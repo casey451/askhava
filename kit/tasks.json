@@ -16325,7 +16325,7 @@
    "id": "T222",
    "slug": "journeys-full-variants",
    "title": "Journeys J1 and J2, the full variants: web chat, photos, question order, quote formats, share box, review links",
-   "goal": "J1 and J2 run end to end with every feature the stage-4 slices (T098, T099) left out: the web-chat path with the consent text first (CON-025), INT-043's question order, INT-039's skips, the INT-044 photo check, the INT-041 card confirmation and TXT-018's email option, PICK-053's quote formats with a note, PICK-049's share box, PICK-050's 'Can't take it', and BIZ-052's review links; keyboard-only variants included; both journeys green on the stand-ins is the stage-5 exit evidence. The web-and-email runs of J1 and J2 (TD-TXT-15's J1 and J2 half, D-3263) go in `tests/e2e/j1_j2_web_email.spec.ts`: signed in as the owner as T310's spec does, the spec sets the launch channel to web-and-email on the served owner settings page (`messaging::api::set_launch_channel`, `app/messaging/src/mode_state.rs:198`, has no other caller), then runs J1 and J2 with web-chat consent and intake, the safety text on screen, the pick code by email through Twilio Verify's email channel (`app/picks/src/email_code.rs:113`, read with the stand-in's `GET /_stand_in/twilio/code`, `stand_ins/server.py:388`), no call-window or who-lets-in question anywhere (D-440), a portal quote, Confirm, HOLD, Away, PAUSE and BUSY in the business portal, and the stand-in carrier listing zero texts at the end of each journey. TD-TXT-15's Resend email checks (the safety email, quote, job-card and check-in emails) are parked: nothing in the app sends email to Resend yet (the server built no `ResendEmail` when this was written, and no task drained the email outbox to a provider), so they wait for a future email-sender wiring task (D-3186's account mailer and the outbox send handler, with the e2e app pointed at the stand-in), which reads them with T414's `control.sentEmails`; this task neither builds that sender nor waits for it. J1's run also carries the J1 half of TD-BIZ-22's and TD-BIZ-25's sweeps: the fake voice provider records no call to a business phone except masked calls a person placed (D-492). Plan change D-3744: J2's Confirm from the email with no session, HOLD, Away and BUSY are served by T457 (the Confirm link's code step), T456 (Hold and Away) and T463 (Busy), so this task depends on T457, which follows T463 and, through it, T456. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744). Plan change D-3750: the email-sender wiring D-3263 waited for is T469 (the Resend client in every account mailer, the end-to-end app on the fake Resend) and T470 (the task that sends queued emails); T222 runs after both, so J1 and J2 run with email reaching the fake Resend, but its parked Resend email checks stay parked, since it is at its 600-line limit; a later plan change un-parks them. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): the stage-4 slices alone are about 925 lines, so this task is split in three, each within 600 lines: this task keeps `tests/e2e/j1_full.spec.ts` and `tests/e2e/j2_full.spec.ts` (J1 and J2 with every feature above, TD-BIZ-22 and TD-BIZ-25); T532 takes the keyboard-only variants (`tests/a11y/j_full_keyboard.spec.ts`); T533 takes the web-and-email runs (`tests/e2e/j1_j2_web_email.spec.ts`, TD-TXT-15's J1 and J2 half), which take the pick code by Verify text: the code by email (PICK-029) is parked, since the pick page only ever texts a code (`app/portals/src/pick_flow.rs:670` to `:715`) and no conversation address is stored (D-1612). PICK-050's \"Can't take it\" is served by T472 (`docs/architecture.md:550` to `:551`), so this task depends on it. Earlier sentences about the keyboard variants and the web-and-email runs are history. Plan change D-3892 (Opus pre-claim checks of T532, T533 and T536, Nov 16, 2026): Playwright refuses a test file that imports another test file, so the J1 and J2 steps T532 and T533 reuse live in this task's helper modules `tests/e2e/j1_full.ts` and `tests/e2e/j2_full.ts` (exported functions, as `tests/e2e/j2.ts` serves T099's specs), and the two specs stay thin; together within 600 lines. The journeys need the worker's outbox sender, email sender and Stripe jobs, and move the shared clock by days, so this task depends on T536, which starts the worker with the keyed values and runs `j1_full*` and `j2_full*` in the late Playwright project; every seed takes the app clock (`GET /__test/clock`), never the database's `now()`. Iterate on one spec with `--no-deps` (T536); the commands under \"Run your tests\" stay the hand-in check. Plan change D-4258 (closed scan lists, Nov 17, 2026): TD-TXT-15's no-call-window check is T533's, closed there (the four phrases of `tests/a11y/pick_forms.spec.ts:123`); this task adds no copy of that list. Passing the closed scans is the wording bar; an off-list phrasing that no file in scope contains is a note under 'Scan list notes (not findings)', not a finding (D-4038). Forbidden framing actually present in a file this task writes still blocks, whether or not a pattern catches it. D-4349: J1 step 7's day-3 DONE and masked call need a job that reaches Connected; until T663 and T664 nothing moved a job past Awaiting confirm, so this task now runs after both.",
+   "goal": "J1 and J2 run end to end with every feature the stage-4 slices (T098, T099) left out: the web-chat path with the consent text first (CON-025), INT-043's question order, INT-039's skips, the INT-044 photo check, the INT-041 card confirmation and TXT-018's email option, PICK-053's quote formats with a note, PICK-049's share box, PICK-050's 'Can't take it', and BIZ-052's review links; keyboard-only variants included; both journeys green on the stand-ins is the stage-5 exit evidence. The web-and-email runs of J1 and J2 (TD-TXT-15's J1 and J2 half, D-3263) go in `tests/e2e/j1_j2_web_email.spec.ts`: signed in as the owner as T310's spec does, the spec sets the launch channel to web-and-email on the served owner settings page (`messaging::api::set_launch_channel`, `app/messaging/src/mode_state.rs:198`, has no other caller), then runs J1 and J2 with web-chat consent and intake, the safety text on screen, the pick code by email through Twilio Verify's email channel (`app/picks/src/email_code.rs:113`, read with the stand-in's `GET /_stand_in/twilio/code`, `stand_ins/server.py:388`), no call-window or who-lets-in question anywhere (D-440), a portal quote, Confirm, HOLD, Away, PAUSE and BUSY in the business portal, and the stand-in carrier listing zero texts at the end of each journey. TD-TXT-15's Resend email checks (the safety email, quote, job-card and check-in emails) are parked: nothing in the app sends email to Resend yet (the server built no `ResendEmail` when this was written, and no task drained the email outbox to a provider), so they wait for a future email-sender wiring task (D-3186's account mailer and the outbox send handler, with the e2e app pointed at the stand-in), which reads them with T414's `control.sentEmails`; this task neither builds that sender nor waits for it. J1's run also carries the J1 half of TD-BIZ-22's and TD-BIZ-25's sweeps: the fake voice provider records no call to a business phone except masked calls a person placed (D-492). Plan change D-3744: J2's Confirm from the email with no session, HOLD, Away and BUSY are served by T457 (the Confirm link's code step), T456 (Hold and Away) and T463 (Busy), so this task depends on T457, which follows T463 and, through it, T456. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744). Plan change D-3750: the email-sender wiring D-3263 waited for is T469 (the Resend client in every account mailer, the end-to-end app on the fake Resend) and T470 (the task that sends queued emails); T222 runs after both, so J1 and J2 run with email reaching the fake Resend, but its parked Resend email checks stay parked, since it is at its 600-line limit; a later plan change un-parks them. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): the stage-4 slices alone are about 925 lines, so this task is split in three, each within 600 lines: this task keeps `tests/e2e/j1_full.spec.ts` and `tests/e2e/j2_full.spec.ts` (J1 and J2 with every feature above, TD-BIZ-22 and TD-BIZ-25); T532 takes the keyboard-only variants (`tests/a11y/j_full_keyboard.spec.ts`); T533 takes the web-and-email runs (`tests/e2e/j1_j2_web_email.spec.ts`, TD-TXT-15's J1 and J2 half), which take the pick code by Verify text: the code by email (PICK-029) is parked, since the pick page only ever texts a code (`app/portals/src/pick_flow.rs:670` to `:715`) and no conversation address is stored (D-1612). PICK-050's \"Can't take it\" is served by T472 (`docs/architecture.md:550` to `:551`), so this task depends on it. Earlier sentences about the keyboard variants and the web-and-email runs are history. Plan change D-3892 (Opus pre-claim checks of T532, T533 and T536, Nov 16, 2026): Playwright refuses a test file that imports another test file, so the J1 and J2 steps T532 and T533 reuse live in this task's helper modules `tests/e2e/j1_full.ts` and `tests/e2e/j2_full.ts` (exported functions, as `tests/e2e/j2.ts` serves T099's specs), and the two specs stay thin; together within 600 lines. The journeys need the worker's outbox sender, email sender and Stripe jobs, and move the shared clock by days, so this task depends on T536, which starts the worker with the keyed values and runs `j1_full*` and `j2_full*` in the late Playwright project; every seed takes the app clock (`GET /__test/clock`), never the database's `now()`. Iterate on one spec with `--no-deps` (T536); the commands under \"Run your tests\" stay the hand-in check. Plan change D-4258 (closed scan lists, Nov 17, 2026): TD-TXT-15's no-call-window check is T533's, closed there (the four phrases of `tests/a11y/pick_forms.spec.ts:123`); this task adds no copy of that list. Passing the closed scans is the wording bar; an off-list phrasing that no file in scope contains is a note under 'Scan list notes (not findings)', not a finding (D-4038). Forbidden framing actually present in a file this task writes still blocks, whether or not a pattern catches it. D-4349: J1 step 7's day-3 DONE and masked call need a job that reaches Connected; until T663 and T664 nothing moved a job past Awaiting confirm, so this task now runs after both. Plan change D-4360: INT-043's question order, the INT-044 photo check and the INT-041 card confirmation are first driven by T671 to T675 (the intake order dispatcher, `app/intake/src/order_dispatch.rs`), so this task runs after T675.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -16356,7 +16356,8 @@
     "T536",
     "T600",
     "T663",
-    "T664"
+    "T664",
+    "T675"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -16404,13 +16405,14 @@
     "D-3892",
     "D-4196",
     "D-4258",
-    "D-4349"
+    "D-4349",
+    "D-4360"
    ],
    "cites": [],
    "budget": {
     "files": 4,
     "lines": 600,
-    "context_pct": 11
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -19845,7 +19847,7 @@
    "id": "T120",
    "slug": "privacy-sentinel",
    "title": "Sentinel test: J1 to J4 leave no contact detail outside the vault",
-   "goal": "With sentinel fake details run through J1 to J4, no non-vault table, log line, Sentry stub event, job card, AI input or pre-release business message contains them (PRIV-005, PRIV-006, PRIV-016, PRIV-017, PRIV-019, PRIV-028). Plan change D-3744: its budget is 600 lines, the build limit; it is listed in D-3744 for a split in a later plan change. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744). Plan change D-3891 (Fable's pre-claim check): the split D-3744 named is made. The browser-tamper test (TD-SEC-14, SEC-033, `tests/security/tests/browser_tamper.rs`) moves to T548; this task keeps `sentinel.rs` (now `app/server/tests/sentinel.rs`, D-3892) and `sentinel.spec.ts` (TD-PRIV-02, TD-PRIV-13). `sentinel.spec.ts` checks tables (`pg_dump`, as `tests/e2e/j1_homeowner.spec.ts:277` does), the web log of a server it spawns itself (the shared e2e server's output is `stdio: \"inherit\"`, `tests/e2e/webserver.ts:227`), rendered job cards and the control's sent texts and emails. `sentinel.rs` checks log lines, Sentry stub envelopes and the AI input in-process behind `build_router`'s layers, as `tests/security/tests/sentinel_db_logs.rs` does (its Sentry stub at `:82`); the stand-ins have no AI read-back route and the AI client is stage 6 (D-3844). TD-PRIV-13's forced-panic case is a test handler holding `Redacted` contact values behind the same layers (`catch_panic`, `app/server/src/lib.rs:332`); production code gains no panic switch, and the other TD-PRIV-13 clauses are done (T011, T015, T090, T251). Plan change D-3892 (Opus pre-claim check of T548, Nov 16, 2026): a test-layer crate may never depend on `askhava-server` (D-597, D-743; `tests/integration/tests/architecture.rs:225` to `:233` fails the build), so `sentinel.rs` lives in `server`'s own test folder as `app/server/tests/sentinel.rs`, where `build_router` and its layers are reachable; a workspace dependency it needs that `app/server/Cargo.toml` lacks (`tracing-subscriber`, `sentry`, `askhava-ai` and `askhava-fixtures`, on Nov 16) is added to that file's `[dev-dependencies]` as one line each. D-4349: the journeys reach Connected only through T663's settle move and T664's Confirm press, so this task runs after both.",
+   "goal": "With sentinel fake details run through J1 to J4, no non-vault table, log line, Sentry stub event, job card, AI input or pre-release business message contains them (PRIV-005, PRIV-006, PRIV-016, PRIV-017, PRIV-019, PRIV-028). Plan change D-3744: its budget is 600 lines, the build limit; it is listed in D-3744 for a split in a later plan change. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744). Plan change D-3891 (Fable's pre-claim check): the split D-3744 named is made. The browser-tamper test (TD-SEC-14, SEC-033, `tests/security/tests/browser_tamper.rs`) moves to T548; this task keeps `sentinel.rs` (now `app/server/tests/sentinel.rs`, D-3892) and `sentinel.spec.ts` (TD-PRIV-02, TD-PRIV-13). `sentinel.spec.ts` checks tables (`pg_dump`, as `tests/e2e/j1_homeowner.spec.ts:277` does), the web log of a server it spawns itself (the shared e2e server's output is `stdio: \"inherit\"`, `tests/e2e/webserver.ts:227`), rendered job cards and the control's sent texts and emails. `sentinel.rs` checks log lines, Sentry stub envelopes and the AI input in-process behind `build_router`'s layers, as `tests/security/tests/sentinel_db_logs.rs` does (its Sentry stub at `:82`); the stand-ins have no AI read-back route and the AI client is stage 6 (D-3844). TD-PRIV-13's forced-panic case is a test handler holding `Redacted` contact values behind the same layers (`catch_panic`, `app/server/src/lib.rs:332`); production code gains no panic switch, and the other TD-PRIV-13 clauses are done (T011, T015, T090, T251). Plan change D-3892 (Opus pre-claim check of T548, Nov 16, 2026): a test-layer crate may never depend on `askhava-server` (D-597, D-743; `tests/integration/tests/architecture.rs:225` to `:233` fails the build), so `sentinel.rs` lives in `server`'s own test folder as `app/server/tests/sentinel.rs`, where `build_router` and its layers are reachable; a workspace dependency it needs that `app/server/Cargo.toml` lacks (`tracing-subscriber`, `sentry`, `askhava-ai` and `askhava-fixtures`, on Nov 16) is added to that file's `[dev-dependencies]` as one line each. D-4349: the journeys reach Connected only through T663's settle move and T664's Confirm press, so this task runs after both. Plan change D-4360: the sentinel's J1 needs the real intake conversation (ZIP, trade, photos, name and address, card) that T671 to T675 wire, so it runs after T675.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -19855,7 +19857,8 @@
     "T217",
     "T118",
     "T663",
-    "T664"
+    "T664",
+    "T675"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -19894,7 +19897,8 @@
     "D-3744",
     "D-3891",
     "D-3892",
-    "D-4349"
+    "D-4349",
+    "D-4360"
    ],
    "cites": [],
    "budget": {
@@ -21630,7 +21634,7 @@
    "id": "T126",
    "slug": "cleanup-stage5",
    "title": "Stage 5 cleanup: dead code, duplicates, docs up to date (end of Phase 1)",
-   "goal": "Scan-driven cleanup, fixing only what the tools flag: an unused-dependency check (`cargo machete` is not pinned, so `cargo tree` plus `python3 scripts/check_crates.py`), the duplicate-function scan `python3 scripts/check_duplicates.py --strict` (T516, D-3870), `python3 scripts/check_rust_rules.py`, `python3 scripts/check_code_docs.py`, a grep for commented-out code, and docs/architecture.md sections 7, 8, 9, 11 and 12 (and section 10 holding no build note: `python3 scripts/split_arch_notes.py --check` prints 0, D-3870) and the build notes in `app/*/NOTES.md` and `docs/build-notes.md` (found by grep, never loaded whole; D-3620) brought up to date with the stage's merges. Done means every scan prints zero findings in the task report and the stage's exit test in docs/build-readiness.md section 3 is not recorded here: the task report gives each exit-test clause's evidence, and the runner records the proof (D-479, D-3870). `tests/task_kinds_deferred.json` (T327) must hold, at this stage's end, only kinds whose owner task is still queued, each with its reason; any other entry is reported in the task report for the next plan change to remove or justify (D-2290). Plan change D-3891 (Fable's pre-claim check), as T100 (D-3870): for each duplicate group one copy stays and the others call it where `kit/layers.json` allows; behaviour is unchanged and every existing test passes unchanged; a group is merged only when every name its bodies use (constants, types, functions, imports) resolves to the same item in each copy; otherwise it goes on the keep-list (`KEEP`, `scripts/check_duplicates.py:28`) with its reason, and a keep-list edit rewrites `kit/plan.lock` (`python3 scripts/check_plan_lock.py --write`) in the same commit. For a security group (sign-in, session, link-token or CSRF code), the report names the existing tests that cover each remaining caller. Findings under `tests/` (which `check_rust_rules.py`, `check_code_docs.py` and `check_crates.py` also scan) are reported in the task report, not fixed. Stage 5's proof is hand-recorded (`runner/proof.py:108`): the task report gives each clause of row 5 (`docs/build-readiness.md:42`) its evidence, and the task never runs `--record-proof`. This is not stage 5's last task: the documentation pass (T498 to T514, T551 to T555) depends on it and starts only after the overseer records the stage-5 proof. Plan change D-4052 (audit batch B, items B29 and B21): one known leftover for this pass, removed only if the scans and a grep confirm no production caller: `businesses::api::night_count` (`app/businesses/src/api.rs:132`, `service::night_count`, the un-narrowed count beside `covered_night_count`, D-2010). `messaging::rules::plan_release` (`app/messaging/src/rules.rs:340`) is not removed in this pass: T583's sender does its job by reading the count at send time, but its unit tests are TD-QH-02's U-level cases (`app/messaging/src/tests/quiet_hours.rs`), so it stays until a decision names TD-QH-02 unit coverage that remains without it.",
+   "goal": "Scan-driven cleanup, fixing only what the tools flag: an unused-dependency check (`cargo machete` is not pinned, so `cargo tree` plus `python3 scripts/check_crates.py`), the duplicate-function scan `python3 scripts/check_duplicates.py --strict` (T516, D-3870), `python3 scripts/check_rust_rules.py`, `python3 scripts/check_code_docs.py`, a grep for commented-out code, and docs/architecture.md sections 7, 8, 9, 11 and 12 (and section 10 holding no build note: `python3 scripts/split_arch_notes.py --check` prints 0, D-3870) and the build notes in `app/*/NOTES.md` and `docs/build-notes.md` (found by grep, never loaded whole; D-3620) brought up to date with the stage's merges. Done means every scan prints zero findings in the task report and the stage's exit test in docs/build-readiness.md section 3 is not recorded here: the task report gives each exit-test clause's evidence, and the runner records the proof (D-479, D-3870). `tests/task_kinds_deferred.json` (T327) must hold, at this stage's end, only kinds whose owner task is still queued, each with its reason; any other entry is reported in the task report for the next plan change to remove or justify (D-2290). Plan change D-3891 (Fable's pre-claim check), as T100 (D-3870): for each duplicate group one copy stays and the others call it where `kit/layers.json` allows; behaviour is unchanged and every existing test passes unchanged; a group is merged only when every name its bodies use (constants, types, functions, imports) resolves to the same item in each copy; otherwise it goes on the keep-list (`KEEP`, `scripts/check_duplicates.py:28`) with its reason, and a keep-list edit rewrites `kit/plan.lock` (`python3 scripts/check_plan_lock.py --write`) in the same commit. For a security group (sign-in, session, link-token or CSRF code), the report names the existing tests that cover each remaining caller. Findings under `tests/` (which `check_rust_rules.py`, `check_code_docs.py` and `check_crates.py` also scan) are reported in the task report, not fixed. Stage 5's proof is hand-recorded (`runner/proof.py:108`): the task report gives each clause of row 5 (`docs/build-readiness.md:42`) its evidence, and the task never runs `--record-proof`. This is not stage 5's last task: the documentation pass (T498 to T514, T551 to T555) depends on it and starts only after the overseer records the stage-5 proof. Plan change D-4052 (audit batch B, items B29 and B21): one known leftover for this pass, removed only if the scans and a grep confirm no production caller: `businesses::api::night_count` (`app/businesses/src/api.rs:132`, `service::night_count`, the un-narrowed count beside `covered_night_count`, D-2010). `messaging::rules::plan_release` (`app/messaging/src/rules.rs:340`) is not removed in this pass: T583's sender does its job by reading the count at send time, but its unit tests are TD-QH-02's U-level cases (`app/messaging/src/tests/quiet_hours.rs`), so it stays until a decision names TD-QH-02 unit coverage that remains without it. Plan change D-4360: also after T676, T677 and T691.",
    "type": "cleanup",
    "phase": 1,
    "stage": "5",
@@ -21826,7 +21830,16 @@
     "T667",
     "T668",
     "T669",
-    "T670"
+    "T670",
+    "T676",
+    "T677",
+    "T681",
+    "T682",
+    "T684",
+    "T686",
+    "T688",
+    "T690",
+    "T691"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -21873,7 +21886,8 @@
     "D-4326",
     "D-4327",
     "D-4338",
-    "D-4349"
+    "D-4349",
+    "D-4360"
    ],
    "cites": [
     "BUILD_BRIEF.md:488",
@@ -21882,7 +21896,7 @@
    "budget": {
     "files": 14,
     "lines": 800,
-    "context_pct": 50
+    "context_pct": 53
    },
    "checks": [
     "Ci",
@@ -23201,7 +23215,8 @@
     "T513",
     "T514",
     "T641",
-    "T642"
+    "T642",
+    "T700"
    ],
    "model": null,
    "effort": null,
@@ -23213,7 +23228,8 @@
    "tests": [],
    "decisions": [
     "D-1154",
-    "D-3856"
+    "D-3856",
+    "D-4392"
    ],
    "cites": [
     "BUILD_BRIEF.md:174"
@@ -23805,7 +23821,7 @@
    "id": "T136",
    "slug": "e2e-test-site",
    "title": "Run J1 to J4 on the Railway test site and record the results",
-   "goal": "J1 to J4 run against the Railway test site with every vendor in its sandbox and fake data only, and each journey's result, with any failure filed as a task, is recorded in `docs/phase2/e2e-test-site.md`. J4's outage steps stay on the stand-ins; J1 to J3 run on the test site; the task records results and files gaps in `docs/for-casey-review.md`, it fixes nothing itself (D-491). (D-493) D-4349: the journeys' day-3 step needs T663 and T664 (a job reaches Connected only through them), so this task runs after both.",
+   "goal": "J1 to J4 run against the Railway test site with every vendor in its sandbox and fake data only, and each journey's result, with any failure filed as a task, is recorded in `docs/phase2/e2e-test-site.md`. J4's outage steps stay on the stand-ins; J1 to J3 run on the test site; the task records results and files gaps in `docs/for-casey-review.md`, it fixes nothing itself (D-491). (D-493) D-4349: the journeys' day-3 step needs T663 and T664 (a job reaches Connected only through them), so this task runs after both. Plan change D-4360: J1 runs the real intake conversation once T676 has replaced its psql seed, so this task runs after T676.",
    "type": "docs",
    "phase": 2,
    "stage": "6",
@@ -23814,7 +23830,8 @@
     "T135",
     "T132",
     "T663",
-    "T664"
+    "T664",
+    "T676"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "low",
@@ -23837,7 +23854,8 @@
    ],
    "decisions": [
     "D-1143",
-    "D-4349"
+    "D-4349",
+    "D-4360"
    ],
    "cites": [
     "BUILD_BRIEF.md:193"
@@ -23845,7 +23863,7 @@
    "budget": {
     "files": 1,
     "lines": 100,
-    "context_pct": 7
+    "context_pct": 10
    },
    "checks": [
     "Ci",
@@ -24365,7 +24383,8 @@
    "stage": "6",
    "module": null,
    "deps": [
-    "T234"
+    "T234",
+    "T680"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -24411,7 +24430,7 @@
    "budget": {
     "files": 4,
     "lines": 600,
-    "context_pct": 6
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -24514,7 +24533,7 @@
    "id": "T299",
    "slug": "ai-intake-wiring",
    "title": "server and intake: the AI client built once per process and the AI reading called from texts and web chat",
-   "goal": "IC-23's second half (D-2065): T236 builds the first intake caller of the AI reading (in `app/intake/src/service.rs`, through the gated `read_intake` taking the pool, with no connection held across the provider await, AI-029) and T298 the AI endpoint settings and the real Claude client, but nothing builds the client in a running process (`app/server/src/main.rs` and `app/server/src/bin/worker.rs` build no AI client today) or calls the reading from a homeowner's text or web chat, so the app would run AI-off for ever and the war games would never exercise the AI. (1) In `app/server/src/ai_client.rs`, build from the settings one `ai::api::AdapterTransport` over T298's client (one reused HTTP client) with its `ai::api::AiConfig` (the AI-023 reply budget T296 set, the AI-024 model, the AI-021 cap), once per process at start-up and shared by reference: in the web process, and in the worker if the text path's AI turn runs there (below); a settings error stops start-up naming the key, except T298's AI-off endpoint in live (no key set), with which the process starts, every step takes the AI-off path with no request made, and one high owner alert and one log line name the missing setting, never a value (D-2065); with no AI keys in dev and ci it is the stand-in; start-up makes no AI call. (2) The text path: in `app/server/src/inbound_text.rs` the webhook's transaction commits its durable record of the text before any AI call is made for it and never awaits the AI inside it (AI-029's webhook half, which T236 left to this task); the AI turn then runs off that transaction, either in the request after the commit or in a `core.task` queued in that transaction and run by the worker. Choose, log the reason in `docs/decisions.md`, and make sure a process stopped between the commit and the turn never loses the step (at worst it is asked on the AI-off path). The homeowner's wait is end to end: if the worker runs the turn, the queue and poll wait before it counts inside AI-023's 3-second reply budget (the AI call gets only what is left, and none left means the AI-off path at once) and inside the time to the next question that T234 and T297 measure, never only the AI call's own time. The AI-008 case through the real inbound route needs the route to know its environment: use the `Environment` T317 adds to the route's state (`Webhooks` in `app/server/src/inbound_text.rs`, set from the settings in `main.rs`; D-2206) and pass it to the gated entry; add no other field to `Webhooks`, since the done tests that build it are T317's (D-2206). The turn (`app/intake/src/ai_turn.rs`) calls T236's caller at each step of the INT-043 order that makes an AI call as the code then stands (the intake reading today) and sends the next step through the outbox: the one the applied reading leads to, or the fixed question-bank question at once (INT-021, INT-039) when the AI-008 switch is off, the AI-023 budget runs out, an AI-028 budget or the AI-021 cap refuses the call, or the reading fails or is discarded; steps that make no AI call never wait on one. (3) The web-chat path (T103's `app/intake/src/web_chat.rs` and `app/site/src/chat.rs`): no AI call before the session's phone code is verified (AI-021); after it, the same turn, the page showing the next question within the reply budget (AI-023). On both paths only `ScrubbedText` reaches `ai` (AI-004), no call is made before the consent text went and the ZIP and area check passed (AI-028), and no database connection or open transaction is held while the AI is awaited (AI-029). The AI writing calls (reword, follow-up, card, project file; D-990) are not this task's: IC-53 tracks them. Update `app/server/CLAUDE.md`, `app/intake/CLAUDE.md` and `docs/architecture.md` (shared), and name in the hand-in the commit and the tests that close IC-23 for the next plan change. Plan change D-4292: this task now depends on T645 (the web chat's opt-out words, INT-038 stop and stored first-message language) and T646 (the chat's client IP for the new-request limit). In `chat_message` keep T645's order: the opt-out check first, then the 911 check and the under-18 stop, and only then the AI turn; no AI call is made for a chat message that opted out or that the INT-038 stop closed, and the turn uses the session's stored language. Plan change D-4326: ordered after T656, which first changes `app/site/src/chat.rs`'s failed-submit page (the focused error summary, `aria-invalid` and the refilled words and number, A11Y-030); this task keeps them.",
+   "goal": "IC-23's second half (D-2065): T236 builds the first intake caller of the AI reading (in `app/intake/src/service.rs`, through the gated `read_intake` taking the pool, with no connection held across the provider await, AI-029) and T298 the AI endpoint settings and the real Claude client, but nothing builds the client in a running process (`app/server/src/main.rs` and `app/server/src/bin/worker.rs` build no AI client today) or calls the reading from a homeowner's text or web chat, so the app would run AI-off for ever and the war games would never exercise the AI. (1) In `app/server/src/ai_client.rs`, build from the settings one `ai::api::AdapterTransport` over T298's client (one reused HTTP client) with its `ai::api::AiConfig` (the AI-023 reply budget T296 set, the AI-024 model, the AI-021 cap), once per process at start-up and shared by reference: in the web process, and in the worker if the text path's AI turn runs there (below); a settings error stops start-up naming the key, except T298's AI-off endpoint in live (no key set), with which the process starts, every step takes the AI-off path with no request made, and one high owner alert and one log line name the missing setting, never a value (D-2065); with no AI keys in dev and ci it is the stand-in; start-up makes no AI call. (2) The text path: in `app/server/src/inbound_text.rs` the webhook's transaction commits its durable record of the text before any AI call is made for it and never awaits the AI inside it (AI-029's webhook half, which T236 left to this task); the AI turn then runs off that transaction, either in the request after the commit or in a `core.task` queued in that transaction and run by the worker. Choose, log the reason in `docs/decisions.md`, and make sure a process stopped between the commit and the turn never loses the step (at worst it is asked on the AI-off path). The homeowner's wait is end to end: if the worker runs the turn, the queue and poll wait before it counts inside AI-023's 3-second reply budget (the AI call gets only what is left, and none left means the AI-off path at once) and inside the time to the next question that T234 and T297 measure, never only the AI call's own time. The AI-008 case through the real inbound route needs the route to know its environment: use the `Environment` T317 adds to the route's state (`Webhooks` in `app/server/src/inbound_text.rs`, set from the settings in `main.rs`; D-2206) and pass it to the gated entry; add no other field to `Webhooks`, since the done tests that build it are T317's (D-2206). The turn (`app/intake/src/ai_turn.rs`) calls T236's caller at each step of the INT-043 order that makes an AI call as the code then stands (the intake reading today) and sends the next step through the outbox: the one the applied reading leads to, or the fixed question-bank question at once (INT-021, INT-039) when the AI-008 switch is off, the AI-023 budget runs out, an AI-028 budget or the AI-021 cap refuses the call, or the reading fails or is discarded; steps that make no AI call never wait on one. (3) The web-chat path (T103's `app/intake/src/web_chat.rs` and `app/site/src/chat.rs`): no AI call before the session's phone code is verified (AI-021); after it, the same turn, the page showing the next question within the reply budget (AI-023). On both paths only `ScrubbedText` reaches `ai` (AI-004), no call is made before the consent text went and the ZIP and area check passed (AI-028), and no database connection or open transaction is held while the AI is awaited (AI-029). The AI writing calls (reword, follow-up, card, project file; D-990) are not this task's: IC-53 tracks them. Update `app/server/CLAUDE.md`, `app/intake/CLAUDE.md` and `docs/architecture.md` (shared), and name in the hand-in the commit and the tests that close IC-23 for the next plan change. Plan change D-4292: this task now depends on T645 (the web chat's opt-out words, INT-038 stop and stored first-message language) and T646 (the chat's client IP for the new-request limit). In `chat_message` keep T645's order: the opt-out check first, then the 911 check and the under-18 stop, and only then the AI turn; no AI call is made for a chat message that opted out or that the INT-038 stop closed, and the turn uses the session's stored language. Plan change D-4326: ordered after T656, which first changes `app/site/src/chat.rs`'s failed-submit page (the focused error summary, `aria-invalid` and the refilled words and number, A11Y-030); this task keeps them. Plan change D-4360: the INT-043 order is walked by `app/intake/src/order_dispatch.rs` (T671 to T675), whose trade check uses the stored keyword reading (the AI-off path). The dispatcher runs inside `reply_in`'s and the webhook's transaction, so it never awaits the AI: at a step that makes an AI call it hands the step to this task's AI turn (after the commit or in the queued task chosen above, AI-029) and takes the turn's result as the step's answer when it lands; this task owns that file after T675 and runs after it. Plan change D-4360: T672's dispatcher rebuilds the question bank's position on each text by replaying the stored answers keyed on their question IDs; an AI follow-up or reworded question must be stored under its own question ID so the replay stays in step with the AI on.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -24534,7 +24553,8 @@
     "T645",
     "T646",
     "T649",
-    "T656"
+    "T656",
+    "T675"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -24549,7 +24569,8 @@
     "app/intake/src/ai_turn.rs",
     "app/intake/src/web_chat.rs",
     "app/site/src/chat.rs",
-    "tests/integration/tests/ai_wiring.rs"
+    "tests/integration/tests/ai_wiring.rs",
+    "app/intake/src/order_dispatch.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -24584,13 +24605,14 @@
     "D-3844",
     "D-4292",
     "D-4294",
-    "D-4326"
+    "D-4326",
+    "D-4360"
    ],
    "cites": [],
    "budget": {
-    "files": 6,
+    "files": 7,
     "lines": 600,
-    "context_pct": 28
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -25995,7 +26017,7 @@
    "id": "T237",
    "slug": "wargames-round-1",
    "title": "War games round 1: the first chaotic run, findings fixed",
-   "goal": "War games round 1 (D-1154): run the whole cast of `wargames/personas.py` and every chaos injector against the Railway test site and the local lane, as chaotically as the business could ever be run: overlapping jobs, pranks and AI-credit drains in the middle of real ones, businesses gaming quotes while homeowners vanish, opt out and come back, and money flowing through Stripe test mode (T235's jobs mixed in). The session plays personas live beyond the library and adds each new one. Every anomaly becomes one row of the findings table in `docs/phase2/war-games.md` (WG-###, round, persona, scenario, request, job and message IDs, the requirement ID it breaks, severity, status). Each Critical, High or Medium finding is fixed in this task with a regression test, in the owned folders, that fails without the fix, and its scenario re-run green; a Low finding is fixed or listed; a finding whose fix would change a requirement, a test-design entry or a locked file is not fixed here: it goes to the top of `docs/for-casey-review.md` as a plan-change item with its WG number; fixes beyond the 800-line budget are carried, listed as open, to the next round. Fake data only (BUILD_BRIEF.md:66, PRIV-019): every persona's name, phone (555-0100 to 555-0199), email (example.com) and street comes from the fixture generator, and no real number, key or person is ever used;  An existing test is never changed or weakened to pass; a wrong test changes only through a logged spec change (BUILD_BRIEF.md:69), which this task cannot make. On the test site the AI-008 switch is on during the money run and the rounds, so real Claude calls are made on fake data from the test project's Console key (T137's), and the campaign's AI spend is capped at $40 in all (a test-project daily AI-call cap, AI-021, of 600 calls, and the Console spend limit Casey set at the account checkpoint, whichever is lower); outbound texts use Twilio's test credentials and magic numbers only, so no real phone receives anything (BUILD_BRIEF.md:190). Each round records, per case of the pentest matrix (`docs/reviews/war-games-inputs/2026-11-09-pentest-matrix.md`), the run and its outcome or the stated skip (D-2350). Plan change D-4292: this task now depends on T643 and T644, which own Playwright specs and the door matrix under this task's paths, so the war games start with every spec posting a browser's own headers.",
+   "goal": "War games round 1 (D-1154): run the whole cast of `wargames/personas.py` and every chaos injector against the Railway test site and the local lane, as chaotically as the business could ever be run: overlapping jobs, pranks and AI-credit drains in the middle of real ones, businesses gaming quotes while homeowners vanish, opt out and come back, and money flowing through Stripe test mode (T235's jobs mixed in). The session plays personas live beyond the library and adds each new one. Every anomaly becomes one row of the findings table in `docs/phase2/war-games.md` (WG-###, round, persona, scenario, request, job and message IDs, the requirement ID it breaks, severity, status). Each Critical, High or Medium finding is fixed in this task with a regression test, in the owned folders, that fails without the fix, and its scenario re-run green; a Low finding is fixed or listed; a finding whose fix would change a requirement, a test-design entry or a locked file is not fixed here: it goes to the top of `docs/for-casey-review.md` as a plan-change item with its WG number; fixes beyond the 800-line budget are carried, listed as open, to the next round. Fake data only (BUILD_BRIEF.md:66, PRIV-019): every persona's name, phone (555-0100 to 555-0199), email (example.com) and street comes from the fixture generator, and no real number, key or person is ever used;  An existing test is never changed or weakened to pass; a wrong test changes only through a logged spec change (BUILD_BRIEF.md:69), which this task cannot make. On the test site the AI-008 switch is on during the money run and the rounds, so real Claude calls are made on fake data from the test project's Console key (T137's), and the campaign's AI spend is capped at $40 in all (a test-project daily AI-call cap, AI-021, of 600 calls, and the Console spend limit Casey set at the account checkpoint, whichever is lower); outbound texts use Twilio's test credentials and magic numbers only, so no real phone receives anything (BUILD_BRIEF.md:190). Each round records, per case of the pentest matrix (`docs/reviews/war-games-inputs/2026-11-09-pentest-matrix.md`), the run and its outcome or the stated skip (D-2350). Plan change D-4292: this task now depends on T643 and T644, which own Playwright specs and the door matrix under this task's paths, so the war games start with every spec posting a browser's own headers. Plan change D-4360: also after T678.",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -26025,7 +26047,13 @@
     "T432",
     "T643",
     "T644",
-    "T659"
+    "T659",
+    "T678",
+    "T680",
+    "T683",
+    "T685",
+    "T689",
+    "T687"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -26076,7 +26104,8 @@
     "D-2350",
     "D-3080",
     "D-4292",
-    "D-4327"
+    "D-4327",
+    "D-4360"
    ],
    "cites": [
     "BUILD_BRIEF.md:196",
@@ -26085,7 +26114,7 @@
    "budget": {
     "files": 14,
     "lines": 800,
-    "context_pct": 16
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -26452,7 +26481,7 @@
    "id": "T142",
    "slug": "cleanup-stage6",
    "title": "Stage 6 cleanup: dead code, duplicates, docs up to date (end of Phase 2)",
-   "goal": "Scan-driven cleanup, fixing only what the tools flag: an unused-dependency check (`cargo machete` is not pinned, so `cargo tree` plus `python3 scripts/check_crates.py`), the duplicate-function scan `python3 scripts/check_duplicates.py --strict` (T516, D-3870), `python3 scripts/check_rust_rules.py`, `python3 scripts/check_code_docs.py`, a grep for commented-out code, and docs/architecture.md sections 7 to 12 brought up to date with the stage's merges. Done means every scan prints zero findings in the task report and the stage's exit test in docs/build-readiness.md section 3 is recorded as passed with its evidence (D-479). Plan change D-3856: the end-of-phase documentation pass of T498 to T514 repeats for phase 2: `docs/decisions-current.md` is brought current (`python3 scripts/check_decision_digest.py` passes with no number pending), the documents phase 2 grew (crate `NOTES.md`, `docs/architecture.md` sections 7 to 12, `docs/build-notes.md`, and what T507 to T513 left in their maps' `left` fields) are compacted under `python3 scripts/check_doc_compaction.py --map docs/reviews/doc-maps/T142.json` with nothing lost and no cited line changed, and `python3 scripts/check_doc_budgets.py` reports nothing over a failing limit; a limit is raised in `kit/doc_budgets.json` only with the reason in the task report.",
+   "goal": "Scan-driven cleanup, fixing only what the tools flag: an unused-dependency check (`cargo machete` is not pinned, so `cargo tree` plus `python3 scripts/check_crates.py`), the duplicate-function scan `python3 scripts/check_duplicates.py --strict` (T516, D-3870), `python3 scripts/check_rust_rules.py`, `python3 scripts/check_code_docs.py`, a grep for commented-out code, and docs/architecture.md sections 7 to 12 brought up to date with the stage's merges. Done means every scan prints zero findings in the task report and the stage's exit test in docs/build-readiness.md section 3 is recorded as passed with its evidence (D-479). Plan change D-3856: the end-of-phase documentation pass of T498 to T514 repeats for phase 2: `docs/decisions-current.md` is brought current (`python3 scripts/check_decision_digest.py` passes with no number pending), the documents phase 2 grew (crate `NOTES.md`, `docs/architecture.md` sections 7 to 12, `docs/build-notes.md`, and what T507 to T513 left in their maps' `left` fields) are compacted under `python3 scripts/check_doc_compaction.py --map docs/reviews/doc-maps/T142.json` with nothing lost and no cited line changed, and `python3 scripts/check_doc_budgets.py` reports nothing over a failing limit; a limit is raised in `kit/doc_budgets.json` only with the reason in the task report. Plan change D-4360: also after T678.",
    "type": "cleanup",
    "phase": 2,
    "stage": "6",
@@ -26488,7 +26517,13 @@
     "T427",
     "T428",
     "T430",
-    "T432"
+    "T432",
+    "T678",
+    "T680",
+    "T683",
+    "T685",
+    "T689",
+    "T687"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -26517,7 +26552,8 @@
    "tests": [],
    "decisions": [
     "D-3856",
-    "D-3870"
+    "D-3870",
+    "D-4360"
    ],
    "cites": [
     "BUILD_BRIEF.md:488"
@@ -26525,7 +26561,7 @@
    "budget": {
     "files": 6,
     "lines": 400,
-    "context_pct": 33
+    "context_pct": 36
    },
    "checks": [
     "Ci",
@@ -37664,7 +37700,7 @@
    "id": "T394",
    "slug": "ai-writing-calls",
    "title": "ai and intake (harness): the AI writing calls (reword, follow-up, job card, project file) wired through the scrub, check and budget rules",
-   "goal": "Register row IC-53 (D-990, D-2065, D-3080; AI-010, AI-019, AI-021, AI-028, AI-029, INT-039, CARD-010): T163 built the pure last step (`ai::api::accept_question` and `accept_document`, `app/ai/src/writer.rs`) and the question bank already passes a reworded question through `accept_question` (`app/intake/src/question_bank.rs:325`), but `INSTRUCTIONS` holds only the intake reading (`app/ai/src/models.rs:95`), so with the AI on nothing ever asks for a reword, the follow-up, the job card or the project file and the homeowner always gets the AI-off text. AI-010 and AI-019 put them in launch scope, so this task wires them after T299's turn and before the war games (T237). (1) `app/ai/src/writing.rs`: four versioned `Instruction`s added to `INSTRUCTIONS` (reword the next bank question, the one follow-up the set's brief allows, the job card, the project file), each with a request builder beside `intake_request`: only `ScrubbedText` goes in (AI-004), inside the AI-025 tag with its name escaped and the instruction saying the tag's content is data; no tools (AI-006); the reply schema-validated (AI-005, AI-010) as the task decides against AI-022's one committed schema and logs in `docs/decisions.md` (`schemas/intake_reading.json` is owned here for that), anything failing it discarded; then `accept_question` or `accept_document` (AI-019 and AI-021's checks, the CARD-010 screen, the URL ban, the length cap), falling back to the template or her own scrubbed words on any hit. Each call goes through the gated, budgeted entry T236 built for the reading: the AI-008 switch, the AI-021 admission and its AI-028 step budget (1 reword per bank question and at most 8, 1 follow-up, card and project file 1 each plus 1 per EDIT and at most 3, the card call reserved), no database connection held across the provider await (AI-029), inside AI-023's reply budget, and the AI-off path at once when any of them refuses. (2) `intake`: T299's turn (`app/intake/src/ai_turn.rs`) asks for the reword before a bank question and the follow-up where the brief allows one (INT-039), and the card step (`app/intake/src/summary_step.rs`) asks for the card and the project file before the card is shown; a step past its budget, timed out or refused takes the AI-off path with nothing said (INT-021). (3) The stand-in AI (`stand_ins/ai.py`) answers a writing request deterministically under its schema, and its plants give an added fact, a link and a screened word for the fallback cases. Photo descriptions (AI-016, only after zero retention) and the INT-046 concept prompt are not this task's. Tests in `app/ai/src/tests/writing.rs` and `tests/integration/tests/ai_writing.rs` (TD-AI-29), fake data only; every existing `ai`, `intake`, `ai_budget` and `ai_wiring` test passes unchanged. Update `app/ai/CLAUDE.md`, `app/intake/CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`, and name in the hand-in the commit and tests that close IC-53. Plan change D-3881: INT-020's AI second opinion on scrubbed text, run only on a message that would otherwise open a new request, is this task's (T103 builds the phrase list), with TD-INT-09's case that the second opinion is called only for such messages.",
+   "goal": "Register row IC-53 (D-990, D-2065, D-3080; AI-010, AI-019, AI-021, AI-028, AI-029, INT-039, CARD-010): T163 built the pure last step (`ai::api::accept_question` and `accept_document`, `app/ai/src/writer.rs`) and the question bank already passes a reworded question through `accept_question` (`app/intake/src/question_bank.rs:325`), but `INSTRUCTIONS` holds only the intake reading (`app/ai/src/models.rs:95`), so with the AI on nothing ever asks for a reword, the follow-up, the job card or the project file and the homeowner always gets the AI-off text. AI-010 and AI-019 put them in launch scope, so this task wires them after T299's turn and before the war games (T237). (1) `app/ai/src/writing.rs`: four versioned `Instruction`s added to `INSTRUCTIONS` (reword the next bank question, the one follow-up the set's brief allows, the job card, the project file), each with a request builder beside `intake_request`: only `ScrubbedText` goes in (AI-004), inside the AI-025 tag with its name escaped and the instruction saying the tag's content is data; no tools (AI-006); the reply schema-validated (AI-005, AI-010) as the task decides against AI-022's one committed schema and logs in `docs/decisions.md` (`schemas/intake_reading.json` is owned here for that), anything failing it discarded; then `accept_question` or `accept_document` (AI-019 and AI-021's checks, the CARD-010 screen, the URL ban, the length cap), falling back to the template or her own scrubbed words on any hit. Each call goes through the gated, budgeted entry T236 built for the reading: the AI-008 switch, the AI-021 admission and its AI-028 step budget (1 reword per bank question and at most 8, 1 follow-up, card and project file 1 each plus 1 per EDIT and at most 3, the card call reserved), no database connection held across the provider await (AI-029), inside AI-023's reply budget, and the AI-off path at once when any of them refuses. (2) `intake`: T299's turn (`app/intake/src/ai_turn.rs`) asks for the reword before a bank question and the follow-up where the brief allows one (INT-039), and the card step (`app/intake/src/summary_step.rs`) asks for the card and the project file before the card is shown; a step past its budget, timed out or refused takes the AI-off path with nothing said (INT-021). (3) The stand-in AI (`stand_ins/ai.py`) answers a writing request deterministically under its schema, and its plants give an added fact, a link and a screened word for the fallback cases. Photo descriptions (AI-016, only after zero retention) and the INT-046 concept prompt are not this task's. Tests in `app/ai/src/tests/writing.rs` and `tests/integration/tests/ai_writing.rs` (TD-AI-29), fake data only; every existing `ai`, `intake`, `ai_budget` and `ai_wiring` test passes unchanged. Update `app/ai/CLAUDE.md`, `app/intake/CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`, and name in the hand-in the commit and tests that close IC-53. Plan change D-3881: INT-020's AI second opinion on scrubbed text, run only on a message that would otherwise open a new request, is this task's (T103 builds the phrase list), with TD-INT-09's case that the second opinion is called only for such messages. Plan change D-4360: T672's dispatcher rebuilds the question bank's position on each text by replaying the stored answers keyed on their question IDs; an AI follow-up or reworded question must be stored under its own question ID so the replay stays in step with the AI on.",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -37723,13 +37759,14 @@
     "D-990",
     "D-2065",
     "D-3080",
-    "D-3881"
+    "D-3881",
+    "D-4360"
    ],
    "cites": [],
    "budget": {
     "files": 9,
     "lines": 600,
-    "context_pct": 21
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -37755,7 +37792,8 @@
     "T139",
     "T438",
     "T596",
-    "T597"
+    "T597",
+    "T700"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -37788,7 +37826,8 @@
    "decisions": [
     "D-2740",
     "D-1760",
-    "D-3080"
+    "D-3080",
+    "D-4392"
    ],
    "cites": [],
    "budget": {
@@ -44060,6 +44099,1501 @@
    "branch": "claude/task/T670-pressed-pick-notice",
    "prompt": "kit/prompts/T670.md",
    "acceptance": "TD-JOB-21 passes against PostgreSQL; every `notice_sent` and confirm-window test passes unchanged."
+  },
+  {
+   "id": "T671",
+   "slug": "intake-order-area-trade",
+   "title": "intake (harness): a homeowner's texts after the consent text are driven through INT-043's order: the ZIP and area check, the trade check with its coverage line, and her first job",
+   "goal": "Plan change D-4360 (unwired sweep, orphan 1, re-verified on `main` 77a49d7cc; round-1 review findings 1 to 3, 9, 10 and 14; INT-043, INT-049, INT-016, INT-017, INT-032, CON-031; D-999, D-3309, D-3702). After the consent text nothing drives the intake order: `reply_in` (`app/intake/src/replies.rs:129`) handles check-in answers, LIST, the wait restart, the under-18 stop, a close by text and the name-and-address answer, then `receive_text` (consent, the 911 screen, SAFE) and step 11; nothing calls `zip_step::ask_zip` or `answer_zip` (`app/intake/src/zip_step.rs:122`, `:149`), so `models::insert_property` (only caller `zip_step.rs:181`) never runs, and nothing calls `conversation::begin_job` (only caller `routing::split_request`, `app/intake/src/routing.rs:482`), so a text request never gets a job. The `Then::FirstQuestion` that `receive_text` returns (CON-031: the first intake question follows the consent text at once as its own text) is acted on by no one (START into an open request, which also stalls, is T691's). (1) A new `app/intake/src/order_dispatch.rs` is the one walker of INT-043's order on the text paths (`order::order`, `app/intake/src/order.rs:124`, is the table as data). It takes `models::lock_homeowner` before it reads where request `conversation` is (two texts at once never both ask or answer a step), reads that only from stored rows (the intake answer rows each step already writes, such as `zip_step`'s asked rows and `HOW_SOON_QUESTION`, the stored property, the request's jobs, the card rows, `NAME_ADDRESS_ASKED`), never from a new column or migration, and calls the existing step functions; it never re-implements a step's rule. `reply_in` calls it last, only for a reply in an open request that nothing earlier ended (LIST, a close, the under-18 stop, the name-and-address answer, a check-in answer, an opt-out or HELP), that `receive_text` did not stop (a 911-list match while SAFE is awaited goes no further, INT-005) and that is not a close intent (`closes(words)` stays the gate, so \"cancel my request?\" is never read as a step answer); ALSO and SPLIT are checked before the current step's answer and never while the name-and-address question is open. A first text's `Then::FirstQuestion` asks the ZIP question in the same turn, after the consent text. Step-marker rows (an asked row such as `zip_step`'s, a `trade_reading` row, the job-kind row) carry no inbox ID: they are written through `models::insert_plain` (`app/intake/src/models.rs:676`), and `zip_step::ask` (`app/intake/src/zip_step.rs:242`) is changed to write its asked row that way, so `intake_answer` rows carrying a text's inbox ID stay that text's answers and the heard row only (the done tests `inbound_first_contact.rs`, \"reached intake once\", and `optout_followups.rs`, \"START is no answer\", pass unchanged). The step-11 call (`order::ask_last_question`, today in `reply_in`, D-3702) moves into the dispatcher at its place in the order; until T672 and T675 wire steps 8 to 10 it fires where it fires today (right after the coverage line). (2) The opening words (finding 1: the first text's words are stored nowhere before a job exists; `messaging.inbox` has no body, `quotes.job_description.job_id` is NOT NULL, `intake.intake_answer.choice` holds codes only). At the first text, after the consent text: the keyword reading's trades (`matching::keyword_reading`, `app/intake/src/matching.rs:215`, the AI-off path) are stored as `trade_reading` intake answer rows (codes only, at most two), and, when it names a trade and `rules::opens_job` holds, her first job opens then, and the first text's scrubbed words are kept once for it through `order::keep_words` (scrubbed again, PRIV-008): the one row of opening words. `begin_job` is not used for this early open: it keys the job with `models::latest_property` (`conversation.rs:139`), her newest property from any earlier request, and its INT-009 check could return a job of another open request of hers. The dispatcher opens it in `order_dispatch.rs` from the crate-internal pieces `begin_job` uses (under `models::lock_homeowner`: `jobs::api::create`, the job-kind row with property `none` through `models::insert_plain`, `models::set_first_job`, `handlers::schedule_no_reply`), with no INT-009 lookup, so a new request never joins another request's job. After the ZIP the dispatcher works on the request's own first job (`intake.conversation.job_id`) and never calls `begin_job` again for it; An ALSO before the ZIP is stored opens the second job the same early way (property `none`, no INT-009 lookup), recorded as a job link of this request; `begin_job` opens only a SPLIT's second job, an ALSO after the ZIP, and a first job that opens at step 5 when the first text named no trade. `keep_words` is called only for the opening text and, later, an EDIT's reply, never for a ZIP reply, a trade-question answer or any other step answer (the ZIP must never reach a card, INT-049). When the first text names no trade, no job opens until step 5's trade answer and the opening words are not kept (the card then rests on her answers and the EDIT step); the build logs this in `docs/decisions.md`. (3) Steps 4 and 5: on the 911 path the ZIP is asked after SAFE (INT-025); `answer_zip`'s three outcomes stand (stored, out of area closing the request as INT-022 says, asked once more then waiting). Once her town is stored the trade check reads the stored `trade_reading` rows (and `fit_step`, `:454`, for the trade question when they are in doubt); T299 adds the AI reading here later. A trade in no open category gets INT-016's reply through `routing::apply`; otherwise the coverage line for the request's own job (or, with no early job, the job `begin_job` opens now) goes through `routing::tell_coverage` (`:378`) with the count from T679's `quotes::api::request_coverage`. SPLIT or DIVIDIR right after a `Coverage::Split` offer of the same request calls `split_request` (never at any other point, D-1020); a first message naming two trades (`matching::two_trades`, `:533`) opens the first job and sends INT-032's \"That's 2 jobs\" text, and ALSO or TAMBIÉN opens the second (D-999's gap). That text has no template yet: add `two_jobs` to the shared `app/messaging/templates/en.json` and `es.json` with INT-032's exact English words and a Spanish draft marked for native-speaker review (TXT-003), passing `scripts/check_copy.py` and `scripts/check_ai_smell.py` (WORD-028, WORD-029); this is the one homeowner text this task writes. `app/intake/src/routing.rs`, `conversation.rs` and `service.rs` are not edited (T402, T662, T650 and T236 own them; T236 runs after the war-games gate T243, so an edit there would hold the intake order back behind T222, which needs it). (4) Done tests that asserted the gap: `tests/e2e/j1_homeowner.spec.ts` step 1 and `tests/integration/tests/inbound_text_route.rs` (`:197`, a first text, and `:241`, START with no open request; each `[\"consent\"]` becomes the consent text then the ZIP question, CON-031), and any case in `close_by_text.rs`, `under_13_purge.rs`, `inbound_text_retry.rs` or `app/intake/src/tests/replies.rs` whose expected texts or outbox counts now include the step text INT-043 sends. Before hand-in, grep every test that posts to `/webhooks/twilio/sms` or calls `receive_reply`/`receive_raw_reply` and run them; a failing one not owned here is a plan gap to report, not to edit. Each change only adds that text to an expected list or count, citing CON-031 or INT-043 in a comment; no assertion is removed or loosened, and a case whose subject is a stop, a close, HELP or an opt-out keeps asserting that nothing else is sent. Two side effects to state in `docs/decisions.md`: every request with a trade now has a `jobs` row before the area check; OPS-006's per-trade request count keys on the job's first `jobs.job_facts` row, written when its cards go out (`app/jobs/src/request_counts.rs:5` to `:8`), and OPS-041's demand rows are written only on a not-covered request, so an out-of-area request counts in neither (check and say so); and a 911-list first text opens its job with `emergency: true` (INT-007's meaning) before the INT-006 choice, which later sets or clears the emergency path. Tests (TD-INT-45) in the new `tests/integration/tests/intake_order_area_trade.rs`, PostgreSQL, fake data and 555 numbers only, through `intake::api::receive_raw_reply` as the route calls it, each case asserting texts only up to the coverage line (step 11's interim place is not asserted, so T672 need not edit this file): first text, consent then ZIP question, the `trade_reading` row and the job with property `none` and one kept-words row; a ZIP of a service-area town stores the property, keeps no words and gets the coverage line with the count of seeded fake covering businesses; an out-of-area ZIP closes the request; no ZIP asks once more then waits; 911 path asks the ZIP only after SAFE; a close intent is never a step answer; two texts at once answer a step once; a homeowner with a property from an earlier request gets one job only (the early job, never a second after the ZIP) and her opening words are on it; a homeowner with another open request's job of the same trade gets a new job for the new request; step-marker rows carry no inbox ID; a two-trade first message, ALSO (before the ZIP, opened the early way, with no INT-009 lookup), and SPLIT after a split offer, each opening exactly one more job. Update `app/intake/CLAUDE.md` and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T482",
+    "T644",
+    "T679"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security",
+    "compliance",
+    "harness"
+   ],
+   "owns": [
+    "app/intake/src/order_dispatch.rs",
+    "app/intake/src/replies.rs",
+    "tests/integration/tests/intake_order_area_trade.rs",
+    "tests/e2e/j1_homeowner.spec.ts",
+    "tests/integration/tests/inbound_text_route.rs",
+    "tests/integration/tests/close_by_text.rs",
+    "tests/integration/tests/under_13_purge.rs",
+    "tests/integration/tests/inbound_text_retry.rs",
+    "app/intake/src/tests/replies.rs",
+    "app/intake/src/zip_step.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/intake.md",
+    "docs/spec/consent.md",
+    "docs/spec/privacy.md",
+    "docs/spec/messaging.md",
+    "app/intake/src/order.rs",
+    "app/intake/src/routing.rs",
+    "app/intake/src/matching.rs",
+    "app/intake/src/conversation.rs",
+    "docs/spec/wording.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "INT-043",
+    "INT-049",
+    "INT-022",
+    "INT-016",
+    "INT-017",
+    "INT-032",
+    "CON-031",
+    "INT-025",
+    "PRIV-028",
+    "PRIV-008",
+    "INT-009",
+    "TXT-003",
+    "INT-007"
+   ],
+   "tests": [
+    "TD-INT-45"
+   ],
+   "decisions": [
+    "D-999",
+    "D-1020",
+    "D-1521",
+    "D-3309",
+    "D-3702",
+    "D-4360"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 10,
+    "lines": 650,
+    "context_pct": 42
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T671-intake-order-area-trade",
+   "prompt": "kit/prompts/T671.md",
+   "acceptance": "TD-INT-45 passes against PostgreSQL; a first text gets the consent text then the next question; only the opening text's scrubbed words are kept, never a ZIP reply's; every done test listed in the goal passes, changed only by adding the step text INT-043 or CON-031 now sends, with no assertion removed or loosened; `routing.rs`, `conversation.rs` and `service.rs` are unchanged; no raw words or ZIP reach a log line or an AI call; `two_jobs` passes `check_copy.py` and `check_ai_smell.py`. A returning homeowner gets one job per request; step-marker rows carry no inbox ID; `inbound_first_contact.rs` and `optout_followups.rs` pass unchanged."
+  },
+  {
+   "id": "T672",
+   "slug": "intake-order-timing",
+   "title": "intake: the dispatcher asks \"How soon?\", the night count and the emergency-or-regular choice, releases an emergency job, then asks the trade questions",
+   "goal": "Plan change D-4360 (orphan 1, steps 6 to 8; INT-030, INT-006, INT-033, INT-005, INT-029, INT-039, TXT-041). After T671 the dispatcher (`app/intake/src/order_dispatch.rs`) stops after the coverage line. Extend it, calling only the existing step functions: `service::ask_how_soon` and `answer_how_soon` (`app/intake/src/service.rs:540`, `:563`; answer 4 asks the day; an unreadable answer asks again), `offer_emergency_choice` (`:607`) once SAFE is in when `Answered::choice_after_safe` was set, the night count first between 8 p.m. and 8 a.m. Arizona (INT-033, through `offer_choice` as `answer_how_soon` already does; with N of 0 no choice, the job stays regular), and the choice through `order::choose_with_card` (`app/intake/src/order.rs:351`), which stores the emergency path's card before `answer_choice` can release the job (INT-029); `release_emergency` (`service.rs:687`) is also called when the ZIP comes in after the choice (its doc: \"the conversation calls it again once the ZIP is in\"). Then the trade questions (INT-039): the question bank (`app/intake/src/question_bank.rs`, at most `MAX_ASKED`, its AI-off fixed questions; T299 and T394 add the AI reword later; T394 owns that file, so it is not edited) with each answer stored through `order::answer_narrowing` (`:193`). `BankRun` (`:223`) keeps its position in private fields with no constructor from stored rows, so the dispatcher rebuilds it on each text by replaying the request's stored bank answers AI-off (`BankRun::new`, then `next` and `hear` with each stored answer's option number, keyed on each stored answer's question ID, not on its place in the order, so an AI follow-up question (T299, T394) that the AI-off replay cannot reproduce never shifts the position); a `Heard::Safety911` (a gas or burning smell answer) holds the order as a 911-list match does, through crate-internal calls since `service::record_match` (`app/intake/src/service.rs:337`) is private and `service.rs` is not edited: the INT-004 text (`rules::SAFETY_TEMPLATE`) queued through `conversation::queue_text`, the SAFE hold through `models::insert_event` with that message's inbox ID, and the audit row `intake.emergency_matched` through `service::audit_action`; the order then waits until SAFE (INT-005) and resumes at the next bank question; and TXT-041's Spanish line once through `order::spanish_line` (`:373`) where the order puts it. On the emergency path the trade questions follow the cards (INT-029). Step 11 stays where T671 put it, now after step 8. `service.rs`, `conversation.rs` and `routing.rs` are not edited (D-4360). Tests (TD-INT-46) in the new `tests/integration/tests/intake_order_timing.rs`, each asserting texts only up to its own last step (photos come between the trade questions and step 11 once T675 lands), PostgreSQL, fake data only, the clock set: regular (answer 2, then the trade questions), answer 4 (the day asked and stored), urgent with Emergency (the emergency card stored and `intake.emergency_released` queued once, before the trade questions), urgent with Regular, the 911 path (no choice until SAFE; the choice after SAFE), night with N of 2 (the count text before the choice) and night with N of 0 (no choice; regular), the ZIP arriving after an Emergency choice releasing the job then; each case asserts the exact texts in order against the \"Intake order\" table (`docs/spec/intake.md:55`).",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T671"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "compliance"
+   ],
+   "owns": [
+    "app/intake/src/order_dispatch.rs",
+    "app/intake/src/order.rs",
+    "tests/integration/tests/intake_order_timing.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/intake.md",
+    "docs/spec/messaging.md",
+    "docs/spec/job-cards.md",
+    "app/intake/src/service.rs",
+    "app/intake/src/question_bank.rs",
+    "app/intake/src/emergency_count.rs",
+    "docs/brains/rust-production.md",
+    "app/intake/src/models.rs",
+    "app/intake/src/conversation.rs"
+   ],
+   "requirements": [
+    "INT-043",
+    "INT-030",
+    "INT-006",
+    "INT-033",
+    "INT-005",
+    "INT-029",
+    "INT-039",
+    "TXT-041",
+    "CARD-007",
+    "INT-004"
+   ],
+   "tests": [
+    "TD-INT-46"
+   ],
+   "decisions": [
+    "D-982",
+    "D-3309",
+    "D-4360"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 500,
+    "context_pct": 30
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T672-intake-order-timing",
+   "prompt": "kit/prompts/T672.md",
+   "acceptance": "TD-INT-46 passes against PostgreSQL; each path's texts match the Intake order table step for step; an emergency is released once and only when consent, SAFE (when needed), the choice and the area check are in; `service.rs`, `conversation.rs` and `routing.rs` are unchanged."
+  },
+  {
+   "id": "T673",
+   "slug": "intake-order-card",
+   "title": "intake (harness): the dispatcher builds and shows the card, takes EDIT or SEND, and the cards go out on SEND or after 30 minutes",
+   "goal": "Plan change D-4360 (orphan 1, step 12; INT-041, INT-029, INT-027, TXT-032). Cards go out only through `cards_out` on `intake.cards_approved` and `intake.emergency_released` (`app/intake/src/cards_out.rs:115`, `:141`, registered in `app/server/src/lib.rs`), queued only by `summary_step::approve`/`show_card` (callers `order::show_built_card`, `app/intake/src/order.rs:321`, and `summary_step::answer_card`, `app/intake/src/summary_step.rs:222`) and by `release_emergency` (wired by T672). Nobody calls `show_built_card` or `answer_card`, so no regular job's card is ever shown or sent. After T672, extend `app/intake/src/order_dispatch.rs`: once step 11 is answered (her name and address stored; `answer_name_address` in `app/intake/src/replies.rs`), the card is built from her stored words and shown (`show_built_card`: the card text when it fits 2 segments, else the link line, INT-041), which queues the 30-minute card timer (`intake.card_timer`, already registered); the next reply goes to `answer_card` (EDIT or CAMBIAR asks what to change, the reply is kept through `order::keep_words` and the new card shown; SEND, OK, YES or ENVIAR approves at once); no reply lets the timer approve. On the emergency path the card was sent at the choice, so step 12 is skipped and steps 8 to 11 only add to the job page (INT-029). Edit `app/intake/src/replies.rs` only as far as the hand-off after the name-and-address answer needs. `summary_step.rs` and `cards_out.rs` are not edited (T394, T600 and T526 own them). Done test: `app/server/tests/name_address_answer.rs` may gain the card text that INT-041 now sends after the answer, only added to an expected list, no assertion removed or loosened. Tests (TD-INT-47) in the new `tests/integration/tests/intake_order_card.rs` (EDIT, SEND, YES, the auto-send after 30 minutes on the worker clock, a card too long for 2 segments shown by link, no contact detail in the shown card) and the new `tests/integration/tests/intake_order_flow.rs` (T675 later extends it, add-only, with the photo step), PostgreSQL, the stand-ins, fake data and 555 numbers only, which drives a fake homeowner's texts through `intake::api::receive_raw_reply` from the first text through consent, ZIP, trade and coverage line, \"How soon?\", the trade questions, name and address and SEND to card rows sent to the seeded fake businesses by the registered `intake.cards_approved` handler, and the urgent Emergency path to the emergency card sent before the trade questions, asserting the texts in the table's order and that no business got a card before SEND or the timer on the regular path. Update `app/intake/CLAUDE.md` and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T672"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "compliance",
+    "harness"
+   ],
+   "owns": [
+    "app/intake/src/order_dispatch.rs",
+    "app/intake/src/replies.rs",
+    "tests/integration/tests/intake_order_card.rs",
+    "tests/integration/tests/intake_order_flow.rs",
+    "app/server/tests/name_address_answer.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/intake.md",
+    "docs/spec/messaging.md",
+    "docs/spec/job-cards.md",
+    "docs/spec/privacy.md",
+    "app/intake/src/summary_step.rs",
+    "app/intake/src/cards_out.rs",
+    "app/intake/src/order.rs",
+    "app/server/src/lib.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "INT-043",
+    "INT-041",
+    "INT-029",
+    "INT-027",
+    "TXT-032",
+    "CARD-007",
+    "PRIV-008"
+   ],
+   "tests": [
+    "TD-INT-47"
+   ],
+   "decisions": [
+    "D-3189",
+    "D-3702",
+    "D-4360"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 600,
+    "context_pct": 38
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T673-intake-order-card",
+   "prompt": "kit/prompts/T673.md",
+   "acceptance": "TD-INT-47 passes against PostgreSQL with the stand-ins; the flow test takes a fake text from consent to job cards sent on the regular and emergency paths; `name_address_answer.rs` changes only by adding the INT-041 text; `summary_step.rs` and `cards_out.rs` are unchanged; no contact detail is in any card."
+  },
+  {
+   "id": "T674",
+   "slug": "photo-upload-served",
+   "title": "server: the homeowner's photo upload page and the short-lived photo links are served",
+   "goal": "Plan change D-4360 (orphan 1, photos; INT-044, PRIV-014, PRIV-015, PRIV-025, PRIV-028, CARD-013; D-2874). `portals::photo_upload_page` and `upload_screen` (`app/portals/src/photo_upload.rs`, route `PHOTO_UPLOAD_ROUTE` `/h/requests/{job}/photos`, whose comment says \"The route is T306's\") and `privacy::api::issue_link`/`photo_path` (`app/privacy/src/photos.rs:410`, `:444`, the `/photos/<token>` preview) are served by no route, and T306's goal does not serve them. In `app/server/src/homeowner_portal.rs` (after T561, its last queued owner): `GET` and a multipart `POST` of `PHOTO_UPLOAD_ROUTE` for the signed-in homeowner's own request only (anyone else's or an unknown number is the one not-found answer, SEC-019), body limit `MAX_PHOTO_BYTES`, `refuse_cross_site`, the CSRF token and `no_store` (SEC-034); the file goes through `privacy::api::take_upload` (format and size checks, metadata stripped, re-encoded on the server, no outside AI) and onto her job as `intake` records a photo, then `upload_screen`; the preview's \"Send this photo\" and \"Take it off\" are served as two `POST`s with the same guards: \"Send this photo\" records her confirmation as one `intake.intake_answer` row (`photo_ok`, the photo's ID as the choice) through a new `intake::api` function in `app/intake/src/photos.rs`, and \"Take it off\" deletes the photo through a new `privacy::api::delete_photo` in `app/privacy/src/photos.rs` copying `purge_photos` and `run_photo_delete` (`app/privacy/src/purge.rs:189`, `:226`): in one transaction it deletes the row `WHERE id = $photo AND job_id = $job ... RETURNING storage_key` (its `photo_link` rows cascade), writes one audit row with IDs only and queues the existing `privacy.photo_delete` task for the sealed object, which is deleted after the commit and retried by that task (the orphan sweep, D-1793, covers the rest), so a failure never leaves a row whose object is gone; a photo of another job is never removed; it is called from `intake` (which may call `privacy`, `kit/layers.json`), and only before her card goes out (a shown card keeps its photo IDs; after that \"Take it off\" and REMOVE are refused with a plain line); a photo with no confirmation row never goes on the card (INT-044, read by T675's card step); and `GET /photos/{token}` serving the opened photo for a live token, 404 for a dead one, `no_store`, the token in the path only (PRIV-028). Its `PAGE_STATES` rows go in the shared `tests/a11y/page_states.ts`. Tests (TD-INT-48): the new `app/server/tests/photo_upload_route.rs` through the assembled router (her upload stored, \"Send this photo\" records the confirmation row once, \"Take it off\" removes it, a HEIC, a too-small and an over-limit file each give the page's error, another homeowner's request is not found, a cross-site post refused, an expired photo link 404) and the new `tests/e2e/photo_upload_served.spec.ts` (keyboard upload with JavaScript off, Ally clean), fake images and data only.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T561"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security",
+    "accessibility"
+   ],
+   "owns": [
+    "app/server/src/homeowner_portal.rs",
+    "app/intake/src/photos.rs",
+    "app/privacy/src/photos.rs",
+    "app/server/tests/photo_upload_route.rs",
+    "tests/e2e/photo_upload_served.spec.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/intake.md",
+    "docs/spec/privacy.md",
+    "docs/spec/job-cards.md",
+    "docs/spec/security.md",
+    "docs/spec/accessibility.md",
+    "app/portals/src/photo_upload.rs",
+    "app/privacy/src/photos.rs",
+    "app/privacy/src/media_fetch.rs",
+    "docs/brains/rust-production.md",
+    "app/privacy/src/purge.rs"
+   ],
+   "requirements": [
+    "INT-044",
+    "PRIV-014",
+    "PRIV-015",
+    "PRIV-025",
+    "PRIV-028",
+    "CARD-013",
+    "SEC-019",
+    "SEC-034",
+    "A11Y-027"
+   ],
+   "tests": [
+    "TD-INT-48"
+   ],
+   "decisions": [
+    "D-2874",
+    "D-4360"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 450,
+    "context_pct": 22
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T674-photo-upload-served",
+   "prompt": "kit/prompts/T674.md",
+   "acceptance": "TD-INT-48 passes through the assembled router and in Playwright with Ally clean; only the signed-in homeowner's own request takes an upload; a photo is stored only after `take_upload`'s checks and goes on the card only with its `photo_ok` row; a dead photo link is 404."
+  },
+  {
+   "id": "T675",
+   "slug": "intake-order-photos",
+   "title": "intake and server (harness): the dispatcher asks for photos and, in design categories, look pictures, and picture texts are taken off the texting provider by a queued task",
+   "goal": "Plan change D-4360 (orphan 1, steps 9 and 10; round-1 review findings 4 and 5; INT-044, INT-045, INT-046, PRIV-014, PRIV-025, SEC-041). Nothing asks for photos: `photos::photo_text` (`app/intake/src/photos.rs:205`) has no caller, `privacy::api::take_picture_text` (`app/privacy/src/media_fetch.rs:168`) has none, and the inbound text route (`app/server/src/inbound_text.rs`) reads no `NumMedia` or `MediaUrl<n>` field; `RawReply` and `TextIn` carry no media. A Twilio fetch and provider delete inside the webhook's transaction would break on a rollback or retry (a photo deleted at Twilio and not kept) and can pass Twilio's webhook timeout, so: (1) `app/server/src/inbound_text.rs` (after T573, the last queued owner before T299 and T402) commits the text as today and, in that same transaction, queues one `intake.picture_text` `core.task` per homeowner text with media, its payload the inbox row's ID, the Twilio message SID and up to 3 media SIDs only (no URL kept beyond what the SIDs rebuild, no phone, no words, no image); a business phone's media is ignored as today. After `receive_raw_reply` returns, in the same transaction (the request is then known, including one the text itself opened), the route records one `photo_pending` step-marker row for that request (choice: the inbox ID's hex) through a new `intake::api` function in `photos.rs`; at step 9 the dispatcher never moves on for a text that has such a row (its body is often empty or \"here\"), so the order waits and the task's photo step drives step 9. A picture text whose request has no job yet (the first text named no trade) is held: the task keeps nothing and deletes nothing at the provider, and re-queues itself every 15 minutes (a plain timed re-queue, each under its own dedupe key with its due time, so a restart loses nothing) until the request's job opens, then stores it; it waits at most 72 hours from the picture text (INT-019's no-reply close), and if the request closes first or 72 hours pass, it keeps nothing and deletes the media at the provider. A photo stored before step 9 (a picture text sent at the ZIP step or later) is never shown for confirmation then: it waits, and step 9 shows it for her YES or REMOVE in the order. The task's photo step drives step 9 on every outcome (stored, re-ask, HEIC, refused off Twilio's hosts, or failed after its retries, each with its text), so step 9 never waits on a task that has ended. (2) A new `app/intake/src/picture_text.rs` handles that task (registered in the shared `app/server/src/lib.rs`): outside any held transaction it fetches each media through `take_picture_text` with `fetch_twilio_media` (SEC-041: Twilio's hosts only, size cap, timeout), stores it, deletes it at the provider only after the store committed, and then, under the homeowner lock, calls the dispatcher's photo step for that request; a rerun takes nothing twice (dedupe key per media SID). (3) `app/intake/src/order_dispatch.rs` asks step 9 after the trade questions (`photo_text` with the job type's asks, at most `MAX_PHOTO_ASKS`, the upload link `issue_link` gives for T674's page, PRIV-015's line); never while a 911 text waits for SAFE; each stored photo is shown as it will appear on the card and needs her YES, which records the same `photo_ok` row T674's \"Send this photo\" writes, REMOVE (or QUITAR) deleting it through T674's `privacy::api::delete_photo`; a photo with no `photo_ok` row is left off the card with a note (INT-044); one re-ask only for a file that would not decode or is under the size setting; \"no\" or any other text moves on; and step 10 in a `design: true` category (`design::is_design_category`, `app/intake/src/design.rs:47`): the look-pictures question, handled as photos, and, while the AI may not read photos, the describe-the-look question; the concept image only while the owner's \"Concept images\" switch is on (off at launch), through `design::concept_step`. Step 11 then follows. (4) T672's `tests/integration/tests/intake_order_timing.rs` and T673's `intake_order_flow.rs` script replies from the trade questions to name and address; with the photo step between them they are extended here, add-only: a \"no photo\" reply (and in the flow test one confirmed picture text) is inserted where the order now asks, and the photo ask is added to the expected texts; no assertion is removed or loosened. Tests (TD-INT-49) in the new `tests/integration/tests/intake_order_photos.rs`, PostgreSQL, the Twilio media stand-in and fake images only: a picture text queues one task whose payload holds only IDs, and its body (\"here\") does not move step 9 on, so the photo's confirmation comes before the name-and-address question; a picture text on the first text (no trade) is held until the job opens and stored then; one sent at the ZIP step is confirmed only at step 9; a fetch that fails after its retries still moves step 9 on with its text; the task stores, confirms by YES and puts it on the card, then deletes at the provider; a rerun fetches nothing twice; a store failure deletes nothing at the provider; REMOVE takes it off; an undecodable file re-asked once; a HEIC gets the PRIV-025 reply; no photo asked while SAFE is awaited; a design category asks the look question; a media URL off Twilio's hosts is refused and nothing fetched. The route's done tests pass unchanged.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T673",
+    "T674",
+    "T573"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security",
+    "compliance",
+    "harness"
+   ],
+   "owns": [
+    "app/intake/src/order_dispatch.rs",
+    "app/intake/src/photos.rs",
+    "app/intake/src/picture_text.rs",
+    "app/server/src/inbound_text.rs",
+    "tests/integration/tests/intake_order_photos.rs",
+    "tests/integration/tests/intake_order_flow.rs",
+    "tests/integration/tests/intake_order_timing.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/intake.md",
+    "docs/spec/privacy.md",
+    "docs/spec/security.md",
+    "docs/spec/ai.md",
+    "app/privacy/src/media_fetch.rs",
+    "app/privacy/src/photos.rs",
+    "app/intake/src/design.rs",
+    "app/portals/src/photo_upload.rs",
+    "app/server/src/lib.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "INT-043",
+    "INT-044",
+    "INT-045",
+    "INT-046",
+    "PRIV-014",
+    "PRIV-025",
+    "SEC-041",
+    "AI-016"
+   ],
+   "tests": [
+    "TD-INT-49"
+   ],
+   "decisions": [
+    "D-432",
+    "D-2874",
+    "D-4360"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 7,
+    "lines": 550,
+    "context_pct": 39
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T675-intake-order-photos",
+   "prompt": "kit/prompts/T675.md",
+   "acceptance": "TD-INT-49 passes against PostgreSQL with the stand-ins; no Twilio fetch or delete runs inside the webhook's transaction; picture texts are fetched only from Twilio's hosts and deleted there only after the store committed; no photo goes on a card without its `photo_ok` row; the flow and timing tests change only by adding the photo step; every existing inbound-route test passes unchanged."
+  },
+  {
+   "id": "T676",
+   "slug": "j1-real-conversation",
+   "title": "tests (harness): J1 runs the real intake conversation instead of seeding the job, and the urgent and 911 paths reach cards sent end to end",
+   "goal": "Plan change D-4360 (orphan 1; INT-043, CON-031, INT-041). `tests/e2e/j1_homeowner.spec.ts` seeds steps 2 to 4 with psql (`seedQuotes`, `:135`: a Quotes ready job, its facts and an intake answer) because \"the conversation stops after the consent text\" (its header, `:12` to `:14`, D-2029). After T675 the conversation runs to cards sent. Replace the seeded job with the real conversation through the served Twilio route: her ZIP, the coverage line counting two fake active HVAC businesses seeded in her town as fixture rows, \"How soon?\", the trade questions, \"No photo\", her fake name and address, the card shown and SEND, and the job's cards recorded; the two quotes then come in through the served Quote link of those two businesses so the job reaches Quotes ready by the real path, or, only if that route cannot be driven from this spec, are seeded on the real job exactly as the quote path stores them, with the job's move made through the same `jobs` function, the reason logged in `docs/decisions.md`. Every existing assertion of steps 1, 5 and 6 and the closing checks is kept (step 1's expected texts are T671's consent then ZIP question); new assertions for steps 2 to 4 check the texts against the Intake order table. A new `tests/e2e/intake_order_paths.spec.ts` runs, through the served route with stand-ins and fake data only, the urgent Emergency path (emergency card sent before the trade questions) and the 911 path (INT-004 text, SAFE, then the ZIP), each to its cards recorded. Tests: TD-INT-50.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "tests",
+   "deps": [
+    "T675",
+    "T644"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "harness",
+    "accessibility"
+   ],
+   "owns": [
+    "tests/e2e/j1_homeowner.spec.ts",
+    "tests/e2e/intake_order_paths.spec.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/intake.md",
+    "docs/spec/consent.md",
+    "tests/e2e/webserver.ts",
+    "tests/e2e/fixtures.ts",
+    "app/intake/src/order_dispatch.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "INT-043",
+    "CON-031",
+    "INT-041",
+    "INT-029"
+   ],
+   "tests": [
+    "TD-INT-50"
+   ],
+   "decisions": [
+    "D-2029",
+    "D-4360"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 450,
+    "context_pct": 15
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T676-j1-real-conversation",
+   "prompt": "kit/prompts/T676.md",
+   "acceptance": "TD-INT-50 passes in Playwright on the stand-ins; J1 no longer inserts a job, its facts or an intake answer by psql; every earlier J1 assertion is kept; fake data only."
+  },
+  {
+   "id": "T677",
+   "slug": "late-cards-on-eligible",
+   "title": "quotes, businesses and server: a business that becomes eligible gets the cards of matching open jobs (CARD-018)",
+   "goal": "Plan change D-4360 (unwired sweep, orphan 4; CARD-018, CARD-024, CARD-020; D-1021, D-2508). `quotes::api::send_late_cards` and `send_late_cards_in_reach` (`app/quotes/src/service.rs:103`, `:120`) have no caller, so a business activated, unpaused or newly ticking a job type while a matching job is Open or No quotes yet never gets its card. Every status move of a business goes through `businesses::service::move_status` (`app/businesses/src/service.rs:118`), and job-type, town and tick changes through `set_job_types`, `set_towns` and `set_ticks` (`:468`, `:434`, `:399`; T375's Job types page reaches `set_job_types` through `capability::save_job_types`, so T375 needs no change). (1) In `app/businesses/src/service.rs`, in the same transaction: a move into Active from any other status, and a change that adds a job type, a town or a tick, queues one `businesses.became_eligible` task (`business` only, deduplicated per business and minute; no homeowner detail). (2) A new `app/quotes/src/late_cards.rs` handles it, registered in `app/server/src/lib.rs` (shared): for each job in Open or No quotes yet whose card the business has not had, built from the stored card and the job's place as `cards_out` builds them, `send_late_cards_in_reach`, then the card notice through `queue_card_notice` (CARD-020, its 24 hours from now), an emergency job's card as `queue_emergency_card` sends it. Tests (TD-CARD-17) in the new `tests/integration/tests/late_cards.rs`, PostgreSQL, fake data only, the clock set: activation, a self-unpause, a rule unpause and a new job-type tick each send the open job's card once with its notice; a job in another status, a business already carded, and a business outside the job's reach get nothing; a rerun sends nothing twice.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "quotes",
+   "deps": [
+    "T673",
+    "T671",
+    "T585",
+    "T679"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "licensing"
+   ],
+   "owns": [
+    "app/quotes/src/late_cards.rs",
+    "app/quotes/src/service.rs",
+    "app/businesses/src/service.rs",
+    "tests/integration/tests/late_cards.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/job-cards.md",
+    "app/quotes/src/card_notices.rs",
+    "app/intake/src/cards_out.rs",
+    "app/quotes/src/card_pool.rs",
+    "app/server/src/lib.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "CARD-018",
+    "CARD-024",
+    "CARD-020"
+   ],
+   "tests": [
+    "TD-CARD-17"
+   ],
+   "decisions": [
+    "D-1021",
+    "D-2508",
+    "D-4360"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 450,
+    "context_pct": 32
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T677-late-cards-on-eligible",
+   "prompt": "kit/prompts/T677.md",
+   "acceptance": "TD-CARD-17 passes against PostgreSQL; each eligibility event sends a matching open job's card and notice once; nothing is sent for other statuses or to a business already carded."
+  },
+  {
+   "id": "T678",
+   "slug": "after-hours-suspension",
+   "title": "messaging, server and quotes: card emails are logged per address with their Quote page's first opening, and two missed night EMERGENCY cards suspend the after-hours tick (BIZ-007)",
+   "goal": "Plan change D-4360 (unwired sweep, orphan 8(b); BIZ-007, OPS-037, BIZ-045, INT-033; D-1992, D-2008, D-2011 (3), D-2412). `businesses::api::missed_in_a_row` and `suspend_after_hours` (`app/businesses/src/emergency_switch.rs:97`, `:402`) have no caller (D-2011 (3) left \"the OPS-037 visit check\" to a later task). Its input does not exist in practice: the store is `messaging.notice_log.first_opened_at` (`migrations/0146_messaging_notice_log.sql`), but `messaging::api::record_notice` (`app/messaging/src/email_timing.rs:156`) has no production caller (D-1992: \"Not done here: the senders' `record_notice` calls\"), so no card email ever has a row, and the Quote page's `GET` (`app/server/src/action_links.rs`, `read_page`) calls `open_action_link`, not `portals::api::open_quote_form` (`app/portals/src/business_actions.rs:1008`), so no first opening is ever stamped. (1) `app/messaging/src/business_notices.rs` (after T379, its last queued owner): each card email queued for an address records one `card` notice row through `record_notice` with its outbox row and send time or quiet-hours hold (`mark_sent` when a held one goes), and the email's own Quote link carries that row's ID as D-2412's `notice` value. (2) `app/server/src/action_links.rs` (after T588, its last queued owner): the Quote page's `GET` calls `open_quote_form` with that value, so the first opening is stamped once (no pixel, no redirect; a mail scanner's open counts as OPS-037 says). (3) A new `app/quotes/src/after_hours_watch.rs`: each night EMERGENCY card sent between 8 p.m. and 8 a.m. Arizona queues one `quotes.after_hours_watch` task due 60 minutes (`VISIT_WITHIN`) after its send; the handler, registered in `app/server/src/lib.rs` (shared), reads that business's last `MISSED_IN_A_ROW` night EMERGENCY cards with the earliest first opening by anyone whose \"Emergency emails at any hour\" switch is on, calls `missed_in_a_row`, and on true `suspend_after_hours` (the tick suspended, the owner's email with the re-test link, the business out of INT-033's count until a new Yes). Tests (TD-BIZ-54) in the new `tests/integration/tests/after_hours_suspension.rs`, PostgreSQL, fake data only, the clock set: two night EMERGENCY cards with no opening suspend the tick once and queue the owner's email; an opening at 59:59 by a switched-on person keeps it; one at 60:00, or by a person with the switch off, does not; a day card never counts; each card email has its notice row and the Quote page's first opening is stamped once.",
+   "type": "build",
+   "phase": 2,
+   "stage": "6",
+   "module": "quotes",
+   "deps": [
+    "T673",
+    "T379",
+    "T588"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "compliance",
+    "security"
+   ],
+   "owns": [
+    "app/quotes/src/after_hours_watch.rs",
+    "app/messaging/src/business_notices.rs",
+    "app/server/src/action_links.rs",
+    "tests/integration/tests/after_hours_suspension.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/businesses.md",
+    "docs/spec/ops-recovery.md",
+    "docs/spec/intake.md",
+    "app/messaging/src/email_timing.rs",
+    "app/businesses/src/emergency_switch.rs",
+    "app/portals/src/business_actions.rs",
+    "app/quotes/src/card_notices.rs",
+    "app/server/src/lib.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "BIZ-007",
+    "OPS-037",
+    "BIZ-045",
+    "INT-033"
+   ],
+   "tests": [
+    "TD-BIZ-54"
+   ],
+   "decisions": [
+    "D-1992",
+    "D-2008",
+    "D-2011",
+    "D-2412",
+    "D-4360"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 500,
+    "context_pct": 42
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T678-after-hours-suspension",
+   "prompt": "kit/prompts/T678.md",
+   "acceptance": "TD-BIZ-54 passes against PostgreSQL; card emails have notice rows and the Quote page stamps its first opening once; two missed night EMERGENCY cards suspend the tick once; nothing else changes the tick."
+  },
+  {
+   "id": "T680",
+   "slug": "cancel-refund",
+   "title": "picks and intake (harness): a homeowner cancel after Confirm refunds a business that never talked to her",
+   "goal": "Plan change D-4361 (unwired sweep orphan 2 and its second pass, `main` 77a49d7cc; FEE-023, FEE-024, FEE-026; D-048, D-141). `payments::api::decide_cancel` (`app/payments/src/refund_rules.rs:236`) has no production caller: `cancel` (`app/intake/src/closing.rs:145` to `:155`) only moves the job to Cancelled, so once T663 makes Payment pending and Connected reachable, a business that paid and whose homeowner cancels before any call answered by a person is never refunded. FEE-025 (a charge after the cancel) is not this task's: a success that lands after the job moved on is `Settled::Left` and refunded by `payments::late_success(PickNow::MovedOn)` (`app/server/src/release_sink.rs:118` to `:139`), so `RefundReason::ChargedAfterCancel` stays a rule-level case. (1) `cancel`, when the job moves to Cancelled from Payment pending or Connected, queues one `picks.cancel_refund` task `{job, cancelled_at}` in the same transaction through a new `picks::api::queue_cancel_refund` (dedupe per job; `intake` may call `picks`, `kit/layers.json`); from any other status nothing is queued. (2) The new `app/picks/src/cancel_refund.rs`: `run_cancel_refund` finds the job's pick that is `paid` (a `free` pick has nothing to refund) or still waiting with a charge that succeeded, gathers `CancelFacts` (the charge's success time through a new `payments::api` read, `charged_at(db, pick)`, in the new `app/payments/src/charge_time.rs`; the pick's call log both directions through `calls::api` as `unreachable_refund.rs` reads it; `refunded_before` from `refund_state`) and calls `decide_cancel`; a `Refund` goes through `payments::api::request_refund` with `RefundTrigger::Rule(reason)`, whose per-pick claim makes it exactly once even when the late-success path also refunds the same pick (FEE-026); `NoRefund` records nothing new. The business is told by the refund's existing receipt and notice path; no homeowner contact appears in any payload (PRIV-005). The handler is registered in the shared `app/server/src/lib.rs` with the Stripe adapter and ID secret, as `UNREACHABLE_STEP_KIND` is. (3) `tests/coverage_floor.json`: a 95% branch floor for `app/picks/src/cancel_refund.rs` (`app/payments/` keeps its 95% floor; `charge_time.rs` falls under it). (4) INT-038's under-13 stop (`cancel_job`, `app/intake/src/conversation.rs:361`) cancels the request's jobs the same way and queues the same task from Payment pending or Connected, the refund judged by the same rule with the stop's time as the cancel (the business is never kept paid for a request Laftly ended); the purge in that transaction removes no call-log or payment row the handler reads. A waiting pick on a job she cancels in Payment pending is still not ended by the cancel (D-4349's open item; a later success is refunded as `Left`). Tests in the new `tests/integration/tests/cancel_refund.rs` (TD-FEE-71), PostgreSQL and the Stripe stand-in, fake data only. Update `app/picks/NOTES.md`, `app/intake/NOTES.md` and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 2,
+   "stage": "6",
+   "module": "picks",
+   "deps": [
+    "T663",
+    "T669",
+    "T662",
+    "T402",
+    "T667",
+    "T650"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "privacy",
+    "harness"
+   ],
+   "owns": [
+    "app/intake/src/closing.rs",
+    "app/intake/src/conversation.rs",
+    "app/picks/src/cancel_refund.rs",
+    "app/payments/src/charge_time.rs",
+    "tests/coverage_floor.json",
+    "tests/integration/tests/cancel_refund.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/spec/lifecycle.md",
+    "app/payments/src/refund_rules.rs",
+    "app/picks/src/unreachable_refund.rs",
+    "app/server/src/release_sink.rs",
+    "docs/brains/payments-stripe.md",
+    "docs/brains/rust-production.md",
+    "docs/spec/intake.md"
+   ],
+   "requirements": [
+    "FEE-023",
+    "FEE-024",
+    "FEE-026",
+    "INT-038"
+   ],
+   "tests": [
+    "TD-FEE-71"
+   ],
+   "decisions": [
+    "D-048",
+    "D-141",
+    "D-4349",
+    "D-4361"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 500,
+    "context_pct": 22
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T680-cancel-refund",
+   "prompt": "kit/prompts/T680.md",
+   "acceptance": "TD-FEE-71 passes against PostgreSQL, its refund cases failing on `main`; `cancel_refund.rs` is at or above 95% branch coverage and `app/payments/` holds its floor; every closing, refund and late-success test passes unchanged."
+  },
+  {
+   "id": "T681",
+   "slug": "loss-notices",
+   "title": "picks and jobs: the businesses that lost a pick and every quoter of a finished job are told",
+   "goal": "Plan change D-4361 (unwired sweep orphan 3 and its second pass, `main` 77a49d7cc; PICK-026, PICK-038; D-043, D-044, D-1575, D-1576). `lost_notices`, `no_longer_active` and `refused_after_confirm` (`app/picks/src/aftermath.rs:234`, `:319`, `:343`) are only re-exported: the `pick_lost*` and `job_no_longer_active` templates exist and nothing sends them, so after a pick is paid the other quoters never hear, and every quoter still sees a finished job as open. D-1575 named the callers. (1) `settle` (`app/picks/src/settle.rs:75`, after T663, T662 and T667), in the transaction that records the pick `paid` or `free`, calls `lost_notices` (PICK-026's moment: the payment or $0 fee decision recorded, D-478). (2) Final moves: `jobs` may not call `picks` (D-491), so `move_to` (`app/jobs/src/service.rs:137`, after T663) queues one `jobs.final_status` task `{job, status}` in the same transaction when the target status is final (`JobStatus::is_final`, `app/jobs/src/status.rs:233`), the kind constant in the new `app/jobs/src/final_event.rs` exported through the shared `jobs::api`; its handler in `aftermath.rs`, registered in the shared `app/server/src/lib.rs`, calls `no_longer_active`. (3) A quote refused after Confirm (D-043): `refused_at_confirm` (`app/picks/src/confirm.rs:231`) and T663's `end_pending` with `ineligible` (`app/picks/src/connect.rs`) call `refused_after_confirm` in their transaction. Every send stays per business and per job once (the shared dedupe key, D-1576), skips the connected business, carries the job number and the quote count only (never an amount or a business name, PICK-038), and goes by the business's chosen channels through `BUSINESS_NOTICE_KIND`. Tests in the new `tests/integration/tests/aftermath_notices.rs` (TD-PICK-67), PostgreSQL, fake data only; `settle.rs` stays at or above its 95% floor. Update `app/picks/NOTES.md`, `app/jobs/NOTES.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "picks",
+   "deps": [
+    "T663",
+    "T662",
+    "T667",
+    "T669"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "privacy"
+   ],
+   "owns": [
+    "app/picks/src/settle.rs",
+    "app/picks/src/aftermath.rs",
+    "app/picks/src/confirm.rs",
+    "app/picks/src/connect.rs",
+    "app/jobs/src/service.rs",
+    "app/jobs/src/final_event.rs",
+    "tests/integration/tests/aftermath_notices.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/lifecycle.md",
+    "app/picks/src/money_notices.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "PICK-026",
+    "PICK-038"
+   ],
+   "tests": [
+    "TD-PICK-67"
+   ],
+   "decisions": [
+    "D-043",
+    "D-044",
+    "D-1575",
+    "D-1576",
+    "D-4361"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 7,
+    "lines": 450,
+    "context_pct": 22
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T681-loss-notices",
+   "prompt": "kit/prompts/T681.md",
+   "acceptance": "TD-PICK-67 passes against PostgreSQL, failing on `main`; `settle.rs` is at or above 95% branch coverage; every settle, release, confirm and job-move test passes unchanged."
+  },
+  {
+   "id": "T682",
+   "slug": "confirm-reminders",
+   "title": "picks: a pick waiting for Confirm gets its hourly reminders, and an emergency pick its one",
+   "goal": "Plan change D-4361 (unwired sweep orphan 5 and its second pass, `main` 77a49d7cc; PICK-037, PICK-044, PICK-043; D-380, D-1972). `reminders`, `emergency_reminders`, `claim_reminder` and `reminder_lines` (`app/picks/src/confirm_reminders.rs:71`, `:98`, `:152`, `:231`) have no caller and no task kind exists (D-1972: \"not wired: queuing the reminders\"), so no \"Reminder: accept job\" email goes and more picks lapse. (1) `notice_sent` (`app/picks/src/handlers.rs:115`, after T670), once the pick notice's send is recorded, queues one `picks.confirm_reminder` task `{pick}` at the first reminder's time (`reminders` from the send to the current end, or `emergency_reminders` on an emergency job), dedupe per pick and time. (2) The new `app/picks/src/reminder_run.rs`, registered in the shared `app/server/src/lib.rs`: at each run it re-reads the pick and recomputes the list from the window's current end (after a HOLD or the bounce grace, PICK-043), and sends only while the pick is still waiting, unpressed (T669's `entered_payment_pending_since` read answers none) and not ended: `claim_reminder` first (never twice), then one `BUSINESS_NOTICE_KIND` task by the business's chosen channels to the owner and every \"Confirm and billing\" member with `reminder_lines` (the Hold line only while a HOLD is still allowed; none on an emergency job), then the next reminder's task; quiet hours apply except as QH-004 allows. The emergency pick's one reminder follows the emergency pick notice's routing (`app/picks/src/emergency_emails.rs`, `emergency_pick_plan` and `businesses::api::night_people`): its payload carries `emergency: true` with its `subject` and `first_line`, so `business_notice` never holds it to 8 a.m. (`app/messaging/src/business_notices.rs:501` to `:510`); by day it goes to every person who gets picks, at night only to the owner and \"Confirm and billing\" members with \"Emergency emails at any hour\" on at an after-hours business that is not suspended (BIZ-037), and to nobody when the notice itself waited for 8 a.m. Tests in the new `tests/integration/tests/confirm_reminders_sent.rs` (TD-PICK-68), PostgreSQL, fake data only. Update `app/picks/NOTES.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "picks",
+   "deps": [
+    "T669",
+    "T670",
+    "T543",
+    "T456"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "privacy"
+   ],
+   "owns": [
+    "app/picks/src/handlers.rs",
+    "app/picks/src/reminder_run.rs",
+    "tests/integration/tests/confirm_reminders_sent.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/quiet-hours.md",
+    "app/picks/src/confirm.rs",
+    "app/picks/src/money_notices.rs",
+    "docs/brains/rust-production.md",
+    "app/picks/src/emergency_emails.rs",
+    "docs/spec/businesses.md"
+   ],
+   "requirements": [
+    "PICK-037",
+    "PICK-044",
+    "PICK-043",
+    "BIZ-037"
+   ],
+   "tests": [
+    "TD-PICK-68"
+   ],
+   "decisions": [
+    "D-380",
+    "D-1972",
+    "D-4361"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 350,
+    "context_pct": 18
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T682-confirm-reminders",
+   "prompt": "kit/prompts/T682.md",
+   "acceptance": "TD-PICK-68 passes against PostgreSQL, failing on `main`; every pick notice, HOLD and lapse test passes unchanged."
+  },
+  {
+   "id": "T683",
+   "slug": "business-yes-text",
+   "title": "server and picks: a business's \"YES 1042\" or \"CONFIRM 1042\" text gets the fee and the Confirm link",
+   "goal": "Plan change D-4361 (unwired sweep orphan 6 and its second pass, `main` 77a49d7cc; round-1 review; PICK-033, FEE-036, PICK-035, BIZ-036, QH-004; D-259, D-365, D-1717, D-2042). `read_business_word` and `business_reply` (`app/picks/src/confirm.rs:315`, `:347`) have no caller: a whole-command text makes `auto_reply_due` false (`app/businesses/src/consent.rs:542`) and `auto_reply` ends with `Halt::Ends(\"business\")` (`app/server/src/inbound_text.rs:1050` to `:1057`), so a business on text that replies \"YES 1042\" hears nothing. (1) `inbound_text.rs`: after the opt-out and HELP screens (an opt-out word always wins, D-2039), a business phone's text that `read_business_word` reads goes to the new `app/picks/src/text_confirm.rs` before `auto_reply`. (2) `text_confirm.rs` (pure reads, no link): for a business whose channel preference includes text (BIZ-036), the job number names the waiting pick of that business (the word alone only when it has exactly one waiting); it answers the pick, its fee and whether the window is open, with `business_reply`'s `linked` true only for a directory line of the picked business that `acts_for_business` accepts (a staff phone still waiting for approval is not linked). (3) The link is minted in `inbound_text.rs`, never in `picks` (which may not call `portals`, `kit/layers.json`): `portals::api::mint_action_link` (`app/portals/src/action_links.rs:251`) for the member that texting line belongs to, read through a new `businesses::api::phone_member(db, line)` in `app/businesses/src/phone_approval.rs` (beside `phone_standing`, `:132`; `businesses.staff_phone.linked_by`, `migrations/0056_businesses_team_members.sql:35`; none for a line with no member), which refuses a member without \"Confirm and billing\" (`:128`). The replies: a linked member with the role gets \"Laftly: Fee $<amount>. Confirm and pay here: <link>.\"; a linked member without the role, and a directory line with no member (the business's own line), get a new reply with no link, \"Laftly: Only the owner or a Confirm and billing member can confirm job <n>. The pick email has the Confirm link.\" (English and Spanish in `app/messaging/templates/`); after the window the expired reply; another business's phone nothing. YES and CONFIRM (and SÍ, CONFIRMAR) get the same answer and neither ever confirms or charges (PICK-033, FEE-036, D-365). (4) The reply is addressed to the texting phone's line ID, as T573 addresses business texts (D-2042: a business-ID row cannot pass `may_text`), and queued with `messaging::api::enqueue_exempt` with `Exemption::DirectReply { inbound_at }` from the inbound text's time (QH-004's 15 minutes), once per inbound message (a provider resend of the same message SID replies once). Tests in the new `app/server/tests/business_yes_text.rs` (TD-PICK-69), through the assembled router with the texting stand-in, fake data only. Update `app/picks/NOTES.md`, `app/server/NOTES.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 2,
+   "stage": "6",
+   "module": "server",
+   "deps": [
+    "T402",
+    "T299",
+    "T407",
+    "T480",
+    "T573",
+    "T457",
+    "T670",
+    "T675"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/server/src/inbound_text.rs",
+    "app/picks/src/text_confirm.rs",
+    "app/businesses/src/phone_approval.rs",
+    "app/server/tests/business_yes_text.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/fees.md",
+    "docs/spec/businesses.md",
+    "app/businesses/src/consent.rs",
+    "docs/brains/rust-production.md",
+    "docs/spec/quiet-hours.md",
+    "app/portals/src/action_links.rs"
+   ],
+   "requirements": [
+    "PICK-033",
+    "FEE-036",
+    "PICK-035",
+    "BIZ-036",
+    "QH-004"
+   ],
+   "tests": [
+    "TD-PICK-69"
+   ],
+   "decisions": [
+    "D-259",
+    "D-365",
+    "D-1717",
+    "D-2042",
+    "D-4361",
+    "D-4360"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 460,
+    "context_pct": 26
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T683-business-yes-text",
+   "prompt": "kit/prompts/T683.md",
+   "acceptance": "TD-PICK-69 passes through the assembled router, failing on `main`; no text confirms or charges a pick; every inbound text test passes unchanged."
+  },
+  {
+   "id": "T684",
+   "slug": "open-cards-email",
+   "title": "picks and server: the open-cards email goes at the times each card recipient chose",
+   "goal": "Plan change D-4361 (unwired sweep orphan 7 and its second pass, `main` 77a49d7cc; CARD-022, BIZ-037, BIZ-038; D-1993). The portal saves each member's open-cards times (`save_open_cards_times`, `app/server/src/business_portal.rs:407`) and `picks` builds the email (`open_cards_email` and `chosen_minutes`, `app/picks/src/open_cards_email.rs:179`, `:59`; `messaging::api::digest_goes`, `app/messaging/src/open_cards_digest.rs:57`), but no task kind, schedule or sender exists, so nobody ever gets it. The new `app/picks/src/open_cards_run.rs`: an hourly `picks.open_cards_email` run (registered in the shared `app/server/src/lib.rs`, scheduled in the shared `app/server/src/bin/worker.rs`, the worker clock's now) that, for each member who gets job cards (BIZ-037) whose chosen slot (8 a.m., noon or 5 p.m. Arizona time, 5 p.m. by default) is due, lists the cards the business has not quoted with at least 1 hour (a setting) of the window left, sends only when `digest_goes` says so, once per member and slot (dedupe key), with the pick-waiting subject and the pick first while a pick waits for that member's business, as one email; each card shows only trade, town, end time and its Quote link (BIZ-038, no homeowner detail). `queue_email` renders only the closed `messaging::Notice` enum (`app/messaging/src/email.rs:151`), so this task adds a `Notice::OpenCards` variant there with its English and Spanish words (after T470, the queued owners of `email.rs`). Each email is stored with `messaging::api::queue_email` as `EmailClass::Bulk` (`app/messaging/src/email.rs:140` to `:146`, `:390`), never through the business-notice path, which stores every email as non-bulk (`app/messaging/src/business_notices.rs:409`), so above 90% of the day's email limit it waits for the reset (OPS-038). Tests in the new `tests/integration/tests/open_cards_email_run.rs` (TD-CARD-18), PostgreSQL, fake data only. Update `app/picks/NOTES.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "picks",
+   "deps": [
+    "T470"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy"
+   ],
+   "owns": [
+    "app/messaging/src/email.rs",
+    "app/picks/src/open_cards_run.rs",
+    "tests/integration/tests/open_cards_email_run.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/job-cards.md",
+    "docs/spec/businesses.md",
+    "app/picks/src/open_cards_email.rs",
+    "app/messaging/src/open_cards_digest.rs",
+    "docs/brains/rust-production.md",
+    "docs/spec/ops-recovery.md"
+   ],
+   "requirements": [
+    "CARD-022",
+    "BIZ-037",
+    "BIZ-038",
+    "OPS-038"
+   ],
+   "tests": [
+    "TD-CARD-18"
+   ],
+   "decisions": [
+    "D-1993",
+    "D-4361"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 410,
+    "context_pct": 18
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T684-open-cards-email",
+   "prompt": "kit/prompts/T684.md",
+   "acceptance": "TD-CARD-18 passes against PostgreSQL; every open-cards and business portal test passes unchanged."
+  },
+  {
+   "id": "T685",
+   "slug": "missed-cards-email",
+   "title": "businesses, quotes and picks: the monthly missed-cards email goes, and the owner can switch it off",
+   "goal": "Plan change D-4361 (unwired sweep orphan 7 and its second pass, `main` 77a49d7cc; BIZ-044, BIZ-025; D-331, D-1994). `missed_email_due` (`app/messaging/src/missed_cards.rs:52`) and `missed_cards_line` (`app/picks/src/open_cards_email.rs:212`) have no caller, and D-1994 left two gaps: no column stores the owner's off switch, and no `quotes` reader gives last month's counts. (1) `migrations/0214_businesses_missed_cards_switch.sql` (headed `businesses`; after T236's `0213`, the dependency on T236 being for that order only, V9): the business's on/off switch for this email, default on; the read and the owner's write in the new `app/businesses/src/missed_cards_switch.rs` (the portal toggle is left to the settings page's owner, T306, noted in its decision). (2) The new `app/quotes/src/month_cards.rs`: last month's cards per business (got, quoted, ended without its quote), Arizona months. (3) The new `app/picks/src/missed_cards_run.rs`: a daily `picks.missed_cards_email` run (registered in the shared `app/server/src/lib.rs`, scheduled in the shared `app/server/src/bin/worker.rs`) that acts only when `first_of_month` holds and sends `missed_cards_line` once per business and month (dedupe key) when `missed_email_due` says so, as an account notice to the owner under the business's consent (CON-019), never marketing. `queue_email` renders only the closed `messaging::Notice` enum (`app/messaging/src/email.rs:151`), so this task adds a `Notice::MissedCards` variant there with its English and Spanish words (after T470 and T684, the queued owners of `email.rs`). Each email is stored with `messaging::api::queue_email` as `EmailClass::Bulk` (`app/messaging/src/email.rs:140` to `:146`, `:390`), never through the business-notice path, which stores every email as non-bulk (`app/messaging/src/business_notices.rs:409`), so above 90% of the day's email limit it waits for the reset (OPS-038). Tests in the new `tests/integration/tests/missed_cards_email.rs` (TD-BIZ-57), PostgreSQL, fake data only. Update `app/picks/NOTES.md`, `app/quotes/NOTES.md`, `app/businesses/NOTES.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 2,
+   "stage": "6",
+   "module": "picks",
+   "deps": [
+    "T470",
+    "T684",
+    "T236"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy"
+   ],
+   "owns": [
+    "app/messaging/src/email.rs",
+    "migrations/0214_businesses_missed_cards_switch.sql",
+    "app/businesses/src/missed_cards_switch.rs",
+    "app/quotes/src/month_cards.rs",
+    "app/picks/src/missed_cards_run.rs",
+    "tests/integration/tests/missed_cards_email.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/businesses.md",
+    "docs/spec/consent.md",
+    "app/messaging/src/missed_cards.rs",
+    "app/picks/src/open_cards_email.rs",
+    "docs/brains/rust-production.md",
+    "docs/spec/ops-recovery.md"
+   ],
+   "requirements": [
+    "BIZ-044",
+    "BIZ-025",
+    "OPS-038"
+   ],
+   "tests": [
+    "TD-BIZ-57"
+   ],
+   "decisions": [
+    "D-331",
+    "D-1994",
+    "D-4361"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 510,
+    "context_pct": 18
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T685-missed-cards-email",
+   "prompt": "kit/prompts/T685.md",
+   "acceptance": "TD-BIZ-57 passes against PostgreSQL; every open-cards and business portal test passes unchanged."
+  },
+  {
+   "id": "T686",
+   "slug": "deliverability-retests",
+   "title": "businesses and server: a 90-day-old inbox or alert Yes gets its re-test email",
+   "goal": "Plan change D-4361 (unwired sweep orphan 8(a) and its second pass, `main` 77a49d7cc; BIZ-042; D-462). `queue_pick_retests` (`app/businesses/src/deliverability_check.rs:325`) and `queue_emergency_retests` (`app/businesses/src/emergency_switch.rs:370`) have no caller, so a person whose Yes is 90 days old silently stops counting and never gets the re-test email; the receiving side is wired (`OFF_SUSPENDED` and `retest_link` render). The new `app/businesses/src/retest_run.rs`: a daily `businesses.deliverability_retests` run (registered in the shared `app/server/src/lib.rs`, scheduled in the shared `app/server/src/bin/worker.rs`, the worker clock's now) calling both (`queue_pick_retests` re-tests a sample-pick Yes, `queue_emergency_retests` an emergency-alert Yes), each queuing at most one re-test per person and Yes (their own dedupe), sent through T470's email drain. BIZ-007's after-hours suspension (`missed_in_a_row`, `suspend_after_hours`) is not this task's: night emergency cards are released only once D-4360's intake tasks wire `release_emergency`. Tests in the new `tests/integration/tests/deliverability_retests.rs` (TD-BIZ-55), PostgreSQL, fake data only. Update `app/businesses/NOTES.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "businesses",
+   "deps": [
+    "T470"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "low",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy"
+   ],
+   "owns": [
+    "app/businesses/src/retest_run.rs",
+    "tests/integration/tests/deliverability_retests.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/businesses.md",
+    "app/businesses/src/deliverability_check.rs",
+    "app/businesses/src/emergency_switch.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "BIZ-042"
+   ],
+   "tests": [
+    "TD-BIZ-55"
+   ],
+   "decisions": [
+    "D-462",
+    "D-4361"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 200,
+    "context_pct": 16
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T686-deliverability-retests",
+   "prompt": "kit/prompts/T686.md",
+   "acceptance": "TD-BIZ-55 passes against PostgreSQL; every deliverability and emergency switch test passes unchanged."
+  },
+  {
+   "id": "T687",
+   "slug": "project-limit-quotes",
+   "title": "quotes: a quote above the business's only class's project limit is refused with an explanation",
+   "goal": "Plan change D-4361 (unwired sweep orphan 10 and its second pass, `main` 77a49d7cc; round-1 review; LIC-045, LIC-019; D-392, D-985). `licensing::ClassMap::check_project_limit` (`app/licensing/src/class_map.rs:343`) and `OverProjectLimit` are used nowhere outside `licensing`, and the quote form checks only the handyman limit, so an R-62-only business's $7,500 quote is accepted. `QuoteRules` (`app/quotes/src/intake.rs:257`) and `parse_quote` stay unchanged: about 18 test files build `QuoteRules` field by field. (1) The new `app/quotes/src/project_limit.rs` (exported through the shared `quotes::api`): `project_limit_check(conn, (job, business), price)` reads the business's latest Active classes (T654's shared read) and the job's category and type, and calls `ClassMap::shipped().check_project_limit` on the price's top (labor and materials, a range judged on its top); `NotCovered` passes here (card eligibility owns it). (2) The quote submit path (`app/server/src/action_links.rs`, after `parse_quote` at `:709` and before `submit_quote_with_facts` at `:650`) calls it and, on `OverProjectLimit`, stores nothing and shows the form again with an explanation of the limit on the price field, as the handyman bounce is shown (LIC-019; marked as T657 marks it). LIC-046's two-active minimum is D-4360's. Tests (TD-LIC-35), fake data only: `app/quotes/src/tests/project_limit.rs` for the rule (R-62 at $5,000.00 accepted and $5,000.01 refused, R-61 at $50,000, a range on its top, a business also holding an unlimited covering class never refused) and `app/server/tests/project_limit_route.rs` through the assembled router (an over-limit quote stores nothing and shows the explanation). Update `app/quotes/NOTES.md`, `app/server/NOTES.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 2,
+   "stage": "6",
+   "module": "quotes",
+   "deps": [
+    "T654",
+    "T657",
+    "T678"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance",
+    "licensing"
+   ],
+   "owns": [
+    "app/quotes/src/project_limit.rs",
+    "app/server/src/action_links.rs",
+    "app/quotes/src/tests/project_limit.rs",
+    "app/server/tests/project_limit_route.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/licensing.md",
+    "app/licensing/src/class_map.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "LIC-045",
+    "LIC-019"
+   ],
+   "tests": [
+    "TD-LIC-35"
+   ],
+   "decisions": [
+    "D-392",
+    "D-985",
+    "D-4361"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 300,
+    "context_pct": 18
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T687-project-limit-quotes",
+   "prompt": "kit/prompts/T687.md",
+   "acceptance": "TD-LIC-35 passes; `QuoteRules` and `parse_quote` are unchanged; every quote form and handyman test passes unchanged."
+  },
+  {
+   "id": "T688",
+   "slug": "main-number-greeting",
+   "title": "server: a call to the Laftly main number hears the greeting with the 911 line",
+   "goal": "Plan change D-4361 (unwired sweep orphan 11 and its second pass, `main` 77a49d7cc; CALL-020; D-227, D-1697, D-4240). `answer` (`app/server/src/inbound_voice.rs:130` to `:139`) returns `hangup_twiml()` for any `To` outside the masked pool, so a call to the main number is hung up silently, and `greeting_twiml` (`app/calls/src/lifecycle.rs:321`) has no caller; the public accessibility statement already says a caller \"hears a short recorded message asking you to text\" (D-4240), which is false today. The main number (`core::settings::main_number`, `app/core/src/settings.rs:495`) reaches the voice route through an `Option<Extension<…>>` extractor whose layer `build_router` (the shared `app/server/src/lib.rs`) adds, never a new `VoiceHooks` field (six test files build `VoiceHooks` by struct literal) and never a required `Extension` (tests call `inbound_voice::routes(v)` without `build_router`, `app/server/tests/inbound_voice.rs:160`, `tests/integration/tests/link_reply.rs:226`; a missing layer means no main number, so the call hangs up as today);  a verified call whose `To` is that number gets `greeting_twiml()` (English then Spanish, \"... If this is an emergency, hang up and call 911.\", then a hang-up): no `Record`, `Dial` or voicemail verb, nothing stored about the caller, no forwarding to Casey. Any other unknown `To` still hangs up. Tests in the new `app/server/tests/main_number_greeting.rs` (TD-CALL-29), through the assembled router with a signed stand-in webhook, fake numbers only. Update `app/server/NOTES.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T121"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "low",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/server/src/inbound_voice.rs",
+    "app/server/tests/main_number_greeting.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/calls.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "CALL-020"
+   ],
+   "tests": [
+    "TD-CALL-29"
+   ],
+   "decisions": [
+    "D-227",
+    "D-1697",
+    "D-4240",
+    "D-4361"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 120,
+    "context_pct": 14
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T688-main-number-greeting",
+   "prompt": "kit/prompts/T688.md",
+   "acceptance": "TD-CALL-29 passes, failing on `main`; every inbound voice test passes unchanged."
+  },
+  {
+   "id": "T689",
+   "slug": "auto-confirm-wiring",
+   "title": "portals, picks and server: a ticked auto-confirm quote is charged when picked with a code, and a voided tick is told",
+   "goal": "Plan change D-4361 (unwired sweep and its second pass, `main` 77a49d7cc; PICK-048, PICK-056, FEE-048, FEE-016; D-401, D-480, D-2785, D-2786, D-2851). `picks::api::auto_confirm` (`app/picks/src/auto_confirm.rs:247`) has no production caller (D-2786 gave it to T306, whose goal no longer has it), and `picks.auto_confirm_voided` has no handler (its deferred-list owner T209 is done, `tests/task_kinds_deferred.json:33`), so a ticked box never fires (it fails safe to the normal Confirm) and a voided tick is never told. (1) In the transaction that stores a Verify-code page pick (`store`, `app/portals/src/pick_flow.rs:1388`, after T589), a new `picks::api::queue_auto_confirm(tx, pick, PickProof::PageCode, at)` queues one `picks.auto_confirm` task `{pick, proof, emergency}` (dedupe per pick), so the charge runs only after the pick commits and a crash never loses it; its handler in `auto_confirm.rs`, registered in the shared `app/server/src/lib.rs` with the Stripe adapter and ID secret, re-reads, before any charge, that the job is still in Awaiting confirm with this pick its waiting pick (`models::waiting_pick`), and charges nothing otherwise (a cancel from Awaiting confirm ends no pick, and `charge_off_session` hard-codes `PickNow::Payable`, `app/payments/src/off_session.rs:209`), then calls `auto_confirm`, which re-reads every PICK-056 fact. A text pick (`app/picks/src/service.rs:439`), an email-code pick and a backup pick queue nothing and keep the normal Confirm; the signed-in portal pick (`PickProof::PortalSession`) has no builder in the graph: an open item in D-4361, so until one exists only a Verify-code pick auto-confirms. T663's `settle` moves an auto-confirmed job through Payment pending to Connected. (1a) No production type implements `OffSessionStripe` (only the test fake, `tests/integration/tests/auto_confirm.rs:151`), and `StripePayments` has no off-session confirm. `app/adapters/src/payments.rs` (after T541, T132 and T380) gains the one off-session confirm (`off_session=true` with the saved card under the attempt's key; the only place `off_session=true` may appear, TD-FEE-30), named so that it does not contain `confirm_off_session`; `app/payments/src/off_session.rs` gains `impl OffSessionStripe for StripePayments` over it, the only production file naming `confirm_off_session` (`app/picks/src/tests/prop_no_other_off_session_charge.rs:164`), under `app/payments/`' 95% floor. The Stripe stand-in (`stand_ins/stripe.py`, `confirm_payment_intent`) accepts the extra form field and answers success, decline and the 3-D Secure card's `requires_action` as on-session, which `charge_off_session` already treats as the fallback to the normal Confirm, so TD-PICK-70 needs no stand-in change; if it does, that is a harness task, not this one. (2) The `picks.auto_confirm_voided` handler, also in `auto_confirm.rs`: one `BUSINESS_NOTICE_KIND` task to the tick's author and the owner by their chosen channels, with new English and Spanish words in `app/messaging/templates/` (the reason in plain words and that the pick waits for the normal Confirm), never a card number. Tests in the new `tests/integration/tests/auto_confirm_wiring.rs` (TD-PICK-70), PostgreSQL and the Stripe stand-in, fake data only: a code pick of a ticked quote charges once off-session; a text pick never; a void tells the business once; a job cancelled before the task runs charges nothing; `auto_confirm.rs` stays at or above its 83% floor. Update `app/picks/NOTES.md`, `app/portals/NOTES.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 2,
+   "stage": "6",
+   "module": "picks",
+   "deps": [
+    "T663",
+    "T589",
+    "T541",
+    "T664",
+    "T132",
+    "T380"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/portals/src/pick_flow.rs",
+    "app/picks/src/auto_confirm.rs",
+    "app/payments/src/off_session.rs",
+    "app/adapters/src/payments.rs",
+    "tests/integration/tests/auto_confirm_wiring.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/fees.md",
+    "app/picks/src/settle.rs",
+    "app/picks/src/money_notices.rs",
+    "docs/brains/payments-stripe.md",
+    "docs/brains/rust-production.md",
+    "app/payments/src/intent_http.rs",
+    "stand_ins/stripe.py"
+   ],
+   "requirements": [
+    "PICK-048",
+    "PICK-056",
+    "FEE-048",
+    "FEE-016"
+   ],
+   "tests": [
+    "TD-PICK-70"
+   ],
+   "decisions": [
+    "D-401",
+    "D-480",
+    "D-2785",
+    "D-2786",
+    "D-2851",
+    "D-4361"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 520,
+    "context_pct": 35
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T689-auto-confirm-wiring",
+   "prompt": "kit/prompts/T689.md",
+   "acceptance": "TD-PICK-70 passes against PostgreSQL and the Stripe stand-in, failing on `main`; `auto_confirm.rs` stays at or above 83% and `app/payments/` at 95%; TD-FEE-30 passes unchanged; every pick flow and auto-confirm test passes unchanged."
+  },
+  {
+   "id": "T679",
+   "slug": "lic046-request-minimum",
+   "title": "quotes and businesses: a launch-open category takes requests only with at least 2 active businesses (LIC-046)",
+   "goal": "Plan change D-4360 (split from T671 by the round-1 review, findings 6, 7 and 13; LIC-046, INT-017, OPS-006; D-396, D-459). `licensing::api::request_intake` (`app/licensing/src/class_map.rs:124`) has no caller, so a launch-open category with one active business takes requests. `intake` may not call `licensing` (`kit/layers.json`) and `quotes` may not read the `businesses` schema, so: (1) a new `app/businesses/src/active_count.rs`, exported through `businesses::api`, counts the active businesses with a ticked job type in a catalog category, category-wide, not per town (the query `report_coverage` keeps private at `app/businesses/src/service.rs:167` to `:183` is the model; `businesses` may call `licensing` and `catalog`); `quotes::scorecard_inputs::active_businesses` is not used (it counts businesses that quoted in the last 30 days). (2) A new `quotes::api::request_coverage` in `app/quotes/src/service.rs` loads the job's pool (`card_pool`) and counts as `coverage_in_reach` does, then applies `request_intake` with the category's `ClassMap::opening` and that count against the minimum: `Open` keeps the count; `TooFewBusinesses`, `WaitlistOnly` (\"Coming later\": no homeowner requests, LIC-046) and `NotRouted` give `Coverage::NotCovered`, so INT-017's reply, the move to Not covered and the recruiting-demand row follow unchanged when T671 calls it. The minimum is a named constant `MIN_ACTIVE_BUSINESSES = 2` beside `MISSED_IN_A_ROW`'s pattern, not an `ASKHAVA_*` setting: threading a setting into the intake turn needs a new field on `intake::api::rules::Settings`, whose full struct literals sit in five done tests, one of them owned by queued T663 (`tests/integration/tests/accepted_quote_email.rs`), which would hold the intake order behind T663; the setting is listed open in D-4360. Tests (TD-LIC-34) in the new `tests/integration/tests/request_coverage_minimum.rs`, PostgreSQL, fake data only.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "quotes",
+   "deps": [
+    "T601"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "licensing",
+    "compliance"
+   ],
+   "owns": [
+    "app/quotes/src/service.rs",
+    "app/businesses/src/active_count.rs",
+    "tests/integration/tests/request_coverage_minimum.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/licensing.md",
+    "docs/spec/intake.md",
+    "app/licensing/src/class_map.rs",
+    "app/businesses/src/service.rs",
+    "app/quotes/src/card_pool.rs",
+    "kit/layers.json",
+    "docs/spec/ops-recovery.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "LIC-046",
+    "INT-017"
+   ],
+   "tests": [
+    "TD-LIC-34"
+   ],
+   "decisions": [
+    "D-396",
+    "D-459",
+    "D-4360"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 300,
+    "context_pct": 18
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T679-lic046-request-minimum",
+   "prompt": "kit/prompts/T679.md",
+   "acceptance": "TD-LIC-34 passes against PostgreSQL; one active business, a Coming-later category and an off category each give `Coverage::NotCovered`; two active businesses give the coverage count; no `businesses` table is read from `quotes`."
+  },
+  {
+   "id": "T690",
+   "slug": "record-resume",
+   "title": "businesses and server: a sign-up waiting on \"That number is old\" resumes when the record shows a new contact",
+   "goal": "Plan change D-4361 (unwired sweep orphan 9, its second pass and the round-1 review, `main` 77a49d7cc; BIZ-026, BIZ-002; D-178, D-254, D-1699, D-1712, D-2954). A sign-up parked by \"That number is old\" never resumes: `resume_on_new_record` (`app/businesses/src/signup.rs:636`) has no caller (D-2954 logged it with no owner). The recorded ROC list stores no contacts (`licensing.agency_record`, `migrations/0050_licensing_imports.sql:22` to `:32`); a record's contacts come only from `licensing::api::read_own_record` (`app/licensing/src/own_record.rs:146`), one adapter lookup with nothing stored (D-1699). (1) The new `app/businesses/src/record_resume.rs`: a daily `businesses.record_resume` run (registered in the shared `app/server/src/lib.rs` with the license-record source, the Verify adapter `send_code_seen` takes (`app/businesses/src/identity.rs:170`) and the ID secret, scheduled in the shared `app/server/src/bin/worker.rs` after the ROC list's run hour) that, when a ROC list newer than the last one it acted on is recorded, queues one `businesses.record_resume_one` task per sign-up with `waiting_on_record_since` set, at most `RESUME_BATCH` (a setting, default 25) per list, the least recently looked up first (never looked up before any looked up; ties by the oldest wait), each sign-up's last lookup time read from T690's own finished `businesses.record_resume_one` rows in `core.task` (`done_at`, payload the sign-up ID only; finished rows are kept and nothing in `app/` deletes them), so no column or migration is added, deduped by sign-up and list date, so each waiting sign-up gets at most one lookup per new list and every one is reached in turn however many wait. Each task makes one `read_own_record` for the sign-up's license number (a failed or misread lookup does nothing and waits for the next list, LIC-008), builds `RecordSeen` from it in memory and calls `resume_on_new_record`. (2) Quiet hours (QH-001): `send_code_seen` sends a Verify text at once with no outbox hold, and the run starts after the ROC list's 6 a.m. run hour (`app/licensing/src/daily_lists.rs:100`), so the code (and the optional text) is sent only between 8 a.m. and 8 p.m. in the stricter of Arizona time and the record phone's area-code time (`messaging::api::decide`'s rule); the task checks Arizona time before the lookup and, outside 8 a.m. to 8 p.m. Arizona, re-queues itself for 8 a.m. without looking up; after the lookup it re-queues only when the record phone's area-code time is the later one (its payload carries no contact, so that one re-queued task looks up again); each re-queue uses its own dedupe key (`businesses.record_resume_one.held.<sign-up>.<list date>.<until>`, the target time included so a second hold of the same task is never dropped, as `business_notice` does with `.held.<id>`, `app/messaging/src/business_notices.rs:505`), since `core.task.dedupe_key` is unique and finished rows are kept; it resumes nothing until it sends, and an email or letter step is not held. On a resume it calls `identity::send_code_seen` with that `RecordSeen`, so the next code goes only to the new record contact, never the old one or a typed one (D-1712): a phone change resumes at the text step and gets the Verify text code; an email-only change resumes at the email step and gets the Verify email code, with no text; an address-only change resumes at the letter step and records it for the Lob mailing, with no text or email. The `signup_record_updated` text (`app/messaging/templates/en.json:432`) goes only on a text-step resume, to that new phone, and only if `messaging` can send to a number held in memory without storing it (PRIV-001, D-1699); otherwise only the code goes and the template stays unused, recorded in this task's decision entry. A contact that only disappeared does not resume. D-1712's open `send_code` key gap is checked at claim and recorded if still open. Tests in the new `tests/integration/tests/record_resume.rs` (TD-BIZ-56), PostgreSQL and the license-record stand-in, fake data only. Update `app/businesses/NOTES.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "businesses",
+   "deps": [
+    "T655",
+    "T470"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/businesses/src/record_resume.rs",
+    "tests/integration/tests/record_resume.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/businesses.md",
+    "docs/spec/licensing.md",
+    "app/businesses/src/signup.rs",
+    "app/businesses/src/identity.rs",
+    "app/licensing/src/own_record.rs",
+    "docs/brains/rust-production.md",
+    "docs/spec/quiet-hours.md"
+   ],
+   "requirements": [
+    "BIZ-026",
+    "BIZ-002",
+    "QH-001"
+   ],
+   "tests": [
+    "TD-BIZ-56"
+   ],
+   "decisions": [
+    "D-178",
+    "D-254",
+    "D-1699",
+    "D-1712",
+    "D-2954",
+    "D-4361"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 360,
+    "context_pct": 21
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T690-record-resume",
+   "prompt": "kit/prompts/T690.md",
+   "acceptance": "TD-BIZ-56 passes against PostgreSQL, failing on `main`; every sign-up, identity and daily-list test passes unchanged; no record contact is written anywhere."
+  },
+  {
+   "id": "T691",
+   "slug": "start-resumes-order",
+   "title": "intake (harness): START into an open request resends the consent text and then the request's open question",
+   "goal": "Plan change D-4360 (round-2 review, finding B; CON-031, CON-001, CON-015, INT-043; D-2629, D-3480). `resubscribe::restart_after_start` (`app/intake/src/resubscribe.rs`, called at `app/server/src/inbound_text.rs:756`) resends her open request's consent text after START and passes nothing on, so the request stalls: CON-031's \"the first intake question follows at once as its own text\" never comes. After T671, in the same transaction and under the homeowner lock it already holds, it hands the request to T671's dispatcher, which sends the request's current open question once more (a re-ask after START does send again a question already asked, since she was opted out and may have lost it; a request still waiting for SAFE gets nothing more, INT-005; a request whose card is shown gets the card text again; a request with nothing open gets nothing); a resent START delivery queues nothing more. The re-ask resends the open question's text only (through `conversation::queue_text` with that step's template, or `ask_zip`'s body), never calling a step's ask function: it writes no asked row at all, so it does not count as an ask (her ZIP \"asked once more\" turn, `app/intake/src/zip_step.rs:226`, is not used up) and no row carries START's inbox ID at any step (the ask functions of \"How soon?\" and name and address record the inbox ID and live in files this task may not edit). Under quiet hours the consent text goes at once and the re-asked question waits for 8 a.m. until T402, as any reply does. Done tests: `tests/integration/tests/optout_followups.rs` (\"START is no answer\", `:223`, `:244`) and `tests/integration/tests/inbound_first_contact.rs` (\"reached intake once\", `:169`, `:170`, `:229`) are expected to pass unchanged; if one still moves, its count may be narrowed only to leave out step-marker question IDs (what the test measures: an answer, reaching intake once), logged in `docs/decisions.md` as narrowing, never loosened otherwise. Tests (TD-INT-51; the ZIP step and the \"How soon?\" step) in the new `tests/integration/tests/start_resumes_order.rs`, PostgreSQL, fake data and 555 numbers only, through the served route.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T671",
+    "T573"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "compliance",
+    "harness"
+   ],
+   "owns": [
+    "app/intake/src/resubscribe.rs",
+    "tests/integration/tests/start_resumes_order.rs",
+    "tests/integration/tests/optout_followups.rs",
+    "tests/integration/tests/inbound_first_contact.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/consent.md",
+    "docs/spec/intake.md",
+    "app/intake/src/order_dispatch.rs",
+    "app/server/src/inbound_text.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "CON-031",
+    "CON-001",
+    "CON-015",
+    "INT-043",
+    "INT-005"
+   ],
+   "tests": [
+    "TD-INT-51"
+   ],
+   "decisions": [
+    "D-2629",
+    "D-3480",
+    "D-4360"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 300,
+    "context_pct": 24
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T691-start-resumes-order",
+   "prompt": "kit/prompts/T691.md",
+   "acceptance": "TD-INT-51 passes against PostgreSQL; START into an open request gets the consent text then its open question once; a resent START queues nothing more; START is no intake answer; the two done tests pass, unchanged unless narrowed only as the goal allows."
+  },
+  {
+   "id": "T700",
+   "slug": "runner-merge-line-rotation",
+   "title": "Runner (harness): a merge-line task whose turn ran out goes to the back of the line instead of waiting forever",
+   "goal": "Plan change D-4392 (merge-line starvation; evidence in D-4392). D-3418's merge line lets a turn holder that neither merges nor moves for `MERGE_LINE_TURN_LIMIT` (45 minutes) give up the line (`_turn_spent`), but nothing ever gives it a turn back: `_turn_spent` reads `merge_turn_since` and the branch's last new head, neither changes while it has no turn, so `_line_place` returns \"late\" forever, and a late task updates only in a cycle where no \"line\" task holds the turn (`_resolve_merges`' late loop, `runner/cycle.py:548`). With five to seven lanes handing in, some line task always holds it. T623 (PR #1007, handed in 03:46:51Z on November 18) took the turn at 05:22:40Z, got its update merge onto `main` 9aeca6f and green Ci, Twin and Ally, but `main` moved at 05:34Z and 06:00Z (plan merges) before auto-merge could land, no runner cycle ran from 05:27Z to 06:06Z, its turn ran out at 06:07:40Z, and from 06:10Z eleven update merges went to other tasks while T623, holding lane 7, got none. Fix: a spent turn sends the task to the back of the line instead of out of it (round robin), with no new `kit/state.json` key. (1) `_line_place`: \"late\" (taken last, updates only while the turn is free, exactly as today) now means only `_ruleset_red` (a ruleset-only check failed on its head); every task whose turn is spent is re-queued: \"line\". (A branch that got no new head in its turn is not kept late: the state cannot tell a branch that was current from one no runner cycle reached, as from 05:27Z to 06:06Z here, so that would bring the starvation back; D-4392 review r2.) (2) `_merge_line(state, now=None)`: with `now`, tasks are ordered by FIX-MAIN first, then by line time (a task without one last, as today; compared as parsed times, not strings), then by task id; a task's line time is `_handed_in_at` (as today), or, when `_turn_spent(task, now)`, the moment its turn ended (the later of `merge_turn_since`, its hand-in and its update merges' `at`, plus `MERGE_LINE_TURN_LIMIT`, capped at `merge_turn_since` plus `MERGE_LINE_TURN_CAP`), so it waits behind every task handed in or re-queued before that moment and ahead of every later one; with `now` None the order is today's hand-in order (`tests/test_runner_merge_line.py:166` calls it so). Every call in `runner/cycle.py` passes `now`, including the merge train's choice of the next line task B (T641), so the train follows the same order. (3) `_mark_turn`: the holder whose turn is spent takes a fresh turn (`merge_turn_since` = now, so `_turn_spent` is false again for a whole turn); a task that does not hold the turn and whose turn is spent keeps its `merge_turn_since` (that is its place in the line: clearing it would put it back at its hand-in time and let it preempt the holder next cycle); one not spent is cleared as today. (4) `_turn_spent` also ends a turn `MERGE_LINE_TURN_CAP` (new, 90 minutes, two limits) after `merge_turn_since` however often its branch got a new head, so a holder whose update keeps being overtaken by `main` cannot keep the turn forever either. Why it is enough (state it in the docstrings): one turn flag, so never two holders; a task re-queued at time r has ahead of it only tasks whose line time is before r, at most the other MERGE_PENDING tasks of that moment (new hand-ins and later re-queues go behind it), each of which holds at most once more for at most `MERGE_LINE_TURN_CAP` before it merges, leaves or is re-queued behind r; so with `main` green it holds the turn within (tasks ahead) x 90 minutes plus one cycle gap, and then gets an update merge (when behind) and a whole turn for its checks. D-3418's protection stays: a holder that never merges (a check that never runs, a ruleset check GitHub waits on) still gives up the line after the limit, and a ruleset-red task never holds the line. Trade-off, accepted: such a holder waits a full round and then holds again for up to the limit every round until its attempt ends or someone steps in, where today it lost the line once; stuck tasks (`_line_stuck`), the red-`main` guard, FIX-MAIN first, `UPDATE_KEYS`, auto-merge for out-of-turn current branches and `resolve_merged`'s early pass (T597) are unchanged. Keep every function under 50 lines. Tests, in the new `tests/test_runner_merge_line_rotation.py` (reuse `tests/test_runner_merge_line.py`'s helpers by import; that file and `tests/test_runner_merge_early.py` and `tests/test_failure_drills.py` pass unchanged; T700 also owns T641's `tests/test_runner_merge_train.py` with one narrow licence: a case that builds its late B from a spent turn (which this rule may re-queue into the line) may switch that B to a ruleset-red one, each such change logged in the decision entry; nothing else in that file changes): (a) the T623 reproduction: T623 handed in at minute 0 takes the turn and is updated; no cycle until minute 50 while `main` moves and four tasks hand in at minutes 10, 20, 30 and 40, all open and behind; then a cycle every 5 minutes, a new task handing in every 10 minutes and each holder leaving MERGE_PENDING (merged) 20 minutes after it took the turn: T623 is re-queued at minute 45, the four earlier tasks hold in turn, and T623's branch gets an update merge and the turn (`merge_turn_since` = that cycle) no later than the cycle after the fourth leaves, while every task handed in after minute 45 is still waiting; this case fails against `main`'s runner (T623 never updates); (b) in every cycle of (a), at most one MERGE_PENDING task has a `merge_turn_since` whose turn is not spent, and at most one line task's branch is updated; (c) a re-queued task keeps its `merge_turn_since` while it waits and never preempts the holder, whose `merge_turn_since` does not change across cycles; (d) a holder updated every 20 minutes keeps the turn at `MERGE_LINE_TURN_CAP` minus one minute and gives it up at the cap to the next in line; (e) a holder whose checks never run gives up the line at the limit, takes a fresh turn only after the tasks ahead of it have held, and gives it up again at the limit, whether or not its branch got a new head in its turn; (f) a spent task alone in the line takes a fresh turn and its update at once (as today's late task with a free turn); (g) a ruleset-red task with a spent turn is still late: it is never re-queued into the line and updates only while the turn is free; (h) FIX-MAIN still comes first and a red `main` still moves nothing else. `docs/architecture.md`'s \"Merge line (D-3418)\" bullet says so with D-4392.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T641"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "recovery"
+   ],
+   "owns": [
+    "runner/cycle.py",
+    "tests/test_runner_merge_line_rotation.py",
+    "tests/test_runner_merge_train.py"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "tests/test_runner_merge_line.py"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-4392",
+    "D-3418",
+    "D-620"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 320,
+    "context_pct": 32
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T700-runner-merge-line-rotation",
+   "prompt": "kit/prompts/T700.md",
+   "acceptance": "`python3 -m pytest tests/test_runner_merge_line_rotation.py tests/test_runner_merge_line.py tests/test_runner_merge_early.py tests/test_runner_merge_train.py tests/test_failure_drills.py` passes, the T623 reproduction failing against `main`'s runner; no existing test changes apart from a late-B case in `tests/test_runner_merge_train.py` under the goal's licence, logged; every other `tests/test_runner_*.py` passes unchanged."
   }
  ]
 }
