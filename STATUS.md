@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T19:42:52Z by runner a36f1c0859b4 (actions).
+Updated 2026-11-18T19:43:18Z by runner a36f1c0859b4 (actions).
 
-**Building: T501 in progress since 18:29Z; 453 of 662 done; week 66% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T483 in progress since 18:25Z; 453 of 662 done; week 66% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 453 of 662 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T501 claimed 18:29Z, lease until 22:10Z; lane 3: T483 claimed 18:25Z, lease until 21:25Z; lane 4: T364 claimed 18:28Z, lease until 21:28Z; lane 5: T706 claimed 19:14Z, lease until 22:14Z; lane 6: T702 claimed 19:21Z, lease until 22:21Z
+- **Lane:** lane 3: T483 claimed 18:25Z, lease until 21:25Z; lane 4: T364 claimed 18:28Z, lease until 21:28Z; lane 5: T706 claimed 19:14Z, lease until 22:14Z; lane 6: T702 claimed 19:21Z, lease until 22:21Z
 - **Week:** 66% used, 58.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:40Z, 2 min before this update
+- **Last run:** 19:40Z, 3 min before this update
 - **Keeper:** last ran 19:39Z, next wake 19:59Z
 
 ## Needs attention
@@ -21,6 +21,7 @@ Evidence (confirmed by a second reviewer): list_disputes (app/payments/src/dispu
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T501 | Decisions digest, piece 2: the next entries after the header | MERGE_PENDING | 1 | 73 min | 19:42Z |  |
 | T711 | intake (harness): the dispatcher's two jobs in one request:  | MERGE_PENDING | 1 | 77 min | 19:29Z |  |
 | T624 | server: two failed in-process health checks in a row raise o | check_failed | 1 | 96 min | 18:26Z | Ci: failure; Python: failure / Python failed at step: Unit, contract and drill tests (pytest) / T705: about 21877 tokens |
 | T205 | portals: owner refunds with a review step and the audit log  | BLOCKED | 1 | 58 min | 18:23Z | PLAN GAP: `payments` has no public reader that ties a dispute to its pick (or its charge, business or job). Without one, |
@@ -131,11 +132,10 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T501 (lease until 2026-11-18T22:10:52Z)
 - lane 3: T483 (lease until 2026-11-18T21:25:05Z)
 - lane 4: T364 (lease until 2026-11-18T21:28:18Z)
 - lane 5: T706 (lease until 2026-11-18T22:14:09Z)
 - lane 6: T702 (lease until 2026-11-18T22:21:53Z)
 
 ## Last usage reading
-- {"task": "T711", "at": "2026-11-18T19:29:30Z", "input_tokens": 259, "cache_read_input_tokens": 10052843, "cache_creation_input_tokens": 296224, "output_tokens": 84110}
+- {"task": "T501", "at": "2026-11-18T19:42:50Z", "cache_read_input_tokens": 8871586, "output_tokens": 72963, "input_tokens": 174, "cache_creation_input_tokens": 307596}
