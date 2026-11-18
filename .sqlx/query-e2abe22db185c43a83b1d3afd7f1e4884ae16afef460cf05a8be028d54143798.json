@@ -1,0 +1,110 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT a.id, a.kind, a.severity, a.subject_kind, a.subject_id, a.raised_at,\n             p.pushed_at, k.at AS \"acknowledged_at?\"\n           FROM ops.alert a JOIN ops.alert_push p ON p.alert_id = a.id\n           LEFT JOIN ops.alert_ack k ON k.alert_id = a.id\n           ORDER BY p.pushed_at DESC, a.id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "ops.alert",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "kind",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "ops.alert",
+            "name": "kind"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "severity",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "ops.alert",
+            "name": "severity"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "subject_kind",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "ops.alert",
+            "name": "subject_kind"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "subject_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "ops.alert",
+            "name": "subject_id"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "raised_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "ops.alert",
+            "name": "raised_at"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "pushed_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "ops.alert_push",
+            "name": "pushed_at"
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "acknowledged_at?",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "ops.alert_ack",
+            "name": "at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "e2abe22db185c43a83b1d3afd7f1e4884ae16afef460cf05a8be028d54143798"
+}

@@ -62,6 +62,7 @@ mod pest_identity;
 mod phone_approval;
 mod public_name;
 mod reply_link;
+mod review_queue;
 mod rules;
 mod service;
 mod service_area;

@@ -128,6 +128,7 @@ pub use crate::phone_approval::{
 };
 pub use crate::public_name::{PUBLIC_NAME_ALERT, public_names};
 pub use crate::reply_link::{is_main_phone, link_by_reply};
+pub use crate::review_queue::{ReviewWaiting, needs_review_signups};
 pub use crate::rules::JobTypeChoice;
 pub use crate::rules::{Checks, Event, OwnHours, Widens};
 pub use crate::service::{
