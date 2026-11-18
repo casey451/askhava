@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T16:48:02Z by runner d81a220d9ece (actions).
+Updated 2026-11-18T16:49:30Z by runner 4648d6feaf42 (actions).
 
-**Building: T621 in progress since 16:25Z; 449 of 645 done; week 62% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T624 in progress since 16:49Z; 449 of 645 done; week 62% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 449 of 645 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T621 claimed 16:25Z, lease until 19:25Z; lane 5: T720 claimed 15:43Z, lease until 19:48Z; lane 7: T671 claimed 15:43Z, lease until 18:43Z
-- **Week:** 62% used, 66.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:47Z, 0 min before this update
+- **Lane:** lane 1: T624 claimed 16:49Z, lease until 19:49Z; lane 2: T621 claimed 16:25Z, lease until 19:25Z; lane 5: T720 claimed 15:43Z, lease until 19:48Z; lane 7: T671 claimed 15:43Z, lease until 18:43Z
+- **Week:** 62% used, 66.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 16:48Z, 1 min before this update
 - **Keeper:** last ran 16:44Z, next wake 18:45Z
 
 ## Needs attention
@@ -19,7 +19,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 - BLOCKED T645: plan gap reported: PLAN GAP: app/site/src/chat.rs:340 (owned by T593, then T646 and T649; T593 is not merged yet) calls `chat_message(db, &secret, &key, &msg, self.intake)` with no `Vault`, and the `ChatKeys` trait (chat.rs:62-66) only exposes secret/send/check. `messaging::api::suppress` (app/messaging/src/optout.rs:311-317) needs a `&Vault` and the phone, since digests come from `vault.blind_index` (optout.rs:441-443). `chat_message` (app/intake/src/web_chat.rs:247-253) takes no vault and its `Settings` is `Copy`, so T645 cannot list the session's number (step 1, TD-CON-36 "at once") without a signature change; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T645 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 28 problem(s) on tasks still to run (+240 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 31 problem(s) on tasks still to run (+247 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -121,7 +121,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-18T16:24:47Z (week)): week: 127.1M used, 66.9M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-02T04:30:27Z.
+- Pacing (session_reading 2026-11-18T16:43:53Z (week)): week: 127.2M used, 66.8M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-02T04:22:36Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -136,7 +136,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T624 (lease until 2026-11-18T19:49:16Z)
 - lane 2: T621 (lease until 2026-11-18T19:25:25Z)
 - lane 5: T720 (lease until 2026-11-18T19:48:02Z)
 - lane 7: T671 (lease until 2026-11-18T18:43:09Z)
