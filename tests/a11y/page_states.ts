@@ -339,6 +339,28 @@ const CONFIRM_STATES: readonly PageState[] = [
   ],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: CONFIRM_ROUTE, name, shows, hides, sql, statusRegions: ["confirm-status"] }));
 
+const CANT_TAKE_ROUTE = "/b/picks/{pick}/cant-take";
+
+/**
+ * The "Can't take it" page (T472; PICK-050, SEC-026, A11Y-007, D-3750): the signed-in owner on
+ * her business's pick waiting for its Confirm; the page shows what the button does and one CSRF
+ * button, and opening it changes nothing.
+ */
+const CANT_TAKE_STATES: readonly PageState[] = [
+  [
+    "can't take it, waiting pick",
+    "This ends the homeowner",
+    "find that page",
+    businessSql(`,
+    j AS (INSERT INTO jobs.job (id, status, emergency, created_at, status_at, timer_from)
+      VALUES (gen_random_uuid(), 'awaiting_confirm', false, now(), now(), now()) RETURNING id),
+    n AS (UPDATE jobs.job_number_next SET next = next + 1 RETURNING next - 1 AS n),
+    num AS (INSERT INTO jobs.job_number (number, job_id, issued_at) SELECT n.n, j.id, now() FROM n, j),
+    p AS (INSERT INTO picks.pick (id, job_id, business_id, quote_number, channel, status, picked_at)
+      SELECT ':pick', j.id, m.business_id, 1, 'page', 'awaiting_confirm', now() FROM j, m)`),
+  ],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: CANT_TAKE_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
 const INBOX_ROUTE = "/b/signup/inbox";
 
 /**
@@ -434,6 +456,7 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: BILLING_ROUTE, seed: portalSeed(false), states: BILLING_STATES },
   { route: NOTICES_ROUTE, seed: portalSeed(true), states: NOTICES_STATES },
   { route: CONFIRM_ROUTE, seed: portalSeed(true), states: CONFIRM_STATES },
+  { route: CANT_TAKE_ROUTE, seed: portalSeed(false), states: CANT_TAKE_STATES },
   { route: INBOX_ROUTE, seed: portalSeed(false), states: INBOX_STATES },
   { route: CAPABILITY_ROUTE, seed: portalSeed(false), states: CAPABILITY_STATES },
   { route: "/", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/") },

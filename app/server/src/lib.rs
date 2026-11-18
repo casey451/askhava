@@ -40,6 +40,7 @@ pub mod business_portal;
 pub mod business_signin;
 pub mod business_signup;
 pub mod call_status;
+pub mod cant_take_route;
 pub mod catalog_start;
 pub mod chat_codes;
 pub mod checkin;
@@ -277,7 +278,8 @@ impl ApprovalSecret for StripeApproval {
 
 /// The served business sign-in (T280) and sign-up (T302) routes, each only when its part is given,
 /// the business portal (T300) over `pool`, always (`business_portal::served`), and the Confirm
-/// route (T261) from the Stripe hooks, with the parts' Confirm settings, else none; and the
+/// route (T261) from the Stripe hooks, with the parts' Confirm settings, else none; the "Can't
+/// take it" page and button ([`cant_take_route`], T472), always; and the
 /// owner's sign-in, step-up and sign-out routes ([`owner_signin`], T303), always.
 fn business_pages(
     parts: BusinessParts,
@@ -297,7 +299,10 @@ fn business_pages(
         })
     });
     let owner = owner_signin::routes(pool.clone());
-    let portal = business_portal::served(pool, parts.vault, (webhooks, voice)).merge(confirm);
+    let cant_take = cant_take_route::routes(pool.clone());
+    let portal = business_portal::served(pool, parts.vault, (webhooks, voice))
+        .merge(confirm)
+        .merge(cant_take);
     (parts.signin)
         .map_or_else(Router::new, business_signin::ServedSignIn::into_router)
         .merge(
@@ -1834,6 +1839,14 @@ fn register_daily_purges(registry: &mut Registry, clock: &Arc<dyn Clock>) {
 /// `schedule_start` in `worker.rs` seeds both. OPS-046, D-3883 (T531): `messaging`'s daily
 /// deferral check the same way; CON-024, D-3881 (T107): its weekly opt-out rate check.
 fn register_daily_sweeps(registry: &mut Registry, clock: &Arc<dyn Clock>) {
+    let at = Arc::clone(clock);
+    registry.register(askhava_calls::api::CLOSE_EXPIRED_KIND, move |pool, task| {
+        askhava_calls::api::run_close_expired_at(pool, task, at.now())
+    });
+    let at = Arc::clone(clock);
+    registry.register(askhava_jobs::api::LINE_CLOSE_KIND, move |pool, task| {
+        askhava_calls::api::run_close_line(pool, task, at.now())
+    });
     askhava_messaging::api::register_deferral_check(registry, Arc::clone(clock));
     askhava_messaging::api::register_optout_rate_check(registry, Arc::clone(clock));
     let at = Arc::clone(clock);

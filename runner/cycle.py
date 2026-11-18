@@ -38,6 +38,9 @@ MERGE_LINE_STUCK = timedelta(minutes=30)
 # Ally take 12 to 17 minutes and auto-merge lands within minutes after, so 45 minutes is well over twice a
 # normal turn, while a check that never runs or a red ruleset check can no longer block the line for good.
 MERGE_LINE_TURN_LIMIT = timedelta(minutes=45)
+# However often its branch gets a new head, a turn ends this long after it began (D-4392): a holder whose update
+# keeps being overtaken by `main` cannot keep the turn forever either. Two limits.
+MERGE_LINE_TURN_CAP = timedelta(minutes=90)
 # The merge train (D-4281): while the turn holder's head runs its checks, the next "line" task's reviewed head
 # merged with that head is tested ahead on a throwaway ref `claude/train/<task>-<head first 12 hex>` that T640's
 # `Ci` counts as proof for the task's real update merge. Depth 2 at most until a later decision; a ref over
@@ -558,15 +561,16 @@ def _resolve_merges(state: State, env: Env, cfg: Config, now: datetime,
     the next to merge were wasted (about 1.9 runs per merge). Tasks are taken in `_merge_line` order and
     the turn goes to the first whose `_line_place` is "line" (`_mark_turn` records since when); one that
     leaves the line in its step (a resync, a failed attempt, DONE) passes it on in the same cycle. A
-    "late" task (its turn ran out, or a ruleset-only check failed) is taken last and may update only if
-    the turn is still free, taking it when it pushes. Every other task skips `_update_step` but still gets auto-merge, so a branch already
+    "late" task (a ruleset-only check failed) is taken last and may update only if the turn is still
+    free, taking it when it pushes. A task whose turn ran out goes to the back of the line (D-4392,
+    `_merge_line` with `now`) and takes a fresh turn when it comes round again. Every other task skips `_update_step` but still gets auto-merge, so a branch already
     current with `main` merges without waiting for its turn. `open_only` (`resolve_merged`'s pass, D-4180)
     skips every task whose `_current_pr` is merged or absent: such a task is "out" and never holds the turn.
     Last, `_train_pass` (D-4281) may test the next "line" task ahead on a train ref and deletes stale ones;
     it reads and writes no state, so the state and outcomes are exactly what they are without it."""
     outcomes: dict[str, tuple[str, str, str]] = {}
     turn_free, late, seen, holder = True, [], [], None
-    for tid in _merge_line(state):
+    for tid in _merge_line(state, now):
         task = st.entry(state, tid)
         pr = _current_pr(env, task)
         if open_only and (pr is None or pr.get("merged")):
@@ -576,7 +580,7 @@ def _resolve_merges(state: State, env: Env, cfg: Config, now: datetime,
             late.append((tid, pr))
             continue
         holds = turn_free and place == "line" and not _main_red_for(state, tid)  # red main: only FIX-MAIN (D-620)
-        state = _mark_turn(state, tid, now if holds else None) if place == "line" else state
+        state = _mark_turn(state, tid, now, holds) if place == "line" else state
         state, _ = _resolve_line_task(state, env, cfg, now, (tid, pr, holds or place == "stuck"), outcomes)
         seen.append((tid, pr, place))
         if holds and st.status(state, tid) == st.MERGE_PENDING:
@@ -719,15 +723,17 @@ def _resolve_line_task(state: State, env: Env, cfg: Config, now: datetime, item:
 def _line_place(task: dict[str, Any], pr: dict[str, Any] | None, now: datetime) -> str:
     """The task's place in the merge line (D-3418). "line": it may hold the turn (an open pull request
     whose required checks have not failed). "stuck": its update has waited MERGE_LINE_STUCK, so it keeps
-    retrying its own update until UPDATE_WAIT fails it (D-620) but never holds the turn. "late": its
-    turn ran out (`_turn_spent`) or a ruleset-only check failed on its head (`_ruleset_red`), so GitHub
-    may never merge it; it updates only when no one else holds the turn. "out": no pull request yet, a
-    merged one or red required checks; its step needs no update merge."""
+    retrying its own update until UPDATE_WAIT fails it (D-620) but never holds the turn. "late": a
+    ruleset-only check failed on its head (`_ruleset_red`), so GitHub may never merge it; it updates only
+    when no one else holds the turn. "out": no pull request yet, a merged one or red required checks; its
+    step needs no update merge. A task whose turn ran out (`_turn_spent`) is "line" again, re-queued at
+    the back by `_merge_line` (D-4392): a branch that got no new head in its turn is not kept late, since
+    the state cannot tell a branch that was current from one no runner cycle reached."""
     if pr is None or pr.get("merged") or verify.checks_state(pr) == "failed":
         return "out"
     if _line_stuck(task, now):
         return "stuck"
-    return "late" if _turn_spent(task, now) or _ruleset_red(pr) else "line"
+    return "late" if _ruleset_red(pr) else "line"
 
 
 def _ruleset_red(pr: dict[str, Any]) -> bool:
@@ -739,34 +745,61 @@ def _ruleset_red(pr: dict[str, Any]) -> bool:
                for c in pr.get("checks", []))
 
 
-def _mark_turn(state: State, tid: str, now: datetime | None) -> State:
-    """Record when a "line" task took the merge line's turn (`merge_turn_since`, D-3418), kept while it
-    holds it; None clears it when an earlier task (FIX-MAIN, or a late branch that pushed) holds the
-    turn instead, so a task's turn time only counts while it is really its turn."""
-    since = st.entry(state, tid).get("merge_turn_since")
-    if now is None:
-        return st.with_task(state, tid, merge_turn_since=None) if since else state
-    return state if since else st.with_task(state, tid, merge_turn_since=st.iso(now))
+def _mark_turn(state: State, tid: str, now: datetime, holds: bool) -> State:
+    """Record when a "line" task took the merge line's turn (`merge_turn_since`, D-3418, D-4392). The
+    holder keeps it while its turn lasts and takes a fresh one (`now`) when its turn is spent, so it
+    holds a whole turn again. A task that does not hold the turn keeps a spent `merge_turn_since`: that
+    is its place at the back of the line, and clearing it would put it back at its hand-in time to
+    preempt the holder next cycle. One not spent is cleared (an earlier task, FIX-MAIN or a late branch
+    that pushed, holds the turn instead), so a task's turn time only counts while it is really its turn."""
+    task = st.entry(state, tid)
+    since, spent = task.get("merge_turn_since"), _turn_spent(task, now)
+    if holds:
+        return state if since and not spent else st.with_task(state, tid, merge_turn_since=st.iso(now))
+    return state if not since or spent else st.with_task(state, tid, merge_turn_since=None)
+
+
+def _turn_end(task: dict[str, Any]) -> datetime | None:
+    """When the task's turn ends (D-3418, D-4392), None when it never took the turn: MERGE_LINE_TURN_LIMIT
+    after the later of `merge_turn_since`, its hand-in and its update merges' `at` (D-620, D-2798), but
+    never later than MERGE_LINE_TURN_CAP after `merge_turn_since`."""
+    since = task.get("merge_turn_since")
+    if not since:
+        return None
+    stamps = [str(since), _handed_in_at(task)] + [str(u.get("at") or "") for u in task.get("update_merges") or []]
+    moved = max(st.parse(s) for s in stamps if s)
+    return min(moved + MERGE_LINE_TURN_LIMIT, st.parse(str(since)) + MERGE_LINE_TURN_CAP)
 
 
 def _turn_spent(task: dict[str, Any], now: datetime) -> bool:
-    """Whether MERGE_LINE_TURN_LIMIT has passed since the task took the turn (`merge_turn_since`) or its
-    branch last got a new head (its hand-in or an update merge's `at`, D-620, D-2798), whichever is later
-    (D-3418): a turn holder that neither merged nor moved for that long (a check that never ran, a
-    ruleset check GitHub waits on) gives up the line. A task that never held the turn never runs out."""
-    since = task.get("merge_turn_since")
-    if not since:
-        return False
-    stamps = [str(since), _handed_in_at(task)] + [str(u.get("at") or "") for u in task.get("update_merges") or []]
-    return now - max(st.parse(s) for s in stamps if s) >= MERGE_LINE_TURN_LIMIT
+    """Whether the task's turn has ended (`_turn_end`, D-3418, D-4392): a holder that neither merged nor
+    moved for MERGE_LINE_TURN_LIMIT (a check that never ran, a ruleset check GitHub waits on), or held
+    MERGE_LINE_TURN_CAP however often `main` overtook its update, goes to the back of the line. A task
+    that never held the turn never runs out."""
+    end = _turn_end(task)
+    return end is not None and now >= end
 
 
-def _merge_line(state: State) -> list[str]:
-    """MERGE_PENDING task ids in merge-line order (D-3418): FIX-MAIN first, then by hand-in time
-    (`_handed_in_at`; a task without one last), then by task id so every runner agrees."""
+def _merge_line(state: State, now: datetime | None = None) -> list[str]:
+    """MERGE_PENDING task ids in merge-line order (D-3418, D-4392): FIX-MAIN first, then by line time as
+    parsed times (a task without one last), then by task id so every runner agrees. The line time is
+    `_handed_in_at`, or, with `now` and a spent turn (`_turn_spent`), its `_turn_end`: a task whose turn
+    ran out goes behind every task handed in or re-queued before that moment (round robin). With `now`
+    None the order is hand-in order. Why it is enough: one turn flag, so never two holders; a task
+    re-queued at r has ahead of it only tasks whose line time is before r, each of which holds at most
+    once more, for at most MERGE_LINE_TURN_CAP, before it merges, leaves or is re-queued behind r; so with
+    `main` green it holds the turn within (tasks ahead) x MERGE_LINE_TURN_CAP plus one cycle gap."""
     pending = [t for t in state["tasks"] if t.get("status") == st.MERGE_PENDING]
-    ordered = sorted(pending, key=lambda t: (t["id"] != st.FIX_MAIN, not _handed_in_at(t), _handed_in_at(t), t["id"]))
-    return [t["id"] for t in ordered]
+    return [t["id"] for t in sorted(pending, key=lambda t: _line_key(t, now))]
+
+
+def _line_key(task: dict[str, Any], now: datetime | None) -> tuple[Any, ...]:
+    """`_merge_line`'s sort key for one task (D-4392): (not FIX-MAIN, no line time, line time, id)."""
+    handed = _handed_in_at(task)
+    at = st.parse(handed) if handed else None
+    if now is not None and _turn_spent(task, now):
+        at = _turn_end(task)
+    return (task["id"] != st.FIX_MAIN, at is None, at, task["id"])
 
 
 def _handed_in_at(task: dict[str, Any]) -> str:

@@ -376,16 +376,41 @@ const CODE_CUES: &[&str] = &["code", "codigo", "código", "gate", "pin", "clave"
 const AT_WORDS: &[&str] = &["at", "arroba"];
 /// Words that join a spoken digit run ("928 dash 555 dash 0134", D-2622).
 const SPOKEN_SEPARATORS: &[&str] = &["dash", "guion", "guión", "space", "espacio"];
-/// Words before a bare house number that put an address next ("i live at 2150 mesquite").
-const HOUSE_CUES: &[&str] = &["at", "live", "address", "is"];
+/// Words before a bare house number that put an address next ("i live at 2150 mesquite", "mi
+/// casa es 2150 mesquite"; D-3314, D-4327).
+#[rustfmt::skip]
+const HOUSE_CUES: &[&str] = &[
+    "at", "live", "address", "is", "vivo", "dirección", "direccion", "casa", "es",
+];
+/// "en" and "el" cue a house only after "vivo" or "estoy" ("estoy en el 3301", D-4327).
+const PLACE_WORDS: &[&str] = &["en", "el"];
+const PLACE_VERBS: &[&str] = &["vivo", "estoy"];
+/// The reply and command words the texting code reads, which the all-caps rule never takes as a
+/// street name ("CLOSE 1042 YES", D-4327). `privacy` may not depend on those crates, so this is
+/// a copy of: `businesses::consent` `COMMAND_WORDS`; `messaging::rules` `PROVIDER_OPT_OUT_WORDS`
+/// and `RESUBSCRIBE_WORDS` (both checked by `tests/integration/tests/scrub_reply_words.rs`); the
+/// help words of `server::inbound_text`; the card replies of `intake::summary_step`; the check-in
+/// answers of `jobs::followups`; "close"/"cerrar" (`intake::rules`) and "list"/"lista"
+/// (`intake::handlers`). A word missing here is only over-scrubbed, never kept as an address.
+#[rustfmt::skip]
+pub const REPLY_WORDS: &[&str] = &[
+    "confirm", "confirmar", "yes", "si", "sí", "hold", "espera", "away", "ausente", "pause",
+    "pausa", "resume", "reanudar", "busy", "ocupado", "start", "unstop", "link", "stop", "stopall",
+    "unsubscribe", "cancel", "end", "revoke", "optout", "quit", "parar", "alto", "cancelar",
+    "baja", "help", "info", "ayuda", "send", "ok", "enviar", "edit", "cambiar", "problem",
+    "problema", "done", "listo", "no", "later", "mas", "más", "tarde", "ongoing", "continuo",
+    "other", "otro", "close", "cerrar", "list", "lista",
+];
 /// Measures after a number that make it a size, not a house ("is 1500 square feet").
+#[rustfmt::skip]
 const MEASURES: &[&str] = &[
     "square", "sq", "sqft", "feet", "foot", "ft", "inch", "inches", "gallon", "gallons", "gal",
     "dollars", "bucks", "watts", "volts", "amps", "btu", "pounds", "lbs", "miles", "years",
     "degrees", "psi", "cfm", "tons", "yards", "meters", "metros", "pies", "pesos", "dolares",
     "dollar", "usd", "watt", "volt", "amp", "kw", "kwh", "kva", "hp", "sf", "sqm", "gpm", "gph",
     "mph", "pound", "lb", "mile", "year", "yrs", "degree", "ton", "yard", "meter", "metro", "pie",
-    "mm", "cm",
+    "mm", "cm", "cuadrados", "galones", "años", "voltios", "grados", "libras", "pulgadas",
+    "millas", "dólares",
 ];
 /// How many words after a code cue its digits may start, and how far a spaced run may reach.
 const CODE_REACH: usize = 3;
@@ -696,19 +721,23 @@ fn mark_streets(tokens: &[Token], common: &CommonWords, cut: &mut [bool]) {
 }
 
 /// A house number of 3 to 6 digits followed by one or two capitalised names and no suffix
-/// ("I'm at 2150 Mesquite"), or, after "at", "live", "address" or "is", by one or two uncommon
-/// words in any case that are not measures ("i live at 2150 mesquite") (AI-002, D-2622).
+/// ("I'm at 2150 Mesquite"; in all-caps text, all-caps names, "2150 MESQUITE"), or, after a
+/// house cue, by one or two uncommon words in any case that are not measures ("i live at 2150
+/// mesquite", "vivo en 3301 palo verde") (AI-002, AI-020, PRIV-005; D-2622, D-3314, D-4327).
 fn mark_bare_houses(tokens: &[Token], common: &CommonWords, cut: &mut [bool]) {
+    let loud = shouting(tokens);
     for (i, t) in tokens.iter().enumerate() {
         let digits = t.key.chars().take_while(char::is_ascii_digit).count();
         if digits < 3 || !is_house_number(&t.key) {
             continue;
         }
-        let cued = i > 0 && HOUSE_CUES.contains(&tokens[i - 1].key.as_str());
+        let cued = house_cued(tokens, i);
         let street_word = |j: &usize| {
             let token = &tokens[*j];
             let plain = cued && is_wordish(&token.key, common);
-            titled(token, common) || (plain && !MEASURES.contains(&token.key.as_str()))
+            titled(token, common)
+                || caps_name(token, common, loud[*j])
+                || (plain && !MEASURES.contains(&token.key.as_str()))
         };
         let names = (i + 1..tokens.len().min(i + 3))
             .take_while(street_word)
@@ -717,6 +746,57 @@ fn mark_bare_houses(tokens: &[Token], common: &CommonWords, cut: &mut [bool]) {
             cut[i..=i + names].fill(true);
         }
     }
+}
+
+/// Whether the token before the number at `i` is a house cue, "en" or "el" only after "vivo" or
+/// "estoy" within the two tokens before it ("instalado en 2015" is no cue) (AI-002, D-4327).
+fn house_cued(tokens: &[Token], i: usize) -> bool {
+    let Some(before) = i.checked_sub(1).map(|b| tokens[b].key.as_str()) else {
+        return false;
+    };
+    HOUSE_CUES.contains(&before)
+        || (PLACE_WORDS.contains(&before)
+            && tokens[i.saturating_sub(3)..i - 1]
+                .iter()
+                .any(|t| PLACE_VERBS.contains(&t.key.as_str())))
+}
+
+/// For each token, whether its sentence or the whole message is all-caps text: at least 8
+/// letters, at least three quarters of them capitals (AI-002, D-4327).
+fn shouting(tokens: &[Token]) -> Vec<bool> {
+    let whole = loud(tokens);
+    let mut out = Vec::with_capacity(tokens.len());
+    let mut start = 0;
+    for (i, t) in tokens.iter().enumerate() {
+        if t.text.ends_with(['.', '!', '?']) || i + 1 == tokens.len() {
+            out.resize(i + 1, whole || loud(&tokens[start..=i]));
+            start = i + 1;
+        }
+    }
+    out
+}
+
+fn loud(tokens: &[Token]) -> bool {
+    let letters = tokens
+        .iter()
+        .flat_map(|t| t.text.chars())
+        .filter(|c| c.is_alphabetic());
+    let (all, caps) = letters.fold((0, 0), |(a, c), ch| {
+        (a + 1, c + usize::from(ch.is_uppercase()))
+    });
+    all >= 8 && caps * 4 >= all * 3
+}
+
+/// In all-caps text, an all-capitals word counts as a name exactly as [`titled`] counts one in
+/// ordinary text: uncommon, letters (with `-` or `'`), not a measure, and never a texting reply or
+/// command word ("2150 MESQUITE"; "CLOSE 1042 YES" stays) (AI-002, AI-020, D-4327).
+fn caps_name(t: &Token, common: &CommonWords, loud: bool) -> bool {
+    let key = t.key.as_str();
+    loud && t.text.chars().any(char::is_uppercase)
+        && !t.text.chars().any(char::is_lowercase)
+        && is_wordish(key, common)
+        && !MEASURES.contains(&key)
+        && !REPLY_WORDS.contains(&key)
 }
 
 /// A capitalised, not all-capitals, uncommon word ("Mesquite", not "YES" or "The").

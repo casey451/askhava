@@ -3355,3 +3355,8 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **One finished task (T623, the business charge sign-in work) sat green and reviewed for over four hours without being merged**, holding one of the seven lanes. The runner brings one finished task at a time up to date with the latest code; T623 had its turn, but the code moved on twice before it could merge, its 45-minute turn ran out, and the rule then let it try again only when no other task held the turn, which with seven lanes busy never happens.
 - **Fix, planned as T700 and claimed first:** a task whose turn runs out now goes to the back of the queue instead of out of it, so every finished task gets its turn in order, and no task holds the turn for more than 90 minutes. A task that is truly stuck still gives up the turn after 45 minutes. The cost we accepted: such a task takes another 45-minute turn once every round until someone looks at it, where today it lost the turn once.
 - Our choice; nothing needs you now.
+
+## Two crates could hold only one task at a time (D-4433)
+- **The server and picks crate notes had grown so close to their size limit that the runner let only one task work in each**, while almost every task waiting to start touches the server crate, so five of seven lanes sat idle.
+- **Fix:** the longer rules in those two notes now keep their first part (the rule and its requirement numbers) and point to the rest, which moved word for word to each crate's searchable notes file; a check confirms no word was lost. Each crate can now hold two tasks again.
+- Our choice; nothing needs you now.
