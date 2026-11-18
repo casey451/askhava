@@ -11,7 +11,7 @@ import { test, expect } from "./fixtures";
 
 const PAGES = ["/owner/home", "/owner/settings"];
 
-const POSTS: Array<[string, Record<string, string>]> = [
+const POSTS: [string, Record<string, string>][] = [
   ["/owner/pause", { change: "pause_all", to: "on" }],
   ["/owner/fee-mode", { change: "fee_mode", target: "flat" }],
   ["/owner/category", { change: "category", target: "plumbing", to: "off" }],
@@ -32,7 +32,9 @@ const OWNER_WORDS = [
   "calendar days",
 ];
 
-test("TD-SEC-22: a signed-out browser gets no owner page", async ({ request }) => {
+test("TD-SEC-22: a signed-out browser gets no owner page", async ({
+  request,
+}) => {
   for (const path of PAGES) {
     const answer = await request.get(path, { maxRedirects: 0 });
     expect(answer.status(), path).toBeGreaterThanOrEqual(400);
@@ -43,7 +45,9 @@ test("TD-SEC-22: a signed-out browser gets no owner page", async ({ request }) =
   }
 });
 
-test("TD-OPS-01, TD-BIZ-07: a signed-out owner change is refused", async ({ request }) => {
+test("TD-OPS-01, TD-BIZ-07: a signed-out owner change is refused", async ({
+  request,
+}) => {
   for (const [path, form] of POSTS) {
     const answer = await request.post(path, { form, maxRedirects: 0 });
     expect(answer.status(), path).toBeGreaterThanOrEqual(400);
