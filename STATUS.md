@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T10:29:40Z by runner af7e9d0c911b (actions).
+Updated 2026-11-18T10:29:54Z by runner af7e9d0c911b (actions).
 
-**Building: T641 in progress since 09:33Z; 437 of 621 done; week 51% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T563 in progress since 09:55Z; 437 of 621 done; week 51% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 437 of 621 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T641 claimed 09:33Z, lease until 13:05Z; lane 2: T563 claimed 09:55Z, lease until 12:55Z; lane 3: T658 claimed 10:13Z, lease until 13:13Z; lane 4: T650 claimed 09:08Z, lease until 13:10Z; lane 5: T408 claimed 09:13Z, lease until 13:23Z; lane 6: T200 claimed 09:05Z, lease until 12:05Z
+- **Lane:** lane 2: T563 claimed 09:55Z, lease until 12:55Z; lane 3: T658 claimed 10:13Z, lease until 13:13Z; lane 4: T650 claimed 09:08Z, lease until 13:10Z; lane 5: T408 claimed 09:13Z, lease until 13:23Z; lane 6: T200 claimed 09:05Z, lease until 12:05Z
 - **Week:** 51% used, 85.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 10:23Z, 6 min before this update
 - **Keeper:** last ran 09:53Z, next wake 10:13Z
@@ -19,6 +19,7 @@ Updated 2026-11-18T10:29:40Z by runner af7e9d0c911b (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T641 | Runner (harness): merge train depth 2, the next branch's upd | MERGE_PENDING | 1 | 55 min | 10:29Z |  |
 | T644 | tests (harness): the remaining Playwright specs and helpers  | done | 1 | 43 min | 09:48Z |  |
 | T660 | quotes (harness): the quote-note AI screener takes scrubbed  | done | 1 | 56 min | 08:52Z |  |
 | T658 | privacy: the scrubber removes lower-case Spanish addresses a | QUEUED | 1 | 89 min | 08:11Z | Fix-round review of head 18e4fd102f38620e11d1055ecb4d77813e2b2965 returned FINDINGS after the one allowed fix round (fir |
@@ -130,7 +131,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T641 (lease until 2026-11-18T13:05:36Z)
+- nothing
 - lane 2: T563 (lease until 2026-11-18T12:55:56Z)
 - lane 3: T658 (lease until 2026-11-18T13:13:04Z)
 - lane 4: T650 (lease until 2026-11-18T13:10:35Z)
@@ -138,4 +139,4 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 6: T200 (lease until 2026-11-18T12:05:13Z)
 
 ## Last usage reading
-- {"task": "T644", "at": "2026-11-18T09:48:10Z", "output_tokens": 32358, "cache_creation_input_tokens": 135408, "cache_read_input_tokens": 4754929, "input_tokens": 149}
+- {"task": "T641", "at": "2026-11-18T10:29:39Z", "cache_creation_input_tokens": 260733, "output_tokens": 75837, "input_tokens": 184, "cache_read_input_tokens": 5752734}
