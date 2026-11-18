@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-18T04:22:31Z by runner d662af7e5b4a (manual).
+Updated 2026-11-18T04:24:30Z by runner 1031aea207a3 (actions).
 
 **Building: T638 in progress since 03:07Z; 424 of 606 done; week 42% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 424 of 606 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T638 claimed 03:07Z, lease until 07:05Z; lane 6: T523 claimed 04:19Z, lease until 07:19Z
-- **Week:** 42% used, 109.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:22Z, 0 min before this update
+- **Lane:** lane 1: T638 claimed 03:07Z, lease until 07:05Z; lane 2: T601 claimed 04:24Z, lease until 07:24Z; lane 6: T523 claimed 04:19Z, lease until 07:19Z
+- **Week:** 42% used, 108.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 04:24Z, 0 min before this update
 - **Keeper:** last ran 04:12Z, next wake 07:08Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 22 problem(s) on tasks still to run (+194 on DONE tasks); first: T151: stored context_pct 31% but it measures 35%; regenerate
+- Strict plan check red: 15 problem(s) on tasks still to run (+191 on DONE tasks); first: T151: stored context_pct 31% but it measures 35%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -85,7 +85,6 @@ Updated 2026-11-18T04:22:31Z by runner d662af7e5b4a (manual).
 | T585 | businesses and licensing: a license change that drops job ty | done | 1 | 43 min | 05:10Z |  |
 | T571 | server and calls: a press of 9 on the safety call is never l | done | 1 | 45 min | 05:08Z |  |
 | T221 | site: the terms, privacy policy, SMS terms, homeowner data a | done | 2 | 29 min | 04:41Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
-| T591 | Runner (harness): free the backup job's disk and cap the smo | done | 1 | 67 min | 04:23Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -93,7 +92,7 @@ Updated 2026-11-18T04:22:31Z by runner d662af7e5b4a (manual).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 678 · unstarted 57
-**Tasks merged (throughput only):** 424 of 606
+**Tasks merged (throughput only):** 424 of 602
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -121,7 +120,7 @@ Updated 2026-11-18T04:22:31Z by runner d662af7e5b4a (manual).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-18T04:11:42Z (week)): week: 84.6M used, 109.4M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-30T15:28:02Z.
+- Pacing (session_reading 2026-11-18T04:11:42Z (week)): week: 85.8M used, 108.2M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-30T15:12:41Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -137,6 +136,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T638 (lease until 2026-11-18T07:05:51Z)
+- lane 2: T601 (lease until 2026-11-18T07:24:12Z)
 - lane 6: T523 (lease until 2026-11-18T07:19:52Z)
 
 ## Last usage reading
