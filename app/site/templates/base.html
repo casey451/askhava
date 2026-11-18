@@ -4,7 +4,9 @@
     `title` (after a failed submit it begins "Error: ", A11Y-030) and `main`, and may set `lang`
     (A11Y-004). The `banner` block stays empty here; only site_layout.html fills it, so portal
     pages carry no banner field (WEB-007, D-3144). The skip link is the first Tab stop (A11Y-003),
-    and Help sits in the header in the same place on every page (A11Y-017, D-3878). The header is
+    and Help sits in the header in the same place on every page (A11Y-017, D-3878). The `get_help`
+    block, right after it, stays empty here; only the business portal's business_layout.html fills it
+    with the "Get help" link (BIZ-047, D-3155). The header is
     not sticky, so nothing covers a focused element (A11Y-026). No script is needed, and no script,
     style or font comes from another host (SEC-013); every value is escaped (SEC-011). Forms post
     with novalidate and never disable their submit button (A11Y-030, A11Y-031). The stylesheet is
@@ -22,7 +24,7 @@
 {% block banner %}{% endblock %}
 <header>
 <p class="wordmark"><a href="/">{{ askhava_core::api::brand().display_name() }}</a></p>
-<nav aria-label="Site"><a href="/help">Help</a></nav>
+<nav aria-label="Site"><a href="/help">Help</a>{% block get_help %}{% endblock %}</nav>
 </header>
 <main id="main" tabindex="-1">
 {% block main %}{% endblock %}

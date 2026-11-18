@@ -1,0 +1,37 @@
+{% extends "business_layout.html" %}
+{#- The business portal's Get help form and its answer (T200; BIZ-047, OPS-036, A11Y-030, D-3155,
+    D-4293). The form takes a topic, an optional job number and a short message; a failed submit
+    keeps the values and shows the error summary, focused. After a send the page shows the answer
+    for the topic first, then the fixed "Got it" line (data-fixed="BIZ-047"), each from the same
+    messaging template the email carries. No homeowner detail; no person is named. -#}
+{% block title %}{% if !problems.is_empty() %}Error: {% endif %}Get help{% endblock %}
+{% block main %}
+<link rel="stylesheet" href="/static/portals/forms.css">
+<h1>Get help</h1>
+{% if let Some((first, last)) = answer %}<div id="help-answer" role="status" tabindex="-1" autofocus>
+{% for line in first %}<p>{{ line }}</p>
+{% endfor %}<p data-fixed="BIZ-047">{{ last }}</p>
+</div>
+<p><a href="{{ crate::api::BUSINESS_HOME_ROUTE }}">Back to your business account</a></p>
+{% else %}{% if !problems.is_empty() %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>There is a problem</h2>
+<ul>{% for (field, reason) in problems %}<li><a href="#{{ field }}">{{ reason }}</a></li>{% endfor %}</ul>
+</div>
+{% endif %}<p>Tell us what you need help with. The {{ askhava_core::api::brand().display_name() }} owner reads every message.</p>
+<form method="post" action="{{ crate::api::GET_HELP_ROUTE }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<fieldset id="topic"{% if error_for("topic").is_some() %} aria-describedby="topic-error"{% endif %}><legend>What is it about?</legend>
+{% if let Some(reason) = error_for("topic") %}<p id="topic-error" class="error">{{ reason }}</p>
+{% endif %}{% for (code, label) in topics %}<p><input type="radio" id="topic-{{ code }}" name="topic" value="{{ code }}"{% if kept.topic == *code %} checked{% endif %}> <label for="topic-{{ code }}">{{ label }}</label></p>
+{% endfor %}</fieldset>
+<p><label for="job">Job number (optional)</label></p>
+<p id="job-hint">It's in the subject line of the email about the job, a number like 1042.</p>
+<p><input type="text" id="job" name="job" inputmode="numeric" maxlength="12" value="{{ kept.job }}" aria-describedby="job-hint{% if error_for("job").is_some() %} job-error{% endif %}"{% if error_for("job").is_some() %} aria-invalid="true"{% endif %}>
+{% if let Some(reason) = error_for("job") %}<span id="job-error" class="error">{{ reason }}</span>{% endif %}</p>
+<p><label for="message">Your message</label></p>
+<p id="message-hint">A few sentences, up to {{ message_max }} characters.</p>
+<p><textarea id="message" name="message" rows="5" aria-describedby="message-hint{% if error_for("message").is_some() %} message-error{% endif %}"{% if error_for("message").is_some() %} aria-invalid="true"{% endif %}>{{ kept.message }}</textarea>
+{% if let Some(reason) = error_for("message") %}<span id="message-error" class="error">{{ reason }}</span>{% endif %}</p>
+<p><button type="submit">Send</button></p>
+</form>
+{% endif %}{% endblock %}
