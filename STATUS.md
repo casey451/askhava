@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T11:04:13Z by runner b29a25f67bdc (actions).
+Updated 2026-11-18T11:04:25Z by runner b29a25f67bdc (actions).
 
 **Building: T563 in progress since 09:55Z; 439 of 621 done; week 52% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 439 of 621 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T563 claimed 09:55Z, lease until 12:55Z; lane 3: T658 claimed 10:13Z, lease until 13:59Z; lane 5: T408 claimed 09:13Z, lease until 13:23Z; lane 6: T200 claimed 09:05Z, lease until 13:36Z
+- **Lane:** lane 2: T563 claimed 09:55Z, lease until 12:55Z; lane 5: T408 claimed 09:13Z, lease until 13:23Z; lane 6: T200 claimed 09:05Z, lease until 13:36Z
 - **Week:** 52% used, 85.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 10:59Z, 4 min before this update
 - **Keeper:** last ran 10:44Z, next wake 12:58Z
@@ -19,11 +19,12 @@ Updated 2026-11-18T11:04:13Z by runner b29a25f67bdc (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T658 | privacy: the scrubber removes lower-case Spanish addresses a | MERGE_PENDING | 2 | 51 min | 11:04Z | Fix-round review of head 18e4fd102f38620e11d1055ecb4d77813e2b2965 returned FINDINGS after the one allowed fix round (fir |
 | T650 | intake: the under-13 stop also deletes the request's job pho | MERGE_PENDING | 1 | 90 min | 10:39Z |  |
 | T641 | Runner (harness): merge train depth 2, the next branch's upd | done | 1 | 55 min | 10:29Z |  |
 | T644 | tests (harness): the remaining Playwright specs and helpers  | done | 1 | 43 min | 09:48Z |  |
 | T660 | quotes (harness): the quote-note AI screener takes scrubbed  | done | 1 | 56 min | 08:52Z |  |
-| T658 | privacy: the scrubber removes lower-case Spanish addresses a | QUEUED | 1 | 89 min | 08:11Z | Fix-round review of head 18e4fd102f38620e11d1055ecb4d77813e2b2965 returned FINDINGS after the one allowed fix round (fir |
+| T658 | privacy: the scrubber removes lower-case Spanish addresses a | QUEUED | 1 | 89 min | 08:11Z |  |
 | T640 | harness: Ci handles the merge train's throwaway refs and cou | done | 1 | 64 min | 08:02Z |  |
 | T619 | quotes, picks and intake: the quote-median, lapsed-pick, win | done | 2 | 40 min | 08:02Z | T619 readers are correct per three Opus reviews, but the test file still misses wrong implementations; no reviewer appro |
 | T482 | messaging and intake: the plain-word auto-answers after HELP | done | 1 | 2 h 29 min | 07:56Z |  |
@@ -132,9 +133,8 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T563 (lease until 2026-11-18T12:55:56Z)
-- lane 3: T658 (lease until 2026-11-18T13:59:20Z)
 - lane 5: T408 (lease until 2026-11-18T13:23:31Z)
 - lane 6: T200 (lease until 2026-11-18T13:36:41Z)
 
 ## Last usage reading
-- {"task": "T650", "at": "2026-11-18T10:39:12Z", "output_tokens": 40511, "cache_creation_input_tokens": 215176, "input_tokens": 194, "cache_read_input_tokens": 3544236}
+- {"task": "T658", "at": "2026-11-18T11:04:12Z", "output_tokens": 35365, "cache_read_input_tokens": 2474484, "input_tokens": 90, "cache_creation_input_tokens": 121409}
