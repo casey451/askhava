@@ -479,7 +479,7 @@ pub async fn store_shared_email(
     tx.commit().await.map_err(db_err)
 }
 
-/// Replaces contact `id`'s phone digests with one under the active index key.
+/// Replaces contact `id`'s phone digests with one per configured index key version (D-4418).
 async fn index_phone(
     db: &mut PgConnection,
     vault: &Vault,
@@ -487,7 +487,7 @@ async fn index_phone(
     phone: &str,
 ) -> Result<(), VaultError> {
     let purpose = IndexPurpose::HomeownerPhone;
-    let (version, digest) = vault.blind_index(purpose, phone)[0];
+    let (versions, digests) = digest_rows(vault.blind_index(purpose, phone));
     sqlx::query!(
         "DELETE FROM privacy.contact_index WHERE contact_id = $1 AND purpose = $2",
         id,
@@ -497,13 +497,13 @@ async fn index_phone(
     .await
     .map_err(db_err)?;
     sqlx::query!(
-        "INSERT INTO privacy.contact_index (purpose, key_version, digest, contact_id) VALUES ($1, $2, $3, $4)",
-        purpose.label(), i32::from(version), &digest[..], id,
+        "INSERT INTO privacy.contact_index (purpose, key_version, digest, contact_id) SELECT $1, k.v, k.d, $4 FROM unnest($2::int4[], $3::bytea[]) AS k(v, d)",
+        purpose.label(), &versions, &digests, id,
     )
     .execute(db)
     .await
-    .map_err(index_err)?;
-    Ok(())
+    .map(|_| ())
+    .map_err(index_err)
 }
 
 /// The contact whose phone is `phone`, looked up by its digest under every index key version, so
@@ -518,11 +518,7 @@ pub async fn find_by_phone(
     phone: &str,
 ) -> Result<Option<Uuid>, VaultError> {
     let phone = normalize_phone(phone)?;
-    let (versions, digests): (Vec<i32>, Vec<Vec<u8>>) = vault
-        .blind_index(IndexPurpose::HomeownerPhone, &phone)
-        .into_iter()
-        .map(|(v, d)| (i32::from(v), d.to_vec()))
-        .unzip();
+    let (versions, digests) = digest_rows(vault.blind_index(IndexPurpose::HomeownerPhone, &phone));
     sqlx::query_scalar!(
         "SELECT i.contact_id FROM privacy.contact_index i \
          JOIN unnest($2::int4[], $3::bytea[]) AS k(v, d) ON i.key_version = k.v AND i.digest = k.d \
@@ -752,14 +748,18 @@ pub(crate) fn own_grant(purpose: Purpose) -> &'static Grant {
         .unwrap_or_else(|| unreachable!())
 }
 
-/// Re-seals up to `limit` contacts still under an older `VAULT_KEY` version or with a
-/// `homeowner-phone` digest under an older `VAULT_INDEX_KEY` version with the active ones,
-/// rebuilding each phone digest; returns how many it moved. Only the phone digest is selected,
-/// as it is the only one [`reseal`] rebuilds, so a stale digest of another purpose never makes a
-/// batch that never ends (D-753). Run it until it
-/// returns 0: both versions stay readable throughout (PRIV-024). Each move is its own transaction
-/// and audits its plaintext read as `privacy`'s rotation (PRIV-003). Stated names under an older
-/// version are moved after the contacts, up to `limit` more, and counted in the result (D-1752).
+/// Re-seals up to `limit` contacts still under an older `VAULT_KEY` version, or with a phone whose
+/// `homeowner-phone` digests miss a configured `VAULT_INDEX_KEY` version or include a dropped one,
+/// rebuilding each phone digest under every configured version (D-4418); returns how many it moved.
+/// Only the phone digest is selected, as it is the only one [`reseal`] rebuilds, so a stale digest
+/// of another purpose never makes a batch that never ends (D-753). Run it until it returns 0: both
+/// versions stay readable throughout (PRIV-024). Each move is its own transaction and audits its
+/// plaintext read as `privacy`'s rotation (PRIV-003). Stated names under an older version are
+/// moved after the contacts, up to `limit` more, and counted in the result (D-1752).
+///
+/// PRIV-024's order for an index key: add the new version, run this until 0 (every phone contact
+/// then holds one digest per configured version), and only then drop the old one, which a later
+/// run removes; a phone-less contact is never selected for a stale digest (nothing rebuilds it).
 ///
 /// # Errors
 ///
@@ -770,10 +770,17 @@ pub async fn rotate_batch(
     limit: i64,
 ) -> Result<u64, VaultError> {
     let ids = sqlx::query_scalar!(
-        "SELECT id FROM privacy.contact WHERE oldest_key_version < $1 \
-         OR id IN (SELECT contact_id FROM privacy.contact_index WHERE key_version < $2 AND purpose = $4) \
-         ORDER BY id LIMIT $3",
-        i32::from(vault.seal_version()), i32::from(vault.index_version()), limit,
+        "SELECT c.id FROM privacy.contact c WHERE c.oldest_key_version < $1 \
+         OR (c.phone IS NOT NULL AND ( \
+           EXISTS (SELECT 1 FROM privacy.contact_index i WHERE i.contact_id = c.id \
+             AND i.purpose = $4 AND i.key_version <> ALL($2::int4[])) \
+           OR EXISTS (SELECT 1 FROM unnest($2::int4[]) AS k(v) WHERE NOT EXISTS ( \
+             SELECT 1 FROM privacy.contact_index i WHERE i.contact_id = c.id \
+             AND i.purpose = $4 AND i.key_version = k.v)))) \
+         ORDER BY c.id LIMIT $3",
+        i32::from(vault.seal_version()),
+        &vault.index_versions_sql(),
+        limit,
         IndexPurpose::HomeownerPhone.label(),
     )
     .fetch_all(&mut *db)
@@ -885,6 +892,128 @@ async fn reseal(
         index_phone(db, vault, id, phone.expose_secret()).await?;
     }
     Ok(())
+}
+
+/// The configured index key versions (PRIV-024, D-4418).
+impl Vault {
+    /// Every configured `VAULT_INDEX_KEY` version, ascending, read from the vault's own key map:
+    /// the versions a homeowner-phone digest is kept under and the ones a held
+    /// `messaging.suppression` row must be under for the process to start (PRIV-024, D-4418).
+    #[must_use]
+    pub fn index_versions(&self) -> Vec<u16> {
+        self.index_keys.keys().copied().collect()
+    }
+
+    /// [`Vault::index_versions`] as the `int4` array a query binds.
+    fn index_versions_sql(&self) -> Vec<i32> {
+        self.index_keys.keys().map(|v| i32::from(*v)).collect()
+    }
+}
+
+/// `digests` as the parallel version and digest arrays an `unnest` query binds (PRIV-024).
+fn digest_rows(digests: Vec<(u16, [u8; 32])>) -> (Vec<i32>, Vec<Vec<u8>>) {
+    digests
+        .into_iter()
+        .map(|(v, d)| (i32::from(v), d.to_vec()))
+        .unzip()
+}
+
+/// Contact `contact`'s homeowner-phone digests as `privacy.contact_index` holds them, one per index
+/// key version, highest version first (the active one once rotated, as [`Vault::blind_index`]
+/// orders them); empty for a contact with no phone. Static SQL, no plaintext read, no audit row,
+/// no row lock, and it may run inside the caller's transaction: these are HMAC blind indexes, not
+/// contact values, so no vault-read grant applies, as for [`find_by_phone`] (PRIV-002, PRIV-024,
+/// CON-035, D-4473).
+///
+/// # Errors
+///
+/// [`VaultError::Database`], also for a stored row that is not a version and a 32-byte digest.
+pub async fn phone_digests(
+    db: &mut PgConnection,
+    contact: Uuid,
+) -> Result<Vec<(u16, [u8; 32])>, VaultError> {
+    let rows = sqlx::query!(
+        "SELECT key_version, digest FROM privacy.contact_index \
+         WHERE contact_id = $1 AND purpose = $2 ORDER BY key_version DESC",
+        contact,
+        IndexPurpose::HomeownerPhone.label(),
+    )
+    .fetch_all(db)
+    .await
+    .map_err(db_err)?;
+    rows.into_iter()
+        .map(|r| {
+            let version = u16::try_from(r.key_version).map_err(|_| VaultError::Database)?;
+            let digest = <[u8; 32]>::try_from(r.digest).map_err(|_| VaultError::Database)?;
+            Ok((version, digest))
+        })
+        .collect()
+}
+
+/// Why [`settle_index_versions`] refused the start; it names versions and a count only, never a
+/// contact ID or a digest (PRIV-016, PRIV-024, D-4473).
+#[derive(Debug, thiserror::Error, PartialEq, Eq)]
+pub enum IndexVersionsError {
+    /// Contacts hold homeowner-phone digests, none under a configured `VAULT_INDEX_KEY` version: a
+    /// version was dropped before [`rotate_batch`] finished under both (PRIV-024's order is add the
+    /// new version, rotate until 0, then drop the old).
+    #[error(
+        "{count} contacts hold no homeowner-phone digest under a configured VAULT_INDEX_KEY version \
+         (configured: {configured:?}); configure the dropped version again and rotate until 0 (D-4473)"
+    )]
+    Unindexed {
+        /// The configured index key versions, ascending.
+        configured: Vec<u16>,
+        /// How many contacts hold homeowner-phone rows under dropped versions only.
+        count: i64,
+    },
+    /// The index could not be read or pruned.
+    #[error("the blind index could not be settled")]
+    Database,
+}
+
+/// The start step run by the server and the worker after building their `Vault` (PRIV-024,
+/// D-4473): refuses, deleting nothing, when any contact holds homeowner-phone digests and none
+/// under a configured index key version; otherwise deletes, in one static statement and with no
+/// plaintext read, the homeowner-phone rows under a version no longer configured of the contacts
+/// that hold one under a configured version (a row an old process wrote during a rolling deploy).
+/// `sender-dir` and `email` rows are never touched. Fails closed: a refused start texts nothing.
+///
+/// # Errors
+///
+/// [`IndexVersionsError::Unindexed`] or [`IndexVersionsError::Database`].
+pub async fn settle_index_versions(
+    db: &mut PgConnection,
+    vault: &Vault,
+) -> Result<(), IndexVersionsError> {
+    let versions = vault.index_versions_sql();
+    let purpose = IndexPurpose::HomeownerPhone.label();
+    let mut tx = db.begin().await.map_err(|_| IndexVersionsError::Database)?;
+    let count = sqlx::query_scalar!(
+        r#"SELECT count(DISTINCT i.contact_id) AS "count!" FROM privacy.contact_index i
+           WHERE i.purpose = $1 AND NOT EXISTS (SELECT 1 FROM privacy.contact_index j
+             WHERE j.contact_id = i.contact_id AND j.purpose = $1 AND j.key_version = ANY($2::int4[]))"#,
+        purpose,
+        &versions,
+    )
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(|_| IndexVersionsError::Database)?;
+    if count > 0 {
+        let configured = vault.index_versions();
+        return Err(IndexVersionsError::Unindexed { configured, count });
+    }
+    sqlx::query!(
+        "DELETE FROM privacy.contact_index i WHERE i.purpose = $1 AND i.key_version <> ALL($2::int4[]) \
+         AND EXISTS (SELECT 1 FROM privacy.contact_index j WHERE j.contact_id = i.contact_id \
+         AND j.purpose = $1 AND j.key_version = ANY($2::int4[]))",
+        purpose,
+        &versions,
+    )
+    .execute(&mut *tx)
+    .await
+    .map_err(|_| IndexVersionsError::Database)?;
+    tx.commit().await.map_err(|_| IndexVersionsError::Database)
 }
 
 /// Compares each reader-purpose count of the hour holding `hour` (rounded down to the UTC hour,
@@ -1024,5 +1153,33 @@ mod shared_email_tests {
             .expect("read only");
         let broken = store_shared_email(&mut db, &vault, id, &mail).await;
         assert!(matches!(broken, Err(VaultError::Database)));
+    }
+}
+
+/// [`Vault::index_versions`] reads the configured index key versions, ascending (PRIV-024,
+/// D-4418): fake keys only.
+#[cfg(test)]
+mod index_versions_tests {
+    use base64::Engine as _;
+    use base64::engine::general_purpose::STANDARD;
+    use secrecy::SecretString;
+
+    use super::Vault;
+
+    fn keys(entries: &[(u16, u8)]) -> SecretString {
+        let list: Vec<String> = entries
+            .iter()
+            .map(|(v, b)| format!("{v}:{}", STANDARD.encode([*b; 32])))
+            .collect();
+        SecretString::from(list.join(","))
+    }
+
+    #[test]
+    fn the_configured_index_versions_come_ascending() {
+        let url = SecretString::from("postgres://askhava_app@db.invalid/askhava".to_owned());
+        let vault = Vault::new(&keys(&[(1, 0x71)]), &keys(&[(3, 0x83), (1, 0x81)]), &url);
+        let vault = vault.expect("keys");
+        assert_eq!(vault.index_versions(), [1, 3]);
+        assert_eq!(vault.index_version(), 3);
     }
 }
