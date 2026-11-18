@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T06:43:07Z by runner 8d82392ea8c4 (actions).
+Updated 2026-11-18T06:46:29Z by runner 8d82392ea8c4 (actions).
 
 **Building: T482 in progress since 05:26Z; 428 of 613 done; week 46% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-18T06:43:07Z by runner 8d82392ea8c4 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T482 claimed 05:26Z, lease until 09:40Z; lane 4: T658 claimed 06:42Z, lease until 09:42Z; lane 5: T643 claimed 05:25Z, lease until 09:27Z
 - **Week:** 46% used, 99.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:40Z, 2 min before this update
+- **Last run:** 06:46Z, 0 min before this update
 - **Keeper:** last ran 06:32Z, next wake 08:28Z
 
 ## Needs attention
@@ -82,7 +82,6 @@ Updated 2026-11-18T06:43:07Z by runner 8d82392ea8c4 (actions).
 | T201 | site: services and help pages, the ROC complaint page | done | 1 | 56 min | 07:22Z |  |
 | T489 | site and server: the web chat and request pages with the con | BLOCKED | 1 | 12 min | 07:15Z |  |
 | T564 | quotes, picks and intake: the LIST, text picks, lapse text a | done | 1 | 43 min | 06:47Z |  |
-| T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | resync | 1 | 2 h 21 min | 06:44Z |  |
 
 ### Plan and harness merges on main
 - none
