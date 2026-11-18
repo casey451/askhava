@@ -17,7 +17,9 @@
 use askhava_businesses::api::has_safety_word;
 use askhava_core::api::enqueue;
 use askhava_jobs::api::rules::{CheckIn, Contact};
-use askhava_jobs::api::{Answer, Inbound, JobRow, answer_check_in, check_in_times, current};
+use askhava_jobs::api::{
+    Answer, Inbound, JobRow, answer_check_in, check_in_times, current, record_check_in_answer,
+};
 use askhava_ops::api::Actor;
 use askhava_picks::api::{Step, UNREACHABLE_STEP_KIND, accepted_pick, contact_choice, step_task};
 use askhava_privacy::api::{CommonWords, Known, NameMemory, keep_problem_words, scrub};
@@ -40,7 +42,9 @@ struct Due {
 
 /// JOB-015, JOB-016, FEE-035, D-1840: answers `msg` as a check-in reply when it reads as an answer
 /// and one of her jobs is Connected with a check-in due; the job answered, or `None` (the text
-/// goes to intake as before). Runs in the caller's transaction.
+/// goes to intake as before). Runs in the caller's transaction. An email-contact day-3 NO queues
+/// the `day3_no` step and, only when newly queued, records the answer (`jobs.check_in_answer`
+/// row, OPS-031, D-4053) in the same transaction, so a repeated NO writes nothing.
 ///
 /// # Errors
 ///
@@ -59,7 +63,12 @@ pub(crate) async fn check_in_reply(
     if let (Answer::No, CheckIn::Day3, Contact::Email, Some(pick)) =
         (answer, due.check, due.contact, due.pick)
     {
-        queue_day_three_no(db, pick, msg.received_at).await?;
+        if queue_day_three_no(db, pick, msg.received_at).await? {
+            let actor = Actor::Homeowner(msg.contact);
+            let how = (CheckIn::Day3, Answer::No);
+            let recorded = record_check_in_answer(db, due.job, how, actor).await;
+            recorded.map_err(job_err)?;
+        }
         return Ok(Some(due.job));
     }
     let safety = has_safety_word(msg.inbound.words);
@@ -100,12 +109,12 @@ async fn keep_words(
 }
 
 /// FEE-035, D-3488: T281's `day3_no` step for `pick`, due `now`, deduped per pick and answer so a
-/// repeated NO queues nothing more.
+/// repeated NO queues nothing more. True when the step was newly queued (OPS-031, D-4053).
 async fn queue_day_three_no(
     db: &mut PgConnection,
     pick: Uuid,
     now: Timestamp,
-) -> Result<(), IntakeError> {
+) -> Result<bool, IntakeError> {
     let mut task = step_task(pick, Step::DayThreeNo, now);
     task.dedupe_key = Some(format!(
         "{UNREACHABLE_STEP_KIND}.{pick}.{}",
@@ -113,7 +122,7 @@ async fn queue_day_three_no(
     ));
     enqueue(db, &task)
         .await
-        .map(drop)
+        .map(|queued| queued.is_some())
         .map_err(|_| IntakeError::Database)
 }
 

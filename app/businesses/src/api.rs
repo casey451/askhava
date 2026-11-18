@@ -140,7 +140,7 @@ pub use crate::service::{
 };
 pub use crate::service_area::{
     MAX_RADIUS_MILES, MIN_RADIUS_MILES, ServiceArea, ServiceAreaProblem, StoredServiceArea,
-    businesses_in_towns, save_service_area, service_area,
+    businesses_in_towns, save_service_area, service_area, service_areas,
 };
 pub use crate::sign_in_lines::{SignInLines, sign_in_lines};
 pub use crate::signup::{
@@ -206,22 +206,6 @@ pub async fn businesses_of_mailbox(
     .fetch_all(conn)
     .await
     .map_err(|_| BusinessesError::Database)
-}
-
-/// CARD-024, BIZ-058, D-1519 (T249): every business with a stored base ZIP and radius, sorted by
-/// ID, whatever its status or towns; `quotes`' card pool reads each one's reach and pools those
-/// whose radius reaches the job, so a business serving a town outside the markets is found too.
-///
-/// # Errors
-///
-/// [`BusinessesError::Database`].
-pub async fn businesses_with_service_area(
-    conn: &mut PgConnection,
-) -> Result<Vec<Uuid>, BusinessesError> {
-    sqlx::query_scalar!("SELECT business_id FROM businesses.service_area ORDER BY business_id")
-        .fetch_all(conn)
-        .await
-        .map_err(|_| BusinessesError::Database)
 }
 
 /// LIC-039, D-230, D-2704 (T371): up to `limit` active businesses with an ID after `after`, by

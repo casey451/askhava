@@ -24,6 +24,9 @@ pub use crate::business_numbers::{Figure, Finished, Move, finished_counts, move_
 pub use crate::feedback_purge::{
     FEEDBACK_PURGE_KIND, FEEDBACK_PURGED, FeedbackStage, feedback_text_stage, purge_feedback,
 };
+pub use crate::flag_inputs::{
+    CHECK_IN_ANSWER, ConnectedAnswers, connected_answers, record_check_in_answer,
+};
 pub use crate::followups::{
     Answer, CHECK_IN_DAY3, CHECK_IN_DAY14, CHECK_IN_KIND, FEEDBACK_REQUEST, Inbound, Next,
     PROBLEM_ALERT, PROBLEM_REPLY, PROBLEM_SAFETY_ALERT, after_answer, answer_check_in,

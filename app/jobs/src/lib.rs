@@ -8,6 +8,7 @@
 pub mod api;
 mod business_numbers;
 mod feedback_purge;
+mod flag_inputs;
 mod followups;
 mod handlers;
 mod job_facts;
