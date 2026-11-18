@@ -8,10 +8,14 @@
 //! `CF-Connecting-IP` only on a proxied hostname from Cloudflare's ranges, never
 //! `X-Forwarded-For` (SEC-040). These limits sit in front of T272's per-member link cap and
 //! per-link code-try cap in `business_auth.rs` and count requests, never links or tries (D-1837).
-//! The owner's passkey path calls none of them, so it is never hard-locked (SEC-040, D-492).
+//! Owner sign-in (D-4294): every `POST` admits [`admit_owner_ip`] first; a passkey answer is
+//! checked before the password and only an unverified one is counted in [`OWNER_TRIES_ALL`]
+//! ([`admit_owner_account`]), so junk passwords never lock the passkey path (SEC-040, D-492);
+//! every other `POST` admits [`admit_owner_account`] before any argon2. The step-up and the
+//! passkey challenge have their own limits, keyed by an IPv6 address's /64 (`ip_prefix`).
 //! Each portal route calls its `admit_*` first and, on a refusal, answers as for any failure.
 
-use std::net::IpAddr;
+use std::net::{IpAddr, Ipv6Addr};
 
 use askhava_intake::api::{Admission, Key, Limit, LimitError, admit};
 use jiff::Timestamp;
@@ -34,6 +38,14 @@ pub const CODE_SENDS_PER_NUMBER: Limit = Limit::daily("portals.code_sends_per_nu
 pub const OWNER_TRIES_PER_IP: Limit = Limit::hourly("portals.owner_tries_per_ip", 5);
 /// Owner password tries on the one owner account per hour, from any IP (SEC-040).
 pub const OWNER_TRIES_ALL: Limit = Limit::hourly("portals.owner_tries_all", 20);
+/// Owner step-up tries per owner session per hour (SEC-020, SEC-043, D-4294).
+pub const OWNER_STEP_UPS_PER_SESSION: Limit =
+    Limit::hourly("portals.owner_step_ups_per_session", 5);
+/// Owner step-up tries per client address (an IPv6 /64) per hour (SEC-020, SEC-040, D-4294).
+pub const OWNER_STEP_UPS_PER_IP: Limit = Limit::hourly("portals.owner_step_ups_per_ip", 10);
+/// Owner passkey sign-in challenges per client address (an IPv6 /64) per hour (SEC-014, D-4294).
+pub const OWNER_CHALLENGES_PER_IP: Limit =
+    Limit::hourly("portals.owner_passkey_challenges_per_ip", 10);
 /// Business sign-ups per client IP per Arizona day (SEC-014).
 pub const SIGNUPS_PER_IP: Limit = Limit::daily("portals.signups_per_ip", 5);
 /// Business sign-ups for everyone per Arizona day (SEC-014).
@@ -125,8 +137,8 @@ pub async fn admit_code_send(
     admit(pool, &checks, now).await
 }
 
-/// SEC-020, SEC-040: one owner password try from `ip`, by IP then for the account. The passkey
-/// path never calls this (never hard-locked, D-492).
+/// SEC-020, SEC-040: one owner password try from `ip`, by IP then for the account: the same
+/// two counts as [`admit_owner_ip`] and then [`admit_owner_account`].
 ///
 /// # Errors
 ///
@@ -141,6 +153,85 @@ pub async fn admit_owner_password(
         (OWNER_TRIES_ALL, Key::All),
     ];
     admit(pool, &checks, now).await
+}
+
+/// SEC-020, SEC-040, D-4294: one owner sign-in `POST` from `ip`, a passkey answer included;
+/// the first check of every one.
+///
+/// # Errors
+///
+/// [`LimitError`]: refuse the try.
+pub async fn admit_owner_ip(
+    pool: &PgPool,
+    ip: IpAddr,
+    now: Timestamp,
+) -> Result<Admission, LimitError> {
+    admit(pool, &[(OWNER_TRIES_PER_IP, Key::Ip(ip))], now).await
+}
+
+/// SEC-020, SEC-040, D-4294: one owner try counted for the account, from any address: every
+/// sign-in `POST` without a passkey answer before its argon2, and an unverified passkey answer.
+/// A verified passkey answer never calls it, so the passkey path is never hard-locked (D-492).
+///
+/// # Errors
+///
+/// [`LimitError`]: refuse the try.
+pub async fn admit_owner_account(pool: &PgPool, now: Timestamp) -> Result<Admission, LimitError> {
+    admit(pool, &[(OWNER_TRIES_ALL, Key::All)], now).await
+}
+
+/// The address a per-address owner limit counts (D-4294): an IPv4 address whole, an IPv6
+/// address by its /64, so one host cannot spread its tries across its own prefix. An
+/// IPv4-mapped IPv6 address (`::ffff:a.b.c.d`) counts as its IPv4 address whole, so an
+/// IPv4 client cannot land in the one shared bucket of the /64 `::`.
+fn ip_prefix(ip: IpAddr) -> IpAddr {
+    match ip {
+        IpAddr::V4(_) => ip,
+        IpAddr::V6(v6) => {
+            if let Some(v4) = v6.to_ipv4_mapped() {
+                return IpAddr::V4(v4);
+            }
+            let bits = u128::from(v6) & !u128::from(u64::MAX);
+            IpAddr::V6(Ipv6Addr::from(bits))
+        }
+    }
+}
+
+/// SEC-020, SEC-043, D-4294: one owner step-up try on `session` from `ip`: 5 per session and 10
+/// per address (an IPv6 /64) an hour, before any TOTP check.
+///
+/// # Errors
+///
+/// [`LimitError`]: refuse the try.
+pub async fn admit_owner_step_up(
+    pool: &PgPool,
+    (session, ip): (Uuid, IpAddr),
+    now: Timestamp,
+) -> Result<Admission, LimitError> {
+    let checks = [
+        (OWNER_STEP_UPS_PER_SESSION, Key::Record(session)),
+        (OWNER_STEP_UPS_PER_IP, Key::Ip(ip_prefix(ip))),
+    ];
+    admit(pool, &checks, now).await
+}
+
+/// SEC-014, SEC-040, D-4294: one passkey sign-in challenge issued to `ip`: 10 per address (an
+/// IPv6 /64) an hour, so no one address fills the challenge table.
+///
+/// # Errors
+///
+/// [`LimitError`]: issue nothing.
+pub async fn admit_owner_passkey_challenge(
+    pool: &PgPool,
+    ip: IpAddr,
+    now: Timestamp,
+) -> Result<Admission, LimitError> {
+    admit(
+        pool,
+        &[(OWNER_CHALLENGES_PER_IP, Key::Ip(ip_prefix(ip)))],
+        now,
+    )
+    .await
 }
 
 /// SEC-014: one business sign-up from `ip`: 5 per IP and 50 for everyone per Arizona day.
@@ -170,4 +261,29 @@ pub async fn admit_quote(
     let mut checks = vec![(QUOTES_PER_BUSINESS, Key::Record(business))];
     checks.extend(ip.map(|ip| (QUOTES_PER_IP, Key::Ip(ip))));
     admit(pool, &checks, now).await
+}
+
+#[cfg(test)]
+mod tests {
+    //! The address a per-address owner limit counts (D-4294, TD-SEC-75).
+
+    use std::net::IpAddr;
+
+    use super::ip_prefix;
+
+    fn key(text: &str) -> IpAddr {
+        ip_prefix(text.parse().expect("a fake test address"))
+    }
+
+    /// An IPv4 address counts whole, an IPv6 address by its /64, and an IPv4-mapped IPv6
+    /// address as its own IPv4 address, never as the shared /64 `::` (D-4294).
+    #[test]
+    fn owner_limits_key_each_client_by_its_own_address() {
+        assert_eq!(key("192.0.2.7"), key("192.0.2.7"));
+        assert_ne!(key("192.0.2.7"), key("192.0.2.8"));
+        assert_eq!(key("2001:db8::1"), key("2001:db8::ffff:2"));
+        assert_ne!(key("2001:db8::1"), key("2001:db8:0:1::1"));
+        assert_eq!(key("::ffff:192.0.2.7"), key("192.0.2.7"));
+        assert_ne!(key("::ffff:192.0.2.7"), key("::ffff:198.51.100.9"));
+    }
 }

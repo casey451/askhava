@@ -111,8 +111,8 @@ pub use crate::charge_rebuild::{Rebuilt, rebuild_charge};
 pub use crate::disputes::DISPUTE_OPENED_KIND;
 pub use crate::disputes::{
     DISPUTE_ACTION, DISPUTE_FEE_CENTS, DisputeStripe, EVIDENCE_ACTION, SUBMIT_BEFORE, SUBMIT_KIND,
-    evidence_pack, list_disputes, mark_auto_submit, record_dispute, record_owner_submission,
-    run_dispute_submit,
+    disputes_of, evidence_pack, list_disputes, mark_auto_submit, record_dispute,
+    record_owner_submission, record_pick_owner_submission, run_dispute_submit,
 };
 pub use crate::fee_facts::{FeeFactsError, JobCodes, JobFeeFacts, resolve_fee_facts};
 pub use crate::flags::{
@@ -139,9 +139,9 @@ pub use crate::models::{
     AUTHORIZATION_TEXT, AUTHORIZATION_VERSION, BusinessId, CardError, ChargeError, ChargeOutcome,
     ChargePlan, CustomerId, DESCRIPTOR_MAX, DisputeOpened, DisputeView, ENTITY_KEY_ACTION,
     EVIDENCE_PRODUCT, EntityKey, EntityKind, EvidencePack, FreeWinError, IntentText, JoinDates,
-    MoneyEventError, MoneyTotals, MoneyView, PickFacts, PickNow, Press, RefundOutcome, RefundStep,
-    RefundTrigger, RefundWhy, SavedCard, SetupIntentRequest, StripeCharge, attempt_label,
-    intent_label, plan_charge, statement_prefix,
+    MoneyEventError, MoneyTotals, MoneyView, OwnerSubmission, PickFacts, PickNow, Press,
+    RefundOutcome, RefundStep, RefundTrigger, RefundWhy, SavedCard, SetupIntentRequest,
+    StripeCharge, attempt_label, intent_label, plan_charge, statement_prefix,
 };
 pub use crate::off_session::{
     OffSessionCharge, OffSessionOutcome, OffSessionStripe, charge_off_session, saved_card_of,
@@ -176,7 +176,7 @@ pub use crate::refunds::{
 };
 pub use crate::release_proof::{
     Minter, Releasable, ReleaseError, SUCCEEDED_EVENT, StripeAccount, VerifiedStripeEvent,
-    no_fee_release, paid_release,
+    held_release, no_fee_release, paid_release,
 };
 pub use crate::routes::{
     DISPUTE_CLOSED_ACTION, FRAUD_WARNING_KIND, ReleaseSink, STRIPE_WEBHOOK_PATH, StripeWebhook,

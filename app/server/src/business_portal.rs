@@ -20,6 +20,12 @@
 //! limit shown (no `api` reads it yet, D-3618, D-3664); the released job's page through `picks::api::released_view` with the session
 //! proof from [`crate::session_minter`] on every load (D-1739); the notice addresses opened from the
 //! vault here (D-1848, D-3664). Business texting is off (TXT-035), so the channel is email.
+//!
+//! T483 (OPS-026, BIZ-052; D-207, D-3753, D-3890): the home also shows the owner's away date
+//! (`ops::api::away_until`) on its review and dispute lines and the saved Google and Yelp links
+//! (`businesses::api::review_links`); `POST` [`REVIEW_LINKS_ROUTE`] stores them through
+//! `portals::api::save_home_links` with `GuardedOpener` (owner only; a link off its site's domain
+//! or that does not open is a 422 with the reason, nothing stored).
 
 use std::io;
 use std::net::IpAddr;
@@ -27,22 +33,24 @@ use std::sync::Arc;
 
 use askhava_adapters::api::PoolNumber;
 use askhava_businesses::api::{
-    NoticeChannel, NoticePurpose, may_get_notices, notice_addresses, notice_channel,
-    open_cards_times, returned_mailboxes, sign_in_lines,
+    GuardedOpener, LinkRefusal, NoticeChannel, NoticePurpose, may_get_notices, notice_addresses,
+    notice_channel, open_cards_times, returned_mailboxes, review_links, sign_in_lines,
 };
 use askhava_core::api::{Clock, Settings, SystemClock, arizona_time};
 use askhava_jobs::api::finished_counts;
+use askhava_messaging::api::still_away;
+use askhava_ops::api::away_until;
 use askhava_payments::api::{Statement, business_statement, saved_cards};
 use askhava_picks::api::pick_numbers;
 use askhava_portals::api::{
     BILLING_ROUTE, BUSINESS_HOME_ROUTE, BusinessPrincipal, ChannelChangeError, ChannelFacts,
-    CookieJar, CsrfField, CsrfForm, InboxSwitch, JOB_RELEASE_ROUTE, JobFacts,
-    NOTICE_SETTINGS_ROUTE, Need, NoticeAddress, OPEN_CARDS_ROUTE, PaymentMethod, SESSION_COOKIE,
-    STATEMENT_ROUTE, SecurityEvent, SecurityEventKind, WebSecurity, YourNumbers,
-    admit_security_event, billing_page, business_home_page, business_principal, change_channel,
-    csrf_token, inbox_shared, job_release_page, no_store, notice_settings_page,
-    record_security_event, refuse_cross_site, save_open_cards_times, security_event_client,
-    signed_out, statement_csv,
+    CookieJar, CsrfField, CsrfForm, HomeExtras, InboxSwitch, JOB_RELEASE_ROUTE, JobFacts,
+    LinksChangeError, NOTICE_SETTINGS_ROUTE, Need, NoticeAddress, OPEN_CARDS_ROUTE, PaymentMethod,
+    REVIEW_LINKS_ROUTE, SESSION_COOKIE, STATEMENT_ROUTE, SecurityEvent, SecurityEventKind,
+    WebSecurity, YourNumbers, admit_security_event, billing_page, business_home_page_with,
+    business_principal, change_channel, csrf_token, inbox_shared, job_release_page, no_store,
+    notice_settings_page, record_security_event, refuse_cross_site, save_home_links,
+    save_open_cards_times, security_event_client, signed_out, statement_csv,
 };
 use askhava_privacy::api::{BusinessContactError, BusinessPurpose, Vault, read_business_mailbox};
 use askhava_quotes::api::quote_numbers;
@@ -127,6 +135,7 @@ pub fn routes(pool: PgPool, vault: PortalVault, numbers: &[PoolNumber]) -> Route
     Router::new()
         .route(BUSINESS_HOME_ROUTE, get(home))
         .route(OPEN_CARDS_ROUTE, post(save_times))
+        .route(REVIEW_LINKS_ROUTE, post(save_links))
         .route(JOB_RELEASE_ROUTE, get(job_page))
         .route(BILLING_ROUTE, get(billing))
         .route(STATEMENT_ROUTE, get(statement))
@@ -314,11 +323,15 @@ async fn your_numbers(
     })
 }
 
-/// BIZ-025, CARD-022, BIZ-046, SEC-027: the home page for `who`; `too_many` shows the times error.
+/// The links just refused, as sent, and why (BIZ-052).
+type Refused<'a> = Option<(&'a LinksForm, LinkRefusal)>;
+
+/// BIZ-025, CARD-022, BIZ-046, SEC-027, OPS-026, BIZ-052: the home page for `who`; `too_many`
+/// shows the times error and `refused` the links error with the links as sent.
 async fn home_html(
     portal: &Portal,
     who: &BusinessPrincipal,
-    too_many: bool,
+    (too_many, refused): (bool, Refused<'_>),
     csrf: &str,
 ) -> Option<String> {
     let statement = month_statement(portal, who.business()).await?;
@@ -331,7 +344,15 @@ async fn home_html(
     };
     let month = this_month(portal.clock.now());
     let numbers = your_numbers(&mut db, who.business(), month, &statement).await?;
-    business_home_page(&numbers, (times, too_many), (&portal.numbers, &inbox), csrf).ok()
+    let saved = review_links(&mut db, who.business()).await.ok()?;
+    let extras = HomeExtras {
+        away_until: still_away(away_until(&mut db).await.ok()?, portal.clock.now()),
+        google: refused.map_or(saved.google(), |(f, _)| Some(f.google.as_str())),
+        yelp: refused.map_or(saved.yelp(), |(f, _)| Some(f.yelp.as_str())),
+        refused: refused.map(|(_, r)| r),
+    };
+    let pool = &portal.numbers;
+    business_home_page_with(&numbers, (times, too_many), (pool, &inbox), &extras, csrf).ok()
 }
 
 /// `GET` [`BUSINESS_HOME_ROUTE`]: the portal home (BIZ-025, CARD-022). Changes nothing.
@@ -347,7 +368,7 @@ async fn home(
     let Some(csrf) = csrf_token(&jar) else {
         return failed("csrf token");
     };
-    match home_html(&portal, &who, false, &csrf).await {
+    match home_html(&portal, &who, (false, None), &csrf).await {
         Some(html) => Html(html).into_response(),
         None => failed("home page"),
     }
@@ -409,12 +430,62 @@ async fn save_times(
         Ok(None) => {
             drop(db);
             let csrf = csrf_token(&jar).unwrap_or_default();
-            match home_html(&portal, &who, true, &csrf).await {
+            match home_html(&portal, &who, (true, None), &csrf).await {
                 Some(html) => (StatusCode::UNPROCESSABLE_ENTITY, Html(html)).into_response(),
                 None => failed("home page"),
             }
         }
         Err(_) => failed("open-cards times"),
+    }
+}
+
+/// The Google and Yelp links form (BIZ-052): its CSRF token and both links; any other field is
+/// refused (SEC-010).
+#[derive(Debug, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct LinksForm {
+    #[serde(default)]
+    csrf: String,
+    #[serde(default)]
+    google: String,
+    #[serde(default)]
+    yelp: String,
+}
+
+impl CsrfField for LinksForm {
+    fn csrf(&self) -> &str {
+        &self.csrf
+    }
+}
+
+/// `POST` [`REVIEW_LINKS_ROUTE`] (BIZ-052, SEC-041, SEC-009, SEC-042, D-439): the owner's Google
+/// and Yelp links, checked and stored, then home; a refused link stores nothing and shows its
+/// reason (422); anyone but the owner gets the not-found answer with a security event.
+async fn save_links(
+    State(portal): State<Portal>,
+    Extension(site): Extension<Site>,
+    jar: CookieJar,
+    CsrfForm(form): CsrfForm<LinksForm>,
+) -> Response {
+    let who = match signed_in(&portal, &site, &jar).await {
+        Ok(who) => who,
+        Err(answer) => return *answer,
+    };
+    let Ok(mut db) = portal.pool.acquire().await else {
+        return failed("connection");
+    };
+    let links = (Some(form.google.as_str()), Some(form.yelp.as_str()));
+    let refusal = match save_home_links(&mut db, &GuardedOpener, &who, links).await {
+        Ok(_) => return see_other(BUSINESS_HOME_ROUTE),
+        Err(LinksChangeError::Role) => return denied(&portal, &site, &who).await,
+        Err(LinksChangeError::Database) => return failed("review links"),
+        Err(LinksChangeError::Refused(refusal)) => refusal,
+    };
+    drop(db);
+    let csrf = csrf_token(&jar).unwrap_or_default();
+    match home_html(&portal, &who, (false, Some((&form, refusal))), &csrf).await {
+        Some(html) => (StatusCode::UNPROCESSABLE_ENTITY, Html(html)).into_response(),
+        None => failed("home page"),
     }
 }
 

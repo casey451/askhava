@@ -399,6 +399,8 @@ Each stand-in has contract tests written from the vendor's published API documen
 
    **Opt-out number lock (T701, T563, D-4418).** `messaging`'s `record` (the one writer of `messaging.suppression` rows: `suppress`, a texted STOP, a carrier 21610) first takes, inside its transaction, one transaction-scoped advisory lock per distinct homeowner-phone digest of the number under every configured index key version (`hashtextextended(encode(digest, 'hex'), 4418)`, one statement each, ascending digest order). The daily consent sweep reads no phone: it builds `messaging::api::listing_key` from the contact's `privacy.contact_index` digests (D-4280), which T702 keeps under every configured index key version, so the key is the whole set `record` locks and lists under (`Vault::index_versions()`; a contact missing a configured version's digest keeps its phone that run). Each number's READ COMMITTED transaction starts with `messaging::api::still_unlisted`, which takes the same lock and then re-reads the list, answering false also while any suppression row is under a version outside the key's (a defense; T702's start check rules it out); nothing re-keys `messaging.suppression` (contrary to D-2208's assumption), so no `VAULT_INDEX_KEY` version may be retired while a row is held under it, and the server and worker refuse to start otherwise, failing closed (T702, PRIV-024); the sweep clears the vault phone (D-079) only on `true`, in that transaction, as its last write, taking the contact row `FOR UPDATE NOWAIT` and then clearing only while the contact's digests are still the key's (a busy row rolls the number back to the next day's run). An opt-out that commits first keeps the phone. One that resolved the number before the sweep and waits on the lock commits after the clear: the number is listed by digest and refused every text, with no vault phone behind it (accepted, D-4418). START takes no lock.
 
+   **Index key start check (T702, D-4418, D-4473).** `privacy`'s `index_phone` writes a contact's homeowner-phone digest under every configured `VAULT_INDEX_KEY` version (`Vault::index_versions()`) and `rotate_batch` also re-indexes every phone contact missing a configured version's digest or holding one under a dropped version. Both binaries, after building their vault and before serving or claiming, run `server::check_index_keys`: `privacy::api::settle_index_versions` (prunes homeowner-phone rows under a dropped version beside a configured one; refuses when a contact holds none under a configured version), then `messaging::api::check_suppression_versions` (refuses while a `messaging.suppression` row is held under a version the key set lacks). A refusal, or an unreadable database, logs versions and a count only and stops the start (fail closed). `privacy::api::phone_digests` reads a contact's digests without the plaintext, for T645 and T563.
+
 ## 9. Environments and deployment shape
 
 | Environment | Where | Data | Adapters | Keys |
@@ -570,6 +572,7 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | GET | /healthz | server | yes |
 | GET | /b | portals | yes |
 | POST | /b/open-cards | portals | yes |
+| POST | /b/review-links | portals | yes |
 | GET | /b/picks/{pick} | portals | yes |
 | GET | /b/billing | portals | yes |
 | GET | /b/billing/statement.csv | portals | yes |

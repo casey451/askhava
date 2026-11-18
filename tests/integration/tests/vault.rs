@@ -4,8 +4,9 @@
 //! columns hold only sealed bytes; that a sealed value copied to another row or column fails to
 //! open; that the vault keys are refused when they repeat or sit in the database credential; that
 //! every plaintext read writes an audit row naming its reader, purpose and field; that the
-//! rotation drill reads v1 rows while v2 is active, ends with no v1 row or digest and still finds
-//! every number; and that an hour's reads above three times the 14-day baseline, or a read with an
+//! rotation drill reads v1 rows while v2 is active, ends with no v1 row, keeps one phone digest
+//! under each configured version (D-4418), drops the v1 digests once only v2 is configured and
+//! still finds every number; and that an hour's reads above three times the 14-day baseline, or a read with an
 //! unregistered purpose, raises one High alert; and that no read or refusal runs inside a caller's
 //! transaction, even one a raw `BEGIN` opened (D-753). The export and the runbook's key inventory are
 //! the nightly export's and T117's cases of TD-PRIV-09. All data and keys are fake.
@@ -452,13 +453,32 @@ async fn the_rotation_drill_moves_every_row_to_v2(pool: PgPool) {
         "SELECT count(*) FROM privacy.contact WHERE oldest_key_version < 2",
     )
     .await;
+    assert_eq!(v1_rows, 0);
+    // D-4418: with v1 and v2 configured each phone contact keeps one digest under each.
+    let per_version = count(
+        &mut conn,
+        "SELECT count(*) FROM (SELECT contact_id FROM privacy.contact_index \
+         WHERE purpose = 'homeowner-phone' GROUP BY contact_id \
+         HAVING count(*) FILTER (WHERE key_version = 1) = 1 \
+         AND count(*) FILTER (WHERE key_version = 2) = 1 AND count(*) = 2) AS each_version",
+    )
+    .await;
+    assert_eq!(
+        per_version, 3,
+        "every phone contact holds one v1 and one v2 digest"
+    );
+    let new = vault(&key(2, 0x12), &key(2, 0x22));
+    assert_eq!(rotate_batch(&mut conn, &new, 5).await.expect("drop v1"), 3);
+    assert_eq!(rotate_batch(&mut conn, &new, 5).await.expect("drop v1"), 0);
     let v1_digests = count(
         &mut conn,
         "SELECT count(*) FROM privacy.contact_index WHERE key_version < 2",
     )
     .await;
-    assert_eq!((v1_rows, v1_digests), (0, 0));
-    let new = vault(&key(2, 0x12), &key(2, 0x22));
+    assert_eq!(
+        v1_digests, 0,
+        "with only v2 configured no v1 digest is left"
+    );
     for (phone, id) in phones.iter().zip(&ids) {
         assert_eq!(
             find_by_phone(&mut conn, &new, phone).await.expect("find"),
