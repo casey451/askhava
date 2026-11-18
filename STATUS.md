@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T01:04:14Z by runner 67827d85943d (manual).
+Updated 2026-11-18T01:16:12Z by runner 82bbce61a338 (actions).
 
-**Building: T478 in progress since 23:24Z; 419 of 582 done; week 36% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T478 in progress since 23:24Z; 420 of 582 done; week 36% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 419 of 582 build tasks (owner gates not counted)
+- **Tasks done:** 420 of 582 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T478 claimed 23:24Z, lease until 04:03Z; lane 5: T151 claimed 00:12Z, lease until 03:12Z; lane 6: T108 claimed 00:23Z, lease until 03:23Z; lane 7: T604 claimed 00:31Z, lease until 03:31Z
 - **Week:** 36% used, 118.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:04Z, 0 min before this update
+- **Last run:** 01:04Z, 11 min before this update
 - **Keeper:** last ran 01:03Z, next wake 03:14Z
 
 ## Needs attention
@@ -20,7 +20,7 @@ Updated 2026-11-18T01:04:14Z by runner 67827d85943d (manual).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T587 | payments and picks: the old Confirm fee writer is marked tes | MERGE_PENDING | 1 | 48 min | 00:26Z |  |
+| T587 | payments and picks: the old Confirm fee writer is marked tes | done | 1 | 48 min | 00:26Z |  |
 | T606 | harness: scripts/check_copy.py allows one aria-hidden arrow  | done | 1 | 62 min | 23:23Z |  |
 | T203 | Wording scan: the required statements, business copy lines a | BLOCKED | 1 | 3 min | 23:08Z | PLAN GAP: `app/portals/templates/quote_page.html:101` (owned by DONE tasks T052, T095, T294, T308, T384, T388, T393, T44 |
 | T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | done | 3 | 37 min | 22:46Z | PLAN GAP: `package-lock.json` (unchanged from main) fails `npm audit --audit-level=low` on GHSA-fc5q-39xc-vjpf; nothing  |
@@ -83,7 +83,6 @@ Updated 2026-11-18T01:04:14Z by runner 67827d85943d (manual).
 | T584 | businesses (harness): sign-up activation retried after a con | BLOCKED | 1 | 3 min | 02:26Z |  |
 | T469 | server (harness): the Resend email client from settings and  | done | 1 | 99 min | 02:12Z |  |
 | T221 | site: the terms, privacy policy, SMS terms, homeowner data a | check_failed | 1 | 2 h 47 min | 01:23Z |  |
-| T320 | ops: a check that runs on a schedule raises its alert once w | done | 2 | 78 min | 01:13Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-16T |
 
 ### Plan and harness merges on main
 - none
@@ -91,7 +90,7 @@ Updated 2026-11-18T01:04:14Z by runner 67827d85943d (manual).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 677 · unstarted 58
-**Tasks merged (throughput only):** 419 of 582
+**Tasks merged (throughput only):** 420 of 582
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -127,7 +126,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 62 of 190 done
+- stage 5: 63 of 190 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
