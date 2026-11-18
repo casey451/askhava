@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T18:31:15Z by runner da3e803af8d3 (actions).
+Updated 2026-11-18T18:31:22Z by runner da3e803af8d3 (actions).
 
 **Building: T501 in progress since 18:29Z; 453 of 645 done; week 64% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-18T18:31:15Z by runner da3e803af8d3 (actions).
 - **Lane:** lane 2: T501 claimed 18:29Z, lease until 21:29Z; lane 3: T483 claimed 18:25Z, lease until 21:25Z; lane 4: T364 claimed 18:28Z, lease until 21:28Z; lane 7: T711 claimed 18:12Z, lease until 21:12Z
 - **Week:** 64% used, 61.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 18:31Z, 0 min before this update
-- **Keeper:** last ran 18:28Z, next wake 18:48Z
+- **Keeper:** last ran 18:31Z, next wake 21:15Z
 
 ## Needs attention
 - BLOCKED T205: plan gap reported: PLAN GAP: `payments` has no public reader that ties a dispute to its pick (or its charge, business or job). Without one, T205 cannot narrow `waiting_disputes` or refuse a press on another pick's dispute, so this has to go back as a `payments` follow-up.
