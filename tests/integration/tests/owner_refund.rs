@@ -253,20 +253,31 @@ async fn td_fee_14_a_disputed_charge_refund_is_blocked(pool: PgPool) {
     assert_eq!(ledger_rows(&pool, "refund").await, 0);
 }
 
-/// An evidence press on `pick` naming `dispute`, by a fresh owner.
-async fn press(pool: &PgPool, jar: &CookieJar, pick: Uuid, dispute: &str) -> OwnerSubmission {
+/// An evidence press on `pick` naming `dispute`, by the owner read back at `t` seconds.
+async fn try_press(
+    pool: &PgPool,
+    jar: &CookieJar,
+    (pick, dispute): (Uuid, &str),
+    t: i64,
+) -> Result<OwnerSubmission, OwnerToolError> {
     let mut db = pool.acquire().await.expect("db");
-    let fresh = owner(&mut db, jar, 60).await;
+    let principal = owner(&mut db, jar, t).await;
     let form = EvidenceForm {
         dispute: dispute.to_owned(),
     };
-    owner_dispute_evidence(&mut db, &fresh, (pick, &form), at(60))
+    owner_dispute_evidence(&mut db, &principal, (pick, &form), at(t)).await
+}
+
+/// An evidence press on `pick` naming `dispute`, by a fresh owner.
+async fn press(pool: &PgPool, jar: &CookieJar, pick: Uuid, dispute: &str) -> OwnerSubmission {
+    try_press(pool, jar, (pick, dispute), 60)
         .await
         .expect("press")
 }
 
 /// TD-FEE-74 (FEE-050, SEC-006, D-229, D-4506): P's review step lists P's dispute, not Q's; a
-/// press on P naming Q's is refused and changes nothing; P's own records once with one owner
+/// stale-factor press on P's own changes nothing; a press on P naming Q's is refused and changes
+/// nothing; P's own records once with one owner
 /// audit row about P and one countering fee, and a replay writes neither again. The audit log
 /// viewer shows the row with its owner actor.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
@@ -286,6 +297,12 @@ async fn td_fee_74_the_evidence_press_is_scoped_to_its_pick(pool: PgPool) {
         .expect("page");
     assert!(page.contains("dp_FakeT205P") && !page.contains("dp_FakeT205Q"));
     assert!(page.contains("I submitted this dispute's evidence in Stripe myself"));
+    let own = state(&pool, "dp_FakeT205P").await;
+    let stale = try_press(&pool, &jar, (p, "dp_FakeT205P"), 301).await;
+    assert_eq!(stale, Err(OwnerToolError::NeedsFreshFactor));
+    assert_eq!(state(&pool, "dp_FakeT205P").await, own);
+    assert_eq!(owner_rows(&pool, OWNER_EVIDENCE_ACTION, p).await, 0);
+    assert_eq!(ledger_rows(&pool, "countering-fee").await, 0);
     let before = state(&pool, "dp_FakeT205Q").await;
     let foreign = press(&pool, &jar, p, "dp_FakeT205Q").await;
     assert_eq!(foreign, OwnerSubmission::NotThisPick);

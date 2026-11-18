@@ -6,7 +6,7 @@
 {% block main %}
 <h1>Refund review</h1>
 <div role="status" aria-live="polite">{% if let Some((line, false)) = notice %}<p>{{ line }}</p>{% endif %}</div>
-{% if let Some((line, true)) = notice %}<div role="alert" tabindex="-1" id="error-summary"><p>{{ line }}</p>{% if step_up %}<p><a href="{{ step_up_route }}">Get a new code</a>, then press again.</p>{% endif %}</div>{% endif %}
+{% if let Some((line, true)) = notice %}<div role="alert" tabindex="-1" id="error-summary" autofocus><p>{{ line }}</p>{% if step_up %}<p><a href="{{ step_up_route }}">Get a new code</a>, then press again.</p>{% endif %}</div>{% endif %}
 <p>Pick {{ pick }}. {{ state }}</p>
 {% if may_refund %}<form method="post" action="{{ refund_route }}" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
