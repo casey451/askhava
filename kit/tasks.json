@@ -41703,8 +41703,7 @@
    "requirements": [
     "WEB-027",
     "A11Y-009",
-    "WEB-024",
-    "A11Y-008"
+    "WEB-024"
    ],
    "tests": [],
    "decisions": [
@@ -41776,8 +41775,7 @@
    "requirements": [
     "WEB-027",
     "A11Y-009",
-    "A11Y-004",
-    "A11Y-008"
+    "A11Y-004"
    ],
    "tests": [],
    "decisions": [
@@ -43169,8 +43167,7 @@
    ],
    "requirements": [
     "AI-002",
-    "AI-020",
-    "PRIV-005"
+    "AI-020"
    ],
    "tests": [
     "TD-AI-31"
