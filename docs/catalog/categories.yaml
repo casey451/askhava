@@ -23,8 +23,8 @@
 #   trip_fee_tier     the set introduction fee in dollars for a diagnostic-visit (visit fee plus
 #                     estimate) quote, used only when quote_format is diagnostic_visit: $25 by
 #                     default, never above $75 (FEE-004, D-399, D-418, D-441).
-#   launch_open       true (every enabled category, D-459): "Open now" at Gate C and takes homeowner requests once it has 1 or more
-#                     active businesses (D-4421); false: "Coming later", waitlist sign-ups only (LIC-046, D-396,
+#   launch_open       true (every enabled category, D-459): "Open now" at Gate C and takes homeowner requests once it has 2 or more
+#                     active businesses; false: "Coming later", waitlist sign-ups only (LIC-046, D-396,
 #                     D-418). A launch-open category must be enabled.
 #   fee_free_job_types  job types whose pick charges no introduction fee (FEE-045, D-403).
 #   job_type_kinds    plumbing repair, heating and cooling (both hvac categories), electrical,
