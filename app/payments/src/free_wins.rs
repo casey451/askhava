@@ -190,8 +190,9 @@ async fn decided(
 }
 
 /// FEE-045, D-1419, D-2623: writes the $0 `fee-free-job-type` entry of the check's business and
-/// job when a stored `payments.pick_fee` row of theirs says fee-free, under the key
-/// `record_fee_at_confirm` uses for it, so either writer appends it once; else nothing.
+/// job when a stored `payments.pick_fee` row of theirs says fee-free, under the
+/// `CONFIRM_FEE_ACTION` key of the job and business, which the test-only `record_fee_at_confirm`
+/// shares, so either appends it once; else nothing.
 async fn fee_free_entry(
     conn: &mut PgConnection,
     secret: &SecretString,

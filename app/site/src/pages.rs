@@ -23,6 +23,10 @@
 //! waitlist count from `businesses::api::trade_count` with the nil business ID (D-4044). Its
 //! WEB-024 line follows `texting_on`, passed as `false` as the served sign-up does until T526 wires
 //! the stored switch (D-3880, D-3881).
+//!
+//! [`page_routes`] also serves the accessibility statement at `/accessibility` (T115, A11Y-020,
+//! D-3155): `docs/legal/accessibility-statement.md`, rendered once by
+//! `legal_pages::accessibility_statement` when the router is built, never a third copy.
 
 use std::sync::Arc;
 
@@ -39,6 +43,7 @@ use jiff::SignedDuration;
 use sqlx::PgPool;
 use uuid::Uuid;
 
+use crate::legal_pages::{LegalDoc, accessibility_statement};
 use crate::routes::banner_shown;
 
 /// The home page (WEB-001).
@@ -67,6 +72,8 @@ pub const BUSINESS_PATH: &str = "/business";
 pub const ES_BUSINESS_PATH: &str = "/es/business";
 /// The business help page with the safety tip for people working alone (WEB-020, D-3880).
 pub const BUSINESS_HELP_PATH: &str = "/business/help";
+/// The accessibility statement (A11Y-020, D-3155).
+pub const ACCESSIBILITY_PATH: &str = "/accessibility";
 
 /// D-3890: the help form's CSRF token, which `server`'s layer on `GET /help` puts in the request's
 /// extensions (T309); the page renders it as the hidden `csrf` field, empty when absent. No
@@ -299,6 +306,14 @@ struct BusinessHelpPage {
     banner_shown: bool,
 }
 
+/// A11Y-020, D-3155: the accessibility statement page, its text the rendered statement document.
+#[derive(Template)]
+#[template(path = "accessibility.html")]
+struct AccessibilityPage<'a> {
+    banner_shown: bool,
+    doc: &'a LegalDoc,
+}
+
 /// WEB-008, WEB-011, WEB-015, WEB-023: the services, coverage, help and ROC complaint pages over
 /// `pool`; `env` is the environment the AI switch is read in (AI-018).
 pub fn help_routes(pool: PgPool, env: Environment) -> Router {
@@ -400,12 +415,26 @@ pub fn page_routes(pool: PgPool, pages: SitePages) -> Router {
         let pool = state.0.clone();
         move || async move { respond(how_it_works_html(&pool, true).await) }
     };
+    let statement = {
+        let (pool, doc) = (state.0.clone(), Arc::new(accessibility_statement()));
+        move || async move {
+            let banner_shown = banner_shown(&pool).await;
+            respond(
+                AccessibilityPage {
+                    banner_shown,
+                    doc: &doc,
+                }
+                .render(),
+            )
+        }
+    };
     Router::new()
         .route(HOME_PATH, get(home.clone()))
         .route(OLD_CATEGORIES_PATH, get(home.clone()))
         .route(OLD_EVENTS_PATH, get(home))
         .route(HOW_IT_WORKS_PATH, get(how))
         .route(ES_HOW_IT_WORKS_PATH, get(es))
+        .route(ACCESSIBILITY_PATH, get(statement))
         .merge(business_routes(&state))
 }
 
@@ -598,9 +627,9 @@ mod tests {
     use jiff::SignedDuration;
 
     use super::{
-        BusinessFacts, BusinessHelpPage, BusinessPage, CityGuide, CoveragePage, EsBusinessPage,
-        EsHomePage, EsHowItWorksPage, Fees, HelpPage, HomePage, HowItWorksPage, RocComplaintPage,
-        SampleCard, ServicesPage, Settings, Waiting, WhoRuns, wait_words,
+        AccessibilityPage, BusinessFacts, BusinessHelpPage, BusinessPage, CityGuide, CoveragePage,
+        EsBusinessPage, EsHomePage, EsHowItWorksPage, Fees, HelpPage, HomePage, HowItWorksPage,
+        RocComplaintPage, SampleCard, ServicesPage, Settings, Waiting, WhoRuns, wait_words,
     };
 
     /// The home page with no numbers and `who`'s facts.
@@ -1067,5 +1096,20 @@ mod tests {
         assert!(help.contains("<h2>Safety when you work alone</h2>"));
         assert!(help.contains("tell someone where the job is and when you expect to finish"));
         assert!(help.contains("If anyone is in danger, call 911."));
+    }
+
+    /// TD-WEB-08 (A11Y-020, D-3155): the statement page holds the statement's title and its
+    /// rendered body, the one copy in `docs/legal/accessibility-statement.md`.
+    #[test]
+    fn td_web_08_statement_page_holds_the_rendered_statement() {
+        let doc = crate::legal_pages::accessibility_statement();
+        let page = AccessibilityPage {
+            banner_shown: false,
+            doc: &doc,
+        }
+        .render()
+        .expect("statement");
+        assert!(page.contains(&format!("<h1>{}</h1>", doc.title)), "{page}");
+        assert!(page.contains(doc.body.as_str()), "{page}");
     }
 }

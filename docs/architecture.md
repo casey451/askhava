@@ -614,7 +614,7 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | GET | /es/your-data | site | yes |
 | GET | /es/business-data | site | yes |
 | GET | /help | site | yes |
-| GET | /accessibility | site | T115 |
+| GET | /accessibility | site | yes |
 | GET | /help/roc-complaint | site | yes |
 | GET | / | site | yes |
 | GET | /how-it-works | site | yes |
