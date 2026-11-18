@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T21:30:07Z by runner d887b5590aaf (actions).
+Updated 2026-11-18T21:30:31Z by runner d887b5590aaf (actions).
 
 **Building: T651 in progress since 19:44Z; 457 of 663 done; week 68% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 457 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T651 claimed 19:44Z, lease until 00:24Z; lane 2: T722 claimed 20:48Z, lease until 23:48Z; lane 4: T364 claimed 21:12Z, lease until 00:12Z; lane 7: T503 claimed 20:58Z, lease until 00:27Z
+- **Lane:** lane 1: T651 claimed 19:44Z, lease until 00:24Z; lane 2: T722 claimed 20:48Z, lease until 23:48Z; lane 4: T364 claimed 21:12Z, lease until 00:12Z
 - **Week:** 68% used, 55.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:27Z, 2 min before this update
 - **Keeper:** last ran 21:20Z, next wake 21:40Z
@@ -20,6 +20,7 @@ Updated 2026-11-18T21:30:07Z by runner d887b5590aaf (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T503 | Decisions digest, piece 4: the next entries after the header | MERGE_PENDING | 1 | 31 min | 21:30Z |  |
 | T483 | messaging, portals and server: the owner's "away until" date | MERGE_PENDING | 1 | 2 h 48 min | 21:13Z |  |
 | T702 | privacy and messaging: no blind-index key version is retired | MERGE_PENDING | 1 | 40 min | 21:07Z | merging main into the reviewed head conflicts in kit/prompts/T702.md; a resync merges it in on this attempt (D-891) |
 | T706 | payments: held_release, the FEE-017 re-check that clears a p | done | 1 | 100 min | 20:54Z |  |
@@ -134,7 +135,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - T651 (lease until 2026-11-19T00:24:06Z)
 - lane 2: T722 (lease until 2026-11-18T23:48:16Z)
 - lane 4: T364 (lease until 2026-11-19T00:12:55Z)
-- lane 7: T503 (lease until 2026-11-19T00:27:16Z)
 
 ## Last usage reading
-- {"task": "T483", "at": "2026-11-18T21:13:59Z", "cache_read_input_tokens": 10154303, "input_tokens": 275, "output_tokens": 76867, "cache_creation_input_tokens": 287935}
+- {"task": "T503", "at": "2026-11-18T21:30:06Z", "cache_read_input_tokens": 7089140, "input_tokens": 126, "cache_creation_input_tokens": 233267, "output_tokens": 47517}
