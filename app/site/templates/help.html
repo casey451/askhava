@@ -2,7 +2,9 @@
 {#- The help page, /help (T201; WEB-008, WEB-025, WORD-009, AI-018, D-3878, D-4044). AI-018's
     switched-off sentence shows while `ai_on` (intake::api::ai_on, D-3144) is false. `old_name` is the
     brand file's forbidden_alone word, never typed (D-4044). The form posts to POST /help, which T309
-    serves (D-2128); `csrf` is the token server's layer sets, empty when absent (D-3890). -#}
+    serves (D-2128) through portals::api::send_help_form (T200, D-491); `csrf` is the token server's
+    layer sets, empty when absent (D-3890). The optional mobile number is used only to stop texts
+    when the message asks to (CON-035, D-4293); it is never stored with the message. -#}
 {% block title %}Help{% endblock %}
 {% block content %}
 {%- let brand = askhava_core::api::brand().display_name() %}
@@ -30,6 +32,9 @@
 <p><textarea id="help-message" name="message" rows="5" aria-describedby="help-message-hint"></textarea></p>
 <p><label for="help-email">Your email for our reply (optional)</label></p>
 <p><input id="help-email" name="email" type="email" autocomplete="email"></p>
+<p><label for="help-mobile">Your mobile number (optional)</label></p>
+<p id="help-mobile-hint">Only needed if you want us to stop texting you.</p>
+<p><input id="help-mobile" name="mobile" type="tel" autocomplete="tel" aria-describedby="help-mobile-hint"></p>
 <p><button type="submit">Send message</button></p>
 </form>
 {% endblock %}

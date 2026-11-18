@@ -1,6 +1,6 @@
 {% extends "site_layout.html" %}
 {#- The business help page, /business/help (T202; WEB-020, D-249): the safety tip for people working
-    alone in customers' homes, and where to ask for help. GET only; it reads nothing but the banner. -#}
+    alone in customers' homes, and where to ask for help (Get help: portals::api::GET_HELP_ROUTE). -#}
 {% block title %}Help for businesses{% endblock %}
 {% block content %}
 {%- let brand = askhava_core::api::brand().display_name() %}
@@ -15,5 +15,6 @@
 </ul>
 <h2>Ask {{ brand }}</h2>
 <p>Email <a href="mailto:help@{{ askhava_core::api::brand().domain() }}">help@{{ askhava_core::api::brand().domain() }}</a>. We usually answer help and charge questions within 2 days.</p>
+<p>If you're signed in to your business account, use the <a href="/b/help">Get help form</a>. Pick a topic and send us a short message.</p>
 <p><a href="/business">Back to the business page</a></p>
 {% endblock %}
