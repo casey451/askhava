@@ -5,13 +5,14 @@
 //! every route call as a page route); an unlisted name answers 404 and a method other than `GET` or `HEAD` 405 with
 //! `Allow`. Each later site task merges its own page router in `server::build_router`. Every site
 //! page extends `templates/site_layout.html` and sets its `banner_shown` field from
-//! [`banner_shown`] before it renders (WEB-007, D-1843, D-3144).
+//! [`banner_shown`] before it renders (WEB-007, D-1843, D-3144), or from [`banner_shown_on`] on
+//! a connection the page already holds (D-4098).
 
 use axum::Router;
 use axum::http::{StatusCode, Uri, header};
 use axum::response::{IntoResponse, Response};
 use axum::routing::get;
-use sqlx::PgPool;
+use sqlx::{PgConnection, PgPool};
 
 use crate::assets;
 
@@ -43,14 +44,26 @@ async fn asset(uri: Uri) -> Response {
 /// page renders. The banner is hidden by default, so a failed read shows the page without it and
 /// logs one warning with no values (R5).
 pub async fn banner_shown(pool: &PgPool) -> bool {
-    let read = match pool.acquire().await {
-        Ok(mut db) => askhava_ops::api::banner_shown(&mut db).await.ok(),
-        Err(_) => None,
-    };
-    read.unwrap_or_else(|| {
-        tracing::warn!("status banner read failed; the page shows no banner");
-        false
-    })
+    match pool.acquire().await {
+        Ok(mut db) => banner_shown_on(&mut db).await,
+        Err(_) => banner_hidden(),
+    }
+}
+
+/// WEB-007, D-1843, D-4098: [`banner_shown`] on a connection the page already holds, so a page
+/// that reads more (the home page's numbers) takes one pooled connection, not two. The same
+/// fail-closed rule: a failed read hides the banner and logs one warning with no values (R5).
+pub async fn banner_shown_on(db: &mut PgConnection) -> bool {
+    match askhava_ops::api::banner_shown(db).await {
+        Ok(shown) => shown,
+        Err(_) => banner_hidden(),
+    }
+}
+
+/// The failed-read answer: one warning, no values, no banner (R5).
+fn banner_hidden() -> bool {
+    tracing::warn!("status banner read failed; the page shows no banner");
+    false
 }
 
 #[cfg(test)]
