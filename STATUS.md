@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T03:40:33Z by runner 559670670c29 (actions).
+Updated 2026-11-18T03:40:49Z by runner 1031aea207a3 (actions).
 
 **Building: T638 in progress since 03:07Z; 423 of 606 done; week 41% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -14,7 +14,7 @@ Updated 2026-11-18T03:40:33Z by runner 559670670c29 (actions).
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 19 problem(s) on tasks still to run (+195 on DONE tasks); first: T402: measures 46% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 15 problem(s) on tasks still to run (+191 on DONE tasks); first: T151: stored context_pct 31% but it measures 35%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -93,7 +93,7 @@ Updated 2026-11-18T03:40:33Z by runner 559670670c29 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 678 · unstarted 57
-**Tasks merged (throughput only):** 423 of 598
+**Tasks merged (throughput only):** 423 of 602
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -129,7 +129,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 66 of 210 done
+- stage 5: 66 of 214 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
