@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-18T11:05:05Z by runner 7b013f128463 (actions).
+Updated 2026-11-18T11:12:16Z by runner d7eb5dc64d18 (actions).
 
 **Building: T563 in progress since 09:55Z; 439 of 621 done; week 52% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 439 of 621 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T563 claimed 09:55Z, lease until 12:55Z; lane 5: T408 claimed 09:13Z, lease until 13:23Z; lane 6: T200 claimed 09:05Z, lease until 13:36Z
+- **Lane:** lane 2: T563 claimed 09:55Z, lease until 14:12Z; lane 5: T408 claimed 09:13Z, lease until 13:23Z; lane 6: T200 claimed 09:05Z, lease until 13:36Z
 - **Week:** 52% used, 85.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:04Z, 0 min before this update
+- **Last run:** 11:05Z, 7 min before this update
 - **Keeper:** last ran 11:05Z, next wake 12:58Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 26 problem(s) on tasks still to run (+219 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 27 problem(s) on tasks still to run (+220 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -80,7 +80,6 @@ Updated 2026-11-18T11:05:05Z by runner 7b013f128463 (actions).
 | T572 | intake: the under-13 stop also clears the vault contact's na | done | 1 | 48 min | 11:31Z |  |
 | T446 | intake and messaging: PICK-046's "couldn't take it" notice g | done | 1 | 87 min | 11:29Z |  |
 | T202 | site: Spanish pages, the business page blocks and the requir | resync | 2 | 56 min | 11:26Z |  |
-| T112 | Draft the privacy policy and SMS terms | done | 3 | 66 min | 11:10Z | Fresh-eyes review of the fix-round head 037ad56a05f50b76c38506da3786bdde73a2be4d ended REVIEW-VERDICT: FINDINGS after th |
 
 ### Plan and harness merges on main
 - none
@@ -132,7 +131,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T563 (lease until 2026-11-18T12:55:56Z)
+- lane 2: T563 (lease until 2026-11-18T14:12:16Z)
 - lane 5: T408 (lease until 2026-11-18T13:23:31Z)
 - lane 6: T200 (lease until 2026-11-18T13:36:41Z)
 
