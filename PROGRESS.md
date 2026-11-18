@@ -7270,3 +7270,4 @@
 - 2026-11-18T17:04:28Z runner 0aa7374b9a56 (actions): {}
 - 2026-11-18T17:04:47Z runner fdf87f6f8474 (actions): {}
 - 2026-11-18T17:05:14Z runner ee510a842fd3 (actions): {"T720": "MERGE_PENDING -> DONE"}
+- 2026-11-18T17:07:27Z runner ee510a842fd3 (actions): {"T500": "QUEUED -> IN_PROGRESS"}; T500 estimated 114k tokens (calibrated); week has 65.0M left (no five-hour budget, D-3056) after 3.0M still running in another lane (session_reading 2026-11-18T17:04:27Z (week)); running to the limit (model window, D-2225), claimed
