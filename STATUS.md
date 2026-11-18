@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T13:37:52Z by runner 196d610a58a2 (manual).
+Updated 2026-11-18T13:55:07Z by runner 290f819ef881 (actions).
 
 **Building: T671 in progress since 13:14Z; 444 of 643 done; week 56% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 444 of 643 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T671 claimed 13:14Z, lease until 16:14Z; lane 6: T200 claimed 12:06Z, lease until 15:58Z
+- **Lane:** lane 1: T671 claimed 13:14Z, lease until 16:55Z; lane 6: T200 claimed 12:06Z, lease until 15:58Z
 - **Week:** 56% used, 84.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:34Z, 3 min before this update
+- **Last run:** 13:38Z, 17 min before this update
 - **Keeper:** last ran 13:34Z, next wake 16:01Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-18T13:37:52Z by runner 196d610a58a2 (manual).
 Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2b1: app/intake/src/job_texts.rs 5/5, app/intake/src/quote_updates.rs 292/0, tests/integration/tests/quote_update_texts.rs 377/0 (679 lines). Fix-round worker's honest trim reached about 273 + 8 + ~350 = ~630 lines (test still failing clippy: a 73-line function needing ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T583 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 32 problem(s) on tasks still to run (+235 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 30 problem(s) on tasks still to run (+233 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -81,9 +81,6 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 | T479 | ops and portals: "Not a fit for us" on the job page, and the | done | 2 | 47 min | 16:17Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T113 | Draft the Twilio campaign description from the real template | done | 2 | 35 min | 15:39Z | PLAN GAP: tests/docs/test_terms_clauses.py:494 is T111's test (DONE, kit/tasks.json:18231) and asserts `report.checked = |
 | T471 | picks and intake: her "backup has your pick" text on every p | done | 1 | 47 min | 14:20Z |  |
-| T321 | messaging: the consent-purge functions, the inbound-text clo | done | 1 | 49 min | 13:42Z |  |
-| T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | done | 2 | 94 min | 13:39Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Version:   3.20. |
-| T363 | portals: the served pick and its code step apply the per-IP  | done | 1 | 62 min | 13:38Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -134,7 +131,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T671 (lease until 2026-11-18T16:14:02Z)
+- T671 (lease until 2026-11-18T16:55:07Z)
 - lane 6: T200 (lease until 2026-11-18T15:58:46Z)
 
 ## Last usage reading
