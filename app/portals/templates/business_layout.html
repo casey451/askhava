@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{#- The layout of every signed-in business portal page (BIZ-047, A11Y-017, D-3155; T200): the
+    shared base.html with its `get_help` block filled by the "Get help" link, right after the
+    shared Help link, so both sit in the same place on every business page. The link carries
+    `data-get-help` so the header test can leave it out (D-4293). Homeowner, owner and public pages
+    never extend this file. -#}
+{% block get_help %} <a href="{{ crate::api::GET_HELP_ROUTE }}" data-get-help>Get help</a>{% endblock %}

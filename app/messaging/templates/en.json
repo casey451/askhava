@@ -543,5 +543,30 @@
     "audience": "homeowner",
     "segments": 2,
     "text": "{brand_short}: This number is for homeowners asking for quotes. To get job requests, sign up at {domain}/b/signup\nReply STOP to opt out, HELP for help."
+  },
+  "business_get_help_answer": {
+    "audience": "business",
+    "segments": 2,
+    "text": "{brand_short}: Got it. The {brand} owner has your message and usually replies within 2 days, or within 24 hours when a pick or an emergency job is waiting."
+  },
+  "business_get_help_job": {
+    "audience": "business",
+    "segments": 3,
+    "text": "{brand_short}: Open the link in the email about that job. It shows where the job stands and what you can do next.\n{brand_short}: Got it. The {brand} owner has your message and usually replies within 2 days, or within 24 hours when a pick or an emergency job is waiting."
+  },
+  "business_get_help_charge": {
+    "audience": "business",
+    "segments": 3,
+    "text": "{brand_short}: Every charge comes with a receipt email. Its \"Why was I charged?\" link shows the job and the fee.\n{brand_short}: Got it. The {brand} owner has your message and usually replies within 2 days, or within 24 hours when a pick or an emergency job is waiting."
+  },
+  "business_get_help_sign_in": {
+    "audience": "business",
+    "segments": 3,
+    "text": "{brand_short}: Go to {domain}/b/sign-in and ask for a sign-in link. Each link works once and runs out after 15 minutes.\n{brand_short}: Got it. The {brand} owner has your message and usually replies within 2 days, or within 24 hours when a pick or an emergency job is waiting."
+  },
+  "business_get_help_emails": {
+    "audience": "business",
+    "segments": 3,
+    "text": "{brand_short}: If our emails aren't reaching you, check your spam or junk folder. Mark our email as not spam so the next ones land in your inbox.\n{brand_short}: Got it. The {brand} owner has your message and usually replies within 2 days, or within 24 hours when a pick or an emergency job is waiting."
   }
 }
