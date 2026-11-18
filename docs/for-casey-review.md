@@ -3284,3 +3284,10 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **Business notice emails would all have failed** once real addresses were wired in (the address read refuses to run inside a database transaction); T490 now reads the addresses first.
 - **The nightly backup would have failed** on the app's database login, which cannot read the counters `pg_dump` needs. A separate read-only backup login is added, and the monthly test restore (now its own task, T648) runs on a throwaway database server, never the live one. When we set up hosting, that is one extra small service and two more settings.
 - Nothing needs you now.
+
+## Spot-review fixes: web chat names, child data, owner sign-in limits (D-4294)
+
+- **The web chat could keep a homeowner's name with her job description.** If she answered the "name and address" question in the chat instead of by text, the answer skipped her private record and her first name could end up on the job card. T649 sends it to her private record, and also removes her name from chat messages the way texts already do.
+- **When a child under 13 is stopped,** their photos and job words are now deleted with the rest of the request (T650).
+- **Your owner sign-in gets three locks fixed** (T651): only a few tries at the step-up code before the session ends; strangers flooding wrong passwords can no longer lock out your passkey sign-in; and nobody can use up the passkey sign-in slots.
+- Nothing needs you now.

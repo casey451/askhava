@@ -10558,6 +10558,62 @@
    "acceptance": "TD-SEC-66 passes against the assembled router; TD-SEC-44 passes with Approve moved to the session kinds, and every other action link case passes unchanged."
   },
   {
+   "id": "T650",
+   "slug": "under-13-purge-photos-words",
+   "title": "intake: the under-13 stop also deletes the request's job photos and kept job words",
+   "goal": "Plan change D-4294 (spot review of privacy, verified on `main` fde4fad3; INT-038, PRIV-008, PRIV-009): INT-038 says that under 13 \"the request and its data are deleted except the consent or opt-out record\", but `conversation::purge_child` (`app/intake/src/conversation.rs:345` to `:355`) runs only `models::purge_request` (`app/intake/src/models.rs:747` to `:782`: intake answers, 911-list events, recruiting demand, property rows) and `purge_contact`, so the request's job photos and its kept job words and cards stay to ordinary retention (three years for the words, PRIV-008). Fix in `purge_child`: for each job of the request (`models::request_jobs`, as `stop_if_under_18` already reads, `conversation.rs:304`), call `privacy::api::purge_photos` (`app/privacy/src/purge.rs:189`; its rows go at once and each sealed object's delete is queued in the same transaction) and `quotes::api::purge_job_text` (`app/quotes/src/job_text.rs:333`; words and cards) inside the same transaction, before `purge_contact`; a failure rolls the whole stop back, as today. Nothing else in `conversation.rs` changes. Tests, fake data only, in the new `tests/integration/tests/under_13_purge_job_data.rs` (TD-INT-44; `tests/integration/tests/under_13_purge.rs` is T572's and passes unchanged). Update `app/intake/NOTES.md` and `docs/decisions.md`. Budget 2 files, 200 lines.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T572"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy"
+   ],
+   "owns": [
+    "app/intake/src/conversation.rs",
+    "tests/integration/tests/under_13_purge_job_data.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/intake.md",
+    "docs/spec/privacy.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "INT-038",
+    "PRIV-008"
+   ],
+   "tests": [
+    "TD-INT-44"
+   ],
+   "decisions": [
+    "D-996",
+    "D-4051",
+    "D-4142",
+    "D-4294"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 200,
+    "context_pct": 12
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T650-under-13-purge-photos-words",
+   "prompt": "kit/prompts/T650.md"
+  },
+  {
    "id": "T402",
    "slug": "quiet-exempt-producers",
    "title": "intake, picks and server: texts QH-004 lets go at any hour for a fact (an emergency job, a direct reply) are queued with that fact",
@@ -10591,7 +10647,8 @@
     "T446",
     "T449",
     "T489",
-    "T564"
+    "T564",
+    "T650"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -10630,13 +10687,14 @@
     "D-2628",
     "D-3055",
     "D-3106",
-    "D-3999"
+    "D-3999",
+    "D-4294"
    ],
    "cites": [],
    "budget": {
     "files": 9,
     "lines": 400,
-    "context_pct": 40
+    "context_pct": 45
    },
    "checks": [
     "Ci",
@@ -21403,7 +21461,10 @@
     "T645",
     "T646",
     "T647",
-    "T648"
+    "T648",
+    "T649",
+    "T650",
+    "T651"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -24094,7 +24155,8 @@
     "T449",
     "T593",
     "T645",
-    "T646"
+    "T646",
+    "T649"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -24142,7 +24204,8 @@
     "D-2206",
     "D-3467",
     "D-3844",
-    "D-4292"
+    "D-4292",
+    "D-4294"
    ],
    "cites": [],
    "budget": {
@@ -24577,6 +24640,71 @@
    "acceptance": "TD-SEC-46 and the browser half of TD-SEC-22 pass against PostgreSQL through the assembled router and in Playwright against the stand-ins, and `Ally` passes with the new page states; every T086 case still passes."
   },
   {
+   "id": "T651",
+   "slug": "owner-auth-try-limits",
+   "title": "server and portals: owner step-up try limit, the passkey path never hard-locked, per-address passkey challenges",
+   "goal": "Plan change D-4294 (spot review of auth, verified on `main` fde4fad3; SEC-043, SEC-020, SEC-014, SEC-040, D-480, D-492, D-1919, D-3962). (1) Step-up has no try limit: `step_up` (`app/server/src/owner_signin.rs:367` to `:393`) calls `require_owner` and then `owner_step_up` with the TOTP code and no `admit_*`; a wrong code is only an `auth_failed` event, so a holder of a live owner session cookie without the authenticator can guess codes for the session's life and open the 5-minute window for every SEC-043 action. Add `admit_owner_step_up` to `app/portals/src/limits.rs` (through `intake::api::admit`: 5 tries per owner session per hour by `Key::Record(session id)`, 10 per client IP per hour), called before the TOTP check; a refused try checks nothing, and a session past its limit is ended on the server (the 4xx with a link to `/owner/sign-in`, as an idle one). (2) The passkey path is hard-locked: every sign-in `POST`, a passkey answer included, runs `admit_owner_password` (`owner_signin.rs:306`), whose checks include the account-wide `OWNER_TRIES_ALL` (`limits.rs:36`, `:139` to `:143`), so 20 junk passwords an hour from four addresses lock the owner out of the passkey path too, against SEC-040; and `limits.rs:11` and `:128` still say the passkey path calls no limit. New order: every sign-in `POST` admits the per-IP bucket first; a post carrying a passkey answer has its assertion checked before the password (no argon2), and only a verified assertion goes on to the password check without the account bucket; an unverified one, and every post without a passkey answer, also admits `OWNER_TRIES_ALL` before any argon2, so argon2 still never runs past both limits (D-3962's fix-round test, `td_sec_46_password_tries_past_the_limit_are_refused_first`, passes unchanged). The doc lines in `limits.rs` say what the code does. (3) `POST /owner/sign-in/passkey` (`owner_signin.rs:323` to `:341`) calls no limiter and refuses with 429 once `MAX_LIVE_SIGN_IN_CHALLENGES` (20, `app/portals/src/owner_auth.rs:54`) are live, so 4 posts a minute from anyone keep passkey sign-in unavailable. Each challenge issue admits a new per-IP limit (`admit_owner_passkey_challenge`, 10 per client IP per hour), and the live cap becomes a table-size bound only (10,000; the 5-minute life and sweep stay), passed as today so `app/portals/src/models.rs` does not change. Tests, fake data only, in the new `app/server/tests/owner_auth_limits.rs` through the assembled router (TD-SEC-75); `app/server/tests/owner_signin_route.rs` (TD-SEC-46) passes unchanged. Update `app/portals/NOTES.md`, `app/server/NOTES.md`, `docs/threat-model.md` S5 if its text names the step-up limit, and `docs/decisions.md` (the entry also notes that D-3962's \"the limit is per address only\" was not what the code did). Budget 4 files, 400 lines.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "portals",
+   "deps": [
+    "T303",
+    "T089",
+    "T086",
+    "T294"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security"
+   ],
+   "owns": [
+    "app/server/src/owner_signin.rs",
+    "app/portals/src/limits.rs",
+    "app/portals/src/owner_auth.rs",
+    "app/server/tests/owner_auth_limits.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/threat-model.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "SEC-043",
+    "SEC-020",
+    "SEC-014",
+    "SEC-040"
+   ],
+   "tests": [
+    "TD-SEC-75"
+   ],
+   "decisions": [
+    "D-480",
+    "D-492",
+    "D-1919",
+    "D-1951",
+    "D-3962",
+    "D-4294"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 400,
+    "context_pct": 24
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T651-owner-auth-try-limits",
+   "prompt": "kit/prompts/T651.md"
+  },
+  {
    "id": "T304",
    "slug": "owner-tools-served",
    "title": "server and portals: the owner refund review, the audit log viewer and the health page are served",
@@ -24594,7 +24722,8 @@
     "T348",
     "T475",
     "T476",
-    "T469"
+    "T469",
+    "T651"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -24640,7 +24769,8 @@
     "D-3753",
     "D-3844",
     "D-3882",
-    "D-3890"
+    "D-3890",
+    "D-4294"
    ],
    "cites": [],
    "budget": {
@@ -25355,7 +25485,8 @@
     "T303",
     "T108",
     "T348",
-    "T484"
+    "T484",
+    "T651"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -25396,7 +25527,8 @@
     "D-3744",
     "D-3753",
     "D-3878",
-    "D-3890"
+    "D-3890",
+    "D-4294"
    ],
    "cites": [],
    "budget": {
@@ -42454,6 +42586,77 @@
    ],
    "branch": "claude/task/T646-web-chat-client-ip",
    "prompt": "kit/prompts/T646.md"
+  },
+  {
+   "id": "T649",
+   "slug": "web-chat-name-address-scrub",
+   "title": "intake, site and server: after the code, the web chat's name-and-address answer goes to the vault and its words are scrubbed with her names",
+   "goal": "Plan change D-4294 (spot review of privacy, verified on `main` fde4fad3; INT-027, PRIV-008, PRIV-005, AI-003, AI-020). (1) After the code, `chat_message` (`app/intake/src/web_chat.rs:247` to `:286`) calls `receive_text` and then `keep_words` for every message in a request with a job; it never reaches `replies::receive_raw_reply`, whose name-and-address branch hands the raw text only to `take_name_address` (`app/intake/src/replies.rs:17` to `:23`). So her answer to the step-11 question typed in the chat (\"Maria Sample, 42 Sample St\") reaches no vault field and is kept in `quotes.job_description` with the first name left in (the chat scrub has no vault name, below), where `order::build_and_keep` would build the card from it. Fix: while `intake::api::name_address_open` holds for the session's contact, the chat turn goes to `receive_raw_reply` with the raw text and the vault (`RawReply`, `replies.rs:75`), under the same rules as a text (LIST and CLOSE keep their path; `reads_as_address` decides the screen), and `keep_words` is not called for that turn; T645's opt-out check stays first, and its under-18 stop is not run twice. The raw text comes from `site::chat` (which holds it before its scrub, `app/site/src/chat.rs:316` to `:318`) as a `SecretString` together with the vault the chat's code keys hold (`app/server/src/chat_codes.rs`), never logged, stored in the session or shown back. (2) The chat scrubs every message with no vault name and a fresh `NameMemory` (`chat_codes::scrubbed`, `app/server/src/chat_codes.rs:104` to `:115`), where the SMS path scrubs with her vault name and the names she stated before (`privacy::api::read_inbound_for`, `app/privacy/src/scrub_context.rs:40`, called at `app/server/src/inbound_text.rs:990`). After the code, the composition scrubs the chat's words through `read_inbound_for` with the session's contact, so the vault name and every name she stated (in a text or the chat) are removed before `intake`, the kept description and, once T299 wires it, the AI; before the code the no-contact scrub stays (there is no contact). A vault error falls back to the empty-context scrub and stops the turn before `intake`, as the SMS path does (D-2088). The chat's `Scrub` type in `site` changes as needed; `site` still calls no `privacy` function itself (`kit/layers.json`), and the shared `app/server/src/lib.rs` passes the new parts. (3) Tests, fake data only, in `app/server/tests/web_chat_after_code.rs` through the assembled router's `/request` (TD-INT-43, TD-AI-30). Update `docs/architecture.md`, `app/site/CLAUDE.md` or `NOTES.md`, `app/server/NOTES.md`, `app/intake/NOTES.md` and `docs/decisions.md`. Budget 4 files, 420 lines.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T645",
+    "T646"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/intake/src/web_chat.rs",
+    "app/site/src/chat.rs",
+    "app/server/src/chat_codes.rs",
+    "app/server/tests/web_chat_after_code.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/consent.md",
+    "docs/spec/intake.md",
+    "docs/spec/messaging.md",
+    "app/intake/src/replies.rs",
+    "app/intake/src/conversation.rs",
+    "app/server/tests/web_chat_route.rs",
+    "docs/spec/privacy.md",
+    "docs/spec/ai.md"
+   ],
+   "requirements": [
+    "INT-027",
+    "PRIV-008",
+    "PRIV-005",
+    "AI-003",
+    "AI-020"
+   ],
+   "tests": [
+    "TD-INT-43",
+    "TD-AI-30"
+   ],
+   "decisions": [
+    "D-2088",
+    "D-3189",
+    "D-3705",
+    "D-4054",
+    "D-4292",
+    "D-4294"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 420,
+    "context_pct": 24
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T649-web-chat-name-address-scrub",
+   "prompt": "kit/prompts/T649.md"
   }
  ]
 }
