@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T13:56:20Z by runner 954dd6895194 (actions).
+Updated 2026-11-18T13:58:12Z by runner 290f819ef881 (actions).
 
-**Building: T671 in progress since 13:14Z; 445 of 643 done; week 56% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T200 in progress since 12:06Z; 445 of 643 done; week 56% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 445 of 643 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T671 claimed 13:14Z, lease until 16:55Z; lane 6: T200 claimed 12:06Z, lease until 15:58Z
+- **Lane:** lane 6: T200 claimed 12:06Z, lease until 15:58Z
 - **Week:** 56% used, 84.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:55Z, 1 min before this update
+- **Last run:** 13:56Z, 1 min before this update
 - **Keeper:** last ran 13:34Z, next wake 16:01Z
 
 ## Needs attention
@@ -16,13 +16,17 @@ Updated 2026-11-18T13:56:20Z by runner 954dd6895194 (actions).
 - BLOCKED T563: plan gap reported: PLAN GAP: app/messaging/src/optout.rs:311 (suppress/record, owned by T029 and later tasks; T563 owns no messaging file) and kit/prompts/T563.md:9 (CROSS_SCHEMA_CALLS fixed at exactly one entry, messaging.last_message_at(). The sweep (head d7eb5dc64, all TD-CON-30 tests green, smoke and prehandin green) checks suppression via messaging::api::send_window before its per-number transaction, then clears the vault phone inside it. Review finding (unresolved): an opt-out via messaging::api::suppress (portal/email/owner paths) or a texted STOP committing between that check and the clear lets the sweep; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T563 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T583: plan gap reported: PLAN GAP: kit/prompts/T583.md:51 (budget of 450 changed lines in 3 files) The smallest plan change: raise T583's budget to 650 changed lines, or move `tests/integration/tests/quote_update_texts.rs` into a test-only follow-up task with its own budget.
 Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2b1: app/intake/src/job_texts.rs 5/5, app/intake/src/quote_updates.rs 292/0, tests/integration/tests/quote_update_texts.rs 377/0 (679 lines). Fix-round worker's honest trim reached about 273 + 8 + ~350 = ~630 lines (test still failing clippy: a 73-line function needing ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T583 --plan-fix D-### --reason "..."` (D-2859)
+- BLOCKED T671: plan gap reported: PLAN GAP: three tests outside T671's scope fail because of the new behaviour (worker edited none of them):
+1. tests/integration/tests/inbound_text_guards.rs:306-308 (T317): quoted_job helper expects begin_job to return Opened::Created after a first text went through the route; the first text now opens the request's job early as D-4360 requires, so begin_job returns Opened::Existing (INT-009). Smallest fix: helper accepts Existing too.
+2. tests/integration/tests/inbound_scrub_context.rs:298 (T257/T317): table scan finds "zebulon" in quotes.job_description, from OTHER homeowner's trade-naming fi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T671 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 31 problem(s) on tasks still to run (+236 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 29 problem(s) on tasks still to run (+234 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T671 | intake (harness): a homeowner's texts after the consent text | BLOCKED | 1 | 44 min | 13:58Z | PLAN GAP: three tests outside T671's scope fail because of the new behaviour (worker edited none of them): / 1. tests/in |
 | T472 | server (harness): serve the "Can't take it" page and button  | done | 1 | 62 min | 12:45Z |  |
 | T662 | jobs, intake, calls and server: a masked call line closes wh | done | 1 | 73 min | 12:39Z |  |
 | T679 | quotes and businesses: a launch-open category takes requests | done | 1 | 37 min | 12:17Z |  |
@@ -131,8 +135,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T671 (lease until 2026-11-18T16:55:07Z)
+- nothing
 - lane 6: T200 (lease until 2026-11-18T15:58:46Z)
 
 ## Last usage reading
-- {"task": "T472", "at": "2026-11-18T12:45:57Z", "cache_read_input_tokens": 8291313, "input_tokens": 158, "output_tokens": 45548, "cache_creation_input_tokens": 216598}
+- {"task": "T671", "at": "2026-11-18T13:58:12Z", "output_tokens": 94424, "cache_creation_input_tokens": 301952, "input_tokens": 274, "cache_read_input_tokens": 20029761}

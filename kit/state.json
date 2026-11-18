@@ -78245,8 +78245,8 @@
     "T644",
     "T679"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "intake-order-area-trade",
    "type": "harness",
    "stage": "5",
@@ -78261,7 +78261,34 @@
    "window_model": {
     "model": "claude-opus-5-5",
     "alias": "opus"
-   }
+   },
+   "reason": "plan gap reported: PLAN GAP: three tests outside T671's scope fail because of the new behaviour (worker edited none of them):\n1. tests/integration/tests/inbound_text_guards.rs:306-308 (T317): quoted_job helper expects begin_job to return Opened::Created after a first text went through the route; the first text now opens the request's job early as D-4360 requires, so begin_job returns Opened::Existing (INT-009). Smallest fix: helper accepts Existing too.\n2. tests/integration/tests/inbound_scrub_context.rs:298 (T257/T317): table scan finds \"zebulon\" in quotes.job_description, from OTHER homeowner's trade-naming fi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T671 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: three tests outside T671's scope fail because of the new behaviour (worker edited none of them):\n1. tests/integration/tests/inbound_text_guards.rs:306-308 (T317): quoted_job helper expects begin_job to return Opened::Created after a first text went through the route; the first text now opens the request's job early as D-4360 requires, so begin_job returns Opened::Existing (INT-009). Smallest fix: helper accepts Existing too.\n2. tests/integration/tests/inbound_scrub_context.rs:298 (T257/T317): table scan finds \"zebulon\" in quotes.job_description, from OTHER homeowner's trade-naming first text \"my zebulon brand heater\", whose scrubbed words are kept per PRIV-008 (not a leak). Smallest fix: check only her rows in that table.\n3. app/quotes/src/update_texts.rs NOT_UPDATE_TEXTS ~:145 (T341/T103/T293/T213/T278/T318): td_txt_25_every_homeowner_template_is_scanned_or_left_out fails \"two_jobs: scanned false, left out false\"; the prompt requires the two_jobs template. Smallest fix: add \"two_jobs\" beside \"split_offer\".\nEvidence: cargo test --workspace --no-fail-fast exit 101 with exactly these three failures; smoke exit 101 at inbound_scrub_context. Reviewer (opus) re-ran them and CONFIRMED ownership in kit/tasks.json and that the spec requires the behaviour.\nWork committed at 290f819ef on claude/task/T671-intake-order-area-trade.\nReviewer findings for the retry to fix (app/intake/src/order_dispatch.rs):\n(a) :334-339 late_trade writes trade_reading before begin_job; begin_job refuses replies of <=2 words (e.g. \"plumber\") or returns Existing, and :330 then ignores every later reply: request stalls for good.\n(b) :135/:312/:330 fit_step trade question never asked (goal (3)); no-trade first text gets nothing after the ZIP; a short trade-naming first text (\"need plumber\") stores trade_reading with no job and stalls. D-4428 defers this to T672 against the prompt.\n(c) :95/:131-134 alarm path: BeepAsked first text skips the ZIP; the \"just chirping\" answer is Screened::Clear (service.rs:407-409) and next_step asks the ZIP only on Safe: stall. TD-INT-45 lacks the case.\n(d) :136 a SAFE reply after the ZIP question (911 match arriving later) is read as a ZIP answer and burns the re-ask.\n(e) diff ~1,060 lines vs the prompt's 650 budget.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 221,
+     "head_sha": "290f819ef8819482408307f8cef7c8550233212d",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-18T13:14:02Z",
+     "ended_at": "2026-11-18T13:58:12Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 19454795,
+       "turns": 123
+      },
+      "reviewer": {
+       "tokens": 971616,
+       "turns": 17
+      }
+     }
+    }
+   ]
   },
   {
    "id": "T672",
@@ -78832,12 +78859,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T472",
-   "at": "2026-11-18T12:45:57Z",
-   "cache_read_input_tokens": 8291313,
-   "input_tokens": 158,
-   "output_tokens": 45548,
-   "cache_creation_input_tokens": 216598
+   "task": "T671",
+   "at": "2026-11-18T13:58:12Z",
+   "output_tokens": 94424,
+   "cache_creation_input_tokens": 301952,
+   "input_tokens": 274,
+   "cache_read_input_tokens": 20029761
   },
   "source": "session_reading 2026-11-18T12:51:16Z (week)",
   "by_task": {
@@ -83841,17 +83868,27 @@
    },
    "T671": {
     "estimated_bytes": 668881,
-    "estimated_tokens": 1927376
+    "estimated_tokens": 1927376,
+    "usage_counting": "message_id",
+    "output_tokens": 94424,
+    "cache_creation_input_tokens": 301952,
+    "input_tokens": 274,
+    "cache_read_input_tokens": 20029761,
+    "worker_tokens": 19454795,
+    "worker_turns": 123,
+    "reviewer_tokens": 971616,
+    "reviewer_turns": 17,
+    "last_model": "claude-opus-5-5"
    }
   },
   "windows": {
    "five_hour": {
-    "start": "2026-11-18T07:49:11Z",
-    "tokens": 18882664
+    "start": "2026-11-18T13:58:12Z",
+    "tokens": 2399626
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 296745453
+    "tokens": 299145079
    }
   },
   "session_reading": {
@@ -83862,7 +83899,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T13:56:20Z",
+ "updated_at": "2026-11-18T13:58:12Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -83960,7 +83997,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "954dd68951948cf70bb31d2bd6e2138dbffb3913",
+ "runner_sha": "290f819ef8819482408307f8cef7c8550233212d",
  "starter": "actions",
  "smoke_runs": [
   {
