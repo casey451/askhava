@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T08:02:30Z by runner 8209762ac442 (actions).
+Updated 2026-11-18T08:02:42Z by runner 8209762ac442 (actions).
 
 **Building: T640 in progress since 06:58Z; 431 of 621 done; week 48% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 431 of 621 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T640 claimed 06:58Z, lease until 10:59Z; lane 2: T660 claimed 07:55Z, lease until 10:55Z; lane 4: T658 claimed 06:42Z, lease until 10:28Z; lane 6: T619 claimed 07:22Z, lease until 10:55Z
+- **Lane:** lane 1: T640 claimed 06:58Z, lease until 10:59Z; lane 2: T660 claimed 07:55Z, lease until 10:55Z; lane 4: T658 claimed 06:42Z, lease until 10:28Z
 - **Week:** 48% used, 94.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 08:01Z, 0 min before this update
 - **Keeper:** last ran 08:01Z, next wake 10:30Z
@@ -19,6 +19,7 @@ Updated 2026-11-18T08:02:30Z by runner 8209762ac442 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T619 | quotes, picks and intake: the quote-median, lapsed-pick, win | MERGE_PENDING | 2 | 40 min | 08:02Z | T619 readers are correct per three Opus reviews, but the test file still misses wrong implementations; no reviewer appro |
 | T482 | messaging and intake: the plain-word auto-answers after HELP | MERGE_PENDING | 1 | 2 h 29 min | 07:56Z |  |
 | T643 | portals (harness): a real browser's same-origin form POST pa | MERGE_PENDING | 1 | 2 h 24 min | 07:49Z |  |
 | T642 | Runner (harness): the keeper starts a run for each free lane | done | 1 | 83 min | 06:05Z |  |
@@ -28,7 +29,7 @@ Updated 2026-11-18T08:02:30Z by runner 8209762ac442 (actions).
 | T623 | payments: a Stripe key refusal (401 or 403) takes the Stripe | MERGE_PENDING | 1 | 63 min | 03:46Z |  |
 | T151 | ops and messaging: HELP requests with one owner notification | done | 1 | 34 min | 03:40Z |  |
 | T647 | payments: rebuild_charge reports Booked inside a caller's tr | done | 1 | 82 min | 03:35Z |  |
-| T619 | quotes, picks and intake: the quote-median, lapsed-pick, win | QUEUED | 1 | 69 min | 03:31Z | T619 readers are correct per three Opus reviews, but the test file still misses wrong implementations; no reviewer appro |
+| T619 | quotes, picks and intake: the quote-median, lapsed-pick, win | QUEUED | 1 | 69 min | 03:31Z |  |
 | T639 | Runner (harness): the smoke warm-up is skipped when the pre- | done | 1 | 76 min | 03:14Z |  |
 | T108 | portals: owner tools for pauses, fee mode, categories and se | done | 1 | 2 h 45 min | 03:08Z |  |
 | T151 | ops and messaging: HELP requests with one owner notification | resync | 1 | 2 h 14 min | 02:26Z |  |
@@ -133,7 +134,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - T640 (lease until 2026-11-18T10:59:53Z)
 - lane 2: T660 (lease until 2026-11-18T10:55:55Z)
 - lane 4: T658 (lease until 2026-11-18T10:28:02Z)
-- lane 6: T619 (lease until 2026-11-18T10:55:39Z)
 
 ## Last usage reading
-- {"task": "T482", "at": "2026-11-18T07:56:36Z", "cache_creation_input_tokens": 335899, "output_tokens": 91505, "cache_read_input_tokens": 14464520, "input_tokens": 317}
+- {"task": "T619", "at": "2026-11-18T08:02:29Z", "cache_read_input_tokens": 3916388, "cache_creation_input_tokens": 137717, "output_tokens": 41843, "input_tokens": 125}
