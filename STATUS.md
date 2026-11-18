@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-18T02:19:39Z by runner 46b7c3778ef2 (actions).
+Updated 2026-11-18T02:21:32Z by runner 4fee847da1a9 (actions).
 
 **Building: T618 in progress since 01:54Z; 421 of 598 done; week 38% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 421 of 598 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T618 claimed 01:54Z, lease until 05:19Z; lane 3: T647 claimed 02:13Z, lease until 05:13Z; lane 4: T639 claimed 01:58Z, lease until 04:58Z; lane 5: T151 claimed 00:12Z, lease until 04:59Z; lane 6: T108 claimed 00:23Z, lease until 04:50Z
-- **Week:** 38% used, 111.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:18Z, 1 min before this update
+- **Lane:** lane 1: T618 claimed 01:54Z, lease until 05:19Z; lane 2: T619 claimed 02:21Z, lease until 05:21Z; lane 3: T647 claimed 02:13Z, lease until 05:13Z; lane 4: T639 claimed 01:58Z, lease until 04:58Z; lane 5: T151 claimed 00:12Z, lease until 04:59Z; lane 6: T108 claimed 00:23Z, lease until 04:50Z
+- **Week:** 38% used, 110.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 02:19Z, 1 min before this update
 - **Keeper:** last ran 02:04Z, next wake 04:53Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 18 problem(s) on tasks still to run (+189 on DONE tasks); first: T402: stored context_pct 40% but it measures 45%; regenerate
+- Strict plan check red: 17 problem(s) on tasks still to run (+190 on DONE tasks); first: T402: stored context_pct 40% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -117,7 +117,7 @@ Updated 2026-11-18T02:19:39Z by runner 46b7c3778ef2 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-18T02:04:14Z (week)): week: 82.1M used, 111.9M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-30T05:54:24Z.
+- Pacing (session_reading 2026-11-18T02:04:14Z (week)): week: 83.3M used, 110.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-30T06:24:15Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -133,6 +133,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T618 (lease until 2026-11-18T05:19:39Z)
+- lane 2: T619 (lease until 2026-11-18T05:21:22Z)
 - lane 3: T647 (lease until 2026-11-18T05:13:33Z)
 - lane 4: T639 (lease until 2026-11-18T04:58:02Z)
 - lane 5: T151 (lease until 2026-11-18T04:59:13Z)
