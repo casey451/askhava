@@ -40,6 +40,7 @@ const CITY_LICENSE: &str = "ASKHAVA_CITY_BUSINESS_LICENSE_NUMBER";
 const CITY_LICENSE_COST: &str = "ASKHAVA_CITY_LICENSE_COST";
 const CITY_LICENSE_TIME: &str = "ASKHAVA_CITY_LICENSE_TIME";
 const CITY_LICENSE_URL: &str = "ASKHAVA_CITY_LICENSE_URL";
+const DB_VOLUME_BYTES: &str = "ASKHAVA_DB_VOLUME_BYTES";
 
 /// Every key the parser accepts; any other `ASKHAVA_*` key stops startup (D-493).
 const KEYS: &[&str] = &[
@@ -81,6 +82,9 @@ const KEYS: &[&str] = &[
     CITY_LICENSE_COST,
     CITY_LICENSE_TIME,
     CITY_LICENSE_URL,
+    // The database volume's size in bytes for the daily volume check, optional here; `server`'s
+    // `watch_checks` registration requires it in `test` and `live` (T525, OPS-052, D-4044, D-4280).
+    DB_VOLUME_BYTES,
     // T106 (OPS-007, OPS-049, D-3144, D-4044): parsed by `server`'s `liveness` and `healthz`: how
     // long a failed liveness check may last before the process exits, and how long due work may
     // wait before `/healthz` reports the worker down.
@@ -408,6 +412,7 @@ pub struct Settings {
     city_license: Option<String>,
     city_guide: [Option<String>; 3],
     scorecard: [u32; SCORECARD_DEFAULTS.len()],
+    db_volume_bytes: Option<u64>,
 }
 
 impl Settings {
@@ -463,6 +468,7 @@ impl Settings {
             city_guide: [CITY_LICENSE_COST, CITY_LICENSE_TIME, CITY_LICENSE_URL]
                 .map(|key| raw.remove(key).map(|v| v.trim().to_owned())),
             scorecard: scorecard(&mut raw)?,
+            db_volume_bytes: volume_bytes(raw.remove(DB_VOLUME_BYTES))?,
         })
     }
 
@@ -647,6 +653,14 @@ impl Settings {
     #[must_use]
     pub fn city_license_guide(&self) -> [Option<&str>; 3] {
         self.city_guide.each_ref().map(Option::as_deref)
+    }
+
+    /// OPS-052, D-4280: the database volume's size in bytes (`ASKHAVA_DB_VOLUME_BYTES`, a whole
+    /// number above 0); `None` while unset. Never required here: `server`'s `watch_checks`
+    /// registration refuses a missing one in test and live (T525).
+    #[must_use]
+    pub fn db_volume_bytes(&self) -> Option<u64> {
+        self.db_volume_bytes
     }
 }
 
@@ -843,6 +857,18 @@ fn request_timeout_secs(raw: Option<String>) -> Result<u64, SettingsError> {
     match raw.trim().parse::<u64>() {
         Ok(secs @ 10..=300) => Ok(secs),
         _ => Err(SettingsError::Invalid(REQUEST_TIMEOUT_SECS)),
+    }
+}
+
+/// OPS-052: the volume size is a whole number of bytes above 0, `None` when unset; a bad value
+/// names only the key (T525).
+fn volume_bytes(raw: Option<String>) -> Result<Option<u64>, SettingsError> {
+    let Some(raw) = raw else {
+        return Ok(None);
+    };
+    match raw.trim().parse::<u64>() {
+        Ok(n) if n > 0 => Ok(Some(n)),
+        _ => Err(SettingsError::Invalid(DB_VOLUME_BYTES)),
     }
 }
 
