@@ -1,27 +1,27 @@
 # Ask Hava build status
 
-Updated 2026-11-18T00:42:00Z by runner 01d25e9d74c2 (actions).
+Updated 2026-11-18T00:52:03Z by runner 67827d85943d (actions).
 
-**Building: T478 in progress since 23:24Z; 418 of 582 done; week 35% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T478 in progress since 23:24Z; 419 of 582 done; week 35% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 418 of 582 build tasks (owner gates not counted)
+- **Tasks done:** 419 of 582 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T478 claimed 23:24Z, lease until 03:11Z; lane 5: T151 claimed 00:12Z, lease until 03:12Z; lane 6: T108 claimed 00:23Z, lease until 03:23Z; lane 7: T604 claimed 00:31Z, lease until 03:31Z
 - **Week:** 35% used, 118.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:38Z, 3 min before this update
+- **Last run:** 00:42Z, 9 min before this update
 - **Keeper:** last ran 00:38Z, next wake 03:14Z
 
 ## Needs attention
 - BLOCKED T203: plan gap reported: PLAN GAP: `app/portals/templates/quote_page.html:101` (owned by DONE tasks T052, T095, T294, T308, T384, T388, T393, T440 and T441, and by QUEUED T608). WORD-002 (`docs/spec/wording.md:6`) and TD-WORD-05 (`docs/test-design.md:683`) say the long not-a-contractor statement must be "at the top of the quote page". The template has only the first sentence, and only at the bottom (line 101 of 103); it extends `app/site/templates/base.html`, which has no contractor line. T203 owns only tests/docs/test_wording_statements.py and tests/docs/test_introduction_fee_wording.py and may not write copy (kit/pr; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T203 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 21 problem(s) on tasks still to run (+189 on DONE tasks); first: T402: stored context_pct 40% but it measures 45%; regenerate
+- Strict plan check red: 22 problem(s) on tasks still to run (+189 on DONE tasks); first: T402: stored context_pct 40% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T587 | payments and picks: the old Confirm fee writer is marked tes | MERGE_PENDING | 1 | 48 min | 00:26Z |  |
-| T606 | harness: scripts/check_copy.py allows one aria-hidden arrow  | MERGE_PENDING | 1 | 62 min | 23:23Z |  |
+| T606 | harness: scripts/check_copy.py allows one aria-hidden arrow  | done | 1 | 62 min | 23:23Z |  |
 | T203 | Wording scan: the required statements, business copy lines a | BLOCKED | 1 | 3 min | 23:08Z | PLAN GAP: `app/portals/templates/quote_page.html:101` (owned by DONE tasks T052, T095, T294, T308, T384, T388, T393, T44 |
 | T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | done | 3 | 37 min | 22:46Z | PLAN GAP: `package-lock.json` (unchanged from main) fails `npm audit --audit-level=low` on GHSA-fc5q-39xc-vjpf; nothing  |
 | T603 | Perf and twin (harness): the web vitals report records LCP a | done | 1 | 40 min | 22:05Z |  |
@@ -91,8 +91,8 @@ Updated 2026-11-18T00:42:00Z by runner 01d25e9d74c2 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 0 of 735 (0.0%) · partial 676 · unstarted 59
-**Tasks merged (throughput only):** 418 of 582
+**Requirements verified:** 0 of 735 (0.0%) · partial 677 · unstarted 58
+**Tasks merged (throughput only):** 419 of 582
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -114,7 +114,7 @@ Updated 2026-11-18T00:42:00Z by runner 01d25e9d74c2 (actions).
 | recurring | 0 | 9 | 2 | 11 |
 | security | 0 | 50 | 5 | 55 |
 | terms | 0 | 32 | 3 | 35 |
-| website | 0 | 24 | 6 | 30 |
+| website | 0 | 25 | 5 | 30 |
 | wording | 0 | 23 | 9 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
@@ -128,7 +128,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 61 of 190 done
+- stage 5: 62 of 190 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
