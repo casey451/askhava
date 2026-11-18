@@ -2036,10 +2036,25 @@ class GitHubEnv:
         if refs:
             self._run(["git", "fetch", "--quiet", "--prune", "origin", "refs/heads/claude/train/*:refs/runner/train/*"], None, self.root)
         for ref in refs:
-            code, out, _ = self._run(["git", "show", "-s", "--format=%ct", ref["sha"]], None, self.root)
-            if code == 0 and out.strip().isdigit():
-                ref["at"] = st.iso(datetime.fromtimestamp(int(out.strip()), timezone.utc))
+            ref["at"] = self._committed(ref["sha"])
         return refs
+
+    def commit_at(self, sha: str, branch: str) -> str | None:
+        """The committer time of `sha` (ISO), fetching `branch` first when git does not have the commit;
+        None when unread. `cycle._build_train` builds no train ref on an A' over TRAIN_MAX_AGE old (D-4383)."""
+        at = self._committed(sha)
+        try:
+            fetched = at is None and bool(branch) and self._fetch(branch) is not None
+        except BEST_EFFORT_ERRORS:
+            fetched = False
+        return self._committed(sha) if fetched else at
+
+    def _committed(self, sha: str) -> str | None:
+        """`git show -s --format=%ct` of `sha` as an ISO time; None when git cannot read it."""
+        code, out, _ = self._run(["git", "show", "-s", "--format=%ct", sha], None, self.root)
+        if code == 0 and out.strip().isdigit():
+            return st.iso(datetime.fromtimestamp(int(out.strip()), timezone.utc))
+        return None
 
     def train_merge(self, name: str, task: tuple[str, str], base: tuple[str, str]) -> dict[str, Any]:
         """B's train ref (D-4281): the update merge of B's reviewed head `task` = (branch, sha) with A's head

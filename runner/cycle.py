@@ -268,6 +268,11 @@ class Env(Protocol):
         """Delete origin's `claude/train/<task>-<12 hex>` ref `name` and nothing else (D-4281)."""
         ...
 
+    def commit_at(self, sha: str, branch: str) -> str | None:
+        """The committer time (ISO) of commit `sha`, fetching `branch` first when it is not local; None when
+        unread (D-4383). Optional: an Env without it builds train refs whatever A''s age."""
+        ...
+
 
 @dataclass
 class Config:
@@ -623,15 +628,18 @@ def _train_pair(state: State, holder: tuple[str, dict[str, Any] | None] | None, 
 
 def _train_pass(state: State, env: Env, now: datetime, pair: tuple[str, ...] | None) -> None:
     """The merge train's ref work on every merge-line pass (D-4281), whatever the depth: list the
-    `claude/train/*` refs (`env.train_refs`; an Env without it does nothing), build and push B's train ref
+    `claude/train/*` refs (`env.train_refs`; an Env without it, `train_merge` or `delete_train_ref` does
+    nothing), build and push B's train ref
     when the depth is 2 and `pair` is set, then delete each stale ref (`_train_stale`) through
     `env.delete_train_ref`. A failed delete is logged and tried again on the next pass. Nothing is recorded
     in the state: the refs are the record."""
     lister = getattr(env, "train_refs", None)
+    if not all(callable(getattr(env, call, None)) for call in ("train_merge", "delete_train_ref")):
+        return
     refs = lister() if callable(lister) else None
     if not isinstance(refs, list):
         return
-    made = _build_train(env, refs, pair) if pair and train_depth(env) >= TRAIN_DEPTH_MAX else ""
+    made = _build_train(env, refs, pair, now) if pair and train_depth(env) >= TRAIN_DEPTH_MAX else ""
     heads = {str(t.get("reviewed_sha") or "")[:12] for t in state["tasks"] if t.get("status") in (st.MERGE_PENDING, st.DONE)}
     pending = {t["id"] for t in state["tasks"] if t.get("status") == st.MERGE_PENDING}
     for ref in [r for r in refs if isinstance(r, dict)]:
@@ -645,14 +653,23 @@ def _train_pass(state: State, env: Env, now: datetime, pair: tuple[str, ...] | N
             print(f"runner: merge train: delete of {name} failed ({why}); tried again next pass (D-4281)")
 
 
-def _build_train(env: Env, refs: list[Any], pair: tuple[str, ...]) -> str:
+def _build_train(env: Env, refs: list[Any], pair: tuple[str, ...], now: datetime) -> str:
     """Build and push B's train ref on A' (`env.train_merge`, D-4281); the ref's name when pushed, else ''.
     A ref already listed for the same pair is left as it is; a create rejected because the ref exists is
     benign; a conflict, a failed tree check or any other failure makes no ref, is logged, and leaves B as
-    it was (its own update merge comes on its turn, exactly as without the train)."""
+    it was (its own update merge comes on its turn, exactly as without the train). No ref is built when
+    A' is over TRAIN_MAX_AGE old by its committer time (`env.commit_at`): the update merge carries A''s
+    committer time, so `_train_stale` would delete it on the next pass and a later pass build it again,
+    a new Ci run each time (D-4383)."""
     b, b_branch, b_head, a, a_branch, a_head = pair
     name = f"claude/train/{b}-{a_head[:12]}"
     if any(isinstance(r, dict) and r.get("name") == name for r in refs):
+        return ""
+    reader = getattr(env, "commit_at", None)
+    at = reader(a_head, a_branch) if callable(reader) else None
+    if at and now - st.parse(str(at)) > TRAIN_MAX_AGE:
+        print(f"runner: merge train: no ref for {b}: {a}'s head {a_head[:12]} is over {TRAIN_MAX_AGE} old, so its "
+              f"train ref would be stale at once (D-4383)")
         return ""
     done = env.train_merge(name, (b_branch, b_head), (a_branch, a_head))
     status, why = done.get("status"), str(done.get("why") or ", ".join(done.get("paths") or []))

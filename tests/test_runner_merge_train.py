@@ -362,3 +362,72 @@ def test_train_refs_lists_only_train_shaped_names_with_their_committer_time(tmp_
     env = GitHubEnv(tmp_path, [], tmp_path, repo="o/r", starter="actions", runner_sha="x", run=fake)
     assert env.train_refs() == [{"name": TRAIN, "task": "T002", "base": A1[:12], "sha": "d" * 40, "at": "2026-11-01T12:00:00Z"}]
     assert not any("push" in c for c in calls)
+
+
+class OriginEnv(TrainEnv):
+    """TrainEnv whose refs act like origin's: a pushed train ref is listed on the next pass, a deleted one is not."""
+
+    def __init__(self, a_age: timedelta) -> None:
+        super().__init__()
+        self.a_age, self.reads = a_age, []  # type: list[tuple[str, str]]
+
+    def commit_at(self, sha: str, branch: str) -> str:
+        self.reads.append((sha, branch))
+        return st.iso(NOW - self.a_age)
+
+    def train_merge(self, name: str, task: tuple[str, str], base: tuple[str, str]) -> dict[str, Any]:
+        done = super().train_merge(name, task, base)
+        # The update merge carries A''s committer time (UpdateMerge.commit), so the ref is as old as A'.
+        self.refs.append({"name": name, "task": name.split("/")[2].split("-")[0], "base": base[1][:12],
+                          "sha": "x" * 40, "at": st.iso(NOW - self.a_age)})
+        return done
+
+    def delete_train_ref(self, name: str) -> bool:
+        self.refs = [r for r in self.refs if r["name"] != name]
+        return super().delete_train_ref(name)
+
+
+@pytest.mark.parametrize(("hours", "merges"), [(7, []), (5, [TRAIN])])
+def test_an_a_prime_over_six_hours_old_gets_no_train_ref_so_no_create_delete_churn(tmp_path: Path, capsys: Any, hours: int, merges: list[str]) -> None:
+    """D-4383: the train merge is stamped with A''s committer time; on an A' over TRAIN_MAX_AGE old a pushed ref
+    would be stale at once, deleted on the next pass and built again on the one after, a new Ci run each time."""
+    plain, cfg, state = two_open(tmp_path)
+    env = OriginEnv(timedelta(hours=hours))
+    env.prs, env.by_branch, env.train_depth = plain.prs, plain.by_branch, plain.train_depth  # type: ignore[method-assign]
+    for _ in range(4):
+        run(env, cfg, copy.deepcopy(state))
+    assert [m[0] for m in env.merges] == merges and env.deleted == []
+    assert env.reads and env.reads[0] == (A1, branch("T001"))
+    assert ("over 6:00:00 old" in capsys.readouterr().out) == bool(hours > 6)
+
+
+def test_an_env_with_train_refs_but_not_the_other_train_calls_does_nothing(tmp_path: Path) -> None:
+    env, cfg, state = two_open(tmp_path)
+    env.refs = [ref("T009", A1)]
+    plain = LineEnv()
+    plain.prs, plain.by_branch = env.prs, env.by_branch
+    plain.train_refs = env.train_refs  # type: ignore[attr-defined]
+    plain.train_depth = env.train_depth  # type: ignore[attr-defined]
+    out, outcomes = run(plain, cfg, copy.deepcopy(state))
+    assert (json.dumps(out, sort_keys=True), outcomes) == without_train(env, cfg, state)
+
+
+@pytest.mark.parametrize(("shows", "fetch", "want"), [
+    (["1793534400\n"], 0, "2026-11-01T12:00:00Z"),
+    (["", "1793534400\n"], 0, "2026-11-01T12:00:00Z"),
+    (["", "1793534400\n"], 1, None),
+])
+def test_commit_at_reads_the_committer_time_fetching_the_branch_when_the_commit_is_not_local(
+        tmp_path: Path, shows: list[str], fetch: int, want: str | None) -> None:
+    calls: list[list[str]] = []
+
+    def fake(args: list[str], stdin: str | None, cwd: Path, env: dict[str, str] | None = None, timeout: int = 600) -> tuple[int, str, str]:
+        calls.append(args)
+        if "show" in args:
+            out = shows.pop(0)
+            return (0 if out else 128), out, ""
+        return (fetch if "fetch" in args else 0), A1 + "\n", ""
+
+    env = GitHubEnv(tmp_path, [], tmp_path, repo="o/r", starter="actions", runner_sha="x", run=fake)
+    assert env.commit_at(A1, branch("T001")) == want
+    assert not any("push" in c for c in calls)
