@@ -77,6 +77,18 @@
   "D-248": {
    "by": "D-1494",
    "cut": "what happens after the 12-month lock, and "
+  },
+  "D-4000": {
+   "by": "D-4310",
+   "cut": "of severity `high` or `critical`, other than `ops.delivery_low`,"
+  },
+  "D-4087": {
+   "by": "D-4310",
+   "cut": " and never started safe mode"
+  },
+  "D-3642": {
+   "by": "D-4310",
+   "cut": ", since the row is the record read at sign-up"
   }
  }
 }
