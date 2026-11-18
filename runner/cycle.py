@@ -38,6 +38,12 @@ MERGE_LINE_STUCK = timedelta(minutes=30)
 # Ally take 12 to 17 minutes and auto-merge lands within minutes after, so 45 minutes is well over twice a
 # normal turn, while a check that never runs or a red ruleset check can no longer block the line for good.
 MERGE_LINE_TURN_LIMIT = timedelta(minutes=45)
+# The merge train (D-4281): while the turn holder's head runs its checks, the next "line" task's reviewed head
+# merged with that head is tested ahead on a throwaway ref `claude/train/<task>-<head first 12 hex>` that T640's
+# `Ci` counts as proof for the task's real update merge. Depth 2 at most until a later decision; a ref over
+# TRAIN_MAX_AGE old (by its commit's committer time) is deleted on the next merge-line pass.
+TRAIN_DEPTH_MAX = 2
+TRAIN_MAX_AGE = timedelta(hours=6)
 RULESET_ONLY_CHECKS = ("Governance",)  # required by the repository ruleset, not by verify.REQUIRED_CHECKS (D-483, D-494)
 UPDATE_STUCK = "the branch could not be brought up to date with main for {wait}: {why} (D-620)"
 UPDATE_CLOSE = ("Closed by the runner: this branch could not be brought up to date with main, and auto-merge was on "
@@ -239,6 +245,27 @@ class Env(Protocol):
         """(status, conclusion, updated_at) of a GitHub Actions run, read from its latest attempt (a re-run
         keeps the run id), or None when it cannot be read (D-3417). Optional: an Env without it frees a
         lease only when it expires."""
+        ...
+
+    def train_depth(self) -> Any:
+        """kit/runner.json "train_depth" as read, None when missing or unreadable (`train_depth` reads it,
+        D-4281). Optional: an Env without it runs no merge train."""
+        ...
+
+    def train_refs(self) -> list[dict[str, Any]] | None:
+        """origin's `claude/train/*` refs as {"name", "task", "base" (A' first 12 hex), "sha", "at" (the
+        commit's committer time, None when unread)}; None when they cannot be listed (D-4281). Optional: an
+        Env without it neither builds nor deletes train refs."""
+        ...
+
+    def train_merge(self, name: str, task: tuple[str, str], base: tuple[str, str]) -> dict[str, Any]:
+        """Build the update merge of the reviewed head `task` = (branch, sha) with `base` = (A's branch, A')
+        and push it as a new ref `name` (a create, never forced; D-4281): {"status": "pushed" (with "sha") |
+        "exists" | "current" | "stale" | "moved" | "conflict" (with "paths") | "push_failed" | "error"}."""
+        ...
+
+    def delete_train_ref(self, name: str) -> bool:
+        """Delete origin's `claude/train/<task>-<12 hex>` ref `name` and nothing else (D-4281)."""
         ...
 
 
@@ -529,9 +556,11 @@ def _resolve_merges(state: State, env: Env, cfg: Config, now: datetime,
     "late" task (its turn ran out, or a ruleset-only check failed) is taken last and may update only if
     the turn is still free, taking it when it pushes. Every other task skips `_update_step` but still gets auto-merge, so a branch already
     current with `main` merges without waiting for its turn. `open_only` (`resolve_merged`'s pass, D-4180)
-    skips every task whose `_current_pr` is merged or absent: such a task is "out" and never holds the turn."""
+    skips every task whose `_current_pr` is merged or absent: such a task is "out" and never holds the turn.
+    Last, `_train_pass` (D-4281) may test the next "line" task ahead on a train ref and deletes stale ones;
+    it reads and writes no state, so the state and outcomes are exactly what they are without it."""
     outcomes: dict[str, tuple[str, str, str]] = {}
-    turn_free, late = True, []
+    turn_free, late, seen, holder = True, [], [], None
     for tid in _merge_line(state):
         task = st.entry(state, tid)
         pr = _current_pr(env, task)
@@ -544,11 +573,119 @@ def _resolve_merges(state: State, env: Env, cfg: Config, now: datetime,
         holds = turn_free and place == "line" and not _main_red_for(state, tid)  # red main: only FIX-MAIN (D-620)
         state = _mark_turn(state, tid, now if holds else None) if place == "line" else state
         state, _ = _resolve_line_task(state, env, cfg, now, (tid, pr, holds or place == "stuck"), outcomes)
-        turn_free = turn_free and not (holds and st.status(state, tid) == st.MERGE_PENDING)
+        seen.append((tid, pr, place))
+        if holds and st.status(state, tid) == st.MERGE_PENDING:
+            turn_free, holder = False, (tid, pr)
     for tid, pr in late:
         state, result = _resolve_line_task(state, env, cfg, now, (tid, pr, turn_free), outcomes)
         turn_free = turn_free and result != "branch_updated"
+    _train_pass(state, env, now, _train_pair(state, holder, seen, outcomes))
     return state, [outcomes[t["id"]] for t in state["tasks"] if t["id"] in outcomes]
+
+
+def train_depth(env: Env) -> int:
+    """How deep the merge train runs (D-4281): the Env's `train_depth()` (GitHubEnv reads kit/runner.json
+    under its root). 1 means off, today's merge line exactly: a value of 1 or less, missing, malformed or a
+    bool, and an Env without the reader. Above TRAIN_DEPTH_MAX it reads as TRAIN_DEPTH_MAX."""
+    reader = getattr(env, "train_depth", None)
+    raw = reader() if callable(reader) else None
+    if isinstance(raw, bool) or not isinstance(raw, int) or raw <= 1:
+        return 1
+    return min(raw, TRAIN_DEPTH_MAX)
+
+
+def _train_pair(state: State, holder: tuple[str, dict[str, Any] | None] | None, seen: list[tuple[str, dict[str, Any] | None, str]],
+                outcomes: dict[str, tuple[str, str, str]]) -> tuple[str, ...] | None:
+    """(B, B's branch, B's reviewed head, A, A's branch, A') for the merge train (D-4281), None when there is
+    none. A is the turn holder and A' its reviewed head: its update merge just pushed, or its open pull
+    request's head (an adopted update merge or a head already current with main; the Env checks main is in
+    it) with Ci, Twin or Ally still pending. B is the first task after A in merge-line order whose place was
+    "line", still MERGE_PENDING with its pull request on its reviewed head. None while main is red and for
+    FIX-MAIN (D-620), and whenever A's head is not its reviewed head or its checks finished."""
+    if holder is None or holder[1] is None or state.get("main_red"):
+        return None
+    a, a_pr = holder
+    task_a = st.entry(state, a)
+    a_head = str(task_a.get("reviewed_sha") or "")
+    pushed = outcomes[a][2] == "branch_updated"
+    if a == st.FIX_MAIN or not a_head or not (pushed or (a_pr.get("head_sha") == a_head and verify.checks_state(a_pr) == "pending")):
+        return None
+    after = [(tid, pr) for tid, pr, place in seen[[t for t, _, _ in seen].index(a) + 1:] if place == "line"]
+    if not after or after[0][1] is None:
+        return None
+    b, b_pr = after[0]
+    task_b = st.entry(state, b)
+    b_head = str(task_b.get("reviewed_sha") or "")
+    if b == st.FIX_MAIN or task_b.get("status") != st.MERGE_PENDING or not b_head or b_pr.get("head_sha") != b_head:
+        return None
+    return b, str(task_b.get("branch") or ""), b_head, a, str(task_a.get("branch") or ""), a_head
+
+
+def _train_pass(state: State, env: Env, now: datetime, pair: tuple[str, ...] | None) -> None:
+    """The merge train's ref work on every merge-line pass (D-4281), whatever the depth: list the
+    `claude/train/*` refs (`env.train_refs`; an Env without it does nothing), build and push B's train ref
+    when the depth is 2 and `pair` is set, then delete each stale ref (`_train_stale`) through
+    `env.delete_train_ref`. A failed delete is logged and tried again on the next pass. Nothing is recorded
+    in the state: the refs are the record."""
+    lister = getattr(env, "train_refs", None)
+    refs = lister() if callable(lister) else None
+    if not isinstance(refs, list):
+        return
+    made = _build_train(env, refs, pair) if pair and train_depth(env) >= TRAIN_DEPTH_MAX else ""
+    heads = {str(t.get("reviewed_sha") or "")[:12] for t in state["tasks"] if t.get("status") in (st.MERGE_PENDING, st.DONE)}
+    pending = {t["id"] for t in state["tasks"] if t.get("status") == st.MERGE_PENDING}
+    for ref in [r for r in refs if isinstance(r, dict)]:
+        why = _train_stale(ref, (pending, heads), now, made)
+        if not why:
+            continue
+        name = str(ref.get("name") or "")
+        if env.delete_train_ref(name):
+            print(f"runner: merge train: deleted {name}: {why} (D-4281)")
+        else:
+            print(f"runner: merge train: delete of {name} failed ({why}); tried again next pass (D-4281)")
+
+
+def _build_train(env: Env, refs: list[Any], pair: tuple[str, ...]) -> str:
+    """Build and push B's train ref on A' (`env.train_merge`, D-4281); the ref's name when pushed, else ''.
+    A ref already listed for the same pair is left as it is; a create rejected because the ref exists is
+    benign; a conflict, a failed tree check or any other failure makes no ref, is logged, and leaves B as
+    it was (its own update merge comes on its turn, exactly as without the train)."""
+    b, b_branch, b_head, a, a_branch, a_head = pair
+    name = f"claude/train/{b}-{a_head[:12]}"
+    if any(isinstance(r, dict) and r.get("name") == name for r in refs):
+        return ""
+    done = env.train_merge(name, (b_branch, b_head), (a_branch, a_head))
+    status, why = done.get("status"), str(done.get("why") or ", ".join(done.get("paths") or []))
+    if status == "pushed":
+        print(f"runner: merge train: {b}'s reviewed head {b_head[:12]} merged with {a}'s head {a_head[:12]} "
+              f"as {str(done.get('sha'))[:12]}, pushed to {name} (D-4281)")
+        return name
+    if status == "exists":
+        print(f"runner: merge train: {name} already exists, left as it is (D-4281)")
+    else:
+        print(f"runner: merge train: no ref for {b} on {a}'s head {a_head[:12]} ({status}: {why[:200]}); {b} is left as it was (D-4281)")
+    return ""
+
+
+def _train_stale(ref: dict[str, Any], live: tuple[set[str], set[str]], now: datetime, made: str) -> str:
+    """Why a listed train ref is deleted, '' when it stays (D-4281): its task is not MERGE_PENDING (merged,
+    failed, resyncing); its base A' is no longer the head of a MERGE_PENDING or DONE task (A got a newer
+    head or failed); it is over TRAIN_MAX_AGE old by its commit's committer time; or this pass made a newer
+    ref for the same task. `live` = (MERGE_PENDING task ids, their and DONE tasks' heads' first 12 hex)."""
+    name, task = str(ref.get("name") or ""), str(ref.get("task") or "")
+    pending, heads = live
+    if name == made:
+        return ""
+    if task not in pending:
+        return f"{task or '?'} is not MERGE_PENDING"
+    if str(ref.get("base") or "") not in heads:
+        return "its base is no longer the head of a MERGE_PENDING or DONE task"
+    at = str(ref.get("at") or "")
+    if at and now - st.parse(at) > TRAIN_MAX_AGE:
+        return f"over {TRAIN_MAX_AGE} old"
+    if made and made.startswith(f"claude/train/{task}-"):
+        return f"{made} replaced it"
+    return ""
 
 
 def _resolve_line_task(state: State, env: Env, cfg: Config, now: datetime, item: tuple[str, dict[str, Any] | None, bool],
