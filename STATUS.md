@@ -1,21 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-18T00:11:24Z by runner 8f65f07a3cef (actions).
+Updated 2026-11-18T00:12:58Z by runner 25b746d18910 (actions).
 
-**Building: T587 in progress since 23:37Z; 415 of 582 done; week 33% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T587 in progress since 23:37Z; 416 of 582 done; week 33% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 415 of 582 build tasks (owner gates not counted)
+- **Tasks done:** 416 of 582 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T587 claimed 23:37Z, lease until 02:37Z; lane 2: T478 claimed 23:24Z, lease until 03:11Z
 - **Week:** 33% used, 126.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:49Z, 21 min before this update
+- **Last run:** 00:11Z, 1 min before this update
 - **Keeper:** last ran 23:38Z, next wake 02:26Z
 
 ## Needs attention
 - BLOCKED T203: plan gap reported: PLAN GAP: `app/portals/templates/quote_page.html:101` (owned by DONE tasks T052, T095, T294, T308, T384, T388, T393, T440 and T441, and by QUEUED T608). WORD-002 (`docs/spec/wording.md:6`) and TD-WORD-05 (`docs/test-design.md:683`) say the long not-a-contractor statement must be "at the top of the quote page". The template has only the first sentence, and only at the bottom (line 101 of 103); it extends `app/site/templates/base.html`, which has no contractor line. T203 owns only tests/docs/test_wording_statements.py and tests/docs/test_introduction_fee_wording.py and may not write copy (kit/pr; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T203 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T583 (since 2026-11-17T23:24:36Z, no attempt used; a plan change fixes it): T583: dependency T582 is DONE but its owned file app/quotes/src/count_update.rs is not on main; T583: dependency T582 is DONE but its owned file app/messaging/src/quote_text_sent.rs is not on main; T583: dependency T582 is DONE but its owned file tests/integration/tests/quote_count_event.rs is not on main
-- Strict plan check red: 19 problem(s) on tasks still to run (+185 on DONE tasks); first: T402: stored context_pct 40% but it measures 45%; regenerate
+- Strict plan check red: 18 problem(s) on tasks still to run (+185 on DONE tasks); first: T402: stored context_pct 40% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -26,7 +26,7 @@ Updated 2026-11-18T00:11:24Z by runner 8f65f07a3cef (actions).
 | T603 | Perf and twin (harness): the web vitals report records LCP a | done | 1 | 40 min | 22:05Z |  |
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | done | 4 | 44 min | 21:44Z | Review not approved after the one fix round (head 01543c2e001f3583c873583dd24865826cfa3ae5; tests/docs/test_wording_scan |
 | T594 | site: the end-to-end spec of the web chat and request page a | MERGE_PENDING | 2 | 83 min | 21:03Z | PLAN GAP: app/server/src/chat_codes.rs:187 and app/site/templates/request.html, both owned by T489. Smallest plan change |
-| T106 | ops: /healthz and the web and worker liveness exits | MERGE_PENDING | 1 | 77 min | 20:38Z |  |
+| T106 | ops: /healthz and the web and worker liveness exits | done | 1 | 77 min | 20:38Z |  |
 | T602 | privacy: the inbound email signature check refuses an out-of | done | 1 | 30 min | 20:37Z |  |
 | T597 | Runner (harness): the early merge-close step also pushes the | done | 1 | 26 min | 20:28Z |  |
 | T582 | quotes and messaging (harness): a late read-back confirm is  | done | 1 | 36 min | 20:13Z |  |
@@ -90,8 +90,8 @@ Updated 2026-11-18T00:11:24Z by runner 8f65f07a3cef (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 0 of 735 (0.0%) · partial 671 · unstarted 64
-**Tasks merged (throughput only):** 415 of 582
+**Requirements verified:** 0 of 735 (0.0%) · partial 673 · unstarted 62
+**Tasks merged (throughput only):** 416 of 582
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -106,7 +106,7 @@ Updated 2026-11-18T00:11:24Z by runner 8f65f07a3cef (actions).
 | licensing | 0 | 48 | 0 | 48 |
 | lifecycle | 0 | 28 | 0 | 28 |
 | messaging | 0 | 44 | 1 | 45 |
-| ops-recovery | 0 | 29 | 25 | 54 |
+| ops-recovery | 0 | 31 | 23 | 54 |
 | privacy | 0 | 29 | 2 | 31 |
 | quiet-hours | 0 | 9 | 0 | 9 |
 | quotes-pick | 0 | 56 | 0 | 56 |
@@ -127,7 +127,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 58 of 190 done
+- stage 5: 59 of 190 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
