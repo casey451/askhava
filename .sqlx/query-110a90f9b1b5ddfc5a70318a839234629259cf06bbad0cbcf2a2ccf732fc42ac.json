@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT stripe_intent_id FROM payments.pick_intent WHERE pick_id = $1 FOR UPDATE",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "stripe_intent_id",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "payments.pick_intent",
+            "name": "stripe_intent_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "110a90f9b1b5ddfc5a70318a839234629259cf06bbad0cbcf2a2ccf732fc42ac"
+}

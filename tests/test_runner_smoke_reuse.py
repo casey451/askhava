@@ -395,7 +395,7 @@ def test_the_workflow_reads_the_state_for_the_step_and_lets_the_session_collect_
     order = [step.get("name") or step.get("uses") for step in steps]
     read = steps[order.index("Read the recorded smoke runs for the pre-session smoke (D-2560)")]
     pre = steps[order.index("Run the start-routine smoke before the session (D-2028)")]
-    assert order.index("Warm the smoke build before the session (D-2007)") < order.index(read["name"]) < order.index(pre["name"])
+    assert order.index(read["name"]) < order.index("Warm the smoke build before the session (D-2007)") < order.index(pre["name"])
     assert read["continue-on-error"] is True and "secrets." not in json.dumps(read)
     assert "ref=claude/kit-state" in read["run"] and "pre_smoke_state.json" in read["run"] and "git push" not in read["run"]
     assert pre["env"][ge.PRE_SMOKE_STATE] == "${{ runner.temp }}/pre_smoke_state.json"
