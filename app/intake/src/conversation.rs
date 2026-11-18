@@ -20,7 +20,8 @@ use askhava_core::api::Guarded;
 use askhava_jobs::api::{JobStatus, create, current, move_to};
 use askhava_messaging::api::{Language, NewText, Relation, enqueue, render};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
-use askhava_privacy::api::{Vault, purge_contact, set_name_address};
+use askhava_privacy::api::{Vault, purge_contact, purge_photos, set_name_address};
+use askhava_quotes::api::purge_job_text;
 use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
 use sqlx::types::Uuid;
@@ -336,8 +337,10 @@ pub async fn stop_if_under_18(
     Ok(Some((stop, queued)))
 }
 
-/// INT-038, PRIV-007, D-4142: under 13, the request's data (`models::purge_request`), then the
-/// sender's vault contact (`purge_contact`, a savepoint), so a failure of either keeps nothing.
+/// INT-038, PRIV-007, PRIV-008, D-4142, D-4294: under 13, each job of the request loses its photo
+/// rows (`purge_photos`, each sealed object's delete queued) and its kept words and cards
+/// (`purge_job_text`), then the request's data (`models::purge_request`), then the sender's vault
+/// contact (`purge_contact`, a savepoint), so a failure of any keeps nothing.
 /// The caller took the homeowner row first, so the contact row comes after it, as in the
 /// retention lock order (D-1839).
 /// The contact is the sender's, not the request's alone: an earlier request's paid pick loses the
@@ -347,6 +350,14 @@ async fn purge_child(
     (conversation, homeowner): (Uuid, Uuid),
     contact: Uuid,
 ) -> Result<(), IntakeError> {
+    for job in models::request_jobs(tx, conversation).await? {
+        purge_photos(tx, job)
+            .await
+            .map_err(|_| IntakeError::Vault)?;
+        purge_job_text(tx, job)
+            .await
+            .map_err(|_| IntakeError::Quotes)?;
+    }
     models::purge_request(tx, conversation, homeowner).await?;
     purge_contact(tx, contact)
         .await
