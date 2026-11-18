@@ -3372,3 +3372,8 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **You said yes to letting the build work on up to three tasks in the same part of the code at once, instead of two.** The trial helps the server and picks parts only after their short guides are trimmed (D-4433, about to merge); the portals part stays at one task at a time until its own guide is trimmed after T200. Smaller parts can use the third slot now.
 - If more than 1 in 3 merges needs a redo, first tries drop under 70%, or the checks start queuing, we go back to two.
 - Your choice, recorded; nothing more needs you now.
+
+## The longest line of remaining work in stage 5 got shorter (D-4447)
+- **The longest chain of tasks that must run one after another fell from 37 to 23.** Three changes: the decision-log digest starts now, as you approved this morning; the home-page and site design work no longer waits behind the business-texting tasks (they only shared one file, and now take it in a different order); and one stale link, left over from a feature that moved to a finished task, was removed.
+- The digest's check can't break other tasks' builds while new decisions keep landing: it runs only on a change to the digest itself.
+- Our choice apart from the digest, which was yours; nothing needs you now.
