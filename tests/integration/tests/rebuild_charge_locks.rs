@@ -2,8 +2,9 @@
 //! PostgreSQL. Called inside a caller's open transaction it books a held charge and answers
 //! `Booked`, then `AlreadyBooked`; run while `record`'s lock order (the newest attempt row
 //! `FOR UPDATE`, then `pick_intent` `FOR SHARE`) is held on another connection it waits, never
-//! deadlocks (40P01) and books one evidence row and one `charge` entry; an attempt made while it
-//! waits is the one it books on. All data is fake.
+//! deadlocks (40P01) and books one evidence row and one `charge` entry; when `record` books the
+//! charge while it waits it answers `AlreadyBooked` and books nothing more; an attempt made while
+//! it waits is the one it books on. All data is fake.
 
 use std::time::Duration;
 
@@ -127,6 +128,36 @@ async fn td_ops_45_record_and_rebuild_on_one_pick_never_deadlock(pool: PgPool) {
     record.commit().await.expect("record commits");
     let answer = run.await.expect("joined").expect("rebuild: no deadlock");
     assert_eq!(answer, Rebuilt::Booked);
+    assert_eq!(booked(&pool, pick).await, (1, Some(1), 1));
+}
+
+/// Books pick `pick`'s try 1 on `record`'s transaction as `record`'s effects do: its evidence
+/// row and its `charge` entry under key `charge.<pick>`.
+async fn record_books(record: &mut PgConnection, pick: Uuid) {
+    sqlx::query("INSERT INTO payments.charge_evidence (pick_id, business_id, job_id, press_id, try_no, idempotency_label, stripe_customer_id, stripe_intent_id, amount_cents, pressed_at, charged_at, stripe_charge_id) SELECT i.pick_id, i.business_id, i.job_id, a.press_id, a.try_no, 'pick-' || i.pick_id || '-try1', 'cus_FakeT647', i.stripe_intent_id, i.amount_cents, now(), now(), 'ch_FakeT647Charge' FROM payments.pick_intent i JOIN payments.charge_attempt a ON a.pick_id = i.pick_id AND a.try_no = 1 WHERE i.pick_id = $1")
+        .bind(pick).execute(&mut *record).await.expect("record's evidence");
+    sqlx::query("INSERT INTO payments.ledger_entry (kind, business_id, job_id, amount_cents, stripe_id, idempotency_key) SELECT 'charge', business_id, job_id, amount_cents, 'ch_FakeT647Charge', 'charge.' || pick_id FROM payments.pick_intent WHERE pick_id = $1")
+        .bind(pick).execute(&mut *record).await.expect("record's charge entry");
+}
+
+/// TD-OPS-45, TD-OPS-04, FEE-019, D-4292: `record` holds the newest attempt row and
+/// `pick_intent`, books the charge and commits while `rebuild_charge` waits; `rebuild_charge`
+/// then sees the evidence under the lock and answers `AlreadyBooked`, never `Booked`, and the
+/// pick keeps exactly one evidence row and one `charge` entry.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_ops_45_record_books_while_rebuild_waits_already_booked(pool: PgPool) {
+    let pick = Uuid::from_u128(0x647_0004);
+    hold(&pool, pick).await;
+    let mut record = pool.begin().await.expect("record's transaction");
+    let attempt_row = "SELECT status FROM payments.charge_attempt WHERE pick_id = $1 FOR UPDATE";
+    lock(&mut record, attempt_row, pick).await;
+    let run = rebuild_blocked(&pool, pick).await;
+    let hold_pick = "SELECT pick_id FROM payments.pick_intent WHERE pick_id = $1 FOR SHARE";
+    lock(&mut record, hold_pick, pick).await;
+    record_books(&mut record, pick).await;
+    record.commit().await.expect("record commits");
+    let answer = run.await.expect("joined").expect("rebuild: no deadlock");
+    assert_eq!(answer, Rebuilt::AlreadyBooked);
     assert_eq!(booked(&pool, pick).await, (1, Some(1), 1));
 }
 
