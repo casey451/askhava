@@ -21166,6 +21166,10 @@
    "module": null,
    "deps": [
     "T101",
+    "T652",
+    "T653",
+    "T654",
+    "T655",
     "T202",
     "T103",
     "T203",
@@ -23919,7 +23923,7 @@
    "id": "T236",
    "slug": "ai-call-budgets",
    "title": "AI-call budgets per conversation and per job, and no AI call before the area check",
-   "goal": "Credit-drain defense for the war games (D-1154): AI-021's global daily cap stays, and below it AI-028's per-step budgets apply: no AI call before the consent text and the area check; 2 readings per inbound message, 1 reword per bank question (at most 8), 1 follow-up, card and project file 1 each plus 1 per EDIT (at most 3), 4 concept prompts, 2 screening calls a photo for at most 3 photos; backstops of 40 calls per conversation per Arizona day and 60 per job, with the card call always reserved so no budget lands on it; a verified web-chat session shares its phone's budget and an unverified one makes no call; quote reads 3 per business per job, outside the job's budget; only the first 1,600 characters of a scrubbed message are sent, while the AI-off card keeps her full scrubbed words. Past a budget the step runs on the AI-off path (INT-021) with nothing said and an `ai.call_stat` row with outcome `budget`; `models::calls_today` (`app/ai/src/models.rs`) excludes `budget` rows as it excludes `daily_cap` rows, so refused calls never use up the AI-021 cap. `IntakeCall` carries the conversation, job, step and (for quote reads) business it is for; the caller in `intake` passes them; the budgets are settings in `AiConfig`; the migration adds the `budget` outcome and the conversation, job, step and business columns to `ai.call_stat`. The global daily cap (AI-021, D-811) becomes an atomic admission: before the provider call, one statement reserves a slot for this Arizona day (a counter row per day updated with `... WHERE used < cap RETURNING`, or an equivalent single-statement reservation) on its own short transaction, so concurrent calls past the cap never reach the transport; a retry of one logical call uses its reservation, an abandoned or timed-out reservation still counts for that day, and the `ai.daily_cap` alert is raised once a day under the same race (D-1757). No database connection or open transaction is held across an AI provider await (AI-029, D-2038): the entry the app calls takes the pool, reads the AI-008 switch and makes the admission and the budget reservations each on its own short connection and releases it, awaits the provider (up to AI-023's timeout, retries and backoff included) with no connection held, then takes a connection again to record the call. With no connection held, every AI-028 budget check is a single-statement reservation like the AI-021 admission (only while the budget has room), so concurrent readings of one message (a duplicate or replayed webhook) cannot pass its 2-reading limit, the 1-reword limit or the per-day and per-job backstops together; a refused reservation makes no call and records outcome `budget`. Intake has no caller that applies a reading yet (`app/intake/src/question_bank.rs` calls only `accept_question`), so this task builds the first one in `app/intake/src/service.rs`: it reads one inbound message through the gated `read_intake` and applies the reading only if the step is still current on the new connection, which means the conversation has no inbound message and no `intake.intake_answer` row newer than the message the call was made for; otherwise the reading is recorded and discarded. Calling that function from the text and web-chat paths is T299's (IC-23, D-2065); the AI writing calls are IC-53's (no owner yet). `app/ai/src/switch.rs` (the gated `read_intake`) is this task's for that change. Other tasks' tests call `read_intake` with a `&mut PgConnection` (`app/ai/src/tests/adapter_calls.rs`, `tests/integration/tests/ai_zero_retention.rs`, `tests/integration/tests/prop_prompt_injection.rs`) and are not this task's to change: keep that form compiling for them as a thin wrapper that no app code calls. AI-029's other half, the inbound-text webhook committing before any AI call, is T299's, which wires the AI reading into the text path (IC-23, D-2065); that path makes no AI call yet. Ordering only: runs after T370, which changes one call in `app/intake/src/service.rs` (D-2703); its migration is `0210_ai_call_budget.sql` (V9, D-2707). Plan change D-3675: the migration is numbered 0209 (it was 0202; D-3881 moved it up one more, so T527's 0208 fits before it; D-3675 made it 0204, D-3722 moved it up one more, D-3750 one more, after T470's `0207_messaging_email_lease.sql`, D-3753 one more, after T480's `0208_messaging_spanish_switch.sql`, and D-3779 one more, because T486 took `0190_catalog_switched_on.sql` and every queued migration from 0190 up moved up one) because T456's `0205_picks_hold_away.sql` and `0206_businesses_away_busy.sql` run before this task in the serial order (`scripts/validate_tasks.py` V9). Plan change D-3883: this task's migration moved up one, to `0210_ai_call_budget.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history. Plan change D-4292: this task's migration moves to `migrations/0212_ai_call_budget.sql` for T645's `0210_messaging_web_chat_optout.sql` and `0211_intake_web_chat_language.sql`, which run earlier (V9); earlier numbers in this goal are history.",
+   "goal": "Credit-drain defense for the war games (D-1154): AI-021's global daily cap stays, and below it AI-028's per-step budgets apply: no AI call before the consent text and the area check; 2 readings per inbound message, 1 reword per bank question (at most 8), 1 follow-up, card and project file 1 each plus 1 per EDIT (at most 3), 4 concept prompts, 2 screening calls a photo for at most 3 photos; backstops of 40 calls per conversation per Arizona day and 60 per job, with the card call always reserved so no budget lands on it; a verified web-chat session shares its phone's budget and an unverified one makes no call; quote reads 3 per business per job, outside the job's budget; only the first 1,600 characters of a scrubbed message are sent, while the AI-off card keeps her full scrubbed words. Past a budget the step runs on the AI-off path (INT-021) with nothing said and an `ai.call_stat` row with outcome `budget`; `models::calls_today` (`app/ai/src/models.rs`) excludes `budget` rows as it excludes `daily_cap` rows, so refused calls never use up the AI-021 cap. `IntakeCall` carries the conversation, job, step and (for quote reads) business it is for; the caller in `intake` passes them; the budgets are settings in `AiConfig`; the migration adds the `budget` outcome and the conversation, job, step and business columns to `ai.call_stat`. The global daily cap (AI-021, D-811) becomes an atomic admission: before the provider call, one statement reserves a slot for this Arizona day (a counter row per day updated with `... WHERE used < cap RETURNING`, or an equivalent single-statement reservation) on its own short transaction, so concurrent calls past the cap never reach the transport; a retry of one logical call uses its reservation, an abandoned or timed-out reservation still counts for that day, and the `ai.daily_cap` alert is raised once a day under the same race (D-1757). No database connection or open transaction is held across an AI provider await (AI-029, D-2038): the entry the app calls takes the pool, reads the AI-008 switch and makes the admission and the budget reservations each on its own short connection and releases it, awaits the provider (up to AI-023's timeout, retries and backoff included) with no connection held, then takes a connection again to record the call. With no connection held, every AI-028 budget check is a single-statement reservation like the AI-021 admission (only while the budget has room), so concurrent readings of one message (a duplicate or replayed webhook) cannot pass its 2-reading limit, the 1-reword limit or the per-day and per-job backstops together; a refused reservation makes no call and records outcome `budget`. Intake has no caller that applies a reading yet (`app/intake/src/question_bank.rs` calls only `accept_question`), so this task builds the first one in `app/intake/src/service.rs`: it reads one inbound message through the gated `read_intake` and applies the reading only if the step is still current on the new connection, which means the conversation has no inbound message and no `intake.intake_answer` row newer than the message the call was made for; otherwise the reading is recorded and discarded. Calling that function from the text and web-chat paths is T299's (IC-23, D-2065); the AI writing calls are IC-53's (no owner yet). `app/ai/src/switch.rs` (the gated `read_intake`) is this task's for that change. Other tasks' tests call `read_intake` with a `&mut PgConnection` (`app/ai/src/tests/adapter_calls.rs`, `tests/integration/tests/ai_zero_retention.rs`, `tests/integration/tests/prop_prompt_injection.rs`) and are not this task's to change: keep that form compiling for them as a thin wrapper that no app code calls. AI-029's other half, the inbound-text webhook committing before any AI call, is T299's, which wires the AI reading into the text path (IC-23, D-2065); that path makes no AI call yet. Ordering only: runs after T370, which changes one call in `app/intake/src/service.rs` (D-2703); its migration is `0210_ai_call_budget.sql` (V9, D-2707). Plan change D-3675: the migration is numbered 0209 (it was 0202; D-3881 moved it up one more, so T527's 0208 fits before it; D-3675 made it 0204, D-3722 moved it up one more, D-3750 one more, after T470's `0207_messaging_email_lease.sql`, D-3753 one more, after T480's `0208_messaging_spanish_switch.sql`, and D-3779 one more, because T486 took `0190_catalog_switched_on.sql` and every queued migration from 0190 up moved up one) because T456's `0205_picks_hold_away.sql` and `0206_businesses_away_busy.sql` run before this task in the serial order (`scripts/validate_tasks.py` V9). Plan change D-3883: this task's migration moved up one, to `0210_ai_call_budget.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history. Plan change D-4292: this task's migration moves to `migrations/0212_ai_call_budget.sql` for T645's `0210_messaging_web_chat_optout.sql` and `0211_intake_web_chat_language.sql`, which run earlier (V9); earlier numbers in this goal are history. Plan change D-4310: this task's migration moves to `migrations/0213_ai_call_budget.sql` for T653's `0212_licensing_btr_typed_unchecked.sql`, which runs earlier (V9); earlier numbers in this goal are history.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -23942,7 +23946,7 @@
     "app/ai/src/service.rs",
     "app/ai/src/models.rs",
     "app/ai/src/switch.rs",
-    "migrations/0212_ai_call_budget.sql",
+    "migrations/0213_ai_call_budget.sql",
     "tests/integration/tests/ai_budget.rs",
     "app/intake/src/service.rs"
    ],
@@ -23982,7 +23986,8 @@
     "D-3779",
     "D-3881",
     "D-3883",
-    "D-4292"
+    "D-4292",
+    "D-4310"
    ],
    "cites": [
     "BUILD_BRIEF.md:196",
@@ -40583,7 +40588,7 @@
    "id": "T600",
    "slug": "worker-clock-handlers",
    "title": "intake, businesses, privacy and server: four worker handlers apply their rules on the worker clock, not the wall clock",
-   "goal": "Plan change D-4196 (Casey's outside audit of Nov 17, 2026, finding 2, verified on `main` 2f2fa8c by an Opus verification pass and re-checked before planning; D-3447's pattern): four worker handlers read the wall clock (`Timestamp::now()`) where the rule they apply needs the worker's injected clock (`core::Clock`; `ManualClock` in tests, the test-control clock in end-to-end runs, D-740), so a test that moves the clock forward gets wrong answers. Production runs one clock (`SystemClock`, `app/core/src/clock.rs:42`, D-2886), so no live behaviour changes. (1) `app/intake/src/cards_out.rs:131` (`run_cards_approved`, `:115`) and `:151` (`run_emergency_released`, `:141`): that `now` stamps `quotes.shown_card.sent_at` (`app/quotes/src/job_text.rs:296`), which starts PICK-001's 24-hour quote window (`window_open`, `app/quotes/src/intake.rs:46`), and times INT-005's hold recheck; after a clock advance the cards are stamped in the past and the window closes early. (2) `app/businesses/src/complaints.rs:490` (`run_box_closed`, `:481`): `list_closed` (`:443`) checks BIZ-029's 5-day reply box against the wall clock, so after an advance the task answers `BoxOpen` and retries until it dead-letters. (3) `app/businesses/src/complaint_holds.rs:65` (`run_complaint_holds`, `:55`) stamps the complaint hold events on the wall clock, and (4) `app/privacy/src/purge.rs:199` (`purge_photos`, `:189`) queues each photo object's delete at the wall clock; D-3447 recorded (3) and (4) as known limits. Fix, D-3447's way: each keeps its signature and calls a new `*_at` version that takes `now` (`run_cards_approved_at`, `run_emergency_released_at`, `run_box_closed_at`, `run_complaint_holds_at`, `purge_photos_at`), exported through the crate's shared `api.rs`. The shared `app/server/src/lib.rs` registers the `*_at` versions on the worker clock: `register_card_sender` (`:1370`, called at `:955`) and `register_business_handlers` (`:1605`, called at `:771`) take the clock as `register_purge_handlers` (`:1733`) does, and `stage_step` (`:1842`) passes its `now` to `run_complaint_holds_at`; in `app/privacy/src/handlers.rs`, `run_purge_due_at` (`:59`) calls `purge_photos_at` with its `now`. `delete_my_data` (`purge.rs:425`, the homeowner's own request on a web route) keeps the wall clock. If a function would pass 50 lines, move its registrations into a helper first. The audit's other wall-clock reads are not rule inputs and stay (D-3447's `(pool, task)` wrappers, run-at times that are due at once under either clock, event stamps, web handlers' session and rate checks). Tests, fake data only, in the new `tests/integration/tests/worker_clock_handlers.rs` against PostgreSQL, each at a time two days ahead of the wall clock: (a) the cards-approved step stamps `shown_card.sent_at` at that time; (b) a complaint received 120 hours before it is listed and the task finishes; (c) the complaint hold events and the photo object's delete task are stamped at it; each `(pool, task)` wrapper still runs. Update the `intake`, `businesses`, `privacy` and `server` notes and `docs/decisions.md`.",
+   "goal": "Plan change D-4196 (Casey's outside audit of Nov 17, 2026, finding 2, verified on `main` 2f2fa8c by an Opus verification pass and re-checked before planning; D-3447's pattern): four worker handlers read the wall clock (`Timestamp::now()`) where the rule they apply needs the worker's injected clock (`core::Clock`; `ManualClock` in tests, the test-control clock in end-to-end runs, D-740), so a test that moves the clock forward gets wrong answers. Production runs one clock (`SystemClock`, `app/core/src/clock.rs:42`, D-2886), so no live behaviour changes. (1) `app/intake/src/cards_out.rs:131` (`run_cards_approved`, `:115`) and `:151` (`run_emergency_released`, `:141`): that `now` stamps `quotes.shown_card.sent_at` (`app/quotes/src/job_text.rs:296`), which starts PICK-001's 24-hour quote window (`window_open`, `app/quotes/src/intake.rs:46`), and times INT-005's hold recheck; after a clock advance the cards are stamped in the past and the window closes early. (2) `app/businesses/src/complaints.rs:490` (`run_box_closed`, `:481`): `list_closed` (`:443`) checks BIZ-029's 5-day reply box against the wall clock, so after an advance the task answers `BoxOpen` and retries until it dead-letters. (3) `app/businesses/src/complaint_holds.rs:65` (`run_complaint_holds`, `:55`) stamps the complaint hold events on the wall clock, and (4) `app/privacy/src/purge.rs:199` (`purge_photos`, `:189`) queues each photo object's delete at the wall clock; D-3447 recorded (3) and (4) as known limits. Fix, D-3447's way: each keeps its signature and calls a new `*_at` version that takes `now` (`run_cards_approved_at`, `run_emergency_released_at`, `run_box_closed_at`, `run_complaint_holds_at`, `purge_photos_at`), exported through the crate's shared `api.rs`. The shared `app/server/src/lib.rs` registers the `*_at` versions on the worker clock: `register_card_sender` (`:1370`, called at `:955`) and `register_business_handlers` (`:1605`, called at `:771`) take the clock as `register_purge_handlers` (`:1733`) does, and `stage_step` (`:1842`) passes its `now` to `run_complaint_holds_at`; in `app/privacy/src/handlers.rs`, `run_purge_due_at` (`:59`) calls `purge_photos_at` with its `now`. `delete_my_data` (`purge.rs:425`, the homeowner's own request on a web route) keeps the wall clock. If a function would pass 50 lines, move its registrations into a helper first. The audit's other wall-clock reads are not rule inputs and stay (D-3447's `(pool, task)` wrappers, run-at times that are due at once under either clock, event stamps, web handlers' session and rate checks). Tests, fake data only, in the new `tests/integration/tests/worker_clock_handlers.rs` against PostgreSQL, each at a time two days ahead of the wall clock: (a) the cards-approved step stamps `shown_card.sent_at` at that time; (b) a complaint received 120 hours before it is listed and the task finishes; (c) the complaint hold events and the photo object's delete task are stamped at it; each `(pool, task)` wrapper still runs. Update the `intake`, `businesses`, `privacy` and `server` notes and `docs/decisions.md`. Plan change D-4310 (the ops spot review of `main` 4fee847d, finding 3; D-3447's pattern as above): three more registered intake handlers pass the wall clock to a step that returns early before its due time, so after a test-control clock advance the worker finishes the task with nothing done: `run_card_timer` (`app/intake/src/summary_step.rs:333`, `card_timer_step` returns `Ok(false)` while `now < t.due`, INT-041's 30-minute auto-send), `run_no_reply` (`app/intake/src/handlers.rs:195`, `no_reply_step` returns `Ok(None)` before its wait, INT-019's reminder and close) and `run_address_needed` (`app/intake/src/address_wait.rs:67`, `ask_again`, INT-027). (5) Each keeps its signature and calls a new `run_card_timer_at`, `run_no_reply_at` and `run_address_needed_at` that takes `now`, exported through `intake::api`; `app/server/src/lib.rs` registers the `*_at` versions on the worker clock (`:701`, `:706`, `:742`). (d) In the same test file, each of the three at a time two days ahead of the wall clock does its step: the INT-019 reminder queued, the card approved and sent by the system actor, the name-and-address ask queued. `run_box_closed` is (2) above. Ordering: after T581, which also changes `app/intake/src/handlers.rs`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -40598,7 +40603,8 @@
     "T092",
     "T257",
     "T274",
-    "T083"
+    "T083",
+    "T581"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -40612,7 +40618,10 @@
     "app/businesses/src/complaint_holds.rs",
     "app/privacy/src/purge.rs",
     "app/privacy/src/handlers.rs",
-    "tests/integration/tests/worker_clock_handlers.rs"
+    "tests/integration/tests/worker_clock_handlers.rs",
+    "app/intake/src/summary_step.rs",
+    "app/intake/src/handlers.rs",
+    "app/intake/src/address_wait.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -40632,20 +40641,24 @@
     "PRIV-007",
     "PRIV-009",
     "INT-005",
-    "SEC-035"
+    "SEC-035",
+    "INT-019",
+    "INT-041",
+    "INT-027"
    ],
    "tests": [],
    "decisions": [
     "D-4196",
     "D-3447",
     "D-2641",
-    "D-740"
+    "D-740",
+    "D-4310"
    ],
    "cites": [],
    "budget": {
-    "files": 6,
-    "lines": 300,
-    "context_pct": 24
+    "files": 9,
+    "lines": 400,
+    "context_pct": 31
    },
    "checks": [
     "Ci",
@@ -40654,7 +40667,7 @@
    ],
    "branch": "claude/task/T600-worker-clock-handlers",
    "prompt": "kit/prompts/T600.md",
-   "acceptance": "`tests/integration/tests/worker_clock_handlers.rs` passes against PostgreSQL with cases (a) to (c) failing on `main` before the change; `tests/integration/tests/task_registry.rs`, every existing cards-out, complaint and purge test pass unchanged."
+   "acceptance": "`tests/integration/tests/worker_clock_handlers.rs` passes against PostgreSQL with cases (a) to (d) failing on `main` before the change; `tests/integration/tests/task_registry.rs`, every existing cards-out, complaint, purge and intake test pass unchanged."
   },
   {
    "id": "T601",
@@ -42377,6 +42390,315 @@
    ],
    "branch": "claude/task/T646-web-chat-client-ip",
    "prompt": "kit/prompts/T646.md"
+  },
+  {
+   "id": "T652",
+   "slug": "safe-mode-kinds",
+   "title": "ops: safe mode starts only on OPS-001's alert kinds, and a delivery alert's hold is per line",
+   "goal": "Plan change D-4310 (Fable's decision on the ops spot review of `main` 4fee847d, findings 1 and 2; OPS-001 stands, no requirement amended). (1) Safe mode. `app/ops/src/safe_mode.rs` starts and holds safe mode on `a.severity IN ('high', 'critical') AND a.kind <> $1` in all three `EXISTS` clauses (`:52`, `:75`, `:78`), so every pushed High alert counts, including `privacy.vault_read_spike` and `privacy.vault_read_unregistered` (High, pushed at once through `PUSH_AT_ONCE` in `app/ops/src/alerts.rs`, D-4084) and the High `messaging.call_back_due` the daytime push lists (D-4087). OPS-001 (`docs/spec/ops-recovery.md:5`), D-075, D-942 and D-1719 name the set: an OPS-004 alert other than the email sending-limit one, or a critical alert. Add one `pub const SAFE_MODE_KINDS: [&str; 4]` = `ops.vendor_errors`, `ops.health_check_failed`, `payments.ledger_mismatch`, `messaging.number_suspended`, and make all three clauses `(a.severity = 'critical' OR a.kind = ANY($n))`, still for an open (`resolved_at IS NULL`) alert with an `ops.alert_push` row; the delivery alert (`ops.delivery_low`, OPS-001's own exception), `ops.email_limit`, both vault kinds and `messaging.call_back_due` never start it unless raised critical, and none of them is. Each `SAFE_MODE_KINDS` entry is the constant its raiser in `ops` uses (a unit test asserts equality where `ops` can name it, and the string otherwise, as D-4087 did). Keep `safe_mode_on`'s fail-closed read by the database's `now()` (D-3878) and the on and off audit rows (D-4000 (2), (3)); D-4000 (1)'s severity test and D-4087's \"never started safe mode\" clause are superseded by D-4310 (D-4087's push listing stays). Correct the docs that say \"a pushed High alert\" (`:41` to `:43`, `:58` to `:61`, the `SAFE_MODE_AFTER` doc) and the `app/ops/NOTES.md` line, if any. Accepted risk (Casey's review list): a vault spike Casey leaves for 24 hours no longer pauses charges; safe mode never contained vault reads. (2) Delivery hold per line (OPS-025, D-163; OPS-004 counts per audience): `raise_delivery`'s `held` (`alerts.rs:188` to `:195`) compares the newest resolved delivery alert of any audience with this line's `recovered_at`, so after the homeowner line's alert is acknowledged, a business line that dropped while it was open is held until it alone reaches 97%, and its outage is never alerted. Compute `held` only from resolved delivery alerts of the same audience (`JOIN ops.delivery_alert d ... WHERE d.audience = $1`); OPS-025's one-open-at-a-time rule in `record_delivery_counts` (`:127` to `:140`) is unchanged. Tests, fake data only, on PostgreSQL: TD-OPS-46 in `tests/integration/tests/safe_mode_kinds.rs` and TD-OPS-47 in `tests/integration/tests/delivery_hold_lines.rs`; `tests/integration/tests/safe_mode.rs` and `tests/integration/tests/ops_alert_conditions.rs` are other tasks' and stay unchanged. Ordering: after T408, which owns `safe_mode.rs`'s module doc sentence. Update `app/ops/NOTES.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "ops",
+   "deps": [
+    "T408",
+    "T105",
+    "T204"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "recovery"
+   ],
+   "owns": [
+    "app/ops/src/safe_mode.rs",
+    "app/ops/src/alerts.rs",
+    "tests/integration/tests/safe_mode_kinds.rs",
+    "tests/integration/tests/delivery_hold_lines.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/ops-recovery.md",
+    "docs/spec/fees.md",
+    "tests/integration/tests/safe_mode.rs",
+    "tests/integration/tests/ops_alert_conditions.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "OPS-001",
+    "OPS-004",
+    "OPS-025",
+    "OPS-023"
+   ],
+   "tests": [
+    "TD-OPS-46",
+    "TD-OPS-47"
+   ],
+   "decisions": [
+    "D-4310",
+    "D-4000",
+    "D-4087",
+    "D-075",
+    "D-942",
+    "D-1719",
+    "D-4084",
+    "D-163",
+    "D-3878",
+    "D-477"
+   ],
+   "cites": [
+    "app/ops/src/safe_mode.rs:52",
+    "app/ops/src/alerts.rs:188"
+   ],
+   "budget": {
+    "files": 4,
+    "lines": 350,
+    "context_pct": 21
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T652-safe-mode-kinds",
+   "prompt": "kit/prompts/T652.md",
+   "acceptance": "TD-OPS-46 and TD-OPS-47 pass against PostgreSQL, the vault, call-back and cross-line cases failing on `main` before the change; `tests/integration/tests/safe_mode.rs`, `ops_alert_conditions.rs` and every existing ops and payments test pass unchanged."
+  },
+  {
+   "id": "T653",
+   "slug": "btr-typed-unchecked",
+   "title": "licensing and server (harness): a typed BTR number is stored unchecked and gives no card and no license line",
+   "goal": "Plan change D-4310 (Fable's decision on the licensing spot review of `main` 4fee847d, finding 1; no requirement amended). Sign-up stores the typed `btr_number` for Home inspection and Alarm systems through `record_agency_license` (`app/server/src/business_signup.rs:1289` to `:1293`), which inserts it as `verification = 'agency_record'` (`app/licensing/src/holder.rs:120`); `read_rows` (`:226`) adds every row to `holder.agencies`, so `rules::agency_only` gives `Eligibility::Card`, and `card_facts::agency_facts` (`app/licensing/src/card_facts.rs:136`) prints LIC-034's \"showed Active on the ... website when we checked on <date>\" with the sign-up day as the check day. No BTR lookup exists, so the line is false and LIC-015, LIC-013 and CARD-015 are not met. Until a BTR source exists, an unchecked number gets no card and no line; extending LIC-047's attestation to BTR is Casey's call (`docs/for-casey-review.md`), not this task's. (1) `migrations/0212_licensing_btr_typed_unchecked.sql`: `licensing.business_license.verification` also allows `typed_unchecked`, only on `home_inspector` and `alarm_business` rows (a CHECK); every existing `home_inspector` and `alarm_business` row with `agency_record` becomes `typed_unchecked` (the comment says why: only sign-up ever wrote them); the other checks stay. (2) `holder.rs`: a new `record_typed_agency_number(conn, business, (agency, number), actor)` stores a typed number as `typed_unchecked` (trimmed, at most 64 characters, `BadRecord` for pest and septage hauler, the unique index's `AlreadyRecorded`, one audit row naming the agency as the field, never the number, PRIV-028), exported through `licensing::api`; `record_agency_license` stays the writer for a number read from the agency's own source, and its doc says sign-up never calls it; `read_rows` adds an agency only for an `agency_record` row (pest stays `self_attested`). (3) `card_facts.rs`: `agency_facts` reads `agency_record` rows only, and its doc states the wording rule: a card says a license \"showed Active ... when we checked on <date>\" only from a stored check of that number against the agency's own source, <date> being that check's day, never the sign-up day; no \"verified\", \"certified by Laftly\" or \"vetted\" (WORD-003). (4) `business_signup.rs:1291` calls `record_typed_agency_number`. (5) `app/server/tests/business_signup_route.rs:673` (TD-BIZ-49) asserts a typed `HI-5678` puts `HomeInspector` in `holder.agencies`; D-4310 makes that wrong, so it now asserts the row is stored `typed_unchecked` and is not in `holder.agencies` (this task is `harness` for that one change; nothing else in the file changes). Tests, fake data only, on PostgreSQL: TD-LIC-32 in `tests/integration/tests/btr_typed_unchecked.rs`. Follow-up, not this task: a BTR source (stand-in, adapter and the CARD-015 daily check) that writes `agency_record` rows with the check date, in a later plan change that gives T134 the real source. Migration number: 0212 runs after T645's 0210 and 0211 in the serial order (V9); T236's moved to 0213. Update `app/licensing/NOTES.md`, `app/server/NOTES.md` and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "licensing",
+   "deps": [
+    "T588",
+    "T645",
+    "T585"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "licensing",
+    "compliance",
+    "harness"
+   ],
+   "owns": [
+    "migrations/0212_licensing_btr_typed_unchecked.sql",
+    "app/licensing/src/holder.rs",
+    "app/licensing/src/card_facts.rs",
+    "app/server/src/business_signup.rs",
+    "app/server/tests/business_signup_route.rs",
+    "tests/integration/tests/btr_typed_unchecked.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/licensing.md",
+    "docs/spec/job-cards.md",
+    "docs/spec/intake.md",
+    "docs/spec/wording.md",
+    "app/licensing/src/rules.rs",
+    "migrations/0048_licensing_agency_rules.sql",
+    "tests/integration/tests/holder_read.rs",
+    "tests/integration/tests/quote_page_cards.rs"
+   ],
+   "requirements": [
+    "LIC-013",
+    "LIC-015",
+    "LIC-034",
+    "CARD-015",
+    "LIC-006",
+    "INT-017",
+    "WORD-003"
+   ],
+   "tests": [
+    "TD-LIC-32",
+    "TD-BIZ-49"
+   ],
+   "decisions": [
+    "D-4310",
+    "D-3642",
+    "D-3646",
+    "D-2712",
+    "D-859",
+    "D-417",
+    "D-3723",
+    "D-3726"
+   ],
+   "cites": [
+    "app/server/src/business_signup.rs:1289",
+    "app/licensing/src/holder.rs:120",
+    "app/licensing/src/card_facts.rs:136",
+    "app/server/tests/business_signup_route.rs:673"
+   ],
+   "budget": {
+    "files": 6,
+    "lines": 400,
+    "context_pct": 37
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T653-btr-typed-unchecked",
+   "prompt": "kit/prompts/T653.md",
+   "acceptance": "TD-LIC-32 passes against PostgreSQL; `app/server/tests/business_signup_route.rs` changes only in the TD-BIZ-49 assertion D-4310 names; `tests/integration/tests/holder_read.rs`, `quote_page_cards.rs`, `capability_offer.rs` and every other licensing and sign-up test pass unchanged; the `app/licensing/` 95% branch floor holds."
+  },
+  {
+   "id": "T654",
+   "slug": "card-pool-roc-check",
+   "title": "quotes and licensing: the card pool gives ROC classes only while the latest ROC standing is Active and fresh",
+   "goal": "Plan change D-4310 (Fable's decision on the licensing spot review of `main` 4fee847d, finding 2's first half; closes D-3181's CARD-015 gap). `card_pool::one_business` (`app/quotes/src/card_pool.rs:227`) takes `parts.classes` (`:256`) from `holder_for`: the classes the latest ROC list shows Active for the latest check's number, never that check's status or age, so a business whose latest lookup read Inactive (the pick lookup or LIC-039's lookup while the list fails) or whose list stopped loading keeps getting ROC cards, and the homeowner spends a pick on a business Confirm refuses (PICK-020). A recorded list writes no per-business `license_check` row (only sign-up's `check_license`, the pick lookup and LIC-039's lookups write one), so the daily check CARD-015 means is the list itself when it loads. (1) `app/licensing/src/service.rs`: a new `roc_standing_allows_card(conn, business, since) -> Result<bool, ImportError>`, exported through `licensing::api` beside `roc_check_allows_card`: the business's ROC standing is the newer of (a) the latest recorded ROC list (`list_import.imported_at`; Active when it shows an Active class for the business's latest checked number) and (b) its latest `license_check` row (`checked_at`, `ORDER BY checked_at DESC, id DESC`, the row `holder_for` reads); true only when that newer one is Active and at or after `since`; no check row (no ROC number) is false. (2) `one_business` keeps `parts.classes` only when it is true for `since = now - pause_after`, LIC-008's 72-hour setting (`licensing::api::FailureLimits`); otherwise `classes` is empty, so ROC categories give no card while agency, pest, handyman and no-license standing are unchanged. `now` is the pool's caller's clock (the worker clock, never the wall clock) and the setting is read the way the caller reads settings; if `card_pool` has no path to the setting, use `FailureLimits::default()` and log it in `docs/decisions.md`. A list outage past 72 hours with failing lookups stops every ROC card: LIC-008 intends that and LIC-039 alerts. Update the `one_business` doc and D-3181's sentence. Tests, fake data only, on PostgreSQL: TD-LIC-33 in `tests/integration/tests/card_pool_license_check.rs`. Ordering: after T601, which changes the same file. Update `app/quotes/NOTES.md`, `app/licensing/NOTES.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "quotes",
+   "deps": [
+    "T601"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "licensing",
+    "money"
+   ],
+   "owns": [
+    "app/quotes/src/card_pool.rs",
+    "app/licensing/src/service.rs",
+    "tests/integration/tests/card_pool_license_check.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/job-cards.md",
+    "docs/spec/licensing.md",
+    "docs/spec/quotes-pick.md",
+    "app/licensing/src/holder.rs",
+    "app/licensing/src/handlers.rs",
+    "app/picks/src/confirm.rs",
+    "migrations/0050_licensing_imports.sql"
+   ],
+   "requirements": [
+    "CARD-015",
+    "LIC-008",
+    "LIC-007",
+    "PICK-020"
+   ],
+   "tests": [
+    "TD-LIC-33"
+   ],
+   "decisions": [
+    "D-4310",
+    "D-3181",
+    "D-3646",
+    "D-2743",
+    "D-2744",
+    "D-941"
+   ],
+   "cites": [
+    "app/quotes/src/card_pool.rs:227",
+    "app/quotes/src/card_pool.rs:256"
+   ],
+   "budget": {
+    "files": 3,
+    "lines": 300,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T654-card-pool-roc-check",
+   "prompt": "kit/prompts/T654.md",
+   "acceptance": "TD-LIC-33 passes against PostgreSQL, its Inactive-check and stale cases failing on `main` before the change; every existing card-pool, matching and licensing test passes unchanged; the `app/licensing/` 95% branch floor holds."
+  },
+  {
+   "id": "T655",
+   "slug": "license-unknown-pause",
+   "title": "businesses: an unknown ROC license status warns at 24 hours, pauses at 72 and resumes on a later Active standing",
+   "goal": "Plan change D-4310 (Fable's decision on the licensing spot review of `main` 4fee847d, finding 2's second half and finding 3; D-941 named this work with no owner). `licensing::api::unknown_standing` (`app/licensing/src/handlers.rs:96`) has no production caller, nothing writes a `license` pause except `lift_no_cover`'s re-hold (`app/businesses/src/license_reapply.rs:218`), and nothing ever lifts one, against LIC-008 (\"a pause that clears when the list loads needs no review\"). (1) `app/licensing/src/daily_lists.rs`: a public `roc_unknown_since(conn, business, run_hour)` (exported through `licensing::api`): `None` while the business's ROC standing (T654's newer of the latest list and its latest `license_check`) is at or after the ROC list's failure start (`recorded_failure_start`), else that failure start; `None` for a business with no check row (no ROC number) or while no list ever loaded. (2) New `app/businesses/src/license_standing.rs`, a daily task chain `businesses.license_standing`, queued like the other chains and registered on the worker clock in the shared `app/server/src/lib.rs` (`now` from the worker's clock, as `register_purge_handlers` does), run after the ROC list's run hour: for each active business it applies `unknown_standing(unknown_since, now, limits)` with LIC-008's settings (`FailureLimits`): `Warned` (24 hours) queues one `license_unknown` notice email to the owner, once per unknown spell (keyed by the business and `unknown_since`), with its audit row; `Paused` (72 hours) pauses it with reason `license` through the status machine (system actor, audit row in the same transaction). For each business paused with reason `license` whose ROC standing is Active and later than the pause, with no pest report holding it (`pest_reported`), it resumes with `Event::Resume` and no review, unless a complaint hold or an earlier self-pause applies, in `lift_no_cover`'s order (complaints, then self). This is also the exit for `lift_no_cover`'s `license` re-hold (finding 3); `license_reapply.rs` changes only in that function's doc. A known Inactive standing is not paused here: T654 stops its ROC cards and Confirm refuses it (PICK-020). Each pause and resume is a system-actor status audit row, which T524's weekly digest counts as automatic pauses and license-unknown counts (OPS-030, D-3882) and which is Casey's count (D-199); this task adds no digest code. (3) `app/businesses/src/notice_emails.rs`: `license_unknown` joins `NOTICE_KINDS`, to the owner's account address like `license_change`, with its English and Spanish words here (BIZ-018): Laftly could not check the ROC license on the state list since <date>; if it still can't by <date and time 72 hours after>, job cards pause until it can; nothing is needed if the license is Active. No license number, contact value or link in the payload; never \"verified\" or \"vetted\". Deferred: LIC-009's end and bond dates (the ROC list has no such column, D-902). Tests, fake data only, on PostgreSQL, in `tests/integration/tests/license_standing.rs`: TD-LIC-05's warning at 24:00:00 and not at 23:59:59, kept at 71:59:59, paused at 72:00:00 (settings), one email per spell, the pause cleared with no review by a later Active list or lookup, kept on an Inactive lookup, a pest report or a complaint hold, `lift_no_cover`'s re-hold cleared the same way, and a system-actor status audit row for each pause and resume. Update `app/businesses/NOTES.md`, `app/licensing/NOTES.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "businesses",
+   "deps": [
+    "T654",
+    "T585",
+    "T372",
+    "T584"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "licensing",
+    "compliance"
+   ],
+   "owns": [
+    "app/businesses/src/license_standing.rs",
+    "app/businesses/src/license_reapply.rs",
+    "app/businesses/src/notice_emails.rs",
+    "app/licensing/src/daily_lists.rs",
+    "tests/integration/tests/license_standing.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/licensing.md",
+    "docs/spec/job-cards.md",
+    "docs/spec/businesses.md",
+    "docs/spec/ops-recovery.md",
+    "docs/spec/wording.md",
+    "app/licensing/src/handlers.rs",
+    "app/businesses/src/status.rs",
+    "app/businesses/src/capability.rs",
+    "app/licensing/src/service.rs"
+   ],
+   "requirements": [
+    "LIC-008",
+    "OPS-030",
+    "BIZ-018",
+    "CARD-015"
+   ],
+   "tests": [
+    "TD-LIC-05"
+   ],
+   "decisions": [
+    "D-4310",
+    "D-941",
+    "D-199",
+    "D-902",
+    "D-3882",
+    "D-3447"
+   ],
+   "cites": [
+    "app/licensing/src/handlers.rs:96",
+    "app/businesses/src/license_reapply.rs:218"
+   ],
+   "budget": {
+    "files": 5,
+    "lines": 550,
+    "context_pct": 27
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T655-license-unknown-pause",
+   "prompt": "kit/prompts/T655.md",
+   "copy": true,
+   "acceptance": "`tests/integration/tests/license_standing.rs` passes against PostgreSQL; every existing licensing, license-reapply, status and notice-email test passes unchanged; the cold read and copy panel find nothing open in the `license_unknown` words."
   }
  ]
 }
