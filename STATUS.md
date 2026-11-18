@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T14:32:20Z by runner ab61d455659b (actions).
+Updated 2026-11-18T14:32:32Z by runner ab61d455659b (actions).
 
 **Building: T665 in progress since 14:25Z; 445 of 643 done; week 57% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 445 of 643 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T665 claimed 14:25Z, lease until 17:25Z; lane 2: T525 claimed 13:59Z, lease until 16:59Z; lane 6: T200 claimed 12:06Z, lease until 17:11Z
+- **Lane:** lane 1: T665 claimed 14:25Z, lease until 17:25Z; lane 2: T525 claimed 13:59Z, lease until 16:59Z
 - **Week:** 57% used, 77.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 14:25Z, 6 min before this update
 - **Keeper:** last ran 14:03Z, next wake 16:01Z
@@ -26,13 +26,14 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T200 | ops and portals: the owner help page with its screened reply | MERGE_PENDING | 2 | 2 h 25 min | 14:32Z | Review not approved after the one fix round (head 346acc872b66e2a8cd86b345b919fe4573f7db87). / Remaining finding (review |
 | T671 | intake (harness): a homeowner's texts after the consent text | BLOCKED | 1 | 44 min | 13:58Z | PLAN GAP: three tests outside T671's scope fail because of the new behaviour (worker edited none of them): / 1. tests/in |
 | T472 | server (harness): serve the "Can't take it" page and button  | done | 1 | 62 min | 12:45Z |  |
 | T662 | jobs, intake, calls and server: a masked call line closes wh | done | 1 | 73 min | 12:39Z |  |
 | T679 | quotes and businesses: a launch-open category takes requests | done | 1 | 37 min | 12:17Z |  |
 | T583 | intake and server: the quote-count update text is sent, at m | BLOCKED | 1 | 53 min | 12:13Z | PLAN GAP: kit/prompts/T583.md:51 (budget of 450 changed lines in 3 files) The smallest plan change: raise T583's budget  |
 | T700 | Runner (harness): a merge-line task whose turn ran out goes  | done | 1 | 29 min | 12:08Z |  |
-| T200 | ops and portals: the owner help page with its screened reply | QUEUED | 1 | 2 h 57 min | 12:02Z | Review not approved after the one fix round (head 346acc872b66e2a8cd86b345b919fe4573f7db87). / Remaining finding (review |
+| T200 | ops and portals: the owner help page with its screened reply | QUEUED | 1 | 2 h 57 min | 12:02Z |  |
 | T408 | payments and server: a release waits while safe mode is on a | BLOCKED | 2 | 2 h 21 min | 11:34Z | PLAN GAP: kit/prompts/T408.md:54 "Size budget: at most 6 files, 800 changed lines" cannot be met. The prompt's own plan  |
 | T563 | intake and privacy: the daily consent sweep removes consent  | BLOCKED | 1 | 85 min | 11:21Z | PLAN GAP: app/messaging/src/optout.rs:311 (suppress/record, owned by T029 and later tasks; T563 owns no messaging file)  |
 | T658 | privacy: the scrubber removes lower-case Spanish addresses a | done | 2 | 51 min | 11:04Z | Fix-round review of head 18e4fd102f38620e11d1055ecb4d77813e2b2965 returned FINDINGS after the one allowed fix round (fir |
@@ -136,7 +137,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T665 (lease until 2026-11-18T17:25:29Z)
 - lane 2: T525 (lease until 2026-11-18T16:59:19Z)
-- lane 6: T200 (lease until 2026-11-18T17:11:22Z)
 
 ## Last usage reading
-- {"task": "T671", "at": "2026-11-18T13:58:12Z", "output_tokens": 94424, "cache_creation_input_tokens": 301952, "input_tokens": 274, "cache_read_input_tokens": 20029761}
+- {"task": "T200", "at": "2026-11-18T14:32:19Z", "input_tokens": 403, "output_tokens": 116184, "cache_creation_input_tokens": 395960, "cache_read_input_tokens": 18705302}
