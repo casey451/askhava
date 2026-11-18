@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM privacy.contact_index i WHERE i.purpose = $1 AND i.key_version <> ALL($2::int4[]) AND EXISTS (SELECT 1 FROM privacy.contact_index j WHERE j.contact_id = i.contact_id AND j.purpose = $1 AND j.key_version = ANY($2::int4[]))",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int4Array"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "80cf849923284ca9ac364b264bb6d825a557d57043942cf84a934fea0e75972f"
+}

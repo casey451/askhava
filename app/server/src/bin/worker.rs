@@ -41,6 +41,9 @@ async fn main() -> io::Result<()> {
     let (settings, _log_guard) = askhava_server::start_up()?;
     let shutdown = askhava_server::shutdown_signal()?;
     let pool = app_pool(&settings).map_err(io::Error::other)?;
+    // No task runs under a key set missing a held index version (D-4418, D-4473).
+    let vault = askhava_server::business_portal::vault_from_settings(&settings, std::env::vars())?;
+    askhava_server::check_index_keys(&pool, vault.as_ref()).await?;
     let owner = WorkerId::new(&pool).await.map_err(io::Error::other)?;
     let control =
         TestControl::from_settings(&settings, std::env::vars()).map_err(io::Error::other)?;

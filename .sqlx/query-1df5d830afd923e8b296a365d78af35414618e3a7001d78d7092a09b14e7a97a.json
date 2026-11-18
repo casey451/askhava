@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(DISTINCT i.contact_id) AS \"count!\" FROM privacy.contact_index i\n           WHERE i.purpose = $1 AND NOT EXISTS (SELECT 1 FROM privacy.contact_index j\n             WHERE j.contact_id = i.contact_id AND j.purpose = $1 AND j.key_version = ANY($2::int4[]))",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "count!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int4Array"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "1df5d830afd923e8b296a365d78af35414618e3a7001d78d7092a09b14e7a97a"
+}
