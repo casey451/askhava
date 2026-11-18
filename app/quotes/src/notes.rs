@@ -5,13 +5,15 @@
 //! contact detail the card gate cuts (the same `text_bounce` the quote uses) or holds a phrase on
 //! [`OFF_PLATFORM`] (or "outside <brand>"). [`screen_note`] adds the AI check while AI is on: the
 //! caller's [`NoteScreener`] (the `ai` crate's, or the stand-in during the build) flags a note
-//! that steers the homeowner away, criticizes another business or makes a WORD-003 claim. Run it
+//! that steers the homeowner away, criticizes another business or makes a WORD-003 claim. It is
+//! handed only the note as `privacy::api::scrub` left it (AI-002, AI-004, D-4327). Run it
 //! before the quote's transaction, never inside it (rust brain R11). A note that passes is kept
 //! and shown exactly as written. [`NoteProblem`] never carries the note's words (R6).
 
 use std::future::Future;
 
 use askhava_core::api::brand;
+use askhava_privacy::api::{CommonWords, Known, NameMemory, ScrubbedText, scrub};
 
 use crate::intake::{Bounce, text_bounce};
 
@@ -144,13 +146,26 @@ pub fn check_note(note: &str) -> Result<(), NoteProblem> {
 }
 
 /// The AI check on a note that passed [`check_note`] (PICK-052, D-442); the `ai` crate's
-/// implementation sees only the note, never a homeowner detail, and has no tools (AI-006).
+/// implementation sees only the scrubbed note, never a homeowner detail, and has no tools
+/// (AI-002, AI-004, AI-006, D-4327).
 pub trait NoteScreener {
     /// The flag for `note`, or none when it reads as about the job only.
-    fn screen(&self, note: &str) -> impl Future<Output = Option<NoteFlag>> + Send;
+    fn screen(&self, note: &ScrubbedText) -> impl Future<Output = Option<NoteFlag>> + Send;
 }
 
-/// PICK-052, D-442: [`check_note`], then, while AI is on (`ai` is some), the AI check.
+/// AI-002, D-4327: the note as the AI may see it: default common words, no vault name (a note
+/// is the business's text) and a fresh name memory.
+fn scrubbed(note: &str) -> ScrubbedText {
+    let common = CommonWords::default();
+    let known = Known {
+        common: &common,
+        vault_name: None,
+    };
+    scrub(note, &known, &mut NameMemory::default())
+}
+
+/// PICK-052, D-442, AI-002, AI-004: [`check_note`], then, while AI is on (`ai` is some), the AI
+/// check on the scrubbed note (D-4327); with no screener nothing is scrubbed or called.
 ///
 /// # Errors
 ///
@@ -164,7 +179,7 @@ pub async fn screen_note<S: NoteScreener + Sync>(
         return Ok(());
     }
     match ai {
-        Some(screener) => match screener.screen(note).await {
+        Some(screener) => match screener.screen(&scrubbed(note)).await {
             Some(flag) => Err(NoteProblem::Flagged(flag)),
             None => Ok(()),
         },
