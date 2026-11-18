@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T04:24:30Z by runner 1031aea207a3 (actions).
+Updated 2026-11-18T04:35:57Z by runner 8d44d2c311f8 (actions).
 
 **Building: T638 in progress since 03:07Z; 424 of 606 done; week 42% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-18T04:24:30Z by runner 1031aea207a3 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T638 claimed 03:07Z, lease until 07:05Z; lane 2: T601 claimed 04:24Z, lease until 07:24Z; lane 6: T523 claimed 04:19Z, lease until 07:19Z
 - **Week:** 42% used, 108.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:24Z, 0 min before this update
+- **Last run:** 04:24Z, 11 min before this update
 - **Keeper:** last ran 04:12Z, next wake 07:08Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 15 problem(s) on tasks still to run (+191 on DONE tasks); first: T151: stored context_pct 31% but it measures 35%; regenerate
+- Strict plan check red: 19 problem(s) on tasks still to run (+192 on DONE tasks); first: T402: stored context_pct 40% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -92,7 +92,7 @@ Updated 2026-11-18T04:24:30Z by runner 1031aea207a3 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 678 · unstarted 57
-**Tasks merged (throughput only):** 424 of 602
+**Tasks merged (throughput only):** 424 of 598
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
