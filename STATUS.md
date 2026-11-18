@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T07:32:31Z by runner 77a49d7ccc9a (actions).
+Updated 2026-11-18T07:32:40Z by runner 77a49d7ccc9a (actions).
 
 **Building: T640 in progress since 06:58Z; 430 of 621 done; week 46% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -78,7 +78,6 @@ Updated 2026-11-18T07:32:31Z by runner 77a49d7ccc9a (actions).
 | T107 | Consent records kept 5 years, no export, opt-out rate alerts | done | 2 | 85 min | 09:00Z | Second fresh-eyes review of head dfb993caba5ddab51d93dc1f24c5403dc513e3e7 ended REVIEW-VERDICT: FINDINGS (the one findin |
 | T112 | Draft the privacy policy and SMS terms | QUEUED | 2 | 52 min | 08:28Z |  |
 | T570 | intake: a CLOSE text, a "Close which?" answer and a cancel-i | done | 1 | 39 min | 08:26Z |  |
-| T112 | Draft the privacy policy and SMS terms | QUEUED | 1 | 62 min | 07:32Z |  |
 
 ### Plan and harness merges on main
 - none
