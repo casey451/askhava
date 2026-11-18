@@ -1060,11 +1060,13 @@ def start_refill(lanes: list[str], env: GitHubEnv) -> list[str]:
 
 
 def warm_smoke(args: argparse.Namespace) -> int:
-    """`--warm-smoke` (D-2007): GitHubEnv.warm_smoke, before any state is read and with no cycle, its log
-    lines and result printed; any failure is printed too and the exit is always 0, so the workflow step
-    never fails the job (the session's own smoke then simply builds what is missing)."""
+    """`--warm-smoke` (D-2007): GitHubEnv.warm_smoke, before any state is read and with no cycle (only the
+    PRE_SMOKE_STATE copy, to skip a smoke that will be reused, D-4281), its log lines and result printed; any
+    failure is printed too and the exit is always 0, so the workflow step never fails the job (the session's own
+    smoke then simply builds what is missing)."""
     env = GitHubEnv(ROOT, [], Path(tempfile.gettempdir()), repo=repo_name(), starter=starter_name(),
                     runner_sha=git_out("rev-parse", "HEAD"), dry_run=args.dry_run)
+    env.smoke_ancestry = smoke_ancestry(ROOT / "kit" / "runner.json")  # one reuse rule with --pre-smoke (D-4281)
     try:
         line = env.warm_smoke()
     except Exception as exc:  # noqa: BLE001  # reason: a failed warm-up only leaves the smoke cold, never fails the job (D-2007)

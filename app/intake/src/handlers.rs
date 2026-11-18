@@ -16,17 +16,36 @@
 //! runs at once on the AI-off path: keyword rules and the fixed questions, no hold, no "we have
 //! your message" text, no retry. TXT-031: [`answer_list`] answers LIST or LISTA with `quotes`' LIST
 //! lines. INT-023: [`queue_call_back`] raises the call-back alert to Casey with its deadline
-//! ([`call_back_due`], [`counts_urgent`]); its callers are the failed-text path (T094) and web chat
-//! (T103). [`answer_list`] has no caller yet either: the conversation dispatcher is the D-999 gap.
+//! ([`call_back_due`], [`counts_urgent`]); no app path calls it yet (only
+//! `tests/integration/tests/intake_timeouts.rs`): the failed-text path (T094) and web chat (T103)
+//! will. [`answer_list`]'s caller is `replies.rs`'s `receive_reply` (T241, D-2206).
+//!
+//! OPS-036, CON-034 (T151, D-3155, D-3753, D-3881, D-4044): a HELP keyword only records its time
+//! ([`note_help`]); [`help_answered`] tells T482's `receive_reply` whether the next message follows
+//! a HELP within 24 hours, and [`help_follow_up`] opens or joins her help request for a follow-up
+//! that is not a plain-word question. A business text that is not a command ([`business_help`]),
+//! a business's "Ask about a charge" event ([`run_help_request_opened`]) and a help email
+//! `privacy` read ([`receive_help_email`]) open one at once. Each keeps the scrubbed words in
+//! `privacy.message_body` (her job, else the request's own ID), opens or joins the request in
+//! `ops`, and for a request notified now queues `messaging`'s notification with the job fields
+//! ([`job_fields`]) and the words passed through `quotes`' CARD-008 gate (PRIV-030).
 
 use askhava_core::api::{
     Claimed, Clock, HandlerError, NewTask, SystemClock, arizona, arizona_time,
     enqueue as enqueue_task,
 };
 use askhava_jobs::api::{JobRow, JobStatus, current, job_number, move_to, restart_timer};
-use askhava_messaging::api::{Language, NewText, Relation, enqueue, render};
-use askhava_ops::api::{Actor, NewAlert, Severity, raise_alert};
-use askhava_quotes::api::{Reader, list_texts, shown_quotes, which_job_text};
+use askhava_messaging::api::{
+    HelpNotice, Language, NewText, Relation, enqueue, last_text, queue_help_notice, render,
+};
+use askhava_ops::api::{
+    Actor, Asker, HelpLimits, HelpOpened, NewAlert, Severity, help_keyword_recent,
+    open_help_request, raise_alert, record_help_keyword,
+};
+use askhava_privacy::api::{
+    CommonWords, InboundEmail, Known, NameMemory, ScrubbedText, Standing, keep_problem_words, scrub,
+};
+use askhava_quotes::api::{Reader, final_gate, list_texts, shown_quotes, which_job_text};
 use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
 use serde_json::{Value, json};
@@ -572,4 +591,295 @@ async fn request_urgent(db: &mut PgConnection, conversation: Uuid) -> Result<boo
         keyword,
         choice.as_deref() == Some("emergency"),
     ))
+}
+
+/// OPS-036, D-887: a help request is due this long after it opens, or [`HEAR_BACK_WITHIN`] when
+/// her job is urgent or an emergency.
+pub const HELP_DUE: SignedDuration = SignedDuration::from_hours(48);
+/// The line kept and shown for a business's "Ask about a charge", whose own words are not carried
+/// (BIZ-032, D-492, D-1958).
+pub const CHARGE_QUESTION: &str = "The business tapped Ask about a charge for this job.";
+const HELP_FAILED: HandlerError = HandlerError("the help request could not be opened");
+
+/// D-3882: the facts of a job a help notification shows (OPS-036).
+pub(crate) struct JobFields {
+    job: Uuid,
+    number: i64,
+    status: JobStatus,
+    trade: Option<String>,
+    town: Option<String>,
+    urgent: bool,
+    list_line: Option<String>,
+}
+
+/// OPS-036, D-3882: her newest job in her open request with its status, number, trade, town,
+/// urgency and first LIST line (no business names); `None` with no open request or job.
+pub(crate) async fn job_fields(
+    db: &mut PgConnection,
+    contact: Uuid,
+) -> Result<Option<JobFields>, IntakeError> {
+    let row = sqlx::query!(
+        "SELECT a.conversation_id, a.choice, split_part(a.question_id, '.', 2) AS \"trade!\", \
+         (SELECT p.town FROM intake.property p WHERE p.homeowner_id = h.id \
+          AND left(replace(p.id::text, '-', ''), 12) = split_part(a.question_id, '.', 3) \
+          LIMIT 1) AS town \
+         FROM intake.intake_answer a JOIN intake.conversation c ON c.id = a.conversation_id \
+         JOIN intake.homeowner h ON h.id = c.homeowner_id \
+         WHERE h.contact_id = $1 AND c.closed_at IS NULL AND a.question_id LIKE 'job.%' \
+         ORDER BY a.answered_at DESC LIMIT 1",
+        contact
+    )
+    .fetch_optional(&mut *db)
+    .await
+    .map_err(|_| IntakeError::Database)?;
+    let Some(row) = row else { return Ok(None) };
+    let Some(job) = row.choice.and_then(|c| Uuid::parse_str(&c).ok()) else {
+        return Ok(None);
+    };
+    let mut fields = charge_job(db, job).await?;
+    fields.urgent = fields.urgent || request_urgent(db, row.conversation_id).await?;
+    let reader = Reader {
+        wanted: Language::En,
+        spanish_on: false,
+    };
+    let list = list_texts(db, (job, &fields.number.to_string()), reader, &[]).await;
+    fields.list_line = list.ok().and_then(|lines| lines.into_iter().next());
+    (fields.trade, fields.town) = (Some(row.trade), row.town);
+    Ok(Some(fields))
+}
+
+/// A job's number, status and emergency flag, with no trade, town or LIST line yet.
+async fn charge_job(db: &mut PgConnection, job: Uuid) -> Result<JobFields, IntakeError> {
+    let row = current(db, job).await.map_err(|_| IntakeError::Job)?;
+    let number = job_number(db, job).await.map_err(|_| IntakeError::Job)?;
+    Ok(JobFields {
+        job,
+        number,
+        status: row.status,
+        trade: None,
+        town: None,
+        urgent: row.emergency,
+        list_line: None,
+    })
+}
+
+/// One help message on its way to `ops`: who, its inbox ID (the `privacy.message_body` key), its
+/// scrubbed words, its job's fields and the number the notification shows.
+struct HelpIn<'a> {
+    asker: Asker,
+    inbox: Uuid,
+    words: &'a ScrubbedText,
+    fields: Option<JobFields>,
+    number: String,
+}
+
+/// OPS-036, PRIV-030, D-4044: opens or joins the request in `ops`, keeps the words in
+/// `privacy.message_body` under the job or the request's own ID, and for a request notified now
+/// queues the one notification with the words through the CARD-008 gate.
+async fn open_help(
+    db: &mut PgConnection,
+    help: HelpIn<'_>,
+    at: Timestamp,
+) -> Result<HelpOpened, IntakeError> {
+    let urgent = help.fields.as_ref().is_some_and(|f| f.urgent);
+    let due = at + if urgent { HEAR_BACK_WITHIN } else { HELP_DUE };
+    let key = (help.inbox, at, due);
+    let opened = open_help_request(db, help.asker, key, HelpLimits::default())
+        .await
+        .map_err(|_| IntakeError::Alert)?;
+    let job = help.fields.as_ref().map_or(opened.request(), |f| f.job);
+    keep_problem_words(db, help.inbox, job, help.words, false)
+        .await
+        .map_err(|_| IntakeError::Vault)?;
+    let HelpOpened::Opened {
+        request,
+        notify: true,
+    } = opened
+    else {
+        return Ok(opened);
+    };
+    let last = match help.asker {
+        Asker::Homeowner(id) | Asker::Business(id) => last_text(db, id).await,
+        Asker::Email => Ok(None),
+    };
+    let f = help.fields;
+    let notice = HelpNotice {
+        request,
+        asker: help.asker.code().to_owned(),
+        number: help.number,
+        status: f.as_ref().map(|f| f.status.code().to_owned()),
+        trade: f.as_ref().and_then(|f| f.trade.clone()),
+        town: f.as_ref().and_then(|f| f.town.clone()),
+        urgent,
+        list_line: f.and_then(|f| f.list_line),
+        message: final_gate(help.words.as_str()),
+        last_text: last.map_err(|_| IntakeError::Outbox)?,
+        due: due.as_second(),
+    };
+    queue_help_notice(db, &notice, at)
+        .await
+        .map_err(|_| IntakeError::Outbox)?;
+    Ok(opened)
+}
+
+/// CON-034, D-3881: records her HELP keyword at `at`; no request and no notification.
+///
+/// # Errors
+///
+/// [`IntakeError::Alert`] when `ops` cannot record it.
+pub async fn note_help(
+    db: &mut PgConnection,
+    contact: Uuid,
+    at: Timestamp,
+) -> Result<(), IntakeError> {
+    record_help_keyword(db, contact, at)
+        .await
+        .map_err(|_| IntakeError::Alert)
+}
+
+/// CON-034, D-3753: whether her number's HELP was answered within the 24 hours before `at`
+/// (T482's `receive_reply` checks this before a follow-up).
+///
+/// # Errors
+///
+/// [`IntakeError::Alert`] when `ops` cannot be read.
+pub async fn help_answered(
+    db: &mut PgConnection,
+    contact: Uuid,
+    at: Timestamp,
+) -> Result<bool, IntakeError> {
+    help_keyword_recent(db, contact, at)
+        .await
+        .map_err(|_| IntakeError::Alert)
+}
+
+/// OPS-036, D-3881: her follow-up after HELP that is not a plain-word question (inbox row `inbox`,
+/// scrubbed `words`) opens or joins her help request, with her newest open job's fields.
+///
+/// # Errors
+///
+/// [`IntakeError::Database`], `Job`, `Alert`, `Vault` or `Outbox`.
+pub async fn help_follow_up(
+    db: &mut PgConnection,
+    (inbox, contact): (Uuid, Uuid),
+    words: &ScrubbedText,
+    at: Timestamp,
+) -> Result<HelpOpened, IntakeError> {
+    let fields = job_fields(db, contact).await?;
+    let number = fields
+        .as_ref()
+        .map_or_else(|| "with no open job".to_owned(), |f| f.number.to_string());
+    let asker = Asker::Homeowner(contact);
+    let help = HelpIn {
+        asker,
+        inbox,
+        words,
+        fields,
+        number,
+    };
+    open_help(db, help, at).await
+}
+
+/// The short reference a business's notification shows in place of a job number.
+fn business_number(business: Uuid) -> String {
+    let hex = business.simple().to_string();
+    format!("B-{}", &hex[..8])
+}
+
+/// OPS-036, D-3881: a business text that is not a command ("why was I charged?", "cargo
+/// incorrecto") opens or joins the business's help request at once.
+///
+/// # Errors
+///
+/// [`IntakeError::Alert`], `Vault` or `Outbox`.
+pub async fn business_help(
+    db: &mut PgConnection,
+    (inbox, business): (Uuid, Uuid),
+    words: &ScrubbedText,
+    at: Timestamp,
+) -> Result<HelpOpened, IntakeError> {
+    let asker = Asker::Business(business);
+    let number = business_number(business);
+    let help = HelpIn {
+        asker,
+        inbox,
+        words,
+        fields: None,
+        number,
+    };
+    open_help(db, help, at).await
+}
+
+/// OPS-036, PRIV-026, D-3155: a help email `privacy::api::read_inbound_email` read (T133's route
+/// hands it here) opens a request; a sender that failed SPF, DKIM or DMARC may only opt out, so
+/// it opens nothing (`None`).
+///
+/// # Errors
+///
+/// [`IntakeError::Database`], `Alert`, `Vault` or `Outbox`.
+pub async fn receive_help_email(
+    db: &mut PgConnection,
+    email: &InboundEmail,
+    at: Timestamp,
+) -> Result<Option<HelpOpened>, IntakeError> {
+    if email.standing != Standing::Authenticated {
+        return Ok(None);
+    }
+    let inbox = sqlx::query_scalar!("SELECT gen_random_uuid() AS \"id!\"")
+        .fetch_one(&mut *db)
+        .await
+        .map_err(|_| IntakeError::Database)?;
+    let help = HelpIn {
+        asker: Asker::Email,
+        inbox,
+        words: &email.text,
+        fields: None,
+        number: "help email".to_owned(),
+    };
+    open_help(db, help, at).await.map(Some)
+}
+
+/// BIZ-032, OPS-036, D-492: the `portals::api::HELP_REQUEST_KIND` handler: a business's "Ask
+/// about a charge" opens one help request with [`CHARGE_QUESTION`], its job's number and status,
+/// keyed by the charge so a rerun joins rather than opens a second.
+///
+/// # Errors
+///
+/// [`HandlerError`] for a bad payload or any failed step (the transaction rolls back).
+pub async fn run_help_request_opened(
+    pool: PgPool,
+    task: Claimed,
+    now: Timestamp,
+) -> Result<(), HandlerError> {
+    let id = |k: &str| {
+        task.payload
+            .get(k)
+            .and_then(Value::as_str)
+            .and_then(|v| Uuid::parse_str(v).ok())
+    };
+    let (Some(business), Some(charge), Some(job)) = (id("business"), id("charge"), id("job"))
+    else {
+        return Err(HandlerError("bad help request payload"));
+    };
+    let mut tx = pool.begin().await.map_err(|_| HELP_FAILED)?;
+    let common = CommonWords::default();
+    let known = Known {
+        common: &common,
+        vault_name: None,
+    };
+    let words = scrub(CHARGE_QUESTION, &known, &mut NameMemory::default());
+    let fields = charge_job(&mut tx, job).await.map_err(|_| HELP_FAILED)?;
+    let number = fields.number.to_string();
+    let asker = Asker::Business(business);
+    let help = HelpIn {
+        asker,
+        inbox: charge,
+        words: &words,
+        fields: Some(fields),
+        number,
+    };
+    open_help(&mut tx, help, now)
+        .await
+        .map_err(|_| HELP_FAILED)?;
+    tx.commit().await.map_err(|_| HELP_FAILED)
 }

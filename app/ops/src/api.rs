@@ -33,8 +33,17 @@ pub use crate::digest_rows::{
     DigestAlert, DigestRow, StatusChangeRow, TradeActive, digest_alerts, digest_opened,
     digest_reminded, digest_sent, latest_digest, system_status_changes, trade_active_counts,
 };
+pub use crate::help_requests::{
+    Asker, HELP_ANSWERED_WITHIN, HELP_PUSH_ITEM, HelpLimits, HelpOpened, HelpRequest,
+    add_owner_reply, help_keyword_recent, help_request, open_help_request, open_help_requests,
+    record_help_keyword, set_help_closed,
+};
 pub use crate::models::{
     Actor, AuditEntry, AuditRow, Change, NewAlert, OpsError, Severity, Switch, is_code_name,
+};
+pub use crate::owner_alerts::{
+    AlertSubject, OWNER_ACK_ACTION, PushedAlert, acknowledge_pushed_alert, alert_subject,
+    pushed_alerts,
 };
 pub use crate::safe_mode::{
     SAFE_MODE_AFTER, SAFE_MODE_EVERY, SAFE_MODE_KIND, SAFE_MODE_OFF_ACTION, SAFE_MODE_ON_ACTION,

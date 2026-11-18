@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE ops.push_item SET done_at = $3 WHERE kind = $1 AND subject_kind = $1 AND subject_id = $2 AND done_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "dc3fc3aca43e49e4536f1e2c0b52ddf58940f150c0041963268d60764b0e3c70"
+}

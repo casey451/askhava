@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{#- The owner home (T108; OPS-001, OPS-003, OPS-035, FEE-007, CON-024, BIZ-027, CON-022; D-1843,
+    D-3744, D-3882, D-3890). Pushed alerts with the acknowledgement, the pause switches, the fee
+    mode, the homeowner line, the status banner, the weekly opt-out rates, the needs-review
+    sign-ups and how long consent records are kept. IDs and code names only, never a contact
+    detail. Every form posts its CSRF token and a change name; record IDs go in the body. -#}
+{% block title %}Owner home{% endblock %}
+{% block main %}
+<link rel="stylesheet" href="/static/portals/forms.css">
+<h1>Owner home</h1>
+<p><a href="{{ routes[5] }}">Category settings</a></p>
+<h2>Alerts sent to your phone</h2>
+{% if alerts.is_empty() %}<p id="no-alerts">No alert has been sent to your phone.</p>
+{% else %}<ul id="pushed-alerts">
+{% for a in alerts %}<li><p>{{ a.kind }} ({{ a.severity }}){% if let Some(about) = a.subject %}, about {{ about }}{% endif %}. Started {{ a.raised }}. Sent to your phone {{ a.pushed }}.
+{% if let Some(done) = a.acknowledged %}Seen {{ done }}.{% endif %}</p>
+{% if a.acknowledged.is_none() && a.delivery %}<p>This clears by itself once texts are getting through again.</p>
+{% else if a.acknowledged.is_none() %}<form method="post" action="{{ routes[0] }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="change" value="acknowledge"><input type="hidden" name="target" value="{{ a.id }}">
+<button type="submit">I've seen this alert</button>
+</form>{% endif %}</li>
+{% endfor %}</ul>
+{% endif %}
+<h2>Pause or resume</h2>
+<ul id="pause-switches">
+{% for p in pauses %}<li><form method="post" action="{{ routes[1] }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="change" value="{{ p.change }}"><input type="hidden" name="target" value="{{ p.target }}"><input type="hidden" name="to" value="{% if p.on %}off{% else %}on{% endif %}">
+<p>{% if p.on %}{{ p.label|capitalize }} is paused. <button type="submit">Resume {{ p.label }}</button>{% else %}{{ p.label|capitalize }} is running. <button type="submit">Pause {{ p.label }}</button>{% endif %}</p>
+</form></li>
+{% endfor %}</ul>
+<h2>Introduction fee</h2>
+<form method="post" action="{{ routes[2] }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="change" value="fee_mode">
+<fieldset><legend>How the introduction fee by job size is worked out</legend>
+<p><input type="radio" id="fee-tiers" name="target" value="tiers"{% if !flat %} checked{% endif %}> <label for="fee-tiers">By the size of each quote</label></p>
+<p><input type="radio" id="fee-flat" name="target" value="flat"{% if flat %} checked{% endif %}> <label for="fee-flat">One flat fee for each job type</label></p>
+</fieldset>
+<p>If you switch, a business is charged again only after it agrees to the new card terms. You need a code from the last 5 minutes: <a href="{{ routes[6] }}">get a new code</a>.</p>
+<p><button type="submit">Save fee mode</button></p>
+</form>
+<h2>Homeowner texts</h2>
+<p id="homeowner-texting">Texting to homeowners is {% if texting_on %}on{% else %}off{% endif %}. Our homeowner text number is {{ number }}.</p>
+<form method="post" action="{{ routes[3] }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="change" value="homeowner_texting"><input type="hidden" name="to" value="{% if texting_on %}off{% else %}on{% endif %}">
+<p><button type="submit">Turn homeowner texting {% if texting_on %}off{% else %}on{% endif %}</button></p>
+</form>
+<form method="post" action="{{ routes[3] }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="change" value="launch_channel">
+<fieldset><legend>How homeowners reach us at launch</legend>
+<p><input type="radio" id="launch-sms" name="target" value="sms"{% if sms_launch %} checked{% endif %}> <label for="launch-sms">By text</label></p>
+<p><input type="radio" id="launch-web" name="target" value="web_and_email"{% if !sms_launch %} checked{% endif %}> <label for="launch-web">Web and email only</label></p>
+</fieldset>
+<p><button type="submit">Save launch channel</button></p>
+</form>
+<form method="post" action="{{ routes[3] }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="change" value="{% if suspended %}number_restored{% else %}number_suspended{% endif %}">
+<p>{% if suspended %}Did the text provider say the number works again?{% else %}Did the text provider suspend the number?{% endif %}</p>
+<p><button type="submit">{% if suspended %}Yes, it works again{% else %}Yes, record the suspension{% endif %}</button></p>
+</form>
+<h2>Status banner</h2>
+{% if banner %}<p id="banner-on">The status banner is showing on the site.</p>
+<form method="post" action="{{ routes[4] }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="change" value="banner_off">
+<p><button type="submit">Hide the status banner</button></p>
+</form>
+{% else %}<p id="banner-off">The status banner is hidden.</p>{% endif %}
+<h2>Opt-outs each week</h2>
+<ul id="opt-out-rates">
+{% for r in rates %}<li>{{ r.week }}, {{ r.audience }}: {{ r.line }}{% if r.alerts %} <strong>At or over the {{ r.limit }}% alert level.</strong>{% endif %}</li>
+{% endfor %}</ul>
+<p>Consent and opt-out records are kept for {{ keep_years }} years.</p>
+<h2>Sign-ups waiting for you</h2>
+{% if reviews.is_empty() %}<p id="no-reviews">No sign-ups are waiting for you.</p>
+{% else %}<ul id="needs-review">
+{% for r in reviews %}<li><p>Business {{ r.business }}</p><p>{{ r.target }}</p></li>
+{% endfor %}</ul>
+{% endif %}
+{% endblock %}
