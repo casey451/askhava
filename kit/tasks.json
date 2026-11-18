@@ -22269,7 +22269,13 @@
     "T688",
     "T690",
     "T691",
-    "T708"
+    "T708",
+    "T710",
+    "T711",
+    "T712",
+    "T714",
+    "T718",
+    "T719"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -24985,7 +24991,9 @@
     "T646",
     "T649",
     "T656",
-    "T675"
+    "T675",
+    "T718",
+    "T719"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -26484,7 +26492,8 @@
     "T683",
     "T685",
     "T689",
-    "T687"
+    "T687",
+    "T713"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -26954,7 +26963,8 @@
     "T683",
     "T685",
     "T689",
-    "T687"
+    "T687",
+    "T713"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -44536,8 +44546,8 @@
   {
    "id": "T671",
    "slug": "intake-order-area-trade",
-   "title": "intake (harness): a homeowner's texts after the consent text are driven through INT-043's order: the ZIP and area check, the trade check with its coverage line, and her first job",
-   "goal": "Plan change D-4360 (unwired sweep, orphan 1, re-verified on `main` 77a49d7cc; round-1 review findings 1 to 3, 9, 10 and 14; INT-043, INT-049, INT-016, INT-017, INT-032, CON-031; D-999, D-3309, D-3702). After the consent text nothing drives the intake order: `reply_in` (`app/intake/src/replies.rs:129`) handles check-in answers, LIST, the wait restart, the under-18 stop, a close by text and the name-and-address answer, then `receive_text` (consent, the 911 screen, SAFE) and step 11; nothing calls `zip_step::ask_zip` or `answer_zip` (`app/intake/src/zip_step.rs:122`, `:149`), so `models::insert_property` (only caller `zip_step.rs:181`) never runs, and nothing calls `conversation::begin_job` (only caller `routing::split_request`, `app/intake/src/routing.rs:482`), so a text request never gets a job. The `Then::FirstQuestion` that `receive_text` returns (CON-031: the first intake question follows the consent text at once as its own text) is acted on by no one (START into an open request, which also stalls, is T691's). (1) A new `app/intake/src/order_dispatch.rs` is the one walker of INT-043's order on the text paths (`order::order`, `app/intake/src/order.rs:124`, is the table as data). It takes `models::lock_homeowner` before it reads where request `conversation` is (two texts at once never both ask or answer a step), reads that only from stored rows (the intake answer rows each step already writes, such as `zip_step`'s asked rows and `HOW_SOON_QUESTION`, the stored property, the request's jobs, the card rows, `NAME_ADDRESS_ASKED`), never from a new column or migration, and calls the existing step functions; it never re-implements a step's rule. `reply_in` calls it last, only for a reply in an open request that nothing earlier ended (LIST, a close, the under-18 stop, the name-and-address answer, a check-in answer, an opt-out or HELP), that `receive_text` did not stop (a 911-list match while SAFE is awaited goes no further, INT-005) and that is not a close intent (`closes(words)` stays the gate, so \"cancel my request?\" is never read as a step answer); ALSO and SPLIT are checked before the current step's answer and never while the name-and-address question is open. A first text's `Then::FirstQuestion` asks the ZIP question in the same turn, after the consent text. Step-marker rows (an asked row such as `zip_step`'s, a `trade_reading` row, the job-kind row) carry no inbox ID: they are written through `models::insert_plain` (`app/intake/src/models.rs:676`), and `zip_step::ask` (`app/intake/src/zip_step.rs:242`) is changed to write its asked row that way, so `intake_answer` rows carrying a text's inbox ID stay that text's answers and the heard row only (the done tests `inbound_first_contact.rs`, \"reached intake once\", and `optout_followups.rs`, \"START is no answer\", pass unchanged). The step-11 call (`order::ask_last_question`, today in `reply_in`, D-3702) moves into the dispatcher at its place in the order; until T672 and T675 wire steps 8 to 10 it fires where it fires today (right after the coverage line). (2) The opening words (finding 1: the first text's words are stored nowhere before a job exists; `messaging.inbox` has no body, `quotes.job_description.job_id` is NOT NULL, `intake.intake_answer.choice` holds codes only). At the first text, after the consent text: the keyword reading's trades (`matching::keyword_reading`, `app/intake/src/matching.rs:215`, the AI-off path) are stored as `trade_reading` intake answer rows (codes only, at most two), and, when it names a trade and `rules::opens_job` holds, her first job opens then, and the first text's scrubbed words are kept once for it through `order::keep_words` (scrubbed again, PRIV-008): the one row of opening words. `begin_job` is not used for this early open: it keys the job with `models::latest_property` (`conversation.rs:139`), her newest property from any earlier request, and its INT-009 check could return a job of another open request of hers. The dispatcher opens it in `order_dispatch.rs` from the crate-internal pieces `begin_job` uses (under `models::lock_homeowner`: `jobs::api::create`, the job-kind row with property `none` through `models::insert_plain`, `models::set_first_job`, `handlers::schedule_no_reply`), with no INT-009 lookup, so a new request never joins another request's job. After the ZIP the dispatcher works on the request's own first job (`intake.conversation.job_id`) and never calls `begin_job` again for it; An ALSO before the ZIP is stored opens the second job the same early way (property `none`, no INT-009 lookup), recorded as a job link of this request; `begin_job` opens only a SPLIT's second job, an ALSO after the ZIP, and a first job that opens at step 5 when the first text named no trade. `keep_words` is called only for the opening text and, later, an EDIT's reply, never for a ZIP reply, a trade-question answer or any other step answer (the ZIP must never reach a card, INT-049). When the first text names no trade, no job opens until step 5's trade answer and the opening words are not kept (the card then rests on her answers and the EDIT step); the build logs this in `docs/decisions.md`. (3) Steps 4 and 5: on the 911 path the ZIP is asked after SAFE (INT-025); `answer_zip`'s three outcomes stand (stored, out of area closing the request as INT-022 says, asked once more then waiting). Once her town is stored the trade check reads the stored `trade_reading` rows (and `fit_step`, `:454`, for the trade question when they are in doubt); T299 adds the AI reading here later. A trade in no open category gets INT-016's reply through `routing::apply`; otherwise the coverage line for the request's own job (or, with no early job, the job `begin_job` opens now) goes through `routing::tell_coverage` (`:378`) with the count from T679's `quotes::api::request_coverage`. SPLIT or DIVIDIR right after a `Coverage::Split` offer of the same request calls `split_request` (never at any other point, D-1020); a first message naming two trades (`matching::two_trades`, `:533`) opens the first job and sends INT-032's \"That's 2 jobs\" text, and ALSO or TAMBIÉN opens the second (D-999's gap). That text has no template yet: add `two_jobs` to the shared `app/messaging/templates/en.json` and `es.json` with INT-032's exact English words and a Spanish draft marked for native-speaker review (TXT-003), passing `scripts/check_copy.py` and `scripts/check_ai_smell.py` (WORD-028, WORD-029); this is the one homeowner text this task writes. `app/intake/src/routing.rs`, `conversation.rs` and `service.rs` are not edited (T402, T662, T650 and T236 own them; T236 runs after the war-games gate T243, so an edit there would hold the intake order back behind T222, which needs it). (4) Done tests that asserted the gap: `tests/e2e/j1_homeowner.spec.ts` step 1 and `tests/integration/tests/inbound_text_route.rs` (`:197`, a first text, and `:241`, START with no open request; each `[\"consent\"]` becomes the consent text then the ZIP question, CON-031), and any case in `close_by_text.rs`, `under_13_purge.rs`, `inbound_text_retry.rs` or `app/intake/src/tests/replies.rs` whose expected texts or outbox counts now include the step text INT-043 sends. Before hand-in, grep every test that posts to `/webhooks/twilio/sms` or calls `receive_reply`/`receive_raw_reply` and run them; a failing one not owned here is a plan gap to report, not to edit. Each change only adds that text to an expected list or count, citing CON-031 or INT-043 in a comment; no assertion is removed or loosened, and a case whose subject is a stop, a close, HELP or an opt-out keeps asserting that nothing else is sent. Two side effects to state in `docs/decisions.md`: every request with a trade now has a `jobs` row before the area check; OPS-006's per-trade request count keys on the job's first `jobs.job_facts` row, written when its cards go out (`app/jobs/src/request_counts.rs:5` to `:8`), and OPS-041's demand rows are written only on a not-covered request, so an out-of-area request counts in neither (check and say so); and a 911-list first text opens its job with `emergency: true` (INT-007's meaning) before the INT-006 choice, which later sets or clears the emergency path. Tests (TD-INT-45) in the new `tests/integration/tests/intake_order_area_trade.rs`, PostgreSQL, fake data and 555 numbers only, through `intake::api::receive_raw_reply` as the route calls it, each case asserting texts only up to the coverage line (step 11's interim place is not asserted, so T672 need not edit this file): first text, consent then ZIP question, the `trade_reading` row and the job with property `none` and one kept-words row; a ZIP of a service-area town stores the property, keeps no words and gets the coverage line with the count of seeded fake covering businesses; an out-of-area ZIP closes the request; no ZIP asks once more then waits; 911 path asks the ZIP only after SAFE; a close intent is never a step answer; two texts at once answer a step once; a homeowner with a property from an earlier request gets one job only (the early job, never a second after the ZIP) and her opening words are on it; a homeowner with another open request's job of the same trade gets a new job for the new request; step-marker rows carry no inbox ID; a two-trade first message, ALSO (before the ZIP, opened the early way, with no INT-009 lookup), and SPLIT after a split offer, each opening exactly one more job. Update `app/intake/CLAUDE.md` and `docs/decisions.md`.",
+   "title": "intake (harness): a homeowner's texts after the consent text are driven through INT-043's steps 1 to 4: the first question at once, the 911 and alarm-beep holds, and the ZIP and area check",
+   "goal": "Plan change D-4360, split by D-4441 after attempt 1 (BLOCKED with a plan gap: three done tests outside its files failed, its diff was about 1,060 lines against 650, and its Opus review found four stalls, D-4441 (a) to (d)). After the consent text nothing drives the intake order: `reply_in` (`app/intake/src/replies.rs:129`) handles check-in answers, LIST, the wait restart, the under-18 stop, a close by text and the name-and-address answer, then `receive_text` (consent, the 911 screen, SAFE) and step 11; nothing calls `zip_step::ask_zip` or `answer_zip` (`app/intake/src/zip_step.rs:122`, `:149`), so no property is ever stored, and the `Then::FirstQuestion` that `receive_text` returns (CON-031: the first intake question follows the consent text at once as its own text) is acted on by no one. This task builds INT-043's steps 1 to 4 (the \"Intake order\" table, `docs/spec/intake.md:59` to `:64`); T715 adds the keyword reading, her first job and step 5, T716 the trade questions, T717 and T718 INT-032's second job. (1) The walker. A new `app/intake/src/order_dispatch.rs` is the one walker of INT-043's order on the text paths (`order::order`, `app/intake/src/order.rs:124`, is the table as data). It takes `models::lock_homeowner` before it reads where request `conversation` is, reads that only from stored rows (`zip_step`'s asked rows, the stored property, the 911 holds, the INT-037 rows), never from a new column or migration, and calls the existing step functions; it never re-implements a step's rule. `reply_in` calls it last, only for a reply in an open request that nothing earlier ended (LIST, a close, the under-18 stop, the name-and-address answer, a check-in answer, an opt-out or HELP) and that is not a close intent (`closes(words)` stays the gate, so \"cancel my request?\" is never read as a step answer); a first text's `Then::FirstQuestion` goes to it in the same turn, after the consent text. It queues nothing for a contact `service::may_text` refuses (after STOP her later texts get nothing from it, CON-009). Every step text goes through the step's own queue call (`Relation::OpenRequest`, the inbound text's time), so `messaging` applies QH-001 and QH-004's direct-reply rule; the walker queues nothing on a timer. (2) The first text. The first question is asked only when `stop_after` did not stop the request (`app/intake/src/replies.rs:245` to `:258`; a stated age under 18, INT-038), as step 11 is already held on `!stopped`: an under-18 first text gets the consent text then INT-038's text, no ZIP question and no `zip` row. Otherwise, by what `receive_text` returned: `Screened::Clear` gets the ZIP question (`ask_zip`) as its own text after the consent text; `Screened::Matched` gets nothing more (the INT-004 text and the consent text are its texts; the ZIP waits for SAFE, the table's 911 column, INT-025); `Screened::BeepAsked` gets nothing more (INT-037's question is open; the ZIP waits for its answer; review finding (c)). (3) A reply the 911 screen acted on is never a step answer (findings (c), (d)). `Matched` (a 911-list match; while an earlier one waits for SAFE no second INT-004 text, D-982) and `BeepAsked` answer and ask nothing. A reply that answered an open INT-037 question (its `emergency_beep` answer row, written by `service::clear_reply`, `app/intake/src/service.rs:395` to `:414`, carries the reply's inbox ID) is not a step answer: answer 2 comes back `Matched` and waits for SAFE; any other answer (\"just chirping\" comes back `Screened::Clear`) goes on as a regular request (INT-037), so the walker goes to the open step. `Screened::Safe` (the hold ended, INT-025) goes to the open step. While a SAFE hold waits (`service::safe_hold`), a `Clear` reply answers no step and gets nothing from the walker (INT-005; the ZIP comes after SAFE). Going to the open step: the ZIP never asked, `ask_zip` (its first ask); asked and no property stored since the request opened, the ZIP question's text once more through (5), with no row written, so her one re-ask (`zip_step::again`, which re-asks only while the latest `zip` asked row is `asked`, `zip_step.rs:226`) is neither used nor renewed; a property stored, nothing in this task (T715's step 5). (4) Step 4 (INT-049, INT-022, PRIV-028): a `Clear` reply while the ZIP question is open and no hold waits goes to `answer_zip`, whose three outcomes stand: stored (the property with the vault contact, town and ZIP; no words kept, INT-049), out of area (INT-022's reply and the early close), no usable ZIP (asked once more, then waiting with nothing sent). `zip_step::ask` (`:242`) writes its asked row through `models::insert_plain` (`app/intake/src/models.rs:676`) with no inbox ID, so `intake_answer` rows carrying a text's inbox ID stay that text's answers and the heard row only (`inbound_first_contact.rs`, \"reached intake once\", and `optout_followups.rs`, \"START is no answer\", pass unchanged). The step-11 call (`order::ask_last_question` in `reply_in`, D-3702) stays where it is here (it asks once a property is stored); T715 moves it after the coverage line. (5) `order_dispatch::ask_open_again` (crate-visible) queues the open step's question text once more (here the ZIP question's body, `zip_step::zip_body`), writing no row, and nothing while a SAFE hold waits or nothing is open; the walker uses it after SAFE and after an INT-037 answer, T691 after START, and T716, T672 and T673 extend it for their questions. `app/intake/src/routing.rs`, `conversation.rs` and `service.rs` are not edited (T402, T662, T650 and T236 own them; T236 runs after the war-games gate T243). No job opens and no words are kept in this task (T715). (6) Done tests that asserted the gap: `tests/e2e/j1_homeowner.spec.ts` step 1 (`:164`, consent then the ZIP question) and its variants: STOP (`:213`: consent, the ZIP question, the opt-out confirmation, nothing after), 911 (`:227`: SAFE now gets the ZIP question, the table's step 4, so 2 texts become 3 with the ZIP question last) and INT-002 (`:240`: consent then the ZIP question); `tests/integration/tests/inbound_text_route.rs` (`:197`, a first text, and `:241`, START with no open request; each `[\"consent\"]` becomes the consent text then the ZIP question); and any case in `close_by_text.rs`, `under_13_purge.rs`, `inbound_text_retry.rs` or `app/intake/src/tests/replies.rs` whose expected texts or outbox counts now include the ZIP question. A text in `under_13_purge.rs` that states an age under 18 gains no ZIP question (INT-038's text stays last, `:297`, `:308`); a ZIP question there is a defect in this task's code, not a test to change. Each change only adds that text to an expected list or count, citing CON-031 or INT-043 in a comment; no assertion is removed or loosened, and a case whose subject is a stop, a close, HELP or an opt-out keeps asserting that nothing else is sent. Before hand-in, grep every test that posts to `/webhooks/twilio/sms` or calls `receive_reply`/`receive_raw_reply` and run them; a failing one not owned here is a plan gap to report, not to edit. Tests (TD-INT-45) in the new `tests/integration/tests/intake_order_area_trade.rs`, PostgreSQL, fake data and 555 numbers only, through `intake::api::receive_raw_reply` as the route calls it; each case asserts texts only up to its last step-4 text and asserts nothing about jobs or kept words (T715's), so T715 need not edit it; cases of one shape (a list of texts in, the returned templates out) are table-driven, to keep within the budget. Update `app/intake/CLAUDE.md` and `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -44576,42 +44586,37 @@
     "docs/spec/privacy.md",
     "docs/spec/messaging.md",
     "app/intake/src/order.rs",
-    "app/intake/src/routing.rs",
-    "app/intake/src/matching.rs",
-    "app/intake/src/conversation.rs",
-    "docs/spec/wording.md",
+    "app/intake/src/service.rs",
+    "app/intake/src/models.rs",
     "docs/brains/rust-production.md"
    ],
    "requirements": [
     "INT-043",
     "INT-049",
     "INT-022",
-    "INT-016",
-    "INT-017",
-    "INT-032",
     "CON-031",
     "INT-025",
+    "INT-005",
+    "INT-037",
     "PRIV-028",
-    "PRIV-008",
-    "INT-009",
-    "TXT-003",
-    "INT-007"
+    "INT-004",
+    "INT-038"
    ],
    "tests": [
     "TD-INT-45"
    ],
    "decisions": [
-    "D-999",
-    "D-1020",
+    "D-982",
     "D-1521",
     "D-3309",
     "D-3702",
-    "D-4360"
+    "D-4360",
+    "D-4441"
    ],
    "cites": [],
    "budget": {
     "files": 10,
-    "lines": 650,
+    "lines": 700,
     "context_pct": 42
    },
    "checks": [
@@ -44621,19 +44626,19 @@
    ],
    "branch": "claude/task/T671-intake-order-area-trade",
    "prompt": "kit/prompts/T671.md",
-   "acceptance": "TD-INT-45 passes against PostgreSQL; a first text gets the consent text then the next question; only the opening text's scrubbed words are kept, never a ZIP reply's; every done test listed in the goal passes, changed only by adding the step text INT-043 or CON-031 now sends, with no assertion removed or loosened; `routing.rs`, `conversation.rs` and `service.rs` are unchanged; no raw words or ZIP reach a log line or an AI call; `two_jobs` passes `check_copy.py` and `check_ai_smell.py`. A returning homeowner gets one job per request; step-marker rows carry no inbox ID; `inbound_first_contact.rs` and `optout_followups.rs` pass unchanged."
+   "acceptance": "TD-INT-45 passes against PostgreSQL; a first text gets the consent text then the ZIP question, a 911-list or alarm-beep first text gets no ZIP question until SAFE or the INT-037 answer; no SAFE reply, INT-037 answer or 911-list match is read as a ZIP answer, and the ZIP's one re-ask is neither used nor renewed by them; nothing is sent to an opted-out contact; every done test listed in the goal passes, changed only by adding the ZIP question CON-031 or INT-043 now sends, with no assertion removed or loosened; `routing.rs`, `conversation.rs` and `service.rs` are unchanged; no ZIP reaches a log line or an AI call; step-marker rows carry no inbox ID; `inbound_first_contact.rs` and `optout_followups.rs` pass unchanged."
   },
   {
    "id": "T672",
    "slug": "intake-order-timing",
    "title": "intake: the dispatcher asks \"How soon?\", the night count and the emergency-or-regular choice, releases an emergency job, then asks the trade questions",
-   "goal": "Plan change D-4360 (orphan 1, steps 6 to 8; INT-030, INT-006, INT-033, INT-005, INT-029, INT-039, TXT-041). After T671 the dispatcher (`app/intake/src/order_dispatch.rs`) stops after the coverage line. Extend it, calling only the existing step functions: `service::ask_how_soon` and `answer_how_soon` (`app/intake/src/service.rs:540`, `:563`; answer 4 asks the day; an unreadable answer asks again), `offer_emergency_choice` (`:607`) once SAFE is in when `Answered::choice_after_safe` was set, the night count first between 8 p.m. and 8 a.m. Arizona (INT-033, through `offer_choice` as `answer_how_soon` already does; with N of 0 no choice, the job stays regular), and the choice through `order::choose_with_card` (`app/intake/src/order.rs:351`), which stores the emergency path's card before `answer_choice` can release the job (INT-029); `release_emergency` (`service.rs:687`) is also called when the ZIP comes in after the choice (its doc: \"the conversation calls it again once the ZIP is in\"). Then the trade questions (INT-039): the question bank (`app/intake/src/question_bank.rs`, at most `MAX_ASKED`, its AI-off fixed questions; T299 and T394 add the AI reword later; T394 owns that file, so it is not edited) with each answer stored through `order::answer_narrowing` (`:193`). `BankRun` (`:223`) keeps its position in private fields with no constructor from stored rows, so the dispatcher rebuilds it on each text by replaying the request's stored bank answers AI-off (`BankRun::new`, then `next` and `hear` with each stored answer's option number, keyed on each stored answer's question ID, not on its place in the order, so an AI follow-up question (T299, T394) that the AI-off replay cannot reproduce never shifts the position); a `Heard::Safety911` (a gas or burning smell answer) holds the order as a 911-list match does, through crate-internal calls since `service::record_match` (`app/intake/src/service.rs:337`) is private and `service.rs` is not edited: the INT-004 text (`rules::SAFETY_TEMPLATE`) queued through `conversation::queue_text`, the SAFE hold through `models::insert_event` with that message's inbox ID, and the audit row `intake.emergency_matched` through `service::audit_action`; the order then waits until SAFE (INT-005) and resumes at the next bank question; and TXT-041's Spanish line once through `order::spanish_line` (`:373`) where the order puts it. On the emergency path the trade questions follow the cards (INT-029). Step 11 stays where T671 put it, now after step 8. `service.rs`, `conversation.rs` and `routing.rs` are not edited (D-4360). Tests (TD-INT-46) in the new `tests/integration/tests/intake_order_timing.rs`, each asserting texts only up to its own last step (photos come between the trade questions and step 11 once T675 lands), PostgreSQL, fake data only, the clock set: regular (answer 2, then the trade questions), answer 4 (the day asked and stored), urgent with Emergency (the emergency card stored and `intake.emergency_released` queued once, before the trade questions), urgent with Regular, the 911 path (no choice until SAFE; the choice after SAFE), night with N of 2 (the count text before the choice) and night with N of 0 (no choice; regular), the ZIP arriving after an Emergency choice releasing the job then; each case asserts the exact texts in order against the \"Intake order\" table (`docs/spec/intake.md:55`).",
+   "goal": "Plan change D-4360 (orphan 1, steps 6 to 8; INT-030, INT-006, INT-033, INT-005, INT-029, INT-039, TXT-041). After T671 and T715 (D-4441) the dispatcher (`app/intake/src/order_dispatch.rs`) stops after the coverage line and step 11. Extend it, calling only the existing step functions: `service::ask_how_soon` and `answer_how_soon` (`app/intake/src/service.rs:540`, `:563`; answer 4 asks the day; an unreadable answer asks again), `offer_emergency_choice` (`:607`) once SAFE is in when `Answered::choice_after_safe` was set, the night count first between 8 p.m. and 8 a.m. Arizona (INT-033, through `offer_choice` as `answer_how_soon` already does; with N of 0 no choice, the job stays regular), and the choice through `order::choose_with_card` (`app/intake/src/order.rs:351`), which stores the emergency path's card before `answer_choice` can release the job (INT-029); `release_emergency` (`service.rs:687`) is also called when the ZIP comes in after the choice (its doc: \"the conversation calls it again once the ZIP is in\"). Then the trade questions (INT-039): the question bank (`app/intake/src/question_bank.rs`, at most `MAX_ASKED`, its AI-off fixed questions; T299 and T394 add the AI reword later; T394 owns that file, so it is not edited) with each answer stored through `order::answer_narrowing` (`:193`). `BankRun` (`:223`) keeps its position in private fields with no constructor from stored rows, so the dispatcher rebuilds it on each text by replaying the request's stored bank answers AI-off (`BankRun::new`, then `next` and `hear` with each stored answer's option number, keyed on each stored answer's question ID, not on its place in the order, so an AI follow-up question (T299, T394) that the AI-off replay cannot reproduce never shifts the position); a `Heard::Safety911` (a gas or burning smell answer) holds the order as a 911-list match does, through crate-internal calls since `service::record_match` (`app/intake/src/service.rs:337`) is private and `service.rs` is not edited: the INT-004 text (`rules::SAFETY_TEMPLATE`) queued through `conversation::queue_text`, the SAFE hold through `models::insert_event` with that message's inbox ID, and the audit row `intake.emergency_matched` through `service::audit_action`; the order then waits until SAFE (INT-005) and resumes at the next bank question; and TXT-041's Spanish line once through `order::spanish_line` (`:373`) where the order puts it. On the emergency path the trade questions follow the cards (INT-029). Step 11 stays where T671 put it, now after step 8. `service.rs`, `conversation.rs` and `routing.rs` are not edited (D-4360). Tests (TD-INT-46) in the new `tests/integration/tests/intake_order_timing.rs`, each asserting texts only up to its own last step (photos come between the trade questions and step 11 once T675 lands), PostgreSQL, fake data only, the clock set: regular (answer 2, then the trade questions), answer 4 (the day asked and stored), urgent with Emergency (the emergency card stored and `intake.emergency_released` queued once, before the trade questions), urgent with Regular, the 911 path (no choice until SAFE; the choice after SAFE), night with N of 2 (the count text before the choice) and night with N of 0 (no choice; regular), the ZIP arriving after an Emergency choice releasing the job then; each case asserts the exact texts in order against the \"Intake order\" table (`docs/spec/intake.md:55`). Extend `order_dispatch::ask_open_again` (T671) with \"How soon?\", the day question and the choice, so START (T691) resends them. D-4441: every first text in this task's tests names one trade and one job type of it (as \"AC blowing warm air\" does), so T716's \"Which fits best?\" never comes before the coverage line in them, and a request in them holds one job (T717 and T718 add a second).",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": "intake",
    "deps": [
-    "T671"
+    "T715"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -44678,7 +44683,8 @@
    "decisions": [
     "D-982",
     "D-3309",
-    "D-4360"
+    "D-4360",
+    "D-4441"
    ],
    "cites": [],
    "budget": {
@@ -44699,7 +44705,7 @@
    "id": "T673",
    "slug": "intake-order-card",
    "title": "intake (harness): the dispatcher builds and shows the card, takes EDIT or SEND, and the cards go out on SEND or after 30 minutes",
-   "goal": "Plan change D-4360 (orphan 1, step 12; INT-041, INT-029, INT-027, TXT-032). Cards go out only through `cards_out` on `intake.cards_approved` and `intake.emergency_released` (`app/intake/src/cards_out.rs:115`, `:141`, registered in `app/server/src/lib.rs`), queued only by `summary_step::approve`/`show_card` (callers `order::show_built_card`, `app/intake/src/order.rs:321`, and `summary_step::answer_card`, `app/intake/src/summary_step.rs:222`) and by `release_emergency` (wired by T672). Nobody calls `show_built_card` or `answer_card`, so no regular job's card is ever shown or sent. After T672, extend `app/intake/src/order_dispatch.rs`: once step 11 is answered (her name and address stored; `answer_name_address` in `app/intake/src/replies.rs`), the card is built from her stored words and shown (`show_built_card`: the card text when it fits 2 segments, else the link line, INT-041), which queues the 30-minute card timer (`intake.card_timer`, already registered); the next reply goes to `answer_card` (EDIT or CAMBIAR asks what to change, the reply is kept through `order::keep_words` and the new card shown; SEND, OK, YES or ENVIAR approves at once); no reply lets the timer approve. On the emergency path the card was sent at the choice, so step 12 is skipped and steps 8 to 11 only add to the job page (INT-029). Edit `app/intake/src/replies.rs` only as far as the hand-off after the name-and-address answer needs. `summary_step.rs` and `cards_out.rs` are not edited (T394, T600 and T526 own them). Done test: `app/server/tests/name_address_answer.rs` may gain the card text that INT-041 now sends after the answer, only added to an expected list, no assertion removed or loosened. Tests (TD-INT-47) in the new `tests/integration/tests/intake_order_card.rs` (EDIT, SEND, YES, the auto-send after 30 minutes on the worker clock, a card too long for 2 segments shown by link, no contact detail in the shown card) and the new `tests/integration/tests/intake_order_flow.rs` (T675 later extends it, add-only, with the photo step), PostgreSQL, the stand-ins, fake data and 555 numbers only, which drives a fake homeowner's texts through `intake::api::receive_raw_reply` from the first text through consent, ZIP, trade and coverage line, \"How soon?\", the trade questions, name and address and SEND to card rows sent to the seeded fake businesses by the registered `intake.cards_approved` handler, and the urgent Emergency path to the emergency card sent before the trade questions, asserting the texts in the table's order and that no business got a card before SEND or the timer on the regular path. Update `app/intake/CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4360 (orphan 1, step 12; INT-041, INT-029, INT-027, TXT-032). Cards go out only through `cards_out` on `intake.cards_approved` and `intake.emergency_released` (`app/intake/src/cards_out.rs:115`, `:141`, registered in `app/server/src/lib.rs`), queued only by `summary_step::approve`/`show_card` (callers `order::show_built_card`, `app/intake/src/order.rs:321`, and `summary_step::answer_card`, `app/intake/src/summary_step.rs:222`) and by `release_emergency` (wired by T672). Nobody calls `show_built_card` or `answer_card`, so no regular job's card is ever shown or sent. After T672, extend `app/intake/src/order_dispatch.rs`: once step 11 is answered (her name and address stored; `answer_name_address` in `app/intake/src/replies.rs`), the card is built from her stored words and shown (`show_built_card`: the card text when it fits 2 segments, else the link line, INT-041), which queues the 30-minute card timer (`intake.card_timer`, already registered); the next reply goes to `answer_card` (EDIT or CAMBIAR asks what to change, the reply is kept through `order::keep_words` and the new card shown; SEND, OK, YES or ENVIAR approves at once); no reply lets the timer approve. On the emergency path the card was sent at the choice, so step 12 is skipped and steps 8 to 11 only add to the job page (INT-029). Edit `app/intake/src/replies.rs` only as far as the hand-off after the name-and-address answer needs. `summary_step.rs` and `cards_out.rs` are not edited (T394, T600 and T526 own them). Done test: `app/server/tests/name_address_answer.rs` may gain the card text that INT-041 now sends after the answer, only added to an expected list, no assertion removed or loosened. Tests (TD-INT-47) in the new `tests/integration/tests/intake_order_card.rs` (EDIT, SEND, YES, the auto-send after 30 minutes on the worker clock, a card too long for 2 segments shown by link, no contact detail in the shown card) and the new `tests/integration/tests/intake_order_flow.rs` (T675 later extends it, add-only, with the photo step), PostgreSQL, the stand-ins, fake data and 555 numbers only, which drives a fake homeowner's texts through `intake::api::receive_raw_reply` from the first text through consent, ZIP, trade and coverage line, \"How soon?\", the trade questions, name and address and SEND to card rows sent to the seeded fake businesses by the registered `intake.cards_approved` handler, and the urgent Emergency path to the emergency card sent before the trade questions, asserting the texts in the table's order and that no business got a card before SEND or the timer on the regular path. Update `app/intake/CLAUDE.md` and `docs/decisions.md`. Extend `order_dispatch::ask_open_again` (T671) with the shown card, so START (T691) resends it. D-4441: every first text in this task's tests names one trade and one job type of it (as \"AC blowing warm air\" does), so T716's \"Which fits best?\" never comes before the coverage line in them, and a request in them holds one job (T717 and T718 add a second).",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -44750,7 +44756,8 @@
    "decisions": [
     "D-3189",
     "D-3702",
-    "D-4360"
+    "D-4360",
+    "D-4441"
    ],
    "cites": [],
    "budget": {
@@ -44845,7 +44852,7 @@
    "id": "T675",
    "slug": "intake-order-photos",
    "title": "intake and server (harness): the dispatcher asks for photos and, in design categories, look pictures, and picture texts are taken off the texting provider by a queued task",
-   "goal": "Plan change D-4360 (orphan 1, steps 9 and 10; round-1 review findings 4 and 5; INT-044, INT-045, INT-046, PRIV-014, PRIV-025, SEC-041). Nothing asks for photos: `photos::photo_text` (`app/intake/src/photos.rs:205`) has no caller, `privacy::api::take_picture_text` (`app/privacy/src/media_fetch.rs:168`) has none, and the inbound text route (`app/server/src/inbound_text.rs`) reads no `NumMedia` or `MediaUrl<n>` field; `RawReply` and `TextIn` carry no media. A Twilio fetch and provider delete inside the webhook's transaction would break on a rollback or retry (a photo deleted at Twilio and not kept) and can pass Twilio's webhook timeout, so: (1) `app/server/src/inbound_text.rs` (after T573, the last queued owner before T299 and T402) commits the text as today and, in that same transaction, queues one `intake.picture_text` `core.task` per homeowner text with media, its payload the inbox row's ID, the Twilio message SID and up to 3 media SIDs only (no URL kept beyond what the SIDs rebuild, no phone, no words, no image); a business phone's media is ignored as today. After `receive_raw_reply` returns, in the same transaction (the request is then known, including one the text itself opened), the route records one `photo_pending` step-marker row for that request (choice: the inbox ID's hex) through a new `intake::api` function in `photos.rs`; at step 9 the dispatcher never moves on for a text that has such a row (its body is often empty or \"here\"), so the order waits and the task's photo step drives step 9. A picture text whose request has no job yet (the first text named no trade) is held: the task keeps nothing and deletes nothing at the provider, and re-queues itself every 15 minutes (a plain timed re-queue, each under its own dedupe key with its due time, so a restart loses nothing) until the request's job opens, then stores it; it waits at most 72 hours from the picture text (INT-019's no-reply close), and if the request closes first or 72 hours pass, it keeps nothing and deletes the media at the provider. A photo stored before step 9 (a picture text sent at the ZIP step or later) is never shown for confirmation then: it waits, and step 9 shows it for her YES or REMOVE in the order. The task's photo step drives step 9 on every outcome (stored, re-ask, HEIC, refused off Twilio's hosts, or failed after its retries, each with its text), so step 9 never waits on a task that has ended. (2) A new `app/intake/src/picture_text.rs` handles that task (registered in the shared `app/server/src/lib.rs`): outside any held transaction it fetches each media through `take_picture_text` with `fetch_twilio_media` (SEC-041: Twilio's hosts only, size cap, timeout), stores it, deletes it at the provider only after the store committed, and then, under the homeowner lock, calls the dispatcher's photo step for that request; a rerun takes nothing twice (dedupe key per media SID). (3) `app/intake/src/order_dispatch.rs` asks step 9 after the trade questions (`photo_text` with the job type's asks, at most `MAX_PHOTO_ASKS`, the upload link `issue_link` gives for T674's page, PRIV-015's line); never while a 911 text waits for SAFE; each stored photo is shown as it will appear on the card and needs her YES, which records the same `photo_ok` row T674's \"Send this photo\" writes, REMOVE (or QUITAR) deleting it through T674's `privacy::api::delete_photo`; a photo with no `photo_ok` row is left off the card with a note (INT-044); one re-ask only for a file that would not decode or is under the size setting; \"no\" or any other text moves on; and step 10 in a `design: true` category (`design::is_design_category`, `app/intake/src/design.rs:47`): the look-pictures question, handled as photos, and, while the AI may not read photos, the describe-the-look question; the concept image only while the owner's \"Concept images\" switch is on (off at launch), through `design::concept_step`. Step 11 then follows. (4) T672's `tests/integration/tests/intake_order_timing.rs` and T673's `intake_order_flow.rs` script replies from the trade questions to name and address; with the photo step between them they are extended here, add-only: a \"no photo\" reply (and in the flow test one confirmed picture text) is inserted where the order now asks, and the photo ask is added to the expected texts; no assertion is removed or loosened. Tests (TD-INT-49) in the new `tests/integration/tests/intake_order_photos.rs`, PostgreSQL, the Twilio media stand-in and fake images only: a picture text queues one task whose payload holds only IDs, and its body (\"here\") does not move step 9 on, so the photo's confirmation comes before the name-and-address question; a picture text on the first text (no trade) is held until the job opens and stored then; one sent at the ZIP step is confirmed only at step 9; a fetch that fails after its retries still moves step 9 on with its text; the task stores, confirms by YES and puts it on the card, then deletes at the provider; a rerun fetches nothing twice; a store failure deletes nothing at the provider; REMOVE takes it off; an undecodable file re-asked once; a HEIC gets the PRIV-025 reply; no photo asked while SAFE is awaited; a design category asks the look question; a media URL off Twilio's hosts is refused and nothing fetched. The route's done tests pass unchanged.",
+   "goal": "Plan change D-4360 (orphan 1, steps 9 and 10; round-1 review findings 4 and 5; INT-044, INT-045, INT-046, PRIV-014, PRIV-025, SEC-041). Nothing asks for photos: `photos::photo_text` (`app/intake/src/photos.rs:205`) has no caller, `privacy::api::take_picture_text` (`app/privacy/src/media_fetch.rs:168`) has none, and the inbound text route (`app/server/src/inbound_text.rs`) reads no `NumMedia` or `MediaUrl<n>` field; `RawReply` and `TextIn` carry no media. A Twilio fetch and provider delete inside the webhook's transaction would break on a rollback or retry (a photo deleted at Twilio and not kept) and can pass Twilio's webhook timeout, so: (1) `app/server/src/inbound_text.rs` (after T573, the last queued owner before T299 and T402) commits the text as today and, in that same transaction, queues one `intake.picture_text` `core.task` per homeowner text with media, its payload the inbox row's ID, the Twilio message SID and up to 3 media SIDs only (no URL kept beyond what the SIDs rebuild, no phone, no words, no image); a business phone's media is ignored as today. After `receive_raw_reply` returns, in the same transaction (the request is then known, including one the text itself opened), the route records one `photo_pending` step-marker row for that request (choice: the inbox ID's hex) through a new `intake::api` function in `photos.rs`; at step 9 the dispatcher never moves on for a text that has such a row (its body is often empty or \"here\"), so the order waits and the task's photo step drives step 9. A picture text whose request has no job yet (the first text named no trade) is held: the task keeps nothing and deletes nothing at the provider, and re-queues itself every 15 minutes (a plain timed re-queue, each under its own dedupe key with its due time, so a restart loses nothing) until the request's job opens, then stores it; it waits at most 72 hours from the picture text (INT-019's no-reply close), and if the request closes first or 72 hours pass, it keeps nothing and deletes the media at the provider. A photo stored before step 9 (a picture text sent at the ZIP step or later) is never shown for confirmation then: it waits, and step 9 shows it for her YES or REMOVE in the order. The task's photo step drives step 9 on every outcome (stored, re-ask, HEIC, refused off Twilio's hosts, or failed after its retries, each with its text), so step 9 never waits on a task that has ended. (2) A new `app/intake/src/picture_text.rs` handles that task (registered in the shared `app/server/src/lib.rs`): outside any held transaction it fetches each media through `take_picture_text` with `fetch_twilio_media` (SEC-041: Twilio's hosts only, size cap, timeout), stores it, deletes it at the provider only after the store committed, and then, under the homeowner lock, calls the dispatcher's photo step for that request; a rerun takes nothing twice (dedupe key per media SID). (3) `app/intake/src/order_dispatch.rs` asks step 9 after the trade questions (`photo_text` with the job type's asks, at most `MAX_PHOTO_ASKS`, the upload link `issue_link` gives for T674's page, PRIV-015's line); never while a 911 text waits for SAFE; each stored photo is shown as it will appear on the card and needs her YES, which records the same `photo_ok` row T674's \"Send this photo\" writes, REMOVE (or QUITAR) deleting it through T674's `privacy::api::delete_photo`; a photo with no `photo_ok` row is left off the card with a note (INT-044); one re-ask only for a file that would not decode or is under the size setting; \"no\" or any other text moves on; and step 10 in a `design: true` category (`design::is_design_category`, `app/intake/src/design.rs:47`): the look-pictures question, handled as photos, and, while the AI may not read photos, the describe-the-look question; the concept image only while the owner's \"Concept images\" switch is on (off at launch), through `design::concept_step`. Step 11 then follows. (4) T672's `tests/integration/tests/intake_order_timing.rs` and T673's `intake_order_flow.rs` script replies from the trade questions to name and address; with the photo step between them they are extended here, add-only: a \"no photo\" reply (and in the flow test one confirmed picture text) is inserted where the order now asks, and the photo ask is added to the expected texts; no assertion is removed or loosened. Tests (TD-INT-49) in the new `tests/integration/tests/intake_order_photos.rs`, PostgreSQL, the Twilio media stand-in and fake images only: a picture text queues one task whose payload holds only IDs, and its body (\"here\") does not move step 9 on, so the photo's confirmation comes before the name-and-address question; a picture text on the first text (no trade) is held until the job opens and stored then; one sent at the ZIP step is confirmed only at step 9; a fetch that fails after its retries still moves step 9 on with its text; the task stores, confirms by YES and puts it on the card, then deletes at the provider; a rerun fetches nothing twice; a store failure deletes nothing at the provider; REMOVE takes it off; an undecodable file re-asked once; a HEIC gets the PRIV-025 reply; no photo asked while SAFE is awaited; a design category asks the look question; a media URL off Twilio's hosts is refused and nothing fetched. The route's done tests pass unchanged. D-4441: every first text in this task's tests names one trade and one job type of it (as \"AC blowing warm air\" does), so T716's \"Which fits best?\" never comes before the coverage line in them, and a request in them holds one job (T717 and T718 add a second).",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -44903,7 +44910,8 @@
    "decisions": [
     "D-432",
     "D-2874",
-    "D-4360"
+    "D-4360",
+    "D-4441"
    ],
    "cites": [],
    "budget": {
@@ -44924,7 +44932,7 @@
    "id": "T676",
    "slug": "j1-real-conversation",
    "title": "tests (harness): J1 runs the real intake conversation instead of seeding the job, and the urgent and 911 paths reach cards sent end to end",
-   "goal": "Plan change D-4360 (orphan 1; INT-043, CON-031, INT-041). `tests/e2e/j1_homeowner.spec.ts` seeds steps 2 to 4 with psql (`seedQuotes`, `:135`: a Quotes ready job, its facts and an intake answer) because \"the conversation stops after the consent text\" (its header, `:12` to `:14`, D-2029). After T675 the conversation runs to cards sent. Replace the seeded job with the real conversation through the served Twilio route: her ZIP, the coverage line counting two fake active HVAC businesses seeded in her town as fixture rows, \"How soon?\", the trade questions, \"No photo\", her fake name and address, the card shown and SEND, and the job's cards recorded; the two quotes then come in through the served Quote link of those two businesses so the job reaches Quotes ready by the real path, or, only if that route cannot be driven from this spec, are seeded on the real job exactly as the quote path stores them, with the job's move made through the same `jobs` function, the reason logged in `docs/decisions.md`. Every existing assertion of steps 1, 5 and 6 and the closing checks is kept (step 1's expected texts are T671's consent then ZIP question); new assertions for steps 2 to 4 check the texts against the Intake order table. A new `tests/e2e/intake_order_paths.spec.ts` runs, through the served route with stand-ins and fake data only, the urgent Emergency path (emergency card sent before the trade questions) and the 911 path (INT-004 text, SAFE, then the ZIP), each to its cards recorded. Tests: TD-INT-50.",
+   "goal": "Plan change D-4360 (orphan 1; INT-043, CON-031, INT-041). `tests/e2e/j1_homeowner.spec.ts` seeds steps 2 to 4 with psql (`seedQuotes`, `:135`: a Quotes ready job, its facts and an intake answer) because \"the conversation stops after the consent text\" (its header, `:12` to `:14`, D-2029). After T675 the conversation runs to cards sent. Replace the seeded job with the real conversation through the served Twilio route: her ZIP, the coverage line counting two fake active HVAC businesses seeded in her town as fixture rows, \"How soon?\", the trade questions, \"No photo\", her fake name and address, the card shown and SEND, and the job's cards recorded; the two quotes then come in through the served Quote link of those two businesses so the job reaches Quotes ready by the real path, or, only if that route cannot be driven from this spec, are seeded on the real job exactly as the quote path stores them, with the job's move made through the same `jobs` function, the reason logged in `docs/decisions.md`. Every existing assertion of steps 1, 5 and 6 and the closing checks is kept (step 1's expected texts are T671's consent then ZIP question); new assertions for steps 2 to 4 check the texts against the Intake order table. A new `tests/e2e/intake_order_paths.spec.ts` runs, through the served route with stand-ins and fake data only, the urgent Emergency path (emergency card sent before the trade questions) and the 911 path (INT-004 text, SAFE, then the ZIP), each to its cards recorded. Tests: TD-INT-50. D-4441: every first text in this task's tests names one trade and one job type of it (as \"AC blowing warm air\" does), so T716's \"Which fits best?\" never comes before the coverage line in them, and a request in them holds one job (T717 and T718 add a second).",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -44966,7 +44974,8 @@
    ],
    "decisions": [
     "D-2029",
-    "D-4360"
+    "D-4360",
+    "D-4441"
    ],
    "cites": [],
    "budget": {
@@ -44996,7 +45005,8 @@
     "T673",
     "T671",
     "T585",
-    "T679"
+    "T679",
+    "T710"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -45335,7 +45345,7 @@
    "id": "T683",
    "slug": "business-yes-text",
    "title": "server and picks: a business's \"YES 1042\" or \"CONFIRM 1042\" text gets the fee and the Confirm link",
-   "goal": "Plan change D-4361 (unwired sweep orphan 6 and its second pass, `main` 77a49d7cc; round-1 review; PICK-033, FEE-036, PICK-035, BIZ-036, QH-004; D-259, D-365, D-1717, D-2042). `read_business_word` and `business_reply` (`app/picks/src/confirm.rs:315`, `:347`) have no caller: a whole-command text makes `auto_reply_due` false (`app/businesses/src/consent.rs:542`) and `auto_reply` ends with `Halt::Ends(\"business\")` (`app/server/src/inbound_text.rs:1050` to `:1057`), so a business on text that replies \"YES 1042\" hears nothing. (1) `inbound_text.rs`: after the opt-out and HELP screens (an opt-out word always wins, D-2039), a business phone's text that `read_business_word` reads goes to the new `app/picks/src/text_confirm.rs` before `auto_reply`. (2) `text_confirm.rs` (pure reads, no link): for a business whose channel preference includes text (BIZ-036), the job number names the waiting pick of that business (the word alone only when it has exactly one waiting); it answers the pick, its fee and whether the window is open, with `business_reply`'s `linked` true only for a directory line of the picked business that `acts_for_business` accepts (a staff phone still waiting for approval is not linked). (3) The link is minted in `inbound_text.rs`, never in `picks` (which may not call `portals`, `kit/layers.json`): `portals::api::mint_action_link` (`app/portals/src/action_links.rs:251`) for the member that texting line belongs to, read through a new `businesses::api::phone_member(db, line)` in `app/businesses/src/phone_approval.rs` (beside `phone_standing`, `:132`; `businesses.staff_phone.linked_by`, `migrations/0056_businesses_team_members.sql:35`; none for a line with no member), which refuses a member without \"Confirm and billing\" (`:128`). The replies: a linked member with the role gets \"Laftly: Fee $<amount>. Confirm and pay here: <link>.\"; a linked member without the role, and a directory line with no member (the business's own line), get a new reply with no link, \"Laftly: Only the owner or a Confirm and billing member can confirm job <n>. The pick email has the Confirm link.\" (English and Spanish in `app/messaging/templates/`); after the window the expired reply; another business's phone nothing. YES and CONFIRM (and SÍ, CONFIRMAR) get the same answer and neither ever confirms or charges (PICK-033, FEE-036, D-365). (4) The reply is addressed to the texting phone's line ID, as T573 addresses business texts (D-2042: a business-ID row cannot pass `may_text`), and queued with `messaging::api::enqueue_exempt` with `Exemption::DirectReply { inbound_at }` from the inbound text's time (QH-004's 15 minutes), once per inbound message (a provider resend of the same message SID replies once). Tests in the new `app/server/tests/business_yes_text.rs` (TD-PICK-69), through the assembled router with the texting stand-in, fake data only. Update `app/picks/NOTES.md`, `app/server/NOTES.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4361 (unwired sweep orphan 6 and its second pass, `main` 77a49d7cc; round-1 review; PICK-033, FEE-036, PICK-035, BIZ-036, QH-004; D-259, D-365, D-1717, D-2042). `read_business_word` and `business_reply` (`app/picks/src/confirm.rs:315`, `:347`) have no caller: a whole-command text makes `auto_reply_due` false (`app/businesses/src/consent.rs:542`) and `auto_reply` ends with `Halt::Ends(\"business\")` (`app/server/src/inbound_text.rs:1050` to `:1057`), so a business on text that replies \"YES 1042\" hears nothing. (1) `inbound_text.rs`: after the opt-out and HELP screens (an opt-out word always wins, D-2039), a business phone's text that `read_business_word` reads goes to the new `app/picks/src/text_confirm.rs` before `auto_reply`. (2) `text_confirm.rs` (pure reads, no link): for a business whose channel preference includes text (BIZ-036), the job number names the waiting pick of that business (the word alone only when it has exactly one waiting); it answers the pick, its fee and whether the window is open, with `business_reply`'s `linked` true only for a directory line of the picked business that `acts_for_business` accepts (a staff phone still waiting for approval is not linked). (3) The link is minted in `inbound_text.rs`, never in `picks` (which may not call `portals`, `kit/layers.json`): `portals::api::mint_text_confirm_link` (T714, D-4425), never `mint_action_link`, so the link is marked text-started and the session it starts lasts 30 minutes (SEC-004), for the member that texting line belongs to, read through a new `businesses::api::phone_member(db, line)` in `app/businesses/src/phone_approval.rs` (beside `phone_standing`, `:132`; `businesses.staff_phone.linked_by`, `migrations/0056_businesses_team_members.sql:35`; none for a line with no member), which refuses a member without \"Confirm and billing\" (`:128`). The replies: a linked member with the role gets \"Laftly: Fee $<amount>. Confirm and pay here: <link>.\"; a linked member without the role, and a directory line with no member (the business's own line), get a new reply with no link, \"Laftly: Only the owner or a Confirm and billing member can confirm job <n>. The pick email has the Confirm link.\" (English and Spanish in `app/messaging/templates/`); after the window the expired reply; another business's phone nothing. YES and CONFIRM (and SÍ, CONFIRMAR) get the same answer and neither ever confirms or charges (PICK-033, FEE-036, D-365). (4) The reply is addressed to the texting phone's line ID, as T573 addresses business texts (D-2042: a business-ID row cannot pass `may_text`), and queued with `messaging::api::enqueue_exempt` with `Exemption::DirectReply { inbound_at }` from the inbound text's time (QH-004's 15 minutes), once per inbound message (a provider resend of the same message SID replies once). Tests in the new `app/server/tests/business_yes_text.rs` (TD-PICK-69), through the assembled router with the texting stand-in, fake data only. Update `app/picks/NOTES.md`, `app/server/NOTES.md` and `docs/decisions.md`. Plan change D-4425: the phone-only Confirm a text-started link gives is accepted at every fee tier under SEC-004's ASVS deviation (D-366, D-477); TD-PICK-69 checks the link is text-started.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -45348,7 +45358,8 @@
     "T573",
     "T457",
     "T670",
-    "T675"
+    "T675",
+    "T714"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -45391,7 +45402,8 @@
     "D-1717",
     "D-2042",
     "D-4361",
-    "D-4360"
+    "D-4360",
+    "D-4425"
    ],
    "cites": [],
    "budget": {
@@ -45594,7 +45606,7 @@
    "id": "T687",
    "slug": "project-limit-quotes",
    "title": "quotes: a quote above the business's only class's project limit is refused with an explanation",
-   "goal": "Plan change D-4361 (unwired sweep orphan 10 and its second pass, `main` 77a49d7cc; round-1 review; LIC-045, LIC-019; D-392, D-985). `licensing::ClassMap::check_project_limit` (`app/licensing/src/class_map.rs:343`) and `OverProjectLimit` are used nowhere outside `licensing`, and the quote form checks only the handyman limit, so an R-62-only business's $7,500 quote is accepted. `QuoteRules` (`app/quotes/src/intake.rs:257`) and `parse_quote` stay unchanged: about 18 test files build `QuoteRules` field by field. (1) The new `app/quotes/src/project_limit.rs` (exported through the shared `quotes::api`): `project_limit_check(conn, (job, business), price)` reads the business's latest Active classes (T654's shared read) and the job's category and type, and calls `ClassMap::shipped().check_project_limit` on the price's top (labor and materials, a range judged on its top); `NotCovered` passes here (card eligibility owns it). (2) The quote submit path (`app/server/src/action_links.rs`, after `parse_quote` at `:709` and before `submit_quote_with_facts` at `:650`) calls it and, on `OverProjectLimit`, stores nothing and shows the form again with an explanation of the limit on the price field, as the handyman bounce is shown (LIC-019; marked as T657 marks it). LIC-046's two-active minimum is D-4360's. Tests (TD-LIC-35), fake data only: `app/quotes/src/tests/project_limit.rs` for the rule (R-62 at $5,000.00 accepted and $5,000.01 refused, R-61 at $50,000, a range on its top, a business also holding an unlimited covering class never refused) and `app/server/tests/project_limit_route.rs` through the assembled router (an over-limit quote stores nothing and shows the explanation). Update `app/quotes/NOTES.md`, `app/server/NOTES.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4361 (unwired sweep orphan 10 and its second pass, `main` 77a49d7cc; round-1 review; LIC-045, LIC-019; D-392, D-985). `licensing::ClassMap::check_project_limit` (`app/licensing/src/class_map.rs:343`) and `OverProjectLimit` are used nowhere outside `licensing`, and the quote form checks only the handyman limit, so an R-62-only business's $7,500 quote is accepted. `QuoteRules` (`app/quotes/src/intake.rs:257`) and `parse_quote` stay unchanged: about 18 test files build `QuoteRules` field by field. (1) The new `app/quotes/src/project_limit.rs` (exported through the shared `quotes::api`): `project_limit_check(conn, (job, business), price)` reads the business's latest Active classes (T654's shared read) and the job's category and type, and calls `ClassMap::shipped().check_project_limit` on the price's top (labor and materials, a range judged on its top); `NotCovered` passes here (card eligibility owns it). (2) The quote submit path (`app/server/src/action_links.rs`, after `parse_quote` at `:709` and before `submit_quote_with_facts` at `:650`) calls it and, on `OverProjectLimit`, stores nothing and shows the form again with an explanation of the limit on the price field, as the handyman bounce is shown (LIC-019; marked as T657 marks it). LIC-046's active-business minimum (1 since D-4421) is D-4360's and T710's. Tests (TD-LIC-35), fake data only: `app/quotes/src/tests/project_limit.rs` for the rule (R-62 at $5,000.00 accepted and $5,000.01 refused, R-61 at $50,000, a range on its top, a business also holding an unlimited covering class never refused) and `app/server/tests/project_limit_route.rs` through the assembled router (an over-limit quote stores nothing and shows the explanation). Update `app/quotes/NOTES.md`, `app/server/NOTES.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -45916,13 +45928,13 @@
    "id": "T691",
    "slug": "start-resumes-order",
    "title": "intake (harness): START into an open request resends the consent text and then the request's open question",
-   "goal": "Plan change D-4360 (round-2 review, finding B; CON-031, CON-001, CON-015, INT-043; D-2629, D-3480). `resubscribe::restart_after_start` (`app/intake/src/resubscribe.rs`, called at `app/server/src/inbound_text.rs:756`) resends her open request's consent text after START and passes nothing on, so the request stalls: CON-031's \"the first intake question follows at once as its own text\" never comes. After T671, in the same transaction and under the homeowner lock it already holds, it hands the request to T671's dispatcher, which sends the request's current open question once more (a re-ask after START does send again a question already asked, since she was opted out and may have lost it; a request still waiting for SAFE gets nothing more, INT-005; a request whose card is shown gets the card text again; a request with nothing open gets nothing); a resent START delivery queues nothing more. The re-ask resends the open question's text only (through `conversation::queue_text` with that step's template, or `ask_zip`'s body), never calling a step's ask function: it writes no asked row at all, so it does not count as an ask (her ZIP \"asked once more\" turn, `app/intake/src/zip_step.rs:226`, is not used up) and no row carries START's inbox ID at any step (the ask functions of \"How soon?\" and name and address record the inbox ID and live in files this task may not edit). Under quiet hours the consent text goes at once and the re-asked question waits for 8 a.m. until T402, as any reply does. Done tests: `tests/integration/tests/optout_followups.rs` (\"START is no answer\", `:223`, `:244`) and `tests/integration/tests/inbound_first_contact.rs` (\"reached intake once\", `:169`, `:170`, `:229`) are expected to pass unchanged; if one still moves, its count may be narrowed only to leave out step-marker question IDs (what the test measures: an answer, reaching intake once), logged in `docs/decisions.md` as narrowing, never loosened otherwise. Tests (TD-INT-51; the ZIP step and the \"How soon?\" step) in the new `tests/integration/tests/start_resumes_order.rs`, PostgreSQL, fake data and 555 numbers only, through the served route.",
+   "goal": "Plan change D-4360 (round-2 review, finding B; CON-031, CON-001, CON-015, INT-043; D-2629, D-3480). `resubscribe::restart_after_start` (`app/intake/src/resubscribe.rs`, called at `app/server/src/inbound_text.rs:756`) resends her open request's consent text after START and passes nothing on, so the request stalls: CON-031's \"the first intake question follows at once as its own text\" never comes. After T671, in the same transaction and under the homeowner lock it already holds, it hands the request to T671's dispatcher, which sends the request's current open question once more (a re-ask after START does send again a question already asked, since she was opted out and may have lost it; a request still waiting for SAFE gets nothing more, INT-005; a request whose card is shown gets the card text again; a request with nothing open gets nothing); a resent START delivery queues nothing more. The re-ask resends the open question's text only (through T671's `order_dispatch::ask_open_again`, which T716, T672 and T673 extend for their questions; it queues the question's text only, D-4441), never calling a step's ask function: it writes no asked row at all, so it does not count as an ask (her ZIP \"asked once more\" turn, `app/intake/src/zip_step.rs:226`, is not used up) and no row carries START's inbox ID at any step (the ask functions of \"How soon?\" and name and address record the inbox ID and live in files this task may not edit). Under quiet hours the consent text goes at once and the re-asked question waits for 8 a.m. until T402, as any reply does. Done tests: `tests/integration/tests/optout_followups.rs` (\"START is no answer\", `:223`, `:244`) and `tests/integration/tests/inbound_first_contact.rs` (\"reached intake once\", `:169`, `:170`, `:229`) are expected to pass unchanged; if one still moves, its count may be narrowed only to leave out step-marker question IDs (what the test measures: an answer, reaching intake once), logged in `docs/decisions.md` as narrowing, never loosened otherwise. Tests (TD-INT-51; the ZIP step and the \"How soon?\" step) in the new `tests/integration/tests/start_resumes_order.rs`, PostgreSQL, fake data and 555 numbers only, through the served route. D-4441: every first text in this task's tests names one trade and one job type of it (as \"AC blowing warm air\" does), so T716's \"Which fits best?\" never comes before the coverage line in them, and a request in them holds one job (T717 and T718 add a second).",
    "type": "harness",
    "phase": 1,
    "stage": "5",
    "module": "intake",
    "deps": [
-    "T671",
+    "T672",
     "T573"
    ],
    "model": "claude-opus-5-5",
@@ -45961,7 +45973,8 @@
    "decisions": [
     "D-2629",
     "D-3480",
-    "D-4360"
+    "D-4360",
+    "D-4441"
    ],
    "cites": [],
    "budget": {
@@ -46027,6 +46040,675 @@
    "branch": "claude/task/T700-runner-merge-line-rotation",
    "prompt": "kit/prompts/T700.md",
    "acceptance": "`python3 -m pytest tests/test_runner_merge_line_rotation.py tests/test_runner_merge_line.py tests/test_runner_merge_early.py tests/test_runner_merge_train.py tests/test_failure_drills.py` passes, the T623 reproduction failing against `main`'s runner; no existing test changes apart from a late-B case in `tests/test_runner_merge_train.py` under the goal's licence, logged; every other `tests/test_runner_*.py` passes unchanged."
+  },
+  {
+   "id": "T715",
+   "slug": "intake-order-trade-check",
+   "title": "intake (harness): the dispatcher's first job and step 5: the keyword reading kept as codes, her first job with her opening words, the trade check and the coverage line or INT-017's reply, then step 11",
+   "goal": "Plan change D-4441 (split from T671; D-4360 parts (2) and (3); review finding (a) and the short-text half of (b) on T671's attempt 1; INT-016, INT-017, INT-007, INT-009, PRIV-008). After T671 the walker (`app/intake/src/order_dispatch.rs`) drives steps 1 to 4; no job opens on the text path and nothing reads the trade. Add, calling only existing functions (`routing.rs`, `conversation.rs` and `service.rs` are not edited, D-4360): (1) The first text's reading. Its words are stored nowhere before a job exists (`messaging.inbox` has no body, `quotes.job_description.job_id` is NOT NULL, `intake.intake_answer.choice` holds codes only). At the first text, after T671's texts and whatever the screen returned: the keyword reading's trades (`matching::keyword_reading`, `app/intake/src/matching.rs:215`, the AI-off path) as `trade_reading` step-marker rows (codes only, at most two, first-named first) and the first trade's candidate job types (`matching::candidates`, `:391`; catalog values only, never her words) as step-marker rows, all through `models::insert_plain` with no inbox ID. When it names a trade and `rules::opens_job` holds (INT-007: more than two words, or a 911-list match), her first job opens at once by (2) and the first text's scrubbed words are kept once for it through `order::keep_words` (scrubbed again, PRIV-008): the one row of opening words. `keep_words` is called for nothing else here: never a ZIP reply or a step answer (INT-049). (2) The own open: every job a request opens on the text path opens this way, never through `begin_job`, which keys a job with `models::latest_property` (`conversation.rs:139`), her newest property from any earlier request, whose INT-009 check could return another request's job, and which refuses a message of one or two words, so a later reply could never open the job (finding (a)). Under `models::lock_homeowner`: `jobs::api::create` (emergency true when the request has a 911-list match recorded, INT-007's meaning; the INT-006 choice later sets or clears it), the job-kind row with property `none` through `models::insert_plain`, `models::set_first_job` and `handlers::schedule_no_reply`; no INT-009 lookup, so a new request never joins another request's job (D-4360); after it the walker works only on `intake.conversation.job_id`. (3) Step 5 (INT-016, INT-017), reached on the turn the ZIP is stored, or after SAFE or an INT-037 answer when the property is stored and step 5 is not done. With a stored trade (the first `trade_reading` code) and no job yet (her first text named it in one or two words, as \"need plumber\"), the job opens now by (2): INT-007 governs whether a message's own words open a job, and the order opening the request's first job at step 5 for the trade her first text named is not that, as INT-032's one-word ALSO opens one (D-4441); nothing is kept for it (the card rests on her answers and the EDIT step, D-4360). Then a category that is not open goes through `routing::apply` with `Outcome::NotCovered` (INT-017's reply, Not covered, the demand row, OPS-041); otherwise `quotes::api::request_coverage` (T679, LIC-046's minimum) with the stored town and ZIP and `CardFacts` from the stored codes goes to `routing::tell_coverage` (`:378`) for the request's own job: the count line, `Coverage::Split`'s offer (the SPLIT reply is T717's; until then it is read as the next step's answer) or Not covered. Step 5 runs once per request: a step-marker row (no inbox ID) written with its text is its done mark. With no stored trade the walker sends nothing at step 5 (T716 asks); such a request has no job, so until T719 adds its request-level wait (INT-049 keeps INT-019's wait) none runs for it. (4) Step 11 (`order::ask_last_question`) moves from `reply_in` into the walker, right after step 5's count line or split offer, never after a not-covered or out-of-area outcome; until T672 and T675 wire steps 6 to 10 it fires there. (5) Two done tests (T317 and T257; TD-SEC-52, TD-AI-19) encode the order before D-4360 and fail once (1) runs (T671's attempt 1: `cargo test --workspace --no-fail-fast`, exactly these two of its three failures, re-run by its Opus reviewer); each changes only as follows. (a) `tests/integration/tests/inbound_text_guards.rs`, `quoted_job` (`:292` to `:326`): its first text `LEAK` (`:50`, \"my kitchen sink is leaking\") now opens the request's `plumbing_repair` job, so the helper's `begin_job` meets that active job of the same homeowner and trade and returns `Opened::Existing` (INT-009, `conversation.rs:143` to `:145`); the helper requires `Opened::Existing(job)` with `job` equal to the request's `intake.conversation.job_id` (not `Created`: one job, opened by the route) and goes on with it unchanged. (b) `tests/integration/tests/inbound_scrub_context.rs`, `td_ai_19_a_stated_name_stays_out_through_the_route`: OTHER's first text \"my zebulon brand heater\" (`:274`) names a trade in four words, so its scrubbed words are kept once as OTHER's opening words (PRIV-008). \"zebulon\" is HER stated name, scrubbed only from her own texts (AI-020; the test asserts OTHER's text keeps it, `:291` to `:297`), and her first text names no trade, so nothing of hers is kept: a fixture collision, not a leak. The scan at `:298` expects `[\"quotes.job_description\"]`, and a new assertion requires the `quotes.job_description` rows matching `NAMES` to be exactly one, on OTHER's request's job, with the words \"my zebulon brand heater\"; a kept row from HER texts, or a name in any other table outside `privacy`, still fails; the scans at `:337` and `:389` stay empty. (6) State in `docs/decisions.md`: a request whose first text names a trade in more than two words has a `jobs` row before the area check; OPS-006's per-trade count keys on the job's first `jobs.job_facts` row (`app/jobs/src/request_counts.rs:5` to `:8`) and OPS-041's demand rows are written only on a not-covered request, so an out-of-area request counts in neither (check and say so); a 911-list first text's job opens with `emergency: true` before the INT-006 choice. Tests (TD-INT-52) in the new `tests/integration/tests/intake_order_trade_check.rs`, PostgreSQL, fake data and 555 numbers only, through `intake::api::receive_raw_reply`, each asserting texts only up to the step-11 question; every first text names one trade and one job type of it (no \"Which fits best?\", T716). Before hand-in, grep every test that posts to `/webhooks/twilio/sms` or calls `receive_reply`/`receive_raw_reply` and run them, including T671's `intake_order_area_trade.rs` and `tests/e2e/j1_homeowner.spec.ts` (the early open adds an Intake job beside `seedQuotes`' seeded job, `j1_homeowner.spec.ts:135` to `:157`, and in step 1, `:164`); a failing one not owned here is a plan gap to report, not to edit. Update `app/intake/CLAUDE.md` and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T671"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security",
+    "compliance",
+    "harness"
+   ],
+   "owns": [
+    "app/intake/src/order_dispatch.rs",
+    "app/intake/src/replies.rs",
+    "tests/integration/tests/intake_order_trade_check.rs",
+    "tests/integration/tests/inbound_text_guards.rs",
+    "tests/integration/tests/inbound_scrub_context.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/intake.md",
+    "docs/spec/privacy.md",
+    "app/intake/src/order.rs",
+    "app/intake/src/routing.rs",
+    "app/intake/src/matching.rs",
+    "app/intake/src/conversation.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "INT-043",
+    "INT-016",
+    "INT-017",
+    "INT-007",
+    "INT-009",
+    "PRIV-008",
+    "INT-049"
+   ],
+   "tests": [
+    "TD-INT-52"
+   ],
+   "decisions": [
+    "D-1521",
+    "D-3702",
+    "D-4360",
+    "D-4441"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 650,
+    "context_pct": 32
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T715-intake-order-trade-check",
+   "prompt": "kit/prompts/T715.md",
+   "acceptance": "TD-INT-52 passes against PostgreSQL; a first text naming a trade in more than two words opens one job with property `none` and keeps its scrubbed words once, a shorter one opens its job at step 5 with nothing kept; no ZIP reply or step answer is kept as words; the coverage line or INT-017's reply comes once per request, then the step-11 question; a returning homeowner gets one job per request and never joins another request's job; `inbound_text_guards.rs` and `inbound_scrub_context.rs` change only as the goal's part (5) says and pass; `routing.rs`, `conversation.rs` and `service.rs` are unchanged; T671's tests pass unchanged."
+  },
+  {
+   "id": "T716",
+   "slug": "intake-order-trade-questions",
+   "title": "intake: the dispatcher's trade questions at step 5: \"Which fits best?\" and, when her words name no trade, one question asking what she needs done",
+   "goal": "Plan change D-4441 (review finding (b) on T671's attempt 1: the trade question was never asked and a first text naming no trade got nothing after the ZIP; INT-014, INT-015, INT-012, INT-016; D-102, D-103, D-105, D-1270). After T715 step 5 reads the stored keyword reading: a trade goes straight to the coverage line with every candidate job type, and a request whose first text named no trade gets nothing after the ZIP. Extend `app/intake/src/order_dispatch.rs`, calling only existing functions (`routing.rs`, `conversation.rs` and `service.rs` are not edited, D-4360): (1) \"Which fits best?\" (INT-014): at step 5, before the coverage line, when `matching::candidates` rebuilt from the stored codes gives `which_fits` (`app/intake/src/matching.rs:414`), ask it with its numbered options; the reply goes to `Candidates::fit_step` (`:454`): `Chosen` stores the chosen job type as the request's candidates (step-marker rows, codes only), `KeepAll` keeps every candidate (the card is marked through `routing_confidence::after_fit`, INT-040), `AskAgain` asks once more with the same options in the same order (INT-015, D-103); then T715's coverage line with the stored candidates. (2) No trade read (AI off; T299 adds the AI reading later): step 5 asks one question in place of the coverage line (new template `trade_ask`, draft copy for the copy panel, WORD-028, starting from \"What do you need done? A few words is enough.\"); its reply is read with `keyword_reading`: a trade stores the reply's `trade_reading` and candidate rows (codes only; the reply's words are never kept, D-4360), opens the first job by T715's own open (the job is opened by the order, not by the reply's words, D-4441), then (1) when it applies and the coverage line; no trade or \"Not sure\" asks once more (INT-015), after which the request waits with nothing sent and each later reply is read the same way, as INT-049's ZIP wait does; the wait of a request with no job is T719's. This replaces D-1270's \"`NoTrade` for the INT-016 path\" on the text path: a request is not called uncovered before she is asked (D-4441); INT-016's reply still follows a trade whose category is not open. A reply naming two trades takes the first (T717 adds INT-032 for a first message only). (3) `order_dispatch::ask_open_again` (T671) gains both questions, so START (T691) resends them. (4) `which_fits` and `trade_ask` go into the shared `app/messaging/templates/en.json` and `es.json` (Spanish drafts marked for native-speaker review, TXT-003), passing `scripts/check_copy.py` and `scripts/check_ai_smell.py` (WORD-028, WORD-029), and into `NOT_UPDATE_TEXTS` (`app/quotes/src/update_texts.rs:116`: intake questions before her request goes out, D-1293); `td_txt_25_every_homeowner_template_is_scanned_or_left_out` (`app/quotes/src/tests/update_texts.rs:145`, TD-TXT-25) is the guard that makes a new homeowner text be listed and is not edited. INT-013's numbered trade question (two readings that disagree) needs the AI reading: with AI off `routing_confidence::decide` never offers two trades, so it is not built here. Tests (TD-INT-53) in the new `tests/integration/tests/intake_order_trade_questions.rs`, PostgreSQL, fake data and 555 numbers only, through `intake::api::receive_raw_reply`, each asserting texts only up to the coverage line or the wait. Before hand-in, run every test that posts to `/webhooks/twilio/sms` or calls `receive_reply`/`receive_raw_reply`; a failing one not owned here is a plan gap to report, not to edit. Update `app/intake/CLAUDE.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T675"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "compliance"
+   ],
+   "owns": [
+    "app/intake/src/order_dispatch.rs",
+    "app/quotes/src/update_texts.rs",
+    "tests/integration/tests/intake_order_trade_questions.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/intake.md",
+    "docs/spec/privacy.md",
+    "docs/spec/messaging.md",
+    "docs/spec/wording.md",
+    "app/intake/src/matching.rs",
+    "app/intake/src/routing_confidence.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "INT-014",
+    "INT-015",
+    "INT-012",
+    "INT-016",
+    "INT-043",
+    "TXT-003",
+    "WORD-028"
+   ],
+   "tests": [
+    "TD-INT-53"
+   ],
+   "decisions": [
+    "D-102",
+    "D-103",
+    "D-105",
+    "D-1270",
+    "D-1293",
+    "D-4360",
+    "D-4441"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 500,
+    "context_pct": 18
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T716-intake-order-trade-questions",
+   "prompt": "kit/prompts/T716.md",
+   "acceptance": "TD-INT-53 passes against PostgreSQL; \"Which fits best?\" is asked only when the candidates call for it and at most twice; a request whose words name no trade is asked once, asked once more, then waits, and is never called uncovered for want of a trade; no reply to either question is kept as words; `which_fits` and `trade_ask` pass `check_copy.py` and `check_ai_smell.py` and are in `NOT_UPDATE_TEXTS`; `routing.rs`, `conversation.rs` and `service.rs` are unchanged; the earlier intake order tests pass unchanged."
+  },
+  {
+   "id": "T717",
+   "slug": "intake-order-two-jobs",
+   "title": "intake: the dispatcher's second job in one request: INT-032's \"That's 2 jobs\" text, ALSO or TAMBIÉN, and SPLIT or DIVIDIR after a split offer",
+   "goal": "Plan change D-4441 (split from T671; D-4360 part (3)'s INT-032 work; D-999, D-1020). After T715 a request holds one job: a first message naming two trades opens a job for the first trade only and keeps both `trade_reading` rows, and nothing reads ALSO, TAMBIÉN, SPLIT or DIVIDIR. Extend `app/intake/src/order_dispatch.rs`, calling only existing functions (`routing.rs`, `conversation.rs` and `service.rs` are not edited, D-4360): (1) A first message naming two trades (`matching::two_trades`, `app/intake/src/matching.rs:533`, read from the two stored `trade_reading` rows) gets INT-032's text with both trades' names once, right after the first ZIP question in the same turn: at the first text on T671's `Clear` path (CON-031 keeps the consent text and the first question together), and on the 911 and INT-037 paths only when the first ZIP question goes, after SAFE or the INT-037 answer, never during a SAFE hold or while the INT-037 question is open. A one-trade message never gets it. (2) ALSO or TAMBIÉN (`matching::starts_second`), checked before the current step's answer and never while the name-and-address question is open, in a request whose first message named two trades, whose second job is not open and with no SAFE hold waiting (an ALSO during a SAFE hold gets nothing and opens nothing), opens the second trade's job by T715's own open (property `none`, no INT-009 lookup, no INT-007 word count: INT-032 names the one-word ALSO as what opens it, and `begin_job` refuses one or two words), recorded as a job link of this request with its candidate rows; its coverage line goes through `routing::tell_coverage` for that job at once when step 5 is done, else right after the first job's at step 5. Any other ALSO is any other reply. Its words are never kept. An ALSO that opens the job answers no step: the open question is sent again through `ask_open_again` (T671) after its coverage line. (3) SPLIT or DIVIDIR (`routing::is_split_reply`) as the first reply after the turn that sent a `Coverage::Split` offer of the same request (T715 asks the next question in that same turn, so \"the latest text\" would never match; the window is read from stored rows: the offer's step-5 mark and the request's heard rows after it) opens the job of the candidates' other trade the same own way, never at any other point (D-1020); that SPLIT answers no step, and the question sent with the offer is sent again through `ask_open_again`; `routing::split_request` is not called, since it opens through `begin_job` (`routing.rs:474`). (4) Add `two_jobs` to the shared `app/messaging/templates/en.json` and `es.json` with INT-032's exact English words and a Spanish draft marked for native-speaker review (TXT-003), passing `scripts/check_copy.py` and `scripts/check_ai_smell.py` (WORD-028, WORD-029), and to `NOT_UPDATE_TEXTS` (`app/quotes/src/update_texts.rs:116`) right after `split_offer` (`:145`), the array length up by one: an intake reply before her request goes out (D-1293); TD-TXT-25's guard (`app/quotes/src/tests/update_texts.rs:145`) failed on attempt 1 of T671 with \"two_jobs: scanned false, left out false\" and is the guard working, not edited. (5) The second job's own later steps (its trade questions, photos and card) are T718's. Tests (TD-INT-54) in the new `tests/integration/tests/intake_order_two_jobs.rs`, PostgreSQL, fake data and 555 numbers only, through `intake::api::receive_raw_reply`, asserting texts only up to the second job's coverage line. Before hand-in, run every test that posts to `/webhooks/twilio/sms` or calls `receive_reply`/`receive_raw_reply`; a failing one not owned here is a plan gap to report, not to edit. Update `app/intake/CLAUDE.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T716"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "compliance"
+   ],
+   "owns": [
+    "app/intake/src/order_dispatch.rs",
+    "app/quotes/src/update_texts.rs",
+    "tests/integration/tests/intake_order_two_jobs.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/intake.md",
+    "docs/spec/privacy.md",
+    "docs/spec/messaging.md",
+    "docs/spec/wording.md",
+    "app/intake/src/routing.rs",
+    "app/intake/src/matching.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "INT-032",
+    "INT-009",
+    "INT-043",
+    "TXT-003",
+    "INT-017"
+   ],
+   "tests": [
+    "TD-INT-54"
+   ],
+   "decisions": [
+    "D-999",
+    "D-1020",
+    "D-1293",
+    "D-4360",
+    "D-4441"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 450,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T717-intake-order-two-jobs",
+   "prompt": "kit/prompts/T717.md",
+   "acceptance": "TD-INT-54 passes against PostgreSQL; each two-trade first message, ALSO, TAMBIÉN, SPLIT or DIVIDIR opens at most one more job and only where INT-032 and D-1020 say; no second job joins another request's job; no ALSO or SPLIT reply is kept as words; `two_jobs` passes `check_copy.py` and `check_ai_smell.py` and is in `NOT_UPDATE_TEXTS`; `routing.rs`, `conversation.rs` and `service.rs` are unchanged; the earlier intake order tests pass unchanged."
+  },
+  {
+   "id": "T718",
+   "slug": "intake-order-second-job-steps",
+   "title": "intake: the dispatcher's steps 8 to 12 for a request's second job: its trade questions, photos and card, after the first job's",
+   "goal": "Plan change D-4441 (INT-032, INT-043, INT-039, INT-041, INT-029; D-1020). After T717 a request can hold two live jobs (ALSO, TAMBIÉN, SPLIT), but steps 6 to 12 as T672, T673 and T675 built them drive the request's first job (`intake.conversation.job_id`) only, so the second job never gets its trade questions, photos or card. Extend `app/intake/src/order_dispatch.rs`, calling only existing step functions (`routing.rs`, `conversation.rs`, `service.rs`, `summary_step.rs` and `cards_out.rs` are not edited): \"How soon?\", the INT-006 choice (with the night count) and the name and address stay the request's, asked once, and apply to every live job of it; the trade questions (INT-039), the photos (INT-044), the design step and the card (INT-041; on the emergency path the emergency card, INT-029) run for each live job in turn, first job first, the second job's starting once the first job's card is approved: on SEND, OK, YES or ENVIAR in that reply's turn; on the 30-minute auto-send (`summary_step::run_card_timer`, `app/intake/src/summary_step.rs:330`, registered for `CARD_TIMER_KIND` in the shared `app/server/src/lib.rs`, `:756`) through a new handler in `order_dispatch.rs` registered there in its place, which runs the card-timer step on the handler's own transaction (its `begin` becomes a savepoint) and queues the second job's first question in that same transaction, as a text that is not a direct reply (quiet hours, QH-001: held to 8 a.m.); because `card_timer_step` reports the approval only on the approving run (`summary_step.rs:291` to `:302`), the question is decided from stored rows (the first job's card approved, the second job's first question not yet asked) and queued under a dedupe key derived from the job and the step (JOB-006, rust brain R12), so a rerun after the approval queues it exactly once; its asked row carries no inbox ID; on the emergency path, where step 12 is skipped and the cards went at the choice, in the turn that answers the first job's step 11, a direct reply; a job that left Intake (Not covered, closed) is skipped; `ask_open_again` names the job its open question belongs to as T717's text does. The build logs in `docs/decisions.md` how each step's stored rows tell the two jobs apart. Tests (TD-INT-55) in the new `tests/integration/tests/intake_order_second_job.rs`, PostgreSQL, the stand-ins, fake data and 555 numbers only, through `intake::api::receive_raw_reply`. Before hand-in, run every test that posts to `/webhooks/twilio/sms` or calls `receive_reply`/`receive_raw_reply`; a failing one not owned here is a plan gap to report, not to edit. Update `app/intake/CLAUDE.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T717"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "compliance"
+   ],
+   "owns": [
+    "app/intake/src/order_dispatch.rs",
+    "app/server/src/lib.rs",
+    "tests/integration/tests/intake_order_second_job.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/intake.md",
+    "docs/spec/privacy.md",
+    "docs/spec/job-cards.md",
+    "app/intake/src/summary_step.rs",
+    "app/intake/src/photos.rs",
+    "docs/brains/rust-production.md",
+    "docs/spec/quiet-hours.md",
+    "docs/spec/lifecycle.md"
+   ],
+   "requirements": [
+    "INT-032",
+    "INT-043",
+    "INT-039",
+    "INT-041",
+    "INT-029",
+    "QH-001",
+    "JOB-006"
+   ],
+   "tests": [
+    "TD-INT-55"
+   ],
+   "decisions": [
+    "D-1020",
+    "D-4360",
+    "D-4441"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 450,
+    "context_pct": 30
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T718-intake-order-second-job-steps",
+   "prompt": "kit/prompts/T718.md",
+   "acceptance": "TD-INT-55 passes against PostgreSQL; each live job of a two-job request gets its own trade questions, photos and card, in turn, and \"How soon?\" and the name and address once per request; no business gets the second job's card before its own approval; a rerun of the auto-send task after the approval queues the second job's first question exactly once; `routing.rs`, `conversation.rs`, `service.rs`, `summary_step.rs` and `cards_out.rs` are unchanged; the earlier intake order tests pass unchanged."
+  },
+  {
+   "id": "T719",
+   "slug": "intake-request-no-reply",
+   "title": "intake: a request with no job yet gets INT-019's no-reply wait at request level: a reminder at 24 hours and the close at 72",
+   "goal": "Plan change D-4441 (round-1 review, finding 5; INT-049, INT-019, QH-001; changes file `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:111`). INT-049 says INT-019's no-reply wait still applies while Laftly waits for a usable ZIP (`docs/spec/intake.md:53`), but INT-019's wait is per job (`handlers::schedule_no_reply`, `app/intake/src/handlers.rs:135`), and after T715 and T716 a request can have no job (a first text naming a trade in one or two words, before the ZIP; a request whose words name no trade), so it stays open for ever and takes later texts as step answers. `handlers.rs` is T402's and is not edited. A new `app/intake/src/request_wait.rs` gives a request with no live job INT-019's wait at request level, on `handlers.rs`' pattern: from the request's opening and each heard reply (`conversation::hear` writes the heard row; the walker in `app/intake/src/order_dispatch.rs` queues the pair at the first text and on each reply while the request has no job), a reminder at 24 hours moved into the texting window (QH-001) and a close at 72 hours, each a queued `core.task` whose dedupe key names the request, the step and the start; a run does nothing when the request is closed, has a job (the job's own wait took over) or heard her after the start; each run checks the request's consent record (as `handlers.rs:341`'s `card_allowed` check does) and `service::may_text`, and sends nothing without them; the close closes the request (`models::close_request`) with its text and an IDs-only audit row in the same transaction (JOB-005, as `routing.rs:331` to `:340`). INT-019's texts name the request number, a job's number, so a request with no job gets two new templates drafted from INT-019's words without it (`request_reminder`, `request_closed_no_reply`, the close keeping INT-019's restart line \"Text us any time and we'll start again.\"; draft copy for the copy panel, WORD-028), in the shared `app/messaging/templates/en.json` and `es.json` (Spanish drafts marked for native-speaker review, TXT-003), passing `scripts/check_copy.py` and `scripts/check_ai_smell.py`, and in `NOT_UPDATE_TEXTS` (`app/quotes/src/update_texts.rs:116`, D-1293). Register the kind in the shared `app/server/src/lib.rs`. Tests (TD-INT-56) in the new `tests/integration/tests/request_no_reply.rs`, PostgreSQL, fake data and 555 numbers only, the clock set. Before hand-in, run every test that posts to `/webhooks/twilio/sms` or calls `receive_reply`/`receive_raw_reply`; a failing one not owned here is a plan gap to report. Update `app/intake/CLAUDE.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T718"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "compliance"
+   ],
+   "owns": [
+    "app/intake/src/request_wait.rs",
+    "app/intake/src/order_dispatch.rs",
+    "app/quotes/src/update_texts.rs",
+    "app/server/src/lib.rs",
+    "tests/integration/tests/request_no_reply.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/intake.md",
+    "docs/spec/messaging.md",
+    "docs/spec/quiet-hours.md",
+    "docs/spec/wording.md",
+    "app/intake/src/handlers.rs",
+    "docs/brains/rust-production.md",
+    "docs/spec/lifecycle.md"
+   ],
+   "requirements": [
+    "INT-019",
+    "INT-049",
+    "QH-001",
+    "TXT-003",
+    "WORD-028",
+    "JOB-005"
+   ],
+   "tests": [
+    "TD-INT-56"
+   ],
+   "decisions": [
+    "D-1293",
+    "D-4360",
+    "D-4441"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 450,
+    "context_pct": 31
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T719-intake-request-no-reply",
+   "prompt": "kit/prompts/T719.md",
+   "acceptance": "TD-INT-56 passes against PostgreSQL; a request with no job is reminded once at 24 hours inside the texting window and closed at 72 hours with its text (with INT-019's \"Text us any time\" restart line) and an IDs-only audit row, nothing is sent without her consent record or to an opted-out contact, a reply restarts both, a job opening ends them, and a closed request gets nothing; both templates pass `check_copy.py` and `check_ai_smell.py` and are in `NOT_UPDATE_TEXTS`; `handlers.rs` is unchanged; the earlier intake order tests pass unchanged."
+  },
+  {
+   "id": "T710",
+   "slug": "lic046-minimum-one",
+   "title": "quotes and licensing (harness): a launch-open category takes requests with at least 1 active business, not 2 (LIC-046)",
+   "goal": "Plan change D-4421 (Casey, Nov 18, 2026: \"At least one active to open a trade\"; LIC-046, INT-017; D-4360, D-4408). T679 built LIC-046's minimum as `quotes::api::MIN_ACTIVE_BUSINESSES = 2` (`app/quotes/src/service.rs:35`); LIC-046 now says at least 1. (1) `service.rs`: the constant becomes 1 and its doc comment and the module doc (`:15` to `:19`) say so; nothing else in `request_coverage` changes (it still checks the opening and the category-wide count before loading the pool, D-4408, and the minimum stays a constant, the `ASKHAVA_*` setting still open under D-4360). (2) `app/licensing/src/class_map.rs`: `request_intake`'s doc comment (`:122`, \"the setting, default 2\") says default 1; the function is unchanged. (3) Tests, changed only as LIC-046's new value requires (D-4421 logs the spec change; no other assertion removed or loosened): `app/licensing/src/tests/class_map.rs`' TD-LIC-21 case (`:303` to `:328`) asserts `request_intake(open, 0, 1)` is `TooFewBusinesses` and `request_intake(open, 1, 1)` is `Open` in place of the 1-of-2 and 2-of-2 pair, and its doc line says 1; `tests/integration/tests/request_coverage_minimum.rs` (TD-LIC-34): `assert_eq!(MIN_ACTIVE_BUSINESSES, 1)`; a category whose only businesses ticking it are paused or removed is `Coverage::NotCovered`; one active business covering the job's town gives `Coverage::Send(1)`; the Coming-later and off cases stay as they are; the file's module doc says 1. Not changed: OPS-006's alert below 2 active businesses (`tests/integration/tests/ops_alert_conditions.rs`' TD-LIC-21 trade case, `app/ops/src/alerts.rs`) and TD-INT-45's two-business coverage line, which pass at a minimum of 1. Before handing in, grep `app/` and `tests/` for any other assertion of the two-business minimum (T671 is in flight and calls `request_coverage`); one in a file this task does not own is reported, not edited. Update the request-minimum line of `docs/architecture.md` (section 2, \"Request minimum\": `MIN_ACTIVE_BUSINESSES` (1, a constant)), the T679 lines of `app/quotes/NOTES.md` and `app/licensing/NOTES.md` that name 2, and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "quotes",
+   "deps": [
+    "T679"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "licensing",
+    "compliance",
+    "harness"
+   ],
+   "owns": [
+    "app/quotes/src/service.rs",
+    "app/licensing/src/class_map.rs",
+    "app/licensing/src/tests/class_map.rs",
+    "tests/integration/tests/request_coverage_minimum.rs"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/spec/licensing.md",
+    "docs/spec/intake.md",
+    "docs/spec/ops-recovery.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "LIC-046",
+    "INT-017"
+   ],
+   "tests": [
+    "TD-LIC-21",
+    "TD-LIC-34"
+   ],
+   "decisions": [
+    "D-4360",
+    "D-4408",
+    "D-4421"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 120,
+    "context_pct": 10
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T710-lic046-minimum-one",
+   "prompt": "kit/prompts/T710.md",
+   "acceptance": "TD-LIC-34 and TD-LIC-21 pass; one active business covering the town gives the coverage count, failing on `main`; the ops coverage-alert tests pass unchanged; no other test changes."
+  },
+  {
+   "id": "T711",
+   "slug": "problem-counted-complaint",
+   "title": "businesses and portals: Casey counts a check-in PROBLEM report as a complaint, once per job",
+   "goal": "Plan change D-4423 (Fable's decision under Casey's delegation, Nov 18, 2026: \"The rest let fable answer\"; JOB-016, BIZ-012, BIZ-011, BIZ-029, OPS-005; closes D-3055 (4)'s and D-4361 (11)'s `record_complaint` item). `businesses::api::record_complaint` (`app/businesses/src/complaints.rs:205`) has no production caller, and a check-in PROBLEM only raises a `jobs.problem_report` or `jobs.problem_report_safety` alert naming its `messaging.inbox` row (`app/jobs/src/followups.rs:35`, `:37`, `:255` to `:265`); its scrubbed words and job sit in `privacy.message_body` for 30 days (`privacy::api::problem_words`, owner session only, `app/privacy/src/message_body.rs:86`). JOB-016 now says a PROBLEM is a complaint only when Casey counts it. (1) New `app/businesses/src/problem_complaint.rs`, exported through the shared `businesses::api`: `PROBLEM_KINDS`, the five kinds `no_show`, `conduct`, `work_or_price`, `safety`, `other`; `count_problem(conn, (business, job), (kind, words), (owner, now))`: a kind outside the five is `ComplaintError::BadKind` before anything is written; in one transaction it locks the business row (`SELECT ... FOR UPDATE`, as `pause_on_count` does), answers `Counted::Already` and writes nothing when a `businesses.complaint` row for that business and job exists, else calls `record_complaint` as built (its own transaction becomes a savepoint; the words go only to its safety check and are never stored) and writes one `businesses.problem_counted` audit row by `Actor::Owner(owner)` naming the complaint (SEC-006), answering `Counted::Recorded(Recorded)`; and `counted_jobs(conn, jobs)`, the jobs among `jobs` that have a complaint. A safety word in the words raises `businesses.complaint_safety` as `record_complaint` always does (OPS-005). (2) New `app/portals/src/owner_complaint.rs`, exported through the shared `portals::api`: `count_problem_as_complaint(conn, proof: &OwnerSessionProof, (alert, kind), (owner, now))` reads the alert with `ops::api::alert_subject`; only kind `jobs.problem_report` or `jobs.problem_report_safety` with a `messaging.inbox` subject goes on (anything else, or no alert, is `NotProblem`); the job and words come from `privacy::api::problem_words` (none kept, after TXT-020's 30 days, is `WordsGone`); the business is that of the job's latest settled pick, read by a new `picks::api::settled_pick(db, job)` in the new `app/picks/src/settled_pick.rs` (exported through the shared `picks::api`): the newest pick of the job, by `picked_at`, whose status is `paid`, `free` or `no_show`, ended or not (a `fraud_refunded` pick was never released, so it is never the business of record), because `accepted_pick` (`app/picks/src/settle.rs:147` to `:160`) answers only an unended paid or free pick and so misses exactly the no-show case (`app/picks/src/unreachable_refund.rs:495`); none is `NoBusiness`; then `count_problem`. `problem_reports(conn, proof, now)`: every PROBLEM alert raised in the 30 days before `now` (`ops::api::digest_alerts` with the two kinds, keeping only rows whose `raised_at` is at or after `now` minus 30 days, since it also returns alerts resolved inside the window, `app/ops/src/digest_rows.rs:48` to `:50`), newest first, with its alert ID, the job number (`jobs::api::job_number`), the kept words, the safety mark and whether its job is counted (`counted_jobs`); no homeowner contact field (PRIV-006). Nothing here sends the homeowner's BIZ-011 text (T713) or serves a page (T712). Tests (TD-BIZ-58) in the new `tests/integration/tests/problem_complaint.rs`, PostgreSQL, fake data only, driving the PROBLEM through `answer_check_in` and `keep_problem_words`. Build notes go to the end of `app/businesses/NOTES.md` and `app/portals/NOTES.md`; update `docs/architecture.md` (section 2) and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "portals",
+   "deps": [
+    "T662",
+    "T600"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security",
+    "compliance"
+   ],
+   "owns": [
+    "app/businesses/src/problem_complaint.rs",
+    "app/portals/src/owner_complaint.rs",
+    "app/picks/src/settled_pick.rs",
+    "tests/integration/tests/problem_complaint.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/lifecycle.md",
+    "docs/spec/businesses.md",
+    "docs/spec/ops-recovery.md",
+    "app/businesses/src/complaints.rs",
+    "app/jobs/src/followups.rs",
+    "app/privacy/src/message_body.rs",
+    "app/ops/src/owner_alerts.rs",
+    "app/ops/src/digest_rows.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "JOB-016",
+    "BIZ-012"
+   ],
+   "tests": [
+    "TD-BIZ-58"
+   ],
+   "decisions": [
+    "D-016",
+    "D-222",
+    "D-280",
+    "D-3055",
+    "D-4361",
+    "D-4423"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 520,
+    "context_pct": 19
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T711-problem-counted-complaint",
+   "prompt": "kit/prompts/T711.md",
+   "acceptance": "TD-BIZ-58 passes against PostgreSQL; a PROBLEM is never a complaint until counted; one complaint per job however often it is counted; `complaints.rs` and every complaint and check-in test pass unchanged; no homeowner contact is read or returned."
+  },
+  {
+   "id": "T712",
+   "slug": "owner-problem-reports-page",
+   "title": "server and portals: the owner portal lists PROBLEM reports with a \"Count as a complaint\" button",
+   "goal": "Plan change D-4423 (JOB-016, BIZ-012, SEC-006; T711's rule). Today no owner page lists a plain `jobs.problem_report` alert, and a safety one shows on the owner home page only as a pushed alert (`app/portals/src/owner_portal.rs:382`). (1) New `app/portals/templates/owner_problem_reports.html` and a page function in T711's `app/portals/src/owner_complaint.rs` (owned here after T711): `problem_reports`' rows, newest first, each with its job number, the time it came in, \"Safety word\" when marked, the kept words, and, while its job is not counted, a form with the CSRF token, the alert ID, a required kind radio group (No-show, Conduct, Work or price, Safety, Other; none preselected; A11Y-011, A11Y-012, A11Y-030) and the button \"Count as a complaint\"; a counted one says \"Counted as a complaint\" and has no form; an empty list says \"No problem reports in the last 30 days.\"; words for the copy panel. `app/portals/templates/owner_home.html` gains one link, \"Problem reports\", to the page. (2) Served in `app/server/src/owner_portal.rs` behind T303's owner session (no fresh second factor: SEC-043 does not list it): `GET /owner/problem-reports` and `POST /owner/problem-complaint` (fixed paths, the alert ID and kind in the form body, D-3890), `refuse_cross_site` and the CSRF check before the session check, every response `no_store`; the `POST` calls `count_problem_as_complaint` with the session's owner proof and owner ID and answers 303 to the list, `Already` included; `NotProblem`, `WordsGone`, `NoBusiness` and a bad kind show the list again with one line saying why, recording nothing. One section 13 row per method and path (module `server`, Wired `yes`); the routes pass T348's doors unchanged. The page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts`. Tests (TD-BIZ-59) in the new `app/server/tests/owner_problem_route.rs`, fake data only, signing in through T409's `owner_sign_in`. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Ordered after every queued owner of `app/server/src/owner_portal.rs` (T310, T540, T407, T480, T527) and of `owner_home.html` (T484).",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T711",
+    "T527",
+    "T484"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/server/src/owner_portal.rs",
+    "app/portals/src/owner_complaint.rs",
+    "app/portals/templates/owner_problem_reports.html",
+    "app/portals/templates/owner_home.html",
+    "app/server/tests/owner_problem_route.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/lifecycle.md",
+    "docs/spec/security.md",
+    "docs/spec/accessibility.md",
+    "app/server/tests/owner_portal_route.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "JOB-016",
+    "SEC-006"
+   ],
+   "tests": [
+    "TD-BIZ-59"
+   ],
+   "decisions": [
+    "D-3890",
+    "D-4423"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 480,
+    "context_pct": 14
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T712-owner-problem-reports-page",
+   "prompt": "kit/prompts/T712.md",
+   "acceptance": "TD-BIZ-59 passes through the assembled router; every owner portal, door and Ally test passes unchanged; the page shows no homeowner contact."
+  },
+  {
+   "id": "T713",
+   "slug": "complaint-reply-text",
+   "title": "intake, privacy and portals: a counted complaint sends the homeowner the BIZ-011 text",
+   "goal": "Plan change D-4423 (BIZ-011, TXT-003, QH-001; T711's rule). BIZ-011's homeowner reply is built (`businesses::api::ReplyFacts::text`, English and Spanish, `app/businesses/src/complaints.rs:140` to `:165`) but nothing sends it. (1) T711's `count_problem_as_complaint` (`app/portals/src/owner_complaint.rs`, owned here after T712), on `Counted::Recorded` only and in the same transaction, queues one `jobs::api::TEXT_KIND` task with template `complaint_reply`, the job's current version and values holding the job number and the business ID only (as `picks`' `pick_ended.rs:228` builds its task; dedupe key `jobs.homeowner_text.<job>.complaint_reply`). (2) `app/intake/src/job_texts.rs`' `body_of` sends `complaint_reply` to the new `app/intake/src/complaint_reply.rs`, as `PICK_MOVED_TEMPLATE` goes to `moved_body`: the business's public name (`businesses::api::public_names`), its main phone, the job number and the job's trade, rendered by `ReplyFacts::text` in her language; the consent, quiet-hours (QH-001), opt-out and moved-on checks of `job_text_step` apply unchanged. The vault refuses a plaintext read inside a transaction (`read_staff_phone` calls `ensure_bare`, `app/privacy/src/business_contacts.rs:393`, `app/privacy/src/vault.rs:587`) and `body_of` runs inside `queue`'s transaction (`app/intake/src/job_texts.rs:528` to `:532`), so for `complaint_reply` the phone is read in `job_text_step` on the bare connection before `queue` opens its transaction and is passed down to `body_of`. (3) The main phone is sealed in `privacy`'s business-contact store and opens today only for `BusinessPurpose::SignInCode` (`app/privacy/src/business_contacts.rs:87`, `:387`); this task adds `BusinessPurpose::ComplaintReply` (audit action and SEC-047 count label `vault_read.intake.complaint_reply`, naming its reader, the `intake` job-text step), the second purpose that opens a phone; `privacy` cannot read `businesses.staff_phone`, so the caller passes only the line a new `businesses::api::main_line(db, business)` read (new `app/businesses/src/main_line.rs`) gives (the `is_main` line), the architecture change D-4423 records in `docs/architecture.md` section 8; no main phone on file records nothing more and sends nothing, raising one Normal `intake.complaint_reply_unsent` alert naming the job. The number never enters the task payload or a log. Tests (TD-BIZ-60) in the new `tests/integration/tests/complaint_reply_text.rs`, PostgreSQL and the texting stand-in, fake data only. Update `app/intake/NOTES.md`, `app/privacy/NOTES.md`, `docs/architecture.md` section 8 (as built: the purpose and its reader) and `docs/decisions.md`. Ordered after every queued owner of `job_texts.rs` (T402, T583) and of `business_contacts.rs` (T470, T661).",
+   "type": "build",
+   "phase": 2,
+   "stage": "6",
+   "module": "intake",
+   "deps": [
+    "T712",
+    "T402",
+    "T583",
+    "T470",
+    "T661"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security",
+    "compliance"
+   ],
+   "owns": [
+    "app/intake/src/job_texts.rs",
+    "app/intake/src/complaint_reply.rs",
+    "app/businesses/src/main_line.rs",
+    "app/privacy/src/business_contacts.rs",
+    "app/portals/src/owner_complaint.rs",
+    "tests/integration/tests/complaint_reply_text.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/businesses.md",
+    "docs/spec/privacy.md",
+    "docs/spec/quiet-hours.md",
+    "app/businesses/src/complaints.rs",
+    "app/picks/src/pick_ended.rs",
+    "app/businesses/src/reply_link.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "BIZ-011"
+   ],
+   "tests": [
+    "TD-BIZ-60"
+   ],
+   "decisions": [
+    "D-1720",
+    "D-4423"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 560,
+    "context_pct": 26
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T713-complaint-reply-text",
+   "prompt": "kit/prompts/T713.md",
+   "acceptance": "TD-BIZ-60 passes against PostgreSQL; every job-text, business-contact and vault-read test passes unchanged; no homeowner contact or business phone is in a task payload or log; `app/privacy/` keeps its 95% branch floor."
+  },
+  {
+   "id": "T714",
+   "slug": "text-confirm-link-session",
+   "title": "portals: a Confirm link sent by text is marked text-started and its session lasts 30 minutes",
+   "goal": "Plan change D-4425 (Fable's decision under Casey's delegation, Nov 18, 2026: \"The rest let fable answer\"; SEC-004, PICK-033; D-366, D-477). T683 sends the Confirm link by text in reply to a linked phone's YES or CONFIRM; SEC-004 now accepts the phone-only Confirm that gives at every fee tier, but a session started from such a link lasts 30 minutes, not 30 days. T457 builds `confirm_link_session` (`app/portals/src/action_links.rs`) with `BUSINESS_SESSION_LIFE` (30 days). (1) `app/portals/src/action_links.rs` adds `mint_text_confirm_link(db, target, (now, ends))`, exported through the shared `portals::api`: Confirm only (any other kind is `NotAllowed`), the same member, role and time checks as `mint_action_link`, stored under the binding `action-text:confirm:<object>:<token>` (a prefix no path can produce: the URL supplies only the kind slug, the object and the token, and `ActionKind::from_slug` never returns a kind that yields `action-text`), so the mark sits outside the attacker-controlled part of the binding and `portals.login_link` (`migrations/0123_portals_business_signin.sql:12` to `:21`) needs no new column or migration; the URL is the same `ACTION_ROUTE`, so section 13, the door matrices and every link page are unchanged. `open_action_link`, `action_link_business` and `use_action_link` first refuse, as `ActionLinkError::Ended` and with nothing read or hashed, any token that is not exactly 64 lower-case hex characters (as `business_auth::well_formed` does for sign-in links, `app/portals/src/business_auth.rs:788`; today `target()` in `app/server/src/action_links.rs:147` to `:153` passes the path token raw), so a token with `%3Atext` or anything else appended never reaches a binding; then, for a Confirm token, they try the email binding, then the text one (each a single guarded read or update, so a token is used at most once); `ActionGrant` gains a private `text_started` flag with a `text_started()` reader, true only from a text-binding match. (2) `confirm_link_session` starts the session with the new `TEXT_CONFIRM_SESSION_LIFE` (30 minutes) for a text-started grant and `BUSINESS_SESSION_LIFE` otherwise; a live session of the link's own person is used as it is, never shortened or lengthened; the Verify code step, the shared-inbox rule (`fresh_code_needed`) and the code caps are unchanged. Tests (TD-SEC-80) added to `app/server/tests/action_links_route.rs`, every existing case unchanged. Update the `portals` `CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "portals",
+   "deps": [
+    "T458",
+    "T588"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy",
+    "money"
+   ],
+   "owns": [
+    "app/portals/src/action_links.rs",
+    "app/server/tests/action_links_route.rs"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/spec/quotes-pick.md",
+    "app/portals/src/session.rs",
+    "app/portals/src/business_auth.rs",
+    "app/portals/src/models.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "SEC-004",
+    "PICK-033"
+   ],
+   "tests": [
+    "TD-SEC-80"
+   ],
+   "decisions": [
+    "D-366",
+    "D-477",
+    "D-4425"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 260,
+    "context_pct": 21
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T714-text-confirm-link-session",
+   "prompt": "kit/prompts/T714.md",
+   "acceptance": "TD-SEC-80 passes through the assembled router; an emailed Confirm link behaves exactly as before; every action-link test passes unchanged; no migration."
   },
   {
    "id": "T705",
