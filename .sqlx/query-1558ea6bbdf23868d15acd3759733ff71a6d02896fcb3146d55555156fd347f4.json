@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO payments.customer (business_id, stripe_customer_id)\n         VALUES ($1, 'cus_FakeT706')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "1558ea6bbdf23868d15acd3759733ff71a6d02896fcb3146d55555156fd347f4"
+}

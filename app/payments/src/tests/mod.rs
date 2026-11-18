@@ -5,6 +5,7 @@ mod charge;
 mod coverage_margin;
 mod fee_at_pick;
 mod fee_tiers;
+mod held_release;
 mod ledger_append;
 mod prop_fee_props;
 mod prop_ledger_matches_stripe;
