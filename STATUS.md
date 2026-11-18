@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T02:26:54Z by runner b7641d13c70c (actions).
+Updated 2026-11-18T02:27:05Z by runner b7641d13c70c (actions).
 
 **Building: T619 in progress since 02:21Z; 421 of 598 done; week 39% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 421 of 598 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T619 claimed 02:21Z, lease until 05:21Z; lane 3: T647 claimed 02:13Z, lease until 05:13Z; lane 4: T639 claimed 01:58Z, lease until 04:58Z; lane 5: T151 claimed 00:12Z, lease until 04:59Z; lane 6: T108 claimed 00:23Z, lease until 04:50Z
+- **Lane:** lane 2: T619 claimed 02:21Z, lease until 05:21Z; lane 3: T647 claimed 02:13Z, lease until 05:13Z; lane 4: T639 claimed 01:58Z, lease until 04:58Z; lane 6: T108 claimed 00:23Z, lease until 04:50Z
 - **Week:** 39% used, 110.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 02:23Z, 3 min before this update
 - **Keeper:** last ran 02:23Z, next wake 04:53Z
@@ -19,6 +19,7 @@ Updated 2026-11-18T02:26:54Z by runner b7641d13c70c (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T151 | ops and messaging: HELP requests with one owner notification | MERGE_PENDING | 1 | 2 h 14 min | 02:26Z |  |
 | T618 | Harness: a 4-hourly advisory watch on main that alerts Casey | MERGE_PENDING | 1 | 28 min | 02:22Z |  |
 | T604 | Dependencies: sentry without default features, so native-tls | MERGE_PENDING | 1 | 78 min | 01:49Z |  |
 | T478 | jobs, intake, calls, messaging and businesses: the scorecard | done | 1 | 2 h 23 min | 01:47Z |  |
@@ -136,8 +137,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T619 (lease until 2026-11-18T05:21:22Z)
 - lane 3: T647 (lease until 2026-11-18T05:13:33Z)
 - lane 4: T639 (lease until 2026-11-18T04:58:02Z)
-- lane 5: T151 (lease until 2026-11-18T04:59:13Z)
 - lane 6: T108 (lease until 2026-11-18T04:50:38Z)
 
 ## Last usage reading
-- {"task": "T618", "at": "2026-11-18T02:22:43Z", "cache_read_input_tokens": 4055337, "cache_creation_input_tokens": 142391, "output_tokens": 55734, "input_tokens": 122}
+- {"task": "T151", "at": "2026-11-18T02:26:53Z", "cache_creation_input_tokens": 427061, "output_tokens": 122224, "cache_read_input_tokens": 23706210, "input_tokens": 389}
