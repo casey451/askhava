@@ -35,6 +35,7 @@
 
 mod about_us;
 mod account_emails;
+mod active_count;
 pub mod api;
 mod backup_address;
 mod capability;
