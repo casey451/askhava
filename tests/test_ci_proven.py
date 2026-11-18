@@ -325,3 +325,119 @@ def test_the_rule_comes_from_the_step_script(tmp_path: Path) -> None:
     with pytest.raises(ci_proven.Unproven, match="cannot read the step script"):
         ci_proven.rule_of(str(tmp_path / "missing.sh"), "rust")
 
+
+
+# The merge train (D-4281, T640): X, the runner's update merge of this task's reviewed head with the turn holder's
+# head, sits on a throwaway ref `claude/train/T###-<12 hex>` in the remote only; the local clone lacks it.
+BRANCH = "claude/task/T640-ci-merge-train-refs"
+
+
+def train_env(tmp_path: Path, ref_name: str = BRANCH) -> dict[str, str]:
+    return {**ENV, "GITHUB_REF_NAME": ref_name, "GITHUB_SERVER_URL": f"file://{tmp_path / 'remote'}"}
+
+
+def train(tmp_path: Path, repo: Repo, ref: str) -> str:
+    """Push X (HEAD's tree, a different commit made in another clone) to the remote as `ref`; return X."""
+    bare, other = tmp_path / "remote" / REPO, tmp_path / "other"
+    if not bare.exists():
+        git(tmp_path, "init", "-q", "--bare", str(bare))
+        git(repo.root, "push", "-q", str(bare), f"{repo.main}:refs/heads/main", f"{repo.head}:refs/heads/{BRANCH}")
+        git(tmp_path, "clone", "-q", str(bare), str(other))
+        git(other, "fetch", "-q", "origin", BRANCH)
+    x = git(other, "-c", "user.name=Fake Tester", "-c", "user.email=ci@example.test", "commit-tree",
+            f"{repo.head}^{{tree}}", "-p", repo.main, "-m", f"train {ref}")
+    git(other, "push", "-q", "origin", f"{x}:refs/heads/{ref}")
+    assert subprocess.run(["git", "cat-file", "-e", x], cwd=repo.root, capture_output=True, check=False).returncode != 0
+    return x
+
+
+def by_sha(answers: dict[str, list[dict[str, Any]]], jobs: dict[int, list[dict[str, Any]]]) -> Api:
+    """An Api whose run list depends on the head_sha asked for."""
+    api = Api([], jobs)
+    api.answers = {**{f"head_sha={sha}&": {"total_count": len(runs), "workflow_runs": runs}
+                      for sha, runs in answers.items()}, **api.answers}
+    return api
+
+
+def red_c_green_x(repo: Repo, x: str, x_job: dict[str, Any] | None = None) -> Api:
+    return by_sha({repo.c: [run(repo.c)], x: [run(x, id=12)]}, {11: [job("Checks", "failure")],
+                                                                 12: [x_job or job("Checks")]})
+
+
+def name(repo: Repo, task: str = "T640") -> str:
+    return f"claude/train/{task}-{repo.main[:12]}"
+
+
+def test_a_train_tip_with_the_same_compiled_inputs_proves_the_head(tmp_path: Path,
+                                                                   monkeypatch: pytest.MonkeyPatch) -> None:
+    repo = make(tmp_path)
+    x = train(tmp_path, repo, name(repo))
+    calls: list[tuple[list[str], dict[str, str]]] = []
+    real = subprocess.run
+
+    def spy(args: list[str], **kw: Any) -> Any:
+        calls.append((args, kw.get("env") or {}))
+        return real(args, **kw)
+
+    monkeypatch.setattr(ci_proven.subprocess, "run", spy)
+    assert decide(tmp_path, monkeypatch, red_c_green_x(repo, x), env=train_env(tmp_path)) == f"proven={x}"
+    assert all("fake-token-not-a-secret" not in " ".join(args) for args, _env in calls)
+    fetch_env = next(env for args, env in calls if args[1] == "fetch")
+    assert "--depth=1" in next(args for args, _env in calls if args[1] == "fetch")
+    assert fetch_env["GIT_CONFIG_KEY_0"] == "http.extraheader" and "fake-token" not in fetch_env["GIT_CONFIG_VALUE_0"]
+
+
+def test_another_tasks_train_tip_and_a_malformed_name_are_ignored(tmp_path: Path,
+                                                                  monkeypatch: pytest.MonkeyPatch) -> None:
+    repo = make(tmp_path)
+    xs = [train(tmp_path, repo, ref) for ref in (name(repo, "T641"), name(repo, "T64"), name(repo) + "0",
+                                                 f"claude/train/T640-{repo.main[:12].upper()}", "claude/train/T640-x")]
+    api = by_sha({repo.c: [run(repo.c)], **{x: [run(x, id=12)] for x in xs}}, {11: [job("Checks", "failure")],
+                                                                              12: [job("Checks")]})
+    assert decide(tmp_path, monkeypatch, api, env=train_env(tmp_path)) == "unproven: Checks on C is completed/failure"
+
+
+@pytest.mark.parametrize(("x_job", "why"), [(job("Checks", "failure"), "completed/failure"),
+                                            (job("Checks", "cancelled"), "completed/cancelled"),
+                                            (job("Checks", None, "in_progress"), "in_progress/None")])
+def test_a_red_cancelled_or_pending_train_run_is_unproven(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+                                                          x_job: dict[str, Any], why: str) -> None:
+    repo = make(tmp_path)
+    x = train(tmp_path, repo, name(repo))
+    line = decide(tmp_path, monkeypatch, red_c_green_x(repo, x, x_job), env=train_env(tmp_path))
+    assert line == f"unproven: Checks on C is completed/failure; {name(repo)}: Checks on C is {why}"
+
+
+def test_a_listing_error_drops_the_train_and_head_parent_is_still_judged(tmp_path: Path,
+                                                                         monkeypatch: pytest.MonkeyPatch) -> None:
+    repo = make(tmp_path)
+    env = train_env(tmp_path)  # no remote at that path: ls-remote fails
+    line = decide(tmp_path, monkeypatch, Api([run(repo.c)], {11: [job("Checks", "failure")]}), env=env)
+    assert line == "unproven: Checks on C is completed/failure; train refs: git ls-remote failed (exit 128)"
+    assert decide(tmp_path, monkeypatch, green(repo), env=env) == f"proven={repo.c}"
+
+
+def test_nothing_is_proven_on_a_train_ref(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    repo = make(tmp_path)
+    line = decide(tmp_path, monkeypatch, green(repo), env=train_env(tmp_path, name(repo)))
+    assert line == "unproven: a claude/train/ ref proves nothing"
+
+
+def test_a_failed_fetch_drops_only_that_candidate(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    repo = make(tmp_path)
+    first, second = name(repo), f"claude/train/T640-{'f' * 12}"
+    x1, x2 = train(tmp_path, repo, first), train(tmp_path, repo, second)
+    real = subprocess.run
+
+    def flaky(args: list[str], **kw: Any) -> Any:
+        if args[1] == "fetch" and args[-1] == f"refs/heads/{first}":
+            return subprocess.CompletedProcess(args, 1, b"", b"fatal: secret-looking stderr")
+        return real(args, **kw)
+
+    monkeypatch.setattr(ci_proven.subprocess, "run", flaky)
+    api = by_sha({repo.c: [run(repo.c)], x1: [run(x1, id=12)], x2: [run(x2, id=12)]},
+                 {11: [job("Checks", "failure")], 12: [job("Checks")]})
+    assert decide(tmp_path, monkeypatch, api, env=train_env(tmp_path)) == f"proven={x2}"
+    git(tmp_path / "other", "push", "-q", "origin", f":refs/heads/{second}")
+    line = decide(tmp_path, monkeypatch, api, env=train_env(tmp_path))
+    assert line == f"unproven: Checks on C is completed/failure; {first}: fetch failed (exit 1)"
