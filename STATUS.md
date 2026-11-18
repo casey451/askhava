@@ -1,21 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-18T22:13:51Z by runner 7d58f8e9c040 (actions).
+Updated 2026-11-18T22:14:36Z by runner 2425d18559d2 (actions).
 
-**Building: T583 in progress since 21:55Z; 460 of 663 done; week 69% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T306 in progress since 22:14Z; 460 of 663 done; week 69% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 460 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 5: T583 claimed 21:55Z, lease until 00:55Z; lane 7: T504 claimed 22:07Z, lease until 01:07Z
-- **Week:** 69% used, 54.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:13Z, 0 min before this update
+- **Lane:** lane 3: T306 claimed 22:14Z, lease until 01:14Z; lane 5: T583 claimed 21:55Z, lease until 00:55Z; lane 7: T504 claimed 22:07Z, lease until 01:07Z
+- **Week:** 69% used, 54.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 22:14Z, 0 min before this update
 - **Keeper:** last ran 22:13Z, next wake 22:33Z
 
 ## Needs attention
 - BLOCKED T715: plan gap reported: PLAN GAP: `app/server/tests/name_address_answer.rs:262`–`:264` (owned by T432, not this task) expects the name-and-address question (step 11) to be asked on the first reply after the area check, even when step 5 never told the coverage. That is the behaviour D-4441 correction (5) removes, so the test is red with T715's change. Smallest plan change: a harness follow-up (T715's attempt or a new task) that may change that test's `her_request` setup so step 5 finishes before step 11 is expected (e.g. first text through the full reply path / receive_raw_reply, or a reply naming a trade, with covera; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T715 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- PLAN GAP T701 (since 2026-11-18T21:55:41Z, no attempt used; a plan change fixes it): T701: dependency T702 is DONE but its owned file app/messaging/src/suppression_versions.rs is not on main; T701: dependency T702 is DONE but its owned file tests/integration/tests/suppression_key_versions.rs is not on main
 - Strict plan check red: 51 problem(s) on tasks still to run (+265 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
@@ -119,7 +118,7 @@ Updated 2026-11-18T22:13:51Z by runner 7d58f8e9c040 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-18T22:06:20Z (week)): week: 139.1M used, 54.9M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T05:56:48Z.
+- Pacing (session_reading 2026-11-18T22:12:27Z (week)): week: 139.4M used, 54.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T04:48:57Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -135,6 +134,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 3: T306 (lease until 2026-11-19T01:14:21Z)
 - lane 5: T583 (lease until 2026-11-19T00:55:41Z)
 - lane 7: T504 (lease until 2026-11-19T01:07:47Z)
 
