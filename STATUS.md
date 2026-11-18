@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-18T07:28:21Z by runner 7b734de350a7 (actions).
+Updated 2026-11-18T07:32:31Z by runner 77a49d7ccc9a (actions).
 
-**Building: T640 in progress since 06:58Z; 430 of 613 done; week 46% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T640 in progress since 06:58Z; 430 of 621 done; week 46% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 430 of 613 build tasks (owner gates not counted)
+- **Tasks done:** 430 of 621 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T640 claimed 06:58Z, lease until 09:58Z; lane 3: T482 claimed 05:26Z, lease until 10:28Z; lane 4: T658 claimed 06:42Z, lease until 10:28Z; lane 5: T643 claimed 05:25Z, lease until 10:00Z; lane 6: T619 claimed 07:22Z, lease until 10:22Z
 - **Week:** 46% used, 97.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:28Z, 0 min before this update
+- **Last run:** 07:28Z, 4 min before this update
 - **Keeper:** last ran 06:46Z, next wake 09:30Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 24 problem(s) on tasks still to run (+204 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 24 problem(s) on tasks still to run (+208 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -86,7 +86,7 @@ Updated 2026-11-18T07:28:21Z by runner 7b734de350a7 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 681 · unstarted 54
-**Tasks merged (throughput only):** 430 of 606
+**Tasks merged (throughput only):** 430 of 621
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -122,7 +122,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 73 of 220 done
+- stage 5: 73 of 228 done
 - stage 6: 0 of 40 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done

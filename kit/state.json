@@ -21430,7 +21430,9 @@
     "T490",
     "T472",
     "T536",
-    "T600"
+    "T600",
+    "T663",
+    "T664"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -23974,7 +23976,9 @@
    "deps": [
     "T119",
     "T217",
-    "T118"
+    "T118",
+    "T663",
+    "T664"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -24236,7 +24240,15 @@
     "T658",
     "T660",
     "T661",
-    "T662"
+    "T662",
+    "T663",
+    "T664",
+    "T665",
+    "T666",
+    "T667",
+    "T668",
+    "T669",
+    "T670"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -24339,7 +24351,8 @@
     "T493",
     "T494",
     "T495",
-    "T623"
+    "T623",
+    "T664"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -24393,7 +24406,9 @@
    "id": "T136",
    "deps": [
     "T135",
-    "T132"
+    "T132",
+    "T663",
+    "T664"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -70848,7 +70863,8 @@
     "T529",
     "T530",
     "T484",
-    "T540"
+    "T540",
+    "T666"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -76080,7 +76096,8 @@
   {
    "id": "T654",
    "deps": [
-    "T601"
+    "T601",
+    "T664"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -76201,6 +76218,110 @@
    "status": "QUEUED",
    "attempts": 0,
    "slug": "close-lines-on-job-end",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T663",
+   "deps": [
+    "T662",
+    "T408",
+    "T209",
+    "T255",
+    "T388",
+    "T033",
+    "T487",
+    "T324",
+    "T471"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "connect-on-settle",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T664",
+   "deps": [
+    "T663",
+    "T669",
+    "T541"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "confirm-press-moves",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T665",
+   "deps": [
+    "T643",
+    "T472"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "door-matrix-job-page",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T666",
+   "deps": [
+    "T665",
+    "T540"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "business-job-page-route",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T667",
+   "deps": [
+    "T663"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "reconnect-line-retry",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T668",
+   "deps": [
+    "T666",
+    "T306"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "job-page-not-a-fit",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T669",
+   "deps": [
+    "T663",
+    "T467",
+    "T471"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "pending-pick-ends",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T670",
+   "deps": [
+    "T669",
+    "T543"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "pressed-pick-notice",
    "type": "build",
    "stage": "5"
   }
@@ -81062,7 +81183,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T07:28:21Z",
+ "updated_at": "2026-11-18T07:32:31Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -81160,7 +81281,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "7b734de350a7f2253e93694d33b0e3156779646c",
+ "runner_sha": "77a49d7ccc9aaf5f86b4a682fb5db7460fc29dc2",
  "starter": "actions",
  "smoke_runs": [
   {
