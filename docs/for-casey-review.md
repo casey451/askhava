@@ -3355,3 +3355,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **One finished task (T623, the business charge sign-in work) sat green and reviewed for over four hours without being merged**, holding one of the seven lanes. The runner brings one finished task at a time up to date with the latest code; T623 had its turn, but the code moved on twice before it could merge, its 45-minute turn ran out, and the rule then let it try again only when no other task held the turn, which with seven lanes busy never happens.
 - **Fix, planned as T700 and claimed first:** a task whose turn runs out now goes to the back of the queue instead of out of it, so every finished task gets its turn in order, and no task holds the turn for more than 90 minutes. A task that is truly stuck still gives up the turn after 45 minutes. The cost we accepted: such a task takes another 45-minute turn once every round until someone looks at it, where today it lost the turn once.
 - Our choice; nothing needs you now.
+
+## Three older tests updated for the new texting order (D-4439)
+
+- **The task that walks a homeowner's texts through the intake steps (T671) found three older tests that still expected the old order.** One expected a fresh job where the new order has already opened her job at her first text; one expected no stored text anywhere to contain a test word, but another (fictional) homeowner's own request now keeps that word, as it should; one checks that every new homeowner text is listed, and the new "That's 2 jobs" text is not listed yet.
+- **Fix:** T671 may now change those three files, each only in the way the plan spells out; every other check in them stays. We checked that the second one is not a privacy leak: the name is still removed from the homeowner who gave it.
+- Our choice; nothing needs you now.
