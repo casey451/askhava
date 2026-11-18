@@ -1576,10 +1576,16 @@ class GitHubEnv:
         compile steps (`warm_commands`), within WARM_TIMEOUT, so the session's smoke, which pins the same
         content to the same times, finds the artifacts fresh. main's head is the checkout's `origin/main`
         (no fetch: the step has no token). Leaves SMOKE_RAN, so the cache is saved, only when the compile
-        made progress (`_warm_build`); writes no state, lease or log on claude/kit-state; returns the line to print."""
+        made progress (`_warm_build`); writes no state, lease or log on claude/kit-state; returns the line to print.
+        When the state read into PRE_SMOKE_STATE lets the pre-session step reuse a recorded smoke for the head
+        (`_reusable_line`, the same rule and `smoke_ancestry` as that step) it builds nothing: no worktree, seed,
+        pin, cargo or SMOKE_RAN (D-4281)."""
         head = self._checkout_main()
         if self.dry_run or not head:
             return f"dry-run: smoke warm-up not run on {head[:12]}" if self.dry_run else "smoke warm-up skipped: no main head"
+        reused = self._reusable_line(head)
+        if reused:
+            return f"smoke warm-up skipped on {head[:12]}: {reused.split(': ', 1)[-1]}"
         tree, start, built = smoke_tree_dir(), time.monotonic(), False
         self._drop_smoke_tree(tree)
         self.git("worktree", "add", "--detach", str(tree), head)
