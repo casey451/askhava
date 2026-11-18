@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T02:22:44Z by runner 46b7c3778ef2 (actions).
+Updated 2026-11-18T02:22:56Z by runner 46b7c3778ef2 (actions).
 
-**Building: T618 in progress since 01:54Z; 421 of 598 done; week 38% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T619 in progress since 02:21Z; 421 of 598 done; week 38% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 421 of 598 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T618 claimed 01:54Z, lease until 05:19Z; lane 2: T619 claimed 02:21Z, lease until 05:21Z; lane 3: T647 claimed 02:13Z, lease until 05:13Z; lane 4: T639 claimed 01:58Z, lease until 04:58Z; lane 5: T151 claimed 00:12Z, lease until 04:59Z; lane 6: T108 claimed 00:23Z, lease until 04:50Z
+- **Lane:** lane 2: T619 claimed 02:21Z, lease until 05:21Z; lane 3: T647 claimed 02:13Z, lease until 05:13Z; lane 4: T639 claimed 01:58Z, lease until 04:58Z; lane 5: T151 claimed 00:12Z, lease until 04:59Z; lane 6: T108 claimed 00:23Z, lease until 04:50Z
 - **Week:** 38% used, 110.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 02:21Z, 1 min before this update
 - **Keeper:** last ran 02:04Z, next wake 04:53Z
@@ -19,6 +19,7 @@ Updated 2026-11-18T02:22:44Z by runner 46b7c3778ef2 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T618 | Harness: a 4-hourly advisory watch on main that alerts Casey | MERGE_PENDING | 1 | 28 min | 02:22Z |  |
 | T604 | Dependencies: sentry without default features, so native-tls | MERGE_PENDING | 1 | 78 min | 01:49Z |  |
 | T478 | jobs, intake, calls, messaging and businesses: the scorecard | done | 1 | 2 h 23 min | 01:47Z |  |
 | T587 | payments and picks: the old Confirm fee writer is marked tes | done | 1 | 48 min | 00:26Z |  |
@@ -132,7 +133,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T618 (lease until 2026-11-18T05:19:39Z)
+- nothing
 - lane 2: T619 (lease until 2026-11-18T05:21:22Z)
 - lane 3: T647 (lease until 2026-11-18T05:13:33Z)
 - lane 4: T639 (lease until 2026-11-18T04:58:02Z)
@@ -140,4 +141,4 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 6: T108 (lease until 2026-11-18T04:50:38Z)
 
 ## Last usage reading
-- {"task": "T604", "at": "2026-11-18T01:49:37Z", "output_tokens": 15229, "cache_creation_input_tokens": 72577, "cache_read_input_tokens": 1348206, "input_tokens": 88}
+- {"task": "T618", "at": "2026-11-18T02:22:43Z", "cache_read_input_tokens": 4055337, "cache_creation_input_tokens": 142391, "output_tokens": 55734, "input_tokens": 122}
