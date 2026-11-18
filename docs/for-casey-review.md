@@ -3316,3 +3316,11 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **Open item, being routed separately:** the job page link in business emails (the job card email's link, and where signing in from a notice lands) leads to a page that is not built yet, so it shows "not found". Building it needs a test-harness change first; it is not in this batch.
 - **The "Sign in" button on notice emails now has the same request limits as the sign-in form**, so nobody holding one link can flood a business's inbox (T382).
 - Nothing needs you now.
+
+## A confirmed job now reaches "connected", and the business job page gets built (D-4349)
+
+- **Jobs never moved past "waiting for the business to confirm".** After a business confirmed and paid, the app shared the homeowner's details but left the job's status behind, so the day-3 and day-14 check-in texts never went out and the call-line closes from D-4338 could not fire. Now the Confirm tap moves the job to "payment pending" and the successful payment (or a free first win) moves it to "connected" (T663, T664). A payment that succeeds after the job has moved on is refunded automatically, as before, and the business is never marked as having "let the pick lapse" when it did tap Confirm.
+- **The Confirm tap now re-checks the business's license and account**, as the spec says, before any charge (T664).
+- **The 1-business-hour window to fix a declined card is unchanged.** It now counts from the decline, as the spec says. Open item, no action needed now: if safe mode pauses charges after a decline and stays on longer than that hour, the job still goes back to the homeowner's other quotes (no fee, nothing counted against the business).
+- **The job page link in business emails gets built** (T665, T666; "Not a fit for us" on it in T668). A business that confirmed lands straight on the homeowner's details. Open item: the page shows the job card, photos and counts, but not yet the homeowner's individual intake answers, because nothing reads them out yet; that needs its own task later.
+- Nothing needs you now.

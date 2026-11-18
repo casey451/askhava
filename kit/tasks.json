@@ -16325,7 +16325,7 @@
    "id": "T222",
    "slug": "journeys-full-variants",
    "title": "Journeys J1 and J2, the full variants: web chat, photos, question order, quote formats, share box, review links",
-   "goal": "J1 and J2 run end to end with every feature the stage-4 slices (T098, T099) left out: the web-chat path with the consent text first (CON-025), INT-043's question order, INT-039's skips, the INT-044 photo check, the INT-041 card confirmation and TXT-018's email option, PICK-053's quote formats with a note, PICK-049's share box, PICK-050's 'Can't take it', and BIZ-052's review links; keyboard-only variants included; both journeys green on the stand-ins is the stage-5 exit evidence. The web-and-email runs of J1 and J2 (TD-TXT-15's J1 and J2 half, D-3263) go in `tests/e2e/j1_j2_web_email.spec.ts`: signed in as the owner as T310's spec does, the spec sets the launch channel to web-and-email on the served owner settings page (`messaging::api::set_launch_channel`, `app/messaging/src/mode_state.rs:198`, has no other caller), then runs J1 and J2 with web-chat consent and intake, the safety text on screen, the pick code by email through Twilio Verify's email channel (`app/picks/src/email_code.rs:113`, read with the stand-in's `GET /_stand_in/twilio/code`, `stand_ins/server.py:388`), no call-window or who-lets-in question anywhere (D-440), a portal quote, Confirm, HOLD, Away, PAUSE and BUSY in the business portal, and the stand-in carrier listing zero texts at the end of each journey. TD-TXT-15's Resend email checks (the safety email, quote, job-card and check-in emails) are parked: nothing in the app sends email to Resend yet (the server built no `ResendEmail` when this was written, and no task drained the email outbox to a provider), so they wait for a future email-sender wiring task (D-3186's account mailer and the outbox send handler, with the e2e app pointed at the stand-in), which reads them with T414's `control.sentEmails`; this task neither builds that sender nor waits for it. J1's run also carries the J1 half of TD-BIZ-22's and TD-BIZ-25's sweeps: the fake voice provider records no call to a business phone except masked calls a person placed (D-492). Plan change D-3744: J2's Confirm from the email with no session, HOLD, Away and BUSY are served by T457 (the Confirm link's code step), T456 (Hold and Away) and T463 (Busy), so this task depends on T457, which follows T463 and, through it, T456. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744). Plan change D-3750: the email-sender wiring D-3263 waited for is T469 (the Resend client in every account mailer, the end-to-end app on the fake Resend) and T470 (the task that sends queued emails); T222 runs after both, so J1 and J2 run with email reaching the fake Resend, but its parked Resend email checks stay parked, since it is at its 600-line limit; a later plan change un-parks them. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): the stage-4 slices alone are about 925 lines, so this task is split in three, each within 600 lines: this task keeps `tests/e2e/j1_full.spec.ts` and `tests/e2e/j2_full.spec.ts` (J1 and J2 with every feature above, TD-BIZ-22 and TD-BIZ-25); T532 takes the keyboard-only variants (`tests/a11y/j_full_keyboard.spec.ts`); T533 takes the web-and-email runs (`tests/e2e/j1_j2_web_email.spec.ts`, TD-TXT-15's J1 and J2 half), which take the pick code by Verify text: the code by email (PICK-029) is parked, since the pick page only ever texts a code (`app/portals/src/pick_flow.rs:670` to `:715`) and no conversation address is stored (D-1612). PICK-050's \"Can't take it\" is served by T472 (`docs/architecture.md:550` to `:551`), so this task depends on it. Earlier sentences about the keyboard variants and the web-and-email runs are history. Plan change D-3892 (Opus pre-claim checks of T532, T533 and T536, Nov 16, 2026): Playwright refuses a test file that imports another test file, so the J1 and J2 steps T532 and T533 reuse live in this task's helper modules `tests/e2e/j1_full.ts` and `tests/e2e/j2_full.ts` (exported functions, as `tests/e2e/j2.ts` serves T099's specs), and the two specs stay thin; together within 600 lines. The journeys need the worker's outbox sender, email sender and Stripe jobs, and move the shared clock by days, so this task depends on T536, which starts the worker with the keyed values and runs `j1_full*` and `j2_full*` in the late Playwright project; every seed takes the app clock (`GET /__test/clock`), never the database's `now()`. Iterate on one spec with `--no-deps` (T536); the commands under \"Run your tests\" stay the hand-in check. Plan change D-4258 (closed scan lists, Nov 17, 2026): TD-TXT-15's no-call-window check is T533's, closed there (the four phrases of `tests/a11y/pick_forms.spec.ts:123`); this task adds no copy of that list. Passing the closed scans is the wording bar; an off-list phrasing that no file in scope contains is a note under 'Scan list notes (not findings)', not a finding (D-4038). Forbidden framing actually present in a file this task writes still blocks, whether or not a pattern catches it.",
+   "goal": "J1 and J2 run end to end with every feature the stage-4 slices (T098, T099) left out: the web-chat path with the consent text first (CON-025), INT-043's question order, INT-039's skips, the INT-044 photo check, the INT-041 card confirmation and TXT-018's email option, PICK-053's quote formats with a note, PICK-049's share box, PICK-050's 'Can't take it', and BIZ-052's review links; keyboard-only variants included; both journeys green on the stand-ins is the stage-5 exit evidence. The web-and-email runs of J1 and J2 (TD-TXT-15's J1 and J2 half, D-3263) go in `tests/e2e/j1_j2_web_email.spec.ts`: signed in as the owner as T310's spec does, the spec sets the launch channel to web-and-email on the served owner settings page (`messaging::api::set_launch_channel`, `app/messaging/src/mode_state.rs:198`, has no other caller), then runs J1 and J2 with web-chat consent and intake, the safety text on screen, the pick code by email through Twilio Verify's email channel (`app/picks/src/email_code.rs:113`, read with the stand-in's `GET /_stand_in/twilio/code`, `stand_ins/server.py:388`), no call-window or who-lets-in question anywhere (D-440), a portal quote, Confirm, HOLD, Away, PAUSE and BUSY in the business portal, and the stand-in carrier listing zero texts at the end of each journey. TD-TXT-15's Resend email checks (the safety email, quote, job-card and check-in emails) are parked: nothing in the app sends email to Resend yet (the server built no `ResendEmail` when this was written, and no task drained the email outbox to a provider), so they wait for a future email-sender wiring task (D-3186's account mailer and the outbox send handler, with the e2e app pointed at the stand-in), which reads them with T414's `control.sentEmails`; this task neither builds that sender nor waits for it. J1's run also carries the J1 half of TD-BIZ-22's and TD-BIZ-25's sweeps: the fake voice provider records no call to a business phone except masked calls a person placed (D-492). Plan change D-3744: J2's Confirm from the email with no session, HOLD, Away and BUSY are served by T457 (the Confirm link's code step), T456 (Hold and Away) and T463 (Busy), so this task depends on T457, which follows T463 and, through it, T456. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744). Plan change D-3750: the email-sender wiring D-3263 waited for is T469 (the Resend client in every account mailer, the end-to-end app on the fake Resend) and T470 (the task that sends queued emails); T222 runs after both, so J1 and J2 run with email reaching the fake Resend, but its parked Resend email checks stay parked, since it is at its 600-line limit; a later plan change un-parks them. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): the stage-4 slices alone are about 925 lines, so this task is split in three, each within 600 lines: this task keeps `tests/e2e/j1_full.spec.ts` and `tests/e2e/j2_full.spec.ts` (J1 and J2 with every feature above, TD-BIZ-22 and TD-BIZ-25); T532 takes the keyboard-only variants (`tests/a11y/j_full_keyboard.spec.ts`); T533 takes the web-and-email runs (`tests/e2e/j1_j2_web_email.spec.ts`, TD-TXT-15's J1 and J2 half), which take the pick code by Verify text: the code by email (PICK-029) is parked, since the pick page only ever texts a code (`app/portals/src/pick_flow.rs:670` to `:715`) and no conversation address is stored (D-1612). PICK-050's \"Can't take it\" is served by T472 (`docs/architecture.md:550` to `:551`), so this task depends on it. Earlier sentences about the keyboard variants and the web-and-email runs are history. Plan change D-3892 (Opus pre-claim checks of T532, T533 and T536, Nov 16, 2026): Playwright refuses a test file that imports another test file, so the J1 and J2 steps T532 and T533 reuse live in this task's helper modules `tests/e2e/j1_full.ts` and `tests/e2e/j2_full.ts` (exported functions, as `tests/e2e/j2.ts` serves T099's specs), and the two specs stay thin; together within 600 lines. The journeys need the worker's outbox sender, email sender and Stripe jobs, and move the shared clock by days, so this task depends on T536, which starts the worker with the keyed values and runs `j1_full*` and `j2_full*` in the late Playwright project; every seed takes the app clock (`GET /__test/clock`), never the database's `now()`. Iterate on one spec with `--no-deps` (T536); the commands under \"Run your tests\" stay the hand-in check. Plan change D-4258 (closed scan lists, Nov 17, 2026): TD-TXT-15's no-call-window check is T533's, closed there (the four phrases of `tests/a11y/pick_forms.spec.ts:123`); this task adds no copy of that list. Passing the closed scans is the wording bar; an off-list phrasing that no file in scope contains is a note under 'Scan list notes (not findings)', not a finding (D-4038). Forbidden framing actually present in a file this task writes still blocks, whether or not a pattern catches it. D-4349: J1 step 7's day-3 DONE and masked call need a job that reaches Connected; until T663 and T664 nothing moved a job past Awaiting confirm, so this task now runs after both.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -16354,7 +16354,9 @@
     "T490",
     "T472",
     "T536",
-    "T600"
+    "T600",
+    "T663",
+    "T664"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -16401,7 +16403,8 @@
     "D-3889",
     "D-3892",
     "D-4196",
-    "D-4258"
+    "D-4258",
+    "D-4349"
    ],
    "cites": [],
    "budget": {
@@ -18624,13 +18627,14 @@
    "id": "T654",
    "slug": "card-pool-roc-check",
    "title": "licensing and quotes: every ROC list import runs each active business's daily check, and the card pool gives ROC classes only after a fresh Active latest check",
-   "goal": "Plan change D-4310 (Fable's decision on the licensing spot review of `main` 4fee847d, finding 2's first half; closes D-3181's CARD-015 gap; review R1 M1 and N1). `card_pool::one_business` (`app/quotes/src/card_pool.rs:227`) takes `parts.classes` (`:256`) from `holder_for`: the classes the latest ROC list shows Active for the latest check's number, never that check's status or age, so a business whose latest lookup read Inactive (the pick lookup or LIC-039's lookup while the list fails) or whose list stopped loading keeps getting ROC cards, and the homeowner spends a pick on a business Confirm refuses (PICK-020). And no list load writes a `license_check` row: only sign-up's `check_license`, the pick lookup and LIC-039's lookups do, although `migrations/0050_licensing_imports.sql` says the table is \"one row per business per daily check\" and CARD-015 says every license is checked daily; so the quote card's ROC line (`card_facts`, D-3646) dates its \"when we checked on\" from the sign-up check for ever. (1) Daily check, `app/licensing/src/daily_lists.rs`: after `run_daily_list` records an ROC list, the same run records `check_license` (`app/licensing/src/service.rs:288`) for every active ROC business, paged through the `ActiveLicenses` it already receives (`server`'s `ActiveRoc`, `app/server/src/lib.rs:852`), in batches the run's sweep budget allows, continuing in the next queued run until done; a business already checked against that list's date is skipped, so a retry or re-run writes no second row. This task owns the hook because `daily_lists.rs` has no other queued owner but T126 and is where the list is recorded; `check_license` is unchanged. The card's ROC line then dates from that day's check and stays true. (2) `app/licensing/src/service.rs`: a new `latest_check_allows_card(conn, business, fresh: Freshness) -> Result<bool, ImportError>`, exported through `licensing::api` beside `roc_check_allows_card` and with its rule: the business's latest `license_check` row overall (`ORDER BY checked_at DESC, id DESC LIMIT 1`, the row `holder_for` reads) is `active`, its `checked_at >= fresh.checked_since` and its `list_date >= fresh.listed_since`; no row (no ROC number) is false. (3) `one_business` keeps `parts.classes` only when it is true for `checked_since = now - pause_after`, LIC-008's 72-hour setting (`licensing::api::FailureLimits`), and `listed_since` that instant's Arizona day, as `picks::confirm::fresh_active` builds its `Freshness`; otherwise `classes` is empty, so ROC categories give no card while agency, pest, handyman and no-license standing are unchanged. The moment cards stop is the latest Active check's `checked_at + pause_after`; T655 pauses at the same instant. `now` is the pool's caller's clock (the worker clock, never the wall clock) and the setting is read the way the caller reads settings; if `card_pool` has no path to the setting, use `FailureLimits::default()` and log it in `docs/decisions.md`. A list outage past 72 hours with failing lookups stops every ROC card: LIC-008 intends that and LIC-039 alerts. Update the `one_business` doc and D-3181's sentence. Tests, fake data only, on PostgreSQL: TD-LIC-33 in `tests/integration/tests/card_pool_license_check.rs`. Ordering: after T601, which changes the same file. Update `app/quotes/NOTES.md`, `app/licensing/NOTES.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4310 (Fable's decision on the licensing spot review of `main` 4fee847d, finding 2's first half; closes D-3181's CARD-015 gap; review R1 M1 and N1). `card_pool::one_business` (`app/quotes/src/card_pool.rs:227`) takes `parts.classes` (`:256`) from `holder_for`: the classes the latest ROC list shows Active for the latest check's number, never that check's status or age, so a business whose latest lookup read Inactive (the pick lookup or LIC-039's lookup while the list fails) or whose list stopped loading keeps getting ROC cards, and the homeowner spends a pick on a business Confirm refuses (PICK-020). And no list load writes a `license_check` row: only sign-up's `check_license`, the pick lookup and LIC-039's lookups do, although `migrations/0050_licensing_imports.sql` says the table is \"one row per business per daily check\" and CARD-015 says every license is checked daily; so the quote card's ROC line (`card_facts`, D-3646) dates its \"when we checked on\" from the sign-up check for ever. (1) Daily check, `app/licensing/src/daily_lists.rs`: after `run_daily_list` records an ROC list, the same run records `check_license` (`app/licensing/src/service.rs:288`) for every active ROC business, paged through the `ActiveLicenses` it already receives (`server`'s `ActiveRoc`, `app/server/src/lib.rs:852`), in batches the run's sweep budget allows, continuing in the next queued run until done; a business already checked against that list's date is skipped, so a retry or re-run writes no second row. This task owns the hook because `daily_lists.rs` has no other queued owner but T126 and is where the list is recorded; `check_license` is unchanged. The card's ROC line then dates from that day's check and stays true. (2) `app/licensing/src/service.rs`: a new `latest_check_allows_card(conn, business, fresh: Freshness) -> Result<bool, ImportError>`, exported through `licensing::api` beside `roc_check_allows_card` and with its rule: the business's latest `license_check` row overall (`ORDER BY checked_at DESC, id DESC LIMIT 1`, the row `holder_for` reads) is `active`, its `checked_at >= fresh.checked_since` and its `list_date >= fresh.listed_since`; no row (no ROC number) is false. (3) `one_business` keeps `parts.classes` only when it is true for `checked_since = now - pause_after`, LIC-008's 72-hour setting (`licensing::api::FailureLimits`), and `listed_since` that instant's Arizona day, as `picks::confirm::fresh_active` builds its `Freshness`; otherwise `classes` is empty, so ROC categories give no card while agency, pest, handyman and no-license standing are unchanged. The moment cards stop is the latest Active check's `checked_at + pause_after`; T655 pauses at the same instant. `now` is the pool's caller's clock (the worker clock, never the wall clock) and the setting is read the way the caller reads settings; if `card_pool` has no path to the setting, use `FailureLimits::default()` and log it in `docs/decisions.md`. A list outage past 72 hours with failing lookups stops every ROC card: LIC-008 intends that and LIC-039 alerts. Update the `one_business` doc and D-3181's sentence. Tests, fake data only, on PostgreSQL: TD-LIC-33 in `tests/integration/tests/card_pool_license_check.rs`. Ordering: after T601, which changes the same file. Update `app/quotes/NOTES.md`, `app/licensing/NOTES.md` and `docs/decisions.md`. D-4349: the Confirm press's PICK-020 re-check this goal relies on (\"a business Confirm refuses\") had no caller; T664 builds it, so this task runs after T664.",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": "quotes",
    "deps": [
-    "T601"
+    "T601",
+    "T664"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -18671,7 +18675,8 @@
     "D-3646",
     "D-2743",
     "D-2744",
-    "D-941"
+    "D-941",
+    "D-4349"
    ],
    "cites": [
     "app/quotes/src/card_pool.rs:227",
@@ -19363,7 +19368,7 @@
    "id": "T114",
    "slug": "payments-recurring-docs",
    "title": "Terms-match-code checks and recurring pricing copy",
-   "goal": "Docs tests prove the business terms state every automatic-refund trigger, timing and method exactly as the code does (including no refund when a business never calls within 72 hours and no early-cancel partial refund), and that pricing copy says ongoing services count as four months capped at $75 with the $150-a-month pool example (REC-007 to REC-009, TERMS-005, TERMS-019). The same test checks every fee, tier and window number in the business terms and the BIZ-030 summary against the catalog settings, and every retention period in the privacy policy against PRIV-007 to PRIV-010 and CON-022 (TERMS-005, D-492). Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): no `catalog.setting` store exists (`docs/architecture.md` section 3 names it; no migration builds it), so \"the catalog settings\" are the values the code holds: the tier fees and edges in `app/payments/src/rules.rs` (`Tier::cents`, `:40` to `:41`, and its tier-edge constants), the `trip_fee_tier` values in `docs/catalog/categories.yaml`, and each window's constant in the module that defines it; the test names the file and constant it reads, and no number is copied into the test by hand. Plan change D-4258 (closed scan lists, Nov 17, 2026): \"no partial-refund rule exists in code or terms\" and \"every fee, tier and window number\" were open-ended, so both are now closed lists, one definition for worker and reviewer; every pattern is case-insensitive; plant every must-fail and must-pass case below as its own parametrized case. (1) Scope. Documents: `docs/legal/business-terms.md`, `docs/legal/business-terms-summary-es.md`, `docs/legal/privacy-policy.md` (as written) and `app/site/templates/business.html` and `es_business.html` (reader text: `{# … #}`, `{% … %}`, `{{ … }}`, `<script>`, `<style>` and every tag removed, line numbers kept). Code: every non-test `.rs` under `app/payments/src/` and `app/picks/src/` (`src/tests/` and `#[cfg(test)]` items skipped) and `app/adapters/src/payments.rs`. (2) Written forms, closed: money `\\$\\s?\\d{1,3}(?:,\\d{3})*(?:\\.\\d{2})?` read as cents (`$1,500.00` and `$1,500` are both 150000); a span `N unit` or `N-unit` with unit minute, hour, business hour, day, week, month or year (singular or plural; `72-hour`, `30-day`), `N more hours`, `day-N`, Spanish `N minutos`, `horas`, `horas hábiles`, `días`, `meses`, `años`; N is digits or one of a, an, one, two, three, four, five, seven, twelve, thirty, cuatro; a clock time `N a.m.` or `N p.m.` (p.m. adds 12); a count `N call attempts`, `N complaints`, `N tiers`, `N characters`, and `twice` or `dos veces` (2). Every match in a scope document must be one pair below or a List A entry, and an unpaired match fails, so a number added later needs its pair. (3) The pairs, each read from the named file and constant (D-3844; the test parses `const NAME: T = expr;`, a `from_hours`/`from_mins` value or the named field or arm, and never holds the number itself). Fees `$25`, `$75`, `$199` at `business-terms.md:14`, `:17`, `:31`, `:65`, `:83` and `business-terms-summary-es.md:18`, `:22`, `:26`, `:29`: `Tier::cents`'s arms, `app/payments/src/rules.rs:39` to `:41`. Edges `$500.00` and `$1,500.00` at `business-terms.md:65`, `$500` and `$1,500` at `business.html:48` to `:50` and `es_business.html:47` to `:49`: `MEDIUM_FROM_CENTS` (`rules.rs:17`) and `MEDIUM_UP_TO_CENTS` (`:19`). Site-visit tier at `business-terms.md:66`: `$25` is `VisitTier::DEFAULT` (`:65`) and \"never more than $75\" is `VisitTier::from_dollars` (`:73` to `:78`: 25 and 75 accepted, 199 refused). Ongoing services: `4 months` at `business-terms.md:69` and `:83`, `four months` at `business.html:54`, `cuatro meses` at `es_business.html:53`: `RECURRING_MONTHS` (`:21`); the cap `$75` at `business-terms.md:69` and the second `$75` at `:83`: `RecurringCap::DEFAULT` (`:255`, `Tier::Medium`); the pool example `$150` and `$600` at `business.html:49` and `es_business.html:48`: 150 times `RECURRING_MONTHS` is 600, and `Tier::for_basis` of 60000 cents is the row it sits in (Medium). `$1,000` at `business-terms.md:39`: `HANDYMAN_LIMIT_CENTS` (`app/licensing/src/handyman.rs:17`). `4 business hours` at `business-terms.md:15`, `:44`, `:59`, `business.html:29`, `4 horas` at `business-terms-summary-es.md:27`, `4 horas hábiles` at `es_business.html:28`: `CONFIRM_BUSINESS_MINUTES` (`app/jobs/src/rules.rs:27`). `60 minutes` at `business-terms.md:15`, `:44`, `:59`, `:89`, `business.html:29`, `60 minutos` at `business-terms-summary-es.md:27` and `es_business.html:28`: `EMERGENCY_MINUTES` (`:31`). `1 business hour` at `business-terms.md:89`: `PAYMENT_BUSINESS_MINUTES` (`:29`). `8 a.m.` and `8 p.m.` at `business-terms.md:15`, `:59`, `:97`, `:110`, `business.html:29`, `business-terms-summary-es.md:27`, `es_business.html:28`: `BUSINESS_OPEN_HOUR` and `BUSINESS_CLOSE_HOUR` (`app/core/src/clock.rs:16`, `:18`). `2 more hours` at `business-terms.md:59`: the `hold_minutes: 2 * 60` field (`app/picks/src/confirm.rs:376`). `24 hours` at `:49`: `QUOTE_WINDOW` (`app/quotes/src/intake.rs:41`). `300 characters` at `:51`: `NOTE_LIMIT` (`app/quotes/src/notes.rs:19`). `90 days` (twice each) at `business-terms.md:72`, `:83`, `business.html:55`, `90 días` at `es_business.html:54`: `FREE_WIN_WINDOW_DAYS` (`app/payments/src/free_wins.rs:40`). `180 days` at `business-terms.md:22`, `:73`, `business.html:36`, `180 días` at `business-terms-summary-es.md:33`, `es_business.html:35`: `REPEAT_FREE_DAYS` (`app/businesses/src/signup.rs:406`). `2 call attempts` at `business-terms.md:93`, `:97`, `twice` at `:17` and `business.html:31`, `dos veces` at `business-terms-summary-es.md:29` and `es_business.html:30`: the `attempts.len() >= 2` guard (`app/payments/src/refund_rules.rs:175`). `3 hours` at `business-terms.md:93`, `:97`: `ATTEMPT_GAP` (`:23`). `72 hours` at `:93`, `:97`, `:102`: `ATTEMPT_WINDOW` (`:19`). `96 hours` at `:97`: `DECIDE_AFTER` (`:21`). `72-hour` at `:97`: `(Step::SeventyTwo, 72)` (`app/picks/src/unreachable_steps.rs:114`). `day-3` at `:102`: `CHECK_IN_DAYS[0]` (`app/messaging/src/checkin_email.rs:33`). `5 days` at `:133`: `REPLY_BOX` (`app/businesses/src/complaints.rs:30`). `3 complaints` and `90 days` at `:134`: `PAUSE_COUNT` (`:34`) and `PAUSE_WINDOW_DAYS` (`:36`). `72 hours` at `:135`: the `pause_after: SignedDuration::from_hours(72)` field (`app/licensing/src/handlers.rs:55`). `7 years` at `:136`, `privacy-policy.md:92`, `:93`: PRIV-010 (`docs/spec/privacy.md:14`). Privacy policy: `180 days` at `:88`: PRIV-007 (`docs/spec/privacy.md:11`); `30 days` at `:89`: PRIV-009 (`:13`); `3 years` at `:90`: PRIV-008 (`:12`); `5 years` at `:91` and `:99`: CON-022 (`docs/spec/consent.md:26`) and `CONSENT_KEEP_YEARS` (`app/messaging/src/consent_alerts.rs:42`); `30 days` at `:94` and `30-day` at `:50`: `REQUEST_LOG_DAYS` (`app/server/src/offdb_stream.rs:46`); `30 days` at `:99`: `ANSWER_WITHIN` (`app/portals/src/data_download.rs:52`). Line numbers say where each pair stands on main 2a27c18, for the reader only. The test keys each pair by file, written form and value, with its count where the text says 'twice', never by line. (4) List A, numbers no code or spec line holds, each named and not compared: `12 months` (`business-terms.md:129`), `30 days` (`:146`), `14 days` (`:150`), `2 days` (`:104`, `:152`, `business-terms-summary-es.md:41`, `business.html:104`, `2 días` at `es_business.html:103`), `4 days` (`business.html:104`, `4 días` at `es_business.html:103`), `3 tiers` (`business-terms.md:51`, no named constant on `main`), and the phrases \"once or twice a day\" (`business-terms.md:15`, `business.html:29`; its \"a day\" and \"twice\" are not windows or attempts) and \"una o dos veces al día\" (`business-terms-summary-es.md:27`, `es_business.html:28`). Line numbers say where each List A entry stands on main 2a27c18, for the reader only. The test keys each entry by file, written form and value, with its count where the text says 'twice', never by line. (5) No partial refund, documents: List B, never allowed: `\\bpartial(?:ly)?\\b`, `\\bpro[- ]?rat\\w*`, `\\bpro rata\\b`, `\\bin part\\b`, `\\b(?:half|portion|part|some|\\d+\\s?%|percent(?:age)?)\\s+of\\s+(?:the|your|its|that)\\s+(?:introduction\\s+)?(?:fee|charge|refund)\\b`, `\\brefund\\w*\\s+(?:\\w+\\s+){0,3}?(?:less|minus|reduced|smaller)\\b`, `\\b(?:reduced|smaller|lower)\\s+(?:refund|fee)\\b`, `\\bearly[- ]cancel\\w*`, `\\bparcial(?:es|mente)?\\b`, `\\bprorrat\\w*`, `\\ben parte\\b`, `\\b(?:mitad|parte|porci[oó]n|\\d+\\s?%|porcentaje)\\s+de\\s+(?:la|su|esa)\\s+(?:tarifa|cobro|devoluci[oó]n|reembolso)\\b`, `\\b(?:reembolso|devoluci[oó]n)\\s+(?:\\w+\\s+){0,2}?(?:menor|reducid[oa])\\b`; List A, removed word for word first: \"is never part of the fee basis\" (`business-terms.md:67`). Code: no line matches `(?i)\\bpartial(?:ly)?\\b|partial_?refund|prorat|pro_?rata` (`PartialEq` and `partial_cmp` pass), and each `self.post(\"refunds\", …)` form in `app/adapters/src/payments.rs` (`:613`, `:626`) is exactly `[(\"payment_intent\", payment_intent)]`, no `amount`; `RefundAmount::Differs` (`app/payments/src/refund_stripe.rs:99`) books what Stripe reports and is not a rule. (6) Planted. Must fail: \"You get a partial refund if the homeowner cancels early.\", \"The refund is prorated.\", \"Half of the fee is refunded.\", \"50% of your fee comes back.\", \"A portion of the fee is returned.\", \"Refunded in part.\", \"The refund is less the processing cost.\", \"A reduced refund applies after Confirm.\", \"Early-cancel refunds are smaller.\", \"Reembolso parcial si cancela.\", \"Se prorratea la tarifa.\", \"La mitad de la tarifa se devuelve.\", \"Se devuelve en parte.\", \"Una devolución reducida.\", the code lines `fn partial_refund(` and `let prorated = fee / 2;`, a refund form `[(\"payment_intent\", payment_intent), (\"amount\", amount)]`, and each of `business-terms.md:65` with `$1,600.00` for the second `$1,500.00`, `:59` with `3 business hours`, `:93` with `48 hours`, `:69` with `$199`, `:73` with \" for 6 weeks\" added, `business-terms-summary-es.md:33` with `90 días`. Must pass: the List A entries, \"It's not a share of the job.\", \"never a percentage or share of the job's price\", \"No es un porcentaje del trabajo.\", `#[derive(PartialEq)]`, both written forms `$1,500` and `$1,500.00`, `72-hour` and `72 hours`, `four months`, and each scope file as it stands. (7) Prototype (`/tmp/claude-0/proto/d4258_t114_numbers.py --check`) on `main` 2a27c18: 5 documents, 144 number matches, 0 that disagree with the code or spec values above; partial scan over 71 files (5 documents, 66 code files): 1 hit, the List A line `business-terms.md:67`; both refund posts send only `payment_intent`. Passing the closed scans is the wording bar; an off-list phrasing that no file in scope contains is a note under 'Scan list notes (not findings)', not a finding (D-4038). Budget 450 lines (was 300): the pair table and the planted cases.",
+   "goal": "Docs tests prove the business terms state every automatic-refund trigger, timing and method exactly as the code does (including no refund when a business never calls within 72 hours and no early-cancel partial refund), and that pricing copy says ongoing services count as four months capped at $75 with the $150-a-month pool example (REC-007 to REC-009, TERMS-005, TERMS-019). The same test checks every fee, tier and window number in the business terms and the BIZ-030 summary against the catalog settings, and every retention period in the privacy policy against PRIV-007 to PRIV-010 and CON-022 (TERMS-005, D-492). Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): no `catalog.setting` store exists (`docs/architecture.md` section 3 names it; no migration builds it), so \"the catalog settings\" are the values the code holds: the tier fees and edges in `app/payments/src/rules.rs` (`Tier::cents`, `:40` to `:41`, and its tier-edge constants), the `trip_fee_tier` values in `docs/catalog/categories.yaml`, and each window's constant in the module that defines it; the test names the file and constant it reads, and no number is copied into the test by hand. Plan change D-4258 (closed scan lists, Nov 17, 2026): \"no partial-refund rule exists in code or terms\" and \"every fee, tier and window number\" were open-ended, so both are now closed lists, one definition for worker and reviewer; every pattern is case-insensitive; plant every must-fail and must-pass case below as its own parametrized case. (1) Scope. Documents: `docs/legal/business-terms.md`, `docs/legal/business-terms-summary-es.md`, `docs/legal/privacy-policy.md` (as written) and `app/site/templates/business.html` and `es_business.html` (reader text: `{# … #}`, `{% … %}`, `{{ … }}`, `<script>`, `<style>` and every tag removed, line numbers kept). Code: every non-test `.rs` under `app/payments/src/` and `app/picks/src/` (`src/tests/` and `#[cfg(test)]` items skipped) and `app/adapters/src/payments.rs`. (2) Written forms, closed: money `\\$\\s?\\d{1,3}(?:,\\d{3})*(?:\\.\\d{2})?` read as cents (`$1,500.00` and `$1,500` are both 150000); a span `N unit` or `N-unit` with unit minute, hour, business hour, day, week, month or year (singular or plural; `72-hour`, `30-day`), `N more hours`, `day-N`, Spanish `N minutos`, `horas`, `horas hábiles`, `días`, `meses`, `años`; N is digits or one of a, an, one, two, three, four, five, seven, twelve, thirty, cuatro; a clock time `N a.m.` or `N p.m.` (p.m. adds 12); a count `N call attempts`, `N complaints`, `N tiers`, `N characters`, and `twice` or `dos veces` (2). Every match in a scope document must be one pair below or a List A entry, and an unpaired match fails, so a number added later needs its pair. (3) The pairs, each read from the named file and constant (D-3844; the test parses `const NAME: T = expr;`, a `from_hours`/`from_mins` value or the named field or arm, and never holds the number itself). Fees `$25`, `$75`, `$199` at `business-terms.md:14`, `:17`, `:31`, `:65`, `:83` and `business-terms-summary-es.md:18`, `:22`, `:26`, `:29`: `Tier::cents`'s arms, `app/payments/src/rules.rs:39` to `:41`. Edges `$500.00` and `$1,500.00` at `business-terms.md:65`, `$500` and `$1,500` at `business.html:48` to `:50` and `es_business.html:47` to `:49`: `MEDIUM_FROM_CENTS` (`rules.rs:17`) and `MEDIUM_UP_TO_CENTS` (`:19`). Site-visit tier at `business-terms.md:66`: `$25` is `VisitTier::DEFAULT` (`:65`) and \"never more than $75\" is `VisitTier::from_dollars` (`:73` to `:78`: 25 and 75 accepted, 199 refused). Ongoing services: `4 months` at `business-terms.md:69` and `:83`, `four months` at `business.html:54`, `cuatro meses` at `es_business.html:53`: `RECURRING_MONTHS` (`:21`); the cap `$75` at `business-terms.md:69` and the second `$75` at `:83`: `RecurringCap::DEFAULT` (`:255`, `Tier::Medium`); the pool example `$150` and `$600` at `business.html:49` and `es_business.html:48`: 150 times `RECURRING_MONTHS` is 600, and `Tier::for_basis` of 60000 cents is the row it sits in (Medium). `$1,000` at `business-terms.md:39`: `HANDYMAN_LIMIT_CENTS` (`app/licensing/src/handyman.rs:17`). `4 business hours` at `business-terms.md:15`, `:44`, `:59`, `business.html:29`, `4 horas` at `business-terms-summary-es.md:27`, `4 horas hábiles` at `es_business.html:28`: `CONFIRM_BUSINESS_MINUTES` (`app/jobs/src/rules.rs:27`). `60 minutes` at `business-terms.md:15`, `:44`, `:59`, `:89`, `business.html:29`, `60 minutos` at `business-terms-summary-es.md:27` and `es_business.html:28`: `EMERGENCY_MINUTES` (`:31`). `1 business hour` at `business-terms.md:89`: `PAYMENT_BUSINESS_MINUTES` (`:29`). `8 a.m.` and `8 p.m.` at `business-terms.md:15`, `:59`, `:97`, `:110`, `business.html:29`, `business-terms-summary-es.md:27`, `es_business.html:28`: `BUSINESS_OPEN_HOUR` and `BUSINESS_CLOSE_HOUR` (`app/core/src/clock.rs:16`, `:18`). `2 more hours` at `business-terms.md:59`: the `hold_minutes: 2 * 60` field (`app/picks/src/confirm.rs:376`). `24 hours` at `:49`: `QUOTE_WINDOW` (`app/quotes/src/intake.rs:41`). `300 characters` at `:51`: `NOTE_LIMIT` (`app/quotes/src/notes.rs:19`). `90 days` (twice each) at `business-terms.md:72`, `:83`, `business.html:55`, `90 días` at `es_business.html:54`: `FREE_WIN_WINDOW_DAYS` (`app/payments/src/free_wins.rs:40`). `180 days` at `business-terms.md:22`, `:73`, `business.html:36`, `180 días` at `business-terms-summary-es.md:33`, `es_business.html:35`: `REPEAT_FREE_DAYS` (`app/businesses/src/signup.rs:406`). `2 call attempts` at `business-terms.md:93`, `:97`, `twice` at `:17` and `business.html:31`, `dos veces` at `business-terms-summary-es.md:29` and `es_business.html:30`: the `attempts.len() >= 2` guard (`app/payments/src/refund_rules.rs:175`). `3 hours` at `business-terms.md:93`, `:97`: `ATTEMPT_GAP` (`:23`). `72 hours` at `:93`, `:97`, `:102`: `ATTEMPT_WINDOW` (`:19`). `96 hours` at `:97`: `DECIDE_AFTER` (`:21`). `72-hour` at `:97`: `(Step::SeventyTwo, 72)` (`app/picks/src/unreachable_steps.rs:114`). `day-3` at `:102`: `CHECK_IN_DAYS[0]` (`app/messaging/src/checkin_email.rs:33`). `5 days` at `:133`: `REPLY_BOX` (`app/businesses/src/complaints.rs:30`). `3 complaints` and `90 days` at `:134`: `PAUSE_COUNT` (`:34`) and `PAUSE_WINDOW_DAYS` (`:36`). `72 hours` at `:135`: the `pause_after: SignedDuration::from_hours(72)` field (`app/licensing/src/handlers.rs:55`). `7 years` at `:136`, `privacy-policy.md:92`, `:93`: PRIV-010 (`docs/spec/privacy.md:14`). Privacy policy: `180 days` at `:88`: PRIV-007 (`docs/spec/privacy.md:11`); `30 days` at `:89`: PRIV-009 (`:13`); `3 years` at `:90`: PRIV-008 (`:12`); `5 years` at `:91` and `:99`: CON-022 (`docs/spec/consent.md:26`) and `CONSENT_KEEP_YEARS` (`app/messaging/src/consent_alerts.rs:42`); `30 days` at `:94` and `30-day` at `:50`: `REQUEST_LOG_DAYS` (`app/server/src/offdb_stream.rs:46`); `30 days` at `:99`: `ANSWER_WITHIN` (`app/portals/src/data_download.rs:52`). Line numbers say where each pair stands on main 2a27c18, for the reader only. The test keys each pair by file, written form and value, with its count where the text says 'twice', never by line. (4) List A, numbers no code or spec line holds, each named and not compared: `12 months` (`business-terms.md:129`), `30 days` (`:146`), `14 days` (`:150`), `2 days` (`:104`, `:152`, `business-terms-summary-es.md:41`, `business.html:104`, `2 días` at `es_business.html:103`), `4 days` (`business.html:104`, `4 días` at `es_business.html:103`), `3 tiers` (`business-terms.md:51`, no named constant on `main`), and the phrases \"once or twice a day\" (`business-terms.md:15`, `business.html:29`; its \"a day\" and \"twice\" are not windows or attempts) and \"una o dos veces al día\" (`business-terms-summary-es.md:27`, `es_business.html:28`). Line numbers say where each List A entry stands on main 2a27c18, for the reader only. The test keys each entry by file, written form and value, with its count where the text says 'twice', never by line. (5) No partial refund, documents: List B, never allowed: `\\bpartial(?:ly)?\\b`, `\\bpro[- ]?rat\\w*`, `\\bpro rata\\b`, `\\bin part\\b`, `\\b(?:half|portion|part|some|\\d+\\s?%|percent(?:age)?)\\s+of\\s+(?:the|your|its|that)\\s+(?:introduction\\s+)?(?:fee|charge|refund)\\b`, `\\brefund\\w*\\s+(?:\\w+\\s+){0,3}?(?:less|minus|reduced|smaller)\\b`, `\\b(?:reduced|smaller|lower)\\s+(?:refund|fee)\\b`, `\\bearly[- ]cancel\\w*`, `\\bparcial(?:es|mente)?\\b`, `\\bprorrat\\w*`, `\\ben parte\\b`, `\\b(?:mitad|parte|porci[oó]n|\\d+\\s?%|porcentaje)\\s+de\\s+(?:la|su|esa)\\s+(?:tarifa|cobro|devoluci[oó]n|reembolso)\\b`, `\\b(?:reembolso|devoluci[oó]n)\\s+(?:\\w+\\s+){0,2}?(?:menor|reducid[oa])\\b`; List A, removed word for word first: \"is never part of the fee basis\" (`business-terms.md:67`). Code: no line matches `(?i)\\bpartial(?:ly)?\\b|partial_?refund|prorat|pro_?rata` (`PartialEq` and `partial_cmp` pass), and each `self.post(\"refunds\", …)` form in `app/adapters/src/payments.rs` (`:613`, `:626`) is exactly `[(\"payment_intent\", payment_intent)]`, no `amount`; `RefundAmount::Differs` (`app/payments/src/refund_stripe.rs:99`) books what Stripe reports and is not a rule. (6) Planted. Must fail: \"You get a partial refund if the homeowner cancels early.\", \"The refund is prorated.\", \"Half of the fee is refunded.\", \"50% of your fee comes back.\", \"A portion of the fee is returned.\", \"Refunded in part.\", \"The refund is less the processing cost.\", \"A reduced refund applies after Confirm.\", \"Early-cancel refunds are smaller.\", \"Reembolso parcial si cancela.\", \"Se prorratea la tarifa.\", \"La mitad de la tarifa se devuelve.\", \"Se devuelve en parte.\", \"Una devolución reducida.\", the code lines `fn partial_refund(` and `let prorated = fee / 2;`, a refund form `[(\"payment_intent\", payment_intent), (\"amount\", amount)]`, and each of `business-terms.md:65` with `$1,600.00` for the second `$1,500.00`, `:59` with `3 business hours`, `:93` with `48 hours`, `:69` with `$199`, `:73` with \" for 6 weeks\" added, `business-terms-summary-es.md:33` with `90 días`. Must pass: the List A entries, \"It's not a share of the job.\", \"never a percentage or share of the job's price\", \"No es un porcentaje del trabajo.\", `#[derive(PartialEq)]`, both written forms `$1,500` and `$1,500.00`, `72-hour` and `72 hours`, `four months`, and each scope file as it stands. (7) Prototype (`/tmp/claude-0/proto/d4258_t114_numbers.py --check`) on `main` 2a27c18: 5 documents, 144 number matches, 0 that disagree with the code or spec values above; partial scan over 71 files (5 documents, 66 code files): 1 hit, the List A line `business-terms.md:67`; both refund posts send only `payment_intent`. Passing the closed scans is the wording bar; an off-list phrasing that no file in scope contains is a note under 'Scan list notes (not findings)', not a finding (D-4038). Budget 450 lines (was 300): the pair table and the planted cases. D-4349: the Payment pending wait stays 60 business minutes (`PAYMENT_BUSINESS_MINUTES`, JOB-014, FEE-020, `docs/legal/business-terms.md:89`); T664 only restarts it from a decline or bank check, so the terms-match check is unchanged.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -19411,7 +19416,8 @@
     "D-492",
     "D-3844",
     "D-3882",
-    "D-4258"
+    "D-4258",
+    "D-4349"
    ],
    "cites": [],
    "budget": {
@@ -19839,7 +19845,7 @@
    "id": "T120",
    "slug": "privacy-sentinel",
    "title": "Sentinel test: J1 to J4 leave no contact detail outside the vault",
-   "goal": "With sentinel fake details run through J1 to J4, no non-vault table, log line, Sentry stub event, job card, AI input or pre-release business message contains them (PRIV-005, PRIV-006, PRIV-016, PRIV-017, PRIV-019, PRIV-028). Plan change D-3744: its budget is 600 lines, the build limit; it is listed in D-3744 for a split in a later plan change. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744). Plan change D-3891 (Fable's pre-claim check): the split D-3744 named is made. The browser-tamper test (TD-SEC-14, SEC-033, `tests/security/tests/browser_tamper.rs`) moves to T548; this task keeps `sentinel.rs` (now `app/server/tests/sentinel.rs`, D-3892) and `sentinel.spec.ts` (TD-PRIV-02, TD-PRIV-13). `sentinel.spec.ts` checks tables (`pg_dump`, as `tests/e2e/j1_homeowner.spec.ts:277` does), the web log of a server it spawns itself (the shared e2e server's output is `stdio: \"inherit\"`, `tests/e2e/webserver.ts:227`), rendered job cards and the control's sent texts and emails. `sentinel.rs` checks log lines, Sentry stub envelopes and the AI input in-process behind `build_router`'s layers, as `tests/security/tests/sentinel_db_logs.rs` does (its Sentry stub at `:82`); the stand-ins have no AI read-back route and the AI client is stage 6 (D-3844). TD-PRIV-13's forced-panic case is a test handler holding `Redacted` contact values behind the same layers (`catch_panic`, `app/server/src/lib.rs:332`); production code gains no panic switch, and the other TD-PRIV-13 clauses are done (T011, T015, T090, T251). Plan change D-3892 (Opus pre-claim check of T548, Nov 16, 2026): a test-layer crate may never depend on `askhava-server` (D-597, D-743; `tests/integration/tests/architecture.rs:225` to `:233` fails the build), so `sentinel.rs` lives in `server`'s own test folder as `app/server/tests/sentinel.rs`, where `build_router` and its layers are reachable; a workspace dependency it needs that `app/server/Cargo.toml` lacks (`tracing-subscriber`, `sentry`, `askhava-ai` and `askhava-fixtures`, on Nov 16) is added to that file's `[dev-dependencies]` as one line each.",
+   "goal": "With sentinel fake details run through J1 to J4, no non-vault table, log line, Sentry stub event, job card, AI input or pre-release business message contains them (PRIV-005, PRIV-006, PRIV-016, PRIV-017, PRIV-019, PRIV-028). Plan change D-3744: its budget is 600 lines, the build limit; it is listed in D-3744 for a split in a later plan change. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744). Plan change D-3891 (Fable's pre-claim check): the split D-3744 named is made. The browser-tamper test (TD-SEC-14, SEC-033, `tests/security/tests/browser_tamper.rs`) moves to T548; this task keeps `sentinel.rs` (now `app/server/tests/sentinel.rs`, D-3892) and `sentinel.spec.ts` (TD-PRIV-02, TD-PRIV-13). `sentinel.spec.ts` checks tables (`pg_dump`, as `tests/e2e/j1_homeowner.spec.ts:277` does), the web log of a server it spawns itself (the shared e2e server's output is `stdio: \"inherit\"`, `tests/e2e/webserver.ts:227`), rendered job cards and the control's sent texts and emails. `sentinel.rs` checks log lines, Sentry stub envelopes and the AI input in-process behind `build_router`'s layers, as `tests/security/tests/sentinel_db_logs.rs` does (its Sentry stub at `:82`); the stand-ins have no AI read-back route and the AI client is stage 6 (D-3844). TD-PRIV-13's forced-panic case is a test handler holding `Redacted` contact values behind the same layers (`catch_panic`, `app/server/src/lib.rs:332`); production code gains no panic switch, and the other TD-PRIV-13 clauses are done (T011, T015, T090, T251). Plan change D-3892 (Opus pre-claim check of T548, Nov 16, 2026): a test-layer crate may never depend on `askhava-server` (D-597, D-743; `tests/integration/tests/architecture.rs:225` to `:233` fails the build), so `sentinel.rs` lives in `server`'s own test folder as `app/server/tests/sentinel.rs`, where `build_router` and its layers are reachable; a workspace dependency it needs that `app/server/Cargo.toml` lacks (`tracing-subscriber`, `sentry`, `askhava-ai` and `askhava-fixtures`, on Nov 16) is added to that file's `[dev-dependencies]` as one line each. D-4349: the journeys reach Connected only through T663's settle move and T664's Confirm press, so this task runs after both.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -19847,7 +19853,9 @@
    "deps": [
     "T119",
     "T217",
-    "T118"
+    "T118",
+    "T663",
+    "T664"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -19885,13 +19893,14 @@
     "D-492",
     "D-3744",
     "D-3891",
-    "D-3892"
+    "D-3892",
+    "D-4349"
    ],
    "cites": [],
    "budget": {
     "files": 2,
     "lines": 600,
-    "context_pct": 7
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -19905,7 +19914,7 @@
    "id": "T548",
    "slug": "browser-tamper",
    "title": "Browser-tamper test: a changed fee, amount or ID in a form or URL changes nothing (D-3891)",
-   "goal": "Split from T120 (D-3744, D-3891). `app/server/tests/browser_tamper.rs` proves that changing the fee, amount, business, quote or pick ID in every form and URL, as another signed-in user or as the same user beyond their rights, changes nothing and is logged; that the charged amount always equals the server's fee rules; and that a scan of every rendered page, served script, source map and logged URL finds no planted sentinel secret, key, contact detail, code or token (SEC-033, TD-SEC-14). It drives requests in-process through `build_router` in the pattern of `app/server/tests/door_matrix.rs` (actors, the shared `tests/security/door_cases.txt`) and `tests/security/tests/sentinel_db_logs.rs` (log and Sentry capture), and takes its list of forms and URLs from `docs/architecture.md` section 13 at claim time, naming in the test any route it leaves out and why. A workspace dependency the test needs that `app/server/Cargo.toml` lacks (for the log scan, `tracing-subscriber`, already in `[workspace.dependencies]`) is added to its `[dev-dependencies]` as one line each; no test-layer crate depends on `askhava-server` (D-597, D-743, `tests/integration/tests/architecture.rs:225` to `:233`), so the test lives in `server`'s own test folder (D-3892). If the routes do not fit the 600-line budget, it covers every money and pick route first and lists the rest in the task report for a plan change. Plan change D-4258 (closed scan lists, Nov 17, 2026): \"changing the fee, amount, business, quote or pick ID in every form and URL\" named no closed set of fields, so the tampered fields are now this closed list, one definition for worker and reviewer (routes still come from `docs/architecture.md` section 13 at claim). (1) Form fields, each posted with a tampered value: `quote`, `business` and `tier` on the pick forms (`app/portals/templates/quote_page.html:74` to `:79`, `pick_review.html:40`, `:41`, `pick_code.html:26`, `:27`); `press` and `payment_method` on the Confirm page (`confirm_pay.html:45`, `:46`; `PressForm`, `app/portals/src/confirm_pay.rs:1189`); `auto_confirm` and `over_largest` on the quote form (`business_actions.html:174`, `:177`); and, added to each of those bodies, one extra field from `fee`, `amount`, `amount_cents`, `cents`, `price`, `pick`, `pick_id`, `quote_id`, `business_id`, `job_id` (refused by SEC-010's `deny_unknown_fields`, changing nothing). The quote form's own price fields (`amount`, `low`, `high`, `trip_fee`, `setup`, `tier1_price` to `tier3_price`) are the business's own quote, not a tamper target. (2) URL segments, each replaced: `{pick}` (`/b/picks/{pick}`, `/b/picks/{pick}/confirm`, `/b/charges/{pick}`), `{job}` (`/b/quote/{job}/auto-confirm`, `/h/requests/{job}/photos`), `{j}` (`/b/jobs/{j}`), `{complaint}` (`/b/complaints/{complaint}/reply`), `{object}` and `{token}` (`/b/a/{kind}/{object}/{token}`, `/b/not-a-fit/{object}/{token}`), and `{token}` (`/q/{token}` and its `/close`, `/code` and `/pick`, `/c/{token}/{answer}`, `/f/{token}`, `/b/sign-in/{token}`); a route section 13 adds after Nov 17 with an ID segment or one of the fields above joins at claim, named in the test. (3) Tampered values, closed: another actor's ID (from `tests/security/door_cases.txt`'s actors), the same actor's ID on an object whose state forbids the step, a well-formed ID that exists nowhere, and for `press` one cent above and below the server's fee, `0`, a negative number and a non-number. Each case asserts no row changed in the pick, ledger and quote tables, no Stripe call on the fake, and the logged event or refusal the route's door case names. Passing the closed scans is the wording bar; an off-list phrasing that no file in scope contains is a note under 'Scan list notes (not findings)', not a finding (D-4038); here a field or segment outside (1) and (2) that no route on `main` carries is such a note.",
+   "goal": "Split from T120 (D-3744, D-3891). `app/server/tests/browser_tamper.rs` proves that changing the fee, amount, business, quote or pick ID in every form and URL, as another signed-in user or as the same user beyond their rights, changes nothing and is logged; that the charged amount always equals the server's fee rules; and that a scan of every rendered page, served script, source map and logged URL finds no planted sentinel secret, key, contact detail, code or token (SEC-033, TD-SEC-14). It drives requests in-process through `build_router` in the pattern of `app/server/tests/door_matrix.rs` (actors, the shared `tests/security/door_cases.txt`) and `tests/security/tests/sentinel_db_logs.rs` (log and Sentry capture), and takes its list of forms and URLs from `docs/architecture.md` section 13 at claim time, naming in the test any route it leaves out and why. A workspace dependency the test needs that `app/server/Cargo.toml` lacks (for the log scan, `tracing-subscriber`, already in `[workspace.dependencies]`) is added to its `[dev-dependencies]` as one line each; no test-layer crate depends on `askhava-server` (D-597, D-743, `tests/integration/tests/architecture.rs:225` to `:233`), so the test lives in `server`'s own test folder (D-3892). If the routes do not fit the 600-line budget, it covers every money and pick route first and lists the rest in the task report for a plan change. Plan change D-4258 (closed scan lists, Nov 17, 2026): \"changing the fee, amount, business, quote or pick ID in every form and URL\" named no closed set of fields, so the tampered fields are now this closed list, one definition for worker and reviewer (routes still come from `docs/architecture.md` section 13 at claim). (1) Form fields, each posted with a tampered value: `quote`, `business` and `tier` on the pick forms (`app/portals/templates/quote_page.html:74` to `:79`, `pick_review.html:40`, `:41`, `pick_code.html:26`, `:27`); `press` and `payment_method` on the Confirm page (`confirm_pay.html:45`, `:46`; `PressForm`, `app/portals/src/confirm_pay.rs:1189`); `auto_confirm` and `over_largest` on the quote form (`business_actions.html:174`, `:177`); and, added to each of those bodies, one extra field from `fee`, `amount`, `amount_cents`, `cents`, `price`, `pick`, `pick_id`, `quote_id`, `business_id`, `job_id` (refused by SEC-010's `deny_unknown_fields`, changing nothing). The quote form's own price fields (`amount`, `low`, `high`, `trip_fee`, `setup`, `tier1_price` to `tier3_price`) are the business's own quote, not a tamper target. (2) URL segments, each replaced: `{pick}` (`/b/picks/{pick}`, `/b/picks/{pick}/confirm`, `/b/charges/{pick}`), `{job}` (`/b/quote/{job}/auto-confirm`, `/h/requests/{job}/photos`), `{j}` (`/b/jobs/{j}`), `{complaint}` (`/b/complaints/{complaint}/reply`), `{object}` and `{token}` (`/b/a/{kind}/{object}/{token}`, `/b/not-a-fit/{object}/{token}`), and `{token}` (`/q/{token}` and its `/close`, `/code` and `/pick`, `/c/{token}/{answer}`, `/f/{token}`, `/b/sign-in/{token}`); a route section 13 adds after Nov 17 with an ID segment or one of the fields above joins at claim, named in the test. (3) Tampered values, closed: another actor's ID (from `tests/security/door_cases.txt`'s actors), the same actor's ID on an object whose state forbids the step, a well-formed ID that exists nowhere, and for `press` one cent above and below the server's fee, `0`, a negative number and a non-number. Each case asserts no row changed in the pick, ledger and quote tables, no Stripe call on the fake, and the logged event or refusal the route's door case names. Passing the closed scans is the wording bar; an off-list phrasing that no file in scope contains is a note under 'Scan list notes (not findings)', not a finding (D-4038); here a field or segment outside (1) and (2) that no route on `main` carries is such a note. D-4349: `/b/jobs/{j}` is served by T666, so this task runs after it.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -19926,7 +19935,8 @@
     "T529",
     "T530",
     "T484",
-    "T540"
+    "T540",
+    "T666"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -19958,7 +19968,8 @@
     "D-3744",
     "D-3891",
     "D-3892",
-    "D-4258"
+    "D-4258",
+    "D-4349"
    ],
    "cites": [],
    "budget": {
@@ -21807,7 +21818,13 @@
     "T658",
     "T660",
     "T661",
-    "T662"
+    "T662",
+    "T663",
+    "T664",
+    "T665",
+    "T666",
+    "T667",
+    "T668"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -21853,7 +21870,8 @@
     "D-4052",
     "D-4326",
     "D-4327",
-    "D-4338"
+    "D-4338",
+    "D-4349"
    ],
    "cites": [
     "BUILD_BRIEF.md:488",
@@ -23450,7 +23468,7 @@
    "id": "T132",
    "slug": "sandbox-stripe",
    "title": "Stripe test mode behind the adapter; contract and webhook tests against it",
-   "goal": "The Stripe test-mode client sits behind the payments adapter, and the contract and webhook tests pass against it: cards only through Elements and the authorization stored, signed webhooks processed once, idempotency keys on every call, and the ledger reconciling to Stripe test mode (FEE-014, FEE-015, FEE-028 to FEE-030, FEE-032, FEE-036, SEC-016 to SEC-018). This task also retires `PaymentsAdapter::create_refund` (ID only), moving its remaining callers to T258's typed `RefundStripe` read, once the Stripe test-mode refund shapes are checked (D-1753). Nov 10 code review, payments F4, and the plan review's M1 (D-2624, D-1476; FEE-031, FEE-049): the PaymentIntent is created with no description and no statement-descriptor suffix (`create_unconfirmed_intent`, `app/adapters/src/payments.rs:227`), so the card statement shows no job number; D-1476 gave this to T132 and its goal never said so. `payments` holds no job number and may not depend on `jobs` (`kit/layers.json`), so the number comes from the Confirm route: `charge` gains `open_intent_described` (and `confirm_and_pay` a matching entry) taking `payments::api::IntentText`, the existing `open_intent` and `confirm_and_pay` keep their signatures and behaviour for the done tests, and `app/portals/src/confirm_pay.rs` (T261's, which runs first) builds `IntentText::for_job` from the job number it already shows and calls the described entry; `IntentStripe` gains a method with a default body carrying the text, so the done tests' fakes compile unchanged, and `intent_http.rs` overrides it; the create form sends `description` from `IntentText::description()` and `statement_descriptor_suffix` from `IntentText::statement_suffix()`, never a brand literal in the adapter (T295 makes brand literals fail); TD-FEE-38's stripe-mock case checks both fields, and the contract run also confirms stripe-mock returns `latest_charge` on a succeeded intent (T352's field). Nov 11 vendor-double review batch 4, F7 (D-2766): `confirm_intent` (`app/adapters/src/payments.rs:272`) confirms with `payment_method` only, while the page hands a `requires_action` intent to Stripe.js `handleNextAction` (`app/portals/static/confirm_pay.ts:95`), which needs the `use_stripe_sdk` next action that a server-side confirm gets only when it sends `use_stripe_sdk=true`; the fake answers `use_stripe_sdk` whatever is sent (`stand_ins/stripe.py:228`). The confirm sends `use_stripe_sdk=true`; the fake answers a 3-D Secure confirm without it with `next_action.type` `redirect_to_url`, so the adapter test fails before the fix; and in sandbox mode `tests/contract/test_sandbox_t132.py` confirms with a 3DS2 test card (https://docs.stripe.com/testing#regulatory-cards) and asserts `requires_action` with `next_action.type` `use_stripe_sdk`; any other answer is fixed in the adapter and the fake together and recorded in the decision.",
+   "goal": "The Stripe test-mode client sits behind the payments adapter, and the contract and webhook tests pass against it: cards only through Elements and the authorization stored, signed webhooks processed once, idempotency keys on every call, and the ledger reconciling to Stripe test mode (FEE-014, FEE-015, FEE-028 to FEE-030, FEE-032, FEE-036, SEC-016 to SEC-018). This task also retires `PaymentsAdapter::create_refund` (ID only), moving its remaining callers to T258's typed `RefundStripe` read, once the Stripe test-mode refund shapes are checked (D-1753). Nov 10 code review, payments F4, and the plan review's M1 (D-2624, D-1476; FEE-031, FEE-049): the PaymentIntent is created with no description and no statement-descriptor suffix (`create_unconfirmed_intent`, `app/adapters/src/payments.rs:227`), so the card statement shows no job number; D-1476 gave this to T132 and its goal never said so. `payments` holds no job number and may not depend on `jobs` (`kit/layers.json`), so the number comes from the Confirm route: `charge` gains `open_intent_described` (and `confirm_and_pay` a matching entry) taking `payments::api::IntentText`, the existing `open_intent` and `confirm_and_pay` keep their signatures and behaviour for the done tests, and `app/portals/src/confirm_pay.rs` (T261's, which runs first) builds `IntentText::for_job` from the job number it already shows and calls the described entry; `IntentStripe` gains a method with a default body carrying the text, so the done tests' fakes compile unchanged, and `intent_http.rs` overrides it; the create form sends `description` from `IntentText::description()` and `statement_descriptor_suffix` from `IntentText::statement_suffix()`, never a brand literal in the adapter (T295 makes brand literals fail); TD-FEE-38's stripe-mock case checks both fields, and the contract run also confirms stripe-mock returns `latest_charge` on a succeeded intent (T352's field). Nov 11 vendor-double review batch 4, F7 (D-2766): `confirm_intent` (`app/adapters/src/payments.rs:272`) confirms with `payment_method` only, while the page hands a `requires_action` intent to Stripe.js `handleNextAction` (`app/portals/static/confirm_pay.ts:95`), which needs the `use_stripe_sdk` next action that a server-side confirm gets only when it sends `use_stripe_sdk=true`; the fake answers `use_stripe_sdk` whatever is sent (`stand_ins/stripe.py:228`). The confirm sends `use_stripe_sdk=true`; the fake answers a 3-D Secure confirm without it with `next_action.type` `redirect_to_url`, so the adapter test fails before the fix; and in sandbox mode `tests/contract/test_sandbox_t132.py` confirms with a 3DS2 test card (https://docs.stripe.com/testing#regulatory-cards) and asserts `requires_action` with `next_action.type` `use_stripe_sdk`; any other answer is fixed in the adapter and the fake together and recorded in the decision. D-4349: T664 also changes `app/portals/src/confirm_pay.rs` (the Confirm press's PICK-020 re-check, its move to Payment pending and its wait restart), so this task runs after it and keeps those calls.",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -23466,7 +23484,8 @@
     "T493",
     "T494",
     "T495",
-    "T623"
+    "T623",
+    "T664"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -23520,7 +23539,8 @@
     "D-1753",
     "D-2624",
     "D-1476",
-    "D-2766"
+    "D-2766",
+    "D-4349"
    ],
    "cites": [
     "BUILD_BRIEF.md:191"
@@ -23783,14 +23803,16 @@
    "id": "T136",
    "slug": "e2e-test-site",
    "title": "Run J1 to J4 on the Railway test site and record the results",
-   "goal": "J1 to J4 run against the Railway test site with every vendor in its sandbox and fake data only, and each journey's result, with any failure filed as a task, is recorded in `docs/phase2/e2e-test-site.md`. J4's outage steps stay on the stand-ins; J1 to J3 run on the test site; the task records results and files gaps in `docs/for-casey-review.md`, it fixes nothing itself (D-491). (D-493)",
+   "goal": "J1 to J4 run against the Railway test site with every vendor in its sandbox and fake data only, and each journey's result, with any failure filed as a task, is recorded in `docs/phase2/e2e-test-site.md`. J4's outage steps stay on the stand-ins; J1 to J3 run on the test site; the task records results and files gaps in `docs/for-casey-review.md`, it fixes nothing itself (D-491). (D-493) D-4349: the journeys' day-3 step needs T663 and T664 (a job reaches Connected only through them), so this task runs after both.",
    "type": "docs",
    "phase": 2,
    "stage": "6",
    "module": null,
    "deps": [
     "T135",
-    "T132"
+    "T132",
+    "T663",
+    "T664"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "low",
@@ -23812,7 +23834,8 @@
     "J4"
    ],
    "decisions": [
-    "D-1143"
+    "D-1143",
+    "D-4349"
    ],
    "cites": [
     "BUILD_BRIEF.md:193"
@@ -43470,6 +43493,434 @@
    "branch": "claude/task/T662-close-lines-on-job-end",
    "prompt": "kit/prompts/T662.md",
    "acceptance": "TD-CALL-27 passes against PostgreSQL, the cancel, PROBLEM and NO cases failing on `main` before the change; `line_lifecycle.rs`, `task_registry.rs`, every check-in, cancel and calls test passes unchanged; no line stays open after its job is cancelled, and no line retry opens a line for a job no longer Connected; `picks`' existing line-retry tests pass unchanged; `app/picks/src/settle.rs` stays at or above its 95% branch floor."
+  },
+  {
+   "id": "T663",
+   "slug": "connect-on-settle",
+   "title": "picks and jobs (harness): a confirmed pick moves its job to Payment pending and Connected, and a pick in Payment pending ends cleanly",
+   "goal": "Plan change D-4349 (design scout and an independent second pass on `main` 8d82392ea; JOB-002, JOB-004, JOB-005, JOB-014, JOB-015, PICK-022, PRIV-005, FEE-020, FEE-021, PICK-047, PICK-048, OPS-034; D-2015 (1), D-2930, D-805, D-807, D-4338). No production code moves a job to Payment pending or Connected (every `move_to` target was checked; `app/picks/src/release.rs:510`), so a released job sits in Awaiting confirm: `check_ins_at_release` (`app/picks/src/release.rs:517` to `:531`) queues no check-in, and T662's PROBLEM and NO line closes stay inert. The blueprint's arrows (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:174` to `:175`) are: the Confirm press (license re-checked) to Payment pending; the charge succeeding or a $0 decision to Connected. This task builds the `picks` half; T664 calls it from the Confirm press, and T667 then fixes the reconnected job's line retry and Connected's start. (1) The new `app/picks/src/connect.rs` (exported through the shared `picks::api`): `confirm_move(tx, (pick, job), at)`, under the pick's row lock, makes the guarded `jobs::api::move_to` Awaiting confirm to Payment pending as `Actor::Business` only while the pick is `awaiting_confirm`, not ended, and the job's waiting pick (`models::waiting_pick`); a job already in Payment pending answers `Already` (a second press after a decline moves nothing); a job in any other status answers `Lost`. (2) `settle` (`app/picks/src/settle.rs:75`), on `SettleStep::Move` and in the same transaction, so before the release's claim and `check_ins_at_release` sees Connected (D-2930): a job in Payment pending moves to Connected; a job still in Awaiting confirm whose waiting pick is this pick makes both moves (Awaiting confirm to Payment pending to Connected, two `status_history` and audit rows; this is the main path for PICK-048 auto-confirm, `app/picks/src/auto_confirm.rs`, which charges with no press, and for a pick pressed before this change); a job in any other status (Quotes ready, a final status, or Awaiting confirm for another pick) is not settled: the answer is `Settled::Left`, so `server`'s sink queues the FEE-021 refund and releases nothing (`app/server/src/release_sink.rs:114` to `:118`, unchanged; otherwise a success after the job went back to Quotes ready would release her details for a job she may have picked again, PRIV-005), and the pick ends as `payment_failed` (never `expired`) in that transaction, with her backup offered as `pick_ended` does; on a final job only the pick ends (no backup move, no homeowner text). `settle` keeps its signature (its callers in `release_sink.rs`, T408's file, and in the tests are unchanged); the moves use the clock its accepted-quote task uses. (3) A pick in Payment pending always ends with its PaymentIntent and the right reason, and never loops through charge and refund: (a) `jobs`' Payment pending timer (1 business hour, 60 clock minutes on an emergency job, `app/jobs/src/rules.rs:29`; the value does not change) moves the job to Quotes ready without `picks` (`run_timer`, `app/jobs/src/service.rs:242` to `:268`); in that move's transaction it now queues one `picks.payment_returned` task `{job}` (the new `app/jobs/src/payment_wait.rs`: the kind constant and `queue_payment_returned`, as T662's `LINE_CLOSE_KIND`; `jobs` may not call `picks`, D-491), registered in the shared `app/server/src/lib.rs` to the new `picks::api::run_payment_returned`: for the job's waiting pick it calls `payments::api::end_intent_unless_charging` (`app/payments/src/pick_fee.rs:222`) and, when that answers `true`, ends the pick as `payment_failed` through `pick_ended`'s path (`app/picks/src/pick_ended.rs:79`: backup, PICK-046 or PICK-047 text); when a charge may still succeed it leaves the pick, whose success then meets (2)'s guard and whose failure meets `payments`' own end; (b) `lapse` (`app/picks/src/confirm_reminders.rs:300`, which the window end and `notice_sent` call, `app/picks/src/handlers.rs:129`, `:246`) never records `expired` for a pick whose job entered Payment pending after the pick was made (a new `jobs::api` read in `payment_wait.rs` over `jobs.status_history`): it takes (a)'s path instead, so a business that pressed Confirm is never counted as a lapse (OPS-034); (c) `cant_take` (`app/picks/src/cant_take.rs:74`) and `end_for_leaving` (`app/picks/src/business_left.rs:54`), on a job in Payment pending, first call `end_intent_unless_charging` (as `end_for_fee_terms` does at `cant_take.rs:119`; a charge in flight changes nothing and answers `Backup::Done`), then end the pick, move the job Payment pending to Quotes ready, and only then run `backup_choice` (which refuses Payment pending, `app/picks/src/backup_choice.rs:233` to `:238`); `end_for_fee_terms` is not changed (T467 pins it to refuse Payment pending, `tests/integration/tests/fee_terms_changed_end.rs:342` to `:349`). (4) Two done tests planted a move the code now makes; each hand-planted move is replaced by the real one and no assertion is weakened: `app/server/tests/address_rerelease.rs:524` to `:531` (TD-INT-39, T255) asserts the job is Connected after `released_free` instead of moving it there by hand; `tests/integration/tests/accepted_quote_email.rs:389` to `:392` (T388) closes the Connected job (Connected to Cancelled) and asserts the move applied instead of dropping its result. Any other done test that fails is reported, not edited. Tests in the new `tests/integration/tests/connect_moves.rs` (TD-JOB-18), PostgreSQL, fake data only. Run and passing unchanged: `release_recovery.rs`, `call_status.rs`, `business_portal_route.rs`, `door_matrix.rs`, `confirm_route.rs`, `auto_confirm.rs`, `backup_choice.rs` (TD-PICK-32), `text_pick.rs`, `quote_window.rs`, `page_pick.rs`, `pick_ended.rs`, `fee_terms_changed_end.rs`, `business_leaving.rs`, `share_and_cant_take.rs`, `confirm_window_lapse.rs`, `job_timers.rs`, `job_races.rs`, `confirm_hold_away.rs`, `unreachable_refund.rs`, `unreachable_refund_states.rs`, `release_fraud_race.rs`, `check_in_texts.rs`, `whos_calling.rs`, `line_close_paths.rs`, `safe_mode.rs`, `task_registry.rs` and `app/jobs/src/tests/business_clock.rs`. Coverage (`tests/coverage_floor.json`): `app/picks/src/settle.rs` at or above its 95% branch floor, `cant_take.rs` at or above 81%, and the new `connect.rs` at or above 95% (money code, `BUILD_BRIEF.md:481`). Update `docs/architecture.md` (section 6 already has the arrows; record who makes each move) and `docs/decisions.md`. Ordered after T662 (`settle.rs`) and T408 (it pauses releases in safe mode, so a job can sit in Connected with its release waiting; a case here covers it).",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "picks",
+   "deps": [
+    "T662",
+    "T408",
+    "T209",
+    "T467",
+    "T255",
+    "T388",
+    "T471"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "privacy",
+    "harness",
+    "compliance"
+   ],
+   "owns": [
+    "app/picks/src/connect.rs",
+    "app/picks/src/settle.rs",
+    "app/picks/src/cant_take.rs",
+    "app/picks/src/business_left.rs",
+    "app/picks/src/confirm_reminders.rs",
+    "app/picks/src/pick_ended.rs",
+    "app/jobs/src/payment_wait.rs",
+    "app/jobs/src/service.rs",
+    "app/server/tests/address_rerelease.rs",
+    "tests/integration/tests/accepted_quote_email.rs",
+    "tests/integration/tests/connect_moves.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/lifecycle.md",
+    "docs/spec/fees.md",
+    "docs/spec/quotes-pick.md",
+    "app/picks/src/status.rs",
+    "app/picks/src/backup_choice.rs",
+    "app/payments/src/pick_fee.rs",
+    "app/server/src/release_sink.rs",
+    "docs/brains/payments-stripe.md",
+    "docs/brains/rust-production.md",
+    "docs/spec/privacy.md",
+    "docs/spec/ops-recovery.md"
+   ],
+   "requirements": [
+    "JOB-002",
+    "JOB-004",
+    "JOB-005",
+    "JOB-014",
+    "JOB-015",
+    "PICK-022",
+    "PRIV-005",
+    "FEE-020",
+    "FEE-021",
+    "PICK-047",
+    "PICK-048",
+    "OPS-034"
+   ],
+   "tests": [
+    "TD-JOB-18"
+   ],
+   "decisions": [
+    "D-491",
+    "D-805",
+    "D-807",
+    "D-2015",
+    "D-2930",
+    "D-4338",
+    "D-4349"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 11,
+    "lines": 800,
+    "context_pct": 34
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T663-connect-on-settle",
+   "prompt": "kit/prompts/T663.md",
+   "acceptance": "TD-JOB-18 passes against PostgreSQL, failing on `main` before the change; the two done tests change only by replacing a hand-planted move with the real one; every test the goal lists passes unchanged; `end_for_fee_terms` and the Payment pending wait's value are unchanged; no pick whose business pressed Confirm is recorded `expired`; `app/picks/src/settle.rs` stays at or above its 95% branch floor and the new `connect.rs` reaches 95%."
+  },
+  {
+   "id": "T664",
+   "slug": "confirm-press-moves",
+   "title": "portals: the Confirm press re-checks the license and account, moves the job to Payment pending, and restarts the payment wait from a decline",
+   "goal": "Plan change D-4349 (JOB-013, JOB-014, PICK-019, PICK-020, PICK-044, FEE-018, FEE-020, FEE-038; D-056, D-805, D-807, D-1502 (1), D-2663). The served Confirm press (`pressed`, `app/portals/src/confirm_pay.rs:1244`) runs `waiting`, `confirm_code_needed`, `fee_terms_accepted`, `record_confirm_terms` and `decide_and_pay`, and nothing else: it never moves the job (D-2015 (1)) and never re-checks the license or account, though PICK-020 says an ineligible business can't confirm and the blueprint re-checks the license \"at this moment\" (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:174`): `picks::api::check_at_confirm` and `refused_at_confirm` (`app/picks/src/confirm.rs:202`, `:231`) have no caller (D-1502 (1) and D-2663 left it to the Confirm route). In the press transaction, in this order: (1) after `fee_terms_accepted` and before the terms row, any $0 decision or any charge, `check_at_confirm` from the stored results only (D-056) with the pick's window deadline; a refusal calls `refused_at_confirm`, ends the pick's PaymentIntent (`payments::api::end_intent_unless_charging`; an intent the page opened has no attempt), returns the job from Awaiting confirm to Quotes ready when no pick then waits and queues her PICK-046 or PICK-047 text as `cant_take` does, commits, charges nothing, and answers \"ended\" with a plain line that names no license detail; (2) after `record_confirm_terms` and before `decide_and_pay` commits, T663's `picks::api::confirm_move`, on both the $0 path and the paid path: `Already` goes on (a second press after a decline), `Lost` (the job left Awaiting confirm and Payment pending, for example `jobs`' wait returned it) ends the pick through T663's path, charges nothing and answers \"ended\"; never in `decide_at_confirm`, which also runs at page load in a rolled-back transaction (`confirm_pay.rs:1132`); a FreeWin `Race` rolls the move back with the transaction. (3) The Payment pending wait (JOB-014, FEE-020: 1 business hour, 60 clock minutes on an emergency job, `app/jobs/src/rules.rs:29`, `docs/legal/business-terms.md:89`; the value does not change) counts from the decline or bank check (D-805, D-807): the charge runs after the press commits (`charge`, `confirm_pay.rs:1350`), so on its answer the press restarts `jobs`' wait with `jobs::api::restart_timer(job, (PaymentPending, from))` (`app/jobs/src/service.rs:193`; a restart never shortens a wait): a `Declined` or `NeedsApproval` answer, and the no-card answer (`confirm_pay.rs:1360`), from the answer's time; a `StripeDown` answer from that time plus FEE-018's 4 hours (`payments::api::STRIPE_DOWN_SECONDS`), so `payments`' own FEE-018 end (through `pick_ended`) comes first; a `Paused` answer (FEE-038) from that time. `Succeeded`, `Pending` (FEE-019's 30-minute ask), `AlreadyPaid`, `OverLimit` and `MovedOn` restart nothing, and a restart that finds the job no longer in Payment pending changes nothing. New logic goes in a new `app/portals/src/confirm_moves.rs`, so `confirm_pay.rs` changes by its calls. Tests in the new `app/server/tests/confirm_press_moves.rs` (TD-JOB-19), through the assembled router with the Stripe stand-in, fake data only. `confirm_route.rs`, `auto_confirm.rs`, `saved_card.rs` and every press case pass unchanged; `app/portals/src/confirm_pay.rs` stays at or above its 70% branch floor (`tests/coverage_floor.json`). Known limit, recorded in D-4349: a safe-mode or charging-switch pause that begins after the last answer and outlasts the wait returns the job (the pick then ends as `payment_failed`, no fee, not a lapse), because `payments`' pause watch may not call `jobs`. After T663 and T541 (T541 also changes the press); T132, the other queued owner of `confirm_pay.rs`, now runs after this task.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "portals",
+   "deps": [
+    "T663",
+    "T541"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "compliance",
+    "security"
+   ],
+   "owns": [
+    "app/portals/src/confirm_moves.rs",
+    "app/portals/src/confirm_pay.rs",
+    "app/server/tests/confirm_press_moves.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/lifecycle.md",
+    "docs/spec/fees.md",
+    "docs/spec/quotes-pick.md",
+    "app/picks/src/confirm.rs",
+    "app/picks/src/connect.rs",
+    "app/jobs/src/service.rs",
+    "app/server/tests/confirm_route.rs",
+    "docs/brains/payments-stripe.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "JOB-013",
+    "JOB-014",
+    "PICK-019",
+    "PICK-020",
+    "PICK-044",
+    "FEE-018",
+    "FEE-020",
+    "FEE-038"
+   ],
+   "tests": [
+    "TD-JOB-19"
+   ],
+   "decisions": [
+    "D-056",
+    "D-805",
+    "D-807",
+    "D-1502",
+    "D-2663",
+    "D-4349"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 600,
+    "context_pct": 30
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T664-confirm-press-moves",
+   "prompt": "kit/prompts/T664.md",
+   "acceptance": "TD-JOB-19 passes through the assembled router, its PICK-020 and move cases failing on `main` before the change; no charge attempt is made for a press the re-check refuses or for a job that moved on; the Payment pending wait stays 1 business hour (60 clock minutes on an emergency job); `confirm_route.rs`, `auto_confirm.rs` and `saved_card.rs` pass unchanged; `app/portals/src/confirm_pay.rs` stays at or above its 70% branch floor."
+  },
+  {
+   "id": "T665",
+   "slug": "door-matrix-job-page",
+   "title": "server tests (harness): the door matrix fills a business job number for /b/jobs/{j}",
+   "goal": "Plan change D-4349 (SEC-019, SEC-048, CARD-023, PICK-024; D-2440, D-3112, D-4338 (3)). `/b/jobs/{n}` is the notice sign-in landing (`app/portals/src/business_auth.rs:102`, `:604` to `:606`), the sign-up done screen's link and every job card email's one link, and no route serves it; T666 serves it at `/b/jobs/{j}`, the parameter name T548's goal already uses. The door probe fails a served row with a parameter it cannot fill (`app/server/tests/door_matrix.rs:93` `FILLS`, `:309` `fill`, D-2440), so first: (1) `{j}` joins `FILLS`, and each side's `{j}` is the job number of its own side's carded job (`Fixtures::numbers`), so business X's request for `/b/jobs/{j}` with Y's number is the one not-found answer like every other cross-side id; (2) a planted-router case proves the fill: X's own number admitted, Y's number and an unknown number the one not-found answer; (3) the `docs/architecture.md` section 13 row `| GET | /b/jobs/{j} | portals | T666 |` (`route_wiring.rs` then requires the route unserved until T666 marks it `yes`). `tests/security/door_cases.txt` needs no line (the `/b` prefix rule already gives the path the business door, `door_matrix.rs:197`). No other door_matrix assertion changes. After T643 and T472, the queued owners of `door_matrix.rs`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T643",
+    "T472"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "harness"
+   ],
+   "owns": [
+    "app/server/tests/door_matrix.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "app/server/tests/route_wiring.rs",
+    "tests/security/door_cases.txt"
+   ],
+   "requirements": [
+    "SEC-019",
+    "SEC-048"
+   ],
+   "tests": [
+    "TD-SEC-79"
+   ],
+   "decisions": [
+    "D-2440",
+    "D-3112",
+    "D-4338",
+    "D-4349"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 150,
+    "context_pct": 23
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T665-door-matrix-job-page",
+   "prompt": "kit/prompts/T665.md",
+   "acceptance": "TD-SEC-79 passes; every existing door_matrix, route_wiring and auth_matrix case passes unchanged; the section 13 row reads `T666`."
+  },
+  {
+   "id": "T666",
+   "slug": "business-job-page-route",
+   "title": "jobs, quotes and server: GET /b/jobs/{j} serves the business job page, and a confirmed job's page leads to its release",
+   "goal": "Plan change D-4349 (CARD-023, CARD-019, CARD-020, BIZ-038, PICK-024, PICK-051, SEC-019, PRIV-006; D-434, D-4338 (3)). No route serves `/b/jobs/{n}`, yet a notice link's sign-in redirects there (`app/portals/src/business_auth.rs:102`, `:604` to `:606`, the PICK-024 \"Job <n> is confirmed. Sign in to see the homeowner's details.\" landing), the sign-up done screen links there (`app/portals/src/business_signup.rs:238`) and it is every job card email's one link (`app/quotes/src/card_notices.rs:64`); CARD-023 and CARD-019 define the page. (1) A lookup that checks the card before any read: T540's `jobs::api::job_by_number(conn, number)` (`app/jobs/src/job_lookup.rs`, D-3892; `jobs` owns `jobs.job_number`, `app/jobs/src/service.rs:99`, and has no other reverse read) and the new `quotes::api::carded_job(db, (number, business)) -> Option<Uuid>` (`app/quotes/src/carded_job.rs`), which calls it and then checks `quotes.job_card` for this business with `page_counts`' card test (`app/quotes/src/models.rs:759`), answering `None` for an unknown number or a job whose card never went to this business before anything else is read (`server` may read no module's table, and `jobs` may not call `quotes`). (2) The new `app/server/src/job_page_route.rs`, merged in the shared `build_router` (`app/server/src/lib.rs:390`): `GET /b/jobs/{j}` behind `portals::api::business_principal` (signed out: the same 4xx with a link to `/b/sign-in` the portal gives); a malformed or unknown number, or a job whose card never went to this business, is the one not-found answer with its security event (SEC-019); when `picks::api::accepted_pick(job)` (`app/picks/src/settle.rs:147`) is this business's pick and the member has \"Confirm and billing\" (the role the release view requires), a 303 to `/b/picks/{pick}`, without which PICK-024's sign-in lands on a page with no details; any other member, or a job with no accepted pick of this business, gets the job page: `PageParts` from `quotes::api::sent_card` as `app/server/src/action_links.rs:269` to `:277` builds them, rendered with the business's own quote controls (`portals::api::job_details_page_with_quote`, `app/portals/src/business_actions.rs:232`: PICK-051's change and withdraw before any pick, the closed line after), and the current number sent and quotes so far (CARD-019); never a homeowner contact detail (PRIV-006, PICK-022). PICK-057's \"Not a fit for us\" choice (`job_details_page_choice`, `business_actions.rs:246`) posts to `NOT_A_FIT_ROUTE`, which T306 serves; this task does not show it, and T668 adds it to this page once T306 serves that route. CARD-023's intake answers and later details stay empty, as on the Quote link's page (`action_links.rs:273` to `:274`), because `intake::api` exports no reader for them; D-4349 records it as an open gap, not built here. (3) It marks its `docs/architecture.md` section 13 row `yes` (T665 added it) and adds the `/b/jobs/{j}` page's `PAGE_STATES` entry (shared `tests/a11y/page_states.ts`). Tests in the new `app/server/tests/job_page_route.rs` (TD-CARD-16), fake data only, through the assembled router; `door_matrix.rs` then probes the row with T665's fill, and `notice_signin_link.rs:284`, `signup_screens.rs:498` and `business_notices.rs:416` pass unchanged. After T665 and T540 (which builds `job_by_number`).",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T665",
+    "T540"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security",
+    "accessibility"
+   ],
+   "owns": [
+    "app/quotes/src/carded_job.rs",
+    "app/server/src/job_page_route.rs",
+    "app/server/tests/job_page_route.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/job-cards.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/security.md",
+    "app/server/src/action_links.rs",
+    "app/portals/src/business_actions.rs",
+    "app/quotes/src/job_page.rs",
+    "docs/brains/rust-production.md",
+    "docs/spec/privacy.md",
+    "docs/spec/businesses.md"
+   ],
+   "requirements": [
+    "CARD-023",
+    "CARD-019",
+    "CARD-020",
+    "BIZ-038",
+    "PICK-024",
+    "PICK-051",
+    "SEC-019",
+    "PRIV-006"
+   ],
+   "tests": [
+    "TD-CARD-16"
+   ],
+   "decisions": [
+    "D-434",
+    "D-2440",
+    "D-4338",
+    "D-4349"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 600,
+    "context_pct": 25
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T666-business-job-page-route",
+   "prompt": "kit/prompts/T666.md",
+   "acceptance": "TD-CARD-16 passes through the assembled router; the door matrix probes `GET /b/jobs/{j}` with T665's fill and passes; another business's or an unknown number is the one not-found answer and reads nothing else; `notice_signin_link.rs`, `signup_screens.rs` and `business_notices.rs` pass unchanged; Ally passes on the page."
+  },
+  {
+   "id": "T667",
+   "slug": "reconnect-line-retry",
+   "title": "picks and calls: a reconnected job's failed masked line is retried, and Connected counts from the release",
+   "goal": "Plan change D-4349 (CALL-001, CALL-009, JOB-015, JOB-003; D-807, D-1688, D-2017, D-2930, D-4338). Split from T663 for size. (1) Reconnect line: `retry_line` (`app/picks/src/settle.rs:175`, the `picks.line_retry` task a failed release line queues, D-1688) returns early whenever `calls::api::job_had_line` finds any line the job ever had (`settle.rs:198`, `app/calls/src/api.rs:82` to `:93`), so once T663 lets a job reach Connected, a job connected, returned under JOB-015 (no call in 72 hours), re-picked and connected again never gets its failed second line retried, though CALL-001 gives each connected job a line. It now skips only when this pick's own line exists: a line of the release row's job, business and contact assigned at or after the release's `released_at` (a new `calls::api` read in `app/calls/src/pick_line.rs`, exported through the shared `calls::api`; `calls.number_pool` has no pick column; `job_line`, `app/calls/src/api.rs:104`, already keys on job, business and homeowner). Keying on job and business alone would reopen a line closed for the same business's earlier connection (CALL-009). T662's final-status check and D-2017's paid-or-free check stay. The one-open-line-per-job index (`migrations/0114_calls_pool.sql:32`) means the earlier line must be closed first (T662's close or the no-show path, `app/picks/src/unreachable_refund.rs:407`); while it is open the retry fails and the worker retries it, then dead-letters it with the release's High alert. (2) Connected's start: the release's claim (`check_ins_at_release`, `app/picks/src/release.rs:517`) restarts the Connected wait with `jobs::api::restart_timer` (D-807 names JOB-015's later of release and visit as a restart event) from the instant its check-ins count from (the later of the release and the earliest visit), so a release that waited for the address (an emergency job) or a later visit date does not shorten Connected's 21 days (`app/jobs/src/status.rs:130`); a restart never shortens a wait, and a job no longer Connected is left alone. Tests in the new `tests/integration/tests/reconnect_line.rs` (TD-CALL-28), PostgreSQL, fake data and numbers only. `release_recovery.rs` (`:642` to `:669`, `:738` to `:770`), `whos_calling.rs`, `line_close_paths.rs`, `address_rerelease.rs`, `check_in_texts.rs`, `followups.rs` and T663's `connect_moves.rs` pass unchanged; `app/picks/src/settle.rs` stays at or above its 95% branch floor and `release.rs` at or above 81% (`tests/coverage_floor.json`). After T663 (both own `settle.rs`).",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "picks",
+   "deps": [
+    "T663"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "money"
+   ],
+   "owns": [
+    "app/picks/src/settle.rs",
+    "app/picks/src/release.rs",
+    "app/calls/src/pick_line.rs",
+    "tests/integration/tests/reconnect_line.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/calls.md",
+    "docs/spec/lifecycle.md",
+    "app/calls/src/api.rs",
+    "app/calls/src/lifecycle.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "CALL-001",
+    "CALL-009",
+    "JOB-015",
+    "JOB-003"
+   ],
+   "tests": [
+    "TD-CALL-28"
+   ],
+   "decisions": [
+    "D-807",
+    "D-1688",
+    "D-2017",
+    "D-2930",
+    "D-4338",
+    "D-4349"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 350,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T667-reconnect-line-retry",
+   "prompt": "kit/prompts/T667.md",
+   "acceptance": "TD-CALL-28 passes against PostgreSQL, its reconnect case failing on `main` before the change; no earlier connection's closed line is reopened; the listed line and release tests pass unchanged; `app/picks/src/settle.rs` stays at or above its 95% branch floor."
+  },
+  {
+   "id": "T668",
+   "slug": "job-page-not-a-fit",
+   "title": "server: the business job page at /b/jobs/{j} offers \"Not a fit for us\"",
+   "goal": "Plan change D-4349 (PICK-057, CARD-023; D-490, D-3753, D-3889). T666 serves the business job page `GET /b/jobs/{j}` (`app/server/src/job_page_route.rs`) with the business's quote controls only, because PICK-057's \"Not a fit for us\" choice (`portals::api::job_details_page_choice`, `app/portals/src/business_actions.rs:246`, T479) posts to `NOT_A_FIT_ROUTE` (`app/portals/src/not_a_fit.rs:24`), which T306 serves. Once both are on `main`, the page renders through `job_details_page_choice` with the same quote controls and the choice bound to this member and job, as T306 binds it on its own job page; PICK-057 says every job card page offers it. Add the cases to `app/server/tests/job_page_route.rs` (TD-CARD-16's choice case): the page shows the four one-tap reasons and posting one through T306's route records it and changes no routing or fee; another business's job still gets the one not-found answer. Update `docs/decisions.md`. After T666 and T306.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T666",
+    "T306"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "accessibility"
+   ],
+   "owns": [
+    "app/server/src/job_page_route.rs",
+    "app/server/tests/job_page_route.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/job-cards.md",
+    "app/portals/src/business_actions.rs",
+    "app/portals/src/not_a_fit.rs"
+   ],
+   "requirements": [
+    "PICK-057",
+    "CARD-023"
+   ],
+   "tests": [
+    "TD-CARD-16"
+   ],
+   "decisions": [
+    "D-490",
+    "D-3753",
+    "D-3889",
+    "D-4349"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 150,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T668-job-page-not-a-fit",
+   "prompt": "kit/prompts/T668.md",
+   "acceptance": "TD-CARD-16's choice case passes through the assembled router; its other cases and the door matrix pass unchanged; Ally passes on the page."
   }
  ]
 }
