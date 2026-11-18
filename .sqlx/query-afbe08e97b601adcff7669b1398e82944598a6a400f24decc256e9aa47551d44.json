@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT try_no FROM payments.charge_attempt WHERE pick_id = $1\n          ORDER BY try_no DESC LIMIT 1 FOR UPDATE",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "try_no",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "payments.charge_attempt",
+            "name": "try_no"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "afbe08e97b601adcff7669b1398e82944598a6a400f24decc256e9aa47551d44"
+}
