@@ -3401,3 +3401,12 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **Limits to know:** the PROBLEM words are kept only 30 days, so a report older than that can no longer be counted. Counting a report that holds a safety word also puts the complaint itself in your next 9 a.m. or 3 p.m. push, as every safety-word complaint does. The homeowner's apology text comes later than the button (T713 is after the Phase 2 texting work), and a business with no main phone on file gets no apology text sent; you get a normal alert instead.
 - **"YES 1042" by text (Fable, D-4425):** accepted as described above, with the 30-minute limit.
 - Nothing needs you now.
+
+## A request that names no trade waits for her next description after the ZIP (D-4428)
+
+- **What happens now:** after the consent text she is asked her ZIP; once her town is known she gets the "We'll send this to the N businesses" line (or "We don't cover ... yet") right away when her first text named the kind of job.
+- **The gap:** if her first text named no trade we know ("Hi, can you help?"), she is asked her first name and address right after the ZIP, and her job opens only once a later text names a trade; the question that would ask her ("Is this mainly 1) plumbing or 2) heating/AC?") has no approved wording yet and comes with the trade questions in a later task (T672).
+## The portals crate could hold only two tasks at a time (D-4480)
+- **The portals crate notes were too long for the runner to let a third task work there**, while twelve waiting tasks all touch portals.
+- **Fix:** a few standalone rules and one background sentence moved word for word to the crate's searchable notes file, leaving each remaining rule whole; a check confirms no word was lost. Portals can now hold three tasks.
+- Our choice; nothing needs you now.

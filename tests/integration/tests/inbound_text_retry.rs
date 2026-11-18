@@ -647,9 +647,10 @@ async fn td_txt_35_a_retry_at_22_00_waits_for_8_a_m(pool: PgPool) {
     );
     clock.set(eight);
     run_due(&pool, &retry, &clock).await;
+    // CON-031, INT-043 (D-4360): the consent text, then the ZIP question as its own text.
     assert_eq!(
         outbox_rows(&pool).await,
-        before + 1,
+        before + 2,
         "her reply is queued at 08:00"
     );
     let consent: i64 =

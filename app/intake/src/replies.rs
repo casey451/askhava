@@ -20,8 +20,11 @@
 //! goes to `take_name_address` with the raw text, never the scrubbed words, the AI or a log; it
 //! is screened with `Asked::NameAndAddress` only when [`reads_as_address`] holds (a name and a
 //! house number with no 911-list words around the street, D-3705), else as any reply, so a
-//! hazard keeps the 911 path; a SAFE is never her answer. Any other handled reply asks step 11
-//! once the request reached it (`order::ask_last_question`).
+//! hazard keeps the 911 path; a SAFE is never her answer. Any other reply in an open request that
+//! moved on (no 911 text or alarm question opened) and is no close goes last to
+//! `order_dispatch::reply_step`, which walks INT-043's order (the ZIP, the trade check, step 11);
+//! a first text goes to `order_dispatch::first_text`, which asks the ZIP after the consent text
+//! (CON-031, D-4360).
 //!
 //! The under-18 stop (INT-038, INT-002, D-4064, D-4142): a clear text stating an age under 18 in
 //! an open request is stopped (`conversation::stop_if_under_18`) before the close and
@@ -60,7 +63,7 @@ use crate::conversation::{
 use crate::emergency::{Check, check};
 use crate::handlers::{answer_list, help_answered, help_follow_up, list_ask, queue_body};
 use crate::models::{self, IntakeError};
-use crate::order::ask_last_question;
+use crate::order_dispatch::{first_text, reply_step};
 use crate::rules::{
     AgeStop, CloseReading, Settings, age_stop, close_reading, language_from_code,
     split_name_address,
@@ -191,8 +194,11 @@ async fn reply_in(
     let stopped =
         !answered_elsewhere && stop_after(&mut tx, secret, msg, &mut handled, spanish_on).await?;
     if let Some(conversation) = step_11.filter(|_| !stopped && moves_on(&handled)) {
-        let ask = ask_last_question(&mut tx, secret, (msg, conversation), spanish_on).await?;
-        handled.texts.extend(ask);
+        let at = (conversation, handled.screened);
+        let texts = reply_step(&mut tx, secret, msg, at, settings).await?;
+        handled.texts.extend(texts);
+    } else if open.is_none() && !stopped && !answered_elsewhere {
+        first_text(&mut tx, secret, msg, &mut handled, settings).await?;
     }
     tx.commit().await.map_err(|_| IntakeError::Database)?;
     Ok(Reply::Handled(handled))

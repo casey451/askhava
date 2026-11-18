@@ -295,7 +295,17 @@ async fn td_ai_19_a_stated_name_stays_out_through_the_route(pool: PgPool) {
         theirs.contains("zebulon"),
         "another homeowner's text is untouched"
     );
-    assert_eq!(tables_with_a_name(&fresh).await, Vec::<String>::new());
+    // D-4439 (PRIV-008, AI-020, D-4360): OTHER's first text names a trade, so its words are kept
+    // as OTHER's opening words; "zebulon" is HER name, not OTHER's. Only OTHER's row may match.
+    assert_eq!(tables_with_a_name(&fresh).await, ["quotes.job_description"]);
+    let kept: Vec<String> = sqlx::query_scalar(
+        "SELECT words FROM quotes.job_description WHERE lower(words) ~ $1 ORDER BY words",
+    )
+    .bind(NAMES.join("|"))
+    .fetch_all(&fresh)
+    .await
+    .expect("kept words");
+    assert_eq!(kept, ["my zebulon brand heater"]);
     let logged = lines.0.lock().expect("lines").concat();
     assert!(!holds_a_name(&logged), "no log line holds the name");
 }

@@ -9,8 +9,8 @@
 // number, the ID secret and both vault keys. Inbound texts are posted to it signed as Twilio signs
 // them (SEC-016). Nothing yet sends the messaging outbox to the carrier (no sender task, D-2030),
 // so the texts the app queued are read from `messaging.outbox` through psql on DATABASE_URL, not
-// from the stand-in's sent log. The conversation stops after the consent text (the question order
-// is D-999's open gap), so steps 2 to 4 are seeded: a job linked to her request, two
+// from the stand-in's sent log. The conversation runs to the ZIP question after the consent text (D-4360;
+// the later steps are T672's to T676's), so steps 2 to 4 are seeded: a job linked to her request, two
 // diagnostic-visit quotes and a quote-page token (D-2029). Step 6 runs the real page pick with the
 // Verify stand-in's code. The closing checks read the database. Fake data only: the 555-01xx
 // numbers are fictional and every key is random per run.
@@ -167,8 +167,9 @@ test("J1 step 1 CON-005 CON-031 INT-002 D-419: the first text is the consent; th
   expect(await textIn(HOMEOWNER, "AC blowing warm air", sid)).toBe(200);
   expect(await textIn(HOMEOWNER, "AC blowing warm air", sid), "the same delivery again").toBe(200);
   Object.assign(state, requestSince(state.since));
-  expect(textsTo(state.contact)).toEqual(["consent"]);
-  const body = rows(`SELECT body FROM messaging.outbox WHERE recipient_id = '${state.contact}'`)[0]?.[0] ?? "";
+  // CON-031, INT-043 (D-4360): the ZIP question follows the consent text as its own text.
+  expect(textsTo(state.contact)).toEqual(["consent", "zip_question"]);
+  const body = rows(`SELECT body FROM messaging.outbox WHERE recipient_id = '${state.contact}' AND template_id = 'consent'`)[0]?.[0] ?? "";
   expect(body.startsWith(CON_031_START)).toBe(true);
   expect(body).not.toMatch(/Reply (OK|YES)/i);
   expect(rows(`SELECT channel FROM intake.consent_record WHERE conversation_id = '${state.conversation}'`)).toEqual([["sms"]]);
@@ -218,13 +219,14 @@ test("J1 variant CON-009 CON-012 CON-028: STOP after quotes arrive; the one conf
   const seeded = seedQuotes(request.conversation);
   expect(await textIn(from, "STOP")).toBe(200);
   expect(await textIn(from, "Is anyone coming today?")).toBe(200);
-  expect(textsTo(request.contact)).toEqual(["consent", "opt_out_confirmation"]);
+  // CON-031, INT-043 (D-4360): the ZIP question follows the consent text as its own text.
+  expect(textsTo(request.contact)).toEqual(["consent", "zip_question", "opt_out_confirmation"]);
   expect(rows(`SELECT status FROM jobs.job WHERE id = '${seeded.job}'`)).toEqual([["quotes_ready"]]);
   await page.goto(BASE + seeded.path);
   await expect(page.locator("#quotes > li h2")).toHaveText(["Quote #1", "Quote #2"]);
 });
 
-test("J1 variant INT-004 INT-005 D-436: 911-list words first get the 911 text and the consent text, once each; SAFE sends nothing more", async () => {
+test("J1 variant INT-004 INT-005 D-436: 911-list words first get the 911 text and the consent text, once each; SAFE then gets only the ZIP question", async () => {
   const since = now();
   expect(await textIn("+19285550143", "I smell gas in the kitchen")).toBe(200);
   const gas = requestSince(since);
@@ -233,7 +235,9 @@ test("J1 variant INT-004 INT-005 D-436: 911-list words first get the 911 text an
   expect([...textsTo(gas.contact)].sort()).toEqual(["consent", "emergency_911"]);
   expect(rows(`SELECT count(*) FROM intake.emergency_event WHERE conversation_id = '${gas.conversation}' AND safe_at IS NULL`)).toEqual([["1"]]);
   expect(await textIn("+19285550143", "we're safe")).toBe(200);
-  expect(textsTo(gas.contact)).toHaveLength(2);
+  // INT-025, INT-043 (D-4360): on the 911 path the ZIP is asked after SAFE, and nothing else.
+  expect(textsTo(gas.contact)).toHaveLength(3);
+  expect(textsTo(gas.contact)[2]).toBe("zip_question");
   expect(rows(`SELECT count(*) FROM intake.emergency_event WHERE conversation_id = '${gas.conversation}' AND safe_at IS NOT NULL`)).toEqual([["1"]]);
 });
 
@@ -242,7 +246,8 @@ for (const [from, words] of [["+19285550144", "pipe burst under the sink"], ["+1
     const since = now();
     expect(await textIn(from, words)).toBe(200);
     const request = requestSince(since);
-    expect(textsTo(request.contact)).toEqual(["consent"]);
+    // CON-031, INT-043 (D-4360): the ZIP question follows the consent text as its own text.
+    expect(textsTo(request.contact)).toEqual(["consent", "zip_question"]);
     expect(rows(`SELECT count(*) FROM intake.emergency_event WHERE conversation_id = '${request.conversation}'`)).toEqual([["0"]]);
   });
 }
