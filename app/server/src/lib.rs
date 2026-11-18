@@ -59,6 +59,7 @@ pub mod release_sink;
 pub mod request_timeout;
 pub mod static_files;
 pub mod voice_status;
+pub mod watch_checks;
 pub mod webhook_refusals;
 
 use request_timeout::RequestTimeout;
@@ -941,7 +942,8 @@ fn register_daily_lists(
 ///
 /// # Errors
 ///
-/// A missing or bad Twilio or postal-address setting in test or live, a postal address that is not
+/// A missing or bad Twilio or postal-address setting or a missing `ASKHAVA_DB_VOLUME_BYTES`
+/// (`watch_checks`, T525) in test or live, a postal address that is not
 /// a P.O. box or private mailbox, or a Twilio client that cannot be built, named, never its value.
 pub fn worker_registry<I>(
     settings: &Settings,
@@ -980,6 +982,7 @@ where
         Arc::clone(&clock),
     );
     no_handler_alert::register(&mut registry, settings.environment(), Arc::clone(&clock));
+    watch_checks::register(&mut registry, settings, &clock)?;
     register_timer_backstop(&mut registry, Arc::clone(&clock));
     register_license_reapply(&mut registry, Arc::clone(&clock));
     register_daily_lists(&mut registry, settings, Arc::clone(&clock), pairs.clone())?;
