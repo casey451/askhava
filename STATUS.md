@@ -1,22 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-18T11:22:50Z by runner 5d77a911c127 (actions).
+Updated 2026-11-18T11:26:59Z by runner 238b98bc9794 (actions).
 
 **Building: T583 in progress since 11:19Z; 440 of 621 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 440 of 621 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T583 claimed 11:19Z, lease until 14:19Z; lane 5: T408 claimed 09:13Z, lease until 13:23Z; lane 6: T200 claimed 09:05Z, lease until 13:36Z
-- **Week:** 53% used, 85.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:22Z, 0 min before this update
+- **Lane:** lane 1: T583 claimed 11:19Z, lease until 14:19Z; lane 2: T662 claimed 11:26Z, lease until 14:26Z; lane 5: T408 claimed 09:13Z, lease until 13:23Z; lane 6: T200 claimed 09:05Z, lease until 13:36Z
+- **Week:** 53% used, 83.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 11:26Z, 0 min before this update
 - **Keeper:** last ran 11:22Z, next wake 13:25Z
 
 ## Needs attention
 - BLOCKED T563: plan gap reported: PLAN GAP: app/messaging/src/optout.rs:311 (suppress/record, owned by T029 and later tasks; T563 owns no messaging file) and kit/prompts/T563.md:9 (CROSS_SCHEMA_CALLS fixed at exactly one entry, messaging.last_message_at(). The sweep (head d7eb5dc64, all TD-CON-30 tests green, smoke and prehandin green) checks suppression via messaging::api::send_window before its per-number transaction, then clears the vault phone inside it. Review finding (unresolved): an opt-out via messaging::api::suppress (portal/email/owner paths) or a texted STOP committing between that check and the clear lets the sweep; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T563 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- PLAN GAP T662 (since 2026-11-18T11:19:34Z, no attempt used; a plan change fixes it): T662: dependency T650 is DONE but its owned file tests/integration/tests/under_13_purge_job_data.rs is not on main
-- Strict plan check red: 26 problem(s) on tasks still to run (+219 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 26 problem(s) on tasks still to run (+226 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -82,7 +81,6 @@ Updated 2026-11-18T11:22:50Z by runner 5d77a911c127 (actions).
 | T441 | portals: the quote page shows the kept number, and the pick  | done | 1 | 74 min | 11:32Z |  |
 | T572 | intake: the under-13 stop also clears the vault contact's na | done | 1 | 48 min | 11:31Z |  |
 | T446 | intake and messaging: PICK-046's "couldn't take it" notice g | done | 1 | 87 min | 11:29Z |  |
-| T202 | site: Spanish pages, the business page blocks and the requir | resync | 2 | 56 min | 11:26Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -118,7 +116,7 @@ Updated 2026-11-18T11:22:50Z by runner 5d77a911c127 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-18T11:04:46Z (week)): week: 108.6M used, 85.4M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-01T04:54:10Z.
+- Pacing (session_reading 2026-11-18T11:22:33Z (week)): week: 110.3M used, 83.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-01T05:06:26Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -134,6 +132,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T583 (lease until 2026-11-18T14:19:34Z)
+- lane 2: T662 (lease until 2026-11-18T14:26:44Z)
 - lane 5: T408 (lease until 2026-11-18T13:23:31Z)
 - lane 6: T200 (lease until 2026-11-18T13:36:41Z)
 
