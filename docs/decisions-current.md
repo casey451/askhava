@@ -1,0 +1,588 @@
+# Decisions in force
+
+Through D-945. Reader layer over the append-only `docs/decisions.md` (D-3856, D-4447), shaped by `docs/reviews/decision-digest-plan.md` and checked by `python3 scripts/check_decision_digest.py`. One line per rule in force; the log keeps the full entry (`grep -n '^- \*\*D-####\*\* ' docs/decisions.md`). "The brand" is Laftly (D-3347); older entries say Ask Hava.
+
+## Product and scope
+
+- D-018 (product) The directory-era /chat page goes; the request web chat is built as the fallback channel.
+- D-028, D-189, D-464 (product) No weekly maximum, cap, rotation or "trade full" waitlist; volume is set by job types, towns and pause; OPS-027 only flags a crowded trade (5+ active businesses and a median of 4+ quotes in a calendar month, settings, no automatic action).
+- D-031 (product) The catalog starts at 39 categories; garage doors and junk removal are listed and off, the "left out" kinds are listed as not offered, pest control is on but never advertised.
+- D-082 (product) Any move that starts or ends outside Arizona is refused.
+- D-086 (product) The service area is a towns list in settings, starting with Lake Havasu City; requests from other towns close early.
+- D-172, D-268 (product) Pages take every number and offer from the spec, never the prototype (WEB-018); the pitch and flyers are fixed by hand outside the repo.
+- D-194 (product) No in-person ID check at launch; stale record contacts use the self-repair path and the review target.
+- D-269, D-301, D-321, D-342, D-354 (product) Not adopted (Casey may revisit): tap-to-ask, multiple site-visit picks, tenant WAIT, storing lock codes, business texting, WhatsApp or an app at launch, open or click tracking, AI reading of HELP messages, and each entry's other listed items.
+- D-367, D-369 (product) No lawyer, CPA or broker for now: legal items are AI memos plus Casey's decision, filings stay his; not adopted: a shorter urgent Confirm window, guessing water providers.
+- D-382 (product) The service-area towns list holds Arizona towns only; another state needs a new logged legal review.
+- D-396, D-459 (product) LIC-046: every enabled category is `launch_open`, taking requests only with 2+ active businesses; the OPS-039 pilot scorecard has settings lines and decides nothing.
+- D-414, D-418, D-425, D-426 (product) Defaults confirmed: $25 / $75 / $199, no arbitration, no owner name online, PICK-026 kept, safety voice call off; trademark skipped for now; insurance after the business works.
+- D-429 (product) Fix round 14 re-read every requirement as "as well packaged as possible" (`docs/handoff/rework-plan.md`).
+- D-467 (product) No "Pro" plan; any later recurring option is a prepaid credit pack for fees only (no auto-renew, no placement edge); fixed running costs about $150 a month.
+- D-468 (product) The hand-run playbook judges Organic requests and real payments; OPS-039 adds 2- and 3-quote shares, 75th-percentile first quote, quotes per win; WEB-028 waits for 50 requests.
+- D-469, D-471 (product) The playbook is rehearsed with `docs/pilot/hand-run-tracker.xlsx` and `dry-run.md` on fake data only.
+- D-470 (product) Paid pilot weeks need one-page pilot terms (unticked box), a pilot privacy notice, CAN-SPAM footers and the city license; launch needs explicit web-chat consent and "tax owed is included".
+- D-495 (product) The build runs now at full scope; the hand-run playbook becomes the script for the first real weeks; the first re-plan is the stage-1 exit review.
+
+## Brand and wording
+
+- D-007 (wording) The opt-out confirmation says to text START to use the service again.
+- D-023 (wording) Quote-card insurance line: "Insurance (business-reported): Yes/No".
+- D-029 (wording) The ban on claims and rankings covers businesses; the neutral job-type prompt to the homeowner is exempt from the word scan.
+- D-064 (wording) Every text the app composes, English and Spanish, starts with the brand prefix; Twilio Verify uses the brand as its friendly name.
+- D-083 (wording) Feedback is private to the service: never public, never on quote cards, never used to order quotes.
+- D-175 (wording) The waitlist message says "Your join date is kept."; the free-win line says "on any job size".
+- D-184 (wording) Business copy: "You quote once. No bidding rounds, no paid placement." and "Every card says how many businesses got it."; never "no bidding wars".
+- D-245 (wording) WORD-019 bans the three phrases the entry names; WEB-018 covers homeowner pages; WORD-005: "#1 means first received, not first choice."
+- D-300 (wording) WORD-020: never "lead(s)" (except lead paint, lead pipe, lead-based), "pre-vetted", "exclusive", "affiliate" (outside TERMS-009) or "partner(s)"; the only exclusivity claim is "Only the business you pick gets your contact info."
+- D-349 (wording) No personal name in any template, page, email or document for users (WORD-021 scan); copy says "the owner"; internal requirements may say Casey.
+- D-352 (wording) Always the full brand name, never a fragment of it; Spanish copy never says leads, "clientes potenciales" or "prospectos"; the site says it is not connected to similarly named businesses.
+- D-356 (wording) One not-a-contractor statement in long and short forms, English and Spanish: site footer, help page, terms, privacy policy, quote page and consent text (WORD-002, WEB-015, TERMS-004).
+- D-357 (wording) TERMS-026: businesses are independent; the service never directs, prices or negotiates; the introduction fee by job size ($25/$75/$199) is never a percentage and does not depend on the work being done or paid.
+- D-358 (wording) Quote amounts and periods show exactly as the business wrote them; the monthly conversion is for the fee tier only; WORD-011: never edit, round, convert or suggest a price.
+- D-359 (wording) Copy sweep: "chose your quote" not "picked you"; "Busy until / Busy for <n> days" not "Booked"; calls are "on a masked number", never "through" the service.
+- D-360 (wording) WORD-022: one NOT_A_CONTRACTOR banned-phrase list in `scripts/trace_spec.py` (hiring, dispatching, scheduling, "our pros", "our network", "guaranteed", "our price", Spanish forms); any hit fails.
+- D-375, D-421 (wording) TERMS-004: homeowner liability capped at $100 (not gross negligence or misconduct), in the terms' "Limit of liability"; beside Pick only "By picking, you agree to the Terms".
+- D-377 (wording) WORD-023: Laftly is "a quote-request service; the business the homeowner chooses pays a set introduction fee"; "connect you with", "referral network" and "lead generation" are banned.
+- D-378 (wording) TERMS-027: the fee pays for the introduction service, never a "license", "data access", "lead", "right to use" or sale of information; a document test enforces it.
+- D-386, D-405 (wording) The pitch file lives outside the repo; its fixes are Casey's; WORD-017 and WORD-022 keep old pitch wording out of the build.
+- D-389, D-390 (wording) TERMS-028: legal drafts in `docs/legal/` carry the AI-research, not-lawyer-reviewed header; `check_legal_docs.py` checks key phrases and banned words; arbitration stays an OPTIONAL, OFF section.
+- D-406, D-447 (wording) WORD-024 voice (`docs/voice.md`, style only), "a sharp, experienced receptionist": short sentences, one next step, no pressure words (tested on every template); safety texts and HELP exempt.
+- D-407 (wording) WORD-025: homeowners see "request <n>", businesses "job <n>", the same number.
+- D-452 (wording) AI smell: `docs/ai_smell.yaml` and `scripts/check_ai_smell.py` (WORD-027, fails `Ci`) plus a cold read (WORD-028); only legally or safety-fixed wording is exempt.
+- D-474 (wording) WORD-029: the copy panel (`docs/copy/copy-panel.md`, grade 8 for homeowners) and `scripts/check_copy.py` check copy; panel writers are never named or imitated.
+- D-475 (wording) `landscape_maintenance` shows as "Yard maintenance"; fake business names never match real ones.
+- D-687 (wording) Current files never name the owner's occupation or employer ("a full-time day job").
+- D-813 (wording) CARD-010's carrier-restricted list is `catalog`'s `restricted_words.rs`, whole words, everyday trade words left off; a list change is a decision entry.
+
+## Homeowner intake
+
+- D-095 (intake) The 72-hour Intake close moves the job to Closed early ("no reply"); reminder and closing text only when consent was recorded, else a silent close.
+- D-102 (intake) After a trade answer, keep that trade's plain-keyword job types; `<trade>_other` only when no reading or keyword gives one, then "Which fits best?".
+- D-103, D-104 (intake) The trade question offers up to three distinct trades, numbered; re-asks repeat the options; after two unusable answers fall back to the single keyword trade, else the first reading.
+- D-105 (intake) License-boundary keyword job types stay candidates whatever trade is read; candidates under different licenses trigger "Which fits best?" (INT-014).
+- D-128 (intake) The safety text ends "Reply SAFE when you are safe."; safe words (English and Spanish) and, after consent, plain OK or Yes count; a consent reply while safety is open gets one "Are you safe now?" (INT-025).
+- D-137, D-165, D-325, D-361 (intake) Emergency stems per INT-002 (English and Spanish; "hot" only with an electrical word; a chirping detector is a low-battery reply, no 911 hold); checked per message after address patterns are removed, never on the name-and-address answer.
+- D-138 (intake) An emergency-keyword message opens a job whatever its length (INT-007).
+- D-146 (intake) Scrubbing (AI-002) removes name intros, phone-shaped numbers, street numbers and emails; first name and address are asked last and never go to the AI (INT-027).
+- D-246 (intake) INT-032: a first message naming two trades starts the first and offers the second ("Reply 2 to start <second> too").
+- D-157, D-897 (intake) The gas keyword list is `docs/catalog/gas_keywords.yaml` (gas, propane, pilot, furnace, gas appliance words, Spanish gas, propano, piloto; AI-012), whole words; an unreadable list blocks handyman cards.
+- D-164 (intake) Emergency job cards go once consent, safe reply, urgent choice, ZIP and area check are done; the name-and-address question follows; the release waits for the address (INT-029).
+- D-208, D-292 (intake) INT-030 asks "How soon?" (today, few days, no rush, by a certain day) as a card field.
+- D-238 (intake) INT-027 says only the picked business gets name and address after the pick and "We never ask about immigration status or ID."
+- D-271, D-324 (intake) INT-033: at night, before the urgent choice, the count of after-hours businesses for the trade (singular form for 1); with none the choice is not offered; one "no quote yet" text after 60 minutes, day or night.
+- D-394, D-431 (intake) `question_bank.yaml`: 3 to 8 questions per category in price-impact order, each set naming its `kb_trade` in `docs/catalog/trade_kb/`; the fixed bank is the AI-off fallback; changes only by logged catalog decision.
+- D-395, D-434 (intake) INT-040 routing with confidence: unsure asks trade then job type; INT-041 she sees the real card (EDIT, SEND, timed auto-send); CARD-023 business job page; OPS-040 golden set per open trade.
+- D-432 (intake) INT-044: photos from day one, never required, never asked in a 911 situation; stripped, screened on Laftly's server, reviewed by her before the card goes; provider copies deleted once stored.
+- D-433 (intake) INT-045 inspiration images in `design: true` categories; INT-046 one concept image from the written project file only, labeled "AI-generated, not exact, may not be feasible", behind an owner switch.
+- D-435 (intake) Once the trade is known she hears the business count or "We don't cover <trade> jobs yet"; OPS-041 emails the owner each uncovered request.
+- D-436 (intake) 911 text only for the fire-truck list (gas smell or hiss, CO alarm, smoke or fire, sparking electrics, downed line), with the SAFE hold; no health, heat, water or utility advice; floods and AC out go urgent.
+- D-437 (intake) No own-or-rent question and no rental flag (INT-028, TXT-028, CARD-011 withdrawn).
+- D-460 (intake) The ZIP and area check comes right after the first reply; INT-041 auto-sends after 30 minutes (a setting); updates go by text, email optional on the quote page.
+- D-800, D-803 (intake) The scrubber drops up to two uncommon words after a name phrase (and later repeats), streets and codes; spelled digits count; over-removal is accepted; `Ci` needs 99% on the corpus.
+- D-908, D-933 (intake) `receive_text` is the one entry: a request opens only with its consent text and versioned consent record in one transaction, 911 text first, one open conversation per homeowner.
+- D-909 (intake) Intake tables hold IDs, codes and times only; `intake.consent_record` is append-only.
+
+## Businesses and licensing
+
+- D-017 (licensing) Licenses are checked from the agencies' daily downloadable lists plus a live lookup at the pick; v9.3's "never guess" rules stay.
+- D-032 (licensing) Category licenses: solar screens R-65; boat repair and detailing need no license; dock, lift and seawall go to ROC licensees; gas appliance repair is R-63 only; `handyman_allowed` per the catalog.
+- D-035 (licensing) A construction-type quote under the handyman exemption or in a no-license construction category must be under $1,000.00 at the top of its range; never applied to non-construction categories.
+- D-056 (licensing) Daily check of every license; a card goes only if the latest check showed Active; one live lookup at the pick; Confirm re-checks stored results with no second lookup; a failed pick lookup uses a daily result under 24 hours old.
+- D-057 (licensing) License line: "<Agency> license #___ showed Active on the <agency> website when we checked on [date]. Check it yourself."
+- D-058 (licensing) License coverage is judged per job type (CARD-001): R-39R only air-conditioning, R-37R only drain and sewer job types.
+- D-059, D-254 (licensing) Identity codes and letters go only to a public-record contact, never one the business typed; before a letter, sign-up shows the town and ZIP and offers to fix the record first.
+- D-061 (licensing) Insurance is a business-reported yes/no on no-license cards only; never verified, tracked or used to pause.
+- D-063 (licensing) Business notices are English unless the business picks Spanish in its portal.
+- D-081, D-186 (licensing) Handyman quotes use the portal form with the certification box on the price screen, ticked on every quote; overlapping scope is the same category or a shared job type at the same property within 30 days.
+- D-145, D-256, D-281 (licensing) A sign-up with identity done and a license or city-list match and no flag activates automatically; flagged ones wait for Casey; the letter path stops being a flag once its code is entered (BIZ-003, BIZ-016).
+- D-154 (licensing) The split-job check runs on the second quote and blocks only when the jobs share a job type or together reach $1,000 (LIC-023).
+- D-027 (licensing) The split-job check's short window is 30 days, a setting.
+- D-176, D-261 (licensing) BIZ-021: sign-up starts with categories marked "Open now" or "Coming later"; coming-later only joins the waitlist; when a trade opens each waitlisted business gets one account notice.
+- D-177, D-255 (licensing) LIC-011: a city-list sign-up with no match waits as pending and activates when a later list matches its business, DBA or owner name; it may enter its city license number.
+- D-179 (licensing) BIZ-024: anyone may fill in the sign-up; the code still goes only to the record contact.
+- D-190, D-267 (licensing) Trust lines: "<Agency> license since <year>" from the record, the city-license year only if listed; a screened 140-character About line; no rating, review, hire count or ranking (WORD-016).
+- D-191 (licensing) BIZ-023: team members have "Cards and quotes" or "Confirm and billing" roles (owner has both); sign-in, consent and language are per person.
+- D-198, D-259 (licensing) BIZ-028: PAUSE, RESUME and BUSY <n> (1 to 60 days), with Spanish forms, only from the owner or a "Confirm and billing" member; never read as opt-outs and vice versa.
+- D-199 (licensing) LIC-008: when status is unknown the business stays as it was up to 72 hours, warned at 24, then paused; it cannot Confirm meanwhile.
+- D-250 (licensing) BIZ-025's "Your numbers" panel adds "Picked, then finished" from DONE, NO and OTHER replies.
+- D-230, D-282 (licensing) LIC-039: a list failing 12 hours alerts; the throttled live lookup covers active businesses meanwhile; still failing after 24 hours joins the OPS-032 push, before LIC-008's pause.
+- D-253 (licensing) BIZ-020: sign-up status messages (never the code) also go to the sign-up email and, with consent, the phone entered.
+- D-257 (licensing) LIC-040: listed trades get multiple-choice card-field intake questions, never free-text model numbers; LIC-041: trades split job types into repair, replace and new install where the license allows.
+- D-258, D-311 (licensing) BIZ-033: the owner is emailed when a non-owner confirms or links a phone; a member-linked phone works only after the owner approves; a STOP stops texts to that phone only, the business stays on email.
+- D-260 (licensing) Removing a member ends their sessions and unlinks every phone they linked (SEC-004, CALL-012).
+- D-285 (licensing) BIZ-034: "Away until <time>" up to 4 business hours delays a non-emergency pick's Confirm clock; never on emergency jobs; an Away-delayed pick cannot be held.
+- D-307, D-308 (licensing) BIZ-036/037: each business chooses its notice channel (email by default and only, while business texting is off); cards go to "Cards and quotes", picks and money to "Confirm and billing", each by their own email.
+- D-309, D-333 (licensing) BIZ-038: every former keyword is a no-JavaScript portal page one tap from a signed single-purpose email link; Confirm needs a session or a Verify code; email replies never act.
+- D-312 (licensing) BIZ-040: the sign-up email is verified before activation; a bounce or complaint marks it unverified with a banner; a changed notice email is verified first and the old one told.
+- D-328, D-362 (licensing) BIZ-042: onboarding sends a sample card email and shows per-mail-app steps until it lands in the inbox; the after-hours tick needs a Do Not Disturb test email, a Yes lasting 90 days.
+- D-329 (licensing) BIZ-043: each person may add one verified backup notice address.
+- D-330 (licensing) CARD-022: one daily open-cards email at the person's chosen time, only with unquoted cards with an hour left, never to a paused or busy business.
+- D-331 (licensing) BIZ-044: a monthly email when at least 3 cards came and half ended unquoted, pointing to the deliverability steps.
+- D-336 (licensing) FEE-022's decision email says which condition was met; BIZ-022: the public business name passes the same channel and link rules.
+- D-346 (licensing) CARD-021: emergency card and pick emails carry an EMERGENCY subject and first line; at night only to people with "Emergency emails at any hour" at after-hours businesses, others at 8 a.m.
+- D-181, D-456 (licensing) The founding interest list is Casey's own, never built from the ROC or city lists; BIZ-048: recruiting is mostly self-serve: hand-written local Facebook group posts by Casey, disclosed, never automated or paid; plus the site, asked-for email and a few visits.
+- D-374 (licensing) BIZ-048: Laftly never texts or calls a business to recruit it; recruiting emails follow CAN-SPAM.
+- D-376, D-402, D-403, D-417 (licensing) Pest control only for attested Department of Agriculture licensees (cards say not independently verified), never advertised; inspections only to certified inspectors, sale-related ones fee-free; LIC-042 no warranties.
+- D-392 (licensing) `docs/catalog/license_map.yaml` maps classes to job types (LIC-043: CR- includes its R-, KB includes B, B and B-3 never trade types); LIC-044 commercial-only licenses not activated; LIC-035 reads subclasses.
+- D-393 (licensing) BIZ-049: job types arrive pre-ticked from the license, plus towns, largest job, recurring and after-hours; BIZ-050 a license change drops types at once, offers new ones unticked; no card for partial coverage.
+- D-404 (licensing) Garage doors and junk removal stay off; an unconfirmed category stays off (LIC-005).
+- D-439 (licensing) BIZ-052: optional Google and Yelp links (domain-checked) and every license number held, shown on every quote card.
+- D-457 (licensing) BIZ-053 and INT-047 record where sign-ups and requests came from (`g` code or "text"); codes never name a person or reach routing.
+- D-463 (licensing) BIZ-054: one optional reason question when a business leaves or pauses over 14 days; answers only go to the weekly digest.
+- D-504 (licensing) `license_map.yaml` scopes R-37R and R-39R subclasses with `scope_tags`; `check_catalog.py` fails unscoped rows, untagged types and enabled licensed types no class covers.
+- D-605, D-756 (licensing) `job_type_kinds` marks each LIC-041 split-category job type repair, replace or install; plumbing and heating and cooling install types wait for `scope_tags` rows.
+- D-744, D-745, D-747 (licensing) A catalog reload never switches a category on and switches off (audited) not-offered, classless-ROC or dropped ones; only the owner switches on, never those.
+- D-748 (licensing) The first task giving the server or worker an app pool calls `load_embedded` after migrations.
+- D-754 (licensing) The question bank is parsed in memory from compiled-in YAML, never a table.
+- D-755 (licensing) A catalog or question-set code naming a warranty, protection plan, service contract or guarantee fails at load.
+- D-856 (licensing) City-list match: one of three names equal after lower-casing and dropping punctuation, no partial match; license numbers on both sides must agree.
+- D-857 (licensing) Class coverage is the license map's `roc_covers` input; `refused` job types go only to a covered license holder; pest reads only the attestation.
+- D-859 (licensing) Self-attested license numbers: letters, digits, `-`, at most 20; agency numbers as shown, at most 64.
+- D-898 (licensing) The never-handyman block reads scrubbed text and job types, on handyman cards only; every handyman quote needs the certification box; $1,000 is judged on a range's top.
+- D-902, D-905 (licensing) A daily list with a wrong header, no good rows, more bad than good, or under half the previous list records nothing; lists hold no contact columns and are never listed out.
+- D-903, D-906 (licensing) Checks record the latest ROC list's status per license number; a card needs that license's latest check `active` within the caller's freshness limits.
+- D-938 (licensing) A pick makes one live lookup, never retried; a failure or misread records nothing; a lookup never yields `not_listed`.
+- D-939, D-940, D-942 (licensing) Limits are passed in (24 h warn, 72 h pause, alerts at 12 h and 24 h, 2 s between lookups); list-failure alerts are `normal`, never High.
+- D-941 (licensing) `businesses` holds each pause and unknown-since instant and applies `licensing`'s clocks.
+
+## Matching, quotes and picks
+
+- D-011 (matching) The job moves to Quotes ready at the first quote; quotes are accepted until each card's window ends or a pick is confirmed.
+- D-030 (matching) An Open job with no quote moves to "No quotes yet" at 6 p.m., with its text.
+- D-042, D-347 (matching) Each business's 24-hour window starts when its own card is sent (after any quiet-hours hold); a newly eligible business gets the card with its own 24 hours; no open or click tracking (PICK-001).
+- D-043 (matching) Quotes are accepted while the job is Open, No quotes yet, Quotes ready or Awaiting confirm; refused once the picked business confirms.
+- D-044, D-150 (matching) When the pick's payment or free win is recorded, other quoting businesses get "picked another quote"; at the end the rest get "no longer active" (PICK-026).
+- D-045, D-140 (matching) A failed pick's quote shows "no longer available"; the job closes only when no choosable quote is left and every card window has ended, else it waits with a fresh 3-day timer (JOB-025).
+- D-046 (matching) With no reply 7 days after the day-14 check-in, the job moves to Closed, with no review request.
+- D-049, D-143 (matching) For email contact the portal shows the preference and the masked line still opens; the day-3 check-in decides, NO records a no-show and returns to Quotes ready; for call contact NO closes the job.
+- D-055 (matching) An emergency is never a reason to close early.
+- D-068 (matching) A text pick works when exactly one job is in Quotes ready, else the service asks which job.
+- D-084 (matching) Quotes show in arrival order only, no sorting or filtering; numbers never change.
+- D-147 (matching) "<n> YES" for another quote before Confirm replaces the pick and tells the first business (PICK-032); after Confirm the reply says it is confirmed (PICK-036).
+- D-149 (matching) A price read from a text is always shown back to the business to confirm before the homeowner sees it (PICK-006).
+- D-185, D-262 (matching) PICK-039: the quote form shows the fee and its basis (midpoint, recurring months, cap) before the business submits.
+- D-188 (matching) CARD-019: every card says "Sent to <N> businesses."; the portal job page shows sent and quotes so far.
+- D-193, D-263 (matching) PICK-026: with 3+ quotes the loss text compares the picked quote (lower, about the same within 10%, higher), never disclosing amounts or names; with 4 or fewer recipients it says "Several businesses quoted".
+- D-201 (matching) No business number sharing; the details text tips "on your first call, ask which number to text" (PICK-024).
+- D-202 (matching) CARD-007: cards carry the category's multiple-choice intake answers as fixed fields; the final card gate still runs.
+- D-233, D-283 (matching) PICK-040: every quote carries required quote facts in a fixed order, pre-filled from the business's last answers with "Same as last time"; earliest visit is a date plus part of day.
+- D-239 (matching) TXT-031: LIST (LISTA) sends the quotes by text in arrival order, up to 10 per text, ending with how to reply "<n> YES".
+- D-240 (matching) JOB-028: LATER, ONGOING and OTHER check-in replies, Spanish forms; LISTO counts as DONE.
+- D-241 (matching) TXT-032 says how many businesses got the request and the quote deadline; JOB-010 offers keep waiting, add details or close; JOB-011's close always says why.
+- D-244 (matching) PICK-042: after Confirm the homeowner gets the accepted quote by email if on file; the quote page keeps it until the token expires.
+- D-247 (matching) PICK-013's code text warns to type it only on the site and that the service never asks for it by phone; PICK-015 shows "or reply <n> YES" by every Choose button.
+- D-252, D-284 (matching) PICK-043: HOLD adds 2 business hours once per pick, refused only on emergency jobs; OPS-034 flags businesses with 3+ lapsed picks in 30 days.
+- D-264 (matching) FEE-041: a Confirm stopped by the business's monthly limit ends the pick and the homeowner may choose another quote.
+- D-270 (matching) PICK-044: an emergency job's Confirm and card-fix windows run 60 minutes clock time at any hour; "Now" is the default call window; cards show "Takes after-hours calls".
+- D-286 (matching) PICK-021 and PICK-037 show the contact choice, call window and refund condition; a delivery failure never counts against the business; BIZ-035 per-job call log.
+- D-332 (matching) The quote window stays 24 hours from send; a pick whose every notice email bounced or failed gets 1 more business hour once; BIZ-045 notice log per job.
+- D-345 (matching) PICK-019: the non-emergency Confirm window is 4 business hours from the pick email, with reminders 1 hour after and 1 hour before the end; PICK-045 tells the homeowner at the pick.
+- D-363 (matching) PICK-017's review step shows the Confirm end time before the pick, warns when it runs past 8 p.m., and may offer a switch to emergency; the window is unchanged.
+- D-365 (matching) Confirm and pay are one on-session step with one "Confirm and pay" button; no off-session charge or background retry; details release only after the server sees the payment succeed, once (PICK-022).
+- D-380, D-462 (matching) BIZ-042 sample-pick alert test when a person first opens a real card (never blocks activation); PICK-037 hourly Confirm reminders with the Hold link; CARD-022 up to two open-cards times a day.
+- D-400 (matching) PICK-047: she may name one backup quote (none preselected); a pick ending without acceptance moves to it at once; Laftly never chooses it.
+- D-420 (matching) Homeowner Terms are accepted by picking (clickwrap beside Pick, or a text pick whose offer says so), logged with time, version, request and channel.
+- D-440 (matching) Laftly schedules nothing: no lockbox or call-window questions; calls 8 a.m. to 8 p.m. Arizona time (any hour on emergencies); the business and homeowner set the time.
+- D-442 (matching) PICK-052: one 300-character job-only notes box; contact details, links and off-platform offers bounce; with AI on, steering notes go back to the business.
+- D-446 (matching) PICK-050 "Can't take it" (no fee, backup applies); PICK-051 quotes editable before a pick; BIZ-051 leaving ends picks and cards, keeps the ledger 7 years; "Pick" is the verb everywhere.
+- D-477 (matching) $0 picks release details like paid ones; codes go only to the person's own phone or email; AI emergency fields never send the 911 text; HOLD, Away and bounce extensions text no homeowner.
+- D-478 (matching) An opted-out homeowner picks only by emailed one-time button or code; no card when no license covers every candidate type; the picked business gets full-size, location-free photos.
+- D-805, D-807 (matching) Each waiting status gets a backstop timer from entry (Intake 72 h, Quotes ready 3 d, Connected 21 d, ...; see the log); a later event re-times it with `restart_timer`, never shorter.
+- D-806, D-892 (matching) Each move bumps `jobs.job.version`; a timer acts only if its versions match, stamped at its due time; a lost guarded move writes nothing and never retries.
+- D-851 (matching) Job numbers start at 1001 and are never reused; a restore's replay raises the counter floor.
+- D-871, D-872 (matching) `jobs` asks `intake` for homeowner texts by event (IDs, version, template; once per job), dropped unless `text_due`; `all_windows_ended` closes a job with no choosable quote.
+- D-874 (matching) Connected: DONE to Done, NO or PROBLEM to Closed, day-3 NO under email contact to Quotes ready; the 21-day backstop closes silently.
+- D-934 (matching) Terms acceptance: one append-only row per pick, the text's SHA256 computed by intake; only a pick writes it.
+
+## Money
+
+- D-009 (money) Fee basis is the chosen quote's amount: under $500.00 is $25, $500.00 to $1,500.00 inclusive is $75, over $1,500.00 is $199; no AI flag changes the tier.
+- D-010, D-159 (money) Recurring quotes convert to monthly first (weekly x 52/12, biweekly x 26/12, quarterly /3, yearly /12, per visit x visits; range midpoint first), then x 4; a recurring job type needs a period (REC-010).
+- D-019, D-151, D-152, D-195 (money) Free first win: businesses joining within 90 days of launch or of their category opening; one per entity (ROC number, city-list entity, card fingerprint, record contact, owner name); join date is the form submit date.
+- D-033 (money) Compute exactly, then round the fee basis down to the cent before choosing the tier.
+- D-034 (money) Trip-fee tiers map small, medium, large to $25, $75, $199; new rows take $25 unless the typical job is clearly $500 to $1,500.
+- D-037 (money) A quote with a period uses the 4-month rule; no period is one-time at face value, allowed in a recurring category only for its `one_time_job_types`.
+- D-047 (money) A no-show gets no refund; the call line closes, the no-show is recorded and Casey alerted; no automatic pause (TERMS-005).
+- D-069 (money) A repeat pick of the same business by the same homeowner costs $0 until the 180-day contact purge; it never uses up a free win.
+- D-070 (money) Flag only: a business with 3 of its last 10 quotes within 5% under a tier edge (FEE-033).
+- D-071 (money) Every day-3 PROBLEM reply is flagged to Casey; no automatic comparison or fee change.
+- D-072 (money) Flat mode defaults each job type to its category's trip-fee tier; any fee-mode change needs a new authorization before the next charge.
+- D-073 (money) Cards only at launch.
+- D-089 (money) No card at sign-up; a card is given when confirming (FEE-020), now in one on-session step (D-365).
+- D-135 (money) Payment timers stop while charges are paused by safe mode or the charging switch and resume with the time left (FEE-038).
+- D-141 (money) A business "talked" to the homeowner when any call either way was answered by a person; the unreachable refund needs 2 attempts 3+ hours apart within 72 hours and no such call (FEE-022); the 45-second mark is for reporting only.
+- D-142 (money) The unreachable refund closes the job, closes the call line and stops check-ins (JOB-027).
+- D-153 (money) A timed-out charge is not retried until Stripe confirms it failed; the nightly reconcile refunds any second charge for one pick (FEE-037).
+- D-173, D-205, D-248 (money) BIZ-030: a plain-words box on fees, refunds and card use at sign-up and on the business page ("It's an introduction fee for a homeowner who chose you."); no "didn't book" credit.
+- D-196, D-265 (money) FEE-039: a recurring job type's fee is the tier for 4 months, capped at $75 (a setting); one-time jobs in recurring categories are not capped.
+- D-197 (money) Fees stay $25 / $75 / $199 (FEE-001); $39 not adopted.
+- D-204, D-223 (money) TERMS-022 and BIZ-027 promise replies within 4 calendar days (settings, blocking nothing); FEE-041 is an optional business-set monthly fee limit.
+- D-225 (money) FEE-031: every receipt says "Tax included." and links a "Why was I charged?" page for that charge.
+- D-229 (money) FEE-027: the dispute evidence pack goes to Stripe automatically 2 days before the due date unless Casey sent it.
+- D-236 (money) TXT-030: after a first unanswered business call the homeowner gets one text; the unreachable refund fires only if it (or its email) went out.
+- D-243 (money) For email contact, at 72 hours the homeowner is asked whether the business emailed; YES stops the refund and close.
+- D-251 (money) OPS-031 flags a trade where over 30% of connected jobs end NO or OTHER for 2 months; any credit is Casey's decision.
+- D-287 (money) BIZ-032: a business message about a charge gets its latest charge's details and "Why was I charged?" link; TERMS-022: a charge that was our mistake is refunded in full.
+- D-288 (money) BIZ-030 says Casey may add a credit if many picks end without a hire; the FEE-040 lock starts no earlier than activation; BIZ-022 refuses directions to other channels; a non-owner-linked phone needs the owner's YES.
+- D-399, D-441 (money) PICK-053: each category or job type has one quote format (range, monthly, tiers, firm, diagnostic_visit); hourly needs an hours estimate; setup charges never join the basis; visit fee $25 default, max $75.
+- D-401 (money) PICK-048: an unticked "Auto-confirm and pay if picked" box with its own authorization, shown only while Stripe's written yes is filed, is the only off-session charge.
+- D-444 (money) Sales tax: an 8.6% set-aside shown beside, never in, the ledger; an ADOR ruling on the later setup list; no TPT license "in case"; the fee never bundles placement or software.
+- D-465 (money) TERMS-026: Laftly may refund any charge at its choice, and none is owed because work wasn't done; the free first-win Confirm shows the unticked save-card box.
+- D-490 (money) 39 brain proposals adopted (TERMS-029 to 032, FEE-047 to 053, A11Y-025 to 035 and others): one PaymentIntent per pick; the one business reply is a registered sample.
+- D-728 (money) The re-fetched `PaymentIntent` carries currency, customer and `pick_id`; a missing `livemode` is a mismatch; vendor IDs are prefix-checked.
+
+## Privacy and the contact vault
+
+- D-013 (privacy) Retention: contact details 180 days after close (unless dispute), photos 30 days, consent and message logs 5 years (bodies to template ID after 30 days), ledger and audit 7 years, scrubbed job text 3 years.
+- D-026 (privacy) The read-back on masked calls happens only from a phone linked to a business with a confirmed, paid pick (or free win) for that job, after a key press.
+- D-074 (privacy) The owner's release only completes or re-sends a release for a confirmed paid pick or recorded free win; never otherwise.
+- D-077, D-160, D-231 (privacy) Masked calls use a fixed number pool sized by Casey (starting at 10); the app never buys numbers; sharing uses PIN routing, with one pool alert open at a time.
+- D-078 (privacy) A blocked caller hears the PIN prompt; the business is told how to link the phone (now by email, D-311).
+- D-079 (privacy) At purge name, address, email and photos go; the phone stays encrypted only with its consent and opt-out records, for those uses only.
+- D-093 (privacy) The vault holds homeowner message text only; raw text is seen only by `privacy::read_inbound`, which stores, matches emergency and keyword words and returns flags plus scrubbed text; business quotes stay in quotes.
+- D-203, D-217 (privacy) TERMS-021: a business data page, English and Spanish: what is kept and how long, no call recordings, data to others only by legal demand, which the business is told of unless forbidden.
+- D-214 (privacy) WORD-018: the homeowner's number is never given to a business; PRIV-011 delete wording; TERMS-008 says no AI reads messages while AI-008 holds; TERMS-023 homeowner data page.
+- D-215 (privacy) TERMS-024: businesses use homeowner details only for this job; no marketing lists or resale; PROBLEM reports a breach.
+- D-296 (privacy) CALL-021: masked calls use standard programmable voice, never a beta or no-SLA masking product.
+- D-299 (privacy) TERMS-025: one plain sharing sentence: scrubbed description to businesses; first name and address only to the business that confirms and pays; never the phone number.
+- D-306 (privacy) TXT-036: no text to anyone but the homeowner carries homeowner name, address, email, on-site contact or photo link; the release goes by portal and email only.
+- D-383 (privacy) PRIV-014: every photo is re-encoded with all metadata stripped before storage, screening, AI or cards; the original bytes are never stored.
+- D-443 (privacy) PICK-049: her required share box releases first name and job address only once the business accepts and pays; WORD-026: business copy never says "lead", "unlock", "buy" or "customer data".
+- D-454 (privacy) Release emails carry no homeowner detail (portal only); PRIV-023 photos app-encrypted behind short-lived signed links; SEC-034 detail pages `no-store`, no third-party script, no detail in URLs or subjects.
+- D-492 (privacy) No consent, sharing, charge or feedback box starts ticked; each terms acceptance is recorded with version and text hash; photos in Backblaze B2; "Download my data" answered in 30 days.
+- D-689 (privacy) Logs are JSON with the route template, never the URI; `Redacted<T>` hides values; Sentry sends no PII and scrubs emails and digit runs.
+- D-726 (privacy) Stored objects are write-once with safe names (a different put is `ObjectExists`, D-728); Phase 2's B2 key is write-only.
+- D-749, D-752, D-753 (privacy) Vault fields are AES-GCM sealed per row and column, keys versioned; reads only by grant (`picks` never the phone), never in a transaction, audited first; a `ReleaseProof` opens one named contact once.
+- D-750 (privacy) Vault reads above 3 times the hourly mean (floor 1) raise one High alert; an unregistered reader or purpose is refused with a High alert.
+- D-801 (privacy) The inbound reader returns flags and scrubbed text only, never raw text or the sender's address.
+- D-849 (privacy) `send` reads a homeowner's phone from the vault; a row goes only to its stored recipient kind.
+
+## Texting and email
+
+- D-003, D-004, D-085 (texting) Non-urgent texts only 8 a.m. to 8 p.m. in both Arizona and area-code time (v9.3 exceptions stay); business hours are 8 a.m. to 8 p.m. Arizona daily; a business may narrow but never widen its window.
+- D-005, D-129 (texting) An opt-out stops all texts and changes no job status; sole CANCEL or CANCELAR on a live job also pauses it ("paused by the homeowner") and tells them how to close (CON-028, CON-029).
+- D-006 (texting) Natural-language opt-outs are honored; an opt-out word used in another sense is not an opt-out.
+- D-008 (texting) The consent text is the first message on every path, except that an emergency's safety text goes first and consent right after.
+- D-012, D-158 (texting) At most one quote-count update per job every 3 hours (a setting); held updates merge into one at the next window.
+- D-020 (texting) Spanish single-word opt-outs are parar, alto, cancelar, baja, kept in settings.
+- D-022, D-289 (texting) HELP gets the help email and help page, says the texting number is text-only and gives no voice number; the next message after HELP is queued for the owner.
+- D-053 (texting) No text goes to an opted-out number until it texts START; after START it is a new request starting with consent.
+- D-054, D-136 (texting) On a homeowner-chosen emergency job, cards, confirm requests, pick, confirm, connect and quote texts may go at night, only to after-hours businesses; other texts keep quiet hours.
+- D-065, D-066 (texting) Spanish when the first message reads as Spanish, else English; a sole AYUDA gets the Spanish HELP reply.
+- D-088, D-305 (texting) Twilio registration: Customer Care, Low-Volume Standard; Casey first sends Twilio the written eligibility question and waits for the answer (TERMS-014).
+- D-100, D-139 (texting) Only US and Canadian area codes in the quiet-hours table are texted or called; every code has a zone; other numbers are refused with a message to use email.
+- D-130 (texting) The provider's auto-reply handles its own opt-out keywords with CON-009 wording; the app confirms only other words, so one confirmation goes (CON-030).
+- D-131 (texting) A first message that is only HELP, INFO or AYUDA gets the HELP reply; "help" inside a request gets the consent text; opted-out numbers still get HELP replies.
+- D-132 (texting) A business-intent first message gets one text with the business sign-up link and opens no job; the AI second opinion runs only on would-be new requests.
+- D-144 (texting) While texting is off, an emergency message raises a critical alert and gets the safety text by email and web chat; every business notice also shows in the portal.
+- D-174, D-266, D-293 (texting) TXT-026: a business with a released job and no call attempt is reminded at 24 and 48 hours; calls only inside the homeowner's window; homeowner times say "Arizona time" (TXT-033); TIMES changes the window.
+- D-206, D-210, D-275 (texting) TXT-024: one automated safety voice call for a homeowner's own emergency message during a suspension, behind a setting off by default until a TCPA attorney approves in writing.
+- D-211 (texting) OPS-028: a critical alert is auto-acknowledged when the safety voice call was answered by a person; otherwise it pushes.
+- D-213, D-339 (texting) TXT-027: the who's-calling text names the business, masked number and call window and advises a written price and no full upfront payment; an email-contact variant.
+- D-226 (texting) Call-backs for homeowners unreachable by text or email are due within 24 hours (urgent) or 4 days; an opted-out homeowner writing without START is emailed or listed, no call-back.
+- D-227 (texting) CALL-020: callers to the texting number hear a recorded greeting; no voicemail, recording or ring-through.
+- D-228 (texting) BIZ-032: business replies get an automatic reply with the portal link; questions and charge words also go to Casey.
+- D-290, D-338 (texting) TXT-016: the first-quote text gives the LIST option before the quote-page link; PICK-015 accepts "<n> SI".
+- D-297 (texting) TXT-021, TXT-034: every step can be done by web chat, quote page, portal and email alone; every journey has a zero-texts test; web chat always available.
+- D-298 (texting) CON-032: before Gate C a build-time check confirms the opt-out rules meet the FCC rule, re-checked and logged.
+- D-303 (texting) TXT-035 Option A: per-audience channels; homeowners SMS; business texting off by default until Casey files Twilio's written answer and a separate business campaign is registered.
+- D-304 (texting) TERMS-011, TERMS-013: the homeowner campaign covers homeowner texts only; a test fails if any business template could be sent from it.
+- D-313 (texting) TXT-038: every pick, identity and sign-in code goes only through Twilio Verify, never the outbox.
+- D-315 (texting) CON-033: toll-free verification for the homeowner stream only with Casey's go and only after a refused registration.
+- D-340 (texting) TXT-032: when the card went to 1 or 2 businesses, the first text warns quotes may be slow or may not come.
+- D-344 (texting) No automated call is ever placed to a business phone (BIZ-039); CON-019 asks no call consent; the contact card lists only the masked pool numbers.
+- D-366 (texting) No call of any kind to a business: Verify voice for businesses is withdrawn; codes go by text or the person's sign-in email; a homeowner gets a voice code only on request; HELP keeps "replies within 2 days".
+- D-372 (texting) CON-035: every revocation channel feeds one suppression list checked before every text and automated call (within 10 business days); only START re-subscribes; PARAR, ALTO, CANCELAR, BAJA opt out.
+- D-384 (texting) The safety voice call stays off until CALL-022's six conditions are built and tested; WEB-026: homeowner pages state the $25, $75 or $199 fee the business pays.
+- D-385 (texting) SEC-028 email footer (LLC postal address, never a home; manage link; no promotions); INT-038 under-18 senders refused, under-13 data deleted; code calls read the main number; no announcement on bridged calls.
+- D-397 (texting) TXT-032: "Sent to N" counts businesses whose card notice was accepted, minus all-hard-bounced; the first text adds "Not every business answers."
+- D-413 (texting) CALL-024: masked pool numbers get SHAKEN/STIR A attestation, the caller name where allowed and carrier-reputation registration.
+- D-419, D-423 (texting) Her first inbound text or web-chat start is the opt-in, no OK reply; the short consent reply (STOP, HELP, Terms, Privacy) goes first; a web-chat phone is texted only after a Verify code.
+- D-427 (texting) TXT-039: English-only conversations at launch; Spanish safety texts, AYUDA and opt-out replies stay on, back-translation-checked; Spanish turns on only after a recorded paid review.
+- D-438 (texting) TXT-040: update texts are short plus her portal link; the portal holds quotes, license numbers, record and review links (links only, no stars or ranking) and the fee line.
+- D-461 (texting) TXT-042 one "All quotes are in" text; JOB-012 one closing note; both follow quiet hours (held, never dropped) and have Spanish templates.
+- D-703 (texting) Twilio mode is `live` in live and `stand_in` or `sandbox` elsewhere; masked calls dial only from the configured pool; a failure is `NotSent` or `OutcomeUnknown`.
+- D-759, D-761 (texting) Templates are keyed by ID with audience, segments and `{name}` text, Spanish `draft`, each starting with the brand prefix; counted segments may not exceed the recorded value.
+- D-760 (texting) Spanish goes to a Spanish speaker only while the setting is on, or for `spanish_stays_on` texts (911, HELP, opt-out confirmation).
+- D-762 (texting) `test_template_scan.py` bans emoji, off-domain links, shorteners, promotion and warranty wording and "reply CANCEL".
+- D-764, D-767 (texting) A hold ends at the earliest 08:00 in Arizona or the recipient's zone when both are open; emails go by the +1 area code too; `decide` runs per channel.
+- D-765 (texting) A multi-zone area code must be open in every zone; an unknown code is refused; check `area_codes.json` against NANPA before Gate C.
+- D-766 (texting) Any hour: 911, keyword replies, pick codes, after-hours notice; direct replies within 15 h; quotes and pick steps only for emergencies; night cards only by email, for an opted-in emergency.
+- D-768 (texting) Held updates merge per job and recipient; a held text for a closed job drops unless it announces the close.
+- D-802, D-804 (texting) Inbound email: Svix-signed within 300 s; a sender failing SPF, DKIM or DMARC can only opt out; an opt-out is a sole word or first line.
+- D-846 (texting) A past customer is texted only after she writes following the close.
+- D-847, D-850 (texting) The outbox re-derives each key from stored IDs; a `sent` row is never resent and its body is cleared; verify Twilio idempotency before Gate C.
+- D-861, D-863 (texting) Webhooks dedupe in the effect's transaction; delivery status folds by rank so a late earlier status never wins.
+- D-866, D-870 (texting) One opt-out confirmation per listing, only with no provider STOP reply, within 5 min; only the provider's START resubscribes; an emergency in an opt-out raises a critical alert.
+- D-867 (texting) Every send goes through `send_checked`: a listed number is refused; a 21610 lists it and blocks the row.
+- D-868 (texting) Opt-out word lists are code constants equal to the provider file; a new word changes both.
+- D-887, D-888, D-889, D-890 (texting) HELP has away and Canadian-roaming variants, all sent as `help_reply`; no voice number yet; START gets no app text.
+- D-907 (texting) `consent_safety_call` is used only while the safety voice call setting is on; `who_is_this` is CON-027's line.
+
+## AI
+
+- D-040 (ai) The real AI is tested in Phase 2 step 5 from the Railway test project, fake data only.
+- D-373, D-430, D-445 (ai) AI-019: with AI on, AI may word bank questions and write the card she approves; never diagnoses, prices, judges safety or recommends; outputs checked, template fallback; quote summaries off; AI-018 one AI description.
+- D-412 (ai) AI may run on scrubbed text before zero retention once the account checklist records the API terms and the policy says so, behind an owner switch off by default; photos go to AI only after zero retention.
+- D-559 (ai) `schemas/intake_reading.json`: closed, all-required fields (trade, job type, confidences, emergency, urgent, language, major, missing_info), no rental; trade and job type checked in code.
+- D-810, D-814 (ai) No retry without `retry-after`; a 400 alerts as a spend limit; AI text is normalized then screened; `missing_info` (at most 8) is never sent.
+- D-811 (ai) Defaults: 20 s timeout, 2,000 calls a day, `claude-haiku-5-5`; length caps 320, 1,200, 4,000; AI alerts are High, once a day per kind.
+- D-812 (ai) The request sends `schemas/intake_reading.json` exactly; a schema the API refuses changes only by logged plan change.
+- D-841 (ai) In live the AI runs only with zero retention signed or the switch on with every AI-008 condition met, checked on each call; else keyword-only.
+- D-842, D-843 (ai) `ai.reading` has no text column; trade and job type go only off-database as code names; the weekly summary is code-built counts.
+
+## Pages and accessibility
+
+- D-041 (pages) The Stage 0.5 publication puts every public page live as static pages with "requests open soon"; no texting number shown and nothing takes requests before Gate C.
+- D-180 (pages) WEB-019: the business page, sign-up and business-terms summary exist in Spanish, marked for native review.
+- D-249 (pages) WEB-020 adds the city-license guide to handyman and no-license sample cards, a solo-worker safety tip and a waiting count for coming-later trades.
+- D-317 (pages) A11Y-023: action pages and their emails meet A11Y-001 to A11Y-019: link text names action and job, plain-text part, end times not countdowns, each action shows what it will do first.
+- D-379 (pages) A11Y-020: the accessibility statement offers text, email or the help form, never a phone line.
+- D-409 (pages) WEB-021/022 "Who runs" blocks link the LLC's ACC record and city license number from settings (omitted while empty); never a personal name online.
+- D-451 (pages) The look follows `docs/design/DESIGN_SPEC.md` ("wall and paper", one brass primary button, self-hosted fonts); wording and numbers come only from `docs/spec/`.
+- D-466 (pages) JOB-017 an unticked box lets feedback show with first name and town (no reward); WEB-028 computed home-page numbers; PICK-054 "Add to contacts", never in a text.
+
+## Security
+
+- D-014 (security) Businesses sign in by single-use emailed link plus a code on a new device (30-day sessions); the owner by argon2id password plus passkey or TOTP (12 hours max); homeowners by phone code, 30 days per device.
+- D-015 (security) The pick-code cooldown is 15 minutes.
+- D-050 (security) Without texting the pick code goes by email only to an address the homeowner gave in their own conversation, never one typed on the quote page.
+- D-098 (security) The owner registers passkeys or TOTP, at least two in total, plus offline recovery codes.
+- D-099 (security) ASVS 5.0.0 at section level; cookies `__Host-`, Secure, HttpOnly, SameSite=Lax; accepted deviations R1, R2 and R11 in the threat model.
+- D-125 (security) `scripts/pii_scan.py` fails on real-looking phones, unfaked street names, real names in name fields and vendor-key shapes; findings print path, line and rule, never the match.
+- D-318 (security) SEC-025: business email from a dedicated sending subdomain via the email adapter, SPF and DKIM aligned, DMARC moving to reject before real mail, no tracking; SEC-024 address changes need a verified owner session.
+- D-480 (security) ASVS L2 gaps became SEC-035 to 048, PRIV-024 to 030 and others: HEIC uploads refused, HELP notification bodies scrubbed, text picks never auto-charge.
+- D-652, D-653 (security) Images are digest-pinned, run as user 10001 and build without cargo features (`image_pinned.rs`).
+- D-688, D-690 (security) `ASKHAVA_APP_ENV` is dev, ci, test or live; vendor IDs are checked against test and live allow-lists; live keys are refused outside live, test keys in live.
+- D-693 (security) `Ci` pins images by digest, actions by commit SHA and tool downloads by SHA-256.
+- D-700 (security) `server migrate` uses only `ASKHAVA_MIGRATION_DATABASE_URL`.
+- D-709 (security) Rate limits never key on a plaintext contact; the client IP is the edge header or the peer, never `X-Forwarded-For`.
+- D-724, D-727 (security) Supplied URLs are fetched only by `fetch_untrusted`: https to listed hosts, public pinned addresses, at most 3 checked redirects, size and time caps, no proxy.
+- D-739, D-742 (security) The test-control router exists only in a `test-control` build, refuses test and live, and answers 404 without its bearer secret.
+- D-815, D-819 (security) Card, quote and pick IDs are HMAC over the secret version and record IDs, pinned at creation; link tokens are salted 256-bit, stored as SHA-256.
+- D-820, D-822 (security) Webhooks pass `verify_webhook` (HMAC, 300 s) before any module; a refusal is 403 with one log line; Stripe sources must be on the compiled IP list.
+- D-943, D-945 (security) `__Host-` session cookies hold a hashed random token, replaced at login; CSRF tokens derive from it; cross-site writes are refused; SEC-048 alerts once per kind per hour.
+- D-944 (security) One outermost middleware sets the security headers (CSP `'self'`); only a confirm page may load `js.stripe.com`.
+
+## Operations
+
+- D-016, D-200, D-222, D-280 (ops) Complaints: 3 in 90 days pauses; each shows in the portal with a 5-day reply box; digest-only unless 2+ in 90 days or a safety word, which alerts at once; TXT-029 PROBLEM reply.
+- D-024 (ops) Hosting: Railway Pro if it has point-in-time recovery, else Render; no backup person.
+- D-075, D-278 (ops) Safe mode starts only when a High alert that pushed is unacknowledged 24 hours after its push; delivery alerts and failed test restores never start it.
+- D-087 (ops) The DNS record set keeps any existing google-site-verification record.
+- D-133 (ops) Safe mode pauses charges and releases only; texts keep going; each paused item goes ahead after FEE-017's check (OPS-024).
+- D-134, D-163 (ops) The delivery alert fires under 90% of the last 50 or 95% of the last 200 texts; one open at a time; recovery and auto-acknowledgement at 97% of 200.
+- D-156 (ops) Before every send a replay checks Twilio's sent log for the message's derived key and skips texts already sent (OPS-017).
+- D-207 (ops) OPS-026: an owner "away until <date>" setting tells businesses when reviews will be answered; no timer changes.
+- D-218 (ops) OPS-029: Casey works a weekly window plus a mid-week check; only four things push to his phone; only critical alerts break Do Not Disturb.
+- D-219 (ops) OPS-030: a weekly digest email of activations, auto-cleared alerts, pauses, complaints and the rest, never homeowner contact details.
+- D-220 (ops) OPS-023: Stripe, webhook, health and ledger alerts clear and acknowledge automatically when the condition ends, logged in the digest.
+- D-221 (ops) OPS-009: a monthly spot check of 10 random cards; flags shown in the monthly review; LIC-023 blocks alone.
+- D-232 (ops) OPS-013: the test-restore result is in the digest; a failed restore raises a High alert.
+- D-277 (ops) OPS-032: at 9 a.m. and 3 p.m. one push lists open urgent call-backs, urgent HELP, safety complaints, Twilio restored and long list failures; never breaks Do Not Disturb.
+- D-279 (ops) OPS-033: the weekly window and mid-week check are at most 4 days apart; the host restarts the app on a failed health check.
+- D-314 (ops) OPS-035: alerts to Casey go as email to his alert address, never a text; a critical safety alert also places one automated call to him.
+- D-348 (ops) OPS-036: each help request sends one email notification to the alert address at once, with a link to an owner-portal page to fix and reply.
+- D-381 (ops) OPS-004 email-limit alert at 70% daily or 80% monthly, pushed once a day; OPS-038 above 90% bulk emails wait; a limit-refused email is queued, never dropped; "sent" windows start on actual send.
+- D-458 (ops) OPS-039 adds requests by source, paid introductions against 15 / 50 / 115 a month, net per introduction, intake drop-off, activation time, leave reasons and Casey's minutes.
+- D-699 (ops) Role timeouts: app statement 15 s, lock 10 s, idle in transaction 30 s; migrator lock 10 s, idle 60 s.
+- D-708, D-710 (ops) `core.task`: IDs-only payloads, 5 attempts, owner-and-attempt fence, backoff to 1 h, 2-minute timeout; `Worker::run` runs 4 at once and drains 20 s on shutdown.
+- D-729 (ops) `ops.audit_log` is append-only, IDs and code names only, written in the caller's transaction; pause switches log history and audit.
+- D-734, D-735, D-737 (ops) Audit rows, request lines and AI readings stream off-database by a task queued in the writing transaction; the audit copy is hash-chained and checked nightly; request lines never delay a response.
+
+## Code and architecture
+
+- D-036 (code) `scripts/check_catalog.py` restates the fee rules, recomputes the worked examples and scans the catalog for superseded values and banned words.
+- D-090 (code) A shared kernel `core` owns only the task queue, timers and rate limits; everything else stays in the business modules.
+- D-091 (code) One Postgres schema per module; modules use only lower layers' public API; cross-module signals are task events carrying IDs only.
+- D-092 (code) Two database roles: a migration owner and an app role with no UPDATE or DELETE on append-only tables.
+- D-096 (code) Pins: newest stable release 14 days before K4 unless an audit finding forces later.
+- D-097 (code) The new-library entries of the Python plan (purpose and license each); see the log.
+- D-453 (code) Rust for all server code (Axum, Askama, SQLx), one crate per module, `unsafe_code` forbidden; release needs a `ReleaseProof` only `payments` makes; exhaustive status enums; Python only for tooling, stand-ins, twin.
+- D-473 (code) `docs/code-docs.md`: `//!` on every file, `///` on public items (`missing_docs` denied), requirement IDs on rule code, a guide per crate; `check_code_docs.py` enforces it.
+- D-481 (code) Unit tests live in each crate's `src/tests/`; `lib.rs` exposes `pub mod api` with `api::rules`; `ReleaseMint` is made once in `server` for `payments`; `thiserror`, no anyhow; one `status.rs` per crate; no `|safe`.
+- D-482 (code) One Intake -> Not covered transition; `ops` stores IDs only, `messaging` sends; help text lives in `privacy`; copy sentences 15 words or fewer, never over 20, spec-fixed ones exempt.
+- D-484 (code) Each crate's `lib.rs` and `api.rs` are shared paths; packages are `askhava-<module>`; ownership is read from the base `kit/tasks.json`; gate phrases match whole words.
+- D-488 (code) The recovery test crate is `askhava-recovery-tests`; `sqlx.toml` maps `TIMESTAMPTZ` to jiff; `payments` may call `privacy`; one `release_mint()` per process plus a source scan.
+- D-491 (code) Shared paths: `en.json`/`es.json` (own keys), every `status.rs` and `askama.toml`, `worker.rs`, `kit/prompts/`; `payments` emails only through a `core.task` event; the push app is not built in the pilot.
+- D-493 (code) No task owns a path in `app/<crate>/` before that crate's `Cargo.toml` (V12); `settings.rs` is shared; the AI schema is `schemas/intake_reading.json`; storage stands in as `file://`.
+- D-585 (code) Rust 1.99.0; lints forbid `unsafe_code` and deny missing docs, functions over 50 lines and nesting over 4; crates pinned exactly.
+- D-586, D-587 (code) New-library entries for `rustls` and `toml`; see the log.
+- D-590, D-591, D-852 (code) `check_rust_rules.py` fails status-enum catch-alls, imports, comparisons and `matches!` outside the module, and unescaped templates; no `String` status field.
+- D-595 (code) Only `adapters`, `payments` and `server` may name the payments adapter.
+- D-596 (code) Every adapter trait method takes an idempotency key unless named `fetch_`, `get_`, `list_`, `read_`, `check_` or `lookup_`.
+- D-597 (code) Test-layer crates never depend on `server` or each other (`askhava-fixtures` aside); only `core` may have optional dependencies.
+- D-600 (code) Migrations are forward-only `0NNN_<slug>.sql` headed `-- <module> (T###)`; no SQL names another module's schema; no dynamic queries.
+- D-698, D-701 (code) Every GRANT is a plain statement after a `DO` check that fails on a missing role, never `IF EXISTS`.
+- D-725 (code) Vendor clients share one base: parsed base URL, encoded segments, no redirects, 15 s timeout; each consuming task adds its own `ASKHAVA_*` keys.
+
+## Testing
+
+- D-101 (testing) TD entries per behavior, boundary, failure or invariant, covering every requirement ID; time windows include the start and exclude the end; "within N" means less than N.
+- D-106 (testing) The homeowner's own answer decides; the Twin gate waives such an instance only with per-instance evidence under a per-scenario ceiling.
+- D-107 (testing) `twin/gate.py` runs every `_fixed` scenario with seeds 1 to 5 and fails on any check not waived in `twin/waivers.json`; v9.1 scenarios are a negative control only.
+- D-109 (testing) One fake-data generator: 555-01xx phones in table area codes, example.com emails, fake streets and names, sentinel values; the PII scanner allows its patterns, never the path.
+- D-110 (testing) `docs/catalog/matching_examples.yaml` is written and checked before routing code; app matching tests and the Twin's license table check against it.
+- D-113 (testing) Named mutants and coverage floors come from one harness task per stage with mutation targets, Opus reviewed.
+- D-124 (testing) Vendor stand-ins are in-process fakes from each vendor's public API (Twilio, Stripe and others) returning the vendor's envelope.
+- D-162 (testing) Spec lines change first, then tests (TD-CON-05, TD-OPS-01, J3 and the new entries the log lists).
+- D-167, D-168 (testing) Sessions have no Docker, so stripe-mock runs only in CI; Playwright uses the pre-installed Chromium; Ally runs in GitHub Actions.
+- D-506 (testing) `matching_examples.yaml` holds M01 to M16, an oracle written apart from routing code; `check_catalog.py` checks it but never derives `no_card`.
+- D-520 (testing) A task changing pinned twin behaviour may edit `tests/twin/test_gate.py` only to move pins, never to weaken it, naming each moved pin.
+- D-521 (testing) `intake_golden.yaml`: 8 to 12 rows per open trade, at least a quarter Spanish, checked against the catalog and PII-scanned.
+- D-541 (testing) The twin's license oracle is generated from the catalog only; `twin/gate.py` exits 2 on a hand edit or disagreement with the matching examples.
+- D-544 (testing) After stage 1 the twin has no pins, only class waivers with committed evidence predicates and ceilings.
+- D-557, D-561 (testing) `stand_ins/server.py` serves each vendor under a prefix with its own paths and errors; only stand-in credentials pass; vendor-side events use `/_stand_in/` paths.
+- D-558, D-560 (testing) The fake Twilio records `X-Askhava-Message-Key`; `stand_ins/provider_optout.json` holds CON-030's words and replies; headers select AI faults and plants.
+- D-647 (testing) `askhava-fixtures` makes deterministic fake data and never yields the sentinels ("Zelda Canary", `+19285550199`), so any find is a leak.
+- D-694 (testing) `Ci` needs Checks and Coverage; floors of 95 for payments, fee rules, privacy and licensing; lowering a floor needs a decision naming it.
+- D-740 (testing) The test-control clock is system time plus a forward-only offset shared through a clock file.
+- D-741 (testing) Root TypeScript tooling is pinned and strict; specs import `test` from `tests/e2e/fixtures.ts`.
+
+## Runner and governance
+
+- D-001 (runner) Requirements are one testable sentence each with a stable area-prefixed ID and `path:LINE` citations, checked by `scripts/trace_spec.py`.
+- D-002 (runner) K2 was written in one session, with the traceability script as the check.
+- D-038 (runner) Conflicts are decided and logged, not asked of Casey.
+- D-039 (runner) Required checks use the brief's names and mechanism: Ci, Twin, Ally.
+- D-067 (runner) Spanish native review is a Gate C account-checklist item, not a build stop.
+- D-111 (runner) Every task in `kit/tasks.json` carries the full field set; the validator fails on malformed tasks, cycles and any uncovered requirement or TD entry.
+- D-112 (runner) Stage 2 builds list imports, business records, portal security and the quote page; stage 4 keeps sign-up, portals and calls; the twin links to app rules at the end of stage 3.
+- D-114 (runner) Each vendor-sandbox task and the ZAP task is a harness task with an Opus review.
+- D-115 (runner) Every task whose review areas include money, privacy, security or recovery runs on Opus with an Opus reviewer; the validator fails otherwise.
+- D-116 (runner) Owner gates are `gate` tasks: account checkpoint, Stage 0.5 go, conditional real texts, finished, Gate B, Gate C, first live charge.
+- D-117 (runner) Coverage is checked against TD entries and journeys J1 to J4; task IDs have three digits.
+- D-118 (runner) The decision, architecture and review files are shared paths outside the ownership check; the kit's own tests are protected.
+- D-119 (runner) Task limits: 14 owned paths, 14 files and 800 changed lines, 25 requirement IDs, 6 test entries, context at most 20%.
+- D-120 (runner) After Gate P shifted the brief, every later `BUILD_BRIEF.md` citation in `kit/tasks.json` moved by one line and prompts were regenerated.
+- D-121 (runner) The runner is pure Python over the real `kit/state.json` shape; inbox answers are recorded and pushed before moving to done.
+- D-122, D-170 (runner) The model check reads `message.model` from the worker transcript; the worker call takes short names and the transcript's full ID decides.
+- D-123 (runner) A gate clears only on the quoted phrase in its resume text, else a whole-word go, yes, approved or done.
+- D-126 (runner) A waiting owner gate holds only its dependents; Gate P holds every task.
+- D-161 (runner) TERMS-017 is unused and never reused.
+- D-166 (runner) The runner runs build prompts itself; practice tasks P1 to P3 proved pass, fail and resume paths.
+- D-169 (runner) The hourly routine carries the chain; about one task an hour until a merge trigger is confirmed.
+- D-171 (runner) One scheduler routine; a live lease naming another session means stop.
+- D-302, D-322, D-343, D-355 (runner) Legal, tax, insurance, Twilio, TCPA, email-records and verification items go to Casey in `docs/for-casey-review.md`.
+- D-370, D-388, D-391, D-408, D-424 (runner) Casey's open items (Stripe and Twilio questions, tax path, arbitration, LLC filing) live in `docs/for-casey-review.md`; the questions describe the email-only business model.
+- D-387, D-428 (runner) Fix-round test rows go one per change to the owning task; `trace_spec.py` bans "connect you with" and "referral network/service"; `check_catalog.py` holds the legal holds.
+- D-416, D-449 (runner) `docs/PREBUILD.md` is the one pre-build list, updated by every change; a closed item reopens only with new evidence named there.
+- D-450 (runner) `docs/constitution.md` follows later reversals; protected source lines stay unedited and the decisions superseding them govern.
+- D-472, D-552, D-553 (runner) Coverage floors (T169) land before money and vault code; nightly cargo-mutants; the real-texts gate clears on a short yes or no, and only yes allows real texts.
+- D-476 (runner) `scripts/smoke.sh` runs the `Ci` checks locally with a fresh local Postgres password each run; `/target/` and `node_modules/` are ignored.
+- D-479 (runner) `docs/governance.md`: `kit/plan.lock` fingerprints the locked blueprint; `check_pr_change.py` enforces task paths and append-only decisions; progress counts verified requirements; gates clear only on unnegated replies.
+- D-483 (runner) The Actions runner is primary; Opus writes money, privacy, security and recovery app code; OPS-043: live deploys only a commit Casey names after an Opus security review.
+- D-485 (runner) Prompts paste requirement text with byte-based budgets (cap 20%, harness 30%); build tasks at most 10 paths, 600 lines, 12 requirements; photos in object storage, only the key in `privacy.photo`.
+- D-486 (runner) `python3 -m runner` runs one cycle; the `claude/lease` ref is the lock; only the reviewed head auto-merges; red `main` is a revert-first FIX-MAIN; `stage_exit.py` gates stages; pacing waits for limits.
+- D-487 (runner) Locked `docs/brains/` files give sourced expertise; prompts paste their checklists; a brain never outranks the spec and its proposals need an adopting decision.
+- D-489 (runner) `Ci` runs Rust and TypeScript steps only when their paths change; document checks, gitleaks, PII and governance always run; one task at a time.
+- D-494 (runner) `protect-main` requires `Governance` and up-to-date branches; `claude/kit-state` blocks deletion and force-push; the setup token never passes through a session.
+- D-496, D-503, D-510, D-522 (runner) Session tools are allowed up front (deny wins, no `SendMessage`); subagents, the runner and `--after` run in the foreground; a claimed task never handed in is handed in by an always-run step.
+- D-497, D-498, D-501 (runner) Gate ids match case-insensitively; a smoke red counts only when the head's checks agree (at most twice per head); a false red is withdrawn; the backup job matches `Ci`'s environment.
+- D-499, D-502 (runner) Each cycle logs to `kit/runner_log.jsonl` (last 200); check-run reads use `RUNNER_CHECKS_TOKEN`, never in argv or logs.
+- D-500, D-505, D-508 (runner) Cycles chain on `ci` for task branches and by `gh workflow run`, never without progress; `allowed_bots` admits the App and `github-actions`; the lease keeps one cycle at a time.
+- D-509, D-519, D-540 (runner) Pushes and remote git and gh calls try `RUNNER_PUSH_TOKEN` first through the environment only, falling back to the App token.
+- D-512 (runner) Every task PR merges on its own after the Opus review and `Ci`, `Twin`, `Ally`, `Governance`; no code-owner review.
+- D-513, D-583, D-584 (runner) The runner prepares each attempt's branch (continued with `main` merged in, else fresh `-a<n>`); a non-fast-forward push fails the attempt, other rejected pushes BLOCK; only a reviewed head, or exactly it plus `main`, merges.
+- D-514 (runner) `actions/cache` keeps cargo, tools and `target/` keyed on toolchain and `Cargo.lock`; every check still runs.
+- D-515, D-646 (runner) `lanes` is 2 (D-646); `leases` per lane mirror `lease`, written only through `with_lease`; `update_state` retries lost races only while the lane is held.
+- D-518 (runner) The hourly tick only dispatches `backup-runner.yml`.
+- D-524 (runner) Pacing budget 30M weighted tokens per five hours, 500M per week; real limits still wait for the reset.
+- D-530 (runner) Decision numbers come in reserved blocks of five per claim; `check_pr_change.py` fails duplicates; `docs/decisions.md` merges by union.
+- D-551 (runner) Only a cleanup task may hand in no commits; the runner records stage 1's proof itself from checked results.
+- D-582 (runner) gitleaks runs with `--verbose --redact` in `Ci` and smoke; a failed check's retry log carries the failed step and a masked excerpt.
+- D-620, D-630 (runner) Tasks in flight never share an owned path or stage; cleanup runs alone; FIX-MAIN has a reserved lane; update merges are exactly reviewed work plus `main`; two strikes fall back to one lane.
+- D-677 (runner) `--requeue T### --plan-fix D-###` gives a capped BLOCKED task one Opus attempt per plan change that lists the decision and changed its entry or prompt.
+- D-723 (runner) A merged pull request's run serves its lane; runs that move a task refill free lanes.
+- D-794 (runner) `tests/test_workflow_shell.py` runs `bash -n` on every workflow `run:` step.
+- D-891 (runner) Pure insertions in shared docs and `Cargo.toml` merge mechanically; other conflicts go to a reviewed worker resync on the same attempt (at most 2).
+- D-930 (runner) Decision IDs parse as three or more digits.
+
+## Superseded
+
+- D-021 -> D-419
+- D-025 -> D-139
+- D-048 -> D-141
+- D-051 -> D-419
+- D-052 -> D-419
+- D-060 -> D-145
+- D-062 -> D-311
+- D-076 -> D-218
+- D-080 -> D-412
+- D-094 -> D-492
+- D-108 -> D-472
+- D-127 -> D-419
+- D-148 -> D-365
+- D-155 -> D-437
+- D-178 -> D-344
+- D-182 -> D-402
+- D-183 -> D-349
+- D-187 -> D-312
+- D-192 -> D-345
+- D-209 -> D-436
+- D-212 -> D-440
+- D-216 -> D-437
+- D-224 -> D-349
+- D-234 -> D-438
+- D-235 -> D-440
+- D-237 -> D-419
+- D-242 -> D-402
+- D-272 -> D-436
+- D-273 -> D-436
+- D-274 -> D-436
+- D-276 -> D-436
+- D-291 -> D-440
+- D-294 -> D-440
+- D-295 -> D-358
+- D-310 -> D-344
+- D-316 -> D-344
+- D-319 -> D-344
+- D-320 -> D-491
+- D-323 -> D-344
+- D-326 -> D-436
+- D-327 -> D-344
+- D-334 -> D-344
+- D-335 -> D-344
+- D-337 -> D-349
+- D-341 -> D-491
+- D-350 -> D-436
+- D-351 -> D-381
+- D-353 -> D-491
+- D-364 -> D-436
+- D-368 -> D-491
+- D-371 -> D-419
+- D-398 -> D-419
+- D-410 -> D-444
+- D-411 -> D-436
+- D-415 -> D-491
+- D-422 -> D-460
+- D-448 -> D-491
+- D-455 -> D-495
+- D-511 -> D-512
+
+## Task-scoped
+
+- T004: D-507
+- T005: D-517
+- T006: D-525
+- T007: D-542, D-543, D-545
+- T009: D-588
+- T014: D-816, D-817, D-818
+- T017: D-736
+- T018: D-821
+- T020: D-743
+- T021: D-746
+- T022: D-751
+- T024: D-840
+- T026: D-763
+- T028: D-848
+- T029: D-869
+- T031: D-808, D-809
+- T032: D-873, D-875
+- T034: D-858, D-860, D-886
+- T036: D-904, D-932
+- T168: D-621
+- T172: D-516
+- T178: D-862
+- T179: D-853
+- T217: D-795

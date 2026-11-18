@@ -2,6 +2,13 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Texting opt-outs: the 5-year cleanup of old numbers now re-checks the opt-out list under a lock (D-4418, November 18)
+
+- **What happened.** The daily cleanup that removes a phone number 5 years after its last message (T563) stopped: it checked whether the number had opted out a moment before removing the phone, so an opt-out in that moment could be missed.
+- **What changed.** A new step (T701) makes every opt-out and the cleanup take the same per-number lock, and the cleanup checks the list again under it before removing the phone. The cleanup never reads a phone number to do this; while a key change is under way it simply keeps phones until it is done.
+- **Worth knowing.** Opt-outs are matched by a coded fingerprint of the number, and those fingerprints are never redone when the fingerprint key is changed (an earlier decision, D-2208, assumed they were). So retiring an old fingerprint key today would quietly drop every opt-out made before the change, and those people could be texted again. A new step (T702) makes the server refuse to start if anyone tries, and the rule is now written into the key-change requirement (PRIV-024). Redoing the fingerprints so an old key can be retired is not designed yet; until then old keys stay in place. To keep the cleanup working through a key change without ever reading a phone number, each kept number's fingerprint is now stored under every key in use (T702). The catch: if a fingerprint key ever leaked, it could not be retired until the redo exists, and every kept number would still carry a fingerprint under it (phone numbers are few enough to guess against a leaked key). **Open item:** designing that redo is what a key-leak response needs; it is not owned by any step yet. Separately, in one rare order (the person opts out at the very moment the cleanup removes a 5-year-silent number) the opt-out still lands and the number is still never texted, but the kept copy of the phone is gone; that copy would matter only to the redo above.
+- **Nothing needs you now.**
+
 ## Business account emails: four of them had no words yet, so the step that sends them now writes them (D-3687, November 14)
 
 - **What happened.** The step that emails businesses about account events (T329) stopped: four of its emails had no words written anywhere (an old address told its notice address changed, the owner told after-hours emergency requests are off, the other addresses told one address is bouncing, and the owner told a team member linked a phone).
@@ -3329,7 +3336,7 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 ## The homeowner's text conversation gets wired past the consent text (D-4360)
 
 - **Today a homeowner who texts us gets the consent text and then nothing.** The pieces for every later question exist (ZIP, trade, "How soon?", emergency or regular, the trade questions, photos, the card she reviews), but nothing calls them, so no job is opened and no business ever gets a card. Six new tasks connect them in the order the spec's "Intake order" table sets (T671 to T676; a re-sent START also picks the conversation back up), ending with the J1 journey test running the real conversation instead of a shortcut.
-- **A trade with fewer than 2 active businesses now takes no requests**, as the spec says: the homeowner gets the "We don't cover <trade> jobs yet" reply and the request is logged as recruiting demand (T679). A trade marked "Coming later" takes no requests either. The minimum of 2 is a fixed value in the code for now; making it a setting you can change waits for a later change, because it touches code another queued task owns.
+- **A trade with no active business takes no requests**: the homeowner gets the "We don't cover <trade> jobs yet" reply and the request is logged as recruiting demand (T679). A trade marked "Coming later" takes no requests either. You set the minimum to 1 on November 18 ("At least one active to open a trade"); T679 built 2 and T710 changes it to 1 (D-4421). You are still alerted when a trade has fewer than 2 active businesses. The minimum is a fixed value in the code for now; making it a setting you can change waits for a later change, because it touches code another queued task owns.
 - **A business that joins, unpauses or ticks a new job type now gets the cards of matching open jobs** (T677).
 - **The after-hours emergency tick is suspended after 2 missed night emergency cards**, as the spec says. To know whether a card was opened, the app now records each card email and when its Quote page was first opened from the email's own link (no tracking pixel) (T678). This also fills the business's notice log page, which was empty.
 - **The homeowner's photo upload page gets served** (T674); it was built but no route served it.
@@ -3345,9 +3352,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **A quote above an R-61 or R-62 project limit is refused with an explanation** (T687).
 - **A call to the Laftly main number hears the greeting with "hang up and call 911"** instead of silence (T688). The accessibility page already promises that message.
 - **Auto-confirm, once you file Stripe's written answer, actually charges a ticked quote picked with a code**, and a business whose tick was voided is told (T689).
-- **Our reading, for your review:** a business on text that replies "YES 1042" gets the Confirm link on that same phone, and the security code the Confirm page asks for also goes to that phone, so whoever holds the phone can confirm and pay. The spec allows this; say if you want the code sent elsewhere (D-4361).
+- **Decided by Fable on November 18 (D-4425):** a business on text that replies "YES 1042" gets the Confirm link on that same phone, and the security code the Confirm page asks for also goes to that phone, so whoever holds the phone can confirm and pay, at every fee size. The one limit: a sign-in that starts from a texted Confirm link lasts 30 minutes instead of 30 days (T714).
 - **Open item:** auto-confirm only works for a pick made with a code on the quote page; no task builds picking from the homeowner portal yet.
-- **Still waiting on you:** who files a complaint about a business (the earlier open question, D-301 item 12); nothing records one until that is decided.
+- **Decided by Fable on November 18 (D-4423):** who files a complaint about a business (the earlier open question, D-301 item 12). You do, with a "Count as a complaint" button on a check-in PROBLEM report (T721 to T713).
 - Nothing new needs you now.
 
 ## A finished task could wait for ever to be merged (D-4392)
@@ -3378,6 +3385,23 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The digest's check can't break other tasks' builds while new decisions keep landing: it runs only on a change to the digest itself.
 - Our choice apart from the digest, which was yours; nothing needs you now.
 
+## Three oversized tasks split, one flaky test made steady (D-4419)
+
+- **The task that lets an emergency job's texts go out at night (T402) needed to read more code than one session holds**, so it is split in two: T704 does the job texts, questions and replies of the request conversation, and T402 then does the pick texts and the replies to a homeowner's own text. Same rule, same tests, just in two steps.
+- **One automatic test that checks Laftly logs a failed license look-up, and never a business's details, failed once at random.** The way the tests listen to the log could miss a line. T705 gives those tests one shared, steadier listener; no test is loosened.
+- **The safe-mode release hold (T408) and the quote-count update texts (T583) each needed more code and tests than one task may hold**, so their builders stopped. T408 needed about 1,140 changed lines against a hard limit of 800; T583 about 600 to 680 against 450 (limit 600).
+- **Fix:** each is split by what it does. T408 becomes three: T706 (the payments check that clears a held release, with its money tests, which can start now), T408 (holding releases while safe mode is on) and T707 (the same hold for an emergency job's address step, plus the checks that a held release goes ahead once only). T583 becomes two: T583 (the update text, at most once per 3 hours, never on a closed or picked job) and T708 (texts held overnight merged into one at 8 a.m., emergency jobs at any hour, and a reviewer-found case where a second quote at night was never told).
+- **The cost we accepted:** a few more tasks; between T408's and T707's merges an emergency job's address step is not yet held by safe mode, and the once-only checks land one task after the code; nothing is live before Gate C. T408 has one try left.
+- Our choice; nothing needs you now.
+
+## Your Nov 18 answers: one business opens a trade, and Fable's two decisions (D-4421, D-4423, D-4425)
+
+- **One active business now opens a trade** (your words: "At least one active to open a trade"). The spec said 2 and the code was built with 2; a small task (T710) changes it to 1. You still get the alert when a town or a requested trade has fewer than 2 active businesses, because that is a warning to you, not a gate.
+- **How a complaint gets filed (Fable, D-4423).** A homeowner's PROBLEM reply is not a complaint by itself. A new owner page, "Problem reports", lists every PROBLEM report from the last 30 days with its words; on each one you can press "Count as a complaint" and pick a kind (no-show, conduct, work or price, safety, other). That records the complaint as the spec already describes: the business sees the kind and date and can reply within 5 days, the homeowner gets the apology text with the business's phone and the state complaint link, and 3 counted complaints in 90 days pause the business. Pressing twice on one job counts once. A PROBLEM with a safety word still reaches your phone at 9 a.m. or 3 p.m. and is never counted unless you press the button. There is no complaint page for homeowners for now.
+- **Limits to know:** the PROBLEM words are kept only 30 days, so a report older than that can no longer be counted. Counting a report that holds a safety word also puts the complaint itself in your next 9 a.m. or 3 p.m. push, as every safety-word complaint does. The homeowner's apology text comes later than the button (T713 is after the Phase 2 texting work), and a business with no main phone on file gets no apology text sent; you get a normal alert instead.
+- **"YES 1042" by text (Fable, D-4425):** accepted as described above, with the 30-minute limit.
+- Nothing needs you now.
+
 ## A request that names no trade waits for her next description after the ZIP (D-4428)
 
 - **What happens now:** after the consent text she is asked her ZIP; once her town is known she gets the "We'll send this to the N businesses" line (or "We don't cover ... yet") right away when her first text named the kind of job.
@@ -3385,4 +3409,28 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 ## The portals crate could hold only two tasks at a time (D-4480)
 - **The portals crate notes were too long for the runner to let a third task work there**, while twelve waiting tasks all touch portals.
 - **Fix:** a few standalone rules and one background sentence moved word for word to the crate's searchable notes file, leaving each remaining rule whole; a check confirms no word was lost. Portals can now hold three tasks.
+- Our choice; nothing needs you now.
+
+## The texting conversation task was cut into smaller pieces, with its gaps named (D-4441, follow-ups to D-4439)
+
+- **The first try at wiring the homeowner's texts past the consent text (T671) came out about 60% over its size limit, and its review found four places where a conversation would stop dead**: a short first text like "need plumber" never got a job; a text naming no trade got nothing after the ZIP; an "alarm keeps beeping" text never got the ZIP question after "just chirping"; and "SAFE" after the ZIP question was taken as a wrong ZIP.
+- **Fix:** T671 had already finished, and the two-jobs task (T711) had started, on the earlier plan, so two follow-up tasks correct what they built: T715 (the stalls above, plus a check that nobody who opted out gets a question) and T717 ("That's 2 jobs" comes right after the ZIP question, ALSO and SPLIT reliably start the second job, and nothing happens during a 911 hold). Later tasks add the "Which fits best?" question and, when her words name no trade, one question asking what she needs done (T716), and the second job's own questions and card (T718). The main J1 path is two tasks longer than the earlier plan (D-4439).
+- **Three older tests** needed small updates for the new order; we checked each one, and none hides a privacy leak (the test that looks for a stated name still checks every table).
+- **Our reading, for your review:** the spec says a one- or two-word text never opens a job. We read that as "a short text never opens a job by itself"; a short first text like "need plumber" still gets its job once the ZIP is checked, the same way the one-word ALSO starts a second job.
+- **New wording, for the copy panel:** the question for a text that names no trade ("What do you need done? A few words is enough.") is a draft. Until the AI reading is on, such a text is asked, not told "We don't cover that yet".
+- **A request that never gets a job now times out like any other** (T719): a reminder after a day and a close after three. Because such a request has no request number yet, the two texts are new drafts of the usual ones without the number, for the copy panel.
+- **Open item:** the numbered "Is this mainly 1) plumbing or 2) heating/AC?" question only comes up when the AI reading and the keywords disagree, so it waits for the AI work (T299); no task builds it yet.
+- Our choice; nothing needs you now.
+
+## Spanish "That's 2 jobs" text, for the Spanish reviewer (D-4486)
+
+- **What it says:** "Laftly: Son 2 trabajos. Empezamos con {trade}. Responda TAMBIÉN para empezar también con {business}." It goes to a homeowner whose first text names two kinds of work.
+- **For the reviewer:** `{trade}` is the first kind of work and `{business}` is the second kind of work (for example "plomería"), not a business name. Please check the sentence with a kind of work in that spot.
+- Our choice; it waits for the native-speaker review like every Spanish text.
+
+## The refund page shows only the charge's own dispute (D-4506)
+
+- **The step that builds your refund page (T205) stopped:** the page must show the dispute on the charge you are looking at and let you say "I submitted this dispute's evidence in Stripe myself", but the payments code could only list every dispute at once and record that press by dispute number alone.
+- **Why it mattered:** one press on the wrong dispute would have stopped that other dispute's automatic evidence, charged the $15 countering fee to the wrong business, and left the right dispute waiting.
+- **Fix:** a small new payments step (T722) adds a list of one charge's disputes and a press that refuses any dispute not on that charge and writes nothing; T205 then uses only those. No change to fees or what you see beyond the narrower list.
 - Our choice; nothing needs you now.
