@@ -22764,7 +22764,8 @@
    "id": "T206",
    "deps": [
     "T109",
-    "T110"
+    "T110",
+    "T648"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -23760,7 +23761,9 @@
    "id": "T122",
    "deps": [
     "T116",
-    "T117"
+    "T117",
+    "T109",
+    "T648"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -23977,7 +23980,11 @@
     "T644",
     "T645",
     "T646",
-    "T647"
+    "T647",
+    "T648",
+    "T649",
+    "T650",
+    "T651"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -24120,7 +24127,9 @@
    "deps": [
     "T134",
     "T303",
-    "T436"
+    "T436",
+    "T109",
+    "T648"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -37486,7 +37495,8 @@
     "T449",
     "T593",
     "T645",
-    "T646"
+    "T646",
+    "T649"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -38775,7 +38785,8 @@
     "T348",
     "T475",
     "T476",
-    "T469"
+    "T469",
+    "T651"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -39093,7 +39104,8 @@
     "T303",
     "T108",
     "T348",
-    "T484"
+    "T484",
+    "T651"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -54180,7 +54192,8 @@
     "T446",
     "T449",
     "T489",
-    "T564"
+    "T564",
+    "T650"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -67404,7 +67417,8 @@
     "T469",
     "T488",
     "T492",
-    "T515"
+    "T515",
+    "T584"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -69976,7 +69990,8 @@
     "T605",
     "T490",
     "T482",
-    "T109"
+    "T109",
+    "T648"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -70577,7 +70592,8 @@
     "T589",
     "T590",
     "T592",
-    "T593"
+    "T593",
+    "T648"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -74906,6 +74922,54 @@
    "status": "QUEUED",
    "attempts": 0,
    "slug": "web-chat-client-ip",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T650",
+   "deps": [
+    "T572"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "under-13-purge-photos-words",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T648",
+   "deps": [
+    "T109"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "recovery-monthly-test-restore",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T651",
+   "deps": [
+    "T303",
+    "T089",
+    "T086",
+    "T294"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "owner-auth-try-limits",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T649",
+   "deps": [
+    "T645",
+    "T646"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "web-chat-name-address-scrub",
    "type": "build",
    "stage": "5"
   }
@@ -79683,7 +79747,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T03:19:33Z",
+ "updated_at": "2026-11-18T03:27:32Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
