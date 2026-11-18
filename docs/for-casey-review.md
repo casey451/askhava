@@ -3355,3 +3355,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **One finished task (T623, the business charge sign-in work) sat green and reviewed for over four hours without being merged**, holding one of the seven lanes. The runner brings one finished task at a time up to date with the latest code; T623 had its turn, but the code moved on twice before it could merge, its 45-minute turn ran out, and the rule then let it try again only when no other task held the turn, which with seven lanes busy never happens.
 - **Fix, planned as T700 and claimed first:** a task whose turn runs out now goes to the back of the queue instead of out of it, so every finished task gets its turn in order, and no task holds the turn for more than 90 minutes. A task that is truly stuck still gives up the turn after 45 minutes. The cost we accepted: such a task takes another 45-minute turn once every round until someone looks at it, where today it lost the turn once.
 - Our choice; nothing needs you now.
+
+## The five-year purge never wipes the phone of someone who just opted out (D-4420)
+
+- **The daily five-year cleanup (T563) could, in a split-second race, clear the stored phone of a number that opted out at that same moment.** That phone is what keeps an opted-out number blocked after a key change, so losing it would weaken the opt-out. It was caught in review before anything merged.
+- **Fix:** the cleanup and every way of opting out (text STOP, email, the portal, the owner, a carrier block) now take turns on the same number, so the cleanup always sees an opt-out that came first and never clears that phone. The texting work on the web chat (T645) now waits for this task.
+- Our choice; nothing needs you now.
