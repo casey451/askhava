@@ -173,65 +173,72 @@ fn fix_line(language: Language) -> String {
     }
 }
 
-/// (status codes, English words, Spanish words) for each status a homeowner's job can show;
-/// any other code reads as the open job's words, [`OPEN_WORDS`].
-const STATUS_WORDS: &[(&[&str], &str, &str)] = &[
-    (
-        &["intake"],
-        "we're still getting your request ready",
-        "todavía estamos preparando su solicitud",
-    ),
-    (
-        &["quotes_ready"],
-        "your quotes are ready",
-        "sus cotizaciones están listas",
-    ),
-    (
-        &["awaiting_confirm", "payment_pending"],
-        "waiting for the business you picked to confirm",
-        "esperando que el negocio que eligió confirme",
-    ),
-    (
-        &["connected", "done"],
-        "you're connected with the business you picked",
-        "ya está en contacto con el negocio que eligió",
-    ),
-    (
-        &["closed", "closed_early", "cancelled"],
-        "this request is closed",
-        "esta solicitud está cerrada",
-    ),
-    (
-        &["not_covered"],
-        "no local business covers this job yet",
-        "ningún negocio local cubre este trabajo todavía",
-    ),
-];
-/// The words of an open job with no quotes yet (`open`, `no_quotes_yet`).
-const OPEN_WORDS: (&str, &str) = (
-    "local businesses have it, no quotes yet",
-    "los negocios locales la tienen, todavía sin cotizaciones",
-);
+/// Where her job stands, as the quotes answer words it (CON-034); `intake` maps each
+/// `jobs::api::JobStatus` to one, since `messaging` sits below `jobs`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum JobStanding {
+    /// Still in intake.
+    Intake,
+    /// Sent to businesses, no quote yet.
+    Waiting,
+    /// Quotes are ready.
+    QuotesReady,
+    /// A pick waits for the business's confirmation or payment.
+    Confirming,
+    /// Connected with the picked business, or done.
+    Connected,
+    /// Closed, closed early or cancelled.
+    Closed,
+    /// No business covers it.
+    NotCovered,
+}
 
-/// A job status code (`jobs::api::JobStatus::code`) in plain words in `language`.
-fn status_words(status: &str, language: Language) -> &'static str {
-    let (en, es) = STATUS_WORDS
-        .iter()
-        .find(|(codes, _, _)| codes.contains(&status))
-        .map_or(OPEN_WORDS, |&(_, en, es)| (en, es));
+impl JobStanding {
+    /// The standing in plain words: (English, Spanish).
+    const fn words(self) -> (&'static str, &'static str) {
+        match self {
+            Self::Intake => (
+                "we're still getting your request ready",
+                "todavía estamos preparando su solicitud",
+            ),
+            Self::Waiting => (
+                "local businesses have it, no quotes yet",
+                "los negocios locales la tienen, todavía sin cotizaciones",
+            ),
+            Self::QuotesReady => ("your quotes are ready", "sus cotizaciones están listas"),
+            Self::Confirming => (
+                "waiting for the business you picked to confirm",
+                "esperando que el negocio que eligió confirme",
+            ),
+            Self::Connected => (
+                "you're connected with the business you picked",
+                "ya está en contacto con el negocio que eligió",
+            ),
+            Self::Closed => ("this request is closed", "esta solicitud está cerrada"),
+            Self::NotCovered => (
+                "no local business covers this job yet",
+                "ningún negocio local cubre este trabajo todavía",
+            ),
+        }
+    }
+}
+
+/// `standing` in plain words in `language`.
+const fn status_words(standing: JobStanding, language: Language) -> &'static str {
+    let (en, es) = standing.words();
     match language {
         Language::En => en,
         Language::Es => es,
     }
 }
 
-/// CON-034, D-3882: the "where are my quotes" answer for job `number` with status code `status`:
+/// CON-034, D-3882: the "where are my quotes" answer for job `number` standing at `standing`:
 /// the status, the LIST line and her quote-page `link`, ending with the fix line.
 #[must_use]
-pub fn quotes_answer(number: i64, status: &str, link: &str, language: Language) -> String {
+pub fn quotes_answer(number: i64, standing: JobStanding, link: &str, language: Language) -> String {
     let (b, said, fix) = (
         names(language).0,
-        status_words(status, language),
+        status_words(standing, language),
         fix_line(language),
     );
     match language {

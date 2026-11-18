@@ -41,8 +41,8 @@ use askhava_core::api::{IdSecret, brand};
 use askhava_jobs::api::quote_token::issue;
 use askhava_jobs::api::{current, job_number};
 use askhava_messaging::api::{
-    AUTO_ANSWERED_ACTION, CLOSE_ANSWER, COST_ANSWER, HelpAsked, HelpQuestion, Language,
-    answered_within, help_question, person_answer, quotes_answer, render,
+    AUTO_ANSWERED_ACTION, CLOSE_ANSWER, COST_ANSWER, HelpAsked, HelpQuestion, JobStanding,
+    Language, answered_within, help_question, person_answer, quotes_answer, render,
 };
 use askhava_ops::api::{Actor, AuditEntry, Change, HelpOpened, audit};
 use askhava_privacy::api::{CommonWords, Known, NameMemory, ScrubbedText, Vault, scrub};
@@ -468,7 +468,7 @@ async fn auto_answer(
         (HelpQuestion::Quotes, Some((job, n))) => {
             let status = current(tx, job).await.map_err(|_| IntakeError::Job)?.status;
             let link = quote_link(tx, secret, job, msg.received_at).await?;
-            quotes_answer(n, status.code(), &link, language)
+            quotes_answer(n, standing(status.code()), &link, language)
         }
         (HelpQuestion::Close | HelpQuestion::Quotes, None) => return Ok(None),
     };
@@ -529,4 +529,28 @@ async fn quote_link(
         .await
         .map_err(|_| IntakeError::Job)?;
     Ok(format!("https://{}/q/{}", brand().domain(), token.as_str()))
+}
+
+/// Each job status code (`jobs::api::JobStatus::code`) with how the quotes answer words it
+/// (CON-034); a code missing here reads as [`JobStanding::Waiting`].
+const STANDINGS: [(&str, JobStanding); 11] = [
+    ("intake", JobStanding::Intake),
+    ("no_quotes_yet", JobStanding::Waiting),
+    ("quotes_ready", JobStanding::QuotesReady),
+    ("awaiting_confirm", JobStanding::Confirming),
+    ("payment_pending", JobStanding::Confirming),
+    ("connected", JobStanding::Connected),
+    ("done", JobStanding::Connected),
+    ("closed", JobStanding::Closed),
+    ("closed_early", JobStanding::Closed),
+    ("cancelled", JobStanding::Closed),
+    ("not_covered", JobStanding::NotCovered),
+];
+
+/// Her job's status code as the quotes answer words it (CON-034).
+fn standing(code: &str) -> JobStanding {
+    STANDINGS
+        .iter()
+        .find(|(c, _)| *c == code)
+        .map_or(JobStanding::Waiting, |&(_, s)| s)
 }
