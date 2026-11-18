@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T12:04:43Z by runner 2ef2075302e7 (actions).
+Updated 2026-11-18T12:07:03Z by runner f9aedd0bebe4 (actions).
 
 **Building: T583 in progress since 11:19Z; 440 of 643 done; week 54% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 440 of 643 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T583 claimed 11:19Z, lease until 15:03Z; lane 2: T662 claimed 11:26Z, lease until 14:26Z; lane 4: T700 claimed 11:39Z, lease until 15:04Z; lane 5: T679 claimed 11:39Z, lease until 14:39Z; lane 7: T472 claimed 11:43Z, lease until 14:43Z
-- **Week:** 54% used, 81.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:03Z, 1 min before this update
+- **Lane:** lane 1: T583 claimed 11:19Z, lease until 15:03Z; lane 2: T662 claimed 11:26Z, lease until 14:26Z; lane 4: T700 claimed 11:39Z, lease until 15:04Z; lane 5: T679 claimed 11:39Z, lease until 14:39Z; lane 6: T200 claimed 12:06Z, lease until 15:06Z; lane 7: T472 claimed 11:43Z, lease until 14:43Z
+- **Week:** 54% used, 80.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 12:04Z, 2 min before this update
 - **Keeper:** last ran 12:03Z, next wake 12:23Z
 
 ## Needs attention
@@ -116,7 +116,7 @@ Updated 2026-11-18T12:04:43Z by runner 2ef2075302e7 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-18T11:40:43Z (week)): week: 112.5M used, 81.5M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-02T07:40:00Z.
+- Pacing (session_reading 2026-11-18T12:03:13Z (week)): week: 113.9M used, 80.1M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-02T08:04:34Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -135,6 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T662 (lease until 2026-11-18T14:26:44Z)
 - lane 4: T700 (lease until 2026-11-18T15:04:43Z)
 - lane 5: T679 (lease until 2026-11-18T14:39:48Z)
+- lane 6: T200 (lease until 2026-11-18T15:06:51Z)
 - lane 7: T472 (lease until 2026-11-18T14:43:39Z)
 
 ## Last usage reading
