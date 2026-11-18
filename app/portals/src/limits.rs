@@ -181,11 +181,16 @@ pub async fn admit_owner_account(pool: &PgPool, now: Timestamp) -> Result<Admiss
 }
 
 /// The address a per-address owner limit counts (D-4294): an IPv4 address whole, an IPv6
-/// address by its /64, so one host cannot spread its tries across its own prefix.
+/// address by its /64, so one host cannot spread its tries across its own prefix. An
+/// IPv4-mapped IPv6 address (`::ffff:a.b.c.d`) counts as its IPv4 address whole, so an
+/// IPv4 client cannot land in the one shared bucket of the /64 `::`.
 fn ip_prefix(ip: IpAddr) -> IpAddr {
     match ip {
         IpAddr::V4(_) => ip,
         IpAddr::V6(v6) => {
+            if let Some(v4) = v6.to_ipv4_mapped() {
+                return IpAddr::V4(v4);
+            }
             let bits = u128::from(v6) & !u128::from(u64::MAX);
             IpAddr::V6(Ipv6Addr::from(bits))
         }
@@ -256,4 +261,29 @@ pub async fn admit_quote(
     let mut checks = vec![(QUOTES_PER_BUSINESS, Key::Record(business))];
     checks.extend(ip.map(|ip| (QUOTES_PER_IP, Key::Ip(ip))));
     admit(pool, &checks, now).await
+}
+
+#[cfg(test)]
+mod tests {
+    //! The address a per-address owner limit counts (D-4294, TD-SEC-75).
+
+    use std::net::IpAddr;
+
+    use super::ip_prefix;
+
+    fn key(text: &str) -> IpAddr {
+        ip_prefix(text.parse().expect("a fake test address"))
+    }
+
+    /// An IPv4 address counts whole, an IPv6 address by its /64, and an IPv4-mapped IPv6
+    /// address as its own IPv4 address, never as the shared /64 `::` (D-4294).
+    #[test]
+    fn owner_limits_key_each_client_by_its_own_address() {
+        assert_eq!(key("192.0.2.7"), key("192.0.2.7"));
+        assert_ne!(key("192.0.2.7"), key("192.0.2.8"));
+        assert_eq!(key("2001:db8::1"), key("2001:db8::ffff:2"));
+        assert_ne!(key("2001:db8::1"), key("2001:db8:0:1::1"));
+        assert_eq!(key("::ffff:192.0.2.7"), key("192.0.2.7"));
+        assert_ne!(key("::ffff:192.0.2.7"), key("::ffff:198.51.100.9"));
+    }
 }
