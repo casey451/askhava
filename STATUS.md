@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T18:26:16Z by runner f9ac2e6c67c7 (actions).
+Updated 2026-11-18T18:26:46Z by runner f9ac2e6c67c7 (actions).
 
-**Building: T624 in progress since 16:49Z; 452 of 645 done; week 64% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T483 in progress since 18:25Z; 452 of 645 done; week 64% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 452 of 645 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T624 claimed 16:49Z, lease until 20:41Z; lane 3: T483 claimed 18:25Z, lease until 21:25Z; lane 7: T711 claimed 18:12Z, lease until 21:12Z
+- **Lane:** lane 3: T483 claimed 18:25Z, lease until 21:25Z; lane 7: T711 claimed 18:12Z, lease until 21:12Z
 - **Week:** 64% used, 63.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 18:25Z, 0 min before this update
 - **Keeper:** last ran 18:25Z, next wake 18:45Z
@@ -26,12 +26,13 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T624 | server: two failed in-process health checks in a row raise o | MERGE_PENDING | 1 | 96 min | 18:26Z | merging main into the reviewed head conflicts in app/server/src/bin/worker.rs; a resync merges it in on this attempt (D- |
 | T205 | portals: owner refunds with a review step and the audit log  | BLOCKED | 1 | 58 min | 18:23Z | PLAN GAP: `payments` has no public reader that ties a dispute to its pick (or its charge, business or job). Without one, |
 | T500 | Decisions digest, piece 1: from the first entry, at most 300 | MERGE_PENDING | 1 | 71 min | 18:18Z |  |
 | T671 | intake (harness): a homeowner's texts after the consent text | done | 2 | 102 min | 17:25Z | PLAN GAP: three tests outside T671's scope fail because of the new behaviour (worker edited none of them): / 1. tests/in |
 | T621 | portals: the scorecard's go and stop line settings and its p | done | 1 | 38 min | 17:03Z |  |
 | T720 | Decision digest prerequisites (harness): the digest plan and | done | 1 | 67 min | 16:51Z |  |
-| T624 | server: two failed in-process health checks in a row raise o | resync | 1 | 49 min | 16:38Z | merging main into the reviewed head conflicts in app/server/src/bin/worker.rs; a resync merges it in on this attempt (D- |
+| T624 | server: two failed in-process health checks in a row raise o | resync | 1 | 49 min | 16:38Z |  |
 | T592 | jobs, quotes and site: the home page's numbers read every jo | done | 1 | 40 min | 16:19Z |  |
 | T645 | intake and messaging: the web chat honours an opt-out word,  | BLOCKED | 1 | 4 min | 16:05Z | PLAN GAP: app/site/src/chat.rs:340 (owned by T593, then T646 and T649; T593 is not merged yet) calls `chat_message(db, & |
 | T621 | portals: the scorecard's go and stop line settings and its p | resync | 1 | 55 min | 15:55Z |  |
@@ -136,9 +137,9 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T624 (lease until 2026-11-18T20:41:09Z)
+- nothing
 - lane 3: T483 (lease until 2026-11-18T21:25:05Z)
 - lane 7: T711 (lease until 2026-11-18T21:12:25Z)
 
 ## Last usage reading
-- {"task": "T205", "at": "2026-11-18T18:23:59Z", "input_tokens": 170, "output_tokens": 54005, "cache_creation_input_tokens": 236315, "cache_read_input_tokens": 6285184}
+- {"task": "T624", "at": "2026-11-18T18:26:13Z", "input_tokens": 114, "cache_creation_input_tokens": 120586, "output_tokens": 19745, "cache_read_input_tokens": 1676939}
