@@ -44,6 +44,9 @@ async fn main() -> io::Result<()> {
     let port = port_from_env()?;
     let listener = TcpListener::bind((Ipv4Addr::UNSPECIFIED, port)).await?;
     let pool = askhava_core::api::app_pool(&settings).map_err(io::Error::other)?;
+    // Nothing is served under a key set missing a held index version (D-4418, D-4473).
+    let vault = askhava_server::business_portal::vault_from_settings(&settings, std::env::vars())?;
+    askhava_server::check_index_keys(&pool, vault.as_ref()).await?;
     askhava_server::catalog_start::store_catalog(&pool).await?;
     let control =
         TestControl::from_settings(&settings, std::env::vars()).map_err(io::Error::other)?;
@@ -55,7 +58,7 @@ async fn main() -> io::Result<()> {
     let limit = askhava_server::request_timeout::RequestTimeout::from_settings(&settings);
     let hooks = (webhooks, voice, pick_keys, stripe);
     let statics = askhava_server::static_files::StaticRoot::from_settings(&settings);
-    let parts = business_parts(&settings, &pool, (hooks, limit, statics).into())?;
+    let parts = business_parts(&settings, &pool, vault, (hooks, limit, statics).into())?;
     let watch = askhava_server::liveness::watch_web(pool.clone(), liveness_limit()?);
     let app = askhava_server::build_router(pool, control.router(), parts);
     let serve = axum::serve(
@@ -77,13 +80,15 @@ fn liveness_limit() -> io::Result<askhava_server::liveness::LivenessLimit> {
     askhava_server::liveness::LivenessLimit::from_pairs(std::env::vars())
 }
 
-/// `parts` with the served business sign-in, sign-up, portal vault and Confirm settings from
+/// `parts` with the served business sign-in, sign-up, portal `vault` (built and checked at start,
+/// D-4418) and Confirm settings from
 /// `settings` and the process environment (T280, T302, T300, T261), the web chat's code-step keys
 /// (T489) and the site pages' settings (T102); each errors as its own
 /// builder does, naming a key, never a value.
 fn business_parts(
     settings: &askhava_core::api::Settings,
     pool: &sqlx::PgPool,
+    vault: Option<askhava_privacy::api::Vault>,
     parts: askhava_server::RouterParts,
 ) -> io::Result<askhava_server::RouterParts> {
     let signin = askhava_server::business_signin::ServedSignIn::from_settings(
@@ -95,7 +100,6 @@ fn business_parts(
         pool.clone(),
         std::env::vars(),
     )?;
-    let vault = askhava_server::business_portal::vault_from_settings(settings, std::env::vars())?;
     let confirm = askhava_server::confirm_settings(settings, std::env::vars())?;
     let chat = askhava_server::chat_codes::chat_keys(settings, std::env::vars())?;
     Ok(parts

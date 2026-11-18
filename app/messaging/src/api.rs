@@ -149,6 +149,7 @@ pub use crate::service::{
 };
 pub use crate::signin_mail::{LINK_MARK, SIGNIN_LINK_TEMPLATE, SignInLinkSender};
 pub use crate::status::DeliveryStatus;
+pub use crate::suppression_versions::{SuppressionVersionsError, check_suppression_versions};
 pub use crate::templates::{
     Audience, Encoding, Language, Registry, Segments, TemplateError, Text, count_segments,
 };

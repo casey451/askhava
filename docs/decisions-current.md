@@ -1,6 +1,6 @@
 # Decisions in force
 
-Through D-945. Reader layer over the append-only `docs/decisions.md` (D-3856, D-4447), shaped by `docs/reviews/decision-digest-plan.md` and checked by `python3 scripts/check_decision_digest.py`. One line per rule in force; the log keeps the full entry (`grep -n '^- \*\*D-####\*\* ' docs/decisions.md`). "The brand" is Laftly (D-3347); older entries say Ask Hava.
+Through D-1292. Reader layer over the append-only `docs/decisions.md` (D-3856, D-4447), shaped by `docs/reviews/decision-digest-plan.md` and checked by `python3 scripts/check_decision_digest.py`. One line per rule in force; the log keeps the full entry (`grep -n '^- \*\*D-####\*\* ' docs/decisions.md`). "The brand" is Laftly (D-3347); older entries say Ask Hava.
 
 ## Product and scope
 
@@ -53,6 +53,7 @@ Through D-945. Reader layer over the append-only `docs/decisions.md` (D-3856, D-
 - D-475 (wording) `landscape_maintenance` shows as "Yard maintenance"; fake business names never match real ones.
 - D-687 (wording) Current files never name the owner's occupation or employer ("a full-time day job").
 - D-813 (wording) CARD-010's carrier-restricted list is `catalog`'s `restricted_words.rs`, whole words, everyday trade words left off; a list change is a decision entry.
+- D-1113 (wording) Quote card fact labels keep PICK-040's words; visits read "November 3, morning"; "Free estimate" never on a visit-fee quote; every card carries WORD-014's "Independent business, not affiliated with" the brand; the Spanish trip and visit fees have different names.
 
 ## Homeowner intake
 
@@ -81,6 +82,24 @@ Through D-945. Reader layer over the append-only `docs/decisions.md` (D-3856, D-
 - D-800, D-803 (intake) The scrubber drops up to two uncommon words after a name phrase (and later repeats), streets and codes; spelled digits count; over-removal is accepted; `Ci` needs 99% on the corpus.
 - D-908, D-933 (intake) `receive_text` is the one entry: a request opens only with its consent text and versioned consent record in one transaction, 911 text first, one open conversation per homeowner.
 - D-909 (intake) Intake tables hold IDs, codes and times only; `intake.consent_record` is append-only.
+- D-978 (intake) The INT-033 zero night text is its exact words with no 911 line (TD-INT-15's phrase is a leftover).
+- D-979 (intake) One `emergency_choice` text day and night ("Is this an emergency?", INT-006's words, "Reply 1 for emergency or 2 for regular."), the night count first; 1/emergency and 2/regular/normal are read.
+- D-980, D-982 (intake) `emergency::check` runs first on every message, overriding the AI's flag (INT-026); one 911 text per hold, later matches only recorded; SAFE is never a question or negated; `safe_hold` gates cards beside `card_allowed`; the choice waits for SAFE; one `intake.emergency_released` task.
+- D-993 (intake) A request's jobs are `intake_answer` link rows `job.<trade>.<property prefix or none>`, made by `begin_job` under the homeowner lock; INT-010's window runs from the later of the newest job and last `heard` row, strictly under it.
+- D-994, D-996, D-997 (intake) Cancel-like: first word cancel, cancelar, stop, quit, unsubscribe, nevermind or parar; "never mind", "forget it", "olvidalo"; or a cancel word in 4 words or fewer; an age counts only after "I'm", "I am" or "tengo" + a number under 18; under 18 cancels its jobs, under 13 deletes its answers.
+- D-995 (intake) `take_name_address` splits first name from street address, stores both as a vault contact and keeps only its ID; asked only after the area check; no street number re-asks.
+- D-998, D-1003 (intake) Keyword rules are `intake::matching::RULES`, job types checked against the catalog, longest phrase wins; "water heater" and "pool/spa heater" always add their licensed-only candidates; candidates spanning two trades ask "Which fits best?"; "Not sure" keeps every candidate.
+- D-999 (intake) `two_trades`, `starts_second` (ALSO/TAMBIÉN alone) and INT-010's after-window rule (`shares_words`, 50% default) are pure in `intake::matching`/`rules`.
+- D-1008, D-1010, D-1011 (intake) `routing::route` is pure, `apply` closes once in one transaction; only a trade not open writes recruiting demand (not refused moves or property management, matched by phrases, never bare nouns); towns are passed in, Arizona only; OPS-041's email reads the audit and demand rows.
+- D-1269 (intake) `intake::api::BankRun` asks one question at a time in order, emergency questions only on emergency jobs, "Not sure" ends every list, at most 8 prompts; AI off: skip only on an exact multi-word option in her words; AI on: skip only at `skip_threshold` (None until AI-027).
+- D-1270 (intake) INT-040 keyword confidence 1.0/0.5/0.0, high-confidence default 0.8 passed in; `decide` goes on only when keyword and AI readings agree at or above it, else the INT-013 question or `NoTrade`.
+- D-1271 (intake) `run_golden` routes every `intake_golden.yaml` row on the AI-off path, stores the share in `intake.golden_result` once per catalog version, at worker start-up; a failed run stops the worker, a low share never does; `test_set.csv` awaits a code mapping.
+- D-1272 (intake) "Not sure" or a second unusable reply with several candidates sets `not_certain`; matching with all candidates reaches only businesses covering all; the card marker and homeowner text need their owners.
+- D-1195, D-1196, D-1199 (intake) No-reply: intake queues its own `intake.no_reply` reminder at 24 h and close at 72 h from `timer_from`, restarted by every message; steps re-check status and run time and send only 8 a.m. to 8 p.m. Arizona, else requeue; the area-code zone check is the send path's.
+- D-1197 (intake) `answer_list` reads LIST/LISTA with an optional request number: one job with shown quotes gets its pages, several get `which_job_text`, none nothing.
+- D-1198 (intake) INT-021 holds: with no AI wired every intake step runs at once on keyword rules; INT-023's call-back is due in 24 h when urgent, else `CALL_BACK_DAYS` 4, and raises one `intake.call_back(_urgent)` alert per request.
+- D-1274, D-1278, D-1279 (intake) Card approval is `intake_answer` rows under `card.<job>` (`shown.<digest>.<show>`, `edit`, `sent.<digest>`), latest wins; approval queues one `intake.cards_approved` task; the sender sends only what `approved_card` holds; the 30-minute wait starts at delivery; a failed text never auto-approves.
+- D-1276 (intake) Card replies are the whole message: SEND/OK/YES/ENVIAR approve the last shown card, EDIT/CAMBIAR stop its timer and ask what to change; nothing goes until the new card is shown; an approved card is never shown again.
 
 ## Businesses and licensing
 
@@ -144,6 +163,14 @@ Through D-945. Reader layer over the append-only `docs/decisions.md` (D-3856, D-
 - D-938 (licensing) A pick makes one live lookup, never retried; a failure or misread records nothing; a lookup never yields `not_listed`.
 - D-939, D-940, D-942 (licensing) Limits are passed in (24 h warn, 72 h pause, alerts at 12 h and 24 h, 2 s between lookups); list-failure alerts are `normal`, never High.
 - D-941 (licensing) `businesses` holds each pause and unknown-since instant and applies `licensing`'s clocks.
+- D-948 (licensing) License lines are pure `licensing::api` functions over caller facts, wording in `license_lines.json` (EN/ES); a pest license gets no check line but the LIC-037 since-line; insurance only on no-license cards, as reported.
+- D-953, D-969, D-970, D-971 (licensing) `businesses::status::next` is the only status move; insurance never moves it; removed is final, takes no change; a self pause resumes only by `resume_self`; every rule pause (complaints, license, no job type, Casey) uses `pause_for_rule`, which replaces a self pause, never another rule's.
+- D-954 (licensing) `set_job_types` takes the allowed set from the caller (license-map coverage plus BIZ-049 no-license types), refuses others, stores category code and job type name; an empty list is allowed.
+- D-955 (licensing) `night_count(category, town)` counts active after-hours businesses; INT-033's trade is the catalog category; BIZ-007's conditions on the tick are T150's.
+- D-963 (licensing) No `businesses` column holds a number or email: phones link through the `SenderLink` trait to `messaging`'s directory in the same transaction; changes take `Acting`; team changes owner-only, phones owner or Confirm-and-billing; every row looked up with its business.
+- D-964 (licensing) `notice_addresses`: owner first, then members by role: Cards to Cards-and-quotes, PicksAndRelease and Money to Confirm-and-billing, Account to the owner alone; removed members never.
+- D-968 (licensing) A business's own quiet times are one Arizona-time window inside 8:00 to 20:00, enforced by its type and a table check; `may_notify` is the app window AND it.
+- D-983, D-984, D-985 (licensing) R-62 never gets `STRUCTURAL_JOB_TYPES`; a record whose classes map to no home job type is `NothingMapped`, not activated; a project limit applies only when every qualifying class has one, the highest wins, CR-61 carries none.
 
 ## Matching, quotes and picks
 
@@ -157,16 +184,16 @@ Through D-945. Reader layer over the append-only `docs/decisions.md` (D-3856, D-
 - D-049, D-143 (matching) For email contact the portal shows the preference and the masked line still opens; the day-3 check-in decides, NO records a no-show and returns to Quotes ready; for call contact NO closes the job.
 - D-055 (matching) An emergency is never a reason to close early.
 - D-068 (matching) A text pick works when exactly one job is in Quotes ready, else the service asks which job.
-- D-084 (matching) Quotes show in arrival order only, no sorting or filtering; numbers never change.
+- D-084, D-1233 (matching) Quotes show in arrival order only, no sorting or filtering; numbers never change; `quotes::api::page_quotes` (confirmed, unwithdrawn, by `received_at`), an unavailable quote keeps its number.
 - D-147 (matching) "<n> YES" for another quote before Confirm replaces the pick and tells the first business (PICK-032); after Confirm the reply says it is confirmed (PICK-036).
 - D-149 (matching) A price read from a text is always shown back to the business to confirm before the homeowner sees it (PICK-006).
 - D-185, D-262 (matching) PICK-039: the quote form shows the fee and its basis (midpoint, recurring months, cap) before the business submits.
-- D-188 (matching) CARD-019: every card says "Sent to <N> businesses."; the portal job page shows sent and quotes so far.
+- D-188, D-1032 (matching) CARD-019: every card says "Sent to <N> businesses." ("Sent to 1 business." for one, no cap); the portal job page shows sent and quotes so far.
 - D-193, D-263 (matching) PICK-026: with 3+ quotes the loss text compares the picked quote (lower, about the same within 10%, higher), never disclosing amounts or names; with 4 or fewer recipients it says "Several businesses quoted".
 - D-201 (matching) No business number sharing; the details text tips "on your first call, ask which number to text" (PICK-024).
 - D-202 (matching) CARD-007: cards carry the category's multiple-choice intake answers as fixed fields; the final card gate still runs.
 - D-233, D-283 (matching) PICK-040: every quote carries required quote facts in a fixed order, pre-filled from the business's last answers with "Same as last time"; earliest visit is a date plus part of day.
-- D-239 (matching) TXT-031: LIST (LISTA) sends the quotes by text in arrival order, up to 10 per text, ending with how to reply "<n> YES".
+- D-239, D-1194 (matching) TXT-031: LIST (LISTA) sends pickable quotes by text in arrival order, up to 10 per text, numbers running across pages, each price exactly as entered, ending with how to reply "<n> YES".
 - D-240 (matching) JOB-028: LATER, ONGOING and OTHER check-in replies, Spanish forms; LISTO counts as DONE.
 - D-241 (matching) TXT-032 says how many businesses got the request and the quote deadline; JOB-010 offers keep waiting, add details or close; JOB-011's close always says why.
 - D-244 (matching) PICK-042: after Confirm the homeowner gets the accepted quote by email if on file; the quote page keeps it until the token expires.
@@ -193,6 +220,25 @@ Through D-945. Reader layer over the append-only `docs/decisions.md` (D-3856, D-
 - D-871, D-872 (matching) `jobs` asks `intake` for homeowner texts by event (IDs, version, template; once per job), dropped unless `text_due`; `all_windows_ended` closes a job with no choosable quote.
 - D-874 (matching) Connected: DONE to Done, NO or PROBLEM to Closed, day-3 NO under email contact to Quotes ready; the 21-day backstop closes silently.
 - D-934 (matching) Terms acceptance: one append-only row per pick, the text's SHA256 computed by intake; only a pick writes it.
+- D-1013, D-1014, D-1015 (matching) `quotes::api::rules::card_for` (pure): active (`receives_cards`), verified, serves an Arizona offer town, ticked a candidate, licensed for every candidate (`ClassMap::covers`); a handyman candidate makes a handyman card; no cap; `quotes.job_card` is insert-only, one per job and business.
+- D-1018 (matching) CARD-004 overflow goes to switch-on businesses passing every check but the ticks, only when the checklist match reaches nobody at that send; a covering holder keeps it off; owner pauses (all, trade, the job's town, every served offer town) skip first; cards are never withdrawn.
+- D-1019, D-1020 (matching) `quotes::api::coverage` gives N (overflow included), SPLIT (one category alone reaches someone, none licensed for all) or Not covered; `tell_coverage` queues INT-017/INT-032's exact lines; a live sibling keeps the request open; SPLIT/DIVIDIR opens the second job via `begin_job`.
+- D-1021 (matching) `send_late_cards` sends only while `JobStatus::takes_late_cards` (Open, No quotes yet), only to businesses holding no card, `sent_at` now; quiet-hours hold is delivery's; the rerun on newly eligible businesses is the worker's.
+- D-1024 (matching) `build_card` is the only way to make a `JobCard` (town, closed `Place` kind, screened photo IDs, `Timing`, fixed `Danger` words, gated text); `CardParts` has no contact field; CARD-009's minimum is a parameter (default 5).
+- D-1025 (matching) `final_gate` cuts, per sentence, from the first name, contact, link, domain, address or number-run shape to its end, erring toward removal, repeated to a fixed point; the 5 words count on that output; a cue-less name is the scrubber's.
+- D-1031 (matching) `final_gate` runs the contact cut, then strips `catalog::api::RESTRICTED_WORDS` whole-word, longest first, logging only the list entry (CARD-010).
+- D-1033 (matching) `CardLines` (sent-to count, prefers Spanish, fee-free) are added to the stored card text at send time via `JobCard::text_for`; language is never a matching input.
+- D-1048 (matching) `window_open` is `now < sent_at + 24 h`, absolute time; `submit_quote` needs a card, an open window and `JobStatus::takes_quotes` (Open through Awaiting confirm), read in the quote's transaction.
+- D-1049 (matching) `quotes.quote` is one row per business per job (a resend is an edit, no expiry); edits only while `takes_quote_edits` and no quote is unavailable; an AI-read quote counts only once confirmed; `shown_quotes` is confirmed and unwithdrawn; no bounce table stores rejected text.
+- D-1050 (matching) `parse_quote` takes only the job's format; hourly with hours is a range, without hours only in `diagnostic_visit`; amounts above $0 to $10 million; the handyman limit checks the top, never the setup charge; `quotes` computes no fee.
+- D-1051 (matching) Quote notes, wording and tier names bounce on anything `final_gate` would cut or a restricted phrase; each quote queues a `quotes.windows_end` task that calls `all_windows_ended` once; `picks` marks a failed pick's quote with `mark_unavailable`, never choosable again.
+- D-1111 (matching) `QuoteCard::lines(language)` takes no viewer, so the business preview equals the homeowner's card (PICK-005); fixed line order with the no-ranking line, the night line only with the tick, facts in PICK-040 order, then the business's own words.
+- D-1201 (matching) `answer_close` cancels only named open jobs as `Actor::Homeowner` under the homeowner lock; intent with several jobs asks "Close which?"; an opt-out or HELP changes no job; `close_from_page` closes one job with no text.
+- D-1200, D-1203 (matching) Close: "CLOSE/CERRAR <n>", "CLOSE ALL/CERRAR TODO"; intent only when a whole clause is a fixed intent or need phrase, or "close", "cerrar" or "ya no" is the whole message; a clause about someone else or any other cancel word ("cancel" alone too) gets the JOB-023 line, nothing closes.
+- D-1243 (matching) `app/picks` holds `PickStatus` and the one `JobStatus`-to-`Stage` match in `status.rs`; a text pick replies with the next step, not that the business has her details (released only once paid).
+- D-1245 (matching) A sole CANCEL withdraws waiting picks via `picks::api::withdraw_paused` (`end_reason = paused`, a `picks.pick_withdrawn` event) with no job status change; a YES during the pause picks nothing.
+- D-1246 (matching) With several jobs a text pick is "<request> <quote> YES"; texts ending with the Terms line are recorded per job in `picks.terms_line`, else a YES gets the Terms text first; paused jobs never count; a pick confirmed meanwhile rolls back (`MovedOn`); each pick queues `picks.pick_made`.
+- D-1290 (matching) `quotes::api::job_page` returns data only: the approved card, her answers and later details each through `final_gate`, current sent and quote counts; `None` for a business with no card row; no contact field; the caller brings intake wording.
 
 ## Money
 
@@ -318,6 +364,16 @@ Through D-945. Reader layer over the append-only `docs/decisions.md` (D-3856, D-
 - D-868 (texting) Opt-out word lists are code constants equal to the provider file; a new word changes both.
 - D-887, D-888, D-889, D-890 (texting) HELP has away and Canadian-roaming variants, all sent as `help_reply`; no voice number yet; START gets no app text.
 - D-907 (texting) `consent_safety_call` is used only while the safety voice call setting is on; `who_is_this` is CON-027's line.
+- D-973 (texting) `safety_text.rs` renders the one INT-004 911 text (Spanish even with Spanish off, 5-minute limit); a docs test bars phone numbers, N11 codes but 911 and utility names in templates and any `safety_contacts` file.
+- D-1190 (texting) `quotes::api::notice` (pure): first quote gives `First`; an update only 3 hours (`UPDATE_GAP`) after the previous first-quote or update text's delivery, else `Held`; counts shown quotes only.
+- D-1191 (texting) The first-quote text carries no amount (TXT-016's fixed words); amounts are in LIST and on the card.
+- D-1192 (texting) Varying texts are whole template sentences joined by Rust (`quote_list` + lines + `quote_list_end`; `request_out` + held/today/slow parts), "Ask Hava:" (the brand prefix) once; LIST line words are fixed Rust words in `quotes/notify.rs`.
+- D-1193 (texting) Times in homeowner texts read "8 a.m. Arizona time" plus each differing area-code zone's clock; zones come through `AreaCodes::zones_for`, never the phone; an unknown zone sends nothing.
+- D-1215, D-1216 (texting) T240 sends `jobs.homeowner_text` (request from job, consent skip, link filled at send, `messaging::api::send_window` for both zones); T241 routes signed Twilio inbound: receive, opt-out, HELP, then `intake::api::receive_reply` (LIST to `answer_list`, `hear` first).
+- D-1202 (texting) `close_mention` carries JOB-023's exact words; `close_howto` stays CON-034's; `close_which`, `job_closed`, `jobs_closed` in both languages; the dispatcher calls `answer_close` before the intake answer rules.
+- D-1228, D-1229 (texting) `intake::api::on_opt_out` changes no job and texts nothing; a sole CANCEL/CANCELAR records `intake.homeowner_pause` per live job; one `intake.opted_out_live_job` task (IDs only); pick, Confirm, charge and release read `paused_by_homeowner`; a pick or a close ends it.
+- D-1275 (texting) `card_shown` carries a literal `[card]` slot filled after rendering; the wait fills `{time}`; over 2 segments the link text (`card_link`) goes instead.
+- D-1291 (texting) `quotes::api::UPDATE_TEXTS` scans homeowner update templates in both languages: fixed texts 20 words a sentence with the link and no quote details, updates 15, LIST 20 with details, other texts capped at 20 words; the brand opener is not counted.
 
 ## AI
 
@@ -330,6 +386,10 @@ Through D-945. Reader layer over the append-only `docs/decisions.md` (D-3856, D-
 - D-812 (ai) The request sends `schemas/intake_reading.json` exactly; a schema the API refuses changes only by logged plan change.
 - D-841 (ai) In live the AI runs only with zero retention signed or the switch on with every AI-008 condition met, checked on each call; else keyword-only.
 - D-842, D-843 (ai) `ai.reading` has no text column; trade and job type go only off-database as code names; the weekly summary is code-built counts.
+- D-988 (ai) WORD-022 phrases live in `app/ai/data/word_022_phrases.json`, kept equal to `trace_spec.py`'s regexes by a docs test; any hit refuses the whole AI text (question: fixed wording, card: her scrubbed words); a load failure falls back (fail closed).
+- D-989 (ai) `adds_fact` refuses AI text holding a digit run or a mid-sentence capitalized word absent from her words, answers, photo notes or the bank; business names come from the caller.
+- D-990 (ai) `accept_question`/`accept_document` are the pure last step on a reply; the calling task adds its writing instruction to `INSTRUCTIONS` and calls through the same gate, web-chat rule and daily cap as `read_intake`.
+- D-1112 (ai) AI quote summaries default Off; `check_summary` rejects any new word or number, reordering, or a dropped clause end, number or negation; `switch_on` needs a decision ID and a published policy holding AI-018's sentence; no summary column exists.
 
 ## Pages and accessibility
 
@@ -341,6 +401,11 @@ Through D-945. Reader layer over the append-only `docs/decisions.md` (D-3856, D-
 - D-409 (pages) WEB-021/022 "Who runs" blocks link the LLC's ACC record and city license number from settings (omitted while empty); never a personal name online.
 - D-451 (pages) The look follows `docs/design/DESIGN_SPEC.md` ("wall and paper", one brass primary button, self-hosted fonts); wording and numbers come only from `docs/spec/`.
 - D-466 (pages) JOB-017 an unticked box lets feedback show with first name and town (no reward); WEB-028 computed home-page numbers; PICK-054 "Add to contacts", never in a text.
+- D-1234 (pages) The quote page token resolves by hash (anything else a bare 404) and dies 30 days after the job is final; Pick buttons while `takes_quote_edits`; the fee line is CON-003's exact words; `X-Robots-Tag: noindex, nofollow` and `no-store`.
+- D-1235, D-1237 (pages) Pages work with no JavaScript; `quote_page.ts` polls every 30 s, merges changed cards, and writes one `role="status"` line per batch from template words; every available quote card carries PICK-041's no-ranking line and a "Quote #<n>" heading.
+- D-1240 (pages) A target under 24 px passes only by WCAG 2.5.8's inline or spacing exception; 400% zoom is a 320 by 256 viewport; help sits in the same place on every page; any axe "incomplete" fails unless in `REVIEWED_INCOMPLETE`.
+- D-1248, D-1251 (pages) Page pick: `POST /q/{token}` shows the review step (Verify code named first); `/q/{token}/pick` re-checks CSRF, link and pickability; picks are taken through Awaiting confirm (replacing a waiting one), none once confirmed; never claim an unstored pick; `result_page` focuses its heading.
+- D-1264, D-1265 (pages) `POST /q/{token}/code` renders the code-and-contact step (masked call or shared email, one `one-time-code` field, accessible error summary, values kept, "Send a new code" keeps answers, limit stated up front, no countdown); it sends and stores nothing until the Verify wiring task.
 
 ## Security
 
@@ -363,6 +428,11 @@ Through D-945. Reader layer over the append-only `docs/decisions.md` (D-3856, D-
 - D-820, D-822 (security) Webhooks pass `verify_webhook` (HMAC, 300 s) before any module; a refusal is 403 with one log line; Stripe sources must be on the compiled IP list.
 - D-943, D-945 (security) `__Host-` session cookies hold a hashed random token, replaced at login; CSRF tokens derive from it; cross-site writes are refused; SEC-048 alerts once per kind per hour.
 - D-944 (security) One outermost middleware sets the security headers (CSP `'self'`); only a confirm page may load `js.stripe.com`.
+- D-946 (security) `security_headers` is outermost and replaces handler headers; the first page needing its own CSP (Confirm, a nonce) makes it keep the handler's CSP, with a `headers.rs` test that the default still applies elsewhere.
+- D-1064 (security) The PII scanner's `MAX_BYTES` is 4,000,000 and `docs/decisions.md` is never skip-listed; a growing file past 75% of it is warned, and `gen_prompts.py --check --strict` fails past 90% (D-1075).
+- D-1244 (security) Verify code caps count per Arizona calendar day and per vault contact ID (no number stored), the 9 p.m. to 8 a.m. voice rule by Arizona hour; a refused send raises one `picks.verify_daily_cap` alert a day; a failed send still counts.
+- D-1250 (security) Chromium sends `Origin: null` on same-origin POSTs under `no-referrer`, so `is_cross_site` refuses them; proposed fix: trust `Sec-Fetch-Site: same-origin`, Origin only when it is absent (null is cross-site); the e2e spec re-sends with the https Origin until then.
+- D-1288 (security) Nightly `stripe-ips` compares the committed Stripe webhook IP copy with the published list after proving it refuses a planted extra and missing address; the app never fetches the list (SEC-049).
 
 ## Operations
 
@@ -415,6 +485,7 @@ Through D-945. Reader layer over the append-only `docs/decisions.md` (D-3856, D-
 - D-600 (code) Migrations are forward-only `0NNN_<slug>.sql` headed `-- <module> (T###)`; no SQL names another module's schema; no dynamic queries.
 - D-698, D-701 (code) Every GRANT is a plain statement after a `DO` check that fails on a missing role, never `IF EXISTS`.
 - D-725 (code) Vendor clients share one base: parsed base URL, encoded segments, no redirects, 15 s timeout; each consuming task adds its own `ASKHAVA_*` keys.
+- D-1281 (code) `npm run build` compiles only `app/*/static/*.ts` (strict) beside their sources; a pinned Node `browser` Docker stage builds them into `/srv/askhava/static/<crate>/`; Node never reaches the runtime image.
 
 ## Testing
 
@@ -438,6 +509,14 @@ Through D-945. Reader layer over the append-only `docs/decisions.md` (D-3856, D-
 - D-694 (testing) `Ci` needs Checks and Coverage; floors of 95 for payments, fee rules, privacy and licensing; lowering a floor needs a decision naming it.
 - D-740 (testing) The test-control clock is system time plus a forward-only offset shared through a clock file.
 - D-741 (testing) Root TypeScript tooling is pinned and strict; specs import `test` from `tests/e2e/fixtures.ts`.
+- D-958 (testing) Playwright starts the app through `globalSetup` `tests/e2e/webserver.ts` (stand-in, build, migrate, worker, web); the per-run control secret is never printed.
+- D-1086 (testing) A stand-in test server is ready only when its own "stand-ins listening" line names its port; up to 5 starts on new ports, no sleep, no request retry.
+- D-1154 (testing) War games (T234 to T239) run before the stage-6 audit on the test site with fake data, findings as WG-### rows; AI-028 sets per-step AI budgets (40 a conversation per day, 60 a job, card call reserved, first 1,600 characters) on top of AI-021; the live AI key uses Casey's subscription credit.
+- D-1238 (testing) The a11y suite runs axe through the pinned `@axe-core/playwright` (axe-core 4.13.0) with tags `wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`.
+- D-1239, D-1241 (testing) `tests/a11y/fixtures.ts` scans every GET `.route` in `app/*/src`; an unparsed route or service fails until it has `PAGE_STATES` or a reasoned `NOT_PAGES` line; each state is seeded by SQL and names a line it must and must not show; `bypassCSP` only in the text-spacing test.
+- D-1282 (testing) `Ci` needs `Checks`, `Coverage` and `E2e` (Postgres, stripe-mock pinned by digest, test-control build, Playwright, no retries, no `test.only`) when app paths change; `Ally` runs the a11y config on every push and lists axe incompletes in the summary.
+- D-1285 (testing) Named mutants live in `tests/mutation/mutants.toml` (`find` exactly once); `run_named_mutants.py` runs a green baseline first, a broken or surviving mutant fails; with `--base` it runs mutants whose rule or test files changed, and a stale `find` is skipped there but fails `--all` nightly.
+- D-1286 (testing) Nightly: named mutants and the Stripe IP check decide the night (red `main`); cargo-mutants 27.1.0 is report only until `tests/mutation/equivalent.toml` exists with reviewed reasons.
 
 ## Runner and governance
 
@@ -472,7 +551,7 @@ Through D-945. Reader layer over the append-only `docs/decisions.md` (D-3856, D-
 - D-476 (runner) `scripts/smoke.sh` runs the `Ci` checks locally with a fresh local Postgres password each run; `/target/` and `node_modules/` are ignored.
 - D-479 (runner) `docs/governance.md`: `kit/plan.lock` fingerprints the locked blueprint; `check_pr_change.py` enforces task paths and append-only decisions; progress counts verified requirements; gates clear only on unnegated replies.
 - D-483 (runner) The Actions runner is primary; Opus writes money, privacy, security and recovery app code; OPS-043: live deploys only a commit Casey names after an Opus security review.
-- D-485 (runner) Prompts paste requirement text with byte-based budgets (cap 20%, harness 30%); build tasks at most 10 paths, 600 lines, 12 requirements; photos in object storage, only the key in `privacy.photo`.
+- D-485, D-1036, D-1075 (runner) Prompts paste requirement text with byte budgets (owned files once, directories not at all): 45% build/docs/audit, 50% harness, 65% cleanup, a stored value within 3 points stands; build tasks at most 10 paths, 600 lines, 12 requirements; photo keys in `privacy.photo`.
 - D-486 (runner) `python3 -m runner` runs one cycle; the `claude/lease` ref is the lock; only the reviewed head auto-merges; red `main` is a revert-first FIX-MAIN; `stage_exit.py` gates stages; pacing waits for limits.
 - D-487 (runner) Locked `docs/brains/` files give sourced expertise; prompts paste their checklists; a brain never outranks the spec and its proposals need an adopting decision.
 - D-489 (runner) `Ci` runs Rust and TypeScript steps only when their paths change; document checks, gitleaks, PII and governance always run; one task at a time.
@@ -484,19 +563,27 @@ Through D-945. Reader layer over the append-only `docs/decisions.md` (D-3856, D-
 - D-509, D-519, D-540 (runner) Pushes and remote git and gh calls try `RUNNER_PUSH_TOKEN` first through the environment only, falling back to the App token.
 - D-512 (runner) Every task PR merges on its own after the Opus review and `Ci`, `Twin`, `Ally`, `Governance`; no code-owner review.
 - D-513, D-583, D-584 (runner) The runner prepares each attempt's branch (continued with `main` merged in, else fresh `-a<n>`); a non-fast-forward push fails the attempt, other rejected pushes BLOCK; only a reviewed head, or exactly it plus `main`, merges.
-- D-514 (runner) `actions/cache` keeps cargo, tools and `target/` keyed on toolchain and `Cargo.lock`; every check still runs.
-- D-515, D-646 (runner) `lanes` is 2 (D-646); `leases` per lane mirror `lease`, written only through `with_lease`; `update_state` retries lost races only while the lane is held.
+- D-514, D-1178 (runner) `actions/cache` keeps cargo, tools and `target/`, keyed on toolchain, `Cargo.lock` and the commit SHA; every check still runs; the runner's smoke uses that target and times out at 540 s as exit 124, never a strike or red `main`.
+- D-515, D-646, D-1128 (runner) `lanes` is 1 (D-1128; 2 under D-646); `leases` per lane mirror `lease`, written only through `with_lease`; `update_state` retries lost races only while the lane is held.
 - D-518 (runner) The hourly tick only dispatches `backup-runner.yml`.
 - D-524 (runner) Pacing budget 30M weighted tokens per five hours, 500M per week; real limits still wait for the reset.
-- D-530 (runner) Decision numbers come in reserved blocks of five per claim; `check_pr_change.py` fails duplicates; `docs/decisions.md` merges by union.
+- D-530, D-1029, D-1058, D-1144 (runner) Claims reserve blocks of five above main's and open plan PRs' numbers; plan changes use `--reserve-decision` (interim rule if refused); entries append at the end whatever the number; an attempt failing only on its own `not owned by` paths is free once.
 - D-551 (runner) Only a cleanup task may hand in no commits; the runner records stage 1's proof itself from checked results.
-- D-582 (runner) gitleaks runs with `--verbose --redact` in `Ci` and smoke; a failed check's retry log carries the failed step and a masked excerpt.
+- D-582, D-1263 (runner) gitleaks runs with `--verbose --redact` in `Ci` and smoke; a failed check's retry log carries the failed step and a masked excerpt (download retried once), else failure-level annotations.
 - D-620, D-630 (runner) Tasks in flight never share an owned path or stage; cleanup runs alone; FIX-MAIN has a reserved lane; update merges are exactly reviewed work plus `main`; two strikes fall back to one lane.
 - D-677 (runner) `--requeue T### --plan-fix D-###` gives a capped BLOCKED task one Opus attempt per plan change that lists the decision and changed its entry or prompt.
 - D-723 (runner) A merged pull request's run serves its lane; runs that move a task refill free lanes.
 - D-794 (runner) `tests/test_workflow_shell.py` runs `bash -n` on every workflow `run:` step.
 - D-891 (runner) Pure insertions in shared docs and `Cargo.toml` merge mechanically; other conflicts go to a reviewed worker resync on the same attempt (at most 2).
 - D-930 (runner) Decision IDs parse as three or more digits.
+- D-1023, D-1030, D-1047 (runner) A task that changes a module's row types or queries owns its `src/models.rs`, and one listed for a test-design unit row owns its in-crate test file; plan audits widen `owns` before a stage rather than let `check_paths` fail attempts.
+- D-1088 (runner) FIX-MAIN reverts a merge, then restores `docs/decisions.md` from `main` (`git checkout origin/main -- docs/decisions.md`) and appends its own entry; a `Plan-Change` trailer when the revert touches protected or locked paths.
+- D-1087 (runner) `Ci`, `Twin` and `Ally` run only on push to `claude/**` and `dependabot/**` (one run per head); Governance posts nothing for a head already merged; a pull request from another branch prefix gets no checks.
+- D-1053 (runner) A reverted task's entries stay in the log and are void until its re-run re-decides them under new numbers.
+- D-1099 (runner) A BLOCKED FIX-MAIN is re-armed by the runner after a 30-minute cool-off, up to 3 rounds with an outbox item each, then escalated; a revert that landed with `main` still red asks a person at once; `--requeue FIX-MAIN` works only while `main` is red and it is BLOCKED.
+- D-1126, D-1127 (runner) `sync_graph` copies changed `deps` onto unfinished state entries; `lanes.refusal` checks the graph's dependencies even with nothing in flight.
+- D-1110, D-1155, D-1156, D-1167, D-1189 (runner) Pacing: week budget 200M, headroom 0.03, claim when it fits (no spend line); the plan's usage comes from the action's `rate_limit_event` via `--usage-reading` (`usage.session_reading`, 6 h); a new state key is checked against `kit/state_schema.json` first.
+- D-1143 (runner) Every task not yet started runs on Opus (worker and reviewer); a running attempt keeps its model.
 
 ## Superseded
 
@@ -559,6 +646,11 @@ Through D-945. Reader layer over the append-only `docs/decisions.md` (D-3856, D-
 - D-448 -> D-491
 - D-455 -> D-495
 - D-511 -> D-512
+- D-1037 -> D-1269
+- D-1038 -> D-1270
+- D-1039 -> D-1271
+- D-1040 -> D-1272
+- D-1041 -> D-1273
 
 ## Task-scoped
 
@@ -581,8 +673,25 @@ Through D-945. Reader layer over the append-only `docs/decisions.md` (D-3856, D-
 - T032: D-873, D-875
 - T034: D-858, D-860, D-886
 - T036: D-904, D-932
+- T039: D-981
+- T043: D-1009, D-1012
+- T044: D-1016, D-1017
+- T045: D-1026, D-1027
+- T046: D-1052
+- T052: D-1236
+- T054: D-1247
+- T055: D-1249, D-1252
+- T056: D-1287, D-1289
+- T156: D-1273
 - T168: D-621
 - T172: D-516
+- T173: D-1280, D-1283
 - T178: D-862
 - T179: D-853
+- T184: D-1022
+- T185: D-1034
+- T187: D-1266
+- T208: D-1227, D-1277
+- T213: D-1292
 - T217: D-795
+- T227: D-959

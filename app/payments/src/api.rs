@@ -176,7 +176,7 @@ pub use crate::refunds::{
 };
 pub use crate::release_proof::{
     Minter, Releasable, ReleaseError, SUCCEEDED_EVENT, StripeAccount, VerifiedStripeEvent,
-    no_fee_release, paid_release,
+    held_release, no_fee_release, paid_release,
 };
 pub use crate::routes::{
     DISPUTE_CLOSED_ACTION, FRAUD_WARNING_KIND, ReleaseSink, STRIPE_WEBHOOK_PATH, StripeWebhook,
