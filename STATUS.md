@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T04:35:57Z by runner 8d44d2c311f8 (actions).
+Updated 2026-11-18T04:36:11Z by runner 8d44d2c311f8 (actions).
 
-**Building: T638 in progress since 03:07Z; 424 of 606 done; week 42% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T601 in progress since 04:24Z; 424 of 606 done; week 42% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 424 of 606 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T638 claimed 03:07Z, lease until 07:05Z; lane 2: T601 claimed 04:24Z, lease until 07:24Z; lane 6: T523 claimed 04:19Z, lease until 07:19Z
+- **Lane:** lane 2: T601 claimed 04:24Z, lease until 07:24Z; lane 6: T523 claimed 04:19Z, lease until 07:19Z
 - **Week:** 42% used, 108.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:24Z, 11 min before this update
 - **Keeper:** last ran 04:12Z, next wake 07:08Z
@@ -19,6 +19,7 @@ Updated 2026-11-18T04:35:57Z by runner 8d44d2c311f8 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T638 | harness: Ci skips a compile its job already passed on a prov | MERGE_PENDING | 1 | 88 min | 04:35Z |  |
 | T623 | payments: a Stripe key refusal (401 or 403) takes the Stripe | MERGE_PENDING | 1 | 63 min | 03:46Z |  |
 | T151 | ops and messaging: HELP requests with one owner notification | MERGE_PENDING | 1 | 34 min | 03:40Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T647 | payments: rebuild_charge reports Booked inside a caller's tr | MERGE_PENDING | 1 | 82 min | 03:35Z |  |
@@ -135,9 +136,9 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T638 (lease until 2026-11-18T07:05:51Z)
+- nothing
 - lane 2: T601 (lease until 2026-11-18T07:24:12Z)
 - lane 6: T523 (lease until 2026-11-18T07:19:52Z)
 
 ## Last usage reading
-- {"task": "T623", "at": "2026-11-18T03:46:50Z", "cache_creation_input_tokens": 167709, "cache_read_input_tokens": 2469737, "output_tokens": 31176, "input_tokens": 117}
+- {"task": "T638", "at": "2026-11-18T04:35:54Z", "cache_creation_input_tokens": 508010, "input_tokens": 389, "output_tokens": 147866, "cache_read_input_tokens": 10191205}
