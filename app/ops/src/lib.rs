@@ -15,3 +15,4 @@ mod safe_mode;
 mod scorecard_inputs;
 mod service;
 mod status_banner;
+mod volume_check;
