@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T16:51:24Z by runner d81a220d9ece (actions).
+Updated 2026-11-18T16:51:36Z by runner d81a220d9ece (actions).
 
 **Building: T624 in progress since 16:49Z; 449 of 645 done; week 63% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 449 of 645 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T624 claimed 16:49Z, lease until 19:49Z; lane 2: T621 claimed 16:25Z, lease until 19:25Z; lane 5: T720 claimed 15:43Z, lease until 19:48Z; lane 7: T671 claimed 15:43Z, lease until 18:43Z
+- **Lane:** lane 1: T624 claimed 16:49Z, lease until 19:49Z; lane 2: T621 claimed 16:25Z, lease until 19:25Z; lane 7: T671 claimed 15:43Z, lease until 18:43Z
 - **Week:** 63% used, 66.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:50Z, 0 min before this update
+- **Last run:** 16:50Z, 1 min before this update
 - **Keeper:** last ran 16:50Z, next wake 18:45Z
 
 ## Needs attention
@@ -24,6 +24,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T720 | Decision digest prerequisites (harness): the digest plan and | MERGE_PENDING | 1 | 67 min | 16:51Z |  |
 | T624 | server: two failed in-process health checks in a row raise o | resync | 1 | 49 min | 16:38Z | merging main into the reviewed head conflicts in app/server/src/bin/worker.rs; a resync merges it in on this attempt (D- |
 | T592 | jobs, quotes and site: the home page's numbers read every jo | done | 1 | 40 min | 16:19Z |  |
 | T645 | intake and messaging: the web chat honours an opt-out word,  | BLOCKED | 1 | 4 min | 16:05Z | PLAN GAP: app/site/src/chat.rs:340 (owned by T593, then T646 and T649; T593 is not merged yet) calls `chat_message(db, & |
@@ -137,8 +138,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T624 (lease until 2026-11-18T19:49:16Z)
 - lane 2: T621 (lease until 2026-11-18T19:25:25Z)
-- lane 5: T720 (lease until 2026-11-18T19:48:02Z)
 - lane 7: T671 (lease until 2026-11-18T18:43:09Z)
 
 ## Last usage reading
-- {"task": "T624", "at": "2026-11-18T16:38:07Z", "cache_creation_input_tokens": 126198, "cache_read_input_tokens": 2610117, "input_tokens": 90, "output_tokens": 31528}
+- {"task": "T720", "at": "2026-11-18T16:51:22Z", "output_tokens": 34339, "input_tokens": 71, "cache_read_input_tokens": 1591988, "cache_creation_input_tokens": 94360}
