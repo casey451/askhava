@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T22:50:58Z by runner 6746b488e964 (actions).
+Updated 2026-11-18T22:51:23Z by runner 6746b488e964 (actions).
 
 **Building: T205 in progress since 22:21Z; 461 of 663 done; week 69% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 461 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T205 claimed 22:21Z, lease until 01:21Z; lane 3: T306 claimed 22:14Z, lease until 01:14Z; lane 5: T583 claimed 21:55Z, lease until 00:55Z; lane 6: T701 claimed 22:16Z, lease until 01:16Z
+- **Lane:** lane 2: T205 claimed 22:21Z, lease until 01:21Z; lane 3: T306 claimed 22:14Z, lease until 01:14Z; lane 6: T701 claimed 22:16Z, lease until 01:16Z
 - **Week:** 69% used, 51.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:49Z, 1 min before this update
+- **Last run:** 22:49Z, 2 min before this update
 - **Keeper:** last ran 22:48Z, next wake 00:57Z
 
 ## Needs attention
@@ -19,6 +19,7 @@ Updated 2026-11-18T22:50:58Z by runner 6746b488e964 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T583 | intake and server: the quote-count update text is sent at mo | MERGE_PENDING | 2 | 55 min | 22:50Z | PLAN GAP: kit/prompts/T583.md:51 (budget of 450 changed lines in 3 files) The smallest plan change: raise T583's budget  |
 | T504 | Decisions digest, piece 5: the next entries after the header | MERGE_PENDING | 1 | 39 min | 22:47Z |  |
 | T364 | server and portals: the business step-up code page is served | MERGE_PENDING | 2 | 52 min | 22:05Z | Ci: failure; Python: failure / Python failed at step: Unit, contract and drill tests (pytest) / T705: about 21877 tokens |
 | T651 | server and portals: owner step-up try limit, the passkey pat | MERGE_PENDING | 1 | 2 h 7 min | 21:52Z |  |
@@ -50,7 +51,7 @@ Updated 2026-11-18T22:50:58Z by runner 6746b488e964 (actions).
 | T472 | server (harness): serve the "Can't take it" page and button  | done | 1 | 62 min | 12:45Z |  |
 | T662 | jobs, intake, calls and server: a masked call line closes wh | done | 1 | 73 min | 12:39Z |  |
 | T679 | quotes and businesses: a launch-open category takes requests | done | 1 | 37 min | 12:17Z |  |
-| T583 | intake and server: the quote-count update text is sent at mo | BLOCKED | 1 | 53 min | 12:13Z | PLAN GAP: kit/prompts/T583.md:51 (budget of 450 changed lines in 3 files) The smallest plan change: raise T583's budget  |
+| T583 | intake and server: the quote-count update text is sent at mo | BLOCKED | 1 | 53 min | 12:13Z |  |
 | T700 | Runner (harness): a merge-line task whose turn ran out goes  | done | 1 | 29 min | 12:08Z |  |
 | T200 | ops and portals: the owner help page with its screened reply | QUEUED | 1 | 2 h 57 min | 12:02Z |  |
 | T408 | server: a release waits while safe mode is on and goes ahead | BLOCKED | 2 | 2 h 21 min | 11:34Z | PLAN GAP: kit/prompts/T408.md:54 "Size budget: at most 6 files, 800 changed lines" cannot be met. The prompt's own plan  |
@@ -135,8 +136,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T205 (lease until 2026-11-19T01:21:45Z)
 - lane 3: T306 (lease until 2026-11-19T01:14:21Z)
-- lane 5: T583 (lease until 2026-11-19T00:55:41Z)
 - lane 6: T701 (lease until 2026-11-19T01:16:47Z)
 
 ## Last usage reading
-- {"task": "T504", "at": "2026-11-18T22:47:21Z", "output_tokens": 45037, "cache_read_input_tokens": 6593075, "input_tokens": 124, "cache_creation_input_tokens": 232493}
+- {"task": "T583", "at": "2026-11-18T22:50:56Z", "input_tokens": 168, "cache_read_input_tokens": 7298731, "output_tokens": 53160, "cache_creation_input_tokens": 181231}
