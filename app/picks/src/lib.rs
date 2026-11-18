@@ -48,6 +48,7 @@ mod digest_counts;
 mod dispute_steps;
 mod email_code;
 mod emergency_emails;
+mod flag_inputs;
 mod handlers;
 mod models;
 mod money_notices;
