@@ -10614,10 +10614,10 @@
    "prompt": "kit/prompts/T650.md"
   },
   {
-   "id": "T402",
-   "slug": "quiet-exempt-producers",
-   "title": "intake, picks and server: texts QH-004 lets go at any hour for a fact (an emergency job, a direct reply) are queued with that fact",
-   "goal": "Plan change D-3106 (QH-004, QH-001; D-2628, D-3055): after T356 the outbox sender holds a row outside 8 a.m. to 8 p.m. unless its `quiet_exempt_until` lets it go; plain `messaging::api::enqueue` sets that itself for the any-hour kinds (the 911 text, keyword replies, pick codes, the after-hours notice), but an emergency job's texts and a direct reply are exempt only through `enqueue_exempt`, which no producer calls, so at night they wait for 8 a.m. Each producer here that queues such a text passes its fact through `enqueue_exempt`: an emergency job's quote texts (the first-quote text and quote-count updates), the questions INT-029 asks after the cards, and the homeowner's pick, confirm and connect texts (including the INT-033 texts; the who's-calling and missed-call texts are T403's) carry the job's emergency choice; a reply to her own inbound text carries that text's received time, so it goes at any hour only within 15 minutes of it. The facts are read where the producer already has them (the job row, the inbound delivery), never guessed from words. A producer whose texts are never exempt by a fact keeps plain `enqueue` and is not changed; a producer found outside these files is reported, not worked around. Tests in `tests/integration/tests/quiet_exempt_producers.rs` (TD-QH-07). Every TD-QH, TD-TXT and TD-INT case passes unchanged. Update the `intake`, `picks` and `server` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3999: it follows T564, which also edits `app/picks/src/service.rs` and `app/intake/src/job_texts.rs`. Plan change D-4338: ordered after T662, which first makes both cancel paths in `app/intake/src/closing.rs` and `conversation.rs` queue the masked line's close (CALL-009, CALL-010); keep those calls.",
+   "id": "T704",
+   "slug": "quiet-exempt-intake-producers",
+   "title": "intake: an emergency job's quote texts, the INT-029 questions and intake's direct replies are queued with their QH-004 fact (D-4419)",
+   "goal": "Plan change D-4419 (T402 measured 47% of the context window, over the 45% build limit, from its nine owned files): D-3106 is split by module. This task does D-3106 for every producer in its six `intake` files and creates `tests/integration/tests/quiet_exempt_producers.rs` (TD-QH-07) with the cases for the texts those producers queue: an emergency job's first-quote text and an INT-029 question go at once at 23:10 and the same texts on a regular job wait until 08:00; an `intake` reply queued within 15 minutes of her own inbound text goes at once and one queued later waits until 08:00. T402 follows this task and does the same for `app/picks/src/service.rs` and `app/server/src/inbound_text.rs`, with its cases (the pick-step texts, the server's replies, the 911 text and a HELP reply, now TD-QH-09) in its own `tests/integration/tests/quiet_exempt_pick_replies.rs`; a text those two files queue is not changed here. The quote-count update text named below is queued by `app/intake/src/quote_updates.rs` (T583's), and its QH-004 exemption is T708's, which this task follows; it is not changed here. D-3106 as written for T402: Plan change D-3106 (QH-004, QH-001; D-2628, D-3055): after T356 the outbox sender holds a row outside 8 a.m. to 8 p.m. unless its `quiet_exempt_until` lets it go; plain `messaging::api::enqueue` sets that itself for the any-hour kinds (the 911 text, keyword replies, pick codes, the after-hours notice), but an emergency job's texts and a direct reply are exempt only through `enqueue_exempt`, which no producer calls, so at night they wait for 8 a.m. Each producer here that queues such a text passes its fact through `enqueue_exempt`: an emergency job's quote texts (the first-quote text and quote-count updates), the questions INT-029 asks after the cards, and the homeowner's pick, confirm and connect texts (including the INT-033 texts; the who's-calling and missed-call texts are T403's) carry the job's emergency choice; a reply to her own inbound text carries that text's received time, so it goes at any hour only within 15 minutes of it. The facts are read where the producer already has them (the job row, the inbound delivery), never guessed from words. A producer whose texts are never exempt by a fact keeps plain `enqueue` and is not changed; a producer found outside these files is reported, not worked around. Tests in `tests/integration/tests/quiet_exempt_producers.rs` (TD-QH-07). Every TD-QH, TD-TXT and TD-INT case passes unchanged. Update the `intake`, `picks` and `server` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3999: it follows T564, which also edits `app/picks/src/service.rs` and `app/intake/src/job_texts.rs`. Plan change D-4338: ordered after T662, which first makes both cancel paths in `app/intake/src/closing.rs` and `conversation.rs` queue the masked line's close (CALL-009, CALL-010); keep those calls. Update the `intake` `CLAUDE.md` (not the `picks` or `server` ones, T402's) and `docs/decisions.md`.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -10649,7 +10649,8 @@
     "T489",
     "T564",
     "T650",
-    "T662"
+    "T662",
+    "T708"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -10665,8 +10666,6 @@
     "app/intake/src/closing.rs",
     "app/intake/src/handlers.rs",
     "app/intake/src/job_texts.rs",
-    "app/picks/src/service.rs",
-    "app/server/src/inbound_text.rs",
     "tests/integration/tests/quiet_exempt_producers.rs"
    ],
    "reads": [
@@ -10690,13 +10689,104 @@
     "D-3106",
     "D-3999",
     "D-4294",
-    "D-4338"
+    "D-4338",
+    "D-4419"
    ],
    "cites": [],
    "budget": {
-    "files": 9,
-    "lines": 400,
-    "context_pct": 45
+    "files": 7,
+    "lines": 320,
+    "context_pct": 34
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T704-quiet-exempt-intake-producers",
+   "prompt": "kit/prompts/T704.md",
+   "acceptance": "TD-QH-07 passes in `tests/integration/tests/quiet_exempt_producers.rs` through the worker with the stand-in Twilio; every TD-QH, TD-TXT and TD-INT case passes unchanged; no file outside this task's six `intake` files and the test file changes producer code."
+  },
+  {
+   "id": "T402",
+   "slug": "quiet-exempt-producers",
+   "title": "picks and server: the pick-step texts and the server's direct replies QH-004 lets go at any hour are queued with their fact (D-4419)",
+   "goal": "Plan change D-4419 (this task measured 47% of the context window, over the 45% build limit): D-3106 is split by module. T704, which this task follows, has done D-3106 for the six `intake` producer files and created `tests/integration/tests/quiet_exempt_producers.rs` (TD-QH-07) with their cases; this task does it for every producer in `app/picks/src/service.rs` and `app/server/src/inbound_text.rs` and puts in the new `tests/integration/tests/quiet_exempt_pick_replies.rs` (TD-QH-09, the cases moved from TD-QH-07; a build task may not edit T704's test) the cases for the texts they queue, set up as T704's file is: the pick-step texts (the homeowner's pick, confirm and connect texts, the INT-033 texts among them) go at once at 23:10 on an emergency job and wait until 08:00 on a regular one; a reply the server queues within 15 minutes of her own inbound text goes at once and one queued later waits until 08:00; the 911 text and a HELP reply go at once with no fact passed. T704's file is not changed; where the text below names it as this task's test file, read `tests/integration/tests/quiet_exempt_pick_replies.rs`. The `intake` files are no longer this task's. D-3106 as written before the split: Plan change D-3106 (QH-004, QH-001; D-2628, D-3055): after T356 the outbox sender holds a row outside 8 a.m. to 8 p.m. unless its `quiet_exempt_until` lets it go; plain `messaging::api::enqueue` sets that itself for the any-hour kinds (the 911 text, keyword replies, pick codes, the after-hours notice), but an emergency job's texts and a direct reply are exempt only through `enqueue_exempt`, which no producer calls, so at night they wait for 8 a.m. Each producer here that queues such a text passes its fact through `enqueue_exempt`: an emergency job's quote texts (the first-quote text and quote-count updates), the questions INT-029 asks after the cards, and the homeowner's pick, confirm and connect texts (including the INT-033 texts; the who's-calling and missed-call texts are T403's) carry the job's emergency choice; a reply to her own inbound text carries that text's received time, so it goes at any hour only within 15 minutes of it. The facts are read where the producer already has them (the job row, the inbound delivery), never guessed from words. A producer whose texts are never exempt by a fact keeps plain `enqueue` and is not changed; a producer found outside these files is reported, not worked around. Tests in `tests/integration/tests/quiet_exempt_producers.rs` (TD-QH-07). Every TD-QH, TD-TXT and TD-INT case passes unchanged. Update the `intake`, `picks` and `server` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3999: it follows T564, which also edits `app/picks/src/service.rs` and `app/intake/src/job_texts.rs`. Plan change D-4338: ordered after T662, which first makes both cancel paths in `app/intake/src/closing.rs` and `conversation.rs` queue the masked line's close (CALL-009, CALL-010); keep those calls. Where that text says to update the `intake` and `server` `CLAUDE.md` files: the `intake` one is T704's, and the `server` note goes as a `(task 402)` line at the end of `app/server/NOTES.md` (`app/server/CLAUDE.md` stays as D-4433 trimmed it, so two tasks fit).",
+   "type": "build",
+   "phase": 2,
+   "stage": "6",
+   "module": "picks",
+   "deps": [
+    "T356",
+    "T340",
+    "T341",
+    "T344",
+    "T361",
+    "T382",
+    "T215",
+    "T255",
+    "T103",
+    "T162",
+    "T236",
+    "T370",
+    "T151",
+    "T299",
+    "T317",
+    "T325",
+    "T336",
+    "T357",
+    "T391",
+    "T432",
+    "T328",
+    "T446",
+    "T449",
+    "T489",
+    "T564",
+    "T650",
+    "T662",
+    "T704"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance",
+    "privacy"
+   ],
+   "owns": [
+    "app/picks/src/service.rs",
+    "app/server/src/inbound_text.rs",
+    "tests/integration/tests/quiet_exempt_pick_replies.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quiet-hours.md",
+    "docs/spec/messaging.md",
+    "docs/brains/sms-compliance.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "QH-004",
+    "QH-001"
+   ],
+   "tests": [
+    "TD-QH-09"
+   ],
+   "decisions": [
+    "D-2628",
+    "D-3055",
+    "D-3106",
+    "D-3999",
+    "D-4294",
+    "D-4338",
+    "D-4419"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 220,
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -10704,7 +10794,8 @@
     "Ally"
    ],
    "branch": "claude/task/T402-quiet-exempt-producers",
-   "prompt": "kit/prompts/T402.md"
+   "prompt": "kit/prompts/T402.md",
+   "acceptance": "TD-QH-09 passes in `tests/integration/tests/quiet_exempt_pick_replies.rs` through the worker with the stand-in Twilio; `tests/integration/tests/quiet_exempt_producers.rs` (T704's) and every TD-QH, TD-TXT and TD-INT case pass unchanged."
   },
   {
    "id": "T403",
@@ -16883,10 +16974,75 @@
    "copy": true
   },
   {
+   "id": "T706",
+   "slug": "held-release-check",
+   "title": "payments: held_release, the FEE-017 re-check that clears a pick held while safe mode was on (D-4419)",
+   "goal": "Plan change D-4419 (T408 attempt 2's plan gap, Nov 18, 2026; D-3144; first drafted on `claude/plan-d4422-t408-t583-size`): the payments half of T408 (safe-mode release hold), split out so its money tests land with its code. Add `payments::api::held_release(pool, stripe, account, pick, at)` (`at: Timestamp`, as `paid_release` takes it for `store_success` and the late-success refund, `release_proof.rs:224`, `:392`) to `app/payments/src/release_proof.rs` (one `pub use` line in the shared `app/payments/src/api.rs`): the only way T408's held-release task re-clears a pick it held while safe mode was on (OPS-024: a paused release goes ahead only after the FEE-017 check). A stored attempt status cannot tell a verified event's success from a press's or the reconcile's (a press, `app/payments/src/charge.rs:234`, a late answer, `:659`, and a verified event's `store_success`, `app/payments/src/release_proof.rs:401`, all write through the same `handlers::record`, `app/payments/src/handlers.rs:118`), so for a paid pick `held_release` re-fetches the pick's stored intent from Stripe and runs `check_intent` (succeeded, mode, the server's fee, `metadata.pick_id`), as `paid_release` does (`release_proof.rs:206` to `:224`), with no connection held across the fetch; for a $0 pick it keeps `no_fee_release`'s ledger check (`release_proof.rs:243`). A pick ended in `payments` (`payments.pick_intent.ended_at`, read before the fetch and again after storing the success, as D-1478 does for `paid_release`) clears nothing, has its success stored and one late-success refund queued in one transaction (FEE-021, D-2290), and answers `ReleaseError::PickEnded`. Safe mode pauses only charges and releases (OPS-001), so a refund (an early-fraud-warning refund among them) or a dispute can land while a pick is held, `payments.pick_intent.ended_at` is not set by either (`refunds.rs` and `disputes.rs` never write it), and Stripe still reports the intent succeeded: so after storing the success, `held_release` reads, under `FOR SHARE OF` the pick's `payments.pick_intent` row as `from_stored_success` does (`release_proof.rs:294` to `:296`), whether the pick has a `payments.refund` or a `payments.dispute` row, and if so clears nothing and answers `PickEnded` (FEE-026; no second refund is queued, the money is already on its way back or disputed). The ended branch never upgrades a `FOR SHARE` lock: the refund-or-dispute read takes its `FOR SHARE OF` lock only in a transaction that writes nothing, and the ended-pick refund is written in its own transaction, as `ended_late` does (`release_proof.rs:390`), so no transaction takes `FOR SHARE` and then writes the same row. Nothing else makes a `Releasable` (SEC-030): `held_release` never calls T255's `Releasable::from_stored_success`, which re-clears only a pick whose proof was already spent (D-3358), and it mints no `ReleaseProof` (only `Minter::mint` does). Its production caller is T408's `run_held_release` (T408 runs after this task; a reader landing before its caller, as D-4202's T605 did); its `///` comment names T408 and OPS-024. Tests TD-FEE-72 in the new `app/payments/src/tests/held_release.rs` (one `mod` line in the shared `app/payments/src/tests/mod.rs`), `#[sqlx::test]` on PostgreSQL with a fake Stripe client implementing the trait `paid_release` takes, fake data only, one case per branch (a failed Stripe fetch, an intent not succeeded, an intent for another pick ID, a pick with no `payments.pick_intent` and no `payments.pick_fee` row (no fee row: `NoFeeDecision`, nothing read from Stripe), a $0 pick whose fee row has no $0 decision in the ledger, the payments-ended pick and its single refund with a second call queuing no second, a paid pick refunded while held, a paid pick disputed while held, and the two clears) so the `app/payments/` 95% branch floor holds (`tests/coverage_floor.json`). Build notes: a `(task 706)` line at the end of `app/payments/NOTES.md`; update `docs/decisions.md` (no new cross-module call: `server` already calls `payments::api`). Budget 2 owned files, 450 lines (T408 attempt 2 measured about 70 lines for `held_release` and a 130-line payments test for the ended-pick branch alone).",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "payments",
+   "deps": [
+    "T105",
+    "T359",
+    "T255"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "security"
+   ],
+   "owns": [
+    "app/payments/src/release_proof.rs",
+    "app/payments/src/tests/held_release.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/ops-recovery.md",
+    "docs/spec/fees.md",
+    "docs/brains/payments-stripe.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "OPS-024",
+    "FEE-021",
+    "FEE-026"
+   ],
+   "tests": [
+    "TD-FEE-72"
+   ],
+   "decisions": [
+    "D-3144",
+    "D-133",
+    "D-1478",
+    "D-2290",
+    "D-3358",
+    "D-4202",
+    "D-4419"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 450,
+    "context_pct": 15
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T706-held-release-check",
+   "prompt": "kit/prompts/T706.md",
+   "acceptance": "TD-FEE-72 passes against PostgreSQL; every existing release, webhook and payments test passes unchanged; no `ReleaseProof` is made anywhere but `Minter::mint`; the `app/payments/` 95% branch floor holds."
+  },
+  {
    "id": "T408",
    "slug": "safe-mode-release-hold",
-   "title": "payments and server: a release waits while safe mode is on and goes ahead after the FEE-017 check when it ends",
-   "goal": "Plan change D-3144 (OPS-001, OPS-024, FEE-017, FEE-021, PICK-022, SEC-030; D-133, D-491): safe mode pauses releases as well as charges, but every release goes through `server`'s `PickReleaser` (`app/server/src/release_sink.rs:78`), which no switch reaches, and T105, which builds safe mode, owns none of the release files. (1) While `ops::api::safe_mode_on` (T487) is true, `PickReleaser` settles and releases nothing for a cleared pick: it queues one held-release task (its payload the pick ID and its due time, since a claimed task carries no run time, `app/core/src/tasks.rs:100`; deduplicated per pick) and answers success, so the Stripe route answers 200 and Stripe sends nothing again. (2) The task (`app/server/src/release_hold.rs`, registered in `worker_registry`, `app/server/src/lib.rs:788`, which has the settings the releaser and its Stripe client are built from, on every path so `tests/integration/tests/task_registry.rs` finds its kind) while safe mode lasts enqueues the next run 15 minutes later and finishes: a handler cannot move its own `core.task` row (`core::api` exports no defer, and `server` may not write `core` tables), so the payload carries the pick ID and the run's due time, and the next run is `core::api::enqueue`d due 15 minutes after that time under the dedupe key `<kind>.<pick>.<run_at in microseconds>` (`core.task.dedupe_key` stays unique after a task is done, so the first held-release task's per-pick key is never reused, and a rerun of the same run enqueues the same key, which is refused, D-3263) and, once safe mode has ended, clears the pick again through a new `payments::api::held_release(pool, stripe, account, pick)` in `app/payments/src/release_proof.rs`. A stored attempt status cannot tell a verified event's success from a press's or the reconcile's (a press, `app/payments/src/charge.rs:234`, a late answer, `:659`, and a verified event's `store_success`, `app/payments/src/release_proof.rs:401`, all write through the same `handlers::record`, `app/payments/src/handlers.rs:118`), so for a paid pick `held_release` re-fetches the pick's stored intent from Stripe and runs `check_intent` (succeeded, mode, the server's fee, `metadata.pick_id`), as `paid_release` does (`release_proof.rs:206` to `:224`), and for a $0 pick keeps `no_fee_release`'s ledger check; nothing else makes a `Releasable` (SEC-030); `held_release` never uses T255's `Releasable::from_stored_success`, which re-clears only a pick whose proof was already spent (D-3358). Then the sink's normal settle and release run; the settle moves nothing for a pick no longer awaiting confirm (FEE-017), so a job cancelled or a pick ended meanwhile releases nothing, and a paid pick that ended gets the one late-success refund `paid_release` queues for an ended pick (FEE-021, D-2290). A second event for a held pick and a rerun of the task release once at most (the release row is the once, PICK-022); a pick released before safe mode began is untouched. Tests in `app/server/tests/safe_mode_release.rs` (TD-OPS-40), fake data only. Its build notes are `(task 408)` lines at the end of `app/server/NOTES.md` and `app/payments/NOTES.md` (`app/server/CLAUDE.md` is at its 8,192-byte cap and is not edited); update `docs/architecture.md` and `docs/decisions.md`. Plan change D-3879 (Fable's pre-claim check of stage-5 wave 2, Nov 16, 2026): (1b) `address_in` (`app/server/src/release_sink.rs:209` to `:232`, registered at `:254`) re-clears, settles and calls `release_settled` directly, not through `PickReleaser`, so an emergency pick waiting for its address would be released during safe mode (OPS-001 pauses releases). `address_in` checks `ops::api::safe_mode_on` first; an error reading it releases nothing and returns `ReleaseError::Database`, so the task is retried (fails closed); while it is on, it releases nothing and enqueues the next `intake.address_in` run 15 minutes later under the same run-time dedupe scheme as the held-release task; TD-OPS-40 has that case. Plan change D-4026 (T408 attempt 1's plan gap, Nov 16, 2026; amends D-4000 (4)): T487's TD-OPS-01 source check (`tests/integration/tests/safe_mode.rs:456` to `:494`) allows a `safe_mode_on(` call only in `payments/src/handlers.rs` and `app/ops/src/`, because the release gate was not on `main` when T487 ran; OPS-001 pauses releases too, so this task is a harness task and takes over that test (T487 is done). In that test only: (i) the function `td_ops_01_every_action_checks_its_switches_and_only_charges_read_safe_mode` is renamed `td_ops_01_every_action_checks_its_switches_and_only_charges_and_releases_read_safe_mode`, and its doc comment says only the charge and release gates read safe mode, so texts keep going (D-133); (ii) `safe_mode_on(` is allowed in exactly two more files, `app/server/src/release_sink.rs` and `app/server/src/release_hold.rs`; (iii) a positive assertion requires each of the two to contain `safe_mode_on(` on a non-comment line (its trimmed text not starting with `//`); (iv) the held-release handler is a named, non-closure `fn run_held_release` in `release_hold.rs` (not a closure inside a `pub fn register_*`; the registration calls it by name), and in those two files, for each non-comment line containing `safe_mode_on(`, the nearest enclosing `fn` above it must be `settle_and_release` (of `PickReleaser`), `address_in` or `run_held_release`, or a non-`pub` `fn`, which the check asserts, so neither file can export a renamed wrapper of the safe-mode read; (v) no texting-gate file (any `app/messaging/src/` file, and `app/server/src/inbound_text.rs`) contains `release_sink` or `release_hold`. `release_sink::` stays allowed elsewhere in `server` (T304 uses `release_sink::StripeHooks`). Every other file stays forbidden, the `charges_paused(` rule (a release never reads the charge pause, which also answers the `charging` and `all` switches) and the gate list are unchanged, and no other test in the file changes. `server` calls `ops::api::safe_mode_on` directly (`server` already calls `askhava_ops::api`, `app/server/src/lib.rs:739`). Stale docs this makes untrue are fixed here: the safe-mode line of `docs/architecture.md` (`:184`, \"Nothing else reads safe mode\") names the release gate too, the `//!` line of `app/ops/src/safe_mode.rs:14` (\"Only `payments::handlers::charges_paused` reads it\") names the two release files (a comment change to the sentence at `:14` to `:15`, which wraps; nothing else in that file), and a `(task 408)` line goes at the end of `app/ops/NOTES.md`. Plan change D-4326 (night pre-claim scout, Nov 18, 2026, re-verified on `main` d662af7e5): TD-OPS-01's source walk (`tests/integration/tests/safe_mode.rs:440` to `:449`, `:481`, `:487`) reads every `.rs` file under `app/`, `app/server/tests/` included, so `app/server/tests/safe_mode_release.rs` never contains the text `safe_mode_on(` or `charges_paused(`, not even in a comment, a string or a helper's name. TD-OPS-40 turns safe mode on and off only through the stored `ops.safe_mode` row (as `tests/integration/tests/safe_mode.rs:425` does) or by raising a `critical` alert and running `ops::api::check_safe_mode`, never through a High alert of another kind, so T652's narrowing of the kinds that start safe mode (D-4310) cannot break it. Budget raised to 800 lines, the harness limit (`scripts/validate_tasks.py:218`): the comparable release tests run 333 to 774 lines.",
+   "title": "server: a release waits while safe mode is on and goes ahead after the FEE-017 check when it ends",
+   "goal": "Plan change D-3144 (OPS-001, OPS-024, FEE-017, FEE-021, PICK-022, SEC-030; D-133, D-491): safe mode pauses releases as well as charges, but every release goes through `server`'s `PickReleaser` (`app/server/src/release_sink.rs:78`), which no switch reaches, and T105, which builds safe mode, owns none of the release files. (1) While `ops::api::safe_mode_on` (T487) is true, `PickReleaser` settles and releases nothing for a cleared pick: it queues one held-release task (its payload the pick ID and its due time, since a claimed task carries no run time, `app/core/src/tasks.rs:100`; deduplicated per pick) and answers success, so the Stripe route answers 200 and Stripe sends nothing again. An error reading safe mode settles, releases and queues nothing and returns `ReleaseError::Database`, so the Stripe route answers 500 and Stripe sends the event again (fails closed); TD-OPS-40 makes that read fail with `ALTER TABLE ops.safe_mode RENAME TO safe_mode_unreadable` in the test's own database (the test pool connects as the database's owner, so a `REVOKE` from the app role would change nothing; the database is the test's alone, so nothing is restored). The gate queues nothing for a pick whose `picks.release` row already exists (released before safe mode began, or a duplicate event after its release) and answers as the sink answers an already released pick; it reads that through `picks::api::is_released(conn, pick)`, which this task makes by renaming the private `claimed` (`app/picks/src/release.rs:385`) and making it `pub`, with one `pub use` in the shared `app/picks/src/api.rs` (nothing else in `release.rs` changes). (2) The task (`app/server/src/release_hold.rs`, registered in `worker_registry`, `app/server/src/lib.rs:788`, which has the settings the releaser and its Stripe client are built from, on every path so `tests/integration/tests/task_registry.rs` finds its kind) while safe mode lasts enqueues the next run 15 minutes later and finishes: a handler cannot move its own `core.task` row (`core::api` exports no defer, and `server` may not write `core` tables), so the payload carries the pick ID and the run's due time, and the next run is `core::api::enqueue`d due 15 minutes after that time under the dedupe key `<kind>.<pick>.<run_at in microseconds>` (`core.task.dedupe_key` stays unique after a task is done, so the first held-release task's per-pick key is never reused, and a rerun of the same run enqueues the same key, which is refused, D-3263) and, once safe mode has ended, clears the pick again through `payments::api::held_release(pool, stripe, account, pick, at)` (`at` read from the worker's clock, the one the releaser's `settle_and_release` reads), which T706 builds in `app/payments/src/release_proof.rs` before this task, with its own tests (TD-FEE-72, D-4419): for a paid pick it re-fetches the stored intent from Stripe and runs `check_intent`, for a $0 pick it keeps `no_fee_release`'s ledger check, and a pick ended in `payments` gets its success stored, one late-success refund queued and `PickEnded`; nothing else makes a `Releasable` (SEC-030), and this task never calls `Releasable::from_stored_success` (D-3358) and does not change `app/payments/`. Then the sink's normal settle and release run; the settle moves nothing for a pick no longer awaiting confirm (FEE-017), so a job cancelled or a pick ended meanwhile releases nothing, and a paid pick that ended gets the one late-success refund `paid_release` queues for an ended pick (FEE-021, D-2290). A second event for a held pick and a rerun of the task release once at most (the release row is the once, PICK-022); a pick released before safe mode began is untouched. Tests in `app/server/tests/safe_mode_release.rs` (TD-OPS-40), fake data only. Its build notes are `(task 408)` lines at the end of `app/server/NOTES.md` (`app/server/CLAUDE.md` stays as D-4433 trimmed it, so two tasks fit, and is not edited); update `docs/architecture.md` and `docs/decisions.md`. Plan change D-3879's (1b), the `address_in` gate (`app/server/src/release_sink.rs:209` to `:232`), and its case are T707's, after this task (D-4419); this task's TD-OPS-01 rule (iv) below already names `address_in`, and this task does not change `address_in`. Plan change D-4026 (T408 attempt 1's plan gap, Nov 16, 2026; amends D-4000 (4)): T487's TD-OPS-01 source check (`tests/integration/tests/safe_mode.rs:456` to `:494`) allows a `safe_mode_on(` call only in `payments/src/handlers.rs` and `app/ops/src/`, because the release gate was not on `main` when T487 ran; OPS-001 pauses releases too, so this task is a harness task and takes over that test (T487 is done). In that test only: (i) the function `td_ops_01_every_action_checks_its_switches_and_only_charges_read_safe_mode` is renamed `td_ops_01_every_action_checks_its_switches_and_only_charges_and_releases_read_safe_mode`, and its doc comment says only the charge and release gates read safe mode, so texts keep going (D-133); (ii) `safe_mode_on(` is allowed in exactly two more files, `app/server/src/release_sink.rs` and `app/server/src/release_hold.rs`; (iii) a positive assertion requires each of the two to contain `safe_mode_on(` on a non-comment line (its trimmed text not starting with `//`); (iv) the held-release handler is a named, non-closure `fn run_held_release` in `release_hold.rs` (not a closure inside a `pub fn register_*`; the registration calls it by name), and in those two files, for each non-comment line containing `safe_mode_on(`, the nearest enclosing `fn` above it must be `settle_and_release` (of `PickReleaser`), `address_in` or `run_held_release`, or a non-`pub` `fn`, which the check asserts, so neither file can export a renamed wrapper of the safe-mode read; (v) no texting-gate file (any `app/messaging/src/` file, and `app/server/src/inbound_text.rs`) contains `release_sink` or `release_hold`. `release_sink::` stays allowed elsewhere in `server` (T304 uses `release_sink::StripeHooks`). Every other file stays forbidden, the `charges_paused(` rule (a release never reads the charge pause, which also answers the `charging` and `all` switches) and the gate list are unchanged, and no other test in the file changes. `server` calls `ops::api::safe_mode_on` directly (`server` already calls `askhava_ops::api`, `app/server/src/lib.rs:739`). Stale docs this makes untrue are fixed here: the safe-mode line of `docs/architecture.md` (`:184`, \"Nothing else reads safe mode\") names the release gate too, the `//!` line of `app/ops/src/safe_mode.rs:14` (\"Only `payments::handlers::charges_paused` reads it\") names the two release files (a comment change to the sentence at `:14` to `:15`, which wraps; nothing else in that file), and a `(task 408)` line goes at the end of `app/ops/NOTES.md`. Plan change D-4326 (night pre-claim scout, Nov 18, 2026, re-verified on `main` d662af7e5): TD-OPS-01's source walk (`tests/integration/tests/safe_mode.rs:440` to `:449`, `:481`, `:487`) reads every `.rs` file under `app/`, `app/server/tests/` included, so `app/server/tests/safe_mode_release.rs` never contains the text `safe_mode_on(` or `charges_paused(`, not even in a comment, a string or a helper's name. TD-OPS-40 turns safe mode on and off only through the stored `ops.safe_mode` row (as `tests/integration/tests/safe_mode.rs:425` does) or by raising a `critical` alert and running `ops::api::check_safe_mode`, never through a High alert of another kind, so T652's narrowing of the kinds that start safe mode (D-4310) cannot break it. Plan change D-4419 (T408 attempt 2's plan gap, Nov 18, 2026): attempt 2 measured 14 files and 1,136 changed lines, over the 800-line harness limit (`scripts/validate_tasks.py:218`), so the work is split, each piece with its own tests: T706 (`held_release` and its payments tests, TD-FEE-72) before this task, this task (the `PickReleaser` gate, the held-release task, TD-OPS-01's source check and TD-OPS-40), and T707 (the `address_in` gate, TD-OPS-48) after it. TD-OPS-40 keeps one held-path refusal (an intent Stripe does not report succeeded); `held_release`'s other refusals and its payments-ended case are TD-FEE-72's. The held pick whose job was cancelled meanwhile (FEE-017, FEE-021), a second verified event or a rerun after the release (PICK-022) and a pick released before safe mode began are TD-OPS-49's, T707's, which follows this task; the behaviour is this task's to build as written above. Budget 5 owned files, 800 changed lines counted in those five files only (`docs/`, the `NOTES.md` files and the shared paths do not count): attempt 2 measured about 900 in them (about 1,136 in all 14 files), of which the address_in gate and case, `held_release`'s refusal cases and the cases moved to TD-OPS-49 are about 250.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -16897,7 +17053,8 @@
     "T255",
     "T266",
     "T433",
-    "T487"
+    "T487",
+    "T706"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -16905,15 +17062,16 @@
    "review_areas": [
     "money",
     "security",
-    "harness"
+    "harness",
+    "privacy"
    ],
    "owns": [
-    "app/payments/src/release_proof.rs",
     "app/server/src/release_sink.rs",
     "app/server/src/release_hold.rs",
     "app/server/tests/safe_mode_release.rs",
     "tests/integration/tests/safe_mode.rs",
-    "app/ops/src/safe_mode.rs"
+    "app/ops/src/safe_mode.rs",
+    "app/picks/src/release.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -16940,13 +17098,14 @@
     "D-3358",
     "D-3879",
     "D-4026",
-    "D-4326"
+    "D-4326",
+    "D-4419"
    ],
    "cites": [],
    "budget": {
     "files": 6,
     "lines": 800,
-    "context_pct": 20
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -16955,7 +17114,75 @@
    ],
    "branch": "claude/task/T408-safe-mode-release-hold",
    "prompt": "kit/prompts/T408.md",
-   "acceptance": "TD-OPS-40 passes against PostgreSQL; every existing release, webhook and payments test passes unchanged; `tests/integration/tests/safe_mode.rs` changes only by D-4026's rename, its two allowed release files, the non-comment positive assertion, the nearest-enclosing-`fn` rule for those files (`settle_and_release`, `address_in`, `run_held_release` or a non-`pub` `fn`) and the texting-gate ban on `release_sink`/`release_hold`, and `app/ops/src/safe_mode.rs` only in its `//!` sentence at `:14` to `:15`; no `ReleaseProof` is made anywhere but `Minter::mint`; the `app/payments/` 95% floor holds."
+   "acceptance": "TD-OPS-40 passes against PostgreSQL; every existing release, webhook and payments test passes unchanged; `tests/integration/tests/safe_mode.rs` changes only by D-4026's rename, its two allowed release files, the non-comment positive assertion, the nearest-enclosing-`fn` rule for those files (`settle_and_release`, `address_in`, `run_held_release` or a non-`pub` `fn`) and the texting-gate ban on `release_sink`/`release_hold`, and `app/ops/src/safe_mode.rs` only in its `//!` sentence at `:14` to `:15`; `app/picks/src/release.rs` changes only by `claimed` becoming `pub fn is_released`; `app/payments/` and `address_in` are unchanged (T706's and T707's, D-4419); no `ReleaseProof` is made anywhere but `Minter::mint`."
+  },
+  {
+   "id": "T707",
+   "slug": "safe-mode-address-in",
+   "title": "server: an emergency pick's address re-release waits while safe mode is on, and a held release goes ahead once only (D-3879, D-4419)",
+   "goal": "Plan change D-4419 (T408 attempt 2's plan gap, Nov 18, 2026): D-3879's (1b), split out of T408. `address_in` (`app/server/src/release_sink.rs:209` to `:232`, registered at `:254`) re-clears, settles and calls `release_settled` directly, not through `PickReleaser`, so an emergency pick waiting for its address would be released during safe mode (OPS-001 pauses releases). `address_in` checks `ops::api::safe_mode_on` first, in `fn address_in` itself: T408's TD-OPS-01 source check (`tests/integration/tests/safe_mode.rs`, D-4026) allows that read in `release_sink.rs` only on a non-comment line whose nearest enclosing `fn` is `settle_and_release`, `address_in`, `run_held_release` or a non-`pub` `fn`. An error reading it releases nothing and returns `ReleaseError::Database`, so the task is retried (fails closed); while it is on, it releases nothing, enqueues the next `intake.address_in` run 15 minutes later through `core::api::enqueue` (`server` may not write `core` tables) under T408's scheme (D-3263): the payload carries the pick and the next run's due time, the first deferral (from a run whose payload has no due time, as `intake` queues it) has the dedupe key `intake.address_in.<pick>.held` (never `intake.address_in.<pick>`, the key `intake` gave the first run, `app/intake/src/address_wait.rs:135`, which `core.task.dedupe_key` keeps unique for all time, `migrations/0020_core_task_queue.sql:22`, so reusing it would be refused and the address never released), and every later one `intake.address_in.<pick>.<run_at in microseconds of the run it follows>`; so a rerun of the same run enqueues the same key, which is refused, and enqueues nothing; and finishes. Once safe mode has ended the run releases as before, once (the release row, PICK-022). Tests TD-OPS-48 in the new `app/server/tests/safe_mode_address_in.rs`, with the fail-closed case too (the read of `ops.safe_mode` made to fail with `ALTER TABLE ops.safe_mode RENAME TO safe_mode_unreadable` in the test's own database, since the test pool connects as the database's owner and a `REVOKE` from the app role would change nothing; nothing is restored, the database being the test's alone; gives a handler error, no release row and no deferral row), driven through the registered handler (`register_address_in`, as the first T408 review required), fake data only; safe mode is turned on and off only through the stored `ops.safe_mode` row or a `critical` alert and `ops::api::check_safe_mode` (D-4326), and the file never contains the text `safe_mode_on(` or `charges_paused(`, not even in a comment, a string or a helper's name (TD-OPS-01's source walk reads every `.rs` file under `app/`). Build notes: a `(task 707)` line at the end of `app/server/NOTES.md` (`app/server/CLAUDE.md` stays as D-4433 trimmed it, so two tasks fit, and is not edited); update `docs/decisions.md`. Also tests TD-OPS-49 in the new `app/server/tests/safe_mode_release_once.rs` for T408's held-release task, through the same registered handlers and the same safe-mode rules (the file never contains `safe_mode_on(` or `charges_paused(`): a held paid pick whose job was cancelled while safe mode lasted releases nothing once it ends and its charge gets exactly one late-success refund (FEE-017, FEE-021, D-2290); after a held pick is released, a second verified event for it and a rerun of the run that released it release nothing more (one release row, one notice, PICK-022); a pick released before safe mode began is untouched by the gate and queues no held-release task. A case that fails shows a fault in T408's code: fix it in `release_sink.rs` (owned here) or report a plan gap for `release_hold.rs`, never change the case. Budget 3 owned files, 560 lines (build limit 600): the gate about 30, TD-OPS-48 about 200, TD-OPS-49 about 250.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T408"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "security"
+   ],
+   "owns": [
+    "app/server/src/release_sink.rs",
+    "app/server/tests/safe_mode_address_in.rs",
+    "app/server/tests/safe_mode_release_once.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/ops-recovery.md",
+    "docs/spec/fees.md",
+    "docs/spec/quotes-pick.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "OPS-001",
+    "OPS-024",
+    "PICK-022",
+    "FEE-021"
+   ],
+   "tests": [
+    "TD-OPS-48",
+    "TD-OPS-49"
+   ],
+   "decisions": [
+    "D-3144",
+    "D-133",
+    "D-3263",
+    "D-3879",
+    "D-4026",
+    "D-4326",
+    "D-4419",
+    "D-2290",
+    "D-1478"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 560,
+    "context_pct": 15
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T707-safe-mode-address-in",
+   "prompt": "kit/prompts/T707.md",
+   "acceptance": "TD-OPS-48 and TD-OPS-49 pass against PostgreSQL; `app/server/tests/address_rerelease.rs`, `app/server/tests/safe_mode_release.rs` and `tests/integration/tests/safe_mode.rs` pass unchanged."
   },
   {
    "id": "T320",
@@ -19733,14 +19960,14 @@
    "id": "T117",
    "slug": "runbook",
    "title": "docs/runbook.md: outages, safe mode, refunds, disputes, complaints, STOP issues, restore, breach steps",
-   "goal": "`docs/runbook.md` covers outages, safe mode, refunds, disputes, STOP issues, the restore drill with the switch to the restored database, the host choice and the breach steps (pause texting and charging, preserve logs, Arizona's 45-day notice), with the key inventory and no hosting key for Claude (OPS-012, OPS-014, OPS-020 to OPS-022, PRIV-024). The breach-notice steps follow OPS-020 (letter, email or a live call, never text alone; substitute notice; the law-enforcement pause; the Attorney General's form; processors' duty), and the runbook says to fix forward after a key rotation and never roll back past it (OPS-054, D-492). Plan change D-3144: the safe-mode steps say that a release waits while safe mode is on and goes ahead after the FEE-017 check when it ends (T408, a dependency), while charges and \"Confirm and pay\" presses are refused until it ends. Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): the runbook also covers complaints (`BUILD_BRIEF.md:526` lists them): how a homeowner's or business's complaint reaches Casey and what he does with it. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): TD-PRIV-09's \"inventory names every secret\" is checked against the secret names PRIV-024 lists, never by parsing `KEYS` in `app/core/src/settings.rs`, so a later task adding a key breaks no test of this task's; the restore steps name `server replay` (T206); and if T116's decision keeps inbound mail at the provider, the runbook records the provider's written retention period (OPS-045).",
+   "goal": "`docs/runbook.md` covers outages, safe mode, refunds, disputes, STOP issues, the restore drill with the switch to the restored database, the host choice and the breach steps (pause texting and charging, preserve logs, Arizona's 45-day notice), with the key inventory and no hosting key for Claude (OPS-012, OPS-014, OPS-020 to OPS-022, PRIV-024). The breach-notice steps follow OPS-020 (letter, email or a live call, never text alone; substitute notice; the law-enforcement pause; the Attorney General's form; processors' duty), and the runbook says to fix forward after a key rotation and never roll back past it (OPS-054, D-492). Plan change D-3144: the safe-mode steps say that a release waits while safe mode is on and goes ahead after the FEE-017 check when it ends (T408, with T706 and T707, D-4419; T707, the last of them, a dependency), while charges and \"Confirm and pay\" presses are refused until it ends. Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): the runbook also covers complaints (`BUILD_BRIEF.md:526` lists them): how a homeowner's or business's complaint reaches Casey and what he does with it. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): TD-PRIV-09's \"inventory names every secret\" is checked against the secret names PRIV-024 lists, never by parsing `KEYS` in `app/core/src/settings.rs`, so a later task adding a key breaks no test of this task's; the restore steps name `server replay` (T206); and if T116's decision keeps inbound mail at the provider, the runbook records the provider's written retention period (OPS-045).",
    "type": "docs",
    "phase": 1,
    "stage": "5",
    "module": null,
    "deps": [
     "T206",
-    "T408"
+    "T707"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -19782,7 +20009,8 @@
     "D-1143",
     "D-3144",
     "D-3844",
-    "D-3889"
+    "D-3889",
+    "D-4419"
    ],
    "cites": [
     "BUILD_BRIEF.md:526"
@@ -19856,7 +20084,7 @@
    "id": "T118",
    "slug": "e2e-j3-operator",
    "title": "Journey J3 (operator) keyboard-only, with closing checks",
-   "goal": "Journey J3 (owner sign-in, pause, refund, fee mode, safe mode, audit viewer) runs end to end in Playwright, again keyboard-only, ending with the closing checks (A11Y-005, A11Y-021). Plan change D-3744: J3 step 5's paused release that goes ahead once the alert is acknowledged is T408's held-release task (`app/server/src/release_hold.rs`, `payments::api::held_release`), so this task depends on T408. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744). Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): J3's refund needs Stripe, which only the keyed binary has (`tests/e2e/webserver.ts:115` to `:137`), so the refund step runs on `keyedUrl()` with the owner signed in there through `owner_session.ts` (which takes the base URL, T303); no step relies on a session made on the other binary's port. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): T536 runs J3 and J4 in a Playwright project after every other spec (their clock advances would expire later specs' seeded sessions), starts the suite's worker with the keyed values so step 5's held release, safety text and STOP confirmation run, and gives the keyed binary a public base URL and a Twilio-signing helper so a STOP can be posted; so this task depends on T536. Its seeds take the app clock (`GET /__test/clock`), never the database's `now()`. Shared steps live in `tests/e2e/j3.ts` (as `tests/e2e/j2.ts` serves T099's two specs). `j3_keyboard.spec.ts` uses the e2e `test` with `test.use({ controlSecret: controlSecret() })` (the a11y config sets none). Step 4's \"business must accept a new authorization\" asserts only the refusal (no page stores the FEE-015 authorization, D-3857). TD-TXT-15 switches the launch channel to web-and-email (`app/messaging/src/mode_state.rs:198`) and back at the end, and safe mode is ended before the spec exits, each in an `afterAll` so a failure leaves the shared database clean. Plan change D-3893: this task's specs run in T536's late Playwright project, so a single-file run also runs the whole first project; add `--no-deps` while iterating on one spec, and the commands under \"Run your tests\" stay the hand-in check.",
+   "goal": "Journey J3 (owner sign-in, pause, refund, fee mode, safe mode, audit viewer) runs end to end in Playwright, again keyboard-only, ending with the closing checks (A11Y-005, A11Y-021). Plan change D-3744: J3 step 5's paused release that goes ahead once the alert is acknowledged is T408's held-release task (`app/server/src/release_hold.rs`, `payments::api::held_release`), so this task depends on T707, the last task of T408's split (D-4419), which follows T408. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744). Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): J3's refund needs Stripe, which only the keyed binary has (`tests/e2e/webserver.ts:115` to `:137`), so the refund step runs on `keyedUrl()` with the owner signed in there through `owner_session.ts` (which takes the base URL, T303); no step relies on a session made on the other binary's port. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): T536 runs J3 and J4 in a Playwright project after every other spec (their clock advances would expire later specs' seeded sessions), starts the suite's worker with the keyed values so step 5's held release, safety text and STOP confirmation run, and gives the keyed binary a public base URL and a Twilio-signing helper so a STOP can be posted; so this task depends on T536. Its seeds take the app clock (`GET /__test/clock`), never the database's `now()`. Shared steps live in `tests/e2e/j3.ts` (as `tests/e2e/j2.ts` serves T099's two specs). `j3_keyboard.spec.ts` uses the e2e `test` with `test.use({ controlSecret: controlSecret() })` (the a11y config sets none). Step 4's \"business must accept a new authorization\" asserts only the refusal (no page stores the FEE-015 authorization, D-3857). TD-TXT-15 switches the launch channel to web-and-email (`app/messaging/src/mode_state.rs:198`) and back at the end, and safe mode is ended before the spec exits, each in an `afterAll` so a failure leaves the shared database clean. Plan change D-3893: this task's specs run in T536's late Playwright project, so a single-file run also runs the whole first project; add `--no-deps` while iterating on one spec, and the commands under \"Run your tests\" stay the hand-in check.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -19867,7 +20095,7 @@
     "T304",
     "T310",
     "T414",
-    "T408",
+    "T707",
     "T536"
    ],
    "model": "claude-sonnet-5-5",
@@ -19903,7 +20131,8 @@
     "D-3744",
     "D-3844",
     "D-3889",
-    "D-3893"
+    "D-3893",
+    "D-4419"
    ],
    "cites": [],
    "budget": {
@@ -20556,8 +20785,8 @@
   {
    "id": "T583",
    "slug": "quote-count-update-texts",
-   "title": "intake and server: the quote-count update text is sent, at most once per 3 hours, merged after quiet hours and dropped on a closed job",
-   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): (B21 and TXT-017) The audit found `messaging::rules::plan_release` (`app/messaging/src/rules.rs:340`) with no production caller and said QH-007 and TXT-025 are unbuilt. Checked: QH-007 holds for every held job text already (`jobs::api::text_due` drops a held text whose job moved on, `app/intake/src/job_texts.rs:9` to `:10`, `app/jobs/src/handlers.rs:56`; TD-JOB-03 in `tests/integration/tests/homeowner_job_texts.rs:226`); TXT-025 has nothing to merge because the update texts themselves are never sent (see T582). This task sends them. The new `app/intake/src/quote_updates.rs` handles T582's `quotes::api::COUNT_UPDATE_KIND` (registered in the shared `app/server/src/lib.rs` beside `jobs.homeowner_text`): it finds the job's request, homeowner and language as `job_texts` does (calling its helpers, which this task may mark `pub(crate)`, D-4280), skips a closed or picked job (QH-007, TXT-042's rule that no update follows a pick), skips a contact with no consent record or an opted-out number (CON-021, CON-028), takes the job's row lock first (`jobs::api::lock_for_quote_change`, as `app/quotes/src/intake.rs:29` to `:35` does) so two events for one job never run side by side, then reads the previous quote text with T582's `messaging` read (sent or still queued) and the count it told (a `first_quote` row counts as having told 1) (kept as one `intake.intake_answer` row per job and count, codes only, question ID `quote_told.<the job ID in simple form>` and choice the count), and asks `quotes::api::notice_for` (`app/quotes/src/notify.rs:123`): `Held { until }` queues the same event again at `until`, its dedupe key naming that release instant as `job_texts::hold` does (`hold` in `app/intake/src/job_texts.rs`; `core.task.dedupe_key` is unique for all time, `migrations/0020_core_task_queue.sql:22`, so T582's key cannot be reused); `Update { quoted }` outside 8 a.m. to 8 p.m. (or her zone, QH-001, `messaging::api::send_window`) queues it again for the window's opening instant, the key again naming that instant, (an emergency job's updates go at any hour, QH-004, through `enqueue_exempt` as `job_texts` does); inside it renders `quotes::api::update_text` with her `/q/` link (`jobs::api::quote_token::issue`, SEC-037) and queues one outbox row keyed on template, contact, job and count. TXT-025 follows from reading the count at send time: several held events for one job release one text with the latest count, and the others find nothing new. `plan_release` stays as it is; T126 decides its removal. Registering the kind makes its `tests/task_kinds_deferred.json` entry (D-4064) stale; TD-OPS-36 prints it and a later plan change removes it. Tests in the new `tests/integration/tests/quote_update_texts.rs` through the worker with the stand-in Twilio, fake data only: a second quote 10 minutes after the first-quote text is told at 3:00:00 and not at 2:59:59 (TD-TXT-06's sender case, D-1190); two quotes in at 22:00 to a 928 number give one text at 08:00:00 with the latest count (TD-QH-02's merge case); two held events for one job released at 08:00 and run on two connections at once give one text; a job closed overnight sends nothing; a picked job sends nothing; an opted-out number gets nothing. `homeowner_job_texts.rs`, `job_timers.rs` and `quote_texts.rs` pass unchanged. Plan change D-4280 (the Opus pre-claim scouts of origin/main 25b746d1, Nov 18, 2026, each finding re-checked on `main`): `app/intake/src/job_texts.rs` has no `pub(crate)` helpers: `homeowner_of`, `hold`, `queue`, `quote_link`, `page_link` and `exempt` are private, and so are `JobTextKeys`' fields `link`, `outbox` and `vault`, which `send_window` and `quote_token::issue` need. This task owns `job_texts.rs` (its earlier owners are done; T402, its next owner, already comes after this task) and may mark `homeowner_of`, `page_link`, `quote_link` and `JobTextKeys`' `link`, `outbox` and `vault` fields `pub(crate)` and nothing else in that file; `hold`'s dedupe-key form is copied for `COUNT_UPDATE_KIND`, not shared. `quotes::api::notice_for` answering `Notice::Nothing` or `Notice::First` sends nothing and queues nothing: the first-quote text is the existing `jobs.homeowner_text` path's. The told count is the `intake.intake_answer` row with question ID `quote_told.<job simple>` (it fits `migrations/0053_intake_tables.sql`'s `question_id` and `choice` checks and never starts `job.`, which `homeowner_of` and the `jobs` readers match as the job answer), choice the count, one row per job and count. Budget 3 files, 450 lines.",
+   "title": "intake and server: the quote-count update text is sent at most once per 3 hours and dropped on a closed or picked job",
+   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): (B21 and TXT-017) The audit found `messaging::rules::plan_release` (`app/messaging/src/rules.rs:340`) with no production caller and said QH-007 and TXT-025 are unbuilt. Checked: QH-007 holds for every held job text already (`jobs::api::text_due` drops a held text whose job moved on, `app/intake/src/job_texts.rs:9` to `:10`, `app/jobs/src/handlers.rs:56`; TD-JOB-03 in `tests/integration/tests/homeowner_job_texts.rs:226`); TXT-025 has nothing to merge because the update texts themselves are never sent (see T582). This task sends them. The new `app/intake/src/quote_updates.rs` handles T582's `quotes::api::COUNT_UPDATE_KIND` (registered in the shared `app/server/src/lib.rs` beside `jobs.homeowner_text`): it finds the job's request, homeowner and language as `job_texts` does (calling its helpers, which this task may mark `pub(crate)`, D-4280), skips a closed or picked job (QH-007, TXT-042's rule that no update follows a pick), skips a contact with no consent record or an opted-out number (CON-021, CON-028), takes the job's row lock first (`jobs::api::lock_for_quote_change`, as `app/quotes/src/intake.rs:29` to `:35` does) so two events for one job never run side by side, then reads the previous quote text with T582's `messaging` read (sent or still queued) and the count it told (a `first_quote` row counts as having told 1) (kept as one `intake.intake_answer` row per job and count, codes only, question ID `quote_told.<the job ID in simple form>` and choice the count), and asks `quotes::api::notice_for` (`app/quotes/src/notify.rs:123`): `Held { until }` queues the same event again at `until`, its dedupe key naming that release instant as `job_texts::hold` does (`hold` in `app/intake/src/job_texts.rs`; `core.task.dedupe_key` is unique for all time, `migrations/0020_core_task_queue.sql:22`, so T582's key cannot be reused); `Update { quoted }` renders `quotes::api::update_text` with her `/q/` link (`jobs::api::quote_token::issue`, SEC-037) and queues one outbox row keyed on template, contact, job and count; a row queued in quiet hours is held to the window by the outbox sender (QH-001, QH-006, `app/messaging/src/outbox_sender.rs:187` to `:191`), and deferring the event itself to the window's opening, the emergency exemption (QH-004) and TXT-025's merge are T708's (D-4419). Reading the count at send time means several events for one job held to the same instant release one text with the latest count, and the others find nothing new. `plan_release` stays as it is; T126 decides its removal. Registering the kind makes its `tests/task_kinds_deferred.json` entry (D-4064) stale; TD-OPS-36 prints it and a later plan change removes it. Tests in the new `tests/integration/tests/quote_update_texts.rs` through the worker with the stand-in Twilio, fake data only: a second quote 10 minutes after the first-quote text is told at 3:00:00 and not at 2:59:59 (TD-TXT-06's sender case, D-1190); two held events for one job released at the same instant by day and run on two connections at once give one text; a job closed before its held event runs sends nothing; a picked job sends nothing; an opted-out number gets nothing (the 22:00 merge and the overnight close are T708's, D-4419). `homeowner_job_texts.rs`, `job_timers.rs` and `quote_texts.rs` pass unchanged. Plan change D-4280 (the Opus pre-claim scouts of origin/main 25b746d1, Nov 18, 2026, each finding re-checked on `main`): `app/intake/src/job_texts.rs` has no `pub(crate)` helpers: `homeowner_of`, `hold`, `queue`, `quote_link`, `page_link` and `exempt` are private, and so are `JobTextKeys`' fields `link`, `outbox` and `vault`, which `send_window` and `quote_token::issue` need. This task owns `job_texts.rs` (its earlier owners are done; T402, its next owner, already comes after this task) and may mark `homeowner_of`, `page_link`, `quote_link` and `JobTextKeys`' `link`, `outbox` and `vault` fields `pub(crate)` and nothing else in that file; `hold`'s dedupe-key form is copied for `COUNT_UPDATE_KIND`, not shared. `quotes::api::notice_for` answering `Notice::Nothing` or `Notice::First` sends nothing and queues nothing: the first-quote text is the existing `jobs.homeowner_text` path's. The told count is the `intake.intake_answer` row with question ID `quote_told.<job simple>` (it fits `migrations/0053_intake_tables.sql`'s `question_id` and `choice` checks and never starts `job.`, which `homeowner_of` and the `jobs` readers match as the job answer), choice the count, one row per job and count. Plan change D-4419 (T583 attempt 1's plan gap, Nov 18, 2026): attempt 1 measured 679 changed lines (`quote_updates.rs` 292, the test 377, `job_texts.rs` 10) and its reviewer a floor of about 590 to 615, at or over the 600-line build limit (`scripts/validate_tasks.py:199`), so the quiet-hours half (the window deferral, QH-004's exemption, TXT-025's merge and the held-first-quote case) moves to T708 with its own tests. Budget 3 owned files, 560 lines.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -20586,9 +20815,7 @@
    ],
    "requirements": [
     "TXT-017",
-    "TXT-025",
-    "QH-007",
-    "QH-001"
+    "QH-007"
    ],
    "tests": [],
    "decisions": [
@@ -20599,12 +20826,13 @@
     "D-1198",
     "D-4052",
     "D-4064",
-    "D-4280"
+    "D-4280",
+    "D-4419"
    ],
    "cites": [],
    "budget": {
     "files": 3,
-    "lines": 450,
+    "lines": 560,
     "context_pct": 15
    },
    "checks": [
@@ -20615,6 +20843,64 @@
    "branch": "claude/task/T583-quote-count-update-texts",
    "prompt": "kit/prompts/T583.md",
    "acceptance": "`tests/integration/tests/quote_update_texts.rs` passes against PostgreSQL through the worker with every listed case; `homeowner_job_texts.rs`, `job_timers.rs`, `quote_texts.rs` and the `messaging` quiet-hours unit tests pass unchanged."
+  },
+  {
+   "id": "T708",
+   "slug": "quote-update-quiet-hours",
+   "title": "intake: a quote-count update due in quiet hours goes at the window's opening, merged into one text with the latest count (D-4419)",
+   "goal": "Plan change D-4419 (T583 attempt 1's plan gap, Nov 18, 2026; D-4052, D-4280): the quiet-hours half of T583's quote-count update sender, in `app/intake/src/quote_updates.rs` (T583's handler of `quotes::api::COUNT_UPDATE_KIND`). (1) An `Update { quoted }` outside 8 a.m. to 8 p.m. in both Arizona and her area-code time (QH-001, `messaging::api::send_window`, `app/messaging/src/send_window.rs:75`) queues no outbox row and queues the same event again for the window's opening instant, its dedupe key naming that instant as `job_texts::hold` does (`core.task.dedupe_key` is unique for all time, `migrations/0020_core_task_queue.sql:22`); at the opening the event reads the count again, so several events held overnight release one text with the latest count and the others find nothing new (TXT-025, D-158), and a job closed or picked meanwhile sends nothing (QH-007, T583's skip). (2) An emergency job's updates go at any hour (QH-004) through `enqueue_exempt` as `job_texts` does, the outbox row carrying the exemption; this is D-3106's \"quote-count updates\" (T402's goal before D-4419): their producer is this file, so T704, which does D-3106 for the other `intake` producers after this task, leaves the update text to this task. (3) Both reviewers of T583 attempt 1 found that a second quote arriving while the first-quote text is still held overnight (by `job_texts::hold`, so no outbox row exists yet and T582's read, `app/messaging/src/quote_text_sent.rs:40`, finds none) makes `quotes::api::notice_for` answer `First`, and T583 drops it, so no update tells 2 unless a third quote comes: when `First` comes with more than one shown quote, the event is queued again once (its payload marking the retry, so a first-quote text that was never sent cannot loop it) for 15 minutes after the window's next opening, its key naming that instant, and from then on TXT-017's 3 hours count from the first-quote text's delivery (D-012, D-1190). Tests in the new `tests/integration/tests/quote_update_quiet_hours.rs` through the worker with the stand-in Twilio, fake data only: two quotes in at 22:00 to a 928 number, after a first-quote text by day, give one update at 08:00:00 with the latest count and none before (TD-QH-02's merge case); two such held events for one job released at 08:00 and run on two connections at once give one text; a job closed overnight sends nothing; an emergency job's update at 23:00 goes at once; a first quote at 21:30 and a second at 22:10 give the first-quote text at 08:00:00 and one update telling 2 three hours after that text's delivery, not before. `quote_update_texts.rs` (T583), `homeowner_job_texts.rs`, `job_timers.rs` and `quote_texts.rs` pass unchanged; `job_texts.rs`'s `pub(crate)` items are used as T583 left them. Update `docs/decisions.md` and a `(task 708)` line at the end of `app/intake/NOTES.md`. Budget 2 owned files, 450 lines.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T583"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance"
+   ],
+   "owns": [
+    "app/intake/src/quote_updates.rs",
+    "tests/integration/tests/quote_update_quiet_hours.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/messaging.md",
+    "docs/spec/quiet-hours.md"
+   ],
+   "requirements": [
+    "TXT-025",
+    "QH-001",
+    "QH-004"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-1190",
+    "D-012",
+    "D-158",
+    "D-461",
+    "D-4052",
+    "D-4280",
+    "D-4419"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 450,
+    "context_pct": 15
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T708-quote-update-quiet-hours",
+   "prompt": "kit/prompts/T708.md",
+   "acceptance": "`tests/integration/tests/quote_update_quiet_hours.rs` passes against PostgreSQL through the worker with every listed case; `quote_update_texts.rs`, `homeowner_job_texts.rs`, `job_timers.rs`, `quote_texts.rs` and the `messaging` quiet-hours unit tests pass unchanged."
   },
   {
    "id": "T584",
@@ -21258,7 +21544,8 @@
     "T590",
     "T592",
     "T593",
-    "T648"
+    "T648",
+    "T708"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -21981,7 +22268,8 @@
     "T686",
     "T688",
     "T690",
-    "T691"
+    "T691",
+    "T708"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -23358,7 +23646,8 @@
     "T514",
     "T641",
     "T642",
-    "T700"
+    "T700",
+    "T705"
    ],
    "model": null,
    "effort": null,
@@ -45738,6 +46027,64 @@
    "branch": "claude/task/T700-runner-merge-line-rotation",
    "prompt": "kit/prompts/T700.md",
    "acceptance": "`python3 -m pytest tests/test_runner_merge_line_rotation.py tests/test_runner_merge_line.py tests/test_runner_merge_early.py tests/test_runner_merge_train.py tests/test_failure_drills.py` passes, the T623 reproduction failing against `main`'s runner; no existing test changes apart from a late-B case in `tests/test_runner_merge_train.py` under the goal's licence, logged; every other `tests/test_runner_*.py` passes unchanged."
+  },
+  {
+   "id": "T705",
+   "slug": "log-capture-interest",
+   "title": "Integration tests (harness): one shared log capture that a callsite cached as \"never\" cannot miss (D-4419)",
+   "goal": "Plan change D-4419 (5): `td_lic_30_reads_write_nothing_and_log_no_value` (`tests/integration/tests/signup_own_record.rs:602`) failed once in `Ci` at its `assert!(!logged.is_empty(), \"the unreadable read is logged\")` (`:634`) with no code change, then passed. Each test file that checks log lines keeps its own `Subscriber` (`Lines`, `:628` to `:674`) and installs it for its own thread only with `tracing::subscriber::set_default` (`:613`). `tracing` caches each callsite's interest the first time any thread reaches it; when another test in the same binary reaches a callsite while no subscriber is in place, or while the interest is being rebuilt as a capture is installed, the callsite can keep a cached `Interest::never`, and the event never reaches the capture: a test that asserts a line is logged fails, and one that asserts no line holds a value passes without having seen the line. Build one capture for the `askhava-integration` test crate in the new `tests/integration/src/log_capture.rs` (`pub mod log_capture;` in `tests/integration/src/lib.rs`; `tracing` moves from `[dev-dependencies]` to `[dependencies]` in the shared `tests/integration/Cargo.toml`, no new crate, `Cargo.lock` unchanged): a process-global subscriber installed once per test binary (`std::sync::OnceLock`, `tracing::subscriber::set_global_default`, then `tracing::callsite::rebuild_interest_cache()`), whose `register_callsite` answers `Interest::always()` and `enabled` true, so no callsite is ever cached as never while it is in place, and which appends each event's and each new span's fields (as the files' `Line` visitors do: ` name=value` with the value's `Debug`) to the buffer of the capture started on the current thread, if any; `log_capture::start()` gives a guard holding that buffer (a `Vec<String>` behind `Arc<Mutex<_>>`) whose drop ends the capture, and a capture never sees another thread's events, as today. A unit test in `log_capture.rs` reaches a callsite first on another thread before any capture exists, then captures it on the test's thread. Move to it the three files whose tests assert that a log line is present, deleting their own `Subscriber`: `signup_own_record.rs` (TD-LIC-30, both captures, `:211` and `:613`), `tests/integration/tests/emergency_request_limits.rs` (`:275` to `:286`, \"logged once\", `error=\\\"Counter\\\"`) and `tests/integration/tests/safety_key_retry.rs` (`:228` to `:229`, \"step failed\"). Every assertion in the three files stays as it is, word for word: no assertion is removed, loosened or moved after a retry; only the capture's type and its start change. The other per-thread captures are not changed here: eight more `tests/integration/tests/` files assert only that no line holds a value, and those in other test crates (`app/server/tests/`, `tests/security/tests/`, `app/jobs/src/tests/transitions.rs`) cannot use this crate's helper. First check that the \"unreadable read\" line (`app/licensing/src/own_record.rs`) is logged on the test's own thread; if it is logged on another, that is the cause, and the worker reports a plan gap instead of widening the capture. Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T012",
+    "T175",
+    "T385",
+    "T449",
+    "T571"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "privacy"
+   ],
+   "owns": [
+    "tests/integration/src/lib.rs",
+    "tests/integration/src/log_capture.rs",
+    "tests/integration/tests/signup_own_record.rs",
+    "tests/integration/tests/emergency_request_limits.rs",
+    "tests/integration/tests/safety_key_retry.rs"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [],
+   "tests": [
+    "TD-LIC-30"
+   ],
+   "decisions": [
+    "D-4419",
+    "D-2954",
+    "D-481"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 350,
+    "context_pct": 11
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T705-log-capture-interest",
+   "prompt": "kit/prompts/T705.md",
+   "acceptance": "`cargo test -p askhava-integration --lib log_capture` passes, its other-thread-first case included; `signup_own_record.rs`, `emergency_request_limits.rs` and `safety_key_retry.rs` pass against PostgreSQL with every assertion unchanged (a `git diff` of the three files shows only the capture's type and start changing), and the three files pass 20 runs in a row (`for i in $(seq 20); do cargo test -p askhava-integration --test signup_own_record || exit 1; done`), the result in the PR; no other test file changes."
   }
  ]
 }
