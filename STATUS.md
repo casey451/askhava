@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T22:05:19Z by runner 96b1f7aa9bc3 (actions).
+Updated 2026-11-18T22:05:46Z by runner 96b1f7aa9bc3 (actions).
 
-**Building: T364 in progress since 21:12Z; 459 of 663 done; week 68% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T583 in progress since 21:55Z; 459 of 663 done; week 68% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 459 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 4: T364 claimed 21:12Z, lease until 01:01Z; lane 5: T583 claimed 21:55Z, lease until 00:55Z
+- **Lane:** lane 5: T583 claimed 21:55Z, lease until 00:55Z
 - **Week:** 68% used, 56.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:02Z, 2 min before this update
+- **Last run:** 22:02Z, 3 min before this update
 - **Keeper:** last ran 21:58Z, next wake 22:18Z
 
 ## Needs attention
@@ -21,6 +21,7 @@ Updated 2026-11-18T22:05:19Z by runner 96b1f7aa9bc3 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T364 | server and portals: the business step-up code page is served | MERGE_PENDING | 2 | 52 min | 22:05Z | Ci: failure; Python: failure / Python failed at step: Unit, contract and drill tests (pytest) / T705: about 21877 tokens |
 | T651 | server and portals: owner step-up try limit, the passkey pat | MERGE_PENDING | 1 | 2 h 7 min | 21:52Z |  |
 | T722 | payments: read a pick's disputes and record Casey's evidence | MERGE_PENDING | 1 | 45 min | 21:33Z |  |
 | T503 | Decisions digest, piece 4: the next entries after the header | done | 1 | 31 min | 21:30Z |  |
@@ -29,7 +30,7 @@ Updated 2026-11-18T22:05:19Z by runner 96b1f7aa9bc3 (actions).
 | T706 | payments: held_release, the FEE-017 re-check that clears a p | done | 1 | 100 min | 20:54Z |  |
 | T715 | intake (harness): corrections to T671's walker: alarm answer | BLOCKED | 1 | 48 min | 20:53Z | PLAN GAP: `app/server/tests/name_address_answer.rs:262`–`:264` (owned by T432, not this task) expects the name-and-addre |
 | T502 | Decisions digest, piece 3: the next entries after the header | done | 1 | 38 min | 20:31Z |  |
-| T364 | server and portals: the business step-up code page is served | check_failed | 1 | 2 h 1 min | 20:29Z | Ci: failure; Python: failure / Python failed at step: Unit, contract and drill tests (pytest) / T705: about 21877 tokens |
+| T364 | server and portals: the business step-up code page is served | check_failed | 1 | 2 h 1 min | 20:29Z |  |
 | T702 | privacy and messaging: no blind-index key version is retired | resync | 1 | 59 min | 20:21Z |  |
 | T501 | Decisions digest, piece 2: the next entries after the header | done | 1 | 73 min | 19:42Z |  |
 | T711 | intake (harness): the dispatcher's two jobs in one request:  | done | 1 | 77 min | 19:29Z |  |
@@ -134,8 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 4: T364 (lease until 2026-11-19T01:01:07Z)
 - lane 5: T583 (lease until 2026-11-19T00:55:41Z)
 
 ## Last usage reading
-- {"task": "T651", "at": "2026-11-18T21:52:18Z", "cache_creation_input_tokens": 268928, "cache_read_input_tokens": 5770520, "output_tokens": 68905, "input_tokens": 176}
+- {"task": "T364", "at": "2026-11-18T22:05:18Z", "input_tokens": 58, "cache_creation_input_tokens": 103266, "output_tokens": 12327, "cache_read_input_tokens": 1184340}
