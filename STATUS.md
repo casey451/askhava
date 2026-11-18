@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T05:06:40Z by runner c6aed66f8f84 (actions).
+Updated 2026-11-18T05:06:52Z by runner c6aed66f8f84 (actions).
 
 **Building: T601 in progress since 04:24Z; 426 of 606 done; week 43% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 426 of 606 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T601 claimed 04:24Z, lease until 07:24Z; lane 4: T642 claimed 04:42Z, lease until 07:42Z; lane 6: T523 claimed 04:19Z, lease until 07:19Z
+- **Lane:** lane 2: T601 claimed 04:24Z, lease until 07:24Z; lane 4: T642 claimed 04:42Z, lease until 07:42Z
 - **Week:** 43% used, 106.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 05:04Z, 2 min before this update
 - **Keeper:** last ran 05:03Z, next wake 07:22Z
@@ -19,6 +19,7 @@ Updated 2026-11-18T05:06:40Z by runner c6aed66f8f84 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T523 | jobs, ops and intake: the check-in answer recorder and the c | MERGE_PENDING | 3 | 46 min | 05:06Z | Review not approved after the one findings round (head bd99856fca96fb81973c28181ad9fd6e39e7ac91; flag_inputs tests 5 pas |
 | T638 | harness: Ci skips a compile its job already passed on a prov | MERGE_PENDING | 1 | 88 min | 04:35Z |  |
 | T623 | payments: a Stripe key refusal (401 or 403) takes the Stripe | MERGE_PENDING | 1 | 63 min | 03:46Z |  |
 | T151 | ops and messaging: HELP requests with one owner notification | MERGE_PENDING | 1 | 34 min | 03:40Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
@@ -138,7 +139,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T601 (lease until 2026-11-18T07:24:12Z)
 - lane 4: T642 (lease until 2026-11-18T07:42:08Z)
-- lane 6: T523 (lease until 2026-11-18T07:19:52Z)
 
 ## Last usage reading
-- {"task": "T638", "at": "2026-11-18T04:35:54Z", "cache_creation_input_tokens": 508010, "input_tokens": 389, "output_tokens": 147866, "cache_read_input_tokens": 10191205}
+- {"task": "T523", "at": "2026-11-18T05:06:38Z", "cache_read_input_tokens": 5539493, "output_tokens": 44410, "cache_creation_input_tokens": 154067, "input_tokens": 158}
