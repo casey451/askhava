@@ -3356,8 +3356,11 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **Fix, planned as T700 and claimed first:** a task whose turn runs out now goes to the back of the queue instead of out of it, so every finished task gets its turn in order, and no task holds the turn for more than 90 minutes. A task that is truly stuck still gives up the turn after 45 minutes. The cost we accepted: such a task takes another 45-minute turn once every round until someone looks at it, where today it lost the turn once.
 - Our choice; nothing needs you now.
 
-## One task split for reading room, one flaky test made steady (D-4419)
+## Three oversized tasks split, one flaky test made steady (D-4419)
 
 - **The task that lets an emergency job's texts go out at night (T402) needed to read more code than one session holds**, so it is split in two: T704 does the job texts, questions and replies of the request conversation, and T402 then does the pick texts and the replies to a homeowner's own text. Same rule, same tests, just in two steps.
 - **One automatic test that checks Laftly logs a failed license look-up, and never a business's details, failed once at random.** The way the tests listen to the log could miss a line. T705 gives those tests one shared, steadier listener; no test is loosened.
+- **The safe-mode release hold (T408) and the quote-count update texts (T583) each needed more code and tests than one task may hold**, so their builders stopped. T408 needed about 1,140 changed lines against a hard limit of 800; T583 about 600 to 680 against 450 (limit 600).
+- **Fix:** each is split by what it does. T408 becomes three: T706 (the payments check that clears a held release, with its money tests, which can start now), T408 (holding releases while safe mode is on) and T707 (the same hold for an emergency job's address step, plus the checks that a held release goes ahead once only). T583 becomes two: T583 (the update text, at most once per 3 hours, never on a closed or picked job) and T708 (texts held overnight merged into one at 8 a.m., emergency jobs at any hour, and a reviewer-found case where a second quote at night was never told).
+- **The cost we accepted:** a few more tasks; between T408's and T707's merges an emergency job's address step is not yet held by safe mode, and the once-only checks land one task after the code; nothing is live before Gate C. T408 has one try left.
 - Our choice; nothing needs you now.
