@@ -176,6 +176,16 @@ def test_a_proof_input_outside_the_rule_is_unproven(tmp_path: Path, monkeypatch:
     assert line == f"unproven: {path!r} changed since C and is a proof input"
 
 
+@pytest.mark.parametrize("path", ["tests/perf/web_vitals.spec.ts", "tests/perf/fixture.json",
+                                  "sources/03_business_and_design/website_prototype/p/assets/js/app.js",
+                                  "tools/x.mjs", "a/b.cjs", "c.mts", "d.cts", "e.jsx", "f.tsx"])
+def test_a_tsc_or_eslint_input_outside_the_npm_rule_is_unproven(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+                                                                 path: str) -> None:
+    repo = make(tmp_path, {path: "changed\n"})
+    line = decide(tmp_path, monkeypatch, green(repo), ("Checks", "npm"))
+    assert line == f"unproven: {path!r} changed since C and is a proof input"
+
+
 def test_head_with_one_parent_is_unproven(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     repo = make(tmp_path)
     commit(repo.root, "on top", {"docs/x.md": "x\n"})

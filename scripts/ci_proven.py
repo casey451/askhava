@@ -35,10 +35,13 @@ WORKFLOW = ".github/workflows/ci.yml"
 # every workflow (the steps and pins themselves; app/privacy's scrub test reads them), this script, the npm audit
 # script, the feature-on security tests E2e builds, rustfmt's config, and the files the Rust tests read at run
 # time: kit/tasks.json (route_wiring, architecture_migrations), the Dockerfile (image_pinned, static_files_route),
-# tests/task_kinds_deferred.json (task_registry) and scripts/check_rust_rules.py (status_enums).
+# tests/task_kinds_deferred.json (task_registry) and scripts/check_rust_rules.py (status_enums). For tsc and
+# eslint: tests/perf/ (tsconfig includes its .ts) and every .js/.mjs/.cjs/.ts/.mts/.cts/.jsx/.tsx path anywhere
+# (eslint parses each one its ignores do not drop, e.g. the prototype .js under sources/).
 EXTRA = re.compile(r"^(tests/coverage_floor\.json|scripts/coverage_floor\.py|\.cargo/|\.github/workflows/"
                    r"|scripts/ci_proven\.py|scripts/npm_audit\.py|tests/security/|\.?rustfmt\.toml"
-                   r"|kit/tasks\.json|Dockerfile|tests/task_kinds_deferred\.json|scripts/check_rust_rules\.py)")
+                   r"|kit/tasks\.json|Dockerfile|tests/task_kinds_deferred\.json|scripts/check_rust_rules\.py"
+                   r"|tests/perf/|.*\.[cm]?[jt]sx?\Z)", re.DOTALL)
 TIMEOUT = 10
 PER_PAGE = 100
 SHA = re.compile(r"^[0-9a-f]{40}$")
