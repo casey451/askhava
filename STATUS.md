@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T18:25:03Z by runner 015d53a2b087 (actions).
+Updated 2026-11-18T18:25:32Z by runner ac95475ba313 (actions).
 
 **Building: T624 in progress since 16:49Z; 452 of 645 done; week 64% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 452 of 645 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T624 claimed 16:49Z, lease until 20:41Z; lane 7: T711 claimed 18:12Z, lease until 21:12Z
-- **Week:** 64% used, 65.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:24Z, 0 min before this update
+- **Lane:** lane 1: T624 claimed 16:49Z, lease until 20:41Z; lane 3: T483 claimed 18:25Z, lease until 21:25Z; lane 7: T711 claimed 18:12Z, lease until 21:12Z
+- **Week:** 64% used, 63.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 18:25Z, 0 min before this update
 - **Keeper:** last ran 18:20Z, next wake 20:27Z
 
 ## Needs attention
@@ -21,7 +21,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 - BLOCKED T645: plan gap reported: PLAN GAP: app/site/src/chat.rs:340 (owned by T593, then T646 and T649; T593 is not merged yet) calls `chat_message(db, &secret, &key, &msg, self.intake)` with no `Vault`, and the `ChatKeys` trait (chat.rs:62-66) only exposes secret/send/check. `messaging::api::suppress` (app/messaging/src/optout.rs:311-317) needs a `&Vault` and the phone, since digests come from `vault.blind_index` (optout.rs:441-443). `chat_message` (app/intake/src/web_chat.rs:247-253) takes no vault and its `Settings` is `Copy`, so T645 cannot list the session's number (step 1, TD-CON-36 "at once") without a signature change; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T645 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 37 problem(s) on tasks still to run (+258 on DONE tasks); first: T402: measures 48% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 34 problem(s) on tasks still to run (+258 on DONE tasks); first: T402: measures 48% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -86,7 +86,6 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | BLOCKED | 3 | 46 min | 19:24Z |  |
 | T605 | businesses, intake and picks: the leaving answers, not-cover | done | 1 | 46 min | 19:15Z |  |
 | T528 | ops: the alert, audit-row and digest-row readers and writers | done | 2 | 37 min | 19:05Z | PLAN GAP: tests/integration/tests/business_leaving.rs:463 (owned by T228, also listed by T343) asserts that businesses/s |
-| T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | QUEUED | 1 | 58 min | 18:25Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -122,7 +121,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-18T17:30:34Z (week)): week: 128.6M used, 65.4M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-02T04:49:22Z.
+- Pacing (session_reading 2026-11-18T18:24:43Z (week)): week: 130.4M used, 63.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-02T05:03:21Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -138,6 +137,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T624 (lease until 2026-11-18T20:41:09Z)
+- lane 3: T483 (lease until 2026-11-18T21:25:05Z)
 - lane 7: T711 (lease until 2026-11-18T21:12:25Z)
 
 ## Last usage reading
