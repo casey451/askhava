@@ -45,6 +45,7 @@ pub mod catalog_start;
 pub mod chat_codes;
 pub mod checkin;
 pub mod email_provider;
+pub mod health_watch;
 pub mod healthz;
 pub mod inbound_retry;
 pub mod inbound_text;
@@ -971,6 +972,13 @@ where
     );
     register_alert_emails(&mut registry, settings, &clock, pairs.clone())?;
     register_paused_safety(&mut registry);
+    let limits = healthz::HealthLimits::from_pairs(pairs.clone())?;
+    health_watch::register(
+        &mut registry,
+        settings.environment(),
+        limits,
+        Arc::clone(&clock),
+    );
     no_handler_alert::register(&mut registry, settings.environment(), Arc::clone(&clock));
     register_timer_backstop(&mut registry, Arc::clone(&clock));
     register_license_reapply(&mut registry, Arc::clone(&clock));

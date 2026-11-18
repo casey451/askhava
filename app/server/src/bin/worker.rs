@@ -98,6 +98,17 @@ async fn schedule_messaging(conn: &mut sqlx::PgConnection, now: jiff::Timestamp)
         .map_err(io::Error::other)
 }
 
+/// The two alert checks' first runs: this hour's dead-letter check (T327) and this 5-minute
+/// slot's health check (T624, D-4280), each under its own slot's dedupe key.
+async fn schedule_checks(conn: &mut sqlx::PgConnection, now: jiff::Timestamp) -> io::Result<()> {
+    askhava_server::no_handler_alert::schedule(conn, now)
+        .await
+        .map_err(io::Error::other)?;
+    askhava_server::health_watch::schedule(conn, now)
+        .await
+        .map_err(io::Error::other)
+}
+
 /// Queues the daily tasks at start (the chain check, the masked-line expiry sweep (T662), the retention sweep, the body cut, the
 /// photo orphan sweep, the day-31 body scan, this hour's dead-letter check, the job timer
 /// backstop, the hourly request count (T105), the safe-mode check (T487), the session sweep and rate-limit prune (T436), the license-map re-apply, each daily license list (T371), the outbox sender's
@@ -125,9 +136,7 @@ async fn schedule_start(
     askhava_privacy::api::schedule_words_cut(&mut conn, now)
         .await
         .map_err(io::Error::other)?;
-    askhava_server::no_handler_alert::schedule(&mut conn, now)
-        .await
-        .map_err(io::Error::other)?;
+    schedule_checks(&mut conn, now).await?;
     askhava_jobs::api::schedule_backstop(&mut conn, now)
         .await
         .map_err(io::Error::other)?;
