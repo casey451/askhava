@@ -72486,8 +72486,8 @@
     "T471",
     "T564"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "quote-count-update-texts",
    "type": "build",
    "stage": "5",
@@ -72502,7 +72502,34 @@
    "window_model": {
     "model": "claude-opus-5-5",
     "alias": "opus"
-   }
+   },
+   "reason": "plan gap reported: PLAN GAP: kit/prompts/T583.md:51 (budget of 450 changed lines in 3 files) The smallest plan change: raise T583's budget to 650 changed lines, or move `tests/integration/tests/quote_update_texts.rs` into a test-only follow-up task with its own budget.\nEvidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2b1: app/intake/src/job_texts.rs 5/5, app/intake/src/quote_updates.rs 292/0, tests/integration/tests/quote_update_texts.rs 377/0 (679 lines). Fix-round worker's honest trim reached about 273 + 8 + ~350 = ~630 lines (test still failing clippy: a 73-line function needing ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T583 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: kit/prompts/T583.md:51 (budget of 450 changed lines in 3 files) The smallest plan change: raise T583's budget to 650 changed lines, or move `tests/integration/tests/quote_update_texts.rs` into a test-only follow-up task with its own budget.\nEvidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2b1: app/intake/src/job_texts.rs 5/5, app/intake/src/quote_updates.rs 292/0, tests/integration/tests/quote_update_texts.rs 377/0 (679 lines). Fix-round worker's honest trim reached about 273 + 8 + ~350 = ~630 lines (test still failing clippy: a 73-line function needing a split), without dropping required cases, the worker-registry path or required docs; tests/integration/src/lib.rs (no shared helpers) is not owned by this task. The confirming reviewer measured a realistic minimum of about 590-615 lines (~30% over 450, and above the 600-line build ceiling MAX_LINES, scripts/validate_tasks.py:199; cf. D-4202's size split). Code at head a3034e2b1 had no correctness finding; all six required cases present; quote_update_texts 19 passed, smoke and prehandin green per the first worker.\nAlso noted by both reviewers as a plan item (not drift): a second quote arriving while the first-quote text is still held overnight is dropped (notice_for answers First), so no update tells \"2\" unless a third quote arrives; suggest holding the event to the first-quote text's send time.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 165,
+     "head_sha": "a3034e2b1c32d286bfcc8b5e0070a421f0ed4bcf",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-18T11:19:34Z",
+     "ended_at": "2026-11-18T12:13:28Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 9075309,
+       "turns": 93
+      },
+      "reviewer": {
+       "tokens": 1288301,
+       "turns": 33
+      }
+     }
+    }
+   ]
   },
   {
    "id": "T584",
@@ -78239,12 +78266,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T700",
-   "at": "2026-11-18T12:08:39Z",
-   "cache_creation_input_tokens": 112575,
-   "output_tokens": 34801,
-   "cache_read_input_tokens": 2009266,
-   "input_tokens": 81
+   "task": "T583",
+   "at": "2026-11-18T12:13:28Z",
+   "cache_creation_input_tokens": 306166,
+   "input_tokens": 250,
+   "cache_read_input_tokens": 9973778,
+   "output_tokens": 83416
   },
   "source": "session_reading 2026-11-18T12:03:13Z (week)",
   "by_task": {
@@ -83178,7 +83205,17 @@
    },
    "T583": {
     "estimated_bytes": 367321,
-    "estimated_tokens": 1069638
+    "estimated_tokens": 1069638,
+    "usage_counting": "message_id",
+    "cache_creation_input_tokens": 306166,
+    "input_tokens": 250,
+    "cache_read_input_tokens": 9973778,
+    "output_tokens": 83416,
+    "worker_tokens": 9075309,
+    "worker_turns": 93,
+    "reviewer_tokens": 1288301,
+    "reviewer_turns": 33,
+    "last_model": "claude-opus-5-5"
    },
    "T662": {
     "estimated_bytes": 494825,
@@ -83210,11 +83247,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-18T07:49:11Z",
-    "tokens": 14742843
+    "tokens": 16130052
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 292605632
+    "tokens": 293992841
    }
   },
   "session_reading": {
@@ -83225,7 +83262,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T12:09:31Z",
+ "updated_at": "2026-11-18T12:13:29Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -83323,7 +83360,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "54ae80c9cb15f194c947776f9f3b64fc643f0e51",
+ "runner_sha": "a3034e2b1c32d286bfcc8b5e0070a421f0ed4bcf",
  "starter": "actions",
  "smoke_runs": [
   {
