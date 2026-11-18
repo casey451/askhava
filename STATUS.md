@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T12:39:46Z by runner 50c23cdbdd10 (actions).
+Updated 2026-11-18T12:40:00Z by runner 50c23cdbdd10 (actions).
 
-**Building: T662 in progress since 11:26Z; 441 of 643 done; week 54% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T200 in progress since 12:06Z; 441 of 643 done; week 54% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 441 of 643 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T662 claimed 11:26Z, lease until 15:35Z; lane 6: T200 claimed 12:06Z, lease until 15:06Z; lane 7: T472 claimed 11:43Z, lease until 14:43Z
+- **Lane:** lane 6: T200 claimed 12:06Z, lease until 15:06Z; lane 7: T472 claimed 11:43Z, lease until 14:43Z
 - **Week:** 54% used, 80.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 12:35Z, 4 min before this update
 - **Keeper:** last ran 12:24Z, next wake 14:29Z
@@ -23,6 +23,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T662 | jobs, intake, calls and server: a masked call line closes wh | MERGE_PENDING | 1 | 73 min | 12:39Z |  |
 | T679 | quotes and businesses: a launch-open category takes requests | MERGE_PENDING | 1 | 37 min | 12:17Z |  |
 | T583 | intake and server: the quote-count update text is sent, at m | BLOCKED | 1 | 53 min | 12:13Z | PLAN GAP: kit/prompts/T583.md:51 (budget of 450 changed lines in 3 files) The smallest plan change: raise T583's budget  |
 | T700 | Runner (harness): a merge-line task whose turn ran out goes  | MERGE_PENDING | 1 | 29 min | 12:08Z |  |
@@ -136,9 +137,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T662 (lease until 2026-11-18T15:35:39Z)
 - lane 6: T200 (lease until 2026-11-18T15:06:51Z)
 - lane 7: T472 (lease until 2026-11-18T14:43:39Z)
 
 ## Last usage reading
-- {"task": "T679", "at": "2026-11-18T12:17:23Z", "cache_read_input_tokens": 4507804, "input_tokens": 132, "output_tokens": 29811, "cache_creation_input_tokens": 129624}
+- {"task": "T662", "at": "2026-11-18T12:39:45Z", "output_tokens": 58659, "cache_creation_input_tokens": 221897, "cache_read_input_tokens": 7701145, "input_tokens": 160}
