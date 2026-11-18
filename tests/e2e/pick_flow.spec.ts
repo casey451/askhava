@@ -3,10 +3,8 @@
 // TD-PICK-30, TD-A11Y-02; PICK-016, PICK-017, A11Y-014, A11Y-031; D-1248 to D-1251).
 //
 // A job in Quotes ready with three quotes (#2 no longer available) is seeded through psql on
-// DATABASE_URL, as tests/a11y/fixtures.ts does. Under the site's `Referrer-Policy: no-referrer` the
-// browser sends `Origin: null` on a same-origin form POST, which `security::is_cross_site` (T051's)
-// refuses; that is logged for a fix in D-1250. Until it is fixed, `page.route` re-sends each POST to
-// the quote page with the https Origin a same-origin request has, so the step itself is tested. The stored page
+// DATABASE_URL, as tests/a11y/fixtures.ts does. Each POST goes with the browser's own headers
+// (`Sec-Fetch-Site: same-origin`, `Origin: null` under `Referrer-Policy: no-referrer`; D-4292). The stored page
 // pick and its result page are T187's (D-1248): here the final Pick shows "Nothing was picked" and
 // nothing is picked (D-1251). The Spanish Terms line is checked in app/portals/src/tests/pick_flow.rs until the page
 // reads the request's language (D-1249). Fake data only.
@@ -42,20 +40,8 @@ function seedQuotePage(): string {
   return `/q/${token}`;
 }
 
-/** Re-sends every POST with a same-origin https Origin (see the header and D-1250). */
-async function httpsOrigin(page: Page): Promise<void> {
-  await page.route("**/q/**", async (route) => {
-    const request = route.request();
-    if (request.method() !== "POST") return route.continue();
-    const origin = new URL(request.url()).host;
-    const headers = { ...request.headers(), origin: `https://${origin}`, "sec-fetch-site": "same-origin" };
-    return route.fulfill({ response: await route.fetch({ headers, maxRedirects: 0 }) });
-  });
-}
-
 async function openReview(page: Page, quote: number): Promise<string> {
   const path = seedQuotePage();
-  await httpsOrigin(page);
   await page.goto(path);
   const answer = page.waitForResponse((r) => r.request().method() === "POST");
   await page.getByRole("button", { name: `Pick #${String(quote)}` }).click();
