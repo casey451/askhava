@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T23:06:33Z by runner 0a1d8934fe08 (actions).
+Updated 2026-11-18T23:22:05Z by runner 2b9452a4f8a9 (actions).
 
 **Building: T205 in progress since 22:21Z; 463 of 663 done; week 69% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-18T23:06:33Z by runner 0a1d8934fe08 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T205 claimed 22:21Z, lease until 01:21Z; lane 3: T306 claimed 22:14Z, lease until 01:14Z
 - **Week:** 69% used, 51.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:04Z, 2 min before this update
+- **Last run:** 23:06Z, 15 min before this update
 - **Keeper:** last ran 23:03Z, next wake 23:23Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 50 problem(s) on tasks still to run (+267 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 50 problem(s) on tasks still to run (+266 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -83,7 +83,6 @@ Updated 2026-11-18T23:06:33Z by runner 0a1d8934fe08 (actions).
 | T478 | jobs, intake, calls, messaging and businesses: the scorecard | done | 1 | 2 h 23 min | 01:47Z |  |
 | T587 | payments and picks: the old Confirm fee writer is marked tes | done | 1 | 48 min | 00:26Z |  |
 | T606 | harness: scripts/check_copy.py allows one aria-hidden arrow  | done | 1 | 62 min | 23:23Z |  |
-| T203 | Wording scan: the required statements, business copy lines a | BLOCKED | 1 | 3 min | 23:08Z | PLAN GAP: `app/portals/templates/quote_page.html:101` (owned by DONE tasks T052, T095, T294, T308, T384, T388, T393, T44 |
 
 ### Plan and harness merges on main
 - none
