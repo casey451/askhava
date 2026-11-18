@@ -1,27 +1,27 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT subject_kind, subject_id, at FROM ops.audit_log WHERE action = $1 AND at >= $2 AND at < $3 ORDER BY at, id",
+  "query": "SELECT body_ref, from_owner, at FROM ops.help_message WHERE request_id = $1 ORDER BY at, id",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
-        "name": "subject_kind",
-        "type_info": "Text",
+        "name": "body_ref",
+        "type_info": "Uuid",
         "origin": {
           "Table": {
-            "table": "ops.audit_log",
-            "name": "subject_kind"
+            "table": "ops.help_message",
+            "name": "body_ref"
           }
         }
       },
       {
         "ordinal": 1,
-        "name": "subject_id",
-        "type_info": "Uuid",
+        "name": "from_owner",
+        "type_info": "Bool",
         "origin": {
           "Table": {
-            "table": "ops.audit_log",
-            "name": "subject_id"
+            "table": "ops.help_message",
+            "name": "from_owner"
           }
         }
       },
@@ -31,7 +31,7 @@
         "type_info": "Timestamptz",
         "origin": {
           "Table": {
-            "table": "ops.audit_log",
+            "table": "ops.help_message",
             "name": "at"
           }
         }
@@ -39,9 +39,7 @@
     ],
     "parameters": {
       "Left": [
-        "Text",
-        "Timestamptz",
-        "Timestamptz"
+        "Uuid"
       ]
     },
     "nullable": [
@@ -50,5 +48,5 @@
       false
     ]
   },
-  "hash": "1e967b4092775affff6f0c706d0782c86183ebf662123e895a5727670f79ff7d"
+  "hash": "d3729b032215e88a4d95c1246630edc4bbf841e58f3cd9875e929a3616f87cf3"
 }

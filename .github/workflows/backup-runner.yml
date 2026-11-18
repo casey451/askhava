@@ -179,7 +179,8 @@ jobs:
           done
           echo "PR still open after fifteen minutes: run anyway"
   backup:
-    name: backup
+    # The lane in the name: a keeper reads it from the live runs' jobs, `backup lane <n>` (D-4281).
+    name: backup lane ${{ needs.gate.outputs.lane }}
     needs: gate
     # On the job, not the workflow: a gate waiting for a merge must not hold up the group. One backup
     # job per lane runs at a time and at most one waits; the lease on claude/lease is the real lock.
@@ -819,15 +820,31 @@ jobs:
           }
           raw kit/state.json claude/kit-state "$RUNNER_TEMP/keeper_state.json"
           raw lease.json claude/lease "$RUNNER_TEMP/keeper_lease.json"
+          raw kit/runner_log.jsonl claude/kit-state "$RUNNER_TEMP/keeper_log.jsonl"
           runs="$RUNNER_TEMP/keeper_runs.json"
           gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/backup-runner.yml/runs?per_page=50" \
             --jq '[.workflow_runs[] | {id, status}]' > "$runs" 2>/dev/null || rm -f "$runs"
+          # The live runs' jobs, for the lanes they serve (D-4281); any failed read leaves no file: today's answer.
+          jobs="$RUNNER_TEMP/keeper_jobs.json"
+          if [ -f "$runs" ] && ids="$(jq -r --arg own "$GITHUB_RUN_ID" '.[] | select(.status != "completed" and (.id | tostring) != $own) | .id' "$runs")"; then
+            echo '[]' > "$jobs"
+            for id in $ids; do
+              part="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${id}/jobs?per_page=100" --jq '[.jobs[] | {run_id, name, status}]' 2>/dev/null)" \
+                && printf '%s' "$part" | jq -s '.[0] + .[1]' "$jobs" - > "$jobs.new" && mv "$jobs.new" "$jobs" || { rm -f "$jobs"; break; }
+            done
+          fi
           out="$(python3 -m runner.keeper wake --state "$RUNNER_TEMP/keeper_state.json" --lease "$RUNNER_TEMP/keeper_lease.json" \
-            --runs "$runs" --run-id "$GITHUB_RUN_ID" 2>&1 || true)"
+            --runs "$runs" --jobs "$jobs" --log "$RUNNER_TEMP/keeper_log.jsonl" --run-id "$GITHUB_RUN_ID" 2>&1 || true)"
           echo "$out"
           { echo "### Keeper"; echo; printf '%s\n' "$out"; } >> "$GITHUB_STEP_SUMMARY"
           action="$(printf '%s\n' "$out" | sed -n 's/^action=//p')"
           again="$(printf '%s\n' "$out" | sed -n 's/^wake_after=//p')"
+          lanes="$(printf '%s\n' "$out" | sed -n 's/^lanes=//p')"
+          if [ "$action" = go ] && [ -n "$lanes" ]; then
+            # One run per free lane with claimable work, as the hourly tick starts them (D-4281).
+            for n in $lanes; do gh workflow run backup-runner.yml --ref main --repo "$GITHUB_REPOSITORY" -f lane="$n"; done
+            exit 0
+          fi
           case "$action" in
             go) gh workflow run backup-runner.yml --ref main --repo "$GITHUB_REPOSITORY" ;;
             rearm) gh workflow run backup-runner.yml --ref main --repo "$GITHUB_REPOSITORY" -f lane="$LANE" -f wake_after="$again" ;;
