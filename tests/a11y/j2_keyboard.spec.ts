@@ -16,7 +16,7 @@
 // day per address, `portals::limits::SIGNUPS_PER_IP`). Fake data only.
 import type { Page } from "@playwright/test";
 import { REVIEWED_INCOMPLETE, TARGETS, WIDTHS, axeScan, expect, test } from "./fixtures";
-import { RECORD_PHONE, boundBusiness, emailedCode, httpsOrigin, plumbingOnBeforeLaunch, signUpEmail, standInCode, storeRocList } from "../e2e/j2";
+import { RECORD_PHONE, boundBusiness, emailedCode, plumbingOnBeforeLaunch, signUpEmail, standInCode, storeRocList } from "../e2e/j2";
 import { WAITING, keyedUrl, openAsOwner, seedPick } from "../e2e/keyed";
 
 interface Focus { index: number; next: number; name: string; problems: string[] }
@@ -147,7 +147,6 @@ async function signUpByKeyboard(page: Page, width: number): Promise<string> {
 
 for (const width of WIDTHS) {
   test(`A11Y-005 A11Y-021 J2 keyboard-only at ${String(width)} px: sign-up, identity code, service area, email code, then Confirm and pay $75; axe at three widths on each`, async ({ page }) => {
-    await httpsOrigin(page);
     plumbingOnBeforeLaunch();
     const business = await signUpByKeyboard(page, width);
     const seeded = seedPick({ business, feeCents: 7500 });
