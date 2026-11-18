@@ -3356,6 +3356,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **Fix, planned as T700 and claimed first:** a task whose turn runs out now goes to the back of the queue instead of out of it, so every finished task gets its turn in order, and no task holds the turn for more than 90 minutes. A task that is truly stuck still gives up the turn after 45 minutes. The cost we accepted: such a task takes another 45-minute turn once every round until someone looks at it, where today it lost the turn once.
 - Our choice; nothing needs you now.
 
+## Two crates could hold only one task at a time (D-4433)
+- **The server and picks crate notes had grown so close to their size limit that the runner let only one task work in each**, while almost every task waiting to start touches the server crate, so five of seven lanes sat idle.
+- **Fix:** the longer rules in those two notes now keep their first part (the rule and its requirement numbers) and point to the rest, which moved word for word to each crate's searchable notes file; a check confirms no word was lost. Each crate can now hold two tasks again.
 ## The texting conversation task was cut into smaller pieces, with its gaps named (D-4441)
 
 - **The first try at wiring the homeowner's texts past the consent text (T671) came out about 60% over its size limit, and its review found four places where a conversation would stop dead**: a short first text like "need plumber" never got a job; a text naming no trade got nothing after the ZIP; an "alarm keeps beeping" text never got the ZIP question after "just chirping"; and "SAFE" after the ZIP question was taken as a wrong ZIP.
@@ -3363,5 +3366,6 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **Three older tests** needed small updates for the new order; we checked each one, and none hides a privacy leak (the test that looks for a stated name still checks every table).
 - **Our reading, for your review:** the spec says a one- or two-word text never opens a job. We read that as "a short text never opens a job by itself"; a short first text like "need plumber" still gets its job once the ZIP is checked, the same way the one-word ALSO starts a second job.
 - **New wording, for the copy panel:** the question for a text that names no trade ("What do you need done? A few words is enough.") is a draft. Until the AI reading is on, such a text is asked, not told "We don't cover that yet".
+- **A request that never gets a job now times out like any other** (T719): a reminder after a day and a close after three. Because such a request has no request number yet, the two texts are new drafts of the usual ones without the number, for the copy panel.
 - **Open item:** the numbered "Is this mainly 1) plumbing or 2) heating/AC?" question only comes up when the AI reading and the keywords disagree, so it waits for the AI work (T299); no task builds it yet.
 - Our choice; nothing needs you now.

@@ -660,5 +660,35 @@
     "draft": true,
     "segments": 2,
     "text": "{brand_short}: Este teléfono es para dueños de casa que piden cotizaciones. Para recibir solicitudes de trabajo, vaya a {domain}/b/signup\nResponda PARAR para salir, AYUDA para ayuda."
+  },
+  "business_get_help_answer": {
+    "audience": "business",
+    "draft": true,
+    "segments": 4,
+    "text": "{brand_short}: Recibido. El dueño de {brand} tiene su mensaje y suele responder en 2 días, o en 24 horas cuando hay una selección o un trabajo de emergencia esperando."
+  },
+  "business_get_help_job": {
+    "audience": "business",
+    "draft": true,
+    "segments": 5,
+    "text": "{brand_short}: Abra el enlace del correo sobre ese trabajo. Ahí ve cómo va el trabajo y qué puede hacer.\n{brand_short}: Recibido. El dueño de {brand} tiene su mensaje y suele responder en 2 días, o en 24 horas cuando hay una selección o un trabajo de emergencia esperando."
+  },
+  "business_get_help_charge": {
+    "audience": "business",
+    "draft": true,
+    "segments": 6,
+    "text": "{brand_short}: Cada cobro trae un correo de recibo. Su enlace \"¿Por qué me cobraron?\" muestra el trabajo y la tarifa.\n{brand_short}: Recibido. El dueño de {brand} tiene su mensaje y suele responder en 2 días, o en 24 horas cuando hay una selección o un trabajo de emergencia esperando."
+  },
+  "business_get_help_sign_in": {
+    "audience": "business",
+    "draft": true,
+    "segments": 6,
+    "text": "{brand_short}: Vaya a {domain}/b/sign-in y pida un enlace para entrar. Cada enlace sirve una vez y vence a los 15 minutos.\n{brand_short}: Recibido. El dueño de {brand} tiene su mensaje y suele responder en 2 días, o en 24 horas cuando hay una selección o un trabajo de emergencia esperando."
+  },
+  "business_get_help_emails": {
+    "audience": "business",
+    "draft": true,
+    "segments": 7,
+    "text": "{brand_short}: Si no le llegan nuestros correos, busque en la carpeta de spam o correo no deseado. Marque nuestro correo como no spam para que los próximos lleguen a su bandeja.\n{brand_short}: Recibido. El dueño de {brand} tiene su mensaje y suele responder en 2 días, o en 24 horas cuando hay una selección o un trabajo de emergencia esperando."
   }
 }
