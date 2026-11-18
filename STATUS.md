@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T00:23:28Z by runner 7f322437dbe5 (actions).
+Updated 2026-11-18T00:26:08Z by runner 170c3aba634d (actions).
 
 **Building: T587 in progress since 23:37Z; 417 of 582 done; week 33% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,14 @@ Updated 2026-11-18T00:23:28Z by runner 7f322437dbe5 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T587 claimed 23:37Z, lease until 03:21Z; lane 2: T478 claimed 23:24Z, lease until 03:11Z; lane 5: T151 claimed 00:12Z, lease until 03:12Z; lane 6: T108 claimed 00:23Z, lease until 03:23Z
 - **Week:** 33% used, 123.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:21Z, 1 min before this update
+- **Last run:** 00:23Z, 2 min before this update
 - **Keeper:** last ran 23:38Z, next wake 02:26Z
 
 ## Needs attention
 - BLOCKED T203: plan gap reported: PLAN GAP: `app/portals/templates/quote_page.html:101` (owned by DONE tasks T052, T095, T294, T308, T384, T388, T393, T440 and T441, and by QUEUED T608). WORD-002 (`docs/spec/wording.md:6`) and TD-WORD-05 (`docs/test-design.md:683`) say the long not-a-contractor statement must be "at the top of the quote page". The template has only the first sentence, and only at the bottom (line 101 of 103); it extends `app/site/templates/base.html`, which has no contractor line. T203 owns only tests/docs/test_wording_statements.py and tests/docs/test_introduction_fee_wording.py and may not write copy (kit/pr; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T203 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 21 problem(s) on tasks still to run (+188 on DONE tasks); first: T402: stored context_pct 40% but it measures 45%; regenerate
+- Strict plan check red: 18 problem(s) on tasks still to run (+185 on DONE tasks); first: T402: stored context_pct 40% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
