@@ -1,19 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-18T11:19:42Z by runner 3103c90462d8 (actions).
+Updated 2026-11-18T11:19:54Z by runner 3103c90462d8 (actions).
 
-**Building: T563 in progress since 09:55Z; 440 of 621 done; week 52% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T583 in progress since 11:19Z; 440 of 621 done; week 52% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 440 of 621 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T563 claimed 09:55Z, lease until 14:12Z; lane 5: T408 claimed 09:13Z, lease until 13:23Z; lane 6: T200 claimed 09:05Z, lease until 13:36Z
-- **Week:** 52% used, 85.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T583 claimed 11:19Z, lease until 14:19Z; lane 2: T563 claimed 09:55Z, lease until 14:12Z; lane 5: T408 claimed 09:13Z, lease until 13:23Z; lane 6: T200 claimed 09:05Z, lease until 13:36Z
+- **Week:** 52% used, 85.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:12Z, 7 min before this update
 - **Keeper:** last ran 11:05Z, next wake 12:58Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
+- PLAN GAP T662 (since 2026-11-18T11:19:34Z, no attempt used; a plan change fixes it): T662: dependency T650 is DONE but its owned file tests/integration/tests/under_13_purge_job_data.rs is not on main
 - Strict plan check red: 26 problem(s) on tasks still to run (+225 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
@@ -115,7 +116,7 @@ Updated 2026-11-18T11:19:42Z by runner 3103c90462d8 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-18T09:52:59Z (week)): week: 108.8M used, 85.2M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-01T06:50:59Z.
+- Pacing (session_reading 2026-11-18T11:04:46Z (week)): week: 108.6M used, 85.4M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-01T04:54:10Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -130,7 +131,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T583 (lease until 2026-11-18T14:19:34Z)
 - lane 2: T563 (lease until 2026-11-18T14:12:16Z)
 - lane 5: T408 (lease until 2026-11-18T13:23:31Z)
 - lane 6: T200 (lease until 2026-11-18T13:36:41Z)
