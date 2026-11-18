@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO payments.refund (pick_id, trigger, status, tries, stripe_refund_id,\n           requested_at) VALUES ($1, 'fraud-warning', 'succeeded', 1, 're_FakeT706', now())",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "a711b23f08f2a2469a510e676107c8f8eccb7d9ede2a4dd62f49f06deceb0b93"
+}
