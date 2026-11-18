@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T18:27:43Z by runner f9ac2e6c67c7 (actions).
+Updated 2026-11-18T18:28:34Z by runner ac95475ba313 (actions).
 
 **Building: T483 in progress since 18:25Z; 453 of 645 done; week 64% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 453 of 645 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T483 claimed 18:25Z, lease until 21:25Z; lane 7: T711 claimed 18:12Z, lease until 21:12Z
-- **Week:** 64% used, 63.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:27Z, 0 min before this update
+- **Lane:** lane 3: T483 claimed 18:25Z, lease until 21:25Z; lane 4: T364 claimed 18:28Z, lease until 21:28Z; lane 7: T711 claimed 18:12Z, lease until 21:12Z
+- **Week:** 64% used, 62.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 18:28Z, 0 min before this update
 - **Keeper:** last ran 18:25Z, next wake 18:45Z
 
 ## Needs attention
@@ -20,8 +20,9 @@ Evidence (confirmed by a second reviewer): list_disputes (app/payments/src/dispu
 Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2b1: app/intake/src/job_texts.rs 5/5, app/intake/src/quote_updates.rs 292/0, tests/integration/tests/quote_update_texts.rs 377/0 (679 lines). Fix-round worker's honest trim reached about 273 + 8 + ~350 = ~630 lines (test still failing clippy: a 73-line function needing ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T583 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T645: plan gap reported: PLAN GAP: app/site/src/chat.rs:340 (owned by T593, then T646 and T649; T593 is not merged yet) calls `chat_message(db, &secret, &key, &msg, self.intake)` with no `Vault`, and the `ChatKeys` trait (chat.rs:62-66) only exposes secret/send/check. `messaging::api::suppress` (app/messaging/src/optout.rs:311-317) needs a `&Vault` and the phone, since digests come from `vault.blind_index` (optout.rs:441-443). `chat_message` (app/intake/src/web_chat.rs:247-253) takes no vault and its `Settings` is `Copy`, so T645 cannot list the session's number (step 1, TD-CON-36 "at once") without a signature change; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T645 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
+- PLAN GAP T501 (since 2026-11-18T18:28:18Z, no attempt used; a plan change fixes it): T501: dependency T500 is DONE but its owned file docs/decisions-current.md is not on main
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 33 problem(s) on tasks still to run (+252 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 34 problem(s) on tasks still to run (+258 on DONE tasks); first: T402: measures 48% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -122,7 +123,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-18T18:24:43Z (week)): week: 130.4M used, 63.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-02T05:03:21Z.
+- Pacing (session_reading 2026-11-18T18:27:22Z (week)): week: 131.1M used, 62.9M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-02T05:39:30Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -139,6 +140,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 3: T483 (lease until 2026-11-18T21:25:05Z)
+- lane 4: T364 (lease until 2026-11-18T21:28:18Z)
 - lane 7: T711 (lease until 2026-11-18T21:12:25Z)
 
 ## Last usage reading

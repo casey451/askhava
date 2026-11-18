@@ -7310,3 +7310,4 @@
 - 2026-11-18T18:26:46Z runner f9ac2e6c67c7 (actions): {"T624": "IN_PROGRESS -> MERGE_PENDING"}
 - 2026-11-18T18:27:21Z runner ac95475ba313 (actions): {"T500": "MERGE_PENDING -> DONE"}
 - 2026-11-18T18:27:43Z runner f9ac2e6c67c7 (actions): {}
+- 2026-11-18T18:28:34Z runner ac95475ba313 (actions): {"T364": "QUEUED -> IN_PROGRESS"}; T364 estimated 1.2M tokens (calibrated); week has 62.9M left (no five-hour budget, D-3056) after 3.1M still running in another lane (session_reading 2026-11-18T18:27:22Z (week)); running to the limit (model window, D-2225), claimed
