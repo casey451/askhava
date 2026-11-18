@@ -3325,3 +3325,12 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **Our reading:** while the payment is going through, the homeowner already sees "the business accepted your pick"; her details are still shared only after payment.
 - **The job page link in business emails gets built** (T665, T666; "Not a fit for us" on it in T668). A business that confirmed lands straight on the homeowner's details. Open item: the page shows the job card, photos and counts, but not yet the homeowner's individual intake answers, because nothing reads them out yet; that needs its own task later.
 - Nothing needs you now.
+
+## The homeowner's text conversation gets wired past the consent text (D-4360)
+
+- **Today a homeowner who texts us gets the consent text and then nothing.** The pieces for every later question exist (ZIP, trade, "How soon?", emergency or regular, the trade questions, photos, the card she reviews), but nothing calls them, so no job is opened and no business ever gets a card. Six new tasks connect them in the order the spec's "Intake order" table sets (T671 to T676), ending with the J1 journey test running the real conversation instead of a shortcut.
+- **A trade with fewer than 2 active businesses now takes no requests**, as the spec says: the homeowner gets the "We don't cover <trade> jobs yet" reply and the request is logged as recruiting demand (T671). The minimum of 2 is a fixed value in the code for now.
+- **A business that joins, unpauses or ticks a new job type now gets the cards of matching open jobs** (T677).
+- **The after-hours emergency tick is suspended after 2 missed night emergency cards**, as the spec says. To know whether a card was opened, the app now records each card email and when its Quote page was first opened from the email's own link (no tracking pixel) (T678). This also fills the business's notice log page, which was empty.
+- **The homeowner's photo upload page gets served** (T674); it was built but no route served it.
+- Nothing needs you now.
