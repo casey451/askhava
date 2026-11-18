@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T16:15:51Z by runner c47c8f979e41 (actions).
+Updated 2026-11-18T16:19:03Z by runner c47c8f979e41 (actions).
 
 **Building: T624 in progress since 15:49Z; 447 of 645 done; week 62% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-18T16:15:51Z by runner c47c8f979e41 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T624 claimed 15:49Z, lease until 18:49Z; lane 4: T592 claimed 15:38Z, lease until 19:15Z; lane 5: T720 claimed 15:43Z, lease until 18:43Z; lane 7: T671 claimed 15:43Z, lease until 18:43Z
 - **Week:** 62% used, 66.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:11Z, 4 min before this update
+- **Last run:** 16:15Z, 3 min before this update
 - **Keeper:** last ran 16:11Z, next wake 18:41Z
 
 ## Needs attention
@@ -85,7 +85,6 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | QUEUED | 1 | 51 min | 16:52Z |  |
 | T528 | ops: the alert, audit-row and digest-row readers and writers | BLOCKED | 1 | 24 min | 16:50Z |  |
 | T595 | server and site: a same-site web chat POST passes its CSRF c | done | 1 | 45 min | 16:19Z |  |
-| T479 | ops and portals: "Not a fit for us" on the job page, and the | done | 2 | 47 min | 16:17Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 
 ### Plan and harness merges on main
 - none
