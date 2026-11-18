@@ -1,0 +1,173 @@
+# Advisory watch (D-4269, SEC-021): every 4 hours, the same cargo-audit, cargo-deny and npm audits `Ci`
+# runs, on main's locks. It only reports: a new advisory becomes outbox/advisory-<ID>.md on
+# claude/kit-state and a notify.yml dispatch. Nothing calls it; it is never a required check, never part
+# of the nightly and never writes the nightly's record. Only `report` joins kit-state-writer, and only when
+# there is something to write or send, so a queued run never cancels a pending nightly record or notify.
+name: advisory-watch
+on:
+  schedule:
+    - cron: "23 */4 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: advisory-watch
+  cancel-in-progress: false
+jobs:
+  scan:
+    name: scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    outputs:
+      new: ${{ steps.scan.outputs.new }}
+      pending: ${{ steps.scan.outputs.pending }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: main
+          persist-credentials: false
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: claude/kit-state
+          path: kit-state
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Rust toolchain (the pinned release, minimal; cargo-deny reads cargo metadata)
+        run: |
+          rustup toolchain install "$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)" --profile minimal
+
+      - name: Prebuilt tools (cargo-audit, cargo-deny) from pinned musl release tarballs (D-693)
+        env:
+          AUDIT_VERSION: 0.22.2
+          AUDIT_URL: https://github.com/rustsec/rustsec/releases/download/cargo-audit/v0.22.2/cargo-audit-x86_64-unknown-linux-musl-v0.22.2.tgz
+          AUDIT_SHA256: 7fb9497f8594b389e5fce5ef9b92db08432996895b2e0c5a0167a69ed445c428
+          DENY_VERSION: 0.20.2
+          DENY_URL: https://github.com/EmbarkStudios/cargo-deny/releases/download/0.20.2/cargo-deny-0.20.2-x86_64-unknown-linux-musl.tar.gz
+          DENY_SHA256: 9f12ed4c49936e09b48bf862b595cde2fe64fcbd9d74dfacac6131ca824c8d5f
+        run: |
+          # Each tool: the pinned musl release tarball, retried, checked against its SHA-256 and extracted only once
+          # that check passes. When the download or the check fails (GitHub's release CDN gave minutes of 504s,
+          # D-1986), the same version from crates.io (the index checksum verifies the crate; --locked builds with the
+          # crate's own Cargo.lock) into the same bin. Either way the binary must report the pinned version; with
+          # neither source, the step fails. Actions runs this with `bash -e` (no pipefail).
+          bin="$RUNNER_TEMP/tools/bin"; mkdir -p "$bin"
+          tool_release() {
+            # Only this tool's binary: GNU tar exits 2 when a named pattern matches nothing.
+            rm -f "$RUNNER_TEMP/$tool.tgz"
+            curl -sSfL --retry 5 --retry-all-errors --retry-delay 15 --connect-timeout 20 -o "$RUNNER_TEMP/$tool.tgz" "${!url}" \
+              && echo "${!sum}  $RUNNER_TEMP/$tool.tgz" | sha256sum -c - \
+              && tar -xzf "$RUNNER_TEMP/$tool.tgz" -C "$bin" --strip-components=1 --wildcards "*/$name"
+          }
+          for tool in AUDIT DENY; do
+            url="${tool}_URL"; sum="${tool}_SHA256"; version="${tool}_VERSION"; name="cargo-${tool,,}"
+            if tool_release; then
+              echo "${name} source: the ${!version} release tarball (SHA-256 verified)"
+            else
+              echo "::warning::${name} release download or SHA-256 check failed; building ${!version} from crates.io (D-1986)"
+              cargo install --locked --root "$RUNNER_TEMP/tools" --version "=${!version}" "$name"
+              echo "${name} source: crates.io ${!version} (index checksum verified, built --locked)"
+            fi
+            reported="$("$bin/$name" --version)"
+            case "$reported" in
+              *" ${!version}") echo "${name} reports version ${reported}" ;;
+              *) echo "::error::${name} reports '${reported}', not ${!version}"; exit 1 ;;
+            esac
+          done
+          echo "$bin" >> "$GITHUB_PATH"
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+
+      - name: Audit the locks and judge the reports (a found advisory is not an error)
+        id: scan
+        run: |
+          # No build, no npm ci: each tool reads Cargo.lock or package-lock.json. A found advisory exits
+          # non-zero, so each exit code is kept and advisory_watch.py tells a finding from a crashed tool.
+          set +e
+          cargo audit --json >audit.json; audit_exit=$?
+          cargo deny --format json check advisories 2>deny.json; deny_exit=$?
+          npm audit --json >npm.json; npm_exit=$?
+          set -e
+          echo "cargo audit exit $audit_exit, cargo deny exit $deny_exit, npm audit exit $npm_exit"
+          python3 scripts/advisory_watch.py scan --cargo-audit audit.json --cargo-audit-exit "$audit_exit" \
+            --cargo-deny deny.json --cargo-deny-exit "$deny_exit" --npm npm.json --npm-exit "$npm_exit" \
+            --kit-state kit-state --out found.json
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: advisory-watch
+          path: |
+            found.json
+            audit.json
+            deny.json
+            npm.json
+          if-no-files-found: error
+
+  report:
+    name: report
+    needs: scan
+    if: github.ref == 'refs/heads/main' && (needs.scan.outputs.new != '0' || needs.scan.outputs.pending != '0')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      actions: write
+    concurrency:
+      group: kit-state-writer
+      cancel-in-progress: false
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: main
+          path: main
+          persist-credentials: false
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: claude/kit-state
+          path: kit-state
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: advisory-watch
+          path: scan
+
+      - name: Write new advisory files and stamp what is dispatched (recomputed from this checkout)
+        id: report
+        working-directory: kit-state
+        run: |
+          python3 ../main/scripts/advisory_watch.py report --found ../scan/found.json --kit-state .
+
+      - name: Commit and push the outbox files (never force)
+        working-directory: kit-state
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A outbox
+          git diff --cached --quiet && exit 0
+          git commit -m "advisory-watch: new=${NEW} pending=${PENDING}"
+          for i in 1 2 3 4 5; do
+            git push origin HEAD:claude/kit-state && exit 0
+            echo "push rejected (attempt $i); rebasing"
+            if ! { git fetch origin claude/kit-state && git rebase origin/claude/kit-state; }; then
+              git rebase --abort || true
+            fi
+          done
+          echo "::error::push failed after 5 attempts"
+          exit 1
+        env:
+          NEW: ${{ steps.report.outputs.new }}
+          PENDING: ${{ steps.report.outputs.pending }}
+
+      - name: Dispatch notify (a push made with GITHUB_TOKEN starts no workflow)
+        if: steps.report.outputs.new != '0' || steps.report.outputs.pending != '0'
+        run: |
+          gh workflow run notify.yml --ref main --repo "$GITHUB_REPOSITORY"
