@@ -85,7 +85,8 @@ def test_a_green_twin_tree_that_raises_warms_and_one_that_proves_skips(tmp_path:
     assert _warmed(tmp_path, env.warm_smoke(), built)
 
 
-@pytest.mark.parametrize("why", ["no_file", "unreadable", "malformed", "main_red", "later_red", "later_timeout",
+@pytest.mark.parametrize("why", ["no_file", "unreadable", "malformed", "runs_not_a_list", "red_history_not_a_list",
+                                 "main_red", "later_red", "later_timeout",
                                  "too_old", "other_head"])
 def test_anything_that_doubts_the_record_warms_exactly_as_today(tmp_path: Path, monkeypatch: Any, why: str) -> None:
     env, _, built = _env(tmp_path, monkeypatch, ancestry=5)
@@ -93,6 +94,7 @@ def test_anything_that_doubts_the_record_warms_exactly_as_today(tmp_path: Path, 
     states = {"main_red": _state(_run(HEAD), main_red=red), "later_red": _state(_run(HEAD), _run(HEAD, ok=False)),
               "later_timeout": _state(_run(HEAD), _run(HEAD, ok=False, timed_out=True)),
               "too_old": _state(_run(HEAD, at=NOW - timedelta(hours=6, seconds=1))), "other_head": _state(_run(OLD))}
+    states |= {"runs_not_a_list": {"smoke_runs": 5}, "red_history_not_a_list": {"main_red_history": 7}}
     if why in states:
         _state_file(tmp_path, monkeypatch, states[why])
     elif why != "no_file":

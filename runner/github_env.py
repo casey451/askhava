@@ -1522,6 +1522,14 @@ class GitHubEnv:
         since = str(kept.get("reused") or kept.get("at"))
         return f"pre-session smoke skipped on {head[:12]}: a green smoke of this head is recorded ({since}); the session reuses it"
 
+    def _warm_reuse_line(self, head: str) -> str:
+        """`_reusable_line` for the warm-up (D-4281): any error reading the state, such as a JSON object whose field
+        has the wrong type, gives "" so the warm-up builds exactly as it did before it read the state (D-4301)."""
+        try:
+            return self._reusable_line(head)
+        except Exception:  # noqa: BLE001  # reason: a bad state file must never stop the warm-up (D-4301)
+            return ""
+
     def _ancestry_line(self, state: State, head: str) -> str:
         """The step's line when `st.ancestry_smoke` finds a real green on an ancestor of `head` at most `smoke_ancestry`
         first-parent commits back with only DONE tasks' squash merges (D-3058) or merges whose identical tree passed
@@ -1583,7 +1591,7 @@ class GitHubEnv:
         head = self._checkout_main()
         if self.dry_run or not head:
             return f"dry-run: smoke warm-up not run on {head[:12]}" if self.dry_run else "smoke warm-up skipped: no main head"
-        reused = self._reusable_line(head)
+        reused = self._warm_reuse_line(head)
         if reused:
             return f"smoke warm-up skipped on {head[:12]}: {reused.split(': ', 1)[-1]}"
         tree, start, built = smoke_tree_dir(), time.monotonic(), False
