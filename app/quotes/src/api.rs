@@ -85,6 +85,7 @@ pub use crate::edit_withdraw::{Saved, Withdrawal, save_quote, withdraw_quote};
 pub use crate::emergency_card_notice::{
     CardTiming, EMERGENCY_FIRST_LINE, emergency_card_subject, queue_emergency_card, split,
 };
+pub use crate::flag_inputs::{MonthQuotes, month_quotes};
 pub use crate::formats::{
     OTHER_SCHEDULE, PriceFields, PriceProblem, VisitSchedule, format_for, parse_price,
     visit_schedule_of,

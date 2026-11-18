@@ -8,7 +8,8 @@
 //! reviewed table, or no location for a ZIP the table lacks (an out-of-state base): its radius is
 //! then unused and its towns served alone decide its cards (BIZ-058). Matching by radius and the
 //! portal edit are T249's. [`businesses_in_towns`] lists the businesses serving any of a job's
-//! towns, the card pool's first read (T251, CARD-001, BIZ-010).
+//! towns, the card pool's first read (T251, CARD-001, BIZ-010). [`service_areas`] reads every
+//! stored area in one statement, the card pool's radius reach (T601, D-4196).
 
 use askhava_catalog::api::{Centroid, is_zip, zip_location};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
@@ -146,18 +147,41 @@ pub async fn service_area(
     )
     .fetch_optional(&mut *conn)
     .await)?;
-    let Some(row) = row else {
-        return Ok(None);
-    };
-    let radius_miles = u8::try_from(row.radius_miles).map_err(|_| BusinessesError::Database)?;
-    let location = zip_location(&row.base_zip).map_err(|_| BusinessesError::Database)?;
-    Ok(Some(StoredServiceArea {
+    row.map(|row| stored(row.base_zip, row.radius_miles))
+        .transpose()
+}
+
+/// CARD-024, BIZ-058, D-3360, D-4196 (T601): every stored service area, each with its base's
+/// centroid as [`service_area`] reads it, paired with its business's ID and sorted by it, whatever
+/// the business's status or towns, in one statement; the card pool's radius reach.
+///
+/// # Errors
+/// `Database`; `Database` too if the compiled-in centroid table cannot be read.
+pub async fn service_areas(
+    conn: &mut PgConnection,
+) -> Result<Vec<(Uuid, StoredServiceArea)>, BusinessesError> {
+    let rows = db(sqlx::query!(
+        "SELECT business_id, base_zip, radius_miles FROM businesses.service_area \
+         ORDER BY business_id"
+    )
+    .fetch_all(conn)
+    .await)?;
+    rows.into_iter()
+        .map(|row| Ok((row.business_id, stored(row.base_zip, row.radius_miles)?)))
+        .collect()
+}
+
+/// One stored row as a [`StoredServiceArea`], with its base ZIP's centroid (BIZ-058, INT-048).
+fn stored(base_zip: String, radius: i16) -> Result<StoredServiceArea, BusinessesError> {
+    let radius_miles = u8::try_from(radius).map_err(|_| BusinessesError::Database)?;
+    let location = zip_location(&base_zip).map_err(|_| BusinessesError::Database)?;
+    Ok(StoredServiceArea {
         area: ServiceArea {
-            base_zip: row.base_zip,
+            base_zip,
             radius_miles,
         },
         location,
-    }))
+    })
 }
 
 /// CARD-001, BIZ-010: the businesses serving any of `towns` (town codes), each once, sorted by

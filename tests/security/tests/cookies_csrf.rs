@@ -1,10 +1,11 @@
 //! Session cookies, CSRF tokens, cross-site refusal and security events (TD-SEC-04, TD-SEC-21,
-//! TD-SEC-26; SEC-009, SEC-042, SEC-048, D-099, D-480).
+//! TD-SEC-26, TD-SEC-73; SEC-009, SEC-042, SEC-048, SEC-012, D-099, D-480, D-4292).
 //!
 //! Every cookie is `__Host-`, `Secure`, `HttpOnly`, `SameSite=Lax` with `Path=/` and no `Domain`;
 //! a login gives a new cookie and the pre-login and earlier cookies stop working; a CSRF token
 //! works only with the cookie it was made from; a portals test route refuses a post without its
-//! token, with another session's token, and any cross-site post even with a good token; each
+//! token, with another session's token, and any cross-site post even with a good token, while a
+//! browser's own form post under `Referrer-Policy: no-referrer` (`Origin: null`) passes; each
 //! refusal is logged with request ID and route template, never the path; and 50 events of one
 //! kind within an hour raise exactly one High alert. The realm-proof case of TD-SEC-25 runs in
 //! `app/portals/src/session.rs`, since only `portals` may take the session mint. Every ID and
@@ -208,40 +209,90 @@ fn form_post(cookie: &str, headers: &[(&str, &str)], body: &str) -> Request<Body
     request.body(Body::from(body.to_owned())).expect("request")
 }
 
-/// TD-SEC-04, TD-SEC-21, TD-SEC-26 (SEC-009, SEC-042, SEC-048): the portals test route takes a
-/// same-origin post with its token, and refuses a missing or foreign token and every cross-site
-/// post; each refusal is logged with request ID and route template, never the path's phone.
+/// A same-origin post with an `https://` Origin.
+const SAME: [(&str, &str); 2] = [
+    ("sec-fetch-site", "same-origin"),
+    ("origin", "https://askhava.test"),
+];
+/// A browser's own form post under `Referrer-Policy: no-referrer` (TD-SEC-73).
+const BROWSER: [(&str, &str); 2] = [("sec-fetch-site", "same-origin"), ("origin", "null")];
+/// A browser before Fetch Metadata posting under `Referrer-Policy: no-referrer` (TD-SEC-73).
+const OLD_BROWSER_NULL: [(&str, &str); 1] = [("origin", "null")];
+
+/// One case of [`csrf_cases`]: headers, whether the cookie is the token's own, body and answer.
+type CsrfCase<'a> = (
+    &'static [(&'static str, &'static str)],
+    bool,
+    &'a str,
+    StatusCode,
+);
+
+/// TD-SEC-21, TD-SEC-73 (SEC-042, SEC-012, D-4292): each case's headers, cookie (`true` for the
+/// token's own), body and answer: `Sec-Fetch-Site` alone decides when present; without it an
+/// `https://<Host>` Origin passes, `Origin: null` falls to the token check, and any other is refused.
+fn csrf_cases(good: &str) -> Vec<CsrfCase<'_>> {
+    use StatusCode as S;
+    vec![
+        (&SAME, true, good, S::OK),
+        (&SAME, true, "", S::FORBIDDEN),
+        (&SAME, false, good, S::FORBIDDEN),
+        (
+            &[("sec-fetch-site", "cross-site")],
+            true,
+            good,
+            S::FORBIDDEN,
+        ),
+        (&[("origin", "https://evil.test")], true, good, S::FORBIDDEN),
+        (&[], true, good, S::FORBIDDEN),
+        (
+            &[("origin", "http://askhava.test")],
+            true,
+            good,
+            S::FORBIDDEN,
+        ),
+        (&[("origin", "https://askhava.test")], true, good, S::OK),
+        (&BROWSER, true, good, S::OK),
+        (
+            &[("sec-fetch-site", "same-site"), ("origin", "null")],
+            true,
+            good,
+            S::FORBIDDEN,
+        ),
+        (&[("sec-fetch-site", "none")], true, good, S::FORBIDDEN),
+        (
+            &[
+                ("sec-fetch-site", "cross-site"),
+                ("origin", "https://askhava.test"),
+            ],
+            true,
+            good,
+            S::FORBIDDEN,
+        ),
+        (&OLD_BROWSER_NULL, true, good, S::OK),
+        (&OLD_BROWSER_NULL, true, "", S::FORBIDDEN),
+        (&OLD_BROWSER_NULL, false, good, S::FORBIDDEN),
+    ]
+}
+
+/// The refusals among [`csrf_cases`]: one `csrf_rejected` event and one log line each.
+const CSRF_REFUSALS: usize = 11;
+
+/// TD-SEC-04, TD-SEC-21, TD-SEC-26, TD-SEC-73 (SEC-009, SEC-042, SEC-048, SEC-012, D-4292): the
+/// portals test route takes a same-origin post with its token (a browser's `Origin: null` one
+/// too), and refuses a missing or foreign token and every cross-site post; each refusal is logged
+/// with request ID and route template, never the path's phone.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn the_test_route_refuses_cross_site_and_tokenless_posts(pool: PgPool) {
     let (mine, other) = ("1c".repeat(32), "2d".repeat(32));
     let token = csrf_token(&jar_with(&[(PRE_SESSION_COOKIE, &mine)])).expect("token");
     let good = format!("csrf={token}");
-    let same = [
-        ("sec-fetch-site", "same-origin"),
-        ("origin", "https://askhava.test"),
-    ];
-    let cases = [
-        (form_post(&mine, &same, &good), StatusCode::OK),
-        (form_post(&mine, &same, ""), StatusCode::FORBIDDEN),
-        (form_post(&other, &same, &good), StatusCode::FORBIDDEN),
-        (
-            form_post(&mine, &[("sec-fetch-site", "cross-site")], &good),
-            StatusCode::FORBIDDEN,
-        ),
-        (
-            form_post(&mine, &[("origin", "https://evil.test")], &good),
-            StatusCode::FORBIDDEN,
-        ),
-        (form_post(&mine, &[], &good), StatusCode::FORBIDDEN),
-        (
-            form_post(&mine, &[("origin", "http://askhava.test")], &good),
-            StatusCode::FORBIDDEN,
-        ),
-        (
-            form_post(&mine, &[("origin", "https://askhava.test")], &good),
-            StatusCode::OK,
-        ),
-    ];
+    let cases: Vec<_> = csrf_cases(&good)
+        .into_iter()
+        .map(|(headers, own, body, want)| {
+            let cookie = if own { &mine } else { &other };
+            (form_post(cookie, headers, body), want)
+        })
+        .collect();
     let log = Sink::default();
     let writer = log.clone();
     let subscriber = tracing_subscriber::registry().with(json_layer(move || writer.clone()));
@@ -259,7 +310,7 @@ async fn the_test_route_refuses_cross_site_and_tokenless_posts(pool: PgPool) {
             .fetch_all(&pool)
             .await
             .expect("events");
-    assert_eq!(stored.len(), 6, "one event per refusal");
+    assert_eq!(stored.len(), CSRF_REFUSALS, "one event per refusal");
     assert!(
         stored
             .iter()
@@ -268,7 +319,7 @@ async fn the_test_route_refuses_cross_site_and_tokenless_posts(pool: PgPool) {
     let text = log.text();
     assert_eq!(
         text.matches("security event").count(),
-        6,
+        CSRF_REFUSALS,
         "one log line per refusal"
     );
     assert!(text.contains(FAKE_REQUEST_ID) && text.contains("/test/{token}"));

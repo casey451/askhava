@@ -7,11 +7,10 @@
 // (555-01xx, sealed with `seal` into `privacy.staff_phone`) and a sign-in link for a token chosen
 // here; pressing Sign in on the keyed binary sends a Verify code to that phone (the stand-in's code
 // hook answers for it) and typing it signs the browser in. The second proves a cookie an Ally seed
-// returns reaches the keyed binary on the next request. POSTs are re-sent with a same-origin https
-// Origin, as the J1 specs do (D-1250). Fake data only; no key or value is printed or logged.
+// returns reaches the keyed binary on the next request. POSTs go with the browser's own headers
+// (D-4292). Fake data only; no key or value is printed or logged.
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import type { Page } from "@playwright/test";
 import { open, seededUrl } from "../a11y/fixtures";
 import { test, expect } from "./fixtures";
 import { keyedUrl, seal } from "./keyed";
@@ -40,16 +39,6 @@ function seedOwnerWithPhone(token: string): void {
   if (done.status !== 0) throw new Error(`seeding the business failed with status ${String(done.status)}`);
 }
 
-/** Re-sends every sign-in POST with a same-origin https Origin (D-1250). */
-async function httpsOrigin(page: Page): Promise<void> {
-  await page.route("**/b/sign-in/**", async (route) => {
-    const request = route.request();
-    if (request.method() !== "POST") return route.continue();
-    const headers = { ...request.headers(), origin: `https://${new URL(request.url()).host}`, "sec-fetch-site": "same-origin" };
-    return route.fulfill({ response: await route.fetch({ headers, maxRedirects: 0 }) });
-  });
-}
-
 /** The code the Verify stand-in sent to `phone`, from its test hook standing in for the phone. */
 async function verifyCode(phone: string): Promise<string> {
   const reply = await fetch(`http://127.0.0.1:4010/_stand_in/twilio/code?to=${encodeURIComponent(phone)}`);
@@ -60,7 +49,6 @@ async function verifyCode(phone: string): Promise<string> {
 test("SEC-004 D-3674: on the keyed binary a sign-in link sends a Verify code to the owner's sealed texting phone, and the code signs the browser in", async ({ page }) => {
   const token = randomBytes(32).toString("hex");
   seedOwnerWithPhone(token);
-  await httpsOrigin(page);
   await page.goto(`${keyedUrl()}/b/sign-in/${token}`);
   await page.getByRole("button", { name: "Sign in" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Enter your sign-in code");

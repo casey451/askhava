@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT subject_kind, subject_id, at FROM ops.audit_log WHERE action = $1 AND at >= $2 AND at < $3 ORDER BY at, id",
+  "query": "SELECT subject_kind, subject_id, field, at FROM ops.audit_log WHERE action = $1 AND at >= $2 AND at < $3 ORDER BY at, id",
   "describe": {
     "columns": [
       {
@@ -27,6 +27,17 @@
       },
       {
         "ordinal": 2,
+        "name": "field",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "ops.audit_log",
+            "name": "field"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
         "name": "at",
         "type_info": "Timestamptz",
         "origin": {
@@ -47,8 +58,9 @@
     "nullable": [
       false,
       false,
+      true,
       false
     ]
   },
-  "hash": "1e967b4092775affff6f0c706d0782c86183ebf662123e895a5727670f79ff7d"
+  "hash": "b3a9c0f2adb19806932469fe7ccac02fe02a3f64337936d601fde5efa84b8b10"
 }
