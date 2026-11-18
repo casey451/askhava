@@ -16881,7 +16881,7 @@
    "id": "T408",
    "slug": "safe-mode-release-hold",
    "title": "payments and server: a release waits while safe mode is on and goes ahead after the FEE-017 check when it ends",
-   "goal": "Plan change D-3144 (OPS-001, OPS-024, FEE-017, FEE-021, PICK-022, SEC-030; D-133, D-491): safe mode pauses releases as well as charges, but every release goes through `server`'s `PickReleaser` (`app/server/src/release_sink.rs:78`), which no switch reaches, and T105, which builds safe mode, owns none of the release files. (1) While `ops::api::safe_mode_on` (T487) is true, `PickReleaser` settles and releases nothing for a cleared pick: it queues one held-release task (its payload the pick ID and its due time, since a claimed task carries no run time, `app/core/src/tasks.rs:100`; deduplicated per pick) and answers success, so the Stripe route answers 200 and Stripe sends nothing again. (2) The task (`app/server/src/release_hold.rs`, registered in `worker_registry`, `app/server/src/lib.rs:788`, which has the settings the releaser and its Stripe client are built from, on every path so `tests/integration/tests/task_registry.rs` finds its kind) while safe mode lasts enqueues the next run 15 minutes later and finishes: a handler cannot move its own `core.task` row (`core::api` exports no defer, and `server` may not write `core` tables), so the payload carries the pick ID and the run's due time, and the next run is `core::api::enqueue`d due 15 minutes after that time under the dedupe key `<kind>.<pick>.<run_at in microseconds>` (`core.task.dedupe_key` stays unique after a task is done, so the first held-release task's per-pick key is never reused, and a rerun of the same run enqueues the same key, which is refused, D-3263) and, once safe mode has ended, clears the pick again through a new `payments::api::held_release(pool, stripe, account, pick)` in `app/payments/src/release_proof.rs`. A stored attempt status cannot tell a verified event's success from a press's or the reconcile's (a press, `app/payments/src/charge.rs:234`, a late answer, `:659`, and a verified event's `store_success`, `app/payments/src/release_proof.rs:401`, all write through the same `handlers::record`, `app/payments/src/handlers.rs:118`), so for a paid pick `held_release` re-fetches the pick's stored intent from Stripe and runs `check_intent` (succeeded, mode, the server's fee, `metadata.pick_id`), as `paid_release` does (`release_proof.rs:206` to `:224`), and for a $0 pick keeps `no_fee_release`'s ledger check; nothing else makes a `Releasable` (SEC-030); `held_release` never uses T255's `Releasable::from_stored_success`, which re-clears only a pick whose proof was already spent (D-3358). Then the sink's normal settle and release run; the settle moves nothing for a pick no longer awaiting confirm (FEE-017), so a job cancelled or a pick ended meanwhile releases nothing, and a paid pick that ended gets the one late-success refund `paid_release` queues for an ended pick (FEE-021, D-2290). A second event for a held pick and a rerun of the task release once at most (the release row is the once, PICK-022); a pick released before safe mode began is untouched. Tests in `app/server/tests/safe_mode_release.rs` (TD-OPS-40), fake data only. Its build notes are `(task 408)` lines at the end of `app/server/NOTES.md` and `app/payments/NOTES.md` (`app/server/CLAUDE.md` is at its 8,192-byte cap and is not edited); update `docs/architecture.md` and `docs/decisions.md`. Plan change D-3879 (Fable's pre-claim check of stage-5 wave 2, Nov 16, 2026): (1b) `address_in` (`app/server/src/release_sink.rs:209` to `:232`, registered at `:254`) re-clears, settles and calls `release_settled` directly, not through `PickReleaser`, so an emergency pick waiting for its address would be released during safe mode (OPS-001 pauses releases). `address_in` checks `ops::api::safe_mode_on` first; an error reading it releases nothing and returns `ReleaseError::Database`, so the task is retried (fails closed); while it is on, it releases nothing and enqueues the next `intake.address_in` run 15 minutes later under the same run-time dedupe scheme as the held-release task; TD-OPS-40 has that case. Plan change D-4026 (T408 attempt 1's plan gap, Nov 16, 2026; amends D-4000 (4)): T487's TD-OPS-01 source check (`tests/integration/tests/safe_mode.rs:456` to `:494`) allows a `safe_mode_on(` call only in `payments/src/handlers.rs` and `app/ops/src/`, because the release gate was not on `main` when T487 ran; OPS-001 pauses releases too, so this task is a harness task and takes over that test (T487 is done). In that test only: (i) the function `td_ops_01_every_action_checks_its_switches_and_only_charges_read_safe_mode` is renamed `td_ops_01_every_action_checks_its_switches_and_only_charges_and_releases_read_safe_mode`, and its doc comment says only the charge and release gates read safe mode, so texts keep going (D-133); (ii) `safe_mode_on(` is allowed in exactly two more files, `app/server/src/release_sink.rs` and `app/server/src/release_hold.rs`; (iii) a positive assertion requires each of the two to contain `safe_mode_on(` on a non-comment line (its trimmed text not starting with `//`); (iv) the held-release handler is a named, non-closure `fn run_held_release` in `release_hold.rs` (not a closure inside a `pub fn register_*`; the registration calls it by name), and in those two files, for each non-comment line containing `safe_mode_on(`, the nearest enclosing `fn` above it must be `settle_and_release` (of `PickReleaser`), `address_in` or `run_held_release`, or a non-`pub` `fn`, which the check asserts, so neither file can export a renamed wrapper of the safe-mode read; (v) no texting-gate file (any `app/messaging/src/` file, and `app/server/src/inbound_text.rs`) contains `release_sink` or `release_hold`. `release_sink::` stays allowed elsewhere in `server` (T304 uses `release_sink::StripeHooks`). Every other file stays forbidden, the `charges_paused(` rule (a release never reads the charge pause, which also answers the `charging` and `all` switches) and the gate list are unchanged, and no other test in the file changes. `server` calls `ops::api::safe_mode_on` directly (`server` already calls `askhava_ops::api`, `app/server/src/lib.rs:739`). Stale docs this makes untrue are fixed here: the safe-mode line of `docs/architecture.md` (`:184`, \"Nothing else reads safe mode\") names the release gate too, the `//!` line of `app/ops/src/safe_mode.rs:14` (\"Only `payments::handlers::charges_paused` reads it\") names the two release files (a comment change to the sentence at `:14` to `:15`, which wraps; nothing else in that file), and a `(task 408)` line goes at the end of `app/ops/NOTES.md`.",
+   "goal": "Plan change D-3144 (OPS-001, OPS-024, FEE-017, FEE-021, PICK-022, SEC-030; D-133, D-491): safe mode pauses releases as well as charges, but every release goes through `server`'s `PickReleaser` (`app/server/src/release_sink.rs:78`), which no switch reaches, and T105, which builds safe mode, owns none of the release files. (1) While `ops::api::safe_mode_on` (T487) is true, `PickReleaser` settles and releases nothing for a cleared pick: it queues one held-release task (its payload the pick ID and its due time, since a claimed task carries no run time, `app/core/src/tasks.rs:100`; deduplicated per pick) and answers success, so the Stripe route answers 200 and Stripe sends nothing again. (2) The task (`app/server/src/release_hold.rs`, registered in `worker_registry`, `app/server/src/lib.rs:788`, which has the settings the releaser and its Stripe client are built from, on every path so `tests/integration/tests/task_registry.rs` finds its kind) while safe mode lasts enqueues the next run 15 minutes later and finishes: a handler cannot move its own `core.task` row (`core::api` exports no defer, and `server` may not write `core` tables), so the payload carries the pick ID and the run's due time, and the next run is `core::api::enqueue`d due 15 minutes after that time under the dedupe key `<kind>.<pick>.<run_at in microseconds>` (`core.task.dedupe_key` stays unique after a task is done, so the first held-release task's per-pick key is never reused, and a rerun of the same run enqueues the same key, which is refused, D-3263) and, once safe mode has ended, clears the pick again through a new `payments::api::held_release(pool, stripe, account, pick)` in `app/payments/src/release_proof.rs`. A stored attempt status cannot tell a verified event's success from a press's or the reconcile's (a press, `app/payments/src/charge.rs:234`, a late answer, `:659`, and a verified event's `store_success`, `app/payments/src/release_proof.rs:401`, all write through the same `handlers::record`, `app/payments/src/handlers.rs:118`), so for a paid pick `held_release` re-fetches the pick's stored intent from Stripe and runs `check_intent` (succeeded, mode, the server's fee, `metadata.pick_id`), as `paid_release` does (`release_proof.rs:206` to `:224`), and for a $0 pick keeps `no_fee_release`'s ledger check; nothing else makes a `Releasable` (SEC-030); `held_release` never uses T255's `Releasable::from_stored_success`, which re-clears only a pick whose proof was already spent (D-3358). Then the sink's normal settle and release run; the settle moves nothing for a pick no longer awaiting confirm (FEE-017), so a job cancelled or a pick ended meanwhile releases nothing, and a paid pick that ended gets the one late-success refund `paid_release` queues for an ended pick (FEE-021, D-2290). A second event for a held pick and a rerun of the task release once at most (the release row is the once, PICK-022); a pick released before safe mode began is untouched. Tests in `app/server/tests/safe_mode_release.rs` (TD-OPS-40), fake data only. Its build notes are `(task 408)` lines at the end of `app/server/NOTES.md` and `app/payments/NOTES.md` (`app/server/CLAUDE.md` is at its 8,192-byte cap and is not edited); update `docs/architecture.md` and `docs/decisions.md`. Plan change D-3879 (Fable's pre-claim check of stage-5 wave 2, Nov 16, 2026): (1b) `address_in` (`app/server/src/release_sink.rs:209` to `:232`, registered at `:254`) re-clears, settles and calls `release_settled` directly, not through `PickReleaser`, so an emergency pick waiting for its address would be released during safe mode (OPS-001 pauses releases). `address_in` checks `ops::api::safe_mode_on` first; an error reading it releases nothing and returns `ReleaseError::Database`, so the task is retried (fails closed); while it is on, it releases nothing and enqueues the next `intake.address_in` run 15 minutes later under the same run-time dedupe scheme as the held-release task; TD-OPS-40 has that case. Plan change D-4026 (T408 attempt 1's plan gap, Nov 16, 2026; amends D-4000 (4)): T487's TD-OPS-01 source check (`tests/integration/tests/safe_mode.rs:456` to `:494`) allows a `safe_mode_on(` call only in `payments/src/handlers.rs` and `app/ops/src/`, because the release gate was not on `main` when T487 ran; OPS-001 pauses releases too, so this task is a harness task and takes over that test (T487 is done). In that test only: (i) the function `td_ops_01_every_action_checks_its_switches_and_only_charges_read_safe_mode` is renamed `td_ops_01_every_action_checks_its_switches_and_only_charges_and_releases_read_safe_mode`, and its doc comment says only the charge and release gates read safe mode, so texts keep going (D-133); (ii) `safe_mode_on(` is allowed in exactly two more files, `app/server/src/release_sink.rs` and `app/server/src/release_hold.rs`; (iii) a positive assertion requires each of the two to contain `safe_mode_on(` on a non-comment line (its trimmed text not starting with `//`); (iv) the held-release handler is a named, non-closure `fn run_held_release` in `release_hold.rs` (not a closure inside a `pub fn register_*`; the registration calls it by name), and in those two files, for each non-comment line containing `safe_mode_on(`, the nearest enclosing `fn` above it must be `settle_and_release` (of `PickReleaser`), `address_in` or `run_held_release`, or a non-`pub` `fn`, which the check asserts, so neither file can export a renamed wrapper of the safe-mode read; (v) no texting-gate file (any `app/messaging/src/` file, and `app/server/src/inbound_text.rs`) contains `release_sink` or `release_hold`. `release_sink::` stays allowed elsewhere in `server` (T304 uses `release_sink::StripeHooks`). Every other file stays forbidden, the `charges_paused(` rule (a release never reads the charge pause, which also answers the `charging` and `all` switches) and the gate list are unchanged, and no other test in the file changes. `server` calls `ops::api::safe_mode_on` directly (`server` already calls `askhava_ops::api`, `app/server/src/lib.rs:739`). Stale docs this makes untrue are fixed here: the safe-mode line of `docs/architecture.md` (`:184`, \"Nothing else reads safe mode\") names the release gate too, the `//!` line of `app/ops/src/safe_mode.rs:14` (\"Only `payments::handlers::charges_paused` reads it\") names the two release files (a comment change to the sentence at `:14` to `:15`, which wraps; nothing else in that file), and a `(task 408)` line goes at the end of `app/ops/NOTES.md`. Plan change D-4326 (night pre-claim scout, Nov 18, 2026, re-verified on `main` d662af7e5): TD-OPS-01's source walk (`tests/integration/tests/safe_mode.rs:440` to `:449`, `:481`, `:487`) reads every `.rs` file under `app/`, `app/server/tests/` included, so `app/server/tests/safe_mode_release.rs` never contains the text `safe_mode_on(` or `charges_paused(`, not even in a comment, a string or a helper's name. TD-OPS-40 turns safe mode on and off only through the stored `ops.safe_mode` row (as `tests/integration/tests/safe_mode.rs:425` does) or by raising a `critical` alert and running `ops::api::check_safe_mode`, never through a High alert of another kind, so T652's narrowing of the kinds that start safe mode (D-4310) cannot break it. Budget raised to 800 lines, the harness limit (`scripts/validate_tasks.py:218`): the comparable release tests run 333 to 774 lines.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -16934,12 +16934,13 @@
     "D-3263",
     "D-3358",
     "D-3879",
-    "D-4026"
+    "D-4026",
+    "D-4326"
    ],
    "cites": [],
    "budget": {
     "files": 6,
-    "lines": 480,
+    "lines": 800,
     "context_pct": 20
    },
    "checks": [
@@ -18036,7 +18037,7 @@
    "id": "T205",
    "slug": "portals-owner-refunds-audit",
    "title": "portals: owner refunds with a review step and the audit log viewer",
-   "goal": "The owner refunds a charge through a review step that issues one Stripe refund and one ledger row, a refund on a disputed charge being blocked; the owner portal alone has pause, refund and release powers; and the audit log viewer shows every action with its actor (FEE-026, SEC-006). T304 serves these pages (D-2128): page functions and route constants only, no `.route` in `server`; the browser half of J3's refund and audit-log steps runs in T304's spec, and `tests/e2e/owner_refund.spec.ts` checks what an unserved page allows. The review step of a disputed charge also offers \"I submitted this dispute's evidence in Stripe myself\", which after a fresh second factor calls `payments::api::record_owner_submission` once (D-229, FEE-050; fourth external audit F44, D-2204). Plan change D-3744: if `owner_refund.html` or `owner_audit_log.html` draws a native checkbox or radio, that template links `<link rel=\"stylesheet\" href=\"/static/portals/forms.css\">` (T466's shared form stylesheet) first in its `main` block, as `app/portals/templates/feedback.html:10` does (D-3700, A11Y-007, A11Y-009); T466 is a dependency. Plan change D-3883 (Fable's pre-claim checks, Nov 16, 2026): The refund calls `payments::api::request_refund` (`app/payments/src/refunds.rs:107`) with `RefundTrigger::Owner`, which T529 adds. Tests in `tests/integration/tests/owner_refund.rs`, fake data only: a replayed press gives one refund and one ledger row; a disputed charge is blocked; the evidence press calls `record_owner_submission` once. Budget 400 lines. Plan change D-3890 (Fable's pre-claim checks of the remaining stage-5 tasks, Nov 16, 2026): Every route constant has no path parameter or only `{pick}` (`app/server/tests/door_matrix.rs:89`), so T304 can serve them unchanged.",
+   "goal": "The owner refunds a charge through a review step that issues one Stripe refund and one ledger row, a refund on a disputed charge being blocked; the owner portal alone has pause, refund and release powers; and the audit log viewer shows every action with its actor (FEE-026, SEC-006). T304 serves these pages (D-2128): page functions and route constants only, no `.route` in `server`; the browser half of J3's refund and audit-log steps runs in T304's spec, and `tests/e2e/owner_refund.spec.ts` checks what an unserved page allows. The review step of a disputed charge also offers \"I submitted this dispute's evidence in Stripe myself\", which after a fresh second factor calls `payments::api::record_owner_submission` once (D-229, FEE-050; fourth external audit F44, D-2204). Plan change D-3744: if `owner_refund.html` or `owner_audit_log.html` draws a native checkbox or radio, that template links `<link rel=\"stylesheet\" href=\"/static/portals/forms.css\">` (T466's shared form stylesheet) first in its `main` block, as `app/portals/templates/feedback.html:10` does (D-3700, A11Y-007, A11Y-009); T466 is a dependency. Plan change D-3883 (Fable's pre-claim checks, Nov 16, 2026): The refund calls `payments::api::request_refund` (`app/payments/src/refunds.rs:107`) with `RefundTrigger::Owner`, which T529 adds. Tests in `tests/integration/tests/owner_refund.rs`, fake data only: a replayed press gives one refund and one ledger row; a disputed charge is blocked; the evidence press calls `record_owner_submission` once. Budget 400 lines. Plan change D-3890 (Fable's pre-claim checks of the remaining stage-5 tasks, Nov 16, 2026): Every route constant has no path parameter or only `{pick}` (`app/server/tests/door_matrix.rs:89`), so T304 can serve them unchanged. Plan change D-4326 (night pre-claim scout, Nov 18, 2026, re-verified on `main` d662af7e5): `tests/e2e/owner_refund.spec.ts` asserts that a signed-out GET of each page gets a status of 400 or more and a body with no charge, refund or contact detail, as `tests/e2e/business_portal.spec.ts:15` does, never an exact 404 (T304 serves these routes later and does not own this spec); it sends no POST.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -18092,13 +18093,14 @@
     "D-3700",
     "D-3744",
     "D-3883",
-    "D-3890"
+    "D-3890",
+    "D-4326"
    ],
    "cites": [],
    "budget": {
     "files": 5,
     "lines": 400,
-    "context_pct": 14
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -20220,7 +20222,7 @@
    "id": "T580",
    "slug": "outbox-end-states-and-429",
    "title": "messaging: a failed, blocked or expired text reads as failed, and a carrier 429 never uses up a retry",
-   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): (B4) `messaging::api::delivery_status` (`app/messaging/src/service.rs:332` to `:351`) returns `Sending` for every outbox status other than `queued` and `sent` with a SID, so a row that ended `blocked`, `failed` or `expired` (`migrations/0182_messaging_outbox_not_before.sql:23`) reads as still sending, and the card timer (`app/intake/src/summary_step.rs:309`, `card_text_watch` in `app/intake/src/status.rs:13` to `:19`) looks again every few minutes for ever (INT-041, TXT-013). The function maps `blocked`, `failed` and `expired` to `DeliveryStatus::Failed` and `unknown` (the carrier may hold it; never resent) to `Sent`, so the card timer starts its wait; `queued` stays `Queued` and `sending` stays `Sending`; the doc comment says so. (B20) `refused` (`service.rs:316` to `:322`) counts every 4xx as a definite refusal, so a 429 rate limit goes to `retries::record_failure` (`app/messaging/src/outbox_sender.rs:294`, `:303` to `:324`) and three of them give the text up (TXT-014, TXT-015). A 429 (and Twilio code 20429 on any status; `OutboxError` and `Carrier` live in `app/messaging/src/models.rs:20`, which this task owns for that variant only) is still proof nothing was sent (TXT-011), so the row is released as now, but a new `OutboxError` variant (or a field on `Carrier`) tells the sender to hold the row for one minute (a `const`, doubling on each 429 in a row up to 15 minutes, derived from the row's current hold; no migration) without calling `record_failure`; the adapter does not surface `Retry-After`, so none is read. (Doc) `app/messaging/CLAUDE.md:7` (shared) still says every text begins \"Ask Hava:\"; it becomes \"Every text begins `<short_name>:` from the brand file (today `Laftly:`)\", keeping the test name as it is (D-3347 (4)). Tests in the new `tests/integration/tests/outbox_end_states.rs`, against PostgreSQL with the stand-in Twilio and fake data only: each of `blocked`, `failed`, `expired` reads `Failed` and `unknown` reads `Sent`; a card timer on a failed summary text stops (no new timer queued); a 429 from the stand-in holds the row, leaves its failure count unchanged, and the text goes on the next try; three 429s then a send still send once; a 400 is still a counted failure. `tests/integration/tests/outbox_sender.rs` and `outbox.rs` pass unchanged. Ordered after T526, which owns `outbox_sender.rs` now (and, once D-4051 merges, after T573, which owns `service.rs`).",
+   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): (B4) `messaging::api::delivery_status` (`app/messaging/src/service.rs:332` to `:351`) returns `Sending` for every outbox status other than `queued` and `sent` with a SID, so a row that ended `blocked`, `failed` or `expired` (`migrations/0182_messaging_outbox_not_before.sql:23`) reads as still sending, and the card timer (`app/intake/src/summary_step.rs:309`, `card_text_watch` in `app/intake/src/status.rs:13` to `:19`) looks again every few minutes for ever (INT-041, TXT-013). The function maps `blocked`, `failed` and `expired` to `DeliveryStatus::Failed` and `unknown` (the carrier may hold it; never resent) to `Sent`, so the card timer starts its wait; `queued` stays `Queued` and `sending` stays `Sending`; the doc comment says so. (B20) `refused` (`service.rs:316` to `:322`) counts every 4xx as a definite refusal, so a 429 rate limit goes to `retries::record_failure` (`app/messaging/src/outbox_sender.rs:294`, `:303` to `:324`) and three of them give the text up (TXT-014, TXT-015). A 429 (and Twilio code 20429 on any status; `OutboxError` and `Carrier` live in `app/messaging/src/models.rs:20`, which this task owns for that variant only) is still proof nothing was sent (TXT-011), so the row is released as now, but a new `OutboxError` variant (or a field on `Carrier`) tells the sender to hold the row for one minute (a `const`, doubling on each 429 in a row up to 15 minutes, derived from the row's current hold; no migration) without calling `record_failure`; the adapter does not surface `Retry-After`, so none is read. (Doc) `app/messaging/CLAUDE.md:7` (shared) still says every text begins \"Ask Hava:\"; it becomes \"Every text begins `<short_name>:` from the brand file (today `Laftly:`)\", keeping the test name as it is (D-3347 (4)). Tests in the new `tests/integration/tests/outbox_end_states.rs`, against PostgreSQL with the stand-in Twilio and fake data only: each of `blocked`, `failed`, `expired` reads `Failed` and `unknown` reads `Sent`; a card timer on a failed summary text stops (no new timer queued); a 429 from the stand-in holds the row, leaves its failure count unchanged, and the text goes on the next try; three 429s then a send still send once; a 400 is still a counted failure. `tests/integration/tests/outbox_sender.rs` and `outbox.rs` pass unchanged. Ordered after T526, which owns `outbox_sender.rs` now (and, once D-4051 merges, after T573, which owns `service.rs`). Plan change D-4327 (night spot review of outgoing email, Nov 18, 2026, re-verified on `main` d662af7e5): `MANAGE_URL` (`app/messaging/src/outbox_sender.rs:61`, used in `email_to` at `:339`) is the relative `/h`, so the failed-text email copy's \"Manage email notices\" link (the footer `href`, `app/messaging/src/email.rs:365`, and the plain-text line, `:372` to `:373`) leads nowhere from an inbox (SEC-028; SEC-025: links only to laftly.com); every other sender uses `OnDomain(\"/h\")` (`app/messaging/src/optout_email.rs:44`). It becomes the absolute link `OnDomain(\"/h\")` renders (`Recipient<'a>` borrows a `&str`, so a `LazyLock<String>` or an owned string the caller holds; never a typed URL). Test in `tests/integration/tests/outbox_end_states.rs`: an important text given up after its retries queues the email copy whose stored HTML holds `href=\"https://<the brand domain>/h\"` and no `href=\"/h\"`, and whose plain-text part holds the same absolute link.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -20242,20 +20244,23 @@
     "docs/architecture.md",
     "docs/code-docs.md",
     "docs/spec/messaging.md",
-    "docs/spec/intake.md"
+    "docs/spec/intake.md",
+    "docs/spec/security.md"
    ],
    "requirements": [
     "TXT-013",
     "TXT-011",
     "TXT-014",
-    "INT-041"
+    "INT-041",
+    "SEC-028"
    ],
    "tests": [],
    "decisions": [
     "D-1278",
     "D-558",
     "D-3347",
-    "D-4052"
+    "D-4052",
+    "D-4327"
    ],
    "cites": [],
    "budget": {
@@ -20270,7 +20275,7 @@
    ],
    "branch": "claude/task/T580-outbox-end-states-and-429",
    "prompt": "kit/prompts/T580.md",
-   "acceptance": "`tests/integration/tests/outbox_end_states.rs` passes against PostgreSQL with every listed case, the end-state and 429 cases failing on `main` before the change; `outbox_sender.rs`, `outbox.rs` and the `messaging` unit tests pass unchanged; `app/messaging/CLAUDE.md` no longer says \"Ask Hava:\"."
+   "acceptance": "`tests/integration/tests/outbox_end_states.rs` passes against PostgreSQL with every listed case, the end-state and 429 cases failing on `main` before the change; `outbox_sender.rs`, `outbox.rs` and the `messaging` unit tests pass unchanged; `app/messaging/CLAUDE.md` no longer says \"Ask Hava:\". D-4327: the failed-text email copy's manage link is absolute in both parts."
   },
   {
    "id": "T581",
@@ -21797,6 +21802,11 @@
     "T649",
     "T650",
     "T651",
+    "T656",
+    "T657",
+    "T658",
+    "T660",
+    "T661",
     "T662"
    ],
    "model": "claude-opus-5-5",
@@ -21841,6 +21851,8 @@
     "D-3877",
     "D-3891",
     "D-4052",
+    "D-4326",
+    "D-4327",
     "D-4338"
    ],
    "cites": [
@@ -24477,7 +24489,7 @@
    "id": "T299",
    "slug": "ai-intake-wiring",
    "title": "server and intake: the AI client built once per process and the AI reading called from texts and web chat",
-   "goal": "IC-23's second half (D-2065): T236 builds the first intake caller of the AI reading (in `app/intake/src/service.rs`, through the gated `read_intake` taking the pool, with no connection held across the provider await, AI-029) and T298 the AI endpoint settings and the real Claude client, but nothing builds the client in a running process (`app/server/src/main.rs` and `app/server/src/bin/worker.rs` build no AI client today) or calls the reading from a homeowner's text or web chat, so the app would run AI-off for ever and the war games would never exercise the AI. (1) In `app/server/src/ai_client.rs`, build from the settings one `ai::api::AdapterTransport` over T298's client (one reused HTTP client) with its `ai::api::AiConfig` (the AI-023 reply budget T296 set, the AI-024 model, the AI-021 cap), once per process at start-up and shared by reference: in the web process, and in the worker if the text path's AI turn runs there (below); a settings error stops start-up naming the key, except T298's AI-off endpoint in live (no key set), with which the process starts, every step takes the AI-off path with no request made, and one high owner alert and one log line name the missing setting, never a value (D-2065); with no AI keys in dev and ci it is the stand-in; start-up makes no AI call. (2) The text path: in `app/server/src/inbound_text.rs` the webhook's transaction commits its durable record of the text before any AI call is made for it and never awaits the AI inside it (AI-029's webhook half, which T236 left to this task); the AI turn then runs off that transaction, either in the request after the commit or in a `core.task` queued in that transaction and run by the worker. Choose, log the reason in `docs/decisions.md`, and make sure a process stopped between the commit and the turn never loses the step (at worst it is asked on the AI-off path). The homeowner's wait is end to end: if the worker runs the turn, the queue and poll wait before it counts inside AI-023's 3-second reply budget (the AI call gets only what is left, and none left means the AI-off path at once) and inside the time to the next question that T234 and T297 measure, never only the AI call's own time. The AI-008 case through the real inbound route needs the route to know its environment: use the `Environment` T317 adds to the route's state (`Webhooks` in `app/server/src/inbound_text.rs`, set from the settings in `main.rs`; D-2206) and pass it to the gated entry; add no other field to `Webhooks`, since the done tests that build it are T317's (D-2206). The turn (`app/intake/src/ai_turn.rs`) calls T236's caller at each step of the INT-043 order that makes an AI call as the code then stands (the intake reading today) and sends the next step through the outbox: the one the applied reading leads to, or the fixed question-bank question at once (INT-021, INT-039) when the AI-008 switch is off, the AI-023 budget runs out, an AI-028 budget or the AI-021 cap refuses the call, or the reading fails or is discarded; steps that make no AI call never wait on one. (3) The web-chat path (T103's `app/intake/src/web_chat.rs` and `app/site/src/chat.rs`): no AI call before the session's phone code is verified (AI-021); after it, the same turn, the page showing the next question within the reply budget (AI-023). On both paths only `ScrubbedText` reaches `ai` (AI-004), no call is made before the consent text went and the ZIP and area check passed (AI-028), and no database connection or open transaction is held while the AI is awaited (AI-029). The AI writing calls (reword, follow-up, card, project file; D-990) are not this task's: IC-53 tracks them. Update `app/server/CLAUDE.md`, `app/intake/CLAUDE.md` and `docs/architecture.md` (shared), and name in the hand-in the commit and the tests that close IC-23 for the next plan change. Plan change D-4292: this task now depends on T645 (the web chat's opt-out words, INT-038 stop and stored first-message language) and T646 (the chat's client IP for the new-request limit). In `chat_message` keep T645's order: the opt-out check first, then the 911 check and the under-18 stop, and only then the AI turn; no AI call is made for a chat message that opted out or that the INT-038 stop closed, and the turn uses the session's stored language.",
+   "goal": "IC-23's second half (D-2065): T236 builds the first intake caller of the AI reading (in `app/intake/src/service.rs`, through the gated `read_intake` taking the pool, with no connection held across the provider await, AI-029) and T298 the AI endpoint settings and the real Claude client, but nothing builds the client in a running process (`app/server/src/main.rs` and `app/server/src/bin/worker.rs` build no AI client today) or calls the reading from a homeowner's text or web chat, so the app would run AI-off for ever and the war games would never exercise the AI. (1) In `app/server/src/ai_client.rs`, build from the settings one `ai::api::AdapterTransport` over T298's client (one reused HTTP client) with its `ai::api::AiConfig` (the AI-023 reply budget T296 set, the AI-024 model, the AI-021 cap), once per process at start-up and shared by reference: in the web process, and in the worker if the text path's AI turn runs there (below); a settings error stops start-up naming the key, except T298's AI-off endpoint in live (no key set), with which the process starts, every step takes the AI-off path with no request made, and one high owner alert and one log line name the missing setting, never a value (D-2065); with no AI keys in dev and ci it is the stand-in; start-up makes no AI call. (2) The text path: in `app/server/src/inbound_text.rs` the webhook's transaction commits its durable record of the text before any AI call is made for it and never awaits the AI inside it (AI-029's webhook half, which T236 left to this task); the AI turn then runs off that transaction, either in the request after the commit or in a `core.task` queued in that transaction and run by the worker. Choose, log the reason in `docs/decisions.md`, and make sure a process stopped between the commit and the turn never loses the step (at worst it is asked on the AI-off path). The homeowner's wait is end to end: if the worker runs the turn, the queue and poll wait before it counts inside AI-023's 3-second reply budget (the AI call gets only what is left, and none left means the AI-off path at once) and inside the time to the next question that T234 and T297 measure, never only the AI call's own time. The AI-008 case through the real inbound route needs the route to know its environment: use the `Environment` T317 adds to the route's state (`Webhooks` in `app/server/src/inbound_text.rs`, set from the settings in `main.rs`; D-2206) and pass it to the gated entry; add no other field to `Webhooks`, since the done tests that build it are T317's (D-2206). The turn (`app/intake/src/ai_turn.rs`) calls T236's caller at each step of the INT-043 order that makes an AI call as the code then stands (the intake reading today) and sends the next step through the outbox: the one the applied reading leads to, or the fixed question-bank question at once (INT-021, INT-039) when the AI-008 switch is off, the AI-023 budget runs out, an AI-028 budget or the AI-021 cap refuses the call, or the reading fails or is discarded; steps that make no AI call never wait on one. (3) The web-chat path (T103's `app/intake/src/web_chat.rs` and `app/site/src/chat.rs`): no AI call before the session's phone code is verified (AI-021); after it, the same turn, the page showing the next question within the reply budget (AI-023). On both paths only `ScrubbedText` reaches `ai` (AI-004), no call is made before the consent text went and the ZIP and area check passed (AI-028), and no database connection or open transaction is held while the AI is awaited (AI-029). The AI writing calls (reword, follow-up, card, project file; D-990) are not this task's: IC-53 tracks them. Update `app/server/CLAUDE.md`, `app/intake/CLAUDE.md` and `docs/architecture.md` (shared), and name in the hand-in the commit and the tests that close IC-23 for the next plan change. Plan change D-4292: this task now depends on T645 (the web chat's opt-out words, INT-038 stop and stored first-message language) and T646 (the chat's client IP for the new-request limit). In `chat_message` keep T645's order: the opt-out check first, then the 911 check and the under-18 stop, and only then the AI turn; no AI call is made for a chat message that opted out or that the INT-038 stop closed, and the turn uses the session's stored language. Plan change D-4326: ordered after T656, which first changes `app/site/src/chat.rs`'s failed-submit page (the focused error summary, `aria-invalid` and the refilled words and number, A11Y-030); this task keeps them.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -24496,7 +24508,8 @@
     "T593",
     "T645",
     "T646",
-    "T649"
+    "T649",
+    "T656"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -24545,7 +24558,8 @@
     "D-3467",
     "D-3844",
     "D-4292",
-    "D-4294"
+    "D-4294",
+    "D-4326"
    ],
    "cites": [],
    "budget": {
@@ -25988,7 +26002,8 @@
     "T430",
     "T432",
     "T643",
-    "T644"
+    "T644",
+    "T659"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -26038,7 +26053,8 @@
     "D-2054",
     "D-2350",
     "D-3080",
-    "D-4292"
+    "D-4292",
+    "D-4327"
    ],
    "cites": [
     "BUILD_BRIEF.md:196",
@@ -32454,7 +32470,7 @@
    "id": "T520",
    "slug": "portal-email-colour-tokens",
    "title": "portals and messaging: the portal stylesheets and email colours use the design tokens (D-3878)",
-   "goal": "Plan change D-3878 (Fable's pre-claim check of stage-5 wave 1, Nov 16, 2026): WEB-027 puts every portal screen and email on DESIGN_SPEC section 2's tokens, but `portals`' served stylesheets (`FEEDBACK_CSS` and `FORMS_CSS`, `app/portals/src/feedback.rs:48` to `:65`) use the old ink `#1f1d1b`, pinned by `app/portals/src/tests/forms_css.rs:35`, and the emails use the old colours: links in `#6B4A1E` (`app/messaging/src/receipt_email.rs:77`, `app/messaging/src/business_notices.rs:287`, `app/messaging/src/checkin_email.rs:105`), and in `app/messaging/templates/email_layout.html` the page `#F3ECE0`, text `#1F1D1B` and a 14 px footer in `#4F4A43`. This task moves them to the tokens: in both stylesheets control borders to `field-edge` (`#6E8077`) and the checked fill to `ink` (`#1E2926`), `#fff` staying `surface`; email links and the check-in buttons' edge and text to `evergreen` (`#245849`), the email page to `canvas` (`#F7F5F0`), text to `ink` and the footer to `ink-soft` (`#4A5952`) at 16 px (WEB-027: no text under 16 px). `forms_css.rs`'s `#1f1d1b` assertion becomes the `field-edge` one, a test change this plan change logs (D-3878), which makes this a harness task (the test is DONE T466's), as D-3877 did for T308; no other assertion changes. It runs after T101, which changes one assertion in `feedback.rs`, and before T379, the other queued owner of `business_notices.rs`. Tests: `forms_css.rs` as above, and unit tests in `receipt_email.rs`, `business_notices.rs` and `checkin_email.rs` that render each email (so `email_layout.html` too) and find every hex colour in it among section 2's tokens (TD-WEB-11's portal and email half; T166 has the site half). Update the `portals` and `messaging` `NOTES.md` and `docs/decisions.md`. Plan change D-3881: the email follows DESIGN_SPEC section 8's email row (`docs/design/DESIGN_SPEC.md:140`): the page `canvas`, the 600 px body column `surface` (white), text `ink`, and each check-in button one solid `evergreen` button with a white label, its text also given as a plain link.",
+   "goal": "Plan change D-3878 (Fable's pre-claim check of stage-5 wave 1, Nov 16, 2026): WEB-027 puts every portal screen and email on DESIGN_SPEC section 2's tokens, but `portals`' served stylesheets (`FEEDBACK_CSS` and `FORMS_CSS`, `app/portals/src/feedback.rs:48` to `:65`) use the old ink `#1f1d1b`, pinned by `app/portals/src/tests/forms_css.rs:35`, and the emails use the old colours: links in `#6B4A1E` (`app/messaging/src/receipt_email.rs:77`, `app/messaging/src/business_notices.rs:287`, `app/messaging/src/checkin_email.rs:105`), and in `app/messaging/templates/email_layout.html` the page `#F3ECE0`, text `#1F1D1B` and a 14 px footer in `#4F4A43`. This task moves them to the tokens: in both stylesheets control borders to `field-edge` (`#6E8077`) and the checked fill to `ink` (`#1E2926`), `#fff` staying `surface`; email links and the check-in buttons' edge and text to `evergreen` (`#245849`), the email page to `canvas` (`#F7F5F0`), text to `ink` and the footer to `ink-soft` (`#4A5952`) at 16 px (WEB-027: no text under 16 px). `forms_css.rs`'s `#1f1d1b` assertion becomes the `field-edge` one, a test change this plan change logs (D-3878), which makes this a harness task (the test is DONE T466's), as D-3877 did for T308; no other assertion changes. It runs after T101, which changes one assertion in `feedback.rs`, and before T379, the other queued owner of `business_notices.rs`. Tests: `forms_css.rs` as above, and unit tests in `receipt_email.rs`, `business_notices.rs` and `checkin_email.rs` that render each email (so `email_layout.html` too) and find every hex colour in it among section 2's tokens (TD-WEB-11's portal and email half; T166 has the site half). Update the `portals` and `messaging` `NOTES.md` and `docs/decisions.md`. Plan change D-3881: the email follows DESIGN_SPEC section 8's email row (`docs/design/DESIGN_SPEC.md:140`): the page `canvas`, the 600 px body column `surface` (white), text `ink`, and each check-in button one solid `evergreen` button with a white label, its text also given as a plain link. Plan change D-4326 (night pre-claim scout, Nov 18, 2026, re-verified on `main` d662af7e5): D-3881's \"its text also given as a plain link\" (`docs/design/DESIGN_SPEC.md:140`) is the URL in the email's plain-text part, already there and checked by TD-TXT-31 at `app/messaging/src/checkin_email.rs:269`; the HTML keeps exactly one `<a>` per answer, now the solid `evergreen` button, and shows no URL as visible HTML text, so TD-TXT-31's counts (`:268`, `:271`) stay unchanged.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -32494,7 +32510,8 @@
     "D-451",
     "D-3331",
     "D-3878",
-    "D-3881"
+    "D-3881",
+    "D-4326"
    ],
    "cites": [],
    "budget": {
@@ -40139,7 +40156,7 @@
    "id": "T470",
    "slug": "email-outbox-send",
    "title": "messaging and server: the worker task that sends queued emails through the email provider",
-   "goal": "Plan change D-3750 (D-3263, D-3186; SEC-025, OPS-038, SEC-018, PRIV-016, BIZ-019): emails stored in `messaging.email_outbox` by `queue_email` (`app/messaging/src/email.rs:343`) and by the business notice sender (job cards, pick and money notices, `app/messaging/src/business_notices.rs`), the receipts and the homeowner emails are never sent: only the account mailers call `send_email` (`app/messaging/src/email.rs:454`), for their own row, and no task sends a queued row to a provider (D-3263 parked T222's email checks for it). Only the account mailers store a credential mark in place of a credential (`LINK_MARK`, `app/messaging/src/signin_mail.rs`; T468's `CODE_MARK`) and add it only on the way to the provider; business notices store real per-recipient sign-in links in their bodies (`app/messaging/src/business_notices.rs:24`, `:389`), so a stored notice is itself a credential for its recipient. (1) `migrations/0207_messaging_email_lease.sql` (headed `messaging`): `messaging.email_outbox` gains `claimed_at timestamptz` (the drain's lease) and the status `dropped` (a row never to be sent; its subject and bodies are cleared in the same statement, as a sent row's are, so the status CHECKs extend to it); no old migration is edited. Its number follows T456's `0205` (T470 depends on T456 for that order only, V9; each moved up one by D-3779) and T236's migration moves to `0208`. (2) `app/messaging/src/email_due.rs` (new; exported through the shared `api.rs` and `lib.rs`): the `messaging.email_due` worker task. Each run, at the worker clock's now, leases a bounded batch, oldest first, in one short committed statement under `FOR UPDATE SKIP LOCKED` that sets `status = 'sending'` and `claimed_at = now` together: it takes `queued` rows whose `not_before` passed and whose `claimed_at` is null or stale, plus `sending` rows only when their lease is stale (`claimed_at` older than `STALE_AFTER`, 5 minutes, as `outbox_sender`'s, or unset 5 minutes past `not_before`), because `claim_email` itself takes `queued` or `sending` (`app/messaging/src/models.rs:764`) and a non-429 provider error leaves a row `sending` (`app/messaging/src/email.rs:494`). A row a worker leased is therefore `sending` with a fresh lease, which no second lease takes, whether the two runs overlap or follow one another, so each row gets one provider call per lease, under its stored idempotency key (SEC-018: a retry after a stale lease is the same email to Resend). `app/messaging/src/models.rs` (owners done): `hold_email` (`:819`), which puts a row back to `queued`, also clears `claimed_at` and never touches a `dropped` row (`status NOT IN ('sent', 'dropped')`), so a held row is leased again once its `not_before` passes. Each leased row is then sent through `send_email` with the provider, email key and `DailyLimit` it is handed (T469's `EmailProvider`), so OPS-038's bulk hold and the daily quota (SEC-025) hold as for every other email. It takes only templates no other code sends: never a template whose own handler calls `send_email` (the sign-in link, the email code, the welcome and phone-stopped, the coverage notice and the business event emails), listed by template ID in one constant; and, as a backstop, a leased row whose subject or body holds `LINK_MARK` or `CODE_MARK` is `dropped` with one High alert naming the row ID only and never sent, so a literal mark never reaches anyone. A homeowner row's address is read through `EmailTo::Homeowner` (the vault, under `messaging`'s send grant); a business row's comes from a resolver trait the composition supplies, which answers the address, or `Gone` when the row's business has left (BIZ-051: leaving stops all notices) or its mailbox is no longer a current member's (a removed member, SEC-024), and a `Gone` row is `dropped` unsent, since it holds that person's sign-in link. With no provider handed in, a run does nothing: it leases, sends and marks nothing and queues no next run; with one, it queues its next run, as `send_due` does (`app/messaging/src/outbox_sender.rs`). No transaction is open during the provider call, and no address, body or key is logged (PRIV-016). (3) `app/privacy/src/business_contacts.rs`: `BusinessPurpose::Notice` (\"the business notice and card emails: the address only\"), in `ALL`, with its audit label (SEC-047). (4) `app/server/src/email_due.rs` (new): the resolver (the current-member and left-business checks through `businesses::api`, then `read_business_mailbox` under `BusinessPurpose::Notice` on a bare connection) and the handler, registered in `worker_registry` (the shared `app/server/src/lib.rs`) always, with T469's provider when it exists and with none otherwise, so `tests/integration/tests/task_registry.rs` (TD-OPS-36, built from the dev stand-in pairs with no Resend key) passes unchanged; the first run is queued at start only when a provider exists. (5) Tests, fake data only, in `tests/integration/tests/email_due.rs` against PostgreSQL with a recording `EmailAdapter`: a queued homeowner email and a queued business notice email each go once to the right address; two workers' leases over the same rows, run both at once and one after the other (the second after the first committed its lease but before its send finished), leave the adapter with exactly one call per row; a `sending` row with a fresh lease is not taken and one with a stale lease is, under the same key; a row `hold_email` put back to `queued` has no lease and goes once its `not_before` passes, and a `dropped` row is never held or sent; a row whose `not_before` is later waits; a bulk row waits above the hold share while a job card still goes; a refused send goes on a later run under the same key; a row of a self-sending template is never taken; a row holding `LINK_MARK` or `CODE_MARK` is dropped with one alert and never sent; a notice to a removed member or a business that left is dropped unsent; with no provider nothing changes and no next run is queued; no address appears in any log line. Update `app/messaging/CLAUDE.md`, `app/privacy/CLAUDE.md`, `app/server/NOTES.md` and `docs/decisions.md`. Plan change D-3883: this task's migration moved up one, to `0207_messaging_email_lease.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): a leased row whose address read answers `EmailError::NoAddress` (`app/messaging/src/email.rs:536` to `:542`) is `dropped`, not left `sending` to be leased again forever; `messaging::api::unsent_business_mailboxes` (`app/messaging/src/api.rs:290`, the shared file) gains `AND status <> 'dropped'`, so a dropped row keeps no removed member's address; if `schedule_start` (`app/server/src/bin/worker.rs:74`, 47 body lines) would pass 50 lines, this task moves its calls into a helper first. `app/server/CLAUDE.md` is at its 8,192-byte cap, so server notes go in `app/server/NOTES.md`. If the change outgrows 600 lines, the natural split is the `messaging` drain versus the `server` resolver and handler: report it. Plan change D-4196 (Casey's outside audit of Nov 17, 2026, finding 1, verified on `main` 2f2fa8c): a row of a self-sending template that `send_email` held on a 429 or a full daily quota is never sent today: `models::hold_email` (`app/messaging/src/models.rs:812`, called from `app/messaging/src/email.rs:539` and `:573`) puts it back to `queued` with a later `not_before` and `waiting_for` set to `provider_limit` or `daily_limit` (the column's only values, `migrations/0089_messaging_retries_email.sql:49`), its own handler turns `EmailSent::Waiting` into a `HandlerError` (`app/businesses/src/account_emails.rs:165`, `app/businesses/src/coverage_notice.rs:138`, `app/businesses/src/notice_emails.rs:608`), and `core::tasks` gives up after 5 tries with a 30-second doubling backoff (`app/core/src/tasks.rs:43`, `:164`), about 8 minutes, long before the midnight-UTC reset (`next_reset`, `email.rs:462`). So the drain also leases a self-sending template's row whose `waiting_for` is not null once its `not_before` passes, and sends it once like any other leased row (a race with that template's own handler retry is the same email under the same idempotency key, SEC-018). A held row of the sign-in link or the email code still holds `LINK_MARK` or `CODE_MARK` and is `dropped` unsent with no alert, because its link or code has expired; the High alert stays for a marked row of any other template. T204's owner alert emails (`owner_alert_push` and `owner_daytime_push`, `app/messaging/src/alert_emails.rs:44`, `:46`) join the self-sending list and are never taken, held or not: their address is the owner alert address, not a member's mailbox (the resolver would answer `Gone`), and `push_alerts` records a push only after its send (`alert_emails.rs:269`), so it tries them again itself. The coverage notice (OPS-041) is stored with the recipient `messaging::api::OWNER_INBOX` (`app/messaging/src/coverage_email.rs:29`, `:115`) and sent to the owner inbox setting (`app/businesses/src/coverage_notice.rs:135`), not to a member's mailbox: the server resolver answers the owner inbox address (the setting `run_coverage_notice` sends to) for a row whose recipient is `messaging::api::OWNER_INBOX`, never `Gone`, so a held coverage notice goes there once after its `not_before`. Add to `tests/integration/tests/email_due.rs`: a welcome row held with `daily_limit` is not taken before its `not_before` and goes once after it; a coverage notice row held with `daily_limit` goes once to the owner inbox after its `not_before`; a held sign-in link row is dropped unsent with no alert; an owner alert row is never taken. Cites now: `send_email` is `email.rs:501` (was `:454`), `hold_email` is `models.rs:812` (was `:819`). This adds about 40 lines; the budget stays at the 600-line cap for a build task, and D-3889's split still applies if the change outgrows it.",
+   "goal": "Plan change D-3750 (D-3263, D-3186; SEC-025, OPS-038, SEC-018, PRIV-016, BIZ-019): emails stored in `messaging.email_outbox` by `queue_email` (`app/messaging/src/email.rs:343`) and by the business notice sender (job cards, pick and money notices, `app/messaging/src/business_notices.rs`), the receipts and the homeowner emails are never sent: only the account mailers call `send_email` (`app/messaging/src/email.rs:454`), for their own row, and no task sends a queued row to a provider (D-3263 parked T222's email checks for it). Only the account mailers store a credential mark in place of a credential (`LINK_MARK`, `app/messaging/src/signin_mail.rs`; T468's `CODE_MARK`) and add it only on the way to the provider; business notices store real per-recipient sign-in links in their bodies (`app/messaging/src/business_notices.rs:24`, `:389`), so a stored notice is itself a credential for its recipient. (1) `migrations/0207_messaging_email_lease.sql` (headed `messaging`): `messaging.email_outbox` gains `claimed_at timestamptz` (the drain's lease) and the status `dropped` (a row never to be sent; its subject and bodies are cleared in the same statement, as a sent row's are, so the status CHECKs extend to it); no old migration is edited. Its number follows T456's `0205` (T470 depends on T456 for that order only, V9; each moved up one by D-3779) and T236's migration moves to `0208`. (2) `app/messaging/src/email_due.rs` (new; exported through the shared `api.rs` and `lib.rs`): the `messaging.email_due` worker task. Each run, at the worker clock's now, leases a bounded batch, oldest first, in one short committed statement under `FOR UPDATE SKIP LOCKED` that sets `status = 'sending'` and `claimed_at = now` together: it takes `queued` rows whose `not_before` passed and whose `claimed_at` is null or stale, plus `sending` rows only when their lease is stale (`claimed_at` older than `STALE_AFTER`, 5 minutes, as `outbox_sender`'s, or unset 5 minutes past `not_before`), because `claim_email` itself takes `queued` or `sending` (`app/messaging/src/models.rs:764`) and a non-429 provider error leaves a row `sending` (`app/messaging/src/email.rs:494`). A row a worker leased is therefore `sending` with a fresh lease, which no second lease takes, whether the two runs overlap or follow one another, so each row gets one provider call per lease, under its stored idempotency key (SEC-018: a retry after a stale lease is the same email to Resend). `app/messaging/src/models.rs` (owners done): `hold_email` (`:819`), which puts a row back to `queued`, also clears `claimed_at` and never touches a `dropped` row (`status NOT IN ('sent', 'dropped')`), so a held row is leased again once its `not_before` passes. Each leased row is then sent through `send_email` with the provider, email key and `DailyLimit` it is handed (T469's `EmailProvider`), so OPS-038's bulk hold and the daily quota (SEC-025) hold as for every other email. It takes only templates no other code sends: never a template whose own handler calls `send_email` (the sign-in link, the email code, the welcome and phone-stopped, the coverage notice and the business event emails), listed by template ID in one constant; and, as a backstop, a leased row whose subject or body holds `LINK_MARK` or `CODE_MARK` is `dropped` with one High alert naming the row ID only and never sent, so a literal mark never reaches anyone. A homeowner row's address is read through `EmailTo::Homeowner` (the vault, under `messaging`'s send grant); a business row's comes from a resolver trait the composition supplies, which answers the address, or `Gone` when the row's business has left (BIZ-051: leaving stops all notices) or its mailbox is no longer a current member's (a removed member, SEC-024), and a `Gone` row is `dropped` unsent, since it holds that person's sign-in link. With no provider handed in, a run does nothing: it leases, sends and marks nothing and queues no next run; with one, it queues its next run, as `send_due` does (`app/messaging/src/outbox_sender.rs`). No transaction is open during the provider call, and no address, body or key is logged (PRIV-016). (3) `app/privacy/src/business_contacts.rs`: `BusinessPurpose::Notice` (\"the business notice and card emails: the address only\"), in `ALL`, with its audit label (SEC-047). (4) `app/server/src/email_due.rs` (new): the resolver (the current-member and left-business checks through `businesses::api`, then `read_business_mailbox` under `BusinessPurpose::Notice` on a bare connection) and the handler, registered in `worker_registry` (the shared `app/server/src/lib.rs`) always, with T469's provider when it exists and with none otherwise, so `tests/integration/tests/task_registry.rs` (TD-OPS-36, built from the dev stand-in pairs with no Resend key) passes unchanged; the first run is queued at start only when a provider exists. (5) Tests, fake data only, in `tests/integration/tests/email_due.rs` against PostgreSQL with a recording `EmailAdapter`: a queued homeowner email and a queued business notice email each go once to the right address; two workers' leases over the same rows, run both at once and one after the other (the second after the first committed its lease but before its send finished), leave the adapter with exactly one call per row; a `sending` row with a fresh lease is not taken and one with a stale lease is, under the same key; a row `hold_email` put back to `queued` has no lease and goes once its `not_before` passes, and a `dropped` row is never held or sent; a row whose `not_before` is later waits; a bulk row waits above the hold share while a job card still goes; a refused send goes on a later run under the same key; a row of a self-sending template is never taken; a row holding `LINK_MARK` or `CODE_MARK` is dropped with one alert and never sent; a notice to a removed member or a business that left is dropped unsent; with no provider nothing changes and no next run is queued; no address appears in any log line. Update `app/messaging/CLAUDE.md`, `app/privacy/CLAUDE.md`, `app/server/NOTES.md` and `docs/decisions.md`. Plan change D-3883: this task's migration moved up one, to `0207_messaging_email_lease.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): a leased row whose address read answers `EmailError::NoAddress` (`app/messaging/src/email.rs:536` to `:542`) is `dropped`, not left `sending` to be leased again forever; `messaging::api::unsent_business_mailboxes` (`app/messaging/src/api.rs:290`, the shared file) gains `AND status <> 'dropped'`, so a dropped row keeps no removed member's address; if `schedule_start` (`app/server/src/bin/worker.rs:74`, 47 body lines) would pass 50 lines, this task moves its calls into a helper first. `app/server/CLAUDE.md` is at its 8,192-byte cap, so server notes go in `app/server/NOTES.md`. If the change outgrows 600 lines, the natural split is the `messaging` drain versus the `server` resolver and handler: report it. Plan change D-4196 (Casey's outside audit of Nov 17, 2026, finding 1, verified on `main` 2f2fa8c): a row of a self-sending template that `send_email` held on a 429 or a full daily quota is never sent today: `models::hold_email` (`app/messaging/src/models.rs:812`, called from `app/messaging/src/email.rs:539` and `:573`) puts it back to `queued` with a later `not_before` and `waiting_for` set to `provider_limit` or `daily_limit` (the column's only values, `migrations/0089_messaging_retries_email.sql:49`), its own handler turns `EmailSent::Waiting` into a `HandlerError` (`app/businesses/src/account_emails.rs:165`, `app/businesses/src/coverage_notice.rs:138`, `app/businesses/src/notice_emails.rs:608`), and `core::tasks` gives up after 5 tries with a 30-second doubling backoff (`app/core/src/tasks.rs:43`, `:164`), about 8 minutes, long before the midnight-UTC reset (`next_reset`, `email.rs:462`). So the drain also leases a self-sending template's row whose `waiting_for` is not null once its `not_before` passes, and sends it once like any other leased row (a race with that template's own handler retry is the same email under the same idempotency key, SEC-018). A held row of the sign-in link or the email code still holds `LINK_MARK` or `CODE_MARK` and is `dropped` unsent with no alert, because its link or code has expired; the High alert stays for a marked row of any other template. T204's owner alert emails (`owner_alert_push` and `owner_daytime_push`, `app/messaging/src/alert_emails.rs:44`, `:46`) join the self-sending list and are never taken, held or not: their address is the owner alert address, not a member's mailbox (the resolver would answer `Gone`), and `push_alerts` records a push only after its send (`alert_emails.rs:269`), so it tries them again itself. The coverage notice (OPS-041) is stored with the recipient `messaging::api::OWNER_INBOX` (`app/messaging/src/coverage_email.rs:29`, `:115`) and sent to the owner inbox setting (`app/businesses/src/coverage_notice.rs:135`), not to a member's mailbox: the server resolver answers the owner inbox address (the setting `run_coverage_notice` sends to) for a row whose recipient is `messaging::api::OWNER_INBOX`, never `Gone`, so a held coverage notice goes there once after its `not_before`. Add to `tests/integration/tests/email_due.rs`: a welcome row held with `daily_limit` is not taken before its `not_before` and goes once after it; a coverage notice row held with `daily_limit` goes once to the owner inbox after its `not_before`; a held sign-in link row is dropped unsent with no alert; an owner alert row is never taken. Cites now: `send_email` is `email.rs:501` (was `:454`), `hold_email` is `models.rs:812` (was `:819`). This adds about 40 lines; the budget stays at the 600-line cap for a build task, and D-3889's split still applies if the change outgrows it. Plan change D-4327 (night spot review of outgoing email, Nov 18, 2026, re-verified on `main` d662af7e5; round-1 review applied): a leased row never loops for ever and is never sent twice. `send_email` (`app/messaging/src/email.rs:501`; this task now owns `email.rs` for this change) turns every provider error but a 429 into `EmailError::Provider` and leaves the row `sending` (`:542`), so under the 5-minute stale lease a refused email would be sent again every 5 minutes for ever, and Resend keeps an idempotency key only 24 hours, so a retry later than that can deliver twice (SEC-018). (i) Answers are sorted by what they prove. A 400 or 422 is Resend refusing this one email: `send_email` marks the row `dropped` (subject and bodies cleared), raises one High `messaging.email_refused` alert naming the row ID only, and returns a new `EmailError::Refused`; it is never sent again. A 401, 403 or 404 is an account or setup fault (a bad or rotated key, an unverified domain), never a fault of the email: the row backs off as below, and one High `messaging.email_provider_setup` alert is raised through `ops::api::raise_kind_once`, so a wave of such answers opens one alert, not one per row. A 429 keeps today's hold. A 5xx, 408, 409 (Resend's idempotent request still in progress), timeout or connection error has an unknown outcome (the email may have gone): the row backs off as below. (ii) Backing off: the drain puts the row back to `queued` with `claimed_at` cleared and `not_before` raised by 1 minute doubling on each such answer in a row, capped at 60 minutes (`lease_count smallint NOT NULL DEFAULT 0`, added by migration 0207, counts them and only sets the delay; no number of leases ever drops a row; a successful send, a 400 or 422 drop, and a 429 or quota hold reset it to 0). (iii) Migration 0207 also adds `first_unsure_at timestamptz`: set once, to the time the unsure call began, never the time an answer came back: after a 5xx, 408, 409, timeout or connection error it is set to that lease's `claimed_at`, and when a stale `sending` lease is taken again (the crash case) the retaking statement sets `first_unsure_at = COALESCE(first_unsure_at, claimed_at)` from the old lease before it overwrites `claimed_at`; it is never cleared, `hold_email` included (a 429 or quota hold proves only that the held call sent nothing, not an earlier unsure one). A row whose `first_unsure_at` is 23 hours or more before now (inside Resend's 24-hour key window) is never handed to the provider again: the next run marks it `dropped` with one High `messaging.email_given_up` alert naming the row ID only. A row with no `first_unsure_at` (only definite answers: 429, 401, 403, 404) is never at risk of a double send, but it may not wait for ever either, since a business notice body holds live sign-in links and an old job card is stale: once its `queued_at` (`migrations/0089_messaging_retries_email.sql:51`) is 72 hours or more before now it is `dropped` (subject and bodies cleared) with one High `messaging.email_expired` alert raised through `ops::api::raise_kind_once`, so a wave of them opens one alert. The expiry pass touches only rows the run would otherwise lease (`queued` rows whose `not_before` has passed), never a `sending` row under a fresh lease. Tests in `tests/integration/tests/email_due.rs`, with the recording adapter answering as planted: a 400 and a 422 each drop the row after one call with one alert and a later run makes no call; 500s on runs spread over 22 hours 59 minutes keep the row (backing off, never dropped, same key each call) and once `first_unsure_at` is 23 hours old the row is dropped with one alert and no call; a 409 and a timeout back off like a 500; a 401 on three rows backs all three off and opens one setup alert, and the rows go once the adapter answers 200; a row held on a 429 or the daily limit gets no `first_unsure_at`, and a held row that had one keeps it; a stale `sending` row whose lease began 23 hours before and is only retaken now is dropped with one alert and no provider call (its `first_unsure_at` is the old lease time); a 500 answer stores the lease time, not the answer time; a row answered only 401 whose `queued_at` is 72 hours old is dropped with one expiry alert and at 71 hours 59 minutes is not; a success after back-offs resets `lease_count`. The budget stays at the 600-line build cap; D-3889's split (the `messaging` drain versus the `server` resolver and handler) applies if this outgrows it. The `bare_address` hardening from the same review is T661's, not this task's.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -40163,7 +40180,8 @@
     "app/messaging/src/models.rs",
     "app/privacy/src/business_contacts.rs",
     "app/server/src/email_due.rs",
-    "tests/integration/tests/email_due.rs"
+    "tests/integration/tests/email_due.rs",
+    "app/messaging/src/email.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -40193,13 +40211,14 @@
     "D-3779",
     "D-3883",
     "D-3889",
-    "D-4196"
+    "D-4196",
+    "D-4327"
    ],
    "cites": [],
    "budget": {
-    "files": 6,
+    "files": 7,
     "lines": 600,
-    "context_pct": 20
+    "context_pct": 27
    },
    "checks": [
     "Ci",
@@ -40208,7 +40227,7 @@
    ],
    "branch": "claude/task/T470-email-outbox-send",
    "prompt": "kit/prompts/T470.md",
-   "acceptance": "`tests/integration/tests/email_due.rs` passes against PostgreSQL: each queued homeowner and business email goes once to the right address, two workers' leases, overlapping or one after the other, make one provider call per row, `hold_email` clears the lease, a fresh lease is never retaken and a stale one is under the same key, `not_before` and the bulk hold are kept, a self-sending template is never taken, a marked row and a notice to a removed member or a business that left are dropped unsent, with no provider nothing changes, and no address is logged; `tests/integration/tests/business_contacts.rs`, `tests/integration/tests/task_registry.rs` and every existing email test pass unchanged; a self-sending template's row held with `daily_limit` goes once after its `not_before`, a coverage notice row held with `daily_limit` goes once to the owner inbox after its `not_before`, a held sign-in link row is dropped unsent with no alert, and an owner alert row is never taken (D-4196)."
+   "acceptance": "`tests/integration/tests/email_due.rs` passes against PostgreSQL: each queued homeowner and business email goes once to the right address, two workers' leases, overlapping or one after the other, make one provider call per row, `hold_email` clears the lease, a fresh lease is never retaken and a stale one is under the same key, `not_before` and the bulk hold are kept, a self-sending template is never taken, a marked row and a notice to a removed member or a business that left are dropped unsent, with no provider nothing changes, and no address is logged; `tests/integration/tests/business_contacts.rs`, `tests/integration/tests/task_registry.rs` and every existing email test pass unchanged; a self-sending template's row held with `daily_limit` goes once after its `not_before`, a coverage notice row held with `daily_limit` goes once to the owner inbox after its `not_before`, a held sign-in link row is dropped unsent with no alert, and an owner alert row is never taken (D-4196). D-4327: a 400 or 422 drops the row after one call with one alert; a 401, 403 or 404 backs off with one deduplicated alert; a 5xx, 408, 409 or timeout backs off and the row is dropped only once its first unsure call is 23 hours old; a quota or 429 hold keeps `first_unsure_at`; `first_unsure_at` is the unsure lease's start (a stale retake keeps the old lease time), and a row with no unsure call is dropped with one deduplicated alert once queued 72 hours."
   },
   {
    "id": "T471",
@@ -41670,7 +41689,7 @@
    "id": "T609",
    "slug": "site-pages-polish",
    "title": "site: the D-4246 polish on the footer, how it works, the business page, coverage, services, help and the chat start screen",
-   "goal": "Plan change D-4246 (Casey, Nov 17, 2026, about 1:15 pm MST: \"the things that really make a website look premium\"; keep the idea, the V6 colors, Gelasio and DM Sans, the hero photo and every word; fast; Rust and Askama server rendering; no front-end framework; no new site JavaScript). DESIGN_SPEC now allows a polish layer within fixed limits: the layered `paper-shadow` and `paper-lift` (`docs/design/DESIGN_SPEC.md:44`, `:77`), 20 px cards with 12 px inner boxes (`:76`), tabular figures and `text-wrap: pretty` (`:62`, `:70`), one italic serif accent a page (`:53`), small capital labels with +0.05em tracking (`:68`), one `aria-hidden` arrow inside a primary button (`:105`), a CSS-drawn external-link mark after the ROC, Google and Yelp links (`:109`), hover, press and motion rules (`:123`, `:124`, `:128`), the speed limits (`:129`) and the checks (`:152` to `:154`); WEB-029 (motion, depth, arrow) and WEB-030 (speed) are the requirements. Limits every polish task keeps (WEB-029, WEB-030): CSS only, no script added to any site page; movement is `transform` alone and no element that holds text starts below full opacity (so axe's contrast, the design-token test and the first-screen measurements see the resting page); entrance motion only on the first render of the quote page's cards (D-4252 dropped the home page's), at most 12 px, staggered with `:nth-child` (the CSP allows no `style` attribute, SEC-013) and capped so the sixth card and every later one share the last delay, every animation's end time (delay plus duration times iterations) within 900 ms; no view transition between pages (D-4246 dropped it); hover and press under 350 ms; no animation repeats more than 3 times; every animation and transition inside `@media (prefers-reduced-motion: no-preference)`, so A11Y-009's test (`tests/a11y/reflow_spacing.spec.ts`) passes unchanged; colors only as section 2's tokens (shadows as `rgba(30,41,38,a)` or `rgba(36,88,73,a)`, the primary button's inner highlight as `rgba(255,255,255,a)`, no other hex), no font size under 16 px or in a unit other than px, no `linear-gradient(` (an axe incomplete on a gradient button would fail TD-A11Y-01), and no class name containing the words badge, pill, chip or tag (`docs/ai_smell.yaml`'s badge-or-pill rule is a `\\b` match, so `quote-tag` fails; D-4246 declines chips and pills). Every word stays as it is: markup and classes change, text does not; capitals (`text-transform: uppercase`) never go on text a test reads through `innerText`, which returns the shown case (for example `tests/e2e/business_portal_served.spec.ts:114` and `tests/e2e/pick_flow.spec.ts:106`, whose page text must keep its case), and `scripts/check_copy.py`, `scripts/check_ai_smell.py` and every existing test that reads page text pass unchanged. The remaining English site pages take the V6 components T607 styled: the footer in `site_layout.html` as section 6 sets it (mark, serif tagline, two link columns of 44 px rows, the not-a-contractor statement); how it works with the serif numerals and rules; the business page's fee card with tabular figures (the fee lines and the WEB-024 notice line read from data, as today); coverage, services and help with paper cards where section 8 puts them (the 911 note on help, its 2 px `alert` border, no shadow); and the chat start screen (`request.html`, the CON-025 consent text and the 18-or-older line) with its form on a paper card and its \"Send\" button (class `button`) carrying the arrow span only after the task has checked that no test reads that label as raw text or markup (as T608 checks \"Get quotes\"; `tests/e2e/web_chat.spec.ts` included; if one does, the button stays without it, an open item for Casey in `docs/for-casey-review.md`, D-4252); the code buttons get no arrow. Existing kickers and fact-row labels take the small-label style, and a page may set one short phrase of an existing headline in the italic accent (`:53`). These pages get depth, type, hover and press, and no entrance motion (section 7 keeps entrance motion to the home and quote pages). The header is T608's `base.html`, unchanged here. Plan change D-4252 (Fable's UI and accessibility review of the D-4246 tasks; Casey, Nov 17, 2026: \"make it exceptional and meet all of the ADA requirements\"): (a) T115, which serves `/accessibility`, is now a dependency, so the footer's \"Accessibility\" link (`:117`) never points at a missing page; the footer's \"Español\" link carries `lang=\"es\" hreflang=\"es\"` (A11Y-004). (b) A form on these pages that shows an error (the help form, the chat start screen) gives the field the 2 px `alert` border beside its existing \"Error:\" text (`:114`), with no new words. (c) (Casey, Nov 17, 2026, about 2:55 pm MST: \"Do whatever fable says\") From 1024 px up only, the home request box (T593's markup, keyed on its existing class, no template change) sits on a paper card: `surface`, the 1 px `line` border, `paper-shadow`, 20 px corners, padding from section 4's steps (`:104`); under 1024 px nothing changes, so `tests/e2e/home_first_screen.spec.ts` passes unchanged at 390 by 844 and 320 by 740 and the button stays inside the first screen at 1440 by 900; the screenshot review checks the home page's 1440 first screen (`polish_screens.spec.ts` saves it) beside `v6-home-1440-first-screen.png`, the card being the one difference D-4252 sets.",
+   "goal": "Plan change D-4246 (Casey, Nov 17, 2026, about 1:15 pm MST: \"the things that really make a website look premium\"; keep the idea, the V6 colors, Gelasio and DM Sans, the hero photo and every word; fast; Rust and Askama server rendering; no front-end framework; no new site JavaScript). DESIGN_SPEC now allows a polish layer within fixed limits: the layered `paper-shadow` and `paper-lift` (`docs/design/DESIGN_SPEC.md:44`, `:77`), 20 px cards with 12 px inner boxes (`:76`), tabular figures and `text-wrap: pretty` (`:62`, `:70`), one italic serif accent a page (`:53`), small capital labels with +0.05em tracking (`:68`), one `aria-hidden` arrow inside a primary button (`:105`), a CSS-drawn external-link mark after the ROC, Google and Yelp links (`:109`), hover, press and motion rules (`:123`, `:124`, `:128`), the speed limits (`:129`) and the checks (`:152` to `:154`); WEB-029 (motion, depth, arrow) and WEB-030 (speed) are the requirements. Limits every polish task keeps (WEB-029, WEB-030): CSS only, no script added to any site page; movement is `transform` alone and no element that holds text starts below full opacity (so axe's contrast, the design-token test and the first-screen measurements see the resting page); entrance motion only on the first render of the quote page's cards (D-4252 dropped the home page's), at most 12 px, staggered with `:nth-child` (the CSP allows no `style` attribute, SEC-013) and capped so the sixth card and every later one share the last delay, every animation's end time (delay plus duration times iterations) within 900 ms; no view transition between pages (D-4246 dropped it); hover and press under 350 ms; no animation repeats more than 3 times; every animation and transition inside `@media (prefers-reduced-motion: no-preference)`, so A11Y-009's test (`tests/a11y/reflow_spacing.spec.ts`) passes unchanged; colors only as section 2's tokens (shadows as `rgba(30,41,38,a)` or `rgba(36,88,73,a)`, the primary button's inner highlight as `rgba(255,255,255,a)`, no other hex), no font size under 16 px or in a unit other than px, no `linear-gradient(` (an axe incomplete on a gradient button would fail TD-A11Y-01), and no class name containing the words badge, pill, chip or tag (`docs/ai_smell.yaml`'s badge-or-pill rule is a `\\b` match, so `quote-tag` fails; D-4246 declines chips and pills). Every word stays as it is: markup and classes change, text does not; capitals (`text-transform: uppercase`) never go on text a test reads through `innerText`, which returns the shown case (for example `tests/e2e/business_portal_served.spec.ts:114` and `tests/e2e/pick_flow.spec.ts:106`, whose page text must keep its case), and `scripts/check_copy.py`, `scripts/check_ai_smell.py` and every existing test that reads page text pass unchanged. The remaining English site pages take the V6 components T607 styled: the footer in `site_layout.html` as section 6 sets it (mark, serif tagline, two link columns of 44 px rows, the not-a-contractor statement); how it works with the serif numerals and rules; the business page's fee card with tabular figures (the fee lines and the WEB-024 notice line read from data, as today); coverage, services and help with paper cards where section 8 puts them (the 911 note on help, its 2 px `alert` border, no shadow); and the chat start screen (`request.html`, the CON-025 consent text and the 18-or-older line) with its form on a paper card and its \"Send\" button (class `button`) carrying the arrow span only after the task has checked that no test reads that label as raw text or markup (as T608 checks \"Get quotes\"; `tests/e2e/web_chat.spec.ts` included; if one does, the button stays without it, an open item for Casey in `docs/for-casey-review.md`, D-4252); the code buttons get no arrow. Existing kickers and fact-row labels take the small-label style, and a page may set one short phrase of an existing headline in the italic accent (`:53`). These pages get depth, type, hover and press, and no entrance motion (section 7 keeps entrance motion to the home and quote pages). The header is T608's `base.html`, unchanged here. Plan change D-4252 (Fable's UI and accessibility review of the D-4246 tasks; Casey, Nov 17, 2026: \"make it exceptional and meet all of the ADA requirements\"): (a) T115, which serves `/accessibility`, is now a dependency, so the footer's \"Accessibility\" link (`:117`) never points at a missing page; the footer's \"Español\" link carries `lang=\"es\" hreflang=\"es\"` (A11Y-004). (b) A form on these pages that shows an error (the help form, the chat start screen) gives the field the 2 px `alert` border beside its existing \"Error:\" text (`:114`), with no new words. (c) (Casey, Nov 17, 2026, about 2:55 pm MST: \"Do whatever fable says\") From 1024 px up only, the home request box (T593's markup, keyed on its existing class, no template change) sits on a paper card: `surface`, the 1 px `line` border, `paper-shadow`, 20 px corners, padding from section 4's steps (`:104`); under 1024 px nothing changes, so `tests/e2e/home_first_screen.spec.ts` passes unchanged at 390 by 844 and 320 by 740 and the button stays inside the first screen at 1440 by 900; the screenshot review checks the home page's 1440 first screen (`polish_screens.spec.ts` saves it) beside `v6-home-1440-first-screen.png`, the card being the one difference D-4252 sets. Plan change D-4326 (night accessibility spot review, Nov 18, 2026, re-verified on `main` d662af7e5; A11Y-008): the fee table's wrapper in `business.html` (`:43`) keeps `role=\"region\"`, `tabindex=\"0\"` and its `aria-label` (`tests/a11y/reflow_spacing.spec.ts:16`, `:25` fail a table outside such a region, so dropping the tabindex would fail Ally), and `site.css` gains one rule keyed on those attributes, `[role=\"region\"][tabindex=\"0\"] { overflow-x: auto; }`, with no markup change, so the region scrolls sideways at 320 px and 400% zoom instead of being a Tab stop that never scrolls; the Spanish page's wrapper (`es_business.html:42`, T610's) gets the same rule from it.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -41716,7 +41735,8 @@
     "D-4252",
     "D-4246",
     "D-3331",
-    "D-3878"
+    "D-3878",
+    "D-4326"
    ],
    "cites": [
     "docs/design/DESIGN_SPEC.md:111",
@@ -41744,7 +41764,7 @@
    "id": "T610",
    "slug": "site-pages-polish-two",
    "title": "site: the D-4246 polish on the Spanish pages, the legal pages and the data and business help pages",
-   "goal": "Plan change D-4246 (Casey, Nov 17, 2026, about 1:15 pm MST: \"the things that really make a website look premium\"; keep the idea, the V6 colors, Gelasio and DM Sans, the hero photo and every word; fast; Rust and Askama server rendering; no front-end framework; no new site JavaScript). DESIGN_SPEC now allows a polish layer within fixed limits: the layered `paper-shadow` and `paper-lift` (`docs/design/DESIGN_SPEC.md:44`, `:77`), 20 px cards with 12 px inner boxes (`:76`), tabular figures and `text-wrap: pretty` (`:62`, `:70`), one italic serif accent a page (`:53`), small capital labels with +0.05em tracking (`:68`), one `aria-hidden` arrow inside a primary button (`:105`), a CSS-drawn external-link mark after the ROC, Google and Yelp links (`:109`), hover, press and motion rules (`:123`, `:124`, `:128`), the speed limits (`:129`) and the checks (`:152` to `:154`); WEB-029 (motion, depth, arrow) and WEB-030 (speed) are the requirements. Limits every polish task keeps (WEB-029, WEB-030): CSS only, no script added to any site page; movement is `transform` alone and no element that holds text starts below full opacity (so axe's contrast, the design-token test and the first-screen measurements see the resting page); entrance motion only on the first render of the quote page's cards (D-4252 dropped the home page's), at most 12 px, staggered with `:nth-child` (the CSP allows no `style` attribute, SEC-013) and capped so the sixth card and every later one share the last delay, every animation's end time (delay plus duration times iterations) within 900 ms; no view transition between pages (D-4246 dropped it); hover and press under 350 ms; no animation repeats more than 3 times; every animation and transition inside `@media (prefers-reduced-motion: no-preference)`, so A11Y-009's test (`tests/a11y/reflow_spacing.spec.ts`) passes unchanged; colors only as section 2's tokens (shadows as `rgba(30,41,38,a)` or `rgba(36,88,73,a)`, the primary button's inner highlight as `rgba(255,255,255,a)`, no other hex), no font size under 16 px or in a unit other than px, no `linear-gradient(` (an axe incomplete on a gradient button would fail TD-A11Y-01), and no class name containing the words badge, pill, chip or tag (`docs/ai_smell.yaml`'s badge-or-pill rule is a `\\b` match, so `quote-tag` fails; D-4246 declines chips and pills). Every word stays as it is: markup and classes change, text does not; capitals (`text-transform: uppercase`) never go on text a test reads through `innerText`, which returns the shown case (for example `tests/e2e/business_portal_served.spec.ts:114` and `tests/e2e/pick_flow.spec.ts:106`, whose page text must keep its case), and `scripts/check_copy.py`, `scripts/check_ai_smell.py` and every existing test that reads page text pass unchanged. The rest of the site pages take T607's components: the Spanish how-it-works and business pages mirror their English pages' structure as T609 left it (`lang` unchanged, A11Y-004); legal pages keep long text in a reading column on `canvas` (section 8) with type and spacing polish only; the data pages and the business help page put their forms and fact lists on paper cards with tabular figures; the ROC complaint page likewise. The small-label style goes on existing labels only (the kicker, fact-row labels); no italic accent beyond one existing headline phrase a page, and none in legal text. Depth, type, hover and press only; no entrance motion.",
+   "goal": "Plan change D-4246 (Casey, Nov 17, 2026, about 1:15 pm MST: \"the things that really make a website look premium\"; keep the idea, the V6 colors, Gelasio and DM Sans, the hero photo and every word; fast; Rust and Askama server rendering; no front-end framework; no new site JavaScript). DESIGN_SPEC now allows a polish layer within fixed limits: the layered `paper-shadow` and `paper-lift` (`docs/design/DESIGN_SPEC.md:44`, `:77`), 20 px cards with 12 px inner boxes (`:76`), tabular figures and `text-wrap: pretty` (`:62`, `:70`), one italic serif accent a page (`:53`), small capital labels with +0.05em tracking (`:68`), one `aria-hidden` arrow inside a primary button (`:105`), a CSS-drawn external-link mark after the ROC, Google and Yelp links (`:109`), hover, press and motion rules (`:123`, `:124`, `:128`), the speed limits (`:129`) and the checks (`:152` to `:154`); WEB-029 (motion, depth, arrow) and WEB-030 (speed) are the requirements. Limits every polish task keeps (WEB-029, WEB-030): CSS only, no script added to any site page; movement is `transform` alone and no element that holds text starts below full opacity (so axe's contrast, the design-token test and the first-screen measurements see the resting page); entrance motion only on the first render of the quote page's cards (D-4252 dropped the home page's), at most 12 px, staggered with `:nth-child` (the CSP allows no `style` attribute, SEC-013) and capped so the sixth card and every later one share the last delay, every animation's end time (delay plus duration times iterations) within 900 ms; no view transition between pages (D-4246 dropped it); hover and press under 350 ms; no animation repeats more than 3 times; every animation and transition inside `@media (prefers-reduced-motion: no-preference)`, so A11Y-009's test (`tests/a11y/reflow_spacing.spec.ts`) passes unchanged; colors only as section 2's tokens (shadows as `rgba(30,41,38,a)` or `rgba(36,88,73,a)`, the primary button's inner highlight as `rgba(255,255,255,a)`, no other hex), no font size under 16 px or in a unit other than px, no `linear-gradient(` (an axe incomplete on a gradient button would fail TD-A11Y-01), and no class name containing the words badge, pill, chip or tag (`docs/ai_smell.yaml`'s badge-or-pill rule is a `\\b` match, so `quote-tag` fails; D-4246 declines chips and pills). Every word stays as it is: markup and classes change, text does not; capitals (`text-transform: uppercase`) never go on text a test reads through `innerText`, which returns the shown case (for example `tests/e2e/business_portal_served.spec.ts:114` and `tests/e2e/pick_flow.spec.ts:106`, whose page text must keep its case), and `scripts/check_copy.py`, `scripts/check_ai_smell.py` and every existing test that reads page text pass unchanged. The rest of the site pages take T607's components: the Spanish how-it-works and business pages mirror their English pages' structure as T609 left it (`lang` unchanged, A11Y-004); legal pages keep long text in a reading column on `canvas` (section 8) with type and spacing polish only; the data pages and the business help page put their forms and fact lists on paper cards with tabular figures; the ROC complaint page likewise. The small-label style goes on existing labels only (the kicker, fact-row labels); no italic accent beyond one existing headline phrase a page, and none in legal text. Depth, type, hover and press only; no entrance motion. Plan change D-4326 (night accessibility spot review, Nov 18, 2026, re-verified on `main` d662af7e5; A11Y-008): the fee table's wrapper in `es_business.html` (`:42`) keeps `role=\"region\"`, `tabindex=\"0\"` and its `aria-label` unchanged; T609's `site.css` rule on `[role=\"region\"][tabindex=\"0\"]` makes it scroll.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -41786,7 +41806,8 @@
    "decisions": [
     "D-4252",
     "D-4246",
-    "D-3331"
+    "D-3331",
+    "D-4326"
    ],
    "cites": [
     "docs/design/DESIGN_SPEC.md:123",
@@ -43013,6 +43034,372 @@
    ],
    "branch": "claude/task/T649-web-chat-name-address-scrub",
    "prompt": "kit/prompts/T649.md"
+  },
+  {
+   "id": "T656",
+   "slug": "web-chat-error-summary",
+   "title": "site: a failed submit on the /request chat shows a focused error summary first, marks the field and keeps what she typed",
+   "goal": "Plan change D-4326 (night accessibility spot review of `main` e64d06e02, re-verified on `main` d662af7e5; A11Y-030, A11Y-035, TD-A11Y-02). A failed submit on the `/request` chat breaks A11Y-030: the notice (`#chat-notice`, `app/site/templates/request.html:28` to `:30`) comes after the h1, both consent texts, the 18-or-older line and the transcript, with no `tabindex` or `autofocus`; no field gets `aria-invalid`; `answer` clears the typed number on every step but the code step (`app/site/src/chat.rs:398` to `:400`) and the job-words textarea is never refilled, so after `FAILED` (`:298`, `:308`) her words are gone; and `NO_CODES`, `OPTED_OUT`, `TOO_MANY` and `TRY_LATER` (`chat.rs:96` to `:113`) refuse her answer with `error` false, so the title has no \"Error: \" and the line sits in a `role=\"status\"` region filled at first render, which is not announced. (1) Whenever the page shows a notice that refuses her answer or sends her back a step (`EMPTY`, `BAD_NUMBER`, `WRONG_CODE`, `FAILED` and the four above), it renders an error summary as the first element in `main`, before the h1: `<div id=\"chat-notice\" role=\"alert\" tabindex=\"-1\" autofocus>` holding the line as a link to the field it is about (`#chat-words`, `#chat-number` or `#chat-code`), and the title begins \"Error: \". A notice that reports progress (`OPEN`, `TEXTED`) stays where it is, in its `role=\"status\"` region, with no \"Error: \". The id `chat-notice` and every notice's words are unchanged, so `tests/e2e/web_chat.spec.ts` passes unchanged. (2) The field the error is about carries `aria-invalid=\"true\"` beside its `aria-describedby`, which keeps `chat-notice`. (3) Every entered value is kept: after a refused or failed message step the textarea shows her words again; after a refused number step the number field shows the typed number again (the page is `no-store`, and D-4044 already round-trips the number in the code form's hidden field); a code is never refilled. Refilled words and numbers are only echoed, autoescaped, into this response's form: never stored in the session, logged or added to the `said` transcript. (4) No announcement of new chat lines after a successful turn: A11Y-035 asks for one question per page with the conversation above it, which the page already does, and no script is added to a site page (WEB-029). (5) Tests, fake data only: `tests/e2e/web_chat_errors.spec.ts` (TD-A11Y-04) drives the chat without JavaScript at 320 and 1280 px through an empty message, a bad number (\"92855501\") and a wrong code; for each it checks the title starts \"Error: \", the summary is the first child of `main` and is focused (`document.activeElement`), its link targets the field, the field has `aria-invalid=\"true\"`, the typed words or number are back in the field, and `axeScan` (`tests/a11y/fixtures.ts`) reports no violation; it also scans the number step and the code step with no error. Unit tests in `chat.rs`'s test module render each refusing notice and each progress notice and check the order, attributes and refilled values. `tests/a11y/page_states.ts` opens each state by GET from its seed, so it cannot open these POST answers; the e2e spec scans them. Ordered after T593 and T609 (both own `request.html`) and T649 (owns `chat.rs`, after T646); T299, the other queued owner of `chat.rs`, runs after this task. Update `app/site/NOTES.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "site",
+   "deps": [
+    "T593",
+    "T609",
+    "T649"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "accessibility"
+   ],
+   "owns": [
+    "app/site/templates/request.html",
+    "app/site/src/chat.rs",
+    "tests/e2e/web_chat_errors.spec.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/accessibility.md",
+    "docs/spec/website.md",
+    "docs/brains/accessibility-forms.md",
+    "tests/e2e/web_chat.spec.ts",
+    "tests/a11y/fixtures.ts"
+   ],
+   "requirements": [
+    "A11Y-030",
+    "A11Y-035"
+   ],
+   "tests": [
+    "TD-A11Y-04"
+   ],
+   "decisions": [
+    "D-490",
+    "D-4044",
+    "D-4252",
+    "D-4326"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 320,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T656-web-chat-error-summary",
+   "prompt": "kit/prompts/T656.md",
+   "acceptance": "TD-A11Y-04 passes; `tests/e2e/web_chat.spec.ts`, `web_chat_route.rs`, the site crate's tests and the Ally suite pass unchanged; no script is added to the page."
+  },
+  {
+   "id": "T657",
+   "slug": "portal-form-error-fields",
+   "title": "quotes and portals: quote-form and sign-in errors mark the field in error, and the failed pages are axe-scanned",
+   "goal": "Plan change D-4326 (night accessibility spot review of `main` e64d06e02, re-verified on `main` d662af7e5; A11Y-030, TD-A11Y-02). (1) `PriceProblem::field` (`app/quotes/src/formats.rs:146` to `:154`) sends every package fault to `tier1_name` and every range fault to `low`, so a business whose package 3 has a name and no price, or whose high price is bad, is pointed at package 1's name or the low price (WCAG 3.3.1). `PriceProblem::Tiers` and `PriceProblem::Range` now carry where the first fault is: for packages, the first package (1 to 3) with only one of its name and price or a price that is not an amount, and whether its name or its price is at fault (`tier<n>_name` or `tier<n>_price`; with no package at all, `tier1_name` as today); for a range, `low` when the low is not an amount, else `high`. `field()` answers that element's ID, `message()` keeps today's words, and every input that fails today still fails (`tests/integration/tests/quote_whole_field_gate.rs` and `quote_formats.rs` pass unchanged). (2) `app/portals/templates/business_actions.html` (`:97` to `:103`): each package name or price input whose ID is the problem's field gets `aria-invalid=\"true\"` and `aria-describedby` naming the error line, so the summary's link lands on it; the `visit_date` (`:149`) and `minutes` (`:168`) inputs get `aria-invalid=\"true\"` when their error shows, as `days` does (`:80`). (3) `app/portals/templates/capability_setup.html:52`: `largest_amount` gets `aria-invalid=\"true\"` when the `largest` error shows. (4) `app/portals/templates/owner_signin.html`: the failed page keeps its one generic line, \"That didn't work\", which on purpose never says which factor failed; so the password (`:19`) and the code (`:22`) both get `aria-invalid=\"true\"` and an `aria-describedby` naming the summary's line, both or neither, never one alone. (5) Tests, fake data only: unit tests in the new `app/quotes/src/tests/price_fields.rs` (`tests/mod.rs` is shared) for each package and range fault's field; `tests/e2e/portal_form_errors.spec.ts` (TD-A11Y-05) posts each failed form through the served routes as the existing served specs do (`tests/e2e/owner_signin_served.spec.ts`, `business_portal_served.spec.ts`, `action_links_served.spec.ts`): owner sign-in with a wrong password, the owner step-up with a wrong code, business sign-in with an empty address, and the quote form with package 3 named but unpriced and with a bad high price; for each it checks the \"Error: \" title, the focused summary first in `main`, `aria-invalid=\"true\"` on exactly the faulty fields (both sign-in factors together) and no `axeScan` violation at 320 and 1280 px. `tests/a11y/page_states.ts` opens states by GET only, so these POST answers are scanned here. If a scan finds a fault on a page this task does not own (`owner_step_up.html`, `business_signin.html`), it reports it rather than editing it. Ordered after T543 and T410, the queued owners of `business_actions.html`. Update `app/quotes/NOTES.md`, `app/portals/NOTES.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "portals",
+   "deps": [
+    "T543",
+    "T410"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "accessibility",
+    "security"
+   ],
+   "owns": [
+    "app/quotes/src/formats.rs",
+    "app/quotes/src/tests/price_fields.rs",
+    "app/portals/templates/business_actions.html",
+    "app/portals/templates/capability_setup.html",
+    "app/portals/templates/owner_signin.html",
+    "tests/e2e/portal_form_errors.spec.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/accessibility.md",
+    "docs/brains/accessibility-forms.md",
+    "app/portals/src/business_actions.rs",
+    "tests/e2e/owner_signin_served.spec.ts",
+    "tests/a11y/fixtures.ts"
+   ],
+   "requirements": [
+    "A11Y-030"
+   ],
+   "tests": [
+    "TD-A11Y-05"
+   ],
+   "decisions": [
+    "D-490",
+    "D-4326"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 360,
+    "context_pct": 24
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T657-portal-form-error-fields",
+   "prompt": "kit/prompts/T657.md",
+   "acceptance": "TD-A11Y-05 passes; `quote_whole_field_gate.rs`, `quote_formats.rs`, the served portal specs and the Ally suite pass unchanged."
+  },
+  {
+   "id": "T658",
+   "slug": "scrub-spanish-allcaps-address",
+   "title": "privacy: the scrubber removes lower-case Spanish addresses and all-caps street names",
+   "goal": "Plan change D-4327 (night spot review of intake and AI, each case reproduced against a copy of `app/privacy/src/scrub.rs` on `main` e64d06e02, re-verified on `main` d662af7e5; AI-002, AI-020, PRIV-005; it amends D-3314). `HOUSE_CUES` (`app/privacy/src/scrub.rs:380`) holds only the English \"at\", \"live\", \"address\" and \"is\" (D-3314), and with no cue `mark_bare_houses` (`:701`) takes a street word only when `titled` (`:723`), which needs a lower-case letter after the capital. So \"vivo en 3301 palo verde\", \"estoy en el 3301 palo verde\", \"mi casa es 2150 mesquite\" and \"mi dirección es 3301 palo verde\" pass unchanged, as do \"WATER HEATER LEAKING 2150 MESQUITE LAKE HAVASU\" and \"2150 MESQUITE\"; that text is kept as the job's description today (`app/intake/src/order.rs:174` to `:180`) and is the AI's input once T299 wires it. (1) Spanish cues: \"vivo\", \"dirección\", \"direccion\", \"casa\" and \"es\" join `HOUSE_CUES`, matched on the token before the number as today; \"en\" and \"el\" count as a cue only when \"vivo\" or \"estoy\" is within the two tokens before them (\"vivo en 3301\", \"estoy en el 3301\"), so \"instalado en 2015 junto al garaje\" keeps every word; `MEASURES` (with \"cuadrados\", \"galones\", \"años\", \"voltios\", \"grados\", \"libras\", \"pulgadas\", \"millas\" and \"dólares\" added where missing) still keeps a size (\"la casa es 1500 pies cuadrados\"). (2) All-caps text: in a message of at least 8 letters of which at least three quarters are capitals, an all-capitals word counts as a capitalised name for the no-cue rule exactly as `titled` counts \"Mesquite\" in ordinary text: letters only, not a common word, not in `MEASURES`, at most 2 after a 3- to 6-digit number (today's reach); a 1- or 2-digit number is never a house number, so \"WATER HEATER 2 YEARS OLD\" keeps every word. In mixed-case text an all-caps word (\"YES\", \"AC\", \"GFCI\") is still never a street name (D-3314's \"YES\" case). The all-caps rule also never takes a word on a fixed list in `scrub.rs` (a `const`, not the owner-editable common words) of the reply and command words the texting code reads, copied from the code: `businesses::consent`'s `COMMAND_WORDS` (`app/businesses/src/consent.rs:501` to `:520`: confirm, confirmar, yes, si, sí, hold, espera, away, ausente, pause, pausa, resume, reanudar, busy, ocupado, start, unstop, link), `messaging::rules::PROVIDER_OPT_OUT_WORDS` (`app/messaging/src/rules.rs:381` to `:394`: stop, stopall, unsubscribe, cancel, end, revoke, optout, quit, parar, alto, cancelar, baja), the help words (`app/server/src/inbound_text.rs:120`: help, info, ayuda), the card replies (`app/intake/src/summary_step.rs:80` to `:81`: send, ok, enviar, edit, cambiar), the check-in answers (`app/jobs/src/followups.rs:89` to `:97`: problem, problema, done, listo, no, later, mas, más, tarde, ongoing, continuo, other, otro), close and cerrar (`app/intake/src/rules.rs:669`) and list and lista (`app/intake/src/handlers.rs:385` to `:386`); `privacy` may not depend on those crates (`kit/layers.json`), so the list is a copy with a doc comment naming each source, exported as `privacy::api::REPLY_WORDS`; most sources are private, so the copy is deliberately not kept in sync by machine (drift fails safe: a word missing from the copy is only over-scrubbed, in all-caps text after a house-sized number, and never keeps an address), except for the two lists `messaging::api` exports: the new `tests/integration/tests/scrub_reply_words.rs` checks that `REPLY_WORDS` holds every word of `messaging::api::PROVIDER_OPT_OUT_WORDS` and `RESUBSCRIBE_WORDS`. So \"CLOSE 1042 YES\" (`app/privacy/src/tests/scrub.rs:221`, which must stay unchanged) keeps every word. All-caps text is thus treated as strictly as ordinary text, no more. (3) Optional, outside AI-002's letter: a phone number split by joining words (\"928 and then 555 and 0100\", \"928 y 555 y 0100\") may be joined like a spoken separator when the pieces are 3, 3 and 4 digits; if built, \"2 and 3 bedrooms\" and \"between 100 and 200 dollars\" keep every word. Tests in `app/privacy/src/tests/scrub.rs` (TD-AI-31), every line fake: must-scrub, each listed number and street word removed: \"vivo en 3301 palo verde\", \"estoy en el 3301 palo verde\", \"mi casa es 2150 mesquite\", \"mi dirección es 3301 palo verde\", \"mi direccion es 3301 palo verde\", \"se me rompió el calentador, vivo en 3301 palo verde\", \"WATER HEATER LEAKING 2150 MESQUITE LAKE HAVASU\", \"2150 MESQUITE\" and \"AC OUT AT THE HOUSE 4410 SAGUARO PLEASE CALL\" (the number and \"SAGUARO\"), each also added to the recall corpus (`CONTACTS`), which keeps at least 99% (TD-AI-09); must-keep, every word unchanged: \"WATER HEATER 2 YEARS OLD\", \"50 GALLON WATER HEATER LEAKING\", \"TANK IS 120 GALLONS\", \"ROOF IS 1500 SQ FT\", \"ERROR CODE 41 ON THE AC\", \"instalado en 2015 junto al garaje\", \"la casa es 1500 pies cuadrados\", \"el calentador tiene 10 años\", \"YES PLEASE SEND SOMEONE\", \"My GFCI trips\", \"CLOSE 1042 YES\", \"HOLD 1042 BUSY\", \"CONFIRM 2150 SI\", \"el voltaje es 220 voltios\" and \"la cuenta es 1500 dólares\"; every existing case passes unchanged. `app/privacy/` keeps its 95% branch coverage. Update `app/privacy/NOTES.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "privacy",
+   "deps": [
+    "T351",
+    "T100",
+    "T517"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy"
+   ],
+   "owns": [
+    "app/privacy/src/scrub.rs",
+    "app/privacy/src/tests/scrub.rs",
+    "tests/integration/tests/scrub_reply_words.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/ai.md",
+    "docs/spec/privacy.md",
+    "docs/brains/ai-intake.md"
+   ],
+   "requirements": [
+    "AI-002",
+    "AI-020"
+   ],
+   "tests": [
+    "TD-AI-31"
+   ],
+   "decisions": [
+    "D-146",
+    "D-2622",
+    "D-3314",
+    "D-4327"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 300,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T658-scrub-spanish-allcaps-address",
+   "prompt": "kit/prompts/T658.md",
+   "acceptance": "TD-AI-31 passes, each must-scrub line failing on `main` before the change and each must-keep line unchanged; the recall corpus stays at or above 99%; every existing privacy test passes unchanged; `app/privacy/` stays at or above 95% branch coverage."
+  },
+  {
+   "id": "T659",
+   "slug": "resend-webhook-route",
+   "title": "server and messaging: the signed Resend webhook route marks bounced and complained business addresses returned",
+   "goal": "Plan change D-4327 (night spot review of outgoing email on `main` e64d06e02, re-verified on `main` d662af7e5; BIZ-040, BIZ-055, SEC-025, SEC-050, SEC-051; D-1381). `messaging::api::receive_email_event` (`app/messaging/src/email.rs:723`, D-1381) and `businesses::api::mark_returned` (`app/businesses/src/email_verification.rs:512`) have no caller outside tests, and no server route verifies `WebhookVendor::Resend` (`app/adapters/src/signatures.rs:59`); `app/businesses/NOTES.md:222` says the webhook's call to `mark_returned` is not wired, D-1381 left it to a later task and none had it (T133 builds the signed adapters and the fake Resend's events, T490 the mailers, T379 only counts suppressed card emails). So a hard-bouncing or complaining business address keeps getting notices, BIZ-040's banner never shows, and once emails go out `check_webhook_silence` (`email.rs:811`, scheduled hourly) raises the High `messaging.email_webhooks_silent` alert 24 hours later and keeps it open for good. (1) `app/server/src/resend_webhook.rs` (new): `POST /webhooks/resend`, mounted in the shared `app/server/src/lib.rs` beside the other webhook routes and outside the CSRF layer as they are, reads the raw body and the `svix-id`, `svix-timestamp` and `svix-signature` headers and passes `adapters::api::verify_webhook(WebhookVendor::Resend, …)` with the signing secret from a new setting `ASKHAVA_RESEND_WEBHOOK_SECRET` (the shared `app/core/src/settings.rs`; a secret, never logged or printed); unset, the route is not mounted in Dev and CI (they answer 404) and the server refuses to start in Test and Live, as `stripe_webhook`'s secret does (`app/server/src/release_sink.rs:298` to `:302`); a refused delivery (bad signature, missing header, timestamp outside 5 minutes) answers `adapters::api::refuse(WebhookVendor::Resend, e)`'s 403 and stores nothing, and the router is mounted through the `refused(...)` wrapper (`app/server/src/lib.rs:404` to `:415`), so each 403 records one capped `webhook_signature_failed` security event (`app/server/src/webhook_refusals.rs`; SEC-016, SEC-048); every other failure answers 200 or 500, never 403, as that layer requires. A verified delivery is handled in one transaction the route opens and commits once: it passes `&mut *tx` to `receive_email_event` (which dedupes by the Svix ID, stores the event and raises SEC-050's complaint alert, D-1381), then to the returns lookup, `mark_returned` and `acknowledge_cleared` below, so each of their own `begin()` calls is a savepoint and a failure anywhere rolls the event back too; `Recorded`, `Repeat` and `Ignored` answer 200 after the commit and any database error answers 500 with nothing kept, so Resend's retry is a first delivery again, never a `Repeat` that skips the address (SEC-051: acknowledged only once stored). (2) For a `Recorded` event of type `email.bounced`, `email.complained` or `email.suppressed`, after the store, a new `messaging::api` lookup in `app/messaging/src/email_returns.rs` (new; not `models.rs`, which T470, T573 and T580 own) maps the event's email ID through `messaging.email_outbox.provider_id` to the row's `recipient_kind` and `recipient_id` (`migrations/0089_messaging_retries_email.sql:39` to `:50`); for a `business` row it finds the mailbox's businesses through `businesses::api::businesses_of_mailbox` and calls `businesses::api::mark_returned` once for each, at the event's signed `created_at` (read from the verified body, never the wall clock, so SEC-051's event-time order holds and BIZ-055's span is measured between events), with `Returned::Complaint` for `email.complained`, `Returned::Hard` for `email.suppressed` and for an `email.bounced` whose `data.bounce.type` is `\"Permanent\"`, and `Returned::Soft` for any other bounce (`\"Transient\"`, `\"Undetermined\"` or no type); the body fields are read in `email_returns.rs` (BIZ-055's 14-day rule is `mark_returned`'s, which queues `RETURNED_KIND`); a homeowner row, an unknown email ID or another event type changes nothing more, and a `Repeat` calls nothing. (3) A stored event of any type clears the webhook-silence alert: `messaging.email_webhooks_silent` joins `CLEARING_KINDS` (`app/ops/src/alerts.rs:396`) and the route calls `ops::api::acknowledge_cleared` (`:418`, OPS-023) with it after the store, so the alert resolves once webhooks arrive and a later silence opens a new one (`raise_kind_once`, D-3144). (4) Before Gate C only the stand-in and test secrets are used: no live Resend key, endpoint or webhook is created or registered (`BUILD_BRIEF.md:68`); registering the endpoint and its secret at Resend is a Gate C step, listed for Casey in `docs/for-casey-review.md`. (5) Tests in `app/server/tests/resend_webhook.rs` (TD-SEC-76), fake data only, through the assembled router with a test signing secret and bodies built by hand in Resend's event shape (the fake Resend's events, `stand_ins/resend.py:84` to `:85`, carry no bounce type, and `stand_ins/` is protected): a bad signature, a missing header and a timestamp 6 minutes old each answer 403 with nothing stored and exactly one `webhook_signature_failed` security event; a hard bounce, a complaint and `email.suppressed` for a sent business notice each mark its mailbox returned with one `RETURNED_KIND` task (the complaint also one complaint alert), and a replay of the same Svix ID changes nothing; two transient bounces whose signed `created_at` are 13 days apart do not mark it and 14 days apart do (BIZ-055); a bounce with an undetermined or missing bounce type counts as soft; a failure injected after the event store (for example a `mark_returned` error from a planted constraint) answers 500 and keeps no event row, and the same delivery sent again then marks the address returned; a bounce of a homeowner email, an unknown email ID and a `contact.created` event answer 200 and change nothing; a database failure answers 500; an open `messaging.email_webhooks_silent` alert is resolved by the next stored event; with no secret set the route is not served in CI, and building the composition for Test or Live with no secret is refused. Ordered after T133, T490 and T469 (the adapters, the fake's events and the provider wiring) and after T652, the other queued owner of `app/ops/src/alerts.rs`. Update `docs/architecture.md`, `app/server/NOTES.md`, `app/messaging/NOTES.md`, `app/businesses/NOTES.md` (its \"Not wired yet\" line), `app/ops/NOTES.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 2,
+   "stage": "6",
+   "module": "server",
+   "deps": [
+    "T133",
+    "T490",
+    "T469",
+    "T652"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/server/src/resend_webhook.rs",
+    "app/server/tests/resend_webhook.rs",
+    "app/messaging/src/email_returns.rs",
+    "app/ops/src/alerts.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/spec/businesses.md",
+    "docs/brains/email-deliverability.md",
+    "app/server/src/inbound_text.rs",
+    "app/adapters/src/signatures.rs",
+    "stand_ins/resend.py",
+    "docs/spec/ops-recovery.md"
+   ],
+   "requirements": [
+    "BIZ-040",
+    "BIZ-055",
+    "SEC-025",
+    "SEC-050",
+    "SEC-051",
+    "OPS-023"
+   ],
+   "tests": [
+    "TD-SEC-76"
+   ],
+   "decisions": [
+    "D-1381",
+    "D-3144",
+    "D-4327"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 480,
+    "context_pct": 26
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T659-resend-webhook-route",
+   "prompt": "kit/prompts/T659.md",
+   "acceptance": "TD-SEC-76 passes against PostgreSQL through the assembled router; `tests/integration/tests/email_verification.rs`, the email and webhook tests and `tests/security` pass unchanged; no live Resend key or endpoint is used."
+  },
+  {
+   "id": "T660",
+   "slug": "note-screener-scrubbed",
+   "title": "quotes (harness): the quote-note AI screener takes scrubbed text only",
+   "goal": "Plan change D-4327 (night spot review of intake and AI on `main` e64d06e02, re-verified on `main` d662af7e5; AI-002, AI-004, PICK-052; D-373, D-442). `quotes::notes::NoteScreener::screen` (`app/quotes/src/notes.rs:146` to `:150`) takes a raw `&str`, while AI-002 (D-373) has business text, quote wording included, scrubbed before every AI call and AI-004 relies on the `ScrubbedText` type to guarantee it; no AI implementation exists yet (only the stand-in at `tests/integration/tests/quote_notes.rs:95`), so the type is closed now. `screen` takes `&askhava_privacy::api::ScrubbedText` (`quotes` may depend on `privacy`, `kit/layers.json`); `screen_note` (`notes.rs:158`) runs `check_note` first as today, so a contact note still never reaches the AI, then scrubs the note with `privacy::api::scrub` (default common words, no vault name, a fresh `NameMemory`) and hands the screener only that; with no screener nothing is scrubbed or called. PICK-052's AI implementation itself is not this task's and is not planned yet (listed for Casey). `tests/integration/tests/quote_notes.rs` is T164's (DONE), so this is a harness task: that file changes only in its stand-in's signature (`&ScrubbedText`, read through `as_str()`) and gains TD-PICK-65's cases: the stand-in records what it was handed; a note that passes `check_note` but holds a house number and a capitalised street name (\"Meet at 2150 Mesquite on Tuesday\"; if `check_note` refuses it, another planted line `check_note` passes and the scrubber changes, named in the test) reaches it with those words removed; a contact note reaches it zero times; with `None` it is never called; TD-PICK-35's cases pass unchanged. Update `app/quotes/NOTES.md` and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "quotes",
+   "deps": [
+    "T164",
+    "T100",
+    "T517"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "harness"
+   ],
+   "owns": [
+    "app/quotes/src/notes.rs",
+    "tests/integration/tests/quote_notes.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/ai.md",
+    "docs/spec/quotes-pick.md"
+   ],
+   "requirements": [
+    "PICK-052",
+    "AI-002",
+    "AI-004"
+   ],
+   "tests": [
+    "TD-PICK-65"
+   ],
+   "decisions": [
+    "D-373",
+    "D-442",
+    "D-4327"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 150,
+    "context_pct": 13
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T660-note-screener-scrubbed",
+   "prompt": "kit/prompts/T660.md",
+   "acceptance": "TD-PICK-65 passes against PostgreSQL; TD-PICK-35's cases pass with only the stand-in's signature changed; no other test changes."
+  },
+  {
+   "id": "T661",
+   "slug": "business-address-chars",
+   "title": "privacy: a business notice address with spaces, commas or control characters is refused",
+   "goal": "Plan change D-4327 (night spot review of outgoing email on `main` e64d06e02, re-verified on `main` d662af7e5; moved out of T470 by the round-1 review so T470 keeps only the drain). `bare_address` (`app/privacy/src/business_contacts.rs:126` to `:137`) checks only for an `@` and the length after trimming the ends, and the sign-up form passes the raw value (`app/server/src/business_signup.rs:645`, `:668` to `:673`), so `me@a.test, other@b.test` or a value with an inner line break is stored and later sent as the Resend `to`, where it may read as two recipients. `bare_address` also refuses, after the bracket strip and trim, an address holding an ASCII control character, any whitespace, `,`, `;`, `<` or `>` (`BusinessContactError::BadAddress`); a valid address's digest and every existing caller are unchanged. Tests in the new `app/privacy/src/tests/business_address.rs` (TD-SEC-77; `tests/mod.rs` is shared), fake data only: each of `\\r`, `\\n`, a tab, a space, `,`, `;`, `<` and `>` inside the address is `BadAddress`; `Name <owner@example.test>` and ` OWNER@Example.test ` still read as `owner@example.test`; `tests/integration/tests/business_contacts.rs` passes unchanged; `app/privacy/` keeps its 95% branch coverage. Ordered after T470, the other queued owner of `business_contacts.rs`. Update `app/privacy/NOTES.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "privacy",
+   "deps": [
+    "T470"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "low",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/privacy/src/business_contacts.rs",
+    "app/privacy/src/tests/business_address.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/security.md",
+    "docs/spec/businesses.md"
+   ],
+   "requirements": [
+    "SEC-025"
+   ],
+   "tests": [
+    "TD-SEC-77"
+   ],
+   "decisions": [
+    "D-4327"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 120,
+    "context_pct": 15
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T661-business-address-chars",
+   "prompt": "kit/prompts/T661.md",
+   "acceptance": "TD-SEC-77 passes, each refused-character case failing on `main` before the change; `tests/integration/tests/business_contacts.rs` and every privacy test pass unchanged; `app/privacy/` stays at or above 95% branch coverage."
   },
   {
    "id": "T662",
