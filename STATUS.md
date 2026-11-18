@@ -1,21 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-18T21:01:00Z by runner 419da048481a (actions).
+Updated 2026-11-18T21:05:37Z by runner 4c61fe086ce6 (actions).
 
 **Building: T651 in progress since 19:44Z; 456 of 663 done; week 67% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 456 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T651 claimed 19:44Z, lease until 23:43Z; lane 2: T722 claimed 20:48Z, lease until 23:48Z; lane 3: T483 claimed 18:25Z, lease until 23:40Z; lane 6: T702 claimed 20:27Z, lease until 23:27Z; lane 7: T503 claimed 20:58Z, lease until 23:58Z
+- **Lane:** lane 1: T651 claimed 19:44Z, lease until 23:43Z; lane 2: T722 claimed 20:48Z, lease until 23:48Z; lane 3: T483 claimed 18:25Z, lease until 23:40Z; lane 6: T702 claimed 20:27Z, lease until 00:05Z; lane 7: T503 claimed 20:58Z, lease until 23:58Z
 - **Week:** 67% used, 54.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:00Z, 0 min before this update
+- **Last run:** 21:01Z, 4 min before this update
 - **Keeper:** last ran 21:00Z, next wake 23:29Z
 
 ## Needs attention
 - BLOCKED T715: plan gap reported: PLAN GAP: `app/server/tests/name_address_answer.rs:262`–`:264` (owned by T432, not this task) expects the name-and-address question (step 11) to be asked on the first reply after the area check, even when step 5 never told the coverage. That is the behaviour D-4441 correction (5) removes, so the test is red with T715's change. Smallest plan change: a harness follow-up (T715's attempt or a new task) that may change that test's `her_request` setup so step 5 finishes before step 11 is expected (e.g. first text through the full reply path / receive_raw_reply, or a reply naming a trade, with covera; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T715 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 51 problem(s) on tasks still to run (+264 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 52 problem(s) on tasks still to run (+264 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -79,7 +79,6 @@ Updated 2026-11-18T21:01:00Z by runner 419da048481a (actions).
 | T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | done | 3 | 37 min | 22:46Z | PLAN GAP: `package-lock.json` (unchanged from main) fails `npm audit --audit-level=low` on GHSA-fc5q-39xc-vjpf; nothing  |
 | T603 | Perf and twin (harness): the web vitals report records LCP a | done | 1 | 40 min | 22:05Z |  |
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | done | 4 | 44 min | 21:44Z | Review not approved after the one fix round (head 01543c2e001f3583c873583dd24865826cfa3ae5; tests/docs/test_wording_scan |
-| T594 | site: the end-to-end spec of the web chat and request page a | done | 2 | 83 min | 21:03Z | PLAN GAP: app/server/src/chat_codes.rs:187 and app/site/templates/request.html, both owned by T489. Smallest plan change |
 
 ### Plan and harness merges on main
 - none
@@ -133,7 +132,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T651 (lease until 2026-11-18T23:43:31Z)
 - lane 2: T722 (lease until 2026-11-18T23:48:16Z)
 - lane 3: T483 (lease until 2026-11-18T23:40:51Z)
-- lane 6: T702 (lease until 2026-11-18T23:27:42Z)
+- lane 6: T702 (lease until 2026-11-19T00:05:37Z)
 - lane 7: T503 (lease until 2026-11-18T23:58:09Z)
 
 ## Last usage reading
