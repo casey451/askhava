@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE payments.pick_intent SET ended_at = now() - interval '1 minute'\n         WHERE pick_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "fbce9b2c39368dfe8ae853c17cf14a398cc28a75c6e3b7d459332471d1d43380"
+}
