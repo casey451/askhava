@@ -63,8 +63,8 @@ pub use crate::reader::{
 };
 pub use crate::released_reader::read_released;
 pub use crate::scrub::{
-    CommonWords, DEFAULT_COMMON_WORDS, Known, NEVER_A_NAME, NameMemory, REMOVED, ScrubbedText,
-    is_format, scrub,
+    CommonWords, DEFAULT_COMMON_WORDS, Known, NEVER_A_NAME, NameMemory, REMOVED, REPLY_WORDS,
+    ScrubbedText, is_format, scrub,
 };
 pub use crate::scrub_context::read_inbound_for;
 pub use crate::vault::{
