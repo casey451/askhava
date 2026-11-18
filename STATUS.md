@@ -1,21 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-18T11:29:31Z by runner 346acc872b66 (actions).
+Updated 2026-11-18T11:31:59Z by runner 56a5f21e77fe (actions).
 
 **Building: T583 in progress since 11:19Z; 440 of 621 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 440 of 621 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T583 claimed 11:19Z, lease until 14:19Z; lane 2: T662 claimed 11:26Z, lease until 14:26Z; lane 5: T408 claimed 09:13Z, lease until 13:23Z; lane 6: T200 claimed 09:05Z, lease until 14:29Z
+- **Lane:** lane 1: T583 claimed 11:19Z, lease until 14:19Z; lane 2: T662 claimed 11:26Z, lease until 14:26Z; lane 5: T408 claimed 09:13Z, lease until 14:31Z; lane 6: T200 claimed 09:05Z, lease until 14:29Z
 - **Week:** 53% used, 83.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:27Z, 2 min before this update
+- **Last run:** 11:31Z, 0 min before this update
 - **Keeper:** last ran 11:27Z, next wake 13:26Z
 
 ## Needs attention
 - BLOCKED T563: plan gap reported: PLAN GAP: app/messaging/src/optout.rs:311 (suppress/record, owned by T029 and later tasks; T563 owns no messaging file) and kit/prompts/T563.md:9 (CROSS_SCHEMA_CALLS fixed at exactly one entry, messaging.last_message_at(). The sweep (head d7eb5dc64, all TD-CON-30 tests green, smoke and prehandin green) checks suppression via messaging::api::send_window before its per-number transaction, then clears the vault phone inside it. Review finding (unresolved): an opt-out via messaging::api::suppress (portal/email/owner paths) or a texted STOP committing between that check and the clear lets the sweep; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T563 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 27 problem(s) on tasks still to run (+223 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 28 problem(s) on tasks still to run (+221 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -79,7 +79,6 @@ Updated 2026-11-18T11:29:31Z by runner 346acc872b66 (actions).
 | T202 | site: Spanish pages, the business page blocks and the requir | done | 2 | 43 min | 13:01Z | merging main into the reviewed head conflicts in app/site/src/api.rs, docs/architecture.md, tests/a11y/page_states.ts; a |
 | T113 | Draft the Twilio campaign description from the real template | BLOCKED | 1 | 10 min | 12:21Z |  |
 | T441 | portals: the quote page shows the kept number, and the pick  | done | 1 | 74 min | 11:32Z |  |
-| T572 | intake: the under-13 stop also clears the vault contact's na | done | 1 | 48 min | 11:31Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -132,7 +131,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T583 (lease until 2026-11-18T14:19:34Z)
 - lane 2: T662 (lease until 2026-11-18T14:26:44Z)
-- lane 5: T408 (lease until 2026-11-18T13:23:31Z)
+- lane 5: T408 (lease until 2026-11-18T14:31:54Z)
 - lane 6: T200 (lease until 2026-11-18T14:29:31Z)
 
 ## Last usage reading
