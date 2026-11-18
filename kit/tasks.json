@@ -10617,7 +10617,7 @@
    "id": "T402",
    "slug": "quiet-exempt-producers",
    "title": "intake, picks and server: texts QH-004 lets go at any hour for a fact (an emergency job, a direct reply) are queued with that fact",
-   "goal": "Plan change D-3106 (QH-004, QH-001; D-2628, D-3055): after T356 the outbox sender holds a row outside 8 a.m. to 8 p.m. unless its `quiet_exempt_until` lets it go; plain `messaging::api::enqueue` sets that itself for the any-hour kinds (the 911 text, keyword replies, pick codes, the after-hours notice), but an emergency job's texts and a direct reply are exempt only through `enqueue_exempt`, which no producer calls, so at night they wait for 8 a.m. Each producer here that queues such a text passes its fact through `enqueue_exempt`: an emergency job's quote texts (the first-quote text and quote-count updates), the questions INT-029 asks after the cards, and the homeowner's pick, confirm and connect texts (including the INT-033 texts; the who's-calling and missed-call texts are T403's) carry the job's emergency choice; a reply to her own inbound text carries that text's received time, so it goes at any hour only within 15 minutes of it. The facts are read where the producer already has them (the job row, the inbound delivery), never guessed from words. A producer whose texts are never exempt by a fact keeps plain `enqueue` and is not changed; a producer found outside these files is reported, not worked around. Tests in `tests/integration/tests/quiet_exempt_producers.rs` (TD-QH-07). Every TD-QH, TD-TXT and TD-INT case passes unchanged. Update the `intake`, `picks` and `server` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3999: it follows T564, which also edits `app/picks/src/service.rs` and `app/intake/src/job_texts.rs`.",
+   "goal": "Plan change D-3106 (QH-004, QH-001; D-2628, D-3055): after T356 the outbox sender holds a row outside 8 a.m. to 8 p.m. unless its `quiet_exempt_until` lets it go; plain `messaging::api::enqueue` sets that itself for the any-hour kinds (the 911 text, keyword replies, pick codes, the after-hours notice), but an emergency job's texts and a direct reply are exempt only through `enqueue_exempt`, which no producer calls, so at night they wait for 8 a.m. Each producer here that queues such a text passes its fact through `enqueue_exempt`: an emergency job's quote texts (the first-quote text and quote-count updates), the questions INT-029 asks after the cards, and the homeowner's pick, confirm and connect texts (including the INT-033 texts; the who's-calling and missed-call texts are T403's) carry the job's emergency choice; a reply to her own inbound text carries that text's received time, so it goes at any hour only within 15 minutes of it. The facts are read where the producer already has them (the job row, the inbound delivery), never guessed from words. A producer whose texts are never exempt by a fact keeps plain `enqueue` and is not changed; a producer found outside these files is reported, not worked around. Tests in `tests/integration/tests/quiet_exempt_producers.rs` (TD-QH-07). Every TD-QH, TD-TXT and TD-INT case passes unchanged. Update the `intake`, `picks` and `server` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3999: it follows T564, which also edits `app/picks/src/service.rs` and `app/intake/src/job_texts.rs`. Plan change D-4338: ordered after T662, which first makes both cancel paths in `app/intake/src/closing.rs` and `conversation.rs` queue the masked line's close (CALL-009, CALL-010); keep those calls.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -10648,7 +10648,8 @@
     "T449",
     "T489",
     "T564",
-    "T650"
+    "T650",
+    "T662"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -10688,7 +10689,8 @@
     "D-3055",
     "D-3106",
     "D-3999",
-    "D-4294"
+    "D-4294",
+    "D-4338"
    ],
    "cites": [],
    "budget": {
@@ -20712,7 +20714,7 @@
    "id": "T588",
    "slug": "business-forms-keep-entries",
    "title": "portals and server: a refused business sign-up keeps every field she entered, and a double-tapped quote shows its job page, not a 404",
-   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): (B13, A11Y-012, WCAG 2.2 3.3.7) A refused sign-up re-renders through `Entered` (`app/portals/src/business_signup.rs:383` to `:405`, filled at `app/server/src/business_signup.rs:602` and `:700`), which keeps the names, license numbers and review links but not the email, the phone, the ticked categories or the attestation, so she types them again. `Entered` gains them and the sealed re-render shows them; the attestation and the text-consent box are shown ticked again only when she ticked them in that same post (they stay her own act, CON-019; never pre-ticked by the app), and a field the server refused is shown with its reason as today. No value is logged or kept beyond the re-render (`no-store` stays). (B39, SEC-026) A second `POST` of a used Quote link (a double tap on \"Send quote\") waits on the first one's row lock, finds the link used and answers the bare 404 (`app/server/src/action_links.rs:20` to `:21`, D-3673). D-3673's smallest fix: a `portals::api` read in `app/portals/src/action_links.rs` (beside the crate-private `action_link_business`, `:307`) that names the business and job of a Quote link used within its window, so `server::action_links` shows that job's page again (`job_details_page`) with the quote as stored; any other used or unknown link stays the 404. Tests in the new `app/server/tests/business_forms_keep_entries.rs`, fake data only: a sign-up refused for a bad license number comes back with the email, phone, categories and both boxes as posted; a refusal for an unticked attestation keeps the rest; a second Quote `POST` with the same used link answers 200 with the job page and stores one quote; a used link of another kind is still 404. `business_signup_route.rs`, `es_business_signup_route.rs`, `action_links_route.rs` and `tests/e2e/business_signup_served.spec.ts` pass unchanged; no axe-core violation on the re-rendered form.",
+   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): (B13, A11Y-012, WCAG 2.2 3.3.7) A refused sign-up re-renders through `Entered` (`app/portals/src/business_signup.rs:383` to `:405`, filled at `app/server/src/business_signup.rs:602` and `:700`), which keeps the names, license numbers and review links but not the email, the phone, the ticked categories or the attestation, so she types them again. `Entered` gains them and the sealed re-render shows them; the attestation and the text-consent box are shown ticked again only when she ticked them in that same post (they stay her own act, CON-019; never pre-ticked by the app), and a field the server refused is shown with its reason as today. No value is logged or kept beyond the re-render (`no-store` stays). (B39, SEC-026) A second `POST` of a used Quote link (a double tap on \"Send quote\") waits on the first one's row lock, finds the link used and answers the bare 404 (`app/server/src/action_links.rs:20` to `:21`, D-3673). D-3673's smallest fix: a `portals::api` read in `app/portals/src/action_links.rs` (beside the crate-private `action_link_business`, `:307`) that names the business and job of a Quote link used within its window, so `server::action_links` shows that job's page again (`job_details_page`) with the quote as stored; any other used or unknown link stays the 404. Tests in the new `app/server/tests/business_forms_keep_entries.rs`, fake data only: a sign-up refused for a bad license number comes back with the email, phone, categories and both boxes as posted; a refusal for an unticked attestation keeps the rest; a second Quote `POST` with the same used link answers 200 with the job page and stores one quote; a used link of another kind is still 404. `business_signup_route.rs`, `es_business_signup_route.rs`, `action_links_route.rs` and `tests/e2e/business_signup_served.spec.ts` pass unchanged; no axe-core violation on the re-rendered form. Plan change D-4338 (night spot review of the business side and quotes on `main` d662af7e5, confirmed in a second pass and re-verified on `main` 9aeca6f95): (quotes 1, money; REC-010, PICK-053, D-2333) the served Quote form drops the parsed visit schedule: `checked` binds `(price, _schedule)` (`app/server/src/action_links.rs:687`) and the quote is stored with `submit_quote_with_facts` (`:650`, `app/quotes/src/quote_facts.rs:33`), which never writes `quotes.quote.visit_schedule`; `store_schedule` (`app/quotes/src/formats.rs:269`) is reached only from `save_quote`, which has no production caller (D-3877). So a per-visit price (\"$40 per visit, every 2 weeks\") is stored with no schedule, and every pick of it is refused (`fee_period(Period::Visit, None)` is `None`, `app/picks/src/service.rs:779`, giving `PicksError::Quotes`; `:580` to `:582`). This task now owns `app/quotes/src/quote_facts.rs`: a new `submit_quote_with_schedule(db, (job, business), quote, facts, schedule: Option<VisitSchedule>, now)` (exported through the shared `quotes::api`) does what `submit_quote_with_facts` does and, when the quote is `Saved` and `schedule` is some, always calls `store_schedule` with it in the same transaction (none clears an old schedule, `app/quotes/src/formats.rs:268`, so an edit away from a per-visit price leaves none behind); `submit_quote_with_facts` becomes that call with `None`, so its callers and T406's tests (`tests/integration/tests/quote_facts_store.rs`, `quote_page_cards.rs`) are unchanged; the served POST passes the schedule `parse_price` returned. Tests in the new `app/server/tests/per_visit_quote_route.rs` (TD-PICK-66), fake data only, through the assembled router, on a job of the recurring category `pool_cleaning` (`recurring: true`, `docs/catalog/categories.yaml:194`, `:203`) whose recorded job type is \"weekly pool service\" (not its one-time \"green pool cleanup\", `:207`, so the job is a recurring job type and the $75 recurring cap applies): a business sends \"$40 per visit, every 2 weeks\" through its Quote link, the stored quote has `visit_schedule` `every_two_weeks`, and the homeowner's pick of it is stored with the $25 fee (the tier of 4 months of the monthly price, `payments::rules::period_fee_for`, `app/payments/src/rules.rs:349` to `:373`; refused with `PicksError::Quotes` on `main` before the change); \"$150 per visit, every 2 weeks\" picks with the $75 fee; a weekly price and \"Other: monthly amount\" store no schedule and still pick; an edit from a per-visit price to a monthly one clears the schedule; a refused form stores nothing; every new branch is covered (money path). Ordered, as already, after every other queued owner of `app/server/src/action_links.rs` (T399, T306, T456, T543, T463, T457, T458, through T121).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -20725,38 +20727,49 @@
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "accessibility",
-    "security"
+    "security",
+    "money"
    ],
    "owns": [
     "app/portals/src/business_signup.rs",
     "app/server/src/business_signup.rs",
     "app/portals/src/action_links.rs",
     "app/server/src/action_links.rs",
-    "app/server/tests/business_forms_keep_entries.rs"
+    "app/server/tests/business_forms_keep_entries.rs",
+    "app/quotes/src/quote_facts.rs",
+    "app/server/tests/per_visit_quote_route.rs"
    ],
    "reads": [
     "docs/architecture.md",
     "docs/code-docs.md",
     "docs/spec/accessibility.md",
     "docs/spec/security.md",
-    "docs/spec/businesses.md"
+    "docs/spec/businesses.md",
+    "docs/spec/recurring.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/fees.md"
    ],
    "requirements": [
     "A11Y-012",
     "SEC-026",
-    "BIZ-022"
+    "BIZ-022",
+    "REC-010",
+    "PICK-053"
    ],
-   "tests": [],
+   "tests": [
+    "TD-PICK-66"
+   ],
    "decisions": [
     "D-3673",
     "D-2943",
     "D-2954",
-    "D-4052"
+    "D-4052",
+    "D-4338"
    ],
    "cites": [],
    "budget": {
-    "files": 5,
-    "lines": 360,
+    "files": 7,
+    "lines": 560,
     "context_pct": 32
    },
    "checks": [
@@ -20766,7 +20779,7 @@
    ],
    "branch": "claude/task/T588-business-forms-keep-entries",
    "prompt": "kit/prompts/T588.md",
-   "acceptance": "`app/server/tests/business_forms_keep_entries.rs` passes with every listed case, each failing on `main` before the change; `business_signup_route.rs`, `es_business_signup_route.rs`, `action_links_route.rs` and `tests/e2e/business_signup_served.spec.ts` (with axe-core) pass unchanged."
+   "acceptance": "`app/server/tests/business_forms_keep_entries.rs` passes with every listed case, each failing on `main` before the change; `business_signup_route.rs`, `es_business_signup_route.rs`, `action_links_route.rs` and `tests/e2e/business_signup_served.spec.ts` (with axe-core) pass unchanged. D-4338: TD-PICK-66 passes through the assembled router, a per-visit quote sent through the served form being picked; `quote_facts_store.rs` and `quote_page_cards.rs` pass unchanged."
   },
   {
    "id": "T589",
@@ -21793,7 +21806,8 @@
     "T657",
     "T658",
     "T660",
-    "T661"
+    "T661",
+    "T662"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -21838,7 +21852,8 @@
     "D-3891",
     "D-4052",
     "D-4326",
-    "D-4327"
+    "D-4327",
+    "D-4338"
    ],
    "cites": [
     "BUILD_BRIEF.md:488",
@@ -22762,13 +22777,14 @@
    "id": "T510",
    "slug": "notes-compact-other-crates",
    "title": "Crate notes compacted: licensing, privacy, calls, jobs, core, adapters, ai, ops, catalog, site, recovery (D-3856)",
-   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). Compact the crate notes of `licensing`, `privacy`, `calls`, `jobs`, `core`, `adapters`, `ai`, `ops`, `catalog`, `site`, `recovery` (`app/<crate>/NOTES.md`, and each crate's shared `CLAUDE.md`, which stays within `docs/code-docs.md` section 2's limits): one entry per fact, a superseded fact folded into the line that replaced it, `(task NNN)` build notes that repeat a `rules` or `owns` line merged into it, wording cut to the shortest clear form; the entry shape and the `(task NNN)` tags stay, so `grep -n '(task 250)' app/*/NOTES.md` still finds every note. A crate `CLAUDE.md` line cited elsewhere as `path:N` keeps its number and text. Lossless, machine-checked: `python3 scripts/check_doc_compaction.py --map `docs/reviews/doc-maps/T510.json`` passes (the map records its base SHA), so every removed or rewritten line maps to a line range that now holds its content, every fact token kept inside that range; lines not worth changing stay byte-identical. No backticked `path:N` cited outside `docs/decisions.md` changes its text at line N. Requirement, TD- and D- numbers never change, no product rule or test meaning changes, and `docs/decisions.md` is only appended to. Follow `docs/reviews/doc-efficiency-plan.md` for these files; if the work exceeds the line budget, do the largest savings first and list the rest in the map's `left` field for T142. Plan change D-3891: a merged line stays within 600 characters with one leading section tag (`scripts/check_code_docs.py:33`, `:34`) and keeps its `(task NNN)` tags in its text. A crate under `app/` at claim time that none of T507 to T510 names is listed in the task report for a plan change.",
+   "goal": "Plan change D-3856 (Casey, Nov 15, 2026: at the end of phase 1 every document needed for upkeep is \"simplified and organized in a way that's most efficient\", nothing left out, nothing \"wordy for no reason\"). Compact the crate notes of `licensing`, `privacy`, `calls`, `jobs`, `core`, `adapters`, `ai`, `ops`, `catalog`, `site`, `recovery` (`app/<crate>/NOTES.md`, and each crate's shared `CLAUDE.md`, which stays within `docs/code-docs.md` section 2's limits): one entry per fact, a superseded fact folded into the line that replaced it, `(task NNN)` build notes that repeat a `rules` or `owns` line merged into it, wording cut to the shortest clear form; the entry shape and the `(task NNN)` tags stay, so `grep -n '(task 250)' app/*/NOTES.md` still finds every note. A crate `CLAUDE.md` line cited elsewhere as `path:N` keeps its number and text. Lossless, machine-checked: `python3 scripts/check_doc_compaction.py --map `docs/reviews/doc-maps/T510.json`` passes (the map records its base SHA), so every removed or rewritten line maps to a line range that now holds its content, every fact token kept inside that range; lines not worth changing stay byte-identical. No backticked `path:N` cited outside `docs/decisions.md` changes its text at line N. Requirement, TD- and D- numbers never change, no product rule or test meaning changes, and `docs/decisions.md` is only appended to. Follow `docs/reviews/doc-efficiency-plan.md` for these files; if the work exceeds the line budget, do the largest savings first and list the rest in the map's `left` field for T142. Plan change D-3891: a merged line stays within 600 characters with one leading section tag (`scripts/check_code_docs.py:33`, `:34`) and keeps its `(task NNN)` tags in its text. A crate under `app/` at claim time that none of T507 to T510 names is listed in the task report for a plan change. Plan change D-4338: ordered after T662, which rewrites `app/calls/NOTES.md`'s \"Not here yet\" line (the callers of `close_line` and the daily `close_expired` sweep are built); keep that.",
    "type": "docs",
    "phase": 1,
    "stage": "5",
    "module": null,
    "deps": [
-    "T499"
+    "T499",
+    "T662"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -22802,7 +22818,8 @@
     "D-3474",
     "D-3620",
     "D-3805",
-    "D-3891"
+    "D-3891",
+    "D-4338"
    ],
    "cites": [],
    "budget": {
@@ -36016,7 +36033,7 @@
    "id": "T382",
    "slug": "verify-max-tries-cooldown",
    "title": "picks, businesses and portals: Twilio Verify's \"too many tries\" is a cooldown, never an error page",
-   "goal": "Nov 11 vendor-double review batch 4, F10 (callers' half; D-2769; PICK-013, SEC-004, SEC-008, BIZ-002, TXT-038). A Verify resend within the code's 10-minute life reuses the pending verification and its check attempts, so after the app allows a new code's tries Twilio can answer a check with 60202 (HTTP 429, too many attempts), and a send with 60203; the app counts tries per code row (`CODE_TRIES`, `app/picks/src/rules.rs:13`; `app/portals/src/business_auth.rs:88`) and maps any check error to `PicksError::Verify` (`app/picks/src/service.rs:790`), so the homeowner or business sees an error, not \"try again in 15 minutes\". After T131 (whose adapter returns a typed too-many-tries error) and the queued owners of these files: each caller (`app/picks/src/service.rs` and `app/picks/src/email_code.rs` for the pick code, `app/businesses/src/identity.rs` for the identity code, `app/portals/src/business_auth.rs` for sign-in) maps that error to its own cooldown (`CodeCheck::CoolingDown(at + COOLDOWN)` for the pick code; the existing lock-out of the other two), which outlasts the 10-minute verification so the next send starts a fresh one; any other adapter error keeps today's answer. Tests in `tests/integration/tests/verify_max_tries.rs` against the served stand-in (T131's faithful attempts): three wrong tries, a resend, then two more wrong tries; the third check after the resend (Twilio's sixth attempt on that verification, 60202) answers the cooldown, not an error (fails before the fix), for each of the three flows. Update the `picks`, `businesses` and `portals` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3999: it follows T564, which also edits `app/picks/src/service.rs` and `app/picks/src/email_code.rs`.",
+   "goal": "Nov 11 vendor-double review batch 4, F10 (callers' half; D-2769; PICK-013, SEC-004, SEC-008, BIZ-002, TXT-038). A Verify resend within the code's 10-minute life reuses the pending verification and its check attempts, so after the app allows a new code's tries Twilio can answer a check with 60202 (HTTP 429, too many attempts), and a send with 60203; the app counts tries per code row (`CODE_TRIES`, `app/picks/src/rules.rs:13`; `app/portals/src/business_auth.rs:88`) and maps any check error to `PicksError::Verify` (`app/picks/src/service.rs:790`), so the homeowner or business sees an error, not \"try again in 15 minutes\". After T131 (whose adapter returns a typed too-many-tries error) and the queued owners of these files: each caller (`app/picks/src/service.rs` and `app/picks/src/email_code.rs` for the pick code, `app/businesses/src/identity.rs` for the identity code, `app/portals/src/business_auth.rs` for sign-in) maps that error to its own cooldown (`CodeCheck::CoolingDown(at + COOLDOWN)` for the pick code; the existing lock-out of the other two), which outlasts the 10-minute verification so the next send starts a fresh one; any other adapter error keeps today's answer. Tests in `tests/integration/tests/verify_max_tries.rs` against the served stand-in (T131's faithful attempts): three wrong tries, a resend, then two more wrong tries; the third check after the resend (Twilio's sixth attempt on that verification, 60202) answers the cooldown, not an error (fails before the fix), for each of the three flows. Update the `picks`, `businesses` and `portals` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3999: it follows T564, which also edits `app/picks/src/service.rs` and `app/picks/src/email_code.rs`. Plan change D-4338 (night spot review of the business side and quotes on `main` d662af7e5, confirmed in a second pass and re-verified on `main` 9aeca6f95): (quotes 3; SEC-014, D-2206) `notice_post` (`app/portals/src/business_auth.rs:633` to `:663`) sends a sign-in link with `send_one` and never runs `admit_sign_in_link` (per IP and per business), which only `server`'s `SignInMailer::admitted` (`app/server/src/business_signin.rs:230` to `:247`) calls for the sign-in form, so anyone holding a valid notice URL can send the member about 480 sign-in emails a day from the shared daily limit (only `LINKS_PER_LIFE`, `:779`, caps it). This task now owns `app/server/src/business_signin.rs`: the `SignInMail` trait (`app/portals/src/business_auth.rs:136`) gains a provided method (a default body, documented as answering `true`) that admits a notice link's request for the notice's business and the client IP, so the ten test implementors of the trait (in `app/server/tests/`, `tests/integration/tests/` and `tests/security/tests/`) compile unchanged; only the server's mailer overrides it, with its existing `admitted` (`business_signin.rs:230` to `:247`); `notice_post` calls it before `send_one`, and when it refuses, shows the same \"check your email\" page a sent link shows and sends nothing, as the sign-in form already does on a refusal (`business_signin.rs:271` to `:275`), so nothing reveals the refusal. Tests in the new `app/server/tests/notice_signin_limit.rs` (TD-SEC-78), fake data only, through the assembled router: notice-link sign-in requests from one IP past the per-IP limit, and for one business past the per-business limit, each answer the same page as a sent link while no new row reaches `messaging.email_outbox` (nothing is sent); one under the limits queues exactly one sign-in email; the sign-in form's limits are unchanged. Ordered after T121, the other queued owner of `business_auth.rs` (already a dependency through its deps).",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -36047,7 +36064,9 @@
     "app/picks/src/email_code.rs",
     "app/businesses/src/identity.rs",
     "app/portals/src/business_auth.rs",
-    "tests/integration/tests/verify_max_tries.rs"
+    "tests/integration/tests/verify_max_tries.rs",
+    "app/server/src/business_signin.rs",
+    "app/server/tests/notice_signin_limit.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -36063,22 +36082,25 @@
     "SEC-004",
     "SEC-008",
     "BIZ-002",
-    "TXT-038"
+    "TXT-038",
+    "SEC-014"
    ],
    "tests": [
-    "TD-PICK-61"
+    "TD-PICK-61",
+    "TD-SEC-78"
    ],
    "decisions": [
     "D-2769",
     "D-2771",
     "D-3676",
-    "D-3999"
+    "D-3999",
+    "D-4338"
    ],
    "cites": [],
    "budget": {
-    "files": 5,
-    "lines": 350,
-    "context_pct": 25
+    "files": 7,
+    "lines": 450,
+    "context_pct": 31
    },
    "checks": [
     "Ci",
@@ -43375,6 +43397,79 @@
    "branch": "claude/task/T661-business-address-chars",
    "prompt": "kit/prompts/T661.md",
    "acceptance": "TD-SEC-77 passes, each refused-character case failing on `main` before the change; `tests/integration/tests/business_contacts.rs` and every privacy test pass unchanged; `app/privacy/` stays at or above 95% branch coverage."
+  },
+  {
+   "id": "T662",
+   "slug": "close-lines-on-job-end",
+   "title": "jobs, intake, calls and server: a masked call line closes when the job is cancelled, on a check-in PROBLEM or NO, and after 30 days",
+   "goal": "Plan change D-4338 (night spot review of `calls` and `jobs` on `main` d662af7e5, confirmed in a second pass and re-verified on `main` 9aeca6f95; CALL-009, CALL-010, JOB-005, JOB-015; closes D-1694's deferral). `calls::api::close_line` (`app/calls/src/lifecycle.rs:168`) has one production caller, the unreachable no-show path (`app/picks/src/unreachable_refund.rs:407`, `:471`), and `close_expired` (`:210`) none; routing and the dial gate check only `closed_at IS NULL` (`app/calls/src/routing.rs:459` `lines_on`, `app/calls/src/pins.rs:551` to `:583` `connect`). So after a homeowner cancels a Connected job, or answers a check-in PROBLEM or NO, the business can still call through the masked number to her real phone indefinitely, and is never told of the cancel (CALL-010). `jobs` and `intake` may not call `calls` (`kit/layers.json`, D-491, D-1694), so the close goes through a queued task, as `jobs`' `PURGE_DUE_KIND` does. (1) The new `app/jobs/src/line_close.rs` (exported through the shared `jobs::api`): `LINE_CLOSE_KIND` (`\"calls.close_line\"`) and `queue_line_close(db, job, reason, now)`, which reads the job's number and enqueues one task with the payload `{job, number, reason}` (`reason` one of `cancelled`, `complaint`, `no_show`) under the per-move dedupe key `calls.close_line.<job>.<job version after the move>` (`core.task.dedupe_key` stays taken once a task is done, `app/core/src/tasks.rs:180`, so a per-job key would silently drop a later move's close; `close_line` is idempotent anyway), on the caller's connection, so it commits or rolls back with the status move. It is called right after a cancel or check-in move applied (`Guarded::Applied`; `intake`'s `cancel` helper drops the move's result today, `app/intake/src/closing.rs:152` to `:155`, so it branches on it), inside the same transaction: by `intake`'s `cancel` (`app/intake/src/closing.rs:146` to `:156`), which both the text cancel and the homeowner's page cancel (`close_from_page`, `:242` to `:261`) use, and its INT-038 cancel (`app/intake/src/conversation.rs:358` to `:369` `cancel_job`) with `cancelled`, on every applied cancel whatever the status it left (`close_line` answers `None` when the job has no line, and the key is per move), because a released job with an open line is not in Connected in production today (D-2015 (1)) but in the status `pick_move` leaves it in (Awaiting confirm, `app/picks/src/status.rs:163` to `:168`); by `jobs::followups::answer_check_in` (`app/jobs/src/followups.rs:205`, after `apply` applied at `:222` to `:229`, before the commit at `:230`) with `complaint` for PROBLEM, and with `no_show` for a NO that moves the job out of Connected (to Closed, or to Quotes ready for a day-3 NO under email contact, which records a no-show; `app/jobs/src/rules.rs:121` to `:126`); OTHER, DONE, ONGOING and the 21-day Connected timeout (`app/jobs/src/status.rs:130`) queue nothing, and their lines close in the 30-day sweep. Both the text and the portal check-in (`app/intake/src/check_in_replies.rs`, `app/portals/src/checkin.rs`) go through `answer_check_in`, so neither changes. (2) The new `app/calls/src/close_tasks.rs` (exported through the shared `calls::api`): `run_close_line` reads the payload and calls `close_line(db, (job, number), reason, now)` (`Cancelled`, `Complaint` or `NoShow`; an unknown reason is a handler error), which closes the line with its audit row and, for a cancel, queues `line_closed_cancelled` (en and es, `app/messaging/templates/en.json:422`, `es.json:514`) to the owner and the Confirm-and-billing members with no strike (CALL-010); `close_line` answers `None` for a line already closed (by the no-show path or a repeat), so the task is idempotent. `CLOSE_EXPIRED_KIND`, `run_close_expired_at` (calls `close_expired` at the worker clock's now, then enqueues the next run a day later under a run-time dedupe key) and `schedule_close_expired`. (3) The shared `app/server/src/lib.rs` registers `jobs::api::LINE_CLOSE_KIND` to `calls::api::run_close_line` and `CLOSE_EXPIRED_KIND` in `register_daily_sweeps` (`:1836`), on every path so `tests/integration/tests/task_registry.rs` finds both kinds; the shared `app/server/src/bin/worker.rs` seeds the sweep in `schedule_start` (`:106`). (3b) A line opened late must not outlive the job: `picks`' `retry_line` (`app/picks/src/settle.rs:175`, the `picks.line_retry` task) opens a line for a Paid or Free pick whose job never had one and never checks the job is still Connected, while a cancel, PROBLEM or NO leaves the pick Paid; so a close that ran before the retry found no line, and the retry would then open a live line to her phone for up to 30 days. This task now owns `settle.rs` (a money file under its 95% branch-coverage floor, `tests/coverage_floor.json:30`): `retry_line` opens nothing (and finishes) when `jobs::api::current` (`app/jobs/src/api.rs:70`) reads the job's status as final (`JobStatus::is_final`, `app/jobs/src/status.rs:233`: Cancelled, Closed, Done, Closed early, Not covered); it does not require Connected, because no production code moves a job to Payment pending or Connected yet (D-2015 (1), D-2930), so released jobs sit in Awaiting confirm and every existing line-retry test (`app/server/tests/release_recovery.rs:642` to `:669`, `:738` to `:770`; `tests/integration/tests/whos_calling.rs:223`) passes unchanged. The PROBLEM and NO closes are wired now but stay inert until the move to Connected is built (D-2015 (1), unowned; the overseer plans it separately), since no check-in is queued for a job that is not Connected (D-2930). (4) Tests in the new `tests/integration/tests/line_close_paths.rs` (TD-CALL-27), PostgreSQL, fake data and fake numbers only, driving the real paths, not `close_line` directly: a released job left in Awaiting confirm, where production leaves it, with an open line, cancelled by her text, closes the line and sends the `line_closed_cancelled` notice once the queued task runs; a released job that the confirm timer moved back to Quotes ready (`app/jobs/src/status.rs:122` to `:125`, the usual state of a released job when she cancels) with an open line, cancelled, does the same; a Connected job (moved there by hand, as no production move exists yet) with an open line; the homeowner's text cancel through `intake`, then the queued task run, closes the line with one `line_closed_cancelled` notice and no strike, and the business's call on the pool number then gets no `Connect` (`calls::api::answer_call` hangs up or asks for nothing to connect); the same for the homeowner's page cancel (`close_from_page`) and the INT-038 cancel; a check-in PROBLEM through `answer_check_in` closes it as a complaint with no notice; a check-in NO closes it as a no-show; OTHER and DONE leave it open; a line closed by the no-show path first makes the task a no-op; a rolled-back move queues nothing; a pick whose line retry is still queued when the job is cancelled opens no line when the retry runs, while a retry for a job in Awaiting confirm still opens its line; a cancel of a job that never had a line queues a task that closes nothing; two moves out of Connected on one job (a re-pick after a no-show) each queue their own close; the sweep closes a line assigned 30 days before and not one assigned 29 days 23 hours before, and queues its next run. Update `app/calls/NOTES.md` (its \"Not here yet\" line: the callers of `close_line` and the sweep are now built), `app/jobs/NOTES.md`, `app/intake/NOTES.md`, `docs/architecture.md` and `docs/decisions.md`. Ordered after T523 (`followups.rs`) and T650 (`conversation.rs`); T402, the other queued owner of `closing.rs` and `conversation.rs`, and T510, which compacts `app/calls/NOTES.md` after the stage-5 cleanup, now run after this task.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "calls",
+   "deps": [
+    "T523",
+    "T650"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security",
+    "compliance",
+    "money"
+   ],
+   "owns": [
+    "app/jobs/src/line_close.rs",
+    "app/jobs/src/followups.rs",
+    "app/intake/src/closing.rs",
+    "app/intake/src/conversation.rs",
+    "app/calls/src/close_tasks.rs",
+    "app/calls/NOTES.md",
+    "tests/integration/tests/line_close_paths.rs",
+    "app/picks/src/settle.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/calls.md",
+    "docs/spec/lifecycle.md",
+    "docs/spec/privacy.md",
+    "app/calls/src/lifecycle.rs",
+    "app/calls/src/routing.rs",
+    "tests/integration/tests/line_lifecycle.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "CALL-009",
+    "CALL-010",
+    "JOB-005",
+    "JOB-015"
+   ],
+   "tests": [
+    "TD-CALL-27"
+   ],
+   "decisions": [
+    "D-491",
+    "D-1694",
+    "D-1810",
+    "D-4338"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 8,
+    "lines": 560,
+    "context_pct": 29
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T662-close-lines-on-job-end",
+   "prompt": "kit/prompts/T662.md",
+   "acceptance": "TD-CALL-27 passes against PostgreSQL, the cancel, PROBLEM and NO cases failing on `main` before the change; `line_lifecycle.rs`, `task_registry.rs`, every check-in, cancel and calls test passes unchanged; no line stays open after its job is cancelled, and no line retry opens a line for a job no longer Connected; `picks`' existing line-retry tests pass unchanged; `app/picks/src/settle.rs` stays at or above its 95% branch floor."
   }
  ]
 }
