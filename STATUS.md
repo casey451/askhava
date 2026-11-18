@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T20:27:46Z by runner 8ba862b4c752 (actions).
+Updated 2026-11-18T20:28:07Z by runner 8ba862b4c752 (actions).
 
 **Building: T651 in progress since 19:44Z; 455 of 663 done; week 67% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -19,7 +19,7 @@ Updated 2026-11-18T20:27:46Z by runner 8ba862b4c752 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T702 | privacy and messaging: no blind-index key version is retired | MERGE_PENDING | 1 | 59 min | 20:21Z |  |
+| T702 | privacy and messaging: no blind-index key version is retired | resync | 1 | 59 min | 20:21Z | merging main into the reviewed head conflicts in kit/prompts/T702.md; a resync merges it in on this attempt (D-891) |
 | T501 | Decisions digest, piece 2: the next entries after the header | done | 1 | 73 min | 19:42Z |  |
 | T711 | intake (harness): the dispatcher's two jobs in one request:  | done | 1 | 77 min | 19:29Z |  |
 | T624 | server: two failed in-process health checks in a row raise o | check_failed | 1 | 96 min | 18:26Z | Ci: failure; Python: failure / Python failed at step: Unit, contract and drill tests (pytest) / T705: about 21877 tokens |
@@ -77,7 +77,6 @@ Updated 2026-11-18T20:27:46Z by runner 8ba862b4c752 (actions).
 | T594 | site: the end-to-end spec of the web chat and request page a | done | 2 | 83 min | 21:03Z | PLAN GAP: app/server/src/chat_codes.rs:187 and app/site/templates/request.html, both owned by T489. Smallest plan change |
 | T106 | ops: /healthz and the web and worker liveness exits | done | 1 | 77 min | 20:38Z |  |
 | T602 | privacy: the inbound email signature check refuses an out-of | done | 1 | 30 min | 20:37Z |  |
-| T597 | Runner (harness): the early merge-close step also pushes the | done | 1 | 26 min | 20:28Z |  |
 
 ### Plan and harness merges on main
 - none
