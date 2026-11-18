@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T03:46:51Z by runner bfbe18be5b22 (actions).
+Updated 2026-11-18T03:47:07Z by runner bfbe18be5b22 (actions).
 
 **Building: T638 in progress since 03:07Z; 423 of 606 done; week 41% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 423 of 606 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T638 claimed 03:07Z, lease until 06:44Z; lane 7: T623 claimed 02:43Z, lease until 05:43Z
+- **Lane:** lane 1: T638 claimed 03:07Z, lease until 06:44Z
 - **Week:** 41% used, 105.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 03:44Z, 2 min before this update
 - **Keeper:** last ran 03:41Z, next wake 05:45Z
@@ -19,6 +19,7 @@ Updated 2026-11-18T03:46:51Z by runner bfbe18be5b22 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T623 | payments: a Stripe key refusal (401 or 403) takes the Stripe | MERGE_PENDING | 1 | 63 min | 03:46Z |  |
 | T151 | ops and messaging: HELP requests with one owner notification | MERGE_PENDING | 1 | 34 min | 03:40Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T647 | payments: rebuild_charge reports Booked inside a caller's tr | MERGE_PENDING | 1 | 82 min | 03:35Z |  |
 | T619 | quotes, picks and intake: the quote-median, lapsed-pick, win | QUEUED | 1 | 69 min | 03:31Z | T619 readers are correct per three Opus reviews, but the test file still misses wrong implementations; no reviewer appro |
@@ -136,7 +137,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T638 (lease until 2026-11-18T06:44:20Z)
-- lane 7: T623 (lease until 2026-11-18T05:43:03Z)
 
 ## Last usage reading
-- {"task": "T151", "at": "2026-11-18T03:40:00Z", "cache_read_input_tokens": 761684, "output_tokens": 7929, "input_tokens": 58, "cache_creation_input_tokens": 48763}
+- {"task": "T623", "at": "2026-11-18T03:46:50Z", "cache_creation_input_tokens": 167709, "cache_read_input_tokens": 2469737, "output_tokens": 31176, "input_tokens": 117}
