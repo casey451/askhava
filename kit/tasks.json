@@ -18703,7 +18703,7 @@
    "id": "T655",
    "slug": "license-unknown-pause",
    "title": "businesses: an unknown ROC license status warns at 24 hours, pauses at 72 and resumes on a later Active standing",
-   "goal": "Plan change D-4310 (Fable's decision on the licensing spot review of `main` 4fee847d, finding 2's second half and finding 3; D-941 named this work with no owner; review R1 B1 to B3). `licensing::api::unknown_standing` (`app/licensing/src/handlers.rs:96`) has no production caller, nothing writes a `license` pause except `lift_no_cover`'s re-hold (`app/businesses/src/license_reapply.rs:218`), and nothing ever lifts one, against LIC-008 (\"a pause that clears when the list loads needs no review\"). After T654 every recorded ROC list writes each active business's daily `license_check`, and cards stop at the latest Active check's `checked_at + pause_after`. (1) `app/licensing/src/daily_lists.rs` (after T654): a public `roc_standing(conn, business, run_hour)` exported through `licensing::api`, giving the latest check (status, `checked_at`) and the ROC list's failure start (`recorded_failure_start`) when the list is failing and that check is before it; nothing for a business with no check row (no ROC number). (2) New `app/businesses/src/license_standing.rs`, a daily task chain `businesses.license_standing`, queued like the other chains and registered on the worker clock in the shared `app/server/src/lib.rs` (`now` from the worker's clock, as `register_purge_handlers` does), run after the ROC list's run hour and again each LIC-039 retry slot. One clock for both tasks (B3): for an active business whose latest check is `active` and whose list is failing, the pause moment is that check's `checked_at + pause_after` (LIC-008's 72-hour setting, `FailureLimits`), the instant T654 stops its cards, and the warning moment is the earlier of `failure start + warn_after` (24 hours) and the pause moment; `unknown_standing` is applied with `unknown_since` the failure start and its answer capped by those two moments. LIC-008's \"stays as it was for up to 72 hours\" holds: the latest Active check is never after the failure start, so the pause comes at most 72 hours after the status became unknown, never later. Warned: one `license_unknown` notice email to the owner, once per unknown spell (keyed by the business and the failure start), with its audit row; its words name the pause moment. Paused: the business is paused with reason `license` through the status machine (system actor, audit row in the same transaction), and if no `license_unknown` notice exists for this spell it is queued in that same transaction (B2: never a pause without a warning). Before the resume step, the chain records `check_license` against the latest ROC list for each business paused with reason `license` (a database-only read of the recorded list, never a lookup; review R2), because the daily list run checks only `active` businesses (`businesses::api::active_license_numbers`, `app/businesses/src/api.rs:239`, behind `server`'s `ActiveRoc`, which stays unchanged) and a paused business would otherwise never get a newer check; a business already checked against that list's date is skipped. Then, for each business paused with reason `license` whose latest check is `active` and later than the pause, with no pest report holding it (`pest_reported`), it resumes with `Event::Resume` and no review, unless a complaint hold or an earlier self-pause applies, in `lift_no_cover`'s order (complaints, then self). This is also the exit for `lift_no_cover`'s `license` re-hold (finding 3); `license_reapply.rs` changes only in that function's doc. A known Inactive or Not-listed check is not paused here: T654 stops its ROC cards and Confirm refuses it (PICK-020). Each pause and resume is a system-actor status audit row, which T524's weekly digest counts as automatic pauses and license-unknown counts (OPS-030, D-3882) and which is Casey's count (D-199); this task adds no digest code. (3) `app/businesses/src/notice_emails.rs` (after T490, which also changes it): `license_unknown` joins `NOTICE_KINDS`, to the owner's account address like `license_change`, with its English and Spanish words here (BIZ-018): Laftly could not check the ROC license on the state list since <date>; if it still can't by <the pause moment, Arizona time>, job cards pause until it can; nothing is needed if the license is Active. No license number, contact value or link in the payload; never \"verified\" or \"vetted\". Deferred: LIC-009's end and bond dates (the ROC list has no such column, D-902). Tests, fake data only, on PostgreSQL, in `tests/integration/tests/license_standing.rs` (TD-LIC-05): with the list failing from the day after a check, the warning at failure start + 24:00:00 and not at 23:59:59; kept at pause moment minus 1 second; paused at the pause moment, the same instant at which T654's `latest_check_allows_card` turns false (both asserted in one case); a first run only at the pause moment sends one notice and pauses in one transaction; a check old enough that the pause moment precedes failure start + 24 hours warns at once; one email per spell; a `license`-paused business with a fresh list showing its license Active gets a check row written by the run itself (not planted) and resumes with no review; the pause cleared with no review by a later Active lookup too, kept on an Inactive check, a pest report or a complaint hold; `lift_no_cover`'s re-hold cleared the same way; a system-actor status audit row for each pause and resume. Update `app/businesses/NOTES.md`, `app/licensing/NOTES.md` and `docs/decisions.md`. Plan change D-4361 (unwired sweep orphan 9 and its second pass, `main` 77a49d7cc; BIZ-026, BIZ-002; D-178, D-254, D-1712, D-2954): a sign-up parked by \"That number is old\" never resumes, because `resume_on_new_record` (`app/businesses/src/signup.rs:636`) has no caller (D-2954 logged it with no owner). (4) The same `businesses.license_standing` chain (`licensing` may not call `businesses`), after each recorded ROC list, takes each sign-up with `waiting_on_record_since` set, builds its `RecordSeen` from that list's record for the sign-up's license number (contacts and mailing address, read from the recorded list, never a lookup), and calls `resume_on_new_record` with the ID secret, which the chain's registration in the shared `app/server/src/lib.rs` passes in; when it answers true, `RECORD_UPDATED_TEMPLATE` goes once (dedupe per sign-up and list date) to the new record contact the resumed step will use, never to the old number nor to a typed one (D-1712); a contact that only disappeared does not resume. D-1712's open `send_code` key gap is checked at claim and, if still open, recorded in this task's decision entry (no change outside its files). Tests add TD-BIZ-56's cases to `tests/integration/tests/license_standing.rs`.",
+   "goal": "Plan change D-4310 (Fable's decision on the licensing spot review of `main` 4fee847d, finding 2's second half and finding 3; D-941 named this work with no owner; review R1 B1 to B3). `licensing::api::unknown_standing` (`app/licensing/src/handlers.rs:96`) has no production caller, nothing writes a `license` pause except `lift_no_cover`'s re-hold (`app/businesses/src/license_reapply.rs:218`), and nothing ever lifts one, against LIC-008 (\"a pause that clears when the list loads needs no review\"). After T654 every recorded ROC list writes each active business's daily `license_check`, and cards stop at the latest Active check's `checked_at + pause_after`. (1) `app/licensing/src/daily_lists.rs` (after T654): a public `roc_standing(conn, business, run_hour)` exported through `licensing::api`, giving the latest check (status, `checked_at`) and the ROC list's failure start (`recorded_failure_start`) when the list is failing and that check is before it; nothing for a business with no check row (no ROC number). (2) New `app/businesses/src/license_standing.rs`, a daily task chain `businesses.license_standing`, queued like the other chains and registered on the worker clock in the shared `app/server/src/lib.rs` (`now` from the worker's clock, as `register_purge_handlers` does), run after the ROC list's run hour and again each LIC-039 retry slot. One clock for both tasks (B3): for an active business whose latest check is `active` and whose list is failing, the pause moment is that check's `checked_at + pause_after` (LIC-008's 72-hour setting, `FailureLimits`), the instant T654 stops its cards, and the warning moment is the earlier of `failure start + warn_after` (24 hours) and the pause moment; `unknown_standing` is applied with `unknown_since` the failure start and its answer capped by those two moments. LIC-008's \"stays as it was for up to 72 hours\" holds: the latest Active check is never after the failure start, so the pause comes at most 72 hours after the status became unknown, never later. Warned: one `license_unknown` notice email to the owner, once per unknown spell (keyed by the business and the failure start), with its audit row; its words name the pause moment. Paused: the business is paused with reason `license` through the status machine (system actor, audit row in the same transaction), and if no `license_unknown` notice exists for this spell it is queued in that same transaction (B2: never a pause without a warning). Before the resume step, the chain records `check_license` against the latest ROC list for each business paused with reason `license` (a database-only read of the recorded list, never a lookup; review R2), because the daily list run checks only `active` businesses (`businesses::api::active_license_numbers`, `app/businesses/src/api.rs:239`, behind `server`'s `ActiveRoc`, which stays unchanged) and a paused business would otherwise never get a newer check; a business already checked against that list's date is skipped. Then, for each business paused with reason `license` whose latest check is `active` and later than the pause, with no pest report holding it (`pest_reported`), it resumes with `Event::Resume` and no review, unless a complaint hold or an earlier self-pause applies, in `lift_no_cover`'s order (complaints, then self). This is also the exit for `lift_no_cover`'s `license` re-hold (finding 3); `license_reapply.rs` changes only in that function's doc. A known Inactive or Not-listed check is not paused here: T654 stops its ROC cards and Confirm refuses it (PICK-020). Each pause and resume is a system-actor status audit row, which T524's weekly digest counts as automatic pauses and license-unknown counts (OPS-030, D-3882) and which is Casey's count (D-199); this task adds no digest code. (3) `app/businesses/src/notice_emails.rs` (after T490, which also changes it): `license_unknown` joins `NOTICE_KINDS`, to the owner's account address like `license_change`, with its English and Spanish words here (BIZ-018): Laftly could not check the ROC license on the state list since <date>; if it still can't by <the pause moment, Arizona time>, job cards pause until it can; nothing is needed if the license is Active. No license number, contact value or link in the payload; never \"verified\" or \"vetted\". Deferred: LIC-009's end and bond dates (the ROC list has no such column, D-902). Tests, fake data only, on PostgreSQL, in `tests/integration/tests/license_standing.rs` (TD-LIC-05): with the list failing from the day after a check, the warning at failure start + 24:00:00 and not at 23:59:59; kept at pause moment minus 1 second; paused at the pause moment, the same instant at which T654's `latest_check_allows_card` turns false (both asserted in one case); a first run only at the pause moment sends one notice and pauses in one transaction; a check old enough that the pause moment precedes failure start + 24 hours warns at once; one email per spell; a `license`-paused business with a fresh list showing its license Active gets a check row written by the run itself (not planted) and resumes with no review; the pause cleared with no review by a later Active lookup too, kept on an Inactive check, a pest report or a complaint hold; `lift_no_cover`'s re-hold cleared the same way; a system-actor status audit row for each pause and resume. Update `app/businesses/NOTES.md`, `app/licensing/NOTES.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -18740,20 +18740,16 @@
     "app/licensing/src/handlers.rs",
     "app/businesses/src/status.rs",
     "app/businesses/src/capability.rs",
-    "app/licensing/src/service.rs",
-    "app/businesses/src/signup.rs"
+    "app/licensing/src/service.rs"
    ],
    "requirements": [
     "LIC-008",
     "OPS-030",
     "BIZ-018",
-    "CARD-015",
-    "BIZ-026",
-    "BIZ-002"
+    "CARD-015"
    ],
    "tests": [
-    "TD-LIC-05",
-    "TD-BIZ-56"
+    "TD-LIC-05"
    ],
    "decisions": [
     "D-4310",
@@ -18761,10 +18757,7 @@
     "D-199",
     "D-902",
     "D-3882",
-    "D-3447",
-    "D-1712",
-    "D-2954",
-    "D-4361"
+    "D-3447"
    ],
    "cites": [
     "app/licensing/src/handlers.rs:96",
@@ -18772,8 +18765,8 @@
    ],
    "budget": {
     "files": 5,
-    "lines": 600,
-    "context_pct": 32
+    "lines": 550,
+    "context_pct": 27
    },
    "checks": [
     "Ci",
@@ -18783,7 +18776,7 @@
    "branch": "claude/task/T655-license-unknown-pause",
    "prompt": "kit/prompts/T655.md",
    "copy": true,
-   "acceptance": "`tests/integration/tests/license_standing.rs` passes against PostgreSQL, including TD-BIZ-56's resume cases; every existing licensing, license-reapply, status and notice-email test passes unchanged; the cold read and copy panel find nothing open in the `license_unknown` words."
+   "acceptance": "`tests/integration/tests/license_standing.rs` passes against PostgreSQL; every existing licensing, license-reapply, status and notice-email test passes unchanged; the cold read and copy panel find nothing open in the `license_unknown` words."
   },
   {
    "id": "T647",
@@ -21844,9 +21837,8 @@
     "T682",
     "T684",
     "T686",
-    "T687",
     "T688",
-    "T689"
+    "T690"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -24388,7 +24380,8 @@
    "stage": "6",
    "module": null,
    "deps": [
-    "T234"
+    "T234",
+    "T680"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -24434,7 +24427,7 @@
    "budget": {
     "files": 4,
     "lines": 600,
-    "context_pct": 6
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -26055,7 +26048,9 @@
     "T678",
     "T680",
     "T683",
-    "T685"
+    "T685",
+    "T689",
+    "T687"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -26523,7 +26518,9 @@
     "T678",
     "T680",
     "T683",
-    "T685"
+    "T685",
+    "T689",
+    "T687"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -44676,7 +44673,7 @@
    "id": "T680",
    "slug": "cancel-refund",
    "title": "picks and intake (harness): a homeowner cancel after Confirm refunds a business that never talked to her",
-   "goal": "Plan change D-4361 (unwired sweep orphan 2 and its second pass, `main` 77a49d7cc; FEE-023, FEE-024, FEE-026; D-048, D-141). `payments::api::decide_cancel` (`app/payments/src/refund_rules.rs:236`) has no production caller: `cancel` (`app/intake/src/closing.rs:145` to `:155`) only moves the job to Cancelled, so once T663 makes Payment pending and Connected reachable, a business that paid and whose homeowner cancels before any call answered by a person is never refunded. FEE-025 (a charge after the cancel) is not this task's: a success that lands after the job moved on is `Settled::Left` and refunded by `payments::late_success(PickNow::MovedOn)` (`app/server/src/release_sink.rs:118` to `:139`), so `RefundReason::ChargedAfterCancel` stays a rule-level case. (1) `cancel`, when the job moves to Cancelled from Payment pending or Connected, queues one `picks.cancel_refund` task `{job, cancelled_at}` in the same transaction through a new `picks::api::queue_cancel_refund` (dedupe per job; `intake` may call `picks`, `kit/layers.json`); from any other status nothing is queued. (2) The new `app/picks/src/cancel_refund.rs`: `run_cancel_refund` finds the job's pick that is `paid` (a `free` pick has nothing to refund) or still waiting with a charge that succeeded, gathers `CancelFacts` (the charge's success time through a new `payments::api` read, `charged_at(db, pick)`, in the new `app/payments/src/charge_time.rs`; the pick's call log both directions through `calls::api` as `unreachable_refund.rs` reads it; `refunded_before` from `refund_state`) and calls `decide_cancel`; a `Refund` goes through `payments::api::request_refund` with `RefundTrigger::Rule(reason)`, whose per-pick claim makes it exactly once even when the late-success path also refunds the same pick (FEE-026); `NoRefund` records nothing new. The business is told by the refund's existing receipt and notice path; no homeowner contact appears in any payload (PRIV-005). The handler is registered in the shared `app/server/src/lib.rs` with the Stripe adapter and ID secret, as `UNREACHABLE_STEP_KIND` is. (3) `tests/coverage_floor.json`: a 95% branch floor for `app/picks/src/cancel_refund.rs` (`app/payments/` keeps its 95% floor; `charge_time.rs` falls under it). A waiting pick on a job she cancels in Payment pending is still not ended by the cancel (D-4349's open item; a later success is refunded as `Left`). Tests in the new `tests/integration/tests/cancel_refund.rs` (TD-FEE-71), PostgreSQL and the Stripe stand-in, fake data only. Update `app/picks/NOTES.md`, `app/intake/NOTES.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4361 (unwired sweep orphan 2 and its second pass, `main` 77a49d7cc; FEE-023, FEE-024, FEE-026; D-048, D-141). `payments::api::decide_cancel` (`app/payments/src/refund_rules.rs:236`) has no production caller: `cancel` (`app/intake/src/closing.rs:145` to `:155`) only moves the job to Cancelled, so once T663 makes Payment pending and Connected reachable, a business that paid and whose homeowner cancels before any call answered by a person is never refunded. FEE-025 (a charge after the cancel) is not this task's: a success that lands after the job moved on is `Settled::Left` and refunded by `payments::late_success(PickNow::MovedOn)` (`app/server/src/release_sink.rs:118` to `:139`), so `RefundReason::ChargedAfterCancel` stays a rule-level case. (1) `cancel`, when the job moves to Cancelled from Payment pending or Connected, queues one `picks.cancel_refund` task `{job, cancelled_at}` in the same transaction through a new `picks::api::queue_cancel_refund` (dedupe per job; `intake` may call `picks`, `kit/layers.json`); from any other status nothing is queued. (2) The new `app/picks/src/cancel_refund.rs`: `run_cancel_refund` finds the job's pick that is `paid` (a `free` pick has nothing to refund) or still waiting with a charge that succeeded, gathers `CancelFacts` (the charge's success time through a new `payments::api` read, `charged_at(db, pick)`, in the new `app/payments/src/charge_time.rs`; the pick's call log both directions through `calls::api` as `unreachable_refund.rs` reads it; `refunded_before` from `refund_state`) and calls `decide_cancel`; a `Refund` goes through `payments::api::request_refund` with `RefundTrigger::Rule(reason)`, whose per-pick claim makes it exactly once even when the late-success path also refunds the same pick (FEE-026); `NoRefund` records nothing new. The business is told by the refund's existing receipt and notice path; no homeowner contact appears in any payload (PRIV-005). The handler is registered in the shared `app/server/src/lib.rs` with the Stripe adapter and ID secret, as `UNREACHABLE_STEP_KIND` is. (3) `tests/coverage_floor.json`: a 95% branch floor for `app/picks/src/cancel_refund.rs` (`app/payments/` keeps its 95% floor; `charge_time.rs` falls under it). (4) INT-038's under-13 stop (`cancel_job`, `app/intake/src/conversation.rs:361`) cancels the request's jobs the same way and queues the same task from Payment pending or Connected, the refund judged by the same rule with the stop's time as the cancel (the business is never kept paid for a request Laftly ended); the purge in that transaction removes no call-log or payment row the handler reads. A waiting pick on a job she cancels in Payment pending is still not ended by the cancel (D-4349's open item; a later success is refunded as `Left`). Tests in the new `tests/integration/tests/cancel_refund.rs` (TD-FEE-71), PostgreSQL and the Stripe stand-in, fake data only. Update `app/picks/NOTES.md`, `app/intake/NOTES.md` and `docs/decisions.md`.",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -44686,7 +44683,8 @@
     "T669",
     "T662",
     "T402",
-    "T667"
+    "T667",
+    "T650"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -44698,6 +44696,7 @@
    ],
    "owns": [
     "app/intake/src/closing.rs",
+    "app/intake/src/conversation.rs",
     "app/picks/src/cancel_refund.rs",
     "app/payments/src/charge_time.rs",
     "tests/coverage_floor.json",
@@ -44712,12 +44711,14 @@
     "app/picks/src/unreachable_refund.rs",
     "app/server/src/release_sink.rs",
     "docs/brains/payments-stripe.md",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "docs/spec/intake.md"
    ],
    "requirements": [
     "FEE-023",
     "FEE-024",
-    "FEE-026"
+    "FEE-026",
+    "INT-038"
    ],
    "tests": [
     "TD-FEE-71"
@@ -44730,8 +44731,8 @@
    ],
    "cites": [],
    "budget": {
-    "files": 5,
-    "lines": 450,
+    "files": 6,
+    "lines": 500,
     "context_pct": 22
    },
    "checks": [
@@ -44815,7 +44816,7 @@
    "id": "T682",
    "slug": "confirm-reminders",
    "title": "picks: a pick waiting for Confirm gets its hourly reminders, and an emergency pick its one",
-   "goal": "Plan change D-4361 (unwired sweep orphan 5 and its second pass, `main` 77a49d7cc; PICK-037, PICK-044, PICK-043; D-380, D-1972). `reminders`, `emergency_reminders`, `claim_reminder` and `reminder_lines` (`app/picks/src/confirm_reminders.rs:71`, `:98`, `:152`, `:231`) have no caller and no task kind exists (D-1972: \"not wired: queuing the reminders\"), so no \"Reminder: accept job\" email goes and more picks lapse. (1) `notice_sent` (`app/picks/src/handlers.rs:115`, after T670), once the pick notice's send is recorded, queues one `picks.confirm_reminder` task `{pick}` at the first reminder's time (`reminders` from the send to the current end, or `emergency_reminders` on an emergency job), dedupe per pick and time. (2) The new `app/picks/src/reminder_run.rs`, registered in the shared `app/server/src/lib.rs`: at each run it re-reads the pick and recomputes the list from the window's current end (after a HOLD or the bounce grace, PICK-043), and sends only while the pick is still waiting, unpressed (T669's `entered_payment_pending_since` read answers none) and not ended: `claim_reminder` first (never twice), then one `BUSINESS_NOTICE_KIND` task by the business's chosen channels to the owner and every \"Confirm and billing\" member with `reminder_lines` (the Hold line only while a HOLD is still allowed; none on an emergency job), then the next reminder's task; quiet hours apply except as QH-004 allows. Tests in the new `tests/integration/tests/confirm_reminders_sent.rs` (TD-PICK-68), PostgreSQL, fake data only. Update `app/picks/NOTES.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4361 (unwired sweep orphan 5 and its second pass, `main` 77a49d7cc; PICK-037, PICK-044, PICK-043; D-380, D-1972). `reminders`, `emergency_reminders`, `claim_reminder` and `reminder_lines` (`app/picks/src/confirm_reminders.rs:71`, `:98`, `:152`, `:231`) have no caller and no task kind exists (D-1972: \"not wired: queuing the reminders\"), so no \"Reminder: accept job\" email goes and more picks lapse. (1) `notice_sent` (`app/picks/src/handlers.rs:115`, after T670), once the pick notice's send is recorded, queues one `picks.confirm_reminder` task `{pick}` at the first reminder's time (`reminders` from the send to the current end, or `emergency_reminders` on an emergency job), dedupe per pick and time. (2) The new `app/picks/src/reminder_run.rs`, registered in the shared `app/server/src/lib.rs`: at each run it re-reads the pick and recomputes the list from the window's current end (after a HOLD or the bounce grace, PICK-043), and sends only while the pick is still waiting, unpressed (T669's `entered_payment_pending_since` read answers none) and not ended: `claim_reminder` first (never twice), then one `BUSINESS_NOTICE_KIND` task by the business's chosen channels to the owner and every \"Confirm and billing\" member with `reminder_lines` (the Hold line only while a HOLD is still allowed; none on an emergency job), then the next reminder's task; quiet hours apply except as QH-004 allows. The emergency pick's one reminder follows the emergency pick notice's routing (`app/picks/src/emergency_emails.rs`, `emergency_pick_plan` and `businesses::api::night_people`): its payload carries `emergency: true` with its `subject` and `first_line`, so `business_notice` never holds it to 8 a.m. (`app/messaging/src/business_notices.rs:501` to `:510`); by day it goes to every person who gets picks, at night only to the owner and \"Confirm and billing\" members with \"Emergency emails at any hour\" on at an after-hours business that is not suspended (BIZ-037), and to nobody when the notice itself waited for 8 a.m. Tests in the new `tests/integration/tests/confirm_reminders_sent.rs` (TD-PICK-68), PostgreSQL, fake data only. Update `app/picks/NOTES.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -44845,12 +44846,15 @@
     "docs/spec/quiet-hours.md",
     "app/picks/src/confirm.rs",
     "app/picks/src/money_notices.rs",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "app/picks/src/emergency_emails.rs",
+    "docs/spec/businesses.md"
    ],
    "requirements": [
     "PICK-037",
     "PICK-044",
-    "PICK-043"
+    "PICK-043",
+    "BIZ-037"
    ],
    "tests": [
     "TD-PICK-68"
@@ -44879,7 +44883,7 @@
    "id": "T683",
    "slug": "business-yes-text",
    "title": "server and picks: a business's \"YES 1042\" or \"CONFIRM 1042\" text gets the fee and the Confirm link",
-   "goal": "Plan change D-4361 (unwired sweep orphan 6 and its second pass, `main` 77a49d7cc; PICK-033, FEE-036, PICK-035, BIZ-036; D-259, D-365, D-1717, D-2042). `read_business_word` and `business_reply` (`app/picks/src/confirm.rs:315`, `:347`) have no caller: a whole-command text makes `auto_reply_due` false (`app/businesses/src/consent.rs:542`) and `auto_reply` ends with `Halt::Ends(\"business\")` (`app/server/src/inbound_text.rs:1050` to `:1057`), so a business on text that replies \"YES 1042\" hears nothing. (1) `inbound_text.rs`: a business phone's text that `read_business_word` reads goes to the new `app/picks/src/text_confirm.rs` before `auto_reply`. (2) `text_confirm.rs`: for a business whose channel preference includes text (BIZ-036), the job number names the waiting pick of that business (the word alone only when it has exactly one waiting); `business_reply` with `linked` true only for a phone linked to the picked business (`acts_for_business`; a staff phone still waiting for approval is not linked), then the fee reply \"Laftly: Fee $<amount>. Confirm and pay here: <link>.\" (the Confirm link `messaging` signs for the pick, under T457's code step), the expired reply after the window, or nothing for another phone; YES and CONFIRM (and SÍ, CONFIRMAR) get the same answer and neither ever confirms or charges (PICK-033, FEE-036, D-365). The reply goes through the outbox to the business ID as T573 addresses business texts (D-2042). Tests in the new `app/server/tests/business_yes_text.rs` (TD-PICK-69), through the assembled router with the texting stand-in, fake data only. Update `app/picks/NOTES.md`, `app/server/NOTES.md` and `docs/decisions.md`. Plan change D-4360 merge: also after T675, which edits `app/server/src/inbound_text.rs` for picture texts.",
+   "goal": "Plan change D-4361 (unwired sweep orphan 6 and its second pass, `main` 77a49d7cc; round-1 review; PICK-033, FEE-036, PICK-035, BIZ-036, QH-004; D-259, D-365, D-1717, D-2042). `read_business_word` and `business_reply` (`app/picks/src/confirm.rs:315`, `:347`) have no caller: a whole-command text makes `auto_reply_due` false (`app/businesses/src/consent.rs:542`) and `auto_reply` ends with `Halt::Ends(\"business\")` (`app/server/src/inbound_text.rs:1050` to `:1057`), so a business on text that replies \"YES 1042\" hears nothing. (1) `inbound_text.rs`: after the opt-out and HELP screens (an opt-out word always wins, D-2039), a business phone's text that `read_business_word` reads goes to the new `app/picks/src/text_confirm.rs` before `auto_reply`. (2) `text_confirm.rs` (pure reads, no link): for a business whose channel preference includes text (BIZ-036), the job number names the waiting pick of that business (the word alone only when it has exactly one waiting); it answers the pick, its fee and whether the window is open, with `business_reply`'s `linked` true only for a directory line of the picked business that `acts_for_business` accepts (a staff phone still waiting for approval is not linked). (3) The link is minted in `inbound_text.rs`, never in `picks` (which may not call `portals`, `kit/layers.json`): `portals::api::mint_action_link` (`app/portals/src/action_links.rs:251`) for the member that texting line belongs to, which refuses a member without \"Confirm and billing\" (`:128`). The replies: a linked member with the role gets \"Laftly: Fee $<amount>. Confirm and pay here: <link>.\"; a linked member without the role, and a directory line with no member (the business's own line), get a new reply with no link, \"Laftly: Only the owner or a Confirm and billing member can confirm job <n>. The pick email has the Confirm link.\" (English and Spanish in `app/messaging/templates/`); after the window the expired reply; another business's phone nothing. YES and CONFIRM (and SÍ, CONFIRMAR) get the same answer and neither ever confirms or charges (PICK-033, FEE-036, D-365). (4) The reply is addressed to the texting phone's line ID, as T573 addresses business texts (D-2042: a business-ID row cannot pass `may_text`), and queued with `messaging::api::enqueue_exempt` with `Exemption::DirectReply { inbound_at }` from the inbound text's time (QH-004's 15 minutes), once per inbound message (a provider resend of the same message SID replies once). Tests in the new `app/server/tests/business_yes_text.rs` (TD-PICK-69), through the assembled router with the texting stand-in, fake data only. Update `app/picks/NOTES.md`, `app/server/NOTES.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -44914,13 +44918,16 @@
     "docs/spec/fees.md",
     "docs/spec/businesses.md",
     "app/businesses/src/consent.rs",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "docs/spec/quiet-hours.md",
+    "app/portals/src/action_links.rs"
    ],
    "requirements": [
     "PICK-033",
     "FEE-036",
     "PICK-035",
-    "BIZ-036"
+    "BIZ-036",
+    "QH-004"
    ],
    "tests": [
     "TD-PICK-69"
@@ -44936,7 +44943,7 @@
    "cites": [],
    "budget": {
     "files": 3,
-    "lines": 350,
+    "lines": 420,
     "context_pct": 22
    },
    "checks": [
@@ -44952,7 +44959,7 @@
    "id": "T684",
    "slug": "open-cards-email",
    "title": "picks and server: the open-cards email goes at the times each card recipient chose",
-   "goal": "Plan change D-4361 (unwired sweep orphan 7 and its second pass, `main` 77a49d7cc; CARD-022, BIZ-037, BIZ-038; D-1993). The portal saves each member's open-cards times (`save_open_cards_times`, `app/server/src/business_portal.rs:407`) and `picks` builds the email (`open_cards_email` and `chosen_minutes`, `app/picks/src/open_cards_email.rs:179`, `:59`; `messaging::api::digest_goes`, `app/messaging/src/open_cards_digest.rs:57`), but no task kind, schedule or sender exists, so nobody ever gets it. The new `app/picks/src/open_cards_run.rs`: an hourly `picks.open_cards_email` run (registered in the shared `app/server/src/lib.rs`, scheduled in the shared `app/server/src/bin/worker.rs`, the worker clock's now) that, for each member who gets job cards (BIZ-037) whose chosen slot (8 a.m., noon or 5 p.m. Arizona time, 5 p.m. by default) is due, lists the cards the business has not quoted with at least 1 hour (a setting) of the window left, sends only when `digest_goes` says so, once per member and slot (dedupe key), with the pick-waiting subject and the pick first while a pick waits for that member's business, through the business notice email path; each card shows only trade, town, end time and its Quote link (BIZ-038, no homeowner detail). Tests in the new `tests/integration/tests/open_cards_email_run.rs` (TD-CARD-18), PostgreSQL, fake data only. Update `app/picks/NOTES.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4361 (unwired sweep orphan 7 and its second pass, `main` 77a49d7cc; CARD-022, BIZ-037, BIZ-038; D-1993). The portal saves each member's open-cards times (`save_open_cards_times`, `app/server/src/business_portal.rs:407`) and `picks` builds the email (`open_cards_email` and `chosen_minutes`, `app/picks/src/open_cards_email.rs:179`, `:59`; `messaging::api::digest_goes`, `app/messaging/src/open_cards_digest.rs:57`), but no task kind, schedule or sender exists, so nobody ever gets it. The new `app/picks/src/open_cards_run.rs`: an hourly `picks.open_cards_email` run (registered in the shared `app/server/src/lib.rs`, scheduled in the shared `app/server/src/bin/worker.rs`, the worker clock's now) that, for each member who gets job cards (BIZ-037) whose chosen slot (8 a.m., noon or 5 p.m. Arizona time, 5 p.m. by default) is due, lists the cards the business has not quoted with at least 1 hour (a setting) of the window left, sends only when `digest_goes` says so, once per member and slot (dedupe key), with the pick-waiting subject and the pick first while a pick waits for that member's business, as one email; each card shows only trade, town, end time and its Quote link (BIZ-038, no homeowner detail). Each email is stored with `messaging::api::queue_email` as `EmailClass::Bulk` (`app/messaging/src/email.rs:140` to `:146`, `:390`), never through the business-notice path, which stores every email as non-bulk (`app/messaging/src/business_notices.rs:409`), so above 90% of the day's email limit it waits for the reset (OPS-038). Tests in the new `tests/integration/tests/open_cards_email_run.rs` (TD-CARD-18), PostgreSQL, fake data only. Update `app/picks/NOTES.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -44977,12 +44984,14 @@
     "docs/spec/businesses.md",
     "app/picks/src/open_cards_email.rs",
     "app/messaging/src/open_cards_digest.rs",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "docs/spec/ops-recovery.md"
    ],
    "requirements": [
     "CARD-022",
     "BIZ-037",
-    "BIZ-038"
+    "BIZ-038",
+    "OPS-038"
    ],
    "tests": [
     "TD-CARD-18"
@@ -45010,7 +45019,7 @@
    "id": "T685",
    "slug": "missed-cards-email",
    "title": "businesses, quotes and picks: the monthly missed-cards email goes, and the owner can switch it off",
-   "goal": "Plan change D-4361 (unwired sweep orphan 7 and its second pass, `main` 77a49d7cc; BIZ-044, BIZ-025; D-331, D-1994). `missed_email_due` (`app/messaging/src/missed_cards.rs:52`) and `missed_cards_line` (`app/picks/src/open_cards_email.rs:212`) have no caller, and D-1994 left two gaps: no column stores the owner's off switch, and no `quotes` reader gives last month's counts. (1) `migrations/0214_businesses_missed_cards_switch.sql` (headed `businesses`; after T236's `0213`, the dependency on T236 being for that order only, V9): the business's on/off switch for this email, default on; the read and the owner's write in the new `app/businesses/src/missed_cards_switch.rs` (the portal toggle is left to the settings page's owner, T306, noted in its decision). (2) The new `app/quotes/src/month_cards.rs`: last month's cards per business (got, quoted, ended without its quote), Arizona months. (3) The new `app/picks/src/missed_cards_run.rs`: a daily `picks.missed_cards_email` run (registered in the shared `app/server/src/lib.rs`, scheduled in the shared `app/server/src/bin/worker.rs`) that acts only when `first_of_month` holds and sends `missed_cards_line` once per business and month (dedupe key) when `missed_email_due` says so, as an account notice to the owner under the business's consent (CON-019), never marketing. Tests in the new `tests/integration/tests/missed_cards_email.rs` (TD-BIZ-57), PostgreSQL, fake data only. Update `app/picks/NOTES.md`, `app/quotes/NOTES.md`, `app/businesses/NOTES.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4361 (unwired sweep orphan 7 and its second pass, `main` 77a49d7cc; BIZ-044, BIZ-025; D-331, D-1994). `missed_email_due` (`app/messaging/src/missed_cards.rs:52`) and `missed_cards_line` (`app/picks/src/open_cards_email.rs:212`) have no caller, and D-1994 left two gaps: no column stores the owner's off switch, and no `quotes` reader gives last month's counts. (1) `migrations/0214_businesses_missed_cards_switch.sql` (headed `businesses`; after T236's `0213`, the dependency on T236 being for that order only, V9): the business's on/off switch for this email, default on; the read and the owner's write in the new `app/businesses/src/missed_cards_switch.rs` (the portal toggle is left to the settings page's owner, T306, noted in its decision). (2) The new `app/quotes/src/month_cards.rs`: last month's cards per business (got, quoted, ended without its quote), Arizona months. (3) The new `app/picks/src/missed_cards_run.rs`: a daily `picks.missed_cards_email` run (registered in the shared `app/server/src/lib.rs`, scheduled in the shared `app/server/src/bin/worker.rs`) that acts only when `first_of_month` holds and sends `missed_cards_line` once per business and month (dedupe key) when `missed_email_due` says so, as an account notice to the owner under the business's consent (CON-019), never marketing. Each email is stored with `messaging::api::queue_email` as `EmailClass::Bulk` (`app/messaging/src/email.rs:140` to `:146`, `:390`), never through the business-notice path, which stores every email as non-bulk (`app/messaging/src/business_notices.rs:409`), so above 90% of the day's email limit it waits for the reset (OPS-038). Tests in the new `tests/integration/tests/missed_cards_email.rs` (TD-BIZ-57), PostgreSQL, fake data only. Update `app/picks/NOTES.md`, `app/quotes/NOTES.md`, `app/businesses/NOTES.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -45040,11 +45049,13 @@
     "docs/spec/consent.md",
     "app/messaging/src/missed_cards.rs",
     "app/picks/src/open_cards_email.rs",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "docs/spec/ops-recovery.md"
    ],
    "requirements": [
     "BIZ-044",
-    "BIZ-025"
+    "BIZ-025",
+    "OPS-038"
    ],
    "tests": [
     "TD-BIZ-57"
@@ -45073,7 +45084,7 @@
    "id": "T686",
    "slug": "deliverability-retests",
    "title": "businesses and server: a 90-day-old inbox or alert Yes gets its re-test email",
-   "goal": "Plan change D-4361 (unwired sweep orphan 8(a) and its second pass, `main` 77a49d7cc; BIZ-042, BIZ-007; D-462). `queue_pick_retests` (`app/businesses/src/deliverability_check.rs:325`) and `queue_emergency_retests` (`app/businesses/src/emergency_switch.rs:370`) have no caller, so a person whose Yes is 90 days old silently stops counting and never gets the re-test email; the receiving side is wired (`OFF_SUSPENDED` and `retest_link` render). The new `app/businesses/src/retest_run.rs`: a daily `businesses.deliverability_retests` run (registered in the shared `app/server/src/lib.rs`, scheduled in the shared `app/server/src/bin/worker.rs`, the worker clock's now) calling both, each queuing at most one re-test per person and Yes (their own dedupe), sent through T470's email drain. BIZ-007's after-hours suspension (`missed_in_a_row`, `suspend_after_hours`) is not this task's: night emergency cards are released only once D-4360's intake tasks wire `release_emergency`. Tests in the new `tests/integration/tests/deliverability_retests.rs` (TD-BIZ-55), PostgreSQL, fake data only. Update `app/businesses/NOTES.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4361 (unwired sweep orphan 8(a) and its second pass, `main` 77a49d7cc; BIZ-042; D-462). `queue_pick_retests` (`app/businesses/src/deliverability_check.rs:325`) and `queue_emergency_retests` (`app/businesses/src/emergency_switch.rs:370`) have no caller, so a person whose Yes is 90 days old silently stops counting and never gets the re-test email; the receiving side is wired (`OFF_SUSPENDED` and `retest_link` render). The new `app/businesses/src/retest_run.rs`: a daily `businesses.deliverability_retests` run (registered in the shared `app/server/src/lib.rs`, scheduled in the shared `app/server/src/bin/worker.rs`, the worker clock's now) calling both (`queue_pick_retests` re-tests a sample-pick Yes, `queue_emergency_retests` an emergency-alert Yes), each queuing at most one re-test per person and Yes (their own dedupe), sent through T470's email drain. BIZ-007's after-hours suspension (`missed_in_a_row`, `suspend_after_hours`) is not this task's: night emergency cards are released only once D-4360's intake tasks wire `release_emergency`. Tests in the new `tests/integration/tests/deliverability_retests.rs` (TD-BIZ-55), PostgreSQL, fake data only. Update `app/businesses/NOTES.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -45100,8 +45111,7 @@
     "docs/brains/rust-production.md"
    ],
    "requirements": [
-    "BIZ-042",
-    "BIZ-007"
+    "BIZ-042"
    ],
    "tests": [
     "TD-BIZ-55"
@@ -45129,15 +45139,15 @@
    "id": "T687",
    "slug": "project-limit-quotes",
    "title": "quotes: a quote above the business's only class's project limit is refused with an explanation",
-   "goal": "Plan change D-4361 (unwired sweep orphan 10 and its second pass, `main` 77a49d7cc; LIC-045, LIC-019; D-392, D-985). `licensing::ClassMap::check_project_limit` (`app/licensing/src/class_map.rs:343`) and `OverProjectLimit` are used nowhere outside `licensing`, and `QuoteRules` (`app/quotes/src/intake.rs:257`, built by `quote_rules`, `app/quotes/src/quote_rules.rs:39` to `:66`) carries only the handyman check, so an R-62-only business's $7,500 quote is accepted. (1) `quote_rules.rs`: `QuoteRules` gains the business's latest Active classes (T654's shared read) and the job's category and type. (2) `intake.rs`: `parse_quote` calls `check_project_limit` (judged on the top of any range, labor and materials) and refuses with a new `Bounce::ProjectLimit` whose line explains the limit, as the handyman bounce does (LIC-019), marked on the price field as T657 marks it; `NotCovered` changes nothing here (card eligibility owns it). LIC-046's two-active minimum is D-4360's. Tests in `app/quotes/src/tests/project_limit.rs` (TD-LIC-35), fake data only: R-62 at $5,000.00 accepted and $5,000.01 refused, R-61 at $50,000, a range judged on its top, a business also holding an unlimited covering class never refused. Update `app/quotes/NOTES.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4361 (unwired sweep orphan 10 and its second pass, `main` 77a49d7cc; round-1 review; LIC-045, LIC-019; D-392, D-985). `licensing::ClassMap::check_project_limit` (`app/licensing/src/class_map.rs:343`) and `OverProjectLimit` are used nowhere outside `licensing`, and the quote form checks only the handyman limit, so an R-62-only business's $7,500 quote is accepted. `QuoteRules` (`app/quotes/src/intake.rs:257`) and `parse_quote` stay unchanged: about 18 test files build `QuoteRules` field by field. (1) The new `app/quotes/src/project_limit.rs` (exported through the shared `quotes::api`): `project_limit_check(conn, (job, business), price)` reads the business's latest Active classes (T654's shared read) and the job's category and type, and calls `ClassMap::shipped().check_project_limit` on the price's top (labor and materials, a range judged on its top); `NotCovered` passes here (card eligibility owns it). (2) The quote submit path (`app/server/src/action_links.rs`, after `parse_quote` at `:709` and before `submit_quote_with_facts` at `:650`) calls it and, on `OverProjectLimit`, stores nothing and shows the form again with an explanation of the limit on the price field, as the handyman bounce is shown (LIC-019; marked as T657 marks it). LIC-046's two-active minimum is D-4360's. Tests (TD-LIC-35), fake data only: `app/quotes/src/tests/project_limit.rs` for the rule (R-62 at $5,000.00 accepted and $5,000.01 refused, R-61 at $50,000, a range on its top, a business also holding an unlimited covering class never refused) and `app/server/tests/project_limit_route.rs` through the assembled router (an over-limit quote stores nothing and shows the explanation). Update `app/quotes/NOTES.md`, `app/server/NOTES.md` and `docs/decisions.md`.",
    "type": "build",
-   "phase": 1,
-   "stage": "5",
+   "phase": 2,
+   "stage": "6",
    "module": "quotes",
    "deps": [
     "T654",
     "T657",
-    "T582"
+    "T678"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -45147,9 +45157,10 @@
     "licensing"
    ],
    "owns": [
-    "app/quotes/src/quote_rules.rs",
-    "app/quotes/src/intake.rs",
-    "app/quotes/src/tests/project_limit.rs"
+    "app/quotes/src/project_limit.rs",
+    "app/server/src/action_links.rs",
+    "app/quotes/src/tests/project_limit.rs",
+    "app/server/tests/project_limit_route.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -45172,8 +45183,8 @@
    ],
    "cites": [],
    "budget": {
-    "files": 3,
-    "lines": 250,
+    "files": 4,
+    "lines": 300,
     "context_pct": 18
    },
    "checks": [
@@ -45183,13 +45194,13 @@
    ],
    "branch": "claude/task/T687-project-limit-quotes",
    "prompt": "kit/prompts/T687.md",
-   "acceptance": "TD-LIC-35 passes; every quote form and handyman test passes unchanged."
+   "acceptance": "TD-LIC-35 passes; `QuoteRules` and `parse_quote` are unchanged; every quote form and handyman test passes unchanged."
   },
   {
    "id": "T688",
    "slug": "main-number-greeting",
    "title": "server: a call to the Laftly main number hears the greeting with the 911 line",
-   "goal": "Plan change D-4361 (unwired sweep orphan 11 and its second pass, `main` 77a49d7cc; CALL-020; D-227, D-1697, D-4240). `answer` (`app/server/src/inbound_voice.rs:130` to `:139`) returns `hangup_twiml()` for any `To` outside the masked pool, so a call to the main number is hung up silently, and `greeting_twiml` (`app/calls/src/lifecycle.rs:321`) has no caller; the public accessibility statement already says a caller \"hears a short recorded message asking you to text\" (D-4240), which is false today. `VoiceHooks` carries the main number (`core::settings::main_number`, `app/core/src/settings.rs:495`); a verified call whose `To` is that number gets `greeting_twiml()` (English then Spanish, \"... If this is an emergency, hang up and call 911.\", then a hang-up): no `Record`, `Dial` or voicemail verb, nothing stored about the caller, no forwarding to Casey. Any other unknown `To` still hangs up. Tests in the new `app/server/tests/main_number_greeting.rs` (TD-CALL-29), through the assembled router with a signed stand-in webhook, fake numbers only. Update `app/server/NOTES.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4361 (unwired sweep orphan 11 and its second pass, `main` 77a49d7cc; CALL-020; D-227, D-1697, D-4240). `answer` (`app/server/src/inbound_voice.rs:130` to `:139`) returns `hangup_twiml()` for any `To` outside the masked pool, so a call to the main number is hung up silently, and `greeting_twiml` (`app/calls/src/lifecycle.rs:321`) has no caller; the public accessibility statement already says a caller \"hears a short recorded message asking you to text\" (D-4240), which is false today. The main number (`core::settings::main_number`, `app/core/src/settings.rs:495`) reaches the voice route through its own route state or an axum `Extension` that `build_router` (the shared `app/server/src/lib.rs`) sets, never a new `VoiceHooks` field (six test files build `VoiceHooks` by struct literal);  a verified call whose `To` is that number gets `greeting_twiml()` (English then Spanish, \"... If this is an emergency, hang up and call 911.\", then a hang-up): no `Record`, `Dial` or voicemail verb, nothing stored about the caller, no forwarding to Casey. Any other unknown `To` still hangs up. Tests in the new `app/server/tests/main_number_greeting.rs` (TD-CALL-29), through the assembled router with a signed stand-in webhook, fake numbers only. Update `app/server/NOTES.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -45245,16 +45256,18 @@
    "id": "T689",
    "slug": "auto-confirm-wiring",
    "title": "portals, picks and server: a ticked auto-confirm quote is charged when picked with a code, and a voided tick is told",
-   "goal": "Plan change D-4361 (unwired sweep and its second pass, `main` 77a49d7cc; PICK-048, PICK-056, FEE-048, FEE-016; D-401, D-480, D-2785, D-2786, D-2851). `picks::api::auto_confirm` (`app/picks/src/auto_confirm.rs:247`) has no production caller (D-2786 gave it to T306, whose goal no longer has it), and `picks.auto_confirm_voided` has no handler (its deferred-list owner T209 is done, `tests/task_kinds_deferred.json:33`), so a ticked box never fires (it fails safe to the normal Confirm) and a voided tick is never told. (1) In the transaction that stores a Verify-code page pick (`store`, `app/portals/src/pick_flow.rs:1388`, after T589), a new `picks::api::queue_auto_confirm(tx, pick, PickProof::PageCode, at)` queues one `picks.auto_confirm` task `{pick, proof, emergency}` (dedupe per pick), so the charge runs only after the pick commits and a crash never loses it; its handler in `auto_confirm.rs`, registered in the shared `app/server/src/lib.rs` with the Stripe adapter and ID secret, calls `auto_confirm`, which re-reads every PICK-056 fact. A text pick (`app/picks/src/service.rs:439`), an email-code pick and a backup pick queue nothing and keep the normal Confirm; the signed-in portal pick (`PickProof::PortalSession`) queues it from whichever task builds that pick. T663's `settle` moves an auto-confirmed job through Payment pending to Connected. (2) The `picks.auto_confirm_voided` handler, also in `auto_confirm.rs`: one `BUSINESS_NOTICE_KIND` task to the tick's author and the owner by their chosen channels, with new English and Spanish words in `app/messaging/templates/` (the reason in plain words and that the pick waits for the normal Confirm), never a card number. Tests in the new `tests/integration/tests/auto_confirm_wiring.rs` (TD-PICK-70), PostgreSQL and the Stripe stand-in, fake data only: a code pick of a ticked quote charges once off-session; a text pick never; a void tells the business once; `auto_confirm.rs` stays at or above its 83% floor. Update `app/picks/NOTES.md`, `app/portals/NOTES.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4361 (unwired sweep and its second pass, `main` 77a49d7cc; PICK-048, PICK-056, FEE-048, FEE-016; D-401, D-480, D-2785, D-2786, D-2851). `picks::api::auto_confirm` (`app/picks/src/auto_confirm.rs:247`) has no production caller (D-2786 gave it to T306, whose goal no longer has it), and `picks.auto_confirm_voided` has no handler (its deferred-list owner T209 is done, `tests/task_kinds_deferred.json:33`), so a ticked box never fires (it fails safe to the normal Confirm) and a voided tick is never told. (1) In the transaction that stores a Verify-code page pick (`store`, `app/portals/src/pick_flow.rs:1388`, after T589), a new `picks::api::queue_auto_confirm(tx, pick, PickProof::PageCode, at)` queues one `picks.auto_confirm` task `{pick, proof, emergency}` (dedupe per pick), so the charge runs only after the pick commits and a crash never loses it; its handler in `auto_confirm.rs`, registered in the shared `app/server/src/lib.rs` with the Stripe adapter and ID secret, re-reads, before any charge, that the job is still in Awaiting confirm with this pick its waiting pick (`models::waiting_pick`), and charges nothing otherwise (a cancel from Awaiting confirm ends no pick, and `charge_off_session` hard-codes `PickNow::Payable`, `app/payments/src/off_session.rs:209`), then calls `auto_confirm`, which re-reads every PICK-056 fact. A text pick (`app/picks/src/service.rs:439`), an email-code pick and a backup pick queue nothing and keep the normal Confirm; the signed-in portal pick (`PickProof::PortalSession`) has no builder in the graph: an open item in D-4361, so until one exists only a Verify-code pick auto-confirms. T663's `settle` moves an auto-confirmed job through Payment pending to Connected. (1a) No production type implements `OffSessionStripe` (only the test fake, `tests/integration/tests/auto_confirm.rs:151`), and `StripePayments` has no off-session confirm. `app/adapters/src/payments.rs` (after T541, T132 and T380) gains the one off-session confirm (`off_session=true` with the saved card under the attempt's key; the only place `off_session=true` may appear, TD-FEE-30), named so that it does not contain `confirm_off_session`; `app/payments/src/off_session.rs` gains `impl OffSessionStripe for StripePayments` over it, the only production file naming `confirm_off_session` (`app/picks/src/tests/prop_no_other_off_session_charge.rs:164`), under `app/payments/`' 95% floor. The Stripe stand-in (`stand_ins/stripe.py`, `confirm_payment_intent`) accepts the extra form field and answers success, decline and the 3-D Secure card's `requires_action` as on-session, which `charge_off_session` already treats as the fallback to the normal Confirm, so TD-PICK-70 needs no stand-in change; if it does, that is a harness task, not this one. (2) The `picks.auto_confirm_voided` handler, also in `auto_confirm.rs`: one `BUSINESS_NOTICE_KIND` task to the tick's author and the owner by their chosen channels, with new English and Spanish words in `app/messaging/templates/` (the reason in plain words and that the pick waits for the normal Confirm), never a card number. Tests in the new `tests/integration/tests/auto_confirm_wiring.rs` (TD-PICK-70), PostgreSQL and the Stripe stand-in, fake data only: a code pick of a ticked quote charges once off-session; a text pick never; a void tells the business once; a job cancelled before the task runs charges nothing; `auto_confirm.rs` stays at or above its 83% floor. Update `app/picks/NOTES.md`, `app/portals/NOTES.md` and `docs/decisions.md`.",
    "type": "build",
-   "phase": 1,
-   "stage": "5",
+   "phase": 2,
+   "stage": "6",
    "module": "picks",
    "deps": [
     "T663",
     "T589",
     "T541",
-    "T664"
+    "T664",
+    "T132",
+    "T380"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -45267,6 +45280,8 @@
    "owns": [
     "app/portals/src/pick_flow.rs",
     "app/picks/src/auto_confirm.rs",
+    "app/payments/src/off_session.rs",
+    "app/adapters/src/payments.rs",
     "tests/integration/tests/auto_confirm_wiring.rs"
    ],
    "reads": [
@@ -45277,7 +45292,9 @@
     "app/picks/src/settle.rs",
     "app/picks/src/money_notices.rs",
     "docs/brains/payments-stripe.md",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "app/payments/src/intent_http.rs",
+    "stand_ins/stripe.py"
    ],
    "requirements": [
     "PICK-048",
@@ -45298,9 +45315,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 3,
-    "lines": 400,
-    "context_pct": 25
+    "files": 5,
+    "lines": 520,
+    "context_pct": 35
    },
    "checks": [
     "Ci",
@@ -45309,7 +45326,71 @@
    ],
    "branch": "claude/task/T689-auto-confirm-wiring",
    "prompt": "kit/prompts/T689.md",
-   "acceptance": "TD-PICK-70 passes against PostgreSQL, failing on `main`; `auto_confirm.rs` stays at or above 83%; every pick flow and auto-confirm test passes unchanged."
+   "acceptance": "TD-PICK-70 passes against PostgreSQL and the Stripe stand-in, failing on `main`; `auto_confirm.rs` stays at or above 83% and `app/payments/` at 95%; TD-FEE-30 passes unchanged; every pick flow and auto-confirm test passes unchanged."
+  },
+  {
+   "id": "T690",
+   "slug": "record-resume",
+   "title": "businesses and server: a sign-up waiting on \"That number is old\" resumes when the record shows a new contact",
+   "goal": "Plan change D-4361 (unwired sweep orphan 9, its second pass and the round-1 review, `main` 77a49d7cc; BIZ-026, BIZ-002; D-178, D-254, D-1699, D-1712, D-2954). A sign-up parked by \"That number is old\" never resumes: `resume_on_new_record` (`app/businesses/src/signup.rs:636`) has no caller (D-2954 logged it with no owner). The recorded ROC list stores no contacts (`licensing.agency_record`, `migrations/0050_licensing_imports.sql:22` to `:32`); a record's contacts come only from `licensing::api::read_own_record` (`app/licensing/src/own_record.rs:146`), one adapter lookup with nothing stored (D-1699). (1) The new `app/businesses/src/record_resume.rs`: a daily `businesses.record_resume` run (registered in the shared `app/server/src/lib.rs` with the license-record source and the ID secret, scheduled in the shared `app/server/src/bin/worker.rs` after the ROC list's run hour) that, when a ROC list newer than the last one it acted on is recorded, queues one `businesses.record_resume_one` task per sign-up with `waiting_on_record_since` set, oldest first, at most `RESUME_BATCH` (a setting, default 25) per list, deduped by sign-up and list date, so each waiting sign-up gets at most one lookup per new list. Each task makes one `read_own_record` for the sign-up's license number (a failed or misread lookup does nothing and waits for the next list, LIC-008), builds `RecordSeen` from it in memory and calls `resume_on_new_record`. (2) On a resume it calls `identity::send_code_seen` with that `RecordSeen`, so the next code goes only to the new record contact, never the old one or a typed one (D-1712): a phone change resumes at the text step and gets the Verify text code; an email-only change resumes at the email step and gets the Verify email code, with no text; an address-only change resumes at the letter step and records it for the Lob mailing, with no text or email. The `signup_record_updated` text (`app/messaging/templates/en.json:432`) goes only on a text-step resume, to that new phone, and only if `messaging` can send to a number held in memory without storing it (PRIV-001, D-1699); otherwise only the code goes and the template stays unused, recorded in this task's decision entry. A contact that only disappeared does not resume. D-1712's open `send_code` key gap is checked at claim and recorded if still open. Tests in the new `tests/integration/tests/record_resume.rs` (TD-BIZ-56), PostgreSQL and the license-record stand-in, fake data only. Update `app/businesses/NOTES.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "businesses",
+   "deps": [
+    "T655",
+    "T470"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/businesses/src/record_resume.rs",
+    "tests/integration/tests/record_resume.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/businesses.md",
+    "docs/spec/licensing.md",
+    "app/businesses/src/signup.rs",
+    "app/businesses/src/identity.rs",
+    "app/licensing/src/own_record.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "BIZ-026",
+    "BIZ-002"
+   ],
+   "tests": [
+    "TD-BIZ-56"
+   ],
+   "decisions": [
+    "D-178",
+    "D-254",
+    "D-1699",
+    "D-1712",
+    "D-2954",
+    "D-4361"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 300,
+    "context_pct": 21
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T690-record-resume",
+   "prompt": "kit/prompts/T690.md",
+   "acceptance": "TD-BIZ-56 passes against PostgreSQL, failing on `main`; every sign-up, identity and daily-list test passes unchanged; no record contact is written anywhere."
   }
  ]
 }
