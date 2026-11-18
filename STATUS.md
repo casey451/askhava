@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T22:17:06Z by runner 7d58f8e9c040 (actions).
+Updated 2026-11-18T22:19:25Z by runner 511cb565de56 (actions).
 
-**Building: T306 in progress since 22:14Z; 460 of 663 done; week 69% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T306 in progress since 22:14Z; 461 of 663 done; week 69% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 460 of 663 build tasks (owner gates not counted)
+- **Tasks done:** 461 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T306 claimed 22:14Z, lease until 01:14Z; lane 5: T583 claimed 21:55Z, lease until 00:55Z; lane 6: T701 claimed 22:16Z, lease until 01:16Z; lane 7: T504 claimed 22:07Z, lease until 01:07Z
 - **Week:** 69% used, 53.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:14Z, 2 min before this update
+- **Last run:** 22:17Z, 2 min before this update
 - **Keeper:** last ran 22:13Z, next wake 22:33Z
 
 ## Needs attention
@@ -22,7 +22,7 @@ Updated 2026-11-18T22:17:06Z by runner 7d58f8e9c040 (actions).
 |---|---|---|---|---|---|---|
 | T364 | server and portals: the business step-up code page is served | MERGE_PENDING | 2 | 52 min | 22:05Z | Ci: failure; Python: failure / Python failed at step: Unit, contract and drill tests (pytest) / T705: about 21877 tokens |
 | T651 | server and portals: owner step-up try limit, the passkey pat | MERGE_PENDING | 1 | 2 h 7 min | 21:52Z |  |
-| T722 | payments: read a pick's disputes and record Casey's evidence | MERGE_PENDING | 1 | 45 min | 21:33Z |  |
+| T722 | payments: read a pick's disputes and record Casey's evidence | done | 1 | 45 min | 21:33Z |  |
 | T503 | Decisions digest, piece 4: the next entries after the header | done | 1 | 31 min | 21:30Z |  |
 | T483 | messaging, portals and server: the owner's "away until" date | done | 1 | 2 h 48 min | 21:13Z |  |
 | T702 | privacy and messaging: no blind-index key version is retired | done | 1 | 40 min | 21:07Z |  |
@@ -90,7 +90,7 @@ Updated 2026-11-18T22:17:06Z by runner 7d58f8e9c040 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 294 of 735 (40.0%) · partial 391 · unstarted 50
-**Tasks merged (throughput only):** 460 of 663
+**Tasks merged (throughput only):** 461 of 663
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -126,7 +126,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 103 of 262 done
+- stage 5: 104 of 262 done
 - stage 6: 0 of 48 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
