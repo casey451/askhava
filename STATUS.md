@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T21:08:20Z by runner 4c61fe086ce6 (actions).
+Updated 2026-11-18T21:08:28Z by runner 4c61fe086ce6 (actions).
 
 **Building: T651 in progress since 19:44Z; 456 of 663 done; week 67% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 456 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T651 claimed 19:44Z, lease until 23:43Z; lane 2: T722 claimed 20:48Z, lease until 23:48Z; lane 3: T483 claimed 18:25Z, lease until 23:40Z; lane 6: T702 claimed 20:27Z, lease until 00:05Z; lane 7: T503 claimed 20:58Z, lease until 23:58Z
+- **Lane:** lane 1: T651 claimed 19:44Z, lease until 23:43Z; lane 2: T722 claimed 20:48Z, lease until 23:48Z; lane 3: T483 claimed 18:25Z, lease until 23:40Z; lane 7: T503 claimed 20:58Z, lease until 23:58Z
 - **Week:** 67% used, 54.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:08Z, 0 min before this update
 - **Keeper:** last ran 21:07Z, next wake 21:27Z
@@ -20,11 +20,12 @@ Updated 2026-11-18T21:08:20Z by runner 4c61fe086ce6 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T702 | privacy and messaging: no blind-index key version is retired | MERGE_PENDING | 1 | 40 min | 21:07Z | merging main into the reviewed head conflicts in kit/prompts/T702.md; a resync merges it in on this attempt (D-891) |
 | T706 | payments: held_release, the FEE-017 re-check that clears a p | MERGE_PENDING | 1 | 100 min | 20:54Z |  |
 | T715 | intake (harness): corrections to T671's walker: alarm answer | BLOCKED | 1 | 48 min | 20:53Z | PLAN GAP: `app/server/tests/name_address_answer.rs:262`–`:264` (owned by T432, not this task) expects the name-and-addre |
 | T502 | Decisions digest, piece 3: the next entries after the header | done | 1 | 38 min | 20:31Z |  |
 | T364 | server and portals: the business step-up code page is served | check_failed | 1 | 2 h 1 min | 20:29Z | Ci: failure; Python: failure / Python failed at step: Unit, contract and drill tests (pytest) / T705: about 21877 tokens |
-| T702 | privacy and messaging: no blind-index key version is retired | resync | 1 | 59 min | 20:21Z | merging main into the reviewed head conflicts in kit/prompts/T702.md; a resync merges it in on this attempt (D-891) |
+| T702 | privacy and messaging: no blind-index key version is retired | resync | 1 | 59 min | 20:21Z |  |
 | T501 | Decisions digest, piece 2: the next entries after the header | done | 1 | 73 min | 19:42Z |  |
 | T711 | intake (harness): the dispatcher's two jobs in one request:  | done | 1 | 77 min | 19:29Z |  |
 | T624 | server: two failed in-process health checks in a row raise o | check_failed | 1 | 96 min | 18:26Z | Ci: failure; Python: failure / Python failed at step: Unit, contract and drill tests (pytest) / T705: about 21877 tokens |
@@ -132,8 +133,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T651 (lease until 2026-11-18T23:43:31Z)
 - lane 2: T722 (lease until 2026-11-18T23:48:16Z)
 - lane 3: T483 (lease until 2026-11-18T23:40:51Z)
-- lane 6: T702 (lease until 2026-11-19T00:05:37Z)
 - lane 7: T503 (lease until 2026-11-18T23:58:09Z)
 
 ## Last usage reading
-- {"task": "T706", "at": "2026-11-18T20:54:25Z", "cache_creation_input_tokens": 185327, "input_tokens": 148, "output_tokens": 43733, "cache_read_input_tokens": 4646093}
+- {"task": "T702", "at": "2026-11-18T21:07:59Z", "output_tokens": 10314, "input_tokens": 58, "cache_creation_input_tokens": 53384, "cache_read_input_tokens": 741219}
