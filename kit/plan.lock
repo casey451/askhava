@@ -45,7 +45,7 @@
   "kit/prompts/TEMPLATE.md": "35a1df0126c5be65c696ff9514b079e76c2c0b4a56ad25b83d31e8450625aff6",
   "kit/runner.json": "7997fa268d3f8f7d86b57f94b96844121457ca2f11aed24f3405a44ecc1f0a9b",
   "kit/sources.sha256": "853b7f37d6e04259ad9d7b64e16e6cb0111ee4499e37af46aeb3183748c7f335",
-  "kit/tasks.json": "017c1a80a63c8a61dc2ff738545a38437ea38e0c59fffce97b58af420b10c05b",
+  "kit/tasks.json": "1f9cac8aeaec4f53233bc3bcc6a514dc10cbb9bfa656d6598ee8f97ca4d72ada",
   "scripts/brand.py": "13d78b9984835e09b072aa5386a2429ba9f65395a6c2ca03677f7ac8c1173d8d",
   "scripts/check_ai_smell.py": "52c625e72630922705b642a20c8a33e2a9a6a8501e32d4687733ec5fe71b40cb",
   "scripts/check_catalog.py": "22059b11f6cd4d8241344302857716a969dfc6434c298106646b8bdd648e86dd",
