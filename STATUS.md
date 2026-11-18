@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T09:13:20Z by runner 41fb8677d6eb (actions).
+Updated 2026-11-18T09:28:34Z by runner 41fb8677d6eb (actions).
 
-**Building: T644 in progress since 09:04Z; 434 of 621 done; week 49% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T644 in progress since 09:04Z; 434 of 621 done; week 50% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 434 of 621 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T644 claimed 09:04Z, lease until 12:04Z; lane 4: T650 claimed 09:08Z, lease until 12:08Z; lane 5: T408 claimed 09:13Z, lease until 12:13Z; lane 6: T200 claimed 09:05Z, lease until 12:05Z
-- **Week:** 49% used, 91.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:08Z, 4 min before this update
+- **Week:** 50% used, 91.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 09:28Z, 0 min before this update
 - **Keeper:** last ran 08:53Z, next wake 09:13Z
 
 ## Needs attention
@@ -80,7 +80,6 @@ Updated 2026-11-18T09:13:20Z by runner 41fb8677d6eb (actions).
 | T489 | site and server: the web chat and request pages with the con | done | 3 | 46 min | 11:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Date:      2026- |
 | T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | check_failed | 1 | 35 min | 10:33Z |  |
 | T489 | site and server: the web chat and request pages with the con | check_failed | 2 | 73 min | 09:54Z |  |
-| T202 | site: Spanish pages, the business page blocks and the requir | check_failed | 1 | 88 min | 09:23Z |  |
 
 ### Plan and harness merges on main
 - none
