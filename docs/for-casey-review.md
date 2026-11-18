@@ -3356,6 +3356,11 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **Fix, planned as T700 and claimed first:** a task whose turn runs out now goes to the back of the queue instead of out of it, so every finished task gets its turn in order, and no task holds the turn for more than 90 minutes. A task that is truly stuck still gives up the turn after 45 minutes. The cost we accepted: such a task takes another 45-minute turn once every round until someone looks at it, where today it lost the turn once.
 - Our choice; nothing needs you now.
 
+## Two crates could hold only one task at a time (D-4433)
+- **The server and picks crate notes had grown so close to their size limit that the runner let only one task work in each**, while almost every task waiting to start touches the server crate, so five of seven lanes sat idle.
+- **Fix:** the longer rules in those two notes now keep their first part (the rule and its requirement numbers) and point to the rest, which moved word for word to each crate's searchable notes file; a check confirms no word was lost. Each crate can now hold two tasks again.
+- Our choice; nothing needs you now.
+
 ## Three oversized tasks split, one flaky test made steady (D-4419)
 
 - **The task that lets an emergency job's texts go out at night (T402) needed to read more code than one session holds**, so it is split in two: T704 does the job texts, questions and replies of the request conversation, and T402 then does the pick texts and the replies to a homeowner's own text. Same rule, same tests, just in two steps.
