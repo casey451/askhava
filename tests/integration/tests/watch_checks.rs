@@ -1,9 +1,9 @@
 //! The hourly vault-read check and the daily database-volume check through the worker
 //! (TD-SEC-26, TD-OPS-09; SEC-047, SEC-048, OPS-052; T525, D-3880, D-4044, D-4280).
 //!
-//! TD-SEC-26 (SEC-047): a planted burst at 4x the 14-day baseline in the hour just ended raises one
-//! pushed High alert when the worker runs `server::watch_checks`' hourly task, which queues its next
-//! hour first. The unregistered-purpose case is `tests/integration/tests/vault.rs`'s (it alerts at
+//! TD-SEC-26 (SEC-047): a planted burst at 4x the 14-day baseline raises one pushed High alert when
+//! the worker runs `server::watch_checks`' hourly task for its hour, even when that run starts late,
+//! past the next hour's end (D-4435). The unregistered-purpose case is `tests/integration/tests/vault.rs`'s (it alerts at
 //! the read), and SEC-048's 50 failed sign-ins are `tests/security/tests/cookies_csrf.rs`'s, which
 //! run against `portals`' security events unchanged.
 //!
@@ -35,8 +35,8 @@ const ACTION: &str = "vault_read.calls.bridge_call";
 /// A fake test-environment allow-list.
 const TEST_LIST: &str =
     "twilio:ACtestfake01,stripe:acct_testfake,resend:test.example.com,bucket:askhava-test";
-/// One hour.
-const HOUR: SignedDuration = SignedDuration::from_hours(1);
+/// The next UTC midnight after [`START`], when the next volume check is due.
+const TOMORROW: &str = "2026-11-03T00:00:00Z";
 
 fn at(text: &str) -> Timestamp {
     text.parse().expect("time")
@@ -137,11 +137,8 @@ async fn td_ops_09_a_volume_at_90_percent_raises_one_high_alert_through_the_work
     run_due(&pool, &registry, &clock).await;
     assert_eq!(alerts(&pool, VOLUME_HIGH_ALERT, "high").await, 1);
     assert_eq!(alerts(&pool, VOLUME_LOW_ALERT, "normal").await, 0);
-    let tomorrow = at(START) + SignedDuration::from_hours(24);
-    assert_eq!(
-        queued(&pool, watch_checks::VOLUME_CHECK_KIND, tomorrow).await,
-        1
-    );
+    let tomorrow = queued(&pool, watch_checks::VOLUME_CHECK_KIND, at(TOMORROW));
+    assert_eq!(tomorrow.await, 1);
     let raised: jiff_sqlx::Timestamp =
         sqlx::query_scalar("SELECT raised_at FROM ops.alert WHERE kind = $1")
             .bind(VOLUME_HIGH_ALERT)
@@ -197,11 +194,8 @@ async fn ops_052_dev_raises_nothing_and_test_needs_the_volume(pool: PgPool) {
         .expect("seed");
     run_due(&pool, &dev, &manual).await;
     assert_eq!(alerts(&pool, VOLUME_HIGH_ALERT, "high").await, 0);
-    let tomorrow = at(START) + SignedDuration::from_hours(24);
-    assert_eq!(
-        queued(&pool, watch_checks::VOLUME_CHECK_KIND, tomorrow).await,
-        1
-    );
+    let tomorrow = queued(&pool, watch_checks::VOLUME_CHECK_KIND, at(TOMORROW));
+    assert_eq!(tomorrow.await, 1);
 }
 
 /// Plants `reads` of [`ACTION`] in `hour` and `per_hour` in each of the 336 hours before it.
@@ -226,27 +220,36 @@ async fn plant(pool: &PgPool, hour: Timestamp, per_hour: i32, reads: i32) {
         .expect("burst");
 }
 
-/// TD-SEC-26 (SEC-047): 8 reads in the hour just ended against a baseline of 2 an hour (4x) raise
-/// one pushed High spike alert when the worker runs the hourly check at 5 past the next hour; the
-/// next hour's run is queued first, and a second run of the same hour raises nothing more.
+/// TD-SEC-26 (SEC-047, D-4435): the 10:05 seed checks the 9:00 hour; 8 reads at 10:00 against a
+/// baseline of 2 an hour (4x) raise one pushed High alert when the run due at 11:00 starts late at
+/// 12:00:05, crossing an hour boundary; the 11:00 hour's run follows at once, and a repeat of the
+/// 10:00 hour raises nothing more.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
-async fn td_sec_26_a_4x_read_burst_alerts_once_through_the_hourly_worker_check(pool: PgPool) {
+async fn td_sec_26_a_4x_read_burst_alerts_once_even_when_the_hourly_check_runs_late(pool: PgPool) {
     let (clock, registry) = setup(None);
-    let ended = at(START) - HOUR;
-    plant(&pool, ended, 2, 8).await;
-    let now = at(START) + SignedDuration::from_mins(5);
-    clock.set(now);
+    plant(&pool, at(START), 2, 8).await;
     let mut conn = pool.acquire().await.expect("conn");
-    watch_checks::schedule_read_check(&mut conn, now)
+    let hour = |m: i64| at(START) + SignedDuration::from_mins(m);
+    watch_checks::schedule_read_check(&mut conn, hour(5))
         .await
         .expect("seed");
+    clock.set(hour(5));
     run_due(&pool, &registry, &clock).await;
-    assert_eq!(alerts(&pool, "privacy.vault_read_spike", "high").await, 1);
+    assert_eq!(alerts(&pool, "privacy.vault_read_spike", "high").await, 0);
     assert_eq!(
-        queued(&pool, watch_checks::READ_CHECK_KIND, now + HOUR).await,
+        queued(&pool, watch_checks::READ_CHECK_KIND, hour(60)).await,
         1
     );
-    watch_checks::run_read_check(&pool, now)
+    clock.set(hour(120) + SignedDuration::from_secs(5));
+    run_due(&pool, &registry, &clock).await;
+    assert_eq!(alerts(&pool, "privacy.vault_read_spike", "high").await, 1);
+    run_due(&pool, &registry, &clock).await;
+    assert_eq!(
+        queued(&pool, watch_checks::READ_CHECK_KIND, hour(180)).await,
+        1
+    );
+    let ten = at(START).as_second() / 3600;
+    watch_checks::run_read_check(&pool, ten)
         .await
         .expect("again");
     assert_eq!(alerts(&pool, "privacy.vault_read_spike", "high").await, 1);
