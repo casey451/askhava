@@ -451,7 +451,7 @@ The replay's helpers (T481, D-4005): `messaging::api::replay_window`, `replay_ma
 | jiff (`tzdb-bundle-always`) | 0.2.38 (2026-10-06) | Unlicense OR MIT | Arizona time and area-code time zones for quiet hours, with the zone data built in |
 | image (`jpeg`, `png`, `webp`, no default features, D-1790) | 0.25.10 (2026-03-10) | MIT OR Apache-2.0 | Photo re-encoding with metadata removed (PRIV-014), under explicit decode limits (PRIV-025). HEIC is not decoded at launch: the upload form accepts `image/jpeg,image/png,image/webp` so phones convert, and a HEIC upload gets the PRIV-025 reply (D-480, D-481) |
 | tracing / tracing-subscriber (`json`, `env-filter`) | 0.1.44 / 0.3.23 | MIT | Structured logs with redaction |
-| sentry (`rustls`, `reqwest`, `tracing`, `panic`, `backtrace`) | 0.49.3 (2026-09-21) | MIT | Error reports with PII off |
+| sentry (no default features, D-4287: `backtrace`, `contexts`, `debug-images`, `logs`, `metrics`, `panic`, `release-health`, `rustls`, `reqwest`, `tracing`; no `transport`, so no `native-tls`) | 0.49.3 (2026-09-21) | MIT | Error reports with PII off |
 | thiserror / base64 / age | 2.0.21 / 0.23.1 / pinned by T109 | MIT OR Apache-2.0 | Error types; encoding (automod dropped, D-481: `lib.rs` is hand-written and the runner is serial); `age` encrypts the nightly export to an offline recipient's public key (PRIV-024, T109, D-3883; T109 pins a release at least two weeks old, and its cargo-audit and cargo-deny results are `Ci`'s on that pull request) |
 
 **Development and checks**
