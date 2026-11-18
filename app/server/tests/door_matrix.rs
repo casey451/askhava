@@ -1664,3 +1664,45 @@ fn td_sec_73_an_own_post_fails_on_a_csrf_refusal() {
         }
     }
 }
+
+/// A planted route that answers 200 and logs a `csrf_rejected` security event under the
+/// request's own ID, as a fail-closed refusal that does not answer 403 would.
+async fn planted_csrf_event(headers: HeaderMap) -> StatusCode {
+    let id = headers.get("x-request-id").and_then(|v| v.to_str().ok());
+    let id = id.unwrap_or_default();
+    tracing::warn!(kind = "csrf_rejected", route = "/planted", request_id = %id, "security event");
+    StatusCode::OK
+}
+
+/// TD-SEC-73 (SEC-048, D-4292): [`answer`] marks a 200 as a CSRF refusal when the [`Events`]
+/// subscriber in force logged a `csrf_rejected` event under its request ID, and not without it,
+/// so an own-site `POST` refused that way fails the matrix.
+#[tokio::test]
+async fn td_sec_73_a_logged_csrf_event_marks_the_reply_refused() {
+    let app = Router::new().route("/planted", post(planted_csrf_event));
+    let send = |id: Uuid| {
+        let request = Request::builder().method(Method::POST).uri("/planted");
+        let request = request.header("x-request-id", id.to_string());
+        request.body(Body::empty()).expect("request")
+    };
+    let (bare, _) = answer(&app, send(Uuid::new_v4())).await;
+    assert_eq!((bare.status, bare.csrf_refused), (200, false));
+    let events = Events::default();
+    let _guard = tracing::subscriber::set_default(events.clone());
+    let id = Uuid::new_v4();
+    let (logged, _) = answer(&app, send(id)).await;
+    assert_eq!(
+        events.of(id),
+        [["csrf_rejected".to_owned(), "/planted".to_owned()]]
+    );
+    assert_eq!((logged.status, logged.csrf_refused), (200, true));
+    let fx = planted_fixtures();
+    let judged = judge(
+        Door::Public,
+        (Actor::Anonymous, &Method::POST),
+        &logged,
+        &fx,
+    );
+    assert!(judged.is_err(), "{judged:?}");
+    assert!(judge_opened(&Method::POST, &logged).is_err());
+}
