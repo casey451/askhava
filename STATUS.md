@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-18T02:10:33Z by runner 4fee847da1a9 (actions).
+Updated 2026-11-18T02:13:58Z by runner fde4fad3f9f2 (actions).
 
 **Building: T618 in progress since 01:54Z; 421 of 598 done; week 38% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 421 of 598 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T618 claimed 01:54Z, lease until 04:54Z; lane 4: T639 claimed 01:58Z, lease until 04:58Z; lane 5: T151 claimed 00:12Z, lease until 04:59Z; lane 6: T108 claimed 00:23Z, lease until 04:50Z
-- **Week:** 38% used, 113.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:04Z, 5 min before this update
+- **Lane:** lane 1: T618 claimed 01:54Z, lease until 04:54Z; lane 3: T647 claimed 02:13Z, lease until 05:13Z; lane 4: T639 claimed 01:58Z, lease until 04:58Z; lane 5: T151 claimed 00:12Z, lease until 04:59Z; lane 6: T108 claimed 00:23Z, lease until 04:50Z
+- **Week:** 38% used, 111.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 02:10Z, 3 min before this update
 - **Keeper:** last ran 02:04Z, next wake 04:53Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 17 problem(s) on tasks still to run (+190 on DONE tasks); first: T402: stored context_pct 40% but it measures 45%; regenerate
+- Strict plan check red: 17 problem(s) on tasks still to run (+189 on DONE tasks); first: T402: stored context_pct 40% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -82,7 +82,6 @@ Updated 2026-11-18T02:10:33Z by runner 4fee847da1a9 (actions).
 | T584 | businesses (harness): sign-up activation retried after a con | done | 2 | 43 min | 03:23Z | PLAN GAP: tests/integration/tests/business_event_emails.rs:318 (owned by T329, not T584) expects `emergency_test` to rea |
 | T221 | site: the terms, privacy policy, SMS terms, homeowner data a | resync | 2 | 79 min | 03:14Z |  |
 | T584 | businesses (harness): sign-up activation retried after a con | BLOCKED | 1 | 3 min | 02:26Z |  |
-| T469 | server (harness): the Resend email client from settings and  | done | 1 | 99 min | 02:12Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -118,7 +117,7 @@ Updated 2026-11-18T02:10:33Z by runner 4fee847da1a9 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-18T01:50:15Z (week)): week: 81.0M used, 113.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-30T07:03:31Z.
+- Pacing (session_reading 2026-11-18T02:04:14Z (week)): week: 82.1M used, 111.9M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-30T05:54:24Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -134,6 +133,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T618 (lease until 2026-11-18T04:54:00Z)
+- lane 3: T647 (lease until 2026-11-18T05:13:33Z)
 - lane 4: T639 (lease until 2026-11-18T04:58:02Z)
 - lane 5: T151 (lease until 2026-11-18T04:59:13Z)
 - lane 6: T108 (lease until 2026-11-18T04:50:38Z)
