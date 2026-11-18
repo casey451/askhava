@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T04:16:46Z by runner 1031aea207a3 (actions).
+Updated 2026-11-18T04:20:13Z by runner 505497feebc3 (actions).
 
 **Building: T638 in progress since 03:07Z; 424 of 606 done; week 42% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 424 of 606 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T638 claimed 03:07Z, lease until 07:05Z
-- **Week:** 42% used, 105.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:16Z, 0 min before this update
+- **Lane:** lane 1: T638 claimed 03:07Z, lease until 07:05Z; lane 6: T523 claimed 04:19Z, lease until 07:19Z
+- **Week:** 42% used, 109.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 04:16Z, 3 min before this update
 - **Keeper:** last ran 04:12Z, next wake 07:08Z
 
 ## Needs attention
@@ -93,7 +93,7 @@ Updated 2026-11-18T04:16:46Z by runner 1031aea207a3 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 678 · unstarted 57
-**Tasks merged (throughput only):** 424 of 602
+**Tasks merged (throughput only):** 424 of 606
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -121,7 +121,7 @@ Updated 2026-11-18T04:16:46Z by runner 1031aea207a3 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-18T02:42:17Z (week)): week: 88.6M used, 105.4M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-30T05:48:24Z.
+- Pacing (session_reading 2026-11-18T04:11:42Z (week)): week: 84.6M used, 109.4M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-30T15:28:02Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -137,6 +137,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T638 (lease until 2026-11-18T07:05:51Z)
+- lane 6: T523 (lease until 2026-11-18T07:19:52Z)
 
 ## Last usage reading
 - {"task": "T623", "at": "2026-11-18T03:46:50Z", "cache_creation_input_tokens": 167709, "cache_read_input_tokens": 2469737, "output_tokens": 31176, "input_tokens": 117}
