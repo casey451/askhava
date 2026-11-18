@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T19:14:51Z by runner 935e6983d16c (actions).
+Updated 2026-11-18T19:22:16Z by runner 935e6983d16c (actions).
 
 **Building: T501 in progress since 18:29Z; 453 of 662 done; week 65% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 453 of 662 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T501 claimed 18:29Z, lease until 22:10Z; lane 3: T483 claimed 18:25Z, lease until 21:25Z; lane 4: T364 claimed 18:28Z, lease until 21:28Z; lane 5: T706 claimed 19:14Z, lease until 22:14Z; lane 7: T711 claimed 18:12Z, lease until 21:57Z
-- **Week:** 65% used, 59.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:11Z, 3 min before this update
+- **Lane:** lane 2: T501 claimed 18:29Z, lease until 22:10Z; lane 3: T483 claimed 18:25Z, lease until 21:25Z; lane 4: T364 claimed 18:28Z, lease until 21:28Z; lane 5: T706 claimed 19:14Z, lease until 22:14Z; lane 6: T702 claimed 19:21Z, lease until 22:21Z; lane 7: T711 claimed 18:12Z, lease until 21:57Z
+- **Week:** 65% used, 58.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 19:15Z, 7 min before this update
 - **Keeper:** last ran 18:33Z, next wake 21:15Z
 
 ## Needs attention
@@ -80,7 +80,6 @@ Evidence (confirmed by a second reviewer): list_disputes (app/payments/src/dispu
 | T582 | quotes and messaging (harness): a late read-back confirm is  | done | 1 | 36 min | 20:13Z |  |
 | T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | BLOCKED | 2 | 68 min | 19:54Z |  |
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | BLOCKED | 3 | 46 min | 19:24Z |  |
-| T605 | businesses, intake and picks: the leaving answers, not-cover | done | 1 | 46 min | 19:15Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -116,7 +115,7 @@ Evidence (confirmed by a second reviewer): list_disputes (app/payments/src/dispu
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-18T18:32:59Z (week)): week: 134.5M used, 59.5M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T02:04:00Z.
+- Pacing (session_reading 2026-11-18T18:32:59Z (week)): week: 135.7M used, 58.3M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T02:11:45Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -136,6 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 3: T483 (lease until 2026-11-18T21:25:05Z)
 - lane 4: T364 (lease until 2026-11-18T21:28:18Z)
 - lane 5: T706 (lease until 2026-11-18T22:14:09Z)
+- lane 6: T702 (lease until 2026-11-18T22:21:53Z)
 - lane 7: T711 (lease until 2026-11-18T21:57:11Z)
 
 ## Last usage reading
