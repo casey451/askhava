@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T17:20:53Z by runner 656d34ef3dcf (actions).
+Updated 2026-11-18T17:23:03Z by runner dc963a52a0d9 (actions).
 
-**Building: T624 in progress since 16:49Z; 450 of 645 done; week 63% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T624 in progress since 16:49Z; 451 of 645 done; week 63% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 450 of 645 build tasks (owner gates not counted)
+- **Tasks done:** 451 of 645 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T624 claimed 16:49Z, lease until 19:49Z; lane 5: T500 claimed 17:07Z, lease until 20:07Z; lane 7: T671 claimed 15:43Z, lease until 20:20Z
 - **Week:** 63% used, 65.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:13Z, 7 min before this update
+- **Last run:** 17:21Z, 2 min before this update
 - **Keeper:** last ran 17:13Z, next wake 18:45Z
 
 ## Needs attention
@@ -19,12 +19,12 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 - BLOCKED T645: plan gap reported: PLAN GAP: app/site/src/chat.rs:340 (owned by T593, then T646 and T649; T593 is not merged yet) calls `chat_message(db, &secret, &key, &msg, self.intake)` with no `Vault`, and the `ChatKeys` trait (chat.rs:62-66) only exposes secret/send/check. `messaging::api::suppress` (app/messaging/src/optout.rs:311-317) needs a `&Vault` and the phone, since digests come from `vault.blind_index` (optout.rs:441-443). `chat_message` (app/intake/src/web_chat.rs:247-253) takes no vault and its `Settings` is `Copy`, so T645 cannot list the session's number (step 1, TD-CON-36 "at once") without a signature change; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T645 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 29 problem(s) on tasks still to run (+246 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 32 problem(s) on tasks still to run (+253 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T621 | portals: the scorecard's go and stop line settings and its p | MERGE_PENDING | 1 | 38 min | 17:03Z | merging main into the reviewed head conflicts in app/core/src/settings.rs; a resync merges it in on this attempt (D-891) |
+| T621 | portals: the scorecard's go and stop line settings and its p | done | 1 | 38 min | 17:03Z |  |
 | T720 | Decision digest prerequisites (harness): the digest plan and | done | 1 | 67 min | 16:51Z |  |
 | T624 | server: two failed in-process health checks in a row raise o | resync | 1 | 49 min | 16:38Z | merging main into the reviewed head conflicts in app/server/src/bin/worker.rs; a resync merges it in on this attempt (D- |
 | T592 | jobs, quotes and site: the home page's numbers read every jo | done | 1 | 40 min | 16:19Z |  |
@@ -93,7 +93,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 685 · unstarted 50
-**Tasks merged (throughput only):** 450 of 645
+**Tasks merged (throughput only):** 451 of 645
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -129,7 +129,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 93 of 246 done
+- stage 5: 94 of 246 done
 - stage 6: 0 of 46 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
