@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T01:50:43Z by runner 5f988ff3b19f (actions).
+Updated 2026-11-18T01:52:59Z by runner fde4fad3f9f2 (manual).
 
 **Building: T151 in progress since 00:12Z; 420 of 598 done; week 38% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-18T01:50:43Z by runner 5f988ff3b19f (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 5: T151 claimed 00:12Z, lease until 04:19Z; lane 6: T108 claimed 00:23Z, lease until 04:50Z
 - **Week:** 38% used, 118.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:50Z, 0 min before this update
+- **Last run:** 01:50Z, 2 min before this update
 - **Keeper:** last ran 01:50Z, next wake 03:25Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 27 problem(s) on tasks still to run (+190 on DONE tasks); first: T402: stored context_pct 40% but it measures 45%; regenerate
+- Strict plan check red: 17 problem(s) on tasks still to run (+189 on DONE tasks); first: T402: stored context_pct 40% but it measures 45%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -90,7 +90,7 @@ Updated 2026-11-18T01:50:43Z by runner 5f988ff3b19f (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 677 · unstarted 58
-**Tasks merged (throughput only):** 420 of 582
+**Tasks merged (throughput only):** 420 of 598
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
