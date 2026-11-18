@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{#- Pick P's refund review step (T205; FEE-026, FEE-050, SEC-006, SEC-043; D-229, D-4506). Only
+    P's own disputes are listed; each not yet in offers the owner's own-evidence press, which
+    names the dispute in the form body. Both presses need a code from the last 5 minutes. -#}
+{% block title %}{% if let Some((_, true)) = notice %}Error: {% endif %}Refund review{% endblock %}
+{% block main %}
+<h1>Refund review</h1>
+<div role="status" aria-live="polite">{% if let Some((line, false)) = notice %}<p>{{ line }}</p>{% endif %}</div>
+{% if let Some((line, true)) = notice %}<div role="alert" tabindex="-1" id="error-summary"><p>{{ line }}</p>{% if step_up %}<p><a href="{{ step_up_route }}">Get a new code</a>, then press again.</p>{% endif %}</div>{% endif %}
+<p>Pick {{ pick }}. {{ state }}</p>
+{% if may_refund %}<form method="post" action="{{ refund_route }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<p>This refunds the whole introduction fee by job size. You can only do it once. It needs a code from the last 5 minutes, and it goes in the audit log.</p>
+<p><button type="submit">Refund this charge</button></p>
+</form>{% endif %}
+<h2>Disputes on this charge</h2>
+{% if disputes.is_empty() %}<p>None.</p>{% else %}<ul id="disputes">
+{% for d in disputes %}<li><p>Dispute {{ d.id }}: {{ d.amount }}, evidence due {{ d.due }}. If you counter, the fee at stake is {{ d.fee }}. {{ d.status }}</p>
+{% if d.open %}<form method="post" action="{{ evidence_route }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="dispute" value="{{ d.id }}">
+<p><button type="submit">I submitted this dispute's evidence in Stripe myself</button></p>
+</form>{% endif %}</li>
+{% endfor %}</ul>{% endif %}
+{% endblock %}

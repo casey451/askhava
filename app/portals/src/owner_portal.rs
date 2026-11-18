@@ -12,6 +12,15 @@
 //! a form for its route and [`apply_owner_change`] makes the change through the owning crate,
 //! which logs it, after the SEC-043 fresh factor for the fee mode and every settings change. No
 //! page or error holds a contact detail. `server` (T310) serves these behind the owner session.
+//!
+//! T205 (FEE-026, FEE-050, SEC-006, D-229, D-4506, D-4481): [`owner_refund_page`] is pick P's
+//! refund review step, listing only P's disputes (`payments::api::disputes_of`);
+//! [`owner_refund`] refunds P once through `request_refund` with [`RefundTrigger::Owner`] (a
+//! disputed charge is blocked there), and [`owner_dispute_evidence`] records Casey's own evidence
+//! submission for one of P's disputes through `record_pick_owner_submission`, its audit row in the
+//! same transaction, refusing another pick's. Both need the SEC-043 fresh factor and audit with
+//! the owner as actor and P as subject. [`owner_audit_log_page`] lists the audit log with each
+//! row's actor. `server` (T304) serves these.
 
 use askama::Template;
 use askhava_businesses::api::{needs_review_signups, review_target_line};
@@ -22,14 +31,19 @@ use askhava_messaging::api::{
     set_launch_channel, switch_off, switch_on, weekly_optout_rates,
 };
 use askhava_ops::api::{
-    Actor, DELIVERY_ALERT, Switch, acknowledge_pushed_alert, banner_shown, clear_banner, is_paused,
-    pushed_alerts, set_switch,
+    Actor, AuditEntry, AuditRow, Change, DELIVERY_ALERT, Switch, acknowledge_pushed_alert, audit,
+    audit_once, banner_shown, clear_banner, export_audit, is_paused, pushed_alerts, set_switch,
 };
-use askhava_payments::api::{FeeMode, fee_terms_in_force, switch_fee_mode};
+use askhava_payments::api::{
+    DisputeView, FeeMode, MoneyEventError, OwnerSubmission, PickRefundState, RefundOutcome,
+    RefundStripe, RefundTrigger, disputes_of, fee_terms_in_force, record_pick_owner_submission,
+    refund_state, request_refund, switch_fee_mode,
+};
 use jiff::{Timestamp, tz};
+use secrecy::SecretString;
 use serde::Deserialize;
-use sqlx::PgConnection;
 use sqlx::types::Uuid;
+use sqlx::{Connection, PgConnection, PgPool};
 
 use crate::owner_auth::{OwnerAction, OwnerAuthError, OwnerPrincipal, require_owner_step_up};
 use crate::owner_step_up_page::OWNER_STEP_UP_ROUTE;
@@ -50,6 +64,21 @@ pub const OWNER_TEXTING_ROUTE: &str = "/owner/texting";
 pub const OWNER_BANNER_ROUTE: &str = "/owner/banner";
 /// The safe-mode acknowledgement of a pushed alert `POST` (OPS-001).
 pub const OWNER_ALERT_ACK_ROUTE: &str = "/owner/alert-ack";
+/// Pick `{pick}`'s refund review step (`GET`, T205; FEE-026, FEE-050, SEC-006, D-3890).
+pub const OWNER_REFUND_ROUTE: &str = "/owner/refunds/{pick}";
+/// The review step's refund press (`POST`, no body but the CSRF field; FEE-026, SEC-043).
+pub const OWNER_REFUND_PRESS_ROUTE: &str = "/owner/refunds/{pick}/refund";
+/// The review step's "I submitted this dispute's evidence in Stripe myself" press (`POST`, an
+/// [`EvidenceForm`]; FEE-050, D-229, D-4506).
+pub const OWNER_EVIDENCE_ROUTE: &str = "/owner/refunds/{pick}/evidence";
+/// The audit log viewer (`GET`, `?after=<row ID>`; SEC-006, OPS-010).
+pub const OWNER_AUDIT_LOG_ROUTE: &str = "/owner/audit-log";
+/// The audit action of the owner's refund press, about the pick (SEC-006, D-074).
+pub const OWNER_REFUND_ACTION: &str = "portals.owner_refund";
+/// The audit action of the owner's own evidence submission, about the pick (SEC-006, D-4481).
+pub const OWNER_EVIDENCE_ACTION: &str = "portals.owner_dispute_evidence";
+/// How many audit rows one page of the viewer lists.
+pub const AUDIT_PAGE_ROWS: i64 = 100;
 /// How many finished Arizona weeks of opt-out rates the home page lists (CON-024).
 pub const OPT_OUT_WEEKS: usize = 4;
 
@@ -525,6 +554,310 @@ pub async fn owner_settings_page(
         step_up_route: OWNER_STEP_UP_ROUTE,
         home_route: OWNER_HOME_ROUTE,
         categories,
+    }
+    .render()
+    .map_err(store)
+}
+
+/// The body of the evidence press: the `dp_` ID of the dispute it names. The pick comes from the
+/// route's `{pick}`; the CSRF field is read by `server`'s `CsrfForm` (D-4506).
+#[derive(Debug, Clone, Default, Deserialize)]
+pub struct EvidenceForm {
+    /// The dispute's Stripe ID.
+    #[serde(default)]
+    pub dispute: String,
+}
+
+/// What the review step says above its lists after a press (FEE-026, FEE-050, SEC-043).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ReviewNotice {
+    /// A refund press came to this.
+    Refund(RefundOutcome),
+    /// An evidence press came to this.
+    Evidence(OwnerSubmission),
+    /// A press without a code from the last 5 minutes: nothing changed.
+    NeedsFreshFactor,
+}
+
+fn route_of(route: &str, pick: Uuid) -> String {
+    route.replace("{pick}", &pick.to_string())
+}
+
+fn money_error(e: MoneyEventError) -> OwnerToolError {
+    refused_or_store(e != MoneyEventError::NothingCharged)
+}
+
+/// SEC-043: the fresh-factor gate of a refund-step press on `route`.
+async fn refund_gate(
+    conn: &mut PgConnection,
+    principal: &OwnerPrincipal,
+    route: &str,
+    now: Timestamp,
+) -> Result<(), OwnerToolError> {
+    match require_owner_step_up(conn, principal, (OwnerAction::Refund, route), now).await {
+        Err(OwnerAuthError::NeedsFreshFactor) => Err(OwnerToolError::NeedsFreshFactor),
+        other => other.map_err(store),
+    }
+}
+
+/// FEE-026, SEC-006, SEC-043, D-3883: after a fresh factor, refunds `pick`'s charge in full once
+/// through `payments::api::request_refund` with [`RefundTrigger::Owner`]; a replayed press sends
+/// nothing and books no second ledger row, and a disputed charge is `Blocked` there. One owner
+/// audit row about the pick, written once however often it is pressed.
+///
+/// # Errors
+///
+/// [`OwnerToolError::NeedsFreshFactor`], [`OwnerToolError::Refused`] when nothing was charged,
+/// or [`OwnerToolError::Database`].
+pub async fn owner_refund(
+    pool: &PgPool,
+    (stripe, secret): (&impl RefundStripe, &SecretString),
+    principal: &OwnerPrincipal,
+    pick: Uuid,
+    now: Timestamp,
+) -> Result<RefundOutcome, OwnerToolError> {
+    let mut conn = pool.acquire().await.map_err(store)?;
+    let route = route_of(OWNER_REFUND_PRESS_ROUTE, pick);
+    refund_gate(&mut conn, principal, &route, now).await?;
+    let outcome = request_refund(pool, stripe, secret, (pick, RefundTrigger::Owner), now)
+        .await
+        .map_err(money_error)?;
+    let entry = owner_entry(principal, OWNER_REFUND_ACTION, pick, Change::Action);
+    audit_once(&mut conn, &entry).await.map_err(store)?;
+    Ok(outcome)
+}
+
+fn owner_entry(
+    principal: &OwnerPrincipal,
+    action: &'static str,
+    pick: Uuid,
+    change: Change,
+) -> AuditEntry {
+    AuditEntry {
+        actor: Actor::Owner(principal.owner()),
+        action,
+        subject_kind: "picks.pick",
+        subject_id: pick,
+        change,
+    }
+}
+
+/// FEE-050, D-229, SEC-006, D-4506: after a fresh factor, records that Casey submitted the
+/// evidence of `pick`'s own dispute `form.dispute` in Stripe himself, through
+/// `payments::api::record_pick_owner_submission`. `Recorded` writes one owner audit row about the
+/// pick in the same transaction; `AlreadyIn` writes nothing more; `NotThisPick` (another pick's
+/// dispute, or none) writes nothing at all and the page shows a plain error.
+///
+/// # Errors
+///
+/// [`OwnerToolError::NeedsFreshFactor`] or [`OwnerToolError::Database`].
+pub async fn owner_dispute_evidence(
+    conn: &mut PgConnection,
+    principal: &OwnerPrincipal,
+    (pick, form): (Uuid, &EvidenceForm),
+    now: Timestamp,
+) -> Result<OwnerSubmission, OwnerToolError> {
+    let route = route_of(OWNER_EVIDENCE_ROUTE, pick);
+    refund_gate(conn, principal, &route, now).await?;
+    let mut tx = conn.begin().await.map_err(store)?;
+    let answer = record_pick_owner_submission(&mut tx, pick, form.dispute.trim(), now)
+        .await
+        .map_err(money_error)?;
+    if answer == OwnerSubmission::Recorded {
+        let change = Change::Field("submitted_at");
+        let entry = owner_entry(principal, OWNER_EVIDENCE_ACTION, pick, change);
+        audit(&mut tx, &entry).await.map_err(store)?;
+    }
+    tx.commit().await.map_err(store)?;
+    Ok(answer)
+}
+
+/// One of the pick's disputes as the review step lists it (FEE-050).
+#[derive(Debug, Clone)]
+struct DisputeRow {
+    id: String,
+    amount: String,
+    due: String,
+    fee: String,
+    status: &'static str,
+    open: bool,
+}
+
+fn dollars(cents: i64) -> String {
+    format!("${}.{:02}", cents / 100, cents % 100)
+}
+
+fn dispute_row(d: DisputeView) -> DisputeRow {
+    let status = match (d.submitted_at, d.auto_submit) {
+        (Some(_), _) => "The evidence is in.",
+        (None, true) => "We send the evidence 2 days before the due date.",
+        (None, false) => "You need to counter or accept this one in Stripe.",
+    };
+    DisputeRow {
+        open: d.submitted_at.is_none(),
+        amount: dollars(d.amount_cents),
+        due: arizona(d.due_at),
+        fee: dollars(d.fee_at_stake_cents),
+        status,
+        id: d.dispute,
+    }
+}
+
+#[derive(Template)]
+#[template(path = "owner_refund.html")]
+struct RefundView<'a> {
+    csrf: &'a str,
+    pick: String,
+    refund_route: String,
+    evidence_route: String,
+    step_up_route: &'static str,
+    state: &'static str,
+    may_refund: bool,
+    notice: Option<(&'static str, bool)>,
+    step_up: bool,
+    disputes: Vec<DisputeRow>,
+}
+
+/// The notice line and whether it is an error.
+fn notice_line(notice: ReviewNotice) -> (&'static str, bool) {
+    match notice {
+        ReviewNotice::Refund(RefundOutcome::Refunded(_)) => ("Refunded in full.", false),
+        ReviewNotice::Refund(RefundOutcome::Unchanged) => (
+            "Nothing new was sent. A refund was already done or is on its way.",
+            false,
+        ),
+        ReviewNotice::Refund(RefundOutcome::Blocked) => (
+            "Error: This charge is disputed, so it can't be refunded. Nothing was sent.",
+            true,
+        ),
+        ReviewNotice::Refund(RefundOutcome::Failed) => (
+            "Not refunded yet. We'll try again every hour and let you know.",
+            false,
+        ),
+        ReviewNotice::Evidence(OwnerSubmission::Recorded) => ("Marked as sent by you.", false),
+        ReviewNotice::Evidence(OwnerSubmission::AlreadyIn) => {
+            ("That evidence is already in.", false)
+        }
+        ReviewNotice::Evidence(OwnerSubmission::NotThisPick) => (
+            "Error: That dispute is not on this charge. Nothing was changed.",
+            true,
+        ),
+        ReviewNotice::NeedsFreshFactor => (
+            "Error: You need a code from the last 5 minutes. Nothing was changed.",
+            true,
+        ),
+    }
+}
+
+/// FEE-026: where the refund stands, and whether the refund press is offered.
+fn state_line(state: PickRefundState) -> (&'static str, bool) {
+    match state {
+        PickRefundState::NoRefund => ("No refund yet.", true),
+        PickRefundState::InFlight => (
+            "A refund is on its way. Stripe has not said it went through.",
+            false,
+        ),
+        PickRefundState::Succeeded => ("Refunded in full.", false),
+        PickRefundState::Failed => (
+            "The last refund didn't go through. We'll try again every hour.",
+            true,
+        ),
+        PickRefundState::Blocked => ("This charge is disputed, so it can't be refunded.", false),
+    }
+}
+
+/// FEE-026, FEE-050, SEC-006, D-4506: pick `pick`'s refund review step, its forms carrying `csrf`:
+/// where its refund stands, the refund press unless the charge is disputed or refunded or a try is
+/// on its way, and only this pick's own disputes with the fee at stake, each not yet in offering
+/// "I submitted this dispute's evidence in Stripe myself". Reads only.
+///
+/// # Errors
+///
+/// [`OwnerToolError::Database`] for a failed read or render.
+pub async fn owner_refund_page(
+    conn: &mut PgConnection,
+    csrf: &str,
+    pick: Uuid,
+    notice: Option<ReviewNotice>,
+) -> Result<String, OwnerToolError> {
+    let state = refund_state(conn, pick).await.map_err(store)?;
+    let disputes = disputes_of(conn, pick).await.map_err(store)?;
+    let (state, may_refund) = state_line(state);
+    RefundView {
+        csrf,
+        pick: pick.to_string(),
+        refund_route: route_of(OWNER_REFUND_PRESS_ROUTE, pick),
+        evidence_route: route_of(OWNER_EVIDENCE_ROUTE, pick),
+        step_up_route: OWNER_STEP_UP_ROUTE,
+        may_refund,
+        state,
+        step_up: notice == Some(ReviewNotice::NeedsFreshFactor),
+        notice: notice.map(notice_line),
+        disputes: disputes.into_iter().map(dispute_row).collect(),
+    }
+    .render()
+    .map_err(store)
+}
+
+/// One audit row as the viewer lists it: IDs, code names and an Arizona time only (SEC-006).
+#[derive(Debug, Clone)]
+struct LogRow {
+    at: String,
+    actor: String,
+    action: String,
+    subject: String,
+    change: String,
+}
+
+fn log_row(r: AuditRow) -> LogRow {
+    let actor = match (r.actor_kind.as_str(), r.actor_id) {
+        ("system", _) => "System".to_owned(),
+        ("owner", _) => "Owner".to_owned(),
+        (kind, Some(id)) => format!("{kind} {id}"),
+        (kind, None) => kind.to_owned(),
+    };
+    let change = match (r.from_status, r.to_status, r.field) {
+        (Some(from), Some(to), _) => format!("{from} to {to}"),
+        (_, _, Some(field)) => field,
+        _ => String::new(),
+    };
+    LogRow {
+        at: arizona(r.at),
+        actor,
+        action: r.action,
+        subject: format!("{} {}", r.subject_kind, r.subject_id),
+        change,
+    }
+}
+
+#[derive(Template)]
+#[template(path = "owner_audit_log.html")]
+struct AuditLogView {
+    rows: Vec<LogRow>,
+    next: Option<String>,
+}
+
+/// SEC-006, OPS-010: the audit log viewer, up to [`AUDIT_PAGE_ROWS`] rows after row `after`,
+/// oldest first, each with its actor; a full page links to the next. Reads only.
+///
+/// # Errors
+///
+/// [`OwnerToolError::Database`] for a failed read or render.
+pub async fn owner_audit_log_page(
+    conn: &mut PgConnection,
+    after: i64,
+) -> Result<String, OwnerToolError> {
+    let rows = export_audit(conn, after, AUDIT_PAGE_ROWS)
+        .await
+        .map_err(store)?;
+    let full = i64::try_from(rows.len()).is_ok_and(|n| n == AUDIT_PAGE_ROWS);
+    let next = rows
+        .last()
+        .filter(|_| full)
+        .map(|r| format!("{OWNER_AUDIT_LOG_ROUTE}?after={}", r.id));
+    AuditLogView {
+        rows: rows.into_iter().map(log_row).collect(),
+        next,
     }
     .render()
     .map_err(store)
