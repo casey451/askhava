@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-18T23:22:37Z by runner 2b9452a4f8a9 (actions).
+Updated 2026-11-18T23:28:36Z by runner 0a1d8934fe08 (actions).
 
-**Building: T205 in progress since 22:21Z; 463 of 663 done; week 69% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T488 in progress since 23:28Z; 463 of 663 done; week 69% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 463 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T205 claimed 22:21Z, lease until 01:21Z; lane 3: T306 claimed 22:14Z, lease until 01:14Z; lane 7: T364 claimed 23:21Z, lease until 02:21Z
-- **Week:** 69% used, 52.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:06Z, 15 min before this update
+- **Lane:** lane 1: T488 claimed 23:28Z, lease until 02:28Z; lane 2: T205 claimed 22:21Z, lease until 01:21Z; lane 3: T306 claimed 22:14Z, lease until 01:14Z; lane 7: T364 claimed 23:21Z, lease until 02:21Z
+- **Week:** 69% used, 51.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 23:22Z, 5 min before this update
 - **Keeper:** last ran 23:03Z, next wake 23:23Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 50 problem(s) on tasks still to run (+266 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 50 problem(s) on tasks still to run (+267 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -82,7 +82,6 @@ Updated 2026-11-18T23:22:37Z by runner 2b9452a4f8a9 (actions).
 | T604 | Dependencies: sentry without default features, so native-tls | done | 1 | 78 min | 01:49Z |  |
 | T478 | jobs, intake, calls, messaging and businesses: the scorecard | done | 1 | 2 h 23 min | 01:47Z |  |
 | T587 | payments and picks: the old Confirm fee writer is marked tes | done | 1 | 48 min | 00:26Z |  |
-| T606 | harness: scripts/check_copy.py allows one aria-hidden arrow  | done | 1 | 62 min | 23:23Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -118,7 +117,7 @@ Updated 2026-11-18T23:22:37Z by runner 2b9452a4f8a9 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-18T23:03:29Z (week)): week: 141.2M used, 52.8M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T03:17:01Z.
+- Pacing (session_reading 2026-11-18T23:03:29Z (week)): week: 142.4M used, 51.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T03:46:19Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -133,7 +132,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T488 (lease until 2026-11-19T02:28:13Z)
 - lane 2: T205 (lease until 2026-11-19T01:21:45Z)
 - lane 3: T306 (lease until 2026-11-19T01:14:21Z)
 - lane 7: T364 (lease until 2026-11-19T02:21:52Z)
