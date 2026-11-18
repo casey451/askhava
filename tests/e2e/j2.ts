@@ -64,16 +64,6 @@ export function emailedCode(business: string): string {
   return String(BigInt(`0x${key.slice(0, 12)}`) % 1_000_000n).padStart(6, "0");
 }
 
-/** Re-sends every business POST with a same-origin https Origin (D-1250). */
-export async function httpsOrigin(page: Page): Promise<void> {
-  await page.route("**/b/**", async (route) => {
-    const request = route.request();
-    if (request.method() !== "POST") return route.continue();
-    const headers = { ...request.headers(), origin: `https://${new URL(request.url()).host}`, "sec-fetch-site": "same-origin" };
-    return route.fulfill({ response: await route.fetch({ headers, maxRedirects: 0 }) });
-  });
-}
-
 /** The business the browser's sign-up binding cookie names (`<sign-up ID>.<salt>.<MAC>`). */
 export async function boundBusiness(page: Page): Promise<string> {
   const cookies = await page.context().cookies(keyedUrl());
