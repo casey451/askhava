@@ -55,6 +55,7 @@ mod sender_pending;
 mod service;
 mod signin_mail;
 mod status;
+mod suppression_versions;
 mod templates;
 
 #[cfg(test)]

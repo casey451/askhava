@@ -601,6 +601,33 @@ where
         .map_err(io::Error::other)
 }
 
+/// The index key start check both binaries run once after building their vault and connecting,
+/// before they serve a request or run a task (PRIV-024, CON-035, D-4418, D-4473): `privacy`
+/// settles the homeowner-phone index under the configured versions, then `messaging` checks that
+/// no opt-out is held under a version the key set lacks. A failure, or a database that cannot be
+/// read, logs one line naming versions and a count only and refuses the start, so nothing is
+/// texted; the host's health check keeps the previous release serving. No vault: skipped.
+///
+/// # Errors
+///
+/// The refusal, naming no digest, contact or key.
+pub async fn check_index_keys(pool: &PgPool, vault: Option<&Vault>) -> io::Result<()> {
+    let Some(vault) = vault else {
+        return Ok(());
+    };
+    let refuse = |error: String| {
+        tracing::error!(%error, "start refused: index key versions (D-4418)");
+        io::Error::other(error)
+    };
+    let mut conn = pool.acquire().await.map_err(|e| refuse(e.to_string()))?;
+    askhava_privacy::api::settle_index_versions(&mut conn, vault)
+        .await
+        .map_err(|e| refuse(e.to_string()))?;
+    askhava_messaging::api::check_suppression_versions(&mut conn, vault)
+        .await
+        .map_err(|e| refuse(e.to_string()))
+}
+
 /// The `ID_SECRET` setting, read here for the webhook routes' outbox keys (SEC-018).
 const ID_SECRET: &str = "ASKHAVA_ID_SECRET";
 

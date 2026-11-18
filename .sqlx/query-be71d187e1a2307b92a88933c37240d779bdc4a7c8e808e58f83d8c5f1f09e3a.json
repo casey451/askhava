@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO privacy.contact_index (purpose, key_version, digest, contact_id) SELECT $1, k.v, k.d, $4 FROM unnest($2::int4[], $3::bytea[]) AS k(v, d)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int4Array",
+        "ByteaArray",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "be71d187e1a2307b92a88933c37240d779bdc4a7c8e808e58f83d8c5f1f09e3a"
+}
