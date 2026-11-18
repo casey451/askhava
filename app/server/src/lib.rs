@@ -693,13 +693,22 @@ where
     (seal, index)
 }
 
-/// `intake`'s no-reply reminder and close (INT-019) and the emergency address asked again on
-/// `picks.address_needed` (INT-029, T255), both with the `ID_SECRET` as outbox key.
-fn register_intake_asks(registry: &mut Registry, id_secret: &SecretString) {
+/// `intake`'s no-reply reminder and close (INT-019), a business's "Ask about a charge" help request
+/// (OPS-036, T151) and the emergency address asked again on `picks.address_needed` (INT-029,
+/// T255), the first and last with the `ID_SECRET` as outbox key, the help request on the worker
+/// clock.
+fn register_intake_asks(registry: &mut Registry, id_secret: &SecretString, clock: &Arc<dyn Clock>) {
     let secret = id_secret.clone();
     registry.register(askhava_intake::api::NO_REPLY_KIND, move |pool, task| {
         askhava_intake::api::run_no_reply(pool, secret.clone(), task)
     });
+    let help_clock = Arc::clone(clock);
+    registry.register(
+        askhava_portals::api::HELP_REQUEST_KIND,
+        move |pool, task| {
+            askhava_intake::api::run_help_request_opened(pool, task, help_clock.now())
+        },
+    );
     let asked = id_secret.clone();
     registry.register(
         askhava_picks::api::ADDRESS_NEEDED_KIND,
@@ -736,7 +745,7 @@ where
     release_minter();
     let clock = Arc::clone(&stream.clock);
     let mut registry = Registry::new();
-    register_intake_asks(&mut registry, &stream.id_secret);
+    register_intake_asks(&mut registry, &stream.id_secret, &clock);
     registry.register(
         askhava_intake::api::CARD_TIMER_KIND,
         askhava_intake::api::run_card_timer,
@@ -1021,7 +1030,7 @@ fn register_twilio_handlers(
 const ALERT_EMAIL: &str = "ASKHAVA_ALERT_EMAIL";
 
 /// OPS-029, OPS-032, OPS-035, SEC-051 (T204, D-2207, D-3144, D-4044): `messaging`'s every-minute
-/// alert push and hourly checks, always registered. The sender is built from T469's
+/// alert push and hourly checks, and OPS-036's HELP notification email (T151), always registered. The sender is built from T469's
 /// [`email_provider::email_provider`] and [`ALERT_EMAIL`], sending as `EmailTo::Business` to that
 /// address; with no provider or no address in dev and Ci it is `None` and sends nothing, and a
 /// missing address in test and live is an error naming the key, never its value.
@@ -1031,7 +1040,9 @@ fn register_alert_emails(
     clock: &Arc<dyn Clock>,
     pairs: Vec<(String, String)>,
 ) -> io::Result<()> {
-    use askhava_messaging::api::{AlertEmailSender, EmailLimits, register_alert_emails};
+    use askhava_messaging::api::{
+        AlertEmailSender, EmailLimits, HelpSender, register_alert_emails, register_help_notices,
+    };
     let address = pairs
         .iter()
         .find(|(k, v)| k == ALERT_EMAIL && !v.trim().is_empty())
@@ -1046,20 +1057,29 @@ fn register_alert_emails(
         (Some(p), Some(address)) => {
             let limits = EmailLimits::new(daily, p.monthly_limit())
                 .ok_or_else(|| io::Error::other("invalid ASKHAVA_EMAIL_DAILY_LIMIT"))?;
+            let help = HelpSender::new(
+                (p.secret().clone(), p.client().clone()),
+                p.postal(),
+                p.daily_limit(),
+                address.clone(),
+            );
             let built = AlertEmailSender::new(
                 (p.secret().clone(), p.client().clone()),
                 p.postal(),
                 p.daily_limit(),
                 (address, limits),
             );
-            Some(Arc::new(built.map_err(|_| bad_postal())?))
+            let help = Arc::new(help.map_err(|_| bad_postal())?);
+            Some((Arc::new(built.map_err(|_| bad_postal())?), help))
         }
         (_, None) if !matches!(settings.environment(), Environment::Dev | Environment::Ci) => {
             return Err(io::Error::other(format!("missing {ALERT_EMAIL}")));
         }
         _ => None,
     };
+    let (sender, help) = sender.unzip();
     register_alert_emails(registry, sender, clock);
+    register_help_notices(registry, help, clock);
     Ok(())
 }
 
