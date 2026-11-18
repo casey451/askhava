@@ -12,7 +12,8 @@
 //! and candidate job type codes as append-only narrowing rows (INT-018, FEE-005, T339); blanking
 //! a job's feedback words at the 3-year purge and on "Delete my data" (PRIV-009, PRIV-011, T315);
 //! the daily timer backstop that revives a dead or missing job timer (JOB-003, JOB-006, OPS-004,
-//! PRIV-007, T366).
+//! PRIV-007, T366); the masked line's queued close after a cancel or a check-in PROBLEM or NO
+//! (CALL-009, CALL-010, T662).
 
 use askhava_core::api::Guarded;
 use askhava_ops::api::Actor;
@@ -34,6 +35,7 @@ pub use crate::followups::{
 };
 pub use crate::handlers::{TEXT_KIND, all_windows_ended, connected_reply, text_due};
 pub use crate::job_facts::{FactsError, JobFacts, Recorded, job_facts, record_job_facts};
+pub use crate::line_close::{LINE_CLOSE_KIND, LineCloseReason, queue_line_close};
 pub use crate::models::{JobRow, JobsError};
 pub use crate::purge_events::{
     PURGE_DUE_KIND, PURGE_STAGES, SWEEP_KIND, SWEEP_PAGE, enqueue_purge, final_jobs_page,
