@@ -9,8 +9,8 @@
 use askhava_intake::api::rules::{Inbound, SAFETY_TEMPLATE, Settings};
 use askhava_intake::api::{
     CLOSE_MENTION_TEMPLATE, CLOSE_WHICH_TEMPLATE, Closing, Handled, JOB_CLOSED_TEMPLATE,
-    JOBS_CLOSED_TEMPLATE, JobStart, Opened, RawReply, Reply, Screened, TextIn, begin_job,
-    name_address_open, receive_raw_reply, receive_text,
+    JOBS_CLOSED_TEMPLATE, JobStart, Opened, RawReply, Reply, Screened, TextIn,
+    ZIP_QUESTION_TEMPLATE, begin_job, name_address_open, receive_raw_reply, receive_text,
 };
 use askhava_jobs::api::{current, job_number};
 use askhava_privacy::api::Vault;
@@ -230,6 +230,8 @@ async fn td_job_05_a_mention_in_an_answer_is_still_taken(mut db: Db) {
     .expect("usual");
     let mut expected = templates(&usual);
     expected.push(CLOSE_MENTION_TEMPLATE);
+    // INT-043, INT-049 (D-4360): the reply goes on, so the request's ZIP question follows.
+    expected.push(ZIP_QUESTION_TEMPLATE);
     assert_eq!(templates(&got), expected);
     assert_eq!((got.then, got.screened), (usual.then, usual.screened));
     assert_eq!(status(&mut db, jobs[0].0).await, "intake");

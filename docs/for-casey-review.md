@@ -3385,6 +3385,7 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - The digest's check can't break other tasks' builds while new decisions keep landing: it runs only on a change to the digest itself.
 - Our choice apart from the digest, which was yours; nothing needs you now.
 
+<<<<<<< HEAD
 ## Three oversized tasks split, one flaky test made steady (D-4419)
 
 - **The task that lets an emergency job's texts go out at night (T402) needed to read more code than one session holds**, so it is split in two: T704 does the job texts, questions and replies of the request conversation, and T402 then does the pick texts and the replies to a homeowner's own text. Same rule, same tests, just in two steps.
@@ -3411,4 +3412,10 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **New wording, for the copy panel:** the question for a text that names no trade ("What do you need done? A few words is enough.") is a draft. Until the AI reading is on, such a text is asked, not told "We don't cover that yet".
 - **A request that never gets a job now times out like any other** (T719): a reminder after a day and a close after three. Because such a request has no request number yet, the two texts are new drafts of the usual ones without the number, for the copy panel.
 - **Open item:** the numbered "Is this mainly 1) plumbing or 2) heating/AC?" question only comes up when the AI reading and the keywords disagree, so it waits for the AI work (T299); no task builds it yet.
+=======
+## A request that names no trade waits for her next description after the ZIP (D-4428)
+
+- **What happens now:** after the consent text she is asked her ZIP; once her town is known she gets the "We'll send this to the N businesses" line (or "We don't cover ... yet") right away when her first text named the kind of job.
+- **The gap:** if her first text named no trade we know ("Hi, can you help?"), she is asked her first name and address right after the ZIP, and her job opens only once a later text names a trade; the question that would ask her ("Is this mainly 1) plumbing or 2) heating/AC?") has no approved wording yet and comes with the trade questions in a later task (T672).
+>>>>>>> origin/main
 - Our choice; nothing needs you now.
