@@ -18,6 +18,7 @@ The layer-2 crate that holds every homeowner contact detail (name, phone, email,
 - An opt-out phrase after a stated name survives the scrub, and `NEVER_A_NAME` holds every word of messaging's opt-out, HELP and START lists: `tests/integration/tests/optout_after_name.rs` (TD-CON-32). `privacy` may not depend on `messaging`, so a word added there is added here.
 - The corpus keeps at least 200 cases and 99% recall: `src/tests/scrub.rs::the_corpus_scores_at_least_99_percent_recall`.
 - "I'm having a leak" keeps every word; short commands survive: `src/tests/scrub.rs`.
+- The all-caps street rule never takes a texting reply or command word ("CLOSE 1042 YES"), and `REPLY_WORDS` holds messaging's opt-out and resubscribe words: `src/tests/scrub.rs`, `tests/integration/tests/scrub_reply_words.rs` (TD-AI-31).
 - An inbound email failing SPF, DKIM or DMARC, or without an auth block, may only opt out (no HELP or START flag); a bad or stale signature is refused: `tests/integration/tests/read_inbound.rs`.
 - Dropping an old `VAULT_KEY` version never makes a photo unreadable: `rotate_photos` moves each row only after its new object is written and deletes the old object only after the move commits; the new object opens only under its row's version and AAD: `tests/integration/tests/photo_key_rotation.rs` (TD-PRIV-24).
 - A purged photo's object goes after its rows, an orphan only over a day old, never an object a row names or one outside `photos/`: `tests/integration/tests/retention_deletes.rs` (TD-PRIV-20).
