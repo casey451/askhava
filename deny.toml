@@ -40,6 +40,7 @@ allow-wildcard-paths = true
 deny = [
     { crate = "askama_axum", reason = "discontinued; askama_web serves templates (D-481)" },
     { crate = "serde_yaml", reason = "unmaintained; serde-saphyr reads the catalog (section 11)" },
+    { crate = "native-tls", reason = "rustls only (section 11); sentry builds without its default transport (D-4287)" },
 ]
 
 [sources]
