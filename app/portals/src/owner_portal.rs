@@ -679,7 +679,7 @@ struct DisputeRow {
     amount: String,
     due: String,
     fee: String,
-    status: &'static str,
+    standing: &'static str,
     open: bool,
 }
 
@@ -688,7 +688,7 @@ fn dollars(cents: i64) -> String {
 }
 
 fn dispute_row(d: DisputeView) -> DisputeRow {
-    let status = match (d.submitted_at, d.auto_submit) {
+    let standing = match (d.submitted_at, d.auto_submit) {
         (Some(_), _) => "The evidence is in.",
         (None, true) => "We send the evidence 2 days before the due date.",
         (None, false) => "You need to counter or accept this one in Stripe.",
@@ -698,7 +698,7 @@ fn dispute_row(d: DisputeView) -> DisputeRow {
         amount: dollars(d.amount_cents),
         due: arizona(d.due_at),
         fee: dollars(d.fee_at_stake_cents),
-        status,
+        standing,
         id: d.dispute,
     }
 }
