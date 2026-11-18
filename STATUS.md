@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-18T07:22:19Z by runner f3c3b7027041 (actions).
+Updated 2026-11-18T07:28:03Z by runner 5b04291a9b2b (actions).
 
 **Building: T640 in progress since 06:58Z; 430 of 613 done; week 46% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 430 of 613 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T640 claimed 06:58Z, lease until 09:58Z; lane 3: T482 claimed 05:26Z, lease until 09:40Z; lane 4: T658 claimed 06:42Z, lease until 09:42Z; lane 5: T643 claimed 05:25Z, lease until 10:00Z; lane 6: T619 claimed 07:22Z, lease until 10:22Z
+- **Lane:** lane 1: T640 claimed 06:58Z, lease until 09:58Z; lane 3: T482 claimed 05:26Z, lease until 09:40Z; lane 4: T658 claimed 06:42Z, lease until 10:28Z; lane 5: T643 claimed 05:25Z, lease until 10:00Z; lane 6: T619 claimed 07:22Z, lease until 10:22Z
 - **Week:** 46% used, 97.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:20Z, 1 min before this update
+- **Last run:** 07:22Z, 5 min before this update
 - **Keeper:** last ran 06:46Z, next wake 09:30Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 25 problem(s) on tasks still to run (+208 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 23 problem(s) on tasks still to run (+204 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -79,7 +79,6 @@ Updated 2026-11-18T07:22:19Z by runner f3c3b7027041 (actions).
 | T112 | Draft the privacy policy and SMS terms | QUEUED | 2 | 52 min | 08:28Z |  |
 | T570 | intake: a CLOSE text, a "Close which?" answer and a cancel-i | done | 1 | 39 min | 08:26Z |  |
 | T112 | Draft the privacy policy and SMS terms | QUEUED | 1 | 62 min | 07:32Z |  |
-| T201 | site: services and help pages, the ROC complaint page | done | 1 | 56 min | 07:22Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -132,7 +131,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T640 (lease until 2026-11-18T09:58:42Z)
 - lane 3: T482 (lease until 2026-11-18T09:40:33Z)
-- lane 4: T658 (lease until 2026-11-18T09:42:44Z)
+- lane 4: T658 (lease until 2026-11-18T10:28:02Z)
 - lane 5: T643 (lease until 2026-11-18T10:00:51Z)
 - lane 6: T619 (lease until 2026-11-18T10:22:07Z)
 
