@@ -16,7 +16,8 @@
 //! the job's centroid (`catalog::api::zip_location`) and, for every other business with a service
 //! area, whatever town it serves, its base ZIP centroid and radius, all read in one statement
 //! (`businesses::api::service_areas`, T601, D-4196); a business whose radius reaches the job
-//! joins the pool by the same reads and skips. A job with no
+//! joins the pool by the same reads and skips, so a send scans `businesses.service_area` once,
+//! whatever the number of businesses with one. A job with no
 //! ZIP or no centroid, or a business with no service area or a base with no centroid, is towns only.
 
 use std::collections::BTreeSet;
@@ -185,7 +186,10 @@ async fn reached(
         return Ok((ids, reach));
     }
     for (id, area) in biz(service_areas(conn).await)? {
-        let Some(base) = area.location.filter(|_| !in_town.contains(&id)) else {
+        if in_town.contains(&id) {
+            continue;
+        }
+        let Some(base) = area.location else {
             continue;
         };
         let radius_miles = area.area.radius_miles();
