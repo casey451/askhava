@@ -37,6 +37,12 @@
 //! facts row (the card's hvac repair and AC not cooling, from the catalog stored once), and each
 //! side has a third quoted job of the same business, page-picked and charged by
 //! [`released_pick::charge`]; the exact path [`CHARGES_PAGE`] is filled with that charged pick.
+//!
+//! T472 (D-3750; PICK-050, SEC-019, SEC-026): an admitted "Can't take it" `POST` by X ends the
+//! pick it names, so each side has a fourth quoted job of the same business, page-picked with no
+//! backup named (seeded as `quoted_job` and the page pick are) and left waiting; the exact path
+//! [`CANT_TAKE_PAGE`] is filled with it, so its end moves no pick onto another row's quote and the
+//! Confirm and [`RELEASED_PAGE`] rows keep their own picks.
 
 #[path = r"door_matrix/released_pick.rs"]
 mod released_pick;
@@ -100,6 +106,9 @@ const FILLS: [&str; 5] = ["{pick}", "{complaint}", "{kind}", "{object}", "{token
 const RELEASED_PAGE: &str = "/b/picks/{pick}";
 /// T306's "Why was I charged?" page, whose `{pick}` is the side's charged pick (FEE-031, D-3112).
 const CHARGES_PAGE: &str = "/b/charges/{pick}";
+/// T472's "Can't take it" page and button, whose `{pick}` is the side's own waiting pick for it,
+/// which an admitted `POST` ends (PICK-050, D-3750).
+const CANT_TAKE_PAGE: &str = "/b/picks/{pick}/cant-take";
 /// A well-formed link token nobody was given.
 const UNISSUED: &str = "0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f";
 /// A base URL nothing listens on, for every vendor client, so no probe reaches a vendor.
@@ -295,6 +304,7 @@ struct Fixtures {
     picks: [Uuid; 2],
     released: [Uuid; 2],
     charged: [Uuid; 2],
+    cant_take: [Uuid; 2],
     complaints: [Uuid; 2],
     links: [Minted; 2],
 }
@@ -317,13 +327,14 @@ impl Fixtures {
     }
 
     /// The ids `template` is filled with for `side`: [`RELEASED_PAGE`] takes the released pick,
-    /// [`CHARGES_PAGE`] the charged one, every other template the waiting one (SEC-019, PICK-024,
-    /// FEE-031, D-3106, D-3112).
+    /// [`CHARGES_PAGE`] the charged one, [`CANT_TAKE_PAGE`] its own waiting one, every other
+    /// template the waiting one (SEC-019, PICK-024, FEE-031, PICK-050, D-3106, D-3112, D-3750).
     fn ids_on(&self, template: &str, side: usize) -> (Uuid, Uuid) {
         let (pick, complaint) = self.ids(side);
         match template {
             RELEASED_PAGE => (self.released[side], complaint),
             CHARGES_PAGE => (self.charged[side], complaint),
+            CANT_TAKE_PAGE => (self.cant_take[side], complaint),
             _ => (pick, complaint),
         }
     }
@@ -912,6 +923,7 @@ struct Side {
     pick: Uuid,
     released: Uuid,
     charged: Uuid,
+    cant_take: Uuid,
     complaint: Uuid,
     link: Minted,
 }
@@ -937,7 +949,8 @@ async fn picked(pool: &PgPool, job: Uuid, now: Timestamp) -> Uuid {
 /// Side `side`: a business with its owner, her job it quoted, her request and page pick of the
 /// quote, the job's quote token and number, a complaint and a Quote action link; and a second
 /// job of the business, quoted, page-picked and released to her contact on the $0 path (D-3106);
-/// and a third, quoted, page-picked and charged (D-3112).
+/// and a third, quoted, page-picked and charged (D-3112); and a fourth, quoted and page-picked
+/// with no backup, left waiting for the "Can't take it" rows (D-3750).
 async fn side(pool: &PgPool, side: usize, now: Timestamp) -> Side {
     let mut db = pool.acquire().await.expect("db");
     let business = create_business(&mut db, false, now)
@@ -971,6 +984,8 @@ async fn side(pool: &PgPool, side: usize, now: Timestamp) -> Side {
     let third = quoted_job(&mut db, business, now).await;
     let paid = picked(pool, third, now).await;
     released_pick::charge(pool, (business, third, paid), now).await;
+    let fourth = quoted_job(&mut db, business, now).await;
+    let cant_take = picked(pool, fourth, now).await;
     Side {
         contact,
         team,
@@ -980,6 +995,7 @@ async fn side(pool: &PgPool, side: usize, now: Timestamp) -> Side {
         pick,
         released: free,
         charged: paid,
+        cant_take,
         complaint: complaint.expect("complaint").id,
         link,
     }
@@ -1147,6 +1163,7 @@ async fn world(pool: &PgPool) -> World {
         picks: [a.pick, b.pick],
         released: [a.released, b.released],
         charged: [a.charged, b.charged],
+        cant_take: [a.cant_take, b.cant_take],
         complaints: [a.complaint, b.complaint],
         links: [a.link, b.link],
     };
@@ -1539,6 +1556,7 @@ fn planted_fixtures() -> Fixtures {
         picks: [Uuid::from_u128(11), Uuid::from_u128(12)],
         released: [Uuid::from_u128(31), Uuid::from_u128(32)],
         charged: [Uuid::from_u128(41), Uuid::from_u128(42)],
+        cant_take: [Uuid::from_u128(51), Uuid::from_u128(52)],
         complaints: [Uuid::from_u128(21), Uuid::from_u128(22)],
         links: [link(1, "c"), link(2, "d")],
     }
