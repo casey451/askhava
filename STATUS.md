@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T15:41:27Z by runner c260062c9bb1 (actions).
+Updated 2026-11-18T15:41:44Z by runner c260062c9bb1 (actions).
 
 **Building: T665 in progress since 14:25Z; 446 of 645 done; week 60% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 446 of 645 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T665 claimed 14:25Z, lease until 17:25Z; lane 2: T525 claimed 13:59Z, lease until 18:18Z; lane 4: T592 claimed 15:38Z, lease until 18:38Z; lane 6: T621 claimed 15:00Z, lease until 18:00Z
+- **Lane:** lane 1: T665 claimed 14:25Z, lease until 17:25Z; lane 4: T592 claimed 15:38Z, lease until 18:38Z; lane 6: T621 claimed 15:00Z, lease until 18:00Z
 - **Week:** 60% used, 70.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:39Z, 2 min before this update
 - **Keeper:** last ran 15:05Z, next wake 17:27Z
@@ -23,6 +23,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T525 | server and ops: the hourly vault-read check and the daily da | MERGE_PENDING | 1 | 102 min | 15:41Z |  |
 | T200 | ops and portals: the owner help page with its screened reply | done | 2 | 2 h 25 min | 14:32Z | Review not approved after the one fix round (head 346acc872b66e2a8cd86b345b919fe4573f7db87). / Remaining finding (review |
 | T671 | intake (harness): a homeowner's texts after the consent text | BLOCKED | 1 | 44 min | 13:58Z | PLAN GAP: three tests outside T671's scope fail because of the new behaviour (worker edited none of them): / 1. tests/in |
 | T472 | server (harness): serve the "Can't take it" page and button  | done | 1 | 62 min | 12:45Z |  |
@@ -132,9 +133,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T665 (lease until 2026-11-18T17:25:29Z)
-- lane 2: T525 (lease until 2026-11-18T18:18:02Z)
 - lane 4: T592 (lease until 2026-11-18T18:38:59Z)
 - lane 6: T621 (lease until 2026-11-18T18:00:08Z)
 
 ## Last usage reading
-- {"task": "T200", "at": "2026-11-18T14:32:19Z", "input_tokens": 403, "output_tokens": 116184, "cache_creation_input_tokens": 395960, "cache_read_input_tokens": 18705302}
+- {"task": "T525", "at": "2026-11-18T15:41:25Z", "cache_creation_input_tokens": 273076, "input_tokens": 230, "output_tokens": 67695, "cache_read_input_tokens": 8525223}
