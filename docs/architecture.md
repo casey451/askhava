@@ -573,6 +573,7 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | GET | /healthz | server | yes |
 | GET | /b | portals | yes |
 | POST | /b/open-cards | portals | yes |
+| POST | /b/review-links | portals | yes |
 | GET | /b/picks/{pick} | portals | yes |
 | GET | /b/billing | portals | yes |
 | GET | /b/billing/statement.csv | portals | yes |

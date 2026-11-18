@@ -15,6 +15,10 @@
 //! and again before the submit task; [`mark_auto_submit`] and [`record_owner_submission`] each
 //! write their two rows in one transaction (a savepoint inside a caller's), so a mark never
 //! lands without its task, nor `submitted_at` without its countering fee.
+//!
+//! T722 (D-4506, SEC-006): the owner portal's refund review reads one pick's disputes through
+//! [`disputes_of`] and records Casey's press through [`record_pick_owner_submission`], which locks
+//! the dispute row and writes only for that pick's own dispute (else `NotThisPick`).
 
 use std::future::Future;
 
@@ -29,7 +33,7 @@ use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection, PgPool};
 
 use crate::ledger::{EntryKind, LedgerEntry, NewEntry, ledger_append};
-use crate::models::{DisputeOpened, DisputeView, EvidencePack, MoneyEventError};
+use crate::models::{DisputeOpened, DisputeView, EvidencePack, MoneyEventError, OwnerSubmission};
 
 /// FEE-027, FEE-050: Stripe's dispute fee, recorded with the disputed amount, and the countering
 /// fee recorded when evidence is submitted.
@@ -225,6 +229,8 @@ pub async fn mark_auto_submit(
 /// D-229, FEE-050: Casey submitted `dispute`'s evidence himself; it is never auto-submitted after,
 /// and the countering fee is recorded once. `false` when it was already in. `submitted_at` and the
 /// fee commit together in one transaction on `conn` (a savepoint inside a caller's, D-2204).
+/// Takes the dispute ID only: a portal calls [`record_pick_owner_submission`], which also checks
+/// the dispute is the reviewed pick's own (D-4506).
 ///
 /// # Errors
 /// `Ledger` or `Database`.
@@ -237,6 +243,45 @@ pub async fn record_owner_submission(
     let recorded = submitted(&mut tx, dispute, "owner", at).await?;
     db(tx.commit().await)?;
     Ok(recorded)
+}
+
+/// FEE-050, D-229, SEC-006, D-4506: Casey submitted the evidence of `dispute` (`dp_` or `du_`, as
+/// stored, no prefix check) himself, recorded only when it is `pick`'s own dispute. In one
+/// transaction on `conn` (a savepoint inside a caller's, D-2204) the dispute row is locked first:
+/// unknown or another pick's is `NotThisPick`, one already in is `AlreadyIn`, both writing
+/// nothing; else `submitted_at`, `submitted_by = 'owner'` and the one countering fee are written
+/// as [`record_owner_submission`] does, `Recorded`. A press racing [`run_dispute_submit`] books
+/// one fee: `submitted` writes only while `submitted_at` is null, under the key `countering.{dp_}`.
+///
+/// # Errors
+/// `Ledger` or `Database`.
+pub async fn record_pick_owner_submission(
+    conn: &mut PgConnection,
+    pick: Uuid,
+    dispute: &str,
+    at: Timestamp,
+) -> Result<OwnerSubmission, MoneyEventError> {
+    let mut tx = db(conn.begin().await)?;
+    let row = db(sqlx::query!(
+        "SELECT pick_id, submitted_at FROM payments.dispute
+          WHERE stripe_dispute_id = $1 FOR UPDATE",
+        dispute,
+    )
+    .fetch_optional(&mut *tx)
+    .await)?;
+    let Some(row) = row.filter(|r| r.pick_id == pick) else {
+        return Ok(OwnerSubmission::NotThisPick);
+    };
+    if row.submitted_at.is_some() {
+        return Ok(OwnerSubmission::AlreadyIn);
+    }
+    let answer = if submitted(&mut tx, dispute, "owner", at).await? {
+        OwnerSubmission::Recorded
+    } else {
+        OwnerSubmission::AlreadyIn
+    };
+    db(tx.commit().await)?;
+    Ok(answer)
 }
 
 /// Marks the evidence in, `by` `auto` or `owner`, and appends the countering fee (FEE-050).
@@ -369,6 +414,38 @@ pub async fn list_disputes(
           WHERE opened_at >= $1 OR (submitted_at IS NULL AND due_at >= $1)
           ORDER BY opened_at, stripe_dispute_id",
         since.to_sqlx() as _,
+    )
+    .fetch_all(conn)
+    .await)?;
+    Ok(rows
+        .into_iter()
+        .map(|r| DisputeView {
+            dispute: r.stripe_dispute_id,
+            amount_cents: r.amount_cents,
+            due_at: r.due_at.to_jiff(),
+            auto_submit: r.auto_submit,
+            submitted_at: r.submitted_at.map(|t| t.to_jiff()),
+            fee_at_stake_cents: DISPUTE_FEE_CENTS,
+        })
+        .collect())
+}
+
+/// FEE-027, FEE-050, SEC-006, D-4506: every dispute of `pick` (evidence in or not), oldest first
+/// by `opened_at` then dispute ID, as [`list_disputes`] shows it, for the owner portal's refund
+/// review of that pick's charge; empty when it has none. IDs, amounts and times only (PRIV-027).
+///
+/// # Errors
+/// [`MoneyEventError::Database`].
+pub async fn disputes_of(
+    conn: &mut PgConnection,
+    pick: Uuid,
+) -> Result<Vec<DisputeView>, MoneyEventError> {
+    let rows = db(sqlx::query!(
+        "SELECT stripe_dispute_id, amount_cents, due_at, auto_submit, submitted_at
+           FROM payments.dispute
+          WHERE pick_id = $1
+          ORDER BY opened_at, stripe_dispute_id",
+        pick,
     )
     .fetch_all(conn)
     .await)?;
