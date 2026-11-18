@@ -11,7 +11,7 @@
 // the Verify stand-in's rule (stand_ins/twilio.py `start_verification`: the sum of the E.164
 // number's character codes modulo 1,000,000, six digits). Then the released job's page shows
 // PICK-024's tip line once and no phone-shaped number, and the home, billing and notice-settings
-// pages load. POSTs are re-sent with a same-origin https Origin, as the J1 specs do (D-1250). No
+// pages load. POSTs go with the browser's own headers (D-4292). No
 // test-control route; fake data only; no key or value is printed or logged.
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { spawnSync } from "node:child_process";
@@ -80,19 +80,8 @@ function seedReleasedPick(business: string): string {
   return pick;
 }
 
-/** Re-sends every sign-in POST with a same-origin https Origin (D-1250). */
-async function httpsOrigin(page: Page): Promise<void> {
-  await page.route("**/b/sign-in/**", async (route) => {
-    const request = route.request();
-    if (request.method() !== "POST") return route.continue();
-    const headers = { ...request.headers(), origin: `https://${new URL(request.url()).host}`, "sec-fetch-site": "same-origin" };
-    return route.fulfill({ response: await route.fetch({ headers, maxRedirects: 0 }) });
-  });
-}
-
 /** Signs the owner in through the served sign-in pages with the stand-in Verify's code. */
 async function signIn(page: Page, token: string): Promise<void> {
-  await httpsOrigin(page);
   await page.goto(`${keyedUrl()}/b/sign-in/${token}`);
   await page.getByRole("button", { name: "Sign in" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Enter your sign-in code");

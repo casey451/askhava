@@ -22,8 +22,7 @@
 // the next one when the current one was used, and waits for the clock to reach the step before a
 // step it may use when both were used. A database that already has an owner this run did not make
 // (a local rerun: webserver.ts makes a new scratch folder per run but migrates the same database)
-// fails at once with what to do. Owner POSTs are re-sent with a same-origin https Origin, as the J1
-// specs do (D-1250), since the suite serves plain http.
+// fails at once with what to do. Owner POSTs go with the browser's own headers (D-4292).
 import { spawnSync } from "node:child_process";
 import { createHash, createHmac, randomBytes } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
@@ -137,20 +136,6 @@ export async function ownerCode(): Promise<string> {
   }
 }
 
-const routed = new WeakSet<Page>();
-
-/** Re-sends every owner POST of `page` with a same-origin https Origin (D-1250). */
-export async function ownerOrigin(page: Page): Promise<void> {
-  if (routed.has(page)) return;
-  routed.add(page);
-  await page.route("**/owner/**", async (route) => {
-    const request = route.request();
-    if (request.method() !== "POST") return route.continue();
-    const headers = { ...request.headers(), origin: `https://${new URL(request.url()).host}`, "sec-fetch-site": "same-origin" };
-    return route.fulfill({ response: await route.fetch({ headers, maxRedirects: 0 }) });
-  });
-}
-
 /**
  * Puts the kept session cookie in `page`'s context and reports whether the owner door takes it
  * at `baseUrl` (set on its https form: a `Secure` cookie, which Chromium sends to 127.0.0.1 on
@@ -178,7 +163,6 @@ async function keepSession(page: Page): Promise<void> {
  * still takes it, else with the password and a fresh TOTP code (one password try).
  */
 export async function signInOwner(page: Page, baseUrl = `http://127.0.0.1:${String(webPort())}`): Promise<void> {
-  await ownerOrigin(page);
   if (await sessionLive(page, baseUrl)) {
     await page.goto(`${baseUrl}/owner/step-up`);
     return;
