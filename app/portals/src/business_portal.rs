@@ -21,11 +21,18 @@
 //! lists the same numbers; [`set_inbox_shared`] keeps the person's "This inbox is shared" switch
 //! in `portals.shared_inbox` (a text phone to turn it on, a fresh code either way) and
 //! [`inbox_shared`] reads it for the Confirm page (T232).
+//!
+//! T483 (OPS-026, BIZ-052; D-207, D-439, D-3753, D-3844, D-3890): [`business_home_page_with`]
+//! adds the review and dispute lines (with the owner's "away until" date while it is set; no timer
+//! changes) and the Google and Yelp links form; [`save_home_links`] checks and stores the links
+//! through `businesses::api` for the owner only. The statement shows a won dispute's
+//! `dispute-reversal` and `countering-fee-return` rows as a won dispute.
 
 use askama::Template;
 use askhava_adapters::api::PoolNumber;
 use askhava_businesses::api::{
-    Acting, Complaint, ComplaintError, OpenCardsTime, OpenCardsTimes, has_fresh_step_up, reply,
+    Acting, Complaint, ComplaintError, LinkOpener, LinkRefusal, OpenCardsTime, OpenCardsTimes,
+    ReviewLinks, ReviewSite, check_links, has_fresh_step_up, reply, save_review_links,
     set_open_cards_times,
 };
 use askhava_core::api::brand;
@@ -33,6 +40,7 @@ use askhava_payments::api::{
     BusinessId, DISPUTE_FEE_CENTS, EntryKind, SavedCard, Statement, save_card, set_fee_limit,
 };
 use jiff::Timestamp;
+use jiff::civil::Date;
 use jiff_sqlx::ToSqlx;
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
@@ -45,6 +53,8 @@ use crate::security::{SecurityEvent, SecurityEventKind, record_security_event};
 pub const BUSINESS_HOME_ROUTE: &str = "/b";
 /// Where the open-cards times form posts.
 pub const OPEN_CARDS_ROUTE: &str = "/b/open-cards";
+/// Where the Google and Yelp links form posts (BIZ-052).
+pub const REVIEW_LINKS_ROUTE: &str = "/b/review-links";
 
 /// A change SEC-038 guards with a fresh Verify code (D-480).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -208,6 +218,23 @@ struct HomeView<'a> {
     card_name: String,
     card_note: String,
     inbox: &'a InboxSwitch,
+    away: Option<String>,
+    link_fields: [(&'static str, &'static str, &'a str); 2],
+    link_error: Option<(&'static str, &'static str)>,
+}
+
+/// What T483 adds to the portal home (OPS-026, BIZ-052): the owner's away date, the links shown
+/// in the form (the saved ones, or the ones just refused) and the refusal, if any.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct HomeExtras<'a> {
+    /// The date the owner is away until (`ops::api::away_until`), `None` while not away.
+    pub away_until: Option<Date>,
+    /// The Google Business Profile link shown in the form.
+    pub google: Option<&'a str>,
+    /// The Yelp page link shown in the form.
+    pub yelp: Option<&'a str>,
+    /// Why the links just sent were refused (BIZ-052); nothing was stored.
+    pub refused: Option<LinkRefusal>,
 }
 
 /// The portal home's calls card and "This inbox is shared" switch, read by the composition for
@@ -231,6 +258,23 @@ pub fn business_home_page(
     numbers: &YourNumbers,
     (times, too_many): (OpenCardsTimes, bool),
     (pool, inbox): (&[PoolNumber], &InboxSwitch),
+    csrf: &str,
+) -> Result<String, askama::Error> {
+    let extras = HomeExtras::default();
+    business_home_page_with(numbers, (times, too_many), (pool, inbox), &extras, csrf)
+}
+
+/// OPS-026, BIZ-052, D-207, D-3890: [`business_home_page`] with `extras`: the review and dispute
+/// lines say "away until <date>" while the owner's date is set, and the Google and Yelp links form
+/// shows the given links and a refusal's reason beside its field.
+///
+/// # Errors
+/// [`askama::Error`] when the template fails.
+pub fn business_home_page_with(
+    numbers: &YourNumbers,
+    (times, too_many): (OpenCardsTimes, bool),
+    (pool, inbox): (&[PoolNumber], &InboxSwitch),
+    extras: &HomeExtras<'_>,
     csrf: &str,
 ) -> Result<String, askama::Error> {
     let chosen = times.times();
@@ -257,8 +301,65 @@ pub fn business_home_page(
         card_name: contact_card_name(),
         card_note: contact_card_note(),
         inbox,
+        away: (extras.away_until).map(|d| d.strftime("%B %-d").to_string()),
+        link_fields: [
+            (
+                "google",
+                "Google Business Profile link",
+                extras.google.unwrap_or_default(),
+            ),
+            ("yelp", "Yelp page link", extras.yelp.unwrap_or_default()),
+        ],
+        link_error: extras.refused.map(|r| (refused_field(r), r.reason())),
     };
     view.render()
+}
+
+/// The form field a link refusal belongs to.
+const fn refused_field(refusal: LinkRefusal) -> &'static str {
+    match refusal {
+        LinkRefusal::WrongSite(ReviewSite::Google)
+        | LinkRefusal::DoesNotOpen(ReviewSite::Google) => "google",
+        LinkRefusal::WrongSite(ReviewSite::Yelp) | LinkRefusal::DoesNotOpen(ReviewSite::Yelp) => {
+            "yelp"
+        }
+    }
+}
+
+/// Why [`save_home_links`] stored nothing.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
+pub enum LinksChangeError {
+    /// Only the business's owner changes its public links.
+    #[error("only the owner changes the review links")]
+    Role,
+    /// A link is not on its site's domain or did not open (BIZ-052).
+    #[error("review link refused")]
+    Refused(LinkRefusal),
+    /// The store failed.
+    #[error("review links store failed")]
+    Database,
+}
+
+/// BIZ-052, SEC-041, D-439, D-492: checks `(google, yelp)` with `businesses::api::check_links`
+/// (each optional, only on its own site's domain, and it must open through `opener`) and stores
+/// them for `principal`'s business, owner only; a refused link stores nothing.
+///
+/// # Errors
+/// [`LinksChangeError`].
+pub async fn save_home_links(
+    db: &mut PgConnection,
+    opener: &impl LinkOpener,
+    principal: &BusinessPrincipal,
+    (google, yelp): (Option<&str>, Option<&str>),
+) -> Result<ReviewLinks, LinksChangeError> {
+    if !principal.is_owner() {
+        return Err(LinksChangeError::Role);
+    }
+    let links = (check_links(opener, google, yelp).await).map_err(LinksChangeError::Refused)?;
+    save_review_links(db, principal.business, &links)
+        .await
+        .map_err(|_| LinksChangeError::Database)?;
+    Ok(links)
 }
 
 /// CARD-022, D-492: stores the form's `codes` as `principal`'s own open-cards times. `Ok(None)`
@@ -429,8 +530,12 @@ pub struct PaymentMethod {
 /// BIZ-015, D-1912, D-1915: a ledger entry in the business's words and its direction (1 for money
 /// the business paid, -1 for money back to it: refunds, credits, disputes); `None` for Ask Hava's
 /// own Stripe costs (processing fees, countering fees, payouts), which are not the business's money.
-fn entry_label(kind: EntryKind) -> Option<(&'static str, i64)> {
+/// D-3844, D-2625: a won dispute's `dispute-reversal` (a `Dispute` line with negative cents) is the
+/// fee back on the business's account, and its `countering-fee-return` moves none of its money.
+fn entry_label(kind: EntryKind, cents: i64) -> Option<(&'static str, i64)> {
     match kind {
+        EntryKind::Dispute if cents < 0 => Some(("Bank dispute closed: fee owed again", -1)),
+        EntryKind::CounteringFeeReturn => Some(("Bank dispute closed: no cost to you", 0)),
         EntryKind::Charge => Some(("Introduction fee by job size", 1)),
         EntryKind::Refund => Some(("Refund", -1)),
         EntryKind::Credit => Some(("Credit", -1)),
@@ -438,10 +543,7 @@ fn entry_label(kind: EntryKind) -> Option<(&'static str, i64)> {
         EntryKind::RepeatCustomer => Some(("Repeat customer: no fee", 1)),
         EntryKind::FeeFreeJobType => Some(("No fee for this job type", 1)),
         EntryKind::Dispute => Some(("You disputed this charge with your bank", -1)),
-        EntryKind::CounteringFee
-        | EntryKind::CounteringFeeReturn
-        | EntryKind::ProcessingFee
-        | EntryKind::Payout => None,
+        EntryKind::CounteringFee | EntryKind::ProcessingFee | EntryKind::Payout => None,
     }
 }
 
@@ -463,11 +565,11 @@ fn statement_rows(statement: &Statement) -> Vec<Row> {
     (statement.lines.iter())
         .filter_map(|l| {
             let fee = if l.kind == EntryKind::Dispute {
-                l.amount_cents.min(DISPUTE_FEE_CENTS)
+                l.amount_cents.clamp(0, DISPUTE_FEE_CENTS)
             } else {
                 0
             };
-            let (what, sign) = entry_label(l.kind)?;
+            let (what, sign) = entry_label(l.kind, l.amount_cents)?;
             Some(Row {
                 date: date(l.recorded_at),
                 what,
