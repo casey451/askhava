@@ -3355,3 +3355,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **One finished task (T623, the business charge sign-in work) sat green and reviewed for over four hours without being merged**, holding one of the seven lanes. The runner brings one finished task at a time up to date with the latest code; T623 had its turn, but the code moved on twice before it could merge, its 45-minute turn ran out, and the rule then let it try again only when no other task held the turn, which with seven lanes busy never happens.
 - **Fix, planned as T700 and claimed first:** a task whose turn runs out now goes to the back of the queue instead of out of it, so every finished task gets its turn in order, and no task holds the turn for more than 90 minutes. A task that is truly stuck still gives up the turn after 45 minutes. The cost we accepted: such a task takes another 45-minute turn once every round until someone looks at it, where today it lost the turn once.
 - Our choice; nothing needs you now.
+
+## One task split for reading room, one flaky test made steady (D-4419)
+
+- **The task that lets an emergency job's texts go out at night (T402) needed to read more code than one session holds**, so it is split in two: T704 does the job texts, questions and replies of the request conversation, and T402 then does the pick texts and the replies to a homeowner's own text. Same rule, same tests, just in two steps.
+- **One automatic test that checks Laftly logs a failed license look-up, and never a business's details, failed once at random.** The way the tests listen to the log could miss a line. T705 gives those tests one shared, steadier listener; no test is loosened.
+- Our choice; nothing needs you now.

@@ -10614,10 +10614,10 @@
    "prompt": "kit/prompts/T650.md"
   },
   {
-   "id": "T402",
-   "slug": "quiet-exempt-producers",
-   "title": "intake, picks and server: texts QH-004 lets go at any hour for a fact (an emergency job, a direct reply) are queued with that fact",
-   "goal": "Plan change D-3106 (QH-004, QH-001; D-2628, D-3055): after T356 the outbox sender holds a row outside 8 a.m. to 8 p.m. unless its `quiet_exempt_until` lets it go; plain `messaging::api::enqueue` sets that itself for the any-hour kinds (the 911 text, keyword replies, pick codes, the after-hours notice), but an emergency job's texts and a direct reply are exempt only through `enqueue_exempt`, which no producer calls, so at night they wait for 8 a.m. Each producer here that queues such a text passes its fact through `enqueue_exempt`: an emergency job's quote texts (the first-quote text and quote-count updates), the questions INT-029 asks after the cards, and the homeowner's pick, confirm and connect texts (including the INT-033 texts; the who's-calling and missed-call texts are T403's) carry the job's emergency choice; a reply to her own inbound text carries that text's received time, so it goes at any hour only within 15 minutes of it. The facts are read where the producer already has them (the job row, the inbound delivery), never guessed from words. A producer whose texts are never exempt by a fact keeps plain `enqueue` and is not changed; a producer found outside these files is reported, not worked around. Tests in `tests/integration/tests/quiet_exempt_producers.rs` (TD-QH-07). Every TD-QH, TD-TXT and TD-INT case passes unchanged. Update the `intake`, `picks` and `server` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3999: it follows T564, which also edits `app/picks/src/service.rs` and `app/intake/src/job_texts.rs`. Plan change D-4338: ordered after T662, which first makes both cancel paths in `app/intake/src/closing.rs` and `conversation.rs` queue the masked line's close (CALL-009, CALL-010); keep those calls.",
+   "id": "T704",
+   "slug": "quiet-exempt-intake-producers",
+   "title": "intake: an emergency job's quote texts, the INT-029 questions and intake's direct replies are queued with their QH-004 fact (D-4419)",
+   "goal": "Plan change D-4419 (T402 measured 47% of the context window, over the 45% build limit, from its nine owned files): D-3106 is split by module. This task does D-3106 for every producer in its six `intake` files and creates `tests/integration/tests/quiet_exempt_producers.rs` (TD-QH-07) with the cases for the texts those producers queue: an emergency job's first-quote text, a quote-count update and an INT-029 question go at once at 23:10 and the same texts on a regular job wait until 08:00; an `intake` reply queued within 15 minutes of her own inbound text goes at once and one queued later waits until 08:00. T402 follows this task and does the same for `app/picks/src/service.rs` and `app/server/src/inbound_text.rs`, with its cases (the pick-step texts, the server's replies, the 911 text and a HELP reply, now TD-QH-09) in its own `tests/integration/tests/quiet_exempt_pick_replies.rs`; a text those two files queue is not changed here. D-3106 as written for T402: Plan change D-3106 (QH-004, QH-001; D-2628, D-3055): after T356 the outbox sender holds a row outside 8 a.m. to 8 p.m. unless its `quiet_exempt_until` lets it go; plain `messaging::api::enqueue` sets that itself for the any-hour kinds (the 911 text, keyword replies, pick codes, the after-hours notice), but an emergency job's texts and a direct reply are exempt only through `enqueue_exempt`, which no producer calls, so at night they wait for 8 a.m. Each producer here that queues such a text passes its fact through `enqueue_exempt`: an emergency job's quote texts (the first-quote text and quote-count updates), the questions INT-029 asks after the cards, and the homeowner's pick, confirm and connect texts (including the INT-033 texts; the who's-calling and missed-call texts are T403's) carry the job's emergency choice; a reply to her own inbound text carries that text's received time, so it goes at any hour only within 15 minutes of it. The facts are read where the producer already has them (the job row, the inbound delivery), never guessed from words. A producer whose texts are never exempt by a fact keeps plain `enqueue` and is not changed; a producer found outside these files is reported, not worked around. Tests in `tests/integration/tests/quiet_exempt_producers.rs` (TD-QH-07). Every TD-QH, TD-TXT and TD-INT case passes unchanged. Update the `intake`, `picks` and `server` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3999: it follows T564, which also edits `app/picks/src/service.rs` and `app/intake/src/job_texts.rs`. Plan change D-4338: ordered after T662, which first makes both cancel paths in `app/intake/src/closing.rs` and `conversation.rs` queue the masked line's close (CALL-009, CALL-010); keep those calls. Update the `intake` `CLAUDE.md` (not the `picks` or `server` ones, T402's) and `docs/decisions.md`.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -10665,8 +10665,6 @@
     "app/intake/src/closing.rs",
     "app/intake/src/handlers.rs",
     "app/intake/src/job_texts.rs",
-    "app/picks/src/service.rs",
-    "app/server/src/inbound_text.rs",
     "tests/integration/tests/quiet_exempt_producers.rs"
    ],
    "reads": [
@@ -10690,13 +10688,104 @@
     "D-3106",
     "D-3999",
     "D-4294",
-    "D-4338"
+    "D-4338",
+    "D-4419"
    ],
    "cites": [],
    "budget": {
-    "files": 9,
-    "lines": 400,
-    "context_pct": 45
+    "files": 7,
+    "lines": 320,
+    "context_pct": 34
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T704-quiet-exempt-intake-producers",
+   "prompt": "kit/prompts/T704.md",
+   "acceptance": "TD-QH-07 passes in `tests/integration/tests/quiet_exempt_producers.rs` through the worker with the stand-in Twilio; every TD-QH, TD-TXT and TD-INT case passes unchanged; no file outside this task's six `intake` files and the test file changes producer code."
+  },
+  {
+   "id": "T402",
+   "slug": "quiet-exempt-producers",
+   "title": "picks and server: the pick-step texts and the server's direct replies QH-004 lets go at any hour are queued with their fact (D-4419)",
+   "goal": "Plan change D-4419 (this task measured 47% of the context window, over the 45% build limit): D-3106 is split by module. T704, which this task follows, has done D-3106 for the six `intake` producer files and created `tests/integration/tests/quiet_exempt_producers.rs` (TD-QH-07) with their cases; this task does it for every producer in `app/picks/src/service.rs` and `app/server/src/inbound_text.rs` and puts in the new `tests/integration/tests/quiet_exempt_pick_replies.rs` (TD-QH-09, the cases moved from TD-QH-07; a build task may not edit T704's test) the cases for the texts they queue, set up as T704's file is: the pick-step texts (the homeowner's pick, confirm and connect texts, the INT-033 texts among them) go at once at 23:10 on an emergency job and wait until 08:00 on a regular one; a reply the server queues within 15 minutes of her own inbound text goes at once and one queued later waits until 08:00; the 911 text and a HELP reply go at once with no fact passed. T704's file is not changed; where the text below names it as this task's test file, read `tests/integration/tests/quiet_exempt_pick_replies.rs`. The `intake` files are no longer this task's. D-3106 as written before the split: Plan change D-3106 (QH-004, QH-001; D-2628, D-3055): after T356 the outbox sender holds a row outside 8 a.m. to 8 p.m. unless its `quiet_exempt_until` lets it go; plain `messaging::api::enqueue` sets that itself for the any-hour kinds (the 911 text, keyword replies, pick codes, the after-hours notice), but an emergency job's texts and a direct reply are exempt only through `enqueue_exempt`, which no producer calls, so at night they wait for 8 a.m. Each producer here that queues such a text passes its fact through `enqueue_exempt`: an emergency job's quote texts (the first-quote text and quote-count updates), the questions INT-029 asks after the cards, and the homeowner's pick, confirm and connect texts (including the INT-033 texts; the who's-calling and missed-call texts are T403's) carry the job's emergency choice; a reply to her own inbound text carries that text's received time, so it goes at any hour only within 15 minutes of it. The facts are read where the producer already has them (the job row, the inbound delivery), never guessed from words. A producer whose texts are never exempt by a fact keeps plain `enqueue` and is not changed; a producer found outside these files is reported, not worked around. Tests in `tests/integration/tests/quiet_exempt_producers.rs` (TD-QH-07). Every TD-QH, TD-TXT and TD-INT case passes unchanged. Update the `intake`, `picks` and `server` `CLAUDE.md` files and `docs/decisions.md`. Plan change D-3999: it follows T564, which also edits `app/picks/src/service.rs` and `app/intake/src/job_texts.rs`. Plan change D-4338: ordered after T662, which first makes both cancel paths in `app/intake/src/closing.rs` and `conversation.rs` queue the masked line's close (CALL-009, CALL-010); keep those calls. Where that text says to update the `intake` and `server` `CLAUDE.md` files: the `intake` one is T704's, and the `server` note goes as a `(task 402)` line at the end of `app/server/NOTES.md` (`app/server/CLAUDE.md` is at its 8,192-byte cap, `scripts/check_code_docs.py`).",
+   "type": "build",
+   "phase": 2,
+   "stage": "6",
+   "module": "picks",
+   "deps": [
+    "T356",
+    "T340",
+    "T341",
+    "T344",
+    "T361",
+    "T382",
+    "T215",
+    "T255",
+    "T103",
+    "T162",
+    "T236",
+    "T370",
+    "T151",
+    "T299",
+    "T317",
+    "T325",
+    "T336",
+    "T357",
+    "T391",
+    "T432",
+    "T328",
+    "T446",
+    "T449",
+    "T489",
+    "T564",
+    "T650",
+    "T662",
+    "T704"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance",
+    "privacy"
+   ],
+   "owns": [
+    "app/picks/src/service.rs",
+    "app/server/src/inbound_text.rs",
+    "tests/integration/tests/quiet_exempt_pick_replies.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quiet-hours.md",
+    "docs/spec/messaging.md",
+    "docs/brains/sms-compliance.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "QH-004",
+    "QH-001"
+   ],
+   "tests": [
+    "TD-QH-09"
+   ],
+   "decisions": [
+    "D-2628",
+    "D-3055",
+    "D-3106",
+    "D-3999",
+    "D-4294",
+    "D-4338",
+    "D-4419"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 220,
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -10704,7 +10793,8 @@
     "Ally"
    ],
    "branch": "claude/task/T402-quiet-exempt-producers",
-   "prompt": "kit/prompts/T402.md"
+   "prompt": "kit/prompts/T402.md",
+   "acceptance": "TD-QH-09 passes in `tests/integration/tests/quiet_exempt_pick_replies.rs` through the worker with the stand-in Twilio; `tests/integration/tests/quiet_exempt_producers.rs` (T704's) and every TD-QH, TD-TXT and TD-INT case pass unchanged."
   },
   {
    "id": "T403",
@@ -23216,7 +23306,8 @@
     "T514",
     "T641",
     "T642",
-    "T700"
+    "T700",
+    "T705"
    ],
    "model": null,
    "effort": null,
@@ -45594,6 +45685,64 @@
    "branch": "claude/task/T700-runner-merge-line-rotation",
    "prompt": "kit/prompts/T700.md",
    "acceptance": "`python3 -m pytest tests/test_runner_merge_line_rotation.py tests/test_runner_merge_line.py tests/test_runner_merge_early.py tests/test_runner_merge_train.py tests/test_failure_drills.py` passes, the T623 reproduction failing against `main`'s runner; no existing test changes apart from a late-B case in `tests/test_runner_merge_train.py` under the goal's licence, logged; every other `tests/test_runner_*.py` passes unchanged."
+  },
+  {
+   "id": "T705",
+   "slug": "log-capture-interest",
+   "title": "Integration tests (harness): one shared log capture that a callsite cached as \"never\" cannot miss (D-4419)",
+   "goal": "Plan change D-4419 (5): `td_lic_30_reads_write_nothing_and_log_no_value` (`tests/integration/tests/signup_own_record.rs:602`) failed once in `Ci` at its `assert!(!logged.is_empty(), \"the unreadable read is logged\")` (`:634`) with no code change, then passed. Each test file that checks log lines keeps its own `Subscriber` (`Lines`, `:628` to `:674`) and installs it for its own thread only with `tracing::subscriber::set_default` (`:613`). `tracing` caches each callsite's interest the first time any thread reaches it; when another test in the same binary reaches a callsite while no subscriber is in place, or while the interest is being rebuilt as a capture is installed, the callsite can keep a cached `Interest::never`, and the event never reaches the capture: a test that asserts a line is logged fails, and one that asserts no line holds a value passes without having seen the line. Build one capture for the `askhava-integration` test crate in the new `tests/integration/src/log_capture.rs` (`pub mod log_capture;` in `tests/integration/src/lib.rs`; `tracing` moves from `[dev-dependencies]` to `[dependencies]` in the shared `tests/integration/Cargo.toml`, no new crate, `Cargo.lock` unchanged): a process-global subscriber installed once per test binary (`std::sync::OnceLock`, `tracing::subscriber::set_global_default`, then `tracing::callsite::rebuild_interest_cache()`), whose `register_callsite` answers `Interest::always()` and `enabled` true, so no callsite is ever cached as never while it is in place, and which appends each event's and each new span's fields (as the files' `Line` visitors do: ` name=value` with the value's `Debug`) to the buffer of the capture started on the current thread, if any; `log_capture::start()` gives a guard holding that buffer (a `Vec<String>` behind `Arc<Mutex<_>>`) whose drop ends the capture, and a capture never sees another thread's events, as today. A unit test in `log_capture.rs` reaches a callsite first on another thread before any capture exists, then captures it on the test's thread. Move to it the three files whose tests assert that a log line is present, deleting their own `Subscriber`: `signup_own_record.rs` (TD-LIC-30, both captures, `:211` and `:613`), `tests/integration/tests/emergency_request_limits.rs` (`:275` to `:286`, \"logged once\", `error=\\\"Counter\\\"`) and `tests/integration/tests/safety_key_retry.rs` (`:228` to `:229`, \"step failed\"). Every assertion in the three files stays as it is, word for word: no assertion is removed, loosened or moved after a retry; only the capture's type and its start change. The other per-thread captures are not changed here: eight more `tests/integration/tests/` files assert only that no line holds a value, and those in other test crates (`app/server/tests/`, `tests/security/tests/`, `app/jobs/src/tests/transitions.rs`) cannot use this crate's helper. First check that the \"unreadable read\" line (`app/licensing/src/own_record.rs`) is logged on the test's own thread; if it is logged on another, that is the cause, and the worker reports a plan gap instead of widening the capture. Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T012",
+    "T175",
+    "T385",
+    "T449",
+    "T571"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "privacy"
+   ],
+   "owns": [
+    "tests/integration/src/lib.rs",
+    "tests/integration/src/log_capture.rs",
+    "tests/integration/tests/signup_own_record.rs",
+    "tests/integration/tests/emergency_request_limits.rs",
+    "tests/integration/tests/safety_key_retry.rs"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [],
+   "tests": [
+    "TD-LIC-30"
+   ],
+   "decisions": [
+    "D-4419",
+    "D-2954",
+    "D-481"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 350,
+    "context_pct": 11
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T705-log-capture-interest",
+   "prompt": "kit/prompts/T705.md",
+   "acceptance": "`cargo test -p askhava-integration --lib log_capture` passes, its other-thread-first case included; `signup_own_record.rs`, `emergency_request_limits.rs` and `safety_key_retry.rs` pass against PostgreSQL with every assertion unchanged (a `git diff` of the three files shows only the capture's type and start changing), and the three files pass 20 runs in a row (`for i in $(seq 20); do cargo test -p askhava-integration --test signup_own_record || exit 1; done`), the result in the PR; no other test file changes."
   }
  ]
 }
