@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T19:29:31Z by runner 27f63a7a1877 (actions).
+Updated 2026-11-18T19:29:57Z by runner 27f63a7a1877 (actions).
 
 **Building: T501 in progress since 18:29Z; 453 of 662 done; week 65% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 453 of 662 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T501 claimed 18:29Z, lease until 22:10Z; lane 3: T483 claimed 18:25Z, lease until 21:25Z; lane 4: T364 claimed 18:28Z, lease until 21:28Z; lane 5: T706 claimed 19:14Z, lease until 22:14Z; lane 6: T702 claimed 19:21Z, lease until 22:21Z; lane 7: T711 claimed 18:12Z, lease until 21:57Z
+- **Lane:** lane 2: T501 claimed 18:29Z, lease until 22:10Z; lane 3: T483 claimed 18:25Z, lease until 21:25Z; lane 4: T364 claimed 18:28Z, lease until 21:28Z; lane 5: T706 claimed 19:14Z, lease until 22:14Z; lane 6: T702 claimed 19:21Z, lease until 22:21Z
 - **Week:** 65% used, 58.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:22Z, 6 min before this update
+- **Last run:** 19:22Z, 7 min before this update
 - **Keeper:** last ran 18:33Z, next wake 21:15Z
 
 ## Needs attention
@@ -21,6 +21,7 @@ Evidence (confirmed by a second reviewer): list_disputes (app/payments/src/dispu
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T711 | intake (harness): the dispatcher's two jobs in one request:  | MERGE_PENDING | 1 | 77 min | 19:29Z |  |
 | T624 | server: two failed in-process health checks in a row raise o | MERGE_PENDING | 1 | 96 min | 18:26Z | merging main into the reviewed head conflicts in app/server/src/bin/worker.rs; a resync merges it in on this attempt (D- |
 | T205 | portals: owner refunds with a review step and the audit log  | BLOCKED | 1 | 58 min | 18:23Z | PLAN GAP: `payments` has no public reader that ties a dispute to its pick (or its charge, business or job). Without one, |
 | T500 | Decisions digest, piece 1: from the first entry, at most 300 | done | 1 | 71 min | 18:18Z |  |
@@ -135,7 +136,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 4: T364 (lease until 2026-11-18T21:28:18Z)
 - lane 5: T706 (lease until 2026-11-18T22:14:09Z)
 - lane 6: T702 (lease until 2026-11-18T22:21:53Z)
-- lane 7: T711 (lease until 2026-11-18T21:57:11Z)
 
 ## Last usage reading
-- {"task": "T624", "at": "2026-11-18T18:26:13Z", "input_tokens": 114, "cache_creation_input_tokens": 120586, "output_tokens": 19745, "cache_read_input_tokens": 1676939}
+- {"task": "T711", "at": "2026-11-18T19:29:30Z", "input_tokens": 259, "cache_read_input_tokens": 10052843, "cache_creation_input_tokens": 296224, "output_tokens": 84110}
