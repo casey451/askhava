@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(*) AS \"n!\" FROM businesses.business b WHERE b.status = 'active' AND EXISTS (SELECT 1 FROM businesses.job_type_choice c WHERE c.business_id = b.id AND c.category = $1)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "n!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "d004c68a7d7f9a7ba92841105fd11f4c111596e4323620e2ac97bcc6b648a94b"
+}
