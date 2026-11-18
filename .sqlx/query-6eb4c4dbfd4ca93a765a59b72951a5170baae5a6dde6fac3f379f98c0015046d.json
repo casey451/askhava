@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT g_code, heard_from, count(*) AS \"signups!\" FROM businesses.signup\n           WHERE submitted_at >= $1 AND submitted_at < $2\n           GROUP BY g_code, heard_from ORDER BY g_code NULLS LAST, heard_from NULLS LAST",
+  "query": "SELECT g_code, heard_from, count(*) AS \"signups!\" FROM businesses.signup\n           WHERE submitted_at >= $1 AND submitted_at < $2\n             AND ($3::text IS NULL OR $3 = ANY(trades))\n           GROUP BY g_code, heard_from ORDER BY g_code NULLS LAST, heard_from NULLS LAST",
   "describe": {
     "columns": [
       {
@@ -35,7 +35,8 @@
     "parameters": {
       "Left": [
         "Timestamptz",
-        "Timestamptz"
+        "Timestamptz",
+        "Text"
       ]
     },
     "nullable": [
@@ -44,5 +45,5 @@
       null
     ]
   },
-  "hash": "85550884fde34e24e00a7e6934b77da3bebd967710b4dc1e8932ab1392dd2b90"
+  "hash": "6eb4c4dbfd4ca93a765a59b72951a5170baae5a6dde6fac3f379f98c0015046d"
 }

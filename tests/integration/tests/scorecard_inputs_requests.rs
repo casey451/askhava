@@ -347,7 +347,9 @@ async fn biz_053_signups_count_by_source_and_route(pool: PgPool) {
         (Some("oo"), None, Some("letter"), true, Some(1)),
     )
     .await;
-    let sources = signups_by_source(&mut db, window()).await.expect("sources");
+    let sources = signups_by_source(&mut db, window(), None)
+        .await
+        .expect("sources");
     let source = |g: Option<&str>, heard: Option<&str>, signups| SignupSource {
         g_code: g.map(str::to_owned),
         heard_from: heard.map(str::to_owned),
@@ -362,13 +364,72 @@ async fn biz_053_signups_count_by_source_and_route(pool: PgPool) {
             source(None, None, 1),
         ]
     );
-    let routes = signup_routes(&mut db, window()).await.expect("routes");
+    let routes = signup_routes(&mut db, window(), None)
+        .await
+        .expect("routes");
     let want = SignupRoutes {
         signups: 4,
         letter_or_review: 2,
         active_within_15_minutes_approx: 2,
     };
     assert_eq!(routes, want);
+}
+
+async fn set_trades(db: &mut PgConnection, business: Uuid, trades: &[&str]) {
+    sqlx::query("UPDATE businesses.signup SET trades = $2 WHERE business_id = $1")
+        .bind(business)
+        .bind(trades)
+        .execute(&mut *db)
+        .await
+        .expect("trades");
+}
+
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn biz_053_signups_split_by_their_stored_trades(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("db");
+    let t = from();
+    let plumber = signup(&mut db, t, (Some("oo"), None, Some("letter"), false, None)).await;
+    set_trades(&mut db, plumber, &["plumbing"]).await;
+    let sparky = signup(
+        &mut db,
+        t + hours(1),
+        (Some("oo"), None, None, false, Some(5)),
+    )
+    .await;
+    set_trades(&mut db, sparky, &["electrical"]).await;
+    let both = signup(&mut db, t + hours(2), (None, None, None, true, None)).await;
+    set_trades(&mut db, both, &["plumbing", "electrical"]).await;
+    let oo = |signups| SignupSource {
+        g_code: Some("oo".to_owned()),
+        heard_from: None,
+        signups,
+    };
+    let none = SignupSource {
+        g_code: None,
+        heard_from: None,
+        signups: 1,
+    };
+    for trade in ["plumbing", "electrical"] {
+        let split = signups_by_source(&mut db, window(), Some(trade)).await;
+        assert_eq!(split.expect("split"), vec![oo(1), none.clone()], "{trade}");
+    }
+    let total = signups_by_source(&mut db, window(), None)
+        .await
+        .expect("total");
+    assert_eq!(total, vec![oo(2), none]);
+    let roofing = signups_by_source(&mut db, window(), Some("roofing")).await;
+    assert_eq!(roofing.expect("roofing"), vec![]);
+    let routes = |signups, letter_or_review, active| SignupRoutes {
+        signups,
+        letter_or_review,
+        active_within_15_minutes_approx: active,
+    };
+    let plumbing = signup_routes(&mut db, window(), Some("plumbing")).await;
+    assert_eq!(plumbing.expect("plumbing routes"), routes(2, 2, 0));
+    let electrical = signup_routes(&mut db, window(), Some("electrical")).await;
+    assert_eq!(electrical.expect("electrical routes"), routes(2, 1, 1));
+    let total = signup_routes(&mut db, window(), None).await;
+    assert_eq!(total.expect("total routes"), routes(3, 2, 1));
 }
 
 async fn complaint(db: &mut PgConnection, business: Uuid, job: Uuid, at: Timestamp) {

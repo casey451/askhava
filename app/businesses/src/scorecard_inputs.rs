@@ -2,6 +2,9 @@
 //! D-457, D-3753, D-3883; T478).
 //!
 //! Read-only, codes and counts only, each over a half-open window (`from` counted, `to` not).
+//! Both sign-up readers take a `trade`: `None` counts every sign-up (the total), `Some(t)` only
+//! those whose stored sign-up trades (`signup.trades`, D-3779) include `t`; a sign-up for two
+//! trades counts once in each, so per-trade figures need not sum to the total.
 //! [`signups_by_source`] counts the sign-ups submitted per BIZ-053 source: the `g` code of the link
 //! they arrived on and the optional "Where did you hear about us?" answer, either may be absent.
 //! [`signup_routes`] counts the same sign-ups, those sent to a mailed letter (`identity_step`
@@ -10,7 +13,7 @@
 //! `status_changed_at` is at most 15 minutes after the sign-up's `submitted_at`; a later status
 //! change hides an early activation, so the figure is a floor. [`complaints_for_jobs`] counts the
 //! homeowner complaints received in the window for the job IDs passed (one trade's or all, from
-//! `jobs::api::jobs_by_trade`; `businesses` stores no trade, D-3883); the scorecard divides per
+//! `jobs::api::jobs_by_trade`; a complaint stores no trade, D-3883); the scorecard divides per
 //! 20 jobs. Leave and pause reasons (BIZ-054) come from `digest_counts::leaving_answers`, not a
 //! second reader. No source code reaches a card or routing (D-457).
 
@@ -44,8 +47,8 @@ pub struct SignupRoutes {
     pub active_within_15_minutes_approx: i64,
 }
 
-/// BIZ-053, OPS-039: the sign-ups submitted at or after `from` and before `to`, per `g` code and
-/// answer, in code order with absent ones last.
+/// BIZ-053, OPS-039: the sign-ups submitted at or after `from` and before `to`, of trade `trade`
+/// (or all with `None`), per `g` code and answer, in code order with absent ones last.
 ///
 /// # Errors
 ///
@@ -53,20 +56,24 @@ pub struct SignupRoutes {
 pub async fn signups_by_source(
     conn: &mut PgConnection,
     (from, to): (Timestamp, Timestamp),
+    trade: Option<&str>,
 ) -> Result<Vec<SignupSource>, BusinessesError> {
     db(sqlx::query_as!(
         SignupSource,
         r#"SELECT g_code, heard_from, count(*) AS "signups!" FROM businesses.signup
            WHERE submitted_at >= $1 AND submitted_at < $2
+             AND ($3::text IS NULL OR $3 = ANY(trades))
            GROUP BY g_code, heard_from ORDER BY g_code NULLS LAST, heard_from NULLS LAST"#,
         from.to_sqlx() as _,
         to.to_sqlx() as _,
+        trade,
     )
     .fetch_all(conn)
     .await)
 }
 
-/// OPS-039: the sign-ups submitted at or after `from` and before `to`, those sent to a mailed
+/// OPS-039: the sign-ups submitted at or after `from` and before `to`, of trade `trade` (or all
+/// with `None`), those sent to a mailed
 /// letter or a review, and the approximate active-within-15-minutes count (module comment).
 ///
 /// # Errors
@@ -75,6 +82,7 @@ pub async fn signups_by_source(
 pub async fn signup_routes(
     conn: &mut PgConnection,
     (from, to): (Timestamp, Timestamp),
+    trade: Option<&str>,
 ) -> Result<SignupRoutes, BusinessesError> {
     db(sqlx::query_as!(
         SignupRoutes,
@@ -85,9 +93,11 @@ pub async fn signup_routes(
                     AND b.status_changed_at <= s.submitted_at + interval '15 minutes')
                     AS "active_within_15_minutes_approx!"
            FROM businesses.signup s JOIN businesses.business b ON b.id = s.business_id
-           WHERE s.submitted_at >= $1 AND s.submitted_at < $2"#,
+           WHERE s.submitted_at >= $1 AND s.submitted_at < $2
+             AND ($3::text IS NULL OR $3 = ANY(s.trades))"#,
         from.to_sqlx() as _,
         to.to_sqlx() as _,
+        trade,
     )
     .fetch_one(conn)
     .await)
