@@ -176,6 +176,18 @@ def test_a_proof_input_outside_the_rule_is_unproven(tmp_path: Path, monkeypatch:
     assert line == f"unproven: {path!r} changed since C and is a proof input"
 
 
+@pytest.mark.parametrize(("path", "job"), [("tests/integration/tests/capability_setup.rs", ("E2e", "run")),
+                                           ("scripts/brand.py", ("E2e", "run")),
+                                           ("scripts/brand.py", ("Checks", "rust")),
+                                           ("scripts/brand.py", ("Lint and slow tests", "rust")),
+                                           ("scripts/brand.py", ("Coverage", "rust"))])
+def test_a_runtime_input_outside_the_e2e_or_rust_rule_is_unproven(tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+                                                                  path: str, job: tuple[str, str]) -> None:
+    repo = make(tmp_path, {path: "changed\n"})
+    line = decide(tmp_path, monkeypatch, green(repo, job[0]), job)
+    assert line == f"unproven: {path!r} changed since C and is a proof input"
+
+
 @pytest.mark.parametrize("path", ["tests/perf/web_vitals.spec.ts", "tests/perf/fixture.json",
                                   "sources/03_business_and_design/website_prototype/p/assets/js/app.js",
                                   "tools/x.mjs", "a/b.cjs", "c.mts", "d.cts", "e.jsx", "f.tsx"])

@@ -37,11 +37,13 @@ WORKFLOW = ".github/workflows/ci.yml"
 # time: kit/tasks.json (route_wiring, architecture_migrations), the Dockerfile (image_pinned, static_files_route),
 # tests/task_kinds_deferred.json (task_registry) and scripts/check_rust_rules.py (status_enums). For tsc and
 # eslint: tests/perf/ (tsconfig includes its .ts) and every .js/.mjs/.cjs/.ts/.mts/.cts/.jsx/.tsx path anywhere
-# (eslint parses each one its ignores do not drop, e.g. the prototype .js under sources/).
+# (eslint parses each one its ignores do not drop, e.g. the prototype .js under sources/). For E2e:
+# tests/integration/ (its specs run the *_write_pages_for_axe tests and axe the pages they write). For every job:
+# scripts/brand.py (stand_ins/ai.py loads it for the short name; Rust tests and E2e start the stand-ins).
 EXTRA = re.compile(r"^(tests/coverage_floor\.json|scripts/coverage_floor\.py|\.cargo/|\.github/workflows/"
                    r"|scripts/ci_proven\.py|scripts/npm_audit\.py|tests/security/|\.?rustfmt\.toml"
                    r"|kit/tasks\.json|Dockerfile|tests/task_kinds_deferred\.json|scripts/check_rust_rules\.py"
-                   r"|tests/perf/|.*\.[cm]?[jt]sx?\Z)", re.DOTALL)
+                   r"|tests/perf/|tests/integration/|scripts/brand\.py|.*\.[cm]?[jt]sx?\Z)", re.DOTALL)
 TIMEOUT = 10
 PER_PAGE = 100
 SHA = re.compile(r"^[0-9a-f]{40}$")

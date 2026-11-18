@@ -61,7 +61,7 @@
   "scripts/check_pr_change.py": "bff82974c36a3b5bbc57f9fdd5bf929b1935e1d0da9ee4bd2b3826e7ccb3cf8d",
   "scripts/check_rust_rules.py": "559029dff80fed3f8a701527b115660bbb19edf05e548b7d4d1caf86d57a573d",
   "scripts/check_state.py": "eb0afa5a32a4648d2a0bf24bc972e00ff6d2347c7f0be81aff384b39f9df0393",
-  "scripts/ci_proven.py": "ff95cfefb12c32c62a1d27e98fec31139952d1b07ee9e9ba605f08f41fe06090",
+  "scripts/ci_proven.py": "b39005a2de629424f178c1637178dca7f2a86716d77d356faaa4cdc5070560d0",
   "scripts/coverage_floor.py": "a1c2a7fcfea10a6a873b76111e7b05cf4a8419281b182b3667a46fabb576354b",
   "scripts/gen_prompts.py": "f07bdf464f66e48b1c4aa3a51d10a112a18d3a6e7c2587fa970ce8f7e60197ee",
   "scripts/npm_audit.py": "8a31f6985a5b3fe1e5fd833002c322b5fae394be8f10a51dfee8fd3978a6d25c",
