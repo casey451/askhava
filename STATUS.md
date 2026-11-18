@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T18:28:34Z by runner ac95475ba313 (actions).
+Updated 2026-11-18T18:28:55Z by runner 4648d6feaf42 (actions).
 
 **Building: T483 in progress since 18:25Z; 453 of 645 done; week 64% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-18T18:28:34Z by runner ac95475ba313 (actions).
 - **Lane:** lane 3: T483 claimed 18:25Z, lease until 21:25Z; lane 4: T364 claimed 18:28Z, lease until 21:28Z; lane 7: T711 claimed 18:12Z, lease until 21:12Z
 - **Week:** 64% used, 62.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 18:28Z, 0 min before this update
-- **Keeper:** last ran 18:25Z, next wake 18:45Z
+- **Keeper:** last ran 18:28Z, next wake 18:48Z
 
 ## Needs attention
 - BLOCKED T205: plan gap reported: PLAN GAP: `payments` has no public reader that ties a dispute to its pick (or its charge, business or job). Without one, T205 cannot narrow `waiting_disputes` or refuse a press on another pick's dispute, so this has to go back as a `payments` follow-up.
@@ -22,7 +22,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T501 (since 2026-11-18T18:28:18Z, no attempt used; a plan change fixes it): T501: dependency T500 is DONE but its owned file docs/decisions-current.md is not on main
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 34 problem(s) on tasks still to run (+258 on DONE tasks); first: T402: measures 48% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 31 problem(s) on tasks still to run (+247 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
