@@ -19119,7 +19119,7 @@
      "resync": true
     }
    ],
-   "reviewed_sha": "2a7a2f8bdf71ca7fe39caa0e476a6b30f4c656c8",
+   "reviewed_sha": "798aec189d610bb5cea700f1627e49459638df0b",
    "review_lease": {
     "task": "T151",
     "session": "actions-44225625465",
@@ -19154,10 +19154,23 @@
      "main": "505497feebc31dff0057080ba9f030daab808ed5",
      "how": "hand-in",
      "at": "2026-11-18T03:40:02Z"
+    },
+    {
+     "from": "2a7a2f8bdf71ca7fe39caa0e476a6b30f4c656c8",
+     "to": "798aec189d610bb5cea700f1627e49459638df0b",
+     "main": "7dd3ec99cddfc7538c6f95ab4432b289bc5297cc",
+     "how": "runner",
+     "checks": {
+      "Ci": "success",
+      "Ally": "success",
+      "Twin": "success"
+     },
+     "at": "2026-11-18T05:01:37Z"
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merge_turn_since": "2026-11-18T05:01:37Z"
   },
   {
    "id": "T200",
@@ -74763,7 +74776,7 @@
    "deps": [
     "T481"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "rebuild-charge-locks",
    "type": "build",
@@ -74787,13 +74800,70 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 121,
      "head_sha": "3758e235f418d6742d87028d49a001a412c04410",
-     "pr": null,
-     "checks": null,
+     "pr": 1004,
+     "checks": [
+      {
+       "name": "backup",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-18T02:13:33Z",
      "ended_at": "2026-11-18T03:35:42Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "usage": {
       "worker": {
        "tokens": 4379594,
@@ -74842,7 +74912,22 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-18T04:39:03Z"
+   "merge_turn_since": "2026-11-18T04:39:03Z",
+   "merged_sha": "7dd3ec99cddfc7538c6f95ab4432b289bc5297cc",
+   "merged_at": "2026-11-18T04:59:57Z",
+   "files": [
+    ".sqlx/query-110a90f9b1b5ddfc5a70318a839234629259cf06bbad0cbcf2a2ccf732fc42ac.json",
+    ".sqlx/query-8a045bb4ddf6dc4b82cb6fca8467384fa4685e709c5847733d22f5f1edb43c47.json",
+    ".sqlx/query-99803a8c25f7823b4a94f680a9264b23c3bd4f79f22c2fc4d56facf8f451d0d0.json",
+    ".sqlx/query-afbe08e97b601adcff7669b1398e82944598a6a400f24decc256e9aa47551d44.json",
+    ".sqlx/query-b8370a92a276e95ebbcd0211bc886449e8e78dd33a4a1fe395e17a76681dbeae.json",
+    "app/payments/CLAUDE.md",
+    "app/payments/NOTES.md",
+    "app/payments/src/charge_rebuild.rs",
+    "docs/decisions.md",
+    "kit/prompts/T647.md",
+    "tests/integration/tests/rebuild_charge_locks.rs"
+   ]
   },
   {
    "id": "T621",
@@ -80278,7 +80363,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T04:55:59Z",
+ "updated_at": "2026-11-18T05:01:46Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -80376,7 +80461,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "e022992197865b9ce2eee7ad3f21426b721d56be",
+ "runner_sha": "7dd3ec99cddfc7538c6f95ab4432b289bc5297cc",
  "starter": "actions",
  "smoke_runs": [
   {

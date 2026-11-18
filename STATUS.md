@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T04:55:59Z by runner e02299219786 (actions).
+Updated 2026-11-18T05:01:46Z by runner 7dd3ec99cddf (actions).
 
-**Building: T601 in progress since 04:24Z; 425 of 606 done; week 43% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T601 in progress since 04:24Z; 426 of 606 done; week 43% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 425 of 606 build tasks (owner gates not counted)
+- **Tasks done:** 426 of 606 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T601 claimed 04:24Z, lease until 07:24Z; lane 4: T642 claimed 04:42Z, lease until 07:42Z; lane 6: T523 claimed 04:19Z, lease until 07:19Z
 - **Week:** 43% used, 106.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:55Z, 0 min before this update
+- **Last run:** 04:56Z, 5 min before this update
 - **Keeper:** last ran 04:55Z, next wake 07:21Z
 
 ## Needs attention
@@ -22,7 +22,7 @@ Updated 2026-11-18T04:55:59Z by runner e02299219786 (actions).
 | T638 | harness: Ci skips a compile its job already passed on a prov | MERGE_PENDING | 1 | 88 min | 04:35Z |  |
 | T623 | payments: a Stripe key refusal (401 or 403) takes the Stripe | MERGE_PENDING | 1 | 63 min | 03:46Z |  |
 | T151 | ops and messaging: HELP requests with one owner notification | MERGE_PENDING | 1 | 34 min | 03:40Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
-| T647 | payments: rebuild_charge reports Booked inside a caller's tr | MERGE_PENDING | 1 | 82 min | 03:35Z |  |
+| T647 | payments: rebuild_charge reports Booked inside a caller's tr | done | 1 | 82 min | 03:35Z |  |
 | T619 | quotes, picks and intake: the quote-median, lapsed-pick, win | QUEUED | 1 | 69 min | 03:31Z | T619 readers are correct per three Opus reviews, but the test file still misses wrong implementations; no reviewer appro |
 | T639 | Runner (harness): the smoke warm-up is skipped when the pre- | done | 1 | 76 min | 03:14Z |  |
 | T108 | portals: owner tools for pauses, fee mode, categories and se | done | 1 | 2 h 45 min | 03:08Z |  |
@@ -92,7 +92,7 @@ Updated 2026-11-18T04:55:59Z by runner e02299219786 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 678 · unstarted 57
-**Tasks merged (throughput only):** 425 of 606
+**Tasks merged (throughput only):** 426 of 606
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -128,7 +128,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 68 of 214 done
+- stage 5: 69 of 214 done
 - stage 6: 0 of 39 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
