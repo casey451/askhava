@@ -3421,3 +3421,10 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **A request that never gets a job now times out like any other** (T719): a reminder after a day and a close after three. Because such a request has no request number yet, the two texts are new drafts of the usual ones without the number, for the copy panel.
 - **Open item:** the numbered "Is this mainly 1) plumbing or 2) heating/AC?" question only comes up when the AI reading and the keywords disagree, so it waits for the AI work (T299); no task builds it yet.
 - Our choice; nothing needs you now.
+
+## The owner refund page could not tell which dispute belongs to which charge (D-4507)
+
+- **The first try at the owner refund page (T205) stopped**: the payments code could list every open dispute in the system, but not the one dispute on the charge you are looking at, and your "I submitted this dispute's evidence in Stripe myself" button would have accepted any dispute's ID. A press on the wrong one would have stopped that other dispute's automatic evidence and booked a $15 countering fee against the wrong business.
+- **Fix:** a small new payments task (T723) adds two pieces: a list of one charge's own disputes, and a version of the "I submitted it myself" record that refuses a dispute that is not that charge's. T205 then uses only those two. No database change; nothing already built changes.
+- **The cost we accepted:** one more small task before the refund page, and the refund page's size limit goes from 400 to 450 lines.
+- Our choice; nothing needs you now.
