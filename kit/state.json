@@ -81859,7 +81859,7 @@
    "deps": [
     "T711"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "intake-order-corrections",
    "type": "harness",
@@ -81877,8 +81877,8 @@
     "model": "claude-opus-5-5",
     "alias": "opus"
    },
-   "reason": "plan gap reported: PLAN GAP: `app/server/tests/name_address_answer.rs:262`\u2013`:264` (owned by T432, not this task) expects the name-and-address question (step 11) to be asked on the first reply after the area check, even when step 5 never told the coverage. That is the behaviour D-4441 correction (5) removes, so the test is red with T715's change. Smallest plan change: a harness follow-up (T715's attempt or a new task) that may change that test's `her_request` setup so step 5 finishes before step 11 is expected (e.g. first text through the full reply path / receive_raw_reply, or a reply naming a trade, with covera; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T715 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: `app/server/tests/name_address_answer.rs:262`\u2013`:264` (owned by T432, not this task) expects the name-and-address question (step 11) to be asked on the first reply after the area check, even when step 5 never told the coverage. That is the behaviour D-4441 correction (5) removes, so the test is red with T715's change. Smallest plan change: a harness follow-up (T715's attempt or a new task) that may change that test's `her_request` setup so step 5 finishes before step 11 is expected (e.g. first text through the full reply path / receive_raw_reply, or a reply naming a trade, with coverage businesses), citing D-4441. Nothing loosened.\nEvidence: on branch head 328d8366a, `cargo test -p askhava-server --test name_address_answer`: 2 passed, 3 failed (td_int_42_a_regular_answer_lands_on_her_own_contact at :264 \"asked after the area check\"; td_int_42_a_street_is_no_hazard_and_no_number_asks_again at :310; td_int_42_a_hazard_keeps_its_911_text_and_safe_asks_again at :563). With main's order_dispatch.rs swapped back, 5 passed. `her_request` (:194\u2013:223) calls service::receive_text directly (skipping first_text at replies.rs:201) and answer_zip directly, so no trade_check marker is ever written.\nReviewer confirmed: kit/tasks.json lists name_address_answer.rs under T432 and T673 only; T715 owns order_dispatch.rs, intake_order_corrections.rs, intake_order_area_trade.rs (kit/prompts/T715.md:34\u2013:38); T673's prompt allows only an INT-041 text change to that test (kit/prompts/T673.md:11); the T715 prompt does not mention that test; no implementation of correction (5) (kit/prompts/T715.md:9, :11) can keep it green.",
+   "reason": null,
+   "last_failure": "PLAN GAP: `app/server/tests/name_address_answer.rs:262`\u2013`:264` (owned by T432, not this task) expects the name-and-address question (step 11) to be asked on the first reply after the area check, even when step 5 never told the coverage. That is the behaviour D-4441 correction (5) removes, so the test is red with T715's change. Smallest plan change: a harness follow-up (T715's attempt or a new task) that may change that test's `her_request` setup so step 5 finishes before step 11 is expected (e.g. first text through the full reply path / receive_raw_reply, or a reply naming a trade, with coverage businesses), citing D-4441. Nothing loosened.\nEvidence: on branch head 328d8366a, `cargo test -p askhava-server --test name_address_answer`: 2 passed, 3 failed (td_int_42_a_regular_answer_lands_on_her_own_contact at :264 \"asked after the area check\"; td_int_42_a_street_is_no_hazard_and_no_number_asks_again at :310; td_int_42_a_hazard_keeps_its_911_text_and_safe_asks_again at :563). With main's order_dispatch.rs swapped back, 5 passed. `her_request` (:194\u2013:223) calls service::receive_text directly (skipping first_text at replies.rs:201) and answer_zip directly, so no trade_check marker is ever written.\nReviewer confirmed: kit/tasks.json lists name_address_answer.rs under T432 and T673 only; T715 owns order_dispatch.rs, intake_order_corrections.rs, intake_order_area_trade.rs (kit/prompts/T715.md:34\u2013:38); T673's prompt allows only an INT-041 text change to that test (kit/prompts/T673.md:11); the T715 prompt does not mention that test; no implementation of correction (5) (kit/prompts/T715.md:9, :11) can keep it green.\nre-queued after plan fix D-4544: Plan gap fixed by D-4544 (#1065): T715 may change only the setup of app/server/tests/name_address_answer.rs so step 5 completes before step 11; no assertion changes",
    "history": [
     {
      "attempt": 1,
@@ -81902,6 +81902,21 @@
        "turns": 11
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-18T22:33:59Z",
+     "reason": "Plan gap fixed by D-4544 (#1065): T715 may change only the setup of app/server/tests/name_address_answer.rs so step 5 completes before step 11; no assertion changes",
+     "by": "manual-f1ccc7e58068",
+     "was": "plan gap reported: PLAN GAP: `app/server/tests/name_address_answer.rs:262`\u2013`:264` (owned by T432, not this task) expects the name-and-address question (step 11) to be asked on the first reply after the area check, even when step 5 never told the coverage. That is the behaviour D-4441 correction (5) removes, so the test is red with T715's change. Smallest plan change: a harness follow-up (T715's attempt or a new task) that may change that test's `her_request` setup so step 5 finishes before step 11 is expected (e.g. first text through the full reply path / receive_raw_reply, or a reply naming a trade, with covera; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T715 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-4544",
+     "plan_since": "2026-11-18T20:05:10Z",
+     "plan_base": "72bf3065c4952a62e4845dce5157fc8aeb10eaaf",
+     "plan_head": "0b3a6fc1de81dd97e54087d08472ad84809fe175",
+     "plan_then": "aca159fe61645fb7adc9e1768995f01257d4f56ec90b7023754851dfece16dc0",
+     "plan_now": "3765386ad2113a227677db9b758c0dfedb62c318259cad4b801f5a75e3e4a180"
     }
    ]
   },
@@ -87465,7 +87480,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T22:23:55Z",
+ "updated_at": "2026-11-18T22:33:59Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -87563,8 +87578,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "511cb565de5615f05844c7b261cf66c2d3c342a4",
- "starter": "actions",
+ "runner_sha": "0b3a6fc1de81dd97e54087d08472ad84809fe175",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "11c03c196b95fa5ee8abd0f221820208127c9279",

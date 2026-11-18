@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T22:23:55Z by runner 511cb565de56 (actions).
+Updated 2026-11-18T22:33:59Z by runner 0b3a6fc1de81 (manual).
 
 **Building: T205 in progress since 22:21Z; 461 of 663 done; week 69% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,10 @@ Updated 2026-11-18T22:23:55Z by runner 511cb565de56 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T205 claimed 22:21Z, lease until 01:21Z; lane 3: T306 claimed 22:14Z, lease until 01:14Z; lane 5: T583 claimed 21:55Z, lease until 00:55Z; lane 6: T701 claimed 22:16Z, lease until 01:16Z; lane 7: T504 claimed 22:07Z, lease until 01:07Z
 - **Week:** 69% used, 51.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:23Z, 0 min before this update
+- **Last run:** 22:24Z, 9 min before this update
 - **Keeper:** last ran 22:23Z, next wake 00:57Z
 
 ## Needs attention
-- BLOCKED T715: plan gap reported: PLAN GAP: `app/server/tests/name_address_answer.rs:262`–`:264` (owned by T432, not this task) expects the name-and-address question (step 11) to be asked on the first reply after the area check, even when step 5 never told the coverage. That is the behaviour D-4441 correction (5) removes, so the test is red with T715's change. Smallest plan change: a harness follow-up (T715's attempt or a new task) that may change that test's `her_request` setup so step 5 finishes before step 11 is expected (e.g. first text through the full reply path / receive_raw_reply, or a reply naming a trade, with covera; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T715 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - Strict plan check red: 51 problem(s) on tasks still to run (+265 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
@@ -89,31 +88,31 @@ Updated 2026-11-18T22:23:55Z by runner 511cb565de56 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 294 of 735 (40.0%) · partial 391 · unstarted 50
+**Requirements verified:** 1 of 735 (0.1%) · partial 684 · unstarted 50
 **Tasks merged (throughput only):** 461 of 663
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 17 | 18 | 0 | 35 |
-| ai | 9 | 17 | 3 | 29 |
-| businesses | 17 | 40 | 1 | 58 |
-| calls | 12 | 13 | 0 | 25 |
-| consent | 14 | 21 | 0 | 35 |
-| fees | 23 | 28 | 1 | 52 |
-| intake | 10 | 33 | 0 | 43 |
-| job-cards | 14 | 10 | 0 | 24 |
-| licensing | 33 | 15 | 0 | 48 |
-| lifecycle | 18 | 10 | 0 | 28 |
-| messaging | 20 | 24 | 1 | 45 |
-| ops-recovery | 3 | 32 | 19 | 54 |
-| privacy | 9 | 21 | 1 | 31 |
-| quiet-hours | 6 | 3 | 0 | 9 |
-| quotes-pick | 27 | 29 | 0 | 56 |
-| recurring | 7 | 2 | 2 | 11 |
-| security | 9 | 41 | 5 | 55 |
-| terms | 25 | 7 | 3 | 35 |
-| website | 9 | 16 | 5 | 30 |
-| wording | 12 | 11 | 9 | 32 |
+| accessibility | 0 | 35 | 0 | 35 |
+| ai | 0 | 26 | 3 | 29 |
+| businesses | 0 | 57 | 1 | 58 |
+| calls | 0 | 25 | 0 | 25 |
+| consent | 1 | 34 | 0 | 35 |
+| fees | 0 | 51 | 1 | 52 |
+| intake | 0 | 43 | 0 | 43 |
+| job-cards | 0 | 24 | 0 | 24 |
+| licensing | 0 | 48 | 0 | 48 |
+| lifecycle | 0 | 28 | 0 | 28 |
+| messaging | 0 | 44 | 1 | 45 |
+| ops-recovery | 0 | 35 | 19 | 54 |
+| privacy | 0 | 30 | 1 | 31 |
+| quiet-hours | 0 | 9 | 0 | 9 |
+| quotes-pick | 0 | 56 | 0 | 56 |
+| recurring | 0 | 9 | 2 | 11 |
+| security | 0 | 50 | 5 | 55 |
+| terms | 0 | 32 | 3 | 35 |
+| website | 0 | 25 | 5 | 30 |
+| wording | 0 | 23 | 9 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
