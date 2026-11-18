@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T20:33:12Z by runner f32c4f1f12b3 (actions).
+Updated 2026-11-18T20:36:26Z by runner 8ba862b4c752 (actions).
 
 **Building: T651 in progress since 19:44Z; 455 of 663 done; week 67% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-18T20:33:12Z by runner f32c4f1f12b3 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T651 claimed 19:44Z, lease until 22:44Z; lane 3: T483 claimed 18:25Z, lease until 22:51Z; lane 5: T706 claimed 19:14Z, lease until 23:19Z; lane 6: T702 claimed 20:27Z, lease until 23:27Z; lane 7: T715 claimed 20:05Z, lease until 23:05Z
 - **Week:** 67% used, 53.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:33Z, 0 min before this update
+- **Last run:** 20:33Z, 2 min before this update
 - **Keeper:** last ran 20:33Z, next wake 22:47Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 50 problem(s) on tasks still to run (+262 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 52 problem(s) on tasks still to run (+263 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -86,7 +86,7 @@ Updated 2026-11-18T20:33:12Z by runner f32c4f1f12b3 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 293 of 735 (39.9%) · partial 392 · unstarted 50
-**Tasks merged (throughput only):** 455 of 662
+**Tasks merged (throughput only):** 455 of 663
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
