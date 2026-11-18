@@ -16,6 +16,7 @@
 //! QH-004, `whos_calling`). Other crates reach it only through [`api`].
 
 pub mod api;
+mod close_tasks;
 mod handlers;
 mod lifecycle;
 mod link_reply;

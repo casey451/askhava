@@ -12,7 +12,10 @@
 //! final. `replies::reply_in` calls [`answer_close`] for a clear text in an open request, inside
 //! the reply's transaction, so its `begin` is a savepoint (D-4051, D-4064).
 
-use askhava_jobs::api::{JobStatus, current, job_number, move_to};
+use askhava_core::api::Guarded;
+use askhava_jobs::api::{
+    JobStatus, LineCloseReason, current, job_number, move_to, queue_line_close,
+};
 use askhava_messaging::api::{Language, NewText, Relation, enqueue, render};
 use askhava_ops::api::Actor;
 use jiff::Timestamp;
@@ -142,17 +145,24 @@ async fn open_jobs(db: &mut PgConnection, conversation: Uuid) -> Result<Vec<Open
 }
 
 /// Moves job `job` from `status` to Cancelled (JOB-002, JOB-004, JOB-005, JOB-018); a job that
-/// moved on meanwhile is left as it is.
+/// moved on meanwhile is left as it is. An applied cancel queues the masked line's close in the
+/// same transaction, whatever status it left, so the business is told and her number shuts
+/// (CALL-009, CALL-010, D-4338).
 async fn cancel(
     db: &mut PgConnection,
     job: Uuid,
     status: JobStatus,
     (at, actor): (Timestamp, Actor),
 ) -> Result<(), IntakeError> {
-    move_to(db, job, (status, JobStatus::Cancelled), at, actor)
+    let moved = move_to(db, job, (status, JobStatus::Cancelled), at, actor)
         .await
-        .map(|_| ())
-        .map_err(|_| IntakeError::Job)
+        .map_err(|_| IntakeError::Job)?;
+    if let Guarded::Applied(()) = moved {
+        queue_line_close(db, job, LineCloseReason::Cancelled, at)
+            .await
+            .map_err(|_| IntakeError::Job)?;
+    }
+    Ok(())
 }
 
 /// Closes request `conversation` at `at` once every job it opened is final, so the next text

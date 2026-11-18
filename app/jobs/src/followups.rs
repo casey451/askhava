@@ -15,6 +15,7 @@ use sqlx::{Connection, PgConnection, PgPool};
 
 use crate::flag_inputs::record_check_in_answer;
 use crate::handlers::TEXT_KIND;
+use crate::line_close::{LineCloseReason, queue_line_close};
 use crate::models::{self, JobsError};
 use crate::rules::{CheckIn, Contact, Reply, connected_move};
 use crate::service::{apply, job_number};
@@ -199,7 +200,8 @@ fn db_err<E>(_: E) -> HandlerError {
 /// text in its transaction; a PROBLEM close raises its alert in the same transaction, and no fee
 /// or ledger row changes. LATER changes nothing. A job no longer Connected changes nothing and
 /// raises nothing ([`Guarded::MovedOn`]), so a repeated answer is never listed twice. An applied
-/// move also writes one `jobs.check_in_answer` audit row in its transaction (OPS-031, D-3881).
+/// move also writes one `jobs.check_in_answer` audit row in its transaction (OPS-031, D-3881),
+/// and a PROBLEM or NO queues the masked line's close there too (CALL-009, D-4338).
 ///
 /// # Errors
 ///
@@ -230,8 +232,22 @@ pub async fn answer_check_in(
     if answer == Answer::Problem {
         flag_problem(&mut tx, inbound).await?;
     }
+    if let Some(reason) = line_close_reason(answer) {
+        queue_line_close(&mut tx, id, reason, at).await?;
+    }
     tx.commit().await.map_err(|_| JobsError::Database)?;
     Ok(Guarded::Applied(next))
+}
+
+/// CALL-009, JOB-015, D-4338: the masked line's close an applied move out of Connected queues:
+/// a PROBLEM's as a complaint, a NO's as a no-show; DONE, ONGOING and OTHER queue none (their
+/// lines close in the 30-day sweep).
+fn line_close_reason(answer: Answer) -> Option<LineCloseReason> {
+    match answer {
+        Answer::Problem => Some(LineCloseReason::Complaint),
+        Answer::No => Some(LineCloseReason::NoShow),
+        Answer::Done | Answer::Later | Answer::Ongoing | Answer::Other => None,
+    }
 }
 
 /// JOB-016, OPS-005, D-222: one alert naming the PROBLEM text's inbox row: the digest kind, or
