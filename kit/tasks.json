@@ -18409,10 +18409,72 @@
    "prompt": "kit/prompts/T529.md"
   },
   {
+   "id": "T722",
+   "slug": "payments-pick-disputes",
+   "title": "payments: read a pick's disputes and record Casey's evidence only for that pick's own dispute",
+   "goal": "Plan change D-4506 (T205 plan gap, attempt 1, Nov 18, 2026; FEE-050, FEE-027, SEC-006). The owner portal's refund review step (T205) must show the disputes of the charge being reviewed and record \"I submitted this dispute's evidence in Stripe myself\" only for that charge's own dispute, but `payments::api` has no reader that ties a dispute to its pick: `list_disputes` (`app/payments/src/disputes.rs:362`) lists every dispute system-wide, `DisputeView` (`app/payments/src/models.rs:621`) has no pick, `refund_state` (`app/payments/src/refund_state.rs:39`) gives only a bool, and `record_owner_submission` (`disputes.rs:231`) takes only the `dp_` ID; portals may not query `payments.dispute` (`docs/architecture.md:267`, SEC-029). `payments.dispute.pick_id` already exists with an index (`migrations/0102_payments_refunds_disputes.sql:27`, `:36`); no migration. Add to `disputes.rs`, re-exported from the shared `payments::api`: (1) `disputes_of(conn, pick) -> Result<Vec<DisputeView>, MoneyEventError>`, every `payments.dispute` row of `pick` (submitted or not), oldest first by `opened_at` then `stripe_dispute_id`, the same `DisputeView` as `list_disputes` with `fee_at_stake_cents` = `DISPUTE_FEE_CENTS`, empty for a pick with none; (2) `record_pick_owner_submission(conn, pick, dispute, at) -> Result<OwnerSubmission, MoneyEventError>`, where `OwnerSubmission` (in `models.rs`) is `Recorded`, `AlreadyIn` or `NotThisPick`: in one transaction on `conn` (a savepoint inside a caller's, D-2204) it first locks the dispute row by `stripe_dispute_id` (`SELECT pick_id, submitted_at ... FOR UPDATE`); a dispute that does not exist or whose `pick_id` is not `pick` answers `NotThisPick` and writes nothing (no `submitted_at`, no `submitted_by`, no countering fee, its `auto_submit` untouched); one already in (by `auto` or `owner`) answers `AlreadyIn` and writes nothing; otherwise it does exactly what `record_owner_submission` does through the same private `submitted` (`submitted_by = 'owner'`, `submitted_at`, one `countering-fee` entry keyed `countering.{dp_}`, FEE-050, D-229) and answers `Recorded`. The lock and `submitted`'s `submitted_at IS NULL` keep a press racing `run_dispute_submit` (`disputes.rs:316`) to one countering fee. `record_owner_submission` keeps its signature and behaviour (DONE tests `tests/integration/tests/disputes.rs`, `dispute_won.rs` and `dispute_submit.rs` call it); its `///` says a portal calls `record_pick_owner_submission`. No contact, help-message or homeowner field is read or returned (PRIV-027); `payments` reads no `picks` table (`pick_id` is its own column). Update the `payments` `CLAUDE.md` dispute rule line, `disputes.rs`'s `//!`, `docs/architecture.md`'s payments api list and `docs/decisions.md`. Tests in `tests/integration/tests/dispute_pick_scope.rs` (TD-FEE-73), PostgreSQL, fake data only: with disputes on picks P and Q and an undisputed pick R, `disputes_of` returns only P's for P, only Q's for Q and none for R; `record_pick_owner_submission(P, Q's dp_)` and `(P, an unknown dp_)` answer `NotThisPick` and leave Q's `submitted_at`, `submitted_by`, `auto_submit` and the ledger unchanged, and Q, once marked, is still sent and recorded by `run_dispute_submit` with a fake `DisputeStripe`; `(P, P's dp_)` answers `Recorded` with one countering-fee entry, then `AlreadyIn` on a replay with no second entry; after an auto-submit `(P, P's dp_)` answers `AlreadyIn`; a press and `run_dispute_submit` on one marked dispute run concurrently book exactly one countering-fee entry. Money: 95% branch floor; the overseer runs an independent money review of the hand-in. Budget 300 lines.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "payments",
+   "deps": [
+    "T314",
+    "T353",
+    "T529"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "security"
+   ],
+   "owns": [
+    "app/payments/src/disputes.rs",
+    "app/payments/src/models.rs",
+    "tests/integration/tests/dispute_pick_scope.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/spec/security.md",
+    "docs/brains/payments-stripe.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "FEE-050",
+    "FEE-027",
+    "SEC-006"
+   ],
+   "tests": [
+    "TD-FEE-73"
+   ],
+   "decisions": [
+    "D-229",
+    "D-2204",
+    "D-074",
+    "D-4506"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 300,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T722-payments-pick-disputes",
+   "prompt": "kit/prompts/T722.md"
+  },
+  {
    "id": "T205",
    "slug": "portals-owner-refunds-audit",
    "title": "portals: owner refunds with a review step and the audit log viewer",
-   "goal": "The owner refunds a charge through a review step that issues one Stripe refund and one ledger row, a refund on a disputed charge being blocked; the owner portal alone has pause, refund and release powers; and the audit log viewer shows every action with its actor (FEE-026, SEC-006). T304 serves these pages (D-2128): page functions and route constants only, no `.route` in `server`; the browser half of J3's refund and audit-log steps runs in T304's spec, and `tests/e2e/owner_refund.spec.ts` checks what an unserved page allows. The review step of a disputed charge also offers \"I submitted this dispute's evidence in Stripe myself\", which after a fresh second factor calls `payments::api::record_owner_submission` once (D-229, FEE-050; fourth external audit F44, D-2204). Plan change D-3744: if `owner_refund.html` or `owner_audit_log.html` draws a native checkbox or radio, that template links `<link rel=\"stylesheet\" href=\"/static/portals/forms.css\">` (T466's shared form stylesheet) first in its `main` block, as `app/portals/templates/feedback.html:10` does (D-3700, A11Y-007, A11Y-009); T466 is a dependency. Plan change D-3883 (Fable's pre-claim checks, Nov 16, 2026): The refund calls `payments::api::request_refund` (`app/payments/src/refunds.rs:107`) with `RefundTrigger::Owner`, which T529 adds. Tests in `tests/integration/tests/owner_refund.rs`, fake data only: a replayed press gives one refund and one ledger row; a disputed charge is blocked; the evidence press calls `record_owner_submission` once. Budget 400 lines. Plan change D-3890 (Fable's pre-claim checks of the remaining stage-5 tasks, Nov 16, 2026): Every route constant has no path parameter or only `{pick}` (`app/server/tests/door_matrix.rs:89`), so T304 can serve them unchanged. Plan change D-4326 (night pre-claim scout, Nov 18, 2026, re-verified on `main` d662af7e5): `tests/e2e/owner_refund.spec.ts` asserts that a signed-out GET of each page gets a status of 400 or more and a body with no charge, refund or contact detail, as `tests/e2e/business_portal.spec.ts:15` does, never an exact 404 (T304 serves these routes later and does not own this spec); it sends no POST.",
+   "goal": "The owner refunds a charge through a review step that issues one Stripe refund and one ledger row, a refund on a disputed charge being blocked; the owner portal alone has pause, refund and release powers; and the audit log viewer shows every action with its actor (FEE-026, SEC-006). T304 serves these pages (D-2128): page functions and route constants only, no `.route` in `server`; the browser half of J3's refund and audit-log steps runs in T304's spec, and `tests/e2e/owner_refund.spec.ts` checks what an unserved page allows. The review step of a disputed charge also offers \"I submitted this dispute's evidence in Stripe myself\", which after a fresh second factor calls `payments::api::record_pick_owner_submission` (T722, D-4506) once for that charge's own dispute (D-229, FEE-050; fourth external audit F44, D-2204). Plan change D-3744: if `owner_refund.html` or `owner_audit_log.html` draws a native checkbox or radio, that template links `<link rel=\"stylesheet\" href=\"/static/portals/forms.css\">` (T466's shared form stylesheet) first in its `main` block, as `app/portals/templates/feedback.html:10` does (D-3700, A11Y-007, A11Y-009); T466 is a dependency. Plan change D-3883 (Fable's pre-claim checks, Nov 16, 2026): The refund calls `payments::api::request_refund` (`app/payments/src/refunds.rs:107`) with `RefundTrigger::Owner`, which T529 adds. Tests in `tests/integration/tests/owner_refund.rs`, fake data only: a replayed press gives one refund and one ledger row; a disputed charge is blocked; the evidence press calls `record_pick_owner_submission` once. Budget 450 lines (400 before D-4506). Plan change D-3890 (Fable's pre-claim checks of the remaining stage-5 tasks, Nov 16, 2026): Every route constant has no path parameter or only `{pick}` (`app/server/tests/door_matrix.rs:89`), so T304 can serve them unchanged. Plan change D-4326 (night pre-claim scout, Nov 18, 2026, re-verified on `main` d662af7e5): `tests/e2e/owner_refund.spec.ts` asserts that a signed-out GET of each page gets a status of 400 or more and a body with no charge, refund or contact detail, as `tests/e2e/business_portal.spec.ts:15` does, never an exact 404 (T304 serves these routes later and does not own this spec); it sends no POST. Plan change D-4506 (T205 plan gap, attempt 1, Nov 18, 2026): the review step of pick P lists only P's own disputes, read with `payments::api::disputes_of(conn, P)` (T722), and shows \"I submitted this dispute's evidence in Stripe myself\" only for one of them not yet in; never `list_disputes`, which is system-wide (the digest's). The press names P (the route's `{pick}`) and the `dp_` ID and, after a fresh second factor, calls `payments::api::record_pick_owner_submission(conn, P, dp, at)` once, never `record_owner_submission`. `Recorded` writes one owner audit row whose subject is P and whose change names the `dp_` ID, in the same transaction (SEC-006, D-074). `AlreadyIn` writes no second audit row and shows that the evidence is already in. `NotThisPick` (a `dp_` of another pick, or none) is refused with no audit row, no ledger row and no change to that dispute, and the page shows a plain error (D-229, FEE-050). Tests in `tests/integration/tests/owner_refund.rs` (TD-FEE-74; T722's half is TD-FEE-73): with disputes on picks P and Q, P's review step lists P's `dp_` and not Q's; a press on P naming Q's `dp_` is refused and leaves Q's `submitted_at` empty, Q's auto-submit intact and no audit row or countering fee; the press on P's own dispute records once with one audit row under P, and a replay writes no second audit row.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -18423,7 +18485,8 @@
     "T108",
     "T314",
     "T466",
-    "T529"
+    "T529",
+    "T722"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -18458,7 +18521,8 @@
    ],
    "tests": [
     "TD-FEE-14",
-    "TD-SEC-01"
+    "TD-SEC-01",
+    "TD-FEE-74"
    ],
    "decisions": [
     "D-074",
@@ -18469,12 +18533,13 @@
     "D-3744",
     "D-3883",
     "D-3890",
-    "D-4326"
+    "D-4326",
+    "D-4506"
    ],
    "cites": [],
    "budget": {
     "files": 5,
-    "lines": 400,
+    "lines": 450,
     "context_pct": 20
    },
    "checks": [
@@ -23403,7 +23468,7 @@
    "budget": {
     "files": 2,
     "lines": 800,
-    "context_pct": 55
+    "context_pct": 59
    },
    "checks": [
     "Ci",
@@ -35715,7 +35780,7 @@
    "id": "T381",
    "slug": "dispute-inquiry",
    "title": "payments and stand-in (harness): a card-network inquiry is not recorded as a chargeback",
-   "goal": "Nov 11 vendor-double review batch 4, F9 (D-2768; FEE-027, FEE-050). Stripe opens an inquiry (a dispute whose `status` is `warning_needs_response`) when a cardholder asks about a charge: no money is withdrawn, there is no dispute fee and a refund is still allowed; if it becomes a chargeback Stripe reports the new status. `record_dispute` (`app/payments/src/disputes.rs:73`) writes the disputed amount and the $15 fee and blocks refunds for every `charge.dispute.created`, and the fake only opens `needs_response` disputes (`stand_ins/stripe.py:274`). After T132, T314, T353 and T380 (owners of the same files): (1) the dispute event's `status` is read where the event is parsed (`app/payments/src/routes.rs`) and passed to `record_dispute`; an inquiry (`warning_needs_response`, `warning_under_review`) is stored as an audit row and a High alert for Casey, not a `payments.dispute` row (that table has no kind column and a unique dispute ID; no migration), with no ledger entry, no fee and no refund block; escalation arrives as `charge.dispute.updated` with a chargeback status (`needs_response` and after) and, where money moves, `charge.dispute.funds_withdrawn`; both are added to `HANDLED` (`app/payments/src/routes.rs:85`) and the first that shows a chargeback status records the dispute then, once, as `charge.dispute.created` does today; a `charge.dispute.closed` with `warning_closed` (or for an inquiry never recorded as a dispute) is acknowledged with its audit row and never takes `dispute_closed`'s not-recorded path that answers 500 (`:489`); (2) the fake opens an inquiry when asked (its own mode), sends the matching events, and can escalate it, through the dispute control in `stand_ins/server.py` (`control_dispute`, owned here, D-2821). Tests in `tests/integration/tests/dispute_inquiry.rs`: an inquiry writes no ledger entry and the pick can still be refunded (fails before the fix); escalation by `charge.dispute.updated` or `charge.dispute.funds_withdrawn` records the dispute and fee once; a `warning_closed` inquiry answers 200 and writes no money; and `tests/contract/test_stripe_inquiry.py` in sandbox mode (skipped without credentials) records which events and statuses Stripe test mode sends for its inquiry test card (https://docs.stripe.com/testing#disputes); any difference is fixed in the code and the fake together and recorded in the decision. Update the `payments` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Nov 11 vendor-double review batch 4, F9 (D-2768; FEE-027, FEE-050). Stripe opens an inquiry (a dispute whose `status` is `warning_needs_response`) when a cardholder asks about a charge: no money is withdrawn, there is no dispute fee and a refund is still allowed; if it becomes a chargeback Stripe reports the new status. `record_dispute` (`app/payments/src/disputes.rs:73`) writes the disputed amount and the $15 fee and blocks refunds for every `charge.dispute.created`, and the fake only opens `needs_response` disputes (`stand_ins/stripe.py:274`). After T132, T314, T353 and T380 (owners of the same files): (1) the dispute event's `status` is read where the event is parsed (`app/payments/src/routes.rs`) and passed to `record_dispute`; an inquiry (`warning_needs_response`, `warning_under_review`) is stored as an audit row and a High alert for Casey, not a `payments.dispute` row (that table has no kind column and a unique dispute ID; no migration), with no ledger entry, no fee and no refund block; escalation arrives as `charge.dispute.updated` with a chargeback status (`needs_response` and after) and, where money moves, `charge.dispute.funds_withdrawn`; both are added to `HANDLED` (`app/payments/src/routes.rs:85`) and the first that shows a chargeback status records the dispute then, once, as `charge.dispute.created` does today; a `charge.dispute.closed` with `warning_closed` (or for an inquiry never recorded as a dispute) is acknowledged with its audit row and never takes `dispute_closed`'s not-recorded path that answers 500 (`:489`); (2) the fake opens an inquiry when asked (its own mode), sends the matching events, and can escalate it, through the dispute control in `stand_ins/server.py` (`control_dispute`, owned here, D-2821). Tests in `tests/integration/tests/dispute_inquiry.rs`: an inquiry writes no ledger entry and the pick can still be refunded (fails before the fix); escalation by `charge.dispute.updated` or `charge.dispute.funds_withdrawn` records the dispute and fee once; a `warning_closed` inquiry answers 200 and writes no money; and `tests/contract/test_stripe_inquiry.py` in sandbox mode (skipped without credentials) records which events and statuses Stripe test mode sends for its inquiry test card (https://docs.stripe.com/testing#disputes); any difference is fixed in the code and the fake together and recorded in the decision. Update the `payments` `CLAUDE.md` and `docs/decisions.md`. Plan change D-4506: after T722 (owner of the same `disputes.rs`), `disputes_of` and `record_pick_owner_submission` read only recorded `payments.dispute` rows, so an inquiry (never a row) is never listed on a pick's review step nor submittable there; keep them so.",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -35723,7 +35788,8 @@
    "deps": [
     "T380",
     "T314",
-    "T353"
+    "T353",
+    "T722"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -35756,7 +35822,8 @@
    ],
    "decisions": [
     "D-2768",
-    "D-2771"
+    "D-2771",
+    "D-4506"
    ],
    "cites": [],
    "budget": {

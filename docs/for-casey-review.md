@@ -3410,3 +3410,10 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **The portals crate notes were too long for the runner to let a third task work there**, while twelve waiting tasks all touch portals.
 - **Fix:** a few standalone rules and one background sentence moved word for word to the crate's searchable notes file, leaving each remaining rule whole; a check confirms no word was lost. Portals can now hold three tasks.
 - Our choice; nothing needs you now.
+
+## The refund page shows only the charge's own dispute (D-4506)
+
+- **The step that builds your refund page (T205) stopped:** the page must show the dispute on the charge you are looking at and let you say "I submitted this dispute's evidence in Stripe myself", but the payments code could only list every dispute at once and record that press by dispute number alone.
+- **Why it mattered:** one press on the wrong dispute would have stopped that other dispute's automatic evidence, charged the $15 countering fee to the wrong business, and left the right dispute waiting.
+- **Fix:** a small new payments step (T722) adds a list of one charge's disputes and a press that refuses any dispute not on that charge and writes nothing; T205 then uses only those. No change to fees or what you see beyond the narrower list.
+- Our choice; nothing needs you now.
