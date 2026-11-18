@@ -44177,7 +44177,7 @@
    "budget": {
     "files": 10,
     "lines": 650,
-    "context_pct": 43
+    "context_pct": 47
    },
    "checks": [
     "Ci",
@@ -44319,7 +44319,7 @@
    "budget": {
     "files": 5,
     "lines": 600,
-    "context_pct": 37
+    "context_pct": 38
    },
    "checks": [
     "Ci",
@@ -44391,7 +44391,7 @@
    "budget": {
     "files": 4,
     "lines": 450,
-    "context_pct": 18
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -44470,7 +44470,7 @@
    "budget": {
     "files": 7,
     "lines": 550,
-    "context_pct": 26
+    "context_pct": 39
    },
    "checks": [
     "Ci",
@@ -45373,7 +45373,7 @@
    "budget": {
     "files": 3,
     "lines": 300,
-    "context_pct": 20
+    "context_pct": 18
    },
    "checks": [
     "Ci",
