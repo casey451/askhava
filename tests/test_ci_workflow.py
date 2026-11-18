@@ -9,6 +9,7 @@ Reads the workflow only; no network.
 from __future__ import annotations
 
 import re
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -165,3 +166,60 @@ def test_the_nightly_ci_call_grants_what_ci_asks() -> None:
     granted, asked = nightly["jobs"]["ci"]["permissions"], _ci()["permissions"]
     assert asked == {"contents": "read", "actions": "read"}
     assert all(granted.get(scope) == level for scope, level in asked.items())
+
+
+GUARD = "A check that exists on main cannot be skipped by deleting its inputs (D-479)"
+FETCH_MAIN = "main:refs/remotes/origin/main"
+TRAIN_IF = "${{ !startsWith(github.ref_name, 'claude/train/') }}"
+
+
+def test_main_is_fetched_by_an_unconditional_step_before_the_delete_guard() -> None:
+    """D-4281, T640: the delete guard, the merge base and the mutants read origin/main on every ref, train included."""
+    steps = _ci()["jobs"]["checks"]["steps"]
+    fetches = [i for i, s in enumerate(steps) if FETCH_MAIN in str(s.get("run", ""))]
+    assert len(fetches) == 1
+    step = steps[fetches[0]]
+    assert "if" not in step and fetches[0] < [s.get("name") for s in steps].index(GUARD)
+    assert [line for line in step["run"].splitlines() if line.strip() and not line.strip().startswith("#")] == [
+        'git fetch --no-tags --depth=200 "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}" '
+        + FETCH_MAIN]
+
+
+def test_the_delete_guard_fails_when_origin_main_is_missing(tmp_path: Path) -> None:
+    """D-479, T640: the guard used to pass when origin/main could not be read (fail open); now it fails."""
+    (step,) = [s for s in _ci()["jobs"]["checks"]["steps"] if s.get("name") == GUARD]
+    for args in (["init", "-q"], ["-c", "user.name=Fake", "-c", "user.email=f@example.test", "commit", "-q",
+                                  "--allow-empty", "-m", "x"]):
+        subprocess.run(["git", *args], cwd=tmp_path, check=True, capture_output=True)
+    done = subprocess.run(["bash", "-e", "-c", step["run"]], cwd=tmp_path, capture_output=True, text=True, check=False)
+    assert done.returncode == 1 and "origin/main cannot be read" in done.stdout
+    subprocess.run(["git", "update-ref", "refs/remotes/origin/main", "HEAD"], cwd=tmp_path, check=True)
+    assert subprocess.run(["bash", "-e", "-c", step["run"]], cwd=tmp_path, capture_output=True, check=False).returncode == 0
+
+
+def test_only_the_plan_lock_and_change_rules_skip_a_train_ref() -> None:
+    """D-4281, T640: X carries two tasks' changes under no task branch; only those two commands are skipped there,
+    every other step of every job runs the same as on any branch."""
+    jobs = _ci()["jobs"]
+    marked = [(name, s) for name, job in jobs.items() for s in job["steps"] if "claude/train" in str(s)]
+    assert [(name, s["if"]) for name, s in marked] == [("checks", TRAIN_IF)]
+    lines = [line.strip() for line in marked[0][1]["run"].splitlines() if line.strip()]
+    assert lines == ["python3 scripts/check_plan_lock.py",
+                     'python3 scripts/check_pr_change.py --base origin/main --branch "$HEAD_BRANCH"']
+    assert str(jobs).count("claude/train") == 1
+    assert not any("ref_name" in str(s.get("if", "")) or "head_ref" in str(s.get("if", ""))
+                   for job in jobs.values() for s in job["steps"] if s is not marked[0][1])
+    assert not any("if" in job and "ref" in str(job["if"]) for job in jobs.values())
+
+
+def test_twin_and_ally_skip_train_refs_and_governance_skips_their_heads() -> None:
+    """D-4281, T640: their results on X prove nothing; no pull request has a train head."""
+    for name in ("twin", "a11y"):
+        flow = yaml.safe_load((ROOT / f".github/workflows/{name}.yml").read_text(encoding="utf-8"))
+        branches = flow[True]["push"]["branches"]
+        assert branches == ["claude/**", "dependabot/**", "!claude/kit-state", "!claude/train/**"], name
+    gov = yaml.safe_load((ROOT / ".github/workflows/governance.yml").read_text(encoding="utf-8"))
+    assert gov["jobs"]["governance"]["if"] == ("github.event.workflow_run.head_branch != 'claude/kit-state' && "
+                                               "!startsWith(github.event.workflow_run.head_branch, 'claude/train/')")
+    ci_branches = _ci()[True]["push"]["branches"]
+    assert "claude/**" in ci_branches and not any("train" in b for b in ci_branches)
