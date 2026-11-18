@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T18:50:08Z by runner 935e6983d16c (manual).
+Updated 2026-11-18T18:57:11Z by runner 6fea6851fef3 (actions).
 
 **Building: T501 in progress since 18:29Z; 453 of 657 done; week 65% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 453 of 657 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T501 claimed 18:29Z, lease until 21:29Z; lane 3: T483 claimed 18:25Z, lease until 21:25Z; lane 4: T364 claimed 18:28Z, lease until 21:28Z; lane 7: T711 claimed 18:12Z, lease until 21:12Z
+- **Lane:** lane 2: T501 claimed 18:29Z, lease until 21:29Z; lane 3: T483 claimed 18:25Z, lease until 21:25Z; lane 4: T364 claimed 18:28Z, lease until 21:28Z; lane 7: T711 claimed 18:12Z, lease until 21:57Z
 - **Week:** 65% used, 61.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:44Z, 5 min before this update
+- **Last run:** 18:50Z, 6 min before this update
 - **Keeper:** last ran 18:33Z, next wake 21:15Z
 
 ## Needs attention
@@ -16,7 +16,7 @@ Updated 2026-11-18T18:50:08Z by runner 935e6983d16c (manual).
 Evidence (confirmed by a second reviewer): list_disputes (app/payments/src/disputes.rs:362-388) and DisputeView (app/payments/src/models.rs:621-634) carry no pick, payment-intent, business or job; refund_state (app/payments/src/refund_state.rs:39-45) gives only `disputed`, not the dp_ id; EvidencePack fields are pub(crate) (models.rs:571-580); ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T205 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 49 problem(s) on tasks still to run (+261 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 38 problem(s) on tasks still to run (+258 on DONE tasks); first: T402: measures 48% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -88,31 +88,31 @@ Evidence (confirmed by a second reviewer): list_disputes (app/payments/src/dispu
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 1 of 735 (0.1%) · partial 684 · unstarted 50
-**Tasks merged (throughput only):** 453 of 657
+**Requirements verified:** 305 of 735 (41.5%) · partial 380 · unstarted 50
+**Tasks merged (throughput only):** 453 of 645
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 0 | 35 | 0 | 35 |
-| ai | 0 | 26 | 3 | 29 |
-| businesses | 0 | 57 | 1 | 58 |
-| calls | 0 | 25 | 0 | 25 |
-| consent | 1 | 34 | 0 | 35 |
-| fees | 0 | 51 | 1 | 52 |
-| intake | 0 | 43 | 0 | 43 |
-| job-cards | 0 | 24 | 0 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 0 | 44 | 1 | 45 |
-| ops-recovery | 0 | 35 | 19 | 54 |
-| privacy | 0 | 30 | 1 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 0 | 56 | 0 | 56 |
-| recurring | 0 | 9 | 2 | 11 |
-| security | 0 | 50 | 5 | 55 |
-| terms | 0 | 32 | 3 | 35 |
-| website | 0 | 25 | 5 | 30 |
-| wording | 0 | 23 | 9 | 32 |
+| accessibility | 17 | 18 | 0 | 35 |
+| ai | 9 | 17 | 3 | 29 |
+| businesses | 19 | 38 | 1 | 58 |
+| calls | 12 | 13 | 0 | 25 |
+| consent | 14 | 21 | 0 | 35 |
+| fees | 24 | 27 | 1 | 52 |
+| intake | 14 | 29 | 0 | 43 |
+| job-cards | 14 | 10 | 0 | 24 |
+| licensing | 34 | 14 | 0 | 48 |
+| lifecycle | 19 | 9 | 0 | 28 |
+| messaging | 21 | 23 | 1 | 45 |
+| ops-recovery | 4 | 31 | 19 | 54 |
+| privacy | 9 | 21 | 1 | 31 |
+| quiet-hours | 6 | 3 | 0 | 9 |
+| quotes-pick | 27 | 29 | 0 | 56 |
+| recurring | 7 | 2 | 2 | 11 |
+| security | 9 | 41 | 5 | 55 |
+| terms | 25 | 7 | 3 | 35 |
+| website | 9 | 16 | 5 | 30 |
+| wording | 12 | 11 | 9 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -136,7 +136,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T501 (lease until 2026-11-18T21:29:34Z)
 - lane 3: T483 (lease until 2026-11-18T21:25:05Z)
 - lane 4: T364 (lease until 2026-11-18T21:28:18Z)
-- lane 7: T711 (lease until 2026-11-18T21:12:25Z)
+- lane 7: T711 (lease until 2026-11-18T21:57:11Z)
 
 ## Last usage reading
 - {"task": "T624", "at": "2026-11-18T18:26:13Z", "input_tokens": 114, "cache_creation_input_tokens": 120586, "output_tokens": 19745, "cache_read_input_tokens": 1676939}
