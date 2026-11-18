@@ -23201,7 +23201,8 @@
     "T513",
     "T514",
     "T641",
-    "T642"
+    "T642",
+    "T700"
    ],
    "model": null,
    "effort": null,
@@ -23213,7 +23214,8 @@
    "tests": [],
    "decisions": [
     "D-1154",
-    "D-3856"
+    "D-3856",
+    "D-4392"
    ],
    "cites": [
     "BUILD_BRIEF.md:174"
@@ -37755,7 +37757,8 @@
     "T139",
     "T438",
     "T596",
-    "T597"
+    "T597",
+    "T700"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -37788,7 +37791,8 @@
    "decisions": [
     "D-2740",
     "D-1760",
-    "D-3080"
+    "D-3080",
+    "D-4392"
    ],
    "cites": [],
    "budget": {
@@ -44060,6 +44064,56 @@
    "branch": "claude/task/T670-pressed-pick-notice",
    "prompt": "kit/prompts/T670.md",
    "acceptance": "TD-JOB-21 passes against PostgreSQL; every `notice_sent` and confirm-window test passes unchanged."
+  },
+  {
+   "id": "T700",
+   "slug": "runner-merge-line-rotation",
+   "title": "Runner (harness): a merge-line task whose turn ran out goes to the back of the line instead of waiting forever",
+   "goal": "Plan change D-4392 (merge-line starvation; evidence in D-4392). D-3418's merge line lets a turn holder that neither merges nor moves for `MERGE_LINE_TURN_LIMIT` (45 minutes) give up the line (`_turn_spent`), but nothing ever gives it a turn back: `_turn_spent` reads `merge_turn_since` and the branch's last new head, neither changes while it has no turn, so `_line_place` returns \"late\" forever, and a late task updates only in a cycle where no \"line\" task holds the turn (`_resolve_merges`' late loop, `runner/cycle.py:548`). With five to seven lanes handing in, some line task always holds it. T623 (PR #1007, handed in 03:46:51Z on November 18) took the turn at 05:22:40Z, got its update merge onto `main` 9aeca6f and green Ci, Twin and Ally, but `main` moved at 05:34Z and 06:00Z (plan merges) before auto-merge could land, no runner cycle ran from 05:27Z to 06:06Z, its turn ran out at 06:07:40Z, and from 06:10Z eleven update merges went to other tasks while T623, holding lane 7, got none. Fix: a spent turn sends the task to the back of the line instead of out of it (round robin), with no new `kit/state.json` key. (1) `_line_place`: \"late\" now means only `_ruleset_red` (a ruleset-only check failed on its head: it is taken last and updates only while the turn is free, exactly as today); a task whose turn is spent is \"line\". (2) `_merge_line(state, now=None)`: with `now`, tasks are ordered by FIX-MAIN first, then by line time, then by task id; a task's line time is `_handed_in_at` (as today), or, when `_turn_spent(task, now)`, the moment its turn ended (the later of `merge_turn_since`, its hand-in and its update merges' `at`, plus `MERGE_LINE_TURN_LIMIT`, capped at `merge_turn_since` plus `MERGE_LINE_TURN_CAP`), so it waits behind every task handed in or re-queued before that moment and ahead of every later one; with `now` None the order is today's hand-in order (`tests/test_runner_merge_line.py:166` calls it so). Every call in `runner/cycle.py` passes `now`, including the merge train's choice of the next line task B (T641), so the train follows the same order. (3) `_mark_turn`: the holder whose turn is spent takes a fresh turn (`merge_turn_since` = now, so `_turn_spent` is false again for a whole turn); a task that does not hold the turn and whose turn is spent keeps its `merge_turn_since` (that is its place in the line: clearing it would put it back at its hand-in time and let it preempt the holder next cycle); one not spent is cleared as today. (4) `_turn_spent` also ends a turn `MERGE_LINE_TURN_CAP` (new, 90 minutes, two limits) after `merge_turn_since` however often its branch got a new head, so a holder whose update keeps being overtaken by `main` cannot keep the turn forever either. Why it is enough (state it in the docstrings): one turn flag, so never two holders; a task re-queued at time r has ahead of it only tasks whose line time is before r, at most the other MERGE_PENDING tasks of that moment (new hand-ins and later re-queues go behind it), each of which holds at most once more for at most `MERGE_LINE_TURN_CAP` before it merges, leaves or is re-queued behind r; so with `main` green it holds the turn within (tasks ahead) x 90 minutes plus one cycle gap, and then gets an update merge (when behind) and a whole turn for its checks. D-3418's protection stays: a holder whose checks never run, or that GitHub never merges, still gives up the line after the limit and now waits a full round before it holds again; a ruleset-red task never holds the line; stuck tasks (`_line_stuck`), the red-`main` guard, FIX-MAIN first, `UPDATE_KEYS`, auto-merge for out-of-turn current branches and `resolve_merged`'s early pass (T597) are unchanged. Keep every function under 50 lines. Tests, in the new `tests/test_runner_merge_line_rotation.py` (reuse `tests/test_runner_merge_line.py`'s helpers by import; that file and `tests/test_runner_merge_early.py`, `tests/test_runner_merge_train.py` and `tests/test_failure_drills.py` pass unchanged): (a) the T623 reproduction: T623 handed in at minute 0 takes the turn and is updated; no cycle until minute 50 while `main` moves and four tasks hand in at minutes 10, 20, 30 and 40, all open and behind; then a cycle every 5 minutes, a new task handing in every 10 minutes and each holder leaving MERGE_PENDING (merged) 20 minutes after it took the turn: T623 is re-queued at minute 45, the four earlier tasks hold in turn, and T623's branch gets an update merge and the turn (`merge_turn_since` = that cycle) no later than the cycle after the fourth leaves, while every task handed in after minute 45 is still waiting; this case fails against `main`'s runner (T623 never updates); (b) in every cycle of (a), at most one task has a `merge_turn_since` whose turn is not spent, and at most one line task's branch is updated; (c) a re-queued task keeps its `merge_turn_since` while it waits and never preempts the holder, whose `merge_turn_since` does not change across cycles; (d) a holder updated every 20 minutes keeps the turn at `MERGE_LINE_TURN_CAP` minus one minute and gives it up at the cap to the next in line; (e) a holder whose checks never run gives up the line at the limit, takes a fresh turn only after the tasks ahead of it have held, and gives it up again at the limit; (f) a spent task alone in the line takes a fresh turn and its update at once (as today's late task with a free turn); (g) a ruleset-red task with a spent turn is still late: it is never re-queued into the line and updates only while the turn is free; (h) FIX-MAIN still comes first and a red `main` still moves nothing else. `docs/architecture.md`'s \"Merge line (D-3418)\" bullet says so with D-4392.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T641"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "recovery"
+   ],
+   "owns": [
+    "runner/cycle.py",
+    "tests/test_runner_merge_line_rotation.py"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "tests/test_runner_merge_line.py",
+    "tests/test_runner_merge_train.py"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-4392",
+    "D-3418",
+    "D-620"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 320,
+    "context_pct": 28
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T700-runner-merge-line-rotation",
+   "prompt": "kit/prompts/T700.md",
+   "acceptance": "`python3 -m pytest tests/test_runner_merge_line_rotation.py tests/test_runner_merge_line.py tests/test_runner_merge_early.py tests/test_runner_merge_train.py tests/test_failure_drills.py` passes, the T623 reproduction failing against `main`'s runner; no existing test changes; every other `tests/test_runner_*.py` passes unchanged."
   }
  ]
 }

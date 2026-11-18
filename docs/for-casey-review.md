@@ -3325,3 +3325,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **Our reading:** while the payment is going through, the homeowner already sees "the business accepted your pick"; her details are still shared only after payment.
 - **The job page link in business emails gets built** (T665, T666; "Not a fit for us" on it in T668). A business that confirmed lands straight on the homeowner's details. Open item: the page shows the job card, photos and counts, but not yet the homeowner's individual intake answers, because nothing reads them out yet; that needs its own task later.
 - Nothing needs you now.
+
+## A finished task could wait for ever to be merged (D-4392)
+
+- **One finished task (T623, the business charge sign-in work) sat green and reviewed for over four hours without being merged**, holding one of the seven lanes. The runner brings one finished task at a time up to date with the latest code; T623 had its turn, but the code moved on twice before it could merge, its 45-minute turn ran out, and the rule then let it try again only when no other task held the turn, which with seven lanes busy never happens.
+- **Fix, planned as T700 and claimed first:** a task whose turn runs out now goes to the back of the queue instead of out of it, so every finished task gets its turn in order, and no task holds the turn for more than 90 minutes. A task that is truly stuck still gives up the turn after 45 minutes, as before.
+- Our choice; nothing needs you now.
