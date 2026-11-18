@@ -253,6 +253,12 @@
     "segments": 1,
     "text": "{brand_short}: Este trabajo necesita 2 tipos de negocio. Responda DIVIDIR y lo enviamos como 2 solicitudes, una para cada oficio."
   },
+  "two_jobs": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 2,
+    "text": "{brand_short}: Son 2 trabajos. Empezamos con {trade}. Responda TAMBIÉN para empezar también con {business}."
+  },
   "quote_update": {
     "audience": "homeowner",
     "draft": true,

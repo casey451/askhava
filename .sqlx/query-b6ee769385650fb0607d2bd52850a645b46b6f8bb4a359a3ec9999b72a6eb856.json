@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT DISTINCT index_version FROM messaging.suppression ORDER BY index_version",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "index_version",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "messaging.suppression",
+            "name": "index_version"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "b6ee769385650fb0607d2bd52850a645b46b6f8bb4a359a3ec9999b72a6eb856"
+}
