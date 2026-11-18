@@ -3360,4 +3360,5 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - **The task that walks a homeowner's texts through the intake steps (T671) found three older tests that still expected the old order.** One expected a fresh job where the new order has already opened her job at her first text; one expected no stored text anywhere to contain a test word, but another (fictional) homeowner's own request now keeps that word, as it should; one checks that every new homeowner text is listed, and the new "That's 2 jobs" text is not listed yet.
 - **Fix:** T671 may now change those three files, each only in the way the plan spells out; every other check in them stays. We checked that the second one is not a privacy leak: the name is still removed from the homeowner who gave it.
+- **Also split in two:** the first try at that task came out about 60% bigger than its size limit, so the "That's 2 jobs" text and its ALSO and SPLIT replies are now their own small task (T711), right after it. Until T711 lands, a message naming two trades is handled as one job for the first trade.
 - Our choice; nothing needs you now.
