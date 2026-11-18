@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-18T10:36:33Z by runner 9dbd52ce1f9f (actions).
+Updated 2026-11-18T10:36:41Z by runner 0cbbe72325f1 (actions).
 
 **Building: T563 in progress since 09:55Z; 438 of 621 done; week 52% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 438 of 621 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T563 claimed 09:55Z, lease until 12:55Z; lane 3: T658 claimed 10:13Z, lease until 13:13Z; lane 4: T650 claimed 09:08Z, lease until 13:10Z; lane 5: T408 claimed 09:13Z, lease until 13:23Z; lane 6: T200 claimed 09:05Z, lease until 12:05Z
+- **Lane:** lane 2: T563 claimed 09:55Z, lease until 12:55Z; lane 3: T658 claimed 10:13Z, lease until 13:13Z; lane 4: T650 claimed 09:08Z, lease until 13:10Z; lane 5: T408 claimed 09:13Z, lease until 13:23Z; lane 6: T200 claimed 09:05Z, lease until 13:36Z
 - **Week:** 52% used, 85.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:34Z, 1 min before this update
+- **Last run:** 10:36Z, 0 min before this update
 - **Keeper:** last ran 10:34Z, next wake 12:07Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 26 problem(s) on tasks still to run (+219 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 27 problem(s) on tasks still to run (+223 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -135,7 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 3: T658 (lease until 2026-11-18T13:13:04Z)
 - lane 4: T650 (lease until 2026-11-18T13:10:35Z)
 - lane 5: T408 (lease until 2026-11-18T13:23:31Z)
-- lane 6: T200 (lease until 2026-11-18T12:05:13Z)
+- lane 6: T200 (lease until 2026-11-18T13:36:41Z)
 
 ## Last usage reading
 - {"task": "T641", "at": "2026-11-18T10:29:39Z", "cache_creation_input_tokens": 260733, "output_tokens": 75837, "input_tokens": 184, "cache_read_input_tokens": 5752734}
