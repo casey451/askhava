@@ -2,6 +2,12 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Texting opt-outs: the 5-year cleanup of old numbers can no longer race an opt-out (D-4418, November 18)
+
+- **What happened.** The daily cleanup that removes a phone number 5 years after its last message (T563) stopped: it checked whether the number had opted out a moment before removing the phone, so an opt-out arriving in that moment could lose the kept phone that keeps the opt-out honored.
+- **What changed.** A new step (T701) makes every opt-out and the cleanup take the same per-number lock, and the cleanup checks the list again under that lock before it removes anything; an opt-out either lands first and the phone stays, or waits a moment for the cleanup to finish. New tests prove both.
+- **Nothing needs you now.**
+
 ## Business account emails: four of them had no words yet, so the step that sends them now writes them (D-3687, November 14)
 
 - **What happened.** The step that emails businesses about account events (T329) stopped: four of its emails had no words written anywhere (an old address told its notice address changed, the owner told after-hours emergency requests are off, the other addresses told one address is bouncing, and the owner told a team member linked a phone).
