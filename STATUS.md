@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T01:03:59Z by runner 67827d85943d (actions).
+Updated 2026-11-18T01:04:14Z by runner 67827d85943d (manual).
 
 **Building: T478 in progress since 23:24Z; 419 of 582 done; week 36% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-18T01:03:59Z by runner 67827d85943d (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T478 claimed 23:24Z, lease until 04:03Z; lane 5: T151 claimed 00:12Z, lease until 03:12Z; lane 6: T108 claimed 00:23Z, lease until 03:23Z; lane 7: T604 claimed 00:31Z, lease until 03:31Z
 - **Week:** 36% used, 118.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:03Z, 0 min before this update
+- **Last run:** 01:04Z, 0 min before this update
 - **Keeper:** last ran 01:03Z, next wake 03:14Z
 
 ## Needs attention
@@ -84,7 +84,6 @@ Updated 2026-11-18T01:03:59Z by runner 67827d85943d (actions).
 | T469 | server (harness): the Resend email client from settings and  | done | 1 | 99 min | 02:12Z |  |
 | T221 | site: the terms, privacy policy, SMS terms, homeowner data a | check_failed | 1 | 2 h 47 min | 01:23Z |  |
 | T320 | ops: a check that runs on a schedule raises its alert once w | done | 2 | 78 min | 01:13Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-16T |
-| T373 | businesses: changing a phone's number ends that phone's text | done | 2 | 42 min | 01:04Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / Finished `dev` profile [u |
 
 ### Plan and harness merges on main
 - none
