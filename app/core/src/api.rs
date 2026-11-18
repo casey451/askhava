@@ -28,6 +28,7 @@ pub use crate::logging::{
     metrics_filter, request_span, scrub_breadcrumb, scrub_event, scrub_text, sentry_options,
     subscriber as log_subscriber,
 };
+pub use crate::queue_health::{QueueHealth, queue_health};
 pub use crate::rate_limit::{
     CF_CONNECTING_IP, CLOUDFLARE_RANGES, ClientIpPolicy, DEFAULT_CLIENT_IP_HEADER,
     LONGEST_WINDOW as RATE_LIMIT_LONGEST_WINDOW, PRUNE_BATCH as RATE_LIMIT_PRUNE_BATCH,
@@ -39,9 +40,9 @@ pub use crate::rate_limit::{
 pub use crate::settings::{Environment, Settings, SettingsError, Vendor, check_base_url};
 pub use crate::task_queries::unfinished;
 pub use crate::tasks::{
-    Claimed, DEFAULT_MAX_ATTEMPTS, HandlerError, HandlerFuture, LEASE_EXPIRED, Lease, NO_HANDLER,
-    NewTask, Outcome, Registry, TIMED_OUT, TaskError, WORKER_CONCURRENCY, Worker, WorkerId,
-    backoff, claim, enqueue, fail, finish, reap_expired, release_leases, renew,
+    ClaimTick, Claimed, DEFAULT_MAX_ATTEMPTS, HandlerError, HandlerFuture, LEASE_EXPIRED, Lease,
+    NO_HANDLER, NewTask, Outcome, Registry, TIMED_OUT, TaskError, WORKER_CONCURRENCY, Worker,
+    WorkerId, backoff, claim, enqueue, fail, finish, reap_expired, release_leases, renew,
 };
 pub use crate::test_control::{TEST_CONTROL_COMPILED, TestControl, TestControlError};
 pub use crate::webhooks::{Dedupe, EventKey, WebhookError};

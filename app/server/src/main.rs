@@ -9,13 +9,15 @@
 //! the `ASKHAVA_REQUEST_TIMEOUT_SECS` limit, D-1870; the business sign-in pages, which refuse to
 //! start without the new-device code settings in test and live, T280) and serves it, with
 //! the socket peer as connect info (SEC-040), on `0.0.0.0:$PORT` (the host sets `PORT`) until SIGINT or SIGTERM, then
-//! finishes the requests in flight and exits 0. `server migrate` instead
+//! finishes the requests in flight and exits 0; it exits non-zero once its database round trip
+//! has failed for `ASKHAVA_LIVENESS_LIMIT_SECS` (`liveness`, OPS-049, T106). `server migrate` instead
 //! applies the pending migrations as the migration role and exits: the
 //! release step of the `migrate` service (D-092, SEC-052). `server bootstrap-owner` creates the
 //! one owner once, as the migration role, from the token in `ASKHAVA_OWNER_BOOTSTRAP_TOKEN` and
 //! a password read from standard input, and prints the first authenticator's secret and the
 //! recovery codes once to the operator's own terminal (SEC-044, SEC-007, D-1918).
 
+use std::future::IntoFuture;
 use std::io;
 use std::net::Ipv4Addr;
 
@@ -54,13 +56,25 @@ async fn main() -> io::Result<()> {
     let hooks = (webhooks, voice, pick_keys, stripe);
     let statics = askhava_server::static_files::StaticRoot::from_settings(&settings);
     let parts = business_parts(&settings, &pool, (hooks, limit, statics).into())?;
+    let watch = askhava_server::liveness::watch_web(pool.clone(), liveness_limit()?);
     let app = askhava_server::build_router(pool, control.router(), parts);
-    axum::serve(
+    let serve = axum::serve(
         listener,
         app.into_make_service_with_connect_info::<std::net::SocketAddr>(),
     )
-    .with_graceful_shutdown(askhava_server::shutdown_signal()?)
-    .await
+    .with_graceful_shutdown(askhava_server::shutdown_signal()?);
+    tokio::select! {
+        served = serve.into_future() => served,
+        failed = watch => Err(failed),
+    }
+}
+
+/// The liveness limit (OPS-049) and the `/healthz` thresholds (OPS-007), read once at start
+/// (T106); a bad value stops start-up, naming its key.
+fn liveness_limit() -> io::Result<askhava_server::liveness::LivenessLimit> {
+    use askhava_server::healthz::{HealthLimits, configure};
+    configure(HealthLimits::from_pairs(std::env::vars())?);
+    askhava_server::liveness::LivenessLimit::from_pairs(std::env::vars())
 }
 
 /// `parts` with the served business sign-in, sign-up, portal vault and Confirm settings from
