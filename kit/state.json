@@ -49657,7 +49657,10 @@
    "update_waiting_since": null,
    "update_push_failures": null,
    "merge_turn_since": "2026-11-18T20:36:13Z",
-   "last_failure": "Ci: failure; Python: failure\nPython failed at step: Unit, contract and drill tests (pytest)\nT705: about 21877 tokens, 11% of the window\nT711: about 59840 tokens, 30% of the window (stored 25%; regenerate to refresh)\nT715: about 57043 tokens, 29% of the window\nT717: about 55645 tokens, 28% of the window\nT716: about 41188 tokens, 21% of the window\nT718: about 65510 tokens, 33% of the window\nT719: about 68257 tokens, 35% of the window (stored 31%; regenerate to refresh)\nERROR T702: stale, differs from the template output\nchecked 663 prompts, 1 problems\n=========================== short test summary info ============================\nFAILED tests/test_gen_prompts.py::test_real_prompts_are_current - AssertionError: assert 1 == 0\n +  where 1 = <function main at 0x75e3e340e520>(['--root', '/home/runner/work/askhava/askhava', '--check'])\n +    where <function main at 0x75e3e340e520> = gp.main\n1 failed, 4033 passed, 11 skipped in 192.79s (0:03:12)\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: failure, Coverage: success, E2e: success\n##[error]Process completed with exit code 1."
+   "last_failure": "Ci: failure; Python: failure\nPython failed at step: Unit, contract and drill tests (pytest)\nT705: about 21877 tokens, 11% of the window\nT711: about 59840 tokens, 30% of the window (stored 25%; regenerate to refresh)\nT715: about 57043 tokens, 29% of the window\nT717: about 55645 tokens, 28% of the window\nT716: about 41188 tokens, 21% of the window\nT718: about 65510 tokens, 33% of the window\nT719: about 68257 tokens, 35% of the window (stored 31%; regenerate to refresh)\nERROR T702: stale, differs from the template output\nchecked 663 prompts, 1 problems\n=========================== short test summary info ============================\nFAILED tests/test_gen_prompts.py::test_real_prompts_are_current - AssertionError: assert 1 == 0\n +  where 1 = <function main at 0x75e3e340e520>(['--root', '/home/runner/work/askhava/askhava', '--check'])\n +    where <function main at 0x75e3e340e520> = gp.main\n1 failed, 4033 passed, 11 skipped in 192.79s (0:03:12)\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: failure, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
+   "runner_closed_prs": [
+    1060
+   ]
   },
   {
    "id": "T365",
@@ -86743,7 +86746,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T21:13:21Z",
+ "updated_at": "2026-11-18T21:13:46Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
