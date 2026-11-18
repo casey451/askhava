@@ -24230,7 +24230,13 @@
     "T648",
     "T649",
     "T650",
-    "T651"
+    "T651",
+    "T656",
+    "T657",
+    "T658",
+    "T660",
+    "T661",
+    "T662"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -28920,7 +28926,8 @@
     "T430",
     "T432",
     "T643",
-    "T644"
+    "T644",
+    "T659"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -37742,7 +37749,8 @@
     "T593",
     "T645",
     "T646",
-    "T649"
+    "T649",
+    "T656"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -54439,7 +54447,8 @@
     "T449",
     "T489",
     "T564",
-    "T650"
+    "T650",
+    "T662"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -68787,7 +68796,8 @@
   {
    "id": "T510",
    "deps": [
-    "T499"
+    "T499",
+    "T662"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -75819,6 +75829,94 @@
    "slug": "license-unknown-pause",
    "type": "build",
    "stage": "5"
+  },
+  {
+   "id": "T656",
+   "deps": [
+    "T593",
+    "T609",
+    "T649"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "web-chat-error-summary",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T657",
+   "deps": [
+    "T543",
+    "T410"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "portal-form-error-fields",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T658",
+   "deps": [
+    "T351",
+    "T100",
+    "T517"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "scrub-spanish-allcaps-address",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T659",
+   "deps": [
+    "T133",
+    "T490",
+    "T469",
+    "T652"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "resend-webhook-route",
+   "type": "build",
+   "stage": "6"
+  },
+  {
+   "id": "T660",
+   "deps": [
+    "T164",
+    "T100",
+    "T517"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "note-screener-scrubbed",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T661",
+   "deps": [
+    "T470"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "business-address-chars",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T662",
+   "deps": [
+    "T523",
+    "T650"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "close-lines-on-job-end",
+   "type": "build",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -80670,7 +80768,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T06:06:53Z",
+ "updated_at": "2026-11-18T06:09:48Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -80768,7 +80866,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "e022992197865b9ce2eee7ad3f21426b721d56be",
+ "runner_sha": "587ccbd0be3156c854d77dafe1b33f96850a7e73",
  "starter": "actions",
  "smoke_runs": [
   {
