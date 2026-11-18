@@ -81,6 +81,7 @@ pub use crate::help_requests::{
 };
 pub use crate::keywords::{
     HelpSettings, HelpSettingsError, Keyword, away_date, help_text, keyword, reply_to_help,
+    still_away,
 };
 pub use crate::mailbox_code_mail::{CODE_MARK, MAILBOX_CODE_TEMPLATE, MailboxCodeSender};
 pub use crate::missed_cards::{MissedSettings, MonthCards, first_of_month, missed_email_due};

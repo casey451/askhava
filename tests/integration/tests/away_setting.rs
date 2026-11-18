@@ -5,7 +5,9 @@
 //! Proves that with the away date stored through `ops::api`, the business home's review and
 //! dispute lines and the HELP reply (read through `messaging::api::reply_to_help` with settings
 //! that carry no date) say "away until <date>" and the 911 line instead of the reply-time line;
-//! that every queued timer fires exactly as without it; that a Google or Yelp link on another
+//! that a stored date before today in Arizona counts as not away (`still_away`, D-4493); that
+//! real timers queued through their own scheduling functions are due and fire exactly as without
+//! it; that a Google or Yelp link on another
 //! domain is refused and stores nothing, and only the owner changes them; and that a won
 //! dispute's two rows read as a won dispute on the page and in the CSV. All data are fake.
 
@@ -13,8 +15,12 @@ use askhava_businesses::api::{
     Acting, LinkOpener, LinkRefusal, OpenCardsTimes, ReviewSite, Roles, add_member, add_owner,
     create, review_links,
 };
-use askhava_core::api::{NewTask, WorkerId, claim, enqueue};
-use askhava_messaging::api::{HelpSettings, InboundText, ProviderKeyword, Relation, reply_to_help};
+use askhava_core::api::{WorkerId, claim};
+use askhava_jobs::api::{BACKSTOP_KIND, schedule_backstop};
+use askhava_messaging::api::{
+    BODY_SCAN_KIND, HelpSettings, InboundText, ProviderKeyword, Relation, reply_to_help,
+    schedule_body_scan, still_away,
+};
 use askhava_ops::api::set_away_until;
 use askhava_payments::api::{DISPUTE_FEE_CENTS, EntryKind, MoneyView, Statement, StatementLine};
 use askhava_portals::api::{
@@ -31,7 +37,9 @@ use secrecy::SecretString;
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
-const AWAY: Date = date(2026, 11, 20);
+/// Far enough ahead that the HELP reply (which reads the system clock's today) still finds it.
+const AWAY: Date = date(2099, 11, 20);
+const DAY_SECS: i64 = 86_400;
 const GOOGLE: &str = "https://g.page/fake-plumbing-co";
 const YELP: &str = "https://www.yelp.com/biz/fake-plumbing-co";
 
@@ -49,7 +57,11 @@ impl LinkOpener for Opens {
 }
 
 async fn away(db: &mut PgConnection) {
-    set_away_until(db, Some(AWAY), Uuid::from_u128(0x0a), at(0))
+    away_on(db, AWAY).await;
+}
+
+async fn away_on(db: &mut PgConnection, day: Date) {
+    set_away_until(db, Some(day), Uuid::from_u128(0x0a), at(0))
         .await
         .expect("away set");
 }
@@ -134,27 +146,62 @@ async fn td_ops_07_the_help_reply_says_away_until(pool: PgPool) {
     );
 }
 
-/// The kinds claimed at each of four times (an hour's lease, so each fires once), on an empty
-/// queue with three tasks due 60 seconds apart from `start`.
-async fn fired(pool: &PgPool, start: i64) -> Vec<Vec<String>> {
+/// TD-OPS-07 (OPS-026, D-207, D-4493): a stored date before today in Arizona is not away, so the
+/// HELP reply keeps its reply-time line instead of naming a day already gone.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_ops_07_a_past_away_date_is_not_shown(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("db");
+    let her = contact(&mut db).await;
+    away_on(&mut db, date(2020, 11, 20)).await;
+    let body = help_body(&mut db, her, 0x1b3).await;
+    assert!(
+        body.contains("usually replies within") && !body.contains("away until"),
+        "{body}"
+    );
+}
+
+/// TD-OPS-07 (OPS-026, D-4493): the shared reader the HELP reply and the business home both use
+/// keeps the date through its own day in Arizona and drops it from the next day on.
+#[test]
+fn td_ops_07_still_away_ends_after_the_date_in_arizona() {
+    let day = date(2026, 11, 20);
+    let noon = |d: Date| {
+        d.at(12, 0, 0, 0)
+            .to_zoned(askhava_core::api::arizona())
+            .expect("zoned")
+            .timestamp()
+    };
+    assert_eq!(still_away(Some(day), noon(date(2026, 11, 19))), Some(day));
+    assert_eq!(still_away(Some(day), noon(day)), Some(day));
+    assert_eq!(still_away(Some(day), noon(date(2026, 11, 25))), None);
+    let late_in_arizona = Timestamp::from_second(1_795_237_200).expect("time");
+    assert_eq!(still_away(Some(day), late_in_arizona), Some(day));
+    assert_eq!(still_away(None, noon(day)), None);
+}
+
+/// Real timers queued at `now` through their own scheduling functions (the timer backstop,
+/// JOB-006; the text-body scan, PRIV-027) on an emptied queue: each kind with its due time in
+/// seconds after `now`, and the kinds claimed a second before and at that due time.
+async fn fired(pool: &PgPool, now: Timestamp) -> (Vec<(String, i64)>, Vec<Vec<String>>) {
     let mut db = pool.acquire().await.expect("db");
     sqlx::query("DELETE FROM core.task")
         .execute(&mut *db)
         .await
         .expect("empty queue");
-    for (n, kind) in ["fake.first", "fake.second", "fake.third"]
-        .iter()
-        .enumerate()
-    {
-        let offset = 60 * i64::try_from(n).expect("n");
-        let task = NewTask::new(kind, serde_json::json!({}), at(start + offset));
-        enqueue(&mut db, &task).await.expect("enqueue");
-    }
+    schedule_backstop(&mut db, now).await.expect("backstop");
+    schedule_body_scan(&mut db, now).await.expect("body scan");
+    let due: Vec<(String, i64)> = sqlx::query_as(
+        "SELECT kind, EXTRACT(EPOCH FROM run_at)::bigint - $1 FROM core.task ORDER BY kind",
+    )
+    .bind(now.as_second())
+    .fetch_all(&mut *db)
+    .await
+    .expect("due");
     let worker = WorkerId::new(pool).await.expect("worker");
     let mut seen = Vec::new();
-    for t in [-1, 0, 90, 200] {
-        let lease = SignedDuration::from_hours(1);
-        let claimed = claim(pool, worker, at(start + t), lease, 10).await;
+    for t in [DAY_SECS - 1, DAY_SECS] {
+        let when = now + SignedDuration::from_secs(t);
+        let claimed = claim(pool, worker, when, SignedDuration::from_hours(1), 10).await;
         let mut kinds: Vec<_> = claimed
             .expect("claim")
             .into_iter()
@@ -163,20 +210,20 @@ async fn fired(pool: &PgPool, start: i64) -> Vec<Vec<String>> {
         kinds.sort();
         seen.push(kinds);
     }
-    seen
+    (due, seen)
 }
 
-/// TD-OPS-07 (D-207): every timer fires exactly as without the away date.
+/// TD-OPS-07 (D-207): real timers are due and fire exactly as without the away date.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_ops_07_every_timer_fires_as_without_it(pool: PgPool) {
-    let without = fired(&pool, 1_000).await;
+    let without = fired(&pool, at(1_000)).await;
     away(&mut pool.acquire().await.expect("db")).await;
-    let with = fired(&pool, 100_000).await;
+    let with = fired(&pool, at(1_000)).await;
     assert_eq!(with, without);
-    assert_eq!(
-        without.concat(),
-        ["fake.first", "fake.second", "fake.third"]
-    );
+    let mut kinds = vec![BACKSTOP_KIND.to_owned(), BODY_SCAN_KIND.to_owned()];
+    kinds.sort();
+    let due: Vec<_> = kinds.iter().map(|k| (k.clone(), DAY_SECS)).collect();
+    assert_eq!(without, (due, vec![vec![], kinds]));
 }
 
 async fn principal(db: &mut PgConnection, who: Acting) -> BusinessPrincipal {

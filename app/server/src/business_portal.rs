@@ -38,6 +38,7 @@ use askhava_businesses::api::{
 };
 use askhava_core::api::{Clock, Settings, SystemClock, arizona_time};
 use askhava_jobs::api::finished_counts;
+use askhava_messaging::api::still_away;
 use askhava_ops::api::away_until;
 use askhava_payments::api::{Statement, business_statement, saved_cards};
 use askhava_picks::api::pick_numbers;
@@ -345,7 +346,7 @@ async fn home_html(
     let numbers = your_numbers(&mut db, who.business(), month, &statement).await?;
     let saved = review_links(&mut db, who.business()).await.ok()?;
     let extras = HomeExtras {
-        away_until: away_until(&mut db).await.ok()?,
+        away_until: still_away(away_until(&mut db).await.ok()?, portal.clock.now()),
         google: refused.map_or(saved.google(), |(f, _)| Some(f.google.as_str())),
         yelp: refused.map_or(saved.yelp(), |(f, _)| Some(f.yelp.as_str())),
         refused: refused.map(|(_, r)| r),
