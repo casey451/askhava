@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T08:03:13Z by runner f3c3b7027041 (actions).
+Updated 2026-11-18T08:03:23Z by runner 8316205fbd02 (actions).
 
-**Building: T640 in progress since 06:58Z; 431 of 621 done; week 48% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T660 in progress since 07:55Z; 431 of 621 done; week 48% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 431 of 621 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T640 claimed 06:58Z, lease until 10:59Z; lane 2: T660 claimed 07:55Z, lease until 10:55Z; lane 4: T658 claimed 06:42Z, lease until 10:28Z
+- **Lane:** lane 2: T660 claimed 07:55Z, lease until 10:55Z; lane 4: T658 claimed 06:42Z, lease until 10:28Z
 - **Week:** 48% used, 94.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 08:03Z, 0 min before this update
 - **Keeper:** last ran 08:03Z, next wake 10:30Z
@@ -14,11 +14,12 @@ Updated 2026-11-18T08:03:13Z by runner f3c3b7027041 (actions).
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 25 problem(s) on tasks still to run (+208 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 24 problem(s) on tasks still to run (+205 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T640 | harness: Ci handles the merge train's throwaway refs and cou | MERGE_PENDING | 1 | 64 min | 08:02Z |  |
 | T619 | quotes, picks and intake: the quote-median, lapsed-pick, win | MERGE_PENDING | 2 | 40 min | 08:02Z | T619 readers are correct per three Opus reviews, but the test file still misses wrong implementations; no reviewer appro |
 | T482 | messaging and intake: the plain-word auto-answers after HELP | MERGE_PENDING | 1 | 2 h 29 min | 07:56Z |  |
 | T643 | portals (harness): a real browser's same-origin form POST pa | MERGE_PENDING | 1 | 2 h 24 min | 07:49Z |  |
@@ -131,9 +132,9 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T640 (lease until 2026-11-18T10:59:53Z)
+- nothing
 - lane 2: T660 (lease until 2026-11-18T10:55:55Z)
 - lane 4: T658 (lease until 2026-11-18T10:28:02Z)
 
 ## Last usage reading
-- {"task": "T619", "at": "2026-11-18T08:02:29Z", "cache_read_input_tokens": 3916388, "cache_creation_input_tokens": 137717, "output_tokens": 41843, "input_tokens": 125}
+- {"task": "T640", "at": "2026-11-18T08:02:57Z", "cache_creation_input_tokens": 128766, "output_tokens": 34721, "input_tokens": 78, "cache_read_input_tokens": 2441444}
