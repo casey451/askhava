@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T09:53:16Z by runner 9f71d076749f (actions).
+Updated 2026-11-18T09:56:09Z by runner 5d77a911c127 (actions).
 
 **Building: T641 in progress since 09:33Z; 436 of 621 done; week 51% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 436 of 621 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T641 claimed 09:33Z, lease until 12:33Z; lane 4: T650 claimed 09:08Z, lease until 12:43Z; lane 5: T408 claimed 09:13Z, lease until 12:13Z; lane 6: T200 claimed 09:05Z, lease until 12:05Z
-- **Week:** 51% used, 88.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:53Z, 0 min before this update
+- **Lane:** lane 1: T641 claimed 09:33Z, lease until 12:33Z; lane 2: T563 claimed 09:55Z, lease until 12:55Z; lane 4: T650 claimed 09:08Z, lease until 12:43Z; lane 5: T408 claimed 09:13Z, lease until 12:13Z; lane 6: T200 claimed 09:05Z, lease until 12:05Z
+- **Week:** 51% used, 86.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 09:53Z, 2 min before this update
 - **Keeper:** last ran 09:53Z, next wake 10:13Z
 
 ## Needs attention
@@ -80,7 +80,6 @@ Updated 2026-11-18T09:53:16Z by runner 9f71d076749f (actions).
 | T112 | Draft the privacy policy and SMS terms | done | 3 | 66 min | 11:10Z | Fresh-eyes review of the fix-round head 037ad56a05f50b76c38506da3786bdde73a2be4d ended REVIEW-VERDICT: FINDINGS after th |
 | T489 | site and server: the web chat and request pages with the con | done | 3 | 46 min | 11:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Date:      2026- |
 | T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | check_failed | 1 | 35 min | 10:33Z |  |
-| T489 | site and server: the web chat and request pages with the con | check_failed | 2 | 73 min | 09:54Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -116,7 +115,7 @@ Updated 2026-11-18T09:53:16Z by runner 9f71d076749f (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-18T09:28:34Z (week)): week: 105.7M used, 88.3M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-01T09:22:16Z.
+- Pacing (session_reading 2026-11-18T09:52:59Z (week)): week: 107.4M used, 86.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-01T08:29:06Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -132,6 +131,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T641 (lease until 2026-11-18T12:33:47Z)
+- lane 2: T563 (lease until 2026-11-18T12:55:56Z)
 - lane 4: T650 (lease until 2026-11-18T12:43:26Z)
 - lane 5: T408 (lease until 2026-11-18T12:13:07Z)
 - lane 6: T200 (lease until 2026-11-18T12:05:13Z)
