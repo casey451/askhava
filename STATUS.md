@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T17:26:16Z by runner 656d34ef3dcf (actions).
+Updated 2026-11-18T17:26:30Z by runner ed339f344700 (actions).
 
 **Building: T624 in progress since 16:49Z; 451 of 645 done; week 63% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-18T17:26:16Z by runner 656d34ef3dcf (actions).
 - **Lane:** lane 1: T624 claimed 16:49Z, lease until 19:49Z; lane 2: T205 claimed 17:25Z, lease until 20:25Z; lane 5: T500 claimed 17:07Z, lease until 20:07Z
 - **Week:** 63% used, 64.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 17:26Z, 0 min before this update
-- **Keeper:** last ran 17:26Z, next wake 19:52Z
+- **Keeper:** last ran 17:26Z, next wake 19:51Z
 
 ## Needs attention
 - BLOCKED T408: plan gap reported: PLAN GAP: kit/prompts/T408.md:54 "Size budget: at most 6 files, 800 changed lines" cannot be met. The prompt's own plan changes (D-3144, D-3879, D-4026, D-4326) require edits to at least 13 files (release_sink.rs, new release_hold.rs, release_proof.rs, server lib.rs, payments api.rs, server tests/safe_mode_release.rs, integration safe_mode.rs, ops safe_mode.rs, three NOTES.md, architecture.md, decisions.md), and tests for every held_release money branch (Stripe fetch failure, pick ended while held, no fee row) plus address_in through its registered handler, which the first review required (95%; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T408 --plan-fix D-### --reason "..."` (D-2859)
@@ -19,7 +19,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 - BLOCKED T645: plan gap reported: PLAN GAP: app/site/src/chat.rs:340 (owned by T593, then T646 and T649; T593 is not merged yet) calls `chat_message(db, &secret, &key, &msg, self.intake)` with no `Vault`, and the `ChatKeys` trait (chat.rs:62-66) only exposes secret/send/check. `messaging::api::suppress` (app/messaging/src/optout.rs:311-317) needs a `&Vault` and the phone, since digests come from `vault.blind_index` (optout.rs:441-443). `chat_message` (app/intake/src/web_chat.rs:247-253) takes no vault and its `Settings` is `Copy`, so T645 cannot list the session's number (step 1, TD-CON-36 "at once") without a signature change; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T645 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 29 problem(s) on tasks still to run (+246 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 28 problem(s) on tasks still to run (+240 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
