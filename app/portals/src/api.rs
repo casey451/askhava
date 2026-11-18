@@ -67,11 +67,12 @@ pub use crate::business_left::{
 };
 pub use crate::business_portal::{
     BILLING_ROUTE, BUSINESS_HOME_ROUTE, BillingChangeError, COMPLAINT_REPLY_ROUTE,
-    COMPLAINTS_ROUTE, CONTACT_CARD_ROUTE, InboxSwitch, OPEN_CARDS_ROUTE, PaymentMethod,
-    RefusedReply, SHARED_INBOX_ROUTE, STATEMENT_ROUTE, SensitiveChange, SharedInboxError,
-    StepUpError, YourNumbers, billing_page, business_home_page, change_fee_limit,
-    change_saved_card, complaints_page, contact_card, contact_card_name, contact_card_note,
-    inbox_shared, reply_to_complaint, require_step_up, save_open_cards_times, set_inbox_shared,
+    COMPLAINTS_ROUTE, CONTACT_CARD_ROUTE, HomeExtras, InboxSwitch, LinksChangeError,
+    OPEN_CARDS_ROUTE, PaymentMethod, REVIEW_LINKS_ROUTE, RefusedReply, SHARED_INBOX_ROUTE,
+    STATEMENT_ROUTE, SensitiveChange, SharedInboxError, StepUpError, YourNumbers, billing_page,
+    business_home_page, business_home_page_with, change_fee_limit, change_saved_card,
+    complaints_page, contact_card, contact_card_name, contact_card_note, inbox_shared,
+    reply_to_complaint, require_step_up, save_home_links, save_open_cards_times, set_inbox_shared,
     statement_csv,
 };
 pub use crate::business_signup::{

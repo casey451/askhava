@@ -6,10 +6,16 @@
 //! that no quiet-hours check holds back, so it goes within 5 minutes at any hour. The body is
 //! one of four registry texts: normal or owner-away (OPS-026), each with or without the roaming
 //! line for a Canadian number. The reply times come from [`HelpSettings`], never from the text.
+//! When the settings carry no away date, [`reply_to_help`] reads the owner's stored one through
+//! `ops::api::away_until` (T483, OPS-026, D-3890) and writes it with [`away_date`].
 //! START needs no reply code here: the provider's `OptOutType=START` lifts the listing and sends
 //! its own reply (`optout::on_inbound_text`, CON-015, CON-030, D-870).
 
+use askhava_core::api::{Clock, SystemClock, arizona_time};
+use askhava_ops::api::away_until;
 use askhava_privacy::api::normalize_phone;
+use jiff::Timestamp;
+use jiff::civil::Date;
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 use std::sync::LazyLock;
@@ -135,6 +141,28 @@ impl HelpSettings {
     }
 }
 
+/// Spanish month abbreviations for [`away_date`].
+const MESES: [&str; 12] = [
+    "ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic",
+];
+
+/// OPS-026: the owner's away `date` as the HELP reply shows it: "Nov 20" in English, "20 de nov"
+/// in Spanish.
+#[must_use]
+pub fn away_date(date: Date, language: Language) -> String {
+    match language {
+        Language::En => date.strftime("%b %-d").to_string(),
+        Language::Es => {
+            let month = usize::try_from(date.month() - 1).ok();
+            let mes = month
+                .and_then(|m| MESES.get(m))
+                .copied()
+                .unwrap_or_default();
+            format!("{} de {mes}", date.day())
+        }
+    }
+}
+
 /// Whether `text` is only HELP, INFO or AYUDA (CON-018, D-131): case, surrounding spaces and
 /// punctuation do not matter; any other word makes it a request ("I need help with my sink").
 #[must_use]
@@ -188,11 +216,24 @@ pub fn help_text(
         .map_err(|_| OutboxError::Template)
 }
 
+/// OPS-026, D-207, D-4493: the stored away date while it still holds on `now`'s day in Arizona
+/// (the date itself included). A date before today in Arizona is no longer away, so neither the
+/// HELP reply nor the business home names a reply day that has already gone by.
+#[must_use]
+pub fn still_away(stored: Option<Date>, now: Timestamp) -> Option<Date> {
+    let today = arizona_time(now).date();
+    stored.filter(|d| *d >= today)
+}
+
 /// Queues the HELP reply for `msg` if its text is only HELP, INFO or AYUDA, whether or not the
 /// number is on the suppression list (CON-013, CON-018, D-131); returns its outbox row, or `None`
 /// for any other text. One reply per inbound message: a repeat of the same message queues no
 /// second one (TXT-011). The row goes out through `optout::send_checked` at any hour; the
-/// caller sends it at once so it is delivered within 5 minutes.
+/// caller sends it at once so it is delivered within 5 minutes. When `settings` carry no away
+/// date, the owner's stored "away until" date (`ops::api::away_until`, read on `db`) is used while
+/// [`still_away`] holds on the system clock's today (the caller passes no clock, D-4493), so
+/// the reply says "away until <date>" and the 911 line instead of the reply-time line (OPS-026,
+/// D-207, D-3890).
 ///
 /// # Errors
 ///
@@ -206,7 +247,19 @@ pub async fn reply_to_help(
     let Some(Keyword::Help(language)) = keyword(msg.text) else {
         return Ok(None);
     };
-    let body = help_text(settings, language, msg.phone)?;
+    let stored = match settings.away_until {
+        Some(_) => None,
+        None => {
+            let stored = away_until(db).await.map_err(|_| OutboxError::Database)?;
+            still_away(stored, SystemClock.now())
+        }
+    };
+    let settings = HelpSettings {
+        away_until: (stored.map(|d| away_date(d, language)))
+            .or_else(|| settings.away_until.clone()),
+        ..settings.clone()
+    };
+    let body = help_text(&settings, language, msg.phone)?;
     let text = NewText {
         template_id: HELP_TEMPLATE,
         subject: &[msg.inbox_id],

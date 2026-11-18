@@ -21,7 +21,8 @@
 //! is refunded, [`RefundStep`] what a request or retry does next, [`RefundOutcome`] and
 //! [`RefundError`] what it came to; [`DisputeOpened`] is a Stripe dispute as the webhook reports
 //! it, [`EvidencePack`] the IDs-and-timestamps evidence built from a charge's FEE-042 record, and
-//! [`DisputeView`] one dispute as the owner portal and the weekly digest list it.
+//! [`DisputeView`] one dispute as the owner portal and the weekly digest list it, and
+//! [`OwnerSubmission`] what Casey's press on one pick's dispute came to (D-4506).
 //!
 //! T067 (FEE-029, FEE-030, FEE-051, D-1552): [`StripeCharge`] is one charge from Stripe's list,
 //! [`plan_charge`] decides from it and its [`PickFacts`] what the nightly reconcile appends and
@@ -631,6 +632,18 @@ pub struct DisputeView {
     pub submitted_at: Option<Timestamp>,
     /// The countering fee at stake if Casey counters (FEE-050): `DISPUTE_FEE_CENTS`.
     pub fee_at_stake_cents: i64,
+}
+
+/// What Casey's "I submitted this dispute's evidence in Stripe myself" on one pick came to
+/// (`record_pick_owner_submission`; FEE-050, D-229, SEC-006, D-4506).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum OwnerSubmission {
+    /// Marked in by `owner` with its one countering-fee entry.
+    Recorded,
+    /// Already in (by `auto` or `owner`); nothing written.
+    AlreadyIn,
+    /// No such dispute, or it is another pick's; nothing written.
+    NotThisPick,
 }
 
 /// One succeeded Stripe charge as the nightly reconcile reads it from Stripe's list, with its
