@@ -24133,7 +24133,7 @@
    "id": "T117",
    "deps": [
     "T206",
-    "T408"
+    "T707"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -24149,7 +24149,7 @@
     "T304",
     "T310",
     "T414",
-    "T408",
+    "T707",
     "T536"
    ],
    "status": "QUEUED",
@@ -24464,7 +24464,13 @@
     "T688",
     "T690",
     "T691",
-    "T720"
+    "T720",
+    "T708",
+    "T710",
+    "T721",
+    "T712",
+    "T714",
+    "T719"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -24496,7 +24502,8 @@
     "T514",
     "T641",
     "T642",
-    "T700"
+    "T700",
+    "T705"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -24743,7 +24750,8 @@
     "T683",
     "T685",
     "T689",
-    "T687"
+    "T687",
+    "T713"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -29173,7 +29181,8 @@
     "T683",
     "T685",
     "T689",
-    "T687"
+    "T687",
+    "T713"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -37997,7 +38006,8 @@
     "T646",
     "T649",
     "T656",
-    "T675"
+    "T675",
+    "T719"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -54709,7 +54719,8 @@
     "T489",
     "T564",
     "T650",
-    "T662"
+    "T662",
+    "T704"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -55293,7 +55304,8 @@
     "T255",
     "T266",
     "T433",
-    "T487"
+    "T487",
+    "T706"
    ],
    "status": "QUEUED",
    "attempts": 2,
@@ -71855,7 +71867,8 @@
     "T590",
     "T592",
     "T593",
-    "T648"
+    "T648",
+    "T708"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -72163,7 +72176,8 @@
   {
    "id": "T563",
    "deps": [
-    "T321"
+    "T321",
+    "T701"
    ],
    "status": "QUEUED",
    "attempts": 1,
@@ -78307,7 +78321,9 @@
     "T595",
     "T357",
     "T321",
-    "T489"
+    "T489",
+    "T701",
+    "T702"
    ],
    "status": "QUEUED",
    "attempts": 1,
@@ -79640,7 +79656,8 @@
    "id": "T672",
    "deps": [
     "T671",
-    "T711"
+    "T711",
+    "T717"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -79701,7 +79718,8 @@
     "T673",
     "T671",
     "T585",
-    "T679"
+    "T679",
+    "T710"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -79776,7 +79794,8 @@
     "T573",
     "T457",
     "T670",
-    "T675"
+    "T675",
+    "T714"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -80026,9 +80045,8 @@
   {
    "id": "T691",
    "deps": [
-    "T671",
-    "T573",
-    "T711"
+    "T672",
+    "T573"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -80342,6 +80360,241 @@
     "model": "claude-opus-5-5",
     "alias": "opus"
    }
+  },
+  {
+   "id": "T704",
+   "deps": [
+    "T356",
+    "T340",
+    "T341",
+    "T344",
+    "T361",
+    "T382",
+    "T215",
+    "T255",
+    "T103",
+    "T162",
+    "T236",
+    "T370",
+    "T151",
+    "T299",
+    "T317",
+    "T325",
+    "T336",
+    "T357",
+    "T391",
+    "T432",
+    "T328",
+    "T446",
+    "T449",
+    "T489",
+    "T564",
+    "T650",
+    "T662",
+    "T708"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "quiet-exempt-intake-producers",
+   "type": "build",
+   "stage": "6"
+  },
+  {
+   "id": "T706",
+   "deps": [
+    "T105",
+    "T359",
+    "T255"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "held-release-check",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T707",
+   "deps": [
+    "T408"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "safe-mode-address-in",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T702",
+   "deps": [
+    "T321",
+    "T255",
+    "T257",
+    "T266",
+    "T273",
+    "T412"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "suppression-key-guard",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T701",
+   "deps": [
+    "T321",
+    "T357",
+    "T702"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "optout-number-lock",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T708",
+   "deps": [
+    "T583"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "quote-update-quiet-hours",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T710",
+   "deps": [
+    "T679"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "lic046-minimum-one",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T721",
+   "deps": [
+    "T662",
+    "T600"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "problem-counted-complaint",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T712",
+   "deps": [
+    "T721",
+    "T527",
+    "T484"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "owner-problem-reports-page",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T713",
+   "deps": [
+    "T712",
+    "T402",
+    "T583",
+    "T470",
+    "T661"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "complaint-reply-text",
+   "type": "build",
+   "stage": "6"
+  },
+  {
+   "id": "T714",
+   "deps": [
+    "T458",
+    "T588"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "text-confirm-link-session",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T705",
+   "deps": [
+    "T012",
+    "T175",
+    "T385",
+    "T449",
+    "T571"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "log-capture-interest",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T715",
+   "deps": [
+    "T711"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-order-corrections",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T717",
+   "deps": [
+    "T715"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-two-jobs-corrections",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T716",
+   "deps": [
+    "T675"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-order-trade-questions",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T718",
+   "deps": [
+    "T716"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-order-second-job-steps",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T719",
+   "deps": [
+    "T718"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-request-no-reply",
+   "type": "build",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -85551,7 +85804,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T19:10:52Z",
+ "updated_at": "2026-11-18T19:14:13Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -85649,7 +85902,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "00344e3a43b7e81b479b30ec94bfc1d409d19203",
+ "runner_sha": "935e6983d16cf4a603927b944ffaab5743158a45",
  "starter": "actions",
  "smoke_runs": [
   {
