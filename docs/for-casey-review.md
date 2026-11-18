@@ -3325,3 +3325,16 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **Our reading:** while the payment is going through, the homeowner already sees "the business accepted your pick"; her details are still shared only after payment.
 - **The job page link in business emails gets built** (T665, T666; "Not a fit for us" on it in T668). A business that confirmed lands straight on the homeowner's details. Open item: the page shows the job card, photos and counts, but not yet the homeowner's individual intake answers, because nothing reads them out yet; that needs its own task later.
 - Nothing needs you now.
+
+## Rules that were built but never switched on now have tasks (D-4361)
+
+- **A homeowner who cancels after a business paid now gets that business refunded** when they never spoke on the phone (T680). A charge that lands after the cancel was already refunded by an existing path.
+- **Businesses that quoted but were not picked are told**, and every quoter hears "This job is no longer active." when a job ends (T681).
+- **The hourly "Reminder: accept job" emails go** while a pick waits for Confirm (T682), and a business on text that replies "YES 1042" gets the fee and the Confirm link back instead of silence (T683).
+- **The open-cards email at the times a business chose, the monthly "missed cards" email** (with an off switch for the owner; the switch on the settings page comes later), **and the 90-day re-test email** get built (T684, T685, T686).
+- **A sign-up waiting on an updated state record resumes by itself** when the daily list shows the new contact, and the message goes only to the new number (T655).
+- **A quote above an R-61 or R-62 project limit is refused with an explanation** (T687).
+- **A call to the Laftly main number hears the greeting with "hang up and call 911"** instead of silence (T688). The accessibility page already promises that message.
+- **Auto-confirm, once you file Stripe's written answer, actually charges a ticked quote picked with a code**, and a business whose tick was voided is told (T689).
+- **Still waiting on you:** who files a complaint about a business (the earlier open question, D-301 item 12); nothing records one until that is decided.
+- Nothing new needs you now.

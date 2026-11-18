@@ -30,7 +30,7 @@
     {"kind": "picks.pick_withdrawn", "owner": "T330", "reason": "the withdrawn-pick business notice has no handler (D-2288)"},
     {"kind": "intake.opted_out_live_job", "owner": "T330", "reason": "the CON-028 notice after a CANCEL has no handler (D-2288)"},
     {"kind": "calls.safety_call", "owner": "T330", "reason": "place_safety_call is registered nowhere (D-2288)"},
-    {"kind": "picks.auto_confirm_voided", "owner": "T209", "reason": "queued by T209 after D-2285; D-2785 left the business notice to the task that adds its template, and no task in the graph owns it yet (D-2851, for-casey-review)"},
+    {"kind": "picks.auto_confirm_voided", "owner": "T689", "reason": "queued by T209 after D-2285; D-2785 left the business notice to the task that adds its template (D-2851); T689 registers its handler (D-4361)"},
     {"kind": "calls.owner_alert_call", "owner": "T484", "reason": "T204 queues OPS-035's automated call for a critical safety alert; T484 registers the handler that places it (D-3880)"},
     {"kind": "quotes.count_update", "owner": "T583", "reason": "T582 queues the quote-count update event; T583 registers the handler that sends the text (D-4052, D-4064)"}
   ]
