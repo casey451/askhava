@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T14:39:34Z by runner 164e7e994839 (manual).
+Updated 2026-11-18T14:58:28Z by runner a14c7a0112d0 (actions).
 
-**Building: T665 in progress since 14:25Z; 445 of 643 done; week 59% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T665 in progress since 14:25Z; 446 of 643 done; week 59% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 445 of 643 build tasks (owner gates not counted)
+- **Tasks done:** 446 of 643 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T665 claimed 14:25Z, lease until 17:25Z; lane 2: T525 claimed 13:59Z, lease until 17:38Z
 - **Week:** 59% used, 77.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:38Z, 0 min before this update
+- **Last run:** 14:39Z, 18 min before this update
 - **Keeper:** last ran 14:38Z, next wake 17:02Z
 
 ## Needs attention
@@ -21,12 +21,12 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 2. tests/integration/tests/inbound_scrub_context.rs:298 (T257/T317): table scan finds "zebulon" in quotes.job_description, from OTHER homeowner's trade-naming fi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T671 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 31 problem(s) on tasks still to run (+236 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 31 problem(s) on tasks still to run (+240 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T200 | ops and portals: the owner help page with its screened reply | MERGE_PENDING | 2 | 2 h 25 min | 14:32Z | Review not approved after the one fix round (head 346acc872b66e2a8cd86b345b919fe4573f7db87). / Remaining finding (review |
+| T200 | ops and portals: the owner help page with its screened reply | done | 2 | 2 h 25 min | 14:32Z | Review not approved after the one fix round (head 346acc872b66e2a8cd86b345b919fe4573f7db87). / Remaining finding (review |
 | T671 | intake (harness): a homeowner's texts after the consent text | BLOCKED | 1 | 44 min | 13:58Z | PLAN GAP: three tests outside T671's scope fail because of the new behaviour (worker edited none of them): / 1. tests/in |
 | T472 | server (harness): serve the "Can't take it" page and button  | done | 1 | 62 min | 12:45Z |  |
 | T662 | jobs, intake, calls and server: a masked call line closes wh | done | 1 | 73 min | 12:39Z |  |
@@ -91,14 +91,14 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 0 of 735 (0.0%) · partial 683 · unstarted 52
-**Tasks merged (throughput only):** 445 of 643
+**Requirements verified:** 0 of 735 (0.0%) · partial 684 · unstarted 51
+**Tasks merged (throughput only):** 446 of 643
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 0 | 35 | 0 | 35 |
 | ai | 0 | 26 | 3 | 29 |
-| businesses | 0 | 56 | 2 | 58 |
+| businesses | 0 | 57 | 1 | 58 |
 | calls | 0 | 25 | 0 | 25 |
 | consent | 0 | 35 | 0 | 35 |
 | fees | 0 | 51 | 1 | 52 |
@@ -128,7 +128,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 88 of 244 done
+- stage 5: 89 of 244 done
 - stage 6: 0 of 46 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
