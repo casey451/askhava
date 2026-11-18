@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T08:39:16Z by runner 41fb8677d6eb (actions).
+Updated 2026-11-18T08:41:25Z by runner d0f204103889 (actions).
 
 **Building: T660 in progress since 07:55Z; 433 of 621 done; week 48% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-18T08:39:16Z by runner 41fb8677d6eb (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T660 claimed 07:55Z, lease until 10:55Z
 - **Week:** 48% used, 94.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:38Z, 0 min before this update
+- **Last run:** 08:39Z, 2 min before this update
 - **Keeper:** last ran 08:12Z, next wake 10:58Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 25 problem(s) on tasks still to run (+215 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 23 problem(s) on tasks still to run (+210 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |

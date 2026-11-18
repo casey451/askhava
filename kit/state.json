@@ -81720,7 +81720,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T08:39:16Z",
+ "updated_at": "2026-11-18T08:41:25Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -81818,17 +81818,9 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "41fb8677d6eba8a8479ede5d6f67a746e50e49a6",
+ "runner_sha": "d0f20410388970caf8d2edc187491580ba9d8d6e",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "f1edb5ace3d679ad5ada21ef2f14065084fc842b",
-   "ok": true,
-   "at": "2026-11-18T00:31:21Z",
-   "why": "start routine (ancestry reuse of 25b746d18910, 2026-11-18T00:12:09Z)",
-   "reused": "2026-11-18T00:12:09Z",
-   "base": "25b746d189101faec013d8b28e7efdd2c3710a48"
-  },
   {
    "sha": "c00d003c00ee25caad9c7e38f13eb5b20b490316",
    "ok": true,
@@ -81977,6 +81969,14 @@
    "why": "start routine (ancestry reuse of 8d82392ea8c4, 2026-11-18T06:42:04Z)",
    "reused": "2026-11-18T06:42:04Z",
    "base": "8d82392ea8c401b821a35aacd001bace8d47031f"
+  },
+  {
+   "sha": "b14b6d878aa298d452b290f24fc34f0e4ec2ef1b",
+   "ok": false,
+   "at": "2026-11-18T08:41:24Z",
+   "why": "start routine (background, ancestor of 41fb8677d6eb)",
+   "seconds": 1500,
+   "timed_out": true
   }
  ],
  "main_red": null,
