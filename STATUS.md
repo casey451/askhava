@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T10:34:28Z by runner 7b013f128463 (actions).
+Updated 2026-11-18T10:36:33Z by runner 9dbd52ce1f9f (actions).
 
-**Building: T563 in progress since 09:55Z; 437 of 621 done; week 52% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T563 in progress since 09:55Z; 438 of 621 done; week 52% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 437 of 621 build tasks (owner gates not counted)
+- **Tasks done:** 438 of 621 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T563 claimed 09:55Z, lease until 12:55Z; lane 3: T658 claimed 10:13Z, lease until 13:13Z; lane 4: T650 claimed 09:08Z, lease until 13:10Z; lane 5: T408 claimed 09:13Z, lease until 13:23Z; lane 6: T200 claimed 09:05Z, lease until 12:05Z
 - **Week:** 52% used, 85.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:34Z, 0 min before this update
+- **Last run:** 10:34Z, 1 min before this update
 - **Keeper:** last ran 10:34Z, next wake 12:07Z
 
 ## Needs attention
@@ -31,7 +31,7 @@ Updated 2026-11-18T10:34:28Z by runner 7b013f128463 (actions).
 | T601 | businesses and quotes: the card pool reads every service are | done | 1 | 50 min | 05:14Z |  |
 | T523 | jobs, ops and intake: the check-in answer recorder and the c | done | 3 | 46 min | 05:06Z | Review not approved after the one findings round (head bd99856fca96fb81973c28181ad9fd6e39e7ac91; flag_inputs tests 5 pas |
 | T638 | harness: Ci skips a compile its job already passed on a prov | done | 1 | 88 min | 04:35Z |  |
-| T623 | payments: a Stripe key refusal (401 or 403) takes the Stripe | MERGE_PENDING | 1 | 63 min | 03:46Z |  |
+| T623 | payments: a Stripe key refusal (401 or 403) takes the Stripe | done | 1 | 63 min | 03:46Z |  |
 | T151 | ops and messaging: HELP requests with one owner notification | done | 1 | 34 min | 03:40Z |  |
 | T647 | payments: rebuild_charge reports Booked inside a caller's tr | done | 1 | 82 min | 03:35Z |  |
 | T619 | quotes, picks and intake: the quote-median, lapsed-pick, win | QUEUED | 1 | 69 min | 03:31Z |  |
@@ -87,7 +87,7 @@ Updated 2026-11-18T10:34:28Z by runner 7b013f128463 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 683 · unstarted 52
-**Tasks merged (throughput only):** 437 of 621
+**Tasks merged (throughput only):** 438 of 621
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -123,7 +123,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 80 of 228 done
+- stage 5: 81 of 228 done
 - stage 6: 0 of 40 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
