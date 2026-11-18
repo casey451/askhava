@@ -3420,6 +3420,7 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **New wording, for the copy panel:** the question for a text that names no trade ("What do you need done? A few words is enough.") is a draft. Until the AI reading is on, such a text is asked, not told "We don't cover that yet".
 - **A request that never gets a job now times out like any other** (T719): a reminder after a day and a close after three. Because such a request has no request number yet, the two texts are new drafts of the usual ones without the number, for the copy panel.
 - **Open item:** the numbered "Is this mainly 1) plumbing or 2) heating/AC?" question only comes up when the AI reading and the keywords disagree, so it waits for the AI work (T299); no task builds it yet.
+- Our choice; nothing needs you now.
 
 ## The refund page shows only the charge's own dispute (D-4506)
 
