@@ -7205,3 +7205,4 @@
 - 2026-11-18T15:42:16Z runner c260062c9bb1 (actions): {}
 - 2026-11-18T15:42:33Z runner 954dd6895194 (actions): {}
 - 2026-11-18T15:43:12Z runner ed339f344700 (actions): {}
+- 2026-11-18T15:43:24Z runner ed339f344700 (actions): {"T671": "QUEUED -> IN_PROGRESS"}; T671 estimated 2.0M tokens (calibrated); week has 69.4M left (no five-hour budget, D-3056) after 2.6M still running in another lane (session_reading 2026-11-18T15:42:15Z (week)); running to the limit (model window, D-2225), claimed
