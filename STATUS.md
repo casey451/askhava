@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T17:25:36Z by runner 656d34ef3dcf (actions).
+Updated 2026-11-18T17:25:46Z by runner 656d34ef3dcf (actions).
 
 **Building: T624 in progress since 16:49Z; 451 of 645 done; week 63% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 451 of 645 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T624 claimed 16:49Z, lease until 19:49Z; lane 2: T205 claimed 17:25Z, lease until 20:25Z; lane 5: T500 claimed 17:07Z, lease until 20:07Z; lane 7: T671 claimed 15:43Z, lease until 20:20Z
+- **Lane:** lane 1: T624 claimed 16:49Z, lease until 19:49Z; lane 2: T205 claimed 17:25Z, lease until 20:25Z; lane 5: T500 claimed 17:07Z, lease until 20:07Z
 - **Week:** 63% used, 64.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 17:25Z, 0 min before this update
 - **Keeper:** last ran 17:13Z, next wake 18:45Z
@@ -24,6 +24,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T671 | intake (harness): a homeowner's texts after the consent text | MERGE_PENDING | 2 | 102 min | 17:25Z | PLAN GAP: three tests outside T671's scope fail because of the new behaviour (worker edited none of them): / 1. tests/in |
 | T621 | portals: the scorecard's go and stop line settings and its p | done | 1 | 38 min | 17:03Z |  |
 | T720 | Decision digest prerequisites (harness): the digest plan and | done | 1 | 67 min | 16:51Z |  |
 | T624 | server: two failed in-process health checks in a row raise o | resync | 1 | 49 min | 16:38Z | merging main into the reviewed head conflicts in app/server/src/bin/worker.rs; a resync merges it in on this attempt (D- |
@@ -33,7 +34,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 | T665 | server tests (harness): the door matrix fills a business job | done | 1 | 81 min | 15:47Z |  |
 | T525 | server and ops: the hourly vault-read check and the daily da | done | 1 | 102 min | 15:41Z |  |
 | T200 | ops and portals: the owner help page with its screened reply | done | 2 | 2 h 25 min | 14:32Z | Review not approved after the one fix round (head 346acc872b66e2a8cd86b345b919fe4573f7db87). / Remaining finding (review |
-| T671 | intake (harness): a homeowner's texts after the consent text | BLOCKED | 1 | 44 min | 13:58Z | PLAN GAP: three tests outside T671's scope fail because of the new behaviour (worker edited none of them): / 1. tests/in |
+| T671 | intake (harness): a homeowner's texts after the consent text | BLOCKED | 1 | 44 min | 13:58Z |  |
 | T472 | server (harness): serve the "Can't take it" page and button  | done | 1 | 62 min | 12:45Z |  |
 | T662 | jobs, intake, calls and server: a masked call line closes wh | done | 1 | 73 min | 12:39Z |  |
 | T679 | quotes and businesses: a launch-open category takes requests | done | 1 | 37 min | 12:17Z |  |
@@ -139,7 +140,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - T624 (lease until 2026-11-18T19:49:16Z)
 - lane 2: T205 (lease until 2026-11-18T20:25:02Z)
 - lane 5: T500 (lease until 2026-11-18T20:07:11Z)
-- lane 7: T671 (lease until 2026-11-18T20:20:52Z)
 
 ## Last usage reading
-- {"task": "T621", "at": "2026-11-18T17:03:49Z", "input_tokens": 60, "cache_read_input_tokens": 821009, "cache_creation_input_tokens": 65463, "output_tokens": 8830}
+- {"task": "T671", "at": "2026-11-18T17:25:29Z", "cache_read_input_tokens": 30578798, "cache_creation_input_tokens": 359454, "input_tokens": 334, "output_tokens": 116238}
