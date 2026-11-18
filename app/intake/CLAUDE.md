@@ -23,6 +23,7 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - PICK-046's notice goes by email only when its text cannot go and she has an email on file, once per pick, never with the text: `tests/integration/tests/pick_lapsed_email.rs` (T446).
 - PICK-047's `pick_moved` text names both businesses in her language, once per ended pick, under consent, opt-out and quiet hours (at once on an emergency job): `tests/integration/tests/pick_moved_text.rs` (T471).
 - The intake order on texts (D-4360): consent then the ZIP question; only the opening text's words are kept, never a ZIP; one job per request, never another request's; step markers carry no inbox ID: `tests/integration/tests/intake_order_area_trade.rs` (TD-INT-45).
+- INT-032's two jobs (D-4486 to D-4488): `two_jobs` only after a two-trade first text; ALSO/TAMBIÉN opens at most one second job, before the ZIP never joining another request's job, never while name-and-address is open; SPLIT only right after a SPLIT offer; no ALSO or SPLIT kept as words: `tests/integration/tests/intake_order_two_jobs.rs`.
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/intake/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/intake/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).
