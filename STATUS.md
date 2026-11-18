@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T20:31:09Z by runner ac95475ba313 (actions).
+Updated 2026-11-18T20:31:41Z by runner 17bc804178af (actions).
 
 **Building: T651 in progress since 19:44Z; 455 of 663 done; week 67% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-18T20:31:09Z by runner ac95475ba313 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T651 claimed 19:44Z, lease until 22:44Z; lane 2: T502 claimed 19:53Z, lease until 22:53Z; lane 3: T483 claimed 18:25Z, lease until 22:51Z; lane 5: T706 claimed 19:14Z, lease until 23:19Z; lane 6: T702 claimed 20:27Z, lease until 23:27Z; lane 7: T715 claimed 20:05Z, lease until 23:05Z
 - **Week:** 67% used, 53.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:30Z, 0 min before this update
+- **Last run:** 20:31Z, 0 min before this update
 - **Keeper:** last ran 20:31Z, next wake 22:47Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 34 problem(s) on tasks still to run (+258 on DONE tasks); first: T402: measures 48% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 50 problem(s) on tasks still to run (+262 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -84,28 +84,28 @@ Updated 2026-11-18T20:31:09Z by runner ac95475ba313 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 307 of 735 (41.8%) · partial 378 · unstarted 50
-**Tasks merged (throughput only):** 455 of 645
+**Requirements verified:** 293 of 735 (39.9%) · partial 392 · unstarted 50
+**Tasks merged (throughput only):** 455 of 662
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 17 | 18 | 0 | 35 |
 | ai | 9 | 17 | 3 | 29 |
-| businesses | 19 | 38 | 1 | 58 |
+| businesses | 17 | 40 | 1 | 58 |
 | calls | 12 | 13 | 0 | 25 |
 | consent | 14 | 21 | 0 | 35 |
-| fees | 24 | 27 | 1 | 52 |
-| intake | 16 | 27 | 0 | 43 |
+| fees | 23 | 28 | 1 | 52 |
+| intake | 10 | 33 | 0 | 43 |
 | job-cards | 14 | 10 | 0 | 24 |
-| licensing | 34 | 14 | 0 | 48 |
-| lifecycle | 19 | 9 | 0 | 28 |
-| messaging | 21 | 23 | 1 | 45 |
-| ops-recovery | 4 | 31 | 19 | 54 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 18 | 10 | 0 | 28 |
+| messaging | 20 | 24 | 1 | 45 |
+| ops-recovery | 3 | 32 | 19 | 54 |
 | privacy | 9 | 21 | 1 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
 | quotes-pick | 27 | 29 | 0 | 56 |
 | recurring | 7 | 2 | 2 | 11 |
-| security | 9 | 41 | 5 | 55 |
+| security | 8 | 42 | 5 | 55 |
 | terms | 25 | 7 | 3 | 35 |
 | website | 9 | 16 | 5 | 30 |
 | wording | 12 | 11 | 9 | 32 |
