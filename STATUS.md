@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T10:30:32Z by runner 9f71d076749f (actions).
+Updated 2026-11-18T10:34:12Z by runner 7b013f128463 (actions).
 
 **Building: T563 in progress since 09:55Z; 437 of 621 done; week 52% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-18T10:30:32Z by runner 9f71d076749f (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T563 claimed 09:55Z, lease until 12:55Z; lane 3: T658 claimed 10:13Z, lease until 13:13Z; lane 4: T650 claimed 09:08Z, lease until 13:10Z; lane 5: T408 claimed 09:13Z, lease until 13:23Z; lane 6: T200 claimed 09:05Z, lease until 12:05Z
 - **Week:** 52% used, 85.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:30Z, 0 min before this update
+- **Last run:** 10:34Z, 0 min before this update
 - **Keeper:** last ran 10:30Z, next wake 12:07Z
 
 ## Needs attention
@@ -80,7 +80,6 @@ Updated 2026-11-18T10:30:32Z by runner 9f71d076749f (actions).
 | T202 | site: Spanish pages, the business page blocks and the requir | resync | 2 | 56 min | 11:26Z |  |
 | T112 | Draft the privacy policy and SMS terms | done | 3 | 66 min | 11:10Z | Fresh-eyes review of the fix-round head 037ad56a05f50b76c38506da3786bdde73a2be4d ended REVIEW-VERDICT: FINDINGS after th |
 | T489 | site and server: the web chat and request pages with the con | done | 3 | 46 min | 11:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Date:      2026- |
-| T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | check_failed | 1 | 35 min | 10:33Z |  |
 
 ### Plan and harness merges on main
 - none
