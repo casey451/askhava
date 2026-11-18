@@ -55,6 +55,7 @@ pub use crate::scorecard_inputs::{
 };
 pub use crate::service::{EXPORT_PAGE_MAX, export_audit, is_paused, raise_alert, raise_kind_once};
 pub use crate::status_banner::{BannerBy, banner_shown, clear_banner, show_banner};
+pub use crate::volume_check::{VOLUME_LOW_ALERT, VolumeLevel, check_volume, volume_level};
 
 /// The `core.task` kind of one off-database stream event; `server` registers its writer
 /// (`app/server/src/offdb_stream.rs`), since `ops` calls no adapter (OPS-011, D-491).

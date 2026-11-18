@@ -40,6 +40,7 @@ const CITY_LICENSE: &str = "ASKHAVA_CITY_BUSINESS_LICENSE_NUMBER";
 const CITY_LICENSE_COST: &str = "ASKHAVA_CITY_LICENSE_COST";
 const CITY_LICENSE_TIME: &str = "ASKHAVA_CITY_LICENSE_TIME";
 const CITY_LICENSE_URL: &str = "ASKHAVA_CITY_LICENSE_URL";
+const DB_VOLUME_BYTES: &str = "ASKHAVA_DB_VOLUME_BYTES";
 
 /// Every key the parser accepts; any other `ASKHAVA_*` key stops startup (D-493).
 const KEYS: &[&str] = &[
@@ -81,6 +82,9 @@ const KEYS: &[&str] = &[
     CITY_LICENSE_COST,
     CITY_LICENSE_TIME,
     CITY_LICENSE_URL,
+    // The database volume's size in bytes for the daily volume check, optional here; `server`'s
+    // `watch_checks` registration requires it in `test` and `live` (T525, OPS-052, D-4044, D-4280).
+    DB_VOLUME_BYTES,
     // T106 (OPS-007, OPS-049, D-3144, D-4044): parsed by `server`'s `liveness` and `healthz`: how
     // long a failed liveness check may last before the process exits, and how long due work may
     // wait before `/healthz` reports the worker down.
@@ -144,6 +148,47 @@ const KEYS: &[&str] = &[
     // Read by `server bootstrap-owner` alone, from the host variable, never stored (T303, SEC-044,
     // D-1918, D-3962).
     "ASKHAVA_OWNER_BOOTSTRAP_TOKEN",
+    // OPS-039's go and stop lines and D-458's paid-introduction ladder, each optional with its
+    // `docs/PREBUILD.md` default in `SCORECARD_DEFAULTS` (T621, D-4280, D-4448).
+    "ASKHAVA_SCORECARD_QUOTED_24H_GO",
+    "ASKHAVA_SCORECARD_QUOTED_24H_STOP",
+    "ASKHAVA_SCORECARD_TWO_QUOTES_24H_GO",
+    "ASKHAVA_SCORECARD_TWO_QUOTES_24H_STOP",
+    "ASKHAVA_SCORECARD_P75_FIRST_QUOTE_HOURS_GO",
+    "ASKHAVA_SCORECARD_P75_FIRST_QUOTE_HOURS_STOP",
+    "ASKHAVA_SCORECARD_MEDIAN_FIRST_QUOTE_HOURS_GO",
+    "ASKHAVA_SCORECARD_MEDIAN_FIRST_QUOTE_HOURS_STOP",
+    "ASKHAVA_SCORECARD_PICKS_PER_QUOTED_GO",
+    "ASKHAVA_SCORECARD_PICKS_PER_QUOTED_STOP",
+    "ASKHAVA_SCORECARD_PICKS_CONFIRMED_GO",
+    "ASKHAVA_SCORECARD_PICKS_CONFIRMED_STOP",
+    "ASKHAVA_SCORECARD_AVERAGE_FEE_DOLLARS_GO",
+    "ASKHAVA_SCORECARD_AVERAGE_FEE_DOLLARS_STOP",
+    "ASKHAVA_SCORECARD_FREE_SHARE_GO",
+    "ASKHAVA_SCORECARD_FREE_SHARE_STOP",
+    "ASKHAVA_SCORECARD_REQUESTS_PER_WEEK_GO",
+    "ASKHAVA_SCORECARD_REQUESTS_PER_WEEK_STOP",
+    "ASKHAVA_SCORECARD_PAID_INTROS_MONTH_GO",
+    "ASKHAVA_SCORECARD_PAID_INTROS_MONTH_STOP",
+    "ASKHAVA_SCORECARD_NET_PER_INTRO_DOLLARS_GO",
+    "ASKHAVA_SCORECARD_NET_PER_INTRO_DOLLARS_STOP",
+    "ASKHAVA_SCORECARD_INTAKE_CARD_STEP_GO",
+    "ASKHAVA_SCORECARD_INTAKE_CARD_STEP_STOP",
+    "ASKHAVA_SCORECARD_SIGNUPS_ACTIVE_15MIN_GO",
+    "ASKHAVA_SCORECARD_SIGNUPS_ACTIVE_15MIN_STOP",
+    "ASKHAVA_SCORECARD_REFUNDS_GO",
+    "ASKHAVA_SCORECARD_REFUNDS_STOP",
+    "ASKHAVA_SCORECARD_BANK_DISPUTES_GO",
+    "ASKHAVA_SCORECARD_BANK_DISPUTES_STOP",
+    "ASKHAVA_SCORECARD_PAYING_AGAIN_60D_GO",
+    "ASKHAVA_SCORECARD_PAYING_AGAIN_60D_STOP",
+    "ASKHAVA_SCORECARD_MINUTES_PER_INTRO_GO",
+    "ASKHAVA_SCORECARD_MINUTES_PER_INTRO_STOP",
+    "ASKHAVA_SCORECARD_COMPLAINTS_PER_20_GO",
+    "ASKHAVA_SCORECARD_COMPLAINTS_PER_20_STOP",
+    "ASKHAVA_SCORECARD_LADDER_PILOT",
+    "ASKHAVA_SCORECARD_LADDER_20K",
+    "ASKHAVA_SCORECARD_LADDER_50K",
 ];
 
 /// Key prefixes that only a live vendor account issues (SEC-002).
@@ -157,6 +202,50 @@ const DEFAULT_SET_ASIDE_BASIS_POINTS: u16 = 860;
 const DEFAULT_REQUEST_TIMEOUT_SECS: u64 = 60;
 /// WEB-028's default threshold: 50 requests with a card sent (D-468).
 const DEFAULT_HOME_NUMBERS_MIN_JOBS: u32 = 50;
+/// OPS-039's go and stop lines and D-458's ladder with their `docs/PREBUILD.md` section 7 defaults,
+/// in whole percent, hours, dollars, minutes or counts as each key names; a missing key takes its
+/// default (T621, D-4280, D-4448). `portals::api::ScorecardLines::from_pairs` reads them by key.
+const SCORECARD_DEFAULTS: [(&str, u32); 39] = [
+    ("ASKHAVA_SCORECARD_QUOTED_24H_GO", 70),
+    ("ASKHAVA_SCORECARD_QUOTED_24H_STOP", 50),
+    ("ASKHAVA_SCORECARD_TWO_QUOTES_24H_GO", 60),
+    ("ASKHAVA_SCORECARD_TWO_QUOTES_24H_STOP", 30),
+    ("ASKHAVA_SCORECARD_P75_FIRST_QUOTE_HOURS_GO", 12),
+    ("ASKHAVA_SCORECARD_P75_FIRST_QUOTE_HOURS_STOP", 24),
+    ("ASKHAVA_SCORECARD_MEDIAN_FIRST_QUOTE_HOURS_GO", 4),
+    ("ASKHAVA_SCORECARD_MEDIAN_FIRST_QUOTE_HOURS_STOP", 12),
+    ("ASKHAVA_SCORECARD_PICKS_PER_QUOTED_GO", 40),
+    ("ASKHAVA_SCORECARD_PICKS_PER_QUOTED_STOP", 25),
+    ("ASKHAVA_SCORECARD_PICKS_CONFIRMED_GO", 85),
+    ("ASKHAVA_SCORECARD_PICKS_CONFIRMED_STOP", 75),
+    ("ASKHAVA_SCORECARD_AVERAGE_FEE_DOLLARS_GO", 50),
+    ("ASKHAVA_SCORECARD_AVERAGE_FEE_DOLLARS_STOP", 35),
+    ("ASKHAVA_SCORECARD_FREE_SHARE_GO", 20),
+    ("ASKHAVA_SCORECARD_FREE_SHARE_STOP", 40),
+    ("ASKHAVA_SCORECARD_REQUESTS_PER_WEEK_GO", 15),
+    ("ASKHAVA_SCORECARD_REQUESTS_PER_WEEK_STOP", 6),
+    ("ASKHAVA_SCORECARD_PAID_INTROS_MONTH_GO", 15),
+    ("ASKHAVA_SCORECARD_PAID_INTROS_MONTH_STOP", 5),
+    ("ASKHAVA_SCORECARD_NET_PER_INTRO_DOLLARS_GO", 40),
+    ("ASKHAVA_SCORECARD_NET_PER_INTRO_DOLLARS_STOP", 28),
+    ("ASKHAVA_SCORECARD_INTAKE_CARD_STEP_GO", 80),
+    ("ASKHAVA_SCORECARD_INTAKE_CARD_STEP_STOP", 60),
+    ("ASKHAVA_SCORECARD_SIGNUPS_ACTIVE_15MIN_GO", 70),
+    ("ASKHAVA_SCORECARD_SIGNUPS_ACTIVE_15MIN_STOP", 40),
+    ("ASKHAVA_SCORECARD_REFUNDS_GO", 10),
+    ("ASKHAVA_SCORECARD_REFUNDS_STOP", 20),
+    ("ASKHAVA_SCORECARD_BANK_DISPUTES_GO", 1),
+    ("ASKHAVA_SCORECARD_BANK_DISPUTES_STOP", 2),
+    ("ASKHAVA_SCORECARD_PAYING_AGAIN_60D_GO", 50),
+    ("ASKHAVA_SCORECARD_PAYING_AGAIN_60D_STOP", 30),
+    ("ASKHAVA_SCORECARD_MINUTES_PER_INTRO_GO", 20),
+    ("ASKHAVA_SCORECARD_MINUTES_PER_INTRO_STOP", 45),
+    ("ASKHAVA_SCORECARD_COMPLAINTS_PER_20_GO", 1),
+    ("ASKHAVA_SCORECARD_COMPLAINTS_PER_20_STOP", 2),
+    ("ASKHAVA_SCORECARD_LADDER_PILOT", 15),
+    ("ASKHAVA_SCORECARD_LADDER_20K", 50),
+    ("ASKHAVA_SCORECARD_LADDER_50K", 115),
+];
 
 /// Why startup refused the settings. Each variant names a key, never its value (SEC-001).
 #[derive(Debug, Error, PartialEq, Eq)]
@@ -322,6 +411,8 @@ pub struct Settings {
     llc_record_url: Option<String>,
     city_license: Option<String>,
     city_guide: [Option<String>; 3],
+    scorecard: [u32; SCORECARD_DEFAULTS.len()],
+    db_volume_bytes: Option<u64>,
 }
 
 impl Settings {
@@ -376,6 +467,8 @@ impl Settings {
             city_license: raw.remove(CITY_LICENSE).map(|n| n.trim().to_owned()),
             city_guide: [CITY_LICENSE_COST, CITY_LICENSE_TIME, CITY_LICENSE_URL]
                 .map(|key| raw.remove(key).map(|v| v.trim().to_owned())),
+            scorecard: scorecard(&mut raw)?,
+            db_volume_bytes: volume_bytes(raw.remove(DB_VOLUME_BYTES))?,
         })
     }
 
@@ -529,6 +622,15 @@ impl Settings {
         self.home_numbers_min_jobs
     }
 
+    /// OPS-039's go and stop lines and D-458's ladder as `(key, value)` pairs, every
+    /// `ASKHAVA_SCORECARD_*` key once, its `docs/PREBUILD.md` default when unset (T621, D-4448).
+    pub fn scorecard_lines(&self) -> impl Iterator<Item = (&'static str, u32)> + '_ {
+        SCORECARD_DEFAULTS
+            .iter()
+            .zip(self.scorecard)
+            .map(|((key, _), value)| (*key, value))
+    }
+
     /// WEB-021, WEB-022: the link to the LLC's public record on the Arizona Corporation Commission
     /// site (`ASKHAVA_LLC_RECORD_URL`, trimmed); `None` while unset, and the "Who runs" block
     /// leaves it out (D-3890).
@@ -551,6 +653,14 @@ impl Settings {
     #[must_use]
     pub fn city_license_guide(&self) -> [Option<&str>; 3] {
         self.city_guide.each_ref().map(Option::as_deref)
+    }
+
+    /// OPS-052, D-4280: the database volume's size in bytes (`ASKHAVA_DB_VOLUME_BYTES`, a whole
+    /// number above 0); `None` while unset. Never required here: `server`'s `watch_checks`
+    /// registration refuses a missing one in test and live (T525).
+    #[must_use]
+    pub fn db_volume_bytes(&self) -> Option<u64> {
+        self.db_volume_bytes
     }
 }
 
@@ -750,6 +860,18 @@ fn request_timeout_secs(raw: Option<String>) -> Result<u64, SettingsError> {
     }
 }
 
+/// OPS-052: the volume size is a whole number of bytes above 0, `None` when unset; a bad value
+/// names only the key (T525).
+fn volume_bytes(raw: Option<String>) -> Result<Option<u64>, SettingsError> {
+    let Some(raw) = raw else {
+        return Ok(None);
+    };
+    match raw.trim().parse::<u64>() {
+        Ok(n) if n > 0 => Ok(Some(n)),
+        _ => Err(SettingsError::Invalid(DB_VOLUME_BYTES)),
+    }
+}
+
 fn per_minute(raw: Option<String>) -> Result<Option<u32>, SettingsError> {
     let Some(raw) = raw else {
         return Ok(None);
@@ -841,4 +963,22 @@ fn min_jobs(raw: Option<String>) -> Result<u32, SettingsError> {
         Ok(jobs @ 1..) => Ok(jobs),
         _ => Err(SettingsError::Invalid(HOME_NUMBERS_MIN_JOBS)),
     }
+}
+
+/// OPS-039, D-4448: each scorecard line is a whole number, its default when unset; a bad value
+/// names only the key.
+fn scorecard(
+    raw: &mut HashMap<&'static str, String>,
+) -> Result<[u32; SCORECARD_DEFAULTS.len()], SettingsError> {
+    let mut lines = [0; SCORECARD_DEFAULTS.len()];
+    for (line, (key, default)) in lines.iter_mut().zip(SCORECARD_DEFAULTS) {
+        *line = match raw.remove(key) {
+            None => default,
+            Some(value) => value
+                .trim()
+                .parse()
+                .map_err(|_| SettingsError::Invalid(key))?,
+        };
+    }
+    Ok(lines)
 }

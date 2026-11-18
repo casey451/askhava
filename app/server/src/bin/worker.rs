@@ -98,11 +98,25 @@ async fn schedule_messaging(conn: &mut sqlx::PgConnection, now: jiff::Timestamp)
         .map_err(io::Error::other)
 }
 
+/// The first nightly Stripe reconcile (T433), then the first runs of `watch_checks`' hourly
+/// vault-read check and daily volume check (T525, SEC-047, OPS-052), each under its own dedupe key.
+async fn schedule_checks(conn: &mut sqlx::PgConnection, now: jiff::Timestamp) -> io::Result<()> {
+    askhava_server::payment_jobs::schedule_reconcile(conn, now)
+        .await
+        .map_err(io::Error::other)?;
+    askhava_server::watch_checks::schedule_read_check(conn, now)
+        .await
+        .map_err(io::Error::other)?;
+    askhava_server::watch_checks::schedule_volume_check(conn, now)
+        .await
+        .map_err(io::Error::other)
+}
+
 /// Queues the daily tasks at start (the chain check, the masked-line expiry sweep (T662), the retention sweep, the body cut, the
 /// photo orphan sweep, the day-31 body scan, this hour's dead-letter check, the job timer
 /// backstop, the hourly request count (T105), the safe-mode check (T487), the session sweep and rate-limit prune (T436), the license-map re-apply, each daily license list (T371), the outbox sender's
 /// first run, the deferral check, the weekly opt-out rate check ([`schedule_messaging`]) and the first nightly Stripe reconcile
-/// (T433)) and runs the intake golden set once.
+/// (T433) with the hourly vault-read and daily volume checks ([`schedule_checks`], T525)) and runs the intake golden set once.
 async fn schedule_start(
     pool: &sqlx::PgPool,
     now: jiff::Timestamp,
@@ -149,9 +163,7 @@ async fn schedule_start(
     askhava_licensing::api::schedule_daily_lists(&mut conn, now, lists)
         .await
         .map_err(io::Error::other)?;
-    askhava_server::payment_jobs::schedule_reconcile(&mut conn, now)
-        .await
-        .map_err(io::Error::other)?;
+    schedule_checks(&mut conn, now).await?;
     askhava_intake::api::run_golden(&mut conn, now)
         .await
         .map(|_| ())
