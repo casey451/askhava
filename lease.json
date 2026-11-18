@@ -16,15 +16,10 @@
   "4": null,
   "5": null,
   "6": null,
-  "7": {
-   "task": "T623",
-   "session": "actions-44223575478",
-   "expires": "2026-11-18T05:43:03Z",
-   "lane": "7"
-  },
+  "7": null,
   "fix": null
  },
- "seq": 6820,
+ "seq": 6821,
  "runner_sha": "bfbe18be5b22cff9c3f6ee9532459ac81ce96d7f",
  "starter": "actions"
 }
