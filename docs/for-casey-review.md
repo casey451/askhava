@@ -3360,3 +3360,8 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **The server and picks crate notes had grown so close to their size limit that the runner let only one task work in each**, while almost every task waiting to start touches the server crate, so five of seven lanes sat idle.
 - **Fix:** the longer rules in those two notes now keep their first part (the rule and its requirement numbers) and point to the rest, which moved word for word to each crate's searchable notes file; a check confirms no word was lost. Each crate can now hold two tasks again.
 - Our choice; nothing needs you now.
+
+## The longest line of remaining work in stage 5 got shorter (D-4447)
+- **The longest chain of tasks that must run one after another fell from 37 to 23.** Three changes: the decision-log digest starts now, as you approved this morning; the home-page and site design work no longer waits behind the business-texting tasks (they only shared one file, and now take it in a different order); and one stale link, left over from a feature that moved to a finished task, was removed.
+- The digest's check can't break other tasks' builds while new decisions keep landing: it runs only on a change to the digest itself.
+- Our choice apart from the digest, which was yours; nothing needs you now.
