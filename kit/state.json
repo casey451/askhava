@@ -65715,7 +65715,7 @@
      }
     }
    ],
-   "reviewed_sha": "3d985c28c167fe5bb39233187198451872620fc1",
+   "reviewed_sha": "d03a2af38894a43639d67b7b56adc3eca47515f6",
    "review_lease": {
     "task": "T472",
     "session": "actions-44296687524",
@@ -65735,10 +65735,23 @@
      "main": "1fa6e8e13b65f3ff258b13ed9855e03a52adb6d1",
      "how": "hand-in",
      "at": "2026-11-18T12:45:58Z"
+    },
+    {
+     "from": "3d985c28c167fe5bb39233187198451872620fc1",
+     "to": "d03a2af38894a43639d67b7b56adc3eca47515f6",
+     "main": "196d610a58a20765555f3e0f2eb520a5a668197c",
+     "how": "runner",
+     "checks": {
+      "Ci": "success",
+      "Twin": "success",
+      "Ally": "success"
+     },
+     "at": "2026-11-18T13:30:40Z"
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merge_turn_since": "2026-11-18T13:30:40Z"
   },
   {
    "id": "T473",
@@ -77878,7 +77891,7 @@
     "T523",
     "T650"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "close-lines-on-job-end",
    "type": "build",
@@ -77902,13 +77915,70 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 117,
      "head_sha": "50c23cdbdd1023f97e18ea0f60d8f83d055bc7bf",
-     "pr": null,
-     "checks": null,
+     "pr": 1030,
+     "checks": [
+      {
+       "name": "backup lane 2",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-18T11:26:44Z",
      "ended_at": "2026-11-18T12:39:45Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "usage": {
       "worker": {
        "tokens": 7303169,
@@ -77968,7 +78038,30 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-18T12:50:38Z"
+   "merge_turn_since": "2026-11-18T12:50:38Z",
+   "merged_sha": "196d610a58a20765555f3e0f2eb520a5a668197c",
+   "merged_at": "2026-11-18T13:28:47Z",
+   "files": [
+    "app/calls/NOTES.md",
+    "app/calls/src/api.rs",
+    "app/calls/src/close_tasks.rs",
+    "app/calls/src/lib.rs",
+    "app/intake/NOTES.md",
+    "app/intake/src/closing.rs",
+    "app/intake/src/conversation.rs",
+    "app/jobs/NOTES.md",
+    "app/jobs/src/api.rs",
+    "app/jobs/src/followups.rs",
+    "app/jobs/src/lib.rs",
+    "app/jobs/src/line_close.rs",
+    "app/picks/NOTES.md",
+    "app/picks/src/settle.rs",
+    "app/server/src/bin/worker.rs",
+    "app/server/src/lib.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "tests/integration/tests/line_close_paths.rs"
+   ]
   },
   {
    "id": "T663",
@@ -83698,7 +83791,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T13:15:33Z",
+ "updated_at": "2026-11-18T13:30:51Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -83796,7 +83889,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "fb873cdccd9c67bf9975665f55bf72ef8d8cbcd4",
+ "runner_sha": "196d610a58a20765555f3e0f2eb520a5a668197c",
  "starter": "actions",
  "smoke_runs": [
   {
