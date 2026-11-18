@@ -4,6 +4,8 @@
 //! The first row is written at card send; a later row may only narrow (the same category, a strict
 //! subset of the latest set). The latest row is what the pick reads to fix the introduction fee by
 //! job size (T340). Codes only: every fact derived from them is resolved from the catalog then.
+//! [`categories_of`] reads many jobs' latest categories in one statement for the home page's trade
+//! count (WEB-028, D-4098, T592).
 
 use std::collections::BTreeSet;
 
@@ -137,4 +139,26 @@ pub async fn job_facts(conn: &mut PgConnection, job: Uuid) -> Result<Option<JobF
         job_types: r.job_types,
         set_at: r.set_at.to_jiff(),
     }))
+}
+
+/// WEB-028, INT-018, D-4098: the distinct categories of the latest facts row of each job in `jobs`,
+/// in one statement however many jobs are listed; a job with no row adds nothing (as
+/// [`job_facts`]' `None`), and an empty list answers an empty set.
+///
+/// # Errors
+///
+/// [`FactsError::Database`].
+pub async fn categories_of(
+    conn: &mut PgConnection,
+    jobs: &[Uuid],
+) -> Result<BTreeSet<String>, FactsError> {
+    let rows = sqlx::query_scalar!(
+        "SELECT DISTINCT ON (job_id) category FROM jobs.job_facts \
+         WHERE job_id = ANY($1) ORDER BY job_id, seq DESC",
+        jobs
+    )
+    .fetch_all(conn)
+    .await
+    .map_err(|_| FactsError::Database)?;
+    Ok(rows.into_iter().collect())
 }
