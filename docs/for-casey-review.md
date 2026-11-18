@@ -3377,3 +3377,8 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **The longest chain of tasks that must run one after another fell from 37 to 23.** Three changes: the decision-log digest starts now, as you approved this morning; the home-page and site design work no longer waits behind the business-texting tasks (they only shared one file, and now take it in a different order); and one stale link, left over from a feature that moved to a finished task, was removed.
 - The digest's check can't break other tasks' builds while new decisions keep landing: it runs only on a change to the digest itself.
 - Our choice apart from the digest, which was yours; nothing needs you now.
+
+## The portals crate could hold only two tasks at a time (D-4480)
+- **The portals crate notes were too long for the runner to let a third task work there**, while twelve waiting tasks all touch portals.
+- **Fix:** a few standalone rules and one background sentence moved word for word to the crate's searchable notes file, leaving each remaining rule whole; a check confirms no word was lost. Portals can now hold three tasks.
+- Our choice; nothing needs you now.
