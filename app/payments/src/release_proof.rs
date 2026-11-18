@@ -18,7 +18,9 @@
 //! [`no_fee_release`] makes one from a recorded $0 decision only: a free first win, a
 //! repeat customer or a fee-free job type in the ledger (FEE-010, FEE-013, FEE-045), for the
 //! pick's own business and job as its `payments.pick_fee` row stores them (D-2302), never for a
-//! pick with a PaymentIntent (D-1478). Releasing
+//! pick with a PaymentIntent (D-1478). [`held_release`] re-clears a pick held while safe mode
+//! was on by the same re-fetch, or the same $0 ledger check, and never clears a pick ended,
+//! refunded or disputed while held (OPS-024, FEE-026, D-4419). Releasing
 //! once however often a proof arrives is the release's own record (PICK-022).
 
 use askhava_adapters::api::{PaymentIntent, PaymentsAdapter, VerifiedWebhook, WebhookVendor};
@@ -149,8 +151,8 @@ pub struct StripeAccount {
 }
 
 /// A pick cleared for release, and why, with private fields and no `Clone` (PICK-022, SEC-030,
-/// D-3358): release only through [`paid_release`], [`no_fee_release`] or `reclear_release` and
-/// then [`Minter::mint`]; `Releasable`'s one crate-private constructor is
+/// D-3358): release only through [`paid_release`], [`no_fee_release`], [`held_release`] or
+/// `reclear_release` and then [`Minter::mint`]; `Releasable`'s one crate-private constructor is
 /// [`Releasable::from_stored_success`], which reads only the named pick's own stored, unended,
 /// unrefunded, undisputed success; `reclear_release` is called only by `server`'s
 /// `intake.address_in` handler after `picks::api::awaiting_address` found the wait row; never a
@@ -224,6 +226,46 @@ pub async fn paid_release(
     store_success(pool, (pick, charge), at).await?;
     if pick_intent(pool, pick).await?.2 {
         ended_late(pool, pick, at).await?;
+        return Err(ReleaseError::PickEnded);
+    }
+    let basis = ReleaseBasis::PaidCharge;
+    Ok(Releasable { pick, basis })
+}
+
+/// Re-clears pick `pick`, held while safe mode was on, for T408's `run_held_release` only: a
+/// paused release goes ahead only after the FEE-017 check (OPS-024, PICK-022, SEC-030, D-4419).
+/// A stored attempt status cannot tell a verified success from a press's, so a paid pick's intent
+/// is re-fetched from Stripe and must pass `check_intent`, with no connection held across the
+/// fetch; a pick with no PaymentIntent clears only through `no_fee_release`'s ledger check for its
+/// own `payments.pick_fee` pair. A pick ended in `payments` has its success stored and its one
+/// late-success refund queued (FEE-021, D-2290); a pick refunded or disputed while held clears
+/// nothing and queues no refund (FEE-026). Never mints a proof nor calls `from_stored_success`.
+///
+/// # Errors
+/// The [`ReleaseError`] of the first check that fails; [`ReleaseError::PickEnded`] for an ended,
+/// refunded or disputed pick; nothing is cleared.
+pub async fn held_release(
+    pool: &PgPool,
+    stripe: &impl PaymentsAdapter,
+    account: &StripeAccount,
+    pick: Uuid,
+    at: Timestamp,
+) -> Result<Releasable, ReleaseError> {
+    let (stored, cents) = match pick_intent(pool, pick).await {
+        Err(ReleaseError::WrongIntent) => return held_no_fee(pool, pick).await,
+        found => found.map(|(stored, cents, _)| (stored, cents))?,
+    };
+    let fetched = stripe
+        .fetch_payment_intent(&stored)
+        .await
+        .map_err(|_| ReleaseError::Stripe)?;
+    let charge = check_intent(&fetched, account, cents, pick)?;
+    store_success(pool, (pick, charge), at).await?;
+    if pick_intent(pool, pick).await?.2 {
+        ended_late(pool, pick, at).await?;
+        return Err(ReleaseError::PickEnded);
+    }
+    if refunded_or_disputed(pool, pick).await? {
         return Err(ReleaseError::PickEnded);
     }
     let basis = ReleaseBasis::PaidCharge;
@@ -381,6 +423,36 @@ async fn pick_intent(pool: &PgPool, pick: Uuid) -> Result<(String, i64, bool), R
     .map_err(|_| ReleaseError::Database)?
     .ok_or(ReleaseError::WrongIntent)?;
     Ok((row.stripe_intent_id, row.amount_cents, row.ended))
+}
+
+/// A held pick with no PaymentIntent: its own `payments.pick_fee` pair through `no_fee_release`;
+/// no fee row is [`ReleaseError::NoFeeDecision`] (FEE-036, OPS-024, D-4419).
+async fn held_no_fee(pool: &PgPool, pick: Uuid) -> Result<Releasable, ReleaseError> {
+    let mut conn = pool.acquire().await.map_err(|_| ReleaseError::Database)?;
+    let stored = pick_fee(&mut conn, pick)
+        .await
+        .map_err(|_| ReleaseError::Database)?
+        .ok_or(ReleaseError::NoFeeDecision)?;
+    no_fee_release(&mut conn, pick, (stored.business.0, stored.job)).await
+}
+
+/// Whether the pick has a `payments.refund` or `payments.dispute` row, read under `FOR SHARE OF`
+/// its `payments.pick_intent` row in a transaction that writes nothing, so no `FOR SHARE` lock is
+/// ever upgraded (FEE-026, D-4419): neither sets `ended_at`, and Stripe still says succeeded.
+async fn refunded_or_disputed(pool: &PgPool, pick: Uuid) -> Result<bool, ReleaseError> {
+    let mut tx = pool.begin().await.map_err(|_| ReleaseError::Database)?;
+    let found = sqlx::query_scalar!(
+        r#"SELECT (EXISTS (SELECT 1 FROM payments.refund r WHERE r.pick_id = i.pick_id)
+             OR EXISTS (SELECT 1 FROM payments.dispute d WHERE d.pick_id = i.pick_id)) AS "found!"
+           FROM payments.pick_intent i WHERE i.pick_id = $1 FOR SHARE OF i"#,
+        pick
+    )
+    .fetch_optional(&mut *tx)
+    .await
+    .map_err(|_| ReleaseError::Database)?
+    .ok_or(ReleaseError::WrongIntent)?;
+    tx.commit().await.map_err(|_| ReleaseError::Database)?;
+    Ok(found)
 }
 
 /// A verified success stored on a pick that has ended clears nothing; its one late-success refund
