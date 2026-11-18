@@ -7487,3 +7487,4 @@
 - 2026-11-18T23:37:14Z runner 0a1d8934fe08 (actions): {}
 - 2026-11-18T23:37:49Z runner 0a1d8934fe08 (actions): {}
 - 2026-11-18T23:42:54Z runner 0a1d8934fe08 (actions): {"T306": "IN_PROGRESS -> QUEUED"}
+- 2026-11-18T23:43:34Z runner 0a1d8934fe08 (actions): {"T306": "QUEUED -> IN_PROGRESS"}; T306 estimated 1.6M tokens (calibrated); week has 49.4M left (no five-hour budget, D-3056) after 4.6M still running in another lane (session_reading 2026-11-18T23:37:13Z (week)); running to the limit (model window, D-2225), claimed
