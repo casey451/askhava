@@ -74523,8 +74523,8 @@
     "T105",
     "T477"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "owner-flag-counts",
    "type": "build",
    "stage": "5",
@@ -74540,7 +74540,33 @@
    "window_model": {
     "model": "claude-opus-5-5",
     "alias": "opus"
-   }
+   },
+   "last_failure": "T619 readers are correct per three Opus reviews, but the test file still misses wrong implementations; no reviewer approved head 23d8d1fa9ab6 (one fix round used, review_missing hold used). Open findings for the retry, all in tests/integration/tests/flag_inputs_counts.rs:\n1. Median's confirmed filter untested: the only unconfirmed quote is on plumbing job 3 (3 confirmed -> 4 if unfiltered, median stays 40). Dropping `AND q.confirmed` in app/quotes/src/flag_inputs.rs:42-44 passes. Fix: put an unconfirmed quote on roofing job 11 or 12 (median would read 40 vs expected 30).\n2. Zero-quote jobs (D-4311: a carded job with no confirmed quotes counts 0) untested: a join-based implementation that drops zero-quote jobs passes. Fix: plant a roofing job carded in the month with no quotes and set the expected median accordingly.\n3. Minor: wins window upper edge untested (app/picks/src/flag_inputs.rs:68 `picked_at < $5`). Fix: a paid pick on a plumbing job exactly at month end, expected wins unchanged.\nNot blocking: repeat_requesters reads \"never picked\" as no pick on the window's requests (D-4311); worth flagging for T524/Casey.\nSmoke and prehandin were green on f6ec6c6bc; prehandin green on 23d8d1fa9.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 119,
+     "head_sha": "23d8d1fa9ab6a05d777a7d46aa127ce712c4edf5",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-18T02:21:22Z",
+     "ended_at": "2026-11-18T03:31:20Z",
+     "result": "QUEUED",
+     "usage": {
+      "worker": {
+       "tokens": 4432934,
+       "turns": 68
+      },
+      "reviewer": {
+       "tokens": 1387787,
+       "turns": 32
+      }
+     }
+    }
+   ]
   },
   {
    "id": "T647",
@@ -75010,12 +75036,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T639",
-   "at": "2026-11-18T03:14:22Z",
-   "output_tokens": 35663,
-   "cache_read_input_tokens": 3477323,
-   "cache_creation_input_tokens": 178429,
-   "input_tokens": 164
+   "task": "T619",
+   "at": "2026-11-18T03:31:20Z",
+   "input_tokens": 200,
+   "cache_read_input_tokens": 5488560,
+   "output_tokens": 58508,
+   "cache_creation_input_tokens": 273453
   },
   "source": "session_reading 2026-11-18T02:42:17Z (week)",
   "by_task": {
@@ -79729,7 +79755,17 @@
    },
    "T619": {
     "estimated_bytes": 367808,
-    "estimated_tokens": 1079745
+    "estimated_tokens": 1079745,
+    "usage_counting": "message_id",
+    "input_tokens": 200,
+    "cache_read_input_tokens": 5488560,
+    "output_tokens": 58508,
+    "cache_creation_input_tokens": 273453,
+    "worker_tokens": 4432934,
+    "worker_turns": 68,
+    "reviewer_tokens": 1387787,
+    "reviewer_turns": 32,
+    "last_model": "claude-opus-5-5"
    },
    "T623": {
     "estimated_bytes": 411802,
@@ -79743,11 +79779,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-18T02:22:43Z",
-    "tokens": 6578291
+    "tokens": 7459308
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 271855884
+    "tokens": 272736901
    }
   },
   "session_reading": {
@@ -79758,7 +79794,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T03:28:24Z",
+ "updated_at": "2026-11-18T03:31:21Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -79856,7 +79892,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "15da6ceed5ed968318b5e7eb5a5c946af4e06ffb",
+ "runner_sha": "23d8d1fa9ab6a05d777a7d46aa127ce712c4edf5",
  "starter": "actions",
  "smoke_runs": [
   {
