@@ -21445,7 +21445,8 @@
     "T536",
     "T600",
     "T663",
-    "T664"
+    "T664",
+    "T675"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -23991,7 +23992,8 @@
     "T217",
     "T118",
     "T663",
-    "T664"
+    "T664",
+    "T675"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -24261,7 +24263,16 @@
     "T667",
     "T668",
     "T669",
-    "T670"
+    "T670",
+    "T676",
+    "T677",
+    "T681",
+    "T682",
+    "T684",
+    "T686",
+    "T688",
+    "T690",
+    "T691"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -24292,7 +24303,8 @@
     "T513",
     "T514",
     "T641",
-    "T642"
+    "T642",
+    "T700"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -24421,7 +24433,8 @@
     "T135",
     "T132",
     "T663",
-    "T664"
+    "T664",
+    "T676"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -24532,7 +24545,13 @@
     "T427",
     "T428",
     "T430",
-    "T432"
+    "T432",
+    "T678",
+    "T680",
+    "T683",
+    "T685",
+    "T689",
+    "T687"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -28906,7 +28925,8 @@
   {
    "id": "T235",
    "deps": [
-    "T234"
+    "T234",
+    "T680"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -28955,7 +28975,13 @@
     "T432",
     "T643",
     "T644",
-    "T659"
+    "T659",
+    "T678",
+    "T680",
+    "T683",
+    "T685",
+    "T689",
+    "T687"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -37778,7 +37804,8 @@
     "T645",
     "T646",
     "T649",
-    "T656"
+    "T656",
+    "T675"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -53430,7 +53457,8 @@
     "T139",
     "T438",
     "T596",
-    "T597"
+    "T597",
+    "T700"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -77767,6 +77795,287 @@
    "slug": "pressed-pick-notice",
    "type": "build",
    "stage": "5"
+  },
+  {
+   "id": "T671",
+   "deps": [
+    "T482",
+    "T644",
+    "T679"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-order-area-trade",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T672",
+   "deps": [
+    "T671"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-order-timing",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T673",
+   "deps": [
+    "T672"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-order-card",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T674",
+   "deps": [
+    "T561"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "photo-upload-served",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T675",
+   "deps": [
+    "T673",
+    "T674",
+    "T573"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-order-photos",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T676",
+   "deps": [
+    "T675",
+    "T644"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "j1-real-conversation",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T677",
+   "deps": [
+    "T673",
+    "T671",
+    "T585",
+    "T679"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "late-cards-on-eligible",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T678",
+   "deps": [
+    "T673",
+    "T379",
+    "T588"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "after-hours-suspension",
+   "type": "build",
+   "stage": "6"
+  },
+  {
+   "id": "T680",
+   "deps": [
+    "T663",
+    "T669",
+    "T662",
+    "T402",
+    "T667",
+    "T650"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "cancel-refund",
+   "type": "harness",
+   "stage": "6"
+  },
+  {
+   "id": "T681",
+   "deps": [
+    "T663",
+    "T662",
+    "T667",
+    "T669"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "loss-notices",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T682",
+   "deps": [
+    "T669",
+    "T670",
+    "T543",
+    "T456"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "confirm-reminders",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T683",
+   "deps": [
+    "T402",
+    "T299",
+    "T407",
+    "T480",
+    "T573",
+    "T457",
+    "T670",
+    "T675"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "business-yes-text",
+   "type": "build",
+   "stage": "6"
+  },
+  {
+   "id": "T684",
+   "deps": [
+    "T470"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "open-cards-email",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T685",
+   "deps": [
+    "T470",
+    "T684",
+    "T236"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "missed-cards-email",
+   "type": "build",
+   "stage": "6"
+  },
+  {
+   "id": "T686",
+   "deps": [
+    "T470"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "deliverability-retests",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T687",
+   "deps": [
+    "T654",
+    "T657",
+    "T678"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "project-limit-quotes",
+   "type": "build",
+   "stage": "6"
+  },
+  {
+   "id": "T688",
+   "deps": [
+    "T121"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "main-number-greeting",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T689",
+   "deps": [
+    "T663",
+    "T589",
+    "T541",
+    "T664",
+    "T132",
+    "T380"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "auto-confirm-wiring",
+   "type": "build",
+   "stage": "6"
+  },
+  {
+   "id": "T679",
+   "deps": [
+    "T601"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "lic046-request-minimum",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T690",
+   "deps": [
+    "T655",
+    "T470"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "record-resume",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T691",
+   "deps": [
+    "T671",
+    "T573"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "start-resumes-order",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T700",
+   "deps": [
+    "T641"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "runner-merge-line-rotation",
+   "type": "harness",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -82748,7 +83057,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T11:35:34Z",
+ "updated_at": "2026-11-18T11:39:08Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -82846,7 +83155,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "41fb8677d6eba8a8479ede5d6f67a746e50e49a6",
+ "runner_sha": "54ae80c9cb15f194c947776f9f3b64fc643f0e51",
  "starter": "actions",
  "smoke_runs": [
   {
