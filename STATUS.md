@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T17:30:56Z by runner dc963a52a0d9 (actions).
+Updated 2026-11-18T17:41:09Z by runner 923328730256 (actions).
 
 **Building: T624 in progress since 16:49Z; 451 of 645 done; week 63% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 451 of 645 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T624 claimed 16:49Z, lease until 19:49Z; lane 2: T205 claimed 17:25Z, lease until 20:25Z; lane 5: T500 claimed 17:07Z, lease until 20:07Z
+- **Lane:** lane 1: T624 claimed 16:49Z, lease until 20:41Z; lane 2: T205 claimed 17:25Z, lease until 20:25Z; lane 5: T500 claimed 17:07Z, lease until 20:07Z
 - **Week:** 63% used, 64.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:30Z, 0 min before this update
+- **Last run:** 17:31Z, 10 min before this update
 - **Keeper:** last ran 17:30Z, next wake 19:51Z
 
 ## Needs attention
@@ -19,7 +19,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 - BLOCKED T645: plan gap reported: PLAN GAP: app/site/src/chat.rs:340 (owned by T593, then T646 and T649; T593 is not merged yet) calls `chat_message(db, &secret, &key, &msg, self.intake)` with no `Vault`, and the `ChatKeys` trait (chat.rs:62-66) only exposes secret/send/check. `messaging::api::suppress` (app/messaging/src/optout.rs:311-317) needs a `&Vault` and the phone, since digests come from `vault.blind_index` (optout.rs:441-443). `chat_message` (app/intake/src/web_chat.rs:247-253) takes no vault and its `Settings` is `Copy`, so T645 cannot list the session's number (step 1, TD-CON-36 "at once") without a signature change; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T645 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 32 problem(s) on tasks still to run (+253 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 33 problem(s) on tasks still to run (+252 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -85,8 +85,6 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 | T115 | docs/a11y.md (plan, statement, VoiceOver script), statement  | QUEUED | 1 | 58 min | 18:25Z |  |
 | T596 | Runner (harness): an ancestor's running smoke finishes and c | done | 1 | 41 min | 17:49Z |  |
 | T491 | picks: the Confirm window's end, every way it comes, runs th | done | 1 | 2 h 2 min | 17:44Z |  |
-| T599 | Tests (harness): the PICK-046 email's no-amount check ignore | done | 1 | 32 min | 17:36Z |  |
-| T104 | Wording scan: brand, banned words and the not-a-contractor p | QUEUED | 2 | 42 min | 17:35Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -137,7 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T624 (lease until 2026-11-18T19:49:16Z)
+- T624 (lease until 2026-11-18T20:41:09Z)
 - lane 2: T205 (lease until 2026-11-18T20:25:02Z)
 - lane 5: T500 (lease until 2026-11-18T20:07:11Z)
 
