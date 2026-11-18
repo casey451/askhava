@@ -101,6 +101,7 @@ SMOKE_POLL = 5  # seconds between looks at the background smoke's result
 SMOKE_WAIT = 450  # seconds one runner call waits for it: room for the cycle's own work inside the 600-second Bash call
 SMOKE_STOP_WAIT = 30  # seconds a stopped background smoke gets to end on SIGTERM before SIGKILL
 SHA = re.compile(r"^[0-9a-f]{40}$")
+TRAIN_REF = re.compile(r"claude/train/(T[0-9]+[A-Za-z]?)-([0-9a-f]{12})", re.ASCII)  # a merge-train ref (D-4281)
 _BACKGROUND: list[subprocess.Popen[bytes]] = []  # the background smokes this process started, kept so none is reaped early
 # The Rust compile steps of scripts/smoke.sh word for word, `cargo test` with `--no-run`: the same flags and
 # environment build the same artifacts, so the session's smoke finds them fresh (D-2007; the keeper tests hold
@@ -2002,6 +2003,116 @@ class GitHubEnv:
         """The git output of the last rejected push_branch ('' when none), so the cycle can tell a
         non-fast-forward from a credential problem (D-583)."""
         return self.last_rejection
+
+    # ---- the merge train (D-4281)
+
+    def _push_remote(self) -> str:
+        """Where a runner push goes: the token URL when RUNNER_PUSH_TOKEN is set, so the push starts
+        workflows (as `push_branch`), else origin."""
+        return f"https://github.com/{self.repo}.git" if os.environ.get("RUNNER_PUSH_TOKEN") else "origin"
+
+    def train_depth(self) -> Any:
+        """kit/runner.json "train_depth" under this Env's root, as read; None when the file or key is
+        missing or unreadable. `cycle.train_depth` decides what the value means (D-4281)."""
+        try:
+            return json.loads((self.root / "kit" / "runner.json").read_text(encoding="utf-8")).get("train_depth")
+        except (OSError, ValueError, AttributeError):
+            return None
+
+    def train_refs(self) -> list[dict[str, Any]] | None:
+        """origin's `claude/train/*` refs that match TRAIN_REF (any other name under it is never touched):
+        {"name", "task", "base", "sha", "at"}, `at` the commit's committer time (fetched first, None when
+        unread); None when `git ls-remote` fails (D-4281)."""
+        code, out, err = self._run(["git", "ls-remote", "origin", "refs/heads/claude/train/*"], None, self.root)
+        if code != 0:
+            self.log.append(f"merge train: refs not listed: {err.strip()[:200]}")
+            return None
+        refs = []
+        for sha, _, ref in (line.partition("\t") for line in out.splitlines() if "\t" in line):
+            name = ref.strip().removeprefix("refs/heads/")
+            found = TRAIN_REF.fullmatch(name)
+            if found:
+                refs.append({"name": name, "task": found.group(1), "base": found.group(2), "sha": sha.strip(), "at": None})
+        if refs:
+            self._run(["git", "fetch", "--quiet", "--prune", "origin", "refs/heads/claude/train/*:refs/runner/train/*"], None, self.root)
+        for ref in refs:
+            ref["at"] = self._committed(ref["sha"])
+        return refs
+
+    def commit_at(self, sha: str, branch: str) -> str | None:
+        """The committer time of `sha` (ISO), fetching `branch` first when git does not have the commit;
+        None when unread. `cycle._build_train` builds no train ref on an A' over TRAIN_MAX_AGE old (D-4383)."""
+        at = self._committed(sha)
+        try:
+            fetched = at is None and bool(branch) and self._fetch(branch) is not None
+        except BEST_EFFORT_ERRORS:
+            fetched = False
+        return self._committed(sha) if fetched else at
+
+    def _committed(self, sha: str) -> str | None:
+        """`git show -s --format=%ct` of `sha` as an ISO time; None when git cannot read it."""
+        code, out, _ = self._run(["git", "show", "-s", "--format=%ct", sha], None, self.root)
+        if code == 0 and out.strip().isdigit():
+            return st.iso(datetime.fromtimestamp(int(out.strip()), timezone.utc))
+        return None
+
+    def train_merge(self, name: str, task: tuple[str, str], base: tuple[str, str]) -> dict[str, Any]:
+        """B's train ref (D-4281): the update merge of B's reviewed head `task` = (branch, sha) with A's head
+        `base` = (A's branch, A'), built by `UpdateMerge.commit` and checked by `is_update_merge(reviewed, X)
+        == (True, A')` exactly as `_built_update` builds an update merge with main, then pushed as a create of
+        `refs/heads/<name>`: never to a task branch or main, never forced, no `+` refspec. "moved" when
+        either branch is no longer at its head; "stale" when main is not in A'; "exists" when the create is
+        rejected because the ref is there (benign); a dry run builds nothing ("current")."""
+        if not isinstance(name, str) or not TRAIN_REF.fullmatch(name):
+            return {"status": "error", "why": f"refused train ref name {str(name)[:80]!r}"}
+        if self.dry_run:
+            return {"status": "current"}
+        try:
+            built = self._built_train(name, task, base)
+        except BEST_EFFORT_ERRORS as exc:
+            built = {"status": "error", "why": str(exc)[:200]}
+        if built["status"] != "built":
+            return built
+        sha = str(built["sha"])
+        code, out, err = self._run(["git", "push", "--porcelain", self._push_remote(), f"{sha}:refs/heads/{name}"], None, self.root)
+        if code == 0:
+            self.log.append(f"merge train: {task[0]} on {base[1][:12]} pushed as {name} ({sha[:12]})")
+            return {"status": "pushed", "sha": sha}
+        rejection = (out.strip() + " " + err.strip()).strip()[:400]
+        if "non-fast-forward" in rejection or "fetch first" in rejection or "already exists" in rejection:
+            return {"status": "exists", "why": rejection}
+        return {"status": "push_failed", "why": rejection}
+
+    def _built_train(self, name: str, task: tuple[str, str], base: tuple[str, str]) -> dict[str, Any]:
+        """`train_merge`'s commit, built and checked but not pushed. RuntimeError when git fails."""
+        (branch, reviewed), (base_branch, head) = task, base
+        main = self.main_head()
+        if not main or self._remote_tip(branch) != reviewed or self._remote_tip(base_branch) != head:
+            return {"status": "moved", "why": f"{branch} or {base_branch} is no longer at its head"}
+        if not self._is_ancestor(main, head):
+            return {"status": "stale", "why": f"main {main[:12]} is not in {head[:12]}"}
+        if self._is_ancestor(head, reviewed):
+            return {"status": "current", "why": f"{head[:12]} is already in {reviewed[:12]}"}
+        sha, conflicts = self.updates.commit(reviewed, head, branch)
+        if sha is None:
+            return {"status": "conflict", "paths": conflicts}
+        if self.updates.is_update_merge(reviewed, sha) != (True, head):
+            return {"status": "error", "why": f"the train merge {sha[:12]} for {name} failed its own tree check"}
+        return {"status": "built", "sha": sha}
+
+    def delete_train_ref(self, name: str) -> bool:
+        """Delete one train ref (D-4281). `push_branch` refuses deletes by design (D-551), so this is the one
+        delete the runner pushes: a name that is not exactly TRAIN_REF (`claude/train/<task>-<12 hex>`) is
+        refused with no git call, and the push is exactly `:refs/heads/<name>`, nothing else."""
+        if not isinstance(name, str) or not TRAIN_REF.fullmatch(name):
+            self.log.append(f"merge train: delete refused for {str(name)[:80]!r}")
+            return False
+        if self.dry_run:
+            return True
+        code, out, err = self._run(["git", "push", "--porcelain", self._push_remote(), f":refs/heads/{name}"], None, self.root)
+        if code != 0:
+            self.log.append(f"merge train: delete of {name} rejected: {(out.strip() + ' ' + err.strip()).strip()[:200]}")
+        return code == 0
 
     # ---- the branch an attempt works on (D-583)
 
