@@ -34,7 +34,9 @@ pub use crate::followups::{
     check_in_times, parse_answer, run_check_in, schedule_check_ins,
 };
 pub use crate::handlers::{TEXT_KIND, all_windows_ended, connected_reply, text_due};
-pub use crate::job_facts::{FactsError, JobFacts, Recorded, job_facts, record_job_facts};
+pub use crate::job_facts::{
+    FactsError, JobFacts, Recorded, categories_of, job_facts, record_job_facts,
+};
 pub use crate::line_close::{LINE_CLOSE_KIND, LineCloseReason, queue_line_close};
 pub use crate::models::{JobRow, JobsError};
 pub use crate::purge_events::{

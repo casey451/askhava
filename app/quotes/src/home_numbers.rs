@@ -4,11 +4,10 @@
 //! and `quotes.quote` (`received_at`, confirmed quotes only), never a typed figure: the number of
 //! jobs with at least one card sent (one job is one request), the median time from a job's first
 //! card to its first quote, the average number of quotes per such job, the date range of those
-//! cards and the number of trades they cover (each job's trade read through `jobs::api`). Below
-//! the caller's threshold (`ASKHAVA_HOME_NUMBERS_MIN_JOBS`, default 50) it answers `None` and
-//! reads no trade. Counts and times only; no business or homeowner detail.
-
-use std::collections::BTreeSet;
+//! cards and the number of trades they cover (every job's trade read at once through
+//! `jobs::api::categories_of`, so it makes 2 statements however many jobs exist, D-4098). Below
+//! the caller's threshold (`ASKHAVA_HOME_NUMBERS_MIN_JOBS`, default 50) it answers `None` after
+//! 1 statement and reads no trade. Counts and times only; no business or homeowner detail.
 
 use jiff::{SignedDuration, Timestamp};
 use sqlx::PgConnection;
@@ -34,7 +33,7 @@ pub struct HomeNumbers {
 }
 
 /// WEB-028, D-466, D-468: the home page's numbers, or `None` while fewer than `min_jobs` jobs have
-/// had a card sent.
+/// had a card sent. Two statements at most, however many jobs exist (D-4098).
 ///
 /// # Errors
 ///
@@ -60,13 +59,10 @@ pub async fn home_numbers(
     if requests == 0 || requests < min_jobs {
         return Ok(None);
     }
-    let mut trades = BTreeSet::new();
-    for row in &rows {
-        let facts = askhava_jobs::api::job_facts(db, row.job)
-            .await
-            .map_err(|_| QuotesError::Job)?;
-        trades.extend(facts.map(|f| f.category));
-    }
+    let jobs: Vec<_> = rows.iter().map(|r| r.job).collect();
+    let trades = askhava_jobs::api::categories_of(db, &jobs)
+        .await
+        .map_err(|_| QuotesError::Job)?;
     let waits = rows.iter().filter_map(|r| {
         let quote = r.first_quote.as_ref()?.to_jiff();
         Some(quote.duration_since(r.first_card.to_jiff()))

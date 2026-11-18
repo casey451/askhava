@@ -10,10 +10,13 @@ pub use crate::legal_pages::{
     BUSINESS_DATA_PATH, ES_BUSINESS_DATA_PATH, ES_YOUR_DATA_PATH, LegalDoc, PRIVACY_PATH,
     SMS_TERMS_PATH, TERMS_PATH, YOUR_DATA_PATH, accessibility_statement, legal_routes,
 };
+pub use crate::pages::HOME_NUMBERS_WINDOW;
+pub use crate::pages::HomeNumbersCache;
+pub use crate::pages::page_routes_with;
 pub use crate::pages::{
     BUSINESS_HELP_PATH, BUSINESS_PATH, COVERAGE_PATH, CityGuide, ES_BUSINESS_PATH, ES_HOME_PATH,
     ES_HOW_IT_WORKS_PATH, HELP_PATH, HOME_PATH, HOW_IT_WORKS_PATH, HelpFormCsrf,
     OLD_CATEGORIES_PATH, OLD_EVENTS_PATH, ROC_COMPLAINT_PATH, SERVICES_PATH, SitePages, WhoRuns,
     help_routes, home_html, how_it_works_html, page_routes,
 };
-pub use crate::routes::{banner_shown, site_routes};
+pub use crate::routes::{banner_shown, banner_shown_on, site_routes};
