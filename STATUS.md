@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T05:14:30Z by runner e23d958d7185 (actions).
+Updated 2026-11-18T05:14:42Z by runner e23d958d7185 (actions).
 
-**Building: T601 in progress since 04:24Z; 426 of 606 done; week 43% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T642 in progress since 04:42Z; 426 of 606 done; week 43% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 426 of 606 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T601 claimed 04:24Z, lease until 08:11Z; lane 4: T642 claimed 04:42Z, lease until 08:10Z
+- **Lane:** lane 4: T642 claimed 04:42Z, lease until 08:10Z
 - **Week:** 43% used, 106.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 05:13Z, 1 min before this update
 - **Keeper:** last ran 05:13Z, next wake 08:13Z
@@ -19,6 +19,7 @@ Updated 2026-11-18T05:14:30Z by runner e23d958d7185 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T601 | businesses and quotes: the card pool reads every service are | MERGE_PENDING | 1 | 50 min | 05:14Z |  |
 | T523 | jobs, ops and intake: the check-in answer recorder and the c | MERGE_PENDING | 3 | 46 min | 05:06Z | Review not approved after the one findings round (head bd99856fca96fb81973c28181ad9fd6e39e7ac91; flag_inputs tests 5 pas |
 | T638 | harness: Ci skips a compile its job already passed on a prov | MERGE_PENDING | 1 | 88 min | 04:35Z |  |
 | T623 | payments: a Stripe key refusal (401 or 403) takes the Stripe | MERGE_PENDING | 1 | 63 min | 03:46Z |  |
@@ -135,8 +136,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T601 (lease until 2026-11-18T08:11:46Z)
 - lane 4: T642 (lease until 2026-11-18T08:10:59Z)
 
 ## Last usage reading
-- {"task": "T523", "at": "2026-11-18T05:06:38Z", "cache_read_input_tokens": 5539493, "output_tokens": 44410, "cache_creation_input_tokens": 154067, "input_tokens": 158}
+- {"task": "T601", "at": "2026-11-18T05:14:29Z", "cache_read_input_tokens": 3374705, "input_tokens": 108, "output_tokens": 27762, "cache_creation_input_tokens": 125241}
