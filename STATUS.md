@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T19:31:04Z by runner 11c03c196b95 (actions).
+Updated 2026-11-18T19:38:58Z by runner 3047ec5266bb (actions).
 
 **Building: T501 in progress since 18:29Z; 453 of 662 done; week 66% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-18T19:31:04Z by runner 11c03c196b95 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T501 claimed 18:29Z, lease until 22:10Z; lane 3: T483 claimed 18:25Z, lease until 21:25Z; lane 4: T364 claimed 18:28Z, lease until 21:28Z; lane 5: T706 claimed 19:14Z, lease until 22:14Z; lane 6: T702 claimed 19:21Z, lease until 22:21Z
 - **Week:** 66% used, 58.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:30Z, 0 min before this update
+- **Last run:** 19:31Z, 7 min before this update
 - **Keeper:** last ran 19:31Z, next wake 21:28Z
 
 ## Needs attention
@@ -16,13 +16,13 @@ Updated 2026-11-18T19:31:04Z by runner 11c03c196b95 (actions).
 Evidence (confirmed by a second reviewer): list_disputes (app/payments/src/disputes.rs:362-388) and DisputeView (app/payments/src/models.rs:621-634) carry no pick, payment-intent, business or job; refund_state (app/payments/src/refund_state.rs:39-45) gives only `disputed`, not the dp_ id; EvidencePack fields are pub(crate) (models.rs:571-580); ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T205 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 34 problem(s) on tasks still to run (+258 on DONE tasks); first: T402: measures 48% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 51 problem(s) on tasks still to run (+261 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T711 | intake (harness): the dispatcher's two jobs in one request:  | MERGE_PENDING | 1 | 77 min | 19:29Z |  |
-| T624 | server: two failed in-process health checks in a row raise o | MERGE_PENDING | 1 | 96 min | 18:26Z | merging main into the reviewed head conflicts in app/server/src/bin/worker.rs; a resync merges it in on this attempt (D- |
+| T624 | server: two failed in-process health checks in a row raise o | check_failed | 1 | 96 min | 18:26Z | Ci: failure; Python: failure / Python failed at step: Unit, contract and drill tests (pytest) / T705: about 21877 tokens |
 | T205 | portals: owner refunds with a review step and the audit log  | BLOCKED | 1 | 58 min | 18:23Z | PLAN GAP: `payments` has no public reader that ties a dispute to its pick (or its charge, business or job). Without one, |
 | T500 | Decisions digest, piece 1: from the first entry, at most 300 | done | 1 | 71 min | 18:18Z |  |
 | T671 | intake (harness): a homeowner's texts after the consent text | done | 2 | 102 min | 17:25Z | PLAN GAP: three tests outside T671's scope fail because of the new behaviour (worker edited none of them): / 1. tests/in |
@@ -86,28 +86,28 @@ Evidence (confirmed by a second reviewer): list_disputes (app/payments/src/dispu
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 305 of 735 (41.5%) · partial 380 · unstarted 50
-**Tasks merged (throughput only):** 453 of 645
+**Requirements verified:** 293 of 735 (39.9%) · partial 392 · unstarted 50
+**Tasks merged (throughput only):** 453 of 662
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 17 | 18 | 0 | 35 |
 | ai | 9 | 17 | 3 | 29 |
-| businesses | 19 | 38 | 1 | 58 |
+| businesses | 17 | 40 | 1 | 58 |
 | calls | 12 | 13 | 0 | 25 |
 | consent | 14 | 21 | 0 | 35 |
-| fees | 24 | 27 | 1 | 52 |
-| intake | 14 | 29 | 0 | 43 |
+| fees | 23 | 28 | 1 | 52 |
+| intake | 10 | 33 | 0 | 43 |
 | job-cards | 14 | 10 | 0 | 24 |
-| licensing | 34 | 14 | 0 | 48 |
-| lifecycle | 19 | 9 | 0 | 28 |
-| messaging | 21 | 23 | 1 | 45 |
-| ops-recovery | 4 | 31 | 19 | 54 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 18 | 10 | 0 | 28 |
+| messaging | 20 | 24 | 1 | 45 |
+| ops-recovery | 3 | 32 | 19 | 54 |
 | privacy | 9 | 21 | 1 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
 | quotes-pick | 27 | 29 | 0 | 56 |
 | recurring | 7 | 2 | 2 | 11 |
-| security | 9 | 41 | 5 | 55 |
+| security | 8 | 42 | 5 | 55 |
 | terms | 25 | 7 | 3 | 35 |
 | website | 9 | 16 | 5 | 30 |
 | wording | 12 | 11 | 9 | 32 |
