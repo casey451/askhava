@@ -3377,3 +3377,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **The longest chain of tasks that must run one after another fell from 37 to 23.** Three changes: the decision-log digest starts now, as you approved this morning; the home-page and site design work no longer waits behind the business-texting tasks (they only shared one file, and now take it in a different order); and one stale link, left over from a feature that moved to a finished task, was removed.
 - The digest's check can't break other tasks' builds while new decisions keep landing: it runs only on a change to the digest itself.
 - Our choice apart from the digest, which was yours; nothing needs you now.
+
+## A request that names no trade waits for her next description after the ZIP (D-4428)
+
+- **What happens now:** after the consent text she is asked her ZIP; once her town is known she gets the "We'll send this to the N businesses" line (or "We don't cover ... yet") right away when her first text named the kind of job.
+- **The gap:** if her first text named no trade we know ("Hi, can you help?"), she is asked her first name and address right after the ZIP, and her job opens only once a later text names a trade; the question that would ask her ("Is this mainly 1) plumbing or 2) heating/AC?") has no approved wording yet and comes with the trade questions in a later task (T672).
+- Our choice; nothing needs you now.

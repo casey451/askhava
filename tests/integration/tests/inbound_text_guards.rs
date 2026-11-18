@@ -304,9 +304,16 @@ async fn quoted_job(pool: &PgPool, h: &Arc<Webhooks>, business: Uuid) {
         at: at() - jiff::SignedDuration::from_hours(1),
     };
     let opened = askhava_intake::api::begin_job(&mut db, &start).await;
-    let Ok(askhava_intake::api::Opened::Created(job)) = opened else {
-        panic!("a new job");
+    // D-4439 (INT-009, D-4360): LEAK opened the request's own job at the first text, so
+    // `begin_job` returns it as the active job of that trade; it is the request's first job.
+    let Ok(askhava_intake::api::Opened::Existing(job)) = opened else {
+        panic!("the request's early job");
     };
+    let first: Option<Uuid> = sqlx::query_scalar("SELECT job_id FROM intake.conversation")
+        .fetch_one(pool)
+        .await
+        .expect("first job");
+    assert_eq!(first, Some(job), "one job only: the request's early job");
     let moved = move_to(
         &mut db,
         job,
