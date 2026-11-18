@@ -284,8 +284,8 @@ pub async fn record_answer(
 ///
 /// # Errors
 ///
-/// [`IntakeError::Template`], [`IntakeError::Outbox`], [`IntakeError::Audit`],
-/// [`IntakeError::Vault`] or [`IntakeError::Database`]; nothing is kept on an error.
+/// [`IntakeError::Template`], [`IntakeError::Outbox`], [`IntakeError::Audit`], [`IntakeError::Job`],
+/// [`IntakeError::Vault`], [`IntakeError::Quotes`] or [`IntakeError::Database`]; nothing is kept.
 pub async fn stop_if_under_18(
     db: &mut PgConnection,
     secret: &SecretString,
