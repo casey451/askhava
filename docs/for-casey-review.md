@@ -3299,3 +3299,11 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **When a child under 13 is stopped,** their photos and job words are now deleted with the rest of the request (T650).
 - **Your owner sign-in gets three locks fixed** (T651): only a few tries at the step-up code before the session ends; strangers flooding wrong passwords can no longer lock out your passkey sign-in; and nobody can use up the passkey sign-in slots.
 - Nothing needs you now.
+
+## Night spot-review fixes: call lines after a job ends, per-visit quotes, business job page (D-4338)
+
+- **A business could still call a homeowner after the job ended.** The masked call line only closed when a business never called. Now it closes when she cancels (the business is told it doesn't count against them), when she answers a check-in with PROBLEM or NO, and for every other job 30 days after it opened (T662). Our choice: a check-in NO ("they never reached you") also closes the line, so a closed job never keeps a live line.
+- **Per-visit quotes ("$40 per visit, every 2 weeks") could never be picked**, because the quote form forgot the visit schedule. Fixed with a test that picks one (T588).
+- **A business signing in from a notice email landed on "not found"** instead of the job; that page is now served behind their sign-in (T306).
+- **The "Sign in" button on notice emails now has the same request limits as the sign-in form**, so nobody holding one link can flood a business's inbox (T382).
+- Nothing needs you now.
