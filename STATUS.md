@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T18:43:07Z by runner 935e6983d16c (manual).
+Updated 2026-11-18T18:43:31Z by runner 935e6983d16c (manual).
 
 **Building: T501 in progress since 18:29Z; 453 of 657 done; week 65% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,12 @@ Updated 2026-11-18T18:43:07Z by runner 935e6983d16c (manual).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T501 claimed 18:29Z, lease until 21:29Z; lane 3: T483 claimed 18:25Z, lease until 21:25Z; lane 4: T364 claimed 18:28Z, lease until 21:28Z; lane 7: T711 claimed 18:12Z, lease until 21:12Z
 - **Week:** 65% used, 61.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:33Z, 9 min before this update
+- **Last run:** 18:43Z, 0 min before this update
 - **Keeper:** last ran 18:33Z, next wake 21:15Z
 
 ## Needs attention
 - BLOCKED T205: plan gap reported: PLAN GAP: `payments` has no public reader that ties a dispute to its pick (or its charge, business or job). Without one, T205 cannot narrow `waiting_disputes` or refuse a press on another pick's dispute, so this has to go back as a `payments` follow-up.
 Evidence (confirmed by a second reviewer): list_disputes (app/payments/src/disputes.rs:362-388) and DisputeView (app/payments/src/models.rs:621-634) carry no pick, payment-intent, business or job; refund_state (app/payments/src/refund_state.rs:39-45) gives only `disputed`, not the dp_ id; EvidencePack fields are pub(crate) (models.rs:571-580); ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T205 --plan-fix D-### --reason "..."` (D-2859)
-- BLOCKED T408: plan gap reported: PLAN GAP: kit/prompts/T408.md:54 "Size budget: at most 6 files, 800 changed lines" cannot be met. The prompt's own plan changes (D-3144, D-3879, D-4026, D-4326) require edits to at least 13 files (release_sink.rs, new release_hold.rs, release_proof.rs, server lib.rs, payments api.rs, server tests/safe_mode_release.rs, integration safe_mode.rs, ops safe_mode.rs, three NOTES.md, architecture.md, decisions.md), and tests for every held_release money branch (Stripe fetch failure, pick ended while held, no fee row) plus address_in through its registered handler, which the first review required (95%; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T408 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T583: plan gap reported: PLAN GAP: kit/prompts/T583.md:51 (budget of 450 changed lines in 3 files) The smallest plan change: raise T583's budget to 650 changed lines, or move `tests/integration/tests/quote_update_texts.rs` into a test-only follow-up task with its own budget.
 Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2b1: app/intake/src/job_texts.rs 5/5, app/intake/src/quote_updates.rs 292/0, tests/integration/tests/quote_update_texts.rs 377/0 (679 lines). Fix-round worker's honest trim reached about 273 + 8 + ~350 = ~630 lines (test still failing clippy: a 73-line function needing ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T583 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T645: plan gap reported: PLAN GAP: app/site/src/chat.rs:340 (owned by T593, then T646 and T649; T593 is not merged yet) calls `chat_message(db, &secret, &key, &msg, self.intake)` with no `Vault`, and the `ChatKeys` trait (chat.rs:62-66) only exposes secret/send/check. `messaging::api::suppress` (app/messaging/src/optout.rs:311-317) needs a `&Vault` and the phone, since digests come from `vault.blind_index` (optout.rs:441-443). `chat_message` (app/intake/src/web_chat.rs:247-253) takes no vault and its `Settings` is `Copy`, so T645 cannot list the session's number (step 1, TD-CON-36 "at once") without a signature change; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T645 --plan-fix D-### --reason "..."` (D-2859)

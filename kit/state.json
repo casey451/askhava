@@ -55295,7 +55295,7 @@
     "T433",
     "T487"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 2,
    "slug": "safe-mode-release-hold",
    "type": "build",
@@ -55313,8 +55313,8 @@
     "model": "claude-opus-5-5",
     "alias": "opus"
    },
-   "reason": "plan gap reported: PLAN GAP: kit/prompts/T408.md:54 \"Size budget: at most 6 files, 800 changed lines\" cannot be met. The prompt's own plan changes (D-3144, D-3879, D-4026, D-4326) require edits to at least 13 files (release_sink.rs, new release_hold.rs, release_proof.rs, server lib.rs, payments api.rs, server tests/safe_mode_release.rs, integration safe_mode.rs, ops safe_mode.rs, three NOTES.md, architecture.md, decisions.md), and tests for every held_release money branch (Stripe fetch failure, pick ended while held, no fee row) plus address_in through its registered handler, which the first review required (95%; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T408 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: kit/prompts/T408.md:54 \"Size budget: at most 6 files, 800 changed lines\" cannot be met. The prompt's own plan changes (D-3144, D-3879, D-4026, D-4326) require edits to at least 13 files (release_sink.rs, new release_hold.rs, release_proof.rs, server lib.rs, payments api.rs, server tests/safe_mode_release.rs, integration safe_mode.rs, ops safe_mode.rs, three NOTES.md, architecture.md, decisions.md), and tests for every held_release money branch (Stripe fetch failure, pick ended while held, no fee row) plus address_in through its registered handler, which the first review required (95% branch floor on payments).\nEvidence (run here): `git diff --shortstat origin/main...HEAD` = 14 files changed, 1106 insertions(+), 30 deletions(-) (1,136 changed lines; the first commit alone was 949+29). Production code ~290 lines; tests ~830 (server TD-OPS-40 test 624, payments unit test ~130, integration safe_mode.rs 79). Server tests may not write payments rows (architecture_migrations check_query_schemas), so the ended-pick branch needed a payments unit test (D-4021).\nReviewer (Opus, fresh) confirmed: PLAN GAP CONFIRMED; the code itself approved at 56a5f21e77fe6da7363db5abceb60648e88b6d22 (cargo test -p askhava-payments --lib release_proof 2 passed; -p askhava-server --test safe_mode_release 5 passed).\nWorker's checks at that head: fmt, clippy -D warnings clean; smoke.sh green; prehandin.sh green incl. \"ok coverage floor\" for app/payments and release_sink.rs (PREHANDIN_COVERAGE_TIMEOUT=1500); prehandin --ally red on j2_keyboard.spec.ts:149 (Stripe card mock timeout / heading not found / toHaveText, 2-3 failed of 807), which the reviewer judged unrelated to this branch (no page, template or route change).\nSmallest plan change: raise T408's budget to about 1,150 lines and 14 files (the branch's work is reviewed and can be reused), or split TD-OPS-40's tests into a follow-up task.",
+   "reason": null,
+   "last_failure": "PLAN GAP: kit/prompts/T408.md:54 \"Size budget: at most 6 files, 800 changed lines\" cannot be met. The prompt's own plan changes (D-3144, D-3879, D-4026, D-4326) require edits to at least 13 files (release_sink.rs, new release_hold.rs, release_proof.rs, server lib.rs, payments api.rs, server tests/safe_mode_release.rs, integration safe_mode.rs, ops safe_mode.rs, three NOTES.md, architecture.md, decisions.md), and tests for every held_release money branch (Stripe fetch failure, pick ended while held, no fee row) plus address_in through its registered handler, which the first review required (95% branch floor on payments).\nEvidence (run here): `git diff --shortstat origin/main...HEAD` = 14 files changed, 1106 insertions(+), 30 deletions(-) (1,136 changed lines; the first commit alone was 949+29). Production code ~290 lines; tests ~830 (server TD-OPS-40 test 624, payments unit test ~130, integration safe_mode.rs 79). Server tests may not write payments rows (architecture_migrations check_query_schemas), so the ended-pick branch needed a payments unit test (D-4021).\nReviewer (Opus, fresh) confirmed: PLAN GAP CONFIRMED; the code itself approved at 56a5f21e77fe6da7363db5abceb60648e88b6d22 (cargo test -p askhava-payments --lib release_proof 2 passed; -p askhava-server --test safe_mode_release 5 passed).\nWorker's checks at that head: fmt, clippy -D warnings clean; smoke.sh green; prehandin.sh green incl. \"ok coverage floor\" for app/payments and release_sink.rs (PREHANDIN_COVERAGE_TIMEOUT=1500); prehandin --ally red on j2_keyboard.spec.ts:149 (Stripe card mock timeout / heading not found / toHaveText, 2-3 failed of 807), which the reviewer judged unrelated to this branch (no page, template or route change).\nSmallest plan change: raise T408's budget to about 1,150 lines and 14 files (the branch's work is reviewed and can be reused), or split TD-OPS-40's tests into a follow-up task.\nre-queued after plan fix D-4419: split-into-T706-T408-T707 (PR #1052)",
    "history": [
     {
      "attempt": 1,
@@ -55376,6 +55376,19 @@
      "plan_head": "7a9d026924022a41e98dab27cdc350f1a5967273",
      "plan_then": "d9f57b3e587231b839bcc681dacc484b6bd18e8c8d8d4d140dff578ae0ec1f90",
      "plan_now": "ce4be83e064d45d550d53f485c8f2508d88e3c7f6fedaffa2c0d698f1c325f56"
+    },
+    {
+     "at": "2026-11-18T18:43:31Z",
+     "reason": "split-into-T706-T408-T707 (PR #1052)",
+     "by": "manual-fc961cf4a6bb",
+     "was": "plan gap reported: PLAN GAP: kit/prompts/T408.md:54 \"Size budget: at most 6 files, 800 changed lines\" cannot be met. The prompt's own plan changes (D-3144, D-3879, D-4026, D-4326) require edits to at least 13 files (release_sink.rs, new release_hold.rs, release_proof.rs, server lib.rs, payments api.rs, server tests/safe_mode_release.rs, integration safe_mode.rs, ops safe_mode.rs, three NOTES.md, architecture.md, decisions.md), and tests for every held_release money branch (Stripe fetch failure, pick ended while held, no fee row) plus address_in through its registered handler, which the first review required (95%; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T408 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 2,
+     "plan_fix": "D-4419",
+     "plan_since": "2026-11-18T09:13:07Z",
+     "plan_base": "00c1e9ff95be7b9a7ae5a8bfc458a45ec0601192",
+     "plan_head": "935e6983d16cf4a603927b944ffaab5743158a45",
+     "plan_then": "7ba98b55df3f44b61d77f301c7e8459e4b3b55a9476421a611b1016fbb4011e6",
+     "plan_now": "d545325759a336ac8a3dfd356e30f045b1b8aea7516ab79f5e62009aa2be17f5"
     }
    ]
   },
@@ -85508,7 +85521,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T18:43:07Z",
+ "updated_at": "2026-11-18T18:43:31Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
