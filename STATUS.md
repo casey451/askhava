@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T21:15:00Z by runner 70d828de1b07 (actions).
+Updated 2026-11-18T21:15:29Z by runner ac95475ba313 (actions).
 
 **Building: T651 in progress since 19:44Z; 456 of 663 done; week 68% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,14 @@ Updated 2026-11-18T21:15:00Z by runner 70d828de1b07 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T651 claimed 19:44Z, lease until 23:43Z; lane 2: T722 claimed 20:48Z, lease until 23:48Z; lane 4: T364 claimed 21:12Z, lease until 00:12Z; lane 7: T503 claimed 20:58Z, lease until 23:58Z
 - **Week:** 68% used, 55.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:14Z, 0 min before this update
-- **Keeper:** last ran 21:09Z, next wake 21:29Z
+- **Last run:** 21:15Z, 0 min before this update
+- **Keeper:** last ran 21:15Z, next wake 23:46Z
 
 ## Needs attention
 - BLOCKED T715: plan gap reported: PLAN GAP: `app/server/tests/name_address_answer.rs:262`–`:264` (owned by T432, not this task) expects the name-and-address question (step 11) to be asked on the first reply after the area check, even when step 5 never told the coverage. That is the behaviour D-4441 correction (5) removes, so the test is red with T715's change. Smallest plan change: a harness follow-up (T715's attempt or a new task) that may change that test's `her_request` setup so step 5 finishes before step 11 is expected (e.g. first text through the full reply path / receive_raw_reply, or a reply naming a trade, with covera; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T715 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 35 problem(s) on tasks still to run (+258 on DONE tasks); first: T402: measures 48% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 34 problem(s) on tasks still to run (+258 on DONE tasks); first: T402: measures 48% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
