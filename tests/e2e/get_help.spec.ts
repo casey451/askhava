@@ -47,5 +47,7 @@ test("TD-PRIV-16: the help form has an optional mobile field and a bare post del
     form: { message: "Please delete my data.", mobile: "+19285550100" },
   });
   expect(answer.status()).toBeGreaterThanOrEqual(400);
-  expect(await answer.text()).not.toContain("Texts to that number are off");
+  const body = await answer.text();
+  expect(body).not.toContain("Message sent");
+  expect(body).not.toContain("We've stopped texting");
 });

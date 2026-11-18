@@ -27,8 +27,7 @@ use askama::Template;
 use askhava_core::api::brand;
 use askhava_intake::api::{Admission, Key, Limit, admit, business_help, receive_help_email};
 use askhava_messaging::api::{
-    Detected, Language, MailboxKind, RevokeChannel, detect_opt_out, queue_account_email, render,
-    suppress,
+    Language, MailboxKind, RevokeChannel, detect_opt_out, queue_account_email, render, suppress,
 };
 use askhava_privacy::api::{
     CommonWords, EmailAuth, Flags, InboundEmail, Known, NameMemory, ScrubbedText, SenderIndex,
@@ -236,8 +235,9 @@ pub async fn send_get_help(
     form: &GetHelpForm,
     now: Timestamp,
 ) -> Result<GetHelpSent, HelpError> {
-    let job = form.job.map_or_else(String::new, |n| format!(", job {n}"));
-    let said = format!("Get help: {}{job}. {}", form.topic.label(), form.message);
+    // The job goes last: a number before a word reads to `scrub` as a street address (D-4376).
+    let job = form.job.map_or_else(String::new, |n| format!(" Job {n}."));
+    let said = format!("Get help: {}. {}{job}", form.topic.label(), form.message);
     let words = scrubbed(&said);
     let opened = business_help(db, (Uuid::new_v4(), who.business()), &words, now)
         .await
@@ -371,10 +371,8 @@ pub async fn send_help_form(
         (None, _) => HelpFormScreen::Sent,
         (Some(_), None) => HelpFormScreen::NeedsNumber,
         (Some(how), Some(phone)) => {
-            let how = match how {
-                Detected::Word(w) | Detected::Phrase(w) => w,
-            };
-            if suppress(db, vault, phone, (RevokeChannel::HelpForm, how), now)
+            let how = how.label();
+            if suppress(db, vault, phone, (RevokeChannel::HelpForm, &how), now)
                 .await
                 .is_err()
             {
@@ -383,7 +381,16 @@ pub async fn send_help_form(
             HelpFormScreen::OptedOut
         }
     };
-    let email = InboundEmail {
+    receive_help_email(db, &site_email(message), now)
+        .await
+        .map_err(|_| HelpError::Request)?;
+    Ok(screen)
+}
+
+/// D-4373: `message` as the help email `intake::api::receive_help_email` takes: scrubbed, with
+/// no sender, so it ties to no record.
+pub(crate) fn site_email(message: &str) -> InboundEmail {
+    InboundEmail {
         flags: Flags::default(),
         text: scrubbed(message),
         auth: EmailAuth {
@@ -396,11 +403,7 @@ pub async fn send_help_form(
             business: Vec::new(),
             homeowner: Vec::new(),
         },
-    };
-    receive_help_email(db, &email, now)
-        .await
-        .map_err(|_| HelpError::Request)?;
-    Ok(screen)
+    }
 }
 
 #[derive(Template)]
