@@ -16827,8 +16827,74 @@
   {
    "id": "T523",
    "slug": "owner-flag-inputs",
-   "title": "quotes, jobs, picks and intake: the readers the owner flags need (D-3880)",
-   "goal": "Plan change D-3880 (Fable's pre-claim check of stage-5 wave 3), revised by D-3881 (Fable's first check of this task, Nov 16, 2026): the owner-portal flags (OPS-027, OPS-031, OPS-034) need counts no `api` gives. Each reader module is re-exported by one line in its shared `api.rs` and returns counts and IDs only, never a phone, name or address; one trade's job IDs come from T477's per-trade reader in `app/quotes/src/scorecard_inputs.rs` (keyed on `quotes.shown_card.category`), never a duplicate. (1) `app/quotes/src/flag_inputs.rs`: for given job IDs and a calendar month, the median number of confirmed quotes per job and the trade's confirmed-quote count. (2) `jobs` stores no check-in answer (`answer_check_in`, `app/jobs/src/followups.rs:205` to `:232`, moves the job and writes only the status-change audit row, `app/jobs/src/service.rs:167` to `:171`): `answer_check_in`, when its move applies, also writes one `ops` audit row in the same transaction (action `jobs.check_in_answer`, subject the job, field code `<day3|day14>_<answer>`) through a recorder defined in `app/jobs/src/flag_inputs.rs`; the reader counts, for given job IDs and a month, the jobs that became Connected (`jobs.status_history`) and those with a `day3_no` or `day3_other` row, read through T477's `ops::api` audit-subjects reader (`app/ops/src/audit_subjects.rs`). (3) `app/picks/src/flag_inputs.rs`: the business IDs with N or more lapsed picks (PICK-019; `picks.pick.status = 'expired'`) in a window, with their counts; for given job IDs and a month, the number of wins (picks `paid` or `free`); and which of given job IDs have any `picks.pick` row. (4) `app/intake/src/flag_inputs.rs`: homeowner IDs (the vault ID, never a phone) with N or more requests in a window and no pick, \"no pick\" coming from the `picks::api` reader in (3), so `intake` queries no `picks` table. Each reader takes its numbers and window as arguments (the settings are T524's, which divides the confirmed-quote count by the wins for quotes per win). Tests in `tests/integration/tests/flag_inputs.rs` against real PostgreSQL, fake data only: each reader on planted rows, its boundary (median 4 quotes against 3, 31% against 30%, 3 lapsed picks against 2, 3 requests against 2), one check-in answer writing one `jobs.check_in_answer` row and a repeated answer none, and no contact field in any result. Update each module's `NOTES.md` and `docs/decisions.md`. Budget 520 lines (was 500; see D-4037). Plan change D-4037 (T523's attempt 1 reported a plan gap, verified): T477's audit-subjects reader returned only each row's subject kind, subject ID and `at` (`app/ops/src/audit_subjects.rs:13` to `:21`, its query `:36` to `:37`), so no reader could tell a `day3_no` or `day3_other` row from the other `jobs.check_in_answer` rows. T523 also owns `app/ops/src/audit_subjects.rs` (T477 is done; no queued task owns it) and adds `field: Option<String>` to `AuditSubject` and `field` to its `SELECT`, keeping the function's signature, its order and its other fields, so T477's caller (`app/quotes/src/scorecard_inputs.rs:74`) and T518's planned use stay as they are; it updates the file's `//!` comment (`:1` to `:3`, which says each row gives its subject kind, subject ID and time only) and the `///` comment on `AuditSubject` to name the new `field` (the row's field code name, if any), refreshes the query's `.sqlx/` entry and updates the reader's line in `docs/architecture.md`. The `field` column holds a code name only (`migrations/0021_ops_audit.sql:26`), never a value, so the reader still returns record IDs and code names only (PRIV-028). The jobs reader filters the rows of `jobs.check_in_answer` by `field`; a test plants one row of each day-3 and day-14 answer and counts only the `day3_no` and `day3_other` jobs. (D-4037's budget was 7 files, 520 lines.) Plan change D-4053 (attempt 2 failed review on two OPS-031 findings; Fable's triage verified both on `main` 7b601a2). (A) One connection, one answer: the jobs reader's month is the month of a move into Connected (`jobs.status_history`, `to_status` Connected, its `at` in the month), and a `day3_no` or `day3_other` row counts for that connection only when the row's `at` is at or after that move's `at` and before the `at` of the same job's next move into Connected, if it has one (read from `jobs.status_history` in any month, not only the given one); a row written after the month ends still counts for its own connection, and never for an earlier one. A job is counted at most once per month in each number. A job goes from Connected back to Quotes ready with no answer row through `picks::no_call_at_72_hours` (`app/picks/src/unreachable_refund.rs:456`, its move at `:467`; run from `app/picks/src/unreachable_steps.rs:370` to `:380`) and can connect again, so without the upper bound a later connection's answer is counted against the earlier month too. Test in `tests/integration/tests/flag_inputs.rs`, with planted `jobs.status_history` rows and `ops.audit_log` rows inserted with an explicit `at`: a job connects March 30, returns to Quotes ready April 2 with no row, connects again April 4 and has a `day3_other` row on April 8; March gives connected 1 and NO-or-OTHER 0, April gives connected 1 and NO-or-OTHER 1. (B) A texted day-3 NO from an email-contact homeowner never reaches `answer_check_in`: `check_in_reply` (`app/intake/src/check_in_replies.rs:59` to `:64`) queues T281's `DayThreeNo` step through `queue_day_three_no` (`:104` to `:118`) and returns, and the step reopens the job through `no_call_at_72_hours` (`app/picks/src/unreachable_steps.rs:421` to `:435`), so nothing wrote a `jobs.check_in_answer` row and these NOs were never counted. T523 also owns `app/intake/src/check_in_replies.rs` (T277 is done; no queued task owns it), and not T277's test file, which only a harness task may change. The recorder in `app/jobs/src/flag_inputs.rs` is `pub` and re-exported by the one `jobs` `api.rs` line; `queue_day_three_no` returns whether `enqueue` queued a new task (`Some`, `app/core/src/tasks.rs:175`), and in that branch `check_in_reply` calls the recorder for `due.job` with day 3 and NO (field code `day3_no`, actor `Actor::Homeowner(msg.contact)`) only when the step was newly queued, in the caller's transaction, so the row and the step commit or roll back together, one row is written per pick (so per connection) and a repeated NO writes none. The row records her answer when she gives it; it does not wait for the step's move. Nothing else on that path changes: the step, its dedupe key, the no-show, the fee and refund rules (FEE-035, JOB-013) and every picks file stay as they are, and `intake` still calls only `jobs::api` and `picks::api`. Update the `///` comments on `check_in_reply` and `queue_day_three_no` and `app/intake/NOTES.md`. Test in `tests/integration/tests/flag_inputs.rs`, through `askhava_intake::api::receive_reply` with a `TextIn` (`app/intake/src/api.rs:103`, called as `app/intake/src/tests/replies.rs:43` does; its body `reply_in`, `app/intake/src/replies.rs:112`, is the only caller of `check_in_reply`, and it answers `Reply::CheckedIn`; `receive_text` only opens a request and never reaches `check_in_reply`, so it serves for the set-up alone), never by calling `answer_check_in` or the recorder directly; model the set-up on T277's `connected_job` and `picked` helpers (`tests/integration/tests/check_in_replies.rs:126` to `:189`, read only: a fake contact, a job walked to Connected 4 days earlier, a paid pick with `ContactChoice::Email`): after her texted NO the job has exactly one `jobs.check_in_answer` row with field `day3_no` and one `day3_no` step is queued, a second NO adds no row, the job is still Connected, and the `jobs::api` reader counts the job as NO-or-OTHER for its connection month. Drop or replace any test that reaches this case by calling `answer_check_in` with `Contact::Email` and a day-3 NO directly, a path no texted reply takes; this means T523's own tests only (D-4173): T097's `tests/integration/tests/followups.rs` (its `answer` helper at `:85` to `:95`, the day-3 NO at `:207`) is not T523's, stays unchanged and must still pass (no test there counts audit rows after a check-in answer). T277's tests in `check_in_replies.rs` must pass unchanged. The bound in (A) assumes the application clock and the database clock agree: the audit row's `at` is the database's `now()` (`migrations/0021_ops_audit.sql:18`) while `jobs.status_history` takes the application's time, so these tests plant every move in the past and advance no clock. Budget 8 files, 600 lines (the build-task limit; attempt 2 measured about 611 lines on 7 files and its branch is gone, so this attempt starts fresh: keep helpers shared and comments short). If the whole change cannot fit in 600 lines, do not hand in an oversized change and do not drop a test: stop and report `PLAN GAP:` naming this split: readers (1) `quotes`, (3) `picks` and (4) `intake` with their tests move to a new task that T524 depends on, and T523 keeps (2), the D-4037 reader change and D-4053's (A) and (B).",
+   "title": "jobs, ops and intake: the check-in answer recorder and the connected and NO-or-OTHER reader the owner flags need (D-3880, D-4280)",
+   "goal": "Plan change D-3880 (Fable's pre-claim check of stage-5 wave 3), revised by D-3881 (Fable's first check of this task, Nov 16, 2026): the owner-portal flags (OPS-027, OPS-031, OPS-034) need counts no `api` gives. Each reader module is re-exported by one line in its shared `api.rs` and returns counts and IDs only, never a phone, name or address; one trade's job IDs come from T477's per-trade reader in `app/quotes/src/scorecard_inputs.rs` (keyed on `quotes.shown_card.category`), never a duplicate. (1), (3) and (4), the `quotes`, `picks` and `intake` readers, moved to T619 by D-4280. (2) `jobs` stores no check-in answer (`answer_check_in`, `app/jobs/src/followups.rs:205` to `:232`, moves the job and writes only the status-change audit row, `app/jobs/src/service.rs:167` to `:171`): `answer_check_in`, when its move applies, also writes one `ops` audit row in the same transaction (action `jobs.check_in_answer`, subject the job, field code `<day3|day14>_<answer>`) through a recorder defined in `app/jobs/src/flag_inputs.rs`; the reader counts, for given job IDs and a month, the jobs that became Connected (`jobs.status_history`) and those with a `day3_no` or `day3_other` row, read through T477's `ops::api` audit-subjects reader (`app/ops/src/audit_subjects.rs`). Each reader takes its numbers and window as arguments (the settings are T524's, which divides the confirmed-quote count by the wins for quotes per win). Tests in `tests/integration/tests/flag_inputs.rs` against real PostgreSQL, fake data only: the jobs reader on planted rows, its boundary (31% against 30%), one check-in answer writing one `jobs.check_in_answer` row and a repeated answer none, and no contact field in any result. Update the `jobs`, `ops` and `intake` `NOTES.md` and `docs/decisions.md`. Budget 520 lines (was 500; see D-4037). Plan change D-4037 (T523's attempt 1 reported a plan gap, verified): T477's audit-subjects reader returned only each row's subject kind, subject ID and `at` (`app/ops/src/audit_subjects.rs:13` to `:21`, its query `:36` to `:37`), so no reader could tell a `day3_no` or `day3_other` row from the other `jobs.check_in_answer` rows. T523 also owns `app/ops/src/audit_subjects.rs` (T477 is done; no queued task owns it) and adds `field: Option<String>` to `AuditSubject` and `field` to its `SELECT`, keeping the function's signature, its order and its other fields, so T477's caller (`app/quotes/src/scorecard_inputs.rs:74`) and T518's planned use stay as they are; it updates the file's `//!` comment (`:1` to `:3`, which says each row gives its subject kind, subject ID and time only) and the `///` comment on `AuditSubject` to name the new `field` (the row's field code name, if any), refreshes the query's `.sqlx/` entry and updates the reader's line in `docs/architecture.md`. The `field` column holds a code name only (`migrations/0021_ops_audit.sql:26`), never a value, so the reader still returns record IDs and code names only (PRIV-028). The jobs reader filters the rows of `jobs.check_in_answer` by `field`; a test plants one row of each day-3 and day-14 answer and counts only the `day3_no` and `day3_other` jobs. (D-4037's budget was 7 files, 520 lines.) Plan change D-4053 (attempt 2 failed review on two OPS-031 findings; Fable's triage verified both on `main` 7b601a2). (A) One connection, one answer: the jobs reader's month is the month of a move into Connected (`jobs.status_history`, `to_status` Connected, its `at` in the month), and a `day3_no` or `day3_other` row counts for that connection only when the row's `at` is at or after that move's `at` and before the `at` of the same job's next move into Connected, if it has one (read from `jobs.status_history` in any month, not only the given one); a row written after the month ends still counts for its own connection, and never for an earlier one. A job is counted at most once per month in each number. A job goes from Connected back to Quotes ready with no answer row through `picks::no_call_at_72_hours` (`app/picks/src/unreachable_refund.rs:456`, its move at `:467`; run from `app/picks/src/unreachable_steps.rs:370` to `:380`) and can connect again, so without the upper bound a later connection's answer is counted against the earlier month too. Test in `tests/integration/tests/flag_inputs.rs`, with planted `jobs.status_history` rows and `ops.audit_log` rows inserted with an explicit `at`: a job connects March 30, returns to Quotes ready April 2 with no row, connects again April 4 and has a `day3_other` row on April 8; March gives connected 1 and NO-or-OTHER 0, April gives connected 1 and NO-or-OTHER 1. (B) A texted day-3 NO from an email-contact homeowner never reaches `answer_check_in`: `check_in_reply` (`app/intake/src/check_in_replies.rs:59` to `:64`) queues T281's `DayThreeNo` step through `queue_day_three_no` (`:104` to `:118`) and returns, and the step reopens the job through `no_call_at_72_hours` (`app/picks/src/unreachable_steps.rs:421` to `:435`), so nothing wrote a `jobs.check_in_answer` row and these NOs were never counted. T523 also owns `app/intake/src/check_in_replies.rs` (T277 is done; no queued task owns it), and not T277's test file, which only a harness task may change. The recorder in `app/jobs/src/flag_inputs.rs` is `pub` and re-exported by the one `jobs` `api.rs` line; `queue_day_three_no` returns whether `enqueue` queued a new task (`Some`, `app/core/src/tasks.rs:175`), and in that branch `check_in_reply` calls the recorder for `due.job` with day 3 and NO (field code `day3_no`, actor `Actor::Homeowner(msg.contact)`) only when the step was newly queued, in the caller's transaction, so the row and the step commit or roll back together, one row is written per pick (so per connection) and a repeated NO writes none. The row records her answer when she gives it; it does not wait for the step's move. Nothing else on that path changes: the step, its dedupe key, the no-show, the fee and refund rules (FEE-035, JOB-013) and every picks file stay as they are, and `intake` still calls only `jobs::api` and `picks::api`. Update the `///` comments on `check_in_reply` and `queue_day_three_no` and `app/intake/NOTES.md`. Test in `tests/integration/tests/flag_inputs.rs`, through `askhava_intake::api::receive_reply` with a `TextIn` (`app/intake/src/api.rs:107`, called as `app/intake/src/tests/replies.rs:43` does; its body `reply_in`, `app/intake/src/replies.rs:129`, is the only caller of `check_in_reply`, and it answers `Reply::CheckedIn`; `receive_text` only opens a request and never reaches `check_in_reply`, so it serves for the set-up alone), never by calling `answer_check_in` or the recorder directly; model the set-up on T277's `connected_job` and `picked` helpers (`tests/integration/tests/check_in_replies.rs:126` to `:189`, read only: a fake contact, a job walked to Connected 4 days earlier, a paid pick with `ContactChoice::Email`): after her texted NO the job has exactly one `jobs.check_in_answer` row with field `day3_no` and one `day3_no` step is queued, a second NO adds no row, the job is still Connected, and the `jobs::api` reader counts the job as NO-or-OTHER for its connection month. Drop or replace any test that reaches this case by calling `answer_check_in` with `Contact::Email` and a day-3 NO directly, a path no texted reply takes; this means T523's own tests only (D-4173): T097's `tests/integration/tests/followups.rs` (its `answer` helper at `:85` to `:95`, the day-3 NO at `:207`) is not T523's, stays unchanged and must still pass (no test there counts audit rows after a check-in answer). T277's tests in `check_in_replies.rs` must pass unchanged. The bound in (A) assumes the application clock and the database clock agree: the audit row's `at` is the database's `now()` (`migrations/0021_ops_audit.sql:18`) while `jobs.status_history` takes the application's time, so these tests plant every move in the past and advance no clock. Plan change D-4280 (Opus pre-claim scout b, Nov 18, 2026, checked on `main` 7f322437): attempt 2 measured about 611 lines on 7 files before D-4053 added (A) and (B), so the change could not fit 600 lines; the split this task named is made now instead of costing a third attempt. Readers (1) `quotes` (median confirmed quotes per job and the trade's confirmed-quote count), (3) `picks` (businesses with N or more lapsed picks, wins, which jobs have a pick) and (4) `intake` (homeowner IDs with N or more requests and no pick) with their boundary tests and the no-contact-field check are T619's, which T524 also depends on. T523 keeps (2) the `jobs` recorder and reader, the D-4037 `audit_subjects.rs` change and D-4053's (A) and (B), in `app/jobs/src/flag_inputs.rs`, `app/jobs/src/followups.rs`, `app/ops/src/audit_subjects.rs`, `app/intake/src/check_in_replies.rs` and `tests/integration/tests/flag_inputs.rs`, and does not create `app/quotes/src/flag_inputs.rs`, `app/picks/src/flag_inputs.rs` or `app/intake/src/flag_inputs.rs`. Cite by name where `main` moves: `receive_reply`'s re-export in `app/intake/src/api.rs`, `reply_in` and `check_in_reply`/`queue_day_three_no` in their files. Budget 5 files, 480 lines; this attempt starts fresh from `main`: keep helpers shared and comments short.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "quotes",
+   "deps": [
+    "T100",
+    "T105",
+    "T477"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy"
+   ],
+   "owns": [
+    "app/jobs/src/flag_inputs.rs",
+    "tests/integration/tests/flag_inputs.rs",
+    "app/jobs/src/followups.rs",
+    "app/ops/src/audit_subjects.rs",
+    "app/intake/src/check_in_replies.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/ops-recovery.md",
+    "docs/spec/quotes-pick.md",
+    "docs/brains/postgres-operations.md",
+    "tests/integration/tests/check_in_replies.rs"
+   ],
+   "requirements": [
+    "OPS-031"
+   ],
+   "tests": [
+    "TD-OPS-08"
+   ],
+   "decisions": [
+    "D-251",
+    "D-284",
+    "D-464",
+    "D-3880",
+    "D-3881",
+    "D-4037",
+    "D-4053",
+    "D-4173",
+    "D-4280"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 480,
+    "context_pct": 16
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T523-owner-flag-inputs",
+   "prompt": "kit/prompts/T523.md"
+  },
+  {
+   "id": "T619",
+   "slug": "owner-flag-counts",
+   "title": "quotes, picks and intake: the quote-median, lapsed-pick, win and repeat-request readers the owner flags need (D-4280)",
+   "goal": "Plan change D-4280 (Opus pre-claim scout b, Nov 18, 2026, checked on `main` 7f322437): split from T523 (D-3880, D-3881), whose change could not fit the build-task limit. The owner-portal flags OPS-027 and OPS-034 need counts no `api` gives. Each reader below is a new module re-exported by one line in its module's shared `api.rs`, takes its numbers and window as arguments (the settings are T524's, which divides the confirmed-quote count by the wins for quotes per win), and returns counts and record IDs only, never a phone, name or address (PRIV-028). One trade's job IDs come from T477's per-trade reader in `app/quotes/src/scorecard_inputs.rs` (keyed on `quotes.shown_card.category`), never a duplicate. (1) `app/quotes/src/flag_inputs.rs`: for given job IDs and a calendar month, the median number of confirmed quotes per job and the trade's confirmed-quote count. (2) `app/picks/src/flag_inputs.rs`: the business IDs with N or more lapsed picks (PICK-019; `picks.pick.status = 'expired'`) in a window, with their counts; for given job IDs and a month, the number of wins (picks `paid` or `free`); and which of given job IDs have any `picks.pick` row. (3) `app/intake/src/flag_inputs.rs`: homeowner IDs (the vault ID, never a phone) with N or more requests in a window and no pick, \"no pick\" coming from the `picks::api` reader in (2), so `intake` queries no `picks` table. T523 keeps the `jobs` check-in recorder and its connected and NO-or-OTHER reader and owns `tests/integration/tests/flag_inputs.rs`; this task does not touch them. Tests in `tests/integration/tests/flag_inputs_counts.rs` against real PostgreSQL, fake data only: each reader on planted rows, its boundary (median 4 quotes against 3, 3 lapsed picks against 2, 3 requests against 2), and no contact field in any result. Update the `quotes`, `picks` and `intake` `NOTES.md`, the readers' lines in `docs/architecture.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -16846,25 +16912,19 @@
    ],
    "owns": [
     "app/quotes/src/flag_inputs.rs",
-    "app/jobs/src/flag_inputs.rs",
     "app/picks/src/flag_inputs.rs",
     "app/intake/src/flag_inputs.rs",
-    "tests/integration/tests/flag_inputs.rs",
-    "app/jobs/src/followups.rs",
-    "app/ops/src/audit_subjects.rs",
-    "app/intake/src/check_in_replies.rs"
+    "tests/integration/tests/flag_inputs_counts.rs"
    ],
    "reads": [
     "docs/architecture.md",
     "docs/code-docs.md",
     "docs/spec/ops-recovery.md",
     "docs/spec/quotes-pick.md",
-    "docs/brains/postgres-operations.md",
-    "tests/integration/tests/check_in_replies.rs"
+    "docs/brains/postgres-operations.md"
    ],
    "requirements": [
     "OPS-027",
-    "OPS-031",
     "OPS-034"
    ],
    "tests": [
@@ -16876,23 +16936,21 @@
     "D-464",
     "D-3880",
     "D-3881",
-    "D-4037",
-    "D-4053",
-    "D-4173"
+    "D-4280"
    ],
    "cites": [],
    "budget": {
-    "files": 8,
-    "lines": 600,
-    "context_pct": 16
+    "files": 4,
+    "lines": 400,
+    "context_pct": 11
    },
    "checks": [
     "Ci",
     "Twin",
     "Ally"
    ],
-   "branch": "claude/task/T523-owner-flag-inputs",
-   "prompt": "kit/prompts/T523.md"
+   "branch": "claude/task/T619-owner-flag-counts",
+   "prompt": "kit/prompts/T619.md"
   },
   {
    "id": "T469",
@@ -17400,7 +17458,7 @@
    "id": "T524",
    "slug": "ops-digest-and-flags",
    "title": "portals and server: the weekly digest and the owner-portal flags (D-3880)",
-   "goal": "Plan change D-3880 (Fable's pre-claim check of stage-5 wave 3, Nov 16, 2026): Split from T204. The weekly digest email and the owner-portal flags carry counts and job or business numbers only, never a homeowner contact detail (OPS-027, OPS-030, OPS-031, OPS-033, OPS-034, OPS-041, BIZ-054). `app/portals/src/digest_flags.rs` builds both and computes no input itself: it reads T523's readers (quotes per win is T523's confirmed-quote count divided by its wins), T105's `ops` business counts, T107's weekly opt-out rates (OPS-030's opt-out line), and the `ops` alert and audit rows named here (automatic activations and self-acknowledged alerts: acknowledged `ops.alert` rows; complaints and PROBLEM replies: the complaint and `jobs.problem` alerts; disputes: `payments` dispute alerts; unknown charges refunded and unreadable business texts: their alert kinds; CON-016: the `messaging.optout_wrote_again` audit rows, D-2629; not-covered requests by trade, OPS-041; the BIZ-054 leaving answers; the open HELP requests with their due dates, from T151's `ops::api`, moved here from T151 by D-3881; the database-volume alerts, T525's); an input with no reader is reported, never queried by naming another module's table. A PROBLEM reply's words come from `privacy::api::problem_words`, which takes an `OwnerSessionProof` (`app/privacy/src/message_body.rs:86` to `:90`), so they appear only on the owner-portal digest view, never in the worker's email, which shows the count and job numbers. The flags' numbers (5 businesses, median 4 quotes, 30% for 2 months, 3 lapsed picks in 30 days, 3 requests in 30 days with no pick) are settings in the shared `app/core/src/settings.rs`; a flag changes nothing. OPS-033: the owner portal lists what falls due in the next 4 days, and an unopened digest is re-sent once after 4 days (the last-opened time is T204's table). The weekly email is a worker task in the new `app/server/src/digest_email.rs`, registered in `worker_registry` and first queued from `schedule_start` under a dedupe key, sending through `messaging::api`'s owner email. Tests in `tests/integration/tests/digest_flags.rs` (TD-OPS-08's flag and digest cases, TD-OPS-09's digest cases, TD-OPS-11's digest line for open HELP requests and the crowding flag TD-OPS-07 points to), fake data only, including that the email holds no vault field and no problem words. Build notes go to the end of `app/portals/NOTES.md` and `app/server/NOTES.md`; update `docs/architecture.md` and `docs/decisions.md`. Plan change D-3882 (Fable's pre-claim checks, Nov 16, 2026): (1) Each OPS-030 item's source: automatic activations, automatic pauses and the BIZ-054 leaving answers from T528's `businesses` reader; self-acknowledged alerts, dispute filings, unknown charges refunded, unreadable business texts and the database-volume alerts from T528's `ops` alert reader by kind; no-shows from T528's `picks` reader; license-unknown counts from T528's `licensing.list_failing` and `licensing.list_still_failing` alerts and its `license`-paused businesses; opt-out rates from T107; complaints and PROBLEM replies with any business reply from the complaint and `jobs.problem` alerts; call-backs due from open `intake.call_back`, `intake.call_back_urgent` (`app/intake/src/handlers.rs:484`, `:486`) and `messaging.call_back_due` (`app/messaging/src/retries.rs:50`) alerts; help requests with their due dates from T151's `ops::api`; HELP messages answered automatically from the `help.auto_answered` audit rows T482 writes; the test-restore result from T109's newest restore audit entry through `ops::api::latest_audit` (moved here from T109); not-covered requests from T528's `intake` reader; the last-opened time from T528's `ops` reader. (2) The weekly email goes to the owner inbox through `messaging::api::queue_account_email` with `OWNER_INBOX` (`app/messaging/src/api.rs:172`, `app/messaging/src/coverage_email.rs:29`), its address the `ASKHAVA_OWNER_INBOX_EMAIL` key T490 adds; the flag settings join `KEYS` in the shared `app/core/src/settings.rs`. Budget 600 lines. Plan change D-4053 (note only): T523's day-3 NO-or-OTHER count ties each `jobs.check_in_answer` row (stamped by the database's `now()`) to a connection in `jobs.status_history` (stamped by the application clock), so it assumes the two clocks agree; no test here, and no e2e or twin check of the OPS-031 count, may rely on advancing the test-control clock (`app/core/src/test_control.rs:12`); plant the moves in the past. Plan change D-4202: T528's `businesses`, `intake` and `picks` readers (the leaving answers, the `license`-paused businesses, the not-covered requests by trade and the no-shows) are now T605's, in the same files; T528 keeps only its `ops` reader (alerts by kind, the system actor's status-change audit rows, the digest row's last-opened time, reminder mark and writers). T605's reader names do not contain `leave_reason`, and no file this task writes may contain that text, not even in a variable name or comment (TD-BIZ-32's text scan, `tests/integration/tests/business_leaving.rs:462`).",
+   "goal": "Plan change D-3880 (Fable's pre-claim check of stage-5 wave 3, Nov 16, 2026): Split from T204. The weekly digest email and the owner-portal flags carry counts and job or business numbers only, never a homeowner contact detail (OPS-027, OPS-030, OPS-031, OPS-033, OPS-034, OPS-041, BIZ-054). `app/portals/src/digest_flags.rs` builds both and computes no input itself: it reads T523's readers (quotes per win is T523's confirmed-quote count divided by its wins), T105's `ops` business counts, T107's weekly opt-out rates (OPS-030's opt-out line), and the `ops` alert and audit rows named here (automatic activations and self-acknowledged alerts: acknowledged `ops.alert` rows; complaints and PROBLEM replies: the complaint and `jobs.problem` alerts; disputes: `payments` dispute alerts; unknown charges refunded and unreadable business texts: their alert kinds; CON-016: the `messaging.optout_wrote_again` audit rows, D-2629; not-covered requests by trade, OPS-041; the BIZ-054 leaving answers; the open HELP requests with their due dates, from T151's `ops::api`, moved here from T151 by D-3881; the database-volume alerts, T525's); an input with no reader is reported, never queried by naming another module's table. A PROBLEM reply's words come from `privacy::api::problem_words`, which takes an `OwnerSessionProof` (`app/privacy/src/message_body.rs:86` to `:90`), so they appear only on the owner-portal digest view, never in the worker's email, which shows the count and job numbers. The flags' numbers (5 businesses, median 4 quotes, 30% for 2 months, 3 lapsed picks in 30 days, 3 requests in 30 days with no pick) are settings in the shared `app/core/src/settings.rs`; a flag changes nothing. OPS-033: the owner portal lists what falls due in the next 4 days, and an unopened digest is re-sent once after 4 days (the last-opened time is T204's table). The weekly email is a worker task in the new `app/server/src/digest_email.rs`, registered in `worker_registry` and first queued from `schedule_start` under a dedupe key, sending through `messaging::api`'s owner email. Tests in `tests/integration/tests/digest_flags.rs` (TD-OPS-08's flag and digest cases, TD-OPS-09's digest cases, TD-OPS-11's digest line for open HELP requests and the crowding flag TD-OPS-07 points to), fake data only, including that the email holds no vault field and no problem words. Build notes go to the end of `app/portals/NOTES.md` and `app/server/NOTES.md`; update `docs/architecture.md` and `docs/decisions.md`. Plan change D-3882 (Fable's pre-claim checks, Nov 16, 2026): (1) Each OPS-030 item's source: automatic activations, automatic pauses and the BIZ-054 leaving answers from T528's `businesses` reader; self-acknowledged alerts, dispute filings, unknown charges refunded, unreadable business texts and the database-volume alerts from T528's `ops` alert reader by kind; no-shows from T528's `picks` reader; license-unknown counts from T528's `licensing.list_failing` and `licensing.list_still_failing` alerts and its `license`-paused businesses; opt-out rates from T107; complaints and PROBLEM replies with any business reply from the complaint and `jobs.problem` alerts; call-backs due from open `intake.call_back`, `intake.call_back_urgent` (`app/intake/src/handlers.rs:484`, `:486`) and `messaging.call_back_due` (`app/messaging/src/retries.rs:50`) alerts; help requests with their due dates from T151's `ops::api`; HELP messages answered automatically from the `help.auto_answered` audit rows T482 writes; the test-restore result from T109's newest restore audit entry through `ops::api::latest_audit` (moved here from T109); not-covered requests from T528's `intake` reader; the last-opened time from T528's `ops` reader. (2) The weekly email goes to the owner inbox through `messaging::api::queue_account_email` with `OWNER_INBOX` (`app/messaging/src/api.rs:172`, `app/messaging/src/coverage_email.rs:29`), its address the `ASKHAVA_OWNER_INBOX_EMAIL` key T490 adds; the flag settings join `KEYS` in the shared `app/core/src/settings.rs`. Budget 600 lines. Plan change D-4053 (note only): T523's day-3 NO-or-OTHER count ties each `jobs.check_in_answer` row (stamped by the database's `now()`) to a connection in `jobs.status_history` (stamped by the application clock), so it assumes the two clocks agree; no test here, and no e2e or twin check of the OPS-031 count, may rely on advancing the test-control clock (`app/core/src/test_control.rs:12`); plant the moves in the past. Plan change D-4202: T528's `businesses`, `intake` and `picks` readers (the leaving answers, the `license`-paused businesses, the not-covered requests by trade and the no-shows) are now T605's, in the same files; T528 keeps only its `ops` reader (alerts by kind, the system actor's status-change audit rows, the digest row's last-opened time, reminder mark and writers). T605's reader names do not contain `leave_reason`, and no file this task writes may contain that text, not even in a variable name or comment (TD-BIZ-32's text scan, `tests/integration/tests/business_leaving.rs:462`). Plan change D-4280: T523's `quotes`, `picks` and `intake` readers (the quote median and confirmed-quote count, the lapsed picks, the wins and which jobs have a pick, the repeat requests with no pick) are now T619's, a dep; T523 keeps the `jobs` connected and NO-or-OTHER reader.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -17408,6 +17466,7 @@
    "deps": [
     "T204",
     "T523",
+    "T619",
     "T107",
     "T277",
     "T357",
@@ -17470,7 +17529,8 @@
     "D-3882",
     "D-3883",
     "D-4053",
-    "D-4202"
+    "D-4202",
+    "D-4280"
    ],
    "cites": [],
    "budget": {
@@ -20338,6 +20398,7 @@
     "T520",
     "T522",
     "T523",
+    "T619",
     "T524",
     "T525",
     "T526",
@@ -20406,7 +20467,7 @@
    "budget": {
     "files": 1,
     "lines": 300,
-    "context_pct": 6
+    "context_pct": 10
    },
    "checks": [
     "Ci",
@@ -20996,6 +21057,7 @@
     "T520",
     "T522",
     "T523",
+    "T619",
     "T524",
     "T525",
     "T526",
