@@ -11,15 +11,28 @@
 //! T249 (CARD-024, D-1519): [`send_job_cards_in_reach`], [`send_late_cards_in_reach`] and
 //! [`coverage_in_reach`] carry a [`Reach`], so a business whose radius reaches the job's ZIP
 //! centroid is matched too; the functions without the suffix pass the empty `Reach` (towns only).
+//!
+//! T679 (LIC-046, INT-017, OPS-006, D-4360): [`request_coverage`] is the coverage intake asks for
+//! a new request: a category that is not "Open now", or a launch-open one with fewer than
+//! [`MIN_ACTIVE_BUSINESSES`] active businesses category-wide (`businesses::api::active_in_category`),
+//! is [`Coverage::NotCovered`]; otherwise it loads the job's pool and counts as
+//! [`coverage_in_reach`] does.
 
+use askhava_businesses::api::active_in_category;
 use askhava_jobs::api::current;
-use askhava_licensing::api::ClassMap;
+use askhava_licensing::api::{ClassMap, RequestIntake, request_intake};
 use jiff::Timestamp;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
+use crate::card_pool::card_pool;
+use crate::job_text::CardFacts;
 use crate::models::{self, CardBusiness, CardJob, Coverage, Pool, QuotesError, Reach, Recipient};
 use crate::rules;
+
+/// Active businesses a launch-open category needs, category-wide, before it takes homeowner
+/// requests (LIC-046, OPS-006; the setting's default, D-4360).
+pub const MIN_ACTIVE_BUSINESSES: u32 = 2;
 
 /// CARD-001, CARD-002, CARD-003: chooses every business that receives the job's card, with no cap,
 /// and records a card for each one not already holding one. Returns the recipients chosen.
@@ -160,4 +173,40 @@ pub fn coverage_in_reach(
 ) -> Result<Coverage, QuotesError> {
     let map = ClassMap::shipped().map_err(|_| QuotesError::LicenseMap)?;
     Ok(rules::coverage_in_reach(map, job, pool, reach))
+}
+
+/// LIC-046, INT-017, OPS-006, D-4360: the coverage for a new request in `town` at `zip` with the
+/// stored card's `facts` and the homeowner's band floor. `map`'s opening for the category and the
+/// category-wide active count go through `licensing::api::request_intake` with
+/// [`MIN_ACTIVE_BUSINESSES`]: only [`RequestIntake::Open`] loads the job's pool and counts as
+/// [`coverage_in_reach`] does; too few businesses, "Coming later" and an off category are
+/// [`Coverage::NotCovered`], so INT-017's reply and the move to Not covered follow.
+///
+/// # Errors
+///
+/// [`QuotesError::Business`] when the active count cannot be read, else [`card_pool`]'s errors.
+pub async fn request_coverage(
+    conn: &mut PgConnection,
+    map: &ClassMap,
+    ((town, zip), facts): ((&str, Option<&str>), &CardFacts),
+    band_floor_cents: Option<u64>,
+) -> Result<Coverage, QuotesError> {
+    let active = active_in_category(conn, &facts.category)
+        .await
+        .map_err(|_| QuotesError::Business)?;
+    let opening = map.opening(&facts.category);
+    if request_intake(opening, active, MIN_ACTIVE_BUSINESSES) != RequestIntake::Open {
+        return Ok(Coverage::NotCovered);
+    }
+    let pool = card_pool(conn, ((town, zip), facts), String::new(), band_floor_cents).await?;
+    let chosen = Pool {
+        businesses: &pool.businesses,
+        pauses: &pool.pauses,
+    };
+    Ok(rules::coverage_in_reach(
+        map,
+        &pool.job,
+        &chosen,
+        &pool.reach,
+    ))
 }
