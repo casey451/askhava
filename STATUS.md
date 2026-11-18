@@ -1,25 +1,27 @@
 # Ask Hava build status
 
-Updated 2026-11-18T11:32:27Z by runner 238b98bc9794 (actions).
+Updated 2026-11-18T11:34:50Z by runner 56a5f21e77fe (actions).
 
-**Building: T583 in progress since 11:19Z; 440 of 621 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T583 in progress since 11:19Z; 440 of 643 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 440 of 621 build tasks (owner gates not counted)
+- **Tasks done:** 440 of 643 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T583 claimed 11:19Z, lease until 14:19Z; lane 2: T662 claimed 11:26Z, lease until 14:26Z; lane 5: T408 claimed 09:13Z, lease until 14:31Z; lane 6: T200 claimed 09:05Z, lease until 14:29Z
+- **Lane:** lane 1: T583 claimed 11:19Z, lease until 14:19Z; lane 2: T662 claimed 11:26Z, lease until 14:26Z; lane 6: T200 claimed 09:05Z, lease until 14:29Z
 - **Week:** 53% used, 83.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:32Z, 0 min before this update
+- **Last run:** 11:32Z, 2 min before this update
 - **Keeper:** last ran 11:32Z, next wake 14:22Z
 
 ## Needs attention
+- BLOCKED T408: plan gap reported: PLAN GAP: kit/prompts/T408.md:54 "Size budget: at most 6 files, 800 changed lines" cannot be met. The prompt's own plan changes (D-3144, D-3879, D-4026, D-4326) require edits to at least 13 files (release_sink.rs, new release_hold.rs, release_proof.rs, server lib.rs, payments api.rs, server tests/safe_mode_release.rs, integration safe_mode.rs, ops safe_mode.rs, three NOTES.md, architecture.md, decisions.md), and tests for every held_release money branch (Stripe fetch failure, pick ended while held, no fee row) plus address_in through its registered handler, which the first review required (95%; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T408 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T563: plan gap reported: PLAN GAP: app/messaging/src/optout.rs:311 (suppress/record, owned by T029 and later tasks; T563 owns no messaging file) and kit/prompts/T563.md:9 (CROSS_SCHEMA_CALLS fixed at exactly one entry, messaging.last_message_at(). The sweep (head d7eb5dc64, all TD-CON-30 tests green, smoke and prehandin green) checks suppression via messaging::api::send_window before its per-number transaction, then clears the vault phone inside it. Review finding (unresolved): an opt-out via messaging::api::suppress (portal/email/owner paths) or a texted STOP committing between that check and the clear lets the sweep; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T563 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 26 problem(s) on tasks still to run (+226 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 28 problem(s) on tasks still to run (+221 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T408 | payments and server: a release waits while safe mode is on a | BLOCKED | 2 | 2 h 21 min | 11:34Z | PLAN GAP: kit/prompts/T408.md:54 "Size budget: at most 6 files, 800 changed lines" cannot be met. The prompt's own plan  |
 | T563 | intake and privacy: the daily consent sweep removes consent  | BLOCKED | 1 | 85 min | 11:21Z | PLAN GAP: app/messaging/src/optout.rs:311 (suppress/record, owned by T029 and later tasks; T563 owns no messaging file)  |
 | T658 | privacy: the scrubber removes lower-case Spanish addresses a | MERGE_PENDING | 2 | 51 min | 11:04Z | Fix-round review of head 18e4fd102f38620e11d1055ecb4d77813e2b2965 returned FINDINGS after the one allowed fix round (fir |
 | T650 | intake: the under-13 stop also deletes the request's job pho | done | 1 | 90 min | 10:39Z |  |
@@ -130,8 +132,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T583 (lease until 2026-11-18T14:19:34Z)
 - lane 2: T662 (lease until 2026-11-18T14:26:44Z)
-- lane 5: T408 (lease until 2026-11-18T14:31:54Z)
 - lane 6: T200 (lease until 2026-11-18T14:29:31Z)
 
 ## Last usage reading
-- {"task": "T563", "at": "2026-11-18T11:21:55Z", "cache_creation_input_tokens": 469777, "output_tokens": 111668, "input_tokens": 341, "cache_read_input_tokens": 14421572}
+- {"task": "T408", "at": "2026-11-18T11:34:50Z", "input_tokens": 364, "output_tokens": 128784, "cache_read_input_tokens": 18678569, "cache_creation_input_tokens": 431498}

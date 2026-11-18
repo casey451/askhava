@@ -55062,8 +55062,8 @@
     "T433",
     "T487"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 1,
+   "status": "BLOCKED",
+   "attempts": 2,
    "slug": "safe-mode-release-hold",
    "type": "build",
    "stage": "5",
@@ -55080,8 +55080,8 @@
     "model": "claude-opus-5-5",
     "alias": "opus"
    },
-   "reason": null,
-   "last_failure": "PLAN GAP: tests/integration/tests/safe_mode.rs:480-484 (owned by T487) fails on any `safe_mode_on(` call outside `payments/src/handlers.rs` and `app/ops/src/` (\"only charges read safe mode\"). This task's goal (D-3144, D-3879; OPS-001 at `docs/spec/ops-recovery.md:5`; TD-OPS-01 at `docs/test-design.md:811`, \"in safe mode no charge and no release happen\") requires `PickReleaser` and `address_in` in `app/server/src` to call `ops::api::safe_mode_on`. Smallest plan change: a harness task lets that scan also allow `server/src/release_hold.rs`, or the scan checks only that text paths never read safe mode.\nEvidence (run here): `cargo test -p askhava-integration --test safe_mode td_ops_01_every_action_checks` panicked at tests/integration/tests/safe_mode.rs:482:13 \"only charges read safe mode: app/server/src/release_hold.rs\"; 0 passed, 1 failed.\nReviewer confirmed: kit/tasks.json:16428 gives safe_mode.rs to T487; T408 owns neither it nor app/payments/src/handlers.rs; no T408 prompt line or decision foresees the scan (D-4000 at docs/decisions.md:2241, app/ops/src/safe_mode.rs:14 say only charges_paused reads it). Routing through charges_paused would also pause releases when the Charging/All switch is off, a behaviour change. Other notes for the plan fix: no ops::api writes ops.alert_push (T204 builds it, not a dependency), so tests need an injected safe-mode reader; the WIP diff was about 1,040 lines against the 450 budget, and it also touches app/payments/src/api.rs and app/server/src/lib.rs. Nothing was committed.\nre-queued after plan fix D-4026: D-4026 merged (#905): T408 harness, safe_mode.rs scan allows exactly the two release files; Opus triage + 3 Opus rounds",
+   "reason": "plan gap reported: PLAN GAP: kit/prompts/T408.md:54 \"Size budget: at most 6 files, 800 changed lines\" cannot be met. The prompt's own plan changes (D-3144, D-3879, D-4026, D-4326) require edits to at least 13 files (release_sink.rs, new release_hold.rs, release_proof.rs, server lib.rs, payments api.rs, server tests/safe_mode_release.rs, integration safe_mode.rs, ops safe_mode.rs, three NOTES.md, architecture.md, decisions.md), and tests for every held_release money branch (Stripe fetch failure, pick ended while held, no fee row) plus address_in through its registered handler, which the first review required (95%; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T408 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: kit/prompts/T408.md:54 \"Size budget: at most 6 files, 800 changed lines\" cannot be met. The prompt's own plan changes (D-3144, D-3879, D-4026, D-4326) require edits to at least 13 files (release_sink.rs, new release_hold.rs, release_proof.rs, server lib.rs, payments api.rs, server tests/safe_mode_release.rs, integration safe_mode.rs, ops safe_mode.rs, three NOTES.md, architecture.md, decisions.md), and tests for every held_release money branch (Stripe fetch failure, pick ended while held, no fee row) plus address_in through its registered handler, which the first review required (95% branch floor on payments).\nEvidence (run here): `git diff --shortstat origin/main...HEAD` = 14 files changed, 1106 insertions(+), 30 deletions(-) (1,136 changed lines; the first commit alone was 949+29). Production code ~290 lines; tests ~830 (server TD-OPS-40 test 624, payments unit test ~130, integration safe_mode.rs 79). Server tests may not write payments rows (architecture_migrations check_query_schemas), so the ended-pick branch needed a payments unit test (D-4021).\nReviewer (Opus, fresh) confirmed: PLAN GAP CONFIRMED; the code itself approved at 56a5f21e77fe6da7363db5abceb60648e88b6d22 (cargo test -p askhava-payments --lib release_proof 2 passed; -p askhava-server --test safe_mode_release 5 passed).\nWorker's checks at that head: fmt, clippy -D warnings clean; smoke.sh green; prehandin.sh green incl. \"ok coverage floor\" for app/payments and release_sink.rs (PREHANDIN_COVERAGE_TIMEOUT=1500); prehandin --ally red on j2_keyboard.spec.ts:149 (Stripe card mock timeout / heading not found / toHaveText, 2-3 failed of 807), which the reviewer judged unrelated to this branch (no page, template or route change).\nSmallest plan change: raise T408's budget to about 1,150 lines and 14 files (the branch's work is reviewed and can be reused), or split TD-OPS-40's tests into a follow-up task.",
    "history": [
     {
      "attempt": 1,
@@ -55103,6 +55103,29 @@
       "reviewer": {
        "tokens": 128435,
        "turns": 5
+      }
+     }
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 258,
+     "head_sha": "56a5f21e77fe6da7363db5abceb60648e88b6d22",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-18T09:13:07Z",
+     "ended_at": "2026-11-18T11:34:50Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 16955031,
+       "turns": 145
+      },
+      "reviewer": {
+       "tokens": 2284184,
+       "turns": 40
       }
      }
     }
@@ -77771,12 +77794,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T563",
-   "at": "2026-11-18T11:21:55Z",
-   "cache_creation_input_tokens": 469777,
-   "output_tokens": 111668,
-   "input_tokens": 341,
-   "cache_read_input_tokens": 14421572
+   "task": "T408",
+   "at": "2026-11-18T11:34:50Z",
+   "input_tokens": 364,
+   "output_tokens": 128784,
+   "cache_read_input_tokens": 18678569,
+   "cache_creation_input_tokens": 431498
   },
   "source": "session_reading 2026-11-18T11:22:33Z (week)",
   "by_task": {
@@ -81788,14 +81811,14 @@
     "estimated_bytes": 456521,
     "estimated_tokens": 1339059,
     "usage_counting": "message_id",
-    "cache_read_input_tokens": 7633892,
-    "input_tokens": 134,
-    "cache_creation_input_tokens": 198067,
-    "output_tokens": 66835,
-    "worker_tokens": 7770493,
-    "worker_turns": 63,
-    "reviewer_tokens": 128435,
-    "reviewer_turns": 5,
+    "cache_read_input_tokens": 26312461,
+    "input_tokens": 498,
+    "cache_creation_input_tokens": 629565,
+    "output_tokens": 195619,
+    "worker_tokens": 24725524,
+    "worker_turns": 208,
+    "reviewer_tokens": 2412619,
+    "reviewer_turns": 45,
     "last_model": "claude-opus-5-5"
    },
    "T221": {
@@ -82710,11 +82733,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-18T07:49:11Z",
-    "tokens": 9717024
+    "tokens": 12145526
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 287579813
+    "tokens": 290008315
    }
   },
   "session_reading": {
@@ -82725,7 +82748,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T11:32:27Z",
+ "updated_at": "2026-11-18T11:34:50Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -82823,7 +82846,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "238b98bc97944ce13d37c8626f3a59ce20a0f23d",
+ "runner_sha": "56a5f21e77fe6da7363db5abceb60648e88b6d22",
  "starter": "actions",
  "smoke_runs": [
   {
