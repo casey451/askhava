@@ -16,6 +16,7 @@ mod purge_events;
 mod quote_token;
 mod request_counts;
 mod rules;
+mod scorecard_inputs;
 mod service;
 mod status;
 mod timer_backstop;
