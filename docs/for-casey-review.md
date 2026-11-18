@@ -3347,7 +3347,7 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **Auto-confirm, once you file Stripe's written answer, actually charges a ticked quote picked with a code**, and a business whose tick was voided is told (T689).
 - **Decided by Fable on November 18 (D-4425):** a business on text that replies "YES 1042" gets the Confirm link on that same phone, and the security code the Confirm page asks for also goes to that phone, so whoever holds the phone can confirm and pay, at every fee size. The one limit: a sign-in that starts from a texted Confirm link lasts 30 minutes instead of 30 days (T714).
 - **Open item:** auto-confirm only works for a pick made with a code on the quote page; no task builds picking from the homeowner portal yet.
-- **Decided by Fable on November 18 (D-4423):** who files a complaint about a business (the earlier open question, D-301 item 12). You do, with a "Count as a complaint" button on a check-in PROBLEM report (T711 to T713).
+- **Decided by Fable on November 18 (D-4423):** who files a complaint about a business (the earlier open question, D-301 item 12). You do, with a "Count as a complaint" button on a check-in PROBLEM report (T721 to T713).
 - Nothing new needs you now.
 
 ## A finished task could wait for ever to be merged (D-4392)
