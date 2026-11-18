@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T22:12:49Z by runner 42b0b6bcb0ae (actions).
+Updated 2026-11-18T22:13:05Z by runner 42b0b6bcb0ae (actions).
 
 **Building: T583 in progress since 21:55Z; 460 of 663 done; week 69% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-18T22:12:49Z by runner 42b0b6bcb0ae (actions).
 - **Lane:** lane 5: T583 claimed 21:55Z, lease until 00:55Z; lane 7: T504 claimed 22:07Z, lease until 01:07Z
 - **Week:** 69% used, 54.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 22:12Z, 0 min before this update
-- **Keeper:** last ran 22:06Z, next wake 22:26Z
+- **Keeper:** last ran 22:13Z, next wake 22:33Z
 
 ## Needs attention
 - BLOCKED T715: plan gap reported: PLAN GAP: `app/server/tests/name_address_answer.rs:262`–`:264` (owned by T432, not this task) expects the name-and-address question (step 11) to be asked on the first reply after the area check, even when step 5 never told the coverage. That is the behaviour D-4441 correction (5) removes, so the test is red with T715's change. Smallest plan change: a harness follow-up (T715's attempt or a new task) that may change that test's `her_request` setup so step 5 finishes before step 11 is expected (e.g. first text through the full reply path / receive_raw_reply, or a reply naming a trade, with covera; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T715 --plan-fix D-### --reason "..."` (D-2859)
