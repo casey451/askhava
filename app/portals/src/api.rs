@@ -124,6 +124,12 @@ pub use crate::emergency_switch_page::{
     emergency_switch_page_with_box, held_back_link, missing_steps, post_step,
 };
 pub use crate::feedback::{FEEDBACK_ROUTE, feedback_routes, share_label};
+pub use crate::help::{
+    GET_HELP_ANSWER_TEMPLATE, GET_HELP_MESSAGE_MAX, GET_HELP_ROUTE, GetHelpForm, GetHelpInput,
+    GetHelpScreen, GetHelpSent, HELP_FORM_ALL, HELP_FORM_PER_IP, HELP_FORM_ROUTE, HelpError,
+    HelpFormScreen, Problem, Topic, admit_help_form, get_help_answer, get_help_page,
+    help_form_client, help_form_page, send_get_help, send_help_form,
+};
 pub use crate::homeowner_portal::{
     HOMEOWNER_CODE_ROUTE, HOMEOWNER_HOME_ROUTE, HOMEOWNER_SESSION_LIFE, HOMEOWNER_SIGNIN_ROUTE,
     HomeFacts, HomeownerError, OnFile, PortalScreen, TEXTS_OFF_LINE, TEXTS_OFF_ROUTE,
