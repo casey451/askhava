@@ -115,13 +115,13 @@ Through D-582. Reader layer over the append-only `docs/decisions.md` (D-3856, D-
 - D-331 (licensing) BIZ-044: a monthly email when at least 3 cards came and half ended unquoted, pointing to the deliverability steps.
 - D-336 (licensing) FEE-022's decision email says which condition was met; BIZ-022: the public business name passes the same channel and link rules.
 - D-346 (licensing) CARD-021: emergency card and pick emails carry an EMERGENCY subject and first line; at night only to people with "Emergency emails at any hour" at after-hours businesses, others at 8 a.m.
+- D-181, D-456 (licensing) The founding interest list is Casey's own, never built from the ROC or city lists; BIZ-048: recruiting is mostly self-serve: hand-written local Facebook group posts by Casey, disclosed, never automated or paid; plus the site, asked-for email and a few visits.
 - D-374 (licensing) BIZ-048: Laftly never texts or calls a business to recruit it; recruiting emails follow CAN-SPAM.
 - D-376, D-402, D-403, D-417 (licensing) Pest control only for attested Department of Agriculture licensees (cards say not independently verified), never advertised; inspections only to certified inspectors, sale-related ones fee-free; LIC-042 no warranties.
 - D-392 (licensing) `docs/catalog/license_map.yaml` maps classes to job types (LIC-043: CR- includes its R-, KB includes B, B and B-3 never trade types); LIC-044 commercial-only licenses not activated; LIC-035 reads subclasses.
 - D-393 (licensing) BIZ-049: job types arrive pre-ticked from the license, plus towns, largest job, recurring and after-hours; BIZ-050 a license change drops types at once, offers new ones unticked; no card for partial coverage.
 - D-404 (licensing) Garage doors and junk removal stay off; an unconfirmed category stays off (LIC-005).
 - D-439 (licensing) BIZ-052: optional Google and Yelp links (domain-checked) and every license number held, shown on every quote card.
-- D-456 (licensing) BIZ-048: recruiting is mostly self-serve: hand-written local Facebook group posts by Casey, disclosed, never automated or paid; plus the site, asked-for email and a few visits.
 - D-457 (licensing) BIZ-053 and INT-047 record where sign-ups and requests came from (`g` code or "text"); codes never name a person or reach routing.
 - D-463 (licensing) BIZ-054: one optional reason question when a business leaves or pauses over 14 days; answers only go to the weekly digest.
 - D-504 (licensing) `license_map.yaml` scopes R-37R and R-39R subclasses with `scope_tags`; `check_catalog.py` fails unscoped rows, untagged types and enabled licensed types no class covers.
@@ -427,7 +427,6 @@ Through D-582. Reader layer over the append-only `docs/decisions.md` (D-3856, D-
 - D-148 -> D-365
 - D-155 -> D-437
 - D-178 -> D-344
-- D-181 -> D-456
 - D-182 -> D-402
 - D-183 -> D-349
 - D-187 -> D-312

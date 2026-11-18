@@ -61,12 +61,15 @@
   "D-155": "D-437",
   "D-216": "D-437",
   "D-212": "D-440",
-  "D-181": "D-456",
   "D-455": "D-495",
   "D-511": "D-512",
   "D-422": "D-460"
  },
  "partial": {
+  "D-181": {
+   "by": "D-456",
+   "cut": "and signs up with each in person during launch week"
+  },
   "D-465": {
    "by": "D-1494",
    "cut": "FEE-040's price lock for early joiners is 6 months, not 12, so a later fee change can reach pilot businesses sooner, and the business terms say so"
