@@ -38,6 +38,7 @@ pub use crate::account_emails::{
     AccountDirectory, AccountMailer, NO_ACCOUNT_SENDER, PHONE_STOPPED_EMAIL, WELCOME_EMAIL,
     run_phone_stopped, run_welcome,
 };
+pub use crate::active_count::active_in_category;
 pub use crate::backup_address::{
     BACKUP_CHANGED_KIND, backup_changed_words, confirm_backup, notice_addresses, remove_backup,
     request_backup,
