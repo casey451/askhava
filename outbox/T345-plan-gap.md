@@ -2,6 +2,7 @@
 id: T345-plan-gap
 title: T345: plan gap reported, blocked for a plan fix
 kind: blocked
+dispatched: 2026-11-18
 ---
 T345's worker reported that only a plan change can unblock it; the task is BLOCKED and is not retried on its unchanged prompt.
 

@@ -2,6 +2,7 @@
 id: lanes-fallback
 title: Runner: back to one lane
 kind: info
+dispatched: 2026-11-18
 ---
 Lane 4 had 2 harness-type failures in a row, so the runner now works one task at a time (kit/runner.json still says more):
 - T414 check_failed: Twin: failure
