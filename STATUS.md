@@ -1,25 +1,27 @@
 # Ask Hava build status
 
-Updated 2026-11-18T11:21:52Z by runner 238b98bc9794 (actions).
+Updated 2026-11-18T11:22:03Z by runner d7eb5dc64d18 (actions).
 
 **Building: T583 in progress since 11:19Z; 440 of 621 done; week 53% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 440 of 621 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T583 claimed 11:19Z, lease until 14:19Z; lane 2: T563 claimed 09:55Z, lease until 14:12Z; lane 5: T408 claimed 09:13Z, lease until 13:23Z; lane 6: T200 claimed 09:05Z, lease until 13:36Z
+- **Lane:** lane 1: T583 claimed 11:19Z, lease until 14:19Z; lane 5: T408 claimed 09:13Z, lease until 13:23Z; lane 6: T200 claimed 09:05Z, lease until 13:36Z
 - **Week:** 53% used, 85.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:21Z, 0 min before this update
 - **Keeper:** last ran 11:05Z, next wake 12:58Z
 
 ## Needs attention
+- BLOCKED T563: plan gap reported: PLAN GAP: app/messaging/src/optout.rs:311 (suppress/record, owned by T029 and later tasks; T563 owns no messaging file) and kit/prompts/T563.md:9 (CROSS_SCHEMA_CALLS fixed at exactly one entry, messaging.last_message_at(). The sweep (head d7eb5dc64, all TD-CON-30 tests green, smoke and prehandin green) checks suppression via messaging::api::send_window before its per-number transaction, then clears the vault phone inside it. Review finding (unresolved): an opt-out via messaging::api::suppress (portal/email/owner paths) or a texted STOP committing between that check and the clear lets the sweep; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T563 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T662 (since 2026-11-18T11:19:34Z, no attempt used; a plan change fixes it): T662: dependency T650 is DONE but its owned file tests/integration/tests/under_13_purge_job_data.rs is not on main
-- Strict plan check red: 26 problem(s) on tasks still to run (+226 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 27 problem(s) on tasks still to run (+220 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T563 | intake and privacy: the daily consent sweep removes consent  | BLOCKED | 1 | 85 min | 11:21Z | PLAN GAP: app/messaging/src/optout.rs:311 (suppress/record, owned by T029 and later tasks; T563 owns no messaging file)  |
 | T658 | privacy: the scrubber removes lower-case Spanish addresses a | MERGE_PENDING | 2 | 51 min | 11:04Z | Fix-round review of head 18e4fd102f38620e11d1055ecb4d77813e2b2965 returned FINDINGS after the one allowed fix round (fir |
 | T650 | intake: the under-13 stop also deletes the request's job pho | done | 1 | 90 min | 10:39Z |  |
 | T641 | Runner (harness): merge train depth 2, the next branch's upd | done | 1 | 55 min | 10:29Z |  |
@@ -132,9 +134,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T583 (lease until 2026-11-18T14:19:34Z)
-- lane 2: T563 (lease until 2026-11-18T14:12:16Z)
 - lane 5: T408 (lease until 2026-11-18T13:23:31Z)
 - lane 6: T200 (lease until 2026-11-18T13:36:41Z)
 
 ## Last usage reading
-- {"task": "T658", "at": "2026-11-18T11:04:12Z", "output_tokens": 35365, "cache_read_input_tokens": 2474484, "input_tokens": 90, "cache_creation_input_tokens": 121409}
+- {"task": "T563", "at": "2026-11-18T11:21:55Z", "cache_creation_input_tokens": 469777, "output_tokens": 111668, "input_tokens": 341, "cache_read_input_tokens": 14421572}

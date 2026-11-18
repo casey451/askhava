@@ -71457,8 +71457,8 @@
    "deps": [
     "T321"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "consent-purge-sweep",
    "type": "harness",
    "stage": "5",
@@ -71474,7 +71474,34 @@
    "window_model": {
     "model": "claude-opus-5-5",
     "alias": "opus"
-   }
+   },
+   "reason": "plan gap reported: PLAN GAP: app/messaging/src/optout.rs:311 (suppress/record, owned by T029 and later tasks; T563 owns no messaging file) and kit/prompts/T563.md:9 (CROSS_SCHEMA_CALLS fixed at exactly one entry, messaging.last_message_at(). The sweep (head d7eb5dc64, all TD-CON-30 tests green, smoke and prehandin green) checks suppression via messaging::api::send_window before its per-number transaction, then clears the vault phone inside it. Review finding (unresolved): an opt-out via messaging::api::suppress (portal/email/owner paths) or a texted STOP committing between that check and the clear lets the sweep; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T563 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: app/messaging/src/optout.rs:311 (suppress/record, owned by T029 and later tasks; T563 owns no messaging file) and kit/prompts/T563.md:9 (CROSS_SCHEMA_CALLS fixed at exactly one entry, messaging.last_message_at(). The sweep (head d7eb5dc64, all TD-CON-30 tests green, smoke and prehandin green) checks suppression via messaging::api::send_window before its per-number transaction, then clears the vault phone inside it. Review finding (unresolved): an opt-out via messaging::api::suppress (portal/email/owner paths) or a texted STOP committing between that check and the clear lets the sweep wipe the locked phone of a now-listed number, breaking goal part (2)/D-079 (a listed number keeps its locked phone). No in-scope fix closes it: vault reads are refused inside a transaction (app/privacy/src/vault.rs:584-588) so send_window can't re-check there; models::listing is pub(crate); intake SQL may not name messaging.* beyond the one exception (tests/integration/tests/architecture_migrations.rs:7-9, :75-77); suppress/record (optout.rs:311-349) take no lock and touch no privacy row the sweep's clear (app/privacy/src/consent_phone.rs:60-76) locks; SERIALIZABLE doesn't apply since suppress runs read-committed with its phone read before its transaction. Reviewer confirmed the ownership claim, with a correction: rotate_batch (vault.rs:767-797) does not rebuild messaging.suppression, so the racing listing itself survives rotation while v1 is kept; what breaks is the keep-the-phone rule. Smallest plan change: let T563 also own app/messaging/src/consent_purge.rs and app/messaging/src/optout.rs: record takes a transaction-scoped advisory lock per digest; a new messaging::api reader listed_locked(tx, digests) -> bool takes the same locks and the sweep calls it right before clear_consent_phone; or the plan accepts the residual window in a logged decision. Then rewrite D-4387 and the //! header of app/intake/src/consent_purge.rs (they claim \"a text that arrived after the check never loses its phone\", true only when it commits before log_due reads).",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 231,
+     "head_sha": "d7eb5dc64d18c2d73868165fcbfb9f28a1243b57",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-18T09:55:56Z",
+     "ended_at": "2026-11-18T11:21:55Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 13127376,
+       "turns": 133
+      },
+      "reviewer": {
+       "tokens": 1875982,
+       "turns": 39
+      }
+     }
+    }
+   ]
   },
   {
    "id": "T562",
@@ -77737,12 +77764,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T658",
-   "at": "2026-11-18T11:04:12Z",
-   "output_tokens": 35365,
-   "cache_read_input_tokens": 2474484,
-   "input_tokens": 90,
-   "cache_creation_input_tokens": 121409
+   "task": "T563",
+   "at": "2026-11-18T11:21:55Z",
+   "cache_creation_input_tokens": 469777,
+   "output_tokens": 111668,
+   "input_tokens": 341,
+   "cache_read_input_tokens": 14421572
   },
   "source": "session_reading 2026-11-18T11:04:46Z (week)",
   "by_task": {
@@ -82652,7 +82679,17 @@
    },
    "T563": {
     "estimated_bytes": 472457,
-    "estimated_tokens": 1382298
+    "estimated_tokens": 1382298,
+    "usage_counting": "message_id",
+    "cache_creation_input_tokens": 469777,
+    "output_tokens": 111668,
+    "input_tokens": 341,
+    "cache_read_input_tokens": 14421572,
+    "worker_tokens": 13127376,
+    "worker_turns": 133,
+    "reviewer_tokens": 1875982,
+    "reviewer_turns": 39,
+    "last_model": "claude-opus-5-5"
    },
    "T583": {
     "estimated_bytes": 367321,
@@ -82662,11 +82699,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-18T07:49:11Z",
-    "tokens": 7693081
+    "tokens": 9717024
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 285555870
+    "tokens": 287579813
    }
   },
   "session_reading": {
@@ -82677,7 +82714,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T11:21:52Z",
+ "updated_at": "2026-11-18T11:22:03Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -82775,7 +82812,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "238b98bc97944ce13d37c8626f3a59ce20a0f23d",
+ "runner_sha": "d7eb5dc64d18c2d73868165fcbfb9f28a1243b57",
  "starter": "actions",
  "smoke_runs": [
   {
