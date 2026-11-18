@@ -113,7 +113,7 @@ pub const UPDATE_TEXTS: [(&str, Shape); 25] = [
 /// intake), the card review texts (INT-041), and the command replies that are not updates
 /// (CLOSE, LIST-which, the other `text_pick_*` replies, the missed-call note). A template is
 /// in this list or in [`UPDATE_TEXTS`], never both (`src/tests/update_texts.rs`).
-pub const NOT_UPDATE_TEXTS: [&str; 44] = [
+pub const NOT_UPDATE_TEXTS: [&str; 45] = [
     "consent",
     "consent_safety_call",
     "who_is_this",
@@ -143,6 +143,7 @@ pub const NOT_UPDATE_TEXTS: [&str; 44] = [
     "coverage_count_many",
     "coverage_count_one",
     "split_offer",
+    "two_jobs",
     "quote_list_which",
     "intake_reminder",
     "intake_closed_no_reply",

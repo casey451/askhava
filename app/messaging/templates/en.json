@@ -204,6 +204,11 @@
     "segments": 1,
     "text": "{brand_short}: This needs 2 kinds of business. Reply SPLIT to send it as 2 requests, one per trade."
   },
+  "two_jobs": {
+    "audience": "homeowner",
+    "segments": 1,
+    "text": "{brand_short}: That's 2 jobs. We'll start with {trade}. Reply ALSO to start {business} too."
+  },
   "quote_update": {
     "audience": "homeowner",
     "segments": 2,
