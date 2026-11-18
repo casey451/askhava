@@ -3283,3 +3283,18 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **Cards stop going to a business whose license check went bad or stale** (latest check not Active, or nothing fresh in 72 hours), so a homeowner never spends a pick on a business that can't confirm (T654). If the state list is down past 72 hours and lookups fail too, ROC cards stop until it is back; you get the list-failure alert before that.
 - **License pauses now work both ways** (T655, T654): the state list now re-checks every ROC business each day, so the license date on a quote card is that day's check; a business whose license can't be checked is emailed (at 24 hours, or at once if it is already near the cut-off) and paused when its last good check is 72 hours old, the same moment its cards stop, and the pause lifts by itself with no review once a check shows Active; both show in your weekly digest's counts.
 - Two small fixes: a second texting line's delivery problem is now alerted even right after the first line recovers (T652), and three more background steps follow the test clock so the end-to-end tests see reminders and auto-sends (T600). Nothing needs you now except the inspector and alarm choice above, whenever you like.
+## Scout fixes: help form, notice emails, backups, HELP answers (D-4293)
+
+- **Data delete or copy requests through the help form or the help email** now open a help request and point the person to the portal sign-in, where the texted code proves the number before anything is deleted or copied. The privacy rule already said signing in counts; nothing is deleted or copied without that code.
+- **The help form gets an optional phone field**, so "no more texts" typed there can actually stop texts to that number; without a number, the page says to text STOP.
+- **The business help page links "Get help"**, as the spec says; the plan's check had forbidden it.
+- **Business notice emails would all have failed** once real addresses were wired in (the address read refuses to run inside a database transaction); T490 now reads the addresses first.
+- **The nightly backup would have failed** on the app's database login, which cannot read the counters `pg_dump` needs. A separate read-only backup login is added, and the monthly test restore (now its own task, T648) runs on a throwaway database server, never the live one. When we set up hosting, that is one extra small service and two more settings.
+- Nothing needs you now.
+
+## Spot-review fixes: web chat names, child data, owner sign-in limits (D-4294)
+
+- **The web chat could keep a homeowner's name with her job description.** If she answered the "name and address" question in the chat instead of by text, the answer skipped her private record and her first name could end up on the job card. T649 sends it to her private record, and also removes her name from chat messages the way texts already do.
+- **When a child under 13 is stopped,** their photos and job words are now deleted with the rest of the request (T650).
+- **Your owner sign-in gets three locks fixed** (T651): only a few tries at the step-up code before the session ends; strangers flooding wrong passwords can no longer lock out your passkey sign-in; and nobody can use up the passkey sign-in slots.
+- Nothing needs you now.
