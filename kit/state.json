@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "phase": "kit",
- "current": "T505",
+ "current": "T708",
  "backup_runner": "on",
  "ruleset_verified": true,
  "lease": null,
@@ -82268,17 +82268,23 @@
    "deps": [
     "T583"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 0,
    "slug": "quote-update-quiet-hours",
    "type": "build",
    "stage": "5",
-   "plan_gap": {
-    "at": "2026-11-18T23:48:09Z",
-    "problems": [
-     "T708: dependency T583 is DONE but its owned file app/intake/src/quote_updates.rs is not on main",
-     "T708: dependency T583 is DONE but its owned file tests/integration/tests/quote_update_texts.rs is not on main"
-    ]
+   "attempt_started_at": "2026-11-18T23:50:23Z",
+   "lane": "5",
+   "decision_ids": [
+    4571,
+    4572,
+    4573,
+    4574,
+    4575
+   ],
+   "window_model": {
+    "model": "claude-opus-5-5",
+    "alias": "opus"
    }
   },
   {
@@ -87993,6 +87999,10 @@
    "T505": {
     "estimated_bytes": 153054,
     "estimated_tokens": 441928
+   },
+   "T708": {
+    "estimated_bytes": 325070,
+    "estimated_tokens": 938607
    }
   },
   "windows": {
@@ -88013,7 +88023,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T23:48:23Z",
+ "updated_at": "2026-11-18T23:50:36Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -88111,17 +88121,9 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "0ad3a89064cf7e52d304ef03533b06faeb13eac3",
+ "runner_sha": "c59d9af9418eb7b3ab99803337e881a42303f44c",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "3047ec5266bbc4fe22801f9b96e0c82da0e9c95c",
-   "ok": true,
-   "at": "2026-11-18T19:14:09Z",
-   "why": "start routine (ancestry reuse of 935e6983d16c, 2026-11-18T19:13:33Z)",
-   "reused": "2026-11-18T19:13:33Z",
-   "base": "935e6983d16cf4a603927b944ffaab5743158a45"
-  },
   {
    "sha": "3047ec5266bbc4fe22801f9b96e0c82da0e9c95c",
    "ok": true,
@@ -88271,24 +88273,32 @@
    "why": "start routine (ancestry reuse of 2b9452a4f8a9, 2026-11-18T23:21:11Z)",
    "reused": "2026-11-18T23:21:11Z",
    "base": "2b9452a4f8a956283b07dfd7010d86ae94787d08"
+  },
+  {
+   "sha": "c59d9af9418eb7b3ab99803337e881a42303f44c",
+   "ok": true,
+   "at": "2026-11-18T23:50:23Z",
+   "why": "start routine (ancestry reuse of 2b9452a4f8a9, 2026-11-18T23:21:11Z)",
+   "reused": "2026-11-18T23:21:11Z",
+   "base": "2b9452a4f8a956283b07dfd7010d86ae94787d08"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T505 estimated 442k tokens (calibrated); week has 47.8M left (no five-hour budget, D-3056) after 6.2M still running in another lane (session_reading 2026-11-18T23:37:13Z (week)); running to the limit (model window, D-2225), claimed",
-  "at": "2026-11-18T23:48:09Z",
+  "last": "T708 estimated 939k tokens (calibrated); week has 47.3M left (no five-hour budget, D-3056) after 6.7M still running in another lane (session_reading 2026-11-18T23:37:13Z (week)); running to the limit (model window, D-2225), claimed",
+  "at": "2026-11-18T23:50:23Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "week": {
-    "used": 146227201,
+    "used": 146669129,
     "budget": 194000000,
-    "left": 47772799,
+    "left": 47330871,
     "resets_at": "2026-11-19T17:00:00Z"
    }
   },
-  "remaining_estimate": 392693236,
-  "projected_finish": "2026-12-03T03:52:01Z"
+  "remaining_estimate": 393317895,
+  "projected_finish": "2026-12-03T04:26:42Z"
  },
  "main_red_history": [
   {
@@ -88406,7 +88416,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 4571,
+ "next_decision": 4576,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
