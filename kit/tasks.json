@@ -44893,7 +44893,7 @@
    "id": "T683",
    "slug": "business-yes-text",
    "title": "server and picks: a business's \"YES 1042\" or \"CONFIRM 1042\" text gets the fee and the Confirm link",
-   "goal": "Plan change D-4361 (unwired sweep orphan 6 and its second pass, `main` 77a49d7cc; round-1 review; PICK-033, FEE-036, PICK-035, BIZ-036, QH-004; D-259, D-365, D-1717, D-2042). `read_business_word` and `business_reply` (`app/picks/src/confirm.rs:315`, `:347`) have no caller: a whole-command text makes `auto_reply_due` false (`app/businesses/src/consent.rs:542`) and `auto_reply` ends with `Halt::Ends(\"business\")` (`app/server/src/inbound_text.rs:1050` to `:1057`), so a business on text that replies \"YES 1042\" hears nothing. (1) `inbound_text.rs`: after the opt-out and HELP screens (an opt-out word always wins, D-2039), a business phone's text that `read_business_word` reads goes to the new `app/picks/src/text_confirm.rs` before `auto_reply`. (2) `text_confirm.rs` (pure reads, no link): for a business whose channel preference includes text (BIZ-036), the job number names the waiting pick of that business (the word alone only when it has exactly one waiting); it answers the pick, its fee and whether the window is open, with `business_reply`'s `linked` true only for a directory line of the picked business that `acts_for_business` accepts (a staff phone still waiting for approval is not linked). (3) The link is minted in `inbound_text.rs`, never in `picks` (which may not call `portals`, `kit/layers.json`): `portals::api::mint_action_link` (`app/portals/src/action_links.rs:251`) for the member that texting line belongs to, which refuses a member without \"Confirm and billing\" (`:128`). The replies: a linked member with the role gets \"Laftly: Fee $<amount>. Confirm and pay here: <link>.\"; a linked member without the role, and a directory line with no member (the business's own line), get a new reply with no link, \"Laftly: Only the owner or a Confirm and billing member can confirm job <n>. The pick email has the Confirm link.\" (English and Spanish in `app/messaging/templates/`); after the window the expired reply; another business's phone nothing. YES and CONFIRM (and SÍ, CONFIRMAR) get the same answer and neither ever confirms or charges (PICK-033, FEE-036, D-365). (4) The reply is addressed to the texting phone's line ID, as T573 addresses business texts (D-2042: a business-ID row cannot pass `may_text`), and queued with `messaging::api::enqueue_exempt` with `Exemption::DirectReply { inbound_at }` from the inbound text's time (QH-004's 15 minutes), once per inbound message (a provider resend of the same message SID replies once). Tests in the new `app/server/tests/business_yes_text.rs` (TD-PICK-69), through the assembled router with the texting stand-in, fake data only. Update `app/picks/NOTES.md`, `app/server/NOTES.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4361 (unwired sweep orphan 6 and its second pass, `main` 77a49d7cc; round-1 review; PICK-033, FEE-036, PICK-035, BIZ-036, QH-004; D-259, D-365, D-1717, D-2042). `read_business_word` and `business_reply` (`app/picks/src/confirm.rs:315`, `:347`) have no caller: a whole-command text makes `auto_reply_due` false (`app/businesses/src/consent.rs:542`) and `auto_reply` ends with `Halt::Ends(\"business\")` (`app/server/src/inbound_text.rs:1050` to `:1057`), so a business on text that replies \"YES 1042\" hears nothing. (1) `inbound_text.rs`: after the opt-out and HELP screens (an opt-out word always wins, D-2039), a business phone's text that `read_business_word` reads goes to the new `app/picks/src/text_confirm.rs` before `auto_reply`. (2) `text_confirm.rs` (pure reads, no link): for a business whose channel preference includes text (BIZ-036), the job number names the waiting pick of that business (the word alone only when it has exactly one waiting); it answers the pick, its fee and whether the window is open, with `business_reply`'s `linked` true only for a directory line of the picked business that `acts_for_business` accepts (a staff phone still waiting for approval is not linked). (3) The link is minted in `inbound_text.rs`, never in `picks` (which may not call `portals`, `kit/layers.json`): `portals::api::mint_action_link` (`app/portals/src/action_links.rs:251`) for the member that texting line belongs to, read through a new `businesses::api::phone_member(db, line)` in `app/businesses/src/phone_approval.rs` (beside `phone_standing`, `:132`; `businesses.staff_phone.linked_by`, `migrations/0056_businesses_team_members.sql:35`; none for a line with no member), which refuses a member without \"Confirm and billing\" (`:128`). The replies: a linked member with the role gets \"Laftly: Fee $<amount>. Confirm and pay here: <link>.\"; a linked member without the role, and a directory line with no member (the business's own line), get a new reply with no link, \"Laftly: Only the owner or a Confirm and billing member can confirm job <n>. The pick email has the Confirm link.\" (English and Spanish in `app/messaging/templates/`); after the window the expired reply; another business's phone nothing. YES and CONFIRM (and SÍ, CONFIRMAR) get the same answer and neither ever confirms or charges (PICK-033, FEE-036, D-365). (4) The reply is addressed to the texting phone's line ID, as T573 addresses business texts (D-2042: a business-ID row cannot pass `may_text`), and queued with `messaging::api::enqueue_exempt` with `Exemption::DirectReply { inbound_at }` from the inbound text's time (QH-004's 15 minutes), once per inbound message (a provider resend of the same message SID replies once). Tests in the new `app/server/tests/business_yes_text.rs` (TD-PICK-69), through the assembled router with the texting stand-in, fake data only. Update `app/picks/NOTES.md`, `app/server/NOTES.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -44919,6 +44919,7 @@
    "owns": [
     "app/server/src/inbound_text.rs",
     "app/picks/src/text_confirm.rs",
+    "app/businesses/src/phone_approval.rs",
     "app/server/tests/business_yes_text.rs"
    ],
    "reads": [
@@ -44952,8 +44953,8 @@
    ],
    "cites": [],
    "budget": {
-    "files": 3,
-    "lines": 420,
+    "files": 4,
+    "lines": 460,
     "context_pct": 22
    },
    "checks": [
@@ -44969,7 +44970,7 @@
    "id": "T684",
    "slug": "open-cards-email",
    "title": "picks and server: the open-cards email goes at the times each card recipient chose",
-   "goal": "Plan change D-4361 (unwired sweep orphan 7 and its second pass, `main` 77a49d7cc; CARD-022, BIZ-037, BIZ-038; D-1993). The portal saves each member's open-cards times (`save_open_cards_times`, `app/server/src/business_portal.rs:407`) and `picks` builds the email (`open_cards_email` and `chosen_minutes`, `app/picks/src/open_cards_email.rs:179`, `:59`; `messaging::api::digest_goes`, `app/messaging/src/open_cards_digest.rs:57`), but no task kind, schedule or sender exists, so nobody ever gets it. The new `app/picks/src/open_cards_run.rs`: an hourly `picks.open_cards_email` run (registered in the shared `app/server/src/lib.rs`, scheduled in the shared `app/server/src/bin/worker.rs`, the worker clock's now) that, for each member who gets job cards (BIZ-037) whose chosen slot (8 a.m., noon or 5 p.m. Arizona time, 5 p.m. by default) is due, lists the cards the business has not quoted with at least 1 hour (a setting) of the window left, sends only when `digest_goes` says so, once per member and slot (dedupe key), with the pick-waiting subject and the pick first while a pick waits for that member's business, as one email; each card shows only trade, town, end time and its Quote link (BIZ-038, no homeowner detail). Each email is stored with `messaging::api::queue_email` as `EmailClass::Bulk` (`app/messaging/src/email.rs:140` to `:146`, `:390`), never through the business-notice path, which stores every email as non-bulk (`app/messaging/src/business_notices.rs:409`), so above 90% of the day's email limit it waits for the reset (OPS-038). Tests in the new `tests/integration/tests/open_cards_email_run.rs` (TD-CARD-18), PostgreSQL, fake data only. Update `app/picks/NOTES.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4361 (unwired sweep orphan 7 and its second pass, `main` 77a49d7cc; CARD-022, BIZ-037, BIZ-038; D-1993). The portal saves each member's open-cards times (`save_open_cards_times`, `app/server/src/business_portal.rs:407`) and `picks` builds the email (`open_cards_email` and `chosen_minutes`, `app/picks/src/open_cards_email.rs:179`, `:59`; `messaging::api::digest_goes`, `app/messaging/src/open_cards_digest.rs:57`), but no task kind, schedule or sender exists, so nobody ever gets it. The new `app/picks/src/open_cards_run.rs`: an hourly `picks.open_cards_email` run (registered in the shared `app/server/src/lib.rs`, scheduled in the shared `app/server/src/bin/worker.rs`, the worker clock's now) that, for each member who gets job cards (BIZ-037) whose chosen slot (8 a.m., noon or 5 p.m. Arizona time, 5 p.m. by default) is due, lists the cards the business has not quoted with at least 1 hour (a setting) of the window left, sends only when `digest_goes` says so, once per member and slot (dedupe key), with the pick-waiting subject and the pick first while a pick waits for that member's business, as one email; each card shows only trade, town, end time and its Quote link (BIZ-038, no homeowner detail). `queue_email` renders only the closed `messaging::Notice` enum (`app/messaging/src/email.rs:151`), so this task adds a `Notice::OpenCards` variant there with its English and Spanish words (after T470, the queued owners of `email.rs`). Each email is stored with `messaging::api::queue_email` as `EmailClass::Bulk` (`app/messaging/src/email.rs:140` to `:146`, `:390`), never through the business-notice path, which stores every email as non-bulk (`app/messaging/src/business_notices.rs:409`), so above 90% of the day's email limit it waits for the reset (OPS-038). Tests in the new `tests/integration/tests/open_cards_email_run.rs` (TD-CARD-18), PostgreSQL, fake data only. Update `app/picks/NOTES.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -44984,6 +44985,7 @@
     "privacy"
    ],
    "owns": [
+    "app/messaging/src/email.rs",
     "app/picks/src/open_cards_run.rs",
     "tests/integration/tests/open_cards_email_run.rs"
    ],
@@ -45012,9 +45014,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 2,
-    "lines": 350,
-    "context_pct": 14
+    "files": 3,
+    "lines": 410,
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -45029,7 +45031,7 @@
    "id": "T685",
    "slug": "missed-cards-email",
    "title": "businesses, quotes and picks: the monthly missed-cards email goes, and the owner can switch it off",
-   "goal": "Plan change D-4361 (unwired sweep orphan 7 and its second pass, `main` 77a49d7cc; BIZ-044, BIZ-025; D-331, D-1994). `missed_email_due` (`app/messaging/src/missed_cards.rs:52`) and `missed_cards_line` (`app/picks/src/open_cards_email.rs:212`) have no caller, and D-1994 left two gaps: no column stores the owner's off switch, and no `quotes` reader gives last month's counts. (1) `migrations/0214_businesses_missed_cards_switch.sql` (headed `businesses`; after T236's `0213`, the dependency on T236 being for that order only, V9): the business's on/off switch for this email, default on; the read and the owner's write in the new `app/businesses/src/missed_cards_switch.rs` (the portal toggle is left to the settings page's owner, T306, noted in its decision). (2) The new `app/quotes/src/month_cards.rs`: last month's cards per business (got, quoted, ended without its quote), Arizona months. (3) The new `app/picks/src/missed_cards_run.rs`: a daily `picks.missed_cards_email` run (registered in the shared `app/server/src/lib.rs`, scheduled in the shared `app/server/src/bin/worker.rs`) that acts only when `first_of_month` holds and sends `missed_cards_line` once per business and month (dedupe key) when `missed_email_due` says so, as an account notice to the owner under the business's consent (CON-019), never marketing. Each email is stored with `messaging::api::queue_email` as `EmailClass::Bulk` (`app/messaging/src/email.rs:140` to `:146`, `:390`), never through the business-notice path, which stores every email as non-bulk (`app/messaging/src/business_notices.rs:409`), so above 90% of the day's email limit it waits for the reset (OPS-038). Tests in the new `tests/integration/tests/missed_cards_email.rs` (TD-BIZ-57), PostgreSQL, fake data only. Update `app/picks/NOTES.md`, `app/quotes/NOTES.md`, `app/businesses/NOTES.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4361 (unwired sweep orphan 7 and its second pass, `main` 77a49d7cc; BIZ-044, BIZ-025; D-331, D-1994). `missed_email_due` (`app/messaging/src/missed_cards.rs:52`) and `missed_cards_line` (`app/picks/src/open_cards_email.rs:212`) have no caller, and D-1994 left two gaps: no column stores the owner's off switch, and no `quotes` reader gives last month's counts. (1) `migrations/0214_businesses_missed_cards_switch.sql` (headed `businesses`; after T236's `0213`, the dependency on T236 being for that order only, V9): the business's on/off switch for this email, default on; the read and the owner's write in the new `app/businesses/src/missed_cards_switch.rs` (the portal toggle is left to the settings page's owner, T306, noted in its decision). (2) The new `app/quotes/src/month_cards.rs`: last month's cards per business (got, quoted, ended without its quote), Arizona months. (3) The new `app/picks/src/missed_cards_run.rs`: a daily `picks.missed_cards_email` run (registered in the shared `app/server/src/lib.rs`, scheduled in the shared `app/server/src/bin/worker.rs`) that acts only when `first_of_month` holds and sends `missed_cards_line` once per business and month (dedupe key) when `missed_email_due` says so, as an account notice to the owner under the business's consent (CON-019), never marketing. `queue_email` renders only the closed `messaging::Notice` enum (`app/messaging/src/email.rs:151`), so this task adds a `Notice::MissedCards` variant there with its English and Spanish words (after T470 and T684, the queued owners of `email.rs`). Each email is stored with `messaging::api::queue_email` as `EmailClass::Bulk` (`app/messaging/src/email.rs:140` to `:146`, `:390`), never through the business-notice path, which stores every email as non-bulk (`app/messaging/src/business_notices.rs:409`), so above 90% of the day's email limit it waits for the reset (OPS-038). Tests in the new `tests/integration/tests/missed_cards_email.rs` (TD-BIZ-57), PostgreSQL, fake data only. Update `app/picks/NOTES.md`, `app/quotes/NOTES.md`, `app/businesses/NOTES.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -45046,6 +45048,7 @@
     "privacy"
    ],
    "owns": [
+    "app/messaging/src/email.rs",
     "migrations/0214_businesses_missed_cards_switch.sql",
     "app/businesses/src/missed_cards_switch.rs",
     "app/quotes/src/month_cards.rs",
@@ -45077,9 +45080,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 5,
-    "lines": 450,
-    "context_pct": 13
+    "files": 6,
+    "lines": 510,
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -45210,7 +45213,7 @@
    "id": "T688",
    "slug": "main-number-greeting",
    "title": "server: a call to the Laftly main number hears the greeting with the 911 line",
-   "goal": "Plan change D-4361 (unwired sweep orphan 11 and its second pass, `main` 77a49d7cc; CALL-020; D-227, D-1697, D-4240). `answer` (`app/server/src/inbound_voice.rs:130` to `:139`) returns `hangup_twiml()` for any `To` outside the masked pool, so a call to the main number is hung up silently, and `greeting_twiml` (`app/calls/src/lifecycle.rs:321`) has no caller; the public accessibility statement already says a caller \"hears a short recorded message asking you to text\" (D-4240), which is false today. The main number (`core::settings::main_number`, `app/core/src/settings.rs:495`) reaches the voice route through its own route state or an axum `Extension` that `build_router` (the shared `app/server/src/lib.rs`) sets, never a new `VoiceHooks` field (six test files build `VoiceHooks` by struct literal);  a verified call whose `To` is that number gets `greeting_twiml()` (English then Spanish, \"... If this is an emergency, hang up and call 911.\", then a hang-up): no `Record`, `Dial` or voicemail verb, nothing stored about the caller, no forwarding to Casey. Any other unknown `To` still hangs up. Tests in the new `app/server/tests/main_number_greeting.rs` (TD-CALL-29), through the assembled router with a signed stand-in webhook, fake numbers only. Update `app/server/NOTES.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4361 (unwired sweep orphan 11 and its second pass, `main` 77a49d7cc; CALL-020; D-227, D-1697, D-4240). `answer` (`app/server/src/inbound_voice.rs:130` to `:139`) returns `hangup_twiml()` for any `To` outside the masked pool, so a call to the main number is hung up silently, and `greeting_twiml` (`app/calls/src/lifecycle.rs:321`) has no caller; the public accessibility statement already says a caller \"hears a short recorded message asking you to text\" (D-4240), which is false today. The main number (`core::settings::main_number`, `app/core/src/settings.rs:495`) reaches the voice route through an `Option<Extension<…>>` extractor whose layer `build_router` (the shared `app/server/src/lib.rs`) adds, never a new `VoiceHooks` field (six test files build `VoiceHooks` by struct literal) and never a required `Extension` (tests call `inbound_voice::routes(v)` without `build_router`, `app/server/tests/inbound_voice.rs:160`, `tests/integration/tests/link_reply.rs:226`; a missing layer means no main number, so the call hangs up as today);  a verified call whose `To` is that number gets `greeting_twiml()` (English then Spanish, \"... If this is an emergency, hang up and call 911.\", then a hang-up): no `Record`, `Dial` or voicemail verb, nothing stored about the caller, no forwarding to Casey. Any other unknown `To` still hangs up. Tests in the new `app/server/tests/main_number_greeting.rs` (TD-CALL-29), through the assembled router with a signed stand-in webhook, fake numbers only. Update `app/server/NOTES.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -45405,7 +45408,7 @@
    "id": "T690",
    "slug": "record-resume",
    "title": "businesses and server: a sign-up waiting on \"That number is old\" resumes when the record shows a new contact",
-   "goal": "Plan change D-4361 (unwired sweep orphan 9, its second pass and the round-1 review, `main` 77a49d7cc; BIZ-026, BIZ-002; D-178, D-254, D-1699, D-1712, D-2954). A sign-up parked by \"That number is old\" never resumes: `resume_on_new_record` (`app/businesses/src/signup.rs:636`) has no caller (D-2954 logged it with no owner). The recorded ROC list stores no contacts (`licensing.agency_record`, `migrations/0050_licensing_imports.sql:22` to `:32`); a record's contacts come only from `licensing::api::read_own_record` (`app/licensing/src/own_record.rs:146`), one adapter lookup with nothing stored (D-1699). (1) The new `app/businesses/src/record_resume.rs`: a daily `businesses.record_resume` run (registered in the shared `app/server/src/lib.rs` with the license-record source and the ID secret, scheduled in the shared `app/server/src/bin/worker.rs` after the ROC list's run hour) that, when a ROC list newer than the last one it acted on is recorded, queues one `businesses.record_resume_one` task per sign-up with `waiting_on_record_since` set, oldest first, at most `RESUME_BATCH` (a setting, default 25) per list, deduped by sign-up and list date, so each waiting sign-up gets at most one lookup per new list. Each task makes one `read_own_record` for the sign-up's license number (a failed or misread lookup does nothing and waits for the next list, LIC-008), builds `RecordSeen` from it in memory and calls `resume_on_new_record`. (2) On a resume it calls `identity::send_code_seen` with that `RecordSeen`, so the next code goes only to the new record contact, never the old one or a typed one (D-1712): a phone change resumes at the text step and gets the Verify text code; an email-only change resumes at the email step and gets the Verify email code, with no text; an address-only change resumes at the letter step and records it for the Lob mailing, with no text or email. The `signup_record_updated` text (`app/messaging/templates/en.json:432`) goes only on a text-step resume, to that new phone, and only if `messaging` can send to a number held in memory without storing it (PRIV-001, D-1699); otherwise only the code goes and the template stays unused, recorded in this task's decision entry. A contact that only disappeared does not resume. D-1712's open `send_code` key gap is checked at claim and recorded if still open. Tests in the new `tests/integration/tests/record_resume.rs` (TD-BIZ-56), PostgreSQL and the license-record stand-in, fake data only. Update `app/businesses/NOTES.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4361 (unwired sweep orphan 9, its second pass and the round-1 review, `main` 77a49d7cc; BIZ-026, BIZ-002; D-178, D-254, D-1699, D-1712, D-2954). A sign-up parked by \"That number is old\" never resumes: `resume_on_new_record` (`app/businesses/src/signup.rs:636`) has no caller (D-2954 logged it with no owner). The recorded ROC list stores no contacts (`licensing.agency_record`, `migrations/0050_licensing_imports.sql:22` to `:32`); a record's contacts come only from `licensing::api::read_own_record` (`app/licensing/src/own_record.rs:146`), one adapter lookup with nothing stored (D-1699). (1) The new `app/businesses/src/record_resume.rs`: a daily `businesses.record_resume` run (registered in the shared `app/server/src/lib.rs` with the license-record source, the Verify adapter `send_code_seen` takes (`app/businesses/src/identity.rs:170`) and the ID secret, scheduled in the shared `app/server/src/bin/worker.rs` after the ROC list's run hour) that, when a ROC list newer than the last one it acted on is recorded, queues one `businesses.record_resume_one` task per sign-up with `waiting_on_record_since` set, at most `RESUME_BATCH` (a setting, default 25) per list, the least recently looked up first (never looked up before any looked up; ties by the oldest wait), recording each lookup's time, deduped by sign-up and list date, so each waiting sign-up gets at most one lookup per new list and every one is reached in turn however many wait. Each task makes one `read_own_record` for the sign-up's license number (a failed or misread lookup does nothing and waits for the next list, LIC-008), builds `RecordSeen` from it in memory and calls `resume_on_new_record`. (2) Quiet hours (QH-001): `send_code_seen` sends a Verify text at once with no outbox hold, and the run starts after the ROC list's 6 a.m. run hour (`app/licensing/src/daily_lists.rs:100`), so the code (and the optional text) is sent only between 8 a.m. and 8 p.m. in the stricter of Arizona time and the record phone's area-code time (`messaging::api::decide`'s rule); outside it the task re-queues itself for the window's next start, resuming nothing until it sends, and an email or letter step is not held. On a resume it calls `identity::send_code_seen` with that `RecordSeen`, so the next code goes only to the new record contact, never the old one or a typed one (D-1712): a phone change resumes at the text step and gets the Verify text code; an email-only change resumes at the email step and gets the Verify email code, with no text; an address-only change resumes at the letter step and records it for the Lob mailing, with no text or email. The `signup_record_updated` text (`app/messaging/templates/en.json:432`) goes only on a text-step resume, to that new phone, and only if `messaging` can send to a number held in memory without storing it (PRIV-001, D-1699); otherwise only the code goes and the template stays unused, recorded in this task's decision entry. A contact that only disappeared does not resume. D-1712's open `send_code` key gap is checked at claim and recorded if still open. Tests in the new `tests/integration/tests/record_resume.rs` (TD-BIZ-56), PostgreSQL and the license-record stand-in, fake data only. Update `app/businesses/NOTES.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -45433,11 +45436,13 @@
     "app/businesses/src/signup.rs",
     "app/businesses/src/identity.rs",
     "app/licensing/src/own_record.rs",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "docs/spec/quiet-hours.md"
    ],
    "requirements": [
     "BIZ-026",
-    "BIZ-002"
+    "BIZ-002",
+    "QH-001"
    ],
    "tests": [
     "TD-BIZ-56"
@@ -45453,7 +45458,7 @@
    "cites": [],
    "budget": {
     "files": 2,
-    "lines": 300,
+    "lines": 360,
     "context_pct": 21
    },
    "checks": [

@@ -3345,6 +3345,7 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **A quote above an R-61 or R-62 project limit is refused with an explanation** (T687).
 - **A call to the Laftly main number hears the greeting with "hang up and call 911"** instead of silence (T688). The accessibility page already promises that message.
 - **Auto-confirm, once you file Stripe's written answer, actually charges a ticked quote picked with a code**, and a business whose tick was voided is told (T689).
+- **Our reading, for your review:** a business on text that replies "YES 1042" gets the Confirm link on that same phone, and the security code the Confirm page asks for also goes to that phone, so whoever holds the phone can confirm and pay. The spec allows this; say if you want the code sent elsewhere (D-4361).
 - **Open item:** auto-confirm only works for a pick made with a code on the quote page; no task builds picking from the homeowner portal yet.
 - **Still waiting on you:** who files a complaint about a business (the earlier open question, D-301 item 12); nothing records one until that is decided.
 - Nothing new needs you now.
