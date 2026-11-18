@@ -80180,7 +80180,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T04:36:32Z",
+ "updated_at": "2026-11-18T04:36:50Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -80278,7 +80278,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "8d44d2c311f85dcff3643e949bbdd380c45ad255",
+ "runner_sha": "15da6ceed5ed968318b5e7eb5a5c946af4e06ffb",
  "starter": "actions",
  "smoke_runs": [
   {
@@ -80598,8 +80598,8 @@
   }
  },
  "keeper": {
-  "last_run_at": "2026-11-18T04:12:01Z",
-  "next_wake_at": "2026-11-18T07:08:01Z"
+  "last_run_at": "2026-11-18T04:36:49Z",
+  "next_wake_at": "2026-11-18T07:22:49Z"
  },
  "plan_reservations": [
   {
