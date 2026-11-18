@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-18T04:39:19Z by runner d662af7e5b4a (actions).
+Updated 2026-11-18T04:42:29Z by runner e02299219786 (actions).
 
 **Building: T601 in progress since 04:24Z; 425 of 606 done; week 43% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 425 of 606 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T601 claimed 04:24Z, lease until 07:24Z; lane 6: T523 claimed 04:19Z, lease until 07:19Z
-- **Week:** 43% used, 108.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:36Z, 2 min before this update
+- **Lane:** lane 2: T601 claimed 04:24Z, lease until 07:24Z; lane 4: T642 claimed 04:42Z, lease until 07:42Z; lane 6: T523 claimed 04:19Z, lease until 07:19Z
+- **Week:** 43% used, 106.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 04:39Z, 3 min before this update
 - **Keeper:** last ran 04:36Z, next wake 07:22Z
 
 ## Needs attention
@@ -85,7 +85,6 @@ Updated 2026-11-18T04:39:19Z by runner d662af7e5b4a (actions).
 | T103 | intake: the web-chat conversation, where typing a verified m | done | 1 | 106 min | 05:27Z |  |
 | T585 | businesses and licensing: a license change that drops job ty | done | 1 | 43 min | 05:10Z |  |
 | T571 | server and calls: a press of 9 on the safety call is never l | done | 1 | 45 min | 05:08Z |  |
-| T221 | site: the terms, privacy policy, SMS terms, homeowner data a | done | 2 | 29 min | 04:41Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
 
 ### Plan and harness merges on main
 - none
@@ -121,7 +120,7 @@ Updated 2026-11-18T04:39:19Z by runner d662af7e5b4a (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-18T04:11:42Z (week)): week: 85.8M used, 108.2M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-30T15:12:41Z.
+- Pacing (session_reading 2026-11-18T04:36:32Z (week)): week: 87.6M used, 106.4M left, resets 2026-11-19T17:00:00Z; projected finish 2026-11-30T15:52:06Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -138,6 +137,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T601 (lease until 2026-11-18T07:24:12Z)
+- lane 4: T642 (lease until 2026-11-18T07:42:08Z)
 - lane 6: T523 (lease until 2026-11-18T07:19:52Z)
 
 ## Last usage reading
