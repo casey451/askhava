@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T03:35:44Z by runner 3758e235f418 (actions).
+Updated 2026-11-18T03:35:58Z by runner 3758e235f418 (actions).
 
 **Building: T638 in progress since 03:07Z; 423 of 606 done; week 41% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 423 of 606 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T638 claimed 03:07Z, lease until 06:07Z; lane 3: T647 claimed 02:13Z, lease until 05:54Z; lane 5: T151 claimed 03:05Z, lease until 06:05Z; lane 7: T623 claimed 02:43Z, lease until 05:43Z
+- **Lane:** lane 1: T638 claimed 03:07Z, lease until 06:07Z; lane 5: T151 claimed 03:05Z, lease until 06:05Z; lane 7: T623 claimed 02:43Z, lease until 05:43Z
 - **Week:** 41% used, 105.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 03:32Z, 3 min before this update
 - **Keeper:** last ran 03:32Z, next wake 05:46Z
@@ -19,6 +19,7 @@ Updated 2026-11-18T03:35:44Z by runner 3758e235f418 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T647 | payments: rebuild_charge reports Booked inside a caller's tr | MERGE_PENDING | 1 | 82 min | 03:35Z |  |
 | T619 | quotes, picks and intake: the quote-median, lapsed-pick, win | QUEUED | 1 | 69 min | 03:31Z | T619 readers are correct per three Opus reviews, but the test file still misses wrong implementations; no reviewer appro |
 | T639 | Runner (harness): the smoke warm-up is skipped when the pre- | MERGE_PENDING | 1 | 76 min | 03:14Z |  |
 | T108 | portals: owner tools for pauses, fee mode, categories and se | MERGE_PENDING | 1 | 2 h 45 min | 03:08Z |  |
@@ -135,9 +136,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T638 (lease until 2026-11-18T06:07:21Z)
-- lane 3: T647 (lease until 2026-11-18T05:54:23Z)
 - lane 5: T151 (lease until 2026-11-18T06:05:05Z)
 - lane 7: T623 (lease until 2026-11-18T05:43:03Z)
 
 ## Last usage reading
-- {"task": "T619", "at": "2026-11-18T03:31:20Z", "input_tokens": 200, "cache_read_input_tokens": 5488560, "output_tokens": 58508, "cache_creation_input_tokens": 273453}
+- {"task": "T647", "at": "2026-11-18T03:35:42Z", "cache_creation_input_tokens": 239341, "cache_read_input_tokens": 6086566, "input_tokens": 208, "output_tokens": 67194}
