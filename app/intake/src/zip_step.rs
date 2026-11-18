@@ -14,8 +14,8 @@
 //! ([`ZipStep::Waiting`]): nothing closes, INT-019's no-reply wait still applies.
 //!
 //! The ZIP is stored only in `intake.property` (with the vault contact ID and the town, never an
-//! address). It goes into no AI call, card, log line, audit value or error. T162's intake order
-//! calls this step; this file adds the step only.
+//! address). It goes into no AI call, card, log line, audit value or error. `order_dispatch`
+//! calls this step on the text paths (T671, D-4360).
 
 use askhava_catalog::api::{town_for_zip, zip_location};
 use askhava_core::api::brand;
@@ -238,7 +238,8 @@ async fn again(
     Ok(ZipStep::AskedAgain(queued))
 }
 
-/// Queues `template` to the sender and records the ask (`asked` or `again`) in `tx`.
+/// Queues `template` to the sender and records the ask (`asked` or `again`) in `tx`, as a step
+/// marker with no inbox ID (D-4360).
 async fn ask(
     tx: &mut PgConnection,
     secret: &SecretString,
@@ -255,8 +256,8 @@ async fn ask(
     } else {
         "again"
     };
-    let ids = (conversation, msg.inbox_id);
-    models::insert_answer(tx, ids, (ZIP_ASKS, choice), msg.received_at).await?;
+    // A step marker carries no inbox ID, so a text's inbox-keyed rows stay its answers (D-4360).
+    models::insert_plain(tx, conversation, (ZIP_ASKS, choice), msg.received_at).await?;
     Ok(queued)
 }
 
