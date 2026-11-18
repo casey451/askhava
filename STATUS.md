@@ -1,24 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-18T08:08:35Z by runner d0f204103889 (actions).
+Updated 2026-11-18T08:11:45Z by runner 18e4fd102f38 (actions).
 
 **Building: T660 in progress since 07:55Z; 431 of 621 done; week 48% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 431 of 621 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T660 claimed 07:55Z, lease until 10:55Z; lane 4: T658 claimed 06:42Z, lease until 11:07Z
+- **Lane:** lane 2: T660 claimed 07:55Z, lease until 10:55Z
 - **Week:** 48% used, 94.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:08Z, 0 min before this update
+- **Last run:** 08:08Z, 3 min before this update
 - **Keeper:** last ran 08:08Z, next wake 10:58Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 24 problem(s) on tasks still to run (+209 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 23 problem(s) on tasks still to run (+204 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T658 | privacy: the scrubber removes lower-case Spanish addresses a | QUEUED | 1 | 89 min | 08:11Z | Fix-round review of head 18e4fd102f38620e11d1055ecb4d77813e2b2965 returned FINDINGS after the one allowed fix round (fir |
 | T640 | harness: Ci handles the merge train's throwaway refs and cou | MERGE_PENDING | 1 | 64 min | 08:02Z |  |
 | T619 | quotes, picks and intake: the quote-median, lapsed-pick, win | MERGE_PENDING | 2 | 40 min | 08:02Z | T619 readers are correct per three Opus reviews, but the test file still misses wrong implementations; no reviewer appro |
 | T482 | messaging and intake: the plain-word auto-answers after HELP | MERGE_PENDING | 1 | 2 h 29 min | 07:56Z |  |
@@ -89,7 +90,7 @@ Updated 2026-11-18T08:08:35Z by runner d0f204103889 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 681 · unstarted 54
-**Tasks merged (throughput only):** 431 of 621
+**Tasks merged (throughput only):** 431 of 613
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -134,7 +135,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T660 (lease until 2026-11-18T10:55:55Z)
-- lane 4: T658 (lease until 2026-11-18T11:07:25Z)
 
 ## Last usage reading
-- {"task": "T640", "at": "2026-11-18T08:02:57Z", "cache_creation_input_tokens": 128766, "output_tokens": 34721, "input_tokens": 78, "cache_read_input_tokens": 2441444}
+- {"task": "T658", "at": "2026-11-18T08:11:44Z", "cache_creation_input_tokens": 198109, "input_tokens": 148, "cache_read_input_tokens": 3492617, "output_tokens": 45019}

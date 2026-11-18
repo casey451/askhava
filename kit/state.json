@@ -76437,8 +76437,8 @@
     "T100",
     "T517"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "scrub-spanish-allcaps-address",
    "type": "build",
    "stage": "5",
@@ -76454,7 +76454,33 @@
    "window_model": {
     "model": "claude-opus-5-5",
     "alias": "opus"
-   }
+   },
+   "last_failure": "Fix-round review of head 18e4fd102f38620e11d1055ecb4d77813e2b2965 returned FINDINGS after the one allowed fix round (first round fixed the per-sentence under-scrub: a word now counts as all-caps when its sentence OR the whole message passes; tests 64 passed, smoke and prehandin green).\nRemaining findings:\n1. app/privacy/src/scrub.rs:832 (caps_name): all-caps street names with a hyphen or apostrophe are kept. key.chars().all(char::is_alphabetic) is stricter than titled, which uses is_wordish and accepts - and '. \"WATER HEATER LEAKING 2150 O'LEARY\" and \"WATER HEATER LEAKING 2150 PALO-VERDE\" pass unchanged while \"Water heater leaking 2150 O'Leary\" / \"...2150 Palo-Verde\" are scrubbed. D-4327: all-caps text treated exactly as titled, \"as strictly as ordinary text, no more\". Fix: use is_wordish(key, common) in place of the all-alphabetic check, keep the no-lowercase test, add one must-scrub case.\n2. app/privacy/NOTES.md:146: the T658 entry's text is 434 characters, over the prompt's 400-character limit; shorten or split it.\nNot a finding: \"AC quit last night. MY HEATER BROKE. 4410 SAGUARO\" (mixed message, short last sentence) is outside D-4327's all-caps rule; leaving it out of the recall corpus is within scope.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 86,
+     "head_sha": "18e4fd102f38620e11d1055ecb4d77813e2b2965",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-18T06:42:44Z",
+     "ended_at": "2026-11-18T08:11:44Z",
+     "result": "QUEUED",
+     "usage": {
+      "worker": {
+       "tokens": 2603888,
+       "turns": 50
+      },
+      "reviewer": {
+       "tokens": 1132005,
+       "turns": 25
+      }
+     }
+    }
+   ]
   },
   {
    "id": "T659",
@@ -76649,12 +76675,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T640",
-   "at": "2026-11-18T08:02:57Z",
-   "cache_creation_input_tokens": 128766,
-   "output_tokens": 34721,
-   "input_tokens": 78,
-   "cache_read_input_tokens": 2441444
+   "task": "T658",
+   "at": "2026-11-18T08:11:44Z",
+   "cache_creation_input_tokens": 198109,
+   "input_tokens": 148,
+   "cache_read_input_tokens": 3492617,
+   "output_tokens": 45019
   },
   "source": "session_reading 2026-11-18T07:55:07Z (week)",
   "by_task": {
@@ -81476,7 +81502,17 @@
    },
    "T658": {
     "estimated_bytes": 369102,
-    "estimated_tokens": 1079906
+    "estimated_tokens": 1079906,
+    "usage_counting": "message_id",
+    "cache_creation_input_tokens": 198109,
+    "input_tokens": 148,
+    "cache_read_input_tokens": 3492617,
+    "output_tokens": 45019,
+    "worker_tokens": 2603888,
+    "worker_turns": 50,
+    "reviewer_tokens": 1132005,
+    "reviewer_turns": 25,
+    "last_model": "claude-opus-5-5"
    },
    "T640": {
     "estimated_bytes": 142168,
@@ -81500,11 +81536,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-18T07:49:11Z",
-    "tokens": 4248057
+    "tokens": 4840594
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 282110846
+    "tokens": 282703383
    }
   },
   "session_reading": {
@@ -81515,7 +81551,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T08:08:35Z",
+ "updated_at": "2026-11-18T08:11:45Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -81613,7 +81649,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "d0f20410388970caf8d2edc187491580ba9d8d6e",
+ "runner_sha": "18e4fd102f38620e11d1055ecb4d77813e2b2965",
  "starter": "actions",
  "smoke_runs": [
   {
