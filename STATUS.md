@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-18T08:12:36Z by runner 8d82392ea8c4 (actions).
+Updated 2026-11-18T08:14:38Z by runner d0f204103889 (actions).
 
-**Building: T660 in progress since 07:55Z; 431 of 621 done; week 48% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T660 in progress since 07:55Z; 432 of 621 done; week 48% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 431 of 621 build tasks (owner gates not counted)
+- **Tasks done:** 432 of 621 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T660 claimed 07:55Z, lease until 10:55Z
 - **Week:** 48% used, 94.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:12Z, 0 min before this update
+- **Last run:** 08:12Z, 1 min before this update
 - **Keeper:** last ran 08:12Z, next wake 10:58Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 23 problem(s) on tasks still to run (+203 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 23 problem(s) on tasks still to run (+210 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -22,7 +22,7 @@ Updated 2026-11-18T08:12:36Z by runner 8d82392ea8c4 (actions).
 | T658 | privacy: the scrubber removes lower-case Spanish addresses a | QUEUED | 1 | 89 min | 08:11Z | Fix-round review of head 18e4fd102f38620e11d1055ecb4d77813e2b2965 returned FINDINGS after the one allowed fix round (fir |
 | T640 | harness: Ci handles the merge train's throwaway refs and cou | MERGE_PENDING | 1 | 64 min | 08:02Z |  |
 | T619 | quotes, picks and intake: the quote-median, lapsed-pick, win | MERGE_PENDING | 2 | 40 min | 08:02Z | T619 readers are correct per three Opus reviews, but the test file still misses wrong implementations; no reviewer appro |
-| T482 | messaging and intake: the plain-word auto-answers after HELP | MERGE_PENDING | 1 | 2 h 29 min | 07:56Z |  |
+| T482 | messaging and intake: the plain-word auto-answers after HELP | done | 1 | 2 h 29 min | 07:56Z |  |
 | T643 | portals (harness): a real browser's same-origin form POST pa | MERGE_PENDING | 1 | 2 h 24 min | 07:49Z |  |
 | T642 | Runner (harness): the keeper starts a run for each free lane | done | 1 | 83 min | 06:05Z |  |
 | T601 | businesses and quotes: the card pool reads every service are | done | 1 | 50 min | 05:14Z |  |
@@ -89,8 +89,8 @@ Updated 2026-11-18T08:12:36Z by runner 8d82392ea8c4 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 0 of 735 (0.0%) · partial 681 · unstarted 54
-**Tasks merged (throughput only):** 431 of 613
+**Requirements verified:** 0 of 735 (0.0%) · partial 682 · unstarted 53
+**Tasks merged (throughput only):** 432 of 621
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -98,7 +98,7 @@ Updated 2026-11-18T08:12:36Z by runner 8d82392ea8c4 (actions).
 | ai | 0 | 26 | 3 | 29 |
 | businesses | 0 | 56 | 2 | 58 |
 | calls | 0 | 25 | 0 | 25 |
-| consent | 0 | 34 | 1 | 35 |
+| consent | 0 | 35 | 0 | 35 |
 | fees | 0 | 51 | 1 | 52 |
 | intake | 0 | 43 | 0 | 43 |
 | job-cards | 0 | 24 | 0 | 24 |
@@ -126,7 +126,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 74 of 228 done
+- stage 5: 75 of 228 done
 - stage 6: 0 of 40 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
