@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T12:45:58Z by runner d951c0a08c26 (actions).
+Updated 2026-11-18T12:46:11Z by runner d951c0a08c26 (actions).
 
 **Building: T200 in progress since 12:06Z; 442 of 643 done; week 54% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 442 of 643 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 6: T200 claimed 12:06Z, lease until 15:06Z; lane 7: T472 claimed 11:43Z, lease until 15:42Z
+- **Lane:** lane 6: T200 claimed 12:06Z, lease until 15:06Z
 - **Week:** 54% used, 80.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 12:45Z, 0 min before this update
 - **Keeper:** last ran 12:45Z, next wake 15:09Z
@@ -23,6 +23,7 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T472 | server (harness): serve the "Can't take it" page and button  | MERGE_PENDING | 1 | 62 min | 12:45Z |  |
 | T662 | jobs, intake, calls and server: a masked call line closes wh | MERGE_PENDING | 1 | 73 min | 12:39Z |  |
 | T679 | quotes and businesses: a launch-open category takes requests | MERGE_PENDING | 1 | 37 min | 12:17Z |  |
 | T583 | intake and server: the quote-count update text is sent, at m | BLOCKED | 1 | 53 min | 12:13Z | PLAN GAP: kit/prompts/T583.md:51 (budget of 450 changed lines in 3 files) The smallest plan change: raise T583's budget  |
@@ -138,7 +139,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 6: T200 (lease until 2026-11-18T15:06:51Z)
-- lane 7: T472 (lease until 2026-11-18T15:42:42Z)
 
 ## Last usage reading
-- {"task": "T662", "at": "2026-11-18T12:39:45Z", "output_tokens": 58659, "cache_creation_input_tokens": 221897, "cache_read_input_tokens": 7701145, "input_tokens": 160}
+- {"task": "T472", "at": "2026-11-18T12:45:57Z", "cache_read_input_tokens": 8291313, "input_tokens": 158, "output_tokens": 45548, "cache_creation_input_tokens": 216598}
