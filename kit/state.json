@@ -21427,7 +21427,9 @@
     "T104",
     "T489",
     "T521",
-    "T479"
+    "T479",
+    "T441",
+    "T102"
    ],
    "status": "QUEUED",
    "attempts": 1,
@@ -22589,7 +22591,8 @@
    "deps": [
     "T109",
     "T377",
-    "T481"
+    "T481",
+    "T647"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -23583,7 +23586,9 @@
     "T473",
     "T100",
     "T458",
-    "T526"
+    "T526",
+    "T488",
+    "T586"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -23740,9 +23745,12 @@
     "T496",
     "T497",
     "T518",
+    "T624",
+    "T623",
     "T520",
     "T522",
     "T523",
+    "T619",
     "T524",
     "T525",
     "T526",
@@ -23803,7 +23811,13 @@
     "T614",
     "T615",
     "T616",
-    "T617"
+    "T617",
+    "T618",
+    "T643",
+    "T644",
+    "T645",
+    "T646",
+    "T647"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -23832,7 +23846,9 @@
     "T511",
     "T512",
     "T513",
-    "T514"
+    "T514",
+    "T641",
+    "T642"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -23903,7 +23919,8 @@
     "T421",
     "T493",
     "T494",
-    "T495"
+    "T495",
+    "T623"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -25270,7 +25287,9 @@
     "T478",
     "T479",
     "T489",
-    "T531"
+    "T531",
+    "T621",
+    "T622"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -27798,7 +27817,8 @@
     "T101",
     "T166",
     "T102",
-    "T200"
+    "T200",
+    "T203"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -28483,7 +28503,9 @@
     "T427",
     "T428",
     "T430",
-    "T432"
+    "T432",
+    "T643",
+    "T644"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -37302,7 +37324,9 @@
     "T435",
     "T432",
     "T449",
-    "T593"
+    "T593",
+    "T645",
+    "T646"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -65112,7 +65136,8 @@
     "T100",
     "T471",
     "T409",
-    "T491"
+    "T491",
+    "T643"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -68118,7 +68143,8 @@
   {
    "id": "T499",
    "deps": [
-    "T498"
+    "T498",
+    "T640"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -69010,7 +69036,8 @@
     "T105",
     "T106",
     "T204",
-    "T477"
+    "T477",
+    "T624"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -69686,6 +69713,7 @@
    "deps": [
     "T204",
     "T523",
+    "T619",
     "T107",
     "T277",
     "T357",
@@ -70257,9 +70285,12 @@
     "T496",
     "T497",
     "T518",
+    "T624",
+    "T623",
     "T520",
     "T522",
     "T523",
+    "T619",
     "T524",
     "T525",
     "T526",
@@ -71501,7 +71532,10 @@
   {
    "id": "T583",
    "deps": [
-    "T582"
+    "T582",
+    "T446",
+    "T471",
+    "T564"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -72405,7 +72439,8 @@
     "T489",
     "T429",
     "T248",
-    "T594"
+    "T594",
+    "T203"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -73972,7 +74007,8 @@
     "T613",
     "T614",
     "T593",
-    "T441"
+    "T441",
+    "T203"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -74084,6 +74120,211 @@
    "status": "QUEUED",
    "attempts": 0,
    "slug": "site-dm-sans-variable",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T623",
+   "deps": [
+    "T105",
+    "T477"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "charge-vendor-auth",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T624",
+   "deps": [
+    "T106",
+    "T204",
+    "T366"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "health-check-alert",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T619",
+   "deps": [
+    "T100",
+    "T105",
+    "T477"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "owner-flag-counts",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T647",
+   "deps": [
+    "T481"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "rebuild-charge-locks",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T621",
+   "deps": [
+    "T106"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "scorecard-lines",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T622",
+   "deps": [
+    "T477",
+    "T479",
+    "T531"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "scorecard-panels",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T618",
+   "deps": [
+    "T345"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "advisory-watch",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T638",
+   "deps": [
+    "T418",
+    "T445"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "ci-proven-parent",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T639",
+   "deps": [
+    "T597"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "runner-warm-skip-on-reuse",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T640",
+   "deps": [
+    "T638"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "ci-merge-train-refs",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T641",
+   "deps": [
+    "T640",
+    "T639"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "runner-merge-train",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T642",
+   "deps": [
+    "T639"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "runner-keeper-free-lanes",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T643",
+   "deps": [
+    "T051",
+    "T319",
+    "T493",
+    "T595",
+    "T409"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "csrf-browser-origin",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T644",
+   "deps": [
+    "T643",
+    "T559",
+    "T594",
+    "T455",
+    "T454",
+    "T464",
+    "T343",
+    "T173",
+    "T099",
+    "T452",
+    "T187",
+    "T515",
+    "T303"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "e2e-browser-origin",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T645",
+   "deps": [
+    "T595",
+    "T357",
+    "T321",
+    "T489"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "web-chat-consent-stops",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T646",
+   "deps": [
+    "T593",
+    "T645"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "web-chat-client-ip",
    "type": "build",
    "stage": "5"
   }
@@ -78797,7 +79038,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T01:52:59Z",
+ "updated_at": "2026-11-18T01:54:04Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -78895,8 +79136,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "fde4fad3f9f2f9f5930bce446afc240543636363",
- "starter": "manual",
+ "runner_sha": "c00d003c00ee25caad9c7e38f13eb5b20b490316",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "c57d89a4648d9e55697cb87872ac582b72c5dd8b",
