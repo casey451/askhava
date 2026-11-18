@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-18T08:53:49Z by runner 77a49d7ccc9a (actions).
+Updated 2026-11-18T09:03:15Z by runner 00c1e9ff95be (actions).
 
-**Idle since 08:52Z; 433 of 621 done; week 49% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 09:00Z; 434 of 621 done; week 49% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 433 of 621 build tasks (owner gates not counted)
+- **Tasks done:** 434 of 621 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** idle since 08:52Z (no task in progress)
+- **Lane:** idle since 09:00Z (no task in progress)
 - **Week:** 49% used, 94.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:53Z, 0 min before this update
+- **Last run:** 08:59Z, 3 min before this update
 - **Keeper:** last ran 08:53Z, next wake 09:13Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 23 problem(s) on tasks still to run (+209 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 27 problem(s) on tasks still to run (+218 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -22,7 +22,7 @@ Updated 2026-11-18T08:53:49Z by runner 77a49d7ccc9a (actions).
 | T660 | quotes (harness): the quote-note AI screener takes scrubbed  | MERGE_PENDING | 1 | 56 min | 08:52Z |  |
 | T658 | privacy: the scrubber removes lower-case Spanish addresses a | QUEUED | 1 | 89 min | 08:11Z | Fix-round review of head 18e4fd102f38620e11d1055ecb4d77813e2b2965 returned FINDINGS after the one allowed fix round (fir |
 | T640 | harness: Ci handles the merge train's throwaway refs and cou | MERGE_PENDING | 1 | 64 min | 08:02Z |  |
-| T619 | quotes, picks and intake: the quote-median, lapsed-pick, win | MERGE_PENDING | 2 | 40 min | 08:02Z | T619 readers are correct per three Opus reviews, but the test file still misses wrong implementations; no reviewer appro |
+| T619 | quotes, picks and intake: the quote-median, lapsed-pick, win | done | 2 | 40 min | 08:02Z | T619 readers are correct per three Opus reviews, but the test file still misses wrong implementations; no reviewer appro |
 | T482 | messaging and intake: the plain-word auto-answers after HELP | done | 1 | 2 h 29 min | 07:56Z |  |
 | T643 | portals (harness): a real browser's same-origin form POST pa | done | 1 | 2 h 24 min | 07:49Z |  |
 | T642 | Runner (harness): the keeper starts a run for each free lane | done | 1 | 83 min | 06:05Z |  |
@@ -81,15 +81,14 @@ Updated 2026-11-18T08:53:49Z by runner 77a49d7ccc9a (actions).
 | T204 | ops: phone pushes by alert email, OPS-023 acknowledgements,  | check_failed | 1 | 35 min | 10:33Z |  |
 | T489 | site and server: the web chat and request pages with the con | check_failed | 2 | 73 min | 09:54Z |  |
 | T202 | site: Spanish pages, the business page blocks and the requir | check_failed | 1 | 88 min | 09:23Z |  |
-| T107 | Consent records kept 5 years, no export, opt-out rate alerts | done | 2 | 85 min | 09:00Z | Second fresh-eyes review of head dfb993caba5ddab51d93dc1f24c5403dc513e3e7 ended REVIEW-VERDICT: FINDINGS (the one findin |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 0 of 735 (0.0%) · partial 682 · unstarted 53
-**Tasks merged (throughput only):** 433 of 621
+**Requirements verified:** 0 of 735 (0.0%) · partial 683 · unstarted 52
+**Tasks merged (throughput only):** 434 of 621
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -104,7 +103,7 @@ Updated 2026-11-18T08:53:49Z by runner 77a49d7ccc9a (actions).
 | licensing | 0 | 48 | 0 | 48 |
 | lifecycle | 0 | 28 | 0 | 28 |
 | messaging | 0 | 44 | 1 | 45 |
-| ops-recovery | 0 | 33 | 21 | 54 |
+| ops-recovery | 0 | 34 | 20 | 54 |
 | privacy | 0 | 30 | 1 | 31 |
 | quiet-hours | 0 | 9 | 0 | 9 |
 | quotes-pick | 0 | 56 | 0 | 56 |
@@ -125,7 +124,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 76 of 228 done
+- stage 5: 77 of 228 done
 - stage 6: 0 of 40 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
