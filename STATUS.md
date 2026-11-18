@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T22:01:07Z by runner 96b1f7aa9bc3 (actions).
+Updated 2026-11-18T22:02:09Z by runner 7d58f8e9c040 (manual).
 
 **Building: T364 in progress since 21:12Z; 459 of 663 done; week 68% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-18T22:01:07Z by runner 96b1f7aa9bc3 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 4: T364 claimed 21:12Z, lease until 01:01Z; lane 5: T583 claimed 21:55Z, lease until 00:55Z
 - **Week:** 68% used, 56.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:58Z, 2 min before this update
+- **Last run:** 22:01Z, 0 min before this update
 - **Keeper:** last ran 21:58Z, next wake 22:18Z
 
 ## Needs attention
@@ -90,31 +90,31 @@ Updated 2026-11-18T22:01:07Z by runner 96b1f7aa9bc3 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 294 of 735 (40.0%) · partial 391 · unstarted 50
+**Requirements verified:** 1 of 735 (0.1%) · partial 684 · unstarted 50
 **Tasks merged (throughput only):** 459 of 663
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 17 | 18 | 0 | 35 |
-| ai | 9 | 17 | 3 | 29 |
-| businesses | 17 | 40 | 1 | 58 |
-| calls | 12 | 13 | 0 | 25 |
-| consent | 14 | 21 | 0 | 35 |
-| fees | 23 | 28 | 1 | 52 |
-| intake | 10 | 33 | 0 | 43 |
-| job-cards | 14 | 10 | 0 | 24 |
-| licensing | 33 | 15 | 0 | 48 |
-| lifecycle | 18 | 10 | 0 | 28 |
-| messaging | 20 | 24 | 1 | 45 |
-| ops-recovery | 3 | 32 | 19 | 54 |
-| privacy | 9 | 21 | 1 | 31 |
-| quiet-hours | 6 | 3 | 0 | 9 |
-| quotes-pick | 27 | 29 | 0 | 56 |
-| recurring | 7 | 2 | 2 | 11 |
-| security | 9 | 41 | 5 | 55 |
-| terms | 25 | 7 | 3 | 35 |
-| website | 9 | 16 | 5 | 30 |
-| wording | 12 | 11 | 9 | 32 |
+| accessibility | 0 | 35 | 0 | 35 |
+| ai | 0 | 26 | 3 | 29 |
+| businesses | 0 | 57 | 1 | 58 |
+| calls | 0 | 25 | 0 | 25 |
+| consent | 1 | 34 | 0 | 35 |
+| fees | 0 | 51 | 1 | 52 |
+| intake | 0 | 43 | 0 | 43 |
+| job-cards | 0 | 24 | 0 | 24 |
+| licensing | 0 | 48 | 0 | 48 |
+| lifecycle | 0 | 28 | 0 | 28 |
+| messaging | 0 | 44 | 1 | 45 |
+| ops-recovery | 0 | 35 | 19 | 54 |
+| privacy | 0 | 30 | 1 | 31 |
+| quiet-hours | 0 | 9 | 0 | 9 |
+| quotes-pick | 0 | 56 | 0 | 56 |
+| recurring | 0 | 9 | 2 | 11 |
+| security | 0 | 50 | 5 | 55 |
+| terms | 0 | 32 | 3 | 35 |
+| website | 0 | 25 | 5 | 30 |
+| wording | 0 | 23 | 9 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
