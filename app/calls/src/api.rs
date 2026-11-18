@@ -21,7 +21,12 @@
 //! T390: [`link_after_dial`], the LINK notice and one pending link after a blocked call connected
 //! a line, and [`LINK_REQUEST_LIFE`] (CALL-011, CALL-003, D-3079). T571: [`queue_safety_key_retry`]
 //! and [`run_safety_key_retry`], the safety key kept through a database error (CON-035, D-4051).
+//! T662: [`run_close_line`], `jobs`' queued line close after a cancel or a check-in PROBLEM or NO,
+//! and the daily [`CLOSE_EXPIRED_KIND`] sweep (CALL-009, CALL-010, D-4338).
 
+pub use crate::close_tasks::{
+    CLOSE_EXPIRED_KIND, run_close_expired_at, run_close_line, schedule_close_expired,
+};
 pub use crate::handlers::{
     DIALED_STATUS_PATH, FinishedCall, LoggedCall, call_log, call_start_confirmed, dial_twiml,
     finished_call, line_parties, log_finished_call,
