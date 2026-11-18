@@ -1,17 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-18T18:20:11Z by runner 11c03c196b95 (actions).
+Updated 2026-11-18T18:24:00Z by runner 015d53a2b087 (actions).
 
 **Building: T624 in progress since 16:49Z; 452 of 645 done; week 64% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 452 of 645 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T624 claimed 16:49Z, lease until 20:41Z; lane 2: T205 claimed 17:25Z, lease until 21:20Z; lane 7: T711 claimed 18:12Z, lease until 21:12Z
+- **Lane:** lane 1: T624 claimed 16:49Z, lease until 20:41Z; lane 7: T711 claimed 18:12Z, lease until 21:12Z
 - **Week:** 64% used, 65.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:20Z, 0 min before this update
+- **Last run:** 18:20Z, 3 min before this update
 - **Keeper:** last ran 18:20Z, next wake 20:27Z
 
 ## Needs attention
+- BLOCKED T205: plan gap reported: PLAN GAP: `payments` has no public reader that ties a dispute to its pick (or its charge, business or job). Without one, T205 cannot narrow `waiting_disputes` or refuse a press on another pick's dispute, so this has to go back as a `payments` follow-up.
+Evidence (confirmed by a second reviewer): list_disputes (app/payments/src/disputes.rs:362-388) and DisputeView (app/payments/src/models.rs:621-634) carry no pick, payment-intent, business or job; refund_state (app/payments/src/refund_state.rs:39-45) gives only `disputed`, not the dp_ id; EvidencePack fields are pub(crate) (models.rs:571-580); ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T205 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T408: plan gap reported: PLAN GAP: kit/prompts/T408.md:54 "Size budget: at most 6 files, 800 changed lines" cannot be met. The prompt's own plan changes (D-3144, D-3879, D-4026, D-4326) require edits to at least 13 files (release_sink.rs, new release_hold.rs, release_proof.rs, server lib.rs, payments api.rs, server tests/safe_mode_release.rs, integration safe_mode.rs, ops safe_mode.rs, three NOTES.md, architecture.md, decisions.md), and tests for every held_release money branch (Stripe fetch failure, pick ended while held, no fee row) plus address_in through its registered handler, which the first review required (95%; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T408 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T563: plan gap reported: PLAN GAP: app/messaging/src/optout.rs:311 (suppress/record, owned by T029 and later tasks; T563 owns no messaging file) and kit/prompts/T563.md:9 (CROSS_SCHEMA_CALLS fixed at exactly one entry, messaging.last_message_at(). The sweep (head d7eb5dc64, all TD-CON-30 tests green, smoke and prehandin green) checks suppression via messaging::api::send_window before its per-number transaction, then clears the vault phone inside it. Review finding (unresolved): an opt-out via messaging::api::suppress (portal/email/owner paths) or a texted STOP committing between that check and the clear lets the sweep; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T563 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T583: plan gap reported: PLAN GAP: kit/prompts/T583.md:51 (budget of 450 changed lines in 3 files) The smallest plan change: raise T583's budget to 650 changed lines, or move `tests/integration/tests/quote_update_texts.rs` into a test-only follow-up task with its own budget.
@@ -19,11 +21,12 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 - BLOCKED T645: plan gap reported: PLAN GAP: app/site/src/chat.rs:340 (owned by T593, then T646 and T649; T593 is not merged yet) calls `chat_message(db, &secret, &key, &msg, self.intake)` with no `Vault`, and the `ChatKeys` trait (chat.rs:62-66) only exposes secret/send/check. `messaging::api::suppress` (app/messaging/src/optout.rs:311-317) needs a `&Vault` and the phone, since digests come from `vault.blind_index` (optout.rs:441-443). `chat_message` (app/intake/src/web_chat.rs:247-253) takes no vault and its `Settings` is `Copy`, so T645 cannot list the session's number (step 1, TD-CON-36 "at once") without a signature change; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T645 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 34 problem(s) on tasks still to run (+258 on DONE tasks); first: T402: measures 48% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 37 problem(s) on tasks still to run (+258 on DONE tasks); first: T402: measures 48% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T205 | portals: owner refunds with a review step and the audit log  | BLOCKED | 1 | 58 min | 18:23Z | PLAN GAP: `payments` has no public reader that ties a dispute to its pick (or its charge, business or job). Without one, |
 | T500 | Decisions digest, piece 1: from the first entry, at most 300 | MERGE_PENDING | 1 | 71 min | 18:18Z |  |
 | T671 | intake (harness): a homeowner's texts after the consent text | done | 2 | 102 min | 17:25Z | PLAN GAP: three tests outside T671's scope fail because of the new behaviour (worker edited none of them): / 1. tests/in |
 | T621 | portals: the scorecard's go and stop line settings and its p | done | 1 | 38 min | 17:03Z |  |
@@ -90,31 +93,31 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 0 of 735 (0.0%) · partial 685 · unstarted 50
+**Requirements verified:** 305 of 735 (41.5%) · partial 380 · unstarted 50
 **Tasks merged (throughput only):** 452 of 645
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 0 | 35 | 0 | 35 |
-| ai | 0 | 26 | 3 | 29 |
-| businesses | 0 | 57 | 1 | 58 |
-| calls | 0 | 25 | 0 | 25 |
-| consent | 0 | 35 | 0 | 35 |
-| fees | 0 | 51 | 1 | 52 |
-| intake | 0 | 43 | 0 | 43 |
-| job-cards | 0 | 24 | 0 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 0 | 44 | 1 | 45 |
-| ops-recovery | 0 | 35 | 19 | 54 |
-| privacy | 0 | 30 | 1 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 0 | 56 | 0 | 56 |
-| recurring | 0 | 9 | 2 | 11 |
-| security | 0 | 50 | 5 | 55 |
-| terms | 0 | 32 | 3 | 35 |
-| website | 0 | 25 | 5 | 30 |
-| wording | 0 | 23 | 9 | 32 |
+| accessibility | 17 | 18 | 0 | 35 |
+| ai | 9 | 17 | 3 | 29 |
+| businesses | 19 | 38 | 1 | 58 |
+| calls | 12 | 13 | 0 | 25 |
+| consent | 14 | 21 | 0 | 35 |
+| fees | 24 | 27 | 1 | 52 |
+| intake | 14 | 29 | 0 | 43 |
+| job-cards | 14 | 10 | 0 | 24 |
+| licensing | 34 | 14 | 0 | 48 |
+| lifecycle | 19 | 9 | 0 | 28 |
+| messaging | 21 | 23 | 1 | 45 |
+| ops-recovery | 4 | 31 | 19 | 54 |
+| privacy | 9 | 21 | 1 | 31 |
+| quiet-hours | 6 | 3 | 0 | 9 |
+| quotes-pick | 27 | 29 | 0 | 56 |
+| recurring | 7 | 2 | 2 | 11 |
+| security | 9 | 41 | 5 | 55 |
+| terms | 25 | 7 | 3 | 35 |
+| website | 9 | 16 | 5 | 30 |
+| wording | 12 | 11 | 9 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -135,8 +138,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T624 (lease until 2026-11-18T20:41:09Z)
-- lane 2: T205 (lease until 2026-11-18T21:20:04Z)
 - lane 7: T711 (lease until 2026-11-18T21:12:25Z)
 
 ## Last usage reading
-- {"task": "T500", "at": "2026-11-18T18:18:14Z", "cache_read_input_tokens": 6278688, "output_tokens": 58532, "input_tokens": 124, "cache_creation_input_tokens": 197465}
+- {"task": "T205", "at": "2026-11-18T18:23:59Z", "input_tokens": 170, "output_tokens": 54005, "cache_creation_input_tokens": 236315, "cache_read_input_tokens": 6285184}

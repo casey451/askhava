@@ -23134,8 +23134,8 @@
     "T466",
     "T529"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "portals-owner-refunds-audit",
    "type": "build",
    "stage": "5",
@@ -23151,7 +23151,34 @@
    "window_model": {
     "model": "claude-opus-5-5",
     "alias": "opus"
-   }
+   },
+   "reason": "plan gap reported: PLAN GAP: `payments` has no public reader that ties a dispute to its pick (or its charge, business or job). Without one, T205 cannot narrow `waiting_disputes` or refuse a press on another pick's dispute, so this has to go back as a `payments` follow-up.\nEvidence (confirmed by a second reviewer): list_disputes (app/payments/src/disputes.rs:362-388) and DisputeView (app/payments/src/models.rs:621-634) carry no pick, payment-intent, business or job; refund_state (app/payments/src/refund_state.rs:39-45) gives only `disputed`, not the dp_ id; EvidencePack fields are pub(crate) (models.rs:571-580); ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T205 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: `payments` has no public reader that ties a dispute to its pick (or its charge, business or job). Without one, T205 cannot narrow `waiting_disputes` or refuse a press on another pick's dispute, so this has to go back as a `payments` follow-up.\nEvidence (confirmed by a second reviewer): list_disputes (app/payments/src/disputes.rs:362-388) and DisputeView (app/payments/src/models.rs:621-634) carry no pick, payment-intent, business or job; refund_state (app/payments/src/refund_state.rs:39-45) gives only `disputed`, not the dp_ id; EvidencePack fields are pub(crate) (models.rs:571-580); record_owner_submission (disputes.rs:231-240) takes only the dispute id, returns bool and never checks a caller-named pick. T205 owns only app/portals/src/owner_portal.rs, the two templates, tests/e2e/owner_refund.spec.ts and tests/integration/tests/owner_refund.rs (kit/tasks.json T205 entry); docs/architecture.md:267 (T175, SEC-029) forbids portals querying payments.dispute directly.\nEffect at head 015d53a2b: the review step lists every waiting dispute system-wide (owner_portal.rs:677, :713) and a press on another pick's dispute records it under this pick's audit subject (owner_portal.rs:643), breaking SEC-006 / D-229 (\"this dispute's evidence\").\nFix needed: a payments task adds a pick-scoped dispute reader (e.g. disputes_of(conn, pick)) and has record_owner_submission take the pick and refuse a dispute not its own; then T205 narrows waiting_disputes, refuses a foreign dispute press with no audit row, adds the integration test, and corrects D-4481.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 105,
+     "head_sha": "015d53a2b08799c97db2eeef6f01f631be4704e2",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-18T17:25:02Z",
+     "ended_at": "2026-11-18T18:23:59Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 5555839,
+       "turns": 63
+      },
+      "reviewer": {
+       "tokens": 1019835,
+       "turns": 22
+      }
+     }
+    }
+   ]
   },
   {
    "id": "T109",
@@ -80156,12 +80183,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T500",
-   "at": "2026-11-18T18:18:14Z",
-   "cache_read_input_tokens": 6278688,
-   "output_tokens": 58532,
-   "input_tokens": 124,
-   "cache_creation_input_tokens": 197465
+   "task": "T205",
+   "at": "2026-11-18T18:23:59Z",
+   "input_tokens": 170,
+   "output_tokens": 54005,
+   "cache_creation_input_tokens": 236315,
+   "cache_read_input_tokens": 6285184
   },
   "source": "session_reading 2026-11-18T17:30:34Z (week)",
   "by_task": {
@@ -85291,7 +85318,17 @@
    },
    "T205": {
     "estimated_bytes": 536442,
-    "estimated_tokens": 1540656
+    "estimated_tokens": 1540656,
+    "usage_counting": "message_id",
+    "input_tokens": 170,
+    "output_tokens": 54005,
+    "cache_creation_input_tokens": 236315,
+    "cache_read_input_tokens": 6285184,
+    "worker_tokens": 5555839,
+    "worker_turns": 63,
+    "reviewer_tokens": 1019835,
+    "reviewer_turns": 22,
+    "last_model": "claude-opus-5-5"
    },
    "T711": {
     "estimated_bytes": 512201,
@@ -85301,11 +85338,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-18T13:58:12Z",
-    "tokens": 12764334
+    "tokens": 13683342
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 309509787
+    "tokens": 310428795
    }
   },
   "session_reading": {
@@ -85316,7 +85353,7 @@
    }
   }
  },
- "updated_at": "2026-11-18T18:20:11Z",
+ "updated_at": "2026-11-18T18:24:00Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -85414,7 +85451,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "11c03c196b95fa5ee8abd0f221820208127c9279",
+ "runner_sha": "015d53a2b08799c97db2eeef6f01f631be4704e2",
  "starter": "actions",
  "smoke_runs": [
   {
