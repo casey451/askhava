@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-18T06:46:46Z by runner 8d82392ea8c4 (actions).
+Updated 2026-11-18T06:55:43Z by runner 23b4d7dc0086 (actions).
 
-**Building: T482 in progress since 05:26Z; 428 of 613 done; week 46% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T482 in progress since 05:26Z; 429 of 613 done; week 46% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 428 of 613 build tasks (owner gates not counted)
+- **Tasks done:** 429 of 613 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T482 claimed 05:26Z, lease until 09:40Z; lane 4: T658 claimed 06:42Z, lease until 09:42Z; lane 5: T643 claimed 05:25Z, lease until 09:27Z
 - **Week:** 46% used, 99.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:46Z, 0 min before this update
+- **Last run:** 06:46Z, 8 min before this update
 - **Keeper:** last ran 06:46Z, next wake 09:30Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 23 problem(s) on tasks still to run (+203 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
+- Strict plan check red: 24 problem(s) on tasks still to run (+205 on DONE tasks); first: T402: measures 47% of the window, over its 45% limit; trim its reads or split it
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -22,7 +22,7 @@ Updated 2026-11-18T06:46:46Z by runner 8d82392ea8c4 (actions).
 | T642 | Runner (harness): the keeper starts a run for each free lane | done | 1 | 83 min | 06:05Z |  |
 | T601 | businesses and quotes: the card pool reads every service are | MERGE_PENDING | 1 | 50 min | 05:14Z |  |
 | T523 | jobs, ops and intake: the check-in answer recorder and the c | MERGE_PENDING | 3 | 46 min | 05:06Z | Review not approved after the one findings round (head bd99856fca96fb81973c28181ad9fd6e39e7ac91; flag_inputs tests 5 pas |
-| T638 | harness: Ci skips a compile its job already passed on a prov | MERGE_PENDING | 1 | 88 min | 04:35Z |  |
+| T638 | harness: Ci skips a compile its job already passed on a prov | done | 1 | 88 min | 04:35Z |  |
 | T623 | payments: a Stripe key refusal (401 or 403) takes the Stripe | MERGE_PENDING | 1 | 63 min | 03:46Z |  |
 | T151 | ops and messaging: HELP requests with one owner notification | done | 1 | 34 min | 03:40Z |  |
 | T647 | payments: rebuild_charge reports Booked inside a caller's tr | done | 1 | 82 min | 03:35Z |  |
@@ -81,7 +81,6 @@ Updated 2026-11-18T06:46:46Z by runner 8d82392ea8c4 (actions).
 | T112 | Draft the privacy policy and SMS terms | QUEUED | 1 | 62 min | 07:32Z |  |
 | T201 | site: services and help pages, the ROC complaint page | done | 1 | 56 min | 07:22Z |  |
 | T489 | site and server: the web chat and request pages with the con | BLOCKED | 1 | 12 min | 07:15Z |  |
-| T564 | quotes, picks and intake: the LIST, text picks, lapse text a | done | 1 | 43 min | 06:47Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -89,7 +88,7 @@ Updated 2026-11-18T06:46:46Z by runner 8d82392ea8c4 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 680 · unstarted 55
-**Tasks merged (throughput only):** 428 of 613
+**Tasks merged (throughput only):** 429 of 613
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -125,7 +124,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 71 of 220 done
+- stage 5: 72 of 220 done
 - stage 6: 0 of 40 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
