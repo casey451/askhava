@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-18T08:52:53Z by runner bde76f8fb038 (actions).
+Updated 2026-11-18T08:53:06Z by runner bde76f8fb038 (actions).
 
-**Building: T660 in progress since 07:55Z; 433 of 621 done; week 49% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 08:52Z; 433 of 621 done; week 49% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 433 of 621 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T660 claimed 07:55Z, lease until 10:55Z
+- **Lane:** idle since 08:52Z (no task in progress)
 - **Week:** 49% used, 94.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 08:51Z, 1 min before this update
 - **Keeper:** last ran 08:41Z, next wake 10:57Z
@@ -19,6 +19,7 @@ Updated 2026-11-18T08:52:53Z by runner bde76f8fb038 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T660 | quotes (harness): the quote-note AI screener takes scrubbed  | MERGE_PENDING | 1 | 56 min | 08:52Z |  |
 | T658 | privacy: the scrubber removes lower-case Spanish addresses a | QUEUED | 1 | 89 min | 08:11Z | Fix-round review of head 18e4fd102f38620e11d1055ecb4d77813e2b2965 returned FINDINGS after the one allowed fix round (fir |
 | T640 | harness: Ci handles the merge train's throwaway refs and cou | MERGE_PENDING | 1 | 64 min | 08:02Z |  |
 | T619 | quotes, picks and intake: the quote-median, lapsed-pick, win | MERGE_PENDING | 2 | 40 min | 08:02Z | T619 readers are correct per three Opus reviews, but the test file still misses wrong implementations; no reviewer appro |
@@ -132,7 +133,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T660 (lease until 2026-11-18T10:55:55Z)
 
 ## Last usage reading
-- {"task": "T658", "at": "2026-11-18T08:11:44Z", "cache_creation_input_tokens": 198109, "input_tokens": 148, "cache_read_input_tokens": 3492617, "output_tokens": 45019}
+- {"task": "T660", "at": "2026-11-18T08:52:51Z", "output_tokens": 18950, "input_tokens": 84, "cache_creation_input_tokens": 83040, "cache_read_input_tokens": 1803631}
