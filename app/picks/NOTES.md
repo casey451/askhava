@@ -146,10 +146,13 @@
 - [-] (tests) The database path with a real proof: `app/server/tests/release_recovery.rs` (TD-PICK-49, TD-PICK-50, T254): `cargo test -p askhava-server --test release_recovery`.
 - [-] (tests) `src/tests/prop_no_other_off_session_charge.rs` (T209: TD-FEE-30 property, TD-FEE-31 pure cases, the source scan that only `payments/src/off_session.rs` confirms off-session and only `auto_confirm.rs` calls `charge_off_session`): `cargo test -p askhava-picks tests::prop_no_other_off_session_charge`; `tests/integration/tests/auto_confirm.rs`: `cargo test -p askhava-integration --test auto_confirm`.
 - [-] (never 12) the real mint and an unknown pick in `app/server/tests/released_view.rs` (TD-PICK-48, D-1895). Never let `portals` name `read_released`.
+- [-] (never 12) the business-proof read in `privacy`'s `realm_tests`;
 - [-] (never 16) Never close, move or email on a refund `refund_state` does not read as `Succeeded`, and never let `end_pick` drop its row count: `tests/integration/tests/unreachable_refund_states.rs` (TD-FEE-47).
+- [-] (never 16) no-call return by contact and the day-3 NO; the missed-call text and reminders once; auto-submit condition; fraud-warning end: `tests/integration/tests/unreachable_refund.rs`.
 - [-] (never 17) or at once on an emergency, the email copy for an untextable number, the 72-hour return and question, a waiting refund re-run and decided once, the retry after the close emailing once, the fraud-warning task: `tests/integration/tests/unreachable_steps.rs` (TD-JOB-14).
 - [-] (never 17) Never queue the missed-call text before its send time, never count `notice_attempted` before the text or email is queued, and never let a step act on an ended pick or a job that moved on except to finish a succeeded refund's decision on a Closed job.
 - [-] (never 18) never the ended quote: `tests/integration/tests/backup_choice.rs` (TD-PICK-32).
+- [PICK-046] (never 18) the latest bound choice counts; an unbound, other-browser, other-quote or after-the-end choice never counts; replaced, withdrawn, paused or another waiting pick is `Done`;
 - [PICK-013 PICK-014 PICK-018 PICK-042] (task 187) cross-reference (D-3620): the build note of T187 is in `app/portals/NOTES.md`: `grep -n '(task 187)' app/portals/NOTES.md`.
 - [PICK-013 PICK-014 PICK-055 CON-029] (task 054) **What T054 built (D-1243 to D-1247).** The `picks` crate (`app/picks`) and `migrations/0079_picks_code.sql`: `picks.pick` (one awaiting-confirm pick per job; channel `text` with its inbound text, or `page`; status from the eleven pick codes; `end_reason` `replaced` or `paused`), `picks.code_attempt` (one row per Verify code: job, vault contact ID, channel, tries, last try, verified;
 - [PICK-013 PICK-014 PICK-055 CON-029] (task 054) never the number), `picks.verify_cap_day` and the append-only `picks.terms_line` (job, outbox row, template version, time).
@@ -301,10 +304,5 @@
 - [-] (never 9) a failed acceptance leaves no pick: `tests/integration/tests/page_pick.rs`. Only `picks` reads the phone for the code and no digit leaks: `tests/security/tests/page_pick_privacy.rs`, `vault_readers.rs`.
 - [-] (never 10) the notice's recipients: `td_pick_15_*`; pure cases and the spec templates: `src/tests/confirm.rs`.
 - [-] (never 11) no picked quote gives the first sentence only; "This job is no longer active." once, withdrawn quoters included, never to the connected business: `tests/integration/tests/pick_aftermath.rs`.
-- [-] (never 12) the business-proof read in `privacy`'s `realm_tests`;
-- [-] (never 14) A Confirm queues one accepted-quote task, IDs only, and a second settle none: `tests/integration/tests/accepted_quote_email.rs` (TD-PICK-42). Never add `Field::Phone` to a release field list or a phone field to `ReleaseView`.
-- [-] (never 16) email YES stops them; no-call return by contact and the day-3 NO; the missed-call text and reminders once; auto-submit condition; fraud-warning end: `tests/integration/tests/unreachable_refund.rs`.
-- [PICK-046] (never 18) the latest bound choice counts; an unbound, other-browser, other-quote or after-the-end choice never counts; replaced, withdrawn, paused or another waiting pick is `Done`;
+- [-] (never 14) A Confirm queues one accepted-quote task, IDs only, and a second settle none: `tests/integration/tests/accepted_quote_email.rs` (TD-PICK-42).
 - [PICK-022 FEE-052] (never 19) a pending claim's release row stops the fraud refund, a committed `picks.fraud_hold` refuses the claim: `tests/integration/tests/release_fraud_race.rs` (TD-PICK-59), `record` itself in `src/release.rs` tests.
-- [FEE-045] (never 21) unsettled facts refuse a non-emergency pick and store nothing; an emergency pick proceeds on `JobFeeFacts::EMERGENCY_DEFAULT` with one High `FEE_FACTS_ALERT` naming the pick ID only: `tests/integration/tests/fee_facts_at_pick.rs` (TD-FEE-62).
-- [PICK-019 PICK-044 PICK-047 PICK-046] (never 26) a restarted window or a pick no longer waiting does nothing: `tests/integration/tests/confirm_window_lapse.rs`.
