@@ -3401,3 +3401,14 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **Limits to know:** the PROBLEM words are kept only 30 days, so a report older than that can no longer be counted. Counting a report that holds a safety word also puts the complaint itself in your next 9 a.m. or 3 p.m. push, as every safety-word complaint does. The homeowner's apology text comes later than the button (T713 is after the Phase 2 texting work), and a business with no main phone on file gets no apology text sent; you get a normal alert instead.
 - **"YES 1042" by text (Fable, D-4425):** accepted as described above, with the 30-minute limit.
 - Nothing needs you now.
+
+## The texting conversation task was cut into smaller pieces, with its gaps named (D-4441, amending D-4439)
+
+- **The first try at wiring the homeowner's texts past the consent text (T671) came out about 60% over its size limit, and its review found four places where a conversation would stop dead**: a short first text like "need plumber" never got a job; a text naming no trade got nothing after the ZIP; an "alarm keeps beeping" text never got the ZIP question after "just chirping"; and "SAFE" after the ZIP question was taken as a wrong ZIP.
+- **Fix:** T671 had already restarted on the earlier plan, so a new task right after it (T715) corrects those four cases and one more the review found (a text from someone under 18 must never get the ZIP question), with a test for each. Later tasks add the "Which fits best?" question and, when her words name no trade, one question asking what she needs done (T716), the "That's 2 jobs" / ALSO / SPLIT texts (T711) and the second job's own questions and card (T718). The main J1 path is one task longer than the earlier split (D-4439).
+- **Three older tests** needed small updates for the new order; we checked each one, and none hides a privacy leak (the test that looks for a stated name still checks every table).
+- **Our reading, for your review:** the spec says a one- or two-word text never opens a job. We read that as "a short text never opens a job by itself"; a short first text like "need plumber" still gets its job once the ZIP is checked, the same way the one-word ALSO starts a second job.
+- **New wording, for the copy panel:** the question for a text that names no trade ("What do you need done? A few words is enough.") is a draft. Until the AI reading is on, such a text is asked, not told "We don't cover that yet".
+- **A request that never gets a job now times out like any other** (T719): a reminder after a day and a close after three. Because such a request has no request number yet, the two texts are new drafts of the usual ones without the number, for the copy panel.
+- **Open item:** the numbered "Is this mainly 1) plumbing or 2) heating/AC?" question only comes up when the AI reading and the keywords disagree, so it waits for the AI work (T299); no task builds it yet.
+- Our choice; nothing needs you now.
