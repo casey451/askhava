@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-18T16:52:00Z by runner d81a220d9ece (actions).
+Updated 2026-11-18T16:52:19Z by runner ed339f344700 (actions).
 
 **Building: T624 in progress since 16:49Z; 449 of 645 done; week 63% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-18T16:52:00Z by runner d81a220d9ece (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T624 claimed 16:49Z, lease until 19:49Z; lane 2: T621 claimed 16:25Z, lease until 19:25Z; lane 7: T671 claimed 15:43Z, lease until 18:43Z
 - **Week:** 63% used, 66.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:51Z, 0 min before this update
-- **Keeper:** last ran 16:50Z, next wake 18:45Z
+- **Last run:** 16:52Z, 0 min before this update
+- **Keeper:** last ran 16:52Z, next wake 18:45Z
 
 ## Needs attention
 - BLOCKED T408: plan gap reported: PLAN GAP: kit/prompts/T408.md:54 "Size budget: at most 6 files, 800 changed lines" cannot be met. The prompt's own plan changes (D-3144, D-3879, D-4026, D-4326) require edits to at least 13 files (release_sink.rs, new release_hold.rs, release_proof.rs, server lib.rs, payments api.rs, server tests/safe_mode_release.rs, integration safe_mode.rs, ops safe_mode.rs, three NOTES.md, architecture.md, decisions.md), and tests for every held_release money branch (Stripe fetch failure, pick ended while held, no fee row) plus address_in through its registered handler, which the first review required (95%; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T408 --plan-fix D-### --reason "..."` (D-2859)
@@ -85,7 +85,6 @@ Evidence: `git diff --numstat origin/main...HEAD` on owned files at head a3034e2
 | T491 | picks: the Confirm window's end, every way it comes, runs th | done | 1 | 2 h 2 min | 17:44Z |  |
 | T599 | Tests (harness): the PICK-046 email's no-amount check ignore | done | 1 | 32 min | 17:36Z |  |
 | T104 | Wording scan: brand, banned words and the not-a-contractor p | QUEUED | 2 | 42 min | 17:35Z |  |
-| T104 | Wording scan: brand, banned words and the not-a-contractor p | QUEUED | 1 | 51 min | 16:52Z |  |
 
 ### Plan and harness merges on main
 - none
