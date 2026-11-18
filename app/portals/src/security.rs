@@ -327,18 +327,32 @@ impl EventSite {
     }
 }
 
-/// Whether a request that changes state comes from another site: a `Sec-Fetch-Site` other than
-/// `same-origin`, an `Origin` that is not `https://` on `host` (a plain `http://` origin is
-/// cross-site, since the app is served over HTTPS only, SEC-012), or neither header (SEC-042).
+/// Whether a request that changes state comes from another site (SEC-042, SEC-012, D-4292).
+///
+/// When `Sec-Fetch-Site` is present it alone decides, since a page cannot set it: `same-origin`
+/// is not cross-site whatever `Origin` says, and `same-site`, `cross-site`, `none` or any other
+/// value is. This matters because every page sends `Referrer-Policy: no-referrer`, and under that
+/// policy the Fetch standard's "append a request `Origin` header" serializes the origin of every
+/// non-`GET`/`HEAD` request whose mode is not `cors` (every HTML form post) as `null`, so a
+/// browser's own form post arrives as `Sec-Fetch-Site: same-origin` with `Origin: null`.
+///
+/// Without `Sec-Fetch-Site` (a browser before Fetch Metadata), `Origin: https://<host>` is not
+/// cross-site; `Origin: null` is not refused here and is left to the route's token check; any
+/// other `Origin` (a plain `http://` one too, as the app is served over HTTPS only), or none, is
+/// cross-site. The `null` fallback is safe only because every route behind this check also
+/// checks the CSRF token bound to the `__Host-` session or pre-session cookie (`CsrfForm`,
+/// `csrf_matches`), and that `SameSite=Lax` cookie is not sent on a cross-site `POST` (SEC-009).
 #[must_use]
 pub fn is_cross_site(headers: &HeaderMap, host: Option<&str>) -> bool {
-    let fetch_site = headers.get("sec-fetch-site");
-    if fetch_site.is_some_and(|site| site.as_bytes() != b"same-origin") {
-        return true;
+    if let Some(site) = headers.get("sec-fetch-site") {
+        return site.as_bytes() != b"same-origin";
     }
     let Some(origin) = headers.get(header::ORIGIN) else {
-        return fetch_site.is_none();
+        return true;
     };
+    if origin.as_bytes() == b"null" {
+        return false;
+    }
     let origin_host = origin
         .to_str()
         .ok()

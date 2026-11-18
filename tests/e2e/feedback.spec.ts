@@ -2,9 +2,8 @@
 // The private feedback page in a browser (T230; TD-JOB-10; JOB-017; D-083, D-466, D-493).
 //
 // A Done job with a live link token is seeded through psql on DATABASE_URL, as pick_flow.spec.ts
-// does; the page opens at /f/<token>. Under the site's `Referrer-Policy: no-referrer` the browser
-// sends `Origin: null` on a same-origin form POST, which `security::is_cross_site` refuses (D-1250),
-// so `page.route` re-sends each POST with the https Origin a same-origin request has. The stored
+// does; the page opens at /f/<token>. Each POST goes with the browser's own headers
+// (`Sec-Fetch-Site: same-origin`, `Origin: null` under `Referrer-Policy: no-referrer`; D-4292). The stored
 // row is read back through psql to check the words and the tick were kept as sent; which feedback
 // may reach askhava.com (ticked only, a negative one like a positive one, the four removal reasons,
 // never the owner's, a relative's or a business's) is checked on the database in
@@ -56,17 +55,6 @@ function stored(hash: string): string {
     JOIN jobs.quote_token t ON t.job_id = f.job_id WHERE t.token_hash = decode('${hash}', 'hex')`);
 }
 
-/** Re-sends every POST with a same-origin https Origin (see the header and D-1250). */
-async function httpsOrigin(page: Page): Promise<void> {
-  await page.route("**/f/**", async (route) => {
-    const request = route.request();
-    if (request.method() !== "POST") return route.continue();
-    const origin = new URL(request.url()).host;
-    const headers = { ...request.headers(), origin: `https://${origin}`, "sec-fetch-site": "same-origin" };
-    return route.fulfill({ response: await route.fetch({ headers, maxRedirects: 0 }) });
-  });
-}
-
 async function noAllFeedbackClaim(page: Page): Promise<void> {
   const text = (await page.locator("body").innerText()).toLowerCase();
   for (const banned of ["all feedback", "all reviews", "every review", "reward", "discount", "gift card"]) {
@@ -87,7 +75,6 @@ test("TD-JOB-10 JOB-017: the share box is one unticked box with the JOB-017 labe
 
 test("TD-JOB-10 JOB-017: ticked negative feedback is stored with its tick as sent, then the thanks shows once", async ({ page }) => {
   const { hash, path } = seedJob("done");
-  await httpsOrigin(page);
   await page.goto(path);
   await page.getByLabel("Your feedback").fill("Sample: the visit was late and the work was poor.");
   await page.getByRole("checkbox", { name: LABEL, exact: true }).check();
@@ -101,7 +88,6 @@ test("TD-JOB-10 JOB-017: ticked negative feedback is stored with its tick as sen
 
 test("TD-JOB-10 JOB-017: unticked feedback is stored private; an empty send keeps the tick and says why", async ({ page }) => {
   const { hash, path } = seedJob("done");
-  await httpsOrigin(page);
   await page.goto(path);
   await page.getByRole("checkbox", { name: LABEL, exact: true }).check();
   await page.getByRole("button", { name: "Send feedback" }).click();
@@ -156,7 +142,6 @@ test("TD-JOB-10 JOB-017: a removal is never changed or cleared, and an author ma
 
 test("TD-JOB-10 (axe part): the feedback form, its error and the thanks have no axe violation at 320, 768 and 1280 px", async ({ page }) => {
   const { path } = seedJob("done");
-  await httpsOrigin(page);
   await page.goto(path);
   const scan = async (state: string): Promise<void> => {
     for (const width of WIDTHS) {
