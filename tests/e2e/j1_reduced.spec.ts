@@ -10,11 +10,10 @@
 // button, which neither sends nor checks a code yet (D-1248, D-1264). Steps 1 to 4 (no route takes
 // an inbound text, T241) and the verified pick are not in this file; D-1280 records them. The
 // test-control router has no seeding route, so the job and its quotes are seeded through psql on
-// DATABASE_URL, as tests/e2e/pick_flow.spec.ts does (D-1280). POSTs are re-sent with a same-origin
-// https Origin until D-1250's fix lands. Fake data only: no name, phone or address is stored.
+// DATABASE_URL, as tests/e2e/pick_flow.spec.ts does (D-1280). POSTs go with the
+// browser's own headers (D-4292). Fake data only: no name, phone or address is stored.
 import { createHash, randomBytes } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import type { Page } from "@playwright/test";
 import { test, expect } from "./fixtures";
 
 /** A job in Quotes ready with two diagnostic-visit quotes ($89 visit each); returns its quote page. */
@@ -37,16 +36,6 @@ function seedTwoDiagnosticQuotes(): string {
   return `/q/${token}`;
 }
 
-/** Re-sends every POST with a same-origin https Origin (D-1250). */
-async function httpsOrigin(page: Page): Promise<void> {
-  await page.route("**/q/**", async (route) => {
-    const request = route.request();
-    if (request.method() !== "POST") return route.continue();
-    const headers = { ...request.headers(), origin: `https://${new URL(request.url()).host}`, "sec-fetch-site": "same-origin" };
-    return route.fulfill({ response: await route.fetch({ headers, maxRedirects: 0 }) });
-  });
-}
-
 test("J1 step 5: both seeded diagnostic-visit quotes are on the quote page, in arrival order, each with Pick", async ({ page }) => {
   const path = seedTwoDiagnosticQuotes();
   await page.goto(path);
@@ -64,7 +53,6 @@ test("J1 step 5: both seeded diagnostic-visit quotes are on the quote page, in a
 
 test("J1 step 6 (partial): Pick #2 and the review step, then the code-and-contact form reached directly (form action rewritten to /code), with the call or email choice", async ({ page }) => {
   const path = seedTwoDiagnosticQuotes();
-  await httpsOrigin(page);
   await page.goto(path);
   await page.getByRole("button", { name: "Pick #2" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Check your pick: quote #2");

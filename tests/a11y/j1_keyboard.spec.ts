@@ -39,16 +39,6 @@ const TWO_VISITS: PageState = {
     FROM j, generate_series(1, 2) AS g(n)`,
 };
 
-/** Re-sends every POST with a same-origin https Origin (D-1250). */
-async function httpsOrigin(page: Page): Promise<void> {
-  await page.route("**/q/**", async (route) => {
-    const request = route.request();
-    if (request.method() !== "POST") return route.continue();
-    const headers = { ...request.headers(), origin: `https://${new URL(request.url()).host}`, "sec-fetch-site": "same-origin" };
-    return route.fulfill({ response: await route.fetch({ headers, maxRedirects: 0 }) });
-  });
-}
-
 interface Focus {
   index: number;
   next: number;
@@ -158,7 +148,6 @@ async function toCodeStep(page: Page): Promise<void> {
 
 for (const width of WIDTHS) {
   test(`A11Y-005 A11Y-021 J1 steps 5 and 6 keyboard-only at ${String(width)} px: quote page, Pick #2, Go back, Pick #2 again, final Pick, code step; axe on each`, async ({ page, pageUrl }) => {
-    await httpsOrigin(page);
     await open(page, pageUrl(TWO_VISITS), width);
     await noTrap(page);
     await open(page, pageUrl(TWO_VISITS), width);
