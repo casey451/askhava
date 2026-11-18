@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO payments.pick_fee (pick_id, business_id, job_id, mode, kind, amount_cents,\n           terms_version, fixed_at) VALUES ($1, $2, $3, 'tiers', 'fee_free', 0, 1, now())",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "069f521c579bc9a7173e530a29f5a89cf7b2cbc9a88fdeeb184250f81855530c"
+}
