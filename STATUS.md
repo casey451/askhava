@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T20:59:56Z by runner 1788f650f608 (actions).
+Updated 2026-11-19T21:00:07Z by runner 1788f650f608 (actions).
 
-**Building: T753 in progress since 19:06Z; 503 of 701 done; week 8% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T480 in progress since 20:38Z; 503 of 701 done; week 8% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 503 of 701 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T753 claimed 19:06Z, lease until 22:06Z; lane 4: T480 claimed 20:38Z, lease until 23:38Z; lane 7: T717 claimed 20:10Z, lease until 23:59Z
+- **Lane:** lane 4: T480 claimed 20:38Z, lease until 23:38Z; lane 7: T717 claimed 20:10Z, lease until 23:59Z
 - **Week:** 8% used, 175.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 20:59Z, 0 min before this update
 - **Keeper:** last ran 20:35Z, next wake 20:55Z
@@ -19,6 +19,7 @@ Updated 2026-11-19T20:59:56Z by runner 1788f650f608 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T753 | runner (harness): `fable` is a model the plan can name, a ta | MERGE_PENDING | 1 | 112 min | 20:59Z |  |
 | T307 | server and portals: the homeowner portal's sign-in, home pag | MERGE_PENDING | 2 | 2 h 45 min | 20:33Z | PLAN GAP: tests/security/tests/vault_readers.rs:23 lets only `portals` call `read_own_contact` (line 19 lets only `messa |
 | T748 | portals: the help-page form's confirmation promises no reply | MERGE_PENDING | 1 | 41 min | 20:08Z |  |
 | T161 | wording: the WORD-024 voice rule's pressure-word scan, the r | MERGE_PENDING | 2 | 2 h 1 min | 20:00Z | PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/s |
@@ -135,9 +136,9 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T753 (lease until 2026-11-19T22:06:54Z)
+- nothing
 - lane 4: T480 (lease until 2026-11-19T23:38:50Z)
 - lane 7: T717 (lease until 2026-11-19T23:59:26Z)
 
 ## Last usage reading
-- {"task": "T307", "at": "2026-11-19T20:33:29Z", "input_tokens": 403, "cache_creation_input_tokens": 446713, "cache_read_input_tokens": 21692156, "output_tokens": 109376}
+- {"task": "T753", "at": "2026-11-19T20:59:28Z", "input_tokens": 346, "output_tokens": 100486, "cache_creation_input_tokens": 395306, "cache_read_input_tokens": 9112770}
