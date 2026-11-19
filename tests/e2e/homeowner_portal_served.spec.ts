@@ -29,7 +29,7 @@ function verifyCode(phone: string): string {
 const bytea = (value: Buffer): string => `decode('${value.toString("hex")}', 'hex')`;
 
 /** Her contact on `number`, sealed, and the number's blind index. */
-function seedHer(number: string): void {
+function seedHer(number: string): string {
   const contact = randomUUID();
   const digest = bytea(blindIndex("homeowner-phone", number));
   const phone = bytea(seal("privacy.contact", "phone", contact, number));
@@ -37,7 +37,12 @@ function seedHer(number: string): void {
   psql(`WITH c AS (INSERT INTO privacy.contact (id, phone, address) VALUES ('${contact}', ${phone}, ${street}) RETURNING id)
     INSERT INTO privacy.contact_index (purpose, key_version, digest, contact_id)
     SELECT 'homeowner-phone', 1, ${digest}, id FROM c`);
+  return contact;
 }
+
+/** Whether her sign-in challenge is open: the route sends the code after it answers (D-4013). */
+const challenged = (contact: string): boolean =>
+  psql(`SELECT count(*) FROM portals.code_challenge WHERE subject_id = '${contact}'`) !== "0";
 
 /** Whether her number is on the suppression list. */
 function listed(): boolean {
@@ -46,7 +51,7 @@ function listed(): boolean {
 }
 
 test("TD-PRIV-21: she signs in with the texted code, sees her own record and turns texts off", async ({ page }) => {
-  seedHer(HER.phone);
+  const contact = seedHer(HER.phone);
   const answers: string[] = [];
   page.on("response", (response) => {
     if (new URL(response.url()).pathname.startsWith("/h")) answers.push(response.headers()["cache-control"] ?? "");
@@ -56,6 +61,7 @@ test("TD-PRIV-21: she signs in with the texted code, sees her own record and tur
   await page.getByLabel("Your mobile number").fill(HER.phone);
   await page.getByRole("button", { name: "Text me a code" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Enter your code");
+  await expect.poll(() => challenged(contact), { message: "her code was sent" }).toBe(true);
   await page.getByLabel("6-digit code").fill(verifyCode(HER.phone));
   await page.getByRole("button", { name: "Sign in" }).click();
 

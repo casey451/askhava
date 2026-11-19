@@ -8,10 +8,11 @@
 //! to `/h/sign-in` with no detail; every answer is `no-store`; a cross-site `POST` (by
 //! `Sec-Fetch-Site` or `Origin`) or a wrong CSRF token is a 403, changes nothing and is logged as a
 //! `csrf_rejected` security event; a send past `admit_code_send`'s limit sends nothing and a check
-//! past `admit_code_try`'s limit calls no Verify. The `/h/my-data` cases are T561's. Fake data only.
+//! past `admit_code_try`'s limit calls no Verify; the code page never waits on Verify (TD-PICK-36,
+//! D-4013), so the cases wait for the send before checking a code. The `/h/my-data` cases are T561's. Fake data only.
 
-use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::{Arc, Mutex, PoisonError};
 
 use askhava_adapters::api::{AdapterError, CodeChannel, IdempotencyKey, VerifyAdapter};
 use askhava_core::api::{Settings, TestControl};
@@ -39,11 +40,33 @@ const HER: (&str, &str) = ("+19285550111", "12 Example Way");
 const OTHER: (&str, &str) = ("+19285550122", "34 Sample Road");
 const CODE: &str = "123456";
 
-/// A Verify that counts its sends and checks; only [`CODE`] is right.
+/// A Verify that counts its sends and checks; only [`CODE`] is right. A `stalled` one never
+/// finishes a send, as a hung Verify would.
 #[derive(Clone, Default)]
 struct FakeVerify {
     sends: Arc<AtomicUsize>,
     checks: Arc<AtomicUsize>,
+    stalled: bool,
+}
+
+impl FakeVerify {
+    /// Waits (5 s at most) until `n` sends were made: the route sends after it answers (D-4013).
+    async fn sent(&self, n: usize) {
+        for _ in 0..500 {
+            if self.sends.load(Ordering::SeqCst) >= n {
+                break;
+            }
+            tokio::time::sleep(std::time::Duration::from_millis(10)).await;
+        }
+        assert_eq!(self.sends.load(Ordering::SeqCst), n);
+    }
+
+    /// Lets a spawned send finish (500 ms, far past the time `sent` sees an admitted send
+    /// take), then checks exactly `n` sends were made: proves a send did not happen (D-4013).
+    async fn quiet(&self, n: usize) {
+        tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+        assert_eq!(self.sends.load(Ordering::SeqCst), n);
+    }
 }
 
 impl VerifyAdapter for FakeVerify {
@@ -54,6 +77,9 @@ impl VerifyAdapter for FakeVerify {
         _: CodeChannel,
     ) -> Result<String, AdapterError> {
         self.sends.fetch_add(1, Ordering::SeqCst);
+        if self.stalled {
+            std::future::pending::<()>().await;
+        }
         Ok("VEfake".to_owned())
     }
 
@@ -257,8 +283,9 @@ fn phone_field(phone: &str) -> String {
 }
 
 /// Signs in as `phone` through both steps with the right code; the jar after.
-async fn sign_in(app: &Router, phone: &str) -> CookieJar {
+async fn sign_in(app: &Router, verify: &FakeVerify, phone: &str) -> CookieJar {
     let jar = browser(app).await;
+    let before = verify.sends.load(Ordering::SeqCst);
     let sent = call(
         app,
         "/h/sign-in",
@@ -267,17 +294,70 @@ async fn sign_in(app: &Router, phone: &str) -> CookieJar {
     )
     .await;
     assert_eq!(sent.status, 200);
+    verify.sent(before + 1).await;
     let form = format!("{}&code={CODE}", phone_field(phone));
     let done = call(app, "/h/sign-in/code", &sent.jar, (Some(&form), Site::Own)).await;
     assert_eq!((done.status, done.text.as_str()), (303, "/h"));
     done.jar
 }
 
-async fn csrf_events(pool: &PgPool) -> i64 {
-    sqlx::query_scalar("SELECT count(*) FROM portals.security_event WHERE kind = 'csrf_rejected'")
-        .fetch_one(pool)
-        .await
-        .expect("count")
+/// The `kind` of every "security event" log line while it is the default subscriber (SEC-048).
+#[derive(Clone, Default)]
+struct Events(Arc<Mutex<Vec<String>>>);
+
+impl Events {
+    fn count(&self, kind: &str) -> usize {
+        let all = self.0.lock().unwrap_or_else(PoisonError::into_inner);
+        all.iter().filter(|k| *k == kind).count()
+    }
+}
+
+/// One log event's `message` and `kind`.
+#[derive(Default)]
+struct Fields(Option<String>, Option<String>);
+
+impl tracing::field::Visit for Fields {
+    fn record_str(&mut self, field: &tracing::field::Field, value: &str) {
+        self.record_debug(field, &value);
+    }
+
+    fn record_debug(&mut self, field: &tracing::field::Field, value: &dyn std::fmt::Debug) {
+        let value = format!("{value:?}").trim_matches('"').to_owned();
+        match field.name() {
+            "message" => self.0 = Some(value),
+            "kind" => self.1 = Some(value),
+            _ => {}
+        }
+    }
+}
+
+impl tracing::Subscriber for Events {
+    fn enabled(&self, _: &tracing::Metadata<'_>) -> bool {
+        true
+    }
+
+    fn new_span(&self, _: &tracing::span::Attributes<'_>) -> tracing::span::Id {
+        tracing::span::Id::from_u64(1)
+    }
+
+    fn record(&self, _: &tracing::span::Id, _: &tracing::span::Record<'_>) {}
+
+    fn record_follows_from(&self, _: &tracing::span::Id, _: &tracing::span::Id) {}
+
+    fn event(&self, event: &tracing::Event<'_>) {
+        let mut fields = Fields::default();
+        event.record(&mut fields);
+        if let (Some("security event"), Some(kind)) = (fields.0.as_deref(), fields.1) {
+            self.0
+                .lock()
+                .unwrap_or_else(PoisonError::into_inner)
+                .push(kind);
+        }
+    }
+
+    fn enter(&self, _: &tracing::span::Id) {}
+
+    fn exit(&self, _: &tracing::span::Id) {}
 }
 
 /// TD-PRIV-21 (SEC-008): a number on file gets one code and the same page as a number not on
@@ -295,7 +375,7 @@ async fn td_priv_21_sign_in_by_texted_code_and_the_same_answer_for_any_number(po
         (Some(&phone_field(HER.0)), Site::Own),
     )
     .await;
-    assert_eq!(verify.sends.load(Ordering::SeqCst), 1);
+    verify.sent(1).await;
     let unknown = call(
         &app,
         "/h/sign-in",
@@ -303,11 +383,7 @@ async fn td_priv_21_sign_in_by_texted_code_and_the_same_answer_for_any_number(po
         (Some(&phone_field(OTHER.0)), Site::Own),
     )
     .await;
-    assert_eq!(
-        verify.sends.load(Ordering::SeqCst),
-        1,
-        "no code to a number not on file"
-    );
+    verify.quiet(1).await;
     assert_eq!((known.status, unknown.status), (200, 200));
     assert_eq!(
         known.text.replace(HER.0, ""),
@@ -323,7 +399,7 @@ async fn td_priv_21_sign_in_by_texted_code_and_the_same_answer_for_any_number(po
     .await;
     assert_eq!(refused.status, 400);
     assert!(refused.text.contains("That code didn't work"));
-    let jar = sign_in(&app, HER.0).await;
+    let jar = sign_in(&app, &verify, HER.0).await;
     let home = call(&app, "/h", &jar, (None, Site::Own)).await;
     assert_eq!(home.status, 200);
     assert!(home.text.contains("ending in 0111") && home.text.contains(HER.1));
@@ -442,12 +518,14 @@ async fn td_priv_21_cross_site_and_wrong_token_posts_are_refused_and_logged(pool
         ("/h/sign-in", &anonymous, phone_field(HER.0)),
         ("/h/sign-in/code", &anonymous, code),
     ];
-    let mut logged = csrf_events(&pool).await;
+    let events = Events::default();
+    let _guard = tracing::subscriber::set_default(events.clone());
+    let mut logged = 0;
     for (path, jar, form) in &posts {
         for site in [Site::CrossFetch, Site::CrossOrigin, Site::WrongToken] {
             let reply = call(&app, path, jar, (Some(form), site)).await;
             assert_eq!(reply.status, 403, "{path}");
-            let now = csrf_events(&pool).await;
+            let now = events.count("csrf_rejected");
             assert_eq!(now, logged + 1, "{path} logged once");
             logged = now;
         }
@@ -486,7 +564,7 @@ async fn td_priv_21_a_send_past_the_limit_sends_nothing(pool: PgPool) {
     .await;
     assert_eq!(past.status, 200);
     assert!(past.text.contains("If we have that number"));
-    assert_eq!(verify.sends.load(Ordering::SeqCst), 0);
+    verify.quiet(0).await;
 }
 
 /// TD-PRIV-21 (SEC-014, SEC-020, D-2206): past the IP's try limit even the right code after a
@@ -509,7 +587,7 @@ async fn td_priv_21_a_check_past_the_limit_calls_no_verify(pool: PgPool) {
         (Some(&phone_field(HER.0)), Site::Own),
     )
     .await;
-    assert_eq!(verify.sends.load(Ordering::SeqCst), 1);
+    verify.sent(1).await;
     let right = format!("{}&code={CODE}", phone_field(HER.0));
     let past = call(
         &app,
@@ -522,4 +600,24 @@ async fn td_priv_21_a_check_past_the_limit_calls_no_verify(pool: PgPool) {
     assert_eq!(verify.checks.load(Ordering::SeqCst), 0);
     let home = call(&app, "/h", &past.jar, (None, Site::Own)).await;
     assert_eq!(home.status, 401);
+}
+
+/// TD-PICK-36 (D-1954, D-4013): the code page never waits on Verify, so a number on file answers
+/// as fast as one that is not; a Verify that never finishes still gets the page at once.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_pick_36_the_code_page_does_not_wait_on_verify(pool: PgPool) {
+    let verify = FakeVerify {
+        stalled: true,
+        ..FakeVerify::default()
+    };
+    let app = app(&pool, &verify);
+    contact(&pool, HER).await;
+    let jar = browser(&app).await;
+    let form = phone_field(HER.0);
+    let sent = call(&app, "/h/sign-in", &jar, (Some(&form), Site::Own));
+    let reply = tokio::time::timeout(std::time::Duration::from_secs(5), sent).await;
+    let reply = reply.expect("the code page waited on Verify");
+    assert_eq!(reply.status, 200);
+    assert!(reply.text.contains("If we have that number"));
+    verify.sent(1).await;
 }

@@ -45,6 +45,7 @@ use axum::http::header::{HeaderValue, LOCATION};
 use axum::middleware::{Next, from_fn, from_fn_with_state};
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{get, post};
+use jiff::Timestamp;
 use secrecy::SecretString;
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
@@ -293,14 +294,31 @@ async fn send(
     let contact = on_file(&state, &form.phone).await;
     let threshold = i32::try_from(VERIFY_DAILY_THRESHOLD).unwrap_or(i32::MAX);
     let limit = admit_code_send(&state.pool, (ip, contact), (now, threshold)).await;
-    let parts = state.hooks.as_deref().zip(state.verify.as_deref());
-    if let (true, Some((hooks, verify))) = (passed(limit), parts) {
-        let keys = (&hooks.vault, verify, &hooks.id_secret);
-        if let Err(error) = send_sign_in_code(&state.pool, keys, &form.phone, now).await {
-            tracing::warn!(%error, "homeowner sign-in code not sent");
-        }
+    let parts = state.hooks.clone().zip(state.verify.clone());
+    if let (true, Some(parts)) = (passed(limit), parts) {
+        tokio::spawn(send_later(
+            state.pool.clone(),
+            parts,
+            form.phone.clone(),
+            now,
+        ));
     }
     code_page(&jar, &form.phone, false)
+}
+
+/// TD-PICK-36, D-1954, D-4013: sends the sign-in code off the request, so the code page never
+/// waits on the challenge write or Verify and its timing does not show whether a number is on
+/// file; a failure is logged once, without the number.
+async fn send_later(
+    pool: PgPool,
+    (hooks, verify): (Arc<Webhooks>, Arc<HomeownerVerify>),
+    phone: String,
+    now: Timestamp,
+) {
+    let keys = (&hooks.vault, verify.as_ref(), &hooks.id_secret);
+    if let Err(error) = send_sign_in_code(&pool, keys, &phone, now).await {
+        tracing::warn!(%error, "homeowner sign-in code not sent");
+    }
 }
 
 /// `POST` [`HOMEOWNER_CODE_ROUTE`] (SEC-008, SEC-014, SEC-020): after the per-IP try limit, checks
