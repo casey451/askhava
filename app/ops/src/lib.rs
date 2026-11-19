@@ -9,6 +9,7 @@ pub mod api;
 mod audit_subjects;
 mod digest_rows;
 mod help_requests;
+mod latest_audit;
 mod models;
 mod owner_alerts;
 mod safe_mode;

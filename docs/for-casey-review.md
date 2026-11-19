@@ -3547,3 +3547,4 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **Licences:** a request such as "handyman needed, breaker panel keeps tripping" no longer counts handymen without an electrical licence, and "water heater" keeps its job type in the count (T716).
 - **Smaller fixes:** a "Close which?" question no longer stays open forever, "never mind" with no job now gets a reply (T759), and a second job opened with "ALSO" before the ZIP now gets its coverage answer (T760).
 - Fable's findings; nothing needs you now.
+- **Nightly backup (T109):** the app now makes a nightly encrypted copy of the database at 3 a.m. Arizona time, locked so only your offline key can open it, and the owner health page shows when the last one was stored. Before the test project runs it, two settings are needed on the worker only: the export's public key and the backup role's database address. Nothing needs you now.
