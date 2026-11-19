@@ -82,7 +82,7 @@ fn liveness_limit() -> io::Result<askhava_server::liveness::LivenessLimit> {
 
 /// `parts` with the served business sign-in, sign-up, portal `vault` (built and checked at start,
 /// D-4418) and Confirm settings from `settings` and the process environment (T280, T302, T300,
-/// T261), the step-up page's Verify part (T364), the web chat's code-step keys (T489) and the
+/// T261), the step-up page's Verify part (T364), the homeowner sign-in's Verify part (T307), the web chat's code-step keys (T489) and the
 /// site pages' settings (T102); each errors as its own builder does, naming a key, never a value.
 fn business_parts(
     settings: &askhava_core::api::Settings,
@@ -102,10 +102,12 @@ fn business_parts(
     let step_up = askhava_server::business_step_up::step_up_codes(settings, std::env::vars())?;
     let confirm = askhava_server::confirm_settings(settings, std::env::vars())?;
     let chat = askhava_server::chat_codes::chat_keys(settings, std::env::vars())?;
+    let homeowner = askhava_server::homeowner_portal::homeowner_verify(settings, std::env::vars())?;
     Ok(parts
         .with_sign_in(signin)
         .with_sign_up(signup)
         .with_step_up(step_up)
+        .with_homeowner_verify(homeowner)
         .with_vault(vault)
         .with_confirm_part(confirm)
         .with_chat_codes(chat)
