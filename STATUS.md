@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T04:57:16Z by runner 21b4c2edab3b (actions).
+Updated 2026-11-19T05:11:15Z by runner 70b8f3dde6f7 (actions).
 
-**Building: T408 in progress since 03:29Z; 474 of 664 done; week 74% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T408 in progress since 03:29Z; 475 of 664 done; week 74% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 474 of 664 build tasks (owner gates not counted)
+- **Tasks done:** 475 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T408 claimed 03:29Z, lease until 06:29Z; lane 4: T562 claimed 04:26Z, lease until 07:26Z; lane 7: T229 claimed 04:42Z, lease until 07:42Z
 - **Week:** 74% used, 41.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:57Z, 0 min before this update
+- **Last run:** 04:57Z, 13 min before this update
 - **Keeper:** last ran 04:57Z, next wake 06:31Z
 
 ## Needs attention
@@ -16,7 +16,7 @@ Updated 2026-11-19T04:57:16Z by runner 21b4c2edab3b (actions).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T456 (since 2026-11-19T04:26:11Z, no attempt used; a plan change fixes it): T456: dependency T399 is DONE but its owned file app/server/tests/approve_link_route.rs is not on main
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 60 problem(s) on tasks still to run (+284 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 62 problem(s) on tasks still to run (+289 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -24,7 +24,7 @@ Updated 2026-11-19T04:57:16Z by runner 21b4c2edab3b (actions).
 | T203 | Wording scan: the required statements, business copy lines a | MERGE_PENDING | 4 | 42 min | 04:50Z | PLAN GAP: app/portals/templates/es_business_signup.html:82 ("Licencia de control de plagas") and :88 ("Mi licencia inclu |
 | T490 | server (harness): the email provider passed to the sign-up m | MERGE_PENDING | 1 | 2 h 25 min | 04:35Z |  |
 | T520 | portals and messaging: the portal stylesheets and email colo | MERGE_PENDING | 1 | 2 h 21 min | 04:18Z |  |
-| T563 | intake and privacy: the daily consent sweep removes consent  | MERGE_PENDING | 3 | 77 min | 04:05Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
+| T563 | intake and privacy: the daily consent sweep removes consent  | done | 3 | 77 min | 04:05Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T399 | server: the email's Approve link approves the phone, only wi | done | 1 | 46 min | 04:01Z |  |
 | T484 | portals and quotes: "Call from the Laftly number", the owner | done | 1 | 82 min | 03:26Z |  |
 | T114 | Terms-match-code checks and recurring pricing copy | done | 1 | 71 min | 03:26Z |  |
@@ -89,7 +89,6 @@ Updated 2026-11-19T04:57:16Z by runner 21b4c2edab3b (actions).
 | T643 | portals (harness): a real browser's same-origin form POST pa | done | 1 | 2 h 24 min | 07:49Z |  |
 | T642 | Runner (harness): the keeper starts a run for each free lane | done | 1 | 83 min | 06:05Z |  |
 | T601 | businesses and quotes: the card pool reads every service are | done | 1 | 50 min | 05:14Z |  |
-| T523 | jobs, ops and intake: the check-in answer recorder and the c | done | 3 | 46 min | 05:06Z | Review not approved after the one findings round (head bd99856fca96fb81973c28181ad9fd6e39e7ac91; flag_inputs tests 5 pas |
 
 ### Plan and harness merges on main
 - none
@@ -97,7 +96,7 @@ Updated 2026-11-19T04:57:16Z by runner 21b4c2edab3b (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 293 of 735 (39.9%) · partial 396 · unstarted 46
-**Tasks merged (throughput only):** 474 of 664
+**Tasks merged (throughput only):** 475 of 664
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -133,7 +132,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 117 of 263 done
+- stage 5: 118 of 263 done
 - stage 6: 0 of 48 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
