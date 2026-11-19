@@ -1,0 +1,71 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT p.job_id, p.business_id, p.confirm_due, p.away_delayed, EXISTS (SELECT 1 FROM picks.window_extension e WHERE e.pick_id = p.id AND e.kind = 'hold') AS \"held!\" FROM picks.pick p WHERE p.id = $1 AND p.status = 'awaiting_confirm'",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "job_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "picks.pick",
+            "name": "job_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "business_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "picks.pick",
+            "name": "business_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "confirm_due",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "picks.pick",
+            "name": "confirm_due"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "away_delayed",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "picks.pick",
+            "name": "away_delayed"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "held!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      null
+    ]
+  },
+  "hash": "2b672f4d166974acd399f8ad66cb84c5c1b6146a6cf115db9dabb875fa9128f6"
+}
