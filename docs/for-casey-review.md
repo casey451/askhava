@@ -3504,3 +3504,17 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **What it changes:** from the moment it is on, new homeowners' first text includes the recorded-call sentence, and a gas, smoke or fire text while our texting is down can get one recorded call. Off again, both stop with the next message.
 - **Not covered yet:** the web chat's welcome text never mentions the recorded call, even with the switch on. That chat part belongs to another module and needs its own small change.
 - Our choice; nothing needs you now.
+
+## Fable's first restart batch: ten new tasks and four widened ones (D-4748 to D-4750)
+
+- **What will change:** a text opt-out keeps working after the phone-lookup key is replaced, and an old key can finally be retired (T743; Gate C now waits for it). Closing or cancelling a job ends a pick still waiting to be accepted or paid, and its payment is cancelled (T744). Businesses see the homeowner's answers on the Quote and Confirm pages (T745, T746), and a returning homeowner's second job from an "ALSO" text gets the $0 repeat-customer fee it should. Choosing "emergency" by text now gives the 60-minute emergency windows (T747). An unused business text is removed (T749).
+- **Help form:** until it asks for an email address, its "got your message" screen stops promising a reply (T748); then the form asks for an email and the owner's reply goes there (T740, T742).
+- **For you to review later:** the privacy policy draft gains "An opted-out number is kept as long as needed to honor the opt-out." (T750), and a Spanish draft of the home page's texting consent line is written for a native speaker to check (T725). Neither is published or shown until you say so.
+- **Test tools:** the payment test stand-in learns to remove a saved card (T751), and an old catalog comment saying "2 businesses" is corrected to 1 (T752).
+- **Dates noted:** the picomatch exception is re-checked December 10; the pacer is re-measured 48 hours after its fix lands.
+- Our choice (Fable's decisions); nothing needs you now.
+
+## Fable takes the retries, and the next tasks in line (D-4761)
+
+- **What will change:** a new runner task (T753) lets a task be assigned to Fable and sends any task that failed once to Fable for its next try; if Fable refuses or runs out of usage, Opus takes over without losing a try. The next tasks claimed are, in order: T724, T753, T726, T727, T748, T740, T742.
+- Your instruction (Nov 19); nothing needs you now.
