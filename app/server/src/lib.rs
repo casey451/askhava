@@ -49,6 +49,7 @@ pub mod checkin;
 pub mod email_due;
 pub mod email_provider;
 pub mod healthz;
+pub mod homeowner_portal;
 pub mod inbound_retry;
 pub mod inbound_text;
 pub mod inbound_voice;
@@ -149,6 +150,7 @@ struct BusinessParts {
     step_up: Option<askhava_portals::api::StepUpCodes>,
     vault: Option<Arc<Vault>>,
     confirm: Option<ConfirmSettings>,
+    homeowner: Option<homeowner_portal::HomeownerVerify>,
 }
 
 impl RouterParts {
@@ -171,6 +173,18 @@ impl RouterParts {
     #[must_use]
     pub fn with_step_up(mut self, codes: Option<askhava_portals::api::StepUpCodes>) -> Self {
         self.business.step_up = codes;
+        self
+    }
+
+    /// Adds the homeowner sign-in's Verify part (T307, D-3877; `homeowner_portal::homeowner_verify`);
+    /// without it the homeowner portal is still served, a code send sends nothing and a code check
+    /// calls nothing.
+    #[must_use]
+    pub fn with_homeowner_verify(
+        mut self,
+        verify: Option<homeowner_portal::HomeownerVerify>,
+    ) -> Self {
+        self.business.homeowner = verify;
         self
     }
 
@@ -297,7 +311,9 @@ impl ApprovalSecret for StripeApproval {
 /// take it" page and button ([`cant_take_route`], T472), always; the business step-up page
 /// ([`business_step_up`], T364), always, sending codes only with its part; and the
 /// owner's sign-in, step-up and sign-out routes ([`owner_signin`], T303) and home, settings and
-/// switches ([`owner_portal`], T310, the opt-out with the portal's vault), always.
+/// switches ([`owner_portal`], T310, the opt-out with the portal's vault), always; and the
+/// homeowner portal's sign-in, home and texts-off routes ([`homeowner_portal`], T307), always,
+/// with the webhooks' vault and ID secret and the parts' Verify client.
 fn business_pages(
     parts: BusinessParts,
     pool: PgPool,
@@ -321,6 +337,7 @@ fn business_pages(
         webhooks,
     ));
     let cant_take = cant_take_route::routes(pool.clone());
+    let homeowner = homeowner_portal::routes(pool.clone(), webhooks, parts.homeowner);
     let step_up = business_step_up::routes(pool.clone(), parts.step_up);
     let portal = business_portal::served(pool, parts.vault, (webhooks, voice))
         .merge(confirm)
@@ -335,6 +352,7 @@ fn business_pages(
         )
         .merge(portal)
         .merge(owner)
+        .merge(homeowner)
 }
 
 /// The feedback page (T230), the check-in answer page (T231), the email action links (T301), the

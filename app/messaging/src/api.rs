@@ -76,6 +76,7 @@ pub use crate::health_figures::{
     EmailFigures, NoticeTiming, PerAudience, TextFigures, email_figures, emails_sent,
     notice_timing, text_figures,
 };
+pub use crate::held_messages::texts_on;
 pub use crate::help_answers::{
     ANSWER_TEMPLATES, ANSWER_WINDOW, AUTO_ANSWERED_ACTION, CLOSE_ANSWER, COST_ANSWER, HelpAsked,
     HelpQuestion, JobStanding, MAX_WORDS, PERSON_ANSWER, QUOTES_ANSWER, answered_within,
