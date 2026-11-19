@@ -1,26 +1,28 @@
 # Ask Hava build status
 
-Updated 2026-11-19T03:05:18Z by runner 032f4c5a7ab6 (actions).
+Updated 2026-11-19T03:08:40Z by runner 49e0ad77e339 (actions).
 
 **Building: T715 in progress since 01:59Z; 471 of 663 done; week 72% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 471 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T715 claimed 01:59Z, lease until 06:05Z; lane 2: T520 claimed 01:57Z, lease until 06:00Z; lane 3: T114 claimed 02:14Z, lease until 05:45Z; lane 4: T484 claimed 02:04Z, lease until 06:01Z; lane 5: T563 claimed 02:48Z, lease until 05:48Z; lane 6: T490 claimed 02:10Z, lease until 05:10Z; lane 7: T203 claimed 02:39Z, lease until 05:39Z
+- **Lane:** lane 1: T715 claimed 01:59Z, lease until 06:05Z; lane 2: T520 claimed 01:57Z, lease until 06:00Z; lane 3: T114 claimed 02:14Z, lease until 05:45Z; lane 4: T484 claimed 02:04Z, lease until 06:01Z; lane 5: T563 claimed 02:48Z, lease until 05:48Z; lane 6: T490 claimed 02:10Z, lease until 05:10Z
 - **Week:** 72% used, 41.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:01Z, 3 min before this update
+- **Last run:** 03:05Z, 2 min before this update
 - **Keeper:** last ran 02:34Z, next wake 02:54Z
 
 ## Needs attention
+- BLOCKED T203: plan gap reported: PLAN GAP: app/portals/templates/es_business_signup.html:82 ("Licencia de control de plagas") and :88 ("Mi licencia incluye la categoría de organismos que destruyen la madera (termitas)") are flagged by the WEB-010 pest scan (tests/docs/test_wording_statements.py:385, ['plagas', 'termitas']), which checks against the closed List A of D-4258 rule (1). Rule (5) of kit/prompts/T203.md:9 says the worker "stops with PLAN GAP: <file:line> and the rule and adds no exemption of its own". The lines are the Spanish twins (same {% if pest %} pest-attestation fieldset, T488) of app/portals/templates/busine; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T203 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 59 problem(s) on tasks still to run (+275 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 56 problem(s) on tasks still to run (+275 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T203 | Wording scan: the required statements, business copy lines a | BLOCKED | 3 | 29 min | 03:08Z | PLAN GAP: app/portals/templates/es_business_signup.html:82 ("Licencia de control de plagas") and :88 ("Mi licencia inclu |
 | T306 | server and portals: the complaints page, the emergency-email | done | 1 | 38 min | 02:21Z |  |
-| T203 | Wording scan: the required statements, business copy lines a | check_failed | 2 | 41 min | 01:40Z | Ci: failure; Python: failure / Python failed at step: Unit, contract and drill tests (pytest) / E         +     'termita |
+| T203 | Wording scan: the required statements, business copy lines a | check_failed | 2 | 41 min | 01:40Z |  |
 | T563 | intake and privacy: the daily consent sweep removes consent  | check_failed | 2 | 99 min | 01:37Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T505 | Decisions digest, piece 6: the next entries after the header | done | 1 | 99 min | 01:27Z |  |
 | T488 | portals and server: the business sign-up served in Spanish o | done | 1 | 111 min | 01:20Z |  |
@@ -142,7 +144,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 4: T484 (lease until 2026-11-19T06:01:37Z)
 - lane 5: T563 (lease until 2026-11-19T05:48:39Z)
 - lane 6: T490 (lease until 2026-11-19T05:10:22Z)
-- lane 7: T203 (lease until 2026-11-19T05:39:05Z)
 
 ## Last usage reading
-- {"task": "T306", "at": "2026-11-19T02:21:39Z", "cache_creation_input_tokens": 64200, "cache_read_input_tokens": 980197, "output_tokens": 10392, "input_tokens": 65}
+- {"task": "T203", "at": "2026-11-19T03:08:39Z", "output_tokens": 15650, "cache_read_input_tokens": 1164633, "input_tokens": 77, "cache_creation_input_tokens": 116044}
