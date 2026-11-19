@@ -201,7 +201,9 @@ pub use crate::quote_page::{
     CLOSE_ROUTE, Numbered, QUOTE_PAGE_ROUTE, TOKEN_LIFE_AFTER_CLOSE, number_quotes,
     quote_page_routes, token_expired,
 };
-pub use crate::receipts_page::{Basis, WHY_CHARGED_ROUTE, WhyCharged, why_charged_page};
+pub use crate::receipts_page::{
+    Basis, WHY_CHARGED_ROUTE, WhyCharged, why_charged_page, why_charged_page_without_basis,
+};
 pub use crate::scorecard_lines::{
     Color, LadderRung, LinesError, Measure, ScorecardLines, color, ladder_rung,
 };

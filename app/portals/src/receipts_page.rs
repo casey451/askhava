@@ -4,8 +4,11 @@
 //! `payments::api::receipt_for` read it (job, fee, tier), the charge description "Ask Hava
 //! introduction service, job <n>", the quote the business sent, how the fee basis was set (the
 //! [`Basis`] `payments` fixed at the pick, FEE-005, checked against the tier charged, D-1561) and
-//! the refund rules. Every receipt email links it at [`WHY_CHARGED_ROUTE`]. The route that reads
-//! the facts behind the business's sign-in is wired with the business portal's sign-in (D-1560).
+//! the refund rules. Every receipt email links it at [`WHY_CHARGED_ROUTE`], served by `server`'s
+//! `business_portal` behind the business sign-in (T562). Nothing stores the basis, so the route
+//! derives it from the accepted quote (D-3890); when the derived tier differs from the fee fixed
+//! at the pick, [`why_charged_page_without_basis`] renders the page with no basis line rather
+//! than a guessed one (D-4603).
 
 use askama::Template;
 use askhava_payments::api::{ChargeReceipt, IntentText, Tier};
@@ -48,7 +51,7 @@ struct WhyView<'a> {
     fee: String,
     quote: &'a str,
     tier_line: String,
-    basis: String,
+    basis: Option<String>,
     refund: &'static str,
 }
 
@@ -103,6 +106,21 @@ fn basis_line(charged: Option<Tier>, basis: Basis) -> String {
 /// # Errors
 /// The template's render error, or a job number too long for the charge description.
 pub fn why_charged_page(facts: &WhyCharged) -> Result<String, askama::Error> {
+    render(facts, Some(basis_line(facts.receipt.tier, facts.basis)))
+}
+
+/// FEE-031, D-3890, D-4603: the page for `facts` with no basis line, for a charge whose basis
+/// derived from the accepted quote gives another tier than the fee fixed at the pick; `basis` is
+/// not shown. Every other line is [`why_charged_page`]'s.
+///
+/// # Errors
+/// The template's render error, or a job number too long for the charge description.
+pub fn why_charged_page_without_basis(facts: &WhyCharged) -> Result<String, askama::Error> {
+    render(facts, None)
+}
+
+/// FEE-031, FEE-053: renders `facts` with the basis line `basis`, if any.
+fn render(facts: &WhyCharged, basis: Option<String>) -> Result<String, askama::Error> {
     let line = IntentText::for_job(facts.job_number)
         .map_err(|e| askama::Error::Custom(Box::new(e)))?
         .description();
@@ -122,7 +140,7 @@ pub fn why_charged_page(facts: &WhyCharged) -> Result<String, askama::Error> {
         fee,
         quote: &facts.quote,
         tier_line,
-        basis: basis_line(facts.receipt.tier, facts.basis),
+        basis,
         refund: REFUND_LINE,
     }
     .render()

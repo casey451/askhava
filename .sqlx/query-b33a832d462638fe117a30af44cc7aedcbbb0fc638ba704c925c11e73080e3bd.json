@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SET ROLE pg_monitor",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "b33a832d462638fe117a30af44cc7aedcbbb0fc638ba704c925c11e73080e3bd"
+}

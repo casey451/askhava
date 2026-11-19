@@ -24,6 +24,7 @@
 <ul><li><a href="#quote-{{ n }}-tier-1">Choose one package for quote #{{ n }}</a></li></ul>
 </div>
 {% endif %}<h1>Your quotes for request {{ request }}</h1>
+<p data-fixed="WORD-002">{{ askhava_core::api::brand().display_name() }} is not a contractor and does not perform, bid on or supervise work. We pass along your request and show you quotes from independent local businesses, as they wrote them. You choose, and you hire the business directly.</p>
 {% if self.just_closed() %}
 <p id="closed-note">Request {{ request }} is closed. No more quotes will come in for it.</p>
 {% endif %}{% if still_open %}
@@ -98,6 +99,5 @@
 </section>
 {% endif %}
 <p>Can't open links? Reply LIST to get your quotes by text.</p>
-<p>{{ askhava_core::api::brand().display_name() }} is not a contractor and does not perform, bid on or supervise work.</p>
 <script type="module" src="/static/portals/quote_page.js"></script>
 {% endblock %}

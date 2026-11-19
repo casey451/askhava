@@ -442,6 +442,23 @@ const OWNER_STEP_UP_STATES: readonly PageState[] = [
   ],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: OWNER_STEP_UP_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
+/** A fake owner session (T310): its own `portals.owner_session` row, for the token hashing to `:hash`. */
+const OWNER_SESSION_SQL = `WITH s AS (INSERT INTO portals.session (token_sha256, realm, actor_id, created_at, expires_at)
+      VALUES (decode(':hash', 'hex'), 'owner', gen_random_uuid(), now(), now() + interval '30 minutes') RETURNING id)
+    INSERT INTO portals.owner_session (session_id, last_seen_at, factor_at) SELECT id, now(), now() FROM s`;
+const OWNER_HOME_ROUTE = "/owner/home";
+const OWNER_SETTINGS_ROUTE = "/owner/settings";
+
+/** The owner home (T310; OPS-003, FEE-007, BIZ-027): the switches, fee mode, rates and sign-ups. */
+const OWNER_HOME_STATES: readonly PageState[] = [
+  ["owner home", "Pause or resume", "Each change needs a code from your authenticator app", OWNER_SESSION_SQL],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: OWNER_HOME_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
+/** The owner settings (T310; LIC-002, CON-035, PICK-048): the category switches and both forms. */
+const OWNER_SETTINGS_STATES: readonly PageState[] = [
+  ["owner settings", "Each change needs a code from your authenticator app", "Pause or resume", OWNER_SESSION_SQL],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: OWNER_SETTINGS_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
 const COMPLAINTS_ROUTE = "/b/complaints";
 const EMERGENCY_ROUTE = "/b/emergency-emails";
 const NOTICE_LOG_ROUTE = "/b/picks/{pick}/notices";
@@ -481,6 +498,42 @@ const NOTICE_LOG_STATES: readonly PageState[] = [
       SELECT p.id, p.business_id, p.job_id, t.mode, 'fee_free', 0, t.authorization_version, now() FROM p, payments.fee_terms t)`),
   ],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: NOTICE_LOG_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
+const WHY_CHARGED_ROUTE = "/b/charges/{pick}";
+
+/**
+ * "Why was I charged?" (T562; FEE-031, D-3890): the owner's pick charged $25 on a fake $480 firm
+ * quote; with no job facts the basis is derived on the default facts and gives the fee fixed at
+ * the pick, so the basis line shows. Reads nothing from the vault.
+ */
+const WHY_CHARGED_STATES: readonly PageState[] = [
+  [
+    "why charged, basis shown",
+    "The fee basis from your quote is $480.00",
+    "find that page",
+    businessSql(`,
+    j AS (INSERT INTO jobs.job (id, status, emergency, created_at, status_at, timer_from)
+      VALUES (gen_random_uuid(), 'awaiting_confirm', false, now(), now(), now()) RETURNING id),
+    n AS (UPDATE jobs.job_number_next SET next = next + 1 RETURNING next - 1 AS n),
+    num AS (INSERT INTO jobs.job_number (number, job_id, issued_at) SELECT n.n, j.id, now() FROM n, j),
+    q AS (INSERT INTO quotes.quote (job_id, business_id, format, amount_cents, confirm_on_site, notes, original,
+      ai_read, confirmed, received_at) SELECT j.id, m.business_id, 'firm', 48000, false, '', 'Fake quote wording',
+      false, true, now() FROM j, m),
+    p AS (INSERT INTO picks.pick (id, job_id, business_id, quote_number, channel, status, picked_at)
+      SELECT ':pick', j.id, m.business_id, 1, 'page', 'awaiting_confirm', now() FROM j, m RETURNING id, job_id, business_id),
+    f AS (INSERT INTO payments.pick_fee (pick_id, business_id, job_id, mode, kind, amount_cents, terms_version, fixed_at)
+      SELECT p.id, p.business_id, p.job_id, t.mode, 'charged', 2500, t.authorization_version, now() FROM p, payments.fee_terms t),
+    i AS (INSERT INTO payments.pick_intent (pick_id, business_id, job_id, amount_cents, stripe_intent_id, emergency, created_at)
+      SELECT id, business_id, job_id, 2500, 'pi_fake' || replace(id::text, '-', ''), false, now() FROM p RETURNING pick_id),
+    a AS (INSERT INTO payments.charge_attempt (pick_id, try_no, press_id, status, started_at, decided_at)
+      SELECT pick_id, 1, gen_random_uuid(), 'succeeded', now(), now() FROM i RETURNING pick_id, press_id),
+    e AS (INSERT INTO payments.charge_evidence (pick_id, business_id, job_id, press_id, try_no, idempotency_label,
+      stripe_customer_id, stripe_intent_id, amount_cents, pressed_at, charged_at)
+      SELECT p.id, p.business_id, p.job_id, a.press_id, 1, 'pick-' || p.id::text || '-try1',
+        'cus_fake' || replace(p.business_id::text, '-', ''), 'pi_fake' || replace(p.id::text, '-', ''), 2500, now(), now()
+      FROM p, a)`),
+  ],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: WHY_CHARGED_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
 /** The business step-up page (T364, SEC-038): the owner signed in, no code sent yet. */
 const BUSINESS_STEP_UP_ROUTE = "/b/step-up";
@@ -532,7 +585,10 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: COMPLAINTS_ROUTE, seed: portalSeed(false), states: COMPLAINTS_STATES },
   { route: EMERGENCY_ROUTE, seed: portalSeed(false), states: EMERGENCY_STATES },
   { route: NOTICE_LOG_ROUTE, seed: portalSeed(true), states: NOTICE_LOG_STATES },
+  { route: WHY_CHARGED_ROUTE, seed: portalSeed(false), states: WHY_CHARGED_STATES },
   { route: BUSINESS_STEP_UP_ROUTE, seed: portalSeed(false), states: BUSINESS_STEP_UP_STATES },
+  { route: OWNER_HOME_ROUTE, seed: portalSeed(false), states: OWNER_HOME_STATES },
+  { route: OWNER_SETTINGS_ROUTE, seed: portalSeed(false), states: OWNER_SETTINGS_STATES },
 ];
 
 /** Every state of every page, in entry order. */
