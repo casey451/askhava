@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T06:17:53Z by runner 4b0eb67e704a (actions).
+Updated 2026-11-19T06:18:21Z by runner 4b0eb67e704a (actions).
 
-**Building: T408 in progress since 03:29Z; 477 of 664 done; week 74% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T310 in progress since 06:04Z; 477 of 664 done; week 74% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 477 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T408 claimed 03:29Z, lease until 09:14Z; lane 2: T310 claimed 06:04Z, lease until 09:04Z; lane 4: T562 claimed 04:26Z, lease until 09:13Z; lane 5: T506 claimed 05:13Z, lease until 08:13Z; lane 7: T229 claimed 04:42Z, lease until 09:05Z
+- **Lane:** lane 2: T310 claimed 06:04Z, lease until 09:04Z; lane 4: T562 claimed 04:26Z, lease until 09:13Z; lane 5: T506 claimed 05:13Z, lease until 08:13Z; lane 7: T229 claimed 04:42Z, lease until 09:05Z
 - **Week:** 74% used, 41.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:14Z, 2 min before this update
+- **Last run:** 06:14Z, 3 min before this update
 - **Keeper:** last ran 05:18Z, next wake 06:31Z
 
 ## Needs attention
@@ -21,6 +21,7 @@ Updated 2026-11-19T06:17:53Z by runner 4b0eb67e704a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T408 | server: a release waits while safe mode is on and goes ahead | MERGE_PENDING | 3 | 2 h 48 min | 06:17Z | PLAN GAP: kit/prompts/T408.md:54 "Size budget: at most 6 files, 800 changed lines" cannot be met. The prompt's own plan  |
 | T203 | Wording scan: the required statements, business copy lines a | MERGE_PENDING | 4 | 42 min | 04:50Z | PLAN GAP: app/portals/templates/es_business_signup.html:82 ("Licencia de control de plagas") and :88 ("Mi licencia inclu |
 | T490 | server (harness): the email provider passed to the sign-up m | done | 1 | 2 h 25 min | 04:35Z |  |
 | T520 | portals and messaging: the portal stylesheets and email colo | done | 1 | 2 h 21 min | 04:18Z |  |
@@ -75,7 +76,7 @@ Updated 2026-11-19T06:17:53Z by runner 4b0eb67e704a (actions).
 | T583 | intake and server: the quote-count update text is sent at mo | BLOCKED | 1 | 53 min | 12:13Z |  |
 | T700 | Runner (harness): a merge-line task whose turn ran out goes  | done | 1 | 29 min | 12:08Z |  |
 | T200 | ops and portals: the owner help page with its screened reply | QUEUED | 1 | 2 h 57 min | 12:02Z |  |
-| T408 | server: a release waits while safe mode is on and goes ahead | BLOCKED | 2 | 2 h 21 min | 11:34Z | PLAN GAP: kit/prompts/T408.md:54 "Size budget: at most 6 files, 800 changed lines" cannot be met. The prompt's own plan  |
+| T408 | server: a release waits while safe mode is on and goes ahead | BLOCKED | 2 | 2 h 21 min | 11:34Z |  |
 | T563 | intake and privacy: the daily consent sweep removes consent  | BLOCKED | 1 | 85 min | 11:21Z |  |
 | T658 | privacy: the scrubber removes lower-case Spanish addresses a | done | 2 | 51 min | 11:04Z | Fix-round review of head 18e4fd102f38620e11d1055ecb4d77813e2b2965 returned FINDINGS after the one allowed fix round (fir |
 | T650 | intake: the under-13 stop also deletes the request's job pho | done | 1 | 90 min | 10:39Z |  |
@@ -137,11 +138,11 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T408 (lease until 2026-11-19T09:14:21Z)
+- nothing
 - lane 2: T310 (lease until 2026-11-19T09:04:46Z)
 - lane 4: T562 (lease until 2026-11-19T09:13:54Z)
 - lane 5: T506 (lease until 2026-11-19T08:13:11Z)
 - lane 7: T229 (lease until 2026-11-19T09:05:52Z)
 
 ## Last usage reading
-- {"task": "T203", "at": "2026-11-19T04:50:26Z", "cache_creation_input_tokens": 85827, "cache_read_input_tokens": 859604, "input_tokens": 48, "output_tokens": 11320}
+- {"task": "T408", "at": "2026-11-19T06:17:52Z", "output_tokens": 111993, "cache_creation_input_tokens": 356561, "input_tokens": 328, "cache_read_input_tokens": 14229221}
