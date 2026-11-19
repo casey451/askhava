@@ -10746,7 +10746,8 @@
     "T564",
     "T650",
     "T662",
-    "T704"
+    "T704",
+    "T741"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -16450,8 +16451,7 @@
     "T600",
     "T663",
     "T664",
-    "T675",
-    "T730"
+    "T675"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -33302,7 +33302,8 @@
     "T736",
     "T737",
     "T738",
-    "T739"
+    "T739",
+    "T741"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -36085,7 +36086,8 @@
     "T656",
     "T675",
     "T719",
-    "T736"
+    "T736",
+    "T741"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -47355,8 +47357,8 @@
   {
    "id": "T728",
    "slug": "intake-text-pick-reply",
-   "title": "intake: a homeowner's \"<n> YES\" text picks, opted in through `answer_text_pick` and opted out through `opted_out_yes`",
-   "goal": "Plan change D-4727 (A; PICK-015, PICK-030, PICK-031, PICK-016, TERMS-016, CON-013; D-050, D-1247, D-1612, D-1614). `intake::api::answer_text_pick` (`app/intake/src/service.rs:1061`) and `picks::api::opted_out_yes` (`app/picks/src/email_code.rs:207`) have no production caller (D-1247 left the first \"until the inbound dispatcher\", D-1612 (3) the second), so a \"2 YES\" from her phone today goes through `reply_in` (`app/intake/src/replies.rs:160`) to `receive_text` and the order dispatcher as if it were an answer, while the LIST text, the PICK-046 lapse text and every quote page tell her to \"reply 1 YES\". (1) In `reply_in`, for a homeowner text from her phone only (`receive_raw_reply`, `raw` present; web chat's `receive_reply` never picks: PICK-015 says \"from the homeowner's own phone\"), in an open request, not an opt-out or HELP (`answered_elsewhere`), with no 911-list match (`msg.inbound.emergency` false: `receive_text` keeps the only 911 screen, INT-002), and whose words read as a text pick (`picks::api::read_text_pick` or the reading `text_pick` uses): after the LIST answer, `hear`, the under-18 stop and the close by text (`in_request`, `:210` to `:233`) and before the name-and-address answer, `receive_text` and the order dispatcher, the reply goes to the new `app/intake/src/text_pick_reply.rs` and ends there with a new `Reply::Picked` variant (its texts, if any, and the pick, if any); a `None` from the pick step (no live job, a pick the job moved away from) falls through to today's path unchanged. (2) Opted in: `answer_text_pick` as it stands (homeowner lock, CON-029 pauses, `text_pick`, one terms acceptance with channel `text_pick` and this inbound ID, TERMS-016, TERMS-033), its own `db.begin()` a savepoint inside the reply's transaction. The published homeowner terms it needs (`PublishedTerms`) reach intake through a new `app/core/src/homeowner_terms.rs` (`core::api::homeowner_terms() -> (version, text)`) that holds the `include_str!` of `docs/legal/homeowner-terms.md` and the \"Version <v>\" parse now in `app/server/src/lib.rs:551` to `:557`; the shared `lib.rs` then uses it, so there is one copy and `intake::Settings` (built field by field in 12 files) and `inbound_text.rs` are not changed. (3) Opted out: whether her number is on the suppression list is read inside the same transaction from her contact's indexed digests, as `app/intake/src/consent_purge.rs:93` builds the key (`messaging::api::listing_key`), and `messaging::api::still_unlisted` (the number's opt-out lock, which the delivery's `on_inbound_text` already took in this transaction, so no new lock order); a listed number never reaches `answer_text_pick` (whose `text_pick` queues texts) and instead goes, under the homeowner lock with each live job's pause read by `paused_under_lock`, to `opted_out_yes` with `Actor::Homeowner`; no text is queued on any branch (CON-013). `Picked` and `Same` store as D-1614 decided (channel `page`); `TermsFirst` and `Nothing` store nothing. The PICK-030 emails (the Terms line with a one-time Pick button and the pick confirmation by email) have no sender and no address source (D-1612 (1), (2)); they stay open, named in D-4727, and this task adds none. Tests in the new `tests/integration/tests/text_pick_reply.rs` (TD-PICK-71), PostgreSQL, fake data and 555 numbers only, driven through `intake::api::receive_raw_reply` as the route calls it; `text_pick.rs`, `withdrawn_optout_safety.rs`, `optout_followups.rs`, `email_pick_code.rs` and every intake order test pass unchanged. Update `app/intake/NOTES.md`, the `intake` and `core` `CLAUDE.md` files and `docs/decisions.md`. After T673, the last queued owner of `replies.rs`; `order_dispatch.rs` and `inbound_text.rs` are not edited, so no order against T675, T715 to T719, T723, T402, T299 or T683 is needed.",
+   "title": "intake: a homeowner's \"<n> YES\" text from her phone picks through `answer_text_pick`",
+   "goal": "Plan change D-4727 (A; PICK-015, PICK-030, PICK-031, PICK-016, TERMS-016, CON-013; D-050, D-1247, D-1612, D-1614). `intake::api::answer_text_pick` (`app/intake/src/service.rs:1061`) has no production caller (D-1247 left it \"until the inbound dispatcher\"), so a \"2 YES\" from her phone today goes through `reply_in` (`app/intake/src/replies.rs:160`) to `receive_text` and the order dispatcher as if it were an answer, while the LIST text, the PICK-046 lapse text and every quote page tell her to \"reply 1 YES\". (1) In `reply_in`, for a homeowner text from her phone only (`receive_raw_reply`, `raw` present; web chat's `receive_reply` never picks: PICK-015 says \"from the homeowner's own phone\"), in an open request, not an opt-out or HELP (`answered_elsewhere`), with no 911-list match (`msg.inbound.emergency` false: `receive_text` keeps the only 911 screen, INT-002), and whose words read as a text pick (`picks::api::read_text_pick` or the reading `text_pick` uses): after the LIST answer, `hear`, the under-18 stop and the close by text (`in_request`, `:210` to `:233`) and before the name-and-address answer, `receive_text` and the order dispatcher, the reply goes to the new `app/intake/src/text_pick_reply.rs` and ends there with a new `Reply::Picked` variant (its texts, if any, and the pick, if any); a `None` from the pick step (no live job, a pick the job moved away from) falls through to today's path unchanged. (2) Opted in: `answer_text_pick` as it stands (homeowner lock, CON-029 pauses, `text_pick`, one terms acceptance with channel `text_pick` and this inbound ID, TERMS-016, TERMS-033), its own `db.begin()` a savepoint inside the reply's transaction. The published homeowner terms it needs (`PublishedTerms`) reach intake through a new `app/core/src/homeowner_terms.rs` (`core::api::homeowner_terms() -> (version, text)`) that holds the `include_str!` of `docs/legal/homeowner-terms.md` and the \"Version <v>\" parse now in `app/server/src/lib.rs:551` to `:557`; the shared `lib.rs` then uses it, so there is one copy and `intake::Settings` (built field by field in 12 files) and `inbound_text.rs` are not changed. (3) A homeowner whose number is on the suppression list never reaches `reply_in`: `screen` turns `Outcome::Suppressed` into a listed sender and `help` ends it with `Halt::Ends(\"suppressed\")` after the CON-016 wrote-again follow-up (`app/server/src/inbound_text.rs:846` to `:876`, `:959`), so her \"<n> YES\" (PICK-030, `opted_out_yes`) is T741's, not this task's. Tests in the new `app/server/tests/text_pick_route.rs` (TD-PICK-71), through the assembled router's `POST /webhooks/twilio/sms` with a signed fake Twilio request, PostgreSQL, fake data and 555 numbers only (a test crate may not depend on `server`, D-736, so the route test lives in `app/server/tests/`); `text_pick.rs`, `withdrawn_optout_safety.rs`, `optout_followups.rs`, `email_pick_code.rs` and every intake order test pass unchanged. Update `app/intake/NOTES.md`, the `intake` and `core` `CLAUDE.md` files and `docs/decisions.md`. After T673, the last queued owner of `replies.rs`; `order_dispatch.rs` and `inbound_text.rs` are not edited, so no order against T675, T715 to T719, T723, T402, T299 or T683 is needed. Plan change D-4727 R1 (Opus round 1): the opted-out branch moved to T741, because a listed number never reaches `reply_in`, and the test runs through the assembled SMS route.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -47376,37 +47378,30 @@
     "app/intake/src/replies.rs",
     "app/intake/src/text_pick_reply.rs",
     "app/core/src/homeowner_terms.rs",
-    "tests/integration/tests/text_pick_reply.rs"
+    "app/server/tests/text_pick_route.rs"
    ],
    "reads": [
     "docs/architecture.md",
     "docs/code-docs.md",
     "docs/spec/intake.md",
     "docs/spec/quotes-pick.md",
-    "docs/spec/consent.md",
     "docs/spec/terms.md",
     "app/intake/src/service.rs",
-    "app/picks/src/email_code.rs",
-    "app/intake/src/consent_purge.rs",
     "docs/brains/rust-production.md"
    ],
    "requirements": [
     "PICK-015",
-    "PICK-030",
     "PICK-031",
     "PICK-016",
     "TERMS-016",
-    "CON-013",
     "INT-002"
    ],
    "tests": [
     "TD-PICK-71"
    ],
    "decisions": [
-    "D-050",
     "D-1247",
-    "D-1612",
-    "D-1614",
+    "D-736",
     "D-4727"
    ],
    "cites": [],
@@ -47422,19 +47417,20 @@
    ],
    "branch": "claude/task/T728-intake-text-pick-reply",
    "prompt": "kit/prompts/T728.md",
-   "acceptance": "TD-PICK-71 passes against PostgreSQL through `receive_raw_reply`, failing on `main`; an opted-out \"1 YES\" queues no text; web chat's \"2 YES\" never picks; every text-pick, opt-out and intake order test passes unchanged; `app/server/src/lib.rs` holds no second copy of the terms."
+   "acceptance": "TD-PICK-71 passes through the assembled SMS route, failing on `main`; web chat's \"2 YES\" never picks; every text-pick and intake order test passes unchanged; `app/server/src/lib.rs` holds no second copy of the terms."
   },
   {
    "id": "T729",
    "slug": "update-email-choice",
    "title": "portals and privacy: the quote page offers updates by email or by text and email, asks for the address and keeps it apart from code addresses",
-   "goal": "Plan change D-4727 (B, first of two; TXT-018, CON-035, SEC-028, PICK-029; D-422, D-460, D-1612 (4)). `messaging::api::set_update_channel` and `update_channel` (`app/messaging/src/email.rs:666`, `:648`) have no caller, `messaging.update_channel` (`migrations/0089_messaging_retries_email.sql:69`) is never written and the quote page has no control, so TXT-018 cannot be chosen. (1) Migration `migrations/0215_update_email_choice.sql`: a `privacy` table holding one sealed update address per contact (vault-encrypted as every contact field, PRIV-001) with `source` `quote_page` and `confirmed_at`, granted to the app role as its neighbours are, so an address typed on the quote page is never the contact's conversation email and no code path can take it (TXT-018: \"never a pick code or any other code\", PICK-029, D-477); and `messaging.update_channel` gains a nullable `reverted_at` (T730 writes it on a hard bounce). (2) New `app/privacy/src/update_email.rs`: store (format-checked by the email check sign-up uses, replacing an earlier one and clearing `confirmed_at`), confirm, read under a new `Reader::Messaging` send grant for T730, and delete with the contact (the vault's deletion paths list it; a removed homeowner keeps none). (3) New `app/portals/src/update_channel.rs` with the quote page (`app/portals/src/quote_page.rs`, `app/portals/templates/quote_page.html`): two buttons, \"Get updates by email instead\" and \"Get updates by text and email\", posting to the new `POST /q/{token}/updates` (CSRF, the quote page's own token rules); either shows \"What email should we use? We never share it with businesses.\"; a malformed address is asked once more with an A11Y-030 error (an \"Error: \" title, a focused summary linking the field, `aria-invalid`, the typed value kept); a second malformed one keeps text and says so; a well-formed one is stored and `set_update_channel` records `Email` or `Both` in the same transaction; while it is unconfirmed the page shows \"Confirm this email\" posting to `POST /q/{token}/updates/confirm`, which sets `confirmed_at` (the first update email links to this page, T730); \"Get updates by text only\" sets `Text` back; while `reverted_at` is set and the channel is `Text` the page says \"Your email bounced, so updates go by text again.\" Copy passes `check_copy.py` and `check_ai_smell.py`. The address is never shown on a job card or business notice (PICK-018 stays the only way a business sees it). (4) `docs/architecture.md` section 13 rows `POST /q/{token}/updates` and `POST /q/{token}/updates/confirm` (added `T729` by D-4727) marked `yes`; the page's states go in the shared `tests/a11y/page_states.ts`. Tests in the new `tests/integration/tests/update_email_choice.rs` (TD-TXT-38), PostgreSQL, fake data only. Update the `portals`, `privacy` and `messaging` notes, `docs/architecture.md` section 8 (the new vault field) and `docs/decisions.md`. After T608, the queued owner of `quote_page.html`.",
+   "goal": "Plan change D-4727 (B, first of two; TXT-018, CON-035, SEC-028, PICK-029; D-422, D-460, D-1612 (4)). `messaging::api::set_update_channel` and `update_channel` (`app/messaging/src/email.rs:666`, `:648`) have no caller, `messaging.update_channel` (`migrations/0089_messaging_retries_email.sql:69`) is never written and the quote page has no control, so TXT-018 cannot be chosen. (1) Migration `migrations/0215_update_email_choice.sql`: a `privacy` table holding one sealed update address per contact (vault-encrypted as every contact field, PRIV-001) with `source` `quote_page` and `confirmed_at`, granted to the app role as its neighbours are, so an address typed on the quote page is never the contact's conversation email and no code path can take it (TXT-018: \"never a pick code or any other code\", PICK-029, D-477); and `messaging.update_channel` gains a nullable `reverted_at` (T730 writes it on a hard bounce). (2) New `app/privacy/src/update_email.rs`: store (format-checked by the email check sign-up uses, replacing an earlier one and clearing `confirmed_at`), confirm, read for T730 only under the existing `(Reader::Messaging, Purpose::Send)` grant's `Email` field (`app/privacy/src/models.rs:233`, its audit name `vault_read.messaging.send`; `GRANTS` and `Field` are not changed), and cleared with the contact: `purge_contact` (`app/privacy/src/purge.rs:376`, which nulls the contact's fields rather than deleting its row, so an `ON DELETE CASCADE` would never fire) also deletes the update address in the same statement group. (3) New `app/portals/src/update_channel.rs` with the quote page (`app/portals/src/quote_page.rs`, `app/portals/templates/quote_page.html`): two buttons, \"Get updates by email instead\" and \"Get updates by text and email\", posting to the new `POST /q/{token}/updates` (CSRF, the quote page's own token rules); either shows \"What email should we use? We never share it with businesses.\"; a malformed address is asked once more with an A11Y-030 error (an \"Error: \" title, a focused summary linking the field, `aria-invalid`, the typed value kept); a second malformed one keeps text and says so; a well-formed one is stored and `set_update_channel` records `Email` or `Both` in the same transaction; while it is unconfirmed the page shows \"Confirm this email\" posting to `POST /q/{token}/updates/confirm`, which sets `confirmed_at` (the first update email links to this page, T730); \"Get updates by text only\" sets `Text` back; while `reverted_at` is set and the channel is `Text` the page says \"Your email bounced, so updates go by text again.\" Copy passes `check_copy.py` and `check_ai_smell.py`. The address is never shown on a job card or business notice (PICK-018 stays the only way a business sees it). (4) `docs/architecture.md` section 13 rows `POST /q/{token}/updates` and `POST /q/{token}/updates/confirm` (added `T729` by D-4727) marked `yes`; the page's states go in the shared `tests/a11y/page_states.ts`. Tests in the new `tests/integration/tests/update_email_choice.rs` (TD-TXT-38), PostgreSQL, fake data only. Update the `portals`, `privacy` and `messaging` notes, `docs/architecture.md` section 8 (the new vault field) and `docs/decisions.md`. After T608, the queued owner of `quote_page.html`, and T600, the queued owner of `purge.rs` (Opus R1 finding 3).",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": "portals",
    "deps": [
-    "T608"
+    "T608",
+    "T600"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -47447,6 +47443,7 @@
    "owns": [
     "migrations/0215_update_email_choice.sql",
     "app/privacy/src/update_email.rs",
+    "app/privacy/src/purge.rs",
     "app/portals/src/update_channel.rs",
     "app/portals/src/quote_page.rs",
     "app/portals/templates/quote_page.html",
@@ -47485,7 +47482,7 @@
    ],
    "cites": [],
    "budget": {
-    "files": 6,
+    "files": 7,
     "lines": 600,
     "context_pct": 27
    },
@@ -47502,7 +47499,7 @@
    "id": "T730",
    "slug": "update-email-sends",
    "title": "messaging: a homeowner who chose email gets each quote update by email, the first with the confirm link, and a hard bounce puts her back on text",
-   "goal": "Plan change D-4727 (B, second of two; TXT-018, SEC-028, CON-035, TXT-027, TXT-030; D-422, D-460). After T729 stores her choice nothing reads it. (1) New `app/messaging/src/update_emails.rs` and a hook in `messaging::enqueue` (`app/messaging/src/service.rs:144`): for a homeowner recipient whose template is an update text and whose `update_channel` is `Email` or `Both`, an update email is stored with `queue_email` beside the text in the same transaction, and for `Email` the text row is not queued; for `Both` both. Update texts are exactly `quotes::api::UPDATE_TEXTS` (`app/quotes/src/update_texts.rs:82`); `messaging` may not call `quotes` (`kit/layers.json`), so `update_emails.rs` holds its own `UPDATE_TEMPLATES` list and a test in the new test file asserts it equals `UPDATE_TEXTS`' IDs. Never by email instead of text: the 911 text, any code, the who's-calling text (TXT-027), the missed-call text (TXT-030) and direct replies to her own texts (TXT-018's list; none of those is in `UPDATE_TEXTS`, and the test asserts it). (2) `app/messaging/src/email.rs` gains `Notice::Update` (the update's rendered words, her quote page link that every update carries, SEC-028's footer and an unsubscribe link feeding the one suppression list, CON-035) in English and Spanish; while the T729 address is unconfirmed each update email also carries \"Confirm this email\" linking to her quote page's confirm button, and nothing else is ever sent to it. The address is read only through T729's grant. (3) A hard bounce on an update email (the provider webhook path already in `email.rs` that sets `email.bounced`) sets `update_channel` back to `Text` and `reverted_at` (T729's column), so later updates go by text and the quote page shows its note. Tests in the new `tests/integration/tests/update_email_sends.rs` (TD-TXT-39), PostgreSQL and the email stand-in, fake data only. Update `app/messaging/NOTES.md` and `docs/decisions.md`. After T729, T684 (the queued owner of `email.rs` before T685, which now follows this task) and T580 (the last queued owner of `service.rs`).",
+   "goal": "Plan change D-4727 (B, second of two; TXT-018, SEC-028, CON-035, TXT-027, TXT-030; D-422, D-460). After T729 stores her choice nothing reads it. (1) New `app/messaging/src/update_emails.rs` and a hook in `messaging::enqueue` (`app/messaging/src/service.rs:144`): for a homeowner recipient whose template is an update text and whose `update_channel` is `Email` or `Both`, an update email is stored with `queue_email` beside the text in the same transaction, and for `Email` the text row is not queued; for `Both` both. Update texts are exactly `quotes::api::UPDATE_TEXTS` (`app/quotes/src/update_texts.rs:82`); `messaging` may not call `quotes` (`kit/layers.json`), so `update_emails.rs` holds its own `UPDATE_TEMPLATES` list and a test in the new test file asserts it equals `UPDATE_TEXTS`' IDs. Never by email instead of text: the 911 text, any code, the who's-calling text (TXT-027), the missed-call text (TXT-030) and direct replies to her own texts (TXT-018's list; none of those is in `UPDATE_TEXTS`, and the test asserts it). (2) `app/messaging/src/email.rs` gains `Notice::Update` (the update's rendered words, her quote page link that every update carries, SEC-028's footer and an unsubscribe link feeding the one suppression list, CON-035) in English and Spanish; while the T729 address is unconfirmed each update email also carries \"Confirm this email\" linking to her quote page's confirm button, and nothing else is ever sent to it. The address is read only through T729's grant. (3) A hard bounce on an update email (the provider webhook path already in `email.rs` that sets `email.bounced`) sets `update_channel` back to `Text` and `reverted_at` (T729's column), so later updates go by text and the quote page shows its note. Tests in the new `tests/integration/tests/update_email_sends.rs` (TD-TXT-39), which also drive T729's quote-page choice to email end to end in PostgreSQL (T222's journey does not assert TXT-018's email option and no longer waits for this task, Opus R1 finding 2), PostgreSQL and the email stand-in, fake data only. Update `app/messaging/NOTES.md` and `docs/decisions.md`. After T729, T684 (the queued owner of `email.rs` before T685, which now follows this task) and T580 (the last queued owner of `service.rs`).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -47761,7 +47758,7 @@
    "id": "T734",
    "slug": "business-leave-served",
    "title": "server and adapters: a business can leave in the portal, with the optional reason, its saved cards detached at Stripe",
-   "goal": "Plan change D-4727 (C (c); BIZ-051, BIZ-054, SEC-038, PICK-047, PICK-046, PICK-051; D-446, D-463, D-3045). `portals::api::leave`, `leave_page` and the pause question (`app/portals/src/business_left.rs:141`; `LEAVE_ROUTE` and `PAUSE_REASON_ROUTE` at `:36`, `:38`) are not served (\"not served yet\", D-3045) and no production type implements `CardDetach` (`:96`), so no business can leave and BIZ-054's pause question is never asked. (1) New `app/adapters/src/card_detach.rs`: the Stripe call `POST /v1/payment_methods/{pm}/detach` with the configured Stripe client (base URL, key and timeout as `app/adapters/src/payments.rs` reads them, never a key in a log), and `impl CardDetach` over it composed in the shared `build_router`. (2) New `app/server/src/business_leave_routes.rs`: `GET /b/leave` (the leave screen, the BIZ-054 question while `reason_asked` is false), `POST /b/leave` (owner only, the fresh code `leave` requires; a stale code answers the step-up form; success shows the left screen with every session already ended, so the response clears the session cookie), `GET /b/pause-reason` (the question once a self-pause passed `PAUSE_ASK_AFTER_DAYS`, `pause_ask_due`; otherwise 303 to the home) and `POST /b/pause-reason`; `refuse_cross_site` and CSRF first, `no_store`. For each `Left.picks` item the homeowner's PICK-047 (moved to her backup) or PICK-046 (no backup) text is queued by the sender T669's ended pending pick uses, never a second one; `Backup::Done` queues nothing. A detach failure is counted and logged once (the cards stay marked removed, so none can be charged); the Stripe stand-in has no detach endpoint (`stand_ins/stripe.py`), so the e2e path records `detach_failed` until a harness task adds one (open in D-4727). (3) `business_home.html` gains \"Leave Laftly\" (owner only) and, while `pause_ask_due`, a link to the question. Section 13 rows (added `T734` by D-4727) marked `yes`; the three screens' states go in the shared `tests/a11y/page_states.ts`. Tests in the new `app/server/tests/business_leave_route.rs` (TD-BIZ-62), the assembled router with a fake `CardDetach` and one case with the adapter against a local fake HTTP server, fake data only. Update the `server` and `adapters` notes and `docs/decisions.md`.",
+   "goal": "Plan change D-4727 (C (c); BIZ-051, BIZ-054, SEC-038, PICK-047, PICK-046, PICK-051; D-446, D-463, D-3045). `portals::api::leave`, `leave_page` and the pause question (`app/portals/src/business_left.rs:141`; `LEAVE_ROUTE` and `PAUSE_REASON_ROUTE` at `:36`, `:38`) are not served (\"not served yet\", D-3045) and no production type implements `CardDetach` (`:96`), so no business can leave and BIZ-054's pause question is never asked. (1) New `app/adapters/src/card_detach.rs`: the Stripe call `POST /v1/payment_methods/{pm}/detach` with the configured Stripe client (base URL, key and timeout as `app/adapters/src/payments.rs` reads them, never a key in a log), and `impl CardDetach` over it composed in the shared `build_router`. (2) New `app/server/src/business_leave_routes.rs`: `GET /b/leave` (the leave screen, the BIZ-054 question while `reason_asked` is false), `POST /b/leave` (owner only, the fresh code `leave` requires; a stale code answers the step-up form; success shows the left screen with every session already ended, so the response clears the session cookie), `GET /b/pause-reason` (the question once a self-pause passed `PAUSE_ASK_AFTER_DAYS`, `pause_ask_due`; otherwise 303 to the home) and `POST /b/pause-reason`; `refuse_cross_site` and CSRF first, `no_store`. For each `Left.picks` item the homeowner's PICK-047 (moved to her backup) or PICK-046 (no backup) text is queued by the sender T669's ended pending pick uses, never a second one; `Backup::Done` queues nothing. A detach failure is counted and logged once (the cards stay marked removed, so none can be charged); the Stripe stand-in has no detach endpoint (`stand_ins/stripe.py`), so the e2e and twin paths always record `detach_failed` until a harness task adds one (open in D-4727; TD-BIZ-62 notes it). (3) `business_home.html` gains \"Leave Laftly\" (owner only) and, while `pause_ask_due`, a link to the question. Section 13 rows (added `T734` by D-4727) marked `yes`; the three screens' states go in the shared `tests/a11y/page_states.ts`. Tests in the new `app/server/tests/business_leave_route.rs` (TD-BIZ-62), the assembled router with a fake `CardDetach` and one case with the adapter against a local fake HTTP server, fake data only. Update the `server` and `adapters` notes and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -47833,7 +47830,7 @@
    "id": "T735",
    "slug": "business-towns-hours",
    "title": "portals, server and messaging: a business changes its towns and its own quiet times in the portal, and its notices keep to them",
-   "goal": "Plan change D-4727 (C (d) second part; BIZ-010, QH-002, QH-005, A11Y-030; D-085). After sign-up a business cannot change its towns or set its own quiet times: `businesses::api::set_towns` and `set_own_hours` (`app/businesses/src/service.rs:343`) have no portal caller, and `may_notify` (`app/businesses/src/rules.rs:184`) has no caller, so a stored own window would change nothing. (1) New `app/portals/src/business_towns_hours.rs` and `app/portals/templates/business_towns_hours.html`: the towns served (the sign-up list and checks) and an optional own window (\"Send me job notices only between\", start and end inside 8 a.m. to 8 p.m. Arizona time, or \"Any time in the app's hours\"), labels and hints before inputs, A11Y-030 errors with values kept; owner or \"Confirm and billing\" only. (2) New `app/server/src/business_towns_hours_route.rs`: `GET` and `POST /b/settings/towns-hours` (CSRF, `no_store`); `business_home.html` gains the link. (3) In `app/messaging/src/business_notices.rs` (after T678): `SendChecks` gains the business's own hours (implemented in the shared `app/server/src/lib.rs` through `businesses::api`, as `may_text` is; `messaging` may not call `businesses`), and `business_notice` holds a non-emergency notice whose business's own window excludes the Arizona time to the start of that window by the same re-queue as `held_until` (QH-005), using `may_notify`; an EMERGENCY card keeps CARD-021's path. Section 13 rows (added `T735` by D-4727) marked `yes`; page states in the shared `tests/a11y/page_states.ts`. Tests in the new `app/server/tests/business_towns_hours_route.rs` and `tests/integration/tests/business_own_hours.rs` (TD-BIZ-63), fake data only. Update `docs/decisions.md`. Phase 2: after T678, the last queued owner of `business_notices.rs`, and T734 (`business_home.html`).",
+   "goal": "Plan change D-4727 (C (d) second part; BIZ-010, QH-002, QH-005, A11Y-030; D-085). After sign-up a business cannot change its towns or set its own quiet times: `businesses::api::set_towns` is called only by sign-up's `save_capability` (`app/businesses/src/capability.rs:407`), with no portal edit after sign-up, and `set_own_hours` (`app/businesses/src/service.rs:343`) has no caller, and `may_notify` (`app/businesses/src/rules.rs:184`) has no caller, so a stored own window would change nothing. (1) New `app/portals/src/business_towns_hours.rs` and `app/portals/templates/business_towns_hours.html`: the towns served (the sign-up list and checks, saved through the same `set_towns` path `save_capability` uses, under the business lock) and an optional own window (\"Send me job notices only between\", start and end inside 8 a.m. to 8 p.m. Arizona time, or \"Any time in the app's hours\"), labels and hints before inputs, A11Y-030 errors with values kept; owner or \"Confirm and billing\" only. (2) New `app/server/src/business_towns_hours_route.rs`: `GET` and `POST /b/settings/towns-hours` (CSRF, `no_store`); `business_home.html` gains the link. (3) In `app/messaging/src/business_notices.rs` (after T678): `SendChecks` gains the business's own hours (implemented in the shared `app/server/src/lib.rs` through `businesses::api`, as `may_text` is; `messaging` may not call `businesses`), and `business_notice` holds a non-emergency notice whose business's own window excludes the Arizona time to the start of that window by the same re-queue as `held_until` (QH-005), using `may_notify`; an EMERGENCY card keeps CARD-021's path. Section 13 rows (added `T735` by D-4727) marked `yes`; page states in the shared `tests/a11y/page_states.ts`. Tests in the new `app/server/tests/business_towns_hours_route.rs` and `tests/integration/tests/business_own_hours.rs` (TD-BIZ-63), fake data only. Update `docs/decisions.md`. Phase 2: after T678, the last queued owner of `business_notices.rs`, and T734 (`business_home.html`).",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -48156,6 +48153,73 @@
    "branch": "claude/task/T739-release-resend-shows",
    "prompt": "kit/prompts/T739.md",
    "acceptance": "TD-PICK-74 passes against PostgreSQL, failing on `main`; TD-PICK-41 passes unchanged."
+  },
+  {
+   "id": "T741",
+   "slug": "opted-out-text-pick",
+   "title": "server and intake: an opted-out homeowner's \"<n> YES\" picks with no text back",
+   "goal": "Plan change D-4727 (A, R1 finding 1; PICK-030, CON-013, CON-016, D-050, D-478, D-1612, D-1614). `picks::api::opted_out_yes` (`app/picks/src/email_code.rs:207`) has no production caller, and a homeowner whose number is on the suppression list never reaches intake: `screen` (`app/server/src/inbound_text.rs:836` to `:876`) maps `Outcome::Suppressed` to a listed sender, queues the CON-016 wrote-again follow-up (`FollowUp::WroteAgain`) and `help` ends the delivery with `Halt::Ends(\"suppressed\")` (`:959`). (1) In `inbound_text.rs`, for `Outcome::Suppressed` from a homeowner (not `Relation::Business`), with no provider keyword, no 911-list match (`msg.emergency` false; the paused-emergency path stays as it is) and words that `picks::api::read_text_pick` reads as a text pick: no wrote-again follow-up is queued, and the text goes, inside the delivery's transaction, to a new `intake::api::answer_opted_out_pick` in `app/intake/src/text_pick_reply.rs` (T728's file): her open request's live jobs under the homeowner lock, each pause read by `paused_under_lock`, then `opted_out_yes` with `Actor::Homeowner`; no text is queued on any branch (CON-013); `Picked` and `Same` store as D-1614 decided (channel `page`), `TermsFirst`, `Nothing` and `None` store nothing; then the delivery ends as `suppressed` does today. Any other listed text keeps today's path, wrote-again follow-up included. A module error is `Halt::Settled` as for every listed sender (D-2307). Open (D-1612 (1), (2)): PICK-030's emails (the Terms line with a one-time Pick button, the confirmation by email) have no sender and no conversation-address source; this task adds none. Tests in the new `app/server/tests/opted_out_pick_route.rs` (TD-PICK-75), the assembled router's `POST /webhooks/twilio/sms` with signed fake requests, PostgreSQL, fake data and 555 numbers only. Update `docs/decisions.md`. After T675, the last phase-1 queued owner of `inbound_text.rs`, and T728; T402 and T299 (phase 2 owners of `inbound_text.rs`) now follow it, and T683 follows both.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T675",
+    "T728"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/server/src/inbound_text.rs",
+    "app/intake/src/text_pick_reply.rs",
+    "app/server/tests/opted_out_pick_route.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/consent.md",
+    "app/picks/src/email_code.rs",
+    "app/intake/src/job_texts.rs",
+    "docs/brains/sms-compliance.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "PICK-030",
+    "CON-013",
+    "CON-016"
+   ],
+   "tests": [
+    "TD-PICK-75"
+   ],
+   "decisions": [
+    "D-050",
+    "D-478",
+    "D-1612",
+    "D-1614",
+    "D-2307",
+    "D-4727"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 400,
+    "context_pct": 30
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T741-opted-out-text-pick",
+   "prompt": "kit/prompts/T741.md",
+   "acceptance": "TD-PICK-75 passes through the assembled SMS route, failing on `main`; an opted-out \"1 YES\" queues no text and no wrote-again follow-up; any other listed text keeps its follow-up; every inbound text and opt-out test passes unchanged."
   }
  ]
 }
