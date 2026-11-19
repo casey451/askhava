@@ -1,28 +1,28 @@
 # Ask Hava build status
 
-Updated 2026-11-19T21:39:35Z by runner e4e41280a9bd (manual).
+Updated 2026-11-19T21:50:45Z by runner f0505596bdb5 (actions).
 
-**Building: T607 in progress since 21:16Z; 505 of 701 done; week 9% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T607 in progress since 21:16Z; 506 of 701 done; week 9% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 505 of 701 build tasks (owner gates not counted)
+- **Tasks done:** 506 of 701 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T607 claimed 21:16Z, lease until 00:16Z; lane 4: T480 claimed 20:38Z, lease until 23:38Z; lane 5: T541 claimed 21:24Z, lease until 00:24Z; lane 6: T707 claimed 21:38Z, lease until 00:38Z; lane 7: T717 claimed 20:10Z, lease until 23:59Z
 - **Week:** 9% used, 169.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:39Z, 0 min before this update
+- **Last run:** 21:39Z, 11 min before this update
 - **Keeper:** last ran 21:36Z, next wake 21:56Z
 
 ## Needs attention
 - BLOCKED T663: plan gap reported: PLAN GAP: tests/test_coverage_floor.py:125 asserts floors["future"] == [], contradicting T663 goal (5), which requires a `future` entry for app/portals/src/confirm_moves.rs. Also the test at :183-196 requires per-file floors and files_measured to hold the same paths, on disk, and named in D-3974, so the new connect.rs and confirm_moves.rs floors fail it. T663 does not own tests/test_coverage_floor.py (T264/T324 do). Reviewer confirmed. Smallest fix: relax the floor tests to accept reasoned future entries, or drop goal (5) from T663. Reviewer also found TD-JOB-18 cases untested (paid settle, he; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T663 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 56 problem(s) on tasks still to run (+343 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 66 problem(s) on tasks still to run (+351 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T663 | picks, jobs and payments (harness): a confirmed pick moves i | BLOCKED | 1 | 30 min | 21:32Z | PLAN GAP: tests/test_coverage_floor.py:125 asserts floors["future"] == [], contradicting T663 goal (5), which requires a |
 | T753 | runner (harness): `fable` is a model the plan can name, a ta | MERGE_PENDING | 1 | 112 min | 20:59Z |  |
-| T307 | server and portals: the homeowner portal's sign-in, home pag | MERGE_PENDING | 2 | 2 h 45 min | 20:33Z | PLAN GAP: tests/security/tests/vault_readers.rs:23 lets only `portals` call `read_own_contact` (line 19 lets only `messa |
+| T307 | server and portals: the homeowner portal's sign-in, home pag | done | 2 | 2 h 45 min | 20:33Z | PLAN GAP: tests/security/tests/vault_readers.rs:23 lets only `portals` call `read_own_contact` (line 19 lets only `messa |
 | T748 | portals: the help-page form's confirmation promises no reply | done | 1 | 41 min | 20:08Z |  |
 | T161 | wording: the WORD-024 voice rule's pressure-word scan, the r | done | 2 | 2 h 1 min | 20:00Z | PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/s |
 | T607 | site: site.css brought up to the V6 reference (laftly-v6.css | QUEUED | 1 | 2 h 5 min | 19:21Z | review_missing on 2c1fc315ebe4 (D-3728): not proven reviewed or worker-made / (b) 5cb49e3317bc T607: NOTES entry in the  |
@@ -90,31 +90,31 @@ Updated 2026-11-19T21:39:35Z by runner e4e41280a9bd (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 80 of 735 (10.9%) · partial 620 · unstarted 35
-**Tasks merged (throughput only):** 505 of 701
+**Requirements verified:** 325 of 735 (44.2%) · partial 375 · unstarted 35
+**Tasks merged (throughput only):** 506 of 701
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 3 | 32 | 0 | 35 |
-| ai | 1 | 25 | 3 | 29 |
-| businesses | 1 | 56 | 1 | 58 |
-| calls | 1 | 24 | 0 | 25 |
-| consent | 3 | 32 | 0 | 35 |
-| fees | 1 | 51 | 0 | 52 |
-| intake | 1 | 42 | 0 | 43 |
-| job-cards | 0 | 24 | 0 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 0 | 44 | 1 | 45 |
-| ops-recovery | 7 | 29 | 18 | 54 |
-| privacy | 0 | 30 | 1 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 0 | 56 | 0 | 56 |
-| recurring | 3 | 8 | 0 | 11 |
-| security | 0 | 50 | 5 | 55 |
-| terms | 25 | 9 | 1 | 35 |
+| accessibility | 18 | 17 | 0 | 35 |
+| ai | 8 | 18 | 3 | 29 |
+| businesses | 21 | 36 | 1 | 58 |
+| calls | 14 | 11 | 0 | 25 |
+| consent | 16 | 19 | 0 | 35 |
+| fees | 22 | 30 | 0 | 52 |
+| intake | 8 | 35 | 0 | 43 |
+| job-cards | 12 | 12 | 0 | 24 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 16 | 12 | 0 | 28 |
+| messaging | 22 | 22 | 1 | 45 |
+| ops-recovery | 9 | 27 | 18 | 54 |
+| privacy | 9 | 21 | 1 | 31 |
+| quiet-hours | 3 | 6 | 0 | 9 |
+| quotes-pick | 25 | 31 | 0 | 56 |
+| recurring | 10 | 1 | 0 | 11 |
+| security | 11 | 39 | 5 | 55 |
+| terms | 27 | 7 | 1 | 35 |
 | website | 18 | 9 | 3 | 30 |
-| wording | 16 | 14 | 2 | 32 |
+| wording | 23 | 7 | 2 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -127,7 +127,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 148 of 284 done
+- stage 5: 149 of 284 done
 - stage 6: 0 of 64 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
