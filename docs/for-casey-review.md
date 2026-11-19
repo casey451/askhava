@@ -3534,3 +3534,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - **What will change:** the filter that removes phone numbers and emails before a business or the AI sees a job description now also catches a number split by "and" or "y", "gmail . com" written with spaces, an encoded email and spaced number emoji, while leaving "2 and 3 bedrooms" alone (T756). "Delete my data" now also deletes the words of her problem and help messages at once, instead of within 30 days (T757).
 - Our choice (Fable's findings); nothing needs you now.
+
+## Shorter path: docs tidy-up moves after the account setup, and AI budgets no longer wait for the war games (D-4771)
+
+- **What changed:** the tasks that tidy the code notes and guides for future AI sessions now run after your account checkpoint and before the handover pack, instead of before the checkpoint; the AI-cost limits no longer wait for your war-games go (the war games themselves still do). The longest remaining chain drops from 42 tasks to 34.
+- **Risk:** notes written after the tidy-up could undo some of it; a final cleanup pass before the finish catches that.
+- Fable's decision, as you asked; nothing needs you now.
