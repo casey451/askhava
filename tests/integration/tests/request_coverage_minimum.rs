@@ -1,12 +1,12 @@
-//! TD-LIC-34 (T679; LIC-046, INT-017, OPS-006; D-4360): a launch-open category takes homeowner
-//! requests only with at least `MIN_ACTIVE_BUSINESSES` active businesses, counted category-wide.
-//! PostgreSQL, fake IDs and no homeowner data.
+//! TD-LIC-34 (T679, T710; LIC-046, INT-017, OPS-006; D-4360, D-4421): a launch-open category
+//! takes homeowner requests only with at least `MIN_ACTIVE_BUSINESSES` (1) active businesses,
+//! counted category-wide. PostgreSQL, fake IDs and no homeowner data.
 //!
 //! `quotes::api::request_coverage` reads the active count through
-//! `businesses::api::active_in_category` and applies `licensing::api::request_intake`: one active
-//! business (even one serving the job's town), a "Coming later" category and an off category are
-//! `Coverage::NotCovered`; two active businesses give the coverage count. Paused and removed
-//! businesses are not counted; a business in another town is.
+//! `businesses::api::active_in_category` and applies `licensing::api::request_intake`: a category
+//! whose only businesses are paused or removed, a "Coming later" category and an off category are
+//! `Coverage::NotCovered`; one active business serving the job's town gives the coverage count.
+//! Paused and removed businesses are not counted; a business in another town gets no card.
 
 use std::collections::BTreeSet;
 
@@ -101,14 +101,13 @@ async fn coverage(db: &mut PgConnection, map: &ClassMap, job: (&str, &str)) -> C
         .expect("coverage")
 }
 
-/// TD-LIC-34, LIC-046, INT-017: one active business serving the job's town is not enough; a
-/// paused and a removed one are not counted; a second active one in another town makes two, so
-/// the request is taken and the count is the in-town business's card.
+/// TD-LIC-34, LIC-046, INT-017: a paused and a removed business are not counted, so the request
+/// is not covered; one active business serving the job's town opens it and the count is its card;
+/// an active one in another town adds no card.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
-async fn td_lic_34_one_active_business_is_not_covered_two_give_the_count(mut db: Db) {
-    assert_eq!(MIN_ACTIVE_BUSINESSES, 2);
+async fn td_lic_34_paused_or_removed_only_is_not_covered_one_active_gives_the_count(mut db: Db) {
+    assert_eq!(MIN_ACTIVE_BUSINESSES, 1);
     setup(&mut db).await;
-    active_business(&mut db, 0, TOWN, CLEAN).await;
     let paused = active_business(&mut db, 1, TOWN, CLEAN).await;
     let pause = Event::Pause(PauseReason::Owner);
     apply(&mut db, paused, pause, Actor::System, at())
@@ -118,11 +117,14 @@ async fn td_lic_34_one_active_business_is_not_covered_two_give_the_count(mut db:
     apply(&mut db, removed, Event::Remove, Actor::System, at())
         .await
         .expect("removed");
+    let none = coverage(&mut db, shipped(), CLEAN).await;
+    assert_eq!(none, Coverage::NotCovered);
+    active_business(&mut db, 0, TOWN, CLEAN).await;
     let one = coverage(&mut db, shipped(), CLEAN).await;
-    assert_eq!(one, Coverage::NotCovered);
+    assert_eq!(one, Coverage::Send(1));
     active_business(&mut db, 3, OTHER_TOWN, CLEAN).await;
-    let two = coverage(&mut db, shipped(), CLEAN).await;
-    assert_eq!(two, Coverage::Send(1));
+    let still = coverage(&mut db, shipped(), CLEAN).await;
+    assert_eq!(still, Coverage::Send(1));
 }
 
 /// TD-LIC-34, LIC-046: a "Coming later" category and an off one take no request, however many
