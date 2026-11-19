@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T00:55:34Z by runner 5c0f662812a7 (actions).
+Updated 2026-11-19T00:55:37Z by runner 85af034f1e4b (actions).
 
 **Building: T488 in progress since 23:28Z; 466 of 663 done; week 70% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 466 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T488 claimed 23:28Z, lease until 03:21Z; lane 3: T505 claimed 23:48Z, lease until 03:55Z; lane 4: T306 claimed 23:42Z, lease until 02:42Z; lane 6: T563 claimed 23:58Z, lease until 03:42Z
+- **Lane:** lane 1: T488 claimed 23:28Z, lease until 03:21Z; lane 3: T505 claimed 23:48Z, lease until 03:55Z; lane 4: T306 claimed 23:42Z, lease until 03:55Z; lane 6: T563 claimed 23:58Z, lease until 03:42Z
 - **Week:** 70% used, 46.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 00:55Z, 0 min before this update
 - **Keeper:** last ran 00:50Z, next wake 02:45Z
@@ -14,7 +14,7 @@ Updated 2026-11-19T00:55:34Z by runner 5c0f662812a7 (actions).
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 51 problem(s) on tasks still to run (+270 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 55 problem(s) on tasks still to run (+268 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -136,7 +136,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T488 (lease until 2026-11-19T03:21:31Z)
 - lane 3: T505 (lease until 2026-11-19T03:55:34Z)
-- lane 4: T306 (lease until 2026-11-19T02:42:52Z)
+- lane 4: T306 (lease until 2026-11-19T03:55:37Z)
 - lane 6: T563 (lease until 2026-11-19T03:42:07Z)
 
 ## Last usage reading
