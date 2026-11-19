@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T12:35:20Z by runner 373fc39eb060 (actions).
+Updated 2026-11-19T12:35:48Z by runner 373fc39eb060 (actions).
 
 **Building: T470 in progress since 10:42Z; 491 of 664 done; week 80% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 491 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T470 claimed 10:42Z, lease until 14:53Z; lane 3: T158 claimed 11:39Z, lease until 14:39Z; lane 7: T593 claimed 11:00Z, lease until 15:27Z
+- **Lane:** lane 1: T470 claimed 10:42Z, lease until 14:53Z; lane 3: T158 claimed 11:39Z, lease until 14:39Z
 - **Week:** 80% used, 28.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 12:35Z, 0 min before this update
 - **Keeper:** last ran 12:34Z, next wake 12:54Z
@@ -20,6 +20,7 @@ Updated 2026-11-19T12:35:20Z by runner 373fc39eb060 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T593 | site and server: the home hero in D-3331's wording with the  | MERGE_PENDING | 1 | 95 min | 12:35Z |  |
 | T536 | E2e harness: clock-advancing journeys last, a keyed worker,  | MERGE_PENDING | 2 | 107 min | 12:33Z | PLAN GAP: tests/e2e/j2.ts:150 (owned by T099, `e2e-j2-business`; T644 also lists it). Smallest plan change: make the `no |
 | T109 | recovery: backup checks and the nightly encrypted export | BLOCKED | 1 | 20 min | 11:47Z | PLAN GAP: `deny.toml:3` (owned by T009 and T604, both outside T109; T109 does not own it): every `age` release fails `ca |
 | T540 | portals and server: the owner's release button re-sends an e | resync | 1 | 54 min | 11:29Z | merging main into the reviewed head conflicts in tests/a11y/page_states.ts; a resync merges it in on this attempt (D-891 |
@@ -142,7 +143,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T470 (lease until 2026-11-19T14:53:27Z)
 - lane 3: T158 (lease until 2026-11-19T14:39:32Z)
-- lane 7: T593 (lease until 2026-11-19T15:27:35Z)
 
 ## Last usage reading
-- {"task": "T536", "at": "2026-11-19T12:33:10Z", "cache_read_input_tokens": 4070194, "output_tokens": 30051, "cache_creation_input_tokens": 127674, "input_tokens": 125}
+- {"task": "T593", "at": "2026-11-19T12:35:17Z", "cache_read_input_tokens": 21516202, "input_tokens": 308, "cache_creation_input_tokens": 285070, "output_tokens": 86246}
