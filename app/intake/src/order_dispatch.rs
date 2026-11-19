@@ -24,15 +24,21 @@
 //! trade. Step 11 (`order::ask_last_question`, once per request) is called last, only once step 5
 //! told the coverage (the `trade_check` marker; D-3702, D-4441).
 //!
-//! INT-032's two jobs (T711, D-4439): a first text naming two trades (`matching::two_trades`)
-//! also gets the `two_jobs` text, right after the consent text and before the ZIP question
-//! ([`first_text`]). [`second_job`] runs before the step's answer: SPLIT or DIVIDIR as the first
-//! reply after a `split_offer` of the request ([`SPLIT_OFFER`] marker) calls
-//! `routing::split_request`; ALSO or TAMBIÉN (`matching::starts_second`), never while the
-//! name-and-address question is open, in a request whose two `trade_reading` rows came from its
-//! first text and whose second trade has no job link yet, opens the second job: before the ZIP
-//! the early way ([`open_job`], property `none`, no INT-009 lookup), after it through
-//! `begin_job` (INT-009). Any other ALSO or SPLIT goes on as any other reply.
+//! INT-032's two jobs (T711, D-4439, corrected by T717, D-4441): a first text whose two
+//! `trade_reading` rows opened the first trade's job gets the `two_jobs` text once, right after
+//! the first ZIP question in the same turn ([`ask_first_zip`]): at the first text on the clear
+//! path, after SAFE or the INT-037 answer on the 911 and alarm paths, never during a SAFE hold.
+//! [`second_job`] runs before the step's answer: SPLIT or DIVIDIR (`routing::is_split_reply`)
+//! counts only as the first `heard` reply after the turn that sent a SPLIT offer (its
+//! [`SPLIT_OFFER`] marker, written beside the `trade_check` marker) and opens the offer's other
+//! trade; ALSO or TAMBIÉN (`matching::starts_second`), never while the name-and-address question
+//! is open, in a request whose two `trade_reading` rows came from its first text and whose second
+//! trade has no job link yet, opens the second trade's job. Both open through [`open_job`] (ALSO
+//! with property `none`, SPLIT keyed with her newest property; no INT-009 lookup, no INT-007 word
+//! count), never `begin_job` (which refuses a one-word reply) or `routing::split_request`, answer
+//! no step and get the open question again ([`ask_open_again`]); an ALSO's coverage line goes
+//! through `routing::tell_coverage` at once when step 5 is done, else right after the first job's.
+//! Any other ALSO or SPLIT goes on as any other reply; nothing is sent during a SAFE hold.
 //!
 //! A ZIP reply, a trade answer, ALSO or SPLIT is never kept as words (INT-049). No words or ZIP
 //! are logged.
@@ -47,16 +53,16 @@ use sqlx::types::Uuid;
 
 use askhava_messaging::api::render;
 
-use crate::conversation::{JobStart, begin_job, name_address_open};
+use askhava_quotes::api::Coverage;
+
+use crate::conversation::name_address_open;
 use crate::handlers::{queue_body, schedule_no_reply};
-use crate::matching::{
-    Reading, candidates, keyword_reading, starts_second, trade_label, two_trades,
-};
+use crate::matching::{Reading, candidates, keyword_reading, starts_second, trade_label};
 use crate::models::{self, IntakeError};
 use crate::order::{ask_last_question, keep_words};
 use crate::routing::{
-    Outcome, Request, Routing, SPLIT_TEMPLATE, apply, is_split_reply, route, split_request,
-    tell_coverage, trade_is_open,
+    Outcome, Request, Routing, SPLIT_TEMPLATE, apply, is_split_reply, route, tell_coverage,
+    trade_is_open,
 };
 use crate::rules::{Settings, Then, opens_job};
 use crate::service::{Handled, Queued, Screened, TextIn, may_text, request_language};
@@ -78,9 +84,8 @@ pub(crate) const TWO_JOBS_TEMPLATE: &str = "two_jobs";
 /// The step marker written when the trade check sent the SPLIT offer; its choice is the trade
 /// SPLIT would open (INT-032, D-1020).
 const SPLIT_OFFER: &str = "split_offer";
-/// The step marker written for the first reply after a SPLIT offer, whatever it says, so only
-/// that reply can be SPLIT (D-1020).
-const SPLIT_REPLY: &str = "split_reply";
+/// The row `conversation::hear` writes for each reply heard in a request, keyed with its inbox ID.
+const HEARD: &str = "heard";
 
 /// Where request `conversation` is in the order, read from its stored rows.
 struct Place {
@@ -94,7 +99,6 @@ struct Place {
     told: bool,
     waiting_safe: bool,
     job_trades: Vec<String>,
-    split_trade: Option<String>,
 }
 
 /// Reads [`Place`] for `conversation`; `None` for an unknown request.
@@ -114,12 +118,7 @@ async fn place(db: &mut PgConnection, conversation: Uuid) -> Result<Option<Place
                AND e.text_queued_at IS NOT NULL AND e.safe_at IS NULL) AS "waiting_safe!",
              ARRAY(SELECT split_part(a.question_id, '.', 2) FROM intake.intake_answer a
                WHERE a.conversation_id = c.id AND a.question_id LIKE 'job.%')
-               AS "job_trades!: Vec<String>",
-             (SELECT a.choice FROM intake.intake_answer a WHERE a.conversation_id = c.id
-               AND a.question_id = $4 AND NOT EXISTS (SELECT 1 FROM intake.intake_answer b
-                 WHERE b.conversation_id = c.id AND b.question_id = $5
-                 AND b.answered_at >= a.answered_at)
-               ORDER BY a.answered_at DESC LIMIT 1) AS "split_trade?"
+               AS "job_trades!: Vec<String>"
            FROM intake.conversation c
            LEFT JOIN LATERAL (SELECT q.town, q.zip FROM intake.property q
              WHERE q.homeowner_id = c.homeowner_id AND q.created_at >= c.opened_at
@@ -127,9 +126,7 @@ async fn place(db: &mut PgConnection, conversation: Uuid) -> Result<Option<Place
            WHERE c.id = $1"#,
         conversation,
         TRADE_READING,
-        TRADE_CHECK,
-        SPLIT_OFFER,
-        SPLIT_REPLY
+        TRADE_CHECK
     )
     .fetch_optional(db)
     .await
@@ -179,18 +176,37 @@ pub(crate) async fn first_text(
         let ids = (place.homeowner, conversation);
         let job = open_job(tx, ids, (trade, None), (emergency, at)).await?;
         keep_words(tx, (conversation, job), msg.inbox_id, (words, at)).await?;
-        if handled.screened == Screened::Clear
-            && let Some(pair) = two_trades(words)
-        {
-            let told = tell_two_jobs(tx, secret, (msg, conversation), pair, settings).await?;
-            handled.texts.push(told);
-        }
     }
     if handled.screened == Screened::Clear {
-        let asked = ask_zip(tx, secret, (msg, conversation), settings).await?;
-        handled.texts.push(asked);
+        let asked = ask_first_zip(tx, secret, (msg, conversation), settings).await?;
+        handled.texts.extend(asked);
     }
     Ok(())
+}
+
+/// INT-049, INT-032, CON-031, D-4441: the first ZIP question, then, when the request's first text
+/// named two trades (two `trade_reading` rows) and opened the first one's job but not yet the
+/// second's, the `two_jobs` text right after it, in the same turn; once, as the first ZIP question
+/// is asked once.
+async fn ask_first_zip(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    request: (&TextIn<'_>, Uuid),
+    settings: Settings,
+) -> Result<Vec<Queued>, IntakeError> {
+    let mut texts = vec![ask_zip(tx, secret, request, settings).await?];
+    let Some(place) = place(tx, request.1).await? else {
+        return Ok(texts);
+    };
+    let linked = |t: &String| place.job_trades.contains(t);
+    if let [first, second] = place.trades.as_slice()
+        && linked(first)
+        && !linked(second)
+    {
+        let pair = (first.as_str(), second.as_str());
+        texts.push(tell_two_jobs(tx, secret, request, pair, settings).await?);
+    }
+    Ok(texts)
 }
 
 /// INT-032, TXT-003: queues the `two_jobs` text naming the `(first, second)` trades in the
@@ -214,9 +230,9 @@ async fn tell_two_jobs(
 }
 
 /// INT-009, INT-019, INT-032: opens a job of request `conversation` for `trade` (its first, or
-/// the ALSO second before the ZIP) from `begin_job`'s pieces, keyed with `property` (`none` before
-/// the area check) and with no INT-009 lookup, so a new request never joins another request's job
-/// (D-4360, D-4439).
+/// the ALSO or SPLIT second) from `begin_job`'s pieces, keyed with `property` (`none` before the
+/// area check and for ALSO) and with no INT-009 lookup and no INT-007 word count, so a new request
+/// never joins another request's job (D-4360, D-4439, D-4441).
 async fn open_job(
     tx: &mut PgConnection,
     (homeowner, conversation): (Uuid, Uuid),
@@ -284,14 +300,16 @@ async fn step_answer(
     place: &Place,
     settings: Settings,
 ) -> Result<Vec<Queued>, IntakeError> {
+    if let Some(texts) = second_job(tx, secret, request, place, settings).await? {
+        return Ok(texts);
+    }
     Ok(match (place.zip_asked, place.town.as_deref()) {
-        _ if second_job(tx, request, place).await? => Vec::new(),
         (_, Some(town)) if !place.told => {
             let reached = (town, place.zip.as_deref());
             trade_check(tx, secret, request, (place, reached), settings).await?
         }
         (_, Some(_)) => Vec::new(),
-        (false, None) => vec![ask_zip(tx, secret, request, settings).await?],
+        (false, None) => ask_first_zip(tx, secret, request, settings).await?,
         (true, None) => zip_answer(tx, secret, request, place, settings).await?,
     })
 }
@@ -318,7 +336,8 @@ async fn answered_beep(
 /// INT-037 answer (or, for T691, START), as the module comment says: the ZIP question when it was
 /// never asked (`ask_zip`), its text again with no row written when it was asked and her town is
 /// not stored, so the one re-ask is neither used nor renewed; nothing while a SAFE hold waits,
-/// nothing is open, the request is closed or `service::may_text` refuses the contact.
+/// nothing is open, the request is closed or `service::may_text` refuses the contact. A first ZIP
+/// question goes through [`ask_first_zip`] (INT-032's `two_jobs` after it, D-4441).
 ///
 /// # Errors
 ///
@@ -328,26 +347,26 @@ pub(crate) async fn ask_open_again(
     secret: &SecretString,
     request: (&TextIn<'_>, Uuid),
     settings: Settings,
-) -> Result<Option<Queued>, IntakeError> {
+) -> Result<Vec<Queued>, IntakeError> {
     let Some(place) = locked(tx, request.1).await? else {
-        return Ok(None);
+        return Ok(Vec::new());
     };
     if place.waiting_safe || !may_text(tx, request.0.contact).await? {
-        return Ok(None);
+        return Ok(Vec::new());
     }
     let (msg, conversation) = request;
     if place.town.is_some() {
-        return Ok(None);
+        return Ok(Vec::new());
     }
     if !place.zip_asked {
-        return Ok(Some(ask_zip(tx, secret, request, settings).await?));
+        return ask_first_zip(tx, secret, request, settings).await;
     }
     let language = request_language(tx, conversation).await?;
     let template = ZIP_QUESTION_TEMPLATE;
     let body = zip_body(template, language, settings.spanish_conversations_on);
     let subject = [conversation, msg.inbox_id];
     let queued = queue_body(tx, secret, (msg.contact, template), &subject, &body).await?;
-    Ok(Some(queued))
+    Ok(vec![queued])
 }
 
 /// INT-049, INT-022: `answer_zip` on her reply; a stored town goes straight on to the trade check.
@@ -371,11 +390,12 @@ async fn zip_answer(
     )
 }
 
-/// INT-016, INT-017, INT-009: step 5 once her town is stored. The request's own first job and its
-/// first `trade_reading` trade; a short first text that read a trade but opened no job opens it
-/// now, keyed with her new property; with no trade read, this reply is read as the trade answer
-/// ([`trade_answer`]; nothing is written or sent when it names no trade). Then the coverage is
-/// told; empty when nothing went.
+/// INT-016, INT-017, INT-009, INT-032: step 5 once her town is stored. The request's own first
+/// job and its first `trade_reading` trade; a short first text that read a trade but opened no job
+/// opens it now, keyed with her new property; with no trade read, this reply is read as the trade
+/// answer ([`trade_answer`]; nothing is written or sent when it names no trade). Then the coverage
+/// is told, and an ALSO second job's right after it ([`tell_also`], D-4441); empty when nothing
+/// went.
 async fn trade_check(
     tx: &mut PgConnection,
     secret: &SecretString,
@@ -385,16 +405,7 @@ async fn trade_check(
 ) -> Result<Vec<Queued>, IntakeError> {
     let at = msg.received_at;
     let (trade, job, words) = match (place.trades.first(), place.job) {
-        (Some(trade), Some(job)) => {
-            let kept = description(tx, job)
-                .await
-                .map_err(|_| IntakeError::Quotes)?;
-            (
-                trade.clone(),
-                job,
-                kept.map(|d| d.text()).unwrap_or_default(),
-            )
-        }
+        (Some(trade), Some(job)) => (trade.clone(), job, kept_words(tx, job).await?),
         (Some(trade), None) => {
             let property = models::latest_property(tx, place.homeowner).await?;
             let ids = (place.homeowner, conversation);
@@ -406,78 +417,139 @@ async fn trade_check(
             None => return Ok(Vec::new()),
         },
     };
+    let request = (msg, conversation);
     let told = (trade.as_str(), job, words.as_str());
-    let texts = tell(tx, secret, (msg, conversation), told, (reached, settings)).await?;
+    let mut texts = tell(tx, secret, request, told, (reached, settings, true)).await?;
     let other = place.trades.iter().find(|t| **t != trade);
     if let Some(other) = other.filter(|_| texts.iter().any(|q| q.template == SPLIT_TEMPLATE)) {
         models::insert_plain(tx, conversation, (SPLIT_OFFER, other), at).await?;
     }
+    let also = (job, words.as_str());
+    texts.extend(tell_also(tx, secret, request, (place, also), (reached, settings)).await?);
     Ok(texts)
 }
 
-/// INT-032, D-1020, INT-009: SPLIT or ALSO before the step's answer, as the module comment says;
-/// true when the reply was taken as one (the step then reads nothing of it). The first reply
-/// after a SPLIT offer always clears it. No words are kept.
+/// INT-032, INT-017, D-4441: after the first job's coverage line, the coverage line of the second
+/// job an ALSO opened before step 5 (the request's other job), through `routing::tell_coverage`;
+/// nothing when step 5 told nothing (no `trade_check` marker) or no ALSO job is open.
+async fn tell_also(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    request: (&TextIn<'_>, Uuid),
+    (place, (first, words)): (&Place, (Uuid, &str)),
+    (reached, settings): ((&str, Option<&str>), Settings),
+) -> Result<Vec<Queued>, IntakeError> {
+    let Some(second) = place.trades.get(1).filter(|t| place.job_trades.contains(t)) else {
+        return Ok(Vec::new());
+    };
+    let conversation = request.1;
+    if models::latest_answer(tx, conversation, TRADE_CHECK)
+        .await?
+        .is_none()
+    {
+        return Ok(Vec::new());
+    }
+    let jobs = models::request_jobs(tx, conversation).await?;
+    let Some(job) = jobs.into_iter().find(|j| *j != first) else {
+        return Ok(Vec::new());
+    };
+    let told = (second.as_str(), job, words);
+    tell(tx, secret, request, told, (reached, settings, false)).await
+}
+
+/// INT-032, D-1020, D-4441: SPLIT or ALSO before the step's answer, as the module comment says;
+/// `Some` with the texts queued when the reply was taken as one (the step then reads nothing of
+/// it), `None` otherwise. No words are kept.
 async fn second_job(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    request: (&TextIn<'_>, Uuid),
+    place: &Place,
+    settings: Settings,
+) -> Result<Option<Vec<Queued>>, IntakeError> {
+    let (msg, conversation) = request;
+    let ids = (place.homeowner, conversation);
+    let at = msg.received_at;
+    let mut texts = Vec::new();
+    if let Some(trade) = split_trade(tx, request, place).await? {
+        let property = models::latest_property(tx, place.homeowner).await?;
+        open_job(tx, ids, (&trade, property), (false, at)).await?;
+    } else if let Some(trade) = also_trade(tx, msg, place).await? {
+        let job = open_job(tx, ids, (trade, None), (false, at)).await?;
+        if let Some(town) = place.town.as_deref().filter(|_| place.told) {
+            let words = match place.job {
+                Some(first) => kept_words(tx, first).await?,
+                None => String::new(),
+            };
+            let told = (trade, job, words.as_str());
+            let reached = ((town, place.zip.as_deref()), settings, false);
+            texts.extend(tell(tx, secret, request, told, reached).await?);
+        }
+    } else {
+        return Ok(None);
+    }
+    texts.extend(ask_open_again(tx, secret, request, settings).await?);
+    Ok(Some(texts))
+}
+
+/// INT-032, D-1020, D-4441: the trade a SPLIT or DIVIDIR reply opens: the choice of the request's
+/// SPLIT offer when this reply is the first `heard` reply after the turn that sent it (no other
+/// `heard` row after the offer's marker) and that trade has no job link yet; else `None`.
+async fn split_trade(
     tx: &mut PgConnection,
     (msg, conversation): (&TextIn<'_>, Uuid),
     place: &Place,
-) -> Result<bool, IntakeError> {
-    let (words, at) = (msg.inbound.words, msg.received_at);
-    if let Some(trade) = place.split_trade.as_deref() {
-        models::insert_plain(tx, conversation, (SPLIT_REPLY, "answered"), at).await?;
-        if is_split_reply(words) {
-            let opening = opening_words(tx, place).await?;
-            let second = second_start(conversation, trade, &opening, at);
-            split_request(tx, words, &second).await?;
-            return Ok(true);
-        }
+) -> Result<Option<String>, IntakeError> {
+    if !is_split_reply(msg.inbound.words) {
+        return Ok(None);
     }
+    let offered = sqlx::query_scalar!(
+        r#"SELECT o.choice AS "choice!" FROM intake.intake_answer o
+           WHERE o.conversation_id = $1 AND o.question_id = $2 AND o.choice IS NOT NULL
+             AND EXISTS (SELECT 1 FROM intake.intake_answer h WHERE h.conversation_id = $1
+               AND h.question_id = $3 AND h.inbox_id = $4 AND h.answered_at > o.answered_at)
+             AND NOT EXISTS (SELECT 1 FROM intake.intake_answer h WHERE h.conversation_id = $1
+               AND h.question_id = $3 AND h.inbox_id IS DISTINCT FROM $4
+               AND h.answered_at > o.answered_at)
+           ORDER BY o.answered_at DESC, o.id DESC LIMIT 1"#,
+        conversation,
+        SPLIT_OFFER,
+        HEARD,
+        msg.inbox_id
+    )
+    .fetch_optional(tx)
+    .await
+    .map_err(|_| IntakeError::Database)?;
+    Ok(offered.filter(|t| !place.job_trades.contains(t)))
+}
+
+/// INT-032, INT-027: the second trade an ALSO or TAMBIÉN reply opens: the request's second
+/// `trade_reading` trade when its first one has a job link and the second none, and the
+/// name-and-address question is not open; else `None`.
+async fn also_trade<'p>(
+    tx: &mut PgConnection,
+    msg: &TextIn<'_>,
+    place: &'p Place,
+) -> Result<Option<&'p str>, IntakeError> {
     let linked = |t: &&String| place.job_trades.contains(t);
     let first_open = place.trades.first().is_some_and(|t| linked(&t));
     let second = place.trades.get(1).filter(|t| first_open && !linked(t));
-    let Some(trade) = second.filter(|_| starts_second(words)) else {
-        return Ok(false);
+    let Some(trade) = second.filter(|_| starts_second(msg.inbound.words)) else {
+        return Ok(None);
     };
     if name_address_open(tx, msg.contact).await? {
-        return Ok(false);
+        return Ok(None);
     }
-    if place.town.is_none() {
-        let ids = (place.homeowner, conversation);
-        open_job(tx, ids, (trade, None), (false, at)).await?;
-    } else {
-        let opening = opening_words(tx, place).await?;
-        begin_job(tx, &second_start(conversation, trade, &opening, at)).await?;
-    }
-    Ok(true)
+    Ok(Some(trade.as_str()))
 }
 
-/// The request's own kept opening words (its first job's description), which the second job's
-/// INT-007 length check reads; empty when none were kept.
-async fn opening_words(tx: &mut PgConnection, place: &Place) -> Result<String, IntakeError> {
-    let Some(job) = place.job else {
-        return Ok(String::new());
-    };
+/// Job `job`'s kept words (its scrubbed description), which the coverage count reads; empty when
+/// none were kept.
+async fn kept_words(tx: &mut PgConnection, job: Uuid) -> Result<String, IntakeError> {
     let kept = description(tx, job)
         .await
         .map_err(|_| IntakeError::Quotes)?;
     Ok(kept.map(|d| d.text()).unwrap_or_default())
-}
-
-/// The [`JobStart`] of request `conversation`'s second job for `trade`.
-fn second_start<'a>(
-    conversation: Uuid,
-    trade: &'a str,
-    words: &'a str,
-    at: Timestamp,
-) -> JobStart<'a> {
-    JobStart {
-        conversation,
-        words,
-        emergency: false,
-        trade,
-        at,
-    }
 }
 
 /// INT-016, INT-043, INT-009, D-4441: her reply read as the trade answer; its first keyword trade
@@ -505,15 +577,17 @@ async fn trade_answer(
     Ok(Some((trade.to_owned(), job)))
 }
 
-/// INT-016, INT-017, LIC-046: a trade in no open category gets the INT-017 reply through
-/// `routing::apply`; otherwise `job`'s coverage, counted by `quotes::api::request_coverage` for
-/// the trade's candidates read from `words`, goes through `routing::tell_coverage`.
+/// INT-016, INT-017, LIC-046, D-4441: `job`'s coverage line. For the first job (`first`) a trade
+/// in no open category gets the INT-017 reply through `routing::apply`, else the `trade_check`
+/// marker is written; a second job's is `Coverage::NotCovered` for that job alone. Otherwise the
+/// count, by `quotes::api::request_coverage` for the trade's candidates read from `words`, goes
+/// through `routing::tell_coverage`.
 async fn tell(
     tx: &mut PgConnection,
     secret: &SecretString,
     (msg, conversation): (&TextIn<'_>, Uuid),
     (trade, job, words): (&str, Uuid, &str),
-    ((town, zip), settings): ((&str, Option<&str>), Settings),
+    ((town, zip), settings, first): ((&str, Option<&str>), Settings, bool),
 ) -> Result<Vec<Queued>, IntakeError> {
     let area = [town];
     let req = Request {
@@ -534,24 +608,37 @@ async fn tell(
         label: &label,
         job_type: None,
     };
-    let outcome = route(&req);
-    if outcome != Outcome::Continue {
-        return Ok(apply(tx, secret, (&req, outcome), &routing)
-            .await?
-            .into_iter()
-            .collect());
+    let coverage = match (route(&req), first) {
+        (Outcome::Continue, _) => count(tx, (town, zip), trade, words).await?,
+        (outcome, true) => {
+            let told = apply(tx, secret, (&req, outcome), &routing).await?;
+            return Ok(told.into_iter().collect());
+        }
+        (_, false) => Coverage::NotCovered,
+    };
+    if first {
+        models::insert_plain(tx, conversation, (TRADE_CHECK, "told"), msg.received_at).await?;
     }
+    let told = tell_coverage(tx, secret, (&req, coverage, job), &routing).await?;
+    Ok(told.into_iter().collect())
+}
+
+/// CARD-001, INT-017: the coverage `quotes::api::request_coverage` counts in `(town, zip)` for
+/// `trade`'s candidates read from `words`.
+async fn count(
+    tx: &mut PgConnection,
+    (town, zip): (&str, Option<&str>),
+    trade: &str,
+    words: &str,
+) -> Result<Coverage, IntakeError> {
     let facts = facts(trade, words);
     let quotes = |_| IntakeError::Quotes;
     let pool = card_pool(tx, ((town, zip), &facts), String::new(), None)
         .await
         .map_err(quotes)?;
-    let coverage = request_coverage(tx, pool.map, ((town, zip), &facts), None)
+    request_coverage(tx, pool.map, ((town, zip), &facts), None)
         .await
-        .map_err(quotes)?;
-    models::insert_plain(tx, conversation, (TRADE_CHECK, "told"), msg.received_at).await?;
-    let told = tell_coverage(tx, secret, (&req, coverage, job), &routing).await?;
-    Ok(told.into_iter().collect())
+        .map_err(quotes)
 }
 
 /// CARD-001, D-102: the card facts the count reads: `trade`'s candidate job types from the
