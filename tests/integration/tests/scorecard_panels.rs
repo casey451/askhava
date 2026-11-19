@@ -237,7 +237,8 @@ async fn not_a_fit(
 
 /// Plumbing jobs 21 and 22 and electrical job 25, carded on day 11; quotes with minutes 20, 40,
 /// 60 and none on plumbing (one more after the window), 90 on electrical; business 1 has two
-/// picks in the window and one after it, business 2 none.
+/// plumbing picks in the window, one electrical pick in the window (another trade, D-3877) and
+/// one after it, business 2 none.
 async fn plant_quotes_and_picks(db: &mut PgConnection) {
     for (job, trade) in [(21, "plumbing"), (22, "plumbing"), (25, "electrical")] {
         card(db, job, trade, 11).await;
@@ -251,11 +252,14 @@ async fn plant_quotes_and_picks(db: &mut PgConnection) {
     pick(db, (81, 21, 1), 12, "paid").await;
     pick(db, (82, 22, 1), 13, "expired").await;
     pick(db, (83, 25, 1), 20, "paid").await;
+    pick(db, (88, 25, 1), 14, "paid").await;
 }
 
 /// TD-OPS-21 (OPS-047): the scorecard's quote minutes, quotes per pick, not-a-fit counts and
-/// refund reasons per pushed trade, each from planted rows; rows outside the window, the month or
-/// the trade are left out, and a pushed trade with no job has empty figures.
+/// refund reasons per pushed trade, each from planted rows; rows outside the window or the trade
+/// are left out (a business's in-window pick in another trade too), not-a-fit answers count for
+/// the window's whole Arizona month (one after the window but in its month counts, one in the month
+/// before does not), and a pushed trade with no job has empty figures.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_ops_21_each_ops_047_figure_comes_from_planted_rows(pool: PgPool) {
     let db = &mut *pool.acquire().await.expect("conn");
@@ -270,6 +274,7 @@ async fn td_ops_21_each_ops_047_figure_comes_from_planted_rows(pool: PgPool) {
     not_a_fit(db, (22, 6), "plumbing", NotAFitReason::NotMyTown, 13).await;
     not_a_fit(db, (22, 7), "plumbing", NotAFitReason::NotMyTrade, -5).await;
     not_a_fit(db, (25, 5), "electrical", NotAFitReason::TooBigOrSmall, 12).await;
+    not_a_fit(db, (21, 8), "plumbing", NotAFitReason::NotMyTrade, 25).await;
     let window = (at(10, 0), at(17, 0));
     let figures = trade_figures(db, &["plumbing", "roofing"], window)
         .await
@@ -299,7 +304,11 @@ async fn td_ops_21_each_ops_047_figure_comes_from_planted_rows(pool: PgPool) {
         Some(10)
     );
     assert_eq!(plumbing.quotes_per_pick[1].quotes_per_pick_tenths(), None);
-    let not_a_fit = [(NotAFitReason::NotMyTown, 2), (NotAFitReason::Other, 1)];
+    let not_a_fit = [
+        (NotAFitReason::NotMyTrade, 1),
+        (NotAFitReason::NotMyTown, 2),
+        (NotAFitReason::Other, 1),
+    ];
     assert_eq!(plumbing.not_a_fit, not_a_fit);
     let reasons = [
         ("cancelled-before-talk".to_owned(), 1),

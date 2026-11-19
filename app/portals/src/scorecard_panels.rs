@@ -8,15 +8,15 @@
 //! `messaging::api::check_deferrals` judges) has deferrals above 5% of its sends; the panel never
 //! calls that check, because a page read changes nothing (SEC-026). The OPS-047 figures take one
 //! trade's job IDs from `quotes::api::jobs_by_trade` (T477), then the median quote minutes and
-//! each business's quotes from `quotes::api`, that business's picks in the window from
-//! `picks::api::pick_numbers`, refund requests by reason from `payments::api::refund_reasons`,
+//! each business's quotes from `quotes::api`, that business's picks on those jobs in the window
+//! from `picks::api::diagnostic_share` (the trade's jobs each paired with the business), refund requests by reason from `payments::api::refund_reasons`,
 //! and not-a-fit answers by reason from `ops::api::not_a_fit_counts` (T479) for the Arizona month
 //! of the window's last second. Counts, code names and record IDs only, never a contact detail.
 
 use askhava_messaging::api::{EmailDay, email_days};
 use askhava_ops::api::{NotAFitReason, not_a_fit_counts};
 use askhava_payments::api::refund_reasons;
-use askhava_picks::api::pick_numbers;
+use askhava_picks::api::diagnostic_share;
 use askhava_quotes::api::{jobs_by_trade, median_quote_minutes, quotes_per_business};
 use jiff::tz::{TimeZone, offset};
 use jiff::{SignedDuration, Timestamp};
@@ -35,6 +35,7 @@ pub struct EmailPanel {
     /// [`EmailDay::deferrals_too_high`] marks it over the line.
     pub days: Vec<EmailDay>,
     /// Whether the deferral alert is open: the day before today had deferrals above 5% of sends.
+    /// Recomputed from the counts, not read from `ops.alert` (an acknowledged alert still shows).
     pub alert_open: bool,
 }
 
@@ -68,15 +69,16 @@ pub struct BusinessQuotes {
     pub business: Uuid,
     /// Its quotes on the trade's jobs received in the window.
     pub quotes: i64,
-    /// Its picks made in the window (`picks::api::pick_numbers`, every trade).
-    pub picks: u32,
+    /// Its picks on the trade's jobs made in the window, any status; picks in other trades are
+    /// left out.
+    pub picks: i64,
 }
 
 impl BusinessQuotes {
     /// OPS-047: quotes per pick in tenths, rounded half up; `None` with no pick.
     #[must_use]
     pub fn quotes_per_pick_tenths(&self) -> Option<i64> {
-        let picks = i64::from(self.picks);
+        let picks = self.picks;
         (picks > 0).then(|| (self.quotes * 20 + picks) / (picks * 2))
     }
 }
@@ -91,14 +93,17 @@ pub struct TradeFigures {
     /// Each business that quoted, by business ID.
     pub quotes_per_pick: Vec<BusinessQuotes>,
     /// Not-a-fit answers by reason, in the page's reason order; a reason with none left out.
+    /// These cover the whole Arizona calendar month of the window's last second, not the window.
     pub not_a_fit: Vec<(NotAFitReason, i64)>,
     /// Refund requests by reason code name, by name; empty with none.
     pub refund_reasons: Vec<(String, i64)>,
 }
 
 /// OPS-047, D-490, D-4639: the figures of each of `pushed` (trade code names, in that order) for
-/// quotes, picks and refund requests at or after `from` and before `to`; a pushed trade with no
-/// job gets empty figures. Reads only.
+/// quotes, picks and refund requests at or after `from` and before `to`; not-a-fit answers for the
+/// Arizona calendar month of `to`'s last second (`ops::api::not_a_fit_counts` takes only a month),
+/// so a week or pilot-to-date window shows that month's answers. A pushed trade with no job gets
+/// empty figures. Reads only.
 ///
 /// # Errors
 ///
@@ -139,7 +144,8 @@ pub async fn trade_figures(
     Ok(figures)
 }
 
-/// OPS-047: each business's quotes on `jobs` in the window with its picks in the window.
+/// OPS-047, D-3877: each business's quotes on `jobs` in the window with its picks on `jobs` in the
+/// window: `diagnostic_share`'s part with every job paired with that business.
 async fn business_quotes(
     db: &mut PgConnection,
     jobs: &[Uuid],
@@ -151,11 +157,15 @@ async fn business_quotes(
         .unwrap_or_default();
     let mut rows = Vec::with_capacity(counts.len());
     for (business, quotes) in counts {
-        let numbers = pick_numbers(db, business, window).await.map_err(|_| DB)?;
+        let pairs: Vec<(Uuid, Uuid)> = jobs.iter().map(|job| (*job, business)).collect();
+        let picks = diagnostic_share(db, jobs, window, &pairs)
+            .await
+            .map_err(|_| DB)?
+            .map_or(0, |share| share.part);
         rows.push(BusinessQuotes {
             business,
             quotes,
-            picks: numbers.picks,
+            picks,
         });
     }
     Ok(rows)
