@@ -1,10 +1,12 @@
 //! Safe mode: pauses charges and releases, and nothing else, while a pushed High alert stays
 //! unacknowledged (OPS-001, OPS-023, OPS-024, FEE-038; D-075, D-133, D-278, D-1427, D-3878, T487).
 //!
-//! A High alert here is an open `ops.alert` of severity `high` or `critical` with an
-//! `ops.alert_push` row (written by T204's push, OPS-029, OPS-032), other than the text-delivery
-//! alert, which never starts safe mode (OPS-023, D-278). "Unacknowledged" is `resolved_at IS
-//! NULL`: every acknowledgement, by Casey or automatic (T105), resolves the alert.
+//! A High alert here (OPS-001, D-4310) is an open `ops.alert` with an `ops.alert_push` row
+//! (written by T204's push, OPS-029, OPS-032) that is `critical`, or `high` and of one of the
+//! [`SAFE_MODE_KINDS`] (the OPS-004 alerts other than the email sending-limit one). The delivery
+//! alert, the email-limit alert, both vault-read alerts and the failed-text call-back alert never
+//! start it (OPS-023, D-278). "Unacknowledged" is `resolved_at IS NULL`: every acknowledgement,
+//! by Casey or automatic (T105), resolves the alert.
 //!
 //! The state is the one `ops.safe_mode` row (migration 0192). [`run_safe_mode_check`], the
 //! [`SAFE_MODE_KIND`] task re-queued every [`SAFE_MODE_EVERY`], turns it on once such an alert's
@@ -21,7 +23,7 @@ use serde_json::json;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection, PgPool};
 
-use crate::alerts::DELIVERY_ALERT;
+use crate::alerts::{HEALTH_ALERT, LEDGER_ALERT, NUMBER_SUSPENDED_ALERT, VENDOR_ALERT};
 use crate::api::audit;
 use crate::models::{Actor, AuditEntry, Change, OpsError};
 
@@ -30,18 +32,29 @@ use crate::models::{Actor, AuditEntry, Change, OpsError};
 pub const SAFE_MODE_KIND: &str = "ops.safe_mode_check";
 /// How often the safe-mode check runs.
 pub const SAFE_MODE_EVERY: SignedDuration = SignedDuration::from_mins(1);
-/// How long a pushed High alert may stay unacknowledged before safe mode starts (OPS-001).
+/// OPS-001, OPS-004, D-075, D-4310: the `high` alert kinds that start safe mode (a `critical`
+/// alert of any kind does too): Stripe or webhook errors, the failed health check, the nightly
+/// ledger difference and the suspended Twilio number. `ops.delivery_low`, `ops.email_limit`,
+/// both `privacy.vault_read_*` kinds and `messaging.call_back_due` are left out.
+pub const SAFE_MODE_KINDS: [&str; 4] = [
+    VENDOR_ALERT,
+    HEALTH_ALERT,
+    LEDGER_ALERT,
+    NUMBER_SUSPENDED_ALERT,
+];
+/// How long a pushed, open alert that starts safe mode (critical, or High of one of the
+/// [`SAFE_MODE_KINDS`]) may stay unacknowledged before safe mode starts (OPS-001, D-4310).
 pub const SAFE_MODE_AFTER: SignedDuration = SignedDuration::from_hours(24);
 /// The audit action written when safe mode turns on (subject `ops.safe_mode`, nil ID).
 pub const SAFE_MODE_ON_ACTION: &str = "ops.safe_mode_on";
 /// The audit action written when safe mode turns off.
 pub const SAFE_MODE_OFF_ACTION: &str = "ops.safe_mode_off";
-
 const FAILED: HandlerError = HandlerError("the safe-mode check database call failed");
 
-/// OPS-001, OPS-024, D-3878: true while safe mode is on: its stored flag is on, or a pushed High
-/// alert is still unacknowledged [`SAFE_MODE_AFTER`] or more after its push by the database's
-/// clock (so it engages at once, with or without the worker).
+/// OPS-001, OPS-024, D-3878, D-4310: true while safe mode is on: its stored flag is on, or a
+/// pushed critical alert or High alert of one of the [`SAFE_MODE_KINDS`] is still unacknowledged
+/// [`SAFE_MODE_AFTER`] or more after its push by the database's clock (so it engages at once,
+/// with or without the worker).
 ///
 /// # Errors
 /// [`OpsError::Database`].
@@ -49,9 +62,10 @@ pub async fn safe_mode_on(db: &mut PgConnection) -> Result<bool, OpsError> {
     sqlx::query_scalar!(
         r#"SELECT COALESCE((SELECT "on" FROM ops.safe_mode), false) OR EXISTS (
              SELECT 1 FROM ops.alert a JOIN ops.alert_push p ON p.alert_id = a.id
-             WHERE a.resolved_at IS NULL AND a.severity IN ('high', 'critical') AND a.kind <> $1
+             WHERE a.resolved_at IS NULL
+               AND (a.severity = 'critical' OR (a.severity = 'high' AND a.kind = ANY($1)))
                AND p.pushed_at <= now() - make_interval(secs => $2)) AS "on!""#,
-        DELIVERY_ALERT,
+        &kinds(),
         SAFE_MODE_AFTER.as_secs_f64(),
     )
     .fetch_one(db)
@@ -59,9 +73,10 @@ pub async fn safe_mode_on(db: &mut PgConnection) -> Result<bool, OpsError> {
     .map_err(|_| OpsError::Database)
 }
 
-/// OPS-001, OPS-023, TD-OPS-01, TD-OPS-06: sets the stored flag at `now`: on when a pushed High
-/// alert's push is [`SAFE_MODE_AFTER`] or more before `now` (24:00:00 starts it, 23:59:59 does
-/// not); while on, off only when no pushed High alert is open. A change writes its audit row in
+/// OPS-001, OPS-023, TD-OPS-01, TD-OPS-06, TD-OPS-46, D-4310: sets the stored flag at `now`: on
+/// when an open critical alert, or High alert of one of the [`SAFE_MODE_KINDS`], was pushed
+/// [`SAFE_MODE_AFTER`] or more before `now` (24:00:00 starts it, 23:59:59 does not); while on,
+/// off only when no such pushed alert is open. A change writes its audit row in
 /// the same transaction, under the row's lock; a repeat changes nothing. Returns the flag.
 ///
 /// # Errors
@@ -72,13 +87,15 @@ pub async fn check_safe_mode(db: &mut PgConnection, now: Timestamp) -> Result<bo
     let row = sqlx::query!(
         r#"SELECT s."on" AS was_on,
              EXISTS (SELECT 1 FROM ops.alert a JOIN ops.alert_push p ON p.alert_id = a.id
-               WHERE a.resolved_at IS NULL AND a.severity IN ('high', 'critical') AND a.kind <> $1
+               WHERE a.resolved_at IS NULL
+                 AND (a.severity = 'critical' OR (a.severity = 'high' AND a.kind = ANY($1)))
                  AND p.pushed_at <= $2) AS "overdue!",
              EXISTS (SELECT 1 FROM ops.alert a JOIN ops.alert_push p ON p.alert_id = a.id
-               WHERE a.resolved_at IS NULL AND a.severity IN ('high', 'critical') AND a.kind <> $1)
+               WHERE a.resolved_at IS NULL
+                 AND (a.severity = 'critical' OR (a.severity = 'high' AND a.kind = ANY($1))))
                AS "open!"
            FROM ops.safe_mode s FOR UPDATE OF s"#,
-        DELIVERY_ALERT,
+        &kinds(),
         cutoff.to_sqlx() as _,
     )
     .fetch_one(&mut *tx)
@@ -90,6 +107,11 @@ pub async fn check_safe_mode(db: &mut PgConnection, now: Timestamp) -> Result<bo
     }
     tx.commit().await.map_err(|_| OpsError::Database)?;
     Ok(on)
+}
+
+/// The [`SAFE_MODE_KINDS`] as owned strings, the form a `text[]` query argument takes (OPS-001).
+fn kinds() -> Vec<String> {
+    SAFE_MODE_KINDS.iter().map(|k| (*k).to_owned()).collect()
 }
 
 /// Stores the flag `on` (with `since` = `now` when on) and its audit row (OPS-001, JOB-005).
