@@ -30071,6 +30071,69 @@
    "acceptance": "`tests/integration/tests/job_answers_reader.rs` passes against PostgreSQL; every existing intake test passes unchanged; an ALSO-reply job is in `jobs_of_contact` after its request closes; no contact answer is returned by `job_answers`."
   },
   {
+   "id": "T744",
+   "slug": "final-status-ends-picks",
+   "title": "picks: a job that reaches a final status ends its pick awaiting Confirm or in Payment pending and cancels the PaymentIntent",
+   "goal": "Plan change D-4748 (Fable's decision (4); FEE-021, PICK-038; D-4361, D-4349, D-1576). After T681, `jobs::service::move_to` queues one `jobs.final_status` task `{job, status}` when a job enters a final status and its handler in `app/picks/src/aftermath.rs` sends `no_longer_active` (`:319`); a pick still awaiting Confirm or in Payment pending on that job is left as it was, so its Confirm window, reminders and open PaymentIntent outlive the job and a late payment is caught only by the Left-and-refund path (FEE-021). This task, after T681: (1) the new `app/picks/src/final_status_end.rs` `end_for_final(tx, job, status, at)`, called by that handler in the same transaction before `no_longer_active`, sends every waiting, not-ended pick on the job (`awaiting_confirm` and Payment pending alike) through T663's `picks::api::end_pending` with a new reason `job_final` (added in `app/picks/src/connect.rs`), which ends the PaymentIntent through `payments`' own pick end so it is cancelled at Stripe and a charge that still succeeds is refunded (FEE-021, D-2958); an `awaiting_confirm` pick can have a PICK-048 auto-confirm charge in flight (`charge_off_session`, `app/picks/src/auto_confirm.rs:280`), and with no PaymentIntent the cancel is a no-op; its queued Confirm reminders and window end then act on nothing, as `cant_take` leaves them. `picks.pick.end_reason` is CHECK-constrained (`pick_end_reason_check`, last replaced by `migrations/0189_picks_fee_terms_changed.sql:7` to `:11`), so the new `migrations/0214_picks_job_final_end.sql` (after T745's 0213 and before T729's 0215 in the runner's serial order, which is why this task also waits for T745) replaces it the same way (NOT VALID, then VALIDATE) with every value the check allows on `main` at claim (re-read the newest migration that replaces it) plus `job_final`; re-check the number at claim against the migration-order rule; a pick already `paid`, `free` or ended is untouched; the job is not moved again (it is already final) and no backup is offered (the job is over). (2) A second delivery of the same task finds nothing to end and sends nothing twice (the shared dedupe key, D-1576). The Left-and-refund path is unchanged and stays the backstop. Tests in the new `tests/integration/tests/final_status_pick_end.rs`, PostgreSQL and the Stripe stand-in, fake data only: a job the homeowner closes with a pick awaiting Confirm ends the pick and no reminder or Confirm-end task acts after; a job cancelled in Payment pending cancels its PaymentIntent once and a late `payment_intent.succeeded` is refunded; a job closed while a PICK-048 auto-confirm charge is in flight on its `awaiting_confirm` pick ends the pick, cancels that intent and refunds a charge that still succeeds; a paid pick is untouched; a replayed task changes nothing. T681's `tests/integration/tests/aftermath_notices.rs` passes unchanged. Money: Opus worker, Opus money, privacy and security review, two review rounds. Update the `picks` notes, `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "picks",
+   "deps": [
+    "T681",
+    "T745"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "migrations/0214_picks_job_final_end.sql",
+    "app/picks/src/final_status_end.rs",
+    "app/picks/src/aftermath.rs",
+    "app/picks/src/connect.rs",
+    "tests/integration/tests/final_status_pick_end.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/lifecycle.md"
+   ],
+   "requirements": [
+    "FEE-021",
+    "PICK-038",
+    "PICK-048"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-1576",
+    "D-2958",
+    "D-4349",
+    "D-4361",
+    "D-4748"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 480,
+    "context_pct": 16
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T744-final-status-ends-picks",
+   "prompt": "kit/prompts/T744.md",
+   "acceptance": "`tests/integration/tests/final_status_pick_end.rs` passes against PostgreSQL and the Stripe stand-in; `tests/integration/tests/aftermath_notices.rs` and every pick-ending test pass unchanged; no PaymentIntent of a final job stays open."
+  },
+  {
    "id": "T654",
    "slug": "card-pool-roc-check",
    "title": "licensing and quotes: every ROC list import runs each active business's daily check, and the card pool gives ROC classes only after a fresh Active latest check",
@@ -42756,7 +42819,8 @@
    "deps": [
     "T608",
     "T200",
-    "T115"
+    "T115",
+    "T748"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -48348,7 +48412,7 @@
    "id": "T740",
    "slug": "owner-help-email-reply",
    "title": "portals (harness): the owner's help reply by email (business on email, help-email askers, a homeowner who cannot be texted) and by text to a business (D-4726)",
-   "goal": "Plan change D-4726 (split from T530 after Opus review round 1). OPS-036 (`docs/spec/ops-recovery.md:40`) sends the owner's reply \"by text under quiet hours to a homeowner who can be texted, and otherwise by email, always by email to a business on email\"; T530 sends only the text to a homeowner `intake::api::may_text` allows and refuses every other asker with a line saying the reply must go by email. This task makes the reply box on T530's page (`app/portals/src/owner_help.rs`) send those: (1) by email, through `messaging::api::queue_email` with the same words (\"Laftly: Reply from the Laftly owner: <text>\", screened as T530 screens them), to a business on email, to a homeowner who cannot be texted (her vault email, read under a purpose that allows it on a bare connection, never inside a transaction), and to a help email's asker at the address T742 seals in the vault and ties to the request (`asker_id` of an `email` request; read only, on a bare connection; a request with no ID (a help-page form request opened before this task) or whose address T742's purge cleared gets no email and the page says so); this task only reads T742's work; (2) by text to a business on text once T573 sends business rows by line ID (`app/messaging/src/outbox_sender.rs:18`, D-2042), addressed as T573 addresses business texts; a business help request opened from the portal with no phone gets email. A reply that can go neither way is refused with the reason, storing nothing. The words are kept and `ops::api::add_owner_reply` is called as T530 does, in the same transaction as the queue. Tests in the new `tests/security/tests/owner_help_email_reply.rs`, fake data only; in T530's `tests/security/tests/owner_help_reply.rs` only the refusal cases for askers this task now serves change, each to the send and citing D-4726. (3) Plan change D-4748 (Fable's decision (7)): the help-page form (`app/portals/src/help.rs`, after T748) gains a required email field (labelled, `type=email`, `autocomplete=email`, its error shown and announced as the form's other errors are, A11Y-030); a form sent without a valid address is shown again with the error and opens nothing; a valid one goes through T742's `intake::api::receive_help_form_from`, so the owner's reply to a form request goes by email as a help email's does, and only then may the confirmation say a reply will come by email (copy panel, cold read). These cases go in `tests/security/tests/owner_help_email_reply.rs`. Update the `portals` `NOTES.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4726 (split from T530 after Opus review round 1). OPS-036 (`docs/spec/ops-recovery.md:40`) sends the owner's reply \"by text under quiet hours to a homeowner who can be texted, and otherwise by email, always by email to a business on email\"; T530 sends only the text to a homeowner `intake::api::may_text` allows and refuses every other asker with a line saying the reply must go by email. This task makes the reply box on T530's page (`app/portals/src/owner_help.rs`) send those: (1) by email, through `messaging::api::queue_email` with the same words (\"Laftly: Reply from the Laftly owner: <text>\", screened as T530 screens them), to a business on email, to a homeowner who cannot be texted (her vault email, read under a purpose that allows it on a bare connection, never inside a transaction), and to a help email's asker at the address T742 seals in the vault and ties to the request (`asker_id` of an `email` request; read only, on a bare connection; a request with no ID (a help-page form request opened before this task) or whose address T742's purge cleared gets no email and the page says so); this task only reads T742's work; (2) by text to a business on text once T573 sends business rows by line ID (`app/messaging/src/outbox_sender.rs:18`, D-2042), addressed as T573 addresses business texts; a business help request opened from the portal with no phone gets email. A reply that can go neither way is refused with the reason, storing nothing. The words are kept and `ops::api::add_owner_reply` is called as T530 does, in the same transaction as the queue. Tests in the new `tests/security/tests/owner_help_email_reply.rs`, fake data only; in T530's `tests/security/tests/owner_help_reply.rs` only the refusal cases for askers this task now serves change, each to the send and citing D-4726. (3) Plan change D-4748 (Fable's decision (7)): the help-page form, whose markup is `app/site/templates/help.html:28` to `:39` (after T748 and T609; it already has an optional `email` field at `:33` to `:34`), served by T309's `POST` route in `app/server/src/help_forms.rs` and handled by `app/portals/src/help.rs`, makes that field required (labelled, `type=email`, `autocomplete=email`, `required`, its error shown and announced as the form's other errors are, A11Y-030); a form sent without a valid address is shown again with the error and opens nothing; a valid one goes through T742's `intake::api::receive_help_form_from`, so the owner's reply to a form request goes by email as a help email's does, and only then may the confirmation say a reply will come by email (copy panel, cold read). These cases go in `tests/security/tests/owner_help_email_reply.rs`. T309's `app/server/tests/help_forms_route.rs` and `tests/e2e/help_forms_served.spec.ts` and T748's `app/portals/src/tests/help_form_reply.rs` change only where they post the form without an email or forbid the reply wording this task now allows, each change citing D-4748 (the logged spec change that makes the email required). Update the `portals` `NOTES.md` and `docs/decisions.md`.",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -48357,7 +48421,9 @@
     "T530",
     "T573",
     "T742",
-    "T748"
+    "T748",
+    "T309",
+    "T609"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -48370,7 +48436,12 @@
     "app/portals/src/owner_help.rs",
     "tests/security/tests/owner_help_email_reply.rs",
     "tests/security/tests/owner_help_reply.rs",
-    "app/portals/src/help.rs"
+    "app/portals/src/help.rs",
+    "app/site/templates/help.html",
+    "app/server/src/help_forms.rs",
+    "app/server/tests/help_forms_route.rs",
+    "tests/e2e/help_forms_served.spec.ts",
+    "app/portals/src/tests/help_form_reply.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -48394,8 +48465,8 @@
    ],
    "cites": [],
    "budget": {
-    "files": 4,
-    "lines": 520,
+    "files": 9,
+    "lines": 700,
     "context_pct": 18
    },
    "checks": [
@@ -48532,66 +48603,6 @@
    "branch": "claude/task/T743-suppression-rekey",
    "prompt": "kit/prompts/T743.md",
    "acceptance": "`tests/integration/tests/suppression_rekey.rs` passes against PostgreSQL with every listed case; `tests/integration/tests/suppression_key_versions.rs` and `tests/integration/tests/optout_number_lock.rs` pass unchanged; no log line, error or audit row holds a phone or a digest."
-  },
-  {
-   "id": "T744",
-   "slug": "final-status-ends-picks",
-   "title": "picks: a job that reaches a final status ends its pick awaiting Confirm or in Payment pending and cancels the PaymentIntent",
-   "goal": "Plan change D-4748 (Fable's decision (4); FEE-021, PICK-038; D-4361, D-4349, D-1576). After T681, `jobs::service::move_to` queues one `jobs.final_status` task `{job, status}` when a job enters a final status and its handler in `app/picks/src/aftermath.rs` sends `no_longer_active` (`:319`); a pick still awaiting Confirm or in Payment pending on that job is left as it was, so its Confirm window, reminders and open PaymentIntent outlive the job and a late payment is caught only by the Left-and-refund path (FEE-021). This task, after T681: (1) the new `app/picks/src/final_status_end.rs` `end_for_final(tx, job, status, at)`, called by that handler in the same transaction before `no_longer_active`, ends the job's pick in `awaiting_confirm` (recorded ended, no charge, its queued Confirm reminders and window end then acting on nothing, as `cant_take` leaves them) and in Payment pending through T663's `picks::api::end_pending` with a new reason `job_final` (added in `app/picks/src/connect.rs`), which ends the PaymentIntent through `payments`' own pick end so it is cancelled at Stripe and a charge that still succeeds is refunded (FEE-021, D-2958); a pick already `paid`, `free` or ended is untouched; the job is not moved again (it is already final) and no backup is offered (the job is over). (2) A second delivery of the same task finds nothing to end and sends nothing twice (the shared dedupe key, D-1576). The Left-and-refund path is unchanged and stays the backstop. Tests in the new `tests/integration/tests/final_status_pick_end.rs`, PostgreSQL and the Stripe stand-in, fake data only: a job the homeowner closes with a pick awaiting Confirm ends the pick and no reminder or Confirm-end task acts after; a job cancelled in Payment pending cancels its PaymentIntent once and a late `payment_intent.succeeded` is refunded; a paid pick is untouched; a replayed task changes nothing. T681's `tests/integration/tests/aftermath_notices.rs` passes unchanged. Money: Opus worker, Opus money, privacy and security review, two review rounds. Update the `picks` notes, `docs/architecture.md` and `docs/decisions.md`.",
-   "type": "build",
-   "phase": 1,
-   "stage": "5",
-   "module": "picks",
-   "deps": [
-    "T681"
-   ],
-   "model": "claude-opus-5-5",
-   "effort": "high",
-   "reviewer_model": "claude-opus-5-5",
-   "review_areas": [
-    "money",
-    "privacy",
-    "security"
-   ],
-   "owns": [
-    "app/picks/src/final_status_end.rs",
-    "app/picks/src/aftermath.rs",
-    "app/picks/src/connect.rs",
-    "tests/integration/tests/final_status_pick_end.rs"
-   ],
-   "reads": [
-    "docs/architecture.md",
-    "docs/code-docs.md",
-    "docs/spec/fees.md",
-    "docs/spec/quotes-pick.md",
-    "docs/spec/lifecycle.md"
-   ],
-   "requirements": [
-    "FEE-021",
-    "PICK-038"
-   ],
-   "tests": [],
-   "decisions": [
-    "D-1576",
-    "D-2958",
-    "D-4349",
-    "D-4361",
-    "D-4748"
-   ],
-   "cites": [],
-   "budget": {
-    "files": 4,
-    "lines": 400,
-    "context_pct": 16
-   },
-   "checks": [
-    "Ci",
-    "Twin",
-    "Ally"
-   ],
-   "branch": "claude/task/T744-final-status-ends-picks",
-   "prompt": "kit/prompts/T744.md",
-   "acceptance": "`tests/integration/tests/final_status_pick_end.rs` passes against PostgreSQL and the Stripe stand-in; `tests/integration/tests/aftermath_notices.rs` and every pick-ending test pass unchanged; no PaymentIntent of a final job stays open."
   },
   {
    "id": "T746",
@@ -48731,7 +48742,7 @@
    "id": "T748",
    "slug": "help-form-no-reply-promise",
    "title": "portals: the help-page form's confirmation promises no reply while the form collects no address",
-   "goal": "Plan change D-4748 (Fable's decision (7), its interim part; OPS-036, WORD-029). The help-page form (`app/portals/src/help.rs`) collects no address and opens its request with no asker ID (`receive_help_email(db, &site_email(message), now)`, `:384`), so the owner's reply cannot reach its sender until T742 and T740 add the required email field; yet its confirmation (`help_form_page`, `:433` to `:439`) says \"Replies usually come within 2 days, or within 24 hours if your request is urgent.\" This task makes the confirmation promise no reply: the line becomes \"The <brand> owner has your message. In an emergency, call 911.\" (the brand from the brand file as today; the copy panel and the cold read may tighten the words, never to say or imply that a reply will come), on every screen that shows it (`Sent` and `OptedOut`); nothing else changes. A unit test in the new `app/portals/src/tests/help_form_reply.rs` (registered in the shared `app/portals/src/tests/mod.rs`) renders each screen and asserts that no line says \"Replies\", \"reply within\", \"within 2 days\" or \"within 24 hours\", and that the 911 sentence stays. `check_copy.py` and `check_ai_smell.py` pass. Update `docs/decisions.md`.",
+   "goal": "Plan change D-4748 (Fable's decision (7), its interim part; OPS-036, WORD-029). The help-page form (`app/site/templates/help.html:28` to `:39`, handled by `app/portals/src/help.rs`) has an optional email field but the handler discards it and opens its request with no asker ID (`receive_help_email(db, &site_email(message), now)`, `:384`), so the owner's reply cannot reach its sender until T742 and T740 add the required email field; yet its confirmation (`help_form_page`, `:433` to `:439`) says \"Replies usually come within 2 days, or within 24 hours if your request is urgent.\" This task makes the confirmation promise no reply: the line becomes \"The <brand> owner has your message. In an emergency, call 911.\" (the brand from the brand file as today; the copy panel and the cold read may tighten the words, never to say or imply that a reply will come), on every screen that shows it (`Sent` and `OptedOut`); and the form's optional email field label (`app/site/templates/help.html:33`, \"Your email for our reply (optional)\"), which the handler discards today (`site_email` keeps no sender), becomes \"Your email (optional)\" so it promises no reply either; nothing else changes. A unit test in the new `app/portals/src/tests/help_form_reply.rs` (registered in the shared `app/portals/src/tests/mod.rs`) renders each screen and asserts that no line says \"Replies\", \"reply within\", \"within 2 days\" or \"within 24 hours\", and that the 911 sentence stays. `check_copy.py` and `check_ai_smell.py` pass. Update `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -48748,6 +48759,7 @@
    ],
    "owns": [
     "app/portals/src/help.rs",
+    "app/site/templates/help.html",
     "app/portals/src/tests/help_form_reply.rs"
    ],
    "reads": [
@@ -48768,9 +48780,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 2,
+    "files": 3,
     "lines": 120,
-    "context_pct": 15
+    "context_pct": 19
    },
    "checks": [
     "Ci",
