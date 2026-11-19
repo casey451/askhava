@@ -1,6 +1,6 @@
 # Decisions in force
 
-Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D-4447), shaped by `docs/reviews/decision-digest-plan.md` and checked by `python3 scripts/check_decision_digest.py`. One line per rule in force; the log keeps the full entry (`grep -n '^- \*\*D-####\*\* ' docs/decisions.md`). "The brand" is Laftly (D-3347); older entries say Ask Hava.
+Through D-2406. Reader layer over the append-only `docs/decisions.md` (D-3856, D-4447), shaped by `docs/reviews/decision-digest-plan.md` and checked by `python3 scripts/check_decision_digest.py`. One line per rule in force; the log keeps the full entry (`grep -n '^- \*\*D-####\*\* ' docs/decisions.md`). "The brand" is Laftly (D-3347); older entries say Ask Hava.
 
 ## Product and scope
 
@@ -67,6 +67,7 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1710 (wording) A sign-up count of one says "the first <trade> business"; two or more use the spec's words exactly.
 - D-1817 (wording) No homeowner template says "Reply YES" (CON-004 guard); a yes/no question says "Text back YES or NO".
 - D-1959 (wording) Quote-form fee lines: "If picked, this quote's fee is $<fee> (<how> $<basis>)", ", capped at" for the recurring cap, one line per tier, "No introduction fee for this job." when fee-free; hourly with no hours shows no fee.
+- D-2389, D-2393 (wording) Brand name forms: a text opening or email subject is `<short_name>:`; a name inside a sentence `display_name`; email footers, the recruiting footer and call greetings `legal_name`; links `domain`; each in the message's language.
 
 ## Homeowner intake
 
@@ -113,8 +114,9 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1198 (intake) INT-021 holds: with no AI wired every intake step runs at once on keyword rules; INT-023's call-back is due in 24 h when urgent, else `CALL_BACK_DAYS` 4, and raises one `intake.call_back(_urgent)` alert per request.
 - D-1274, D-1278, D-1279 (intake) Card approval is `intake_answer` rows under `card.<job>` (`shown.<digest>.<show>`, `edit`, `sent.<digest>`), latest wins; approval queues one `intake.cards_approved` task; the sender sends only what `approved_card` holds; the 30-minute wait starts at delivery; a failed text never auto-approves.
 - D-1276 (intake) Card replies are the whole message: SEND/OK/YES/ENVIAR approve the last shown card, EDIT/CAMBIAR stop its timer and ask what to change; nothing goes until the new card is shown; an approved card is never shown again.
-- D-1751 (intake) A first-text `PhoneTaken` race re-reads the phone in the same transaction and continues with the winner; finding none rolls back the whole delivery so Twilio resends.
-- D-1752 (intake) Inbound text is scrubbed with the vault name and the contact's stated names (`privacy.stated_name`) by `read_inbound_for`, which returns no plaintext and so may run inside the delivery's transaction.
+- D-1751, D-2039 (intake) A first-text `PhoneTaken` race re-reads the phone in the same transaction and continues with the winner; finding none rolls back the whole delivery so Twilio resends; a business phone's STOP calls `phone_stopped` in the delivery's transaction.
+- D-1752, D-2087, D-2088 (intake) Inbound text is scrubbed with the vault name and the contact's stated names (`privacy.stated_name`) by `read_inbound_for` inside the delivery's transaction; a vault `Database` or `Audit` error is a 500; any other runs STOP and HELP on a plain read and never reaches intake or the AI.
+- D-2202 (intake) Address patterns stripped before the emergency check match street words in any case; no market's street names go in a word list (market values come from data).
 
 ## Businesses and licensing
 
@@ -281,6 +283,10 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1820, D-1823 (jobs) Feedback page `/f/{token}` uses the quote-page token, open only while Done and within 30 days of close, else a bare 404; no rating column; removal and author marks are set once and never cleared.
 - D-1957 (quotes) `quotes.quote.quote_minutes` is 1 to 600; quote-form facts prefill from the last quote for the job type; a per-visit recurring price shows no fee until the form asks the schedule.
 - D-1973 (picks) Confirm reminders every `reminder_minutes` (60) business minutes from the window start while before its current end, recomputed after a HOLD; one landing at 8 p.m. waits for 8 a.m.
+- D-2014, D-2017 (matching) A settled pick (`picks::api::settle`: awaiting_confirm to paid or free) releases through the server's release sink, once per release row; `picks.line_retry` is queued only after the claim and opens a line only while the pick is still paid or free.
+- D-2330 (matching) `jobs.job_facts` holds append-only narrowing rows (category code, remaining job type codes), the first written in the card-send transaction; a later row only narrows (same category, subset).
+- D-2332 (matching) A tiers quote is picked on the page with one named tier stored on `picks.pick`; the fee uses that tier's price, no default; a text pick of a tiers quote stores nothing and replies with the quote-page link.
+- D-2334 (matching) Quote text is bounced if either the line view or a whitespace-folded view of the whole field is cut (notes, original wording, tier names); cards keep their lines.
 
 ## Money
 
@@ -306,7 +312,7 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-197 (money) Fees stay $25 / $75 / $199 (FEE-001); $39 not adopted.
 - D-204, D-223 (money) TERMS-022 and BIZ-027 promise replies within 4 calendar days (settings, blocking nothing); FEE-041 is an optional business-set monthly fee limit.
 - D-225 (money) FEE-031: every receipt says "Tax included." and links a "Why was I charged?" page for that charge.
-- D-229 (money) FEE-027: the dispute evidence pack goes to Stripe automatically 2 days before the due date unless Casey sent it.
+- D-229, D-2204 (money) FEE-027: the dispute evidence pack goes to Stripe automatically 2 days before the due date unless Casey sent it; each submit marker commits with its effect; `picks.dispute_opened` gathers the facts and runs again at the due date less 2 days.
 - D-236 (money) TXT-030: after a first unanswered business call the homeowner gets one text; the unreachable refund fires only if it (or its email) went out.
 - D-243 (money) For email contact, at 72 hours the homeowner is asked whether the business emailed; YES stops the refund and close.
 - D-251 (money) OPS-031 flags a trade where over 30% of connected jobs end NO or OTHER for 2 months; any credit is Casey's decision.
@@ -328,7 +334,7 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1420 (money) Repeat customer: the caller passes her other linked jobs; `Repeat` when the ledger shows the same business introduced on one; checked before the free win; nothing after the 180-day purge.
 - D-1424, D-1425 (money) One PaymentIntent per pick (unconfirmed create, confirm per press through `IntentStripe`), keys HMAC-derived; one attempt row per press; no new try while one is undecided or until Stripe says it failed.
 - D-1426 (money) Card-fix window 1 business hour (60 clock min on an emergency); the first unanswered Stripe call starts a 4-hour release; timers end a pick only on Stripe's word, else recheck in 5 min.
-- D-1427, D-1758 (money) Charges pause while the `charging` or `all` switch is on (`pause_watch` syncs timers each minute); the monthly fee limit (Arizona month, at the limit is charged) is a hard cap, checked under a lock with undecided attempts reserved, and ends an over-limit pick with no Stripe call.
+- D-1427, D-1758, D-2081, D-2083 (money) Charges pause while the `charging` or `all` switch is on; the monthly fee limit (Arizona month of the press; at the limit is charged) is a hard cap: `begin_attempt` locks the pick, then `fee_limit`, counting reserved, paid and open bank-approval tries; an over-limit pick ends with no Stripe call.
 - D-1428, D-1557 (money) `payments` sends nothing itself: it queues `card_needs_fix` and `receipt` tasks that `picks` turns into `messaging` notices to `notice_addresses(Money)`.
 - D-1474, D-1478 (money) `payments.charge_evidence`: one append-only row per pick, IDs and times only, written with the success, holding the latest authorization version at the press; a success on an ended pick releases nothing (reconcile refunds).
 - D-1476 (money) `IntentText::for_job` builds the description "<brand> introduction service, job <n>" and descriptor `ASKHAVA* JOB <n>` (at most 22 characters).
@@ -336,16 +342,21 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1494, D-1532 (money) No early-joiner price lock (FEE-040 withdrawn): every business pays the published fee at the pick; no fee function takes a join date (TD-FEE-41 source check); no text may imply joining early locks prices (WORD-032).
 - D-1497 (money) Free first jobs stay as built until Casey chooses a branch (one per business ever, or two for self-serve).
 - D-1527, D-1528, D-1529, D-1531 (money) Refund rules are pure (facts from `picks`), one key per pick; attempts count within 72:00:00, in business hours unless emergency, 3 h apart; an answered call blocks a refund or no-show; nothing charged, no refund; T191 words the email.
-- D-1542, D-1545, D-1546, D-1753 (money) One `payments.refund` row per charged pick under the pick lock; hourly tries replay the last key first; a disputed charge blocks; alert on first failure only; the ledger `refund` only on Stripe `succeeded`, a later failure appends a `refund-reversal`.
+- D-1542, D-1545, D-1546, D-1753, D-2067 (money) One `payments.refund` row per charged pick under the pick lock; hourly tries replay the last key; a disputed charge blocks; first-failure alert only; ledger `refund` only on Stripe `succeeded`, a later failure appends a `refund-reversal`; a pending one is re-read every 30 minutes, never resent.
 - D-1543, D-1544 (money) A dispute is recorded once per `dp_…` with its $15 ledger fee and a High alert; auto-submit only when `picks` marks it (48 h before due); the evidence pack holds no contact; refund and dispute rows are never deleted.
-- D-1547 (money) A success after the job moved on: `picks` calls `late_success`, which queues one refund task and one High alert per pick through `request_refund`.
+- D-1547, D-2290 (money) A success after the job moved on: `late_success` queues one refund (trigger `late-success`) and one High alert per pick through `request_refund`, exactly once whether the webhook, the charge check or both see it.
 - D-1552, D-1553, D-1554, D-1555 (money) Nightly reconcile reads 7 days of charges, auto-matches known picks, refunds unknown, closed or second charges (never disputed), alerts once per unknown charge, never stops on one.
 - D-1558 (money) The FEE-033 tier-edge flag is a pure rule (5%, 3 of the last 10 bases by default) with no caller until a basis is stored at the pick.
-- D-1754 (money) Stripe webhook events are recorded by ID in `payments.webhook_event`, one effect per event; refund, dispute and fraud events reach their handlers; only the Confirm page's CSP allows `js.stripe.com`.
+- D-1754, D-2071, D-2072, D-2073, D-2289 (money) Stripe events are recorded by ID in `payments.webhook_event` (a known ID answers 200); a `succeeded` refund is re-read from Stripe; a signed event the route cannot read gets a row and one High alert; an event arriving before its record answers 500; only Confirm's CSP allows `js.stripe.com`.
 - D-1814, D-1819, D-1836 (money) Unreachable refund: `picks` decides, `payments` refunds; close, pick end and email only on Stripe `Succeeded`; a call's start is recorded (a lost start uses its end and counts as an attempt); a no-show ends a paid or free pick.
 - D-1871 (money) Fee terms live in `payments.fee_terms`; the fee fixed at the pick (`payments.pick_fee`) is the only amount charged; a differing press is refused before Stripe; a pick made under another fee mode ends with no fee, not counted against the business.
-- D-1872 (money) A charge the reconcile cannot settle goes to `payments.reconcile_open` and is retried nightly until settled; one High alert after 7 days open; `LOOKBACK` stays 7 days.
+- D-1872, D-2304 (money) A charge the reconcile cannot settle goes to `payments.reconcile_open` and is retried nightly until settled, one High alert after 7 days open; each run reads, paged, every charge since the earlier of now less 7 days and the last finished run less 1 day; a gap over 2 days alerts.
 - D-1912, D-1915 (money) Billing page and CSV show only the business's money (no processing, dispute-fee or payout lines); refunds, credits and disputes are negative so the amount column sums to the net paid.
+- D-2016 (money) The Stripe webhook needs `ASKHAVA_STRIPE_WEBHOOK_SECRET` (unset: no route in dev and CI, an error in test and live); `ASKHAVA_ADAPTER_MODE_STRIPE` is `live` only and always in live; errors name the key, never a value.
+- D-2302 (money) `no_fee_release` reads the pick's `payments.pick_fee` row and refuses when it is missing or names another business or job; the $0 ledger entry is checked against that row's pair.
+- D-2303 (money) Only full refunds; a succeeded refund in USD whose reported amount differs is booked at Stripe's amount with a High alert and no "refunded in full" notice; another currency or a missing amount books the charge amount with an unconfirmed alert.
+- D-2331 (money) Fee facts come from the job's latest `job_facts` row resolved through `catalog`; a non-emergency job with no row, unknown code or mixed categories is refused at the pick; an emergency proceeds on one-time defaults with a High alert; any fee-free candidate makes the pick fee-free.
+- D-2333 (money) A per-visit price needs its visit schedule (weekly, every two weeks, monthly, quarterly, yearly); any other schedule is entered as a monthly amount; the pick maps visit and schedule to the fee period.
 
 ## Privacy and the contact vault
 
@@ -389,6 +400,11 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1801, D-1802 (privacy) The 3-year text stage deletes `intake.intake_answer` rows; ledger, payment, audit and terms rows hold IDs only and are never purged by the app.
 - D-1803, D-1841 (privacy) Purge deletes sealed photo objects, orphans and day-31 Twilio bodies through additive `StorageDelete` and `SmsBodyDelete`; `write_once` publishes a private temp file by hard link; `photos/` has its own key.
 - D-1936, D-1937, D-1939 (privacy) A homeowner copy or delete request is an audit row acted on once, only with a correct code, within 30 days; the delete and its audit commit together; a download holds only her items, business contacts masked.
+- D-2091, D-2092, D-2201 (privacy) Masked calls route only on the stored `calls.number_pool.pin`; a wrong PIN try counts once per CallSid and try, capped at 6 per caller digest per Arizona day; the read-back's line is stored and only that line, still open, connects on confirm.
+- D-2150, D-2153 (privacy) Contact purges lock the global retention advisory key (holds share it), then the homeowner row, then the vault row; a purge kept back only by an unfinished hold-producing task clears nothing and re-queues itself an hour later.
+- D-2156 (privacy) Text bodies are removed by Twilio redaction (empty `Body`), keeping the delivery record; adapter delete methods are additive traits taking an `IdempotencyKey`; an absent object or unknown message counts as nothing left.
+- D-2160, D-2161, D-2162 (privacy) Photo-object and text-body deletes are `core.task`s queued after the row delete commits (the dedupe key is the done record); bodies 31+ days old are redacted daily; an orphan object goes 24 h after a sweep first sees it; a 10th failed try raises one High alert.
+- D-2205 (privacy) Feedback words are blanked once (`body_purged_at`, trigger refuses other changes) at the purge's text stage and in "Delete my data"; the row, share tick and removal marks stay; the download masks bare domains and split digit runs.
 
 ## Texting and email
 
@@ -475,6 +491,11 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1851, D-1852 (texting) The message log takes each text's language from its rendered body and its request from `subject_ids`; no new columns.
 - D-1853, D-1854, D-1855 (texting) A daily `messaging.cut_bodies` task fails rows still queued or sending 30 days on (not through `give_up`); opt-out events keep the inbox ID as evidence.
 - D-1938 (texting) The homeowner portal switch only turns texts off; only START lifts a listing.
+- D-1992 (texting) `messaging.notice_log` keeps one row per business notice per address (opaque mailbox, provider status read from `email_event`); first open is stamped by the notice's own link page, never a pixel, redirect or open tracking.
+- D-2203 (texting) An `emergency: true` business notice passes the night hold, with CARD-021's subject and first line; its recipients were already chosen under QH-004 and BIZ-037.
+- D-2185 (texting) Line mode is append-only `messaging.mode_state` (latest row per audience); no row means homeowner line on, business line off; Casey records suspensions and restores; a suspended line cannot switch on; web-and-email launch switches texting off.
+- D-2186, D-2187, D-2189 (texting) A 911-list emergency text while the homeowner line (or Casey's texting pause) is off turns on the banner and queues `messaging.paused_safety`: INT-004 by email, else Casey's call list; an opted-out number gets the same follow-up, never a voice call.
+- D-2307 (texting) An inbox row failed for a transient reason is retried 3 times (5 min, 30 min, 2 h) by reading the body back from Twilio, never stored or logged; opt-out and HELP always run; a newer processed row from the sender closes it; sends follow quiet hours.
 
 ## AI
 
@@ -483,7 +504,7 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-412 (ai) AI may run on scrubbed text before zero retention once the account checklist records the API terms and the policy says so, behind an owner switch off by default; photos go to AI only after zero retention.
 - D-559 (ai) `schemas/intake_reading.json`: closed, all-required fields (trade, job type, confidences, emergency, urgent, language, major, missing_info), no rental; trade and job type checked in code.
 - D-810, D-814, D-1362 (ai) No retry without `retry-after`; a 400 alerts as a spend limit; AI text is normalized then screened with `privacy::api::is_format`, the scrubber's own list; `missing_info` (at most 8) is never sent.
-- D-811 (ai) Defaults: 20 s timeout, 2,000 calls a day, `claude-haiku-5-5`; length caps 320, 1,200, 4,000; AI alerts are High, once a day per kind.
+- D-811, D-2038 (ai) Defaults: 2,000 calls a day, `claude-haiku-5-5`; a call a homeowner's reply waits on has one 3 s budget (1 to 5) with retries inside, then the AI-off path; no connection or transaction is held while an AI call is awaited (AI-029); length caps 320, 1,200, 4,000; AI alerts High, once a day per kind.
 - D-812 (ai) The request sends `schemas/intake_reading.json` exactly; a schema the API refuses changes only by logged plan change.
 - D-841 (ai) In live the AI runs only with zero retention signed or the switch on with every AI-008 condition met, checked on each call; else keyword-only.
 - D-842, D-843 (ai) `ai.reading` has no text column; trade and job type go only off-database as code names; the weekly summary is code-built counts.
@@ -493,6 +514,7 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1112 (ai) AI quote summaries default Off; `check_summary` rejects any new word or number, reordering, or a dropped clause end, number or negation; `switch_on` needs a decision ID and a published policy holding AI-018's sentence; no summary column exists.
 - D-1757 (ai) The global daily AI cap is an atomic per-Arizona-day reservation before each call; the cap alert goes once a day.
 - D-1794, D-1795 (ai) A flagged or unscreened photo is left off the card, never blurred; photo screening calls the AI only once zero retention is signed and the photo sentence is live, after cleaning and her confirmation.
+- D-2065 (ai) AI endpoint: `ASKHAVA_ADAPTER_MODE_AI` `stand_in` (loopback only, refused in live) or `api` (only `https://api.anthropic.com`, refused in dev and ci); the key is a secret sent only as `x-api-key`; a missing key in live starts AI-off with a high alert.
 
 ## Pages and accessibility
 
@@ -513,6 +535,8 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1603 (pages) The page pick allows 500 codes a day app-wide; its Terms are `docs/legal/homeowner-terms.md` compiled in, versioned from its second line, so the stored hash matches the text served.
 - D-1728, D-1772, D-1788 (pages) No `.route` for an unserved page in `app/`; the serving task writes it in `server` and adds its states to the shared, data-only `tests/a11y/page_states.ts`; `fixtures.ts` keeps the checks.
 - D-1868 (pages) `docs/architecture.md` section 13 is the route table; `app/server/tests/route_wiring.rs` fails a `yes` row not served or a task row served.
+- D-2117, D-2128 (pages) Built pages are served by `server` composition files (business portal `/b` T300, others T301 to T310): a wrong or missing realm gets a 4xx linking that realm's sign-in, another account the one not-found with no vault read; `no-store`; POSTs refuse cross-site and check CSRF.
+- D-2269, D-2270 (pages) `docs/architecture.md` section 13 lists one row per served or path-fixed route (`Wired` `yes` or the queued task); `route_wiring.rs` probes each; the task that wires a route adds its row or marks it `yes`.
 
 ## Security
 
@@ -556,6 +580,12 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1950, D-1953 (security) Rate limits go through `intake::api::admit` over `core.rate_limit`, narrowest first, keyed by IP, record ID or everyone, never a phone or email; one alert per scope and window (per-phone Normal, others High).
 - D-1951, D-1954 (security) Each route's owner calls its `admit_*` first and does nothing on a refusal; unknown and known numbers spend the same counter writes.
 - D-1955, D-1956 (security) Email action links live in `portals.login_link`, hashed with kind and object, single use, voided with the member, never a sign-in; each action has its role; Confirm without a session needs a code.
+- D-2144 (security) `.cargo/audit.toml` ignores RUSTSEC-2026-0459 (`libsqlite3-sys`, never built: sqlx is Postgres-only) with its proof; remove when sqlx allows `libsqlite3-sys` 0.39 or later, review by 2027-01-31.
+- D-2206 (security) Every served route calls its `admit_*` limit first; a new request by text is admitted in the delivery's transaction; a business's public name is read from its license record at call time and screened, never stored.
+- D-2208 (security) Live and sandbox refuse to start without an explicit, proved `ASKHAVA_CLIENT_IP_HEADER`; a panic answers 500 with security headers, no panic text; the base URL has no path; CON-022 rows go 1,827 days after a number's last message, except a suppressed number's opt-out records.
+- D-2306 (security) A daily `core.rate_limit_prune` deletes rate-limit windows older than the longest window plus a day, in batches of at most 5,000; rows holding client addresses are kept no longer than that plus about a day.
+- D-2347 (security) Every external `uses:` in every workflow is pinned to a full commit SHA with the version in a trailing comment (SEC-045); T121's test fails on any that is not.
+- D-2348, D-2349 (security) Every Verify code is bound to a stored challenge of its purpose (homeowner sign-in and requests: `portals.code_challenge`, 10 minutes, 5 tries reserved before Verify; business: one reserved `portals.code_send` per link); no connection or transaction is held across a Verify call.
 
 ## Operations
 
@@ -584,6 +614,7 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-734, D-735, D-737 (ops) Audit rows, request lines and AI readings stream off-database by a task queued in the writing transaction; the audit copy is hash-chained and checked nightly; request lines never delay a response.
 - D-1309 (ops) `ASKHAVA_PUBLIC_BASE_URL` is optional and https to a non-local host in live; unset means no Twilio routes in dev and CI and a start-up error in test and live.
 - D-1706 (ops) `ops::api::acknowledge_alert` resolves a critical alert with an audit row; a person answering the safety call acknowledges it.
+- D-2207 (ops) An inbound text stopped by a non-database error raises one body-free High alert; one open alert per kind and subject; security events are capped per kind, address and route per minute (never below 50); webhook 403s are security events; expired sessions swept daily.
 
 ## Code and architecture
 
@@ -615,7 +646,8 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1677, D-1875 (code) Migrations and query macros hold no dynamic SQL (`DO`, `EXECUTE` of a string, `format` or `quote_*`) except paths in `DYNAMIC_SQL_ALLOWED` with a reason (T252, TD-SEC-36).
 - D-1592 (code) `rules_bridge` (a `server` binary) answers the twin in JSON lines: fee, quiet_hours, transition, card, job_types; a hand-written schema and subset validator, no JSON-schema crate.
 - D-1643, D-1666 (code) A cargo-audit advisory in an unused transitive crate is fixed by a patch bump in `Cargo.lock`, never an ignore; follow-up: `sentry` with `default-features = false`.
-- D-1867 (code) Files compiled in by `include_*!` must match `Ci`'s Rust path rules and `RUST_PATHS`; `scripts/check_include_paths.py` fails otherwise.
+- D-1867, D-2248 (code) Files compiled in by `include_*!` (folders, or the single files `docs/copy/mail-app-steps.md` and `scripts/pii_scan.py`) must match `Ci`'s Rust path rules and `RUST_PATHS`; `scripts/check_include_paths.py` fails otherwise.
+- D-2285 (code) Every task kind the app can queue is registered in the production worker or listed in `tests/task_kinds_deferred.json` with owner and reason (only a harness task adds one); an hourly server check raises one High `core.task_no_handler` alert per kind.
 
 ## Testing
 
@@ -636,7 +668,7 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-557, D-561 (testing) `stand_ins/server.py` serves each vendor under a prefix with its own paths and errors; only stand-in credentials pass; vendor-side events use `/_stand_in/` paths.
 - D-558, D-560 (testing) The fake Twilio records `X-Askhava-Message-Key`; `stand_ins/provider_optout.json` holds CON-030's words and replies; headers select AI faults and plants.
 - D-647 (testing) `askhava-fixtures` makes deterministic fake data and never yields the sentinels ("Zelda Canary", `+19285550199`), so any find is a leak.
-- D-694, D-1759 (testing) `Ci` needs Checks and Coverage; floors of 95 for payments, fee rules, privacy and licensing; lowering a floor needs a decision naming it; a floored path missing from the report or an empty report fails; the total floor comes from a named `Ci` run less 2 points.
+- D-694, D-1759, D-2096 (testing) `Ci` needs Checks and Coverage; floors of 95 for payments, fee rules, privacy and licensing; lowering one needs a decision naming it; an empty report or a floored path it misses fails, unless the floor file's `future` list gives a reason; the total floor is a named `Ci` run less 2 points.
 - D-740 (testing) The test-control clock is system time plus a forward-only offset shared through a clock file.
 - D-741 (testing) Root TypeScript tooling is pinned and strict; specs import `test` from `tests/e2e/fixtures.ts`.
 - D-958 (testing) Playwright starts the app through `globalSetup` `tests/e2e/webserver.ts` (stand-in, build, migrate, worker, web); the per-run control secret is never printed.
@@ -653,6 +685,8 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1587 (testing) Named mutants cover the 4-month rule, tiers, free wins, the license at pick and card approval; the AI flag has no fee input to mutate, so it is noted, not faked.
 - D-1593, D-1594, D-1595, D-1596 (testing) The twin with `--bridge` takes fee, arrows and cards from `rules_bridge` (its 9 p.m. text close is a known gap); a fee probe fails on any difference; `python3 -m twin chaos` checks a baseline.
 - D-1896 (testing) Until a page is served, its e2e spec checks only the signed-out edge; the page's words are tested on the rendered template.
+- D-2209 (testing) Money and privacy files outside the floored crates get per-file floors (95 where measured at 95 or more, else measured less 2); a backup address is re-checked at confirmation; AI-019 counts an unknown sentence-start word unless it is on an opener list.
+- D-2350 (testing) The pentest's 38-case matrix (`docs/reviews/war-games-inputs/2026-11-09-pentest-matrix.md`, isolated, synthetic data only) is accounted for case by case: T234 maps each to a scenario or a stated skip; each round records its outcome.
 
 ## Runner and governance
 
@@ -730,8 +764,14 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1462 (runner) STATUS.md opens with Casey's dashboard (verdict, progress, lanes, tokens, needs attention, last 24 hours); failure text redacted.
 - D-1498 (runner) Plan changes that land before any affected task is claimed need no build hold; `build_hold` (Gate P) exists for when one is needed.
 - D-1678 (runner) Run `gen_prompts.py` in full and let its settled `context_pct` stand, done tasks included, so `--check --strict` and `plan_health.py --all` stay at zero.
-- D-1760, D-1835 (runner) `docs/integration-closure.md` registers cross-module handoffs; `stage_exit.py` fails open security, money or privacy rows owned only by finished tasks, unowned or closed without evidence; audit findings get dispositions files.
+- D-1760, D-1835, D-2101, D-2116 (runner) `docs/integration-closure.md` registers cross-module handoffs; `stage_exit.py` fails open security, money or privacy rows owned only by finished tasks, unowned, or closed without Evidence naming a commit or PR and a test; audit findings get dispositions files.
 - D-1869 (runner) A task whose owned files or route rows are missing on `main` at close still goes DONE, with an `owned_gap` mark and one outbox item.
+- D-1986 (runner) Workflow release downloads retry (`--retry 5 --retry-all-errors`) and keep every SHA-256 check; gitleaks falls back to a pinned `go install` checked by module hash; only the backup job's nightly and cargo-llvm-cov are best effort.
+- D-2007 (runner) The backup job warms the smoke build before the session (`python3 -m runner --warm-smoke`: smoke.sh's compile steps in `target/smoke`, 1,200 s cap, continue-on-error, always exits 0, no secrets).
+- D-2028 (runner) The start-routine smoke runs before the session (`python3 -m runner --pre-smoke`, 1,500 s, `target/smoke-pre.json`); the session uses it only when its job and SHA match main's fetched head, else runs smoke.sh itself.
+- D-2054 (runner) T242 lists every outbound vendor call site (texts, voice, Verify, email, Stripe, Lob, license sources, storage, AI) as holding a database connection across the await or not, with file:line; T297's overload scenario runs in every war-games round.
+- D-2200, D-2284, D-2301, D-2329, D-2346 (runner) Each outside audit (fourth to seventh, the pentest) gets one disposition line per finding (taken with its task and decision, already owned, or declined with a reason) in its `docs/reviews/2026-11-*-dispositions.md`.
+- D-2225 (runner) `kit/runner.json` `model_window` (model, alias, from, until, run_to_limit) sets the model of claims inside it, marked per attempt and judged on that mark; the session model comes from `--session-model`; `run_to_limit` holds claims only at a recorded or read 100% usage.
 
 ## Superseded
 
@@ -800,6 +840,7 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1039 -> D-1271
 - D-1040 -> D-1272
 - D-1041 -> D-1273
+- D-2210 -> D-2331
 
 ## Task-scoped
 
@@ -855,8 +896,11 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - T095: D-1612
 - T096: D-1807
 - T097: D-1811
+- T098: D-2029, D-2030, D-2031, D-2032
 - T147: D-1826, D-1827, D-1829
 - T148: D-1958
+- T149: D-1987, D-1988, D-1989, D-1990, D-1991
+- T150: D-2008, D-2009, D-2010, D-2011, D-2012
 - T156: D-1273
 - T168: D-621
 - T172: D-516
@@ -874,6 +918,7 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - T195: D-1916
 - T196: D-1848
 - T197: D-1971, D-1972, D-1974
+- T198: D-1993, D-1994, D-1995
 - T208: D-1227, D-1277
 - T213: D-1292
 - T217: D-795
@@ -883,6 +928,34 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - T240: D-1304
 - T246: D-1606
 - T253: D-1892, D-1894, D-1895
+- T254: D-2013, D-2015
+- T256: D-2040, D-2041, D-2042, D-2043
+- T257: D-2086, D-2089, D-2090
+- T258: D-2066, D-2068, D-2069, D-2070
+- T260: D-2076
+- T262: D-2093, D-2094, D-2095
+- T263: D-2082
+- T267: D-2106
+- T270: D-2145, D-2146, D-2147
+- T274: D-2151, D-2152, D-2154
+- T275: D-2155, D-2157, D-2158
 - T278: D-1842
+- T279: D-2188
 - T281: D-1845
-- T289: D-1873
+- T282: D-2129
+- T284: D-2271, D-2272
+- T285: D-2351
+- T286: D-2356, D-2357
+- T287: D-2211, D-2212, D-2236
+- T288: D-2361, D-2362, D-2363, D-2364
+- T289: D-1873, D-2366
+- T290: D-2371, D-2386
+- T292: D-2387, D-2388
+- T293: D-2392, D-2394
+- T326: D-2247
+- T328: D-2286
+- T329: D-2287
+- T330: D-2288
+- T335: D-2305
+- T338: D-2318
+- T344: D-2335
