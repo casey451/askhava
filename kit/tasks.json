@@ -33294,8 +33294,7 @@
     "T724",
     "T725",
     "T726",
-    "T727",
-    "T740"
+    "T727"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -37578,7 +37577,9 @@
     "T685",
     "T689",
     "T687",
-    "T713"
+    "T713",
+    "T740",
+    "T742"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -38049,7 +38050,9 @@
     "T685",
     "T689",
     "T687",
-    "T713"
+    "T713",
+    "T742",
+    "T740"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -47346,14 +47349,15 @@
    "id": "T740",
    "slug": "owner-help-email-reply",
    "title": "portals (harness): the owner's help reply by email (business on email, help-email askers, a homeowner who cannot be texted) and by text to a business (D-4726)",
-   "goal": "Plan change D-4726 (split from T530 after Opus review round 1). OPS-036 (`docs/spec/ops-recovery.md:40`) sends the owner's reply \"by text under quiet hours to a homeowner who can be texted, and otherwise by email, always by email to a business on email\"; T530 sends only the text to a homeowner `intake::api::may_text` allows and refuses every other asker with a line saying the reply must go by email. This task makes the reply box on T530's page (`app/portals/src/owner_help.rs`) send those: (1) by email, through `messaging::api::queue_email` with the same words (\"Laftly: Reply from the Laftly owner: <text>\", screened as T530 screens them), to a business on email, to a homeowner who cannot be texted (her vault email, read under a purpose that allows it on a bare connection, never inside a transaction), and to a help email's asker, whose address `ops.help_request` does not keep (`asker_id` is `None` for `email`, `migrations/0194_help_requests.sql:12` to `:13`): the task decides where that address is kept (the vault only, PRIV-001) and for how long, and logs it in `docs/decisions.md`; (2) by text to a business on text once T573 sends business rows by line ID (`app/messaging/src/outbox_sender.rs:18`, D-2042), addressed as T573 addresses business texts; a business help request opened from the portal with no phone gets email. A reply that can go neither way is refused with the reason, storing nothing. The words are kept and `ops::api::add_owner_reply` is called as T530 does, in the same transaction as the queue. Tests in the new `tests/security/tests/owner_help_email_reply.rs`, fake data only; in T530's `tests/security/tests/owner_help_reply.rs` only the refusal cases for askers this task now serves change, each to the send and citing D-4726. Update the `portals` `NOTES.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4726 (split from T530 after Opus review round 1). OPS-036 (`docs/spec/ops-recovery.md:40`) sends the owner's reply \"by text under quiet hours to a homeowner who can be texted, and otherwise by email, always by email to a business on email\"; T530 sends only the text to a homeowner `intake::api::may_text` allows and refuses every other asker with a line saying the reply must go by email. This task makes the reply box on T530's page (`app/portals/src/owner_help.rs`) send those: (1) by email, through `messaging::api::queue_email` with the same words (\"Laftly: Reply from the Laftly owner: <text>\", screened as T530 screens them), to a business on email, to a homeowner who cannot be texted (her vault email, read under a purpose that allows it on a bare connection, never inside a transaction), and to a help email's asker at the address T742 seals in the vault and ties to the request (`asker_id` of an `email` request; read only, on a bare connection; a request with no ID, from the help-page form, or whose address T742's purge cleared, gets no email and the page says so); this task only reads T742's work; (2) by text to a business on text once T573 sends business rows by line ID (`app/messaging/src/outbox_sender.rs:18`, D-2042), addressed as T573 addresses business texts; a business help request opened from the portal with no phone gets email. A reply that can go neither way is refused with the reason, storing nothing. The words are kept and `ops::api::add_owner_reply` is called as T530 does, in the same transaction as the queue. Tests in the new `tests/security/tests/owner_help_email_reply.rs`, fake data only; in T530's `tests/security/tests/owner_help_reply.rs` only the refusal cases for askers this task now serves change, each to the send and citing D-4726. Update the `portals` `NOTES.md` and `docs/decisions.md`.",
    "type": "harness",
-   "phase": 1,
-   "stage": "5",
+   "phase": 2,
+   "stage": "6",
    "module": "portals",
    "deps": [
     "T530",
-    "T573"
+    "T573",
+    "T742"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -47398,6 +47402,70 @@
    "branch": "claude/task/T740-owner-help-email-reply",
    "prompt": "kit/prompts/T740.md",
    "acceptance": "`tests/security/tests/owner_help_email_reply.rs` passes against PostgreSQL; each OPS-036 email case and the business text case is sent once with the reply's exact words; T530's `tests/security/tests/owner_help_reply.rs` passes with only its refusal cases for the askers this task now serves changed to sends, each change citing D-4726."
+  },
+  {
+   "id": "T742",
+   "slug": "help-email-asker-address",
+   "title": "intake, ops and privacy: a help email's sender address is sealed in the vault and tied to its help request, and purged with its words (D-4726)",
+   "goal": "Plan change D-4726 (Opus review round 2). OPS-036 (`docs/spec/ops-recovery.md:40`) answers a help email's asker by email, but nothing keeps the address: `privacy::api::read_inbound_email` returns no sender address by design (`InboundEmail`, `app/privacy/src/reader.rs:171` to `:184`; PRIV-026, only the blind index `sender`), `intake::api::receive_help_email` (`app/intake/src/handlers.rs:820`) opens the request as `Asker::Email` with no ID (`app/ops/src/help_requests.rs:45` to `:54`), and `ops.help_request` forces `asker_id` empty for `email` (`migrations/0194_help_requests.sql:13`). This task, before T740: (1) `app/privacy/src/reader.rs`: a new `privacy::api::help_sender(delivery, ctx) -> Result<SecretString, InboundError>` that verifies the delivery as `read_inbound_email` does (sharing its private parse, no second copy) and returns the `from` address as a `SecretString`, never logged or put in an error. (2) `app/intake/src/handlers.rs`: a new `intake::api::receive_help_email_from(db, vault, (email, sender), at)` for an authenticated help email only (an `OptOutOnly` sender opens nothing and stores nothing, PRIV-026): it stores the address as a new vault contact with `privacy::api::store_contact` (`app/privacy/src/vault.rs:383`; `NewContact { email: Some(sender), ..NewContact::default() }`, sealed like every contact field, PRIV-001; on a bare connection, before the help transaction) and opens the request as a new `ops::api::Asker::EmailFrom(contact)` (code `email`, ID the contact; it never joins another request, as `Email`); `receive_help_email` keeps its signature and behaviour for the help-page form (`app/portals/src/help.rs:384`, which collects no address, so its asker gets no email reply). (3) `migrations/0218_ops_help_email_sender.sql` replaces `ops.help_request`'s `asker_id` check with one that requires an ID for `homeowner` and `business` and allows one or none for `email` (check the next free migration number at claim time; `0215` to `0217` are taken on another plan branch). (4) Retention: the address is kept only as long as the request's words, the TXT-020 cut (`WORDS_KEPT_FOR`, 30 days, `app/privacy/src/message_body.rs:29`): a new daily task in `handlers.rs` (`intake.help_sender_purge`, registered in the shared `app/server/src/lib.rs`, deduplicated per Arizona day) clears, through `privacy::api::purge_contact` (`app/privacy/src/purge.rs:376`), the contact of every `email` request whose newest message is older than that window, and an audit row records each purge; after it, T740's page has no address and refuses the email reply. (5) The signed inbound-email route T133 builds hands help emails to `receive_help_email` (D-3155); this task switches that one call to `receive_help_email_from` with `help_sender`'s address; if the call sits in a file this task does not own and that is not a shared path, it is a plan gap to report. Tests in the new `tests/integration/tests/help_email_sender.rs`, PostgreSQL, fake addresses at `example.com` only: an authenticated help email stores one sealed contact whose email reads back under an allowed purpose and opens one `email` request with that ID; an `OptOutOnly` one stores nothing; the help form still opens a request with no ID; no log line, audit row, notification or `privacy.message_body` row holds the address; the purge clears the address after 30 days and not before. `tests/integration/tests/help_requests.rs` passes unchanged. Update `app/intake/CLAUDE.md`, `app/privacy/CLAUDE.md`, `app/ops/CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 2,
+   "stage": "6",
+   "module": "intake",
+   "deps": [
+    "T133",
+    "T704",
+    "T581",
+    "T600",
+    "T151"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/intake/src/handlers.rs",
+    "app/ops/src/help_requests.rs",
+    "app/privacy/src/reader.rs",
+    "migrations/0218_ops_help_email_sender.sql",
+    "tests/integration/tests/help_email_sender.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/ops-recovery.md",
+    "docs/spec/privacy.md",
+    "docs/spec/messaging.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "OPS-036",
+    "PRIV-026",
+    "PRIV-001"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-3155",
+    "D-3883",
+    "D-4726"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 550,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T742-help-email-asker-address",
+   "prompt": "kit/prompts/T742.md",
+   "acceptance": "`tests/integration/tests/help_email_sender.rs` passes against PostgreSQL with every listed case; `tests/integration/tests/help_requests.rs` and `tests/integration/tests/read_inbound.rs` pass unchanged; no log line, audit row, notification or kept message holds a sender address; the address is purged after the TXT-020 window."
   }
  ]
 }
