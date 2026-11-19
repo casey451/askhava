@@ -1,21 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-19T19:08:07Z by runner 599c4d8662c4 (actions).
+Updated 2026-11-19T19:13:38Z by runner 17e7cbdd4e1b (manual).
 
-**Building: T753 in progress since 19:06Z; 501 of 696 done; week 4% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T753 in progress since 19:06Z; 501 of 698 done; week 4% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 501 of 696 build tasks (owner gates not counted)
+- **Tasks done:** 501 of 698 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T753 claimed 19:06Z, lease until 22:06Z; lane 2: T161 claimed 17:58Z, lease until 20:58Z; lane 3: T307 claimed 17:47Z, lease until 20:47Z; lane 5: T607 claimed 17:15Z, lease until 20:15Z; lane 6: T480 claimed 17:18Z, lease until 20:18Z
 - **Week:** 4% used, 181.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:53Z, 14 min before this update
+- **Last run:** 19:10Z, 3 min before this update
 - **Keeper:** last ran 18:29Z, next wake 20:17Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T755 (since 2026-11-19T19:06:54Z, no attempt used; a plan change fixes it): T755: prompt kit/prompts/T755.md is missing; run scripts/gen_prompts.py; T755: branch claude/task/T755-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
-- Strict plan check red: 60 problem(s) on tasks still to run (+339 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 59 problem(s) on tasks still to run (+339 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -95,8 +95,8 @@ Updated 2026-11-19T19:08:07Z by runner 599c4d8662c4 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 330 of 735 (44.9%) · partial 368 · unstarted 37
-**Tasks merged (throughput only):** 501 of 695
+**Requirements verified:** 328 of 735 (44.6%) · partial 370 · unstarted 37
+**Tasks merged (throughput only):** 501 of 698
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -113,7 +113,7 @@ Updated 2026-11-19T19:08:07Z by runner 599c4d8662c4 (actions).
 | messaging | 22 | 22 | 1 | 45 |
 | ops-recovery | 9 | 27 | 18 | 54 |
 | privacy | 9 | 21 | 1 | 31 |
-| quiet-hours | 5 | 4 | 0 | 9 |
+| quiet-hours | 3 | 6 | 0 | 9 |
 | quotes-pick | 25 | 31 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
 | security | 11 | 39 | 5 | 55 |
