@@ -6,7 +6,8 @@
     once here (T102, D-3878): the "Homeowners" column (How it works, Services, Get quotes, Help;
     never a directory, events or /chat link, WEB-003), the tagline (WEB-004) and the
     not-a-contractor statement (WORD-002). base.html has no block after `main`, so the footer sits
-    at the end of `main` (D-3994). A Spanish page overrides the `footer` block. -#}
+    at the end of `main` (D-3994). A Spanish page overrides the `footer` block; the decorative
+    mark sits before it, so every footer keeps it (T216, D-4629). -#}
 {% block banner %}
 {%- if banner_shown %}
 <section class="site-banner" aria-label="Site status">
@@ -17,6 +18,7 @@
 {% block main %}
 {% block content %}{% endblock %}
 <footer class="site-footer">
+<svg class="mark" width="30" height="27" viewBox="0 0 446 399" aria-hidden="true" focusable="false"><use href="/static/site/brand/mark.svg#mark"/></svg>
 {% block footer %}
 <h2>Homeowners</h2>
 <ul>
