@@ -484,8 +484,12 @@ async fn td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number(pool: PgP
 }
 
 /// The kinds whose `POST` acts with a business session (T455, D-3675, D-3839).
-const SESSION_ACTS: [ActionKind; 3] =
-    [ActionKind::Pause, ActionKind::Resume, ActionKind::AskCharge];
+const SESSION_ACTS: [ActionKind; 4] = [
+    ActionKind::Pause,
+    ActionKind::Resume,
+    ActionKind::AskCharge,
+    ActionKind::Approve,
+];
 
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_sec_44_every_other_kind_post_is_not_found_and_uses_nothing(pool: PgPool) {
