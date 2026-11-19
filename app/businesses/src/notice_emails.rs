@@ -268,8 +268,11 @@ pub async fn run_notice_email<E: EmailAdapter + Send + Sync, P: NoticeParts>(
     let business = id(&task, "business")?;
     let mailer = mailer.ok_or(HandlerError(NO_ACCOUNT_SENDER))?;
     let mut db = pool.acquire().await.map_err(|_| FAILED)?;
-    let addresses = addresses(&mut db, &mailer, &task, business).await?;
-    let rows = store(&pool, &mailer, &task, (business, &addresses)).await?;
+    let Some((addresses, named)) = addresses(&mut db, &mailer, &task, business).await? else {
+        return Ok(());
+    };
+    let found = (addresses.as_slice(), named.as_ref());
+    let rows = store(&pool, &mailer, &task, (business, found)).await?;
     for (row, to) in rows {
         send(&mut db, &mailer, row, &to).await?;
     }
@@ -279,30 +282,59 @@ pub async fn run_notice_email<E: EmailAdapter + Send + Sync, P: NoticeParts>(
 /// A mailbox and its address, read before the transaction (D-4293).
 type OnFile = [(Uuid, SecretString)];
 
-/// D-752, D-4293: the address of each mailbox `task`'s email goes to, and `returned`'s gone one,
-/// read on the bare connection `db` before [`store`] opens its transaction; a mailbox with no
-/// address is left out, so [`queue`] or [`returned_plan`] then refuses it.
+/// The linking member's name and the linked phone's last 4 digits (`phone_linked` only).
+type Named = (String, String);
+
+/// D-752, D-4293, D-4587: the address of each mailbox `task`'s email goes to, and `returned`'s
+/// gone one, read on the bare connection `db` before [`store`] opens its transaction, and only
+/// after [`ready`] found the email can go; `None` (no address read) when it cannot. A mailbox with
+/// no address is left out, so [`queue`] or [`returned_plan`] then refuses it.
 async fn addresses<E, P: NoticeParts>(
     db: &mut PgConnection,
     mailer: &AccountMailer<E, P>,
     task: &Claimed,
     business: Uuid,
-) -> Result<Vec<(Uuid, SecretString)>, HandlerError> {
+) -> Result<Option<(Vec<(Uuid, SecretString)>, Option<Named>)>, HandlerError> {
     let team = members(db, business).await.map_err(|_| FAILED)?;
     let Some(owner) = team.iter().find(|m| m.owner).copied() else {
         return Err(HandlerError("the business has no owner"));
     };
     let (to, gone) = recipients(db, task, &team, owner).await?;
-    let mut found = Vec::new();
+    let Some(named) = ready(db, mailer, task, (&team, owner)).await? else {
+        return Ok(None);
+    };
     if to.is_empty() {
-        return Ok(found);
+        return Ok(None);
     }
+    let mut found = Vec::new();
     for mailbox in to.into_iter().chain(gone) {
         if let Some(address) = mailer.directory.address(db, mailbox).await? {
             found.push((mailbox, address));
         }
     }
-    Ok(found)
+    Ok(Some((found, named)))
+}
+
+/// SEC-024, BIZ-033, D-4587: the checks that can stop `task`'s email, run before any address is
+/// read: the payload is whole and, for `phone_linked`, the phone still waits on a current member
+/// whose name and digits are known (`Some(Some(..))`). `None` when nothing is to be sent.
+async fn ready<E, P: NoticeParts>(
+    db: &mut PgConnection,
+    mailer: &AccountMailer<E, P>,
+    task: &Claimed,
+    (team, owner): (&[TeamMember], TeamMember),
+) -> Result<Option<Option<Named>>, HandlerError> {
+    match task.kind.as_str() {
+        AFTER_HOURS_OFF_KIND => after_hours(task, &mailer.directory, false).map(|_| ())?,
+        LICENSE_CHANGE_KIND => license(task, false).map(|_| ())?,
+        PHONE_LINKED_KIND => return Ok(named(db, mailer, (task, team, owner)).await?.map(Some)),
+        BACKUP_CHANGED_KIND | SAMPLE_CARD_KIND | SAMPLE_PICK_KIND | CHANGED_KIND => {
+            id(task, "member")?;
+            listed(task, false).map(|_| ())?;
+        }
+        _ => {}
+    }
+    Ok(Some(None))
 }
 
 /// The address of `mailbox` among those read before the transaction.
@@ -320,14 +352,15 @@ async fn store<E, P: NoticeParts>(
     pool: &PgPool,
     mailer: &AccountMailer<E, P>,
     task: &Claimed,
-    (business, addresses): (Uuid, &OnFile),
+    (business, found): (Uuid, (&OnFile, Option<&Named>)),
 ) -> Result<Vec<(Uuid, SecretString)>, HandlerError> {
+    let addresses = found.0;
     let mut tx = pool.begin().await.map_err(|_| FAILED)?;
     let team = members(&mut tx, business).await.map_err(|_| FAILED)?;
     let Some(owner) = team.iter().find(|m| m.owner).copied() else {
         return Err(HandlerError("the business has no owner"));
     };
-    let Some(planned) = plan(&mut tx, mailer, (task, &team, owner), addresses).await? else {
+    let Some(planned) = plan(&mut tx, mailer, (task, &team, owner), found).await? else {
         return Ok(Vec::new());
     };
     let task_id = Uuid::from_u128(u128::from(task.id.unsigned_abs()));
@@ -354,7 +387,7 @@ async fn plan<E, P: NoticeParts>(
     db: &mut PgConnection,
     mailer: &AccountMailer<E, P>,
     (task, team, owner): (&Claimed, &[TeamMember], TeamMember),
-    addresses: &OnFile,
+    (addresses, named): (&OnFile, Option<&Named>),
 ) -> Result<Option<Planned>, HandlerError> {
     let parts = &mailer.directory;
     let kind = task.kind.as_str();
@@ -373,7 +406,8 @@ async fn plan<E, P: NoticeParts>(
             after_hours(task, parts, spanish)?,
         ),
         PHONE_LINKED_KIND => {
-            let Some(words) = linked(db, mailer, (task, team, owner), spanish).await? else {
+            let Some(words) = linked(db, mailer, (task, team, owner), (spanish, named)).await?
+            else {
                 return Ok(None);
             };
             ("business_phone_linked", words)
@@ -564,19 +598,27 @@ async fn owner_addresses(
         .collect())
 }
 
-/// BIZ-033, JOB-006: the phone-linked words with the member's name, the phone's last 4 digits and
-/// the owner's Approve link; `None` (nothing to send) when the linking member has left the team or
-/// the phone is no longer waiting (approved, declined, or dropped with its member, D-3640).
-async fn linked<E, P: NoticeParts>(
+/// BIZ-033, JOB-006, D-3640: whether phone `line` still waits and its linking `member` is still on
+/// the team (not approved, declined, or dropped with its member).
+async fn waiting(
+    db: &mut PgConnection,
+    team: &[TeamMember],
+    (member, line): (Uuid, Uuid),
+) -> Result<bool, HandlerError> {
+    let standing = phone_standing(db, line).await.map_err(|_| FAILED)?;
+    Ok(team.iter().any(|m| m.id == member) && standing == Some(false))
+}
+
+/// BIZ-033, D-4587: the linking member's name and the phone's last 4 digits, read before any
+/// address; `None` (nothing to send) when the phone no longer [`waiting`].
+async fn named<E, P: NoticeParts>(
     db: &mut PgConnection,
     mailer: &AccountMailer<E, P>,
     (task, team, owner): (&Claimed, &[TeamMember], TeamMember),
-    spanish: bool,
-) -> Result<Option<[String; 2]>, HandlerError> {
+) -> Result<Option<Named>, HandlerError> {
     let parts = &mailer.directory;
     let (member, line) = (id(task, "member")?, id(task, "line")?);
-    let standing = phone_standing(db, line).await.map_err(|_| FAILED)?;
-    if !team.iter().any(|m| m.id == member) || standing != Some(false) {
+    if !waiting(db, team, (member, line)).await? {
         return Ok(None);
     }
     let name = parts.member_name(db, member).await?;
@@ -587,13 +629,30 @@ async fn linked<E, P: NoticeParts>(
         .ok_or(HandlerError(
             "the linked phone's last 4 digits are not known",
         ))?;
+    Ok(Some((name, last4)))
+}
+
+/// BIZ-033, JOB-006: the phone-linked words with the `named` member's name and phone digits and
+/// the owner's Approve link; `None` (nothing to send) when the phone is no longer [`waiting`].
+async fn linked<E, P: NoticeParts>(
+    db: &mut PgConnection,
+    mailer: &AccountMailer<E, P>,
+    (task, team, owner): (&Claimed, &[TeamMember], TeamMember),
+    (spanish, named): (bool, Option<&Named>),
+) -> Result<Option<[String; 2]>, HandlerError> {
+    let parts = &mailer.directory;
+    let (member, line) = (id(task, "member")?, id(task, "line")?);
+    if !waiting(db, team, (member, line)).await? {
+        return Ok(None);
+    }
+    let (name, last4) = named.ok_or(HandlerError("the linking member's name is not known"))?;
     let now = mailer.clock.now();
     let link = parts
         .approve_link(db, (owner.business, owner.id, line), now)
         .await?;
     Ok(Some(phone_linked_words(
         spanish,
-        (&name, &last4),
+        (name.as_str(), last4.as_str()),
         link.expose_secret(),
     )))
 }

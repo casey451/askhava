@@ -15,12 +15,13 @@ use std::sync::{Arc, Mutex, PoisonError};
 
 use askhava_adapters::api::{AdapterError, Charge, IdempotencyKey, PaymentIntent, PaymentsAdapter};
 use askhava_businesses::api::{
-    AccountDirectory, Acting, Checks, Event, Returned, Roles, SignUpForm, add_member, add_owner,
-    apply, create, mark_returned, may_get_cards, request_welcome, sign_up, verified_by_link,
+    AccountDirectory, Acting, Checks, Event, Returned, Roles, SenderLink, SignUpForm, TeamError,
+    add_member, add_owner, apply, create, link_phone, mark_returned, may_get_cards,
+    request_welcome, sign_up, verified_by_link,
 };
 use askhava_core::api::{Clock, Lease, MIGRATOR, Settings, SystemClock, WorkerId, claim};
 use askhava_licensing::api::ClassMap;
-use askhava_ops::api::Actor;
+use askhava_ops::api::{Actor, export_audit};
 use askhava_picks::api::ConfirmSettings;
 use askhava_privacy::api::{Vault, mailbox_for};
 use askhava_server::account_directory::VaultAccountDirectory;
@@ -36,8 +37,8 @@ use base64::Engine as _;
 use base64::engine::general_purpose::STANDARD;
 use jiff::Timestamp;
 use secrecy::SecretString;
-use sqlx::PgPool;
 use sqlx::types::Uuid;
+use sqlx::{PgConnection, PgPool};
 
 const SECRET: &str = "test-only-id-secret-not-a-real-key-0001";
 const API_KEY: &str = "re_stand_in_fake_key_0001";
@@ -216,6 +217,62 @@ async fn a_returned_notice_names_the_gone_address_once_per_recipient(pool: PgPoo
         "to the owner, never the returned address"
     );
     assert!(emails[1].1.contains(MEMBER), "it names the gone address");
+}
+
+/// A sender directory that links nothing: the member's phone only waits for the owner.
+struct NoSenders;
+
+impl SenderLink for NoSenders {
+    async fn link(
+        &self,
+        _: &mut PgConnection,
+        _: (Uuid, Uuid),
+        _: &SecretString,
+    ) -> Result<(), TeamError> {
+        Ok(())
+    }
+}
+
+/// The number of `vault_read` audit rows so far.
+async fn vault_reads(pool: &PgPool) -> usize {
+    let mut db = pool.acquire().await.expect("db");
+    let rows = export_audit(&mut db, 0, 1000).await.expect("export");
+    rows.iter()
+        .filter(|r| r.action.starts_with("vault_read"))
+        .count()
+}
+
+/// D-4587: a phone-linked email whose member name is unknown (D-3186) sends nothing and reads
+/// no address: the owner's mailbox is never opened, so no `vault_read` audit row is written.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn a_phone_linked_email_with_no_name_reads_no_address(pool: PgPool) {
+    let seen = Seen::default();
+    let base = recorder(Arc::clone(&seen)).await;
+    let registry = registry(pairs(&base, true));
+    let now = Timestamp::now();
+    let mut db = pool.acquire().await.expect("db");
+    let owner_box = mailbox_for(&mut db, &vault(), OWNER).await.expect("box");
+    let member_box = mailbox_for(&mut db, &vault(), MEMBER).await.expect("box");
+    let business = create(&mut db, false, now).await.expect("business");
+    let owner = add_owner(&mut db, business, owner_box, now).await;
+    let acting = Acting {
+        business,
+        member: owner.expect("owner"),
+    };
+    let verified = verified_by_link(&mut db, acting, owner_box, now).await;
+    verified.expect("verified");
+    let added = add_member(&mut db, acting, member_box, Roles::BOTH, now).await;
+    let by = Acting {
+        business,
+        member: added.expect("member"),
+    };
+    let number = SecretString::from("928-555-0142".to_owned());
+    let linked = link_phone(&mut db, &NoSenders, (by, false), &number, now).await;
+    linked.expect("linked");
+    let before = vault_reads(&pool).await;
+    run_due(&pool, &registry).await;
+    assert_eq!(vault_reads(&pool).await, before, "no address was read");
+    assert!(sent(&seen).is_empty(), "no email was sent");
 }
 
 /// A fake Stripe that makes customers only.
