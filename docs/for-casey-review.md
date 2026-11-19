@@ -2,6 +2,12 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Texting records: the daily 5-year cleanup is built, and an opted-out number's locked phone stays (D-4387, D-2208, November 19)
+
+- **What happened.** The daily cleanup (T563) now removes, 5 years after a number's last message, its consent records, old opt-out records and message logs, and then the locked phone number itself unless the number opted out. It checks the opt-out list again under the per-number lock right before it removes the phone.
+- **Worth knowing.** A number that opted out keeps its locked phone past 5 years, so the opt-out survives a key change. The privacy policy says we keep the phone 5 years; you may want it to say opt-outs are kept for as long as needed to honor them. During a key change a phone is kept until the change finishes, then removed on a later day.
+- **Nothing needs you now.**
+
 ## Texting opt-outs: the 5-year cleanup of old numbers now re-checks the opt-out list under a lock (D-4418, November 18)
 
 - **What happened.** The daily cleanup that removes a phone number 5 years after its last message (T563) stopped: it checked whether the number had opted out a moment before removing the phone, so an opt-out in that moment could be missed.

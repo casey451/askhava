@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM privacy.contact_index WHERE contact_id = $1 AND purpose = 'homeowner-phone'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "483e411a45badbcb1b6eed94a83c5bd384bf3bc44b01764b64e67cfe0d044bdb"
+}

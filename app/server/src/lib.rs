@@ -1017,6 +1017,7 @@ where
     register_license_reapply(&mut registry, Arc::clone(&clock));
     register_daily_lists(&mut registry, settings, Arc::clone(&clock), pairs.clone())?;
     register_card_sender(&mut registry, settings, &id_secret, pairs.clone())?;
+    register_consent_sweep(&mut registry, settings, &clock, pairs.clone())?;
     register_opted_out_live(&mut registry, settings, &id_secret, pairs.clone())?;
     register_optout_followup(&mut registry, settings, &id_secret, pairs.clone())?;
     let stripe = stripe_client(settings, &pairs)?;
@@ -1175,6 +1176,26 @@ fn register_opted_out_live(
     registry.register(OPTED_OUT_LIVE_KIND, move |pool, task| {
         run_opted_out_live(pool, sender.clone(), task)
     });
+    Ok(())
+}
+
+/// T563 (CON-022, D-3844, D-4418): `intake`'s daily consent sweep (`intake.consent_sweep`,
+/// [`askhava_intake::api::run_consent_sweep_at`]) at the worker's clock, with the vault when both
+/// vault keys are set (without them, dev and CI only, no phone is cleared).
+fn register_consent_sweep(
+    registry: &mut Registry,
+    settings: &Settings,
+    clock: &Arc<dyn Clock>,
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
+    let vault = vault_from(settings, pairs)?.map(Arc::new);
+    let at = Arc::clone(clock);
+    registry.register(
+        askhava_intake::api::CONSENT_SWEEP_KIND,
+        move |pool, task| {
+            askhava_intake::api::run_consent_sweep_at(pool, vault.clone(), task, at.now())
+        },
+    );
     Ok(())
 }
 
