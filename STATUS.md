@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T00:21:31Z by runner ac0f272e1b7e (actions).
+Updated 2026-11-19T00:32:14Z by runner 44d63b391927 (actions).
 
 **Building: T488 in progress since 23:28Z; 465 of 663 done; week 70% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-19T00:21:31Z by runner ac0f272e1b7e (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T488 claimed 23:28Z, lease until 03:21Z; lane 2: T205 claimed 22:21Z, lease until 03:21Z; lane 3: T505 claimed 23:48Z, lease until 02:48Z; lane 4: T306 claimed 23:42Z, lease until 02:42Z; lane 5: T708 claimed 23:50Z, lease until 02:50Z; lane 6: T563 claimed 23:58Z, lease until 02:58Z; lane 7: T364 claimed 23:21Z, lease until 03:07Z
 - **Week:** 70% used, 46.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:21Z, 0 min before this update
+- **Last run:** 00:21Z, 10 min before this update
 - **Keeper:** last ran 23:37Z, next wake 23:57Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 50 problem(s) on tasks still to run (+267 on DONE tasks); first: T488: stored context_pct 29% but it measures 38%; regenerate
+- Strict plan check red: 51 problem(s) on tasks still to run (+267 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -81,7 +81,6 @@ Updated 2026-11-19T00:21:31Z by runner ac0f272e1b7e (actions).
 | T618 | Harness: a 4-hourly advisory watch on main that alerts Casey | done | 1 | 28 min | 02:22Z |  |
 | T604 | Dependencies: sentry without default features, so native-tls | done | 1 | 78 min | 01:49Z |  |
 | T478 | jobs, intake, calls, messaging and businesses: the scorecard | done | 1 | 2 h 23 min | 01:47Z |  |
-| T587 | payments and picks: the old Confirm fee writer is marked tes | done | 1 | 48 min | 00:26Z |  |
 
 ### Plan and harness merges on main
 - none
