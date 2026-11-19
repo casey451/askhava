@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T09:01:48Z by runner bf2db38bac38 (actions).
+Updated 2026-11-19T09:02:38Z by runner 4ca5171581b8 (actions).
 
-**Building: T553 in progress since 08:48Z; 484 of 664 done; week 77% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T553 in progress since 08:48Z; 485 of 664 done; week 77% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 484 of 664 build tasks (owner gates not counted)
+- **Tasks done:** 485 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T553 claimed 08:48Z, lease until 11:48Z; lane 3: T710 claimed 08:40Z, lease until 11:40Z; lane 5: T622 claimed 07:06Z, lease until 11:53Z; lane 7: T375 claimed 08:04Z, lease until 11:04Z
 - **Week:** 77% used, 35.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:01Z, 0 min before this update
+- **Last run:** 09:02Z, 0 min before this update
 - **Keeper:** last ran 09:01Z, next wake 09:21Z
 
 ## Needs attention
@@ -21,7 +21,7 @@ Evidence: with the worker now started on keyedEnv, the business-notice handler r
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T540 (since 2026-11-19T08:04:18Z, no attempt used; a plan change fixes it): T540: dependency T310 is DONE but its owned file app/server/src/owner_portal.rs is not on main; T540: dependency T310 is DONE but its owned file app/server/tests/owner_portal_route.rs is not on main; T540: dependency T310 is DONE but its owned file tests/e2e/owner_portal_served.spec.ts is not on main
 - OWNED GAP T216 (DONE, since 2026-11-19T08:36:02Z; a later task or plan change must add it): T216: app/site/static/photos/hero-kitchen-phone.avif missing on main
-- Strict plan check red: 60 problem(s) on tasks still to run (+301 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 64 problem(s) on tasks still to run (+304 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -29,7 +29,7 @@ Evidence: with the worker now started on keyedEnv, the business-notice handler r
 | T536 | E2e harness: clock-advancing journeys last, a keyed worker,  | BLOCKED | 1 | 46 min | 09:00Z | PLAN GAP: tests/e2e/j2.ts:150 (owned by T099, `e2e-j2-business`; T644 also lists it). Smallest plan change: make the `no |
 | T476 | portals: the owner health page with every OPS-008 figure and | MERGE_PENDING | 1 | 2 h 27 min | 08:50Z |  |
 | T161 | wording: the WORD-024 voice rule's pressure-word scan, the r | BLOCKED | 1 | 4 min | 08:41Z | PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/s |
-| T456 | picks and server: "Hold for 2 more hours" is stored, honoure | MERGE_PENDING | 1 | 97 min | 08:35Z |  |
+| T456 | picks and server: "Hold for 2 more hours" is stored, honoure | done | 1 | 97 min | 08:35Z |  |
 | T216 | site: the hero photo and mark (photography assets) | done | 1 | 97 min | 08:10Z |  |
 | T310 | server and portals: the owner home and settings pages and th | done | 1 | 74 min | 07:19Z |  |
 | T562 | server and portals: "Why was I charged?" is served with the  | done | 1 | 2 h 43 min | 07:09Z |  |
@@ -103,7 +103,7 @@ Evidence: with the worker now started on keyedEnv, the business-notice handler r
 ## Progress (requirements verified)
 
 **Requirements verified:** 306 of 735 (41.6%) · partial 389 · unstarted 40
-**Tasks merged (throughput only):** 484 of 664
+**Tasks merged (throughput only):** 485 of 664
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -139,7 +139,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 127 of 263 done
+- stage 5: 128 of 263 done
 - stage 6: 0 of 48 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
