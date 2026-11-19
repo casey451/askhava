@@ -56504,7 +56504,26 @@
      "plan_then": "7ba98b55df3f44b61d77f301c7e8459e4b3b55a9476421a611b1016fbb4011e6",
      "plan_now": "d545325759a336ac8a3dfd356e30f045b1b8aea7516ab79f5e62009aa2be17f5"
     }
-   ]
+   ],
+   "reviewed_sha": "92b537227e9508a8991634caf472912dbdf460ed",
+   "review_lease": {
+    "task": "T408",
+    "session": "actions-44451059431",
+    "expires": "2026-11-19T09:14:21Z"
+   },
+   "branch": "claude/task/T408-safe-mode-release-hold",
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "4b0eb67e704ada6201ddcb02ad65cd1d15fc5ff6",
+     "to": "92b537227e9508a8991634caf472912dbdf460ed",
+     "main": "5ee8ef90fc5097b5016bb9eb6bac9407f63b6a47",
+     "how": "hand-in",
+     "at": "2026-11-19T06:17:53Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T411",
@@ -90268,7 +90287,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T06:14:21Z",
+ "updated_at": "2026-11-19T06:17:53Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
