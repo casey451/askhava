@@ -16,7 +16,7 @@
 use std::sync::Arc;
 
 use askhava_businesses::api::{
-    AccountStatus, Business, BusinessesError, NoticePurpose, business, members, notice_addresses,
+    Business, BusinessesError, NoticePurpose, business, members, notice_addresses,
 };
 use askhava_core::api::HandlerError;
 use askhava_messaging::api::{BusinessAddresses, DueAddress, DueBusiness, OWNER_INBOX};
@@ -83,7 +83,8 @@ async fn current(
     subjects: &[Uuid],
 ) -> Result<bool, HandlerError> {
     for named in named_businesses(db, subjects).await? {
-        if named.status == AccountStatus::Removed {
+        // BIZ-051: `removed` is the status leaving sets; compared by code (SEC-031).
+        if named.status.code() == "removed" {
             continue;
         }
         let team = members(db, named.id).await.map_err(|_| FAILED)?;
