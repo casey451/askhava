@@ -37,6 +37,7 @@ pub use crate::handlers::{TEXT_KIND, all_windows_ended, connected_reply, text_du
 pub use crate::job_facts::{
     FactsError, JobFacts, Recorded, categories_of, job_facts, record_job_facts,
 };
+pub use crate::job_lookup::job_by_number;
 pub use crate::line_close::{LINE_CLOSE_KIND, LineCloseReason, queue_line_close};
 pub use crate::models::{JobRow, JobsError};
 pub use crate::purge_events::{

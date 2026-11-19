@@ -12,6 +12,7 @@ mod flag_inputs;
 mod followups;
 mod handlers;
 mod job_facts;
+mod job_lookup;
 mod line_close;
 mod models;
 mod purge_events;

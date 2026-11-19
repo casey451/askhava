@@ -189,6 +189,9 @@ pub use crate::owner_portal::{
     owner_dispute_evidence, owner_file_stripe_answer, owner_home_page, owner_record_opt_out,
     owner_refund, owner_refund_page, owner_settings_page, owner_settings_page_with, parse_change,
 };
+pub use crate::owner_release::{
+    OWNER_RELEASE_ROUTE, ReleaseForm, ReleaseScreen, owner_release_page, owner_release_resend,
+};
 pub use crate::owner_step_up_page::{
     OWNER_SIGN_OUT_ALL_ROUTE, OWNER_SIGN_OUT_ROUTE, OWNER_STEP_UP_ROUTE, StepUpScreen,
     owner_signed_out, owner_step_up_page,
@@ -208,6 +211,10 @@ pub use crate::quote_page::{
 };
 pub use crate::receipts_page::{
     Basis, WHY_CHARGED_ROUTE, WhyCharged, why_charged_page, why_charged_page_without_basis,
+};
+pub use crate::scorecard::{
+    MinutesForm, MinutesNotice, OWNER_SCORECARD_MINUTES_ROUTE, OWNER_SCORECARD_ROUTE,
+    ScorecardInputs, owner_record_minutes, owner_scorecard_page,
 };
 pub use crate::scorecard_lines::{
     Color, LadderRung, LinesError, Measure, ScorecardLines, color, ladder_rung,
