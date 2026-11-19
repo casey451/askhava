@@ -65,5 +65,6 @@ mod receipts_page;
 mod scorecard_lines;
 mod security;
 mod session;
+mod step_up_page;
 #[cfg(test)]
 mod tests;

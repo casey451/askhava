@@ -1,5 +1,6 @@
 //! The sender of the quote-count update text: the `quotes.count_update` handler (TXT-017, QH-007,
-//! TXT-042, CON-021, CON-028, SEC-037; D-012, D-1190, D-4052, D-4280, D-4419).
+//! TXT-042, TXT-025, QH-001, QH-004, CON-021, CON-028, SEC-037; D-012, D-158, D-1190, D-4052,
+//! D-4280, D-4419).
 //!
 //! `quotes` queues one `quotes::api::COUNT_UPDATE_KIND` event (the job ID only) for each quote
 //! newly shown on a Quotes ready job. [`quote_update_step`] finds the job's open request, her
@@ -19,21 +20,26 @@
 //! the transaction, SEC-037) and queues one outbox row keyed on template, contact, job and count
 //! (the count as the second subject ID, `Uuid::from_u128`); `Nothing` and `First` send nothing (the
 //! first-quote text is `jobs.homeowner_text`'s). The count is read at send time, so several events
-//! released at one instant send one text with the latest count and the rest find nothing new. A row
-//! queued in quiet hours is held by the outbox sender (QH-001, QH-006); deferring the event itself,
-//! QH-004's exemption and TXT-025's merge are T708's (D-4419).
+//! released at one instant send one text with the latest count and the rest find nothing new.
+//!
+//! T708 (D-4419, D-4571): an `Update` in quiet hours is queued again for the window's opening, so
+//! events held overnight become one task sending one text with the latest count (TXT-025, D-158);
+//! an emergency job's goes at any hour (QH-004, [`update`]); a `First` with more than one shown
+//! quote, the first-quote text still held, is retried once ([`first_held`]).
 
 use std::sync::Arc;
 
 use askhava_core::api::{Claimed, HandlerError, NewTask, enqueue};
-use askhava_jobs::api::{job_number, lock_for_quote_change};
+use askhava_jobs::api::{current, job_number, lock_for_quote_change};
 use askhava_messaging::api::{
-    Language, NewText, Relation, SendWindow, last_quote_text, send_window,
+    Exemption, Language, NewText, Relation, SendWindow, enqueue_exempt, last_quote_text,
+    send_window,
 };
 use askhava_quotes::api::{
-    COUNT_UPDATE_KIND, Counts, Notice, Reader, Sent, notice_for, sent_count, update_text,
+    COUNT_UPDATE_KIND, Counts, Notice, Reader, Sent, notice_for, sent_count, shown_quotes,
+    update_text,
 };
-use jiff::Timestamp;
+use jiff::{SignedDuration, Timestamp};
 use serde_json::json;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection, PgPool};
@@ -46,13 +52,17 @@ use crate::service::{Queued, may_text};
 const UPDATE_TEMPLATE: &str = "quote_update";
 const BAD_PAYLOAD: &str = "bad quotes count-update payload";
 const FAILED: &str = "the quotes count-update step failed";
+/// D-4419: a `First` with more than one shown quote is tried again this many minutes after the
+/// window's next opening.
+const RETRY_MINUTES: i64 = 15;
 
 /// What [`quote_update_step`] did.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum QuoteUpdateStep {
     /// The update text was queued.
     Queued(Queued),
-    /// The 3-hour gap has not passed: the event was queued again for this instant (TXT-017).
+    /// The event was queued again for this instant: the 3-hour gap has not passed (TXT-017), quiet
+    /// hours hold her texts (QH-001, TXT-025) or the first-quote text is still held (D-4419).
     Held(Timestamp),
     /// Nothing new to tell, or the first quote's text is due (TXT-016's own path).
     Nothing,
@@ -61,7 +71,7 @@ pub enum QuoteUpdateStep {
 }
 
 /// The `quotes.count_update` handler `server` registers: [`quote_update_step`] on the task's job
-/// at `now`, the worker clock's time.
+/// at `now`, the worker clock's time, a payload's `"retry": true` marking D-4419's one retry.
 ///
 /// # Errors
 ///
@@ -76,16 +86,18 @@ pub async fn run_quote_update_at(
         .as_str()
         .and_then(|j| Uuid::parse_str(j).ok())
         .ok_or(HandlerError(BAD_PAYLOAD))?;
+    let retry = task.payload["retry"].as_bool().unwrap_or(false);
     let mut db = pool.acquire().await.map_err(|_| HandlerError(FAILED))?;
-    quote_update_step(&mut db, &keys, job, now)
+    quote_update_step(&mut db, &keys, (job, retry), now)
         .await
         .map(|_| ())
         .map_err(|_| HandlerError(FAILED))
 }
 
-/// TXT-017, QH-007, TXT-042, CON-021, CON-028: one count-update event for `job` at `now`, the
-/// checks and the answer in the module's order. Call it outside a transaction (the vault read).
-/// Only a queued text or a held event commits; anything else rolls its transaction back.
+/// TXT-017, TXT-025, QH-001, QH-004, QH-007, TXT-042, CON-021, CON-028: one count-update event for
+/// `job` at `now` (`retry` marks D-4419's one retry of a `First`), the checks and the answer in the
+/// module's order. Call it outside a transaction (the vault read). Only a queued text or a held
+/// event commits; anything else rolls its transaction back.
 ///
 /// # Errors
 ///
@@ -94,7 +106,7 @@ pub async fn run_quote_update_at(
 pub async fn quote_update_step(
     db: &mut PgConnection,
     keys: &JobTextKeys,
-    job: Uuid,
+    (job, retry): (Uuid, bool),
     now: Timestamp,
 ) -> Result<QuoteUpdateStep, IntakeError> {
     let Some(her) = job_homeowner(db, job).await? else {
@@ -106,11 +118,12 @@ pub async fn quote_update_step(
     let window = send_window(db, &keys.vault, her.contact, now)
         .await
         .map_err(|_| IntakeError::Outbox)?;
-    match window {
+    let opens = match window {
         SendWindow::OptedOut => return Ok(QuoteUpdateStep::Skipped(JobTextSkip::OptedOut)),
         SendWindow::NotTextable => return Ok(QuoteUpdateStep::Skipped(JobTextSkip::NotTextable)),
-        SendWindow::Now | SendWindow::Hold { .. } => {}
-    }
+        SendWindow::Now => None,
+        SendWindow::Hold { until } => Some(until),
+    };
     let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
     let status = lock_for_quote_change(&mut tx, job)
         .await
@@ -123,8 +136,11 @@ pub async fn quote_update_step(
         .await
         .map_err(|_| IntakeError::Job)?;
     let step = match notice {
-        Notice::Held { until } => hold(&mut tx, job, until).await?,
-        Notice::Update { quoted } => send(&mut tx, keys, (&her, job), quoted, now).await?,
+        Notice::Held { until } => hold(&mut tx, job, until, false).await?,
+        Notice::Update { quoted } => {
+            update(&mut tx, keys, (&her, job), quoted, (now, opens)).await?
+        }
+        Notice::First if !retry => first_held(&mut tx, job, opens.unwrap_or(now)).await?,
         Notice::Nothing | Notice::First => QuoteUpdateStep::Nothing,
     };
     if matches!(step, QuoteUpdateStep::Queued(_) | QuoteUpdateStep::Held(_)) {
@@ -168,14 +184,66 @@ async fn previous(
     }))
 }
 
-/// TXT-017: queues the same event again for `until`, keyed on the job and that instant, so every
+/// QH-001, QH-004, TXT-025, D-4419: an `Update` of an emergency job goes now with the exemption;
+/// any other goes now inside the window, else the event is held to the window's opening `opens`.
+async fn update(
+    tx: &mut PgConnection,
+    keys: &JobTextKeys,
+    (her, job): (&JobHomeowner, Uuid),
+    quoted: u32,
+    (now, opens): (Timestamp, Option<Timestamp>),
+) -> Result<QuoteUpdateStep, IntakeError> {
+    let emergency = current(&mut *tx, job)
+        .await
+        .map_err(|_| IntakeError::Job)?
+        .emergency;
+    match (emergency, opens) {
+        (true, _) => {
+            let exempt = Some(Exemption::EmergencyJob);
+            send(tx, keys, (her, job), quoted, (now, exempt)).await
+        }
+        (false, Some(until)) => hold(tx, job, until, false).await,
+        (false, None) => send(tx, keys, (her, job), quoted, (now, None)).await,
+    }
+}
+
+/// D-4419, D-1190: `First` with more than one shown quote means the first-quote text is still held
+/// (no outbox row yet), so the event is queued once more, marked as the retry, [`RETRY_MINUTES`]
+/// after `opens` (the window's next opening, or now inside it); one shown quote sends nothing.
+async fn first_held(
+    tx: &mut PgConnection,
+    job: Uuid,
+    opens: Timestamp,
+) -> Result<QuoteUpdateStep, IntakeError> {
+    let shown = shown_quotes(&mut *tx, job)
+        .await
+        .map_err(|_| IntakeError::Job)?;
+    if shown.len() < 2 {
+        return Ok(QuoteUpdateStep::Nothing);
+    }
+    hold(
+        tx,
+        job,
+        opens + SignedDuration::from_mins(RETRY_MINUTES),
+        true,
+    )
+    .await
+}
+
+/// TXT-017, TXT-025: queues the same event again for `until` (`retry` marks D-4419's one retry),
+/// keyed on the job and that instant (`core.task.dedupe_key` is unique for all time), so every
 /// event held to one instant becomes one task.
 async fn hold(
     tx: &mut PgConnection,
     job: Uuid,
     until: Timestamp,
+    retry: bool,
 ) -> Result<QuoteUpdateStep, IntakeError> {
-    let mut task = NewTask::new(COUNT_UPDATE_KIND, json!({ "job": job }), until);
+    let mut payload = json!({ "job": job });
+    if retry {
+        payload["retry"] = true.into();
+    }
+    let mut task = NewTask::new(COUNT_UPDATE_KIND, payload, until);
     let run = until.as_microsecond();
     task.dedupe_key = Some(format!("{COUNT_UPDATE_KIND}.{job}.{run}"));
     enqueue(tx, &task)
@@ -186,13 +254,14 @@ async fn hold(
 
 /// TXT-017, TXT-032, SEC-037: renders "You now have <k> quotes" in her language with her `/q/`
 /// link and queues it, keyed on template, contact, job and count, with the told row for `quoted`;
-/// a row already queued gives [`QuoteUpdateStep::Nothing`] (its transaction rolls back).
+/// `exempt` lets an emergency job's go at any hour (QH-004). A row already queued gives
+/// [`QuoteUpdateStep::Nothing`] (its transaction rolls back).
 async fn send(
     tx: &mut PgConnection,
     keys: &JobTextKeys,
     (her, job): (&JobHomeowner, Uuid),
     quoted: u32,
-    now: Timestamp,
+    (now, exempt): (Timestamp, Option<Exemption>),
 ) -> Result<QuoteUpdateStep, IntakeError> {
     let number = job_number(&mut *tx, job)
         .await
@@ -220,9 +289,11 @@ async fn send(
         relation: Relation::OpenRequest,
         body: &body,
     };
-    let (outbox_id, created) = askhava_messaging::api::enqueue(&mut *tx, &keys.outbox, &new)
-        .await
-        .map_err(|_| IntakeError::Outbox)?;
+    let queued = match exempt {
+        Some(e) => enqueue_exempt(&mut *tx, &keys.outbox, &new, e).await,
+        None => askhava_messaging::api::enqueue(&mut *tx, &keys.outbox, &new).await,
+    };
+    let (outbox_id, created) = queued.map_err(|_| IntakeError::Outbox)?;
     if !created {
         return Ok(QuoteUpdateStep::Nothing);
     }
