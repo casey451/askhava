@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T21:02:36Z by runner d68fb0f0ae65 (actions).
+Updated 2026-11-19T21:07:04Z by runner 92c9356ca85b (actions).
 
 **Building: T480 in progress since 20:38Z; 503 of 701 done; week 8% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-19T21:02:36Z by runner d68fb0f0ae65 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 4: T480 claimed 20:38Z, lease until 23:38Z; lane 6: T663 claimed 21:02Z, lease until 00:02Z; lane 7: T717 claimed 20:10Z, lease until 23:59Z
 - **Week:** 8% used, 174.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:01Z, 0 min before this update
+- **Last run:** 21:06Z, 0 min before this update
 - **Keeper:** last ran 21:01Z, next wake 21:21Z
 
 ## Needs attention
@@ -92,8 +92,8 @@ Updated 2026-11-19T21:02:36Z by runner d68fb0f0ae65 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 328 of 735 (44.6%) · partial 370 · unstarted 37
-**Tasks merged (throughput only):** 503 of 698
+**Requirements verified:** 324 of 735 (44.1%) · partial 374 · unstarted 37
+**Tasks merged (throughput only):** 503 of 701
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -103,10 +103,10 @@ Updated 2026-11-19T21:02:36Z by runner d68fb0f0ae65 (actions).
 | calls | 14 | 11 | 0 | 25 |
 | consent | 16 | 19 | 0 | 35 |
 | fees | 22 | 30 | 0 | 52 |
-| intake | 9 | 34 | 0 | 43 |
+| intake | 8 | 35 | 0 | 43 |
 | job-cards | 12 | 12 | 0 | 24 |
-| licensing | 34 | 14 | 0 | 48 |
-| lifecycle | 18 | 10 | 0 | 28 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 16 | 12 | 0 | 28 |
 | messaging | 22 | 22 | 1 | 45 |
 | ops-recovery | 9 | 27 | 18 | 54 |
 | privacy | 9 | 21 | 1 | 31 |
