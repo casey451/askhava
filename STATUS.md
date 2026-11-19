@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T04:02:08Z by runner 5ba2bea829be (actions).
+Updated 2026-11-19T04:02:17Z by runner 5ba2bea829be (actions).
 
 **Building: T408 in progress since 03:29Z; 472 of 663 done; week 73% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 472 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T408 claimed 03:29Z, lease until 06:29Z; lane 2: T520 claimed 01:57Z, lease until 06:52Z; lane 5: T563 claimed 02:48Z, lease until 07:01Z; lane 6: T490 claimed 02:10Z, lease until 06:17Z; lane 7: T399 claimed 03:14Z, lease until 06:59Z
+- **Lane:** lane 1: T408 claimed 03:29Z, lease until 06:29Z; lane 2: T520 claimed 01:57Z, lease until 06:52Z; lane 5: T563 claimed 02:48Z, lease until 07:01Z; lane 6: T490 claimed 02:10Z, lease until 06:17Z
 - **Week:** 73% used, 42.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:01Z, 0 min before this update
 - **Keeper:** last ran 03:33Z, next wake 05:50Z
@@ -21,6 +21,7 @@ Evidence: `trade_check` passes no words when the first tex; fix the plan (the ta
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T399 | server: the email's Approve link approves the phone, only wi | MERGE_PENDING | 1 | 46 min | 04:01Z |  |
 | T484 | portals and quotes: "Call from the Laftly number", the owner | MERGE_PENDING | 1 | 82 min | 03:26Z |  |
 | T114 | Terms-match-code checks and recurring pricing copy | done | 1 | 71 min | 03:26Z |  |
 | T715 | intake (harness): corrections to T671's walker: alarm answer | BLOCKED | 2 | 83 min | 03:22Z | PLAN GAP: one TD-INT-52 sentence can't be met by intake as planned: "a two-word first text naming a trade opens its job  |
@@ -140,7 +141,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T520 (lease until 2026-11-19T06:52:34Z)
 - lane 5: T563 (lease until 2026-11-19T07:01:29Z)
 - lane 6: T490 (lease until 2026-11-19T06:17:23Z)
-- lane 7: T399 (lease until 2026-11-19T06:59:29Z)
 
 ## Last usage reading
-- {"task": "T484", "at": "2026-11-19T03:26:58Z", "input_tokens": 364, "cache_read_input_tokens": 21961281, "cache_creation_input_tokens": 392508, "output_tokens": 105413}
+- {"task": "T399", "at": "2026-11-19T04:01:49Z", "input_tokens": 137, "cache_creation_input_tokens": 190219, "cache_read_input_tokens": 6378971, "output_tokens": 42903}
