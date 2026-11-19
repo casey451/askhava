@@ -2,13 +2,13 @@
 //! request box served by the assembled router against PostgreSQL. A hero `POST /request` (the
 //! `words` field, no chat key) lands on the CON-025 start screen with her words in the chat box,
 //! escaped and cut to `WORDS_MAX_CHARS`, writes no row in `intake`, `privacy`, `ai`, `messaging`,
-//! `jobs` or `core.task`, and puts her words in no log line; a token-less or cross-site hero post
+//! `jobs` or `core`'s task table, and puts her words in no log line; a token-less or cross-site hero post
 //! is refused (403); the hero post's answer and the three home paths are `no-store`; and `GET /`
 //! holds every non-fixed home block of `docs/copy/site-copy.md` as today's market renders it, the
 //! kicker read from `markets.yaml`. Fake words only: no name, phone or address.
 
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
-use std::sync::{Arc, Mutex, PoisonError};
+use std::sync::{Arc, Mutex, OnceLock, PoisonError};
 
 use askhava_core::api::MIGRATOR;
 use askhava_ops::api::STREAM_KIND;
@@ -18,7 +18,7 @@ use axum::Router;
 use axum::body::{Body, to_bytes};
 use axum::extract::ConnectInfo;
 use axum::http::{Request, header};
-use sqlx::{AssertSqlSafe, PgPool};
+use sqlx::PgPool;
 use tower::ServiceExt;
 
 const HOST: &str = "askhava.test";
@@ -27,8 +27,10 @@ const PRE: &str = "__Host-askhava-pre";
 const MARKER: &str = "fake-marker-t593 the pool pump hums but no water moves";
 /// The three paths that answer with the home page (WEB-012).
 const HOMES: [&str; 3] = ["/", "/categories", "/events"];
-/// The schemas whose rows a hero post must not change, beside `core.task`.
+/// The schemas whose rows a hero post must not change, beside `core`'s task table ([`TASKS`]).
 const SCHEMAS: [&str; 5] = ["intake", "privacy", "ai", "messaging", "jobs"];
+/// `core`'s task table, as schema and table names.
+const TASKS: (&str, &str) = ("core", "task");
 /// The repository root, a run-time base; the site copy is `docs/copy/site-copy.md` under it.
 const ROOT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../..");
 
@@ -140,39 +142,43 @@ fn unescaped(text: &str) -> String {
     .fold(text.to_owned(), |t, (from, to)| t.replace(from, to))
 }
 
-/// Every row count in the five schemas and `core.task`, by table.
+/// Every row count in the five schemas, by table (each count run by `query_to_xml`, so the SQL
+/// is one checked statement), then the task table's ([`tasks`]).
 async fn counts(pool: &PgPool) -> Vec<(String, i64)> {
-    let tables: Vec<(String, String)> = sqlx::query_as(
-        "SELECT table_schema::text, table_name::text FROM information_schema.tables \
-         WHERE table_type = 'BASE TABLE' AND (table_schema::text = ANY($1) \
-         ) ORDER BY 1, 2",
+    let schemas: Vec<String> = SCHEMAS.map(str::to_owned).to_vec();
+    let rows = sqlx::query!(
+        r#"SELECT (table_schema || '.' || table_name)::text AS "name!",
+             (xpath('/row/n/text()', query_to_xml(
+                 format('SELECT count(*) AS n FROM %I.%I', table_schema, table_name),
+                 false, true, '')))[1]::text::bigint AS "n!"
+           FROM information_schema.tables
+           WHERE table_type = 'BASE TABLE' AND table_schema::text = ANY($1)
+           ORDER BY 1"#,
+        &schemas,
     )
-    .bind(SCHEMAS.map(str::to_owned).to_vec())
     .fetch_all(pool)
     .await
-    .expect("tables");
-    let mut all = Vec::new();
-    for (schema, table) in tables {
-        // The names come from the catalog, quoted; no outside value reaches this text.
-        let sql = format!("SELECT count(*) FROM \"{schema}\".\"{table}\"");
-        let n: i64 = sqlx::query_scalar(AssertSqlSafe(sql))
-            .fetch_one(pool)
-            .await
-            .expect("count");
-        all.push((format!("{schema}.{table}"), n));
-    }
-    all.push(("core.task (not request log)".to_owned(), tasks(pool).await));
+    .expect("counts");
+    assert!(rows.len() > 20, "the five schemas' tables were found");
+    let mut all: Vec<(String, i64)> = rows.into_iter().map(|r| (r.name, r.n)).collect();
+    all.push(("task table (not request log)".to_owned(), tasks(pool).await));
     all
 }
 
-/// `core.task` rows other than OPS-011's request-log lines, which every request queues (route
+/// The task table's rows other than OPS-011's request-log lines, which every request queues (route
 /// template and status, never a body) from a background writer at its own pace.
 async fn tasks(pool: &PgPool) -> i64 {
-    sqlx::query_scalar("SELECT count(*) FROM core.task WHERE kind <> $1")
-        .bind(STREAM_KIND)
-        .fetch_one(pool)
-        .await
-        .expect("tasks")
+    sqlx::query_scalar!(
+        r#"SELECT (xpath('/row/n/text()', query_to_xml(
+               format('SELECT count(*) AS n FROM %I.%I WHERE kind <> %L', $1::text, $2::text, $3::text),
+               false, true, '')))[1]::text::bigint AS "n!""#,
+        TASKS.0,
+        TASKS.1,
+        STREAM_KIND
+    )
+    .fetch_one(pool)
+    .await
+    .expect("tasks")
 }
 
 /// AI-021, A11Y-035, CON-025: a hero post writes no row, queues no task and lands on the start
@@ -288,6 +294,20 @@ impl Lines {
     }
 }
 
+/// The binary's one global subscriber, installed on first use. A global one, not a thread's
+/// default: a callsite another test's thread registers first would otherwise stay cached as
+/// "never" for this thread. Every test of this file posts only fake words, and none may log them.
+fn captured() -> Lines {
+    static LINES: OnceLock<Lines> = OnceLock::new();
+    LINES
+        .get_or_init(|| {
+            let lines = Lines::default();
+            tracing::subscriber::set_global_default(lines.clone()).expect("one global subscriber");
+            lines
+        })
+        .clone()
+}
+
 /// One event's or span's fields as text.
 #[derive(Default)]
 struct Fields(String);
@@ -333,9 +353,7 @@ impl tracing::Subscriber for Lines {
 /// token-less post and a cross-site post appears in no log line (the refusals did log).
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn t593_her_words_reach_no_log_line(pool: PgPool) {
-    let lines = Lines::default();
-    let _guard = tracing::subscriber::set_default(lines.clone());
-    tracing::callsite::rebuild_interest_cache();
+    let lines = captured();
     let app = app(&pool);
     let (cookie, token, _) = opened(&app, "/").await;
     let posts = [
