@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T16:29:24Z by runner 26068b87a58a (actions).
+Updated 2026-11-19T16:29:47Z by runner 26068b87a58a (actions).
 
 **Building: T724 in progress since 16:18Z; 497 of 670 done; week 86% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 497 of 670 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T724 claimed 16:18Z, lease until 19:18Z; lane 2: T210 claimed 15:35Z, lease until 19:27Z; lane 3: T530 claimed 15:41Z, lease until 18:41Z; lane 4: T555 claimed 15:44Z, lease until 18:44Z; lane 7: T715 claimed 15:50Z, lease until 18:50Z
+- **Lane:** lane 1: T724 claimed 16:18Z, lease until 19:18Z; lane 3: T530 claimed 15:41Z, lease until 18:41Z; lane 4: T555 claimed 15:44Z, lease until 18:44Z; lane 7: T715 claimed 15:50Z, lease until 18:50Z
 - **Week:** 86% used, 17.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:27Z, 1 min before this update
+- **Last run:** 16:27Z, 2 min before this update
 - **Keeper:** last ran 16:10Z, next wake 16:30Z
 
 ## Needs attention
@@ -21,6 +21,7 @@ Updated 2026-11-19T16:29:24Z by runner 26068b87a58a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T210 | payments: the money view's sales-tax set-aside and manual ex | MERGE_PENDING | 1 | 53 min | 16:29Z |  |
 | T407 | calls, portals and server: the owner-portal safety voice cal | MERGE_PENDING | 1 | 102 min | 16:01Z |  |
 | T541 | payments, portals and adapters: a card saved or changed from | check_failed | 1 | 2 h 16 min | 15:25Z | Ci: failure; Coverage: failure; E2e: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refus |
 | T470 | messaging and server: the worker task that sends queued emai | MERGE_PENDING | 3 | 2 h 18 min | 15:24Z | Fix-round review (after the one allowed findings round) still found a problem at head 1830747e4; no reviewer approved a  |
@@ -143,10 +144,9 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T724 (lease until 2026-11-19T19:18:33Z)
-- lane 2: T210 (lease until 2026-11-19T19:27:14Z)
 - lane 3: T530 (lease until 2026-11-19T18:41:09Z)
 - lane 4: T555 (lease until 2026-11-19T18:44:06Z)
 - lane 7: T715 (lease until 2026-11-19T18:50:24Z)
 
 ## Last usage reading
-- {"task": "T407", "at": "2026-11-19T16:01:51Z", "output_tokens": 80472, "cache_creation_input_tokens": 262279, "cache_read_input_tokens": 15308090, "input_tokens": 235}
+- {"task": "T210", "at": "2026-11-19T16:29:22Z", "cache_creation_input_tokens": 156335, "output_tokens": 41516, "cache_read_input_tokens": 5368341, "input_tokens": 131}
