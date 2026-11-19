@@ -1,7 +1,7 @@
 //! TD-INT-45's two-job cases (T711, D-4439, INT-032, INT-009, D-1020): a first message naming two
 //! trades through the route's entry, `intake::api::receive_raw_reply`, opens one job and gets the
-//! `two_jobs` text; ALSO or TAMBIÉN opens the second trade's job (before the ZIP the early way,
-//! after it through `begin_job`), only once and never while the name-and-address question is open;
+//! `two_jobs` text; ALSO or TAMBIÉN opens the second trade's job (the early way, before and after
+//! the ZIP, D-4441 (2)), only once and never while the name-and-address question is open;
 //! SPLIT opens one more job only as the first reply after a SPLIT offer; no ALSO or SPLIT reply is
 //! kept as words. Texts are asserted only up to the coverage line. PostgreSQL, fake data and 555
 //! numbers only (no phone number appears here at all).
@@ -193,13 +193,13 @@ async fn two_jobs_body(db: &mut PgConnection, contact: u128) -> Vec<String> {
 }
 
 /// TD-INT-45 (INT-032, CON-031): a two-trade first message opens one job, for the first trade,
-/// and gets the consent text, INT-032's `two_jobs` text with both trades' names, then the ZIP
-/// question; a one-trade message never gets it.
+/// and gets the consent text, the ZIP question, then INT-032's `two_jobs` text with both trades'
+/// names (right after the first ZIP question, D-4441 (1)); a one-trade message never gets it.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_int_45_two_trades_get_the_two_jobs_text(mut db: Db) {
     setup(&mut db).await;
     let got = sent(&mut db, 0x0555_0201, TWO_TRADES, 0).await;
-    assert_eq!(got, [CONSENT_TEMPLATE, TWO_JOBS, ZIP_QUESTION_TEMPLATE]);
+    assert_eq!(got, [CONSENT_TEMPLATE, ZIP_QUESTION_TEMPLATE, TWO_JOBS]);
     let id = request(&mut db, 0x0555_0201).await;
     assert_eq!(links(&mut db, id).await, ["job.handyman.none"]);
     let words = format!(
@@ -272,9 +272,10 @@ async fn td_int_45_also_before_the_zip_opens_the_second_job_the_early_way(mut db
 
 /// TD-INT-45 (INT-032, INT-027, INT-009): ALSO while the name-and-address question is open opens
 /// nothing; once it is answered (its `address_contact` marker, as `take_name_address` writes it),
-/// ALSO opens exactly one more job through `begin_job`, keyed with her new property.
+/// ALSO opens exactly one more job through `open_job`, with property `none` (D-4441 (2): never
+/// through `begin_job`, which refuses the one-word ALSO).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
-async fn td_int_45_also_after_the_zip_opens_the_second_job_through_begin_job(mut db: Db) {
+async fn td_int_45_also_after_the_zip_opens_the_second_job_through_open_job(mut db: Db) {
     setup(&mut db).await;
     business(&mut db, 0).await;
     business(&mut db, 1).await;
@@ -300,9 +301,9 @@ async fn td_int_45_also_after_the_zip_opens_the_second_job_through_begin_job(mut
     let got = links(&mut db, id).await;
     assert_eq!(got.len(), 2, "{got:?}");
     assert!(got[1].starts_with("job.plumbing_repair."), "{got:?}");
-    assert_ne!(
+    assert_eq!(
         got[1], "job.plumbing_repair.none",
-        "keyed with her property"
+        "D-4441 (2): property none"
     );
     assert_eq!(kept(&mut db, id).await, [TWO_TRADES]);
 }
