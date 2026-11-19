@@ -3474,3 +3474,10 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **The gap:** under D-4602's plan, a request like "pool heater" or "water heater leak" would have lost its licensed-only job type the second time its job types were read, so the count and the card could have reached a business without the license that job needs.
 - **Fix:** T716 adds one small reader so those licensed-only job types are kept every time, and its tests check it; T723 reads the same way and names the row that marks a job type as "not certain".
 - Our choice; nothing needs you now.
+
+## The safety voice call switch is now on your settings page, still off (D-4721)
+
+- **What's built:** your owner settings page shows the safety voice call switch. It is off. Turning it on asks for the date and reference of your TCPA attorney's written approval and a fresh code from your authenticator app; turning it off asks for the code too. Every change is logged without the reference.
+- **What it changes:** from the moment it is on, new homeowners' first text includes the recorded-call sentence, and a gas, smoke or fire text while our texting is down can get one recorded call. Off again, both stop with the next message.
+- **Not covered yet:** the web chat's welcome text never mentions the recorded call, even with the switch on. That chat part belongs to another module and needs its own small change.
+- Our choice; nothing needs you now.
