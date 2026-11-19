@@ -27,6 +27,7 @@ mod consent_alerts;
 mod consent_purge;
 mod coverage_email;
 mod email;
+mod email_due;
 mod email_timing;
 mod handlers;
 mod health_figures;
