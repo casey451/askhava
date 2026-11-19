@@ -56,11 +56,16 @@ pub use crate::coverage_email::{
     town_words, trade_subject,
 };
 pub use crate::email::{
-    COMPLAINT_ALERT, DailyLimit, EMAIL_ACTION, EmailClass, EmailEvent, EmailSent, EmailTo, FROM,
-    MailboxKind, NewEmail, Notice, OnDomain, PostalAddress, Recipient, Rendered, Sender,
-    UpdateChannel, WEBHOOK_GRACE, WEBHOOKS_SILENT_ALERT, check_webhook_silence, email_log,
-    email_status, next_reset, queue_email, receive_email_event, render as render_email, reply_to,
-    send_email, set_update_channel, short_name, update_channel,
+    COMPLAINT_ALERT, DailyLimit, EMAIL_ACTION, EMAIL_ROW, EmailClass, EmailEvent, EmailSent,
+    EmailTo, FROM, MailboxKind, NewEmail, Notice, OnDomain, PostalAddress, REFUSED_ALERT,
+    Recipient, Rendered, SETUP_ALERT, Sender, UpdateChannel, WEBHOOK_GRACE, WEBHOOKS_SILENT_ALERT,
+    check_webhook_silence, email_log, email_status, next_reset, queue_email, receive_email_event,
+    render as render_email, reply_to, send_email, set_update_channel, short_name, update_channel,
+};
+pub use crate::email_due::{
+    BATCH as EMAIL_DUE_BATCH, BusinessAddresses, DueAddress, DueBusiness, EMAIL_DUE_KIND,
+    EXPIRED_ALERT, EmailDrain, GIVEN_UP_ALERT, MARKED_ALERT, OWN_RETRY, RUN_BUDGET, SELF_SENDING,
+    register_email_due, run_email_due, schedule_email_due,
 };
 pub use crate::email_timing::{
     NewNoticeLog, NoticeEntry, NoticeKind, ProviderStatus, Sending, mark_sent, notice_log,
@@ -321,10 +326,10 @@ pub async fn homeowner_has_email(
         .map(|email| email.is_some())
 }
 
-/// BIZ-040, SEC-024, D-3262 (T415): the mailbox ID of every business email not yet sent and
-/// queued within the 7 days before `now`, so the contact sweep keeps the address it goes to (an
-/// old address must still get its change notice and a bounce must still find its mailbox); a row
-/// stuck in `sending` keeps no address past that week. IDs only, each once.
+/// BIZ-040, SEC-024, D-3262, D-3889 (T415): the mailbox ID of every business email neither sent
+/// nor dropped and queued within the 7 days before `now`, so the contact sweep keeps the address
+/// it goes to (an old address must still get its change notice and a bounce must still find its
+/// mailbox); a row stuck in `sending` keeps no address past that week. IDs only, each once.
 ///
 /// # Errors
 ///
@@ -339,7 +344,7 @@ pub async fn unsent_business_mailboxes(
         .map_err(|_| EmailError::Database)?;
     sqlx::query_scalar!(
         "SELECT DISTINCT recipient_id FROM messaging.email_outbox WHERE recipient_kind = 'business' \
-         AND status <> 'sent' AND queued_at > $1::timestamptz",
+         AND status NOT IN ('sent', 'dropped') AND queued_at > $1::timestamptz",
         week.to_sqlx() as _
     )
     .fetch_all(db)

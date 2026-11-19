@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE messaging.email_outbox SET status = 'queued', not_before = $2, waiting_for = $3, claimed_at = NULL, lease_count = 0 WHERE id = $1 AND status NOT IN ('sent', 'dropped')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "75b25010d089da1bf1a22a3156d6970232b55f25de28ead01488bacee0c5aa91"
+}
