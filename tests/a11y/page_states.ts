@@ -554,6 +554,42 @@ const BUSINESS_STEP_UP_STATES: readonly PageState[] = [
   ["business step-up, send a code", "Send me a code", "That code didn't work", businessSql("")],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: BUSINESS_STEP_UP_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
+/** The homeowner sign-in form (T307, SEC-008): no seed, the plain path. */
+const HOMEOWNER_SIGNIN_ROUTE = "/h/sign-in";
+const HOMEOWNER_SIGNIN_STATES: readonly PageState[] = [
+  ["homeowner sign-in form", "Your mobile number", "We couldn't sign you in", ""],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: HOMEOWNER_SIGNIN_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
+/**
+ * The homeowner portal home (T307; PRIV-021, CON-035): a fake contact (phone and street sealed in
+ * the keyed binary's vault format) and a homeowner session on it for the token hashing to `:hash`.
+ */
+const HOMEOWNER_HOME_ROUTE = "/h";
+const HOMEOWNER_HOME_STATES: readonly PageState[] = [
+  [
+    "homeowner portal home, texts on",
+    "Turn texts off",
+    "We couldn't sign you in",
+    `WITH c AS (INSERT INTO privacy.contact (id, phone, address) VALUES (':contact', decode(':phone', 'hex'), decode(':street', 'hex')) RETURNING id)
+    INSERT INTO portals.session (token_sha256, realm, actor_id, created_at, expires_at)
+      SELECT decode(':hash', 'hex'), 'homeowner', id, now(), now() + interval '30 days' FROM c`,
+  ],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: HOMEOWNER_HOME_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
+/** Seeds a homeowner home state on the keyed binary (its vault reads her record) with her session cookie. */
+function homeownerSeed(state: PageState): Seeded {
+  const token = randomBytes(32).toString("hex");
+  const contact = randomUUID();
+  const sql = state.sql
+    .replaceAll(":hash", createHash("sha256").update(token).digest("hex"))
+    .replaceAll(":contact", contact)
+    .replaceAll(":phone", seal("privacy.contact", "phone", contact, "+19285550164").toString("hex"))
+    .replaceAll(":street", seal("privacy.contact", "address", contact, "64 Example Way").toString("hex"));
+  const done = spawnSync("psql", [process.env.DATABASE_URL ?? "", "-v", "ON_ERROR_STOP=1", "-q", "-c", sql], { encoding: "utf8" });
+  if (done.status !== 0) throw new Error(`seeding "${state.name}" failed: ${done.stderr}`);
+  return { url: `${keyedUrl()}${state.route}`, cookies: [{ name: "__Host-askhava-session", value: token }] };
+}
+
 /** Every page's entry: its route, its states and its seed function. Append a new page's entry. */
 export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: QUOTE_ROUTE, seed: tokenSeed, states: QUOTE_STATES },
@@ -604,6 +640,8 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: OWNER_SETTINGS_ROUTE, seed: portalSeed(false), states: OWNER_SETTINGS_STATES },
   { route: OWNER_RELEASE_ROUTE, seed: portalSeed(false), states: OWNER_RELEASE_STATES },
   { route: JOB_TYPES_ROUTE, seed: portalSeed(false), states: JOB_TYPES_STATES },
+  { route: HOMEOWNER_SIGNIN_ROUTE, seed: (state) => state.route, states: HOMEOWNER_SIGNIN_STATES },
+  { route: HOMEOWNER_HOME_ROUTE, seed: homeownerSeed, states: HOMEOWNER_HOME_STATES },
 ];
 
 /** Every state of every page, in entry order. */
