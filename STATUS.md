@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-19T11:31:03Z by runner 7be551b7caec (actions).
+Updated 2026-11-19T11:35:05Z by runner ff354758f85f (actions).
 
-**Building: T470 in progress since 10:42Z; 489 of 664 done; week 79% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T470 in progress since 10:42Z; 490 of 664 done; week 79% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 489 of 664 build tasks (owner gates not counted)
+- **Tasks done:** 490 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T470 claimed 10:42Z, lease until 13:42Z; lane 2: T536 claimed 10:45Z, lease until 13:45Z; lane 5: T109 claimed 11:27Z, lease until 14:27Z; lane 7: T593 claimed 11:00Z, lease until 14:00Z
 - **Week:** 79% used, 28.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:30Z, 0 min before this update
+- **Last run:** 11:31Z, 3 min before this update
 - **Keeper:** last ran 11:31Z, next wake 13:45Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 59 problem(s) on tasks still to run (+306 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 61 problem(s) on tasks still to run (+311 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -22,7 +22,7 @@ Updated 2026-11-19T11:31:03Z by runner 7be551b7caec (actions).
 | T540 | portals and server: the owner's release button re-sends an e | MERGE_PENDING | 1 | 54 min | 11:29Z |  |
 | T705 | Integration tests (harness): one shared log capture that a c | MERGE_PENDING | 1 | 114 min | 11:11Z |  |
 | T470 | messaging and server: the worker task that sends queued emai | QUEUED | 1 | 93 min | 10:35Z | Fix-round review (after the one allowed findings round) still found two problems at head d9889d9b8; no reviewer approved |
-| T710 | quotes and licensing (harness): a launch-open category takes | MERGE_PENDING | 1 | 85 min | 10:06Z |  |
+| T710 | quotes and licensing (harness): a launch-open category takes | done | 1 | 85 min | 10:06Z |  |
 | T553 | Decisions digest, piece 8: the next entries after the header | done | 1 | 76 min | 10:04Z |  |
 | T622 | portals: the scorecard's first-six-weeks email panel and OPS | done | 1 | 2 h 41 min | 09:47Z |  |
 | T375 | portals and server: the business's Job types page lets the o | done | 1 | 74 min | 09:18Z |  |
@@ -91,21 +91,20 @@ Updated 2026-11-19T11:31:03Z by runner 7be551b7caec (actions).
 | T583 | intake and server: the quote-count update text is sent at mo | BLOCKED | 1 | 53 min | 12:13Z |  |
 | T700 | Runner (harness): a merge-line task whose turn ran out goes  | done | 1 | 29 min | 12:08Z |  |
 | T200 | ops and portals: the owner help page with its screened reply | QUEUED | 1 | 2 h 57 min | 12:02Z |  |
-| T408 | server: a release waits while safe mode is on and goes ahead | BLOCKED | 2 | 2 h 21 min | 11:34Z |  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 307 of 735 (41.8%) · partial 389 · unstarted 39
-**Tasks merged (throughput only):** 489 of 664
+**Requirements verified:** 309 of 735 (42.0%) · partial 387 · unstarted 39
+**Tasks merged (throughput only):** 490 of 664
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 17 | 18 | 0 | 35 |
 | ai | 9 | 17 | 3 | 29 |
-| businesses | 18 | 39 | 1 | 58 |
+| businesses | 19 | 38 | 1 | 58 |
 | calls | 12 | 13 | 0 | 25 |
 | consent | 15 | 20 | 0 | 35 |
 | fees | 23 | 28 | 1 | 52 |
@@ -114,7 +113,7 @@ Updated 2026-11-19T11:31:03Z by runner 7be551b7caec (actions).
 | licensing | 34 | 14 | 0 | 48 |
 | lifecycle | 18 | 10 | 0 | 28 |
 | messaging | 20 | 24 | 1 | 45 |
-| ops-recovery | 4 | 32 | 18 | 54 |
+| ops-recovery | 5 | 31 | 18 | 54 |
 | privacy | 10 | 20 | 1 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
 | quotes-pick | 27 | 29 | 0 | 56 |
@@ -135,7 +134,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 132 of 263 done
+- stage 5: 133 of 263 done
 - stage 6: 0 of 48 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
