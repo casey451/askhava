@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T17:43:52Z by runner e5def8a3b807 (actions).
+Updated 2026-11-19T17:44:17Z by runner e5def8a3b807 (actions).
 
 **Building: T555 in progress since 15:44Z; 499 of 683 done; week 1% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 499 of 683 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 4: T555 claimed 15:44Z, lease until 20:13Z; lane 5: T607 claimed 17:15Z, lease until 20:15Z; lane 6: T480 claimed 17:18Z, lease until 20:18Z; lane 7: T715 claimed 15:50Z, lease until 20:39Z
+- **Lane:** lane 4: T555 claimed 15:44Z, lease until 20:13Z; lane 5: T607 claimed 17:15Z, lease until 20:15Z; lane 6: T480 claimed 17:18Z, lease until 20:18Z
 - **Week:** 1% used, 189.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 17:40Z, 3 min before this update
 - **Keeper:** last ran 17:40Z, next wake 18:00Z
@@ -19,6 +19,7 @@ Updated 2026-11-19T17:43:52Z by runner e5def8a3b807 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T715 | intake (harness): corrections to T671's walker: alarm answer | MERGE_PENDING | 3 | 113 min | 17:43Z | PLAN GAP: one TD-INT-52 sentence can't be met by intake as planned: "a two-word first text naming a trade opens its job  |
 | T530 | portals: the owner help page and its screened reply box (D-3 | QUEUED | 1 | 117 min | 17:38Z | Review round 2 on head 9cae918e901f6738321e0450589f137ab939da2f: REVIEW-VERDICT: FINDINGS (the one fix round is used). / |
 | T724 | harness: Ci's Rust-test jobs, the worker job and the nightly | MERGE_PENDING | 1 | 50 min | 17:09Z |  |
 | T210 | payments: the money view's sales-tax set-aside and manual ex | MERGE_PENDING | 1 | 53 min | 16:29Z |  |
@@ -59,7 +60,7 @@ Updated 2026-11-19T17:43:52Z by runner e5def8a3b807 (actions).
 | T399 | server: the email's Approve link approves the phone, only wi | done | 1 | 46 min | 04:01Z |  |
 | T484 | portals and quotes: "Call from the Laftly number", the owner | done | 1 | 82 min | 03:26Z |  |
 | T114 | Terms-match-code checks and recurring pricing copy | done | 1 | 71 min | 03:26Z |  |
-| T715 | intake (harness): corrections to T671's walker: alarm answer | BLOCKED | 2 | 83 min | 03:22Z | PLAN GAP: one TD-INT-52 sentence can't be met by intake as planned: "a two-word first text naming a trade opens its job  |
+| T715 | intake (harness): corrections to T671's walker: alarm answer | BLOCKED | 2 | 83 min | 03:22Z |  |
 | T203 | Wording scan: the required statements, business copy lines a | BLOCKED | 3 | 29 min | 03:08Z |  |
 | T306 | server and portals: the complaints page, the emergency-email | done | 1 | 38 min | 02:21Z |  |
 | T203 | Wording scan: the required statements, business copy lines a | check_failed | 2 | 41 min | 01:40Z |  |
@@ -143,7 +144,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 4: T555 (lease until 2026-11-19T20:13:37Z)
 - lane 5: T607 (lease until 2026-11-19T20:15:21Z)
 - lane 6: T480 (lease until 2026-11-19T20:18:37Z)
-- lane 7: T715 (lease until 2026-11-19T20:39:29Z)
 
 ## Last usage reading
-- {"task": "T530", "at": "2026-11-19T17:38:57Z", "cache_creation_input_tokens": 307915, "output_tokens": 77173, "input_tokens": 266, "cache_read_input_tokens": 10596246}
+- {"task": "T715", "at": "2026-11-19T17:43:51Z", "input_tokens": 202, "cache_read_input_tokens": 11137024, "output_tokens": 73150, "cache_creation_input_tokens": 234345}
