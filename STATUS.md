@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T08:36:13Z by runner df9e147aa320 (actions).
+Updated 2026-11-19T08:36:40Z by runner ee18d0c046b3 (actions).
 
 **Building: T536 in progress since 08:14Z; 484 of 664 done; week 76% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -16,7 +16,7 @@ Updated 2026-11-19T08:36:13Z by runner df9e147aa320 (actions).
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T540 (since 2026-11-19T08:04:18Z, no attempt used; a plan change fixes it): T540: dependency T310 is DONE but its owned file app/server/src/owner_portal.rs is not on main; T540: dependency T310 is DONE but its owned file app/server/tests/owner_portal_route.rs is not on main; T540: dependency T310 is DONE but its owned file tests/e2e/owner_portal_served.spec.ts is not on main
 - OWNED GAP T216 (DONE, since 2026-11-19T08:36:02Z; a later task or plan change must add it): T216: app/site/static/photos/hero-kitchen-phone.avif missing on main
-- Strict plan check red: 61 problem(s) on tasks still to run (+301 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 61 problem(s) on tasks still to run (+298 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
