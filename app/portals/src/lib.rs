@@ -49,6 +49,7 @@ mod feedback;
 mod help;
 mod homeowner_portal;
 mod job_release;
+mod job_types_page;
 mod limits;
 mod models;
 mod not_a_fit;
