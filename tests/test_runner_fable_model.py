@@ -155,6 +155,52 @@ def test_a_refusal_for_an_attempt_not_on_fable_changes_nothing(tmp_path: Path) -
     assert env.store == before
 
 
+# ---- the reviewer falls back with the worker (D-4769)
+
+
+def test_a_fable_reviewer_runs_on_opus_once_the_fallback_is_recorded() -> None:
+    off = {"at": st.iso(NOW), "why": "usage limit", "from": FABLE, "to": MODELS["opus"]}
+    tsk = make_task("T001", model=MODELS["opus"], reviewer_model=FABLE)
+    assert cycle.reviewer_model(tsk) == FABLE
+    assert cycle.reviewer_model(dict(tsk, **{cycle.FABLE_OFF: off})) == MODELS["opus"]
+    assert cycle.reviewer_model(dict(tsk, reviewer_model=MODELS["sonnet"], **{cycle.FABLE_OFF: off})) == MODELS["sonnet"]
+    assert cycle.reviewer_model(dict(make_task("T001"), **{cycle.FABLE_OFF: off})) is None
+    mark = {"model": FABLE, "alias": "fable"}
+    assert cycle.reviewer_model(dict(tsk, **{cycle.FABLE_OFF: off, mw.MARK: mark})) == FABLE
+
+
+def test_a_fable_usage_limit_moves_the_reviewer_to_opus_too(tmp_path: Path) -> None:
+    env, cfg = _failed_once(tmp_path)
+    env.worker = lambda t, m, log: cycle.WorkerResult("usage_limit", reset_at=NOW + timedelta(hours=5))
+    cycle.run_cycle(cfg, env, NOW + timedelta(minutes=1))
+    merged = {**st.entry(env.store, "T001"), **make_task("T001", reviewer_model=FABLE)}
+    assert merged[cycle.FABLE_OFF]["from"] == FABLE and cycle.reviewer_model(merged) == MODELS["opus"]
+
+
+def test_a_refused_fable_reviewer_reruns_on_opus_with_the_count_unchanged(tmp_path: Path) -> None:
+    env = FakeEnv(lambda t, m, log: cycle.WorkerResult("handed_off"))
+    cfg = fable_config([make_task("T001", model=MODELS["opus"], reviewer_model=FABLE)], tmp_path)
+    assert cycle.run_cycle(cfg, env, NOW) == "handed_off" and env.runs[-1][1] == MODELS["opus"]
+    line = cycle.model_fallback(cfg, env, REFUSAL)
+    assert line.startswith(f"fable: {FABLE} refused for T001"), line
+    on_fable = cycle.WorkerResult("submitted", ["app/t001/x.py"], [MODELS["opus"]], reviewer_evidence=[FABLE])
+    on_opus = dataclasses.replace(on_fable, reviewer_evidence=[MODELS["opus"]])
+    assert cycle.after_handoff(cfg, copy.deepcopy(env), lambda t: on_fable, own_models=True) != st.MERGE_PENDING
+    assert cycle.after_handoff(cfg, env, lambda t: on_opus, own_models=True) == st.MERGE_PENDING
+    entry = st.entry(env.store, "T001")
+    assert entry["attempts"] == 0 and entry["history"][-1]["reviewer_model"] == MODELS["opus"]
+    assert cs.check(env.store) == []
+
+
+def test_a_reviewer_refusal_without_a_fable_reviewer_changes_nothing(tmp_path: Path) -> None:
+    env = FakeEnv(lambda t, m, log: cycle.WorkerResult("handed_off"))
+    cfg = fable_config([make_task("T001", model=MODELS["opus"], reviewer_model=MODELS["opus"])], tmp_path)
+    cycle.run_cycle(cfg, env, NOW)
+    before = copy.deepcopy(env.store)
+    assert "nothing to fall back from" in cycle.model_fallback(cfg, env, REFUSAL)
+    assert env.store == before
+
+
 # ---- scripts/validate_tasks.py
 
 

@@ -385,12 +385,14 @@ def with_fable_off(task: dict[str, Any], entry: dict[str, Any]) -> dict[str, Any
     return {**task, FABLE_OFF: entry[FABLE_OFF]} if entry.get(FABLE_OFF) else task
 
 
-def fable_off(state: State, tid: str, why: str, now: datetime) -> State:
+def fable_off(state: State, tid: str, why: str, now: datetime, models: dict[str, str]) -> State:
     """Record that Fable refused TID or hit its usage limit (D-4761): this and every later attempt of TID runs
-    on Opus. The first record stays; a second call returns the state unchanged, so the choice is logged once."""
+    on Opus, and so does its reviewer (`from` and `to` name the two model IDs for reviewer_model, D-4769).
+    The first record stays; a second call returns the state unchanged, so the choice is logged once."""
     if st.entry(state, tid).get(FABLE_OFF):
         return state
-    return st.with_task(state, tid, **{FABLE_OFF: {"at": st.iso(now), "why": " ".join(why.split())[:160]}})
+    off = {"at": st.iso(now), "why": " ".join(why.split())[:160], "from": models[FABLE], "to": models["opus"]}
+    return st.with_task(state, tid, **{FABLE_OFF: off})
 
 
 def fable_limited(res: WorkerResult) -> bool:
@@ -415,7 +417,7 @@ def _fable_limit(
         return None
     why = f"usage limit on {fable}"
     print(f"runner: fable: {tid} hit the usage limit on {fable}; it re-runs on {cfg.models['opus']}, no attempt counted (D-4761)")
-    return st.with_task(fable_off(state, tid, why, now), tid, status=st.QUEUED)
+    return st.with_task(fable_off(state, tid, why, now, cfg.models), tid, status=st.QUEUED)
 
 
 def worker_model(task: dict[str, Any], attempts: int, models: dict[str, str]) -> str:
@@ -427,9 +429,13 @@ def worker_model(task: dict[str, Any], attempts: int, models: dict[str, str]) ->
 
 def reviewer_model(task: dict[str, Any]) -> str | None:
     """The model the attempt's reviewer runs on: the window's mark when the task has a reviewer (D-2225),
-    else the task's own `reviewer_model` (None: no review required)."""
+    else the task's own `reviewer_model` (None: no review required). A reviewer on Fable runs on Opus once
+    the task's FABLE_OFF record names that Fable model (`from`, its Opus `to`; D-4769)."""
     mark, want = model_window.mark_of(task), task.get("reviewer_model")
-    return mark["model"] if mark and want else want
+    if mark and want:
+        return str(mark["model"])
+    off = task.get(FABLE_OFF) or {}
+    return str(off["to"]) if want and off.get("to") and want == off.get("from") else want
 
 
 def with_claim_mark(task: dict[str, Any], entry: dict[str, Any]) -> dict[str, Any]:
@@ -3079,13 +3085,16 @@ def model_fallback(cfg: Config, env: Env, why: str) -> str:
 
 
 def _fable_fallback(cfg: Config, env: Env, state: State, tid: str, why: str, now: datetime) -> str:
-    """`--model-fallback` for an attempt on Fable outside a model window (D-4761): FABLE_OFF is recorded, so
-    `--after` judges this attempt on Opus (the session re-ran it there) and later attempts run on Opus; no
-    attempt is counted. Any other attempt has nothing to fall back from."""
+    """`--model-fallback` for an attempt outside a model window whose worker or reviewer is on Fable (D-4761,
+    D-4769): FABLE_OFF is recorded, so `--after` judges this attempt's worker and reviewer on Opus (the session
+    re-ran the refused one there) and later attempts run on Opus; no attempt is counted. Any other attempt has
+    nothing to fall back from."""
     task = {**st.entry(state, tid), **next((t for t in cfg.graph if t["id"] == tid), {})}
     fable = cfg.models.get(FABLE)
-    if not fable or not task.get("model") or worker_model(task, int(task.get("attempts", 0)), cfg.models) != fable:
+    on_fable = fable and task.get("model") and fable in (
+        worker_model(task, int(task.get("attempts", 0)), cfg.models), reviewer_model(task))
+    if not on_fable:
         return f"model window: {tid} was not claimed inside a window; nothing to fall back from"
-    if env.update_state(lambda fresh: fable_off(fresh, tid, f"refused: {why}", now)) is None:
+    if env.update_state(lambda fresh: fable_off(fresh, tid, f"refused: {why}", now, cfg.models)) is None:
         return f"fable: {fable} refused for {tid}; the fallback was not recorded (lost race)"
     return f"fable: {fable} refused for {tid}; it runs on {cfg.models['opus']} from now on, no attempt counted (D-4761)"
