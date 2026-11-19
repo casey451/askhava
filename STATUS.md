@@ -1,28 +1,28 @@
 # Ask Hava build status
 
-Updated 2026-11-19T15:13:21Z by runner 345380f4824a (actions).
+Updated 2026-11-19T15:15:58Z by runner dd768f848177 (actions).
 
-**Building: T541 in progress since 13:09Z; 493 of 668 done; week 84% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T541 in progress since 13:09Z; 495 of 668 done; week 84% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 493 of 668 build tasks (owner gates not counted)
+- **Tasks done:** 495 of 668 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T541 claimed 13:09Z, lease until 18:01Z; lane 5: T470 claimed 13:05Z, lease until 17:30Z; lane 6: T407 claimed 14:19Z, lease until 17:19Z
 - **Week:** 84% used, 21.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:13Z, 0 min before this update
+- **Last run:** 15:13Z, 2 min before this update
 - **Keeper:** last ran 15:13Z, next wake 17:22Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 61 problem(s) on tasks still to run (+312 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 64 problem(s) on tasks still to run (+322 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T593 | site and server: the home hero in D-3331's wording with the  | MERGE_PENDING | 2 | 75 min | 15:11Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
-| T554 | Decisions digest, piece 9: the next entries after the header | MERGE_PENDING | 1 | 110 min | 15:03Z |  |
+| T554 | Decisions digest, piece 9: the next entries after the header | done | 1 | 110 min | 15:03Z |  |
 | T652 | ops: safe mode starts only on OPS-001's alert kinds, and a d | MERGE_PENDING | 2 | 112 min | 15:03Z | PLAN GAP: tests/integration/tests/safe_mode.rs:246,281,320,378,407 (owned by T487 and T408; T652's prompt :11 and :47 sa |
-| T158 | portals: the owner's pilot scorecard page with go and stop l | MERGE_PENDING | 1 | 2 h 57 min | 14:37Z |  |
+| T158 | portals: the owner's pilot scorecard page with go and stop l | done | 1 | 2 h 57 min | 14:37Z |  |
 | T540 | portals and server: the owner's release button re-sends an e | done | 1 | 53 min | 13:47Z |  |
 | T470 | messaging and server: the worker task that sends queued emai | QUEUED | 2 | 2 h 21 min | 13:03Z | Fix-round review (after the one allowed findings round) still found a problem at head 1830747e4; no reviewer approved a  |
 | T593 | site and server: the home hero in D-3331's wording with the  | check_failed | 1 | 95 min | 12:35Z |  |
@@ -98,18 +98,18 @@ Updated 2026-11-19T15:13:21Z by runner 345380f4824a (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 308 of 735 (41.9%) · partial 388 · unstarted 39
-**Tasks merged (throughput only):** 493 of 666
+**Requirements verified:** 310 of 735 (42.2%) · partial 386 · unstarted 39
+**Tasks merged (throughput only):** 495 of 668
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 17 | 18 | 0 | 35 |
 | ai | 9 | 17 | 3 | 29 |
-| businesses | 19 | 38 | 1 | 58 |
+| businesses | 20 | 37 | 1 | 58 |
 | calls | 12 | 13 | 0 | 25 |
 | consent | 14 | 21 | 0 | 35 |
 | fees | 23 | 28 | 1 | 52 |
-| intake | 9 | 34 | 0 | 43 |
+| intake | 10 | 33 | 0 | 43 |
 | job-cards | 13 | 11 | 0 | 24 |
 | licensing | 34 | 14 | 0 | 48 |
 | lifecycle | 18 | 10 | 0 | 28 |
@@ -135,7 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 136 of 267 done
+- stage 5: 138 of 267 done
 - stage 6: 0 of 48 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
