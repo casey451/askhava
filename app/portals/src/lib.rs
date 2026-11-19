@@ -63,6 +63,7 @@ mod quote_cards;
 mod quote_page;
 mod receipts_page;
 mod scorecard_lines;
+mod scorecard_panels;
 mod security;
 mod session;
 mod step_up_page;

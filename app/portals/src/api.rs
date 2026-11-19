@@ -201,6 +201,9 @@ pub use crate::receipts_page::{Basis, WHY_CHARGED_ROUTE, WhyCharged, why_charged
 pub use crate::scorecard_lines::{
     Color, LadderRung, LinesError, Measure, ScorecardLines, color, ladder_rung,
 };
+pub use crate::scorecard_panels::{
+    BusinessQuotes, EmailPanel, TradeFigures, email_panel, trade_figures,
+};
 pub use crate::security::CONFIRM_CONTENT_SECURITY_POLICY;
 pub use crate::security::StripeConfirmCsp;
 pub use crate::security::{
