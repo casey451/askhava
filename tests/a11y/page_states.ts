@@ -442,6 +442,12 @@ const OWNER_STEP_UP_STATES: readonly PageState[] = [
   ],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: OWNER_STEP_UP_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
+/** The business step-up page (T364, SEC-038): the owner signed in, no code sent yet. */
+const BUSINESS_STEP_UP_ROUTE = "/b/step-up";
+const BUSINESS_STEP_UP_STATES: readonly PageState[] = [
+  ["business step-up, send a code", "Send me a code", "That code didn't work", businessSql("")],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: BUSINESS_STEP_UP_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
 /** Every page's entry: its route, its states and its seed function. Append a new page's entry. */
 export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: QUOTE_ROUTE, seed: tokenSeed, states: QUOTE_STATES },
@@ -483,6 +489,7 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: "/request", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/request") },
   { route: OWNER_SIGNIN_ROUTE, seed: (state) => state.route, states: OWNER_SIGNIN_STATES },
   { route: OWNER_STEP_UP_ROUTE, seed: portalSeed(false), states: OWNER_STEP_UP_STATES },
+  { route: BUSINESS_STEP_UP_ROUTE, seed: portalSeed(false), states: BUSINESS_STEP_UP_STATES },
 ];
 
 /** Every state of every page, in entry order. */
