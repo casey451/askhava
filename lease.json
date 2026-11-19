@@ -24,12 +24,7 @@
    "lane": "3"
   },
   "4": null,
-  "5": {
-   "task": "T607",
-   "session": "actions-44567405247",
-   "expires": "2026-11-19T20:15:21Z",
-   "lane": "5"
-  },
+  "5": null,
   "6": {
    "task": "T480",
    "session": "actions-44575057652",
@@ -39,7 +34,7 @@
   "7": null,
   "fix": null
  },
- "seq": 7972,
- "runner_sha": "17e7cbdd4e1bc91544e7a1975b1681774178c856",
+ "seq": 7973,
+ "runner_sha": "2c1fc315ebe435ce689c94c1393ee9511150d881",
  "starter": "actions"
 }
