@@ -1,14 +1,9 @@
 //! The held release (OPS-001, OPS-024, FEE-017, FEE-021, PICK-022, SEC-030; T408, D-133, D-3144,
-//! D-3263, D-4020, D-4419). While safe mode is on, `PickReleaser::settle_and_release` calls
-//! [`hold`]: an already released pick is `Already`; any other queues one [`HELD_RELEASE_KIND`]
-//! task (payload `{"pick", "run_at"}`: a claimed task carries no run time; key `<kind>.<pick>`,
-//! so a second delivery queues no second) due [`HOLD_EVERY`] later. [`run_held_release`] reads
-//! safe mode each run: still on, it enqueues the next run [`HOLD_EVERY`] after its own due time
-//! under `<kind>.<pick>.<next run_at in microseconds>` (a rerun's same key is refused) and
-//! finishes; off, `payments::api::held_release` clears the pick again (the stored intent
-//! re-fetched and checked, or the $0 ledger check), then the releaser's normal settle and
-//! release (FEE-017: a pick no longer awaiting confirm moves nothing; the release row is the
-//! once). A refusal finishes and releases nothing; a database or Stripe failure is retried.
+//! D-3263, D-4020, D-4419). In safe mode `PickReleaser::settle_and_release` calls [`hold`], which
+//! queues one [`HELD_RELEASE_KIND`] task per pick. [`run_held_release`] re-enqueues itself
+//! [`HOLD_EVERY`] after its own due time while safe mode lasts (a rerun's same key is refused);
+//! once it ends, `payments::api::held_release` clears the pick again (the only way, SEC-030) and
+//! the releaser's settle (FEE-017) and release (the row is the once) run.
 
 use askhava_adapters::api::PaymentsAdapter;
 use askhava_core::api::{HandlerError, NewTask, Registry, enqueue};

@@ -546,14 +546,13 @@ fn release_gate_reads_safe_mode(path: &Path, gate: &str) {
 
 /// The name of the `fn` a trimmed line declares, if it declares one.
 fn fn_name(line: &str) -> Option<&str> {
-    let (_, rest) = line.split_once("fn ")?;
-    let before = &line[..line.len() - rest.len() - 3];
-    let words = [
-        "", "pub ", "async ", "const ", "unsafe ", "(crate) ", "(super) ",
-    ];
-    let decl = before
-        .split_inclusive(' ')
-        .all(|w| words.contains(&w) || w.starts_with("pub(") || w.starts_with("extern"));
-    let end = rest.find(|c: char| !(c.is_alphanumeric() || c == '_'))?;
-    (decl && end > 0).then(|| &rest[..end])
+    let words = ["pub(crate) ", "pub ", "async ", "const "];
+    let decl = words
+        .iter()
+        .fold(line, |l, w| l.strip_prefix(w).unwrap_or(l));
+    let rest = decl.strip_prefix("fn ")?;
+    let name = rest
+        .split(|c: char| !(c.is_alphanumeric() || c == '_'))
+        .next();
+    name.filter(|n| !n.is_empty())
 }

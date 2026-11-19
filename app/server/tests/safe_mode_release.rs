@@ -1,10 +1,7 @@
-//! TD-OPS-40 (OPS-001, OPS-024; T408, D-3144, D-4026, D-4326, D-4419): with safe mode on, a
-//! verified success settles and releases nothing and queues one held-release task (a second
-//! delivery none); a failed safe-mode read answers 500 and queues nothing; while safe mode lasts
-//! the task enqueues its next run 15 minutes on (a rerun nothing, D-3263); once it ends the task
-//! releases once; an intent Stripe does not report succeeded is never released; a $0 pick the
-//! same way. Safe mode is set only through the stored `ops.safe_mode` row (D-4326); every other
-//! row comes through a module API, as in `release_recovery.rs`. Fake data only.
+//! TD-OPS-40 (OPS-001, OPS-024; T408, D-3144, D-4021, D-4326, D-4419): a release held in safe
+//! mode (one held-release task, a failed read fails closed), re-run every 15 minutes while it
+//! lasts and released once when it ends; never for an intent Stripe does not report succeeded;
+//! a $0 pick the same way. Every row comes through a module API. Fake data only.
 
 use std::collections::BTreeSet;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
@@ -23,7 +20,9 @@ use askhava_intake::api::rules::{Inbound, Settings as IntakeSettings};
 use askhava_intake::api::{Answer, TextIn, receive_text, record_answer};
 use askhava_jobs::api::{JobStatus, create, move_to, record_job_facts};
 use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
-use askhava_ops::api::Actor;
+use askhava_ops::api::{
+    Actor, NewAlert, Severity, acknowledge_alert, check_safe_mode, raise_alert, record_push,
+};
 use askhava_payments::api::{
     BusinessId, ChargeOutcome, EntryKind, IntentStripe, LedgerEntry, NewEntry, PickNow, Press,
     STRIPE_WEBHOOK_PATH, StripeAccount, StripeWebhook, confirm_and_pay, ensure_customer,
@@ -47,6 +46,7 @@ use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
 use sha2::Sha256;
 use sqlx::PgPool;
+use sqlx::postgres::PgPoolOptions;
 use sqlx::types::Uuid;
 use tower::ServiceExt;
 
@@ -82,13 +82,27 @@ fn masked() -> MaskedPool {
         .clone()
 }
 
-/// Turns the stored safe-mode flag on or off (D-4326).
-async fn safe_mode(pool: &PgPool, on: bool) {
-    sqlx::query(r#"UPDATE ops.safe_mode SET "on" = $1, since = CASE WHEN $1 THEN now() END"#)
-        .bind(on)
-        .execute(pool)
-        .await
-        .expect("flag");
+/// Safe mode on through `ops::api` (D-4326, D-4021): a critical alert pushed 25 hours ago and
+/// `check_safe_mode`; returns the alert.
+async fn safe_mode_starts(pool: &PgPool) -> Uuid {
+    let mut db = pool.acquire().await.expect("db");
+    let alert = NewAlert {
+        kind: "ops.t408_fake_critical",
+        severity: Severity::Critical,
+        subject: None,
+    };
+    let alert = raise_alert(&mut db, &alert).await.expect("alert");
+    let pushed = now() - SignedDuration::from_hours(25);
+    record_push(&mut db, alert, pushed).await.expect("push");
+    assert!(check_safe_mode(&mut db, now()).await.expect("on"));
+    alert
+}
+
+/// Safe mode off: `alert` acknowledged and `check_safe_mode` run again.
+async fn safe_mode_ends(pool: &PgPool, alert: Uuid) {
+    let mut db = pool.acquire().await.expect("db");
+    assert!(acknowledge_alert(&mut db, alert, now()).await.expect("ack"));
+    assert!(!check_safe_mode(&mut db, now()).await.expect("off"));
 }
 
 /// The homeowner's fake contact in the vault and her request naming `job`.
@@ -344,6 +358,11 @@ type Hooks = Arc<StripeWebhook<FakeStripe, PickReleaser>>;
 
 /// The webhook state over the real sink, with Stripe reporting the intent as `status`.
 fn hooks(pool: &PgPool, pick: Uuid, status: &'static str) -> Hooks {
+    hooks_with((pool, pool), pick, status)
+}
+
+/// [`hooks`] with the sink on its own pool `sink`.
+fn hooks_with((pool, sink): (&PgPool, &PgPool), pick: Uuid, status: &'static str) -> Hooks {
     let none: [(String, String); 0] = [];
     let clock = Arc::new(ManualClock::new(now()));
     Arc::new(StripeWebhook {
@@ -358,7 +377,7 @@ fn hooks(pool: &PgPool, pick: Uuid, status: &'static str) -> Hooks {
         stand_in_host: IpAddr::V4(Ipv4Addr::LOCALHOST),
         client_ip: ClientIpPolicy::from_pairs(none).expect("policy"),
         clock: clock.clone(),
-        sink: PickReleaser::new(pool.clone(), vault(), masked(), clock),
+        sink: PickReleaser::new(sink.clone(), vault(), masked(), clock),
     })
 }
 
@@ -391,17 +410,12 @@ async fn deliver(hooks: Hooks, pick: Uuid, event: &str) -> StatusCode {
 /// The one held-release task queued since the last claim for `pick`, checked due at `due`.
 async fn one_held(pool: &PgPool, pick: Uuid, due: Timestamp) -> Claimed {
     let queued = tasks(pool).await;
-    assert!(
-        of(&queued, BUSINESS_NOTICE_KIND, pick).is_empty(),
-        "no notice"
-    );
+    assert!(of(&queued, BUSINESS_NOTICE_KIND, pick).is_empty());
     let mut held = of(&queued, HELD_RELEASE_KIND, pick);
     assert_eq!(held.len(), 1, "one held-release task");
     let task = held.remove(0);
-    assert_eq!(
-        task.payload["run_at"].as_str(),
-        Some(due.to_string().as_str())
-    );
+    let due = due.to_string();
+    assert_eq!(task.payload["run_at"].as_str(), Some(due.as_str()));
     task
 }
 
@@ -409,18 +423,15 @@ async fn one_held(pool: &PgPool, pick: Uuid, due: Timestamp) -> Claimed {
 async fn ends_and_releases_once(
     pool: &PgPool,
     hooks: &Hooks,
-    (job, pick): (Uuid, Uuid),
+    (job, pick, alert): (Uuid, Uuid, Uuid),
     due: Timestamp,
 ) {
     let held = one_held(pool, pick, due).await;
-    safe_mode(pool, false).await;
+    safe_mode_ends(pool, alert).await;
     run_held_release(pool, hooks, &held.payload)
         .await
         .expect("released");
-    assert!(
-        released(pool, (job, pick)).await.0,
-        "released once safe mode ends"
-    );
+    assert!(released(pool, (job, pick)).await.0);
     assert_eq!(
         counts(pool, pick).await,
         (0, 1),
@@ -435,7 +446,7 @@ async fn ends_and_releases_once(
 async fn td_ops_40_a_success_in_safe_mode_is_held_then_released_once_it_ends(pool: PgPool) {
     let (business, job, pick) = picked(&pool).await;
     paid(&pool, (business, job, pick)).await;
-    safe_mode(&pool, true).await;
+    let alert = safe_mode_starts(&pool).await;
     let hooks = hooks(&pool, pick, "succeeded");
     for event in ["evt_fake408a", "evt_fake408b"] {
         assert_eq!(deliver(hooks.clone(), pick, event).await, StatusCode::OK);
@@ -454,7 +465,7 @@ async fn td_ops_40_a_success_in_safe_mode_is_held_then_released_once_it_ends(poo
         .await
         .expect("held again");
     let due = now() + HOLD_EVERY + HOLD_EVERY + HOLD_EVERY;
-    ends_and_releases_once(&pool, &hooks, (job, pick), due).await;
+    ends_and_releases_once(&pool, &hooks, (job, pick, alert), due).await;
     assert!(
         released(&pool, (job, pick)).await.1,
         "the masked line opens"
@@ -462,16 +473,16 @@ async fn td_ops_40_a_success_in_safe_mode_is_held_then_released_once_it_ends(poo
 }
 
 /// TD-OPS-40 (OPS-001, SEC-030): a failed safe-mode read fails closed: the route answers 500,
-/// nothing is released and nothing is queued.
+/// nothing is released and nothing is queued. The sink's pool runs as `pg_monitor`, which cannot
+/// use schema `ops`, since this file may hold no SQL (TD-SEC-10, D-4021).
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn td_ops_40_a_failed_safe_mode_read_releases_and_queues_nothing(pool: PgPool) {
     let (business, job, pick) = picked(&pool).await;
     paid(&pool, (business, job, pick)).await;
-    sqlx::query("ALTER TABLE ops.safe_mode RENAME TO safe_mode_unreadable")
-        .execute(&pool)
-        .await
-        .expect("rename");
-    let hooks = hooks(&pool, pick, "succeeded");
+    let options = pool.connect_options().as_ref().clone();
+    let no_ops = options.options([("role", "pg_monitor")]);
+    let unreadable = PgPoolOptions::new().connect_lazy_with(no_ops);
+    let hooks = hooks_with((&pool, &unreadable), pick, "succeeded");
     let answer = deliver(hooks, pick, "evt_fake408c").await;
     assert_eq!(answer, StatusCode::INTERNAL_SERVER_ERROR);
     assert_eq!(released(&pool, (job, pick)).await, (false, false));
@@ -484,11 +495,11 @@ async fn td_ops_40_a_failed_safe_mode_read_releases_and_queues_nothing(pool: PgP
 async fn td_ops_40_a_held_pick_stripe_does_not_report_paid_is_not_released(pool: PgPool) {
     let (business, job, pick) = picked(&pool).await;
     paid(&pool, (business, job, pick)).await;
-    safe_mode(&pool, true).await;
+    let alert = safe_mode_starts(&pool).await;
     let answer = deliver(hooks(&pool, pick, "succeeded"), pick, "evt_fake408d").await;
     assert_eq!(answer, StatusCode::OK);
     let held = one_held(&pool, pick, now() + HOLD_EVERY).await;
-    safe_mode(&pool, false).await;
+    safe_mode_ends(&pool, alert).await;
     let unpaid = hooks(&pool, pick, "requires_payment_method");
     run_held_release(&pool, &unpaid, &held.payload)
         .await
@@ -516,7 +527,7 @@ async fn td_ops_40_a_zero_fee_pick_is_held_and_released_the_same_way(pool: PgPoo
     ledger_append(&mut db, &entry).await.expect("ledger");
     let cleared = no_fee_release(&mut db, pick, (business, job)).await;
     drop(db);
-    safe_mode(&pool, true).await;
+    let alert = safe_mode_starts(&pool).await;
     let hooks = hooks(&pool, pick, "succeeded");
     let held = hooks
         .sink
@@ -524,5 +535,5 @@ async fn td_ops_40_a_zero_fee_pick_is_held_and_released_the_same_way(pool: PgPoo
         .await;
     assert!(matches!(held.expect("held"), Released::MovedOn));
     assert_eq!(released(&pool, (job, pick)).await, (false, false));
-    ends_and_releases_once(&pool, &hooks, (job, pick), now() + HOLD_EVERY).await;
+    ends_and_releases_once(&pool, &hooks, (job, pick, alert), now() + HOLD_EVERY).await;
 }

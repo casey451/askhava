@@ -31,9 +31,7 @@
 //! and `picks::api::settle` in one transaction, then the same mint and release, so the masked
 //! line opens then.
 //!
-//! T408 (OPS-001, OPS-024, D-3144): while `ops::api::safe_mode_on` is true, `settle_and_release`
-//! settles and releases nothing and queues the pick's one held-release task (`release_hold`); an
-//! error reading safe mode is `ReleaseError::Database` (fails closed, Stripe sends again).
+//! T408 (OPS-001, OPS-024, D-3144): in safe mode `settle_and_release` holds the pick instead.
 
 use std::io;
 use std::net::{IpAddr, Ipv4Addr};
