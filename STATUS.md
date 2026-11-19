@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T12:33:12Z by runner 8ad8b6ef11ba (actions).
+Updated 2026-11-19T12:33:40Z by runner 8ad8b6ef11ba (actions).
 
 **Building: T470 in progress since 10:42Z; 491 of 664 done; week 80% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 491 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T470 claimed 10:42Z, lease until 14:53Z; lane 2: T536 claimed 10:45Z, lease until 15:30Z; lane 3: T158 claimed 11:39Z, lease until 14:39Z; lane 7: T593 claimed 11:00Z, lease until 15:27Z
+- **Lane:** lane 1: T470 claimed 10:42Z, lease until 14:53Z; lane 3: T158 claimed 11:39Z, lease until 14:39Z; lane 7: T593 claimed 11:00Z, lease until 15:27Z
 - **Week:** 80% used, 28.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:32Z, 0 min before this update
+- **Last run:** 12:32Z, 1 min before this update
 - **Keeper:** last ran 12:29Z, next wake 13:47Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Updated 2026-11-19T12:33:12Z by runner 8ad8b6ef11ba (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T536 | E2e harness: clock-advancing journeys last, a keyed worker,  | MERGE_PENDING | 2 | 107 min | 12:33Z | PLAN GAP: tests/e2e/j2.ts:150 (owned by T099, `e2e-j2-business`; T644 also lists it). Smallest plan change: make the `no |
 | T109 | recovery: backup checks and the nightly encrypted export | BLOCKED | 1 | 20 min | 11:47Z | PLAN GAP: `deny.toml:3` (owned by T009 and T604, both outside T109; T109 does not own it): every `age` release fails `ca |
 | T540 | portals and server: the owner's release button re-sends an e | resync | 1 | 54 min | 11:29Z | merging main into the reviewed head conflicts in tests/a11y/page_states.ts; a resync merges it in on this attempt (D-891 |
 | T705 | Integration tests (harness): one shared log capture that a c | done | 1 | 114 min | 11:11Z |  |
@@ -29,7 +30,7 @@ Updated 2026-11-19T12:33:12Z by runner 8ad8b6ef11ba (actions).
 | T622 | portals: the scorecard's first-six-weeks email panel and OPS | done | 1 | 2 h 41 min | 09:47Z |  |
 | T375 | portals and server: the business's Job types page lets the o | done | 1 | 74 min | 09:18Z |  |
 | T652 | ops: safe mode starts only on OPS-001's alert kinds, and a d | BLOCKED | 1 | 5 min | 09:10Z | PLAN GAP: tests/integration/tests/safe_mode.rs:246,281,320,378,407 (owned by T487 and T408; T652's prompt :11 and :47 sa |
-| T536 | E2e harness: clock-advancing journeys last, a keyed worker,  | BLOCKED | 1 | 46 min | 09:00Z | PLAN GAP: tests/e2e/j2.ts:150 (owned by T099, `e2e-j2-business`; T644 also lists it). Smallest plan change: make the `no |
+| T536 | E2e harness: clock-advancing journeys last, a keyed worker,  | BLOCKED | 1 | 46 min | 09:00Z |  |
 | T476 | portals: the owner health page with every OPS-008 figure and | done | 1 | 2 h 27 min | 08:50Z |  |
 | T161 | wording: the WORD-024 voice rule's pressure-word scan, the r | BLOCKED | 1 | 4 min | 08:41Z | PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/s |
 | T456 | picks and server: "Hold for 2 more hours" is stored, honoure | done | 1 | 97 min | 08:35Z |  |
@@ -140,9 +141,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T470 (lease until 2026-11-19T14:53:27Z)
-- lane 2: T536 (lease until 2026-11-19T15:30:09Z)
 - lane 3: T158 (lease until 2026-11-19T14:39:32Z)
 - lane 7: T593 (lease until 2026-11-19T15:27:35Z)
 
 ## Last usage reading
-- {"task": "T109", "at": "2026-11-19T11:47:45Z", "output_tokens": 70908, "cache_creation_input_tokens": 196678, "cache_read_input_tokens": 12046035, "input_tokens": 201}
+- {"task": "T536", "at": "2026-11-19T12:33:10Z", "cache_read_input_tokens": 4070194, "output_tokens": 30051, "cache_creation_input_tokens": 127674, "input_tokens": 125}
