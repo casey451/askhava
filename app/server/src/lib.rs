@@ -39,6 +39,7 @@ pub mod business_contacts;
 pub mod business_portal;
 pub mod business_signin;
 pub mod business_signup;
+pub mod business_step_up;
 pub mod call_status;
 pub mod cant_take_route;
 pub mod catalog_start;
@@ -141,6 +142,7 @@ impl Default for SiteParts {
 struct BusinessParts {
     signin: Option<business_signin::ServedSignIn>,
     signup: Option<business_signup::ServedSignUp>,
+    step_up: Option<askhava_portals::api::StepUpCodes>,
     vault: Option<Arc<Vault>>,
     confirm: Option<ConfirmSettings>,
 }
@@ -157,6 +159,14 @@ impl RouterParts {
     #[must_use]
     pub fn with_sign_up(mut self, signup: business_signup::ServedSignUp) -> Self {
         self.business.signup = Some(signup);
+        self
+    }
+
+    /// Adds the step-up page's Verify part (T364, D-3744; `business_step_up::step_up_codes`);
+    /// without it the step-up routes are still served and a send sends nothing.
+    #[must_use]
+    pub fn with_step_up(mut self, codes: Option<askhava_portals::api::StepUpCodes>) -> Self {
+        self.business.step_up = codes;
         self
     }
 
@@ -280,7 +290,8 @@ impl ApprovalSecret for StripeApproval {
 /// The served business sign-in (T280) and sign-up (T302) routes, each only when its part is given,
 /// the business portal (T300) over `pool`, always (`business_portal::served`), and the Confirm
 /// route (T261) from the Stripe hooks, with the parts' Confirm settings, else none; the "Can't
-/// take it" page and button ([`cant_take_route`], T472), always; and the
+/// take it" page and button ([`cant_take_route`], T472), always; the business step-up page
+/// ([`business_step_up`], T364), always, sending codes only with its part; and the
 /// owner's sign-in, step-up and sign-out routes ([`owner_signin`], T303), always.
 fn business_pages(
     parts: BusinessParts,
@@ -301,9 +312,11 @@ fn business_pages(
     });
     let owner = owner_signin::routes(pool.clone());
     let cant_take = cant_take_route::routes(pool.clone());
+    let step_up = business_step_up::routes(pool.clone(), parts.step_up);
     let portal = business_portal::served(pool, parts.vault, (webhooks, voice))
         .merge(confirm)
-        .merge(cant_take);
+        .merge(cant_take)
+        .merge(step_up);
     (parts.signin)
         .map_or_else(Router::new, business_signin::ServedSignIn::into_router)
         .merge(
@@ -818,13 +831,24 @@ where
     register_accepted_quote(&mut registry);
     register_purge_handlers(&mut registry, &clock);
     if let Some(keys) = texts {
-        let text_clock = Arc::clone(&clock);
-        registry.register(askhava_jobs::api::TEXT_KIND, move |pool, task| {
-            let now = text_clock.now();
-            askhava_intake::api::run_job_text_at(pool, Arc::clone(&keys), task, now)
-        });
+        register_job_texts(&mut registry, &keys, &clock);
     }
     registry
+}
+
+/// `intake`'s homeowner job texts (`jobs.homeowner_text`, D-1030 (A)) and quote-count update
+/// texts (`quotes.count_update`, TXT-017, T583) on the worker's clock.
+fn register_job_texts(registry: &mut Registry, keys: &Arc<JobTextKeys>, clock: &Arc<dyn Clock>) {
+    let (text_keys, text_clock) = (Arc::clone(keys), Arc::clone(clock));
+    registry.register(askhava_jobs::api::TEXT_KIND, move |pool, task| {
+        let now = text_clock.now();
+        askhava_intake::api::run_job_text_at(pool, Arc::clone(&text_keys), task, now)
+    });
+    let (update_keys, update_clock) = (Arc::clone(keys), Arc::clone(clock));
+    registry.register(askhava_quotes::api::COUNT_UPDATE_KIND, move |pool, task| {
+        let now = update_clock.now();
+        askhava_intake::api::run_quote_update_at(pool, Arc::clone(&update_keys), task, now)
+    });
 }
 
 /// `picks`' notices to the business: the pick notice with the worker's Confirm window and its end

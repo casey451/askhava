@@ -33,6 +33,7 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - `Notice::PickLapsed` names only the lapsed business and her quote-page link: no amount and no other business's contact (PICK-046): `tests/integration/tests/pick_lapsed_email.rs` (T446).
 - CON-022: no opt-out event a suppression row references and never a number's newest is purged, nothing goes before 1,827 days after the number's last message, and a temporary table cannot shadow the guard: `tests/integration/tests/consent_purge.rs` (`td_con_30_*`, T321).
 - No index key version is retired while a suppression row is held under it: `check_suppression_versions` refuses the start, naming versions only: `tests/integration/tests/suppression_key_versions.rs` (TD-PRIV-31, D-4418).
+- An opt-out of a number waits for the consent sweep's `still_unlisted` lock and the sweep's re-check waits for an open opt-out: `tests/integration/tests/optout_number_lock.rs` (TD-CON-37, T701).
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/messaging/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/messaging/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).
