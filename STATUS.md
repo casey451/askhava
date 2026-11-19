@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T03:59:29Z by runner 5ba2bea829be (actions).
+Updated 2026-11-19T04:01:29Z by runner 82a5f5d741df (actions).
 
 **Building: T408 in progress since 03:29Z; 472 of 663 done; week 73% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 472 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T408 claimed 03:29Z, lease until 06:29Z; lane 2: T520 claimed 01:57Z, lease until 06:52Z; lane 5: T563 claimed 02:48Z, lease until 05:48Z; lane 6: T490 claimed 02:10Z, lease until 06:17Z; lane 7: T399 claimed 03:14Z, lease until 06:59Z
+- **Lane:** lane 1: T408 claimed 03:29Z, lease until 06:29Z; lane 2: T520 claimed 01:57Z, lease until 06:52Z; lane 5: T563 claimed 02:48Z, lease until 07:01Z; lane 6: T490 claimed 02:10Z, lease until 06:17Z; lane 7: T399 claimed 03:14Z, lease until 06:59Z
 - **Week:** 73% used, 42.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:58Z, 0 min before this update
+- **Last run:** 03:59Z, 1 min before this update
 - **Keeper:** last ran 03:33Z, next wake 05:50Z
 
 ## Needs attention
@@ -16,7 +16,7 @@ Updated 2026-11-19T03:59:29Z by runner 5ba2bea829be (actions).
 Evidence: `trade_check` passes no words when the first tex; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T715 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 59 problem(s) on tasks still to run (+280 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 62 problem(s) on tasks still to run (+282 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -138,7 +138,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T408 (lease until 2026-11-19T06:29:11Z)
 - lane 2: T520 (lease until 2026-11-19T06:52:34Z)
-- lane 5: T563 (lease until 2026-11-19T05:48:39Z)
+- lane 5: T563 (lease until 2026-11-19T07:01:29Z)
 - lane 6: T490 (lease until 2026-11-19T06:17:23Z)
 - lane 7: T399 (lease until 2026-11-19T06:59:29Z)
 
