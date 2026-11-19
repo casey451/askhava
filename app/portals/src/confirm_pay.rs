@@ -636,8 +636,8 @@ homeowner's details as soon as Stripe confirms the payment.";
 
 /// SEC-038, T541: a paid press changing the saved card without a fresh code.
 const PAID_CODE_LINE: &str = "Payment sent. You already have a saved card, so we kept it. \
-Changing it needs a phone code from the last 5 minutes. You'll get the homeowner's details as \
-soon as Stripe confirms the payment.";
+Changing it needs a code we sent to your phone or email in the last 5 minutes. You'll get the \
+homeowner's details as soon as Stripe confirms the payment.";
 
 /// FEE-014, T541: a press with the save box ticked that needs the bank's approval.
 const APPROVE_NOT_SAVED_LINE: &str = "Your bank wants to check this payment. Follow the steps in \
@@ -653,8 +653,8 @@ card. The homeowner's details are in your portal.";
 
 /// SEC-038, T541: a $0 Confirm changing the saved card without a fresh code.
 const CONFIRMED_CODE_LINE: &str = "Confirmed. No fee is due. You already have a saved card, so \
-we kept it. Changing it needs a phone code from the last 5 minutes. The homeowner's details are \
-in your portal.";
+we kept it. Changing it needs a code we sent to your phone or email in the last 5 minutes. The \
+homeowner's details are in your portal.";
 
 /// The served route's settings part (D-3813, D-3717): Stripe's publishable key, the launch
 /// instant and `ASKHAVA_ID_SECRET` (the idempotency and entity-key secret), which `main` builds.
@@ -1458,8 +1458,7 @@ where
             let released = release_no_fee(&mut db, &route.hooks.sink, pick).await;
             released.map_err(|_| ())?;
             drop(db);
-            let plan = save_plan(&route.hooks.pool, mine, attempt).await?;
-            let saved = save_unpaid(route, settings, mine, (plan, attempt)).await;
+            let (plan, saved) = plan_and_save_unpaid(route, settings, mine, attempt).await;
             let reply = said("confirmed", CONFIRMED_LINE, Some(PORTAL_LINK));
             Ok(with_save(reply, plan, saved))
         }
@@ -1596,6 +1595,28 @@ async fn save_plan(pool: &PgPool, mine: &Mine, attempt: Attempt<'_>) -> Result<S
         Ok(()) => Ok(SavePlan::Change),
         Err(StepUpError::NeedsCode) => Ok(SavePlan::NeedsCode),
         Err(StepUpError::Database) => Err(()),
+    }
+}
+
+/// FEE-048, SEC-038, T541: a released $0 Confirm's save plan and whether its card was stored; the
+/// pick is already released, so a database error while planning (only when the box is ticked)
+/// answers "card not saved" (`SavePlan::New`, not stored) rather than failing the press.
+async fn plan_and_save_unpaid<S, R>(
+    route: &ConfirmRoute<S, R>,
+    settings: &ConfirmSettings,
+    mine: &Mine,
+    attempt: Attempt<'_>,
+) -> (SavePlan, bool)
+where
+    S: IntentStripe + Send + Sync,
+    R: ReleaseSink,
+{
+    match save_plan(&route.hooks.pool, mine, attempt).await {
+        Ok(plan) => (
+            plan,
+            save_unpaid(route, settings, mine, (plan, attempt)).await,
+        ),
+        Err(()) => (SavePlan::New, false),
     }
 }
 

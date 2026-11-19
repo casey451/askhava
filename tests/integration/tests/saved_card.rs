@@ -23,6 +23,7 @@ use askhava_businesses::api::{Acting, SignUpForm, add_owner, record_step_up, sig
 use askhava_core::api::{ClientIpPolicy, Guarded, MIGRATOR, ManualClock, SystemClock};
 use askhava_intake::api::rules::{Inbound, Settings as IntakeSettings};
 use askhava_intake::api::{Answer as TextAnswer, TextIn, receive_text, record_answer};
+use askhava_integration::log_capture;
 use askhava_jobs::api::{JobStatus, create, move_to, record_job_facts};
 use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
 use askhava_ops::api::Actor;
@@ -603,7 +604,9 @@ async fn td_sec_70_a_ticked_box_stores_stripes_own_report(pool: PgPool) {
     let s = served(&pool, paid_launch(), CARD);
     let forged = format!("{}&brand=amex&last4=0005", ticked(POSTED));
     assert_eq!(press(&s.app, &p, &forged).await.0, 422);
+    let logs = log_capture::start();
     let (status, reply) = press(&s.app, &p, &ticked(POSTED)).await;
+    no_method_logged(&logs);
     assert_eq!(status, 200);
     assert!(
         reply.contains("Your card is saved for next time"),
@@ -692,10 +695,20 @@ async fn td_sec_70_a_saved_card_changes_only_with_a_fresh_code(pool: PgPool) {
     record_step_up(&mut db, by, now() - SignedDuration::from_secs(120))
         .await
         .expect("step-up");
+    let logs = log_capture::start();
     let (_, reply) = press(&s.app, &q, &ticked(POSTED)).await;
+    no_method_logged(&logs);
     assert!(reply.contains("Your card is saved") && !reply.contains(SAVE_CODE_LABEL));
     let stored = cards(&pool, q.business).await;
     assert!(stored.iter().any(|c| c.0 == ANSWERED), "{stored:?}");
+}
+
+/// TD-SEC-70: no log line of the press holds a `pm_…` ID, posted or answered by Stripe.
+fn no_method_logged(logs: &log_capture::Capture) {
+    let all = logs.all();
+    for id in [ANSWERED, POSTED, SET_UP] {
+        assert!(!all.contains(id), "a log line holds {id}: {all}");
+    }
 }
 
 /// A second business's earlier card (each `pm_…` belongs to one business).
@@ -751,7 +764,9 @@ async fn td_sec_70_a_zero_confirm_saves_through_an_off_session_setup_intent(pool
     let launch = now() - SignedDuration::from_hours(24);
     let p = picked(&pool, true).await;
     let s = served(&pool, launch, CARD);
+    let logs = log_capture::start();
     let (_, reply) = press(&s.app, &p, &ticked(POSTED)).await;
+    no_method_logged(&logs);
     assert!(
         reply.contains("\"confirmed\"") && reply.contains("saved for next time"),
         "{reply}"
