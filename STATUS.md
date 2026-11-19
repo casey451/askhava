@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T04:42:45Z by runner 547545f44116 (actions).
+Updated 2026-11-19T04:43:20Z by runner 547545f44116 (actions).
 
 **Building: T408 in progress since 03:29Z; 474 of 664 done; week 74% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 474 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T408 claimed 03:29Z, lease until 06:29Z; lane 3: T203 claimed 04:08Z, lease until 07:08Z; lane 4: T562 claimed 04:26Z, lease until 07:26Z
-- **Week:** 74% used, 41.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:38Z, 4 min before this update
+- **Lane:** lane 1: T408 claimed 03:29Z, lease until 06:29Z; lane 3: T203 claimed 04:08Z, lease until 07:08Z; lane 4: T562 claimed 04:26Z, lease until 07:26Z; lane 7: T229 claimed 04:42Z, lease until 07:42Z
+- **Week:** 74% used, 41.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 04:43Z, 0 min before this update
 - **Keeper:** last ran 04:37Z, next wake 04:57Z
 
 ## Needs attention
@@ -124,7 +124,7 @@ Updated 2026-11-19T04:42:45Z by runner 547545f44116 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-19T04:24:00Z (week)): week: 152.8M used, 41.2M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T01:44:05Z.
+- Pacing (session_reading 2026-11-19T04:37:11Z (week)): week: 152.7M used, 41.3M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T04:38:30Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -142,6 +142,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T408 (lease until 2026-11-19T06:29:11Z)
 - lane 3: T203 (lease until 2026-11-19T07:08:12Z)
 - lane 4: T562 (lease until 2026-11-19T07:26:11Z)
+- lane 7: T229 (lease until 2026-11-19T07:42:10Z)
 
 ## Last usage reading
 - {"task": "T490", "at": "2026-11-19T04:35:43Z", "input_tokens": 341, "cache_creation_input_tokens": 366069, "cache_read_input_tokens": 17968335, "output_tokens": 97612}
