@@ -51,6 +51,9 @@ pub enum RecoveryError {
     /// A database read or write failed.
     #[error("database error")]
     Database,
+    /// The export passed its deadline; its `pg_dump` was killed (OPS-013).
+    #[error("export timed out")]
+    Timeout,
 }
 
 impl RecoveryError {
@@ -65,6 +68,7 @@ impl RecoveryError {
             Self::Encrypt => "encrypt",
             Self::Storage => "storage",
             Self::Database => "database",
+            Self::Timeout => "timeout",
         }
     }
 }

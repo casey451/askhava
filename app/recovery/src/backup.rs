@@ -10,13 +10,17 @@
 //! one `ops` audit entry in one transaction. Missing export settings fail the run closed in dev and
 //! CI; in test and live [`register_export`] refuses to start. [`pg_tool`] finds `pg_dump`,
 //! `pg_restore`, `psql`, `initdb` or `pg_ctl` by name on `PATH`, PostgreSQL 16 only (T206 and T648
-//! reuse it). A handler runs under the worker's 2-minute timeout, which bounds the dump's size.
+//! reuse it). The worker drops a handler unrecorded at its 2-minute lease, so each export has its
+//! own [`EXPORT_DEADLINE`] under it: past that the export is dropped, its `pg_dump` killed and
+//! reaped (the [`Dump`] guard), and the run recorded as a `timeout` failure. `pg_dump` starts with
+//! a cleared environment (only `PATH` and `PGPASSWORD`), so no host secret reaches it.
 
 use std::ffi::OsStr;
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::sync::Arc;
+use std::time::Duration;
 
 use askhava_adapters::api::{IdempotencyKey, StorageAdapter};
 use askhava_core::api::{Clock, Environment, HandlerError, NewTask, Registry, Settings, enqueue};
@@ -45,6 +49,10 @@ pub const PG_MAJOR: u32 = 16;
 /// OPS-013: the export's hour in UTC, 3 a.m. in Arizona (a fixed UTC-7), outside business hours.
 const EXPORT_HOUR_UTC: i64 = 10;
 const DAY_SECS: i64 = 86_400;
+
+/// OPS-013: one export's deadline, under the worker's 2-minute lease so a slow run is still
+/// recorded (as `timeout`) rather than dropped by the worker unrecorded.
+pub const EXPORT_DEADLINE: Duration = Duration::from_secs(100);
 
 /// A PostgreSQL 16 binary found on `PATH` (D-4708).
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -125,10 +133,13 @@ fn percent_decode(text: &str) -> Option<String> {
     String::from_utf8(out).ok()
 }
 
-/// OPS-051: the `pg_dump -Fc` command for `url`, its stdout piped and nothing read from a prompt.
+/// OPS-051, SEC-052: the `pg_dump -Fc` command for `url`, its stdout piped, nothing read from a
+/// prompt, and its environment cleared to `PATH` and `PGPASSWORD` so no host key reaches it.
 fn dump_command(tool: &PgTool, url: &SecretString) -> Result<Command, RecoveryError> {
     let (dbname, password) = split_password(url)?;
     let mut cmd = Command::new(&tool.path);
+    cmd.env_clear()
+        .env("PATH", std::env::var_os("PATH").unwrap_or_default());
     cmd.args(["--format=custom", "--no-password", "--dbname"])
         .arg(dbname)
         .stdin(Stdio::null())
@@ -156,21 +167,38 @@ fn encrypt_stream(
     Ok(out)
 }
 
-/// OPS-051, PRIV-024: runs the dump and encrypts it as it streams. Blocking.
-fn dump_encrypted(tool: &PgTool, export: &ExportSettings) -> Result<Vec<u8>, RecoveryError> {
-    let mut child = dump_command(tool, &export.backup_url)?
+/// OPS-013: a running `pg_dump`, killed and reaped when dropped before it exited (a failed
+/// encryption, or the export dropped at [`EXPORT_DEADLINE`]), so no dump outlives its run.
+struct Dump(std::process::Child);
+
+impl Drop for Dump {
+    fn drop(&mut self) {
+        if matches!(self.0.try_wait(), Ok(None)) {
+            self.0.kill().ok();
+            self.0.wait().ok();
+        }
+    }
+}
+
+/// OPS-051, PRIV-024: runs the dump and encrypts it as it streams, off the async runtime.
+async fn dump_encrypted(tool: &PgTool, export: ExportSettings) -> Result<Vec<u8>, RecoveryError> {
+    let child = dump_command(tool, &export.backup_url)?
         .spawn()
         .map_err(|_| RecoveryError::Dump)?;
-    let stdout = child.stdout.take().ok_or(RecoveryError::Dump)?;
-    let encrypted = encrypt_stream(stdout, &export.recipient);
-    if encrypted.is_err() {
-        child.kill().ok();
-    }
-    let status = child.wait().map_err(|_| RecoveryError::Dump)?;
+    let mut dump = Dump(child);
+    let stdout = dump.0.stdout.take().ok_or(RecoveryError::Dump)?;
+    let recipient = export.recipient;
+    let encrypted = tokio::task::spawn_blocking(move || encrypt_stream(stdout, &recipient))
+        .await
+        .map_err(|_| RecoveryError::Dump)??;
+    let status = tokio::task::spawn_blocking(move || dump.0.wait())
+        .await
+        .map_err(|_| RecoveryError::Dump)?
+        .map_err(|_| RecoveryError::Dump)?;
     if !status.success() {
         return Err(RecoveryError::Dump);
     }
-    encrypted
+    Ok(encrypted)
 }
 
 /// D-3155 (b): refuses a `pg_dump` whose major is not the server's.
@@ -211,9 +239,7 @@ async fn export_once<S: StorageAdapter>(
         .await
         .map_err(|_| RecoveryError::Dump)??;
     check_server_major(pool, &tool).await?;
-    let bytes = tokio::task::spawn_blocking(move || dump_encrypted(&tool, &export))
-        .await
-        .map_err(|_| RecoveryError::Dump)??;
+    let bytes = dump_encrypted(&tool, export).await?;
     let sha256 = Sha256::digest(&bytes).to_vec();
     let size = i64::try_from(bytes.len()).map_err(|_| RecoveryError::Storage)?;
     let key = IdempotencyKey::derive(secret, EXPORT_KIND, &[&name]);
@@ -296,12 +322,13 @@ pub async fn schedule_export(db: &mut PgConnection, now: Timestamp) -> Result<()
         .map_err(|_| RecoveryError::Database)
 }
 
-/// OPS-013, PRIV-018, PRIV-029: one nightly run: queue the next, export, record the result.
+/// OPS-013, PRIV-018, PRIV-029: one nightly run: queue the next, export within `deadline` (past
+/// it the dump is killed and the run is a `timeout` failure), record the result.
 async fn run_export<S: StorageAdapter>(
     pool: &PgPool,
     parts: (&S, &SecretString, &dyn Clock),
     export: &Result<ExportSettings, RecoveryError>,
-    task: i64,
+    (task, deadline): (i64, Duration),
 ) -> Result<(), HandlerError> {
     let (store, secret, clock) = parts;
     let started = clock.now();
@@ -314,7 +341,9 @@ async fn run_export<S: StorageAdapter>(
         "{EXPORT_PREFIX}/{}/{task}.age",
         started.strftime("%Y-%m-%d")
     );
-    let result = export_once(pool, (store, secret), export, name).await;
+    let result = tokio::time::timeout(deadline, export_once(pool, (store, secret), export, name))
+        .await
+        .unwrap_or(Err(RecoveryError::Timeout));
     let finished = clock.now().max(started);
     record(pool, (started, finished), &result)
         .await
@@ -351,7 +380,8 @@ where
     registry.register(EXPORT_KIND, move |pool, task| {
         let (store, secret) = (Arc::clone(&store), secret.clone());
         let (clock, export) = (Arc::clone(&clock), Arc::clone(&export));
-        async move { run_export(&pool, (&*store, &secret, &*clock), &export, task.id).await }
+        let run = (task.id, EXPORT_DEADLINE);
+        async move { run_export(&pool, (&*store, &secret, &*clock), &export, run).await }
     });
     Ok(())
 }
@@ -584,9 +614,14 @@ mod tests {
             backup_url,
         });
         let secret = SecretString::from("fake-id-secret-for-tests-only-000000");
-        run_export(pool, (&store, &secret, &SystemClock), &export, 7)
-            .await
-            .unwrap();
+        run_export(
+            pool,
+            (&store, &secret, &SystemClock),
+            &export,
+            (7, EXPORT_DEADLINE),
+        )
+        .await
+        .unwrap();
         let mut conn = pool.acquire().await.unwrap();
         let entry = latest_audit(&mut conn, BACKUP_EXPORTED_ACTION)
             .await
@@ -605,6 +640,7 @@ mod tests {
         );
         assert!(age::decrypt(&own, &sealed).unwrap().starts_with(b"PGDMP"));
         assert!(age::decrypt(&other, &sealed).is_err());
+        a_run_past_its_deadline_is_recorded(pool, (&store, &secret), &export).await;
         a_failed_run_is_recorded_and_the_next_night_queued_once(pool, &store, &secret).await;
     }
 
@@ -616,7 +652,13 @@ mod tests {
         secret: &SecretString,
     ) {
         let missing = Err(RecoveryError::Settings("ASKHAVA_EXPORT_RECIPIENT"));
-        let failed = run_export(pool, (store, secret, &SystemClock), &missing, 8).await;
+        let failed = run_export(
+            pool,
+            (store, secret, &SystemClock),
+            &missing,
+            (8, EXPORT_DEADLINE),
+        )
+        .await;
         assert_eq!(failed, Err(HandlerError("settings")));
         let mut conn = pool.acquire().await.unwrap();
         let entry = latest_audit(&mut conn, BACKUP_EXPORT_FAILED_ACTION)
@@ -638,5 +680,73 @@ mod tests {
         );
         let doubled = enqueue(&mut conn, &again).await.unwrap();
         assert_eq!(doubled, None, "both runs queued the same next night once");
+    }
+
+    /// OPS-013: a run past its deadline is dropped and still recorded as a `timeout` failure.
+    async fn a_run_past_its_deadline_is_recorded(
+        pool: &PgPool,
+        (store, secret): (&LocalStorage, &SecretString),
+        export: &Result<ExportSettings, RecoveryError>,
+    ) {
+        let run = (9, Duration::ZERO);
+        let late = run_export(pool, (store, secret, &SystemClock), export, run).await;
+        assert_eq!(late, Err(HandlerError("timeout")));
+        let mut conn = pool.acquire().await.unwrap();
+        let entry = latest_audit(&mut conn, BACKUP_EXPORT_FAILED_ACTION)
+            .await
+            .unwrap()
+            .unwrap();
+        let failure = sqlx::query_scalar!(
+            "SELECT failure FROM recovery.backup_check WHERE id = $1",
+            entry.subject_id
+        )
+        .fetch_one(&mut *conn)
+        .await
+        .unwrap();
+        assert_eq!(failure.as_deref(), Some("timeout"));
+    }
+
+    /// A fake `pg_dump` running `body`, and export settings to a fresh fake recipient.
+    fn fake_dump(dir: &Path, body: &str) -> (PgTool, ExportSettings, age::x25519::Identity) {
+        use std::os::unix::fs::PermissionsExt;
+        let path = dir.join("pg_dump");
+        std::fs::write(&path, format!("#!/bin/sh\n{body}\n")).unwrap();
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755)).unwrap();
+        let own = age::x25519::Identity::generate();
+        let export = ExportSettings {
+            recipient: own.to_public(),
+            backup_url: SecretString::from("postgres://fake_user:fake-pw@localhost/fake_db"),
+        };
+        (PgTool { path, major: 16 }, export, own)
+    }
+
+    #[tokio::test]
+    async fn the_dump_sees_only_path_and_its_password() {
+        let (tool, export, own) = fake_dump(&scratch("env"), "env");
+        let sealed = dump_encrypted(&tool, export).await.unwrap();
+        let plain = String::from_utf8(age::decrypt(&own, &sealed).unwrap()).unwrap();
+        assert!(plain.lines().any(|l| l == "PGPASSWORD=fake-pw"));
+        let names: Vec<&str> = plain.lines().filter_map(|l| l.split('=').next()).collect();
+        let shell_own = ["PATH", "PGPASSWORD", "PWD", "OLDPWD", "SHLVL", "_"];
+        for name in names {
+            assert!(shell_own.contains(&name), "{name} reached pg_dump");
+        }
+    }
+
+    #[tokio::test]
+    async fn a_dump_dropped_at_its_deadline_is_killed() {
+        let dir = scratch("slow");
+        let pid_file = dir.join("pid");
+        let body = format!("echo $$ > {}\nexec sleep 30", pid_file.display());
+        let (tool, export, _) = fake_dump(&dir, &body);
+        let started = std::time::Instant::now();
+        let late = tokio::time::timeout(Duration::from_millis(500), dump_encrypted(&tool, export));
+        assert!(late.await.is_err(), "the slow dump passed its deadline");
+        let pid = std::fs::read_to_string(&pid_file).unwrap();
+        assert!(
+            !Path::new("/proc").join(pid.trim()).exists(),
+            "pg_dump {pid} still runs"
+        );
+        assert!(started.elapsed() < Duration::from_secs(5));
     }
 }
