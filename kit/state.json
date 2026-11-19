@@ -67807,8 +67807,8 @@
     "T456",
     "T490"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 1,
+   "status": "QUEUED",
+   "attempts": 2,
    "slug": "email-outbox-send",
    "type": "build",
    "stage": "5",
@@ -67824,7 +67824,7 @@
     "model": "claude-opus-5-5",
     "alias": "opus"
    },
-   "last_failure": "Fix-round review (after the one allowed findings round) still found two problems at head d9889d9b8; no reviewer approved a head.\n1. app/messaging/src/email_due.rs:81 (BATCH = 10) and :209: core cancels a task handler after 2 minutes (app/core/src/tasks.rs:142-145, hold_lease -> TIMED_OUT). 10 rows x 15 s adapter timeout = 150 s exceeds that; the lease-margin check guards only the 5-minute STALE_AFTER. In a Resend outage the run is killed around row 8-9, `release` never runs, unreached rows stay `sending`, and 5 minutes later are retaken as stale with first_unsure_at set though no call was made (starts the 23-hour give-up instead of 72-hour expiry; the drain task fails every minute). Fix: bound the run by the handler timeout too (BATCH = 6, or stop once lease + min(STALE_AFTER, 2 min) - LEASE_MARGIN has passed); add a test where the adapter ticks the clock 15 s per call; correct the \"150 seconds\" line in D-4671.\n2. app/messaging/src/email_due.rs:212 (and :189): send_batch passes `lease` (run start) as `now` to send_leased -> send_email, so mark_email_sent stamps sent_at up to ~4 minutes early, and the daily count and 429 pause use that stale time. OPS-038: a window counting from a send (PICK-001, PICK-019) starts only when it is actually sent. Fix: call send_leased(db, drain, row, drain.clock.now()) and keep `lease` only for the margin check and release.\nEarlier findings (lease outliving run, size overrun reported in D-4671, AccountStatus::Removed.code()) were confirmed fixed. email_due integration tests 27/27 passed; smoke and prehandin green at d9889d9b8.",
+   "last_failure": "Fix-round review (after the one allowed findings round) still found a problem at head 1830747e4; no reviewer approved a head.\n1. app/server/src/email_due.rs:85 and :95: current() accepts a mailbox only when businesses_of_mailbox (app/businesses/src/api.rs:198, reads only businesses.team_member.mailbox_id) lists it. BIZ-043: a verified backup address gets every job-card, pick, reminder and money email its person gets; backup_address::notice_addresses (app/businesses/src/backup_address.rs:324) adds the backup's own mailbox (businesses.backup_address) as a separate recipient, and picks handlers, release, money_notices, aftermath, unreachable and businesses/notice_emails.rs:372 queue to it. That mailbox is never a team-member mailbox, so every backup row is dropped with Report::Quiet and no backup address ever gets a notice (e.g. PICK-037 pick notice, BIZ-037 job cards). Present since the first commit; no test covers a backup recipient; D-4670/D-4673 don't mention backups. Fix: also accept a mailbox that is a verified, not-removed backup of a current member of the row's named business (keeps the SEC-024 cut-off); add a backup-recipient test.\nEarlier findings confirmed fixed: handler-timeout bound (BATCH 6, 90 s run budget, tested with 15/20 s ticks), per-row clock read for send_email's now, and the per-row business check for shared mailboxes (row's own business in subject_ids must not have left and must still have the mailbox as a current member; a row naming no business is dropped; D-4673; test a_shared_mailbox_gets_only_the_notices_of_its_own_current_businesses). email_due integration tests 30/30 passed; smoke and prehandin green at 1830747e4. prehandin --ally was red twice at 1830747e4 on tests/a11y/j2_keyboard.spec.ts:149 (/b/signup/start load timeout, Stripe stub mount timeout) though green at da8d3f4a2; reviewer judged it unrelated (no page/startup path changed by the fix).",
    "history": [
     {
      "attempt": 1,
@@ -67846,6 +67846,29 @@
       "reviewer": {
        "tokens": 2147748,
        "turns": 36
+      }
+     }
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 328,
+     "head_sha": "1830747e4759f02276a22fbe061a9e48f11c3cfd",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-19T10:42:01Z",
+     "ended_at": "2026-11-19T13:03:56Z",
+     "result": "QUEUED",
+     "usage": {
+      "worker": {
+       "tokens": 25435537,
+       "turns": 193
+      },
+      "reviewer": {
+       "tokens": 4465565,
+       "turns": 66
       }
      }
     }
@@ -87119,12 +87142,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T593",
-   "at": "2026-11-19T12:35:17Z",
-   "cache_read_input_tokens": 21516202,
-   "input_tokens": 308,
-   "cache_creation_input_tokens": 285070,
-   "output_tokens": 86246
+   "task": "T470",
+   "at": "2026-11-19T13:03:56Z",
+   "input_tokens": 502,
+   "cache_read_input_tokens": 29274634,
+   "output_tokens": 152933,
+   "cache_creation_input_tokens": 473033
   },
   "source": "session_reading 2026-11-19T12:36:25Z (week)",
   "by_task": {
@@ -92760,14 +92783,14 @@
     "estimated_bytes": 595058,
     "estimated_tokens": 1732975,
     "usage_counting": "message_id",
-    "cache_creation_input_tokens": 390032,
-    "input_tokens": 363,
-    "cache_read_input_tokens": 19486986,
-    "output_tokens": 122364,
-    "worker_tokens": 17851997,
-    "worker_turns": 151,
-    "reviewer_tokens": 2147748,
-    "reviewer_turns": 36,
+    "cache_creation_input_tokens": 863065,
+    "input_tokens": 865,
+    "cache_read_input_tokens": 48761620,
+    "output_tokens": 275297,
+    "worker_tokens": 43287534,
+    "worker_turns": 344,
+    "reviewer_tokens": 6613313,
+    "reviewer_turns": 102,
     "last_model": "claude-opus-5-5"
    },
    "T652": {
@@ -92848,11 +92871,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-19T11:29:39Z",
-    "tokens": 6041011
+    "tokens": 9594942
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 368970174
+    "tokens": 372524105
    }
   },
   "session_reading": {
@@ -92863,7 +92886,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T13:00:35Z",
+ "updated_at": "2026-11-19T13:03:57Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
