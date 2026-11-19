@@ -46,6 +46,7 @@ pub mod cant_take_route;
 pub mod catalog_start;
 pub mod chat_codes;
 pub mod checkin;
+pub mod email_due;
 pub mod email_provider;
 pub mod healthz;
 pub mod inbound_retry;
@@ -1033,6 +1034,7 @@ where
     );
     register_alert_emails(&mut registry, settings, &clock, pairs.clone())?;
     register_business_handlers(&mut registry, settings, &clock, pairs.clone())?;
+    register_email_due(&mut registry, settings, &clock, pairs.clone())?;
     register_paused_safety(&mut registry);
     no_handler_alert::register(&mut registry, settings.environment(), Arc::clone(&clock));
     watch_checks::register(&mut registry, settings, &clock)?;
@@ -1931,6 +1933,47 @@ fn register_business_handlers(
         });
     }
     register_accepted_quote(registry, settings, provider.as_ref(), pairs)
+}
+
+/// SEC-025, OPS-038, D-3750 (T470): `messaging.email_due`, always registered: with T469's
+/// provider and the vault the drain sends queued emails, its business addresses through
+/// [`email_due::NoticeAddresses`] and its coverage rows to [`OWNER_INBOX_EMAIL`]; without either
+/// (dev and CI without the Resend key) a run does nothing and queues no next run.
+fn register_email_due(
+    registry: &mut Registry,
+    settings: &Settings,
+    clock: &Arc<dyn Clock>,
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
+    use askhava_messaging::api::{EmailDrain, register_email_due};
+    let provider = email_provider::email_provider(settings, pairs.clone())?;
+    let vault = vault_from(settings, pairs.clone())?.map(Arc::new);
+    let inbox = pairs
+        .iter()
+        .find(|(k, v)| k == OWNER_INBOX_EMAIL && !v.trim().is_empty())
+        .map(|(_, v)| SecretString::from(v.trim().to_owned()));
+    let drain = provider.zip(vault).map(|(p, vault)| {
+        let resolver = email_due::NoticeAddresses::new(Arc::clone(&vault), inbox);
+        let keys = (p.secret().clone(), p.client().clone(), p.daily_limit());
+        Arc::new(EmailDrain::new(keys, (vault, resolver), Arc::clone(clock)))
+    });
+    register_email_due(registry, drain);
+    Ok(())
+}
+
+/// D-3750 (T470): whether the worker has what `messaging.email_due` sends with (the email
+/// provider and the vault), so its first run is queued at start only then.
+///
+/// # Errors
+///
+/// A bad email provider or vault setting, named, never its value.
+pub fn email_drain_ready<I>(settings: &Settings, pairs: I) -> io::Result<bool>
+where
+    I: IntoIterator<Item = (String, String)>,
+{
+    let pairs: Vec<(String, String)> = pairs.into_iter().collect();
+    let provider = email_provider::email_provider(settings, pairs.clone())?;
+    Ok(provider.is_some() && vault_from(settings, pairs)?.is_some())
 }
 
 /// An account mailer over provider `p`'s client, email key, postal line and shared daily limit,
