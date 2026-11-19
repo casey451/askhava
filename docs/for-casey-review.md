@@ -3547,3 +3547,14 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **Licences:** a request such as "handyman needed, breaker panel keeps tripping" no longer counts handymen without an electrical licence, and "water heater" keeps its job type in the count (T716).
 - **Smaller fixes:** a "Close which?" question no longer stays open forever, "never mind" with no job now gets a reply (T759), and a second job opened with "ALSO" before the ZIP now gets its coverage answer (T760).
 - Fable's findings; nothing needs you now.
+
+## A planning snag in the payment-flow task, fixed without loosening any check (D-4788)
+
+- **What happened:** the task that moves a job through "Payment pending" (T663) stopped on its first try because its plan asked it to add a coverage threshold that the existing coverage test does not allow. Two later tasks (T664, T680) had the same problem.
+- **Fix:** each of the three now proves its new payment code is at least 95% tested in its report, and one small follow-up task (T761) then locks those thresholds into the coverage test, raising them, never lowering any.
+- Our choice (Fable's review); nothing needs you now.
+
+## A hand-in snag fixed (D-4796)
+
+- **What changed:** some finished work was held because the worker's commit did not show in its log; workers are now told to commit in a way that always shows, and a held hand-in that cannot pass now says so at once (T762, first in line). It also prepares the build sessions to run tasks on Fable, which is switched on in a later change once this lands.
+- Fable's decision; nothing needs you now.
