@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T12:36:59Z by runner 06d6439ca6d9 (actions).
+Updated 2026-11-19T12:45:39Z by runner 5339e72a662e (manual).
 
 **Building: T470 in progress since 10:42Z; 491 of 664 done; week 80% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,14 @@ Updated 2026-11-19T12:36:59Z by runner 06d6439ca6d9 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T470 claimed 10:42Z, lease until 14:53Z; lane 3: T158 claimed 11:39Z, lease until 14:39Z
 - **Week:** 80% used, 28.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:36Z, 0 min before this update
+- **Last run:** 12:37Z, 8 min before this update
 - **Keeper:** last ran 12:36Z, next wake 12:56Z
 
 ## Needs attention
 - BLOCKED T109: plan gap reported: PLAN GAP: `deny.toml:3` (owned by T009 and T604, both outside T109; T109 does not own it): every `age` release fails `cargo deny check`, so `Ci` and prehandin go red. age 0.11.5: `cargo deny check licenses bans sources advisories` exit 1, error[unmaintained] proc-macro-error2 (RUSTSEC-2026-0173) via i18n-embed-fl 0.9.4 (non-optional dependency of age). age 0.12.1: exit 1, error[vulnerability] RUSTSEC-2026-0387 on crypto-bigint 0.5.5 via hpke/p256 -> elliptic-curve 0.13 (non-optional). Clean main: advisories ok. With one ignore line `{ id = "RUSTSEC-2026-0173", reason = "proc-macro-error2 is un; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T109 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 61 problem(s) on tasks still to run (+308 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 61 problem(s) on tasks still to run (+311 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -90,38 +90,37 @@ Updated 2026-11-19T12:36:59Z by runner 06d6439ca6d9 (actions).
 | T200 | ops and portals: the owner help page with its screened reply | done | 2 | 2 h 25 min | 14:32Z | Review not approved after the one fix round (head 346acc872b66e2a8cd86b345b919fe4573f7db87). / Remaining finding (review |
 | T671 | intake (harness): a homeowner's texts after the consent text | BLOCKED | 1 | 44 min | 13:58Z |  |
 | T472 | server (harness): serve the "Can't take it" page and button  | done | 1 | 62 min | 12:45Z |  |
-| T662 | jobs, intake, calls and server: a masked call line closes wh | done | 1 | 73 min | 12:39Z |  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 309 of 735 (42.0%) · partial 387 · unstarted 39
+**Requirements verified:** 58 of 735 (7.9%) · partial 638 · unstarted 39
 **Tasks merged (throughput only):** 491 of 664
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 17 | 18 | 0 | 35 |
-| ai | 9 | 17 | 3 | 29 |
-| businesses | 19 | 38 | 1 | 58 |
-| calls | 12 | 13 | 0 | 25 |
-| consent | 15 | 20 | 0 | 35 |
-| fees | 23 | 28 | 1 | 52 |
-| intake | 9 | 34 | 0 | 43 |
-| job-cards | 13 | 11 | 0 | 24 |
-| licensing | 34 | 14 | 0 | 48 |
-| lifecycle | 18 | 10 | 0 | 28 |
-| messaging | 20 | 24 | 1 | 45 |
-| ops-recovery | 5 | 31 | 18 | 54 |
-| privacy | 10 | 20 | 1 | 31 |
-| quiet-hours | 6 | 3 | 0 | 9 |
-| quotes-pick | 27 | 29 | 0 | 56 |
-| recurring | 7 | 4 | 0 | 11 |
-| security | 9 | 41 | 5 | 55 |
-| terms | 26 | 8 | 1 | 35 |
+| accessibility | 2 | 33 | 0 | 35 |
+| ai | 2 | 24 | 3 | 29 |
+| businesses | 1 | 56 | 1 | 58 |
+| calls | 0 | 25 | 0 | 25 |
+| consent | 3 | 32 | 0 | 35 |
+| fees | 0 | 51 | 1 | 52 |
+| intake | 0 | 43 | 0 | 43 |
+| job-cards | 0 | 24 | 0 | 24 |
+| licensing | 0 | 48 | 0 | 48 |
+| lifecycle | 0 | 28 | 0 | 28 |
+| messaging | 0 | 44 | 1 | 45 |
+| ops-recovery | 4 | 32 | 18 | 54 |
+| privacy | 0 | 30 | 1 | 31 |
+| quiet-hours | 0 | 9 | 0 | 9 |
+| quotes-pick | 0 | 56 | 0 | 56 |
+| recurring | 0 | 11 | 0 | 11 |
+| security | 0 | 50 | 5 | 55 |
+| terms | 23 | 11 | 1 | 35 |
 | website | 13 | 13 | 4 | 30 |
-| wording | 17 | 11 | 4 | 32 |
+| wording | 10 | 18 | 4 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
