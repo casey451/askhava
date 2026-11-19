@@ -1,21 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-19T10:42:14Z by runner 1fab3a0bc8d2 (actions).
+Updated 2026-11-19T10:45:40Z by runner 7be551b7caec (actions).
 
 **Building: T470 in progress since 10:42Z; 487 of 664 done; week 78% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 487 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T470 claimed 10:42Z, lease until 13:42Z; lane 4: T705 claimed 09:16Z, lease until 13:34Z; lane 6: T540 claimed 10:35Z, lease until 13:35Z
-- **Week:** 78% used, 36.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:37Z, 4 min before this update
+- **Lane:** lane 1: T470 claimed 10:42Z, lease until 13:42Z; lane 2: T536 claimed 10:45Z, lease until 13:45Z; lane 4: T705 claimed 09:16Z, lease until 13:34Z; lane 6: T540 claimed 10:35Z, lease until 13:35Z
+- **Week:** 78% used, 34.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 10:42Z, 3 min before this update
 - **Keeper:** last ran 10:37Z, next wake 10:57Z
 
 ## Needs attention
 - PLAN GAP T109 (since 2026-11-19T10:35:23Z, no attempt used; a plan change fixes it): T109: dependency T476 is DONE but its owned file app/portals/src/health_page.rs is not on main; T109: dependency T476 is DONE but its owned file app/portals/templates/health.html is not on main; T109: dependency T476 is DONE but its owned file tests/integration/tests/health_page.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 62 problem(s) on tasks still to run (+307 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 60 problem(s) on tasks still to run (+305 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -128,7 +128,7 @@ Updated 2026-11-19T10:42:14Z by runner 1fab3a0bc8d2 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-19T10:36:44Z (week)): week: 157.7M used, 36.3M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T08:51:23Z.
+- Pacing (session_reading 2026-11-19T10:36:44Z (week)): week: 159.4M used, 34.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T07:58:11Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -144,6 +144,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T470 (lease until 2026-11-19T13:42:01Z)
+- lane 2: T536 (lease until 2026-11-19T13:45:21Z)
 - lane 4: T705 (lease until 2026-11-19T13:34:42Z)
 - lane 6: T540 (lease until 2026-11-19T13:35:23Z)
 
