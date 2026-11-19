@@ -33591,7 +33591,9 @@
     "T746",
     "T747",
     "T748",
-    "T749"
+    "T749",
+    "T756",
+    "T757"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -35043,7 +35045,9 @@
     "T748",
     "T749",
     "T750",
-    "T752"
+    "T752",
+    "T756",
+    "T757"
    ],
    "model": null,
    "effort": null,
@@ -37905,7 +37909,9 @@
     "T731",
     "T735",
     "T743",
-    "T744"
+    "T744",
+    "T756",
+    "T757"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -38000,7 +38006,9 @@
     "T430",
     "T432",
     "T743",
-    "T744"
+    "T744",
+    "T756",
+    "T757"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -38091,7 +38099,9 @@
     "T430",
     "T432",
     "T743",
-    "T744"
+    "T744",
+    "T756",
+    "T757"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -38386,7 +38396,9 @@
     "T731",
     "T735",
     "T743",
-    "T744"
+    "T744",
+    "T756",
+    "T757"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -49277,6 +49289,119 @@
    "branch": "claude/task/T754-zero-fee-after-intent",
    "prompt": "kit/prompts/T754.md",
    "acceptance": "`tests/integration/tests/zero_fee_after_intent.rs` passes against PostgreSQL and the Stripe stand-in, failing on `main`; every Confirm route, waiver and release test passes unchanged; `app/payments/` stays at or above 95%; no pick is both charged and released as free."
+  },
+  {
+   "id": "T756",
+   "slug": "scrub-connector-runs",
+   "title": "privacy: the scrubber catches phones split by connector words, spaced dots, percent-encoded addresses and spaced keycap digits",
+   "goal": "Plan change D-4765 (Fable's privacy audit of `main` 4ed3a4ff, finding P1; AI-020, AI-002, PRIV-005, AI-003; TD-AI-09). The scrubber's text feeds `quotes.job_description` (the job card a business sees before a paid pick) and the AI, and four contact shapes pass it: (1) connector words split a spelled or digit phone into runs under 7 digits, each kept (`mark_digit_runs` and `spoken_gap`, `app/privacy/src/scrub.rs:637` to `:664`): \"nine two eight and five five five and zero one two three\"; (2) a lone \".\" between a label and a top-level domain is not taken as a dot (`:666` to `:684`): \"name at gmail . com\"; (3) a percent-encoded address is checked undecoded (`:566` to `:594`): \"name%40example.com\"; (4) keycap-emoji digits with spaces between them. This task, in `scrub.rs` only: a connector word (`y`, `and`, `then`, `luego`) may sit inside a spelled or digit run only when digits lie on both sides of it and the joined run reaches 7 or more digits, so ordinary text keeps its words (\"2 and 3 bedrooms\", \"between 9 and 5\", \"de 2 y 3 recámaras\"); a token's key is percent-decoded before the contact checks; a lone \".\" between a label and a top-level domain counts as a dot; spaced keycap digits join as digits do. Tests: new corpus cases in `app/privacy/src/tests/scrub.rs` for each shape, English and Spanish, with the ordinary-text guards above kept intact; its existing cases and TD-AI-09's recall floor unchanged; `prop_scrub_props.rs` and `scrub_context.rs` pass unchanged. Privacy: Opus worker (Fable once the runner's `models` map names it, D-4761), Opus privacy and security review. Update the `privacy` notes and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "privacy",
+   "deps": [
+    "T658",
+    "T351"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/privacy/src/scrub.rs",
+    "app/privacy/src/tests/scrub.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/ai.md",
+    "docs/spec/privacy.md"
+   ],
+   "requirements": [
+    "AI-020",
+    "AI-002",
+    "PRIV-005",
+    "AI-003"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-4765"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 300,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T756-scrub-connector-runs",
+   "prompt": "kit/prompts/T756.md",
+   "acceptance": "`app/privacy/src/tests/scrub.rs` passes with the new corpus cases and its existing cases unchanged; \"2 and 3 bedrooms\" and \"between 9 and 5\" are untouched; TD-AI-09's recall floor holds; the scrub property tests pass unchanged."
+  },
+  {
+   "id": "T757",
+   "slug": "delete-message-bodies",
+   "title": "privacy and ops: \"Delete my data\" also deletes her kept message words and help-request words",
+   "goal": "Plan change D-4765 (Fable's privacy audit of `main` 4ed3a4ff, finding P2; PRIV-011, PRIV-006, PRIV-030). \"Delete my data\" (`portals::delete_her_data`, `app/portals/src/data_download.rs:349`, which calls `privacy::api::delete_my_data(db, contact, &jobs)` with every job of hers) purges her contact and photos (`app/privacy/src/purge.rs:425` to `:437`) but leaves her kept words in `privacy.message_body` (`migrations/0171_privacy_message_body.sql`) for up to the 30-day cut: problem and help words are kept under a job ID or, for a help request with no job, under the help request's own ID (`open_help`, `app/intake/src/handlers.rs:677` to `:691`). This task: (1) `delete_my_data`, in its one transaction, also deletes the `privacy.message_body` rows of each job it is given (a new delete by job in `app/privacy/src/message_body.rs`, beside `run_words_purge`'s, `:161`) and of each help request she asked (`Asker::Homeowner(contact)`, `app/intake/src/handlers.rs:772`), whose IDs it reads through a new `ops::api::help_requests_of_homeowner(conn, contact)` in the new `app/ops/src/help_request_keys.rs` (re-exported by one line in the shared `ops::api`; `privacy` may call `ops`, `kit/layers.json`); its signature stays, so `data_download.rs` and every caller are unchanged and no `portals` file is needed. Tests in the new `tests/integration/tests/delete_message_bodies.rs`, PostgreSQL, fake data only: after \"Delete my data\", no `privacy.message_body` row of her jobs or her help requests remains, another homeowner's rows remain, and the confirmation sentence is unchanged; every purge and data-download test passes unchanged. Privacy: Opus worker (Fable once the runner's `models` map names it, D-4761), Opus privacy and security review. Update the `privacy` and `ops` notes and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "privacy",
+   "deps": [
+    "T277",
+    "T448",
+    "T600",
+    "T729"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/privacy/src/purge.rs",
+    "app/privacy/src/message_body.rs",
+    "app/ops/src/help_request_keys.rs",
+    "tests/integration/tests/delete_message_bodies.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/privacy.md",
+    "app/portals/src/data_download.rs"
+   ],
+   "requirements": [
+    "PRIV-011",
+    "PRIV-006",
+    "PRIV-030"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-4765"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 300,
+    "context_pct": 25
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T757-delete-message-bodies",
+   "prompt": "kit/prompts/T757.md",
+   "acceptance": "`tests/integration/tests/delete_message_bodies.rs` passes against PostgreSQL; every purge and data-download test passes unchanged; no message words of hers outlive \"Delete my data\"."
   }
  ]
 }

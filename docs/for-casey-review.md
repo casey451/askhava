@@ -3524,3 +3524,8 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **Faster order:** a few tasks were waiting on others only by habit: the Twilio voice sandbox, the AI and security scans of the test site, the cancel refund and the three-part code audit now start sooner (the audit parts run side by side). Nothing is skipped.
 - **Payment fixes:** a business owed a free introduction after its card page opened a payment is no longer stuck (T754); a payment Stripe reports that we can't match now alerts you instead of only being logged (T754); an auto-confirm pick that should be free charges nothing and waits for the business's normal Confirm (T689).
 - Our choice (Fable's findings); nothing needs you now.
+
+## Two privacy fixes from the privacy audit (D-4765)
+
+- **What will change:** the filter that removes phone numbers and emails before a business or the AI sees a job description now also catches a number split by "and" or "y", "gmail . com" written with spaces, an encoded email and spaced number emoji, while leaving "2 and 3 bedrooms" alone (T756). "Delete my data" now also deletes the words of her problem and help messages at once, instead of within 30 days (T757).
+- Our choice (Fable's findings); nothing needs you now.
