@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T19:27:03Z by runner 17e7cbdd4e1b (actions).
+Updated 2026-11-19T19:35:08Z by runner a569d63ba923 (actions).
 
 **Building: T753 in progress since 19:06Z; 501 of 698 done; week 6% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-19T19:27:03Z by runner 17e7cbdd4e1b (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T753 claimed 19:06Z, lease until 22:06Z; lane 2: T161 claimed 17:58Z, lease until 20:58Z; lane 3: T307 claimed 17:47Z, lease until 20:47Z; lane 5: T748 claimed 19:26Z, lease until 22:26Z; lane 6: T480 claimed 17:18Z, lease until 20:18Z
 - **Week:** 6% used, 177.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:22Z, 4 min before this update
+- **Last run:** 19:33Z, 1 min before this update
 - **Keeper:** last ran 19:22Z, next wake 19:42Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 59 problem(s) on tasks still to run (+339 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 56 problem(s) on tasks still to run (+339 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -88,7 +88,6 @@ Updated 2026-11-19T19:27:03Z by runner 17e7cbdd4e1b (actions).
 | T364 | server and portals: the business step-up code page is served | check_failed | 1 | 2 h 1 min | 20:29Z |  |
 | T702 | privacy and messaging: no blind-index key version is retired | resync | 1 | 59 min | 20:21Z |  |
 | T501 | Decisions digest, piece 2: the next entries after the header | done | 1 | 73 min | 19:42Z |  |
-| T711 | intake (harness): the dispatcher's two jobs in one request:  | done | 1 | 77 min | 19:29Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -132,8 +131,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 144 of 293 done
-- stage 6: 0 of 52 done
+- stage 5: 144 of 281 done
+- stage 6: 0 of 64 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
 - stage kit: 14 of 15 done

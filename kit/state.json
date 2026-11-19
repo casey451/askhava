@@ -25231,8 +25231,6 @@
    "deps": [
     "T126",
     "T432",
-    "T498",
-    "T499",
     "T500",
     "T501",
     "T502",
@@ -25240,14 +25238,6 @@
     "T504",
     "T505",
     "T506",
-    "T507",
-    "T508",
-    "T509",
-    "T510",
-    "T511",
-    "T512",
-    "T513",
-    "T514",
     "T641",
     "T642",
     "T700",
@@ -25263,7 +25253,9 @@
     "T752",
     "T755",
     "T756",
-    "T757"
+    "T757",
+    "T558",
+    "T726"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -25459,7 +25451,8 @@
    "id": "T141",
    "deps": [
     "T140",
-    "T159"
+    "T159",
+    "T514"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -30392,7 +30385,6 @@
     "T295",
     "T370",
     "T296",
-    "T243",
     "T747"
    ],
    "status": "QUEUED",
@@ -30444,7 +30436,8 @@
     "T744",
     "T755",
     "T756",
-    "T757"
+    "T757",
+    "T514"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -72885,13 +72878,14 @@
    "id": "T498",
    "deps": [
     "T126",
-    "T125"
+    "T125",
+    "T127"
    ],
    "status": "QUEUED",
    "attempts": 0,
    "slug": "doc-efficiency-audit",
    "type": "audit",
-   "stage": "5"
+   "stage": "6"
   },
   {
    "id": "T499",
@@ -72904,7 +72898,7 @@
    "attempts": 0,
    "slug": "doc-compaction-tools",
    "type": "harness",
-   "stage": "5"
+   "stage": "6"
   },
   {
    "id": "T500",
@@ -73884,7 +73878,7 @@
    "attempts": 0,
    "slug": "notes-compact-payments-portals",
    "type": "docs",
-   "stage": "5"
+   "stage": "6"
   },
   {
    "id": "T508",
@@ -73895,7 +73889,7 @@
    "attempts": 0,
    "slug": "notes-compact-businesses-intake-picks",
    "type": "docs",
-   "stage": "5"
+   "stage": "6"
   },
   {
    "id": "T509",
@@ -73906,7 +73900,7 @@
    "attempts": 0,
    "slug": "notes-compact-quotes-messaging-server",
    "type": "docs",
-   "stage": "5"
+   "stage": "6"
   },
   {
    "id": "T510",
@@ -73918,7 +73912,7 @@
    "attempts": 0,
    "slug": "notes-compact-other-crates",
    "type": "docs",
-   "stage": "5"
+   "stage": "6"
   },
   {
    "id": "T511",
@@ -73929,7 +73923,7 @@
    "attempts": 0,
    "slug": "test-design-preambles",
    "type": "cleanup",
-   "stage": "5"
+   "stage": "6"
   },
   {
    "id": "T512",
@@ -73944,7 +73938,7 @@
    "attempts": 0,
    "slug": "guides-compact",
    "type": "docs",
-   "stage": "5"
+   "stage": "6"
   },
   {
    "id": "T513",
@@ -73955,7 +73949,7 @@
    "attempts": 0,
    "slug": "brains-compact",
    "type": "docs",
-   "stage": "5"
+   "stage": "6"
   },
   {
    "id": "T514",
@@ -73972,7 +73966,7 @@
    "attempts": 0,
    "slug": "docs-stick",
    "type": "harness",
-   "stage": "5"
+   "stage": "6"
   },
   {
    "id": "T515",
@@ -77123,7 +77117,7 @@
    "attempts": 0,
    "slug": "brains-compact-2",
    "type": "docs",
-   "stage": "5"
+   "stage": "6"
   },
   {
    "id": "T552",
@@ -77134,7 +77128,7 @@
    "attempts": 0,
    "slug": "for-casey-archive",
    "type": "docs",
-   "stage": "5"
+   "stage": "6"
   },
   {
    "id": "T540",
@@ -95425,7 +95419,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T19:27:03Z",
+ "updated_at": "2026-11-19T19:35:08Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -95523,7 +95517,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "17e7cbdd4e1bc91544e7a1975b1681774178c856",
+ "runner_sha": "a569d63ba923812f8459e604320180e9a16931a8",
  "starter": "actions",
  "smoke_runs": [
   {
