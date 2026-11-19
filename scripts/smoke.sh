@@ -12,6 +12,17 @@ cd "$(dirname "$0")/.."
 FULL="${1:-}"
 step() { printf '\n== %s\n' "$1"; }
 
+pg16_path() {
+  # D-4708: initdb and pg_ctl live only in PostgreSQL 16's bin directory and /usr/bin/pg_dump is Debian's
+  # pg_wrapper, so the tests that run them by name need it first on PATH (Ci's preflight step does the same).
+  local pg16=/usr/lib/postgresql/16/bin
+  if [ -d "${pg16}" ]; then
+    export PATH="${pg16}:${PATH}"
+  else
+    echo "${pg16} is missing: PostgreSQL 16's initdb, pg_ctl and pg_dump are not on the path (D-4708)" >&2
+  fi
+}
+
 local_database() {
   # Ci brings its own Postgres service and sets DATABASE_URL; a session starts its own.
   if [ -n "${CI:-}" ] && [ -n "${DATABASE_URL:-}" ]; then
@@ -74,6 +85,7 @@ step "Python tests"
 python3 -m pytest tests -q -p no:cacheprovider
 
 if [ -f Cargo.toml ]; then
+  pg16_path
   local_database
   step "Rust format, lint and tests"
   toolchain="$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)"

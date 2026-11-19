@@ -21,7 +21,7 @@ jobs:
     # Every entry of tests/mutation/mutants.toml, applied in place; any survivor fails the night and so
     # makes main red (BUILD_BRIEF.md:472, docs/test-design.md section 4, D-481).
     name: named-mutants
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 120
     services:
       postgres:
@@ -43,6 +43,12 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           persist-credentials: false
+      - name: PostgreSQL 16's initdb, pg_ctl and pg_dump first on the path (D-4708)
+        run: |
+          pg16=/usr/lib/postgresql/16/bin; echo "Image: ${ImageOS:-unknown} ${ImageVersion:-unknown}"
+          major="$("$pg16/initdb" --version 2>/dev/null | awk '{split($3, v, "."); print v[1]}')" || major=""
+          [ "$major" = 16 ] || { echo "::error::$pg16/initdb is missing or not PostgreSQL 16 (major '${major:-none}'): PostgreSQL 16's initdb, pg_ctl and pg_dump are not on the path (D-4708)"; exit 1; }
+          "$pg16/initdb" --version && echo "$pg16" >> "$GITHUB_PATH"
       - name: Database roles, toolchain and migrations (as in Ci's Coverage job)
         run: |
           for role in askhava_app askhava_migrator; do
@@ -53,7 +59,7 @@ jobs:
           for f in $(ls migrations/*.sql | sort); do psql "$DATABASE_URL" -q -v ON_ERROR_STOP=1 -f "$f"; done
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
-          shared-key: mutants
+          shared-key: mutants-ubuntu-24.04
       - name: Every named mutant (python3 scripts/run_named_mutants.py --all)
         run: |
           python3 scripts/run_named_mutants.py --all
@@ -63,7 +69,7 @@ jobs:
     # tests/mutation/equivalent.toml exists with its Opus-reviewed reasons (D-1286): its survivors are
     # uploaded as the cargo-mutants artifact and do not decide the night; the named mutants do.
     name: cargo-mutants
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 300
     services:
       postgres:
@@ -85,6 +91,12 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           persist-credentials: false
+      - name: PostgreSQL 16's initdb, pg_ctl and pg_dump first on the path (D-4708)
+        run: |
+          pg16=/usr/lib/postgresql/16/bin; echo "Image: ${ImageOS:-unknown} ${ImageVersion:-unknown}"
+          major="$("$pg16/initdb" --version 2>/dev/null | awk '{split($3, v, "."); print v[1]}')" || major=""
+          [ "$major" = 16 ] || { echo "::error::$pg16/initdb is missing or not PostgreSQL 16 (major '${major:-none}'): PostgreSQL 16's initdb, pg_ctl and pg_dump are not on the path (D-4708)"; exit 1; }
+          "$pg16/initdb" --version && echo "$pg16" >> "$GITHUB_PATH"
       - name: Database roles, toolchain and cargo-mutants 27.1.0
         run: |
           for role in askhava_app askhava_migrator; do
