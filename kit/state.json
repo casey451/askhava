@@ -77822,8 +77822,8 @@
     "T364",
     "T261"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 1,
+   "status": "QUEUED",
+   "attempts": 2,
    "slug": "saved-card-from-confirm",
    "type": "build",
    "stage": "5",
@@ -77909,13 +77909,54 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 82,
      "head_sha": "e5e753826fe0afe4a268b35501f58759b936427d",
-     "pr": null,
-     "checks": null,
+     "pr": 1153,
+     "checks": [
+      {
+       "name": "Ci",
+       "conclusion": "failure"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-19T21:24:08Z",
      "ended_at": "2026-11-19T22:55:57Z",
-     "result": "MERGE_PENDING",
+     "result": "check_failed",
      "usage": {
       "worker": {
        "tokens": 2978175,
@@ -77941,7 +77982,7 @@
     "why": "auto-merge on #1153 (gh pr merge)",
     "head": "e1b02edcfceda1795581472e4473d5e67fe25864"
    },
-   "last_failure": "Ci: failure; Coverage: failure; E2e: failure\nCoverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered floor (D-694)\napp/picks/src/settle.rs: 95.83333333333333 (floor 95.0)\napp/picks/src/unreachable_refund.rs: 89.79591836734694 (floor 87.0)\napp/picks/src/unreachable_steps.rs: 88.0 (floor 86.0)\napp/portals/src/business_left.rs: 66.66666666666667 (floor 64.0)\napp/portals/src/confirm_pay.rs: 75.0 (floor 70.0)\napp/portals/src/confirm_waiver.rs: 50.0 (floor 48.0)\napp/portals/src/data_download.rs: 83.87096774193549 (floor 81.0)\napp/portals/src/job_release.rs: 53.333333333333336 (floor 51.0)\napp/quotes/src/job_text.rs: 100.0 (floor 95.0)\napp/server/src/business_contacts.rs: 70.0 (floor 68.0)\napp/server/src/inbound_text.rs: 27.38095238095238 (floor 25.0)\napp/server/src/offdb_stream.rs: 33.333333333333336 (floor 21.0)\napp/server/src/release_sink.rs: 81.81818181818181 (floor 78.0)\nFAIL: app/adapters/src/payments.rs 82.61 is below the floor 84.0\n##[error]Process completed with exit code 1.\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n  \u2718  25 [main] \u203a tests/e2e/confirm_served.spec.ts:113:1 \u203a TD-FEE-45 FEE-014: a press with Save this card for next time ticked charges once (5.2s)\n##[error]  1) [main] \u203a tests/e2e/confirm_served.spec.ts:113:1 \u203a TD-FEE-45 FEE-014: a press with Save this card for next time ticked charges once \nCi failed at step: All five jobs passed\n##[error]Process completed with exit code 1.",
+   "last_failure": "Ci: failure; E2e: failure\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n{\"timestamp\":\"2026-11-19T23:01:05.346379Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1037,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-19T23:01:05.347770Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1039,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-19T23:01:05.348174Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1038,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-19T23:01:05.552052Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1041,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-19T23:01:05.553016Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1040,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n  \u2718   98 [main] \u203a tests/e2e/web_chat.spec.ts:129:1 \u203a TD-CON-10 TD-INT-09 TD-INT-30 TD-A11Y-02 TD-SEC-73 CON-025 A11Y-035 SEC-042: one question per page; only the Verify code until the right code, whic\n##[error]  1) [main] \u203a tests/e2e/web_chat.spec.ts:129:1 \u203a TD-CON-10 TD-INT-09 TD-INT-30 TD-A11Y-02 TD-SEC-73 CON-025 A11Y-035 SEC-042: one question per page; only the Verify code until the right code,\nCi failed at step: All five jobs passed\n##[error]Process completed with exit code 1.",
    "lane": "5",
    "runner_closed_prs": [
     1128
@@ -96785,7 +96826,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T23:22:20Z",
+ "updated_at": "2026-11-19T23:25:55Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

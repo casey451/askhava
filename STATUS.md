@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T23:22:20Z by runner b440e68b158d (actions).
+Updated 2026-11-19T23:25:55Z by runner b440e68b158d (actions).
 
 **Building: T726 in progress since 22:06Z; 509 of 703 done; week 11% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-19T23:22:20Z by runner b440e68b158d (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T726 claimed 22:06Z, lease until 01:06Z; lane 2: T758 claimed 23:07Z, lease until 02:07Z; lane 3: T109 claimed 21:53Z, lease until 00:53Z; lane 7: T613 claimed 23:22Z, lease until 02:22Z
 - **Week:** 11% used, 168.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:19Z, 2 min before this update
+- **Last run:** 23:22Z, 3 min before this update
 - **Keeper:** last ran 23:19Z, next wake 23:39Z
 
 ## Needs attention
@@ -21,7 +21,7 @@ Updated 2026-11-19T23:22:20Z by runner b440e68b158d (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T707 | server: an emergency pick's address re-release waits while s | MERGE_PENDING | 1 | 80 min | 22:59Z |  |
-| T541 | payments, portals and adapters: a card saved or changed from | MERGE_PENDING | 2 | 91 min | 22:55Z | Ci: failure; Coverage: failure; E2e: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refus |
+| T541 | payments, portals and adapters: a card saved or changed from | check_failed | 2 | 91 min | 22:55Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-19T |
 | T480 | messaging, server and portals: the stored "Spanish conversat | MERGE_PENDING | 1 | 104 min | 22:23Z |  |
 | T717 | intake (harness): corrections to T711's two jobs: two_jobs a | done | 1 | 2 h 11 min | 22:21Z |  |
 | T607 | site: site.css brought up to the V6 reference (laftly-v6.css | done | 2 | 41 min | 21:57Z | review_missing on 2c1fc315ebe4 (D-3728): not proven reviewed or worker-made / (b) 5cb49e3317bc T607: NOTES entry in the  |
