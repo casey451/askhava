@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM intake.consent_phone_wait WHERE contact_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "8d106c02ff8235f5095b4e092e7fcd54da0eda32d3156b99074cb21b403c649e"
+}

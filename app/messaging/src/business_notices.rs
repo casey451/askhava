@@ -284,7 +284,7 @@ fn parse(p: &Value) -> Option<Parsed> {
     ext = "html",
     source = r#"{% extends "email_layout.html" %}{% block content %}
 {% for line in lines %}<p>{{ line }}</p>
-{% endfor %}{% if let Some(url) = link %}<p><a href="{{ url }}" style="color:#6B4A1E;text-decoration:underline;">{{ url }}</a></p>{% endif %}
+{% endfor %}{% if let Some(url) = link %}<p><a href="{{ url }}" style="color:#245849;text-decoration:underline;">{{ url }}</a></p>{% endif %}
 {% endblock %}"#
 )]
 struct NoticeView<'a> {
@@ -585,4 +585,50 @@ pub async fn card_notice_accepted(
     .fetch_one(db)
     .await
     .map_err(|_| EmailError::Database)
+}
+
+#[cfg(test)]
+mod token_tests {
+    //! TD-WEB-11 (WEB-027, D-3878): a notice email with its link, layout included, holds only
+    //! section 2's colours and no text under 16 px. Fake keys, IDs and link only.
+
+    use askhava_core::api::IdSecret;
+    use secrecy::SecretString;
+    use sqlx::types::Uuid;
+
+    use super::{MailboxKind, NoticeSender, Parsed, render};
+    use crate::checkin_email::design_tokens::{off_token_colours, small_font_sizes};
+
+    /// TD-WEB-11: the release notice and its sign-in link use only design tokens.
+    #[test]
+    fn td_web_11_notice_email_uses_only_design_tokens() {
+        let key = SecretString::from("test-only-link-secret-not-a-real-key".to_owned());
+        let secret = SecretString::from("fake-email-key-secret-0000000003".to_owned());
+        let links = IdSecret::new(1, key).expect("secret");
+        let postal = "PO Box 1234, Lake Havasu City, AZ 86405";
+        let sender = NoticeSender::new((secret, links), postal, MailboxKind::PoBox).expect("ok");
+        let notice = Parsed {
+            template: "release_notice".to_owned(),
+            text_template: "release_text".to_owned(),
+            business: Uuid::from_u128(0xb1),
+            pick: None,
+            subject: Vec::new(),
+            job: Some(1042),
+            quote_hours: None,
+            to: Vec::new(),
+            texts: Vec::new(),
+            values: vec![("job".to_owned(), "1042".to_owned())],
+            card: None,
+            emergency: None,
+        };
+        let link = Some("https://example.test/s/fake-link");
+        let mail = render(&sender, &notice, link).expect("renders");
+        assert!(off_token_colours(&mail.html).is_empty(), "{}", mail.html);
+        assert!(small_font_sizes(&mail.html).is_empty(), "{}", mail.html);
+        assert!(
+            mail.html.contains("fake-link\" style=\"color:#245849;"),
+            "{}",
+            mail.html
+        );
+    }
 }

@@ -74,7 +74,7 @@ impl ReceiptSender {
 <p>{{ charge }}</p>
 <p>{{ tax }}</p>
 <p>{{ one_line }}</p>
-<p><a href="{{ why_url }}" style="color:#6B4A1E;text-decoration:underline;">{{ why_label }}</a></p>
+<p><a href="{{ why_url }}" style="color:#245849;text-decoration:underline;">{{ why_label }}</a></p>
 {% endblock %}"#
 )]
 struct ReceiptView<'a> {
@@ -228,4 +228,36 @@ pub async fn run_receipt_email(
         .map_err(|_| FAILED)?;
     }
     tx.commit().await.map_err(|_| FAILED)
+}
+
+#[cfg(test)]
+mod token_tests {
+    //! TD-WEB-11 (WEB-027, D-3878): the receipt, layout included, holds only section 2's colours
+    //! and no text under 16 px. Fake pick, job and mailbox only.
+
+    use secrecy::SecretString;
+    use sqlx::types::Uuid;
+
+    use super::{Language, MailboxKind, ReceiptFacts, ReceiptSender, render_receipt};
+    use crate::checkin_email::design_tokens::{off_token_colours, small_font_sizes};
+
+    /// TD-WEB-11: both languages' receipt uses only design tokens.
+    #[test]
+    fn td_web_11_receipt_uses_only_design_tokens() {
+        let secret = SecretString::from("fake-email-key-secret-0000000002".to_owned());
+        let postal = "PO Box 1234, Lake Havasu City, AZ 86405";
+        let sender = ReceiptSender::new(secret, postal, MailboxKind::PoBox).expect("sender");
+        let facts = ReceiptFacts {
+            pick: Uuid::from_u128(0x42),
+            job_number: 1042,
+            fee_cents: 2500,
+            line: "Introduction service, job 1042".to_owned(),
+        };
+        for language in [Language::En, Language::Es] {
+            let mail = render_receipt(&sender, language, &facts).expect("renders");
+            assert!(off_token_colours(&mail.html).is_empty(), "{}", mail.html);
+            assert!(small_font_sizes(&mail.html).is_empty(), "{}", mail.html);
+            assert!(mail.html.contains("color:#245849;"), "evergreen links");
+        }
+    }
 }

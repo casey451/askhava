@@ -34,6 +34,7 @@ use tokio::signal::unix::{SignalKind, signal};
 use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer};
 use tower_http::trace::TraceLayer;
 
+pub mod account_directory;
 pub mod action_links;
 pub mod business_contacts;
 pub mod business_portal;
@@ -827,8 +828,6 @@ where
         let now = pause_clock.now();
         async move { askhava_payments::api::run_pause_watch(&pool, now).await }
     });
-    register_business_handlers(&mut registry);
-    register_accepted_quote(&mut registry);
     register_purge_handlers(&mut registry, &clock);
     if let Some(keys) = texts {
         register_job_texts(&mut registry, &keys, &clock);
@@ -1023,6 +1022,7 @@ where
         photo_clock,
     );
     register_alert_emails(&mut registry, settings, &clock, pairs.clone())?;
+    register_business_handlers(&mut registry, settings, &clock, pairs.clone())?;
     register_paused_safety(&mut registry);
     no_handler_alert::register(&mut registry, settings.environment(), Arc::clone(&clock));
     watch_checks::register(&mut registry, settings, &clock)?;
@@ -1030,6 +1030,7 @@ where
     register_license_reapply(&mut registry, Arc::clone(&clock));
     register_daily_lists(&mut registry, settings, Arc::clone(&clock), pairs.clone())?;
     register_card_sender(&mut registry, settings, &id_secret, pairs.clone())?;
+    register_consent_sweep(&mut registry, settings, &clock, pairs.clone())?;
     register_opted_out_live(&mut registry, settings, &id_secret, pairs.clone())?;
     register_optout_followup(&mut registry, settings, &id_secret, pairs.clone())?;
     let stripe = stripe_client(settings, &pairs)?;
@@ -1190,6 +1191,26 @@ fn register_opted_out_live(
     registry.register(OPTED_OUT_LIVE_KIND, move |pool, task| {
         run_opted_out_live(pool, sender.clone(), task)
     });
+    Ok(())
+}
+
+/// T563 (CON-022, D-3844, D-4418): `intake`'s daily consent sweep (`intake.consent_sweep`,
+/// [`askhava_intake::api::run_consent_sweep_at`]) at the worker's clock, with the vault when both
+/// vault keys are set (without them, dev and CI only, no phone is cleared).
+fn register_consent_sweep(
+    registry: &mut Registry,
+    settings: &Settings,
+    clock: &Arc<dyn Clock>,
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
+    let vault = vault_from(settings, pairs)?.map(Arc::new);
+    let at = Arc::clone(clock);
+    registry.register(
+        askhava_intake::api::CONSENT_SWEEP_KIND,
+        move |pool, task| {
+            askhava_intake::api::run_consent_sweep_at(pool, vault.clone(), task, at.now())
+        },
+    );
     Ok(())
 }
 
@@ -1832,20 +1853,41 @@ fn register_notice_senders(
     });
 }
 
-/// The business-account handlers: the complaint box's close (BIZ-029, T083), a removed
-/// member's sessions and links ended (SEC-004, SEC-024, T084), and the welcome and phone-stopped
-/// emails (CON-020, BIZ-017, T268), which have no sender yet: no Resend client is built and no
-/// business mailbox address or phone number can be read (the sender directory keeps digests
-/// only), so each such task fails with `NO_ACCOUNT_SENDER` and is tried again, and a welcome is
-/// never marked sent without its email (D-3186). The OPS-041 owner-inbox email of a not-covered
-/// request (`intake.not_covered`, T215) has no sender either until a Resend client and the
-/// owner-inbox address exist, so it fails and is tried again the same way (D-3334). The business
-/// account event emails (`businesses::api::NOTICE_KINDS`, T329) wait the same way (D-3684).
-fn register_business_handlers(registry: &mut Registry) {
-    use askhava_adapters::api::ResendEmail;
+/// The coverage notice's owner-inbox address key, a secret never logged (OPS-041, T490, D-3882).
+const OWNER_INBOX_EMAIL: &str = "ASKHAVA_OWNER_INBOX_EMAIL";
+
+/// The business-account handlers (T490, D-3750, D-3882, D-4293): the complaint box's close
+/// (BIZ-029, T083), a removed member's sessions and links ended (SEC-004, SEC-024, T084), the
+/// OPS-041 owner-inbox email of a not-covered request (T215), the welcome and phone-stopped emails
+/// (CON-020, BIZ-017, T268), the business account event emails (`NOTICE_KINDS`, T329) and the
+/// accepted-quote email ([`register_accepted_quote`]). Every mailer is built from
+/// [`email_provider::email_provider`] (one client, one shared daily limit) and reads addresses
+/// through [`account_directory::VaultAccountDirectory`]; with no provider or vault (dev and CI
+/// without the Resend key) each is `None` as before: those tasks fail with `NO_ACCOUNT_SENDER`
+/// and are tried again, so a welcome is never marked sent without its email (D-3186). The
+/// coverage notice also needs [`OWNER_INBOX_EMAIL`], whose absence is an error naming the key in
+/// test and live.
+fn register_business_handlers(
+    registry: &mut Registry,
+    settings: &Settings,
+    clock: &Arc<dyn Clock>,
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
     use askhava_businesses::api::{run_coverage_notice, run_phone_stopped, run_welcome};
-    registry.register(askhava_intake::api::NOT_COVERED_KIND, |pool, task| {
-        run_coverage_notice::<ResendEmail>(pool, None, task)
+    let provider = email_provider::email_provider(settings, pairs.clone())?;
+    let vault = vault_from(settings, pairs.clone())?.map(Arc::new);
+    let coverage = coverage_mailer(settings, provider.as_ref(), clock, &pairs)?;
+    let account = provider.as_ref().zip(vault).map(|(p, vault)| {
+        let directory = || account_directory::VaultAccountDirectory::new(Arc::clone(&vault));
+        let welcome = Arc::new(account_mailer(p, directory(), clock));
+        (
+            welcome,
+            Arc::new(account_mailer(p, PortalNoticeParts(directory()), clock)),
+        )
+    });
+    let (welcome, notices) = account.unzip();
+    registry.register(askhava_intake::api::NOT_COVERED_KIND, move |pool, task| {
+        run_coverage_notice(pool, coverage.clone(), task)
     });
     registry.register(
         askhava_businesses::api::BOX_CLOSED_KIND,
@@ -1855,36 +1897,89 @@ fn register_business_handlers(registry: &mut Registry) {
         askhava_businesses::api::MEMBER_REMOVED_KIND,
         askhava_portals::api::run_member_removed,
     );
-    registry.register(askhava_businesses::api::WELCOME_KIND, |pool, task| {
-        run_welcome::<ResendEmail, NoAccountDirectory>(pool, None, task)
+    let stopped = welcome.clone();
+    registry.register(askhava_businesses::api::WELCOME_KIND, move |pool, task| {
+        run_welcome(pool, welcome.clone(), task)
     });
-    registry.register(askhava_businesses::api::PHONE_STOPPED_KIND, |pool, task| {
-        run_phone_stopped::<ResendEmail, NoAccountDirectory>(pool, None, task)
-    });
+    registry.register(
+        askhava_businesses::api::PHONE_STOPPED_KIND,
+        move |pool, task| run_phone_stopped(pool, stopped.clone(), task),
+    );
     for kind in askhava_businesses::api::NOTICE_KINDS {
-        registry.register(kind, |pool, task| {
-            askhava_businesses::api::run_notice_email::<ResendEmail, PortalNoticeParts>(
-                pool, None, task,
-            )
+        let notices = notices.clone();
+        registry.register(kind, move |pool, task| {
+            askhava_businesses::api::run_notice_email(pool, notices.clone(), task)
         });
     }
+    register_accepted_quote(registry, settings, provider.as_ref(), pairs)
+}
+
+/// An account mailer over provider `p`'s client, email key, postal line and shared daily limit,
+/// reading addresses through `directory` (SEC-025, OPS-038, T490).
+fn account_mailer<D>(
+    p: &email_provider::EmailProvider,
+    directory: D,
+    clock: &Arc<dyn Clock>,
+) -> askhava_businesses::api::AccountMailer<askhava_adapters::api::ResendEmail, D> {
+    let (postal, kind) = p.postal();
+    askhava_businesses::api::AccountMailer {
+        secret: p.secret().clone(),
+        postal: (postal.to_owned(), kind),
+        provider: p.client().clone(),
+        limit: p.daily_limit(),
+        directory,
+        clock: Arc::clone(clock),
+    }
+}
+
+/// OPS-041, D-3882: the not-covered email's mailer over `provider` and [`OWNER_INBOX_EMAIL`];
+/// `None` without either in dev and CI, and a missing address in test and live is an error naming
+/// the key, never its value.
+fn coverage_mailer(
+    settings: &Settings,
+    provider: Option<&email_provider::EmailProvider>,
+    clock: &Arc<dyn Clock>,
+    pairs: &[(String, String)],
+) -> io::Result<
+    Option<Arc<askhava_businesses::api::CoverageMailer<askhava_adapters::api::ResendEmail>>>,
+> {
+    let inbox = pairs
+        .iter()
+        .find(|(k, v)| k == OWNER_INBOX_EMAIL && !v.trim().is_empty())
+        .map(|(_, v)| SecretString::from(v.trim().to_owned()));
+    let dev_or_ci = matches!(settings.environment(), Environment::Dev | Environment::Ci);
+    if inbox.is_none() && !dev_or_ci {
+        return Err(io::Error::other(format!("missing {OWNER_INBOX_EMAIL}")));
+    }
+    Ok(provider.zip(inbox).map(|(p, owner_inbox)| {
+        let (postal, kind) = p.postal();
+        Arc::new(askhava_businesses::api::CoverageMailer {
+            secret: p.secret().clone(),
+            postal: (postal.to_owned(), kind),
+            provider: p.client().clone(),
+            limit: p.daily_limit(),
+            owner_inbox,
+            clock: Arc::clone(clock),
+        })
+    }))
 }
 
 /// How long the BIZ-033 Approve link in the owner's phone-linked email works (D-3683).
 const APPROVE_LINK_LIFE: jiff::SignedDuration = jiff::SignedDuration::from_hours(7 * 24);
 
-/// The business event emails' parts (T329, D-3112, D-3684): no address, name, digits or language
-/// choice is readable yet (D-3186), so nothing is on file and English is used; the Approve link
-/// is `portals::api::mint_action_link`'s and the re-test link is the Emergency emails page.
-struct PortalNoticeParts;
+/// The business event emails' parts (T329, D-3112, D-3684, T490): each address through
+/// [`account_directory::VaultAccountDirectory`] (D-4293); no name, digits or language choice is
+/// readable yet (D-3186), so English is used; the Approve link is
+/// `portals::api::mint_action_link`'s and the re-test link is the Emergency emails page.
+struct PortalNoticeParts(account_directory::VaultAccountDirectory);
 
 impl askhava_businesses::api::NoticeParts for PortalNoticeParts {
     async fn address(
         &self,
-        _: &mut sqlx::PgConnection,
-        _: Uuid,
+        db: &mut sqlx::PgConnection,
+        mailbox: Uuid,
     ) -> Result<Option<SecretString>, askhava_core::api::HandlerError> {
-        Ok(None)
+        askhava_businesses::api::AccountDirectory::address(&self.0, db, mailbox).await
     }
     async fn spanish(
         &self,
@@ -1931,33 +2026,31 @@ impl askhava_businesses::api::NoticeParts for PortalNoticeParts {
     }
 }
 
-/// The account emails' directory until business addresses and phone numbers are readable
-/// (D-3186): nothing is on file.
-struct NoAccountDirectory;
-
-impl askhava_businesses::api::AccountDirectory for NoAccountDirectory {
-    async fn address(
-        &self,
-        _: &mut sqlx::PgConnection,
-        _: Uuid,
-    ) -> Result<Option<SecretString>, askhava_core::api::HandlerError> {
-        Ok(None)
-    }
-    async fn last4(
-        &self,
-        _: &mut sqlx::PgConnection,
-        _: (Uuid, Uuid),
-    ) -> Result<Option<String>, askhava_core::api::HandlerError> {
-        Ok(None)
-    }
-}
-
-/// `intake`'s accepted-quote email after a Confirm (PICK-042, T388), with no sender until the
-/// footer postal setting exists, so each task ends done with nothing sent (D-3077).
-fn register_accepted_quote(registry: &mut Registry) {
-    registry.register(askhava_picks::api::ACCEPTED_QUOTE_KIND, |pool, task| {
-        askhava_intake::api::run_accepted_quote(pool, None, task)
-    });
+/// `intake`'s accepted-quote email after a Confirm (PICK-042, T388, T490, D-3882), its sender
+/// built from `provider`'s email key and postal line and the vault; with no provider or vault (dev
+/// and CI) each task ends done with nothing sent (D-3077).
+fn register_accepted_quote(
+    registry: &mut Registry,
+    settings: &Settings,
+    provider: Option<&email_provider::EmailProvider>,
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
+    let sender = match (provider, vault_from(settings, pairs)?) {
+        (Some(p), Some(vault)) => {
+            let built = askhava_messaging::api::AcceptedQuoteSender::new(
+                p.secret().clone(),
+                p.postal(),
+                vault,
+            );
+            Some(Arc::new(built.map_err(|_| bad_postal())?))
+        }
+        _ => None,
+    };
+    registry.register(
+        askhava_picks::api::ACCEPTED_QUOTE_KIND,
+        move |pool, task| askhava_intake::api::run_accepted_quote(pool, sender.clone(), task),
+    );
+    Ok(())
 }
 
 /// The retention purge (PRIV-007 to PRIV-009, D-491), every handler at `clock`'s now (the worker's
