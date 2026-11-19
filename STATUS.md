@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T11:29:40Z by runner 9caae39c4a2f (actions).
+Updated 2026-11-19T11:30:02Z by runner 9caae39c4a2f (actions).
 
 **Building: T470 in progress since 10:42Z; 489 of 664 done; week 79% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 489 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T470 claimed 10:42Z, lease until 13:42Z; lane 2: T536 claimed 10:45Z, lease until 13:45Z; lane 5: T109 claimed 11:27Z, lease until 14:27Z; lane 6: T540 claimed 10:35Z, lease until 14:26Z; lane 7: T593 claimed 11:00Z, lease until 14:00Z
+- **Lane:** lane 1: T470 claimed 10:42Z, lease until 13:42Z; lane 2: T536 claimed 10:45Z, lease until 13:45Z; lane 5: T109 claimed 11:27Z, lease until 14:27Z; lane 7: T593 claimed 11:00Z, lease until 14:00Z
 - **Week:** 79% used, 28.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:27Z, 1 min before this update
+- **Last run:** 11:27Z, 2 min before this update
 - **Keeper:** last ran 11:19Z, next wake 13:37Z
 
 ## Needs attention
@@ -19,6 +19,7 @@ Updated 2026-11-19T11:29:40Z by runner 9caae39c4a2f (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T540 | portals and server: the owner's release button re-sends an e | MERGE_PENDING | 1 | 54 min | 11:29Z |  |
 | T705 | Integration tests (harness): one shared log capture that a c | MERGE_PENDING | 1 | 114 min | 11:11Z |  |
 | T470 | messaging and server: the worker task that sends queued emai | QUEUED | 1 | 93 min | 10:35Z | Fix-round review (after the one allowed findings round) still found two problems at head d9889d9b8; no reviewer approved |
 | T710 | quotes and licensing (harness): a launch-open category takes | MERGE_PENDING | 1 | 85 min | 10:06Z |  |
@@ -144,8 +145,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T470 (lease until 2026-11-19T13:42:01Z)
 - lane 2: T536 (lease until 2026-11-19T13:45:21Z)
 - lane 5: T109 (lease until 2026-11-19T14:27:16Z)
-- lane 6: T540 (lease until 2026-11-19T14:26:20Z)
 - lane 7: T593 (lease until 2026-11-19T14:00:06Z)
 
 ## Last usage reading
-- {"task": "T705", "at": "2026-11-19T11:11:53Z", "input_tokens": 122, "cache_read_input_tokens": 2787274, "output_tokens": 40029, "cache_creation_input_tokens": 160441}
+- {"task": "T540", "at": "2026-11-19T11:29:39Z", "output_tokens": 58783, "cache_read_input_tokens": 11983841, "input_tokens": 217, "cache_creation_input_tokens": 223124}
