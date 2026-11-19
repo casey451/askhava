@@ -35,8 +35,6 @@ use crate::owner_portal::OwnerToolError;
 pub const OWNER_HEALTH_ROUTE: &str = "/owner/health";
 /// OPS-009: how many random job cards the spot-check shows.
 pub const SPOT_CHECK_CARDS: u32 = 10;
-/// OPS-009, D-4280: `ASKHAVA_SPOT_CHECK_EVERY_DAYS`'s default.
-pub const DEFAULT_SPOT_CHECK_EVERY_DAYS: u32 = 30;
 /// OPS-037: the quote limit of the "quoted within" share when no setting overrides it.
 pub const DEFAULT_QUOTED_WITHIN: SignedDuration = SignedDuration::from_hours(6);
 /// OPS-008: UptimeRobot's own 30-day uptime figure, linked, never copied (no history is stored).
@@ -79,7 +77,8 @@ pub struct HealthInputs {
     pub email_monthly_limit: u64,
     /// OPS-037's quote limit; [`DEFAULT_QUOTED_WITHIN`] by default.
     pub quoted_within: SignedDuration,
-    /// `ASKHAVA_SPOT_CHECK_EVERY_DAYS` (OPS-009); [`DEFAULT_SPOT_CHECK_EVERY_DAYS`] by default.
+    /// `ASKHAVA_SPOT_CHECK_EVERY_DAYS` (OPS-009): `Settings::spot_check_every_days`, default
+    /// [`askhava_core::api::DEFAULT_SPOT_CHECK_EVERY_DAYS`] (D-4625).
     pub spot_check_every_days: u32,
     /// How long the web process has run.
     pub web_up_for: SignedDuration,
@@ -118,6 +117,8 @@ struct HealthView<'a> {
     uptime_url: &'a str,
     spot_days: u32,
     spot: Vec<SpotRow>,
+    /// Fewer than [`SPOT_CHECK_CARDS`] cards in the window, so every one is shown (D-4626).
+    spot_all: bool,
     secrets: &'a [SecretLine],
     accounts: Vec<Figure>,
 }
@@ -363,11 +364,13 @@ pub async fn owner_health_page(
     let spot = spot_check_cards(conn, w.spot, now, SPOT_CHECK_CARDS)
         .await
         .map_err(db)?;
+    let spot_all = u32::try_from(spot.len()).is_ok_and(|n| n < SPOT_CHECK_CARDS);
     HealthView {
         sections,
         uptime_url: UPTIME_HISTORY_URL,
         spot_days: inputs.spot_check_every_days,
         spot: spot.into_iter().map(spot_row).collect(),
+        spot_all,
         secrets: &inputs.secrets,
         accounts: account_lines(&inputs.accounts),
     }

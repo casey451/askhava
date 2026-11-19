@@ -6,22 +6,25 @@
 //! per audience, sending-limit use, TD-OPS-12's 20- and 60-minute medians and the 6-hour share,
 //! the share of this month's cards that ended without a quote, payment and AI errors, uptime, the
 //! last backup and each secret's three flags beside the SEC-036 identifiers, with no business-call
-//! rate (TD-OPS-10's page figures); the OPS-009 spot-check shows 10 distinct cards of the window;
-//! and a sentinel secret's value, length and hash appear nowhere in the page.
+//! rate (TD-OPS-10's page figures); the OPS-009 spot-check shows 10 distinct cards of the window and
+//! words a window of fewer or none; and a sentinel secret read through `Settings::from_pairs`
+//! reaches the page as its name and flags only, its value, length and hash nowhere.
 
 use std::collections::BTreeSet;
 
+use askhava_core::api::{DEFAULT_SPOT_CHECK_EVERY_DAYS, Settings};
 use askhava_integration::set_app_role;
 use askhava_portals::api::{
-    AccountIds, DEFAULT_QUOTED_WITHIN, DEFAULT_SPOT_CHECK_EVERY_DAYS, HealthInputs, SecretLine,
-    UPTIME_HISTORY_URL, owner_health_page,
+    AccountIds, DEFAULT_QUOTED_WITHIN, HealthInputs, SecretLine, UPTIME_HISTORY_URL,
+    owner_health_page,
 };
 use jiff::{SignedDuration, Timestamp};
+use secrecy::ExposeSecret;
 use sha2::{Digest, Sha256};
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
-/// A fake secret value the route never passes in; nothing on the page may reveal it.
+/// A fake 32-character secret value set as `ASKHAVA_STRIPE_SECRET_KEY`; nothing on the page may reveal it.
 const SENTINEL: &str = "sk_test_FAKE_SENTINEL_value_0042";
 
 /// The page's "now": Friday Nov 20, 2026, noon in Arizona.
@@ -219,16 +222,20 @@ fn inputs() -> HealthInputs {
     }
 }
 
-/// Plants the rows and renders the page as the app role.
-async fn page(pool: &PgPool) -> (String, BTreeSet<Uuid>) {
-    let inside = plant(&mut pool.acquire().await.expect("connection")).await;
+/// Renders the page as the app role.
+async fn render(pool: &PgPool, inputs: &HealthInputs) -> String {
     let mut conn = pool.acquire().await.expect("connection");
     set_app_role(&mut conn).await.expect("SET ROLE askhava_app");
     let now: Timestamp = NOW.parse().expect("now");
-    let html = owner_health_page(&mut conn, &inputs(), now)
+    owner_health_page(&mut conn, inputs, now)
         .await
-        .expect("page");
-    (html, inside)
+        .expect("page")
+}
+
+/// Plants the rows and renders the page.
+async fn page(pool: &PgPool) -> (String, BTreeSet<Uuid>) {
+    let inside = plant(&mut pool.acquire().await.expect("connection")).await;
+    (render(pool, &inputs()).await, inside)
 }
 
 /// TD-OPS-02, TD-OPS-12, TD-OPS-10: every OPS-008 figure from planted rows, no business-call rate.
@@ -279,21 +286,104 @@ async fn ops_009_spot_check_shows_ten_distinct_cards_of_the_month(pool: PgPool) 
         .collect();
     assert_eq!(shown.len(), 10, "{shown:?}");
     assert!(shown.is_subset(&inside), "a card outside the window");
+    assert!(html.contains("Every 30 days, open these 10 job cards, picked at random"));
 }
 
-/// TD-OPS-02, SEC-002, D-492: a sentinel secret's value, length and hash appear nowhere.
+/// OPS-009, D-4626: an empty window says there is nothing to check; a window of 3 cards shows
+/// all 3 as every card of the window, never "10".
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn ops_009_spot_check_words_a_window_of_fewer_than_ten_cards(pool: PgPool) {
+    let html = render(&pool, &inputs()).await;
+    assert!(
+        html.contains("No job cards were sent in the last 30 days, so there are none to check.")
+    );
+    assert!(!html.contains("open these") && !html.contains("<tr><td>"));
+    let mut db = pool.acquire().await.expect("connection");
+    for _ in 0..3 {
+        card(&mut db, "2026-11-18T17:00:00Z", false).await;
+    }
+    drop(db);
+    let html = render(&pool, &inputs()).await;
+    assert!(html.contains(
+        "Every 30 days, open each job card below. They are all the cards sent in the last 30 days."
+    ));
+    assert!(!html.contains("10 job cards"));
+    assert_eq!(html.matches("<tr><td>").count(), 3);
+}
+
+/// TD-OPS-02, SEC-002, D-492: a sentinel secret read through `Settings::from_pairs` reaches the
+/// page only as its name and three flags; its value, length and hash appear nowhere.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn a_sentinel_secrets_value_length_and_hash_appear_nowhere(pool: PgPool) {
-    let (html, _) = page(&pool).await;
+    let settings = Settings::from_pairs(
+        [
+            ("ASKHAVA_APP_ENV", "dev"),
+            (
+                "ASKHAVA_DATABASE_URL",
+                "postgres://fake:fake@localhost/fake",
+            ),
+            ("ASKHAVA_STRIPE_SECRET_KEY", SENTINEL),
+        ]
+        .map(|(k, v)| (k.to_owned(), v.to_owned())),
+    )
+    .expect("settings");
+    let key = settings.stripe_secret_key().expect("the sentinel is read");
+    assert_eq!(key.expose_secret(), SENTINEL);
+    let line = SecretLine {
+        name: "ASKHAVA_STRIPE_SECRET_KEY".to_owned(),
+        present: true,
+        parsed: true,
+        env_matched: key.expose_secret().starts_with("sk_test_"),
+    };
+    // No `..`: a field added to `SecretLine` (a value, a length, a hash) stops this compiling.
+    let SecretLine {
+        name: _,
+        present: _,
+        parsed: _,
+        env_matched: _,
+    } = &line;
+    let mut with_sentinel = inputs();
+    with_sentinel.secrets = vec![line];
+    let html = render(&pool, &with_sentinel).await;
     let hash: String = Sha256::digest(SENTINEL.as_bytes())
         .iter()
         .map(|b| format!("{b:02x}"))
         .collect();
-    let length = SENTINEL.len().to_string();
     assert!(!html.contains(SENTINEL) && !html.contains(&hash) && !html.contains(&hash[..16]));
-    assert!(
-        !html.contains(&format!("{length} characters"))
-            && !html.contains(&format!("{length} chars"))
-    );
+    let table = html
+        .split("<table id=\"secrets\">")
+        .nth(1)
+        .and_then(|t| t.split("</table>").next())
+        .expect("secrets table");
+    assert!(table.contains("ASKHAVA_STRIPE_SECRET_KEY</th><td>Yes</td><td>Yes</td><td>Yes</td>"));
+    assert_eq!(SENTINEL.len(), 32);
+    assert!(!table.contains("32"), "the length shows: {table}");
     assert!(!html.to_lowercase().contains("length"));
+}
+
+/// OPS-009, D-4625: the spot-check cadence is 30 days when unset and refuses 0 or text by name.
+#[test]
+fn the_spot_check_cadence_is_a_typed_setting() {
+    let parse = |days: Option<&str>| {
+        let mut pairs = vec![
+            ("ASKHAVA_APP_ENV".to_owned(), "dev".to_owned()),
+            (
+                "ASKHAVA_DATABASE_URL".to_owned(),
+                "postgres://fake@localhost/fake".to_owned(),
+            ),
+        ];
+        pairs.extend(days.map(|d| ("ASKHAVA_SPOT_CHECK_EVERY_DAYS".to_owned(), d.to_owned())));
+        Settings::from_pairs(pairs)
+    };
+    let unset = parse(None).expect("default");
+    assert_eq!(unset.spot_check_every_days(), DEFAULT_SPOT_CHECK_EVERY_DAYS);
+    assert_eq!(DEFAULT_SPOT_CHECK_EVERY_DAYS, 30);
+    assert_eq!(parse(Some("7")).expect("7").spot_check_every_days(), 7);
+    for bad in ["0", "abc"] {
+        let err = parse(Some(bad)).expect_err(bad).to_string();
+        assert!(
+            err.contains("ASKHAVA_SPOT_CHECK_EVERY_DAYS") && !err.contains(bad),
+            "{err}"
+        );
+    }
 }

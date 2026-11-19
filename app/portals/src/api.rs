@@ -126,8 +126,8 @@ pub use crate::emergency_switch_page::{
 };
 pub use crate::feedback::{FEEDBACK_ROUTE, feedback_routes, share_label};
 pub use crate::health_page::{
-    AccountIds, DEFAULT_QUOTED_WITHIN, DEFAULT_SPOT_CHECK_EVERY_DAYS, HealthInputs,
-    OWNER_HEALTH_ROUTE, SPOT_CHECK_CARDS, SecretLine, UPTIME_HISTORY_URL, owner_health_page,
+    AccountIds, DEFAULT_QUOTED_WITHIN, HealthInputs, OWNER_HEALTH_ROUTE, SPOT_CHECK_CARDS,
+    SecretLine, UPTIME_HISTORY_URL, owner_health_page,
 };
 pub use crate::help::{
     GET_HELP_ANSWER_TEMPLATE, GET_HELP_MESSAGE_MAX, GET_HELP_ROUTE, GetHelpForm, GetHelpInput,
