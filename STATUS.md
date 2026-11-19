@@ -1,20 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-19T01:42:12Z by runner b5e9d7dccb4e (actions).
+Updated 2026-11-19T01:43:34Z by runner c5a97a0b8910 (actions).
 
-**Idle since 01:40Z; 468 of 663 done; week 71% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T306 in progress since 01:43Z; 468 of 663 done; week 71% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 468 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** idle since 01:40Z (no task in progress)
-- **Week:** 71% used, 48.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:41Z, 0 min before this update
+- **Lane:** lane 5: T306 claimed 01:43Z, lease until 04:43Z
+- **Week:** 71% used, 52.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 01:42Z, 1 min before this update
 - **Keeper:** last ran 01:42Z, next wake 02:02Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
+- PLAN GAP T484 (since 2026-11-19T01:43:18Z, no attempt used; a plan change fixes it): T484: dependency T205 is DONE but its owned file app/portals/templates/owner_refund.html is not on main; T484: dependency T205 is DONE but its owned file tests/e2e/owner_refund.spec.ts is not on main; T484: dependency T205 is DONE but its owned file app/portals/templates/owner_audit_log.html is not on main; T484: dependency T205 is DONE but its owned file tests/integration/tests/owner_refund.rs is not on main
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 52 problem(s) on tasks still to run (+271 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 53 problem(s) on tasks still to run (+271 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -124,7 +125,7 @@ Updated 2026-11-19T01:42:12Z by runner b5e9d7dccb4e (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-19T00:55:07Z (week)): week: 145.3M used, 48.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T04:13:24Z.
+- Pacing (session_reading 2026-11-19T01:41:41Z (week)): week: 142.0M used, 52.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T03:04:25Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -140,6 +141,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 5: T306 (lease until 2026-11-19T04:43:18Z)
 
 ## Last usage reading
 - {"task": "T203", "at": "2026-11-19T01:40:48Z", "input_tokens": 110, "cache_creation_input_tokens": 163610, "output_tokens": 45650, "cache_read_input_tokens": 4105326}
