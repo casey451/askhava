@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T09:48:00Z by runner b4c3e3f2cc9e (actions).
+Updated 2026-11-19T09:48:29Z by runner b4c3e3f2cc9e (actions).
 
 **Building: T470 in progress since 09:02Z; 485 of 664 done; week 78% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 485 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T470 claimed 09:02Z, lease until 12:02Z; lane 2: T553 claimed 08:48Z, lease until 12:13Z; lane 3: T710 claimed 08:40Z, lease until 12:37Z; lane 4: T705 claimed 09:16Z, lease until 12:16Z; lane 5: T622 claimed 07:06Z, lease until 12:04Z
+- **Lane:** lane 1: T470 claimed 09:02Z, lease until 12:02Z; lane 2: T553 claimed 08:48Z, lease until 12:13Z; lane 3: T710 claimed 08:40Z, lease until 12:37Z; lane 4: T705 claimed 09:16Z, lease until 12:16Z
 - **Week:** 78% used, 34.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:37Z, 10 min before this update
 - **Keeper:** last ran 09:25Z, next wake 11:42Z
@@ -22,6 +22,7 @@ Updated 2026-11-19T09:48:00Z by runner b4c3e3f2cc9e (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T622 | portals: the scorecard's first-six-weeks email panel and OPS | MERGE_PENDING | 1 | 2 h 41 min | 09:47Z |  |
 | T375 | portals and server: the business's Job types page lets the o | MERGE_PENDING | 1 | 74 min | 09:18Z |  |
 | T652 | ops: safe mode starts only on OPS-001's alert kinds, and a d | BLOCKED | 1 | 5 min | 09:10Z | PLAN GAP: tests/integration/tests/safe_mode.rs:246,281,320,378,407 (owned by T487 and T408; T652's prompt :11 and :47 sa |
 | T536 | E2e harness: clock-advancing journeys last, a keyed worker,  | BLOCKED | 1 | 46 min | 09:00Z | PLAN GAP: tests/e2e/j2.ts:150 (owned by T099, `e2e-j2-business`; T644 also lists it). Smallest plan change: make the `no |
@@ -93,7 +94,6 @@ Updated 2026-11-19T09:48:00Z by runner b4c3e3f2cc9e (actions).
 | T658 | privacy: the scrubber removes lower-case Spanish addresses a | done | 2 | 51 min | 11:04Z | Fix-round review of head 18e4fd102f38620e11d1055ecb4d77813e2b2965 returned FINDINGS after the one allowed fix round (fir |
 | T650 | intake: the under-13 stop also deletes the request's job pho | done | 1 | 90 min | 10:39Z |  |
 | T641 | Runner (harness): merge train depth 2, the next branch's upd | done | 1 | 55 min | 10:29Z |  |
-| T644 | tests (harness): the remaining Playwright specs and helpers  | done | 1 | 43 min | 09:48Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -148,7 +148,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T553 (lease until 2026-11-19T12:13:52Z)
 - lane 3: T710 (lease until 2026-11-19T12:37:32Z)
 - lane 4: T705 (lease until 2026-11-19T12:16:58Z)
-- lane 5: T622 (lease until 2026-11-19T12:04:37Z)
 
 ## Last usage reading
-- {"task": "T375", "at": "2026-11-19T09:18:59Z", "input_tokens": 184, "cache_creation_input_tokens": 222863, "output_tokens": 49124, "cache_read_input_tokens": 11044228}
+- {"task": "T622", "at": "2026-11-19T09:47:58Z", "cache_creation_input_tokens": 450849, "input_tokens": 295, "cache_read_input_tokens": 6398403, "output_tokens": 77145}
