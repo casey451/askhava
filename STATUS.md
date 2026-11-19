@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T07:01:53Z by runner 547545f44116 (actions).
+Updated 2026-11-19T07:01:59Z by runner 8eb209a9d88c (actions).
 
 **Building: T456 in progress since 06:58Z; 479 of 664 done; week 75% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -17,7 +17,7 @@ Updated 2026-11-19T07:01:53Z by runner 547545f44116 (actions).
 - PLAN GAP T652 (since 2026-11-19T06:58:02Z, no attempt used; a plan change fixes it): T652: dependency T408 is DONE but its owned file app/server/src/release_hold.rs is not on main; T652: dependency T408 is DONE but its owned file app/server/tests/safe_mode_release.rs is not on main
 - PLAN GAP T663 (since 2026-11-19T06:58:02Z, no attempt used; a plan change fixes it): T663: dependency T408 is DONE but its owned file app/server/src/release_hold.rs is not on main; T663: dependency T408 is DONE but its owned file app/server/tests/safe_mode_release.rs is not on main
 - PLAN GAP T707 (since 2026-11-19T06:58:02Z, no attempt used; a plan change fixes it): T707: dependency T408 is DONE but its owned file app/server/src/release_hold.rs is not on main; T707: dependency T408 is DONE but its owned file app/server/tests/safe_mode_release.rs is not on main
-- Strict plan check red: 59 problem(s) on tasks still to run (+284 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 61 problem(s) on tasks still to run (+296 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -97,8 +97,8 @@ Updated 2026-11-19T07:01:53Z by runner 547545f44116 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 308 of 735 (41.9%) · partial 386 · unstarted 41
-**Tasks merged (throughput only):** 479 of 663
+**Requirements verified:** 306 of 735 (41.6%) · partial 388 · unstarted 41
+**Tasks merged (throughput only):** 479 of 664
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -108,8 +108,8 @@ Updated 2026-11-19T07:01:53Z by runner 547545f44116 (actions).
 | calls | 12 | 13 | 0 | 25 |
 | consent | 15 | 20 | 0 | 35 |
 | fees | 23 | 28 | 1 | 52 |
-| intake | 10 | 33 | 0 | 43 |
-| job-cards | 14 | 10 | 0 | 24 |
+| intake | 9 | 34 | 0 | 43 |
+| job-cards | 13 | 11 | 0 | 24 |
 | licensing | 34 | 14 | 0 | 48 |
 | lifecycle | 18 | 10 | 0 | 28 |
 | messaging | 20 | 24 | 1 | 45 |
