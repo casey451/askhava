@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-19T11:19:32Z by runner 06d6439ca6d9 (actions).
+Updated 2026-11-19T11:24:29Z by runner ff354758f85f (actions).
 
-**Building: T470 in progress since 10:42Z; 488 of 664 done; week 79% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T470 in progress since 10:42Z; 489 of 664 done; week 79% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 488 of 664 build tasks (owner gates not counted)
+- **Tasks done:** 489 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T470 claimed 10:42Z, lease until 13:42Z; lane 2: T536 claimed 10:45Z, lease until 13:45Z; lane 6: T540 claimed 10:35Z, lease until 13:35Z; lane 7: T593 claimed 11:00Z, lease until 14:00Z
 - **Week:** 79% used, 32.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:19Z, 0 min before this update
+- **Last run:** 11:19Z, 4 min before this update
 - **Keeper:** last ran 11:19Z, next wake 13:37Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 61 problem(s) on tasks still to run (+308 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 61 problem(s) on tasks still to run (+311 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -23,7 +23,7 @@ Updated 2026-11-19T11:19:32Z by runner 06d6439ca6d9 (actions).
 | T470 | messaging and server: the worker task that sends queued emai | QUEUED | 1 | 93 min | 10:35Z | Fix-round review (after the one allowed findings round) still found two problems at head d9889d9b8; no reviewer approved |
 | T710 | quotes and licensing (harness): a launch-open category takes | MERGE_PENDING | 1 | 85 min | 10:06Z |  |
 | T553 | Decisions digest, piece 8: the next entries after the header | done | 1 | 76 min | 10:04Z |  |
-| T622 | portals: the scorecard's first-six-weeks email panel and OPS | MERGE_PENDING | 1 | 2 h 41 min | 09:47Z |  |
+| T622 | portals: the scorecard's first-six-weeks email panel and OPS | done | 1 | 2 h 41 min | 09:47Z |  |
 | T375 | portals and server: the business's Job types page lets the o | done | 1 | 74 min | 09:18Z |  |
 | T652 | ops: safe mode starts only on OPS-001's alert kinds, and a d | BLOCKED | 1 | 5 min | 09:10Z | PLAN GAP: tests/integration/tests/safe_mode.rs:246,281,320,378,407 (owned by T487 and T408; T652's prompt :11 and :47 sa |
 | T536 | E2e harness: clock-advancing journeys last, a keyed worker,  | BLOCKED | 1 | 46 min | 09:00Z | PLAN GAP: tests/e2e/j2.ts:150 (owned by T099, `e2e-j2-business`; T644 also lists it). Smallest plan change: make the `no |
@@ -91,7 +91,6 @@ Updated 2026-11-19T11:19:32Z by runner 06d6439ca6d9 (actions).
 | T700 | Runner (harness): a merge-line task whose turn ran out goes  | done | 1 | 29 min | 12:08Z |  |
 | T200 | ops and portals: the owner help page with its screened reply | QUEUED | 1 | 2 h 57 min | 12:02Z |  |
 | T408 | server: a release waits while safe mode is on and goes ahead | BLOCKED | 2 | 2 h 21 min | 11:34Z |  |
-| T563 | intake and privacy: the daily consent sweep removes consent  | BLOCKED | 1 | 85 min | 11:21Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -99,7 +98,7 @@ Updated 2026-11-19T11:19:32Z by runner 06d6439ca6d9 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 307 of 735 (41.8%) · partial 389 · unstarted 39
-**Tasks merged (throughput only):** 488 of 664
+**Tasks merged (throughput only):** 489 of 664
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -135,7 +134,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 131 of 263 done
+- stage 5: 132 of 263 done
 - stage 6: 0 of 48 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
