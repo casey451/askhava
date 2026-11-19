@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T02:21:40Z by runner 664d20bcb40f (actions).
+Updated 2026-11-19T02:22:04Z by runner 664d20bcb40f (actions).
 
 **Building: T715 in progress since 01:59Z; 470 of 663 done; week 71% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 470 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T715 claimed 01:59Z, lease until 04:59Z; lane 2: T520 claimed 01:57Z, lease until 04:57Z; lane 3: T114 claimed 02:14Z, lease until 05:14Z; lane 4: T484 claimed 02:04Z, lease until 05:04Z; lane 5: T306 claimed 01:43Z, lease until 05:18Z; lane 6: T490 claimed 02:10Z, lease until 05:10Z
+- **Lane:** lane 1: T715 claimed 01:59Z, lease until 04:59Z; lane 2: T520 claimed 01:57Z, lease until 04:57Z; lane 3: T114 claimed 02:14Z, lease until 05:14Z; lane 4: T484 claimed 02:04Z, lease until 05:04Z; lane 6: T490 claimed 02:10Z, lease until 05:10Z
 - **Week:** 71% used, 44.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:18Z, 2 min before this update
+- **Last run:** 02:18Z, 3 min before this update
 - **Keeper:** last ran 02:09Z, next wake 02:29Z
 
 ## Needs attention
@@ -19,11 +19,12 @@ Updated 2026-11-19T02:21:40Z by runner 664d20bcb40f (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T306 | server and portals: the complaints page, the emergency-email | MERGE_PENDING | 1 | 38 min | 02:21Z | merging main into the reviewed head conflicts in tests/a11y/page_states.ts; a resync merges it in on this attempt (D-891 |
 | T203 | Wording scan: the required statements, business copy lines a | MERGE_PENDING | 2 | 41 min | 01:40Z | PLAN GAP: `app/portals/templates/quote_page.html:101` (owned by DONE tasks T052, T095, T294, T308, T384, T388, T393, T44 |
 | T563 | intake and privacy: the daily consent sweep removes consent  | check_failed | 2 | 99 min | 01:37Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T505 | Decisions digest, piece 6: the next entries after the header | done | 1 | 99 min | 01:27Z |  |
 | T488 | portals and server: the business sign-up served in Spanish o | done | 1 | 111 min | 01:20Z |  |
-| T306 | server and portals: the complaints page, the emergency-email | resync | 1 | 77 min | 00:59Z | merging main into the reviewed head conflicts in tests/a11y/page_states.ts; a resync merges it in on this attempt (D-891 |
+| T306 | server and portals: the complaints page, the emergency-email | resync | 1 | 77 min | 00:59Z |  |
 | T205 | portals: owner refunds with a review step and the audit log  | done | 2 | 2 h 26 min | 00:48Z | PLAN GAP: `payments` has no public reader that ties a dispute to its pick (or its charge, business or job). Without one, |
 | T708 | intake: a quote-count update due in quiet hours goes at the  | done | 1 | 50 min | 00:40Z |  |
 | T364 | server and portals: the business step-up code page is served | done | 2 | 70 min | 00:32Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
@@ -141,8 +142,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T520 (lease until 2026-11-19T04:57:04Z)
 - lane 3: T114 (lease until 2026-11-19T05:14:19Z)
 - lane 4: T484 (lease until 2026-11-19T05:04:28Z)
-- lane 5: T306 (lease until 2026-11-19T05:18:41Z)
 - lane 6: T490 (lease until 2026-11-19T05:10:22Z)
 
 ## Last usage reading
-- {"task": "T203", "at": "2026-11-19T01:40:48Z", "input_tokens": 110, "cache_creation_input_tokens": 163610, "output_tokens": 45650, "cache_read_input_tokens": 4105326}
+- {"task": "T306", "at": "2026-11-19T02:21:39Z", "cache_creation_input_tokens": 64200, "cache_read_input_tokens": 980197, "output_tokens": 10392, "input_tokens": 65}
