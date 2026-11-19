@@ -1,19 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-19T01:57:17Z by runner c5a97a0b8910 (actions).
+Updated 2026-11-19T01:57:45Z by runner c5a97a0b8910 (actions).
 
-**Building: T306 in progress since 01:43Z; 469 of 663 done; week 71% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T520 in progress since 01:57Z; 469 of 663 done; week 71% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 469 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 5: T306 claimed 01:43Z, lease until 04:43Z
-- **Week:** 71% used, 52.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 2: T520 claimed 01:57Z, lease until 04:57Z; lane 5: T306 claimed 01:43Z, lease until 04:43Z
+- **Week:** 71% used, 50.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:48Z, 9 min before this update
 - **Keeper:** last ran 01:47Z, next wake 02:07Z
 
 ## Needs attention
+- PLAN GAP T114 (since 2026-11-19T01:57:04Z, no attempt used; a plan change fixes it): T114: dependency T488 is DONE but its owned file app/portals/templates/es_business_signup.html is not on main; T114: dependency T488 is DONE but its owned file app/server/tests/es_business_signup_route.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T484 (since 2026-11-19T01:43:18Z, no attempt used; a plan change fixes it): T484: dependency T205 is DONE but its owned file app/portals/templates/owner_refund.html is not on main; T484: dependency T205 is DONE but its owned file tests/e2e/owner_refund.spec.ts is not on main; T484: dependency T205 is DONE but its owned file app/portals/templates/owner_audit_log.html is not on main; T484: dependency T205 is DONE but its owned file tests/integration/tests/owner_refund.rs is not on main
+- PLAN GAP T490 (since 2026-11-19T01:57:04Z, no attempt used; a plan change fixes it): T490: dependency T488 is DONE but its owned file app/portals/templates/es_business_signup.html is not on main; T490: dependency T488 is DONE but its owned file app/server/tests/es_business_signup_route.rs is not on main
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - Strict plan check red: 52 problem(s) on tasks still to run (+272 on DONE tasks); first: T563: stored context_pct 22% but it measures 26%; regenerate
 
@@ -123,7 +125,7 @@ Updated 2026-11-19T01:57:17Z by runner c5a97a0b8910 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-19T01:41:41Z (week)): week: 142.0M used, 52.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T03:04:25Z.
+- Pacing (session_reading 2026-11-19T01:47:20Z (week)): week: 143.6M used, 50.4M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T01:02:44Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -139,6 +141,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T520 (lease until 2026-11-19T04:57:04Z)
 - lane 5: T306 (lease until 2026-11-19T04:43:18Z)
 
 ## Last usage reading
