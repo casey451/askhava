@@ -6,9 +6,9 @@
 //! the capture then never sees its event. Here one subscriber is installed once per test binary
 //! with `set_global_default`, answers `Interest::always()` and `enabled` true for every callsite,
 //! and the interest cache is rebuilt after it is in place, so no callsite stays cached as never.
-//! It appends each event's and each span's fields (` name=value`, the value's `Debug`) to the
-//! buffer of the capture [`start`]ed on the current thread, if any; a capture never sees another
-//! thread's events.
+//! It appends each event's fields, each new span's fields and each value later recorded on a span
+//! (` name=value`, the value's `Debug`) to the buffer of the capture [`start`]ed on the current
+//! thread, if any; a capture never sees another thread's events.
 
 use std::cell::RefCell;
 use std::sync::{Arc, Mutex, OnceLock};
@@ -92,7 +92,7 @@ fn begin(skip: Option<&'static str>) -> Capture {
 fn install() {
     static INSTALLED: OnceLock<()> = OnceLock::new();
     INSTALLED.get_or_init(|| {
-        tracing::subscriber::set_global_default(Global)
+        tracing::subscriber::set_global_default(Global::default())
             .expect("no other global subscriber in an integration test binary");
         tracing::callsite::rebuild_interest_cache();
     });
@@ -123,7 +123,25 @@ impl Visit for Line<'_> {
 }
 
 /// The process-global subscriber: interested in every callsite, forwarding to [`CURRENT`].
-struct Global;
+///
+/// It keeps each span's metadata, the span's `Id` being its index plus one, so a value recorded
+/// on a span later is appended under the span's target, and skipped like the span itself.
+#[derive(Default)]
+struct Global {
+    spans: Mutex<Vec<&'static Metadata<'static>>>,
+}
+
+impl Global {
+    /// The metadata of the span `id` names, if this subscriber issued it.
+    fn span(&self, id: &Id) -> Option<&'static Metadata<'static>> {
+        let index = usize::try_from(id.into_u64()).ok()?.checked_sub(1)?;
+        self.spans
+            .lock()
+            .expect("span metadata")
+            .get(index)
+            .copied()
+    }
+}
 
 impl Subscriber for Global {
     fn register_callsite(&self, _: &'static Metadata<'static>) -> Interest {
@@ -134,9 +152,15 @@ impl Subscriber for Global {
     }
     fn new_span(&self, attributes: &Attributes<'_>) -> Id {
         append(attributes.metadata(), |v| attributes.record(v));
-        Id::from_u64(1)
+        let mut spans = self.spans.lock().expect("span metadata");
+        spans.push(attributes.metadata());
+        Id::from_u64(u64::try_from(spans.len()).expect("span count"))
     }
-    fn record(&self, _: &Id, _: &Record<'_>) {}
+    fn record(&self, span: &Id, values: &Record<'_>) {
+        if let Some(meta) = self.span(span) {
+            append(meta, |v| values.record(v));
+        }
+    }
     fn record_follows_from(&self, _: &Id, _: &Id) {}
     fn event(&self, event: &Event<'_>) {
         append(event.metadata(), |v| event.record(v));
@@ -147,21 +171,36 @@ impl Subscriber for Global {
 
 #[cfg(test)]
 mod tests {
-    use super::start;
+    use super::{start, start_skipping};
 
-    /// One callsite every case reaches.
+    /// The callsite only the other-thread-first case reaches, first on another thread.
+    fn first_elsewhere(n: u32) {
+        tracing::warn!(probe = n, "log capture probe reached first elsewhere");
+    }
+
+    /// The callsite the other cases reach.
     fn probe(n: u32) {
         tracing::warn!(probe = n, "log capture probe");
     }
 
+    /// Every case in one test, in a fixed order: this is the only test in the crate's library
+    /// binary, so nothing has called [`start`] when `first_elsewhere` is first reached on another
+    /// thread, with no subscriber in place (the case D-4419 missed), and no other test can reach
+    /// that callsite or install the subscriber earlier, whatever the runner's thread order.
     #[test]
+    fn every_line_of_this_thread_is_captured_and_nothing_else() {
+        a_callsite_reached_first_on_another_thread_is_still_captured();
+        a_dropped_capture_sees_nothing_more_and_skipping_drops_the_target();
+        a_value_recorded_on_a_span_later_is_captured();
+    }
+
     fn a_callsite_reached_first_on_another_thread_is_still_captured() {
-        std::thread::spawn(|| probe(1))
+        std::thread::spawn(|| first_elsewhere(1))
             .join()
             .expect("other thread");
         let capture = start();
-        probe(2);
-        std::thread::spawn(|| probe(3))
+        first_elsewhere(2);
+        std::thread::spawn(|| first_elsewhere(3))
             .join()
             .expect("other thread");
         let lines = capture.lines();
@@ -169,12 +208,11 @@ mod tests {
         assert!(lines[0].contains("probe=2"), "{lines:?}");
     }
 
-    #[test]
     fn a_dropped_capture_sees_nothing_more_and_skipping_drops_the_target() {
         let first = start();
         probe(4);
         let lines = {
-            let skipping = super::start_skipping(module_path!());
+            let skipping = start_skipping(module_path!());
             probe(5);
             skipping.lines()
         };
@@ -183,5 +221,20 @@ mod tests {
         assert!(lines.is_empty(), "{lines:?}");
         assert_eq!(kept.len(), 2, "{kept:?}");
         assert!(kept[0].contains("probe=4") && kept[1].contains("probe=6"));
+    }
+
+    fn a_value_recorded_on_a_span_later_is_captured() {
+        let capture = start();
+        let span = tracing::warn_span!("probe span", contact = tracing::field::Empty);
+        span.record("contact", "fake-contact");
+        let lines = capture.lines();
+        assert_eq!(lines.len(), 2, "{lines:?}");
+        assert!(lines[1].contains("contact=\"fake-contact\""), "{lines:?}");
+        let skipped = {
+            let skipping = start_skipping(module_path!());
+            span.record("contact", "other-fake-contact");
+            skipping.lines()
+        };
+        assert!(skipped.is_empty(), "{skipped:?}");
     }
 }
