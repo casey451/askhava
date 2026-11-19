@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {#- The owner home (T108; OPS-001, OPS-003, OPS-035, FEE-007, CON-024, BIZ-027, CON-022; D-1843,
-    D-3744, D-3882, D-3890). Pushed alerts with the acknowledgement, the pause switches, the fee
+    D-3744, D-3882, D-3890; T484: OPS-028, D-3753). Pushed alerts with the acknowledgement and,
+    for a critical alert about a text, the bridge press, the pause switches, the fee
     mode, the homeowner line, the status banner, the weekly opt-out rates, the needs-review
     sign-ups and how long consent records are kept. IDs and code names only, never a contact
     detail. Every form posts its CSRF token and a change name; record IDs go in the body. -#}
@@ -18,6 +19,11 @@
 {% else if a.acknowledged.is_none() %}<form method="post" action="{{ routes[0] }}" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="change" value="acknowledge"><input type="hidden" name="target" value="{{ a.id }}">
 <button type="submit">I've seen this alert</button>
+</form>{% endif %}
+{% if a.bridge %}<form method="post" action="{{ routes[7] }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="alert" value="{{ a.id }}"><input type="hidden" name="press" value="{{ a.press }}">
+<p>We call your phone, read you the 911 safety text we sent the homeowner, then connect you. They see our number, never yours. This needs a code from the last 5 minutes. If yours is older, <a href="{{ routes[6] }}">get a new code</a> first.</p>
+<p><button type="submit">Call from the {{ brand }} number</button></p>
 </form>{% endif %}</li>
 {% endfor %}</ul>
 {% endif %}

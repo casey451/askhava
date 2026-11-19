@@ -1048,7 +1048,8 @@ where
     Ok(registry)
 }
 
-/// The handlers that need the Twilio settings: the inbound retry, the safety call, the outbox
+/// The handlers that need the Twilio settings: the inbound retry, the safety call, the two owner
+/// calls (T484), the outbox
 /// sender (with both vault keys), the body deletes and the masked-line handlers. With no Twilio
 /// settings (dev and CI only) none is registered.
 fn register_twilio_handlers(
@@ -1072,6 +1073,7 @@ fn register_twilio_handlers(
         (&twilio, &id_secret, &clock),
         pairs.clone(),
     )?;
+    register_owner_calls(registry, settings, (&twilio, &id_secret), pairs.clone())?;
     let (sms, _, _) = twilio_clients(&twilio).map_err(io::Error::other)?;
     let sms = with_status_url(settings, sms);
     if let Some(vault) = vault_from(settings, pairs.clone())? {
@@ -1408,6 +1410,155 @@ async fn run_safety_call(
         .await
         .map(|_| ())
         .map_err(|_| SAFETY_FAILED)
+}
+
+/// What both owner calls dial with (OPS-028, OPS-035, D-3890): the Twilio voice client, the first
+/// pool number that is not the main number, `ASKHAVA_OWNER_PHONE`, the `ID_SECRET`, the public base
+/// URL and the vault (the bridge's read of her phone).
+struct OwnerCallParts {
+    voice: askhava_adapters::api::TwilioVoice,
+    from: Option<askhava_adapters::api::PoolNumber>,
+    owner_phone: Option<SecretString>,
+    secret: SecretString,
+    public_base: Option<String>,
+    vault: Option<Vault>,
+}
+
+impl OwnerCallParts {
+    /// The dialer, or `None` (fail closed, nothing dialled) when Casey's phone, a pool number
+    /// other than the main number or the public base URL is missing.
+    fn dialer(
+        &self,
+    ) -> Option<askhava_calls::api::OwnerDialer<'_, askhava_adapters::api::TwilioVoice>> {
+        Some(askhava_calls::api::OwnerDialer {
+            voice: &self.voice,
+            secret: &self.secret,
+            owner_phone: self.owner_phone.as_ref()?,
+            from: self.from.as_ref()?,
+            public_base: self.public_base.as_deref()?,
+        })
+    }
+}
+
+const OWNER_CALL_FAILED: askhava_core::api::HandlerError =
+    askhava_core::api::HandlerError("the owner call step failed");
+
+/// T484 (OPS-028, OPS-035, D-3880, D-3890): registers `calls.owner_alert_call` (T204 queues it per
+/// critical alert) and `calls.owner_bridge` (the owner portal's press) beside the safety call. In
+/// test and live a missing `ASKHAVA_OWNER_PHONE` is an error naming the key; in dev and Ci both
+/// register and a run without it fails closed, dialling nothing.
+fn register_owner_calls(
+    registry: &mut Registry,
+    settings: &Settings,
+    (twilio, id_secret): (&TwilioConfig, &SecretString),
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
+    let owner_phone = settings.owner_phone().cloned();
+    let required = matches!(
+        settings.environment(),
+        Environment::Test | Environment::Live
+    );
+    if owner_phone.is_none() && required {
+        return Err(io::Error::other("missing setting ASKHAVA_OWNER_PHONE"));
+    }
+    let (_, voice, _) = twilio_clients(twilio).map_err(io::Error::other)?;
+    let main = settings.main_number().unwrap_or_default();
+    let from = twilio.pool().numbers().iter().find(|n| n.as_str() != main);
+    let parts = Arc::new(OwnerCallParts {
+        voice,
+        from: from.cloned(),
+        owner_phone,
+        secret: id_secret.clone(),
+        public_base: settings.public_base_url().map(str::to_owned),
+        vault: vault_from(settings, pairs)?,
+    });
+    let bridge = Arc::clone(&parts);
+    registry.register(
+        askhava_messaging::api::OWNER_ALERT_CALL_KIND,
+        move |pool, task| run_owner_alert_call(pool, Arc::clone(&parts), task),
+    );
+    registry.register(askhava_calls::api::OWNER_BRIDGE_KIND, move |pool, task| {
+        run_owner_bridge(pool, Arc::clone(&bridge), task)
+    });
+    Ok(())
+}
+
+/// A task payload's ID field `key`.
+fn payload_id(task: &askhava_core::api::Claimed, key: &str) -> Option<Uuid> {
+    task.payload.get(key)?.as_str()?.parse().ok()
+}
+
+/// OPS-035 (D-3890): the job number of `contact`'s newest job (the highest number), `None` when she
+/// has none or no contact is known.
+async fn newest_job_number(
+    db: &mut sqlx::PgConnection,
+    contact: Option<Uuid>,
+) -> Result<Option<i64>, askhava_core::api::HandlerError> {
+    let Some(contact) = contact else {
+        return Ok(None);
+    };
+    let jobs = askhava_intake::api::jobs_of_contact(db, contact)
+        .await
+        .map_err(|_| OWNER_CALL_FAILED)?;
+    let mut newest = None;
+    for job in jobs {
+        let number = askhava_jobs::api::job_number(db, job)
+            .await
+            .map_err(|_| OWNER_CALL_FAILED)?;
+        newest = newest.max(Some(number));
+    }
+    Ok(newest)
+}
+
+/// `calls.owner_alert_call` (OPS-035, D-3880, D-3890): one say-only call to Casey naming the alert
+/// kind and her newest job number, at any hour and whatever the texting number's state; the call
+/// is keyed by the alert, so a rerun is the provider's same call. No owner phone: fails, no dial.
+async fn run_owner_alert_call(
+    pool: PgPool,
+    parts: Arc<OwnerCallParts>,
+    task: askhava_core::api::Claimed,
+) -> Result<(), askhava_core::api::HandlerError> {
+    let alert = payload_id(&task, "alert").ok_or(OWNER_CALL_FAILED)?;
+    let dialer = parts.dialer().ok_or(OWNER_CALL_FAILED)?;
+    let mut db = pool.acquire().await.map_err(|_| OWNER_CALL_FAILED)?;
+    let facts = askhava_calls::api::alert_facts(&mut db, alert).await;
+    let (kind, contact) = facts.ok().flatten().ok_or(OWNER_CALL_FAILED)?;
+    let job = newest_job_number(&mut db, contact).await?;
+    drop(db);
+    askhava_calls::api::place_owner_alert_call(&dialer, alert, (&kind, job))
+        .await
+        .map(drop)
+        .map_err(|_| OWNER_CALL_FAILED)
+}
+
+/// `calls.owner_bridge` (OPS-028, D-3753, D-3890): one press of "Call from the" brand "number":
+/// rings Casey and bridges him to the alert's homeowner with the INT-004 words read first, keyed
+/// by alert and press. No owner phone, vault or known contact: fails, no dial.
+async fn run_owner_bridge(
+    pool: PgPool,
+    parts: Arc<OwnerCallParts>,
+    task: askhava_core::api::Claimed,
+) -> Result<(), askhava_core::api::HandlerError> {
+    let ids = payload_id(&task, "alert").zip(payload_id(&task, "press"));
+    let (alert, press) = ids.ok_or(OWNER_CALL_FAILED)?;
+    let (Some(dialer), Some(vault)) = (parts.dialer(), parts.vault.as_ref()) else {
+        return Err(OWNER_CALL_FAILED);
+    };
+    let words = askhava_messaging::api::render(
+        askhava_intake::api::rules::SAFETY_TEMPLATE,
+        askhava_messaging::api::Language::En,
+        false,
+        &[],
+    )
+    .map_err(|_| OWNER_CALL_FAILED)?;
+    let mut db = pool.acquire().await.map_err(|_| OWNER_CALL_FAILED)?;
+    let facts = askhava_calls::api::alert_facts(&mut db, alert).await;
+    let (_, contact) = facts.ok().flatten().ok_or(OWNER_CALL_FAILED)?;
+    let ids = (alert, press, contact.ok_or(OWNER_CALL_FAILED)?);
+    askhava_calls::api::bridge_owner(&mut db, vault, &dialer, ids, &words.body)
+        .await
+        .map(drop)
+        .map_err(|_| OWNER_CALL_FAILED)
 }
 
 /// T318 (TXT-027, QH-004, D-1687): with both vault keys, `calls.whos_calling`

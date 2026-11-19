@@ -67,8 +67,9 @@
 use sqlx::types::Uuid;
 
 pub use crate::auto_confirm_box::{
-    AUTO_CONFIRM_VERSION, AutoConfirmError, AutoConfirmTick, Untick, auto_confirm_authorization,
-    auto_confirm_of, stripe_answer_filed, tick_auto_confirm, untick_auto_confirm,
+    AUTO_CONFIRM_VERSION, AutoConfirmError, AutoConfirmTick, StripeAnswer, Untick,
+    auto_confirm_authorization, auto_confirm_of, file_stripe_answer, latest_stripe_answer,
+    stripe_answer_filed, tick_auto_confirm, untick_auto_confirm,
 };
 pub use crate::business_left::withdraw_for_leaving;
 pub use crate::business_numbers::{QuoteNumbers, median_tenths, quote_numbers};
