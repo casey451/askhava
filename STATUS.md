@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T10:08:02Z by runner 25c9a14919a4 (actions).
+Updated 2026-11-19T10:24:05Z by runner 7be551b7caec (actions).
 
-**Building: T470 in progress since 09:02Z; 485 of 664 done; week 78% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T470 in progress since 09:02Z; 486 of 664 done; week 78% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 485 of 664 build tasks (owner gates not counted)
+- **Tasks done:** 486 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T470 claimed 09:02Z, lease until 12:55Z; lane 4: T705 claimed 09:16Z, lease until 12:16Z
 - **Week:** 78% used, 34.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:07Z, 0 min before this update
+- **Last run:** 10:08Z, 15 min before this update
 - **Keeper:** last ran 10:08Z, next wake 12:19Z
 
 ## Needs attention
@@ -17,13 +17,13 @@ Updated 2026-11-19T10:08:02Z by runner 25c9a14919a4 (actions).
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T540 (since 2026-11-19T08:04:18Z, no attempt used; a plan change fixes it): T540: dependency T310 is DONE but its owned file app/server/src/owner_portal.rs is not on main; T540: dependency T310 is DONE but its owned file app/server/tests/owner_portal_route.rs is not on main; T540: dependency T310 is DONE but its owned file tests/e2e/owner_portal_served.spec.ts is not on main
 - PLAN GAP T593 (since 2026-11-19T09:02:31Z, no attempt used; a plan change fixes it): T593: dependency T216 is DONE but its owned file app/site/static/photos/hero-kitchen-phone.avif is not on main
-- Strict plan check red: 62 problem(s) on tasks still to run (+302 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 61 problem(s) on tasks still to run (+304 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T710 | quotes and licensing (harness): a launch-open category takes | MERGE_PENDING | 1 | 85 min | 10:06Z |  |
-| T553 | Decisions digest, piece 8: the next entries after the header | MERGE_PENDING | 1 | 76 min | 10:04Z |  |
+| T553 | Decisions digest, piece 8: the next entries after the header | done | 1 | 76 min | 10:04Z |  |
 | T622 | portals: the scorecard's first-six-weeks email panel and OPS | MERGE_PENDING | 1 | 2 h 41 min | 09:47Z |  |
 | T375 | portals and server: the business's Job types page lets the o | MERGE_PENDING | 1 | 74 min | 09:18Z |  |
 | T652 | ops: safe mode starts only on OPS-001's alert kinds, and a d | BLOCKED | 1 | 5 min | 09:10Z | PLAN GAP: tests/integration/tests/safe_mode.rs:246,281,320,378,407 (owned by T487 and T408; T652's prompt :11 and :47 sa |
@@ -103,7 +103,7 @@ Updated 2026-11-19T10:08:02Z by runner 25c9a14919a4 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 306 of 735 (41.6%) · partial 389 · unstarted 40
-**Tasks merged (throughput only):** 485 of 664
+**Tasks merged (throughput only):** 486 of 664
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -139,7 +139,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 128 of 263 done
+- stage 5: 129 of 263 done
 - stage 6: 0 of 48 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
