@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T04:12:41Z by runner 547545f44116 (actions).
+Updated 2026-11-19T04:13:09Z by runner 547545f44116 (actions).
 
 **Building: T408 in progress since 03:29Z; 473 of 663 done; week 73% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-19T04:12:41Z by runner 547545f44116 (actions).
 - **Lane:** lane 1: T408 claimed 03:29Z, lease until 06:29Z; lane 2: T520 claimed 01:57Z, lease until 06:52Z; lane 3: T203 claimed 04:08Z, lease until 07:08Z; lane 6: T490 claimed 02:10Z, lease until 07:07Z
 - **Week:** 73% used, 43.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:12Z, 0 min before this update
-- **Keeper:** last ran 04:08Z, next wake 04:28Z
+- **Keeper:** last ran 04:13Z, next wake 04:33Z
 
 ## Needs attention
 - BLOCKED T715: plan gap reported: PLAN GAP: one TD-INT-52 sentence can't be met by intake as planned: "a two-word first text naming a trade opens its job at the ZIP's step 5 and gets the coverage line". D-4441 gives the job-type question before the count to T716, and without that question the coverage line never comes. Today a homeowner who texts "sticky door" gets INT-017's "not covered" reply and the request is closed, even though two covering handyman businesses exist. Amend TD-INT-52 or move this case to T716; the test's assertion then changes to the coverage line.
