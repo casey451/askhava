@@ -1,0 +1,32 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO calls.safety_switch (is_on, approved_on, reference, changed_by, changed_at) SELECT $1, $2::text::date, $3, $4, GREATEST($5, (SELECT max(changed_at) + interval '1 microsecond' FROM calls.safety_switch)) RETURNING id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "calls.safety_switch",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Bool",
+        "Text",
+        "Text",
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "daa2d30312f625b5d256637cfc134a0f8416db0640233b66a7faa4fad4df186a"
+}

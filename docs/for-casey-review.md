@@ -2,6 +2,12 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Help replies: the first version texts homeowners only; email replies come in a later step (D-4726, November 19, open)
+
+- **What happened.** The owner help page (T530) lets you answer a help request. The rule says a reply goes by text to a homeowner who can be texted, and otherwise by email, always by email to a business on email. Texts to businesses are not sent yet, and nothing stores the address of someone who wrote to the help email.
+- **What changed.** T530 now sends a reply only by text, and only to a homeowner who agreed to texts. For anyone else the page says plainly that the reply must go by email for now, and sends nothing. Two later steps in Phase 2 add the rest: T742 keeps the address of someone who writes to the help email (locked in the vault, deleted after 30 days with their message), and T740 adds the email replies and texts to businesses once business texts are sent. People who use the help page's form give no address, so they can only be answered if they write again.
+- **Open until T740 merges.** Until then, answer a business, a help email or a homeowner who can't be texted from your own mailbox.
+
 ## Backups: a new encryption library with one dated exception, and the test machines pinned (D-4707, D-4708, November 19)
 
 - **What happened.** The nightly backup step (T109) stopped: the encryption library it needs, `age`, uses a small helper that is no longer maintained, and our dependency check refuses that. The newer `age` release is worse: it brings in a part with a known security problem.
@@ -3479,4 +3485,22 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - **What changed:** safe mode (charges and releases paused) now starts only when a payment-error, app-down, ledger-difference or suspended-number alert, or a critical alert, waits 24 hours after reaching your phone. A texting-delivery, email-limit, unusual-vault-reading or call-back alert no longer starts it. A business-line texting drop is now alerted even if the homeowner-line alert was just cleared.
 - **Accepted risk:** an unusual-vault-reading alert you leave for 24 hours no longer pauses charges; safe mode never stopped vault reads anyway.
+## Thirteen wiring tasks from the November 19 sweep (D-4727)
+
+- **The gap:** some finished pieces were never connected: "2 YES" texts did not pick, the quote page had no "updates by email" choice, several business portal buttons (auto-confirm, withdraw a quote, leave, service area, shared inbox, contact card) posted to pages that do not exist, the owner's AI switch had no page, owner settings errors were not shown accessibly, and two owner actions were not logged.
+- **Fix:** tasks T728 to T739 and T741 connect each one, with tests; nothing changes for homeowners or businesses until each lands.
+- **Cleanup note:** the `business_pick_waiting` text has no sender and looks replaced by the pick-notice emails; it can be removed in a cleanup.
+- Our choice; nothing needs you now.
+
+## Queued emails now go out, and one help reply has no address yet (D-4670 to D-4673)
+
+- **What changed:** job cards, picks, receipts, reminders and homeowner emails that were stored but never sent now go out once a minute through the email provider, each once. An email the provider turns down, one tried for 23 hours without a clear answer, or one waiting 72 hours is dropped with an alert to you; an email to someone removed from a business, or to a business that left, is dropped unsent. The one exception: the "your notice email changed" warning to a business's old address still goes once the day's email limit resets, since that warning is what protects the account.
+- **The gap:** the "Got it" reply to a business's Get help form is stored under the team member's record, not their email, so it is dropped instead of sent. The fix belongs to the help form's task (queue it to the member's email with the business named).
+- Our choice; nothing needs you now.
+
+## The safety voice call switch is now on your settings page, still off (D-4721)
+
+- **What's built:** your owner settings page shows the safety voice call switch. It is off. Turning it on asks for the date and reference of your TCPA attorney's written approval and a fresh code from your authenticator app; turning it off asks for the code too. Every change is logged without the reference.
+- **What it changes:** from the moment it is on, new homeowners' first text includes the recorded-call sentence, and a gas, smoke or fire text while our texting is down can get one recorded call. Off again, both stop with the next message.
+- **Not covered yet:** the web chat's welcome text never mentions the recorded call, even with the switch on. That chat part belongs to another module and needs its own small change.
 - Our choice; nothing needs you now.

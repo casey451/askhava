@@ -1,0 +1,113 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH due AS (SELECT id FROM messaging.email_outbox WHERE ((status = 'queued' AND not_before <= $1 AND (claimed_at IS NULL OR claimed_at <= $2)) OR (status = 'sending' AND (claimed_at <= $2 OR (claimed_at IS NULL AND not_before <= $2)))) AND template_id <> ALL($3) AND (template_id <> ALL($4) OR waiting_for IS NOT NULL) ORDER BY not_before, queued_at, id LIMIT $5 FOR UPDATE SKIP LOCKED) UPDATE messaging.email_outbox o SET status = 'sending', claimed_at = $1, first_unsure_at = CASE WHEN o.status = 'sending' THEN COALESCE(o.first_unsure_at, o.claimed_at, o.not_before) ELSE o.first_unsure_at END FROM due WHERE o.id = due.id RETURNING o.id, o.template_id, o.recipient_id, o.recipient_kind, o.subject_ids, o.queued_at, o.first_unsure_at, (strpos(o.subject || o.html || o.plain, $6) > 0 OR strpos(o.subject || o.html || o.plain, $7) > 0) AS \"marked!\" ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "messaging.email_outbox",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "template_id",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "messaging.email_outbox",
+            "name": "template_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "recipient_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "messaging.email_outbox",
+            "name": "recipient_id"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "recipient_kind",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "messaging.email_outbox",
+            "name": "recipient_kind"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "subject_ids",
+        "type_info": "UuidArray",
+        "origin": {
+          "Table": {
+            "table": "messaging.email_outbox",
+            "name": "subject_ids"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "queued_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "messaging.email_outbox",
+            "name": "queued_at"
+          }
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "first_unsure_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "messaging.email_outbox",
+            "name": "first_unsure_at"
+          }
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "marked!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz",
+        "Timestamptz",
+        "TextArray",
+        "TextArray",
+        "Int8",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      null
+    ]
+  },
+  "hash": "e48a6c11a94cf54e38de4184bb0ee8206844bcf32c2100032478ae9e474c133f"
+}

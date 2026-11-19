@@ -46,6 +46,7 @@ pub mod cant_take_route;
 pub mod catalog_start;
 pub mod chat_codes;
 pub mod checkin;
+pub mod email_due;
 pub mod email_provider;
 pub mod healthz;
 pub mod inbound_retry;
@@ -1033,6 +1034,7 @@ where
     );
     register_alert_emails(&mut registry, settings, &clock, pairs.clone())?;
     register_business_handlers(&mut registry, settings, &clock, pairs.clone())?;
+    register_email_due(&mut registry, settings, &clock, pairs.clone())?;
     register_paused_safety(&mut registry);
     no_handler_alert::register(&mut registry, settings.environment(), Arc::clone(&clock));
     watch_checks::register(&mut registry, settings, &clock)?;
@@ -1369,17 +1371,10 @@ fn stripe_wanted(settings: &Settings, pairs: &[(String, String)]) -> bool {
     )
 }
 
-/// The safety voice call switch, read on every `calls.safety_call` run, so the registration holds
-/// no value (CALL-019, D-3134): off, the launch state (D-384), until T407 replaces this body with
-/// the stored owner-portal switch and Casey's recorded approval.
-fn safety_switch() -> askhava_calls::api::SafetySwitch {
-    askhava_calls::api::SafetySwitch::off()
-}
-
 /// What the `calls.safety_call` handler dials with (CALL-019, CALL-022, D-3134): the Twilio voice
 /// client and masked pool of the Twilio settings, `ASKHAVA_MAIN_NUMBER`, the `ID_SECRET`, the
 /// public base URL, the vault (both vault keys) and the worker clock; none of it is read while
-/// the switch is off.
+/// the stored switch is off.
 struct SafetyParts {
     voice: askhava_adapters::api::TwilioVoice,
     pool: askhava_adapters::api::MaskedPool,
@@ -1393,27 +1388,30 @@ struct SafetyParts {
 const SAFETY_FAILED: askhava_core::api::HandlerError =
     askhava_core::api::HandlerError("the safety call step failed");
 
-/// The `calls.safety_call` handler (CALL-019, CALL-022, D-1705, D-3134): reads the switch first;
-/// off (the default), no call is placed and the task completes. On, it dials from the first pool
-/// number that is not the main number through `calls::api::place_safety_call`, which re-checks
-/// the switch, the 30 minutes, the calling number and the suppression list and dials at most once
-/// per alert; a missing main number, public base URL or vault, or no pool number other than the
-/// main number, fails the task, never dials.
+/// The `calls.safety_call` handler (CALL-019, CALL-022, D-1705, D-3134, D-3890): reads the stored
+/// owner-portal switch first (`calls::api::safety_switch`, on every run, so a change after start
+/// is honoured by the next task, T407); off (the default) or with no main number set, no call is
+/// placed and the task completes. On, it dials from the first pool number that is not the main
+/// number through `calls::api::place_safety_call`, which re-checks the switch, the 30 minutes,
+/// the calling number and the suppression list and dials at most once per alert; a missing
+/// public base URL or vault, or no pool number other than the main number, fails the task, never
+/// dials.
 async fn run_safety_call(
     pool: PgPool,
     parts: Arc<SafetyParts>,
     task: askhava_core::api::Claimed,
 ) -> Result<(), askhava_core::api::HandlerError> {
-    use askhava_calls::api::{SafetyCall, SafetyDialer, place_safety_call};
+    use askhava_calls::api::{SafetyCall, SafetyDialer, place_safety_call, safety_switch};
     let call = SafetyCall::from_payload(&task.payload).ok_or(askhava_core::api::HandlerError(
         "safety call payload is malformed",
     ))?;
-    let switch = safety_switch();
-    if !switch.is_on() {
-        return Ok(());
-    }
+    let mut db = pool.acquire().await.map_err(|_| SAFETY_FAILED)?;
+    let switch = safety_switch(&mut db).await.map_err(|_| SAFETY_FAILED)?;
     let p = &*parts;
-    let (Some(main), Some(public_base), Some(vault)) = (&p.main, &p.public_base, &p.vault) else {
+    let (true, Some(main)) = (switch.is_on(), &p.main) else {
+        return Ok(());
+    };
+    let (Some(public_base), Some(vault)) = (&p.public_base, &p.vault) else {
         return Err(SAFETY_FAILED);
     };
     let numbers = p.pool.numbers();
@@ -1429,7 +1427,6 @@ async fn run_safety_call(
         secret: &p.secret,
         public_base,
     };
-    let mut db = pool.acquire().await.map_err(|_| SAFETY_FAILED)?;
     place_safety_call(&mut db, vault, &dialer, &call, p.clock.now())
         .await
         .map(|_| ())
@@ -1611,8 +1608,8 @@ fn register_whos_calling(
 
 /// T330 (CALL-019, CALL-022, D-2288, D-3134): registers `calls.safety_call` inside the Twilio
 /// settings branch, over the same settings as `picks.line_retry`, with [`SafetyParts`] built once;
-/// the switch is not captured ([`safety_switch`] is read on each run). T571 (CON-035, D-4051):
-/// beside it `calls.safety_key_retry` over the same parts' vault and clock.
+/// the switch is not captured (`calls::api::safety_switch` is read on each run, T407). T571
+/// (CON-035, D-4051): beside it `calls.safety_key_retry` over the same parts' vault and clock.
 fn register_safety_call(
     registry: &mut Registry,
     settings: &Settings,
@@ -1936,6 +1933,47 @@ fn register_business_handlers(
         });
     }
     register_accepted_quote(registry, settings, provider.as_ref(), pairs)
+}
+
+/// SEC-025, OPS-038, D-3750 (T470): `messaging.email_due`, always registered: with T469's
+/// provider and the vault the drain sends queued emails, its business addresses through
+/// [`email_due::NoticeAddresses`] and its coverage rows to [`OWNER_INBOX_EMAIL`]; without either
+/// (dev and CI without the Resend key) a run does nothing and queues no next run.
+fn register_email_due(
+    registry: &mut Registry,
+    settings: &Settings,
+    clock: &Arc<dyn Clock>,
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
+    use askhava_messaging::api::{EmailDrain, register_email_due};
+    let provider = email_provider::email_provider(settings, pairs.clone())?;
+    let vault = vault_from(settings, pairs.clone())?.map(Arc::new);
+    let inbox = pairs
+        .iter()
+        .find(|(k, v)| k == OWNER_INBOX_EMAIL && !v.trim().is_empty())
+        .map(|(_, v)| SecretString::from(v.trim().to_owned()));
+    let drain = provider.zip(vault).map(|(p, vault)| {
+        let resolver = email_due::NoticeAddresses::new(Arc::clone(&vault), inbox);
+        let keys = (p.secret().clone(), p.client().clone(), p.daily_limit());
+        Arc::new(EmailDrain::new(keys, (vault, resolver), Arc::clone(clock)))
+    });
+    register_email_due(registry, drain);
+    Ok(())
+}
+
+/// D-3750 (T470): whether the worker has what `messaging.email_due` sends with (the email
+/// provider and the vault), so its first run is queued at start only then.
+///
+/// # Errors
+///
+/// A bad email provider or vault setting, named, never its value.
+pub fn email_drain_ready<I>(settings: &Settings, pairs: I) -> io::Result<bool>
+where
+    I: IntoIterator<Item = (String, String)>,
+{
+    let pairs: Vec<(String, String)> = pairs.into_iter().collect();
+    let provider = email_provider::email_provider(settings, pairs.clone())?;
+    Ok(provider.is_some() && vault_from(settings, pairs)?.is_some())
 }
 
 /// An account mailer over provider `p`'s client, email key, postal line and shared daily limit,
