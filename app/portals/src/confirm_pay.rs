@@ -32,6 +32,14 @@
 //! T440 (PICK-021, PICK-053, D-2332, D-3627): [`confirm_page_with_tier`] adds, for a pick of a
 //! tiers quote, the package the homeowner chose and its price above the fee line, whose basis
 //! line then reads that price; [`confirm_page_with_code`] is it with no package.
+//!
+//! T541 (SEC-038, FEE-014, FEE-015, FEE-048, D-4710): a ticked save box stores the card only
+//! from Stripe's own answers: a paid press whose card will be stored (no saved card yet, or a
+//! step-up from the last 5 minutes) confirms through [`ApprovalSecret::confirm_saving`]
+//! (`setup_future_usage=off_session`) and, once succeeded, stores the answered `pm_…` with
+//! [`ApprovalSecret::read_card`]'s type, brand and last four; a $0 Confirm uses
+//! [`ApprovalSecret::set_up_card`]. A change without a fresh code saves nothing and links the
+//! step-up page under [`SAVE_CODE_LABEL`]; the `pm_…` is never shown or logged.
 
 use std::net::IpAddr;
 use std::pin::Pin;
@@ -39,8 +47,8 @@ use std::sync::{Arc, Mutex, PoisonError};
 
 use askama::Template;
 use askhava_adapters::api::{
-    AdapterError, Charge, CodeChannel, IdempotencyKey, PaymentIntent, PaymentsAdapter,
-    VerifyAdapter,
+    AdapterError, CardFacts, Charge, CodeChannel, ConfirmedIntent, IdempotencyKey, PaymentIntent,
+    PaymentsAdapter, SetUpIntent, VerifyAdapter,
 };
 use askhava_businesses::api::{ConfirmTerms, confirm_assent_line, members, record_confirm_terms};
 use askhava_intake::api::{Admission, job_homeowner, jobs_of_contact, paused_by_homeowner};
@@ -50,9 +58,10 @@ use askhava_ops::api::Actor;
 use askhava_payments::api::{
     AUTHORIZATION_TEXT, ChargeError, ChargeOutcome, ConfirmError, Fee, FeeJob, FeeMode, FeeQuote,
     FreeWinError, IntentStripe, PeriodJob, PickNow, PickedFee, Press, RecurringCap, ReleaseSink,
-    Service, StoredPickFee, StripeRefund, StripeWebhook, Tier, VisitTier, Waiver, confirm_and_pay,
-    end_intent_unless_charging, ensure_customer, fee_at_pick, fee_terms_in_force,
-    may_confirm as fee_terms_accepted, open_intent, pick_fee,
+    SavedCard, Service, SetupIntentRequest, StoredPickFee, StripeRefund, StripeWebhook, Tier,
+    VisitTier, Waiver, confirm_and_pay, end_intent_unless_charging, ensure_customer, fee_at_pick,
+    fee_terms_in_force, may_confirm as fee_terms_accepted, open_intent, pick_fee, save_card,
+    saved_cards,
 };
 use askhava_picks::api::{Backup, ChosenTier, cant_take_job, end_for_fee_terms};
 use axum::Extension;
@@ -73,7 +82,9 @@ use crate::action_links::{ActionKind, fresh_code_needed};
 use crate::business_auth::{
     BusinessPrincipal, CodeAddress, CodeTo, Need, SIGNIN_ROUTE, business_principal,
 };
-use crate::business_portal::inbox_shared;
+use crate::business_portal::{
+    SensitiveChange, StepUpError, change_saved_card, inbox_shared, require_step_up,
+};
 use crate::confirm_waiver::{
     ConfirmFee, ConfirmWaiverError, ConfirmedPick, decide_at_confirm, release_no_fee,
 };
@@ -84,6 +95,7 @@ use crate::security::{
     security_event_client,
 };
 use crate::session::{PortalsError, csrf_token};
+use crate::step_up_page::BUSINESS_STEP_UP_ROUTE;
 
 /// The one refund line every Confirm page shows (PICK-021).
 pub const REFUND_LINE: &str = "Refund if you can't reach them: 2 call attempts at least 3 hours \
@@ -271,6 +283,9 @@ pub struct PressReply {
     /// The portal link shown with an over-limit answer (FEE-041).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub link: Option<&'static str>,
+    /// SEC-038, T541: the link's own words; none is "Go to your portal".
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub link_label: Option<&'static str>,
 }
 
 /// The state, words and whether a new press ID goes back, for `outcome` (FEE-016, FEE-041).
@@ -326,6 +341,7 @@ pub fn press_reply(
         next_press: next.then_some(fresh),
         client_secret: client_secret.filter(|_| matches!(outcome, ChargeOutcome::NeedsApproval(_))),
         link: matches!(outcome, ChargeOutcome::OverLimit).then_some(PORTAL_LINK),
+        link_label: None,
     }
 }
 
@@ -607,6 +623,39 @@ const NOT_CHARGED_LINE: &str = "Nothing was charged. Check your card and try aga
 const CONFIRMED_LINE: &str =
     "Confirmed. No fee is due. The homeowner's details are in your portal.";
 
+/// SEC-038, T541: the label of the step-up link a card change without a fresh code gets.
+pub const SAVE_CODE_LABEL: &str = "Enter a code to save this card";
+
+/// FEE-014, T541: a paid press whose card was stored.
+const PAID_SAVED_LINE: &str = "Payment sent. Your card is saved for next time. You'll get the \
+homeowner's details as soon as Stripe confirms the payment.";
+
+/// FEE-014, T541: a paid press whose card could not be stored.
+const PAID_NOT_SAVED_LINE: &str = "Payment sent, but we couldn't save your card. You'll get the \
+homeowner's details as soon as Stripe confirms the payment.";
+
+/// SEC-038, T541: a paid press changing the saved card without a fresh code.
+const PAID_CODE_LINE: &str = "Payment sent. You already have a saved card, so we kept it. \
+Changing it needs a phone code from the last 5 minutes. You'll get the homeowner's details as \
+soon as Stripe confirms the payment.";
+
+/// FEE-014, T541: a press with the save box ticked that needs the bank's approval.
+const APPROVE_NOT_SAVED_LINE: &str = "Your bank wants to check this payment. Follow the steps in \
+the window your bank opens. We don't save a card that needs a bank check.";
+
+/// FEE-048, T541: a $0 Confirm whose card was set up and stored.
+const CONFIRMED_SAVED_LINE: &str = "Confirmed. No fee is due. Your card is saved for next time. \
+The homeowner's details are in your portal.";
+
+/// FEE-048, T541: a $0 Confirm whose card could not be set up or stored.
+const CONFIRMED_NOT_SAVED_LINE: &str = "Confirmed. No fee is due, but we couldn't save your \
+card. The homeowner's details are in your portal.";
+
+/// SEC-038, T541: a $0 Confirm changing the saved card without a fresh code.
+const CONFIRMED_CODE_LINE: &str = "Confirmed. No fee is due. You already have a saved card, so \
+we kept it. Changing it needs a phone code from the last 5 minutes. The homeowner's details are \
+in your portal.";
+
 /// The served route's settings part (D-3813, D-3717): Stripe's publishable key, the launch
 /// instant and `ASKHAVA_ID_SECRET` (the idempotency and entity-key secret), which `main` builds.
 #[derive(Clone)]
@@ -634,6 +683,11 @@ pub type SecretAnswer<'a> = Pin<
 /// may name the Stripe client). The secret comes from that confirm's own answer, never from
 /// replaying the pick's PaymentIntent create, whose key Stripe forgets after about 24 hours (a
 /// weekend's Confirm window), so a bank approval never makes a second PaymentIntent.
+///
+/// T541 (FEE-014, FEE-048, D-3892): the three calls of a card saved from the save box have
+/// default bodies that save nothing: [`Self::confirm_saving`] confirms as
+/// [`Self::confirm_keeping_secret`] (no `pm_…` comes back), and [`Self::read_card`] and
+/// [`Self::set_up_card`] answer unavailable; `server`'s Stripe client overrides all three.
 pub trait ApprovalSecret: Send + Sync {
     /// Confirms `intent` on-session with `payment_method` under one attempt's `key`.
     fn confirm_keeping_secret<'a>(
@@ -642,14 +696,58 @@ pub trait ApprovalSecret: Send + Sync {
         intent: &'a str,
         payment_method: &'a str,
     ) -> SecretAnswer<'a>;
+
+    /// FEE-048: the confirm with `setup_future_usage=off_session`, answering Stripe's own
+    /// `payment_method` beside the intent; by default the plain confirm, naming no card.
+    fn confirm_saving<'a>(
+        &'a self,
+        key: &'a IdempotencyKey,
+        intent: &'a str,
+        payment_method: &'a str,
+    ) -> Answer<'a, ConfirmedIntent> {
+        Box::pin(async move {
+            let (intent, client_secret) = self
+                .confirm_keeping_secret(key, intent, payment_method)
+                .await?;
+            Ok(ConfirmedIntent {
+                intent,
+                client_secret,
+                payment_method: None,
+            })
+        })
+    }
+
+    /// FEE-014: the type, brand and last four Stripe reports for a charge `ch_…` or a
+    /// `pm_…`; by default unavailable.
+    fn read_card<'a>(&'a self, _id: &'a str) -> Answer<'a, CardFacts> {
+        Box::pin(async { Err(AdapterError::NotSent) })
+    }
+
+    /// FEE-048: creates and confirms a $0 Confirm's SetupIntent from `form` with
+    /// `payment_method`; by default unavailable.
+    fn set_up_card<'a>(
+        &'a self,
+        _key: &'a IdempotencyKey,
+        _form: &'a [(&'a str, &'a str)],
+        _payment_method: &'a str,
+    ) -> Answer<'a, SetUpIntent> {
+        Box::pin(async { Err(AdapterError::NotSent) })
+    }
 }
+
+/// What a saved-card call of [`ApprovalSecret`] answers (T541).
+pub type Answer<'a, T> = Pin<Box<dyn Future<Output = Result<T, AdapterError>> + Send + 'a>>;
 
 /// FEE-014, D-3719: the Stripe client one press charges through: `stripe` for every call but the
 /// confirm, which goes through `approval`, keeping its client secret for the page.
+/// With `saving` (FEE-048, T541) the confirm goes through [`ApprovalSecret::confirm_saving`] and
+/// a succeeded answer's `pm_…` and `latest_charge` are `kept`.
 struct Catching<'a, S> {
     stripe: &'a S,
     approval: &'a dyn ApprovalSecret,
     secret: Mutex<Option<SecretString>>,
+    saving: bool,
+    kept: Mutex<Option<(String, String)>>,
 }
 
 impl<S: PaymentsAdapter + Sync> PaymentsAdapter for Catching<'_, S> {
@@ -714,12 +812,26 @@ impl<S: IntentStripe + Sync> IntentStripe for Catching<'_, S> {
         intent: &str,
         payment_method: &str,
     ) -> Result<PaymentIntent, AdapterError> {
-        let confirm = self
-            .approval
-            .confirm_keeping_secret(key, intent, payment_method);
-        let (intent, secret) = confirm.await?;
-        *self.secret.lock().unwrap_or_else(PoisonError::into_inner) = secret;
-        Ok(intent)
+        let approval = self.approval;
+        let answer = if self.saving {
+            approval.confirm_saving(key, intent, payment_method).await?
+        } else {
+            let (intent, client_secret) = approval
+                .confirm_keeping_secret(key, intent, payment_method)
+                .await?;
+            ConfirmedIntent {
+                intent,
+                client_secret,
+                payment_method: None,
+            }
+        };
+        let paid = answer.intent.status == "succeeded";
+        let charge = answer.intent.latest_charge.clone().filter(|_| paid);
+        if let (Some(method), Some(charge)) = (answer.payment_method, charge) {
+            *self.kept.lock().unwrap_or_else(PoisonError::into_inner) = Some((method, charge));
+        }
+        *self.secret.lock().unwrap_or_else(PoisonError::into_inner) = answer.client_secret;
+        Ok(answer.intent)
     }
 }
 
@@ -909,6 +1021,7 @@ const fn said(
         next_press: None,
         client_secret: None,
         link,
+        link_label: None,
     }
 }
 
@@ -1195,8 +1308,18 @@ struct PressForm {
     payment_method: String,
     #[serde(default, rename = "code")]
     _code: String,
-    #[serde(default, rename = "save_card")]
-    _save_card: String,
+    #[serde(default)]
+    save_card: String,
+}
+
+/// One press: its ID, the posted card (used only for the charge or the $0 SetupIntent, never
+/// stored), whether the save box was ticked (FEE-014, FEE-015) and the time.
+#[derive(Clone, Copy)]
+struct Attempt<'a> {
+    id: Uuid,
+    card: &'a str,
+    save: bool,
+    now: Timestamp,
 }
 
 impl CsrfField for PressForm {
@@ -1230,8 +1353,13 @@ where
     let Some(settings) = &route.settings else {
         return Json(said("try_later", CARD_OFF_REPLY, None)).into_response();
     };
-    let card = form.payment_method.as_str();
-    match pressed(route, settings, &mine, (id, card), now).await {
+    let attempt = Attempt {
+        id,
+        card: form.payment_method.as_str(),
+        save: form.save_card == "yes",
+        now,
+    };
+    match pressed(route, settings, &mine, attempt).await {
         Ok(reply) => Json(reply).into_response(),
         Err(()) => failed(),
     }
@@ -1245,13 +1373,13 @@ async fn pressed<S, R>(
     route: &ConfirmRoute<S, R>,
     settings: &ConfirmSettings,
     mine: &Mine,
-    (id, card): (Uuid, &str),
-    now: Timestamp,
+    attempt: Attempt<'_>,
 ) -> Result<PressReply, ()>
 where
     S: IntentStripe + Send + Sync,
     R: ReleaseSink,
 {
+    let now = attempt.now;
     let mut tx = route.hooks.pool.begin().await.map_err(|_| ())?;
     let at = waiting(&mut tx, mine).await?;
     let Some((job, false)) = at else {
@@ -1283,7 +1411,7 @@ where
     let people = (mine.fee.business.0, mine.who.member());
     let stored = record_confirm_terms(&mut tx, people, mine.pick, terms, now).await;
     stored.map_err(|_| ())?;
-    decide_and_pay(route, settings, mine, tx, (id, card, now)).await
+    decide_and_pay(route, settings, mine, tx, attempt).await
 }
 
 /// D-1871, D-3722, PICK-050: the fee mode changed after the pick: nothing is charged and the pick
@@ -1313,7 +1441,7 @@ async fn decide_and_pay<S, R>(
     settings: &ConfirmSettings,
     mine: &Mine,
     mut tx: sqlx::Transaction<'static, sqlx::Postgres>,
-    (id, card, now): (Uuid, &str, Timestamp),
+    attempt: Attempt<'_>,
 ) -> Result<PressReply, ()>
 where
     S: IntentStripe + Send + Sync,
@@ -1329,11 +1457,15 @@ where
             let mut db = route.hooks.pool.acquire().await.map_err(|_| ())?;
             let released = release_no_fee(&mut db, &route.hooks.sink, pick).await;
             released.map_err(|_| ())?;
-            Ok(said("confirmed", CONFIRMED_LINE, Some(PORTAL_LINK)))
+            drop(db);
+            let plan = save_plan(&route.hooks.pool, mine, attempt).await?;
+            let saved = save_unpaid(route, settings, mine, (plan, attempt)).await;
+            let reply = said("confirmed", CONFIRMED_LINE, Some(PORTAL_LINK));
+            Ok(with_save(reply, plan, saved))
         }
         Ok(ConfirmFee::Charge) => {
             tx.commit().await.map_err(|_| ())?;
-            charge(route, settings, mine, (id, card, now)).await
+            charge(route, settings, mine, attempt).await
         }
         Err(ConfirmWaiverError::FreeWin(FreeWinError::Race)) => Ok(press_reply(
             &ChargeOutcome::StripeDown,
@@ -1346,18 +1478,19 @@ where
 
 /// FEE-014, FEE-016, FEE-041, FEE-047: one charge attempt of the stored fee through
 /// `confirm_and_pay`; a bank approval carries the client secret of that confirm's own answer
-/// (D-3719), nothing else does.
+/// (D-3719), nothing else does. A ticked save box whose card will be stored (T541, SEC-038,
+/// FEE-048) confirms with `setup_future_usage=off_session` and, once paid, stores the card.
 async fn charge<S, R>(
     route: &ConfirmRoute<S, R>,
     settings: &ConfirmSettings,
     mine: &Mine,
-    (id, card, now): (Uuid, &str, Timestamp),
+    attempt: Attempt<'_>,
 ) -> Result<PressReply, ()>
 where
     S: IntentStripe + Send + Sync,
     R: ReleaseSink,
 {
-    if !card.starts_with("pm_") {
+    if !attempt.card.starts_with("pm_") {
         return Ok(said("declined", NO_CARD_LINE, None));
     }
     let (pool, stripe, secret) = (&route.hooks.pool, &route.hooks.stripe, &settings.secret);
@@ -1368,13 +1501,48 @@ where
     {
         return Ok(press_reply(&ChargeOutcome::StripeDown, fresh, None));
     }
-    let press = press_of(mine, card, id).ok_or(())?;
+    let plan = save_plan(pool, mine, attempt).await?;
+    let (outcome, client, kept) = confirm_once(route, settings, mine, (plan, attempt)).await?;
+    let saved = match (&outcome, kept) {
+        (ChargeOutcome::Succeeded(_), Some((method, charge))) => {
+            store_reported(route, mine, plan, (&method, &charge), attempt.now).await
+        }
+        _ => false,
+    };
+    Ok(with_save(press_reply(&outcome, fresh, client), plan, saved))
+}
+
+/// What one confirm left: the outcome, a bank approval's client secret, and the paid card's
+/// `pm_…` and charge as Stripe's answer named them (only when saving).
+type Confirmed = (ChargeOutcome, Option<String>, Option<(String, String)>);
+
+/// FEE-014, FEE-016, FEE-048: `confirm_and_pay` through [`Catching`], saving per `plan`.
+async fn confirm_once<S, R>(
+    route: &ConfirmRoute<S, R>,
+    settings: &ConfirmSettings,
+    mine: &Mine,
+    (plan, attempt): (SavePlan, Attempt<'_>),
+) -> Result<Confirmed, ()>
+where
+    S: IntentStripe + Send + Sync,
+    R: ReleaseSink,
+{
+    let press = press_of(mine, attempt.card, attempt.id).ok_or(())?;
     let catching = Catching {
-        stripe,
+        stripe: &route.hooks.stripe,
         approval: route.approval.as_ref(),
         secret: Mutex::new(None),
+        saving: plan.stores(),
+        kept: Mutex::new(None),
     };
-    let outcome = match confirm_and_pay(pool, &catching, secret, &press, now).await {
+    let paid = confirm_and_pay(
+        &route.hooks.pool,
+        &catching,
+        &settings.secret,
+        &press,
+        attempt.now,
+    );
+    let outcome = match paid.await {
         Ok(outcome) => outcome,
         Err(ChargeError::Stripe) => ChargeOutcome::StripeDown,
         Err(_) => return Err(()),
@@ -1384,7 +1552,150 @@ where
         .into_inner()
         .unwrap_or_else(PoisonError::into_inner);
     let client = kept.map(|kept| kept.expose_secret().to_owned());
-    Ok(press_reply(&outcome, fresh, client))
+    let card = catching
+        .kept
+        .into_inner()
+        .unwrap_or_else(PoisonError::into_inner);
+    Ok((outcome, client, card))
+}
+
+/// What a ticked save box does on this press (FEE-014, FEE-015, SEC-038, T541).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum SavePlan {
+    /// The box was not ticked.
+    Not,
+    /// No saved card yet: `payments::api::save_card`.
+    New,
+    /// A saved card exists and a step-up passed in the last 5 minutes: `change_saved_card`.
+    Change,
+    /// A saved card exists and no step-up passed: nothing is sent for saving.
+    NeedsCode,
+}
+
+impl SavePlan {
+    /// Whether the card is sent for saving (`setup_future_usage` or the $0 SetupIntent).
+    const fn stores(self) -> bool {
+        matches!(self, Self::New | Self::Change)
+    }
+}
+
+/// SEC-038, FEE-014: the plan for `attempt`'s save box; a change of a saved card without a
+/// fresh code is refused and logged by `require_step_up` (an `authz_denied` event, kept apart
+/// from any transaction), and the payment still goes ahead.
+async fn save_plan(pool: &PgPool, mine: &Mine, attempt: Attempt<'_>) -> Result<SavePlan, ()> {
+    if !attempt.save {
+        return Ok(SavePlan::Not);
+    }
+    let mut db = pool.acquire().await.map_err(|_| ())?;
+    let cards = saved_cards(&mut db, mine.fee.business.0).await;
+    if cards.map_err(|_| ())?.is_empty() {
+        return Ok(SavePlan::New);
+    }
+    let step = (SensitiveChange::SavedCard, CONFIRM_ROUTE);
+    match require_step_up(&mut db, &mine.who, step, attempt.now).await {
+        Ok(()) => Ok(SavePlan::Change),
+        Err(StepUpError::NeedsCode) => Ok(SavePlan::NeedsCode),
+        Err(StepUpError::Database) => Err(()),
+    }
+}
+
+/// FEE-048, FEE-036: a $0 Confirm's card set up through an off-session SetupIntent; the card
+/// stored is the `pm_…` the SetupIntent names once `succeeded`, never the posted one, and a
+/// `requires_action` answer saves nothing.
+async fn save_unpaid<S, R>(
+    route: &ConfirmRoute<S, R>,
+    settings: &ConfirmSettings,
+    mine: &Mine,
+    (plan, attempt): (SavePlan, Attempt<'_>),
+) -> bool
+where
+    S: IntentStripe + Send + Sync,
+    R: ReleaseSink,
+{
+    if !plan.stores() || !attempt.card.starts_with("pm_") {
+        return false;
+    }
+    let (pool, stripe, secret) = (&route.hooks.pool, &route.hooks.stripe, &settings.secret);
+    let Ok(customer) = ensure_customer(pool, stripe, secret, mine.fee.business).await else {
+        return false;
+    };
+    let request = SetupIntentRequest::for_customer(customer);
+    let ids = [mine.pick.to_string(), attempt.id.to_string()];
+    let key = IdempotencyKey::derive(secret, "confirm.save_card", &[&ids[0], &ids[1]]);
+    let form = request.form();
+    let set = route.approval.set_up_card(&key, &form, attempt.card).await;
+    let Some(method) = set
+        .ok()
+        .filter(|set| set.status == "succeeded")
+        .and_then(|set| set.payment_method)
+    else {
+        return false;
+    };
+    store_reported(route, mine, plan, (&method, &method), attempt.now).await
+}
+
+/// FEE-014, FEE-015, SEC-038, D-073: stores `method` from Stripe's own report read for `read`
+/// (the charge, or the method itself), with the FEE-015 authorization accepted `now`; a non-card
+/// method, a bad field or a failed read stores nothing. The `pm_…` is never logged.
+async fn store_reported<S, R>(
+    route: &ConfirmRoute<S, R>,
+    mine: &Mine,
+    plan: SavePlan,
+    (method, read): (&str, &str),
+    now: Timestamp,
+) -> bool {
+    let Ok(facts) = route.approval.read_card(read).await else {
+        tracing::warn!("saved card: Stripe's card read failed");
+        return false;
+    };
+    let Ok(card) = SavedCard::new(method, &facts.method_type, &facts.brand, &facts.last4) else {
+        return false;
+    };
+    let Ok(mut db) = route.hooks.pool.acquire().await else {
+        return false;
+    };
+    let stored = match plan {
+        SavePlan::New => save_card(&mut db, mine.fee.business, &card, now)
+            .await
+            .is_ok(),
+        SavePlan::Change => change_saved_card(&mut db, &mine.who, &card, now)
+            .await
+            .is_ok(),
+        SavePlan::Not | SavePlan::NeedsCode => false,
+    };
+    if !stored {
+        tracing::warn!("saved card: not stored");
+    }
+    stored
+}
+
+/// T541 (FEE-014, SEC-038): `reply` with what became of a ticked save box: saved, not saved, or
+/// not saved for want of a code (with the step-up page under [`SAVE_CODE_LABEL`]); a decline,
+/// an end or an unticked box keeps its words.
+fn with_save(reply: PressReply, plan: SavePlan, saved: bool) -> PressReply {
+    let code = plan == SavePlan::NeedsCode;
+    let message = match (reply.state, plan, saved) {
+        (_, SavePlan::Not, _) => return reply,
+        ("waiting", _, true) => PAID_SAVED_LINE,
+        ("waiting", _, false) if code => PAID_CODE_LINE,
+        ("waiting", _, false) => PAID_NOT_SAVED_LINE,
+        ("approve", _, _) => APPROVE_NOT_SAVED_LINE,
+        ("confirmed", _, true) => CONFIRMED_SAVED_LINE,
+        ("confirmed", _, false) if code => CONFIRMED_CODE_LINE,
+        ("confirmed", _, false) => CONFIRMED_NOT_SAVED_LINE,
+        _ => return reply,
+    };
+    let to_code = code && !saved && reply.state != "approve";
+    PressReply {
+        message,
+        link: if to_code {
+            Some(BUSINESS_STEP_UP_ROUTE)
+        } else {
+            reply.link
+        },
+        link_label: to_code.then_some(SAVE_CODE_LABEL),
+        ..reply
+    }
 }
 
 #[cfg(test)]

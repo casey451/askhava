@@ -21,8 +21,8 @@ use askhava_intake::api::JobTextKeys;
 use askhava_intake::api::rules::Settings as IntakeSettings;
 use askhava_payments::api::{Minter, stripe_webhook_routes};
 use askhava_portals::api::{
-    ApprovalSecret, ConfirmRoute, ConfirmSettings, PickCodeKeys, SecretAnswer, confirm_routes,
-    feedback_routes, pick_flow_routes, quote_page_routes, security_headers,
+    Answer, ApprovalSecret, ConfirmRoute, ConfirmSettings, PickCodeKeys, SecretAnswer,
+    confirm_routes, feedback_routes, pick_flow_routes, quote_page_routes, security_headers,
 };
 use askhava_privacy::api::{SessionMint, Vault};
 use axum::Router;
@@ -287,6 +287,34 @@ impl ApprovalSecret for StripeApproval {
             let answer = answer.await?;
             Ok((answer.intent, answer.client_secret))
         })
+    }
+
+    /// FEE-048, T541: the confirm with `setup_future_usage=off_session`.
+    fn confirm_saving<'a>(
+        &'a self,
+        key: &'a askhava_adapters::api::IdempotencyKey,
+        intent: &'a str,
+        payment_method: &'a str,
+    ) -> Answer<'a, askhava_adapters::api::ConfirmedIntent> {
+        Box::pin(
+            self.0
+                .confirm_payment_intent_saving(key, intent, payment_method),
+        )
+    }
+
+    /// FEE-014, T541: Stripe's type, brand and last four for a charge or a `pm_…`.
+    fn read_card<'a>(&'a self, id: &'a str) -> Answer<'a, askhava_adapters::api::CardFacts> {
+        Box::pin(self.0.fetch_card_facts(id))
+    }
+
+    /// FEE-048, T541: a $0 Confirm's off-session SetupIntent, created and confirmed.
+    fn set_up_card<'a>(
+        &'a self,
+        key: &'a askhava_adapters::api::IdempotencyKey,
+        form: &'a [(&'a str, &'a str)],
+        payment_method: &'a str,
+    ) -> Answer<'a, askhava_adapters::api::SetUpIntent> {
+        Box::pin(self.0.set_up_card(key, form, payment_method))
     }
 }
 
