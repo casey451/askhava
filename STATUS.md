@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T04:56:48Z by runner 21b4c2edab3b (actions).
+Updated 2026-11-19T04:57:16Z by runner 21b4c2edab3b (actions).
 
 **Building: T408 in progress since 03:29Z; 474 of 664 done; week 74% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-19T04:56:48Z by runner 21b4c2edab3b (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T408 claimed 03:29Z, lease until 06:29Z; lane 4: T562 claimed 04:26Z, lease until 07:26Z; lane 7: T229 claimed 04:42Z, lease until 07:42Z
 - **Week:** 74% used, 41.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:56Z, 0 min before this update
-- **Keeper:** last ran 04:52Z, next wake 06:32Z
+- **Last run:** 04:57Z, 0 min before this update
+- **Keeper:** last ran 04:57Z, next wake 06:31Z
 
 ## Needs attention
 - PLAN GAP T310 (since 2026-11-19T04:26:11Z, no attempt used; a plan change fixes it): T310: dependency T484 is DONE but its owned file tests/integration/tests/owner_tools.rs is not on main; T310: dependency T484 is DONE but its owned file app/calls/src/owner_calls.rs is not on main; T310: dependency T484 is DONE but its owned file app/messaging/src/alert_contact.rs is not on main
