@@ -1,28 +1,28 @@
 # Ask Hava build status
 
-Updated 2026-11-19T21:59:07Z by runner 9a58cedd8922 (actions).
+Updated 2026-11-19T22:02:37Z by runner f0505596bdb5 (actions).
 
-**Building: T109 in progress since 21:53Z; 506 of 701 done; week 10% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T109 in progress since 21:53Z; 507 of 701 done; week 10% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 506 of 701 build tasks (owner gates not counted)
+- **Tasks done:** 507 of 701 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T109 claimed 21:53Z, lease until 00:53Z; lane 4: T480 claimed 20:38Z, lease until 23:38Z; lane 5: T541 claimed 21:24Z, lease until 00:24Z; lane 6: T707 claimed 21:38Z, lease until 00:38Z; lane 7: T717 claimed 20:10Z, lease until 00:57Z
 - **Week:** 10% used, 168.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:58Z, 0 min before this update
+- **Last run:** 21:59Z, 3 min before this update
 - **Keeper:** last ran 21:59Z, next wake 23:41Z
 
 ## Needs attention
 - BLOCKED T663: plan gap reported: PLAN GAP: tests/test_coverage_floor.py:125 asserts floors["future"] == [], contradicting T663 goal (5), which requires a `future` entry for app/portals/src/confirm_moves.rs. Also the test at :183-196 requires per-file floors and files_measured to hold the same paths, on disk, and named in D-3974, so the new connect.rs and confirm_moves.rs floors fail it. T663 does not own tests/test_coverage_floor.py (T264/T324 do). Reviewer confirmed. Smallest fix: relax the floor tests to accept reasoned future entries, or drop goal (5) from T663. Reviewer also found TD-JOB-18 cases untested (paid settle, he; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T663 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 56 problem(s) on tasks still to run (+343 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 66 problem(s) on tasks still to run (+351 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T607 | site: site.css brought up to the V6 reference (laftly-v6.css | MERGE_PENDING | 2 | 41 min | 21:57Z | review_missing on 2c1fc315ebe4 (D-3728): not proven reviewed or worker-made / (b) 5cb49e3317bc T607: NOTES entry in the  |
 | T663 | picks, jobs and payments (harness): a confirmed pick moves i | BLOCKED | 1 | 30 min | 21:32Z | PLAN GAP: tests/test_coverage_floor.py:125 asserts floors["future"] == [], contradicting T663 goal (5), which requires a |
-| T753 | runner (harness): `fable` is a model the plan can name, a ta | MERGE_PENDING | 1 | 112 min | 20:59Z |  |
+| T753 | runner (harness): `fable` is a model the plan can name, a ta | done | 1 | 112 min | 20:59Z |  |
 | T307 | server and portals: the homeowner portal's sign-in, home pag | done | 2 | 2 h 45 min | 20:33Z | PLAN GAP: tests/security/tests/vault_readers.rs:23 lets only `portals` call `read_own_contact` (line 19 lets only `messa |
 | T748 | portals: the help-page form's confirmation promises no reply | done | 1 | 41 min | 20:08Z |  |
 | T161 | wording: the WORD-024 voice rule's pressure-word scan, the r | done | 2 | 2 h 1 min | 20:00Z | PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/s |
@@ -91,7 +91,7 @@ Updated 2026-11-19T21:59:07Z by runner 9a58cedd8922 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 325 of 735 (44.2%) · partial 375 · unstarted 35
-**Tasks merged (throughput only):** 506 of 701
+**Tasks merged (throughput only):** 507 of 701
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -127,7 +127,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 149 of 284 done
+- stage 5: 150 of 284 done
 - stage 6: 0 of 64 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
