@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT contact_id FROM intake.consent_phone_wait ORDER BY contact_id LIMIT $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "contact_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "intake.consent_phone_wait",
+            "name": "contact_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "a3f3b5d85edccf65f5ba0af7663eefe716bc8a368f835debea9ccbfc264fdcf7"
+}
