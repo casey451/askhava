@@ -16,6 +16,8 @@ from runner.state import State
 
 MAX_ATTEMPTS = 3  # BUILD_BRIEF.md:540; one more only through a plan-fix re-queue (D-677); FIX-MAIN re-arms (D-1099)
 HOURLY = timedelta(hours=1)
+FABLE = "fable"  # the kit/tasks.json `models` key that names Fable; absent, no attempt runs on it (D-4761)
+FABLE_OFF = "fable_fallback"  # a task entry's record that Fable refused it or hit its limit: Opus from then on
 WAIT_RESULTS = ("merge_pending", "not_done", "check_failed", "no_changes", "unreviewed_head",
                 "branch_updated", "update_conflict", "update_push_failed")
 # Stage C (D-620, D-891): a reviewed head that fell behind main is brought up to date by the runner's own
@@ -364,11 +366,56 @@ def _by_day(cfg: Config, ids: list[str], now: datetime) -> list[str]:
 
 
 def attempt_model(task: dict[str, Any], attempts: int, models: dict[str, str]) -> str:
-    """The task's own model first; from the second attempt Opus for a task named on any other model
-    (D-2474: a Sonnet task that failed once moves up at once); Opus on the last try (BUILD_BRIEF.md:540)."""
-    if attempts >= MAX_ATTEMPTS - 1 or (attempts >= 1 and task["model"] != models["opus"]):
-        return models["opus"]
-    return str(task["model"])
+    """The task's own model first; from the second attempt Fable when `models` names it (D-4761), else Opus
+    for a task named on any other model (D-2474: a Sonnet task that failed once moves up at once) and Opus on
+    the last try (BUILD_BRIEF.md:540). A task whose entry holds FABLE_OFF (a Fable refusal or usage limit)
+    runs on Opus wherever this would name Fable."""
+    fable = models.get(FABLE)
+    if attempts >= 1 and fable:
+        model = fable
+    elif attempts >= MAX_ATTEMPTS - 1 or (attempts >= 1 and task["model"] != models["opus"]):
+        model = models["opus"]
+    else:
+        model = str(task["model"])
+    return models["opus"] if task.get(FABLE_OFF) and model == fable else model
+
+
+def with_fable_off(task: dict[str, Any], entry: dict[str, Any]) -> dict[str, Any]:
+    """The picked plan task with its state entry's FABLE_OFF record, if any, so attempt_model sees it (D-4761)."""
+    return {**task, FABLE_OFF: entry[FABLE_OFF]} if entry.get(FABLE_OFF) else task
+
+
+def fable_off(state: State, tid: str, why: str, now: datetime) -> State:
+    """Record that Fable refused TID or hit its usage limit (D-4761): this and every later attempt of TID runs
+    on Opus. The first record stays; a second call returns the state unchanged, so the choice is logged once."""
+    if st.entry(state, tid).get(FABLE_OFF):
+        return state
+    return st.with_task(state, tid, **{FABLE_OFF: {"at": st.iso(now), "why": " ".join(why.split())[:160]}})
+
+
+def fable_limited(res: WorkerResult) -> bool:
+    """A Fable attempt that ended at a usage limit: the `usage_limit` outcome, or an API death whose safe label
+    reads as a rate limit (429 or rate_limit_error, api_death.label) (D-4761)."""
+    if res.outcome == "usage_limit":
+        return True
+    found = api_death.label(res.log) if res.outcome == api_death.API_ERROR else ""
+    return " 429" in found or "rate_limit_error" in found
+
+
+def _fable_limit(
+    state: State, task: dict[str, Any], res: WorkerResult, cfg: Config, model: str, now: datetime
+) -> State | None:
+    """A Fable attempt, not one the model window chose, that hit a usage limit (D-4761): the task goes back to
+    QUEUED with its attempts unchanged and FABLE_OFF set, so the re-run is on Opus. None for any other end."""
+    tid = task["id"]
+    fable = cfg.models.get(FABLE)
+    if not fable or model != fable or model_window.mark_of(task) or st.entry(state, tid).get(FABLE_OFF):
+        return None
+    if not fable_limited(res):
+        return None
+    why = f"usage limit on {fable}"
+    print(f"runner: fable: {tid} hit the usage limit on {fable}; it re-runs on {cfg.models['opus']}, no attempt counted (D-4761)")
+    return st.with_task(fable_off(state, tid, why, now), tid, status=st.QUEUED)
 
 
 def worker_model(task: dict[str, Any], attempts: int, models: dict[str, str]) -> str:
@@ -506,6 +553,9 @@ def _after_worker(
     state: State, task: dict[str, Any], res: WorkerResult, cfg: Config, model: str, now: datetime
 ) -> State:
     tid = task["id"]
+    limited = _fable_limit(state, task, res, cfg, model, now)
+    if limited is not None:
+        return limited
     if res.outcome == api_death.API_ERROR:
         return _api_death(state, tid, res, cfg, now)
     state = api_death.end_run(state, tid)  # any other end breaks a run of free requeues (D-3443)
@@ -2334,7 +2384,7 @@ def _paced_pick(cfg: Config, state: State, ids: list[str], now: datetime) -> tup
 def _work(cfg: Config, env: Env, claimed: State, task: dict[str, Any], now: datetime) -> str:
     tid = task["id"]
     entry = st.entry(claimed, tid)
-    task = with_claim_mark(task, entry)
+    task = with_fable_off(with_claim_mark(task, entry), entry)
     model = worker_model(task, int(entry.get("attempts", 0)), cfg.models)
     current: dict[str, Any] = {"state": claimed, "lost": False}
     lane = st.lane_of(claimed, tid) or st.LANE_ONE
@@ -3004,7 +3054,7 @@ def model_fallback(cfg: Config, env: Env, why: str) -> str:
     window is recorded as refused (`model_window_refused`) with an outbox item, so later claims change no
     model; no attempt is counted for it. WHY must read as a model refusal (`model_window.is_refusal`); any other
     text changes nothing, and the attempt is judged as usual. Returns the log line ('' when this session holds
-    no lease)."""
+    no lease). An attempt claimed outside a window whose model is Fable falls back to Opus (`_fable_fallback`)."""
     if not model_window.is_refusal(why):
         return f"model window: not a model refusal, nothing recorded: {' '.join(why.split())[:160]}"
     now = cfg.clock()
@@ -3016,7 +3066,7 @@ def model_fallback(cfg: Config, env: Env, why: str) -> str:
     mark = model_window.mark_of(st.entry(state, tid))
     window = cfg.model_window
     if mark is None:
-        return f"model window: {tid} was not claimed inside a window; nothing to fall back from"
+        return _fable_fallback(cfg, env, state, tid, why, now)
     if window is None or window["model"] != mark["model"]:
         done = env.update_state(lambda fresh: model_window.unmark(fresh, tid))
         return f"model window: {tid} falls back from {mark['model']} to its own models" + ("" if done else " (not recorded: lost race)")
@@ -3026,3 +3076,16 @@ def model_fallback(cfg: Config, env: Env, why: str) -> str:
         (cfg.outbox_dir / f"{model_window.OUTBOX_ID}.md").unlink(missing_ok=True)
         return f"model window: {window['model']} refused for {tid}; the refusal was not recorded (lost race)"
     return f"model window: {window['model']} refused for {tid} ({' '.join(why.split())[:160]}); {tid} is judged on its own models"
+
+
+def _fable_fallback(cfg: Config, env: Env, state: State, tid: str, why: str, now: datetime) -> str:
+    """`--model-fallback` for an attempt on Fable outside a model window (D-4761): FABLE_OFF is recorded, so
+    `--after` judges this attempt on Opus (the session re-ran it there) and later attempts run on Opus; no
+    attempt is counted. Any other attempt has nothing to fall back from."""
+    task = {**st.entry(state, tid), **next((t for t in cfg.graph if t["id"] == tid), {})}
+    fable = cfg.models.get(FABLE)
+    if not fable or not task.get("model") or worker_model(task, int(task.get("attempts", 0)), cfg.models) != fable:
+        return f"model window: {tid} was not claimed inside a window; nothing to fall back from"
+    if env.update_state(lambda fresh: fable_off(fresh, tid, f"refused: {why}", now)) is None:
+        return f"fable: {fable} refused for {tid}; the fallback was not recorded (lost race)"
+    return f"fable: {fable} refused for {tid}; it runs on {cfg.models['opus']} from now on, no attempt counted (D-4761)"
