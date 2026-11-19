@@ -4,13 +4,12 @@
     offered (WEB-009, D-297); the texting number shows only after Gate C (WEB-017). The numbers
     come from `quotes`' card and quote records and show only past the setting (D-466, D-468).
     The hero (T216, WEB-027, D-3331, D-4252) puts the decorative photo above the headline on
-    phones and beside the text from 1024 px; the phone crop comes first in AVIF, then WebP, and
-    no text ever sits on the photo. -#}
+    phones and beside the text from 1024 px; under 768 px the phone crop replaces it (WebP only
+    for now, D-4630), and no text ever sits on the photo. -#}
 {% block title %}Local quotes for Havasu homes{% endblock %}
 {% block content %}
 <div class="hero">
 <picture class="hero-photo">
-<source media="(max-width: 767px)" type="image/avif" srcset="/static/site/photos/hero-kitchen-phone.avif" width="557" height="343">
 <source media="(max-width: 767px)" type="image/webp" srcset="/static/site/photos/hero-kitchen-phone.webp" width="557" height="343">
 <img src="/static/site/photos/hero-kitchen.webp" width="557" height="941" alt="" fetchpriority="high">
 </picture>

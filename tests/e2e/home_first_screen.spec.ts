@@ -5,7 +5,7 @@
 // draws the phone crop) and the whole "Get quotes" link are inside the first viewport, and no text
 // box on the page overlaps the photo's box. The photo is decorative (`alt=""`, width and height
 // set); every served crop is the right image type, 100 KB or less, and its bytes hold no `Exif`,
-// `<x:xmpmeta` or `GPS` block (`scripts/pii_scan.py` does not read AVIF, D-4252). The mark sits
+// `<x:xmpmeta` or `GPS` block (D-4252; an AVIF crop, once one ships, joins PHOTOS, D-4630). The mark sits
 // beside, not inside, the home link, hidden from assistive tech, and the served mark.svg has no
 // script. Fake data only: the page shows no person's details.
 import type { Page } from "@playwright/test";
@@ -19,7 +19,6 @@ const SCREENS = [
 
 /** Every served hero crop and its type. */
 const PHOTOS = [
-  { path: "/static/site/photos/hero-kitchen-phone.avif", type: "image/avif" },
   { path: "/static/site/photos/hero-kitchen-phone.webp", type: "image/webp" },
   { path: "/static/site/photos/hero-kitchen.webp", type: "image/webp" },
 ];

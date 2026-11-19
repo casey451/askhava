@@ -10,8 +10,8 @@
 //! there) and served at `/static/site/fonts/<name>` as `font/woff2`, so no page loads a font host.
 //!
 //! The photos and the mark (T216, WEB-027, D-3331, D-4252) are the home hero, served through
-//! `<picture>` as the phone strip `photos/hero-kitchen-phone.avif` (then `.webp`) and the tablet
-//! and desktop `photos/hero-kitchen.webp`, each 100 KB or less with no metadata, and the brand mark
+//! `<picture>` as the phone strip `photos/hero-kitchen-phone.webp` and the tablet and desktop
+//! `photos/hero-kitchen.webp` (no AVIF yet, D-4630), each 100 KB or less with no metadata, and the brand mark
 //! `brand/mark.svg` (no `<title>`, no script), copied from `docs/design/`. They are concept
 //! placeholders: licensed photos replace them at the same names and sizes before launch.
 
@@ -62,11 +62,6 @@ const ASSETS: &[Asset] = &[
         name: "photos/hero-kitchen.webp",
         mime: "image/webp",
         bytes: include_bytes!("../static/photos/hero-kitchen.webp"),
-    },
-    Asset {
-        name: "photos/hero-kitchen-phone.avif",
-        mime: "image/avif",
-        bytes: include_bytes!("../static/photos/hero-kitchen-phone.avif"),
     },
     Asset {
         name: "photos/hero-kitchen-phone.webp",
@@ -128,7 +123,6 @@ mod tests {
         for (name, mime, magic) in [
             ("photos/hero-kitchen.webp", "image/webp", *b"WEBP"),
             ("photos/hero-kitchen-phone.webp", "image/webp", *b"WEBP"),
-            ("photos/hero-kitchen-phone.avif", "image/avif", *b"avif"),
         ] {
             let photo = find(name).expect(name);
             assert_eq!(photo.mime, mime, "{name}");
