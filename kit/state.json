@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "phase": "kit",
- "current": "T540",
+ "current": "T470",
  "backup_runner": "on",
  "ruleset_verified": true,
  "lease": null,
@@ -56206,7 +56206,13 @@
    "attempts": 0,
    "slug": "phone-approval-page",
    "type": "build",
-   "stage": "5"
+   "stage": "5",
+   "plan_gap": {
+    "at": "2026-11-19T13:05:58Z",
+    "problems": [
+     "T397: dependency T536 is DONE but its owned file tests/e2e/twilio_signature.ts is not on main"
+    ]
+   }
   },
   {
    "id": "T399",
@@ -67807,12 +67813,12 @@
     "T456",
     "T490"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 2,
    "slug": "email-outbox-send",
    "type": "build",
    "stage": "5",
-   "attempt_started_at": "2026-11-19T10:42:01Z",
+   "attempt_started_at": "2026-11-19T13:05:58Z",
    "decision_ids": [
     4670,
     4671,
@@ -67872,7 +67878,8 @@
       }
      }
     }
-   ]
+   ],
+   "lane": "5"
   },
   {
    "id": "T471",
@@ -87230,7 +87237,7 @@
    "output_tokens": 152933,
    "cache_creation_input_tokens": 473033
   },
-  "source": "session_reading 2026-11-19T12:36:25Z (week)",
+  "source": "session_reading 2026-11-19T13:04:36Z (week)",
   "by_task": {
    "FIX-MAIN": {
     "estimated_bytes": 3756447,
@@ -92861,8 +92868,8 @@
     "last_model": "claude-opus-5-5"
    },
    "T470": {
-    "estimated_bytes": 595058,
-    "estimated_tokens": 1732975,
+    "estimated_bytes": 595739,
+    "estimated_tokens": 1734792,
     "usage_counting": "message_id",
     "cache_creation_input_tokens": 863065,
     "input_tokens": 865,
@@ -92967,7 +92974,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T13:06:10Z",
+ "updated_at": "2026-11-19T13:06:41Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -93068,14 +93075,6 @@
  "runner_sha": "5339e72a662e65cd5567e34754c30b68767ecced",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "c2eaa68952bf22db864f49d7cad8f5c3c6590a1c",
-   "ok": true,
-   "at": "2026-11-19T07:06:52Z",
-   "why": "start routine (ancestry reuse of bfe866faeae6, 2026-11-19T06:04:10Z)",
-   "reused": "2026-11-19T06:04:10Z",
-   "base": "bfe866faeae636ba9053e68b8265dbc6003f57b0"
-  },
   {
    "sha": "b7f0cf41b372f4b82c92ef46022e4d9e53f635bd",
    "ok": true,
@@ -93224,24 +93223,32 @@
    "why": "start routine (ancestry reuse of de9f7793b42e, 2026-11-19T12:53:48Z)",
    "reused": "2026-11-19T12:53:48Z",
    "base": "de9f7793b42e01de0afd0f508ffc183563e7fb94"
+  },
+  {
+   "sha": "b110102be020e11b423ff9f82663bec7363ec7d2",
+   "ok": true,
+   "at": "2026-11-19T13:05:58Z",
+   "why": "start routine (ancestry reuse of de9f7793b42e, 2026-11-19T12:53:48Z)",
+   "reused": "2026-11-19T12:53:48Z",
+   "base": "de9f7793b42e01de0afd0f508ffc183563e7fb94"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T540 estimated 1.3M tokens (calibrated); week has 30.8M left (no five-hour budget, D-3056) after 3.2M still running in another lane (session_reading 2026-11-19T12:36:25Z (week)); running to the limit (model window, D-2225), claimed",
-  "at": "2026-11-19T12:54:26Z",
+  "last": "T470 estimated 1.7M tokens (calibrated); week has 31.1M left (no five-hour budget, D-3056) after 2.9M still running in another lane (session_reading 2026-11-19T13:04:36Z (week)); running to the limit (model window, D-2225), claimed",
+  "at": "2026-11-19T13:05:58Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "week": {
-    "used": 163249530,
+    "used": 162857386,
     "budget": 194000000,
-    "left": 30750470,
+    "left": 31142614,
     "resets_at": "2026-11-19T17:00:00Z"
    }
   },
-  "remaining_estimate": 383488014,
-  "projected_finish": "2026-12-03T09:00:00Z"
+  "remaining_estimate": 381147879,
+  "projected_finish": "2026-12-03T07:09:56Z"
  },
  "main_red_history": [
   {
