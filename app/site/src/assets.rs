@@ -8,6 +8,12 @@
 //! The fonts (T166, WEB-027, D-3331) are Gelasio 400 and 500 and DM Sans 400, 500 and 700, copied
 //! from `docs/design/fonts/` (SIL Open Font License; the license texts sit beside the originals
 //! there) and served at `/static/site/fonts/<name>` as `font/woff2`, so no page loads a font host.
+//!
+//! The photos and the mark (T216, WEB-027, D-3331, D-4252) are the home hero, served through
+//! `<picture>` as the phone strip `photos/hero-kitchen-phone.webp` and the tablet and desktop
+//! `photos/hero-kitchen.webp` (no AVIF yet, D-4630), each 100 KB or less with no metadata, and the brand mark
+//! `brand/mark.svg` (no `<title>`, no script), copied from `docs/design/`. They are concept
+//! placeholders: licensed photos replace them at the same names and sizes before launch.
 
 /// One file served at `/static/site/<name>`.
 pub(crate) struct Asset {
@@ -20,7 +26,7 @@ pub(crate) struct Asset {
 }
 
 /// Every file the site serves (WEB-001: the daylight-and-evergreen stylesheet; WEB-027: its
-/// self-hosted fonts).
+/// self-hosted fonts, the hero photo crops and the mark).
 const ASSETS: &[Asset] = &[
     Asset {
         name: "site.css",
@@ -51,6 +57,21 @@ const ASSETS: &[Asset] = &[
         name: "fonts/dm-sans-latin-700-normal.woff2",
         mime: "font/woff2",
         bytes: include_bytes!("../static/fonts/dm-sans-latin-700-normal.woff2"),
+    },
+    Asset {
+        name: "photos/hero-kitchen.webp",
+        mime: "image/webp",
+        bytes: include_bytes!("../static/photos/hero-kitchen.webp"),
+    },
+    Asset {
+        name: "photos/hero-kitchen-phone.webp",
+        mime: "image/webp",
+        bytes: include_bytes!("../static/photos/hero-kitchen-phone.webp"),
+    },
+    Asset {
+        name: "brand/mark.svg",
+        mime: "image/svg+xml",
+        bytes: include_bytes!("../static/brand/mark.svg"),
     },
 ];
 
@@ -93,6 +114,42 @@ mod tests {
         assert_eq!(css.mime, "text/css; charset=utf-8");
         let text = std::str::from_utf8(css.bytes).expect("utf-8");
         assert!(text.contains("--evergreen: #245849"));
+    }
+
+    /// WEB-027, D-4252: each hero crop is listed with its image type, holds that format's bytes,
+    /// is 100 KB or less and carries no Exif, XMP or GPS block.
+    #[test]
+    fn every_photo_is_listed_small_and_without_metadata() {
+        for (name, mime, magic) in [
+            ("photos/hero-kitchen.webp", "image/webp", *b"WEBP"),
+            ("photos/hero-kitchen-phone.webp", "image/webp", *b"WEBP"),
+        ] {
+            let photo = find(name).expect(name);
+            assert_eq!(photo.mime, mime, "{name}");
+            assert_eq!(photo.bytes[8..12], magic, "{name}");
+            assert!(photo.bytes.len() <= 100 * 1024, "{name}");
+            for block in [&b"Exif"[..], b"<x:xmpmeta", b"XMP ", b"GPS"] {
+                assert!(
+                    !photo.bytes.windows(block.len()).any(|w| w == block),
+                    "{name}"
+                );
+            }
+        }
+    }
+
+    /// WEB-027, D-3890: the mark is listed as SVG, is evergreen, and has no script, title or
+    /// metadata.
+    #[test]
+    fn the_mark_is_a_plain_evergreen_svg() {
+        let mark = find("brand/mark.svg").expect("listed");
+        assert_eq!(mark.mime, "image/svg+xml");
+        let text = std::str::from_utf8(mark.bytes).expect("utf-8");
+        assert!(
+            text.starts_with("<svg") && text.contains("id=\"mark\"") && text.contains("#245849")
+        );
+        for gone in ["<script", "<title", "<metadata", " on", "href"] {
+            assert!(!text.contains(gone), "{gone}");
+        }
     }
 
     /// An unlisted name, a path with a folder and an empty name are never found.

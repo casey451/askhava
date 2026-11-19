@@ -21,14 +21,19 @@
 //! there first) lapses at the later of its due time and the worker's now, so a late worker never
 //! starts the backup's window in the past; a notice sent after that lapses at its send.
 //! T214 (PICK-050, D-3024): the notice's values carry `cant_take`, the pick's "Can't take it" page.
+//! T456 (PICK-043, D-3675, D-3890): [`start_window`] stores the window's end in
+//! `picks.pick.confirm_due`; [`hold_ask`] reads a waiting pick's HOLD facts and [`hold_pick`] adds
+//! the HOLD's business hours to that end once, restarting `jobs`' backstop and queueing a new
+//! [`CONFIRM_ENDS_KIND`] task, so the earlier one finds a moved `timer_from` and does nothing.
 
-use askhava_businesses::api::{NoticePurpose, notice_addresses};
+use askhava_businesses::api::{NoticePurpose, Roles, notice_addresses};
 use askhava_core::api::{Claimed, Guarded, HandlerError, NewTask, add_business_minutes, enqueue};
 use askhava_jobs::api::{
     JobRow, JobStatus, current, job_number, move_to, restart_timer, rules::timeout,
 };
 use askhava_ops::api::Actor;
 use jiff::Timestamp;
+use jiff_sqlx::ToSqlx;
 use serde_json::{Value, json};
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection, PgPool};
@@ -36,9 +41,10 @@ use sqlx::{Connection, PgConnection, PgPool};
 use crate::backup_choice::Backup;
 use crate::cant_take::cant_take_link;
 use crate::confirm::{
-    ConfirmSettings, PICK_NOTICE_EMERGENCY_TEMPLATE, PICK_NOTICE_TEMPLATE, confirm_by,
+    ConfirmSettings, HoldAsk, PICK_NOTICE_EMERGENCY_TEMPLATE, PICK_NOTICE_TEMPLATE, TimeRefusal,
+    WindowRules, confirm_by, hold, hold_allowed,
 };
-use crate::confirm_reminders::lapse;
+use crate::confirm_reminders::{Extension, extend_once, lapse};
 use crate::models::{self, PicksError};
 use crate::money_notices::BUSINESS_NOTICE_KIND;
 use crate::pick_ended::queue_backup_text;
@@ -178,7 +184,8 @@ async fn queue_window_end(
 }
 
 /// Restarts `jobs`' backstop to end one business minute after the window that starts at `start`,
-/// unless it already counts from there (a repeat), and queues the window's end; returns the end.
+/// unless it already counts from there (a repeat), stores the end as the pick's `confirm_due`
+/// (PICK-043) and queues the window's end; returns the end.
 async fn start_window(
     tx: &mut PgConnection,
     (pick, job, row): (Uuid, Uuid, &JobRow),
@@ -189,16 +196,175 @@ async fn start_window(
     let backstop = (settings.window_minutes + 1).saturating_sub(confirm_backstop_minutes());
     let from = add_business_minutes(start, backstop);
     if row.timer_from.as_second() != from.as_second() {
-        let restarted = restart_timer(tx, job, (JobStatus::AwaitingConfirm, from)).await;
-        if !matches!(
-            restarted.map_err(|_| PicksError::Job)?,
-            Guarded::Applied(())
-        ) {
-            return Err(PicksError::MovedOn);
-        }
+        restart_backstop(tx, job, from).await?;
     }
+    store_due(tx, pick, due).await?;
     queue_window_end(tx, (pick, job), (from, due)).await?;
     Ok(due)
+}
+
+/// Restarts `jobs`' Awaiting confirm wait of `job` to count from `from`; moved on when the job
+/// left Awaiting confirm.
+async fn restart_backstop(
+    tx: &mut PgConnection,
+    job: Uuid,
+    from: Timestamp,
+) -> Result<(), PicksError> {
+    let restarted = restart_timer(tx, job, (JobStatus::AwaitingConfirm, from)).await;
+    match restarted.map_err(|_| PicksError::Job)? {
+        Guarded::Applied(()) => Ok(()),
+        Guarded::MovedOn => Err(PicksError::MovedOn),
+    }
+}
+
+/// PICK-019, PICK-043: stores `due` as waiting pick `pick`'s Confirm end.
+async fn store_due(tx: &mut PgConnection, pick: Uuid, due: Timestamp) -> Result<(), PicksError> {
+    sqlx::query!(
+        "UPDATE picks.pick SET confirm_due = $2 WHERE id = $1",
+        pick,
+        due.to_sqlx() as _,
+    )
+    .execute(tx)
+    .await
+    .map(drop)
+    .map_err(|_| PicksError::Database)
+}
+
+/// A waiting pick's HOLD facts as stored (PICK-043, BIZ-034).
+struct HoldRow {
+    job: Uuid,
+    business: Uuid,
+    due: Option<Timestamp>,
+    away_delayed: bool,
+    held: bool,
+}
+
+/// Waiting pick `pick`'s job, business, stored Confirm end, Away mark and whether a HOLD was
+/// stored for it; none when it does not wait.
+async fn hold_row(db: &mut PgConnection, pick: Uuid) -> Result<Option<HoldRow>, PicksError> {
+    let row = sqlx::query!(
+        "SELECT p.job_id, p.business_id, p.confirm_due, p.away_delayed, \
+         EXISTS (SELECT 1 FROM picks.window_extension e \
+                 WHERE e.pick_id = p.id AND e.kind = 'hold') AS \"held!\" \
+         FROM picks.pick p WHERE p.id = $1 AND p.status = 'awaiting_confirm'",
+        pick,
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| PicksError::Database)?;
+    Ok(row.map(|r| HoldRow {
+        job: r.job_id,
+        business: r.business_id,
+        due: r.confirm_due.map(|t| t.to_jiff()),
+        away_delayed: r.away_delayed,
+        held: r.held,
+    }))
+}
+
+/// The [`HoldAsk`] of `row` asked by `by`, with the job's emergency choice from `jobs` (INT-006).
+async fn ask_of(db: &mut PgConnection, row: &HoldRow, by: Roles) -> Result<HoldAsk, PicksError> {
+    let emergency = current(db, row.job)
+        .await
+        .map_err(|_| PicksError::Job)?
+        .emergency;
+    Ok(HoldAsk {
+        by,
+        emergency,
+        held: row.held,
+        away_delayed: row.away_delayed,
+    })
+}
+
+/// PICK-043, BIZ-034, D-1956: waiting pick `pick`'s business and its HOLD facts as asked by `by`
+/// (an emergency job, a stored HOLD, an Away-delayed clock), read without a lock for the Hold
+/// link's check before it is used; none when the pick does not wait.
+///
+/// # Errors
+/// [`PicksError::Job`] or [`PicksError::Database`].
+pub async fn hold_ask(
+    db: &mut PgConnection,
+    pick: Uuid,
+    by: Roles,
+) -> Result<Option<(Uuid, HoldAsk)>, PicksError> {
+    let Some(row) = hold_row(db, pick).await? else {
+        return Ok(None);
+    };
+    let ask = ask_of(db, &row, by).await?;
+    Ok(Some((row.business, ask)))
+}
+
+/// PICK-043, PICK-045, D-252, D-284, D-344, D-3675: a HOLD by `by` at `now` on waiting pick
+/// `pick`, in one transaction: locks the pick, re-reads its facts and computes the new end with
+/// `hold` over the stored `confirm_due` and `rules`; stores it once (`extend_once`), writes it
+/// to `confirm_due`, restarts `jobs`' backstop `rules.hold_minutes` business minutes later and
+/// queues [`CONFIRM_ENDS_KIND`] at the new end. The homeowner gets no text. The inner error is the
+/// refusal the business is told (the window can't be extended); a window not started (no stored
+/// end) is [`TimeRefusal::Ended`] after `hold_allowed`'s reasons; a refusal changes nothing.
+///
+/// # Errors
+/// [`PicksError::MovedOn`] when the pick no longer waits or the job left Awaiting confirm,
+/// [`PicksError::Job`] or [`PicksError::Database`].
+pub async fn hold_pick(
+    db: &mut PgConnection,
+    pick: Uuid,
+    by: Roles,
+    now: Timestamp,
+    rules: WindowRules,
+) -> Result<Result<Timestamp, TimeRefusal>, PicksError> {
+    let mut tx = db.begin().await.map_err(|_| PicksError::Database)?;
+    let held = hold_locked(&mut tx, pick, by, (now, rules)).await;
+    let ended = match held {
+        Ok(Ok(_)) => tx.commit().await,
+        Ok(Err(_)) | Err(_) => tx.rollback().await,
+    };
+    ended.map_err(|_| PicksError::Database)?;
+    held
+}
+
+/// [`hold_pick`] inside its transaction `tx`; the caller commits only a moved window.
+async fn hold_locked(
+    tx: &mut PgConnection,
+    pick: Uuid,
+    by: Roles,
+    (now, rules): (Timestamp, WindowRules),
+) -> Result<Result<Timestamp, TimeRefusal>, PicksError> {
+    models::lock_waiting(tx, pick)
+        .await?
+        .ok_or(PicksError::MovedOn)?;
+    let row = hold_row(tx, pick).await?.ok_or(PicksError::MovedOn)?;
+    let ask = ask_of(tx, &row, by).await?;
+    let new_due = match row.due {
+        Some(due) => hold(ask, (now, due), rules),
+        None => hold_allowed(ask).and(Err(TimeRefusal::Ended)),
+    };
+    let Ok(new_due) = new_due else {
+        return Ok(new_due);
+    };
+    if !extend_once(tx, (pick, Extension::Hold), new_due, now).await? {
+        return Ok(Err(TimeRefusal::AlreadyHeld));
+    }
+    move_window_end(tx, (pick, row.job), new_due, rules.hold_minutes).await?;
+    Ok(Ok(new_due))
+}
+
+/// PICK-043, D-3750: moves pick `pick`'s window on `job` to end at `due`, `minutes` business
+/// minutes later than before: the stored end, `jobs`' backstop (its wait start moved by the same
+/// minutes, so it still ends one business minute past the window) and a new
+/// [`CONFIRM_ENDS_KIND`] task fenced on the new start.
+async fn move_window_end(
+    tx: &mut PgConnection,
+    (pick, job): (Uuid, Uuid),
+    due: Timestamp,
+    minutes: u32,
+) -> Result<(), PicksError> {
+    let row = current(tx, job).await.map_err(|_| PicksError::Job)?;
+    if !awaits_confirm(row.status) {
+        return Err(PicksError::MovedOn);
+    }
+    let from = add_business_minutes(row.timer_from, minutes);
+    restart_backstop(tx, job, from).await?;
+    store_due(tx, pick, due).await?;
+    queue_window_end(tx, (pick, job), (from, due)).await
 }
 
 /// The [`CONFIRM_ENDS_KIND`] handler (PICK-019, JOB-006): [`run_confirm_ends_at`] with the task's
