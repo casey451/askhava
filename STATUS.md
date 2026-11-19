@@ -1,21 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-19T23:28:08Z by runner f0505596bdb5 (actions).
+Updated 2026-11-19T23:29:20Z by runner b440e68b158d (actions).
 
-**Building: T726 in progress since 22:06Z; 509 of 703 done; week 11% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T726 in progress since 22:06Z; 510 of 703 done; week 11% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 509 of 703 build tasks (owner gates not counted)
+- **Tasks done:** 510 of 703 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T726 claimed 22:06Z, lease until 01:06Z; lane 2: T758 claimed 23:07Z, lease until 02:07Z; lane 7: T613 claimed 23:22Z, lease until 02:22Z
 - **Week:** 11% used, 168.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:27Z, 0 min before this update
+- **Last run:** 23:28Z, 0 min before this update
 - **Keeper:** last ran 23:28Z, next wake 23:48Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T672 (since 2026-11-19T23:07:12Z, no attempt used; a plan change fixes it): T672: dependency T717 is DONE but its owned file tests/integration/tests/intake_order_two_jobs_rules.rs is not on main
-- Strict plan check red: 65 problem(s) on tasks still to run (+352 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 63 problem(s) on tasks still to run (+357 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -23,7 +23,7 @@ Updated 2026-11-19T23:28:08Z by runner f0505596bdb5 (actions).
 | T109 | recovery: backup checks and the nightly encrypted export | MERGE_PENDING | 2 | 93 min | 23:26Z | PLAN GAP: `deny.toml:3` (owned by T009 and T604, both outside T109; T109 does not own it): every `age` release fails `ca |
 | T707 | server: an emergency pick's address re-release waits while s | MERGE_PENDING | 1 | 80 min | 22:59Z |  |
 | T541 | payments, portals and adapters: a card saved or changed from | check_failed | 2 | 91 min | 22:55Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-19T |
-| T480 | messaging, server and portals: the stored "Spanish conversat | MERGE_PENDING | 1 | 104 min | 22:23Z |  |
+| T480 | messaging, server and portals: the stored "Spanish conversat | done | 1 | 104 min | 22:23Z |  |
 | T717 | intake (harness): corrections to T711's two jobs: two_jobs a | done | 1 | 2 h 11 min | 22:21Z |  |
 | T607 | site: site.css brought up to the V6 reference (laftly-v6.css | done | 2 | 41 min | 21:57Z | review_missing on 2c1fc315ebe4 (D-3728): not proven reviewed or worker-made / (b) 5cb49e3317bc T607: NOTES entry in the  |
 | T663 | picks, jobs and payments (harness): a confirmed pick moves i | BLOCKED | 1 | 30 min | 21:32Z | PLAN GAP: tests/test_coverage_floor.py:125 asserts floors["future"] == [], contradicting T663 goal (5), which requires a |
@@ -91,8 +91,8 @@ Updated 2026-11-19T23:28:08Z by runner f0505596bdb5 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 325 of 735 (44.2%) · partial 375 · unstarted 35
-**Tasks merged (throughput only):** 509 of 701
+**Requirements verified:** 323 of 735 (43.9%) · partial 377 · unstarted 35
+**Tasks merged (throughput only):** 510 of 703
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -101,14 +101,14 @@ Updated 2026-11-19T23:28:08Z by runner f0505596bdb5 (actions).
 | businesses | 21 | 36 | 1 | 58 |
 | calls | 14 | 11 | 0 | 25 |
 | consent | 16 | 19 | 0 | 35 |
-| fees | 22 | 30 | 0 | 52 |
+| fees | 21 | 31 | 0 | 52 |
 | intake | 8 | 35 | 0 | 43 |
 | job-cards | 12 | 12 | 0 | 24 |
 | licensing | 33 | 15 | 0 | 48 |
 | lifecycle | 16 | 12 | 0 | 28 |
 | messaging | 22 | 22 | 1 | 45 |
 | ops-recovery | 9 | 27 | 18 | 54 |
-| privacy | 9 | 21 | 1 | 31 |
+| privacy | 8 | 22 | 1 | 31 |
 | quiet-hours | 3 | 6 | 0 | 9 |
 | quotes-pick | 25 | 31 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
@@ -128,7 +128,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 152 of 285 done
+- stage 5: 153 of 285 done
 - stage 6: 0 of 65 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done

@@ -71010,7 +71010,7 @@
     "T407",
     "T470"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "spanish-conversations-switch",
    "type": "build",
@@ -71038,13 +71038,70 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 186,
      "head_sha": "c311c6f335119a9c27688d4ac12de9197ea74efd",
-     "pr": null,
-     "checks": null,
+     "pr": 1152,
+     "checks": [
+      {
+       "name": "backup lane 4",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-19T20:38:50Z",
      "ended_at": "2026-11-19T22:23:02Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "usage": {
       "worker": {
        "tokens": 14407664,
@@ -71093,7 +71150,30 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-19T23:07:12Z"
+   "merge_turn_since": "2026-11-19T23:07:12Z",
+   "merged_sha": "dbbf2ecc1e6e7d7795aef917992a61167d1f3215",
+   "merged_at": "2026-11-19T23:26:49Z",
+   "files": [
+    ".sqlx/query-35a30799669cce0762f9c6cb5418fe17ce32f31c6600d53de3b96d37e008e94b.json",
+    ".sqlx/query-37a7196afa17d9db044cda953d02eca339b889584625cead68b0cbacc1134886.json",
+    ".sqlx/query-ae1c78b4bda4aca9c7fff2b1ed34b10374da6e76684c2754b8560b89fd3162cf.json",
+    "app/messaging/NOTES.md",
+    "app/messaging/src/api.rs",
+    "app/messaging/src/lib.rs",
+    "app/messaging/src/spanish_switch.rs",
+    "app/portals/NOTES.md",
+    "app/portals/src/api.rs",
+    "app/portals/src/owner_portal.rs",
+    "app/portals/templates/owner_settings.html",
+    "app/server/NOTES.md",
+    "app/server/src/inbound_retry.rs",
+    "app/server/src/inbound_text.rs",
+    "app/server/src/owner_portal.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "migrations/0208_messaging_spanish_switch.sql",
+    "tests/integration/tests/spanish_switch.rs"
+   ]
   },
   {
    "id": "T482",
@@ -88364,8 +88444,9 @@
      "at": "2026-11-19T22:59:13Z"
     }
    ],
-   "update_waiting_since": null,
-   "update_push_failures": null
+   "update_waiting_since": "2026-11-19T23:29:13Z",
+   "update_push_failures": null,
+   "merge_turn_since": "2026-11-19T23:29:13Z"
   },
   {
    "id": "T702",
@@ -96862,7 +96943,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T23:28:08Z",
+ "updated_at": "2026-11-19T23:29:20Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -96960,7 +97041,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "f0505596bdb52690d5efdc240484087366e864e5",
+ "runner_sha": "b440e68b158d1b548bc54c645952b8b8e054bf7a",
  "starter": "actions",
  "smoke_runs": [
   {
