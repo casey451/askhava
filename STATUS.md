@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T04:07:58Z by runner 82a5f5d741df (actions).
+Updated 2026-11-19T04:08:28Z by runner 09c77368bd30 (actions).
 
 **Building: T408 in progress since 03:29Z; 473 of 663 done; week 73% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 473 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T408 claimed 03:29Z, lease until 06:29Z; lane 2: T520 claimed 01:57Z, lease until 06:52Z; lane 6: T490 claimed 02:10Z, lease until 07:07Z
-- **Week:** 73% used, 42.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:07Z, 0 min before this update
+- **Lane:** lane 1: T408 claimed 03:29Z, lease until 06:29Z; lane 2: T520 claimed 01:57Z, lease until 06:52Z; lane 3: T203 claimed 04:08Z, lease until 07:08Z; lane 6: T490 claimed 02:10Z, lease until 07:07Z
+- **Week:** 73% used, 43.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 04:08Z, 0 min before this update
 - **Keeper:** last ran 04:03Z, next wake 04:23Z
 
 ## Needs attention
@@ -16,7 +16,7 @@ Updated 2026-11-19T04:07:58Z by runner 82a5f5d741df (actions).
 Evidence: `trade_check` passes no words when the first tex; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T715 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 61 problem(s) on tasks still to run (+283 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 57 problem(s) on tasks still to run (+278 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -123,7 +123,7 @@ Evidence: `trade_check` passes no words when the first tex; fix the plan (the ta
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-19T03:28:00Z (week)): week: 151.8M used, 42.2M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T05:20:00Z.
+- Pacing (session_reading 2026-11-19T04:07:32Z (week)): week: 150.3M used, 43.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T04:05:45Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -140,6 +140,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T408 (lease until 2026-11-19T06:29:11Z)
 - lane 2: T520 (lease until 2026-11-19T06:52:34Z)
+- lane 3: T203 (lease until 2026-11-19T07:08:12Z)
 - lane 6: T490 (lease until 2026-11-19T07:07:31Z)
 
 ## Last usage reading
