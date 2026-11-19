@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T13:50:02Z by runner 345380f4824a (actions).
+Updated 2026-11-19T13:54:36Z by runner 345380f4824a (actions).
 
 **Building: T541 in progress since 13:09Z; 492 of 666 done; week 81% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-19T13:50:02Z by runner 345380f4824a (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T541 claimed 13:09Z, lease until 16:09Z; lane 2: T554 claimed 13:13Z, lease until 16:13Z; lane 3: T158 claimed 11:39Z, lease until 16:22Z; lane 4: T652 claimed 13:10Z, lease until 16:10Z; lane 5: T470 claimed 13:05Z, lease until 16:05Z
 - **Week:** 81% used, 26.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:49Z, 0 min before this update
+- **Last run:** 13:50Z, 4 min before this update
 - **Keeper:** last ran 13:49Z, next wake 16:08Z
 
 ## Needs attention
@@ -22,7 +22,7 @@ Updated 2026-11-19T13:50:02Z by runner 345380f4824a (actions).
 |---|---|---|---|---|---|---|
 | T540 | portals and server: the owner's release button re-sends an e | MERGE_PENDING | 1 | 53 min | 13:47Z | merging main into the reviewed head conflicts in tests/a11y/page_states.ts; a resync merges it in on this attempt (D-891 |
 | T470 | messaging and server: the worker task that sends queued emai | QUEUED | 2 | 2 h 21 min | 13:03Z | Fix-round review (after the one allowed findings round) still found a problem at head 1830747e4; no reviewer approved a  |
-| T593 | site and server: the home hero in D-3331's wording with the  | MERGE_PENDING | 1 | 95 min | 12:35Z |  |
+| T593 | site and server: the home hero in D-3331's wording with the  | check_failed | 1 | 95 min | 12:35Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T536 | E2e harness: clock-advancing journeys last, a keyed worker,  | done | 2 | 107 min | 12:33Z | PLAN GAP: tests/e2e/j2.ts:150 (owned by T099, `e2e-j2-business`; T644 also lists it). Smallest plan change: make the `no |
 | T109 | recovery: backup checks and the nightly encrypted export | BLOCKED | 1 | 20 min | 11:47Z | PLAN GAP: `deny.toml:3` (owned by T009 and T604, both outside T109; T109 does not own it): every `age` release fails `ca |
 | T540 | portals and server: the owner's release button re-sends an e | resync | 1 | 54 min | 11:29Z |  |
