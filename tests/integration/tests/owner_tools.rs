@@ -411,8 +411,8 @@ async fn ops_028_the_bridge_rings_through_the_stand_in(pool: PgPool) {
 
 /// TD-OPS-10's call case (OPS-035, OPS-004, QH-004; D-3880, D-3890): at 02:00 and with the texting
 /// number suspended, `calls.owner_alert_call` places one call to Casey naming the alert kind and
-/// her job number, holding no homeowner detail; with no owner phone the run fails and dials
-/// nothing.
+/// her job number, holding no homeowner detail; with no owner phone a second real alert's call
+/// fails closed and dials nothing.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_ops_10_the_automated_call_names_kind_and_job_at_night(pool: PgPool) {
     let fake = stand_in();
@@ -448,7 +448,13 @@ async fn td_ops_10_the_automated_call_names_kind_and_job_at_night(pool: PgPool) 
     );
     assert!(!twiml.contains("<Dial"), "say only");
     assert_eq!(count(&mut db, texts).await, before, "no alert goes by text");
-    queue_call(&mut db, Uuid::from_u128(0x0a1e)).await;
+    let second = NewAlert {
+        kind: KIND,
+        severity: Severity::Critical,
+        subject: Some(("messaging.inbox", Uuid::from_u128(0x484))),
+    };
+    let second = raise_alert(&mut db, &second).await.expect("second alert");
+    queue_call(&mut db, second).await;
     let closed = worker(fake.1, None, clock.clone());
     assert_eq!(
         run_due(&pool, &closed, &clock).await,
