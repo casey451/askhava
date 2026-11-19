@@ -331,17 +331,40 @@ pub(crate) mod design_tokens {
         "1F4A3E", "DCE8E0", "557A6E", "A8581E", "F2B27A", "9B2C1F",
     ];
 
-    /// WEB-027: each `font-size` in `html` under 16 px, in px.
-    pub(crate) fn small_font_sizes(html: &str) -> Vec<u32> {
-        html.split("font-size:")
-            .skip(1)
-            .filter_map(|rest| rest.split("px").next()?.trim().parse::<u32>().ok())
-            .filter(|px| *px < 16)
+    /// WEB-027: each `font-size` or `font` shorthand value in `html` that is not a px size of
+    /// 16 or more (decimals read; any other unit or an unreadable value counts), as written.
+    pub(crate) fn small_font_sizes(html: &str) -> Vec<String> {
+        let values = |key: &'static str| {
+            html.split(key).skip(1).map(move |rest| {
+                let value = rest.split([';', '"', '\'', '}']).next().unwrap_or("");
+                (key, value.trim())
+            })
+        };
+        values("font-size:")
+            .chain(values("font:"))
+            .filter(|(key, value)| !px_of_16_or_more(key, value))
+            .map(|(_, value)| value.to_string())
             .collect()
     }
 
-    /// WEB-027: each `#` colour (3 or 6 hex digits, `&#..;` entities skipped) in `html` that is
-    /// not a section 2 token, as written.
+    /// The size in a `font-size` value, or the first numeric word of a `font` shorthand (its
+    /// `/line-height` dropped), reads as px of 16 or more.
+    fn px_of_16_or_more(key: &str, value: &str) -> bool {
+        let size = if key == "font:" {
+            let numeric = |w: &&str| w.starts_with(|c: char| c.is_ascii_digit() || c == '.');
+            let first = value.split_whitespace().find(numeric);
+            first.and_then(|w| w.split('/').next()).unwrap_or("")
+        } else {
+            value
+        };
+        let px = size
+            .strip_suffix("px")
+            .and_then(|n| n.trim().parse::<f64>().ok());
+        px.is_some_and(|px| px >= 16.0)
+    }
+
+    /// WEB-027: each `#` colour (3, 4, 6 or 8 hex digits, `&#..;` entities skipped) in `html`
+    /// that is not a section 2 token, as written; a 4- or 8-digit (alpha) colour never is.
     pub(crate) fn off_token_colours(html: &str) -> Vec<String> {
         let mut off = Vec::new();
         for (at, _) in html.match_indices('#') {
@@ -350,7 +373,11 @@ pub(crate) mod design_tokens {
                 .take_while(char::is_ascii_alphanumeric)
                 .collect();
             let hex = run.chars().all(|c| c.is_ascii_hexdigit());
-            if html[..at].ends_with('&') || !hex || !matches!(run.len(), 3 | 6) {
+            if html[..at].ends_with('&') || !hex || !matches!(run.len(), 3 | 4 | 6 | 8) {
+                continue;
+            }
+            if matches!(run.len(), 4 | 8) {
+                off.push(run);
                 continue;
             }
             let full = if run.len() == 3 {
@@ -370,7 +397,15 @@ pub(crate) mod design_tokens {
     fn td_web_11_planted_grey_is_caught() {
         let planted = "<p style=\"color:#9A9A9A;background:#F7F5F0\">Hi</p>";
         assert_eq!(off_token_colours(planted), ["9A9A9A"]);
-        assert!(off_token_colours("color:#fff;color:#245849 &#39; #feedback").is_empty());
-        assert_eq!(small_font_sizes("font-size:14px;font-size:16px"), [14]);
+        let alpha = "color:#9A9A9A80;color:#9AA8;color:#24584980";
+        assert_eq!(off_token_colours(alpha), ["9A9A9A80", "9AA8", "24584980"]);
+        let fine = "color:#fff;color:#245849 &#39; &#x27; &#8217; #feedback";
+        assert!(off_token_colours(fine).is_empty());
+        let sizes = "font-size:14px;font-size:16px;font-size:14.5px;font-size:16.5px";
+        assert_eq!(small_font_sizes(sizes), ["14px", "14.5px"]);
+        let units = "font-size:12pt;font-size:0.8rem;font-size:large\"";
+        assert_eq!(small_font_sizes(units), ["12pt", "0.8rem", "large"]);
+        let shorthand = "font:14px Arial;font:bold 16px/1.5 Arial;font:inherit";
+        assert_eq!(small_font_sizes(shorthand), ["14px Arial", "inherit"]);
     }
 }
