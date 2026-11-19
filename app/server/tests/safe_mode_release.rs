@@ -236,8 +236,8 @@ async fn picked(pool: &PgPool) -> (Uuid, Uuid, Uuid) {
 
 /// The $25 Confirm-and-pay press through `payments` with the fake Stripe (FEE-016).
 async fn paid(pool: &PgPool, (business, job, pick): (Uuid, Uuid, Uuid)) {
-    let status = "succeeded";
-    let stripe = FakeStripe { pick, status };
+    let reports = "succeeded";
+    let stripe = FakeStripe { pick, reports };
     let secret = SecretString::from("test-only-id-secret-not-a-real-key".to_owned());
     ensure_customer(pool, &stripe, &secret, BusinessId(business))
         .await
@@ -291,14 +291,14 @@ async fn released(pool: &PgPool, (job, pick): (Uuid, Uuid)) -> (bool, bool) {
 
 struct FakeStripe {
     pick: Uuid,
-    status: &'static str,
+    reports: &'static str,
 }
 
 impl FakeStripe {
-    fn intent(&self, id: &str, status: &str) -> PaymentIntent {
+    fn intent(&self, id: &str, state: &str) -> PaymentIntent {
         PaymentIntent {
             id: id.to_owned(),
-            status: status.to_owned(),
+            status: state.to_owned(),
             amount: 2500,
             currency: "usd".to_owned(),
             customer: "cus_fake408".to_owned(),
@@ -325,7 +325,7 @@ impl PaymentsAdapter for FakeStripe {
     }
 
     async fn fetch_payment_intent(&self, id: &str) -> Result<PaymentIntent, AdapterError> {
-        Ok(self.intent(id, self.status))
+        Ok(self.intent(id, self.reports))
     }
 
     async fn create_refund(&self, _: &IdempotencyKey, _: &str) -> Result<String, AdapterError> {
@@ -356,18 +356,18 @@ impl IntentStripe for FakeStripe {
 
 type Hooks = Arc<StripeWebhook<FakeStripe, PickReleaser>>;
 
-/// The webhook state over the real sink, with Stripe reporting the intent as `status`.
-fn hooks(pool: &PgPool, pick: Uuid, status: &'static str) -> Hooks {
-    hooks_with((pool, pool), pick, status)
+/// The webhook state over the real sink, with Stripe reporting the intent as `reports`.
+fn hooks(pool: &PgPool, pick: Uuid, reports: &'static str) -> Hooks {
+    hooks_with((pool, pool), pick, reports)
 }
 
 /// [`hooks`] with the sink on its own pool `sink`.
-fn hooks_with((pool, sink): (&PgPool, &PgPool), pick: Uuid, status: &'static str) -> Hooks {
+fn hooks_with((pool, sink): (&PgPool, &PgPool), pick: Uuid, reports: &'static str) -> Hooks {
     let none: [(String, String); 0] = [];
     let clock = Arc::new(ManualClock::new(now()));
     Arc::new(StripeWebhook {
         pool: pool.clone(),
-        stripe: FakeStripe { pick, status },
+        stripe: FakeStripe { pick, reports },
         secret: SecretString::from(SECRET),
         account: StripeAccount {
             live: false,
