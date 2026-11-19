@@ -1,27 +1,27 @@
 # Ask Hava build status
 
-Updated 2026-11-19T15:44:20Z by runner 7ab290e2ada6 (actions).
+Updated 2026-11-19T15:50:48Z by runner dd768f848177 (actions).
 
-**Building: T210 in progress since 15:35Z; 496 of 668 done; week 84% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T210 in progress since 15:35Z; 497 of 668 done; week 84% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 496 of 668 build tasks (owner gates not counted)
+- **Tasks done:** 497 of 668 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T210 claimed 15:35Z, lease until 18:35Z; lane 3: T530 claimed 15:41Z, lease until 18:41Z; lane 4: T555 claimed 15:44Z, lease until 18:44Z; lane 6: T407 claimed 14:19Z, lease until 17:19Z
 - **Week:** 84% used, 22.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:42Z, 1 min before this update
+- **Last run:** 15:44Z, 6 min before this update
 - **Keeper:** last ran 15:32Z, next wake 15:52Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 64 problem(s) on tasks still to run (+323 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 64 problem(s) on tasks still to run (+322 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T541 | payments, portals and adapters: a card saved or changed from | MERGE_PENDING | 1 | 2 h 16 min | 15:25Z |  |
 | T470 | messaging and server: the worker task that sends queued emai | MERGE_PENDING | 3 | 2 h 18 min | 15:24Z | Fix-round review (after the one allowed findings round) still found a problem at head 1830747e4; no reviewer approved a  |
-| T593 | site and server: the home hero in D-3331's wording with the  | MERGE_PENDING | 2 | 75 min | 15:11Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
+| T593 | site and server: the home hero in D-3331's wording with the  | done | 2 | 75 min | 15:11Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T554 | Decisions digest, piece 9: the next entries after the header | done | 1 | 110 min | 15:03Z |  |
 | T652 | ops: safe mode starts only on OPS-001's alert kinds, and a d | done | 2 | 112 min | 15:03Z | PLAN GAP: tests/integration/tests/safe_mode.rs:246,281,320,378,407 (owned by T487 and T408; T652's prompt :11 and :47 sa |
 | T158 | portals: the owner's pilot scorecard page with go and stop l | done | 1 | 2 h 57 min | 14:37Z |  |
@@ -92,15 +92,14 @@ Updated 2026-11-19T15:44:20Z by runner 7ab290e2ada6 (actions).
 | T592 | jobs, quotes and site: the home page's numbers read every jo | done | 1 | 40 min | 16:19Z |  |
 | T645 | intake and messaging: the web chat honours an opt-out word,  | BLOCKED | 1 | 4 min | 16:05Z | PLAN GAP: app/site/src/chat.rs:340 (owned by T593, then T646 and T649; T593 is not merged yet) calls `chat_message(db, & |
 | T621 | portals: the scorecard's go and stop line settings and its p | resync | 1 | 55 min | 15:55Z |  |
-| T665 | server tests (harness): the door matrix fills a business job | done | 1 | 81 min | 15:47Z |  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 310 of 735 (42.2%) · partial 386 · unstarted 39
-**Tasks merged (throughput only):** 496 of 668
+**Requirements verified:** 310 of 735 (42.2%) · partial 387 · unstarted 38
+**Tasks merged (throughput only):** 497 of 668
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -122,7 +121,7 @@ Updated 2026-11-19T15:44:20Z by runner 7ab290e2ada6 (actions).
 | recurring | 7 | 4 | 0 | 11 |
 | security | 9 | 41 | 5 | 55 |
 | terms | 26 | 8 | 1 | 35 |
-| website | 13 | 13 | 4 | 30 |
+| website | 13 | 14 | 3 | 30 |
 | wording | 17 | 11 | 4 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
@@ -136,7 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 139 of 267 done
+- stage 5: 140 of 267 done
 - stage 6: 0 of 48 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
