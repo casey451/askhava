@@ -9,13 +9,13 @@
 //! read writes a `licensing` or `businesses` row or logs a name or contact. All data is fake.
 
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
 
 use askhava_adapters::api::LicenseLists;
 use askhava_businesses::api::{
     ContactKind, Flag, SignupRecord, create, save_business_name, signup_record,
 };
 use askhava_core::api::{MIGRATOR, Settings};
+use askhava_integration::log_capture::{self, Capture};
 use askhava_integration::set_app_role;
 use askhava_licensing::api::{
     RECORD_HEADER, RECORD_UNREADABLE_ALERT, RecordList, RecordRead, check_license,
@@ -26,9 +26,6 @@ use jiff::civil::date;
 use secrecy::ExposeSecret;
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
-use tracing::field::{Field, Visit};
-use tracing::span::{Attributes, Id, Record};
-use tracing::{Event, Metadata, Subscriber};
 
 const FULL: &str = "ROC100001,Example Plumbing Co,Sample Pipes,928-555-0142,mobile,office@example.test,100 Sample Way,Lake Havasu City,86403";
 const SPARSE: &str = "ROC100002,Sample Drains LLC,,928-555-0143,,,,,";
@@ -207,8 +204,7 @@ async fn td_lic_30_landline_and_missing_record(pool: PgPool) {
 async fn td_lic_30_unreadable_reads_raise_one_alert_a_day(pool: PgPool) {
     let (fixtures, mut conn) = (Fixtures::new(), app(&pool).await);
     let source = fixtures.source();
-    let lines = Lines::default();
-    let _guard = tracing::subscriber::set_default(lines.clone());
+    let lines = Lines(log_capture::start());
     for number in [
         "../ROC100001",
         "ROC200001",
@@ -609,8 +605,7 @@ async fn td_lic_30_reads_write_nothing_and_log_no_value(pool: PgPool) {
         .expect("check");
     let yard = business(&mut conn, &["house_cleaning"], Some("Sample Yards")).await;
     let before = row_counts(&pool).await;
-    let lines = Lines::default();
-    let _guard = tracing::subscriber::set_default(lines.clone());
+    let lines = Lines(log_capture::start());
     for id in [ours, yard] {
         assert!(matches!(
             signup(&mut conn, &source, id).await,
@@ -625,12 +620,11 @@ async fn td_lic_30_reads_write_nothing_and_log_no_value(pool: PgPool) {
 }
 
 /// Every log line's and span's fields, for the test's thread.
-#[derive(Clone, Default)]
-struct Lines(Arc<Mutex<Vec<String>>>);
+struct Lines(Capture);
 
 impl Lines {
     fn assert_clean(&self) {
-        let logged = self.0.lock().expect("lines").clone();
+        let logged = self.0.lines();
         assert!(!logged.is_empty(), "the unreadable read is logged");
         for line in logged {
             for secret in SECRETS {
@@ -638,37 +632,4 @@ impl Lines {
             }
         }
     }
-}
-
-struct Line<'a>(&'a mut String);
-
-impl Visit for Line<'_> {
-    fn record_debug(&mut self, field: &Field, value: &dyn std::fmt::Debug) {
-        self.0.push_str(&format!(" {}={value:?}", field.name()));
-    }
-}
-
-impl Subscriber for Lines {
-    fn enabled(&self, _: &Metadata<'_>) -> bool {
-        true
-    }
-    fn new_span(&self, attributes: &Attributes<'_>) -> Id {
-        let mut line = String::new();
-        attributes.record(&mut Line(&mut line));
-        self.0.lock().expect("lines").push(line);
-        Id::from_u64(1)
-    }
-    fn record(&self, _: &Id, values: &Record<'_>) {
-        let mut line = String::new();
-        values.record(&mut Line(&mut line));
-        self.0.lock().expect("lines").push(line);
-    }
-    fn record_follows_from(&self, _: &Id, _: &Id) {}
-    fn event(&self, event: &Event<'_>) {
-        let mut line = String::new();
-        event.record(&mut Line(&mut line));
-        self.0.lock().expect("lines").push(line);
-    }
-    fn enter(&self, _: &Id) {}
-    fn exit(&self, _: &Id) {}
 }

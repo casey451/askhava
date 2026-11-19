@@ -8,6 +8,7 @@ publish.workspace = true
 
 [dependencies]
 sqlx = { workspace = true }
+tracing = { workspace = true }
 
 [dev-dependencies]
 askhava-ai = { workspace = true }
@@ -46,7 +47,6 @@ tokio = { workspace = true, features = ["test-util"] }
 toml = { workspace = true }
 tower = { workspace = true }
 tower-http = { workspace = true }
-tracing = { workspace = true }
 
 [lints]
 workspace = true
