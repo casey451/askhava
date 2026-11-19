@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "phase": "kit",
- "current": "T705",
+ "current": "T540",
  "backup_runner": "on",
  "ruleset_verified": true,
  "lease": null,
@@ -23585,7 +23585,15 @@
    "attempts": 0,
    "slug": "recovery-backup-export",
    "type": "build",
-   "stage": "5"
+   "stage": "5",
+   "plan_gap": {
+    "at": "2026-11-19T10:35:23Z",
+    "problems": [
+     "T109: dependency T476 is DONE but its owned file app/portals/src/health_page.rs is not on main",
+     "T109: dependency T476 is DONE but its owned file app/portals/templates/health.html is not on main",
+     "T109: dependency T476 is DONE but its owned file tests/integration/tests/health_page.rs is not on main"
+    ]
+   }
   },
   {
    "id": "T110",
@@ -24790,13 +24798,7 @@
    "attempts": 0,
    "slug": "site-stage05-dns",
    "type": "build",
-   "stage": "5",
-   "plan_gap": {
-    "at": "2026-11-19T08:37:10Z",
-    "problems": [
-     "T116: dependency T216 is DONE but its owned file app/site/static/photos/hero-kitchen-phone.avif is not on main"
-    ]
-   }
+   "stage": "5"
   },
   {
    "id": "T117",
@@ -75774,18 +75776,23 @@
     "T108",
     "T303"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 0,
    "slug": "owner-release-button",
    "type": "build",
    "stage": "5",
-   "plan_gap": {
-    "at": "2026-11-19T08:04:18Z",
-    "problems": [
-     "T540: dependency T310 is DONE but its owned file app/server/src/owner_portal.rs is not on main",
-     "T540: dependency T310 is DONE but its owned file app/server/tests/owner_portal_route.rs is not on main",
-     "T540: dependency T310 is DONE but its owned file tests/e2e/owner_portal_served.spec.ts is not on main"
-    ]
+   "attempt_started_at": "2026-11-19T10:35:23Z",
+   "lane": "6",
+   "decision_ids": [
+    4687,
+    4688,
+    4689,
+    4690,
+    4691
+   ],
+   "window_model": {
+    "model": "claude-opus-5-5",
+    "alias": "opus"
    }
   },
   {
@@ -78593,13 +78600,7 @@
    "attempts": 0,
    "slug": "home-hero-request-box",
    "type": "harness",
-   "stage": "5",
-   "plan_gap": {
-    "at": "2026-11-19T09:02:31Z",
-    "problems": [
-     "T593: dependency T216 is DONE but its owned file app/site/static/photos/hero-kitchen-phone.avif is not on main"
-    ]
-   }
+   "stage": "5"
   },
   {
    "id": "T594",
@@ -86463,7 +86464,7 @@
    "cache_creation_input_tokens": 110538,
    "input_tokens": 76
   },
-  "source": "session_reading 2026-11-19T09:11:37Z (week)",
+  "source": "session_reading 2026-11-19T10:33:46Z (week)",
   "by_task": {
    "FIX-MAIN": {
     "estimated_bytes": 3756447,
@@ -92114,6 +92115,10 @@
    "T705": {
     "estimated_bytes": 115898,
     "estimated_tokens": 337527
+   },
+   "T540": {
+    "estimated_bytes": 458820,
+    "estimated_tokens": 1336212
    }
   },
   "windows": {
@@ -92134,7 +92139,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T10:35:03Z",
+ "updated_at": "2026-11-19T10:35:44Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -92232,24 +92237,9 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "98c1191cd5fdab5a50b7fc44e1408b2165d57dfb",
+ "runner_sha": "7be551b7caecffd5e22c64de91c78f4b842c96c8",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "09c77368bd303d841ce3203a20ab5744d81c1fb1",
-   "ok": true,
-   "at": "2026-11-19T04:06:00Z",
-   "why": "start routine (pre-session, ancestor of 547545f44116)",
-   "seconds": 1160
-  },
-  {
-   "sha": "547545f441162238021f6a4eb3f613d7dc1271ce",
-   "ok": true,
-   "at": "2026-11-19T04:08:12Z",
-   "why": "start routine (ancestry reuse of 09c77368bd30, 2026-11-19T04:06:00Z)",
-   "reused": "2026-11-19T04:06:00Z",
-   "base": "09c77368bd303d841ce3203a20ab5744d81c1fb1"
-  },
   {
    "sha": "bd5f0eff60b812e962082bfd3704f5dc7cb333b9",
    "ok": true,
@@ -92391,24 +92381,39 @@
    "why": "start routine (ancestry reuse of b7f0cf41b372, 2026-11-19T08:03:27Z)",
    "reused": "2026-11-19T08:03:27Z",
    "base": "b7f0cf41b372f4b82c92ef46022e4d9e53f635bd"
+  },
+  {
+   "sha": "7be551b7caecffd5e22c64de91c78f4b842c96c8",
+   "ok": true,
+   "at": "2026-11-19T10:32:55Z",
+   "why": "start routine (pre-session, ancestor of 1fab3a0bc8d2)",
+   "seconds": 1120
+  },
+  {
+   "sha": "1fab3a0bc8d26d3b914c19af6a255ed52d369b82",
+   "ok": true,
+   "at": "2026-11-19T10:35:23Z",
+   "why": "start routine (ancestry reuse of 7be551b7caec, 2026-11-19T10:32:55Z)",
+   "reused": "2026-11-19T10:32:55Z",
+   "base": "7be551b7caecffd5e22c64de91c78f4b842c96c8"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T705 estimated 338k tokens (calibrated); week has 34.7M left (no five-hour budget, D-3056) after 5.3M still running in another lane (session_reading 2026-11-19T09:11:37Z (week)); running to the limit (model window, D-2225), claimed",
-  "at": "2026-11-19T09:16:58Z",
+  "last": "T540 estimated 1.3M tokens (calibrated); week has 35.9M left (no five-hour budget, D-3056) after 2.1M still running in another lane (session_reading 2026-11-19T10:33:46Z (week)); running to the limit (model window, D-2225), claimed",
+  "at": "2026-11-19T10:35:23Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "week": {
-    "used": 159298643,
+    "used": 158067866,
     "budget": 194000000,
-    "left": 34701357,
+    "left": 35932134,
     "resets_at": "2026-11-19T17:00:00Z"
    }
   },
-  "remaining_estimate": 386610280,
-  "projected_finish": "2026-12-03T08:04:45Z"
+  "remaining_estimate": 384782718,
+  "projected_finish": "2026-12-03T07:48:13Z"
  },
  "main_red_history": [
   {
@@ -92526,7 +92531,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 4687,
+ "next_decision": 4692,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",

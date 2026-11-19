@@ -1,22 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-19T10:35:03Z by runner 98c1191cd5fd (actions).
+Updated 2026-11-19T10:35:44Z by runner 7be551b7caec (actions).
 
 **Building: T470 in progress since 09:02Z; 487 of 664 done; week 78% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 487 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T470 claimed 09:02Z, lease until 13:32Z; lane 4: T705 claimed 09:16Z, lease until 13:34Z
-- **Week:** 78% used, 34.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:34Z, 0 min before this update
+- **Lane:** lane 1: T470 claimed 09:02Z, lease until 13:32Z; lane 4: T705 claimed 09:16Z, lease until 13:34Z; lane 6: T540 claimed 10:35Z, lease until 13:35Z
+- **Week:** 78% used, 35.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 10:35Z, 0 min before this update
 - **Keeper:** last ran 10:34Z, next wake 10:54Z
 
 ## Needs attention
-- PLAN GAP T116 (since 2026-11-19T08:37:10Z, no attempt used; a plan change fixes it): T116: dependency T216 is DONE but its owned file app/site/static/photos/hero-kitchen-phone.avif is not on main
+- PLAN GAP T109 (since 2026-11-19T10:35:23Z, no attempt used; a plan change fixes it): T109: dependency T476 is DONE but its owned file app/portals/src/health_page.rs is not on main; T109: dependency T476 is DONE but its owned file app/portals/templates/health.html is not on main; T109: dependency T476 is DONE but its owned file tests/integration/tests/health_page.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- PLAN GAP T540 (since 2026-11-19T08:04:18Z, no attempt used; a plan change fixes it): T540: dependency T310 is DONE but its owned file app/server/src/owner_portal.rs is not on main; T540: dependency T310 is DONE but its owned file app/server/tests/owner_portal_route.rs is not on main; T540: dependency T310 is DONE but its owned file tests/e2e/owner_portal_served.spec.ts is not on main
-- PLAN GAP T593 (since 2026-11-19T09:02:31Z, no attempt used; a plan change fixes it): T593: dependency T216 is DONE but its owned file app/site/static/photos/hero-kitchen-phone.avif is not on main
 - Strict plan check red: 60 problem(s) on tasks still to run (+305 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
@@ -130,7 +128,7 @@ Updated 2026-11-19T10:35:03Z by runner 98c1191cd5fd (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-19T09:11:37Z (week)): week: 159.3M used, 34.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T08:04:45Z.
+- Pacing (session_reading 2026-11-19T10:33:46Z (week)): week: 158.1M used, 35.9M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T07:48:13Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -147,6 +145,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T470 (lease until 2026-11-19T13:32:40Z)
 - lane 4: T705 (lease until 2026-11-19T13:34:42Z)
+- lane 6: T540 (lease until 2026-11-19T13:35:23Z)
 
 ## Last usage reading
 - {"task": "T710", "at": "2026-11-19T10:06:14Z", "cache_read_input_tokens": 1388035, "output_tokens": 19196, "cache_creation_input_tokens": 110538, "input_tokens": 76}
