@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T01:20:29Z by runner 122ddd90f1f9 (actions).
+Updated 2026-11-19T01:20:51Z by runner 122ddd90f1f9 (actions).
 
-**Building: T488 in progress since 23:28Z; 467 of 663 done; week 71% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T505 in progress since 23:48Z; 467 of 663 done; week 71% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 467 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T488 claimed 23:28Z, lease until 03:59Z; lane 3: T505 claimed 23:48Z, lease until 03:55Z; lane 6: T563 claimed 23:58Z, lease until 04:16Z; lane 7: T203 claimed 00:59Z, lease until 03:59Z
+- **Lane:** lane 3: T505 claimed 23:48Z, lease until 03:55Z; lane 6: T563 claimed 23:58Z, lease until 04:16Z; lane 7: T203 claimed 00:59Z, lease until 03:59Z
 - **Week:** 71% used, 48.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:20Z, 0 min before this update
 - **Keeper:** last ran 01:06Z, next wake 03:44Z
@@ -19,6 +19,7 @@ Updated 2026-11-19T01:20:29Z by runner 122ddd90f1f9 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T488 | portals and server: the business sign-up served in Spanish o | MERGE_PENDING | 1 | 111 min | 01:20Z |  |
 | T306 | server and portals: the complaints page, the emergency-email | MERGE_PENDING | 1 | 77 min | 00:59Z |  |
 | T205 | portals: owner refunds with a review step and the audit log  | MERGE_PENDING | 2 | 2 h 26 min | 00:48Z | PLAN GAP: `payments` has no public reader that ties a dispute to its pick (or its charge, business or job). Without one, |
 | T708 | intake: a quote-count update due in quiet hours goes at the  | done | 1 | 50 min | 00:40Z |  |
@@ -135,10 +136,10 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T488 (lease until 2026-11-19T03:59:58Z)
+- nothing
 - lane 3: T505 (lease until 2026-11-19T03:55:34Z)
 - lane 6: T563 (lease until 2026-11-19T04:16:01Z)
 - lane 7: T203 (lease until 2026-11-19T03:59:10Z)
 
 ## Last usage reading
-- {"task": "T306", "at": "2026-11-19T00:59:59Z", "input_tokens": 245, "cache_read_input_tokens": 17091075, "output_tokens": 74977, "cache_creation_input_tokens": 283839}
+- {"task": "T488", "at": "2026-11-19T01:20:10Z", "output_tokens": 95646, "input_tokens": 288, "cache_read_input_tokens": 12878496, "cache_creation_input_tokens": 361986}
