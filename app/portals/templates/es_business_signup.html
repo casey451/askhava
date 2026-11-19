@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{#- The business sign-up screens in Spanish (T488; WEB-019, D-180, D-3144, D-3805): the same fields
+    and steps as business_signup.html, served when the request carries lang=es (the Spanish business
+    page's sign-up link adds it, and every form below posts it again in a hidden field). All Spanish
+    here is a draft marked for native-speaker review (D-180). The consent wording stays exactly as
+    `businesses::api::consent_box` gives it, in English, since that is the text the consent record
+    stores (CON-019); a Spanish line above it says so. Trade names stay as the catalog writes them
+    (lang="en"). Business statement: "no es contratista" (WORD-002). forms.css comes first in `main`
+    so the native checkboxes keep their edge (A11Y-007, D-3700). -#}
+{% block lang %}es{% endblock %}
+{% block title %}{{ title }}{% endblock %}
+{% block main %}
+<link rel="stylesheet" href="/static/portals/forms.css">
+<h1>{{ title }}</h1>
+<p id="draft-mark">Este texto en español es un borrador. Una persona que habla español como lengua materna todavía lo va a revisar.</p>
+<p id="notice-line"{% if notice_lang != "en" %} lang="{{ notice_lang }}"{% endif %}>{{ notice }}</p>
+<p id="someone-else">{{ someone_else }}</p>
+{% for line in lines %}<p class="signup-line">{{ line }}</p>
+{% endfor %}
+{% if !links.is_empty() %}<ul id="signup-links">
+{% for (href, label) in links %}<li><a href="{{ href }}">{{ label }}</a></li>
+{% endfor %}</ul>
+{% endif %}
+{% if title == "Ya está registrado" %}<section id="contact-card" aria-labelledby="contact-card-title">
+<h2 id="contact-card-title">Guarde los números desde los que le llaman los propietarios</h2>
+<p>Cuando un propietario elige su cotización, le llama desde uno de estos números de {{ askhava_core::api::brand().es().display_name() }}. {{ askhava_core::api::brand().es().display_name() }} nunca le llama.</p>
+<p><a href="{{ crate::business_portal::CONTACT_CARD_ROUTE }}" download>Guarde estos números en su teléfono (tarjeta de contacto: <span lang="en">{{ crate::business_portal::contact_card_name() }}</span>)</a></p>
+</section>
+{% endif %}
+{% if !categories.is_empty() %}
+<form method="post" action="{{ crate::business_signup::SIGNUP_FORM_ROUTE }}" id="signup-form" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="lang" value="es">
+<input type="hidden" name="consent_channels" value="{{ consent_channels }}">
+<input type="hidden" name="consent_seal" value="{{ consent_seal }}">
+{% if let Some((_, reason)) = entered.problem %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>Corrija el dato marcado abajo</h2>
+<p><a href="#{{ problem_anchor() }}">{{ reason }}</a></p>
+</div>
+{% endif %}
+<fieldset id="names"><legend>El nombre en sus cotizaciones</legend>
+<p><label for="business-name">Nombre del negocio</label>
+<span id="business-name-hint">El nombre que ven los propietarios en sus cotizaciones. No ponga números de teléfono ni enlaces.</span>
+<input type="text" id="business-name" name="business_name" maxlength="200" autocomplete="organization" aria-describedby="business-name-hint{% if error_for("business_name").is_some() %} business-name-error{% endif %}" value="{{ entered.business_name }}"{% if error_for("business_name").is_some() %} aria-invalid="true"{% endif %}>
+{% if let Some(reason) = error_for("business_name") %}<span id="business-name-error" class="error">{{ reason }}</span>{% endif %}</p>
+<p><label for="trade-name">Nombre comercial o DBA, si usa uno</label>
+<input type="text" id="trade-name" name="trade_name" maxlength="200" value="{{ entered.trade_name }}"{% if error_for("trade_name").is_some() %} aria-invalid="true" aria-describedby="trade-name-error"{% endif %}>
+{% if let Some(reason) = error_for("trade_name") %}<span id="trade-name-error" class="error">{{ reason }}</span>{% endif %}</p>
+</fieldset>
+<fieldset id="license-numbers"><legend>Sus números de licencia</legend>
+<p><label for="roc-number">Número de licencia del ROC, si tiene uno</label>
+<input type="text" id="roc-number" name="roc_number" maxlength="64" value="{{ entered.roc_number }}"></p>
+<p><label for="btr-number">Número de la Junta de Registro Técnico de Arizona (BTR), si tiene uno</label>
+<input type="text" id="btr-number" name="btr_number" maxlength="64" value="{{ entered.btr_number }}"></p>
+<p><label for="city-license-number">Número de licencia de negocio de la ciudad, si no necesita una licencia del estado</label>
+<input type="text" id="city-license-number" name="city_license_number" maxlength="64" value="{{ entered.city_license_number }}"{% if error_for("city_license_number").is_some() %} aria-invalid="true" aria-describedby="city-license-number-error"{% endif %}>
+{% if let Some(reason) = error_for("city_license_number") %}<span id="city-license-number-error" class="error">{{ reason }}</span>{% endif %}</p>
+</fieldset>
+<fieldset id="review-links"><legend>Sus enlaces de Google y Yelp, que aparecen en cada cotización</legend>
+<p id="review-links-hint">Los dos son opcionales. Revisaremos que cada enlace funcione, y los propietarios los verán en sus cotizaciones.</p>
+<p><label for="google-link">Enlace de su perfil de negocio de Google</label>
+<input type="url" id="google-link" name="google_link" maxlength="500" aria-describedby="review-links-hint{% if error_for("google_link").is_some() %} google-link-error{% endif %}" value="{{ entered.google_link }}"{% if error_for("google_link").is_some() %} aria-invalid="true"{% endif %}>
+{% if let Some(reason) = error_for("google_link") %}<span id="google-link-error" class="error">{{ reason }}</span>{% endif %}</p>
+<p><label for="yelp-link">Enlace de su página de Yelp</label>
+<input type="url" id="yelp-link" name="yelp_link" maxlength="500" aria-describedby="review-links-hint{% if error_for("yelp_link").is_some() %} yelp-link-error{% endif %}" value="{{ entered.yelp_link }}"{% if error_for("yelp_link").is_some() %} aria-invalid="true"{% endif %}>
+{% if let Some(reason) = error_for("yelp_link") %}<span id="yelp-link-error" class="error">{{ reason }}</span>{% endif %}</p>
+</fieldset>
+<p><label for="email">Correo electrónico para solicitudes de trabajo y para saber cuándo lo eligen</label>
+<input type="email" id="email" name="email" autocomplete="email"></p>
+{% if texting_on %}<fieldset id="notice-choice"><legend>¿Cómo quiere recibir las solicitudes de trabajo y saber cuándo un propietario lo elige?</legend>
+{% for (value, label, on) in choices %}<p><input type="radio" id="notice-{{ value }}" name="notice_channel" value="{{ value }}"{% if *on %} checked{% endif %}>
+<label for="notice-{{ value }}">{{ label }}</label></p>
+{% endfor %}</fieldset>
+<p><label for="text-phone">Número de celular, solo para mensajes de trabajo</label>
+<span id="text-phone-hint">Llénelo si eligió mensajes de texto o los dos.</span>
+{% if let Some(m) = phone_error() %}<span id="text-phone-error" class="error">Error: {{ m }}</span>{% endif %}
+<input type="tel" id="text-phone" name="text_phone" autocomplete="tel" aria-describedby="text-phone-hint{% if phone_error().is_some() %} text-phone-error{% endif %}"{% if phone_error().is_some() %} aria-invalid="true"{% endif %}></p>
+{% endif %}<fieldset id="categories"><legend>¿Qué tipo de trabajo hace?</legend>
+{% for (code, name, label) in categories %}<p><input type="checkbox" id="cat-{{ code }}" name="category" value="{{ code }}">
+<label for="cat-{{ code }}"><span lang="en">{{ name }}</span> ({{ label }})</label></p>
+{% endfor %}</fieldset>
+{% if pest %}<fieldset id="pest-attestation"><legend>Licencia de control de plagas</legend>
+<p><input type="checkbox" id="pest-license" name="pest_license" value="yes">
+<label for="pest-license">{{ pest_attestation }}</label></p>
+<p><label for="pest-number">Número de licencia</label>
+<input type="text" id="pest-number" name="pest_number"></p>
+<p><input type="checkbox" id="pest-wdo" name="pest_category" value="wood_destroying">
+<label for="pest-wdo">Mi licencia incluye la categoría de organismos que destruyen la madera (termitas)</label></p>
+<p><input type="checkbox" id="pest-weed" name="pest_category" value="weed_control">
+<label for="pest-weed">Mi licencia incluye la categoría de control de maleza</label></p>
+</fieldset>
+{% endif %}
+<section id="fee-summary" aria-labelledby="fee-summary-title">
+<h2 id="fee-summary-title">Cómo se le cobra</h2>
+<ul>
+{% for line in fee_lines %}<li>{{ line }}</li>
+{% endfor %}<li>{{ askhava_core::api::brand().es().display_name() }} no es contratista. Hace llegar esta solicitud y la elección del propietario. Si el propietario lo elige a usted, lo contrata directamente; {{ askhava_core::api::brand().es().display_name() }} no dirige, programa, supervisa ni paga el trabajo.</li>
+</ul>
+</section>
+<fieldset id="consent-box"><legend>Cómo recibe las solicitudes de trabajo y los avisos</legend>
+<p id="consent-note">El acuerdo de abajo está en inglés porque es el texto exacto que guardamos con su registro. En español dice: Acepta recibir de {{ askhava_core::api::brand().es().display_name() }} los avisos de trabajo y de su cuenta por correo electrónico, en la dirección de arriba, en lugar de en papel.{% if consent_channels.contains("text") %} Acepta recibir de {{ askhava_core::api::brand().es().display_name() }} textos con solicitudes de trabajo en el número de teléfono de arriba. La frecuencia de los mensajes varía. Pueden aplicarse tarifas de mensajes y datos. Para dejar de recibir textos, responda PARAR; para pedir ayuda, responda AYUDA.{% endif %} {{ askhava_core::api::brand().es().display_name() }} nunca le hace llamadas grabadas ni automáticas. Puede cambiar esto cuando quiera en su portal.</p>
+{% if let Some(reason) = error_for("consent") %}<p id="consent-error" class="error">Error: {{ reason }}</p>{% endif %}
+<p><input type="checkbox" id="consent" name="consent" value="yes" aria-describedby="consent-note{% if error_for("consent").is_some() %} consent-error{% endif %}"{% if error_for("consent").is_some() %} aria-invalid="true"{% endif %}>
+<label for="consent" lang="en">{{ consent }}</label></p>
+</fieldset>
+<p id="terms-link"><a href="/terms/business" hreflang="en">Lea los términos para negocios (en inglés)</a></p>
+<button type="submit">Siguiente: reciba su código</button>
+</form>
+{% endif %}
+{% if let Some(area) = area %}
+<form method="post" action="{{ crate::business_signup::SERVICE_AREA_ROUTE }}" id="service-area-form" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="lang" value="es">
+{% for (name, value) in area.hidden() %}<input type="hidden" name="{{ name }}" value="{{ value }}">
+{% endfor %}
+{% if !area.problems.is_empty() %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>Corrija esto para continuar</h2>
+<ul>{% for p in area.problems %}<li><a href="#{{ crate::business_signup::area_field(**p).replace('_', "-") }}">{{ crate::business_signup::es_area_message(**p) }}</a></li>{% endfor %}</ul>
+</div>
+{% endif %}
+<p><label for="base-zip">Código postal de donde sale a trabajar</label>
+<span id="base-zip-hint">El código postal desde donde normalmente sale, como su taller o su casa. Lo usamos para ver qué tan lejos está cada trabajo.</span>
+{% if let Some(p) = area.es_error_for("base_zip") %}<span id="base-zip-error" class="error">Error: {{ p }}</span>{% endif %}
+<input type="text" id="base-zip" name="base_zip" inputmode="numeric" autocomplete="postal-code" aria-describedby="base-zip-hint{% if area.es_error_for("base_zip").is_some() %} base-zip-error{% endif %}" value="{{ area.base_zip }}"{% if area.es_error_for("base_zip").is_some() %} aria-invalid="true"{% endif %}></p>
+<p><label for="radius">¿Cuántas millas viaja para hacer un trabajo?</label>
+<span id="radius-hint">Un número del 1 al 100, por ejemplo 25. Contamos millas en línea recta, no por carretera, así que el viaje puede ser más largo.</span>
+{% if let Some(p) = area.es_error_for("radius") %}<span id="radius-error" class="error">Error: {{ p }}</span>{% endif %}
+<input type="text" id="radius" name="radius" inputmode="numeric" aria-describedby="radius-hint{% if area.es_error_for("radius").is_some() %} radius-error{% endif %}" value="{{ area.radius }}"{% if area.es_error_for("radius").is_some() %} aria-invalid="true"{% endif %}></p>
+<button type="submit">Siguiente</button>
+</form>
+{% endif %}
+{% if let Some(code) = code_form %}
+<form method="post" action="{{ code.action }}" id="code-form" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="lang" value="es">
+{% if let Some(m) = code.error %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>Corrija el dato marcado abajo</h2>
+<p><a href="#code">{{ m }}</a></p>
+</div>
+{% endif %}
+<p><label for="code">Código de 6 dígitos</label>
+<span id="code-hint">{{ code.hint }}</span>
+{% if let Some(m) = code.error %}<span id="code-error" class="error">Error: {{ m }}</span>{% endif %}
+<input type="text" id="code" name="code" inputmode="numeric" autocomplete="one-time-code" aria-describedby="code-hint{% if code.error.is_some() %} code-error{% endif %}"{% if code.error.is_some() %} aria-invalid="true"{% endif %}></p>
+<button type="submit">Siguiente</button>
+</form>
+{% endif %}
+{% for (action, id, label) in buttons %}
+<form method="post" action="{{ action }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="lang" value="es">
+<button type="submit" id="button-{{ id }}">{{ label }}</button>
+</form>
+{% endfor %}
+{% endblock %}

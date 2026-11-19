@@ -3434,3 +3434,10 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **Why it mattered:** one press on the wrong dispute would have stopped that other dispute's automatic evidence, charged the $15 countering fee to the wrong business, and left the right dispute waiting.
 - **Fix:** a small new payments step (T722) adds a list of one charge's disputes and a press that refuses any dispute not on that charge and writes nothing; T205 then uses only those. No change to fees or what you see beyond the narrower list.
 - Our choice; nothing needs you now.
+
+## The business sign-up in Spanish, for the Spanish reviewer (D-4561)
+
+- **What changed:** a business that comes from the Spanish business page now gets every sign-up screen in Spanish, from the form to the "you're signed up" screen. Each screen says the Spanish is a draft waiting for a native-speaker review.
+- **For the reviewer:** the Spanish words are in `app/portals/templates/es_business_signup.html` and `app/portals/src/business_signup.rs` (`ES_WORDS`, `ES_MORE` and the `es_` lines). The agreement beside the tick box stays in English, because that is the exact text saved with the sign-up; a Spanish line above it explains it.
+- **Still in English on those screens:** trade names, a few refusal messages about links and license numbers, and the business terms page. They are logged for a later step.
+- Our choice; it waits for the native-speaker review like every Spanish page.

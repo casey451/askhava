@@ -51,6 +51,8 @@
 //! only to the sign-up mailbox through [`SignupMail`] and is never logged or stored here. An
 //! activating code clears the [`SIGNUP_COOKIE`], emails the owner's sign-in link and shows the
 //! done screen; a flagged one shows `Screen::Review` and keeps the cookie.
+//!
+//! T488 (WEB-019, D-4561): `lang=es` serves every step in Spanish (`Asked`, `Form::page`).
 
 use std::future::Future;
 use std::io;
@@ -115,7 +117,7 @@ use askhava_privacy::api::{
 use axum::Router;
 use axum::extract::{FromRef, FromRequest, Query, Request, State};
 use axum::http::header::{CACHE_CONTROL, HOST, HeaderValue, LOCATION, RETRY_AFTER, SET_COOKIE};
-use axum::http::{HeaderMap, StatusCode};
+use axum::http::{HeaderMap, StatusCode, Uri};
 use axum::middleware::{from_fn, from_fn_with_state};
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{get, post};
@@ -478,7 +480,7 @@ fn identity_codes(settings: &Settings, pairs: &[(String, String)]) -> io::Result
 /// BIZ-021, CON-019, SEC-042: `GET` [`SIGNUP_ROUTE`], the form with the box unticked, the
 /// pre-session cookie and its CSRF token, and the shown channels sealed for that token. Changes
 /// nothing stored; any failure is a bare 500 logged once without values.
-async fn form_page(State(form): State<Arc<Form>>, jar: CookieJar) -> Response {
+async fn form_page(State(form): State<Arc<Form>>, uri: Uri, jar: CookieJar) -> Response {
     let Ok(jar) = ensure_pre_session(jar) else {
         return failure("pre-session cookie");
     };
@@ -488,7 +490,8 @@ async fn form_page(State(form): State<Arc<Form>>, jar: CookieJar) -> Response {
     let Some(categories) = categories(&form.pool).await else {
         return failure("category list");
     };
-    match form.page(Screen::Form(&categories), &csrf) {
+    let asked = Asked::from_query(&csrf, uri.query());
+    match form.page(Screen::Form(&categories), asked) {
         Some(html) => (jar, no_store(), Html(html)).into_response(),
         None => failure("sign-up template"),
     }
@@ -518,7 +521,7 @@ async fn start_post(State(form): State<Arc<Form>>, request: Request) -> Response
     match same_site(&form.pool, request, SIGNUP_FORM_ROUTE, now).await {
         Ok((fields, _)) => {
             let posted = Posted(&fields);
-            form.submit(&posted, posted.get("csrf"), now).await
+            form.submit(&posted, posted.asked(), now).await
         }
         Err(refused) => *refused,
     }
@@ -616,8 +619,8 @@ impl Form {
     /// ticked (else `CONSENT_MISSING`, nothing minted), the text phone, categories and source
     /// code checked (`checked_form`, nothing minted), the mailbox minted from the typed address,
     /// then `submit_signup`.
-    async fn submit(&self, posted: &Posted<'_>, csrf: &str, now: Timestamp) -> Response {
-        let channels = ChannelPost::parse(posted.0, TEXTING_ON, (&self.secret, csrf));
+    async fn submit(&self, posted: &Posted<'_>, csrf: Asked<'_>, now: Timestamp) -> Response {
+        let channels = ChannelPost::parse(posted.0, TEXTING_ON, (&self.secret, csrf.csrf));
         let mut entered = channels.entered();
         posted.fill(&mut entered);
         let chosen = channels.consent_channels();
@@ -679,7 +682,7 @@ impl Form {
         &self,
         refusal: &SignupRefusal,
         mut entered: Entered<'_>,
-        csrf: &str,
+        csrf: Asked<'_>,
     ) -> Response {
         let fixable = matches!(
             refusal,
@@ -697,7 +700,7 @@ impl Form {
     }
 
     /// D-2943: the form again with what was typed and the reason, sealed for the same token.
-    async fn again(&self, entered: &Entered<'_>, csrf: &str) -> Response {
+    async fn again(&self, entered: &Entered<'_>, csrf: Asked<'_>) -> Response {
         let Some(categories) = categories(&self.pool).await else {
             return failure("category list");
         };
@@ -708,11 +711,11 @@ impl Form {
     }
 
     /// The screen's page for `csrf`, its shown channels sealed (CON-019).
-    fn page(&self, screen: Screen<'_>, csrf: &str) -> Option<String> {
+    fn page(&self, screen: Screen<'_>, csrf: Asked<'_>) -> Option<String> {
         let parts = Parts {
             texting_on: TEXTING_ON,
-            language: PageLanguage::En,
-            csrf,
+            language: csrf.language,
+            csrf: csrf.csrf,
             fees: fee_numbers(self.confirm, WindowRules::default()),
         };
         sealed_signup_page(screen, &parts, &self.secret).ok()
@@ -726,7 +729,7 @@ impl Form {
         &self,
         business: Uuid,
         posted: &Posted<'_>,
-        csrf: &str,
+        csrf: Asked<'_>,
         now: Timestamp,
     ) -> Response {
         let Some(cookie) = binding_cookie(&self.secret, business) else {
@@ -754,7 +757,7 @@ impl Form {
         &self,
         db: &mut PgConnection,
         (business, roc): (Uuid, Option<DailyCheck>),
-        csrf: &str,
+        csrf: Asked<'_>,
         now: Timestamp,
     ) -> Response {
         let records = Records(self.start.records.as_ref());
@@ -848,7 +851,7 @@ async fn step_post(form: Arc<Form>, request: Request, ask: Ask) -> Response {
         return failure("database");
     };
     let posted = Posted(&fields);
-    let typed = (posted.get("code"), posted.get("csrf"));
+    let typed = (posted.get("code"), posted.asked());
     form.step(&mut db, (business, ask), typed, now).await
 }
 
@@ -866,7 +869,7 @@ impl Form {
         &self,
         db: &mut PgConnection,
         (business, ask): (Uuid, Ask),
-        (code, csrf): (&str, &str),
+        (code, csrf): (&str, Asked<'_>),
         now: Timestamp,
     ) -> Response {
         match stored_business(db, business).await {
@@ -914,7 +917,7 @@ impl Form {
         &self,
         db: &mut PgConnection,
         (business, at): (Uuid, Option<Step>),
-        (found, csrf): (&RecordFound, &str),
+        (found, csrf): (&RecordFound, Asked<'_>),
         now: Timestamp,
     ) -> Response {
         let keys = (&self.start.verify, &self.start.id_secret);
@@ -932,7 +935,7 @@ impl Form {
         &self,
         db: &mut PgConnection,
         (business, at): (Uuid, Step),
-        (found, csrf): (&RecordFound, &str),
+        (found, csrf): (&RecordFound, Asked<'_>),
         (code, now): (&str, Timestamp),
     ) -> Response {
         let keys = (&self.start.verify, &self.start.id_secret);
@@ -950,7 +953,7 @@ impl Form {
     /// contact for the step. Always `no-store`.
     fn screen(
         &self,
-        (found, csrf): (&RecordFound, &str),
+        (found, csrf): (&RecordFound, Asked<'_>),
         letter: Option<Step>,
         code: Option<(Step, Option<CodeProblem>)>,
     ) -> Response {
@@ -971,7 +974,7 @@ impl Form {
     }
 
     /// BIZ-026: the saved screen with the typical list delay.
-    fn saved(&self, csrf: &str) -> Option<String> {
+    fn saved(&self, csrf: Asked<'_>) -> Option<String> {
         let delay = self.start.settings.list_delay_days;
         self.page(Screen::NumberOld(delay), csrf)
     }
@@ -1059,7 +1062,7 @@ impl Form {
         let Ok(area) = service_area(db, business).await else {
             return failure("service area");
         };
-        let csrf = posted.get("csrf");
+        let csrf = posted.asked();
         match (later, area.is_some()) {
             (Later::Area, false) => self.area(db, business, posted, (ip, now)).await,
             (Later::Area, true) => shown(self.page(Screen::EmailCode(None), csrf)),
@@ -1081,11 +1084,8 @@ impl Form {
         posted: &Posted<'_>,
         (ip, now): (IpAddr, Timestamp),
     ) -> Response {
-        let (base_zip, radius, csrf) = (
-            posted.get("base_zip"),
-            posted.get("radius"),
-            posted.get("csrf"),
-        );
+        let (base_zip, radius, csrf) =
+            (posted.get("base_zip"), posted.get("radius"), posted.asked());
         let area = match ServiceArea::parse(base_zip, radius) {
             Ok(area) => area,
             Err(problems) => {
@@ -1112,7 +1112,7 @@ impl Form {
         db: &mut PgConnection,
         business: Uuid,
         (ip, now): (IpAddr, Timestamp),
-        csrf: &str,
+        csrf: Asked<'_>,
     ) -> Response {
         match self.send_email_code(db, business, (ip, now)).await {
             Ok(()) => shown(self.page(Screen::EmailCode(None), csrf)),
@@ -1159,7 +1159,7 @@ impl Form {
         &self,
         db: &mut PgConnection,
         business: Uuid,
-        (code, csrf): (&str, &str),
+        (code, csrf): (&str, Asked<'_>),
         now: Timestamp,
     ) -> Response {
         let Ok(mailbox) = signup_mailbox(db, business).await else {
@@ -1193,7 +1193,7 @@ impl Form {
         &self,
         db: &mut PgConnection,
         (business, mailbox): (Uuid, Uuid),
-        csrf: &str,
+        csrf: Asked<'_>,
         now: Timestamp,
     ) -> Response {
         let to = SignInAddress { business, mailbox };
@@ -1765,4 +1765,40 @@ fn no_store() -> [(axum::http::HeaderName, HeaderValue); 1] {
 fn failure(what: &'static str) -> Response {
     tracing::warn!(what, "business sign-up step failed");
     StatusCode::INTERNAL_SERVER_ERROR.into_response()
+}
+
+/// WEB-019, D-3144, D-3881, D-4561: what every sign-up page is served for: the session's CSRF
+/// token (SEC-042) and the page language, Spanish only when the request carries `lang=es` (the
+/// query of `GET` [`SIGNUP_ROUTE`], the hidden `lang` field each Spanish form posts); `Form::page`
+/// sets `Parts.language` from it. No new route.
+#[derive(Debug, Clone, Copy)]
+struct Asked<'a> {
+    csrf: &'a str,
+    language: PageLanguage,
+}
+
+impl<'a> Asked<'a> {
+    /// WEB-019: the `GET`'s token `csrf`, Spanish when its `query` holds `lang=es`.
+    fn from_query(csrf: &'a str, query: Option<&str>) -> Self {
+        let es = query.is_some_and(|q| q.split('&').any(|p| p == "lang=es"));
+        Self::new(csrf, es)
+    }
+
+    /// WEB-019: the token `csrf`, Spanish when `es`, else English.
+    const fn new(csrf: &'a str, es: bool) -> Self {
+        let language = if es {
+            PageLanguage::Es
+        } else {
+            PageLanguage::En
+        };
+        Self { csrf, language }
+    }
+}
+
+impl<'a> Posted<'a> {
+    /// WEB-019, SEC-042: the posted CSRF token and the language its hidden `lang` field asks for.
+    fn asked(&self) -> Asked<'a> {
+        let es = self.0.iter().any(|(n, v)| n == "lang" && v == "es");
+        Asked::new(self.get("csrf"), es)
+    }
 }
