@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO quotes.stripe_written_answer (answered_on, reference, allows, filed_at) VALUES ($1::text::date, $2, $3, $4)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Bool",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "6403017efc4fd3066eec0e501675a0fb056dd71c472c8a785967ab6dd275010d"
+}

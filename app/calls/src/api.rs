@@ -22,7 +22,9 @@
 //! a line, and [`LINK_REQUEST_LIFE`] (CALL-011, CALL-003, D-3079). T571: [`queue_safety_key_retry`]
 //! and [`run_safety_key_retry`], the safety key kept through a database error (CON-035, D-4051).
 //! T662: [`run_close_line`], `jobs`' queued line close after a cancel or a check-in PROBLEM or NO,
-//! and the daily [`CLOSE_EXPIRED_KIND`] sweep (CALL-009, CALL-010, D-4338).
+//! and the daily [`CLOSE_EXPIRED_KIND`] sweep (CALL-009, CALL-010, D-4338). T484:
+//! [`place_owner_alert_call`], OPS-035's say-only call to Casey per critical alert, and
+//! [`bridge_owner`], the owner portal's bridge press, with [`alert_facts`] (OPS-028, D-3890).
 
 pub use crate::close_tasks::{
     CLOSE_EXPIRED_KIND, run_close_expired_at, run_close_line, schedule_close_expired,
@@ -39,6 +41,10 @@ pub use crate::lifecycle::{
 pub use crate::link_reply::{LINK_REFUSALS_PER_DAY, LinkReply, link_pin, link_reply};
 pub use crate::link_request::{LINK_REQUEST_LIFE, link_after_dial};
 pub use crate::models::CallsError;
+pub use crate::owner_calls::{
+    OWNER_BRIDGE_KIND, OwnerDialer, alert_facts, bridge_owner, owner_alert_twiml,
+    owner_alert_words, place_owner_alert_call,
+};
 pub use crate::pins::{
     PIN_DRAWS, PIN_TRY_LABEL, VoiceCall, VoiceKeys, VoiceReply, arizona_day, call_start,
     caller_digest, dialed_line, pin_tries_today, stored_pin, voice_confirm,

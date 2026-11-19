@@ -23,6 +23,10 @@
 //! `quote_literal`/`quote_nullable` call; or a query macro's SQL under `app/` holding `DO` or
 //! `EXECUTE`. One finding per file, unless its path is in [`DYNAMIC_SQL_ALLOWED`] with a reason;
 //! an entry whose file is gone or holds no dynamic SQL is itself a finding.
+//! One logged exception to the schema rule (CON-022, D-3753, D-4418): a migration listed in
+//! [`CROSS_SCHEMA_CALLS`] may call exactly its listed function of another module's schema
+//! (`<schema>.<function>(`); any other name of that schema in the file, the same call in any other
+//! file, and an entry whose file is gone or never makes the call are each still a finding.
 //!
 //! SQL is lexed with comments and `'…'` strings removed; unquoted names fold to lower case, quoted
 //! names keep their case, and dollar-quoted bodies are scanned as SQL so a function body cannot hide
@@ -63,6 +67,18 @@ const STATIC_EXECUTE: [&str; 4] = ["function", "procedure", "on", ","];
 const DYNAMIC_SQL_ALLOWED: [(&str, &str); 1] = [
     ("migrations/0019_core_db_migrations.sql", "its `DO $guard$` block only raises an error when role askhava_app is missing and builds no SQL (T012)"),
 ];
+
+/// The only cross-schema calls a migration may make: (file, call, reason). Each exempts that one
+/// call in that one file and nothing else; an entry whose file is gone or never makes the call is
+/// itself a finding (CON-022, D-3753, D-4418). A Rust call through another crate's `api` is no
+/// cross-schema call and never needs an entry.
+#[rustfmt::skip]
+const CROSS_SCHEMA_CALLS: [(&str, &str, &str); 1] = [
+    ("migrations/0196_intake_consent_purge.sql", "messaging.last_message_at(", "CON-022's five-year guard on consent records reads the number's last message, which only `messaging` holds; `intake` may call `messaging` (kit/layers.json; D-3753, T563)"),
+];
+
+/// A cross-schema call list: (file, call, reason) triples (CON-022, D-3753).
+type Calls<'a> = &'a [(&'a str, &'a str, &'a str)];
 
 /// The module schemas (`kit/layers.json`) and the task graph (`kit/tasks.json`).
 struct Plan {
@@ -475,8 +491,44 @@ fn check_dynamic(dynamic: &Dynamic, allowed: &[(&str, &str)], out: &mut Vec<Stri
     }
 }
 
-fn check_migrations(plan: &Plan, root: &Path, dynamic: &mut Dynamic, out: &mut Vec<String>) {
+/// `t` with each call `calls` lets the file `at` make blanked out, so [`schema_refs`] does not see
+/// it; each exempted entry is recorded in `used` (CON-022, D-3753).
+fn exempt_calls(at: &str, t: &[String], calls: Calls, used: &mut BTreeSet<String>) -> Vec<String> {
+    let mut out = t.to_vec();
+    for (path, call, _) in calls.iter().filter(|(path, _, _)| *path == at) {
+        let Some((schema, name)) = call.strip_suffix('(').and_then(|c| c.split_once('.')) else {
+            continue;
+        };
+        for k in 0..t.len().saturating_sub(3) {
+            if t[k] == schema && t[k + 1] == "." && t[k + 2] == name && t[k + 3] == "(" {
+                out[k] = String::new();
+                used.insert(format!("{path} {call}"));
+            }
+        }
+    }
+    out
+}
+
+/// One finding per [`CROSS_SCHEMA_CALLS`]-style entry whose file is gone or never makes its call,
+/// so the list cannot go stale (CON-022, D-3753).
+fn check_calls(calls: Calls, used: &BTreeSet<String>, out: &mut Vec<String>) {
+    for (path, call, _) in calls {
+        if !used.contains(&format!("{path} {call}")) {
+            out.push(format!(
+                "{path}: listed in CROSS_SCHEMA_CALLS but the file is missing or never calls `{call}`"
+            ));
+        }
+    }
+}
+
+fn check_migrations(
+    plan: &Plan,
+    root: &Path,
+    (dynamic, calls): (&mut Dynamic, Calls),
+    out: &mut Vec<String>,
+) {
     let files = load_migrations(root, plan);
+    let mut used = BTreeSet::new();
     check_files(plan, &files, out);
     check_order(plan, &files, out);
     for m in &files {
@@ -486,9 +538,11 @@ fn check_migrations(plan: &Plan, root: &Path, dynamic: &mut Dynamic, out: &mut V
                 continue;
             }
             let at = format!("migrations/{}", m.name);
-            out.extend(schema_refs(plan, own, &at, &m.tokens));
+            let tokens = exempt_calls(&at, &m.tokens, calls, &mut used);
+            out.extend(schema_refs(plan, own, &at, &tokens));
         }
     }
+    check_calls(calls, &used, out);
 }
 
 fn skip_quote(c: &[char], i: usize) -> usize {
@@ -704,12 +758,17 @@ fn check_app(plan: &Plan, root: &Path, dynamic: &mut Dynamic, out: &mut Vec<Stri
 }
 
 /// Every migration and SQL finding for the repository at `root`, with `allowed` the files that
-/// may hold dynamic SQL (SEC-029, D-491, TD-SEC-36).
+/// may hold dynamic SQL and no cross-schema call allowed (SEC-029, D-491, TD-SEC-36).
 fn check_repo(root: &Path, allowed: &[(&str, &str)]) -> Vec<String> {
+    check_repo_calls(root, allowed, &[])
+}
+
+/// [`check_repo`] with `calls` the cross-schema calls allowed (CON-022, D-3753).
+fn check_repo_calls(root: &Path, allowed: &[(&str, &str)], calls: Calls) -> Vec<String> {
     let plan = load_plan(root);
     let mut out = Vec::new();
     let mut dynamic = Dynamic::new();
-    check_migrations(&plan, root, &mut dynamic, &mut out);
+    check_migrations(&plan, root, (&mut dynamic, calls), &mut out);
     check_app(&plan, root, &mut dynamic, &mut out);
     check_dynamic(&dynamic, allowed, &mut out);
     out
@@ -728,8 +787,9 @@ fn td_sec_10_migrations_and_sql_obey_the_rules() {
     let root = repo_root();
     assert!(load_plan(&root).deps.contains_key("T226"));
     assert!(DYNAMIC_SQL_ALLOWED.iter().all(|(_, why)| !why.is_empty()));
+    assert!(CROSS_SCHEMA_CALLS.iter().all(|(_, _, why)| !why.is_empty()));
     assert_eq!(
-        check_repo(&root, &DYNAMIC_SQL_ALLOWED),
+        check_repo_calls(&root, &DYNAMIC_SQL_ALLOWED, &CROSS_SCHEMA_CALLS),
         Vec::<String>::new()
     );
 }
@@ -959,5 +1019,58 @@ fn td_sec_36_dynamic_sql_is_a_finding_unless_allow_listed() {
         let root = plant(case);
         write(&root, rel, content);
         assert_eq!(check_repo(&root, allowed), Vec::<String>::new(), "{case}");
+    }
+}
+
+/// An allow list letting the planted [`NEXT`] file call `picks.pick_count(` (CON-022, D-3753).
+const NEXT_CALLS: [(&str, &str, &str); 1] = [(NEXT, "picks.pick_count(", "planted (T563)")];
+/// The planted [`NEXT`] file making its one allowed call.
+const NEXT_CALL: &str = "-- jobs (T002)\nSELECT picks.pick_count(1);\n";
+
+/// The files one plant writes over the clean tree: (path, text) pairs.
+type Files = &'static [(&'static str, &'static str)];
+
+/// Cross-schema call plants that give exactly one finding: case, the files written, the finding.
+#[rustfmt::skip]
+const CALL_CASES: [(&str, Files, &str); 3] = [
+    ("call_other_name", &[(NEXT, "-- jobs (T002)\nSELECT picks.pick_count(1);\nSELECT id FROM picks.pick;\n")], "migrations/0005_jobs_next.sql: `picks.` names another module's schema"),
+    ("call_other_file", &[(NEXT, NEXT_CALL), (JOBS_SRC, "fn f() { let r = sqlx::query!(\"SELECT picks.pick_count(1)\"); }\n")], "app/jobs/src/lib.rs: `picks.` names another module's schema"),
+    ("call_missing", &[(NEXT, "-- jobs (T002)\nCREATE TABLE jobs.next (id bigint);\n")], "migrations/0005_jobs_next.sql: listed in CROSS_SCHEMA_CALLS but the file is missing or never calls `picks.pick_count(`"),
+];
+
+/// CON-022 (D-3753, D-4418, T563): the real list has exactly its one entry; the listed call alone
+/// gives no finding; another name of that schema in the file, the same call in another file and an
+/// entry whose call is missing each give exactly one.
+#[test]
+fn td_sec_10_cross_schema_calls_are_exactly_the_listed_ones() {
+    assert_eq!(
+        CROSS_SCHEMA_CALLS.map(|(path, call, _)| (path, call)),
+        [(
+            "migrations/0196_intake_consent_purge.sql",
+            "messaging.last_message_at("
+        )]
+    );
+    let root = plant("call_allowed");
+    write(&root, NEXT, NEXT_CALL);
+    assert_eq!(
+        check_repo_calls(&root, &[], &NEXT_CALLS),
+        Vec::<String>::new()
+    );
+    assert_eq!(
+        check_repo(&root, &[]).len(),
+        1,
+        "unlisted, the call is a finding"
+    );
+    for (case, files, want) in CALL_CASES {
+        let root = plant(case);
+        for (rel, content) in files {
+            write(&root, rel, content);
+        }
+        let findings = check_repo_calls(&root, &[], &NEXT_CALLS);
+        assert_eq!(findings.len(), 1, "{case}: one finding, got {findings:?}");
+        assert!(
+            findings[0].contains(want),
+            "{case}: no {want:?} in {findings:?}"
+        );
     }
 }
