@@ -19,7 +19,11 @@
 //! refusal is a 401 showing the step-up form, which links to no sign-in page (D-3878); a 403 is
 //! kept for the cross-site and CSRF refusals, as the door probe reads it (`door_matrix.rs:480`). A change
 //! the rules refuse is a 400 with its page again; a made change is a 303 back to its page, the
-//! opt-out and Stripe answer show the settings page with `portals`' confirmation line. Each change
+//! opt-out and Stripe answer show the settings page with `portals`' confirmation line. T540
+//! (PICK-022, PICK-023, D-3890, D-3892): `GET` and `POST` [`OWNER_RELEASE_ROUTE`] serve the
+//! release button, which passes `owner_power` with `OwnerPower::Release` (no fresh factor,
+//! SEC-043) and only re-sends a standing release (`picks::api::resend_release`); a refusal is a
+//! 400 with the page and its error summary, a re-send a 200 with its line. Each change
 //! writes its audit row in the owning crate (SEC-006, OPS-003). The BIZ-027 review target is the
 //! sign-up settings' `ASKHAVA_BIZ_REVIEW_TARGET_DAYS` read from the environment at start, else 4.
 
@@ -30,11 +34,13 @@ use askhava_core::api::{Clock, SystemClock};
 use askhava_portals::api::{
     BridgeForm, ChangeForm, CookieJar, CsrfField, CsrfForm, OWNER_ALERT_ACK_ROUTE,
     OWNER_BANNER_ROUTE, OWNER_BRIDGE_ROUTE, OWNER_CATEGORY_ROUTE, OWNER_FEE_MODE_ROUTE,
-    OWNER_HOME_ROUTE, OWNER_OPT_OUT_ROUTE, OWNER_PAUSE_ROUTE, OWNER_SETTINGS_ROUTE,
-    OWNER_STRIPE_ANSWER_ROUTE, OWNER_TEXTING_ROUTE, OptOutForm, OwnerPrincipal, OwnerToolError,
-    SettingsNotice, StepUpScreen, StripeAnswerForm, WebSecurity, apply_owner_change, csrf_token,
-    no_store, owner_bridge_press, owner_file_stripe_answer, owner_home_page, owner_record_opt_out,
-    owner_settings_page_with, owner_step_up_page, parse_change, refuse_cross_site,
+    OWNER_HOME_ROUTE, OWNER_OPT_OUT_ROUTE, OWNER_PAUSE_ROUTE, OWNER_RELEASE_ROUTE,
+    OWNER_SETTINGS_ROUTE, OWNER_STRIPE_ANSWER_ROUTE, OWNER_TEXTING_ROUTE, OptOutForm,
+    OwnerPrincipal, OwnerToolError, ReleaseForm, ReleaseScreen, SettingsNotice, StepUpScreen,
+    StripeAnswerForm, WebSecurity, apply_owner_change, csrf_token, no_store, owner_bridge_press,
+    owner_file_stripe_answer, owner_home_page, owner_record_opt_out, owner_release_page,
+    owner_release_resend, owner_settings_page_with, owner_signed_out, owner_step_up_page,
+    parse_change, refuse_cross_site,
 };
 use askhava_privacy::api::Vault;
 use axum::Router;
@@ -156,6 +162,23 @@ impl CsrfField for StripeBody {
     }
 }
 
+/// The release press with its CSRF token (D-3892).
+#[derive(serde::Deserialize)]
+struct ReleaseBody {
+    #[serde(default)]
+    csrf: String,
+    #[serde(default)]
+    job: String,
+    #[serde(default)]
+    press: String,
+}
+
+impl CsrfField for ReleaseBody {
+    fn csrf(&self) -> &str {
+        &self.csrf
+    }
+}
+
 /// Which owner page a refusal shows again.
 #[derive(Clone, Copy)]
 enum Page {
@@ -195,6 +218,7 @@ pub fn routes(pool: PgPool, vault: Option<Arc<Vault>>, webhooks: Option<&Arc<Web
         .route(OWNER_BRIDGE_ROUTE, post(bridge))
         .route(OWNER_OPT_OUT_ROUTE, post(opt_out))
         .route(OWNER_STRIPE_ANSWER_ROUTE, post(stripe_answer))
+        .route(OWNER_RELEASE_ROUTE, get(release_page).post(release_press))
         .route_layer(from_fn(note_owner_site))
         .with_state(state)
         .layer(from_fn_with_state(security, refuse_cross_site))
@@ -416,5 +440,60 @@ async fn stripe_answer(
             page_answer(&tools, &jar, shown, StatusCode::OK).await
         }
         Err(error) => not_made(&tools, &jar, &error, Page::Settings).await,
+    }
+}
+
+/// The release page for `screen` with `typed` kept, answering 400 for a refusal, else 200.
+fn release_answer(jar: &CookieJar, screen: ReleaseScreen, typed: &str) -> Response {
+    let Some(csrf) = csrf_token(jar) else {
+        return failed("csrf token");
+    };
+    let status = if screen.refused() {
+        StatusCode::BAD_REQUEST
+    } else {
+        StatusCode::OK
+    };
+    match owner_release_page(&csrf, screen, typed) {
+        Ok(html) => (status, Html(html)).into_response(),
+        Err(_) => failed("release page"),
+    }
+}
+
+/// `GET` [`OWNER_RELEASE_ROUTE`]: the release button's form with a fresh press ID, for the owner
+/// only (SEC-006, PICK-023; reads nothing else).
+async fn release_page(
+    State(tools): State<Tools>,
+    Extension(site): Extension<OwnerSite>,
+    jar: CookieJar,
+) -> Response {
+    if let Err(refused) = owner(&tools, &jar, &site).await {
+        return *refused;
+    }
+    release_answer(&jar, ReleaseScreen::Ask, "")
+}
+
+/// `POST` [`OWNER_RELEASE_ROUTE`] (PICK-022, PICK-023, SEC-006, D-074, D-3892): re-sends the typed
+/// job's standing release through `portals`' `owner_release_resend`; it never makes a release.
+async fn release_press(
+    State(tools): State<Tools>,
+    Extension(site): Extension<OwnerSite>,
+    jar: CookieJar,
+    CsrfForm(body): CsrfForm<ReleaseBody>,
+) -> Response {
+    let now = match owner(&tools, &jar, &site).await {
+        Ok((_, now)) => now,
+        Err(refused) => return *refused,
+    };
+    let Ok(mut db) = tools.pool.acquire().await else {
+        return failed("database");
+    };
+    let form = ReleaseForm {
+        job: body.job,
+        press: body.press,
+    };
+    match owner_release_resend(&mut db, &jar, &form, now).await {
+        Ok(screen) => release_answer(&jar, screen, &form.job),
+        Err(OwnerToolError::Database) => failed("owner release"),
+        Err(OwnerToolError::Refused | OwnerToolError::NeedsFreshFactor) => owner_signed_out(),
     }
 }
