@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T16:02:58Z by runner 5bb7409eb85f (actions).
+Updated 2026-11-19T16:03:47Z by runner 2cf51500b706 (actions).
 
 **Building: T210 in progress since 15:35Z; 497 of 668 done; week 85% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-19T16:02:58Z by runner 5bb7409eb85f (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T210 claimed 15:35Z, lease until 18:35Z; lane 3: T530 claimed 15:41Z, lease until 18:41Z; lane 4: T555 claimed 15:44Z, lease until 18:44Z; lane 7: T715 claimed 15:50Z, lease until 18:50Z
 - **Week:** 85% used, 21.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:02Z, 0 min before this update
+- **Last run:** 16:03Z, 0 min before this update
 - **Keeper:** last ran 15:32Z, next wake 15:52Z
 
 ## Needs attention
@@ -16,13 +16,13 @@ Updated 2026-11-19T16:02:58Z by runner 5bb7409eb85f (actions).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T607 (since 2026-11-19T15:50:24Z, no attempt used; a plan change fixes it): T607: dependency T593 is DONE but its owned file app/server/tests/home_request_box.rs is not on main
-- Strict plan check red: 65 problem(s) on tasks still to run (+322 on DONE tasks); first: T397: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 64 problem(s) on tasks still to run (+322 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T407 | calls, portals and server: the owner-portal safety voice cal | MERGE_PENDING | 1 | 102 min | 16:01Z |  |
-| T541 | payments, portals and adapters: a card saved or changed from | MERGE_PENDING | 1 | 2 h 16 min | 15:25Z |  |
+| T541 | payments, portals and adapters: a card saved or changed from | check_failed | 1 | 2 h 16 min | 15:25Z | Ci: failure; Coverage: failure; E2e: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refus |
 | T470 | messaging and server: the worker task that sends queued emai | MERGE_PENDING | 3 | 2 h 18 min | 15:24Z | Fix-round review (after the one allowed findings round) still found a problem at head 1830747e4; no reviewer approved a  |
 | T593 | site and server: the home hero in D-3331's wording with the  | done | 2 | 75 min | 15:11Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T554 | Decisions digest, piece 9: the next entries after the header | done | 1 | 110 min | 15:03Z |  |
@@ -101,7 +101,7 @@ Updated 2026-11-19T16:02:58Z by runner 5bb7409eb85f (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 310 of 735 (42.2%) · partial 387 · unstarted 38
-**Tasks merged (throughput only):** 497 of 666
+**Tasks merged (throughput only):** 497 of 668
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|

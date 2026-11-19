@@ -76737,8 +76737,8 @@
     "T364",
     "T261"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "saved-card-from-confirm",
    "type": "build",
    "stage": "5",
@@ -76760,13 +76760,58 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 167,
      "head_sha": "0b7b95db2bd621ee8b20d3e4704304253e788daa",
-     "pr": null,
-     "checks": null,
+     "pr": 1128,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "failure"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-19T13:09:37Z",
      "ended_at": "2026-11-19T15:25:56Z",
-     "result": "MERGE_PENDING",
+     "result": "check_failed",
      "usage": {
       "worker": {
        "tokens": 11560797,
@@ -76801,7 +76846,8 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "last_failure": "Ci: failure; Coverage: failure; E2e: failure\nCoverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered floor (D-694)\napp/picks/src/settle.rs: 95.83333333333333 (floor 95.0)\napp/picks/src/unreachable_refund.rs: 89.79591836734694 (floor 87.0)\napp/picks/src/unreachable_steps.rs: 88.0 (floor 86.0)\napp/portals/src/business_left.rs: 66.66666666666667 (floor 64.0)\napp/portals/src/confirm_pay.rs: 75.0 (floor 70.0)\napp/portals/src/confirm_waiver.rs: 50.0 (floor 48.0)\napp/portals/src/data_download.rs: 83.87096774193549 (floor 81.0)\napp/portals/src/job_release.rs: 53.333333333333336 (floor 51.0)\napp/quotes/src/job_text.rs: 100.0 (floor 95.0)\napp/server/src/business_contacts.rs: 70.0 (floor 68.0)\napp/server/src/inbound_text.rs: 27.38095238095238 (floor 25.0)\napp/server/src/offdb_stream.rs: 33.333333333333336 (floor 21.0)\napp/server/src/release_sink.rs: 81.81818181818181 (floor 78.0)\nFAIL: app/adapters/src/payments.rs 82.61 is below the floor 84.0\n##[error]Process completed with exit code 1.\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n  \u2718  25 [main] \u203a tests/e2e/confirm_served.spec.ts:113:1 \u203a TD-FEE-45 FEE-014: a press with Save this card for next time ticked charges once (5.2s)\n##[error]  1) [main] \u203a tests/e2e/confirm_served.spec.ts:113:1 \u203a TD-FEE-45 FEE-014: a press with Save this card for next time ticked charges once \nCi failed at step: All five jobs passed\n##[error]Process completed with exit code 1."
   },
   {
    "id": "T542",
@@ -93982,7 +94028,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T16:02:58Z",
+ "updated_at": "2026-11-19T16:03:47Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -94080,7 +94126,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "5bb7409eb85fc59be79d49a28035be8d3742f0fb",
+ "runner_sha": "2cf51500b7061f54b7e5a2a0fed1ed6b434cf05b",
  "starter": "actions",
  "smoke_runs": [
   {
