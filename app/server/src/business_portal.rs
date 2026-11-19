@@ -1151,7 +1151,11 @@ async fn charge_facts(
     let facts = WhyCharged {
         receipt,
         job_number,
-        quote: format!("{} ({})", quote.amount(false), quote.kind(false)),
+        quote: format!(
+            "{}, {}",
+            quote.amount(false),
+            quote.kind(false).to_lowercase()
+        ),
         basis: basis.unwrap_or(Basis::OnSite),
     };
     Ok(Some((facts, basis.is_some())))

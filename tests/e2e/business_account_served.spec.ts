@@ -81,7 +81,7 @@ test("TD-SEC-49: a signed-in owner opens a charge's page", async ({ page }) => {
 
   await page.goto(`${keyedUrl()}/b/charges/${pick}`);
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Why was I charged for job");
-  await expect(page.locator("#quote-line")).toContainText("$480 (Firm price)");
+  await expect(page.locator("#quote-line")).toContainText("$480, firm price");
   await expect(page.locator("#tier-line")).toContainText("Introduction fee by job size: $25.00 (small job).");
   await expect(page.locator("#basis-line")).toContainText("The fee basis from your quote is $480.00.");
 });

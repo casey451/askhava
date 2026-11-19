@@ -961,10 +961,7 @@ async fn td_sec_49_why_charged_shows_the_own_charge_and_refuses_the_rest(pool: P
         let page = send(&app, (&Method::GET, &path), &who.jar, "").await;
         assert!(page.status == 200 && page.no_store, "{page:?}");
         assert!(page.text.contains("Why was I charged for job"), "{page:?}");
-        assert!(
-            page.text.contains("$325 (Firm price)"),
-            "the accepted quote"
-        );
+        assert!(page.text.contains("$325, firm price"), "the accepted quote");
         assert!(page.text.contains("id=\"basis-line\""), "the derived basis");
         assert!(
             page.text
@@ -1022,7 +1019,7 @@ async fn td_sec_49_why_charged_shows_no_basis_line_when_the_tier_differs(pool: P
     .await;
     assert!(page.status == 200 && page.no_store, "{page:?}");
     assert!(
-        page.text.contains("$2,000 (Firm price)"),
+        page.text.contains("$2,000, firm price"),
         "the accepted quote"
     );
     assert!(page.text.contains("id=\"tier-line\""), "{page:?}");
