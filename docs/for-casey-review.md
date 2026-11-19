@@ -3529,4 +3529,21 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - **What will change:** a text of "STOP ALL" (with a space) now stops all texts, as "STOPALL" does, and Spanish opt-out phrases typed with accents from any phone are caught (T755). A text waiting for the morning is dropped if its job closed overnight, each queued text is checked against the clock at its own send moment, and a business phone from another time zone gets that zone's quiet hours too (T573, T744).
 - **Left for later:** "stop please" still does not count as an opt-out (the rule says a text must be only the opt-out word); say if you want that changed.
+
+## Two privacy fixes from the privacy audit (D-4765)
+
+- **What will change:** the filter that removes phone numbers and emails before a business or the AI sees a job description now also catches a number split by "and" or "y", "gmail . com" written with spaces, an encoded email and spaced number emoji, while leaving "2 and 3 bedrooms" alone (T756). "Delete my data" now also deletes the words of her problem and help messages at once, instead of within 30 days (T757).
 - Our choice (Fable's findings); nothing needs you now.
+
+## Shorter path: docs tidy-up moves after the account setup, and AI budgets no longer wait for the war games (D-4771)
+
+- **What changed:** the tasks that tidy the code notes and guides for future AI sessions now run after your account checkpoint and before the handover pack, instead of before the checkpoint; the AI-cost limits no longer wait for your war-games go (the war games themselves still do). The longest remaining chain drops from 42 tasks to 34.
+- **Risk:** notes written after the tidy-up could undo some of it; a final cleanup pass before the finish catches that.
+- Fable's decision, as you asked; nothing needs you now.
+
+## Intake fixes from the intake audit, one for safety first (D-4777)
+
+- **Safety, first in line:** Spanish texts like "huelo gas en la cocina" or "huele a quemado" now get the 911 message, as the English ones do; "calentador de gas no funciona" still does not (T758).
+- **Licences:** a request such as "handyman needed, breaker panel keeps tripping" no longer counts handymen without an electrical licence, and "water heater" keeps its job type in the count (T716).
+- **Smaller fixes:** a "Close which?" question no longer stays open forever, "never mind" with no job now gets a reply (T759), and a second job opened with "ALSO" before the ZIP now gets its coverage answer (T760).
+- Fable's findings; nothing needs you now.
