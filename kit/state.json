@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "phase": "kit",
- "current": "T607",
+ "current": "T541",
  "backup_runner": "on",
  "ruleset_verified": true,
  "lease": null,
@@ -77686,12 +77686,12 @@
     "T364",
     "T261"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 1,
    "slug": "saved-card-from-confirm",
    "type": "build",
    "stage": "5",
-   "attempt_started_at": "2026-11-19T13:09:37Z",
+   "attempt_started_at": "2026-11-19T21:24:08Z",
    "decision_ids": [
     4710,
     4711,
@@ -77699,10 +77699,6 @@
     4713,
     4714
    ],
-   "window_model": {
-    "model": "claude-opus-5-5",
-    "alias": "opus"
-   },
    "history": [
     {
      "attempt": 1,
@@ -77796,7 +77792,8 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "last_failure": "Ci: failure; Coverage: failure; E2e: failure\nCoverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered floor (D-694)\napp/picks/src/settle.rs: 95.83333333333333 (floor 95.0)\napp/picks/src/unreachable_refund.rs: 89.79591836734694 (floor 87.0)\napp/picks/src/unreachable_steps.rs: 88.0 (floor 86.0)\napp/portals/src/business_left.rs: 66.66666666666667 (floor 64.0)\napp/portals/src/confirm_pay.rs: 75.0 (floor 70.0)\napp/portals/src/confirm_waiver.rs: 50.0 (floor 48.0)\napp/portals/src/data_download.rs: 83.87096774193549 (floor 81.0)\napp/portals/src/job_release.rs: 53.333333333333336 (floor 51.0)\napp/quotes/src/job_text.rs: 100.0 (floor 95.0)\napp/server/src/business_contacts.rs: 70.0 (floor 68.0)\napp/server/src/inbound_text.rs: 27.38095238095238 (floor 25.0)\napp/server/src/offdb_stream.rs: 33.333333333333336 (floor 21.0)\napp/server/src/release_sink.rs: 81.81818181818181 (floor 78.0)\nFAIL: app/adapters/src/payments.rs 82.61 is below the floor 84.0\n##[error]Process completed with exit code 1.\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n  \u2718  25 [main] \u203a tests/e2e/confirm_served.spec.ts:113:1 \u203a TD-FEE-45 FEE-014: a press with Save this card for next time ticked charges once (5.2s)\n##[error]  1) [main] \u203a tests/e2e/confirm_served.spec.ts:113:1 \u203a TD-FEE-45 FEE-014: a press with Save this card for next time ticked charges once \nCi failed at step: All five jobs passed\n##[error]Process completed with exit code 1."
+   "last_failure": "Ci: failure; Coverage: failure; E2e: failure\nCoverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered floor (D-694)\napp/picks/src/settle.rs: 95.83333333333333 (floor 95.0)\napp/picks/src/unreachable_refund.rs: 89.79591836734694 (floor 87.0)\napp/picks/src/unreachable_steps.rs: 88.0 (floor 86.0)\napp/portals/src/business_left.rs: 66.66666666666667 (floor 64.0)\napp/portals/src/confirm_pay.rs: 75.0 (floor 70.0)\napp/portals/src/confirm_waiver.rs: 50.0 (floor 48.0)\napp/portals/src/data_download.rs: 83.87096774193549 (floor 81.0)\napp/portals/src/job_release.rs: 53.333333333333336 (floor 51.0)\napp/quotes/src/job_text.rs: 100.0 (floor 95.0)\napp/server/src/business_contacts.rs: 70.0 (floor 68.0)\napp/server/src/inbound_text.rs: 27.38095238095238 (floor 25.0)\napp/server/src/offdb_stream.rs: 33.333333333333336 (floor 21.0)\napp/server/src/release_sink.rs: 81.81818181818181 (floor 78.0)\nFAIL: app/adapters/src/payments.rs 82.61 is below the floor 84.0\n##[error]Process completed with exit code 1.\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n  \u2718  25 [main] \u203a tests/e2e/confirm_served.spec.ts:113:1 \u203a TD-FEE-45 FEE-014: a press with Save this card for next time ticked charges once (5.2s)\n##[error]  1) [main] \u203a tests/e2e/confirm_served.spec.ts:113:1 \u203a TD-FEE-45 FEE-014: a press with Save this card for next time ticked charges once \nCi failed at step: All five jobs passed\n##[error]Process completed with exit code 1.",
+   "lane": "5"
   },
   {
    "id": "T542",
@@ -95900,8 +95897,8 @@
     "last_model": "claude-opus-5-5"
    },
    "T541": {
-    "estimated_bytes": 598076,
-    "estimated_tokens": 1741597,
+    "estimated_bytes": 602859,
+    "estimated_tokens": 1766060,
     "usage_counting": "message_id",
     "cache_creation_input_tokens": 337837,
     "input_tokens": 246,
@@ -96070,7 +96067,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T21:20:59Z",
+ "updated_at": "2026-11-19T21:24:26Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -96168,17 +96165,9 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "9a58cedd8922ef5b66c558ca776712e67295de47",
+ "runner_sha": "a2df2ce40208437c2b43cbf9df293a88cf929d5d",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "46e5a10b419e85960a02623f2db92335f7c5a824",
-   "ok": true,
-   "at": "2026-11-19T14:19:51Z",
-   "why": "start routine (ancestry reuse of de9f7793b42e, 2026-11-19T12:53:48Z)",
-   "reused": "2026-11-19T12:53:48Z",
-   "base": "de9f7793b42e01de0afd0f508ffc183563e7fb94"
-  },
   {
    "sha": "dd768f84817756d60074af64bdf2150cee45d70b",
    "ok": true,
@@ -96326,24 +96315,32 @@
    "why": "start routine (ancestry reuse of d68fb0f0ae65, 2026-11-19T20:38:23Z)",
    "reused": "2026-11-19T20:38:23Z",
    "base": "d68fb0f0ae65597fcc904df76a343d14851e3fc5"
+  },
+  {
+   "sha": "a2df2ce40208437c2b43cbf9df293a88cf929d5d",
+   "ok": true,
+   "at": "2026-11-19T21:24:08Z",
+   "why": "start routine (ancestry reuse of d68fb0f0ae65, 2026-11-19T20:38:23Z)",
+   "reused": "2026-11-19T20:38:23Z",
+   "base": "d68fb0f0ae65597fcc904df76a343d14851e3fc5"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T607 estimated 1.3M tokens (calibrated); week has 172.8M left (no five-hour budget, D-3056) after 5.2M still running in another lane (session_reading 2026-11-19T21:15:33Z (week)); claimed",
-  "at": "2026-11-19T21:16:12Z",
+  "last": "T541 estimated 1.8M tokens (calibrated); week has 171.5M left (no five-hour budget, D-3056) after 6.5M still running in another lane (session_reading 2026-11-19T21:15:33Z (week)); claimed",
+  "at": "2026-11-19T21:24:08Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "week": {
-    "used": 21249326,
+    "used": 22514167,
     "budget": 194000000,
-    "left": 172750674,
+    "left": 171485833,
     "resets_at": "2026-11-26T17:00:00Z"
    }
   },
-  "remaining_estimate": 420380315,
-  "projected_finish": "2026-12-05T01:18:39Z"
+  "remaining_estimate": 418763971,
+  "projected_finish": "2026-12-05T00:02:35Z"
  },
  "main_red_history": [
   {
