@@ -2,6 +2,12 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Help replies: the first version texts homeowners only; email replies come in a later step (D-4726, November 19, open)
+
+- **What happened.** The owner help page (T530) lets you answer a help request. The rule says a reply goes by text to a homeowner who can be texted, and otherwise by email, always by email to a business on email. Texts to businesses are not sent yet, and nothing stores the address of someone who wrote to the help email.
+- **What changed.** T530 now sends a reply only by text, and only to a homeowner who agreed to texts. For anyone else the page says plainly that the reply must go by email for now, and sends nothing. A new step (T740) adds the email replies and texts to businesses once business texts are sent.
+- **Open until T740 merges.** Until then, answer a business, a help email or a homeowner who can't be texted from your own mailbox.
+
 ## Backups: a new encryption library with one dated exception, and the test machines pinned (D-4707, D-4708, November 19)
 
 - **What happened.** The nightly backup step (T109) stopped: the encryption library it needs, `age`, uses a small helper that is no longer maintained, and our dependency check refuses that. The newer `age` release is worse: it brings in a part with a known security problem.
