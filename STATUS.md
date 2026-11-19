@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T22:32:58Z by runner c625369f5c87 (actions).
+Updated 2026-11-19T22:55:59Z by runner e5e753826fe0 (actions).
 
 **Building: T726 in progress since 22:06Z; 507 of 703 done; week 11% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-19T22:32:58Z by runner c625369f5c87 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T726 claimed 22:06Z, lease until 01:06Z; lane 3: T109 claimed 21:53Z, lease until 00:53Z; lane 5: T541 claimed 21:24Z, lease until 00:24Z; lane 6: T707 claimed 21:38Z, lease until 00:38Z
 - **Week:** 11% used, 166.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:32Z, 0 min before this update
+- **Last run:** 22:33Z, 22 min before this update
 - **Keeper:** last ran 22:32Z, next wake 00:26Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 66 problem(s) on tasks still to run (+352 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 64 problem(s) on tasks still to run (+348 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -82,8 +82,6 @@ Updated 2026-11-19T22:32:58Z by runner c625369f5c87 (actions).
 | T708 | intake: a quote-count update due in quiet hours goes at the  | done | 1 | 50 min | 00:40Z |  |
 | T364 | server and portals: the business step-up code page is served | done | 2 | 70 min | 00:32Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
 | T701 | messaging: a per-number opt-out lock, and the listing key an | done | 1 | 45 min | 23:02Z |  |
-| T583 | intake and server: the quote-count update text is sent at mo | done | 2 | 55 min | 22:50Z | PLAN GAP: kit/prompts/T583.md:51 (budget of 450 changed lines in 3 files) The smallest plan change: raise T583's budget  |
-| T504 | Decisions digest, piece 5: the next entries after the header | done | 1 | 39 min | 22:47Z |  |
 
 ### Plan and harness merges on main
 - none
