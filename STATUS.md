@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T05:13:33Z by runner 70b8f3dde6f7 (actions).
+Updated 2026-11-19T05:18:20Z by runner 70b8f3dde6f7 (actions).
 
 **Building: T408 in progress since 03:29Z; 475 of 664 done; week 74% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-19T05:13:33Z by runner 70b8f3dde6f7 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T408 claimed 03:29Z, lease until 06:29Z; lane 4: T562 claimed 04:26Z, lease until 07:26Z; lane 5: T506 claimed 05:13Z, lease until 08:13Z; lane 7: T229 claimed 04:42Z, lease until 07:42Z
 - **Week:** 74% used, 42.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:11Z, 1 min before this update
+- **Last run:** 05:18Z, 0 min before this update
 - **Keeper:** last ran 04:57Z, next wake 06:31Z
 
 ## Needs attention
@@ -88,7 +88,6 @@ Updated 2026-11-19T05:13:33Z by runner 70b8f3dde6f7 (actions).
 | T482 | messaging and intake: the plain-word auto-answers after HELP | done | 1 | 2 h 29 min | 07:56Z |  |
 | T643 | portals (harness): a real browser's same-origin form POST pa | done | 1 | 2 h 24 min | 07:49Z |  |
 | T642 | Runner (harness): the keeper starts a run for each free lane | done | 1 | 83 min | 06:05Z |  |
-| T601 | businesses and quotes: the card pool reads every service are | done | 1 | 50 min | 05:14Z |  |
 
 ### Plan and harness merges on main
 - none
