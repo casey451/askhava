@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "phase": "kit",
- "current": "T707",
+ "current": "T109",
  "backup_runner": "on",
  "ruleset_verified": true,
  "lease": null,
@@ -23583,13 +23583,13 @@
     "T724",
     "T604"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 1,
    "slug": "recovery-backup-export",
    "type": "build",
    "stage": "5",
-   "attempt_started_at": "2026-11-19T11:27:16Z",
-   "lane": "5",
+   "attempt_started_at": "2026-11-19T21:53:21Z",
+   "lane": "3",
    "decision_ids": [
     4697,
     4698,
@@ -23597,10 +23597,6 @@
     4700,
     4701
    ],
-   "window_model": {
-    "model": "claude-opus-5-5",
-    "alias": "opus"
-   },
    "reason": null,
    "last_failure": "PLAN GAP: `deny.toml:3` (owned by T009 and T604, both outside T109; T109 does not own it): every `age` release fails `cargo deny check`, so `Ci` and prehandin go red. age 0.11.5: `cargo deny check licenses bans sources advisories` exit 1, error[unmaintained] proc-macro-error2 (RUSTSEC-2026-0173) via i18n-embed-fl 0.9.4 (non-optional dependency of age). age 0.12.1: exit 1, error[vulnerability] RUSTSEC-2026-0387 on crypto-bigint 0.5.5 via hpke/p256 -> elliptic-curve 0.13 (non-optional). Clean main: advisories ok. With one ignore line `{ id = \"RUSTSEC-2026-0173\", reason = \"proc-macro-error2 is unmaintained; reached only at compile time through age 0.11.5 -> i18n-embed-fl\" }` added to `[advisories] ignore` in a /tmp copy, cargo deny exits 0 (advisories, bans, licenses, sources ok). Ci (ci.yml:324) and prehandin.sh:153 run cargo deny with no softening flags; deny.toml has no unmaintained scope setting. The plan (D-3883) assumed age is \"allowed by deny.toml\" and its cargo-deny result \"proven by Ci\", never checked. Reviewer (agent a43170edff0848f3c) confirmed with its own runs. Smallest plan change: add deny.toml to T109's owns list so it can add the ignore entry; pin age = \"=0.11.5\". Second note: this runner and ubuntu-latest are now Ubuntu 26.04 with only PostgreSQL 18 client tools and no /usr/lib/postgresql/16/bin (CI server 16.15); T109's tests worked around it by using the newest pg_dump on PATH at or above the server's major, but T648's initdb test assumes /usr/lib/postgresql/16/bin and will fail. The finished but uncommitted work (29 files) is saved at /tmp/T109-wip.patch on this runner only.\nre-queued after plan fix D-4707: D-4707 (PR #1120): age =0.11.5 with one dated RUSTSEC-2026-0173 ignore and lock guard; waits on T724 (D-4708 ubuntu-24.04 pin)",
    "history": [
@@ -95998,8 +95994,8 @@
     "last_model": "claude-opus-5-5"
    },
    "T109": {
-    "estimated_bytes": 466812,
-    "estimated_tokens": 1359487,
+    "estimated_bytes": 511189,
+    "estimated_tokens": 1499410,
     "usage_counting": "message_id",
     "output_tokens": 70908,
     "cache_creation_input_tokens": 196678,
@@ -96210,7 +96206,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T21:50:45Z",
+ "updated_at": "2026-11-19T21:53:39Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -96311,14 +96307,6 @@
  "runner_sha": "f0505596bdb52690d5efdc240484087366e864e5",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "2cf51500b7061f54b7e5a2a0fed1ed6b434cf05b",
-   "ok": true,
-   "at": "2026-11-19T15:35:36Z",
-   "why": "start routine (ancestry reuse of dd768f848177, 2026-11-19T15:34:54Z)",
-   "reused": "2026-11-19T15:34:54Z",
-   "base": "dd768f84817756d60074af64bdf2150cee45d70b"
-  },
   {
    "sha": "7ab290e2ada6c4c8b01c449a9cdb5d36a50e4273",
    "ok": true,
@@ -96467,24 +96455,32 @@
    "why": "start routine (ancestry reuse of d68fb0f0ae65, 2026-11-19T20:38:23Z)",
    "reused": "2026-11-19T20:38:23Z",
    "base": "d68fb0f0ae65597fcc904df76a343d14851e3fc5"
+  },
+  {
+   "sha": "f0505596bdb52690d5efdc240484087366e864e5",
+   "ok": true,
+   "at": "2026-11-19T21:53:21Z",
+   "why": "start routine (ancestry reuse of d68fb0f0ae65, 2026-11-19T20:38:23Z)",
+   "reused": "2026-11-19T20:38:23Z",
+   "base": "d68fb0f0ae65597fcc904df76a343d14851e3fc5"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T707 estimated 1.4M tokens (calibrated); week has 169.7M left (no five-hour budget, D-3056) after 6.3M still running in another lane (session_reading 2026-11-19T21:36:17Z (week)); claimed",
-  "at": "2026-11-19T21:38:53Z",
+  "last": "T109 estimated 1.5M tokens (calibrated); week has 168.4M left (no five-hour budget, D-3056) after 7.6M still running in another lane (session_reading 2026-11-19T21:36:17Z (week)); claimed",
+  "at": "2026-11-19T21:53:21Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "week": {
-    "used": 24258846,
+    "used": 25611774,
     "budget": 194000000,
-    "left": 169741154,
+    "left": 168388226,
     "resets_at": "2026-11-26T17:00:00Z"
    }
   },
-  "remaining_estimate": 418763971,
-  "projected_finish": "2026-12-05T00:17:21Z"
+  "remaining_estimate": 419551640,
+  "projected_finish": "2026-12-05T01:12:44Z"
  },
  "main_red_history": [
   {

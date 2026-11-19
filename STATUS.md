@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T21:50:45Z by runner f0505596bdb5 (actions).
+Updated 2026-11-19T21:53:39Z by runner f0505596bdb5 (actions).
 
 **Building: T607 in progress since 21:16Z; 506 of 701 done; week 9% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 506 of 701 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T607 claimed 21:16Z, lease until 00:16Z; lane 4: T480 claimed 20:38Z, lease until 23:38Z; lane 5: T541 claimed 21:24Z, lease until 00:24Z; lane 6: T707 claimed 21:38Z, lease until 00:38Z; lane 7: T717 claimed 20:10Z, lease until 23:59Z
-- **Week:** 9% used, 169.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:39Z, 11 min before this update
+- **Lane:** lane 2: T607 claimed 21:16Z, lease until 00:16Z; lane 3: T109 claimed 21:53Z, lease until 00:53Z; lane 4: T480 claimed 20:38Z, lease until 23:38Z; lane 5: T541 claimed 21:24Z, lease until 00:24Z; lane 6: T707 claimed 21:38Z, lease until 00:38Z; lane 7: T717 claimed 20:10Z, lease until 23:59Z
+- **Week:** 9% used, 168.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 21:51Z, 2 min before this update
 - **Keeper:** last ran 21:36Z, next wake 21:56Z
 
 ## Needs attention
@@ -83,7 +83,6 @@ Updated 2026-11-19T21:50:45Z by runner f0505596bdb5 (actions).
 | T583 | intake and server: the quote-count update text is sent at mo | done | 2 | 55 min | 22:50Z | PLAN GAP: kit/prompts/T583.md:51 (budget of 450 changed lines in 3 files) The smallest plan change: raise T583's budget  |
 | T504 | Decisions digest, piece 5: the next entries after the header | done | 1 | 39 min | 22:47Z |  |
 | T364 | server and portals: the business step-up code page is served | resync | 2 | 52 min | 22:05Z |  |
-| T651 | server and portals: owner step-up try limit, the passkey pat | done | 1 | 2 h 7 min | 21:52Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -119,7 +118,7 @@ Updated 2026-11-19T21:50:45Z by runner f0505596bdb5 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-19T21:36:17Z (week)): week: 24.3M used, 169.7M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T00:17:21Z.
+- Pacing (session_reading 2026-11-19T21:36:17Z (week)): week: 25.6M used, 168.4M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T01:12:44Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -136,6 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T607 (lease until 2026-11-20T00:16:12Z)
+- lane 3: T109 (lease until 2026-11-20T00:53:21Z)
 - lane 4: T480 (lease until 2026-11-19T23:38:50Z)
 - lane 5: T541 (lease until 2026-11-20T00:24:08Z)
 - lane 6: T707 (lease until 2026-11-20T00:38:53Z)
