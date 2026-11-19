@@ -93,15 +93,18 @@ pub enum BusinessPurpose {
     AccountEmail,
     /// The owner's phone approval page (T397): the address.
     PhoneApproval,
+    /// The business notice and card emails (T470, D-3750): the address only.
+    Notice,
 }
 
 impl BusinessPurpose {
     /// Every purpose.
-    pub const ALL: [Self; 4] = [
+    pub const ALL: [Self; 5] = [
         Self::SignInLink,
         Self::SignInCode,
         Self::AccountEmail,
         Self::PhoneApproval,
+        Self::Notice,
     ];
 
     /// The audit action and read-count label, `vault_read.server.<purpose>` (SEC-047).
@@ -112,6 +115,7 @@ impl BusinessPurpose {
             Self::SignInCode => "vault_read.server.sign_in_code",
             Self::AccountEmail => "vault_read.server.account_email",
             Self::PhoneApproval => "vault_read.server.phone_approval",
+            Self::Notice => "vault_read.server.notice",
         }
     }
 

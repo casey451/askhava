@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE payments.expense SET amount_cents = 1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "45cca1d9320f7a39b4fc0ae12dbbbe0852c683adb81682bc0cbe5e8a9cdb4374"
+}

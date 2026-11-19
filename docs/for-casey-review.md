@@ -2,6 +2,12 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Help replies: the first version texts homeowners only; email replies come in a later step (D-4726, November 19, open)
+
+- **What happened.** The owner help page (T530) lets you answer a help request. The rule says a reply goes by text to a homeowner who can be texted, and otherwise by email, always by email to a business on email. Texts to businesses are not sent yet, and nothing stores the address of someone who wrote to the help email.
+- **What changed.** T530 now sends a reply only by text, and only to a homeowner who agreed to texts. For anyone else the page says plainly that the reply must go by email for now, and sends nothing. Two later steps in Phase 2 add the rest: T742 keeps the address of someone who writes to the help email (locked in the vault, deleted after 30 days with their message), and T740 adds the email replies and texts to businesses once business texts are sent. People who use the help page's form give no address, so they can only be answered if they write again.
+- **Open until T740 merges.** Until then, answer a business, a help email or a homeowner who can't be texted from your own mailbox.
+
 ## Backups: a new encryption library with one dated exception, and the test machines pinned (D-4707, D-4708, November 19)
 
 - **What happened.** The nightly backup step (T109) stopped: the encryption library it needs, `age`, uses a small helper that is no longer maintained, and our dependency check refuses that. The newer `age` release is worse: it brings in a part with a known security problem.
@@ -3474,3 +3480,70 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **The gap:** under D-4602's plan, a request like "pool heater" or "water heater leak" would have lost its licensed-only job type the second time its job types were read, so the count and the card could have reached a business without the license that job needs.
 - **Fix:** T716 adds one small reader so those licensed-only job types are kept every time, and its tests check it; T723 reads the same way and names the row that marks a job type as "not certain".
 - Our choice; nothing needs you now.
+
+## Safe mode now starts only on the serious alerts the spec names (D-4310, D-4676)
+
+- **What changed:** safe mode (charges and releases paused) now starts only when a payment-error, app-down, ledger-difference or suspended-number alert, or a critical alert, waits 24 hours after reaching your phone. A texting-delivery, email-limit, unusual-vault-reading or call-back alert no longer starts it. A business-line texting drop is now alerted even if the homeowner-line alert was just cleared.
+- **Accepted risk:** an unusual-vault-reading alert you leave for 24 hours no longer pauses charges; safe mode never stopped vault reads anyway.
+## Thirteen wiring tasks from the November 19 sweep (D-4727)
+
+- **The gap:** some finished pieces were never connected: "2 YES" texts did not pick, the quote page had no "updates by email" choice, several business portal buttons (auto-confirm, withdraw a quote, leave, service area, shared inbox, contact card) posted to pages that do not exist, the owner's AI switch had no page, owner settings errors were not shown accessibly, and two owner actions were not logged.
+- **Fix:** tasks T728 to T739 and T741 connect each one, with tests; nothing changes for homeowners or businesses until each lands.
+- **Cleanup note:** the `business_pick_waiting` text has no sender and looks replaced by the pick-notice emails; it can be removed in a cleanup.
+- Our choice; nothing needs you now.
+
+## Queued emails now go out, and one help reply has no address yet (D-4670 to D-4673)
+
+- **What changed:** job cards, picks, receipts, reminders and homeowner emails that were stored but never sent now go out once a minute through the email provider, each once. An email the provider turns down, one tried for 23 hours without a clear answer, or one waiting 72 hours is dropped with an alert to you; an email to someone removed from a business, or to a business that left, is dropped unsent. The one exception: the "your notice email changed" warning to a business's old address still goes once the day's email limit resets, since that warning is what protects the account.
+- **The gap:** the "Got it" reply to a business's Get help form is stored under the team member's record, not their email, so it is dropped instead of sent. The fix belongs to the help form's task (queue it to the member's email with the business named).
+- Our choice; nothing needs you now.
+
+## The safety voice call switch is now on your settings page, still off (D-4721)
+
+- **What's built:** your owner settings page shows the safety voice call switch. It is off. Turning it on asks for the date and reference of your TCPA attorney's written approval and a fresh code from your authenticator app; turning it off asks for the code too. Every change is logged without the reference.
+- **What it changes:** from the moment it is on, new homeowners' first text includes the recorded-call sentence, and a gas, smoke or fire text while our texting is down can get one recorded call. Off again, both stop with the next message.
+- **Not covered yet:** the web chat's welcome text never mentions the recorded call, even with the switch on. That chat part belongs to another module and needs its own small change.
+- Our choice; nothing needs you now.
+
+## Fable's first restart batch: ten new tasks and four widened ones (D-4748 to D-4750)
+
+- **What will change:** a text opt-out keeps working after the phone-lookup key is replaced, and an old key can finally be retired (T743; Gate C now waits for it). Closing or cancelling a job ends a pick still waiting to be accepted or paid, and its payment is cancelled (T744). Businesses see the homeowner's answers on the Quote and Confirm pages (T745, T746), and a returning homeowner's second job from an "ALSO" text gets the $0 repeat-customer fee it should. Choosing "emergency" by text now gives the 60-minute emergency windows (T747). An unused business text is removed (T749).
+- **Help form:** until it asks for an email address, its "got your message" screen stops promising a reply (T748); then the form asks for an email and the owner's reply goes there (T740, T742).
+- **For you to review later:** the privacy policy draft gains "An opted-out number is kept as long as needed to honor the opt-out." (T750), and a Spanish draft of the home page's texting consent line is written for a native speaker to check (T725). Neither is published or shown until you say so.
+- **Test tools:** the payment test stand-in learns to remove a saved card (T751), and an old catalog comment saying "2 businesses" is corrected to 1 (T752).
+- **Dates noted:** the picomatch exception is re-checked December 10; the pacer is re-measured 48 hours after its fix lands.
+- Our choice (Fable's decisions); nothing needs you now.
+
+## Fable takes the retries, and the next tasks in line (D-4761)
+
+- **What will change:** a new runner task (T753) lets a task be assigned to Fable and sends any task that failed once to Fable for its next try; if Fable refuses or runs out of usage, Opus takes over without losing a try. The next tasks claimed are, in order: T724, T753, T726, T727, T748, T740, T742.
+- Your instruction (Nov 19); nothing needs you now.
+
+## Shorter path to Gate C, and three payment fixes (D-4762, D-4763)
+
+- **Faster order:** a few tasks were waiting on others only by habit: the Twilio voice sandbox, the AI and security scans of the test site, the cancel refund and the three-part code audit now start sooner (the audit parts run side by side). Nothing is skipped.
+- **Payment fixes:** a business owed a free introduction after its card page opened a payment is no longer stuck (T754); a payment Stripe reports that we can't match now alerts you instead of only being logged (T754); an auto-confirm pick that should be free charges nothing and waits for the business's normal Confirm (T689).
+- Our choice (Fable's findings); nothing needs you now.
+
+## Texting fixes from the opt-out audit (D-4764)
+
+- **What will change:** a text of "STOP ALL" (with a space) now stops all texts, as "STOPALL" does, and Spanish opt-out phrases typed with accents from any phone are caught (T755). A text waiting for the morning is dropped if its job closed overnight, each queued text is checked against the clock at its own send moment, and a business phone from another time zone gets that zone's quiet hours too (T573, T744).
+- **Left for later:** "stop please" still does not count as an opt-out (the rule says a text must be only the opt-out word); say if you want that changed.
+
+## Two privacy fixes from the privacy audit (D-4765)
+
+- **What will change:** the filter that removes phone numbers and emails before a business or the AI sees a job description now also catches a number split by "and" or "y", "gmail . com" written with spaces, an encoded email and spaced number emoji, while leaving "2 and 3 bedrooms" alone (T756). "Delete my data" now also deletes the words of her problem and help messages at once, instead of within 30 days (T757).
+- Our choice (Fable's findings); nothing needs you now.
+
+## Shorter path: docs tidy-up moves after the account setup, and AI budgets no longer wait for the war games (D-4771)
+
+- **What changed:** the tasks that tidy the code notes and guides for future AI sessions now run after your account checkpoint and before the handover pack, instead of before the checkpoint; the AI-cost limits no longer wait for your war-games go (the war games themselves still do). The longest remaining chain drops from 42 tasks to 34.
+- **Risk:** notes written after the tidy-up could undo some of it; a final cleanup pass before the finish catches that.
+- Fable's decision, as you asked; nothing needs you now.
+
+## Intake fixes from the intake audit, one for safety first (D-4777)
+
+- **Safety, first in line:** Spanish texts like "huelo gas en la cocina" or "huele a quemado" now get the 911 message, as the English ones do; "calentador de gas no funciona" still does not (T758).
+- **Licences:** a request such as "handyman needed, breaker panel keeps tripping" no longer counts handymen without an electrical licence, and "water heater" keeps its job type in the count (T716).
+- **Smaller fixes:** a "Close which?" question no longer stays open forever, "never mind" with no job now gets a reply (T759), and a second job opened with "ALSO" before the ZIP now gets its coverage answer (T760).
+- Fable's findings; nothing needs you now.
