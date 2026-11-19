@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T01:40:50Z by runner 29f55bf35465 (actions).
+Updated 2026-11-19T01:41:14Z by runner 29f55bf35465 (actions).
 
-**Building: T203 in progress since 00:59Z; 468 of 663 done; week 71% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Idle since 01:40Z; 468 of 663 done; week 71% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 468 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 7: T203 claimed 00:59Z, lease until 04:38Z
+- **Lane:** idle since 01:40Z (no task in progress)
 - **Week:** 71% used, 48.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:39Z, 1 min before this update
 - **Keeper:** last ran 01:39Z, next wake 01:59Z
@@ -19,6 +19,7 @@ Updated 2026-11-19T01:40:50Z by runner 29f55bf35465 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T203 | Wording scan: the required statements, business copy lines a | MERGE_PENDING | 2 | 41 min | 01:40Z | PLAN GAP: `app/portals/templates/quote_page.html:101` (owned by DONE tasks T052, T095, T294, T308, T384, T388, T393, T44 |
 | T563 | intake and privacy: the daily consent sweep removes consent  | MERGE_PENDING | 2 | 99 min | 01:37Z | PLAN GAP: app/messaging/src/optout.rs:311 (suppress/record, owned by T029 and later tasks; T563 owns no messaging file)  |
 | T505 | Decisions digest, piece 6: the next entries after the header | MERGE_PENDING | 1 | 99 min | 01:27Z |  |
 | T488 | portals and server: the business sign-up served in Spanish o | MERGE_PENDING | 1 | 111 min | 01:20Z |  |
@@ -139,7 +140,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 7: T203 (lease until 2026-11-19T04:38:25Z)
 
 ## Last usage reading
-- {"task": "T563", "at": "2026-11-19T01:37:50Z", "output_tokens": 93225, "input_tokens": 246, "cache_read_input_tokens": 11651005, "cache_creation_input_tokens": 377381}
+- {"task": "T203", "at": "2026-11-19T01:40:48Z", "input_tokens": 110, "cache_creation_input_tokens": 163610, "output_tokens": 45650, "cache_read_input_tokens": 4105326}
