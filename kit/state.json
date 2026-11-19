@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "phase": "kit",
- "current": "T307",
+ "current": "T161",
  "backup_runner": "on",
  "ruleset_verified": true,
  "lease": null,
@@ -27028,12 +27028,12 @@
     "T488",
     "T593"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 1,
    "slug": "wording-voice-scan",
    "type": "build",
    "stage": "5",
-   "attempt_started_at": "2026-11-19T08:37:10Z",
+   "attempt_started_at": "2026-11-19T17:58:49Z",
    "lane": "2",
    "decision_ids": [
     4654,
@@ -27042,10 +27042,6 @@
     4657,
     4658
    ],
-   "window_model": {
-    "model": "claude-opus-5-5",
-    "alias": "opus"
-   },
    "reason": null,
    "last_failure": "PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/site-copy.md:7` to `:79` (D-3890 (3)). On `main` the home page does not match that file, and I can't fix either side. `app/site/templates/home.html` belongs to T102, T203, T216, T593 and T608. `docs/copy/site-copy.md` belongs to T429, T593 and T615. Smallest plan change: move `test_site_copy_blocks.py` to T593, which already owns both files and rewrites both to D-3331's wording, or make T161 depend on T593. T161 keeps its other seven files.\nEvidence: site-copy.md:32 \"It goes to Havasu businesses\" vs home.html:30 \"Your request goes to\"; site-copy.md:35 \"or you can pick none\" vs home.html:31 \"you don't have to pick anyone\"; fair 3 (:47), coverage title/line (:50, :53), business text (:61), WEB-024 business line (:68) and texting consent line (:23) are absent from home.html and site_layout.html. T593's goal (D-4098) says \"the home page still renders the October 28 draft\" and rewrites both files; T161 depends on T203, T202, T429, T488, not T593; no cycle either way.\nReviewer (opus, ab595414359dfc49d) confirmed (a)-(d) with file:line evidence: PLAN-GAP: CONFIRMED.\nre-queued after plan fix D-4669: D-4669 (PR #1106): T161 follows T593; site-copy check is a site-crate test by heading with two reasoned skips; T593 places fair 3/business blocks",
    "history": [
@@ -88990,7 +88986,7 @@
    "output_tokens": 73658,
    "input_tokens": 247
   },
-  "source": "session_reading 2026-11-19T17:46:20Z (week)",
+  "source": "session_reading 2026-11-19T17:57:32Z (week)",
   "by_task": {
    "FIX-MAIN": {
     "estimated_bytes": 3756447,
@@ -94579,8 +94575,8 @@
     "last_model": "claude-opus-5-5"
    },
    "T161": {
-    "estimated_bytes": 484048,
-    "estimated_tokens": 527586,
+    "estimated_bytes": 504838,
+    "estimated_tokens": 550247,
     "usage_counting": "message_id",
     "output_tokens": 18449,
     "input_tokens": 85,
@@ -94843,7 +94839,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T17:58:08Z",
+ "updated_at": "2026-11-19T17:59:11Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -94944,14 +94940,6 @@
  "runner_sha": "79e9b499dfce05021d7a5315d361364596fefb94",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "69f9113f192f42eaa49eb8e2b3eaef77160a72c6",
-   "ok": true,
-   "at": "2026-11-19T11:39:32Z",
-   "why": "start routine (ancestry reuse of 7be551b7caec, 2026-11-19T10:32:55Z)",
-   "reused": "2026-11-19T10:32:55Z",
-   "base": "7be551b7caecffd5e22c64de91c78f4b842c96c8"
-  },
   {
    "sha": "5dc7a90cf33f9a08f44a429638390c90e1d79457",
    "ok": false,
@@ -95100,24 +95088,32 @@
    "why": "start routine (ancestry reuse of b05c08a0d168, 2026-11-19T17:14:45Z)",
    "reused": "2026-11-19T17:14:45Z",
    "base": "b05c08a0d16829edf7d1945e78d76b6fec4c7320"
+  },
+  {
+   "sha": "79e9b499dfce05021d7a5315d361364596fefb94",
+   "ok": true,
+   "at": "2026-11-19T17:58:49Z",
+   "why": "start routine (ancestry reuse of b05c08a0d168, 2026-11-19T17:14:45Z)",
+   "reused": "2026-11-19T17:14:45Z",
+   "base": "b05c08a0d16829edf7d1945e78d76b6fec4c7320"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T307 estimated 1.3M tokens (calibrated); week has 186.4M left (no five-hour budget, D-3056) after 3.6M still running in another lane (session_reading 2026-11-19T17:46:20Z (week)); claimed",
-  "at": "2026-11-19T17:47:50Z",
+  "last": "T161 estimated 550k tokens (calibrated); week has 183.7M left (no five-hour budget, D-3056) after 4.3M still running in another lane (session_reading 2026-11-19T17:57:32Z (week)); claimed",
+  "at": "2026-11-19T17:58:49Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "week": {
-    "used": 7574756,
+    "used": 10269453,
     "budget": 194000000,
-    "left": 186425244,
+    "left": 183730547,
     "resets_at": "2026-11-26T17:00:00Z"
    }
   },
-  "remaining_estimate": 404520393,
-  "projected_finish": "2026-12-04T08:06:12Z"
+  "remaining_estimate": 403226244,
+  "projected_finish": "2026-12-04T07:09:58Z"
  },
  "main_red_history": [
   {

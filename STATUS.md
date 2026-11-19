@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T17:58:08Z by runner 79e9b499dfce (actions).
+Updated 2026-11-19T17:59:11Z by runner 79e9b499dfce (actions).
 
-**Building: T307 in progress since 17:47Z; 500 of 683 done; week 3% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T161 in progress since 17:58Z; 500 of 683 done; week 3% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 500 of 683 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T307 claimed 17:47Z, lease until 20:47Z; lane 5: T607 claimed 17:15Z, lease until 20:15Z; lane 6: T480 claimed 17:18Z, lease until 20:18Z
-- **Week:** 3% used, 186.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:57Z, 0 min before this update
+- **Lane:** lane 2: T161 claimed 17:58Z, lease until 20:58Z; lane 3: T307 claimed 17:47Z, lease until 20:47Z; lane 5: T607 claimed 17:15Z, lease until 20:15Z; lane 6: T480 claimed 17:18Z, lease until 20:18Z
+- **Week:** 3% used, 183.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 17:58Z, 0 min before this update
 - **Keeper:** last ran 17:58Z, next wake 18:18Z
 
 ## Needs attention
@@ -126,7 +126,7 @@ Updated 2026-11-19T17:58:08Z by runner 79e9b499dfce (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-19T17:46:20Z (week)): week: 7.6M used, 186.4M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-04T08:06:12Z.
+- Pacing (session_reading 2026-11-19T17:57:32Z (week)): week: 10.3M used, 183.7M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-04T07:09:58Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -142,6 +142,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T161 (lease until 2026-11-19T20:58:49Z)
 - lane 3: T307 (lease until 2026-11-19T20:47:50Z)
 - lane 5: T607 (lease until 2026-11-19T20:15:21Z)
 - lane 6: T480 (lease until 2026-11-19T20:18:37Z)
