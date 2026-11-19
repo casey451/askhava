@@ -77809,7 +77809,7 @@
     "T364",
     "T261"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 1,
    "slug": "saved-card-from-confirm",
    "type": "build",
@@ -77890,6 +77890,29 @@
        "turns": 26
       }
      }
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 82,
+     "head_sha": "e5e753826fe0afe4a268b35501f58759b936427d",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-19T21:24:08Z",
+     "ended_at": "2026-11-19T22:55:57Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 2978175,
+       "turns": 49
+      },
+      "reviewer": {
+       "tokens": 1042781,
+       "turns": 21
+      }
+     }
     }
    ],
    "reviewed_sha": "e1b02edcfceda1795581472e4473d5e67fe25864",
@@ -77902,15 +77925,14 @@
    "branch": "claude/task/T541-saved-card-from-confirm",
    "auto_merge": {
     "enabled": true,
-    "why": "auto-merge on #1128 (gh pr merge)",
-    "head": "375ee1551c64556304aa3c83c89bcd207a534cf6"
+    "why": "auto-merge on #1153 (gh pr merge)",
+    "head": "e1b02edcfceda1795581472e4473d5e67fe25864"
    },
    "last_failure": "Ci: failure; Coverage: failure; E2e: failure\nCoverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered floor (D-694)\napp/picks/src/settle.rs: 95.83333333333333 (floor 95.0)\napp/picks/src/unreachable_refund.rs: 89.79591836734694 (floor 87.0)\napp/picks/src/unreachable_steps.rs: 88.0 (floor 86.0)\napp/portals/src/business_left.rs: 66.66666666666667 (floor 64.0)\napp/portals/src/confirm_pay.rs: 75.0 (floor 70.0)\napp/portals/src/confirm_waiver.rs: 50.0 (floor 48.0)\napp/portals/src/data_download.rs: 83.87096774193549 (floor 81.0)\napp/portals/src/job_release.rs: 53.333333333333336 (floor 51.0)\napp/quotes/src/job_text.rs: 100.0 (floor 95.0)\napp/server/src/business_contacts.rs: 70.0 (floor 68.0)\napp/server/src/inbound_text.rs: 27.38095238095238 (floor 25.0)\napp/server/src/offdb_stream.rs: 33.333333333333336 (floor 21.0)\napp/server/src/release_sink.rs: 81.81818181818181 (floor 78.0)\nFAIL: app/adapters/src/payments.rs 82.61 is below the floor 84.0\n##[error]Process completed with exit code 1.\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n  \u2718  25 [main] \u203a tests/e2e/confirm_served.spec.ts:113:1 \u203a TD-FEE-45 FEE-014: a press with Save this card for next time ticked charges once (5.2s)\n##[error]  1) [main] \u203a tests/e2e/confirm_served.spec.ts:113:1 \u203a TD-FEE-45 FEE-014: a press with Save this card for next time ticked charges once \nCi failed at step: All five jobs passed\n##[error]Process completed with exit code 1.",
    "lane": "5",
    "runner_closed_prs": [
     1128
    ],
-   "head_check_since": null,
    "update_merges": [
     {
      "from": "e5e753826fe0afe4a268b35501f58759b936427d",
@@ -90573,12 +90595,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T480",
-   "at": "2026-11-19T22:23:02Z",
-   "input_tokens": 244,
-   "cache_creation_input_tokens": 256614,
-   "cache_read_input_tokens": 15130818,
-   "output_tokens": 80283
+   "task": "T541",
+   "at": "2026-11-19T22:55:57Z",
+   "input_tokens": 137,
+   "cache_creation_input_tokens": 134579,
+   "cache_read_input_tokens": 3857535,
+   "output_tokens": 28705
   },
   "source": "session_reading 2026-11-19T22:04:39Z (week)",
   "by_task": {
@@ -96312,14 +96334,14 @@
     "estimated_bytes": 602859,
     "estimated_tokens": 1766060,
     "usage_counting": "message_id",
-    "cache_creation_input_tokens": 337837,
-    "input_tokens": 246,
-    "cache_read_input_tokens": 12500746,
-    "output_tokens": 93313,
-    "worker_tokens": 11560797,
-    "worker_turns": 99,
-    "reviewer_tokens": 1371345,
-    "reviewer_turns": 26,
+    "cache_creation_input_tokens": 472416,
+    "input_tokens": 383,
+    "cache_read_input_tokens": 16358281,
+    "output_tokens": 122018,
+    "worker_tokens": 14538972,
+    "worker_turns": 148,
+    "reviewer_tokens": 2414126,
+    "reviewer_turns": 47,
     "last_model": "claude-opus-5-5"
    },
    "T554": {
@@ -96502,11 +96524,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-19T22:21:14Z",
-    "tokens": 3280879
+    "tokens": 3830053
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 13177020
+    "tokens": 13726194
    }
   },
   "session_reading": {
@@ -96517,7 +96539,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T22:55:59Z",
+ "updated_at": "2026-11-19T22:56:49Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T22:55:59Z by runner e5e753826fe0 (actions).
+Updated 2026-11-19T22:56:49Z by runner e5e753826fe0 (actions).
 
 **Building: T726 in progress since 22:06Z; 507 of 703 done; week 11% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 507 of 703 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T726 claimed 22:06Z, lease until 01:06Z; lane 3: T109 claimed 21:53Z, lease until 00:53Z; lane 5: T541 claimed 21:24Z, lease until 00:24Z; lane 6: T707 claimed 21:38Z, lease until 00:38Z
+- **Lane:** lane 1: T726 claimed 22:06Z, lease until 01:06Z; lane 3: T109 claimed 21:53Z, lease until 00:53Z; lane 6: T707 claimed 21:38Z, lease until 00:38Z
 - **Week:** 11% used, 166.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:33Z, 22 min before this update
+- **Last run:** 22:56Z, 0 min before this update
 - **Keeper:** last ran 22:32Z, next wake 00:26Z
 
 ## Needs attention
@@ -19,6 +19,7 @@ Updated 2026-11-19T22:55:59Z by runner e5e753826fe0 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T541 | payments, portals and adapters: a card saved or changed from | MERGE_PENDING | 2 | 91 min | 22:55Z | Ci: failure; Coverage: failure; E2e: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refus |
 | T480 | messaging, server and portals: the stored "Spanish conversat | MERGE_PENDING | 1 | 104 min | 22:23Z |  |
 | T717 | intake (harness): corrections to T711's two jobs: two_jobs a | MERGE_PENDING | 1 | 2 h 11 min | 22:21Z |  |
 | T607 | site: site.css brought up to the V6 reference (laftly-v6.css | MERGE_PENDING | 2 | 41 min | 21:57Z | review_missing on 2c1fc315ebe4 (D-3728): not proven reviewed or worker-made / (b) 5cb49e3317bc T607: NOTES entry in the  |
@@ -34,7 +35,7 @@ Updated 2026-11-19T22:55:59Z by runner e5e753826fe0 (actions).
 | T724 | harness: Ci's Rust-test jobs, the worker job and the nightly | done | 1 | 50 min | 17:09Z |  |
 | T210 | payments: the money view's sales-tax set-aside and manual ex | done | 1 | 53 min | 16:29Z |  |
 | T407 | calls, portals and server: the owner-portal safety voice cal | done | 1 | 102 min | 16:01Z |  |
-| T541 | payments, portals and adapters: a card saved or changed from | check_failed | 1 | 2 h 16 min | 15:25Z | Ci: failure; Coverage: failure; E2e: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refus |
+| T541 | payments, portals and adapters: a card saved or changed from | check_failed | 1 | 2 h 16 min | 15:25Z |  |
 | T470 | messaging and server: the worker task that sends queued emai | done | 3 | 2 h 18 min | 15:24Z | Fix-round review (after the one allowed findings round) still found a problem at head 1830747e4; no reviewer approved a  |
 | T593 | site and server: the home hero in D-3331's wording with the  | done | 2 | 75 min | 15:11Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T554 | Decisions digest, piece 9: the next entries after the header | done | 1 | 110 min | 15:03Z |  |
@@ -134,8 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T726 (lease until 2026-11-20T01:06:39Z)
 - lane 3: T109 (lease until 2026-11-20T00:53:21Z)
-- lane 5: T541 (lease until 2026-11-20T00:24:08Z)
 - lane 6: T707 (lease until 2026-11-20T00:38:53Z)
 
 ## Last usage reading
-- {"task": "T480", "at": "2026-11-19T22:23:02Z", "input_tokens": 244, "cache_creation_input_tokens": 256614, "cache_read_input_tokens": 15130818, "output_tokens": 80283}
+- {"task": "T541", "at": "2026-11-19T22:55:57Z", "input_tokens": 137, "cache_creation_input_tokens": 134579, "cache_read_input_tokens": 3857535, "output_tokens": 28705}
