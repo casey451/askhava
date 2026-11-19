@@ -51,7 +51,8 @@ FORMS = [
     ("clock", re.compile(r"\b(\d{1,2})\s?([ap])\.m\.", re.I)),
     ("twice", re.compile(r"\btwice\b|\bdos veces\b", re.I)),
 ]
-LIST_A_PHRASES = ("once or twice a day", "una o dos veces al día", "is never part of the fee basis")
+LIST_A_PHRASES = {"once or twice a day": (BT, BH), "una o dos veces al día": (SUM, EB),
+                  "is never part of the fee basis": (BT,)}  # removed only in the files D-4258 names
 
 
 def read(path: str) -> str:
@@ -69,7 +70,7 @@ def reader_text(path: str, text: str | None = None) -> str:
         for pat in (r"\{#.*?#\}", r"\{%.*?%\}", r"\{\{.*?\}\}", r"<script.*?</script>",
                     r"<style.*?</style>", r"<[^>]*>"):
             text = re.sub(pat, _blank, text, flags=re.S | re.I)
-    for phrase in LIST_A_PHRASES:
+    for phrase in (p for p, files in LIST_A_PHRASES.items() if path in files):
         text = re.sub(re.escape(phrase), _blank, text, flags=re.I)
     return text
 
@@ -237,21 +238,44 @@ PAIRS: list[Pair] = [
     (PP, "day", lambda: const("app/portals/src/data_download.rs", "ANSWER_WITHIN"), 1),
 ]
 # List A (D-4258): numbers no code or spec line holds, named and not compared.
-LIST_A = [(BT, "month", 12, 1), (BT, "day", 30 * DAY, 1), (BT, "day", 14 * DAY, 1),
-          (BT, "day", 2 * DAY, 2), (BT, "tiers", 3, 1), (SUM, "day", 2 * DAY, 1),
-          (BH, "day", 2 * DAY, 1), (BH, "day", 4 * DAY, 1), (EB, "day", 2 * DAY, 1), (EB, "day", 4 * DAY, 1)]
+LIST_A = [(BT, "12 months", "month", 12, 1), (BT, "30 days", "day", 30 * DAY, 1),
+          (BT, "14 days", "day", 14 * DAY, 1), (BT, "2 days", "day", 2 * DAY, 2),
+          (BT, "3 tiers", "tiers", 3, 1), (SUM, "2 días", "day", 2 * DAY, 1),
+          (BH, "2 days", "day", 2 * DAY, 1), (BH, "4 days", "day", 4 * DAY, 1),
+          (EB, "2 días", "day", 2 * DAY, 1), (EB, "4 días", "day", 4 * DAY, 1)]
 
 
-def expected(path: str) -> Counter[tuple[str, int]]:
+def expected(path: str, drop: tuple | None = None) -> Counter[tuple[str, int]]:
     want: Counter[tuple[str, int]] = Counter()
-    for file, form, value, count in [*PAIRS, *((f, k, (lambda n=n: n), c) for f, k, n, c in LIST_A)]:
+    entries = [(e[0], e[2], (lambda n=e[3]: n), e[4]) for e in LIST_A if e != drop]
+    for file, form, value, count in [*PAIRS, *entries]:
         want[(form, value())] += count if file == path else 0
     return +want
 
 
-def mismatch(path: str, text: str | None = None) -> dict[tuple[str, int], tuple[int, int]]:
-    found, want = numbers(reader_text(path, text)), expected(path)
+def mismatch(path: str, text: str | None = None, drop: tuple | None = None) -> dict[tuple[str, int], tuple[int, int]]:
+    found, want = numbers(reader_text(path, text)), expected(path, drop)
     return {k: (found[k], want[k]) for k in found.keys() | want.keys() if found[k] != want[k]}
+
+
+@pytest.mark.parametrize("entry", LIST_A, ids=lambda e: f"{Path(e[0]).name}:{e[1]}x{e[4]}")
+def test_list_a_entry_passes_in_its_file(entry: tuple[str, str, str, int, int]) -> None:
+    """D-4258 (4), (6): each List A entry reads as its key, stands in its file, and is what lets it pass."""
+    path, written, form, value, count = entry
+    assert numbers(written) == Counter({(form, value): 1})
+    found, want = numbers(reader_text(path))[(form, value)], expected(path)[(form, value)]
+    assert found == want >= count
+    assert mismatch(path, drop=entry)[(form, value)] == (found, want - count)
+
+
+@pytest.mark.parametrize(("phrase", "path"), [(p, f) for p, files in LIST_A_PHRASES.items() for f in files])
+def test_list_a_phrase_passes_only_in_its_named_files(phrase: str, path: str) -> None:
+    """D-4258 (4), (5), (6): each List A phrase stands in its named file and reads as no number and no
+    partial refund there; the same phrase planted in the privacy policy (a file it is not named for) fails."""
+    assert phrase.lower() in read(path).lower()
+    assert numbers(reader_text(path, phrase)) == Counter() and partial_hits(reader_text(path, phrase)) == []
+    planted = read(PP) + "\n" + phrase + "\n"
+    assert mismatch(PP, planted) != {} or partial_hits(reader_text(PP, planted)) != []
 
 
 @pytest.mark.parametrize("path", DOCS)
@@ -385,22 +409,47 @@ def test_planted_code_lines(line: str, caught: bool) -> None:
 FULL_FORM = '[("payment_intent", payment_intent)]'
 
 
+def _first_arg(text: str) -> str:
+    """The text up to the first top-level `,` or the call's closing bracket."""
+    depth = 0
+    for i, ch in enumerate(text):
+        if ch in "([{":
+            depth += 1
+        elif (ch in ")]}" and depth == 0) or (ch == "," and depth == 0):
+            return text[:i].strip()
+        elif ch in ")]}":
+            depth -= 1
+    return text.strip()
+
+
 def refund_forms(text: str) -> list[str]:
-    """The form each `self.post("refunds", &form, ...)` sends: the nearest `let form = ...;` before it."""
+    """The form every `.post("refunds", form, ...)` call sends, whatever the form's shape: an inline
+    array as written, or a named binding resolved to its nearest `let NAME = ...;` before the call."""
     forms = []
-    for post in re.finditer(r'self\.post\("refunds", &form\b', text):
-        lets = re.findall(r"let form = (.+?);", text[: post.start()], re.S)
-        forms.append(lets[-1] if lets else "")
+    for post in re.finditer(r'\.post(?:::<[^>]*>)?\(\s*"refunds"\s*,', text):
+        arg = _first_arg(text[post.end():]).lstrip("&").strip()
+        if re.fullmatch(r"\w+", arg):
+            lets = re.findall(rf"let (?:mut )?{arg}\b[^=]*= (.+?);", text[: post.start()], re.S)
+            arg = lets[-1] if lets else ""
+        forms.append(re.sub(r"\s+", " ", arg))
     return forms
+
+
+AMOUNT = '[("payment_intent", payment_intent), ("amount", amount)]'
 
 
 @pytest.mark.parametrize(("text", "full"), [
     (read("app/adapters/src/payments.rs"), True),
-    ('let form = [("payment_intent", payment_intent), ("amount", amount)];\nself.post("refunds", &form, k)', False)])
+    (f'let form = {AMOUNT};\nself.post("refunds", &form, k)', False),
+    (f'self.post("refunds", &{AMOUNT}, idempotency).await', False),
+    (f'let params = {AMOUNT};\nlet created: Created = self.post("refunds", &params, k).await?;', False),
+    (read("app/adapters/src/payments.rs") + f'\nself.post("refunds", &{AMOUNT}, k).await', False)],
+    ids=["adapter-as-is", "named-form-amount", "inline-amount", "params-amount", "third-post-amount"])
 def test_refund_posts_send_only_the_payment_intent(text: str, full: bool) -> None:
-    """TD-FEE-19, REC-007, FEE-026: each refund post sends no amount (a full refund); a planted amount fails."""
+    """TD-FEE-19, REC-007, FEE-026, D-4258 (5): every refund post, however its form is written, sends
+    only the payment intent (a full refund); an amount in any one of them, inline or named, fails."""
     forms = refund_forms(text)
-    assert forms
+    assert forms and len(forms) == len(re.findall(r'\(\s*"refunds"\s*,', text))
     assert all(f == FULL_FORM for f in forms) is full
 
 
