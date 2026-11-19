@@ -7728,3 +7728,4 @@
 - 2026-11-19T08:37:53Z runner 7c090605e7a9 (actions): {}
 - 2026-11-19T08:39:50Z runner 36941c782403 (actions): {}
 - 2026-11-19T08:40:29Z runner 25c9a14919a4 (actions): {"T710": "QUEUED -> IN_PROGRESS"}; T710 estimated 603k tokens (calibrated); week has 35.5M left (no five-hour budget, D-3056) after 6.5M still running in another lane (session_reading 2026-11-19T08:36:18Z (week)); running to the limit (model window, D-2225), claimed
+- 2026-11-19T08:41:50Z runner 25c9a14919a4 (actions): {"T161": "IN_PROGRESS -> BLOCKED"}

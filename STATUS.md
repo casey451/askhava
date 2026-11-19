@@ -1,17 +1,19 @@
 # Ask Hava build status
 
-Updated 2026-11-19T08:40:29Z by runner 25c9a14919a4 (actions).
+Updated 2026-11-19T08:41:50Z by runner 25c9a14919a4 (actions).
 
-**Building: T161 in progress since 08:37Z; 484 of 664 done; week 76% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T710 in progress since 08:40Z; 484 of 664 done; week 76% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 484 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T161 claimed 08:37Z, lease until 11:37Z; lane 3: T710 claimed 08:40Z, lease until 11:40Z; lane 4: T536 claimed 08:14Z, lease until 11:14Z; lane 5: T622 claimed 07:06Z, lease until 11:39Z; lane 6: T476 claimed 06:22Z, lease until 11:34Z; lane 7: T375 claimed 08:04Z, lease until 11:04Z
+- **Lane:** lane 3: T710 claimed 08:40Z, lease until 11:40Z; lane 4: T536 claimed 08:14Z, lease until 11:14Z; lane 5: T622 claimed 07:06Z, lease until 11:39Z; lane 6: T476 claimed 06:22Z, lease until 11:34Z; lane 7: T375 claimed 08:04Z, lease until 11:04Z
 - **Week:** 76% used, 35.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:40Z, 0 min before this update
+- **Last run:** 08:41Z, 0 min before this update
 - **Keeper:** last ran 08:37Z, next wake 08:57Z
 
 ## Needs attention
+- BLOCKED T161: plan gap reported: PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/site-copy.md:7` to `:79` (D-3890 (3)). On `main` the home page does not match that file, and I can't fix either side. `app/site/templates/home.html` belongs to T102, T203, T216, T593 and T608. `docs/copy/site-copy.md` belongs to T429, T593 and T615. Smallest plan change: move `test_site_copy_blocks.py` to T593, which already owns both files and rewrites both to D-3331's wording, or make T161 depend on T593. T161 keeps its other seven files.
+Evidence: site-copy.md:32 "It goes t; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T161 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T116 (since 2026-11-19T08:37:10Z, no attempt used; a plan change fixes it): T116: dependency T216 is DONE but its owned file app/site/static/photos/hero-kitchen-phone.avif is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
@@ -22,6 +24,7 @@ Updated 2026-11-19T08:40:29Z by runner 25c9a14919a4 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T161 | wording: the WORD-024 voice rule's pressure-word scan, the r | BLOCKED | 1 | 4 min | 08:41Z | PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/s |
 | T456 | picks and server: "Hold for 2 more hours" is stored, honoure | MERGE_PENDING | 1 | 97 min | 08:35Z |  |
 | T216 | site: the hero photo and mark (photography assets) | done | 1 | 97 min | 08:10Z |  |
 | T310 | server and portals: the owner home and settings pages and th | done | 1 | 74 min | 07:19Z |  |
@@ -141,7 +144,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T161 (lease until 2026-11-19T11:37:10Z)
 - lane 3: T710 (lease until 2026-11-19T11:40:16Z)
 - lane 4: T536 (lease until 2026-11-19T11:14:06Z)
 - lane 5: T622 (lease until 2026-11-19T11:39:50Z)
@@ -149,4 +151,4 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 7: T375 (lease until 2026-11-19T11:04:18Z)
 
 ## Last usage reading
-- {"task": "T456", "at": "2026-11-19T08:35:13Z", "input_tokens": 208, "output_tokens": 67110, "cache_read_input_tokens": 11330930, "cache_creation_input_tokens": 222708}
+- {"task": "T161", "at": "2026-11-19T08:41:30Z", "output_tokens": 18449, "input_tokens": 85, "cache_creation_input_tokens": 110860, "cache_read_input_tokens": 2506538}

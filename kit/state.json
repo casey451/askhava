@@ -26668,8 +26668,8 @@
     "T429",
     "T488"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "wording-voice-scan",
    "type": "build",
    "stage": "5",
@@ -26685,7 +26685,34 @@
    "window_model": {
     "model": "claude-opus-5-5",
     "alias": "opus"
-   }
+   },
+   "reason": "plan gap reported: PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/site-copy.md:7` to `:79` (D-3890 (3)). On `main` the home page does not match that file, and I can't fix either side. `app/site/templates/home.html` belongs to T102, T203, T216, T593 and T608. `docs/copy/site-copy.md` belongs to T429, T593 and T615. Smallest plan change: move `test_site_copy_blocks.py` to T593, which already owns both files and rewrites both to D-3331's wording, or make T161 depend on T593. T161 keeps its other seven files.\nEvidence: site-copy.md:32 \"It goes t; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T161 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/site-copy.md:7` to `:79` (D-3890 (3)). On `main` the home page does not match that file, and I can't fix either side. `app/site/templates/home.html` belongs to T102, T203, T216, T593 and T608. `docs/copy/site-copy.md` belongs to T429, T593 and T615. Smallest plan change: move `test_site_copy_blocks.py` to T593, which already owns both files and rewrites both to D-3331's wording, or make T161 depend on T593. T161 keeps its other seven files.\nEvidence: site-copy.md:32 \"It goes to Havasu businesses\" vs home.html:30 \"Your request goes to\"; site-copy.md:35 \"or you can pick none\" vs home.html:31 \"you don't have to pick anyone\"; fair 3 (:47), coverage title/line (:50, :53), business text (:61), WEB-024 business line (:68) and texting consent line (:23) are absent from home.html and site_layout.html. T593's goal (D-4098) says \"the home page still renders the October 28 draft\" and rewrites both files; T161 depends on T203, T202, T429, T488, not T593; no cycle either way.\nReviewer (opus, ab595414359dfc49d) confirmed (a)-(d) with file:line evidence: PLAN-GAP: CONFIRMED.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 57,
+     "head_sha": "25c9a14919a446dcdf78956b44e4e3adc0d3c4bf",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-19T08:37:10Z",
+     "ended_at": "2026-11-19T08:41:30Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 2435270,
+       "turns": 35
+      },
+      "reviewer": {
+       "tokens": 200662,
+       "turns": 8
+      }
+     }
+    }
+   ]
   },
   {
    "id": "T162",
@@ -85774,12 +85801,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T456",
-   "at": "2026-11-19T08:35:13Z",
-   "input_tokens": 208,
-   "output_tokens": 67110,
-   "cache_read_input_tokens": 11330930,
-   "cache_creation_input_tokens": 222708
+   "task": "T161",
+   "at": "2026-11-19T08:41:30Z",
+   "output_tokens": 18449,
+   "input_tokens": 85,
+   "cache_creation_input_tokens": 110860,
+   "cache_read_input_tokens": 2506538
   },
   "source": "session_reading 2026-11-19T08:36:18Z (week)",
   "by_task": {
@@ -91331,7 +91358,17 @@
    },
    "T161": {
     "estimated_bytes": 484048,
-    "estimated_tokens": 527586
+    "estimated_tokens": 527586,
+    "usage_counting": "message_id",
+    "output_tokens": 18449,
+    "input_tokens": 85,
+    "cache_creation_input_tokens": 110860,
+    "cache_read_input_tokens": 2506538,
+    "worker_tokens": 2435270,
+    "worker_turns": 35,
+    "reviewer_tokens": 200662,
+    "reviewer_turns": 8,
+    "last_model": "claude-opus-5-5"
    },
    "T710": {
     "estimated_bytes": 207112,
@@ -91341,11 +91378,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-19T06:17:52Z",
-    "tokens": 9446986
+    "tokens": 9827033
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 353975820
+    "tokens": 354355867
    }
   },
   "session_reading": {
@@ -91356,7 +91393,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T08:40:29Z",
+ "updated_at": "2026-11-19T08:41:50Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
