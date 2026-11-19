@@ -10,13 +10,19 @@
 //! [`first_text`] stores up to two `trade_reading` rows, opens her first job at once ([`open_job`],
 //! property `none`, no INT-009 lookup) when the text names a trade and opens a job (INT-007), keeps
 //! its scrubbed words once through `order::keep_words` (PRIV-008), and asks the ZIP after the
-//! consent text (CON-031). [`reply_step`] asks the ZIP when it never was (after SAFE or an alarm
-//! answer), asks again on a SAFE while it is open, else reads it with `zip_step::answer_zip`; once
-//! her town is stored the trade check tells the coverage (`routing::apply` for a closed category,
-//! else `routing::tell_coverage` with `quotes::api::request_coverage`'s count). With no trade
-//! read, each later reply is the trade answer; its job opens through `begin_job`, and nothing is
-//! written until it does (D-4428). Step 11 (`order::ask_last_question`, once per request once her
-//! town is stored) is called last on every such reply, where it fired before (D-3702).
+//! consent text (CON-031). [`reply_step`] sends nothing to a contact `service::may_text` refuses
+//! (CON-009) or while a 911 text waits for SAFE (INT-005). SAFE, and a reply that answered an open
+//! INT-037 question (its `emergency_beep` row carries the reply's inbox ID), are never a step
+//! answer: they go to the open step ([`ask_open_again`]: the ZIP question when never asked, its
+//! text again with no row written when asked and her town is not stored, else nothing), so the one
+//! ZIP re-ask is neither used nor renewed (D-4441). Any other reply asks the ZIP when it never was,
+//! else is read by `zip_step::answer_zip`; once her town is stored the trade check tells the
+//! coverage (`routing::apply` for a closed category, else `routing::tell_coverage` with
+//! `quotes::api::request_coverage`'s count). With no trade read, each later reply is the trade
+//! answer (the ZIP reply itself too, "86403 my sink leaks"); its job opens through [`open_job`]
+//! keyed with her new property, never `begin_job`, and nothing is written or sent when it names no
+//! trade. Step 11 (`order::ask_last_question`, once per request) is called last, only once step 5
+//! told the coverage (the `trade_check` marker; D-3702, D-4441).
 //!
 //! INT-032's two jobs (T711, D-4439): a first text naming two trades (`matching::two_trades`)
 //! also gets the `two_jobs` text, right after the consent text and before the ZIP question
@@ -41,7 +47,7 @@ use sqlx::types::Uuid;
 
 use askhava_messaging::api::render;
 
-use crate::conversation::{JobStart, Opened, begin_job, name_address_open};
+use crate::conversation::{JobStart, begin_job, name_address_open};
 use crate::handlers::{queue_body, schedule_no_reply};
 use crate::matching::{
     Reading, candidates, keyword_reading, starts_second, trade_label, two_trades,
@@ -53,14 +59,18 @@ use crate::routing::{
     tell_coverage, trade_is_open,
 };
 use crate::rules::{Settings, Then, opens_job};
-use crate::service::{Handled, Queued, Screened, TextIn, request_language};
-use crate::zip_step::{ZipPlace, ZipStep, answer_zip, ask_zip, read_zip};
+use crate::service::{Handled, Queued, Screened, TextIn, may_text, request_language};
+use crate::zip_step::{
+    ZIP_QUESTION_TEMPLATE, ZipPlace, ZipStep, answer_zip, ask_zip, read_zip, zip_body,
+};
 
 /// The step-marker question holding one trade the keyword reading named (codes only, at most two,
 /// first-named first).
 pub(crate) const TRADE_READING: &str = "trade_reading";
 /// The step-marker question written once the trade check told her the coverage (INT-017).
 const TRADE_CHECK: &str = "trade_check";
+/// The INT-037 answer row `service::clear_reply` writes, keyed with the answering reply's inbox ID.
+const BEEP_ANSWER: &str = "emergency_beep";
 /// A first message's trades kept as `trade_reading` rows (INT-032: at most two jobs).
 const MAX_TRADES: usize = 2;
 /// The INT-032 "That's 2 jobs" text a first message naming two trades gets (T711).
@@ -228,9 +238,9 @@ async fn open_job(
     Ok(job)
 }
 
-/// INT-043, INT-049, INT-025, INT-016, INT-017, INT-027, D-3702: one reply in open request
-/// `conversation` that moved on (`screened` is clear or SAFE), as the module comment says. Returns
-/// the texts queued, in order.
+/// INT-043, INT-049, INT-025, INT-037, INT-016, INT-017, INT-027, CON-009, D-3702, D-4441: one
+/// reply in open request `conversation` that moved on (`screened` is clear or SAFE), as the module
+/// comment says. Returns the texts queued, in order; none to a contact `service::may_text` refuses.
 ///
 /// # Errors
 ///
@@ -245,26 +255,99 @@ pub(crate) async fn reply_step(
     let Some(place) = locked(tx, conversation).await? else {
         return Ok(Vec::new());
     };
-    if place.waiting_safe {
+    if place.waiting_safe || !may_text(tx, msg.contact).await? {
         return Ok(Vec::new());
     }
     let request = (msg, conversation);
     let mut texts = Vec::new();
-    match (place.zip_asked, place.town.clone()) {
-        _ if second_job(tx, request, &place).await? => {}
-        (_, Some(town)) if !place.told => {
-            let reached = (town.as_str(), place.zip.as_deref());
-            texts.extend(trade_check(tx, secret, request, (&place, reached), settings).await?);
-        }
-        (_, Some(_)) => {}
-        (asked, None) if !asked || screened == Screened::Safe => {
-            texts.push(ask_zip(tx, secret, request, settings).await?);
-        }
-        (_, None) => texts.extend(zip_answer(tx, secret, request, &place, settings).await?),
+    if screened == Screened::Safe || answered_beep(tx, request).await? {
+        texts.extend(ask_open_again(tx, secret, request, settings).await?);
+    } else {
+        texts.extend(step_answer(tx, secret, request, &place, settings).await?);
     }
-    let spanish_on = settings.spanish_conversations_on;
-    texts.extend(ask_last_question(tx, secret, request, spanish_on).await?);
+    if models::latest_answer(tx, conversation, TRADE_CHECK)
+        .await?
+        .is_some()
+    {
+        let spanish_on = settings.spanish_conversations_on;
+        texts.extend(ask_last_question(tx, secret, request, spanish_on).await?);
+    }
     Ok(texts)
+}
+
+/// INT-043, INT-049, INT-032: her clear reply read as the open step's answer: ALSO or SPLIT, the
+/// trade check once her town is stored, the first ZIP question, or the ZIP answer.
+async fn step_answer(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    request: (&TextIn<'_>, Uuid),
+    place: &Place,
+    settings: Settings,
+) -> Result<Vec<Queued>, IntakeError> {
+    Ok(match (place.zip_asked, place.town.as_deref()) {
+        _ if second_job(tx, request, place).await? => Vec::new(),
+        (_, Some(town)) if !place.told => {
+            let reached = (town, place.zip.as_deref());
+            trade_check(tx, secret, request, (place, reached), settings).await?
+        }
+        (_, Some(_)) => Vec::new(),
+        (false, None) => vec![ask_zip(tx, secret, request, settings).await?],
+        (true, None) => zip_answer(tx, secret, request, place, settings).await?,
+    })
+}
+
+/// INT-037, D-361, D-4441: whether this reply answered an open INT-037 question (its
+/// `emergency_beep` answer row, written by `service::clear_reply`, carries the reply's inbox ID).
+async fn answered_beep(
+    tx: &mut PgConnection,
+    (msg, conversation): (&TextIn<'_>, Uuid),
+) -> Result<bool, IntakeError> {
+    sqlx::query_scalar!(
+        r#"SELECT EXISTS (SELECT 1 FROM intake.intake_answer WHERE conversation_id = $1
+             AND question_id = $2 AND inbox_id = $3) AS "answered!""#,
+        conversation,
+        BEEP_ANSWER,
+        msg.inbox_id
+    )
+    .fetch_one(tx)
+    .await
+    .map_err(|_| IntakeError::Database)
+}
+
+/// INT-049, INT-025, INT-037, CON-009, D-4441: the open question asked again after SAFE, an
+/// INT-037 answer (or, for T691, START), as the module comment says: the ZIP question when it was
+/// never asked (`ask_zip`), its text again with no row written when it was asked and her town is
+/// not stored, so the one re-ask is neither used nor renewed; nothing while a SAFE hold waits,
+/// nothing is open, the request is closed or `service::may_text` refuses the contact.
+///
+/// # Errors
+///
+/// `ask_zip`'s, [`IntakeError::Outbox`] or [`IntakeError::Database`].
+pub(crate) async fn ask_open_again(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    request: (&TextIn<'_>, Uuid),
+    settings: Settings,
+) -> Result<Option<Queued>, IntakeError> {
+    let Some(place) = locked(tx, request.1).await? else {
+        return Ok(None);
+    };
+    if place.waiting_safe || !may_text(tx, request.0.contact).await? {
+        return Ok(None);
+    }
+    let (msg, conversation) = request;
+    if place.town.is_some() {
+        return Ok(None);
+    }
+    if !place.zip_asked {
+        return Ok(Some(ask_zip(tx, secret, request, settings).await?));
+    }
+    let language = request_language(tx, conversation).await?;
+    let template = ZIP_QUESTION_TEMPLATE;
+    let body = zip_body(template, language, settings.spanish_conversations_on);
+    let subject = [conversation, msg.inbox_id];
+    let queued = queue_body(tx, secret, (msg.contact, template), &subject, &body).await?;
+    Ok(Some(queued))
 }
 
 /// INT-049, INT-022: `answer_zip` on her reply; a stored town goes straight on to the trade check.
@@ -291,8 +374,8 @@ async fn zip_answer(
 /// INT-016, INT-017, INT-009: step 5 once her town is stored. The request's own first job and its
 /// first `trade_reading` trade; a short first text that read a trade but opened no job opens it
 /// now, keyed with her new property; with no trade read, this reply is read as the trade answer
-/// and its job opens through `begin_job` (nothing is written when it opens none). Then the
-/// coverage is told; empty when nothing went.
+/// ([`trade_answer`]; nothing is written or sent when it names no trade). Then the coverage is
+/// told; empty when nothing went.
 async fn trade_check(
     tx: &mut PgConnection,
     secret: &SecretString,
@@ -318,7 +401,7 @@ async fn trade_check(
             let job = open_job(tx, ids, (trade, property), (false, at)).await?;
             (trade.clone(), job, String::new())
         }
-        (None, _) => match trade_answer(tx, msg, conversation).await? {
+        (None, _) => match trade_answer(tx, msg, (place.homeowner, conversation)).await? {
             Some((trade, job)) => (trade, job, msg.inbound.words.to_owned()),
             None => return Ok(Vec::new()),
         },
@@ -397,28 +480,28 @@ fn second_start<'a>(
     }
 }
 
-/// INT-016, INT-007, INT-009: her reply read as the trade answer; its first keyword trade opens
-/// the request's first job through `begin_job`, and only then is its `trade_reading` row written.
+/// INT-016, INT-043, INT-009, D-4441: her reply read as the trade answer; its first keyword trade
+/// opens the request's first job through [`open_job`], keyed with her newest property and with no
+/// INT-009 lookup (INT-007 governs a message's own words, not the order opening the job her answer
+/// named, so a one-word "plumbing" opens it too), then its `trade_reading` row is written.
 async fn trade_answer(
     tx: &mut PgConnection,
     msg: &TextIn<'_>,
-    conversation: Uuid,
+    (homeowner, conversation): (Uuid, Uuid),
 ) -> Result<Option<(String, Uuid)>, IntakeError> {
-    let words = msg.inbound.words;
-    let Some(trade) = keyword_reading(words).trades.first().copied() else {
+    let Some(trade) = keyword_reading(msg.inbound.words).trades.first().copied() else {
         return Ok(None);
     };
-    let start = JobStart {
-        conversation,
-        words,
-        emergency: false,
-        trade,
-        at: msg.received_at,
-    };
-    let Opened::Created(job) = begin_job(tx, &start).await? else {
-        return Ok(None);
-    };
-    models::insert_plain(tx, conversation, (TRADE_READING, trade), msg.received_at).await?;
+    let at = msg.received_at;
+    let property = models::latest_property(tx, homeowner).await?;
+    let job = open_job(
+        tx,
+        (homeowner, conversation),
+        (trade, property),
+        (false, at),
+    )
+    .await?;
+    models::insert_plain(tx, conversation, (TRADE_READING, trade), at).await?;
     Ok(Some((trade.to_owned(), job)))
 }
 
