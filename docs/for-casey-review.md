@@ -3518,3 +3518,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - **What will change:** a new runner task (T753) lets a task be assigned to Fable and sends any task that failed once to Fable for its next try; if Fable refuses or runs out of usage, Opus takes over without losing a try. The next tasks claimed are, in order: T724, T753, T726, T727, T748, T740, T742.
 - Your instruction (Nov 19); nothing needs you now.
+
+## Shorter path to Gate C, and three payment fixes (D-4762, D-4763)
+
+- **Faster order:** a few tasks were waiting on others only by habit: the Twilio voice sandbox, the AI and security scans of the test site, the cancel refund and the three-part code audit now start sooner (the audit parts run side by side). Nothing is skipped.
+- **Payment fixes:** a business owed a free introduction after its card page opened a payment is no longer stuck (T754); a payment Stripe reports that we can't match now alerts you instead of only being logged (T754); an auto-confirm pick that should be free charges nothing and waits for the business's normal Confirm (T689).
+- Our choice (Fable's findings); nothing needs you now.
