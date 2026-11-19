@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T16:35:52Z by runner 54f201670873 (actions).
+Updated 2026-11-19T16:39:45Z by runner 54f201670873 (actions).
 
-**Building: T724 in progress since 16:18Z; 497 of 670 done; week 86% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T724 in progress since 16:18Z; 497 of 683 done; week 86% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 497 of 670 build tasks (owner gates not counted)
+- **Tasks done:** 497 of 683 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T724 claimed 16:18Z, lease until 19:18Z; lane 3: T530 claimed 15:41Z, lease until 18:41Z; lane 4: T555 claimed 15:44Z, lease until 18:44Z; lane 7: T715 claimed 15:50Z, lease until 18:50Z
 - **Week:** 86% used, 17.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:35Z, 0 min before this update
+- **Last run:** 16:36Z, 3 min before this update
 - **Keeper:** last ran 16:35Z, next wake 18:43Z
 
 ## Needs attention
@@ -92,7 +92,6 @@ Updated 2026-11-19T16:35:52Z by runner 54f201670873 (actions).
 | T671 | intake (harness): a homeowner's texts after the consent text | done | 2 | 102 min | 17:25Z | PLAN GAP: three tests outside T671's scope fail because of the new behaviour (worker edited none of them): / 1. tests/in |
 | T621 | portals: the scorecard's go and stop line settings and its p | done | 1 | 38 min | 17:03Z |  |
 | T720 | Decision digest prerequisites (harness): the digest plan and | done | 1 | 67 min | 16:51Z |  |
-| T624 | server: two failed in-process health checks in a row raise o | resync | 1 | 49 min | 16:38Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -136,8 +135,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 140 of 267 done
-- stage 6: 0 of 50 done
+- stage 5: 140 of 278 done
+- stage 6: 0 of 52 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
 - stage kit: 14 of 15 done

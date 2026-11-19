@@ -25196,7 +25196,18 @@
     "T724",
     "T725",
     "T726",
-    "T727"
+    "T727",
+    "T728",
+    "T729",
+    "T730",
+    "T732",
+    "T733",
+    "T734",
+    "T736",
+    "T737",
+    "T738",
+    "T739",
+    "T741"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -25479,7 +25490,9 @@
     "T687",
     "T713",
     "T742",
-    "T740"
+    "T740",
+    "T731",
+    "T735"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -30304,7 +30317,9 @@
     "T687",
     "T713",
     "T740",
-    "T742"
+    "T742",
+    "T731",
+    "T735"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -39129,7 +39144,9 @@
     "T649",
     "T656",
     "T675",
-    "T719"
+    "T719",
+    "T736",
+    "T741"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -56752,7 +56769,8 @@
     "T564",
     "T650",
     "T662",
-    "T704"
+    "T704",
+    "T741"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -86087,7 +86105,8 @@
    "deps": [
     "T470",
     "T684",
-    "T236"
+    "T236",
+    "T730"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -88307,6 +88326,160 @@
    "slug": "help-email-asker-address",
    "type": "build",
    "stage": "6"
+  },
+  {
+   "id": "T728",
+   "deps": [
+    "T673"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-text-pick-reply",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T729",
+   "deps": [
+    "T608",
+    "T600"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "update-email-choice",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T730",
+   "deps": [
+    "T729",
+    "T684",
+    "T580"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "update-email-sends",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T731",
+   "deps": [
+    "T689",
+    "T687"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "auto-confirm-box-served",
+   "type": "harness",
+   "stage": "6"
+  },
+  {
+   "id": "T732",
+   "deps": [
+    "T668"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "quote-withdraw-served",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T733",
+   "deps": [
+    "T665",
+    "T200",
+    "T483"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "business-settings-routes",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T734",
+   "deps": [
+    "T733",
+    "T669",
+    "T541"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "business-leave-served",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T735",
+   "deps": [
+    "T678",
+    "T734"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "business-towns-hours",
+   "type": "build",
+   "stage": "6"
+  },
+  {
+   "id": "T736",
+   "deps": [
+    "T719"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-follow-up-joins",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T737",
+   "deps": [
+    "T712"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "owner-ai-switch",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T738",
+   "deps": [
+    "T712",
+    "T645"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "owner-settings-errors",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T739",
+   "deps": [
+    "T540"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "release-resend-shows",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T741",
+   "deps": [
+    "T675",
+    "T728"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "opted-out-text-pick",
+   "type": "build",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -94156,7 +94329,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T16:35:52Z",
+ "updated_at": "2026-11-19T16:39:45Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
