@@ -1,0 +1,43 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT s.\"on\" AS was_on,\n             EXISTS (SELECT 1 FROM ops.alert a JOIN ops.alert_push p ON p.alert_id = a.id\n               WHERE a.resolved_at IS NULL\n                 AND (a.severity = 'critical' OR (a.severity = 'high' AND a.kind = ANY($1)))\n                 AND p.pushed_at <= $2) AS \"overdue!\",\n             EXISTS (SELECT 1 FROM ops.alert a JOIN ops.alert_push p ON p.alert_id = a.id\n               WHERE a.resolved_at IS NULL\n                 AND (a.severity = 'critical' OR (a.severity = 'high' AND a.kind = ANY($1))))\n               AS \"open!\"\n           FROM ops.safe_mode s FOR UPDATE OF s",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "was_on",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "ops.safe_mode",
+            "name": "on"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "overdue!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "open!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "TextArray",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      null,
+      null
+    ]
+  },
+  "hash": "85439a22d91fe8ac599764ae18555724e2901d6bb4c6f8e3789cd25f7bbc56a9"
+}
