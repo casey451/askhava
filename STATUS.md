@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T11:11:56Z by runner 208fb4d7d73c (actions).
+Updated 2026-11-19T11:12:26Z by runner 208fb4d7d73c (actions).
 
 **Building: T470 in progress since 10:42Z; 488 of 664 done; week 79% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 488 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T470 claimed 10:42Z, lease until 13:42Z; lane 2: T536 claimed 10:45Z, lease until 13:45Z; lane 4: T705 claimed 09:16Z, lease until 14:08Z; lane 6: T540 claimed 10:35Z, lease until 13:35Z; lane 7: T593 claimed 11:00Z, lease until 14:00Z
+- **Lane:** lane 1: T470 claimed 10:42Z, lease until 13:42Z; lane 2: T536 claimed 10:45Z, lease until 13:45Z; lane 6: T540 claimed 10:35Z, lease until 13:35Z; lane 7: T593 claimed 11:00Z, lease until 14:00Z
 - **Week:** 79% used, 32.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:09Z, 2 min before this update
 - **Keeper:** last ran 11:09Z, next wake 13:38Z
@@ -19,6 +19,7 @@ Updated 2026-11-19T11:11:56Z by runner 208fb4d7d73c (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T705 | Integration tests (harness): one shared log capture that a c | MERGE_PENDING | 1 | 114 min | 11:11Z |  |
 | T470 | messaging and server: the worker task that sends queued emai | QUEUED | 1 | 93 min | 10:35Z | Fix-round review (after the one allowed findings round) still found two problems at head d9889d9b8; no reviewer approved |
 | T710 | quotes and licensing (harness): a launch-open category takes | MERGE_PENDING | 1 | 85 min | 10:06Z |  |
 | T553 | Decisions digest, piece 8: the next entries after the header | done | 1 | 76 min | 10:04Z |  |
@@ -143,9 +144,8 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T470 (lease until 2026-11-19T13:42:01Z)
 - lane 2: T536 (lease until 2026-11-19T13:45:21Z)
-- lane 4: T705 (lease until 2026-11-19T14:08:18Z)
 - lane 6: T540 (lease until 2026-11-19T13:35:23Z)
 - lane 7: T593 (lease until 2026-11-19T14:00:06Z)
 
 ## Last usage reading
-- {"task": "T470", "at": "2026-11-19T10:35:45Z", "cache_creation_input_tokens": 390032, "input_tokens": 363, "cache_read_input_tokens": 19486986, "output_tokens": 122364}
+- {"task": "T705", "at": "2026-11-19T11:11:53Z", "input_tokens": 122, "cache_read_input_tokens": 2787274, "output_tokens": 40029, "cache_creation_input_tokens": 160441}
