@@ -120,6 +120,10 @@ function appEnv(scratch: string): NodeJS.ProcessEnv {
 /**
  * The keyed binary's environment: the suite's `env` plus fake Verify, pool, ID secret, vault keys
  * and Stripe stand-in settings (D-3813). The Stripe values are made per run and never printed.
+ * T490 (SEC-025, D-3750, D-3882): the fake Resend stand-in too, with a per-run fake key carrying
+ * the stand-in's `re_stand_in_` prefix (`stand_ins/server.py`), a fake sending domain and a fake
+ * postal line, so the keyed binary's mailers send to the stand-in, whose sent emails T414's control
+ * route reads.
  */
 function keyedEnv(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   const secrets = keyedSecrets();
@@ -142,6 +146,11 @@ function keyedEnv(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
     ASKHAVA_STRIPE_ACCOUNT_ID: "acct_e2efake",
     ASKHAVA_STRIPE_PUBLISHABLE_KEY: `pk_test_${randomBytes(12).toString("hex")}`,
     ASKHAVA_LAUNCH_DATE: "2026-01-15T07:00:00Z",
+    ASKHAVA_ADAPTER_MODE_RESEND: "stand_in",
+    ASKHAVA_RESEND_BASE_URL: `http://127.0.0.1:${String(STAND_IN_PORT)}/resend`,
+    ASKHAVA_RESEND_API_KEY: `re_stand_in_${randomBytes(12).toString("hex")}`,
+    ASKHAVA_RESEND_DOMAIN: "notify.e2efake.example.com",
+    ASKHAVA_POSTAL_ADDRESS: "PO Box 1234, Faketown, AZ 00000",
   };
 }
 

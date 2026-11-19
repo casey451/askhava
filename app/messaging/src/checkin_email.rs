@@ -102,7 +102,7 @@ pub struct CheckInFacts {
     ext = "html",
     source = r#"{% extends "email_layout.html" %}{% block content %}
 <p>{{ ask }}</p>
-{% for (url, label) in buttons %}<p><a href="{{ url }}" style="display:inline-block;padding:12px 16px;border:2px solid #6B4A1E;border-radius:4px;color:#6B4A1E;text-decoration:underline;">{{ label }}</a></p>
+{% for (url, label) in buttons %}<p><a href="{{ url }}" style="display:inline-block;padding:12px 16px;border:1px solid #183F35;border-radius:4px;background:#245849;color:#FFFFFF;text-decoration:none;">{{ label }}</a></p>
 {% endfor %}<p>{{ after }}</p>
 <p>{{ problem }}</p>
 {% endblock %}"#
@@ -237,6 +237,7 @@ mod tests {
     use secrecy::SecretString;
     use sqlx::types::Uuid;
 
+    use super::design_tokens::{off_token_colours, small_font_sizes};
     use super::{
         CHECK_IN_ANSWERS, CheckInFacts, CheckInSender, Language, MailboxKind, check_in_code,
         parse_check_in_code, queue_check_in_email, render_check_in,
@@ -274,6 +275,22 @@ mod tests {
         }
     }
 
+    /// TD-WEB-11 (WEB-027, D-3881): both languages' check-in email, layout included, holds only
+    /// section 2's colours, its buttons solid `evergreen` with a white label.
+    #[test]
+    fn td_web_11_check_in_email_uses_only_design_tokens() {
+        for language in [Language::En, Language::Es] {
+            let mail = render_check_in(&sender(), language, FACTS, TOKEN).expect("renders");
+            assert!(off_token_colours(&mail.html).is_empty(), "{}", mail.html);
+            let solid = "background:#245849;color:#FFFFFF;";
+            assert_eq!(mail.html.matches(solid).count(), CHECK_IN_ANSWERS.len());
+            assert!(
+                small_font_sizes(&mail.html).is_empty(),
+                "no text under 16 px"
+            );
+        }
+    }
+
     #[test]
     fn td_txt_31_codes_round_trip_and_nothing_else_parses() {
         for day in [3, 14] {
@@ -300,5 +317,95 @@ mod tests {
         let day14 = CheckInFacts { day: 14, ..FACTS };
         let later = queue_check_in_email(&mut db, &sender(), to, (day14, TOKEN), now).await;
         assert!(later.expect("stored"));
+    }
+}
+
+#[cfg(test)]
+pub(crate) mod design_tokens {
+    //! TD-WEB-11 (WEB-027, D-3878): every hex colour a rendered email holds is one of
+    //! `docs/design/DESIGN_SPEC.md` section 2's tokens; shared by each email's own test.
+
+    /// Section 2's token hex values, upper case (`on-evergreen` and `on-night` are `surface`'s).
+    const TOKENS: [&str; 15] = [
+        "F7F5F0", "FFFFFF", "ECEFE8", "1E2926", "4A5952", "245849", "183F35", "C8CEC5", "6E8077",
+        "1F4A3E", "DCE8E0", "557A6E", "A8581E", "F2B27A", "9B2C1F",
+    ];
+
+    /// WEB-027: each `font-size` or `font` shorthand value in `html` that is not a px size of
+    /// 16 or more (decimals read; any other unit or an unreadable value counts), as written.
+    pub(crate) fn small_font_sizes(html: &str) -> Vec<String> {
+        let values = |key: &'static str| {
+            html.split(key).skip(1).map(move |rest| {
+                let value = rest.split([';', '"', '\'', '}']).next().unwrap_or("");
+                (key, value.trim())
+            })
+        };
+        values("font-size:")
+            .chain(values("font:"))
+            .filter(|(key, value)| !px_of_16_or_more(key, value))
+            .map(|(_, value)| value.to_string())
+            .collect()
+    }
+
+    /// The size in a `font-size` value, or the first numeric word of a `font` shorthand (its
+    /// `/line-height` dropped), reads as px of 16 or more.
+    fn px_of_16_or_more(key: &str, value: &str) -> bool {
+        let size = if key == "font:" {
+            let numeric = |w: &&str| w.starts_with(|c: char| c.is_ascii_digit() || c == '.');
+            let first = value.split_whitespace().find(numeric);
+            first.and_then(|w| w.split('/').next()).unwrap_or("")
+        } else {
+            value
+        };
+        let px = size
+            .strip_suffix("px")
+            .and_then(|n| n.trim().parse::<f64>().ok());
+        px.is_some_and(|px| px >= 16.0)
+    }
+
+    /// WEB-027: each `#` colour (3, 4, 6 or 8 hex digits, `&#..;` entities skipped) in `html`
+    /// that is not a section 2 token, as written; a 4- or 8-digit (alpha) colour never is.
+    pub(crate) fn off_token_colours(html: &str) -> Vec<String> {
+        let mut off = Vec::new();
+        for (at, _) in html.match_indices('#') {
+            let run: String = html[at + 1..]
+                .chars()
+                .take_while(char::is_ascii_alphanumeric)
+                .collect();
+            let hex = run.chars().all(|c| c.is_ascii_hexdigit());
+            if html[..at].ends_with('&') || !hex || !matches!(run.len(), 3 | 4 | 6 | 8) {
+                continue;
+            }
+            if matches!(run.len(), 4 | 8) {
+                off.push(run);
+                continue;
+            }
+            let full = if run.len() == 3 {
+                run.chars().flat_map(|c| [c, c]).collect()
+            } else {
+                run.clone()
+            };
+            if !TOKENS.contains(&full.to_ascii_uppercase().as_str()) {
+                off.push(run);
+            }
+        }
+        off
+    }
+
+    /// TD-WEB-11: a planted `#9A9A9A` text colour is caught; tokens, short `#fff` and entities pass.
+    #[test]
+    fn td_web_11_planted_grey_is_caught() {
+        let planted = "<p style=\"color:#9A9A9A;background:#F7F5F0\">Hi</p>";
+        assert_eq!(off_token_colours(planted), ["9A9A9A"]);
+        let alpha = "color:#9A9A9A80;color:#9AA8;color:#24584980";
+        assert_eq!(off_token_colours(alpha), ["9A9A9A80", "9AA8", "24584980"]);
+        let fine = "color:#fff;color:#245849 &#39; &#x27; &#8217; #feedback";
+        assert!(off_token_colours(fine).is_empty());
+        let sizes = "font-size:14px;font-size:16px;font-size:14.5px;font-size:16.5px";
+        assert_eq!(small_font_sizes(sizes), ["14px", "14.5px"]);
+        let units = "font-size:12pt;font-size:0.8rem;font-size:large\"";
+        assert_eq!(small_font_sizes(units), ["12pt", "0.8rem", "large"]);
+        let shorthand = "font:14px Arial;font:bold 16px/1.5 Arial;font:inherit";
+        assert_eq!(small_font_sizes(shorthand), ["14px Arial", "inherit"]);
     }
 }

@@ -370,7 +370,7 @@ async fn line_later(pool: &PgPool, pick: Uuid, at: Timestamp, failed: bool) {
     let Ok(mut tx) = pool.begin().await else {
         return;
     };
-    if !matches!(claimed(&mut tx, pick).await, Ok(true)) {
+    if !matches!(is_released(&mut tx, pick).await, Ok(true)) {
         return;
     }
     if failed && raise_alert(&mut tx, &alert).await.is_err() {
@@ -382,7 +382,10 @@ async fn line_later(pool: &PgPool, pick: Uuid, at: Timestamp, failed: bool) {
 }
 
 /// Whether pick `pick` has its `picks.release` row, the claim (PICK-022, D-2017).
-async fn claimed(conn: &mut PgConnection, pick: Uuid) -> Result<bool, sqlx::Error> {
+///
+/// # Errors
+/// The database error when the read fails.
+pub async fn is_released(conn: &mut PgConnection, pick: Uuid) -> Result<bool, sqlx::Error> {
     sqlx::query_scalar!(
         r#"SELECT EXISTS (SELECT 1 FROM picks.release WHERE pick_id = $1) AS "claimed!""#,
         pick

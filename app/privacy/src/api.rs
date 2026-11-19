@@ -25,6 +25,7 @@ pub use crate::business_contacts::{
     mailboxes_of, read_business_mailbox, read_staff_phone, rotate_business_batch,
     store_staff_phone,
 };
+pub use crate::consent_phone::{CONSENT_PHONE_CLEARED, PhoneClear, clear_consent_phone};
 pub use crate::contact_fields::{CONTACT_FIELDS_SET, set_name_address};
 pub use crate::handlers::{
     PURGE_KIND, RECHECK_KIND, purge_target, run_complaint_hold, run_complaint_hold_at,
