@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T20:23:33Z by runner 82ae7f077915 (actions).
+Updated 2026-11-19T20:33:52Z by runner 2713b670905c (actions).
 
 **Building: T753 in progress since 19:06Z; 503 of 698 done; week 7% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-19T20:23:33Z by runner 82ae7f077915 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T753 claimed 19:06Z, lease until 22:06Z; lane 3: T307 claimed 17:47Z, lease until 23:22Z; lane 6: T480 claimed 17:18Z, lease until 20:18Z; lane 7: T717 claimed 20:10Z, lease until 23:10Z
 - **Week:** 7% used, 176.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:23Z, 0 min before this update
+- **Last run:** 20:33Z, 0 min before this update
 - **Keeper:** last ran 20:23Z, next wake 22:09Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 66 problem(s) on tasks still to run (+340 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 74 problem(s) on tasks still to run (+345 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -86,8 +86,6 @@ Updated 2026-11-19T20:23:33Z by runner 82ae7f077915 (actions).
 | T702 | privacy and messaging: no blind-index key version is retired | done | 1 | 40 min | 21:07Z |  |
 | T706 | payments: held_release, the FEE-017 re-check that clears a p | done | 1 | 100 min | 20:54Z |  |
 | T715 | intake (harness): corrections to T671's walker: alarm answer | BLOCKED | 1 | 48 min | 20:53Z |  |
-| T502 | Decisions digest, piece 3: the next entries after the header | done | 1 | 38 min | 20:31Z |  |
-| T364 | server and portals: the business step-up code page is served | check_failed | 1 | 2 h 1 min | 20:29Z |  |
 
 ### Plan and harness merges on main
 - none
