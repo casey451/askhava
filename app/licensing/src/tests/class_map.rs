@@ -301,15 +301,15 @@ fn td_lic_21_every_enabled_category_is_open_now() {
 }
 
 /// TD-LIC-21 (LIC-046, OPS-006, INT-017): "Coming later" takes waitlist sign-ups only; open needs
-/// 2 active businesses; a disabled launch-open category fails the load.
+/// 1 active business (D-4421); a disabled launch-open category fails the load.
 #[test]
 fn td_lic_21_launch_open_flag_and_active_businesses() {
     let m = map("  - {class: R-1}\n").expect("test map loads");
     assert_eq!(m.opening("pool_cleaning"), Opening::ComingLater);
     assert_eq!(m.opening("junk_removal"), Opening::Off);
     let open = m.opening("plumbing_repair");
-    assert_eq!(request_intake(open, 1, 2), RequestIntake::TooFewBusinesses);
-    assert_eq!(request_intake(open, 2, 2), RequestIntake::Open);
+    assert_eq!(request_intake(open, 0, 1), RequestIntake::TooFewBusinesses);
+    assert_eq!(request_intake(open, 1, 1), RequestIntake::Open);
     for active in [0, 5] {
         assert_eq!(
             request_intake(Opening::ComingLater, active, 2),

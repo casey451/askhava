@@ -119,7 +119,7 @@ pub enum RequestIntake {
 }
 
 /// LIC-046, OPS-006: a launch-open category takes requests only with at least `min_active` active
-/// businesses (the setting, default 2); fewer is INT-017's case.
+/// businesses (the setting, default 1, D-4421); fewer is INT-017's case.
 #[must_use]
 pub const fn request_intake(opening: Opening, active: u32, min_active: u32) -> RequestIntake {
     match opening {
