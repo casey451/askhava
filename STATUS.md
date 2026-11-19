@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T21:58:02Z by runner 1dab405a553b (actions).
+Updated 2026-11-19T21:58:12Z by runner 1dab405a553b (actions).
 
-**Building: T607 in progress since 21:16Z; 506 of 701 done; week 9% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T109 in progress since 21:53Z; 506 of 701 done; week 9% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 506 of 701 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T607 claimed 21:16Z, lease until 00:16Z; lane 3: T109 claimed 21:53Z, lease until 00:53Z; lane 4: T480 claimed 20:38Z, lease until 23:38Z; lane 5: T541 claimed 21:24Z, lease until 00:24Z; lane 6: T707 claimed 21:38Z, lease until 00:38Z; lane 7: T717 claimed 20:10Z, lease until 00:57Z
+- **Lane:** lane 3: T109 claimed 21:53Z, lease until 00:53Z; lane 4: T480 claimed 20:38Z, lease until 23:38Z; lane 5: T541 claimed 21:24Z, lease until 00:24Z; lane 6: T707 claimed 21:38Z, lease until 00:38Z; lane 7: T717 claimed 20:10Z, lease until 00:57Z
 - **Week:** 9% used, 168.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:57Z, 0 min before this update
 - **Keeper:** last ran 21:36Z, next wake 21:56Z
@@ -20,12 +20,13 @@ Updated 2026-11-19T21:58:02Z by runner 1dab405a553b (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T607 | site: site.css brought up to the V6 reference (laftly-v6.css | MERGE_PENDING | 2 | 41 min | 21:57Z | review_missing on 2c1fc315ebe4 (D-3728): not proven reviewed or worker-made / (b) 5cb49e3317bc T607: NOTES entry in the  |
 | T663 | picks, jobs and payments (harness): a confirmed pick moves i | BLOCKED | 1 | 30 min | 21:32Z | PLAN GAP: tests/test_coverage_floor.py:125 asserts floors["future"] == [], contradicting T663 goal (5), which requires a |
 | T753 | runner (harness): `fable` is a model the plan can name, a ta | MERGE_PENDING | 1 | 112 min | 20:59Z |  |
 | T307 | server and portals: the homeowner portal's sign-in, home pag | done | 2 | 2 h 45 min | 20:33Z | PLAN GAP: tests/security/tests/vault_readers.rs:23 lets only `portals` call `read_own_contact` (line 19 lets only `messa |
 | T748 | portals: the help-page form's confirmation promises no reply | done | 1 | 41 min | 20:08Z |  |
 | T161 | wording: the WORD-024 voice rule's pressure-word scan, the r | done | 2 | 2 h 1 min | 20:00Z | PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/s |
-| T607 | site: site.css brought up to the V6 reference (laftly-v6.css | QUEUED | 1 | 2 h 5 min | 19:21Z | review_missing on 2c1fc315ebe4 (D-3728): not proven reviewed or worker-made / (b) 5cb49e3317bc T607: NOTES entry in the  |
+| T607 | site: site.css brought up to the V6 reference (laftly-v6.css | QUEUED | 1 | 2 h 5 min | 19:21Z |  |
 | T555 | Decisions digest, piece 10: the next entries after the heade | done | 1 | 2 h 7 min | 17:51Z |  |
 | T715 | intake (harness): corrections to T671's walker: alarm answer | done | 3 | 113 min | 17:43Z | PLAN GAP: one TD-INT-52 sentence can't be met by intake as planned: "a two-word first text naming a trade opens its job  |
 | T530 | portals: the owner help page and its screened reply box (D-3 | QUEUED | 1 | 117 min | 17:38Z | Review round 2 on head 9cae918e901f6738321e0450589f137ab939da2f: REVIEW-VERDICT: FINDINGS (the one fix round is used). / |
@@ -134,7 +135,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T607 (lease until 2026-11-20T00:16:12Z)
 - lane 3: T109 (lease until 2026-11-20T00:53:21Z)
 - lane 4: T480 (lease until 2026-11-19T23:38:50Z)
 - lane 5: T541 (lease until 2026-11-20T00:24:08Z)
@@ -142,4 +142,4 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 7: T717 (lease until 2026-11-20T00:57:31Z)
 
 ## Last usage reading
-- {"task": "T663", "at": "2026-11-19T21:32:53Z", "cache_creation_input_tokens": 262824, "input_tokens": 233, "output_tokens": 76311, "cache_read_input_tokens": 14719874}
+- {"task": "T607", "at": "2026-11-19T21:57:40Z", "cache_creation_input_tokens": 150727, "output_tokens": 46933, "input_tokens": 140, "cache_read_input_tokens": 4586158}
