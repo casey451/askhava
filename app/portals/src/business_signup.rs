@@ -53,8 +53,14 @@
 //! [`ChannelPost::parse`] keeps the shown channels only when the seal verifies (constant time), and
 //! [`ChannelPost::consent_channels`] is `None` unless they cover the choice, so `FormAgain` comes
 //! back with the wording naming texts and nothing is stored. The `POST` routes are T302's.
+//!
+//! T488 (WEB-019, D-180, D-3144, D-4561): with `Parts.language` Spanish, every [`Screen`] step is
+//! rendered through `to_spanish` and `EsSignupView` over `templates/es_business_signup.html`, the
+//! same fields in Spanish (a draft for native-speaker review); the consent wording stays
+//! `consent_box`'s, since that is what the consent record stores ([`es_words`]).
 
 use std::collections::BTreeSet;
+use std::ops::Deref;
 
 use askama::Template;
 use askhava_adapters::api::PaymentsAdapter;
@@ -73,6 +79,7 @@ use askhava_businesses::api::{
     ContactKind, FeeNumbers, MaskedContact, NUMBER_OLD_BUTTON, SOMEONE_ELSE_LINE, STOP_FIX_BUTTON,
     fee_summary, fix_record_lines, trade_count,
 };
+use askhava_businesses::api::{REPEAT_FREE_DAYS, whole_dollars};
 use askhava_core::api::{IdSecret, LinkKind, LinkSalt, LinkToken, link_token};
 use askhava_licensing::api::ClassMap;
 use askhava_payments::api::Tier;
@@ -343,6 +350,11 @@ impl AreaEntered<'_> {
     fn error_for(&self, field: &str) -> Option<&'static str> {
         let found = self.problems.iter().find(|p| area_field(**p) == field);
         found.map(|p| area_message(*p))
+    }
+
+    /// WEB-019, A11Y-030: [`Self::error_for`] in Spanish, for the Spanish page.
+    fn es_error_for(&self, field: &str) -> Option<&'static str> {
+        self.error_for(field).map(|m| es_words(m).unwrap_or(m))
     }
 
     /// The carried answers to post again as hidden fields, less `base_zip` and `radius`, which
@@ -768,7 +780,8 @@ impl SignupView<'_> {
 
     /// CON-019, A11Y-030: [`TEXT_PHONE_MISSING`] beside the text phone field, while it is shown.
     fn phone_error(&self) -> Option<&str> {
-        let shown = |r: &&str| self.texting_on && *r == TEXT_PHONE_MISSING;
+        let missing = |r: &str| r == TEXT_PHONE_MISSING || es_words(TEXT_PHONE_MISSING) == Some(r);
+        let shown = |r: &&str| self.texting_on && missing(r);
         self.entered.problem.map(|(_, r)| r).filter(shown)
     }
 
@@ -919,7 +932,13 @@ fn render_signup(
         Screen::ServiceArea(area) => fill_area(&mut v, area),
         other => fill_record(&mut v, other),
     }
-    v.render()
+    match parts.language {
+        PageLanguage::En => v.render(),
+        PageLanguage::Es => {
+            to_spanish(&mut v, screen, &parts.fees);
+            EsSignupView { v }.render()
+        }
+    }
 }
 
 /// BIZ-026, BIZ-031: the record-contact, saved, letter and done screens.
@@ -963,6 +982,296 @@ fn fill_record(v: &mut SignupView<'_>, screen: Screen<'_>) {
         }
         _ => {}
     }
+}
+
+/// WEB-019, D-180, D-3144: the Spanish sign-up page, `templates/es_business_signup.html`, over the
+/// same fields as [`SignupView`] (reached through `Deref`); [`to_spanish`] fills them in Spanish.
+/// All its Spanish is a draft marked for native-speaker review.
+#[derive(Template)]
+#[template(path = "es_business_signup.html")]
+struct EsSignupView<'a> {
+    v: SignupView<'a>,
+}
+
+impl<'a> Deref for EsSignupView<'a> {
+    type Target = SignupView<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.v
+    }
+}
+
+/// WEB-019, D-180: the sign-up's fixed English words beside their Spanish drafts (titles, buttons,
+/// hints, choices, category labels and the messages the form shows), for native-speaker review.
+const ES_WORDS: [(&str, &str); 33] = [
+    ("Sign up your business", "Registre su negocio"),
+    ("Error: Sign up your business", "Error: Registre su negocio"),
+    (
+        "Show this business is yours",
+        "Demuestre que este negocio es suyo",
+    ),
+    (
+        "Error: Show this business is yours",
+        "Error: Demuestre que este negocio es suyo",
+    ),
+    (
+        "Check your email for a code",
+        "Busque el código en su correo electrónico",
+    ),
+    (
+        "Error: Check your email for a code",
+        "Error: Busque el código en su correo electrónico",
+    ),
+    (
+        "How far do you travel for jobs?",
+        "¿Qué tan lejos viaja para hacer trabajos?",
+    ),
+    (
+        "Error: How far do you travel for jobs?",
+        "Error: ¿Qué tan lejos viaja para hacer trabajos?",
+    ),
+    ("Where your code goes", "A dónde enviamos su código"),
+    ("Your sign-up is saved", "Su registro está guardado"),
+    ("Your code comes by letter", "Su código llega por carta"),
+    ("You're signed up", "Ya está registrado"),
+    (REVIEW_TITLE, "Estamos revisando su registro a mano"),
+    ("Send the code", "Enviar el código"),
+    (NUMBER_OLD_BUTTON, "Ese número ya no es el mío"),
+    (
+        STOP_FIX_BUTTON,
+        "Espere, primero voy a corregir mi registro",
+    ),
+    ("Mail the letter", "Enviar la carta"),
+    ("Send a new code", "Enviar un código nuevo"),
+    ("Send the email again", "Enviar el correo otra vez"),
+    (
+        "Type or paste the code. Your phone may fill it in.",
+        "Escriba o pegue el código. Su teléfono puede llenarlo solo.",
+    ),
+    ("Type or paste the code.", "Escriba o pegue el código."),
+    (
+        NO_EMAIL_HINT,
+        "¿No le llegó? Revise su carpeta de spam o de correo no deseado.",
+    ),
+    (
+        CodeProblem::Refused.message(),
+        "Ese código no coincide. Revíselo y escríbalo otra vez.",
+    ),
+    (
+        CodeProblem::Expired.message(),
+        "Ese código ya venció. Use el botón de abajo para pedir uno nuevo.",
+    ),
+    ("Email", "Correo electrónico"),
+    ("Text messages", "Mensajes de texto"),
+    ("Both", "Los dos"),
+    ("Open now", "Ya disponible"),
+    ("Coming later", "Próximamente"),
+    (
+        CONSENT_MISSING,
+        "Marque la casilla para aceptar los avisos. Enviamos las solicitudes de trabajo por correo electrónico, así que sin su permiso no podemos registrarlo.",
+    ),
+    (
+        TEXT_PHONE_MISSING,
+        "Agregue el número de celular para los mensajes de trabajo, o elija solo correo electrónico.",
+    ),
+    (
+        CONSENT_AGAIN,
+        "Cambió cómo quiere recibir las solicitudes de trabajo, así que el acuerdo de abajo también cambió. Léalo y luego marque la casilla para aceptar.",
+    ),
+    (
+        SOMEONE_ELSE_LINE,
+        "¿Está llenando esto por otra persona? Pídale al dueño que le lea el código de 6 dígitos o que le reenvíe el mensaje de texto.",
+    ),
+];
+
+/// WEB-019, D-180: more fixed words, the pest attestation, the name refusals and the service-area
+/// messages, beside their Spanish drafts.
+const ES_MORE: [(&str, &str); 5] = [
+    (
+        PEST_ATTESTATION,
+        "Tengo una licencia vigente de negocio de control de plagas del Departamento de Agricultura de Arizona",
+    ),
+    (
+        "Enter your business name.",
+        "Escriba el nombre de su negocio.",
+    ),
+    (
+        "Keep each name to 200 characters or fewer.",
+        "Use 200 caracteres o menos en cada nombre.",
+    ),
+    (
+        area_message(ServiceAreaProblem::BaseZip),
+        "Escriba el código postal de 5 dígitos de su base.",
+    ),
+    (
+        area_message(ServiceAreaProblem::Radius),
+        "Escriba un número de millas del 1 al 100, como 25.",
+    ),
+];
+
+/// WEB-019, D-180: the Spanish draft of the sign-up words `en`, or `None` when it has none (a
+/// refusal from another crate's check stays as written).
+#[must_use]
+pub fn es_words(en: &str) -> Option<&'static str> {
+    let all = ES_WORDS.iter().chain(&ES_MORE);
+    all.into_iter().find(|(e, _)| *e == en).map(|(_, es)| *es)
+}
+
+/// BIZ-058, WEB-019: [`area_message`] in Spanish, for the Spanish page's summary and fields.
+fn es_area_message(p: ServiceAreaProblem) -> &'static str {
+    es_words(area_message(p)).unwrap_or(area_message(p))
+}
+
+/// WEB-019, BIZ-024 to BIZ-031, D-3144: the English view's words in Spanish for `screen`. The
+/// consent wording and the notice line are left as they are: the wording is what the consent
+/// record stores (CON-019), and the notice line is already in the page language.
+fn to_spanish(v: &mut SignupView<'_>, screen: Screen<'_>, fees: &FeeNumbers) {
+    let es = |en: &'static str| es_words(en).unwrap_or(en);
+    v.title = es(v.title);
+    v.someone_else = es(v.someone_else);
+    v.pest_attestation = es(v.pest_attestation);
+    v.buttons.iter_mut().for_each(|b| b.2 = es(b.2));
+    v.choices.iter_mut().for_each(|c| c.1 = es(c.1));
+    v.categories.iter_mut().for_each(|c| c.2 = es(c.2));
+    if let Some(code) = v.code_form.as_mut() {
+        code.hint = es(code.hint);
+        code.error = code.error.map(es);
+    }
+    v.entered.problem = v
+        .entered
+        .problem
+        .map(|(f, r)| (f, es_words(r).unwrap_or(r)));
+    if !v.fee_lines.is_empty() {
+        v.fee_lines = es_fee_lines(fees);
+    }
+    es_lines(v, screen);
+}
+
+/// BIZ-026, BIZ-031, WEB-019: the Spanish lines and links of the code, record, done and review
+/// screens; the form and service-area screens have none.
+fn es_lines(v: &mut SignupView<'_>, screen: Screen<'_>) {
+    match screen {
+        Screen::Contact(to, landline) => {
+            let shown = landline.into_iter().chain([to]);
+            v.lines = shown.map(es_contact_line).collect();
+        }
+        Screen::NumberOld(delay) => v.lines = es_fix_lines(delay).to_vec(),
+        Screen::Letter(to, delay) => {
+            v.lines = [es_contact_line(to)].into_iter().chain(es_fix_lines(delay)).collect();
+            let roc = ("https://roc.az.gov".to_owned(), "Cómo actualizar su registro del ROC (en inglés)".to_owned());
+            v.links = vec![roc];
+        }
+        Screen::Done(facts) => (v.lines, v.links) = es_done_lines(facts),
+        Screen::Review => v.lines = vec!["Algunos registros esperan una revisión a mano antes de activarse. Le enviaremos un correo electrónico para decirle cómo va el suyo.".to_owned()],
+        Screen::IdentityCode(to, _) => {
+            let to_word = match to.kind() {
+                ContactKind::Mobile => "al celular",
+                ContactKind::Landline => "al teléfono fijo",
+                ContactKind::Email => "al correo electrónico",
+                ContactKind::MailingAddress => "a la dirección postal",
+            };
+            v.lines = vec![format!("Enviamos un código de 6 dígitos {to_word} de su registro del ROC o de su licencia de la ciudad: {}.", to.shown())];
+        }
+        Screen::EmailCode(_) => v.lines = vec!["Enviamos un código de 6 dígitos a la dirección de correo que nos dio para las solicitudes de trabajo. Escríbalo abajo.".to_owned()],
+        Screen::Form(..) | Screen::FormAgain(..) | Screen::ServiceArea(_) => {}
+    }
+}
+
+/// BIZ-026, D-366, WEB-019: `MaskedContact::line` in Spanish.
+fn es_contact_line(to: &MaskedContact) -> String {
+    let s = to.shown();
+    match to.kind() {
+        ContactKind::Landline => format!(
+            "El teléfono de su registro, {s}, es fijo. No podemos enviarle mensajes de texto ahí, y nunca llamamos. Su código va al correo electrónico de su registro. Si no hay correo, va por carta."
+        ),
+        ContactKind::MailingAddress => format!(
+            "Le enviaremos por correo postal una carta con su código de 6 dígitos a la dirección de su registro en {s}."
+        ),
+        ContactKind::Mobile => format!(
+            "Le enviaremos su código de 6 dígitos por mensaje de texto al celular de su registro del ROC o de su licencia de la ciudad: {s}."
+        ),
+        ContactKind::Email => format!(
+            "Le enviaremos su código de 6 dígitos al correo electrónico de su registro del ROC o de su licencia de la ciudad: {s}."
+        ),
+    }
+}
+
+/// BIZ-026, D-288, WEB-019: `businesses::api::fix_record_lines` in Spanish.
+fn es_fix_lines(delay_days: u32) -> [String; 3] {
+    [
+        "Para cambiarlo, actualice sus datos de contacto en el Registro de Contratistas de Arizona (ROC). Si solo tiene una licencia de negocio de la ciudad, pida el cambio en la ciudad.".to_owned(),
+        format!("Los cambios normalmente nos llegan unos {delay_days} días después de que usted los hace."),
+        "Cuando veamos el cambio, le enviaremos por correo electrónico un enlace para terminar. Su código irá a su nuevo número o correo.".to_owned(),
+    ]
+}
+
+/// BIZ-031, D-1710, WEB-019: [`done_lines`] in Spanish; the trade's name stays as the catalog
+/// writes it.
+fn es_done_lines(f: &DoneFacts) -> (Vec<String>, Vec<(String, String)>) {
+    let (n, t) = (f.count, &f.trade);
+    if f.waitlist {
+        let who = if n == 1 {
+            "el primer negocio en espera".to_owned()
+        } else {
+            format!("uno de {n} negocios en espera")
+        };
+        let line = format!(
+            "Está en la lista de espera de {t}, {who}. Le enviaremos un solo correo cuando abramos {t}. Guardamos la fecha en que se anotó."
+        );
+        return (vec![line], Vec::new());
+    }
+    let one_of = if n == 1 {
+        format!("Es el primer negocio de {t} hasta ahora.")
+    } else {
+        format!("Es uno de {n} negocios de {t} hasta ahora.")
+    };
+    let k = f.open_jobs.len();
+    if k == 0 {
+        let line = format!(
+            "{one_of} Le avisaremos una sola vez, por correo electrónico, cuando empiecen a llegar solicitudes para su oficio."
+        );
+        return (vec![line], Vec::new());
+    }
+    let open = if k == 1 {
+        format!("1 trabajo de {t} abierto que puede cotizar ahora")
+    } else {
+        format!("{k} trabajos de {t} abiertos que puede cotizar ahora")
+    };
+    let links = f.open_jobs.iter().enumerate();
+    let links = links.map(|(i, j)| {
+        (
+            format!("/b/jobs/{j}"),
+            format!("Abrir el trabajo {} de {t}", i + 1),
+        )
+    });
+    (vec![open, one_of], links.collect())
+}
+
+/// BIZ-030, D-173, WEB-019, WORD-013: `businesses::api::fee_summary` in Spanish over the same
+/// numbers, less the business statement, which the Spanish page writes as template text.
+fn es_fee_lines(n: &FeeNumbers) -> Vec<String> {
+    let [s, m, l] = n.tier_cents.map(whole_dollars);
+    let (h, min) = (n.confirm_minutes / 60, n.confirm_minutes % 60);
+    let window = match (h, min) {
+        (_, 0) => format!("{h} horas"),
+        (0, _) => format!("{min} minutos"),
+        _ => format!("{h} horas y {min} minutos"),
+    };
+    let brand = askhava_core::api::brand();
+    let brand = brand.es();
+    vec![
+        format!("Registrarse es gratis. Pague solo cuando confirme que un propietario lo eligió: {s} / {m} / {l} según el tamaño del trabajo. Reembolso si no logra comunicarse con el propietario."),
+        format!("Cuando un propietario lo elige, tiene {window} para confirmar. Solo cuentan las horas de 8 a.m. a 8 p.m., todos los días. Para un trabajo de emergencia tiene {} minutos. ¿Revisa su correo solo una o dos veces al día? Agregue también el correo de alguien que lo revise más seguido.", n.emergency_minutes),
+        "Es una tarifa de presentación por un propietario que lo eligió a usted.".to_owned(),
+        format!("Usted paga una sola tarifa fija cuando confirma que un propietario lo eligió: {s}, {m} o {l} según el tamaño del trabajo. No es un porcentaje del trabajo. ¿Llamó dos veces en el horario del propietario y no le contestó? Le devolvemos la tarifa sin que tenga que pedirlo."),
+        "Es una tarifa de presentación fija, nunca un porcentaje del trabajo, y no depende de que el trabajo se haga o se pague.".to_owned(),
+        "El propietario ve todas las cotizaciones y elige solo un negocio. Si lo elige a usted, el trabajo no se le pasa a nadie más.".to_owned(),
+        "Una tarifa nueva nunca se aplica hasta que usted la acepte.".to_owned(),
+        format!("Si el mismo propietario lo vuelve a elegir dentro de {REPEAT_FREE_DAYS} días después de que se cierra el trabajo, no paga."),
+        "Las tarifas siguen la lista publicada, y un cambio necesita su aprobación primero.".to_owned(),
+        "Puede descargar sus estados de cuenta en un archivo CSV.".to_owned(),
+        format!("Si en su oficio muchos propietarios lo eligen y luego no lo contratan, el dueño de {} revisa el caso y puede darle un crédito.", brand.display_name()),
+    ]
 }
 
 /// BIZ-049: the capability step's path; `?step=<slug>` picks one guided screen.
