@@ -7,24 +7,24 @@ These terms explain the emails Laftly LLC sends to businesses that signed up for
 
 ## 1. Your consent
 
-At sign-up you tick an unchecked box that gives your consent, as an electronic record under the federal E-SIGN Act and the Arizona Electronic Transactions Act, to get job and account notices by email. We store the box's wording version and when you ticked it. Each team member gives the same consent at first sign-in. Laftly never places recorded or automated calls to you.
+At sign-up you tick an unchecked box to consent to get job and account notices by email. That consent is an electronic record under the federal E-SIGN Act and the Arizona Electronic Transactions Act. We store the box's wording version and when you ticked it. Each team member gives the same consent at first sign-in. Laftly never places recorded or automated calls to you.
 
-Job requests and picks come by email. We don't text or call businesses. If Laftly ever offers business texting, you'll choose email, text or both, and texts go only to phones whose owner ticks their own box.
+Job requests and picks come by email. We don't text or call businesses. If Laftly ever offers business texting, you'll choose email, text or both. Texts go only to phones whose owner ticks their own box.
 
 ## 2. What we send
 
 | Email | Who gets it | When |
 |---|---|---|
-| Job card | The owner and every "Cards and quotes" member | When a matching request goes out (held to 8 a.m. outside 8 a.m. to 8 p.m., except EMERGENCY cards to people who turned on "Emergency emails at any hour") |
-| Open-cards email | Each person who gets cards, at up to two times a day they choose | Only when the business has cards not yet quoted, or a pick waiting |
+| Job card | The owner and every "Cards and quotes" member | When a matching request goes out. A card due between 8 p.m. and 8 a.m. waits until 8 a.m. EMERGENCY cards to people who turned on "Emergency emails at any hour" don't wait. |
+| Open-cards email | Each person who gets cards | At up to two times a day each person chooses. Only when the business has cards not yet quoted, or a pick waiting |
 | Pick notice | The owner and every "Confirm and billing" member | When a homeowner chooses your quote |
-| Confirm reminders | The same people | Every business hour until you confirm or the window ends, each with the Hold link |
-| Release (job confirmed; the homeowner's details are only in your signed-in portal, never in the email) | The owner and every "Confirm and billing" member | After you confirm and pay |
+| Confirm reminders | The same people | Every business hour until you confirm or the window ends. Each has the Hold link. |
+| Release (job confirmed). The homeowner's details are only in your signed-in portal, never in the email. | The owner and every "Confirm and billing" member | After you confirm and pay |
 | Receipts, refunds and charge answers | The owner and every "Confirm and billing" member | With each charge or refund |
 | Account notices | The owner | Sign-up, license, pause, complaint and terms changes |
-| Monthly missed-cards email | The owner | On the 1st, only when the business got at least 3 cards last month and half or more ended without a quote |
+| Monthly missed-cards email | The owner | On the 1st. Only when the business got at least 3 cards last month and half or more ended without a quote. |
 
-Every notice email comes from "Laftly" <jobs@notify.laftly.com>, has a plain-text part, and carries a footer with Laftly LLC's postal address, a "Manage email notices" link and the line "You get these emails because your business signed up for job requests from Laftly." Notice emails never contain promotions.
+Every notice email comes from "Laftly" <jobs@notify.laftly.com> and has a plain-text part. Its footer has Laftly LLC's postal address, a "Manage email notices" link and the line "You get these emails because your business signed up for job requests from Laftly." Notice emails never contain promotions.
 
 Laftly emails come only from addresses ending in laftly.com, never ask for your card or a code, and every button goes to laftly.com. Opening a link only shows a page; nothing happens until you press that page's button.
 
@@ -47,7 +47,7 @@ For each notice we keep its send time, the provider's delivery status, and when 
 
 ## 6. Recruiting emails
 
-Laftly never texts or calls a business to recruit it. If we email a business that hasn't signed up, the email says in its first line that it is an advertisement for Laftly, says who we are, has an honest subject, carries our postal address and has a working way to stop further recruiting emails, honored at once and never later than 10 business days.
+Laftly never texts or calls a business to recruit it. If we email a business that hasn't signed up, the email says in its first line that it is an advertisement for Laftly. The email also says who we are, has an honest subject line and gives our postal address. It includes a working way to stop more recruiting emails. We honor a stop request at once, and never later than 10 business days.
 
 ## 7. Contact
 
