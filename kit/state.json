@@ -94444,7 +94444,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T17:06:47Z",
+ "updated_at": "2026-11-19T17:09:15Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -94542,8 +94542,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "b05c08a0d16829edf7d1945e78d76b6fec4c7320",
- "starter": "actions",
+ "runner_sha": "3693971a9c8e8d39469093495c8f4ff8a28cc249",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "1fab3a0bc8d26d3b914c19af6a255ed52d369b82",
@@ -94837,7 +94837,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 4748,
+ "next_decision": 4749,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
@@ -96150,6 +96150,12 @@
    "at": "2026-11-19T14:58:20Z",
    "reason": "Unwired sweep + spot review (Nov 19 am): text YES pick, TXT-018 update channel, T306 undelivered business actions, INT-010 join rule, AI-008 switch, owner-settings errors/audit, release re-send gate",
    "session": "manual-1f8b9c4fd7f8"
+  },
+  {
+   "number": 4748,
+   "at": "2026-11-19T17:09:15Z",
+   "reason": "Fable batch Nov 19 plan changes: suppression re-keying, final_status pick handler, intake-answers reader and display, INT-029 emergency_choice, help-form email, retire business_pick_waiting, LIC-046 reword, privacy-policy and Spanish consent drafts",
+   "session": "manual-a3351294ea30"
   }
  ],
  "lanes_fallback_history": [
