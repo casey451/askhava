@@ -25207,7 +25207,14 @@
     "T737",
     "T738",
     "T739",
-    "T741"
+    "T741",
+    "T743",
+    "T744",
+    "T745",
+    "T746",
+    "T747",
+    "T748",
+    "T749"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -25240,7 +25247,16 @@
     "T641",
     "T642",
     "T700",
-    "T705"
+    "T705",
+    "T743",
+    "T744",
+    "T745",
+    "T746",
+    "T747",
+    "T748",
+    "T749",
+    "T750",
+    "T752"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -25291,7 +25307,8 @@
     "T275",
     "T336",
     "T378",
-    "T414"
+    "T414",
+    "T751"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -25313,7 +25330,9 @@
     "T494",
     "T495",
     "T623",
-    "T664"
+    "T664",
+    "T746",
+    "T751"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -25326,7 +25345,8 @@
    "deps": [
     "T131",
     "T293",
-    "T584"
+    "T584",
+    "T751"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -25340,7 +25360,8 @@
     "T133",
     "T260",
     "T275",
-    "T385"
+    "T385",
+    "T751"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -25492,7 +25513,9 @@
     "T742",
     "T740",
     "T731",
-    "T735"
+    "T735",
+    "T743",
+    "T744"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -30357,7 +30380,8 @@
     "T295",
     "T370",
     "T296",
-    "T243"
+    "T243",
+    "T747"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -30403,7 +30427,9 @@
     "T740",
     "T742",
     "T731",
-    "T735"
+    "T735",
+    "T743",
+    "T744"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -30425,7 +30451,9 @@
     "T427",
     "T428",
     "T430",
-    "T432"
+    "T432",
+    "T743",
+    "T744"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -30447,7 +30475,9 @@
     "T427",
     "T428",
     "T430",
-    "T432"
+    "T432",
+    "T743",
+    "T744"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -55671,7 +55701,8 @@
     "T596",
     "T597",
     "T700",
-    "T727"
+    "T727",
+    "T753"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -76025,7 +76056,8 @@
     "T527",
     "T562",
     "T573",
-    "T593"
+    "T593",
+    "T747"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -82144,7 +82176,8 @@
    "deps": [
     "T608",
     "T200",
-    "T115"
+    "T115",
+    "T748"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -86382,7 +86415,8 @@
    "deps": [
     "T673",
     "T379",
-    "T588"
+    "T588",
+    "T746"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -86398,7 +86432,8 @@
     "T662",
     "T402",
     "T667",
-    "T650"
+    "T650",
+    "T745"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -86494,7 +86529,8 @@
    "deps": [
     "T654",
     "T657",
-    "T678"
+    "T678",
+    "T746"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -87171,7 +87207,9 @@
     "T650",
     "T662",
     "T708",
-    "T723"
+    "T723",
+    "T745",
+    "T747"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -88739,7 +88777,8 @@
    "deps": [
     "T526",
     "T608",
-    "T161"
+    "T161",
+    "T615"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -88763,7 +88802,8 @@
    "id": "T727",
    "deps": [
     "T726",
-    "T700"
+    "T700",
+    "T753"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -88776,7 +88816,10 @@
    "deps": [
     "T530",
     "T573",
-    "T742"
+    "T742",
+    "T748",
+    "T309",
+    "T609"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -88839,7 +88882,8 @@
    "id": "T731",
    "deps": [
     "T689",
-    "T687"
+    "T687",
+    "T746"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -88876,7 +88920,8 @@
    "deps": [
     "T733",
     "T669",
-    "T541"
+    "T541",
+    "T751"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -88951,6 +88996,152 @@
    "attempts": 0,
    "slug": "opted-out-text-pick",
    "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T745",
+   "deps": [
+    "T251",
+    "T711",
+    "T650",
+    "T662",
+    "T653"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-answers-reader",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T744",
+   "deps": [
+    "T681",
+    "T745"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "final-status-ends-picks",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T743",
+   "deps": [
+    "T701",
+    "T702"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "suppression-rekey",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T746",
+   "deps": [
+    "T745",
+    "T121",
+    "T588",
+    "T543",
+    "T463",
+    "T457",
+    "T458",
+    "T666",
+    "T668",
+    "T732",
+    "T541",
+    "T664",
+    "T410"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "job-answers-shown",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T747",
+   "deps": [
+    "T340",
+    "T456"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "emergency-choice-flag",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T748",
+   "deps": [
+    "T200"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "help-form-no-reply-promise",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T749",
+   "deps": [
+    "T383",
+    "T386"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "retire-business-pick-waiting",
+   "type": "cleanup",
+   "stage": "5"
+  },
+  {
+   "id": "T750",
+   "deps": [
+    "T428",
+    "T112",
+    "T229"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "privacy-policy-optout-kept",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T751",
+   "deps": [
+    "T352",
+    "T497",
+    "T515"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "stripe-stand-in-detach",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T752",
+   "deps": [
+    "T521"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "launch-open-comment-oracle",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T753",
+   "deps": [
+    "T700",
+    "T641"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "fable-model-retry",
+   "type": "harness",
    "stage": "5"
   }
  ],
@@ -94839,7 +95030,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T18:07:30Z",
+ "updated_at": "2026-11-19T18:11:04Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -94938,7 +95129,7 @@
   ]
  },
  "runner_sha": "a9e2cb7968442f37d36f3253c7212cee058e07b1",
- "starter": "manual",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "5dc7a90cf33f9a08f44a429638390c90e1d79457",
