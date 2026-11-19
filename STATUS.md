@@ -1,25 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-19T23:27:11Z by runner b440e68b158d (actions).
+Updated 2026-11-19T23:27:20Z by runner 624fb7d0b8ae (actions).
 
 **Building: T726 in progress since 22:06Z; 509 of 703 done; week 11% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 509 of 703 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T726 claimed 22:06Z, lease until 01:06Z; lane 2: T758 claimed 23:07Z, lease until 02:07Z; lane 3: T109 claimed 21:53Z, lease until 00:53Z; lane 7: T613 claimed 23:22Z, lease until 02:22Z
+- **Lane:** lane 1: T726 claimed 22:06Z, lease until 01:06Z; lane 2: T758 claimed 23:07Z, lease until 02:07Z; lane 7: T613 claimed 23:22Z, lease until 02:22Z
 - **Week:** 11% used, 168.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:26Z, 0 min before this update
+- **Last run:** 23:27Z, 0 min before this update
 - **Keeper:** last ran 23:26Z, next wake 23:46Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T672 (since 2026-11-19T23:07:12Z, no attempt used; a plan change fixes it): T672: dependency T717 is DONE but its owned file tests/integration/tests/intake_order_two_jobs_rules.rs is not on main
-- Strict plan check red: 64 problem(s) on tasks still to run (+356 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 67 problem(s) on tasks still to run (+352 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T109 | recovery: backup checks and the nightly encrypted export | MERGE_PENDING | 2 | 93 min | 23:26Z | PLAN GAP: `deny.toml:3` (owned by T009 and T604, both outside T109; T109 does not own it): every `age` release fails `ca |
 | T707 | server: an emergency pick's address re-release waits while s | MERGE_PENDING | 1 | 80 min | 22:59Z |  |
 | T541 | payments, portals and adapters: a card saved or changed from | check_failed | 2 | 91 min | 22:55Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-19T |
 | T480 | messaging, server and portals: the stored "Spanish conversat | MERGE_PENDING | 1 | 104 min | 22:23Z |  |
@@ -47,7 +48,7 @@ Updated 2026-11-19T23:27:11Z by runner b440e68b158d (actions).
 | T470 | messaging and server: the worker task that sends queued emai | QUEUED | 2 | 2 h 21 min | 13:03Z |  |
 | T593 | site and server: the home hero in D-3331's wording with the  | check_failed | 1 | 95 min | 12:35Z |  |
 | T536 | E2e harness: clock-advancing journeys last, a keyed worker,  | done | 2 | 107 min | 12:33Z | PLAN GAP: tests/e2e/j2.ts:150 (owned by T099, `e2e-j2-business`; T644 also lists it). Smallest plan change: make the `no |
-| T109 | recovery: backup checks and the nightly encrypted export | BLOCKED | 1 | 20 min | 11:47Z | PLAN GAP: `deny.toml:3` (owned by T009 and T604, both outside T109; T109 does not own it): every `age` release fails `ca |
+| T109 | recovery: backup checks and the nightly encrypted export | BLOCKED | 1 | 20 min | 11:47Z |  |
 | T540 | portals and server: the owner's release button re-sends an e | resync | 1 | 54 min | 11:29Z |  |
 | T705 | Integration tests (harness): one shared log capture that a c | done | 1 | 114 min | 11:11Z |  |
 | T470 | messaging and server: the worker task that sends queued emai | QUEUED | 1 | 93 min | 10:35Z |  |
@@ -90,8 +91,8 @@ Updated 2026-11-19T23:27:11Z by runner b440e68b158d (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 323 of 735 (43.9%) · partial 377 · unstarted 35
-**Tasks merged (throughput only):** 509 of 703
+**Requirements verified:** 325 of 735 (44.2%) · partial 375 · unstarted 35
+**Tasks merged (throughput only):** 509 of 701
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -100,14 +101,14 @@ Updated 2026-11-19T23:27:11Z by runner b440e68b158d (actions).
 | businesses | 21 | 36 | 1 | 58 |
 | calls | 14 | 11 | 0 | 25 |
 | consent | 16 | 19 | 0 | 35 |
-| fees | 21 | 31 | 0 | 52 |
+| fees | 22 | 30 | 0 | 52 |
 | intake | 8 | 35 | 0 | 43 |
 | job-cards | 12 | 12 | 0 | 24 |
 | licensing | 33 | 15 | 0 | 48 |
 | lifecycle | 16 | 12 | 0 | 28 |
 | messaging | 22 | 22 | 1 | 45 |
 | ops-recovery | 9 | 27 | 18 | 54 |
-| privacy | 8 | 22 | 1 | 31 |
+| privacy | 9 | 21 | 1 | 31 |
 | quiet-hours | 3 | 6 | 0 | 9 |
 | quotes-pick | 25 | 31 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
@@ -136,8 +137,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T726 (lease until 2026-11-20T01:06:39Z)
 - lane 2: T758 (lease until 2026-11-20T02:07:12Z)
-- lane 3: T109 (lease until 2026-11-20T00:53:21Z)
 - lane 7: T613 (lease until 2026-11-20T02:22:00Z)
 
 ## Last usage reading
-- {"task": "T707", "at": "2026-11-19T22:59:09Z", "cache_read_input_tokens": 11389570, "input_tokens": 268, "output_tokens": 89094, "cache_creation_input_tokens": 320150}
+- {"task": "T109", "at": "2026-11-19T23:26:29Z", "input_tokens": 314, "cache_read_input_tokens": 19555824, "output_tokens": 112495, "cache_creation_input_tokens": 387177}
