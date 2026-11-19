@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T10:06:39Z by runner c06b99f64c4b (actions).
+Updated 2026-11-19T10:06:49Z by runner c06b99f64c4b (actions).
 
 **Building: T470 in progress since 09:02Z; 485 of 664 done; week 78% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 485 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T470 claimed 09:02Z, lease until 12:55Z; lane 3: T710 claimed 08:40Z, lease until 12:37Z; lane 4: T705 claimed 09:16Z, lease until 12:16Z
+- **Lane:** lane 1: T470 claimed 09:02Z, lease until 12:55Z; lane 4: T705 claimed 09:16Z, lease until 12:16Z
 - **Week:** 78% used, 34.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 10:06Z, 0 min before this update
 - **Keeper:** last ran 10:05Z, next wake 12:19Z
@@ -22,6 +22,7 @@ Updated 2026-11-19T10:06:39Z by runner c06b99f64c4b (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T710 | quotes and licensing (harness): a launch-open category takes | MERGE_PENDING | 1 | 85 min | 10:06Z |  |
 | T553 | Decisions digest, piece 8: the next entries after the header | MERGE_PENDING | 1 | 76 min | 10:04Z |  |
 | T622 | portals: the scorecard's first-six-weeks email panel and OPS | MERGE_PENDING | 1 | 2 h 41 min | 09:47Z |  |
 | T375 | portals and server: the business's Job types page lets the o | MERGE_PENDING | 1 | 74 min | 09:18Z |  |
@@ -146,8 +147,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T470 (lease until 2026-11-19T12:55:21Z)
-- lane 3: T710 (lease until 2026-11-19T12:37:32Z)
 - lane 4: T705 (lease until 2026-11-19T12:16:58Z)
 
 ## Last usage reading
-- {"task": "T553", "at": "2026-11-19T10:04:12Z", "cache_read_input_tokens": 5757835, "cache_creation_input_tokens": 260215, "output_tokens": 49230, "input_tokens": 144}
+- {"task": "T710", "at": "2026-11-19T10:06:14Z", "cache_read_input_tokens": 1388035, "output_tokens": 19196, "cache_creation_input_tokens": 110538, "input_tokens": 76}
