@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T17:09:59Z by runner 3693971a9c8e (manual).
+Updated 2026-11-19T17:10:14Z by runner 555e33a8e0e5 (actions).
 
-**Building: T724 in progress since 16:18Z; 498 of 683 done; week 0% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T530 in progress since 15:41Z; 498 of 683 done; week 0% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 498 of 683 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T724 claimed 16:18Z, lease until 20:06Z; lane 3: T530 claimed 15:41Z, lease until 19:41Z; lane 4: T555 claimed 15:44Z, lease until 18:44Z; lane 7: T715 claimed 15:50Z, lease until 18:50Z
+- **Lane:** lane 3: T530 claimed 15:41Z, lease until 19:41Z; lane 4: T555 claimed 15:44Z, lease until 18:44Z; lane 7: T715 claimed 15:50Z, lease until 18:50Z
 - **Week:** 0% used, 17.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:09Z, 0 min before this update
+- **Last run:** 17:10Z, 0 min before this update
 - **Keeper:** last ran 17:06Z, next wake 17:26Z
 
 ## Needs attention
@@ -16,11 +16,12 @@ Updated 2026-11-19T17:09:59Z by runner 3693971a9c8e (manual).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T607 (since 2026-11-19T15:50:24Z, no attempt used; a plan change fixes it): T607: dependency T593 is DONE but its owned file app/server/tests/home_request_box.rs is not on main
-- Strict plan check red: 64 problem(s) on tasks still to run (+328 on DONE tasks); first: T403: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 62 problem(s) on tasks still to run (+325 on DONE tasks); first: T403: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T724 | harness: Ci's Rust-test jobs, the worker job and the nightly | MERGE_PENDING | 1 | 50 min | 17:09Z |  |
 | T210 | payments: the money view's sales-tax set-aside and manual ex | MERGE_PENDING | 1 | 53 min | 16:29Z |  |
 | T407 | calls, portals and server: the owner-portal safety voice cal | MERGE_PENDING | 1 | 102 min | 16:01Z |  |
 | T541 | payments, portals and adapters: a card saved or changed from | check_failed | 1 | 2 h 16 min | 15:25Z | Ci: failure; Coverage: failure; E2e: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refus |
@@ -96,29 +97,29 @@ Updated 2026-11-19T17:09:59Z by runner 3693971a9c8e (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 295 of 735 (40.1%) · partial 402 · unstarted 38
-**Tasks merged (throughput only):** 498 of 683
+**Requirements verified:** 310 of 735 (42.2%) · partial 387 · unstarted 38
+**Tasks merged (throughput only):** 498 of 670
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 17 | 18 | 0 | 35 |
-| ai | 8 | 18 | 3 | 29 |
-| businesses | 18 | 39 | 1 | 58 |
+| ai | 9 | 17 | 3 | 29 |
+| businesses | 20 | 37 | 1 | 58 |
 | calls | 12 | 13 | 0 | 25 |
-| consent | 13 | 22 | 0 | 35 |
+| consent | 14 | 21 | 0 | 35 |
 | fees | 23 | 28 | 1 | 52 |
-| intake | 8 | 35 | 0 | 43 |
-| job-cards | 12 | 12 | 0 | 24 |
+| intake | 10 | 33 | 0 | 43 |
+| job-cards | 13 | 11 | 0 | 24 |
 | licensing | 34 | 14 | 0 | 48 |
 | lifecycle | 18 | 10 | 0 | 28 |
-| messaging | 19 | 25 | 1 | 45 |
+| messaging | 20 | 24 | 1 | 45 |
 | ops-recovery | 5 | 31 | 18 | 54 |
 | privacy | 10 | 20 | 1 | 31 |
-| quiet-hours | 4 | 5 | 0 | 9 |
-| quotes-pick | 23 | 33 | 0 | 56 |
+| quiet-hours | 6 | 3 | 0 | 9 |
+| quotes-pick | 27 | 29 | 0 | 56 |
 | recurring | 7 | 4 | 0 | 11 |
 | security | 9 | 41 | 5 | 55 |
-| terms | 25 | 9 | 1 | 35 |
+| terms | 26 | 8 | 1 | 35 |
 | website | 13 | 14 | 3 | 30 |
 | wording | 17 | 11 | 4 | 32 |
 
@@ -140,10 +141,10 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T724 (lease until 2026-11-19T20:06:07Z)
+- nothing
 - lane 3: T530 (lease until 2026-11-19T19:41:19Z)
 - lane 4: T555 (lease until 2026-11-19T18:44:06Z)
 - lane 7: T715 (lease until 2026-11-19T18:50:24Z)
 
 ## Last usage reading
-- {"task": "T210", "at": "2026-11-19T16:29:22Z", "cache_creation_input_tokens": 156335, "output_tokens": 41516, "cache_read_input_tokens": 5368341, "input_tokens": 131}
+- {"task": "T724", "at": "2026-11-19T17:09:10Z", "input_tokens": 98, "cache_read_input_tokens": 3439044, "output_tokens": 34551, "cache_creation_input_tokens": 136721}
