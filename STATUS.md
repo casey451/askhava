@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T09:34:44Z by runner 7be551b7caec (manual).
+Updated 2026-11-19T09:37:32Z by runner c06b99f64c4b (actions).
 
 **Building: T470 in progress since 09:02Z; 485 of 664 done; week 78% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 485 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T470 claimed 09:02Z, lease until 12:02Z; lane 2: T553 claimed 08:48Z, lease until 12:13Z; lane 3: T710 claimed 08:40Z, lease until 11:40Z; lane 4: T705 claimed 09:16Z, lease until 12:16Z; lane 5: T622 claimed 07:06Z, lease until 12:04Z
+- **Lane:** lane 1: T470 claimed 09:02Z, lease until 12:02Z; lane 2: T553 claimed 08:48Z, lease until 12:13Z; lane 3: T710 claimed 08:40Z, lease until 12:37Z; lane 4: T705 claimed 09:16Z, lease until 12:16Z; lane 5: T622 claimed 07:06Z, lease until 12:04Z
 - **Week:** 78% used, 34.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:26Z, 8 min before this update
+- **Last run:** 09:34Z, 2 min before this update
 - **Keeper:** last ran 09:25Z, next wake 11:42Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-19T09:34:44Z by runner 7be551b7caec (manual).
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T540 (since 2026-11-19T08:04:18Z, no attempt used; a plan change fixes it): T540: dependency T310 is DONE but its owned file app/server/src/owner_portal.rs is not on main; T540: dependency T310 is DONE but its owned file app/server/tests/owner_portal_route.rs is not on main; T540: dependency T310 is DONE but its owned file tests/e2e/owner_portal_served.spec.ts is not on main
 - PLAN GAP T593 (since 2026-11-19T09:02:31Z, no attempt used; a plan change fixes it): T593: dependency T216 is DONE but its owned file app/site/static/photos/hero-kitchen-phone.avif is not on main
-- Strict plan check red: 62 problem(s) on tasks still to run (+303 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 62 problem(s) on tasks still to run (+302 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -100,31 +100,31 @@ Updated 2026-11-19T09:34:44Z by runner 7be551b7caec (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 56 of 735 (7.6%) · partial 639 · unstarted 40
+**Requirements verified:** 306 of 735 (41.6%) · partial 389 · unstarted 40
 **Tasks merged (throughput only):** 485 of 664
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 2 | 33 | 0 | 35 |
-| ai | 2 | 24 | 3 | 29 |
-| businesses | 1 | 56 | 1 | 58 |
-| calls | 0 | 25 | 0 | 25 |
-| consent | 3 | 32 | 0 | 35 |
-| fees | 0 | 51 | 1 | 52 |
-| intake | 0 | 43 | 0 | 43 |
-| job-cards | 0 | 24 | 0 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 0 | 44 | 1 | 45 |
-| ops-recovery | 2 | 33 | 19 | 54 |
-| privacy | 0 | 30 | 1 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 0 | 56 | 0 | 56 |
-| recurring | 0 | 11 | 0 | 11 |
-| security | 0 | 50 | 5 | 55 |
-| terms | 23 | 11 | 1 | 35 |
+| accessibility | 17 | 18 | 0 | 35 |
+| ai | 9 | 17 | 3 | 29 |
+| businesses | 18 | 39 | 1 | 58 |
+| calls | 12 | 13 | 0 | 25 |
+| consent | 15 | 20 | 0 | 35 |
+| fees | 23 | 28 | 1 | 52 |
+| intake | 9 | 34 | 0 | 43 |
+| job-cards | 13 | 11 | 0 | 24 |
+| licensing | 34 | 14 | 0 | 48 |
+| lifecycle | 18 | 10 | 0 | 28 |
+| messaging | 20 | 24 | 1 | 45 |
+| ops-recovery | 3 | 32 | 19 | 54 |
+| privacy | 10 | 20 | 1 | 31 |
+| quiet-hours | 6 | 3 | 0 | 9 |
+| quotes-pick | 27 | 29 | 0 | 56 |
+| recurring | 7 | 4 | 0 | 11 |
+| security | 9 | 41 | 5 | 55 |
+| terms | 26 | 8 | 1 | 35 |
 | website | 13 | 13 | 4 | 30 |
-| wording | 10 | 18 | 4 | 32 |
+| wording | 17 | 11 | 4 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -146,7 +146,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T470 (lease until 2026-11-19T12:02:31Z)
 - lane 2: T553 (lease until 2026-11-19T12:13:52Z)
-- lane 3: T710 (lease until 2026-11-19T11:40:16Z)
+- lane 3: T710 (lease until 2026-11-19T12:37:32Z)
 - lane 4: T705 (lease until 2026-11-19T12:16:58Z)
 - lane 5: T622 (lease until 2026-11-19T12:04:37Z)
 
