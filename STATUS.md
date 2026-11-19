@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T16:40:57Z by runner 54f201670873 (actions).
+Updated 2026-11-19T16:41:19Z by runner fc64ddb97e19 (actions).
 
 **Building: T724 in progress since 16:18Z; 497 of 683 done; week 86% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 497 of 683 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T724 claimed 16:18Z, lease until 19:18Z; lane 3: T530 claimed 15:41Z, lease until 18:41Z; lane 4: T555 claimed 15:44Z, lease until 18:44Z; lane 7: T715 claimed 15:50Z, lease until 18:50Z
+- **Lane:** lane 1: T724 claimed 16:18Z, lease until 19:18Z; lane 3: T530 claimed 15:41Z, lease until 19:41Z; lane 4: T555 claimed 15:44Z, lease until 18:44Z; lane 7: T715 claimed 15:50Z, lease until 18:50Z
 - **Week:** 86% used, 17.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:40Z, 0 min before this update
+- **Last run:** 16:41Z, 0 min before this update
 - **Keeper:** last ran 16:40Z, next wake 18:43Z
 
 ## Needs attention
@@ -16,7 +16,7 @@ Updated 2026-11-19T16:40:57Z by runner 54f201670873 (actions).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T607 (since 2026-11-19T15:50:24Z, no attempt used; a plan change fixes it): T607: dependency T593 is DONE but its owned file app/server/tests/home_request_box.rs is not on main
-- Strict plan check red: 62 problem(s) on tasks still to run (+325 on DONE tasks); first: T403: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 68 problem(s) on tasks still to run (+325 on DONE tasks); first: T397: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -99,7 +99,7 @@ Updated 2026-11-19T16:40:57Z by runner 54f201670873 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 310 of 735 (42.2%) · partial 387 · unstarted 38
-**Tasks merged (throughput only):** 497 of 670
+**Tasks merged (throughput only):** 497 of 668
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -143,7 +143,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T724 (lease until 2026-11-19T19:18:33Z)
-- lane 3: T530 (lease until 2026-11-19T18:41:09Z)
+- lane 3: T530 (lease until 2026-11-19T19:41:19Z)
 - lane 4: T555 (lease until 2026-11-19T18:44:06Z)
 - lane 7: T715 (lease until 2026-11-19T18:50:24Z)
 
