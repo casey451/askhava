@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T09:25:18Z by runner 358c022b2c57 (actions).
+Updated 2026-11-19T09:25:49Z by runner 358c022b2c57 (actions).
 
 **Building: T470 in progress since 09:02Z; 485 of 664 done; week 78% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-19T09:25:18Z by runner 358c022b2c57 (actions).
 - **Lane:** lane 1: T470 claimed 09:02Z, lease until 12:02Z; lane 2: T553 claimed 08:48Z, lease until 12:13Z; lane 3: T710 claimed 08:40Z, lease until 11:40Z; lane 4: T705 claimed 09:16Z, lease until 12:16Z; lane 5: T622 claimed 07:06Z, lease until 12:04Z
 - **Week:** 78% used, 34.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:25Z, 0 min before this update
-- **Keeper:** last ran 09:22Z, next wake 11:42Z
+- **Keeper:** last ran 09:25Z, next wake 11:42Z
 
 ## Needs attention
 - BLOCKED T652: plan gap reported: PLAN GAP: tests/integration/tests/safe_mode.rs:246,281,320,378,407 (owned by T487 and T408; T652's prompt :11 and :47 say it must pass unchanged) plant Severity::High alerts of the made-up kind "ops.ledger_difference" and expect safe mode to start. D-4310 (docs/decisions.md:2366) lets a High alert start safe mode only for ops.vendor_errors, ops.health_check_failed, payments.ledger_mismatch or messaging.number_suspended. The worker made a trial edit (not committed) and `cargo test -p askhava-integration --test safe_mode` gave 3 passed, 4 failed: td_ops_01_safe_mode_at_24_00_00_not_at_23_59_59, ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T652 --plan-fix D-### --reason "..."` (D-2859)
