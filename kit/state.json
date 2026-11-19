@@ -95707,7 +95707,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T20:16:56Z",
+ "updated_at": "2026-11-19T20:22:03Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -95805,7 +95805,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "a91fb80e680659b3addc6cbd20fde03a7d29bbe0",
+ "runner_sha": "9f00f6ffef005a77b843a59f9bfcef78947b195f",
  "starter": "actions",
  "smoke_runs": [
   {
@@ -97547,6 +97547,15 @@
     {
      "at": "2026-11-19T13:54:23Z",
      "why": "T593 check_failed: Ci: failure; Coverage: cancelled\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest server::tests::the_notice_senders_need_the_postal_setting_in_test_and_live ... ok\n"
+    }
+   ]
+  },
+  "6": {
+   "count": 1,
+   "last": [
+    {
+     "at": "2026-11-19T20:22:02Z",
+     "why": "T480: the attempt could not write its review record (lost race)"
     }
    ]
   }

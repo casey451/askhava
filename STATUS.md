@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T20:16:56Z by runner a91fb80e6806 (actions).
+Updated 2026-11-19T20:22:03Z by runner 9f00f6ffef00 (actions).
 
 **Building: T753 in progress since 19:06Z; 503 of 698 done; week 7% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-19T20:16:56Z by runner a91fb80e6806 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T753 claimed 19:06Z, lease until 22:06Z; lane 3: T307 claimed 17:47Z, lease until 20:47Z; lane 6: T480 claimed 17:18Z, lease until 20:18Z; lane 7: T717 claimed 20:10Z, lease until 23:10Z
 - **Week:** 7% used, 176.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:16Z, 0 min before this update
+- **Last run:** 20:17Z, 4 min before this update
 - **Keeper:** last ran 20:16Z, next wake 20:36Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 56 problem(s) on tasks still to run (+342 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 73 problem(s) on tasks still to run (+347 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -88,15 +88,14 @@ Updated 2026-11-19T20:16:56Z by runner a91fb80e6806 (actions).
 | T715 | intake (harness): corrections to T671's walker: alarm answer | BLOCKED | 1 | 48 min | 20:53Z |  |
 | T502 | Decisions digest, piece 3: the next entries after the header | done | 1 | 38 min | 20:31Z |  |
 | T364 | server and portals: the business step-up code page is served | check_failed | 1 | 2 h 1 min | 20:29Z |  |
-| T702 | privacy and messaging: no blind-index key version is retired | resync | 1 | 59 min | 20:21Z |  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 328 of 735 (44.6%) · partial 370 · unstarted 37
-**Tasks merged (throughput only):** 503 of 698
+**Requirements verified:** 336 of 735 (45.7%) · partial 362 · unstarted 37
+**Tasks merged (throughput only):** 503 of 683
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -105,19 +104,19 @@ Updated 2026-11-19T20:16:56Z by runner a91fb80e6806 (actions).
 | businesses | 21 | 36 | 1 | 58 |
 | calls | 14 | 11 | 0 | 25 |
 | consent | 16 | 19 | 0 | 35 |
-| fees | 22 | 30 | 0 | 52 |
+| fees | 25 | 27 | 0 | 52 |
 | intake | 9 | 34 | 0 | 43 |
 | job-cards | 12 | 12 | 0 | 24 |
-| licensing | 34 | 14 | 0 | 48 |
+| licensing | 35 | 13 | 0 | 48 |
 | lifecycle | 18 | 10 | 0 | 28 |
 | messaging | 22 | 22 | 1 | 45 |
 | ops-recovery | 9 | 27 | 18 | 54 |
-| privacy | 9 | 21 | 1 | 31 |
-| quiet-hours | 3 | 6 | 0 | 9 |
+| privacy | 10 | 20 | 1 | 31 |
+| quiet-hours | 5 | 4 | 0 | 9 |
 | quotes-pick | 25 | 31 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
 | security | 11 | 39 | 5 | 55 |
-| terms | 27 | 7 | 1 | 35 |
+| terms | 28 | 6 | 1 | 35 |
 | website | 17 | 10 | 3 | 30 |
 | wording | 23 | 5 | 4 | 32 |
 
