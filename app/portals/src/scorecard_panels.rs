@@ -9,9 +9,10 @@
 //! calls that check, because a page read changes nothing (SEC-026). The OPS-047 figures take one
 //! trade's job IDs from `quotes::api::jobs_by_trade` (T477), then the median quote minutes and
 //! each business's quotes from `quotes::api`, that business's picks on those jobs in the window
-//! from `picks::api::diagnostic_share` (the trade's jobs each paired with the business), refund requests by reason from `payments::api::refund_reasons`,
-//! and not-a-fit answers by reason from `ops::api::not_a_fit_counts` (T479) for the Arizona month
-//! of the window's last second. Counts, code names and record IDs only, never a contact detail.
+//! from `picks::api::diagnostic_share` (the trade's jobs each paired with the business), refund
+//! requests by reason from `payments::api::refund_reasons`, and not-a-fit answers by reason from
+//! `ops::api::not_a_fit_counts` (T479) for the Arizona month of the window's last second.
+//! Counts, code names and record IDs only, never a contact detail.
 
 use askhava_messaging::api::{EmailDay, email_days};
 use askhava_ops::api::{NotAFitReason, not_a_fit_counts};
