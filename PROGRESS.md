@@ -8076,3 +8076,4 @@
 - 2026-11-19T21:07:33Z runner 92c9356ca85b (actions): {}
 - 2026-11-19T21:12:35Z runner 9a58cedd8922 (actions): {"T161": "MERGE_PENDING -> DONE"}
 - 2026-11-19T21:15:33Z runner d68fb0f0ae65 (actions): {}
+- 2026-11-19T21:16:26Z runner 9a58cedd8922 (actions): {"T607": "QUEUED -> IN_PROGRESS"}; T607 estimated 1.3M tokens (calibrated); week has 172.8M left (no five-hour budget, D-3056) after 5.2M still running in another lane (session_reading 2026-11-19T21:15:33Z (week)); claimed
