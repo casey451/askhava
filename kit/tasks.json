@@ -10654,7 +10654,8 @@
     "T708",
     "T723",
     "T745",
-    "T747"
+    "T747",
+    "T759"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -33598,7 +33599,9 @@
     "T749",
     "T755",
     "T756",
-    "T757"
+    "T757",
+    "T758",
+    "T759"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -35058,7 +35061,9 @@
     "T756",
     "T757",
     "T558",
-    "T726"
+    "T726",
+    "T758",
+    "T759"
    ],
    "model": null,
    "effort": null,
@@ -37924,7 +37929,9 @@
     "T755",
     "T756",
     "T757",
-    "T514"
+    "T514",
+    "T758",
+    "T759"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -38023,7 +38030,9 @@
     "T744",
     "T755",
     "T756",
-    "T757"
+    "T757",
+    "T758",
+    "T759"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -38117,7 +38126,9 @@
     "T744",
     "T755",
     "T756",
-    "T757"
+    "T757",
+    "T758",
+    "T759"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -38417,7 +38428,9 @@
     "T744",
     "T755",
     "T756",
-    "T757"
+    "T757",
+    "T758",
+    "T759"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -47190,7 +47203,7 @@
    "id": "T717",
    "slug": "intake-two-jobs-corrections",
    "title": "intake (harness): corrections to T711's two jobs: two_jobs after the first ZIP question, ALSO and SPLIT opened the walker's own way, nothing during a SAFE hold, SPLIT only right after its offer",
-   "goal": "Plan change D-4441, follow-ups to D-4439. T671 merged (`11c03c196`) and T711 was claimed on D-4439's plan before D-4441 could merge, so their entries stand and D-4441's reviewed corrections are built here as required behaviour. Read the merged code first; keep what already conforms, change what does not, and add a test for each part either way. `routing.rs`, `conversation.rs` and `service.rs` are not edited (D-4360). This task: INT-032's two jobs as T711 builds them in `app/intake/src/order_dispatch.rs` on D-4439's plan, which sends `two_jobs` \"in the same turn as its other texts, after the consent text\", opens an ALSO after the ZIP through `conversation::begin_job` and a SPLIT through `routing::split_request`. Required: (1) a first message naming two trades gets `two_jobs` once, right after the first ZIP question in the same turn: at the first text on the `Clear` path (CON-031 keeps the consent text and the first question together), and on the 911 and INT-037 paths only when the first ZIP question goes, after SAFE or the INT-037 answer, never during a SAFE hold or while the INT-037 question is open. (2) ALSO or TAMBIÉN opens the second trade's job through `open_job` (property `none`, no INT-009 lookup, no INT-007 word count), never through `begin_job`, which refuses the one-word ALSO (`app/intake/src/conversation.rs:132`, `rules::opens_job`), so D-4439's \"after the ZIP, through `begin_job`\" would never open it; an ALSO while a SAFE hold waits gets nothing and opens nothing; an ALSO that opens the job answers no step: its coverage line goes through `routing::tell_coverage` at once when step 5 is done, else right after the first job's, and the open question is sent again through T715's `ask_open_again`. (3) SPLIT or DIVIDIR (`routing::is_split_reply`) counts only as the first reply after the turn that sent a `Coverage::Split` offer of the same request (T671 asks the next question in that same turn, so \"the latest text\" never matches; read from stored rows: the `trade_check` marker and the request's heard rows after it), never at any other point (D-1020); it opens the job of the candidates' other trade through `open_job`, not `routing::split_request` (which opens through `begin_job`, `app/intake/src/routing.rs:474`), answers no step, and the open question is sent again through `ask_open_again`. No ALSO or SPLIT reply is kept as words. T711's `tests/integration/tests/intake_order_two_jobs.rs` changes only where a case asserts behaviour this goal corrects, each change citing D-4441 and its requirement, nothing else removed or loosened. Tests (TD-INT-54) in the new `tests/integration/tests/intake_order_two_jobs_rules.rs`, PostgreSQL, fake data and 555 numbers only, through `intake::api::receive_raw_reply`. Before hand-in, run every test that posts to `/webhooks/twilio/sms` or calls `receive_reply`/`receive_raw_reply`; a failing one not owned here is a plan gap to report, not to edit. Update `app/intake/CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4441, follow-ups to D-4439. T671 merged (`11c03c196`) and T711 was claimed on D-4439's plan before D-4441 could merge, so their entries stand and D-4441's reviewed corrections are built here as required behaviour. Read the merged code first; keep what already conforms, change what does not, and add a test for each part either way. `routing.rs`, `conversation.rs` and `service.rs` are not edited (D-4360). This task: INT-032's two jobs as T711 builds them in `app/intake/src/order_dispatch.rs` on D-4439's plan, which sends `two_jobs` \"in the same turn as its other texts, after the consent text\", opens an ALSO after the ZIP through `conversation::begin_job` and a SPLIT through `routing::split_request`. Required: (1) a first message naming two trades gets `two_jobs` once, right after the first ZIP question in the same turn: at the first text on the `Clear` path (CON-031 keeps the consent text and the first question together), and on the 911 and INT-037 paths only when the first ZIP question goes, after SAFE or the INT-037 answer, never during a SAFE hold or while the INT-037 question is open. (2) ALSO or TAMBIÉN opens the second trade's job through `open_job` (property `none`, no INT-009 lookup, no INT-007 word count), never through `begin_job`, which refuses the one-word ALSO (`app/intake/src/conversation.rs:132`, `rules::opens_job`), so D-4439's \"after the ZIP, through `begin_job`\" would never open it; an ALSO while a SAFE hold waits gets nothing and opens nothing; an ALSO that opens the job answers no step: its coverage line goes through `routing::tell_coverage` at once when step 5 is done, else right after the first job's, and the open question is sent again through T715's `ask_open_again`. (3) SPLIT or DIVIDIR (`routing::is_split_reply`) counts only as the first reply after the turn that sent a `Coverage::Split` offer of the same request (T671 asks the next question in that same turn, so \"the latest text\" never matches; read from stored rows: the `trade_check` marker and the request's heard rows after it), never at any other point (D-1020); it opens the job of the candidates' other trade through `open_job`, not `routing::split_request` (which opens through `begin_job`, `app/intake/src/routing.rs:474`), answers no step, and the open question is sent again through `ask_open_again`. No ALSO or SPLIT reply is kept as words. T711's `tests/integration/tests/intake_order_two_jobs.rs` changes only where a case asserts behaviour this goal corrects, each change citing D-4441 and its requirement, nothing else removed or loosened. Tests (TD-INT-54) in the new `tests/integration/tests/intake_order_two_jobs_rules.rs`, PostgreSQL, fake data and 555 numbers only, through `intake::api::receive_raw_reply`. Plan change D-4777 (Fable's intake audit, finding I4, MED; INT-032, INT-017): an ALSO job opened before her ZIP (`order_dispatch.rs:296` to `:333`, `:362` to `:364`) is never told its coverage; once the town is stored, each linked job of the request that has had no trade check gets one (the coverage line or INT-017's reply for its trade), once per job, in the turn that stores the town; its cases join `tests/integration/tests/intake_order_two_jobs_rules.rs`. Before hand-in, run every test that posts to `/webhooks/twilio/sms` or calls `receive_reply`/`receive_raw_reply`; a failing one not owned here is a plan gap to report, not to edit. Update `app/intake/CLAUDE.md` and `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -47238,13 +47251,14 @@
     "D-1020",
     "D-4360",
     "D-4439",
-    "D-4441"
+    "D-4441",
+    "D-4777"
    ],
    "cites": [],
    "budget": {
     "files": 3,
-    "lines": 450,
-    "context_pct": 25
+    "lines": 550,
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -47259,26 +47273,30 @@
    "id": "T716",
    "slug": "intake-order-trade-questions",
    "title": "intake: the dispatcher's trade questions at step 5: \"Which fits best?\" and, when her words name no trade, one question asking what she needs done",
-   "goal": "Plan change D-4441 (review finding (b) on T671's attempt 1: the trade question was never asked and a first text naming no trade got nothing after the ZIP; INT-014, INT-015, INT-012, INT-016; D-102, D-103, D-105, D-1270). After T671, T715 and T717 step 5 reads the stored keyword reading: a trade goes straight to the coverage line with every candidate job type, and a request whose first text named no trade gets nothing after the ZIP. Extend `app/intake/src/order_dispatch.rs`, calling only existing functions (`routing.rs`, `conversation.rs` and `service.rs` are not edited, D-4360): (1) \"Which fits best?\" (INT-014): at step 5, before the coverage line, when `matching::candidates` rebuilt from the stored codes gives `which_fits` (`app/intake/src/matching.rs:414`), ask it with its numbered options; the reply goes to `Candidates::fit_step` (`:454`): `Chosen` stores the chosen job type as the request's candidates (step-marker rows, codes only, stored and read back as (5) says), `KeepAll` keeps every candidate (the card is marked through `routing_confidence::after_fit`, INT-040), `AskAgain` asks once more with the same options in the same order (INT-015, D-103); then T671's coverage line with the stored candidates. (2) No trade read (AI off; T299 adds the AI reading later): step 5 asks one question in place of the coverage line (new template `trade_ask`, draft copy for the copy panel, WORD-028, starting from \"What do you need done? A few words is enough.\"); its reply is read with `keyword_reading`: a trade stores the reply's `trade_reading` and candidate rows (codes only; the reply's words are never kept, D-4360), opens the first job by T715's own open (the job is opened by the order, not by the reply's words, D-4441), then (1) when it applies and the coverage line; no trade or \"Not sure\" asks once more (INT-015), after which the request waits with nothing sent and each later reply is read the same way, as INT-049's ZIP wait does; the wait of a request with no job is T719's. This replaces D-1270's \"`NoTrade` for the INT-016 path\" on the text path: a request is not called uncovered before she is asked (D-4441); INT-016's reply still follows a trade whose category is not open. A reply naming two trades takes the first (T711 adds INT-032 for a first message only). (3) `order_dispatch::ask_open_again` (T715) gains both questions, so START (T691) resends them. (4) `which_fits` and `trade_ask` go into the shared `app/messaging/templates/en.json` and `es.json` (Spanish drafts marked for native-speaker review, TXT-003), passing `scripts/check_copy.py` and `scripts/check_ai_smell.py` (WORD-028, WORD-029), and into `NOT_UPDATE_TEXTS` (`app/quotes/src/update_texts.rs:116`: intake questions before her request goes out, D-1293); `td_txt_25_every_homeowner_template_is_scanned_or_left_out` (`app/quotes/src/tests/update_texts.rs:145`, TD-TXT-25) is the guard that makes a new homeowner text be listed and is not edited. INT-013's numbered trade question (two readings that disagree) needs the AI reading: with AI off `routing_confidence::decide` never offers two trades, so it is not built here. Tests (TD-INT-53) in the new `tests/integration/tests/intake_order_trade_questions.rs`, PostgreSQL, fake data and 555 numbers only, through `intake::api::receive_raw_reply`, each asserting texts only up to the coverage line or the wait. Before hand-in, run every test that posts to `/webhooks/twilio/sms` or calls `receive_reply`/`receive_raw_reply`; a failing one not owned here is a plan gap to report, not to edit. Update `app/intake/CLAUDE.md` and `docs/decisions.md`. T671 (claimed on D-4439's plan, which named `fit_step` for the trade question) may already ask \"Which fits best?\": where it does, this task checks and completes that ask rather than adding a second. Plan change D-4602 (T715's plan gap, Nov 19, 2026): (5) `first_text` also stores, codes only, every (trade, job type) pair of the first text's `keyword_reading` `job_types`, `boundary` and `licensed_only` (`app/intake/src/matching.rs:160` to `:171`), each stored as a step-marker row with question `job_type.<trade>` and choice the label folded to lower case with every run of other characters as `_` (the `intake.intake_answer.choice` check, `migrations/0053_intake_tables.sql:68`, allows only `^[a-z0-9][a-z0-9_.]{0,63}$`; the longest keyword label, 33 characters, and the longest catalog job type, 48, fit), read back only by matching the labels `matching::stored_job_types_of(trade)` gives, folded the same way (plan change D-4618: `RULES` and `LICENSED_ONLY` are private, `app/intake/src/matching.rs:52`, `:134`, so this task adds to `matching.rs` one public reader, `pub fn stored_job_types_of(trade: &str) -> Vec<&'static str>`, returning `job_types_of(trade)` then the trade's `LICENSED_ONLY` labels, with a `///` comment citing D-105, D-1003 and D-4618, and changes nothing else there; so plumbing's \"water heater replacement\" and pool repair's \"gas pool heater\", which are neither keyword nor catalog job types, survive read-back); a choice that matches none is dropped; each set is written in one turn at that turn's `received_at` (every row of the set with the same `answered_at`); step 5 and the card read only the rows with the newest `answered_at` for `job_type.<trade>`, so a later set replaces an earlier one; never her words (INT-007, INT-049), so the license-boundary job types of other trades that `candidates` adds (`matching.rs:403` to `:405`) are kept; step 5 rebuilds the candidates from the stored trade and these rows, so a two-word first text naming a job type (\"sticky door\") gets the coverage line with no question. Planted in this task's own tests, which also assert that a first text naming a licensed-only job type (\"water heater leak\": `keyword_reading` puts plumbing's \"water heater replacement\" in `licensed_only`, `matching.rs:227` to `:231`) keeps that pair after read-back, shown by the count, not only by the row: with two businesses serving the town and ticking plumbing's leak repair, one holding R-37 and one signed up as a handyman, matched on the city list, without R-37, the coverage line after the ZIP counts 1, not 2 (every candidate must be a card, `app/quotes/src/rules.rs:296`; \"water heater replacement\" is permit-type and not a listed job type, so the handyman gets no card for it, `app/licensing/src/handyman.rs:138` to `:142`, `app/licensing/src/rules.rs:98` to `:100`; R-37 covers it, `docs/catalog/license_map.yaml:57`; the words \"water heater leak\" name no permit phrase, `handyman.rs:48` to `:55`, so a dropped pair would count 2) (D-4618). What \"Not sure\" or two unusable replies lead to on a trade with no job type named (INT-040, the `job_unsure` text, the OPS-041 email) is T723's, which follows this task; `KeepAll` here stays as (1) says, and when the kept candidates include `<trade>_other` this task's tests assert nothing after that reply (no INT-017 close is asserted there; TD-INT-57's).",
+   "goal": "Plan change D-4441 (review finding (b) on T671's attempt 1: the trade question was never asked and a first text naming no trade got nothing after the ZIP; INT-014, INT-015, INT-012, INT-016; D-102, D-103, D-105, D-1270). After T671, T715 and T717 step 5 reads the stored keyword reading: a trade goes straight to the coverage line with every candidate job type, and a request whose first text named no trade gets nothing after the ZIP. Extend `app/intake/src/order_dispatch.rs`, calling only existing functions (`routing.rs`, `conversation.rs` and `service.rs` are not edited, D-4360): (1) \"Which fits best?\" (INT-014): at step 5, before the coverage line, when `matching::candidates` rebuilt from the stored codes gives `which_fits` (`app/intake/src/matching.rs:414`), ask it with its numbered options; the reply goes to `Candidates::fit_step` (`:454`): `Chosen` stores the chosen job type as the request's candidates (step-marker rows, codes only, stored and read back as (5) says), `KeepAll` keeps every candidate (the card is marked through `routing_confidence::after_fit`, INT-040), `AskAgain` asks once more with the same options in the same order (INT-015, D-103); then T671's coverage line with the stored candidates. (2) No trade read (AI off; T299 adds the AI reading later): step 5 asks one question in place of the coverage line (new template `trade_ask`, draft copy for the copy panel, WORD-028, starting from \"What do you need done? A few words is enough.\"); its reply is read with `keyword_reading`: a trade stores the reply's `trade_reading` and candidate rows (codes only; the reply's words are never kept, D-4360), opens the first job by T715's own open (the job is opened by the order, not by the reply's words, D-4441), then (1) when it applies and the coverage line; no trade or \"Not sure\" asks once more (INT-015), after which the request waits with nothing sent and each later reply is read the same way, as INT-049's ZIP wait does; the wait of a request with no job is T719's. This replaces D-1270's \"`NoTrade` for the INT-016 path\" on the text path: a request is not called uncovered before she is asked (D-4441); INT-016's reply still follows a trade whose category is not open. A reply naming two trades takes the first (T711 adds INT-032 for a first message only). (3) `order_dispatch::ask_open_again` (T715) gains both questions, so START (T691) resends them. (4) `which_fits` and `trade_ask` go into the shared `app/messaging/templates/en.json` and `es.json` (Spanish drafts marked for native-speaker review, TXT-003), passing `scripts/check_copy.py` and `scripts/check_ai_smell.py` (WORD-028, WORD-029), and into `NOT_UPDATE_TEXTS` (`app/quotes/src/update_texts.rs:116`: intake questions before her request goes out, D-1293); `td_txt_25_every_homeowner_template_is_scanned_or_left_out` (`app/quotes/src/tests/update_texts.rs:145`, TD-TXT-25) is the guard that makes a new homeowner text be listed and is not edited. INT-013's numbered trade question (two readings that disagree) needs the AI reading: with AI off `routing_confidence::decide` never offers two trades, so it is not built here. Tests (TD-INT-53) in the new `tests/integration/tests/intake_order_trade_questions.rs`, PostgreSQL, fake data and 555 numbers only, through `intake::api::receive_raw_reply`, each asserting texts only up to the coverage line or the wait. Before hand-in, run every test that posts to `/webhooks/twilio/sms` or calls `receive_reply`/`receive_raw_reply`; a failing one not owned here is a plan gap to report, not to edit. (6) Plan change D-4777 (Fable's intake audit, finding I2, HIGH, licensing; CARD-001, INT-017, LIC-043; D-105, D-4488): the coverage count drops cross-trade licence-boundary job types: `order_dispatch::facts` (`app/intake/src/order_dispatch.rs:476` to `:491`) keeps only candidates whose trade is the job's (`.filter(|(t, _)| t == trade)`), and `quotes::card_pool` gives every candidate the stored category (`app/quotes/src/card_pool.rs:141` to `:152`, the change D-4488 named), so \"handyman needed, breaker panel keeps tripping\" counts handymen without the electrical licence (D-105); and `trade_check` (`order_dispatch.rs:315` to `:319`) opens the job with `String::new()` as its words, so \"water heater\" counts `plumbing_other`. This task also: the count carries the stored (trade, job type) pairs end to end (`facts` keeps every pair; `card_pool` matches each pair against businesses holding that trade's licence class for that job type, a business counting only when it may take every candidate); `trade_check` reads her stored first words for the job, so \"water heater\" keeps \"water heater replacement\". These cases go in the new `tests/integration/tests/intake_boundary_count.rs`: a boundary job type named under another trade (handyman, breaker panel) never counts a business without the licence and counts one with it; a \"water heater\" first text keeps \"water heater replacement\" and its count; every card-pool test passes unchanged. Licensing: two review rounds. Update `app/intake/CLAUDE.md` and `docs/decisions.md`. T671 (claimed on D-4439's plan, which named `fit_step` for the trade question) may already ask \"Which fits best?\": where it does, this task checks and completes that ask rather than adding a second. Plan change D-4602 (T715's plan gap, Nov 19, 2026): (5) `first_text` also stores, codes only, every (trade, job type) pair of the first text's `keyword_reading` `job_types`, `boundary` and `licensed_only` (`app/intake/src/matching.rs:160` to `:171`), each stored as a step-marker row with question `job_type.<trade>` and choice the label folded to lower case with every run of other characters as `_` (the `intake.intake_answer.choice` check, `migrations/0053_intake_tables.sql:68`, allows only `^[a-z0-9][a-z0-9_.]{0,63}$`; the longest keyword label, 33 characters, and the longest catalog job type, 48, fit), read back only by matching the labels `matching::stored_job_types_of(trade)` gives, folded the same way (plan change D-4618: `RULES` and `LICENSED_ONLY` are private, `app/intake/src/matching.rs:52`, `:134`, so this task adds to `matching.rs` one public reader, `pub fn stored_job_types_of(trade: &str) -> Vec<&'static str>`, returning `job_types_of(trade)` then the trade's `LICENSED_ONLY` labels, with a `///` comment citing D-105, D-1003 and D-4618, and changes nothing else there; so plumbing's \"water heater replacement\" and pool repair's \"gas pool heater\", which are neither keyword nor catalog job types, survive read-back); a choice that matches none is dropped; each set is written in one turn at that turn's `received_at` (every row of the set with the same `answered_at`); step 5 and the card read only the rows with the newest `answered_at` for `job_type.<trade>`, so a later set replaces an earlier one; never her words (INT-007, INT-049), so the license-boundary job types of other trades that `candidates` adds (`matching.rs:403` to `:405`) are kept; step 5 rebuilds the candidates from the stored trade and these rows, so a two-word first text naming a job type (\"sticky door\") gets the coverage line with no question. Planted in this task's own tests, which also assert that a first text naming a licensed-only job type (\"water heater leak\": `keyword_reading` puts plumbing's \"water heater replacement\" in `licensed_only`, `matching.rs:227` to `:231`) keeps that pair after read-back, shown by the count, not only by the row: with two businesses serving the town and ticking plumbing's leak repair, one holding R-37 and one signed up as a handyman, matched on the city list, without R-37, the coverage line after the ZIP counts 1, not 2 (every candidate must be a card, `app/quotes/src/rules.rs:296`; \"water heater replacement\" is permit-type and not a listed job type, so the handyman gets no card for it, `app/licensing/src/handyman.rs:138` to `:142`, `app/licensing/src/rules.rs:98` to `:100`; R-37 covers it, `docs/catalog/license_map.yaml:57`; the words \"water heater leak\" name no permit phrase, `handyman.rs:48` to `:55`, so a dropped pair would count 2) (D-4618). What \"Not sure\" or two unusable replies lead to on a trade with no job type named (INT-040, the `job_unsure` text, the OPS-041 email) is T723's, which follows this task; `KeepAll` here stays as (1) says, and when the kept candidates include `<trade>_other` this task's tests assert nothing after that reply (no INT-017 close is asserted there; TD-INT-57's).",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": "intake",
    "deps": [
-    "T675"
+    "T675",
+    "T654"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "privacy",
-    "compliance"
+    "compliance",
+    "licensing"
    ],
    "owns": [
     "app/intake/src/matching.rs",
     "app/intake/src/order_dispatch.rs",
     "app/quotes/src/update_texts.rs",
-    "tests/integration/tests/intake_order_trade_questions.rs"
+    "tests/integration/tests/intake_order_trade_questions.rs",
+    "app/quotes/src/card_pool.rs",
+    "tests/integration/tests/intake_boundary_count.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -47288,7 +47306,9 @@
     "docs/spec/messaging.md",
     "docs/spec/wording.md",
     "app/intake/src/routing_confidence.rs",
-    "docs/brains/rust-production.md"
+    "docs/brains/rust-production.md",
+    "docs/spec/licensing.md",
+    "docs/spec/job-cards.md"
    ],
    "requirements": [
     "INT-014",
@@ -47299,7 +47319,9 @@
     "TXT-003",
     "WORD-028",
     "INT-007",
-    "INT-017"
+    "INT-017",
+    "CARD-001",
+    "LIC-043"
    ],
    "tests": [
     "TD-INT-53"
@@ -47314,12 +47336,13 @@
     "D-4441",
     "D-4439",
     "D-4602",
-    "D-4618"
+    "D-4618",
+    "D-4777"
    ],
    "cites": [],
    "budget": {
-    "files": 4,
-    "lines": 500,
+    "files": 6,
+    "lines": 600,
     "context_pct": 22
    },
    "checks": [
@@ -47329,7 +47352,7 @@
    ],
    "branch": "claude/task/T716-intake-order-trade-questions",
    "prompt": "kit/prompts/T716.md",
-   "acceptance": "TD-INT-53 passes against PostgreSQL; \"Which fits best?\" is asked only when the candidates call for it and at most twice; a request whose words name no trade is asked once, asked once more, then waits, and is never called uncovered for want of a trade; no reply to either question is kept as words; `which_fits` and `trade_ask` pass `check_copy.py` and `check_ai_smell.py` and are in `NOT_UPDATE_TEXTS`; a licensed-only job type of the first text survives read-back; `matching.rs` gains only `stored_job_types_of`; `routing.rs`, `conversation.rs` and `service.rs` are unchanged; the earlier intake order tests pass unchanged.",
+   "acceptance": "TD-INT-53 passes against PostgreSQL; \"Which fits best?\" is asked only when the candidates call for it and at most twice; a request whose words name no trade is asked once, asked once more, then waits, and is never called uncovered for want of a trade; no reply to either question is kept as words; `which_fits` and `trade_ask` pass `check_copy.py` and `check_ai_smell.py` and are in `NOT_UPDATE_TEXTS`; a licensed-only job type of the first text survives read-back; `matching.rs` gains only `stored_job_types_of`; `routing.rs`, `conversation.rs` and `service.rs` are unchanged; the earlier intake order tests pass unchanged. `tests/integration/tests/intake_boundary_count.rs` passes: a business without the boundary licence is never counted.",
    "copy": true
   },
   {
@@ -49484,6 +49507,118 @@
    "branch": "claude/task/T757-delete-message-bodies",
    "prompt": "kit/prompts/T757.md",
    "acceptance": "`tests/integration/tests/delete_message_bodies.rs` passes against PostgreSQL; every purge and data-download test passes unchanged; no message words of hers outlive \"Delete my data\"."
+  },
+  {
+   "id": "T758",
+   "slug": "spanish-gas-signs",
+   "title": "intake: Spanish gas and burning reports reach the 911 list, and the not-list stays clear",
+   "goal": "Plan change D-4777 (Fable's intake audit of `main` a569d63b, finding I1, HIGH, safety; INT-002, INT-003, INT-004; TD-INT-01; D-982). Spanish gas and fire reports miss the 911 list: `hazard` (`app/intake/src/emergency.rs:279`) needs a gas word and an English sign stem (`GAS_SIGNS`, `:68` to `:70`) or one of the fixed `GAS_PHRASES` (`:71` onward), so \"huelo gas en la cocina\", \"hay una fuga en la tubería de gas\" and \"huele mucho a gas\" read `Clear`, and there is no Spanish burning rule, so \"huele a quemado\" and \"se está quemando la casa\" read `Clear` too. This task, in `emergency.rs` only: (1) the word-plus-sign rule also takes the Spanish sign stems `huel`, `olor`, `fuga` and `escap` (folded, accents removed as the file's `Folded` does), so a gas word and a Spanish sign anywhere in the message match; (2) a Spanish burning rule beside the English one: \"huele a quemado\", \"olor a quemado\", \"se está quemando\", \"se quema\", \"hay fuego\", \"hay humo\" (folded forms), matching the same hazard the English burning rule does; (3) the not-list stays clear: \"calentador de gas no funciona\", \"la estufa de gas no prende\", \"el gas está caro\", \"cambiar el tanque de gas\" (no sign word) read `Clear`. Tests: TD-INT-01 cases in `app/intake/src/tests/emergency.rs` (existing cases unchanged): each Spanish report above matches, in English and Spanish pairs (\"I smell gas in the kitchen\" / \"huelo gas en la cocina\"), and each not-list sentence is `Clear`; `emergency_streets.rs` and every intake order test pass unchanged. Safety: Opus worker (Fable once the runner's `models` map names it, D-4761), Opus security and compliance review, two review rounds. It is claimed right after T742 (`kit/runner.json` `claim_first`, D-4777). Update the `intake` notes and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T312",
+    "T420",
+    "T100",
+    "T517"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "compliance"
+   ],
+   "owns": [
+    "app/intake/src/emergency.rs",
+    "app/intake/src/tests/emergency.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/intake.md"
+   ],
+   "requirements": [
+    "INT-002",
+    "INT-003",
+    "INT-004"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-982",
+    "D-4777"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 250,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T758-spanish-gas-signs",
+   "prompt": "kit/prompts/T758.md",
+   "acceptance": "`app/intake/src/tests/emergency.rs` passes with the new TD-INT-01 cases and its existing cases unchanged; every Spanish report in the goal matches and every not-list sentence is `Clear`."
+  },
+  {
+   "id": "T759",
+   "slug": "close-which-expiry",
+   "title": "intake: \"Close which?\" expires on any other reply, and \"never mind\" in a request with no job gets a reply",
+   "goal": "Plan change D-4777 (Fable's intake audit, finding I3, MED, and the low finding; JOB-019, JOB-021, INT-038; D-1203). (1) \"Close which?\" never expires: `closing.rs` (`app/intake/src/closing.rs:79` to `:95`) writes `close_which` = `asked` and only a close answer clears it, so a lone number or ALL sent days later for another reason (`close_target`, `app/intake/src/rules.rs:663` to `:676`) still closes a job. Any reply in the request that is not a close answer now writes `close_which` = `dropped` in the same transaction, so a later lone number or ALL is no longer read as the answer. (2) \"never mind\" (or another cancel phrase, `rules.rs:307`) in an open request with no job gets no reply today: it now gets the close reply for a request (the request is closed as `close_request` closes it, with its existing confirmation wording, or, if none fits, a new draft line for the copy panel). Tests in the new `tests/integration/tests/close_which_expiry.rs`, PostgreSQL, fake data only: \"Close which?\", then an unrelated reply, then \"2\" closes nothing; \"Close which?\" then \"2\" still closes job 2; \"never mind\" in a request with no job closes it and replies once. Every close test passes unchanged. Opus worker (Fable once the runner's `models` map names it, D-4761), Opus security review. Update the `intake` notes and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T662",
+    "T570"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/intake/src/closing.rs",
+    "tests/integration/tests/close_which_expiry.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/lifecycle.md",
+    "docs/spec/intake.md",
+    "app/intake/src/rules.rs"
+   ],
+   "requirements": [
+    "JOB-019",
+    "JOB-021",
+    "INT-038"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-1203",
+    "D-4777"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 250,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T759-close-which-expiry",
+   "prompt": "kit/prompts/T759.md",
+   "acceptance": "`tests/integration/tests/close_which_expiry.rs` passes against PostgreSQL; every close test passes unchanged."
   }
  ]
 }
