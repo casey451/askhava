@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T20:33:52Z by runner 2713b670905c (actions).
+Updated 2026-11-19T20:34:03Z by runner 2713b670905c (actions).
 
 **Building: T753 in progress since 19:06Z; 503 of 698 done; week 7% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 503 of 698 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T753 claimed 19:06Z, lease until 22:06Z; lane 3: T307 claimed 17:47Z, lease until 23:22Z; lane 6: T480 claimed 17:18Z, lease until 20:18Z; lane 7: T717 claimed 20:10Z, lease until 23:10Z
+- **Lane:** lane 1: T753 claimed 19:06Z, lease until 22:06Z; lane 6: T480 claimed 17:18Z, lease until 20:18Z; lane 7: T717 claimed 20:10Z, lease until 23:10Z
 - **Week:** 7% used, 176.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 20:33Z, 0 min before this update
 - **Keeper:** last ran 20:23Z, next wake 22:09Z
@@ -19,6 +19,7 @@ Updated 2026-11-19T20:33:52Z by runner 2713b670905c (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T307 | server and portals: the homeowner portal's sign-in, home pag | MERGE_PENDING | 2 | 2 h 45 min | 20:33Z | PLAN GAP: tests/security/tests/vault_readers.rs:23 lets only `portals` call `read_own_contact` (line 19 lets only `messa |
 | T748 | portals: the help-page form's confirmation promises no reply | MERGE_PENDING | 1 | 41 min | 20:08Z |  |
 | T161 | wording: the WORD-024 voice rule's pressure-word scan, the r | MERGE_PENDING | 2 | 2 h 1 min | 20:00Z | PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/s |
 | T607 | site: site.css brought up to the V6 reference (laftly-v6.css | QUEUED | 1 | 2 h 5 min | 19:21Z | review_missing on 2c1fc315ebe4 (D-3728): not proven reviewed or worker-made / (b) 5cb49e3317bc T607: NOTES entry in the  |
@@ -137,9 +138,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T753 (lease until 2026-11-19T22:06:54Z)
-- lane 3: T307 (lease until 2026-11-19T23:22:34Z)
 - lane 6: T480 (lease until 2026-11-19T20:18:37Z)
 - lane 7: T717 (lease until 2026-11-19T23:10:06Z)
 
 ## Last usage reading
-- {"task": "T748", "at": "2026-11-19T20:08:02Z", "input_tokens": 60, "output_tokens": 13501, "cache_read_input_tokens": 1086477, "cache_creation_input_tokens": 68993}
+- {"task": "T307", "at": "2026-11-19T20:33:29Z", "input_tokens": 403, "cache_creation_input_tokens": 446713, "cache_read_input_tokens": 21692156, "output_tokens": 109376}
