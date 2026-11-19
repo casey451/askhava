@@ -35,6 +35,7 @@ const STRIPE_PUBLISHABLE_KEY: &str = "ASKHAVA_STRIPE_PUBLISHABLE_KEY";
 const LAUNCH_DATE: &str = "ASKHAVA_LAUNCH_DATE";
 const SET_ASIDE: &str = "ASKHAVA_SALES_TAX_SET_ASIDE_BASIS_POINTS";
 const HOME_NUMBERS_MIN_JOBS: &str = "ASKHAVA_HOME_NUMBERS_MIN_JOBS";
+const SPOT_CHECK_EVERY_DAYS: &str = "ASKHAVA_SPOT_CHECK_EVERY_DAYS";
 const LLC_RECORD_URL: &str = "ASKHAVA_LLC_RECORD_URL";
 const CITY_LICENSE: &str = "ASKHAVA_CITY_BUSINESS_LICENSE_NUMBER";
 const CITY_LICENSE_COST: &str = "ASKHAVA_CITY_LICENSE_COST";
@@ -115,6 +116,9 @@ const KEYS: &[&str] = &[
     "ASKHAVA_EMAIL_DAILY_LIMIT",
     "ASKHAVA_EMAIL_MONTHLY_LIMIT",
     "ASKHAVA_EMAIL_BULK_HOLD_PERCENT",
+    // OPS-009's spot-check cadence in days (default 30), read by the serving route (T304) for
+    // T476's owner health page (D-4280, D-4625).
+    SPOT_CHECK_EVERY_DAYS,
     // OPS-035's alert address, read as a `SecretString` by `askhava_server`'s alert email sender
     // and never logged (T204, D-3882, D-4044).
     "ASKHAVA_ALERT_EMAIL",
@@ -209,6 +213,8 @@ const DEFAULT_SET_ASIDE_BASIS_POINTS: u16 = 860;
 const DEFAULT_REQUEST_TIMEOUT_SECS: u64 = 60;
 /// WEB-028's default threshold: 50 requests with a card sent (D-468).
 const DEFAULT_HOME_NUMBERS_MIN_JOBS: u32 = 50;
+/// OPS-009's default spot-check cadence in days (`ASKHAVA_SPOT_CHECK_EVERY_DAYS`, D-4280, D-4625).
+pub const DEFAULT_SPOT_CHECK_EVERY_DAYS: u32 = 30;
 /// OPS-039's go and stop lines and D-458's ladder with their `docs/PREBUILD.md` section 7 defaults,
 /// in whole percent, hours, dollars, minutes or counts as each key names; a missing key takes its
 /// default (T621, D-4280, D-4448). `portals::api::ScorecardLines::from_pairs` reads them by key.
@@ -415,6 +421,7 @@ pub struct Settings {
     launch_date: Option<jiff::Timestamp>,
     set_aside_basis_points: u16,
     home_numbers_min_jobs: u32,
+    spot_check_every_days: u32,
     llc_record_url: Option<String>,
     city_license: Option<String>,
     city_guide: [Option<String>; 3],
@@ -447,10 +454,6 @@ impl Settings {
         }
         let accounts = check_accounts(environment, &mut raw)?;
         let public_base_url = public_base_url(environment, raw.remove(PUBLIC_BASE_URL))?;
-        let license_base_url = raw.remove(LICENSE_BASE_URL);
-        if let Some(url) = &license_base_url {
-            check_base_url(environment, LICENSE_BASE_URL, url)?;
-        }
         Ok(Self {
             environment,
             database_url: required(&mut raw, DATABASE_URL)?.into(),
@@ -464,13 +467,22 @@ impl Settings {
             request_timeout_secs: request_timeout_secs(raw.remove(REQUEST_TIMEOUT_SECS))?,
             postal_address: raw.remove(POSTAL_ADDRESS).map(|p| p.trim().to_owned()),
             static_dir: raw.remove(STATIC_DIR).map(|d| d.trim().to_owned()),
-            license_base_url,
+            license_base_url: license_base_url(environment, raw.remove(LICENSE_BASE_URL))?,
             security_events_per_minute: per_minute(raw.remove(SECURITY_EVENTS_PER_MINUTE))?,
             main_number: main_number(raw.remove(MAIN_NUMBER))?,
             stripe_publishable_key: publishable_key(raw.remove(STRIPE_PUBLISHABLE_KEY))?,
             launch_date: launch_date(raw.remove(LAUNCH_DATE))?,
             set_aside_basis_points: set_aside(raw.remove(SET_ASIDE))?,
-            home_numbers_min_jobs: min_jobs(raw.remove(HOME_NUMBERS_MIN_JOBS))?,
+            home_numbers_min_jobs: above_zero(
+                &mut raw,
+                HOME_NUMBERS_MIN_JOBS,
+                DEFAULT_HOME_NUMBERS_MIN_JOBS,
+            )?,
+            spot_check_every_days: above_zero(
+                &mut raw,
+                SPOT_CHECK_EVERY_DAYS,
+                DEFAULT_SPOT_CHECK_EVERY_DAYS,
+            )?,
             llc_record_url: raw.remove(LLC_RECORD_URL).map(|u| u.trim().to_owned()),
             city_license: raw.remove(CITY_LICENSE).map(|n| n.trim().to_owned()),
             city_guide: [CITY_LICENSE_COST, CITY_LICENSE_TIME, CITY_LICENSE_URL]
@@ -638,6 +650,13 @@ impl Settings {
         self.home_numbers_min_jobs
     }
 
+    /// OPS-009's spot-check cadence (`ASKHAVA_SPOT_CHECK_EVERY_DAYS`, a whole number of days above
+    /// 0, default [`DEFAULT_SPOT_CHECK_EVERY_DAYS`]) for the owner health page (T476, D-4625).
+    #[must_use]
+    pub fn spot_check_every_days(&self) -> u32 {
+        self.spot_check_every_days
+    }
+
     /// OPS-039's go and stop lines and D-458's ladder as `(key, value)` pairs, every
     /// `ASKHAVA_SCORECARD_*` key once, its `docs/PREBUILD.md` default when unset (T621, D-4448).
     pub fn scorecard_lines(&self) -> impl Iterator<Item = (&'static str, u32)> + '_ {
@@ -736,6 +755,17 @@ fn is_local_host(host: &str) -> bool {
                 .to_ipv4_mapped()
                 .is_some_and(|v4| v4.is_loopback() || v4.is_unspecified())
     })
+}
+
+/// The license-lookup base URL, when set, passes [`check_base_url`].
+fn license_base_url(
+    environment: Environment,
+    raw: Option<String>,
+) -> Result<Option<String>, SettingsError> {
+    if let Some(url) = &raw {
+        check_base_url(environment, LICENSE_BASE_URL, url)?;
+    }
+    Ok(raw)
 }
 
 /// `ASKHAVA_PUBLIC_BASE_URL`, if set: an `http` or `https` origin passing [`check_base_url`]
@@ -975,15 +1005,19 @@ fn set_aside(raw: Option<String>) -> Result<u16, SettingsError> {
     }
 }
 
-/// WEB-028, D-468: the home page's threshold is a whole number above 0, 50 when unset; a bad value
-/// names only the key.
-fn min_jobs(raw: Option<String>) -> Result<u32, SettingsError> {
-    let Some(raw) = raw else {
-        return Ok(DEFAULT_HOME_NUMBERS_MIN_JOBS);
+/// WEB-028, D-468 (the home page's threshold) and OPS-009, D-4625 (the spot-check cadence): a
+/// whole number above 0, `default` when unset; a bad value names only the key.
+fn above_zero(
+    raw: &mut HashMap<&'static str, String>,
+    key: &'static str,
+    default: u32,
+) -> Result<u32, SettingsError> {
+    let Some(value) = raw.remove(key) else {
+        return Ok(default);
     };
-    match raw.trim().parse::<u32>() {
-        Ok(jobs @ 1..) => Ok(jobs),
-        _ => Err(SettingsError::Invalid(HOME_NUMBERS_MIN_JOBS)),
+    match value.trim().parse::<u32>() {
+        Ok(n @ 1..) => Ok(n),
+        _ => Err(SettingsError::Invalid(key)),
     }
 }
 
