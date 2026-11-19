@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T07:02:14Z by runner 8eb209a9d88c (actions).
+Updated 2026-11-19T07:04:32Z by runner c2eaa68952bf (actions).
 
-**Building: T456 in progress since 06:58Z; 479 of 664 done; week 75% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T456 in progress since 06:58Z; 480 of 664 done; week 75% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 479 of 664 build tasks (owner gates not counted)
+- **Tasks done:** 480 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T456 claimed 06:58Z, lease until 09:58Z; lane 2: T310 claimed 06:04Z, lease until 09:04Z; lane 3: T216 claimed 06:32Z, lease until 09:32Z; lane 4: T562 claimed 04:26Z, lease until 09:57Z; lane 6: T476 claimed 06:22Z, lease until 09:22Z
 - **Week:** 75% used, 38.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:02Z, 0 min before this update
+- **Last run:** 07:02Z, 2 min before this update
 - **Keeper:** last ran 07:02Z, next wake 09:07Z
 
 ## Needs attention
@@ -17,13 +17,13 @@ Updated 2026-11-19T07:02:14Z by runner 8eb209a9d88c (actions).
 - PLAN GAP T652 (since 2026-11-19T06:58:02Z, no attempt used; a plan change fixes it): T652: dependency T408 is DONE but its owned file app/server/src/release_hold.rs is not on main; T652: dependency T408 is DONE but its owned file app/server/tests/safe_mode_release.rs is not on main
 - PLAN GAP T663 (since 2026-11-19T06:58:02Z, no attempt used; a plan change fixes it): T663: dependency T408 is DONE but its owned file app/server/src/release_hold.rs is not on main; T663: dependency T408 is DONE but its owned file app/server/tests/safe_mode_release.rs is not on main
 - PLAN GAP T707 (since 2026-11-19T06:58:02Z, no attempt used; a plan change fixes it): T707: dependency T408 is DONE but its owned file app/server/src/release_hold.rs is not on main; T707: dependency T408 is DONE but its owned file app/server/tests/safe_mode_release.rs is not on main
-- Strict plan check red: 61 problem(s) on tasks still to run (+296 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 60 problem(s) on tasks still to run (+297 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T229 | Legal drafts: reading-grade check and plain-language rewrite | MERGE_PENDING | 1 | 2 h 17 min | 06:59Z |  |
-| T506 | Decisions digest, piece 7: the next entries after the header | MERGE_PENDING | 1 | 102 min | 06:55Z |  |
+| T506 | Decisions digest, piece 7: the next entries after the header | done | 1 | 102 min | 06:55Z |  |
 | T408 | server: a release waits while safe mode is on and goes ahead | done | 3 | 2 h 48 min | 06:17Z | PLAN GAP: kit/prompts/T408.md:54 "Size budget: at most 6 files, 800 changed lines" cannot be met. The prompt's own plan  |
 | T203 | Wording scan: the required statements, business copy lines a | done | 4 | 42 min | 04:50Z | PLAN GAP: app/portals/templates/es_business_signup.html:82 ("Licencia de control de plagas") and :88 ("Mi licencia inclu |
 | T490 | server (harness): the email provider passed to the sign-up m | done | 1 | 2 h 25 min | 04:35Z |  |
@@ -98,7 +98,7 @@ Updated 2026-11-19T07:02:14Z by runner 8eb209a9d88c (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 306 of 735 (41.6%) · partial 388 · unstarted 41
-**Tasks merged (throughput only):** 479 of 664
+**Tasks merged (throughput only):** 480 of 664
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -134,7 +134,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 122 of 263 done
+- stage 5: 123 of 263 done
 - stage 6: 0 of 48 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
