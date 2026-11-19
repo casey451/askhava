@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-19T21:07:33Z by runner 92c9356ca85b (actions).
+Updated 2026-11-19T21:12:35Z by runner 9a58cedd8922 (actions).
 
-**Building: T480 in progress since 20:38Z; 503 of 701 done; week 8% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T480 in progress since 20:38Z; 504 of 701 done; week 8% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 503 of 701 build tasks (owner gates not counted)
+- **Tasks done:** 504 of 701 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 4: T480 claimed 20:38Z, lease until 23:38Z; lane 6: T663 claimed 21:02Z, lease until 00:02Z; lane 7: T717 claimed 20:10Z, lease until 23:59Z
 - **Week:** 8% used, 174.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:07Z, 0 min before this update
+- **Last run:** 21:07Z, 4 min before this update
 - **Keeper:** last ran 21:07Z, next wake 23:41Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 56 problem(s) on tasks still to run (+342 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 56 problem(s) on tasks still to run (+343 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -22,7 +22,7 @@ Updated 2026-11-19T21:07:33Z by runner 92c9356ca85b (actions).
 | T753 | runner (harness): `fable` is a model the plan can name, a ta | MERGE_PENDING | 1 | 112 min | 20:59Z |  |
 | T307 | server and portals: the homeowner portal's sign-in, home pag | MERGE_PENDING | 2 | 2 h 45 min | 20:33Z | PLAN GAP: tests/security/tests/vault_readers.rs:23 lets only `portals` call `read_own_contact` (line 19 lets only `messa |
 | T748 | portals: the help-page form's confirmation promises no reply | MERGE_PENDING | 1 | 41 min | 20:08Z |  |
-| T161 | wording: the WORD-024 voice rule's pressure-word scan, the r | MERGE_PENDING | 2 | 2 h 1 min | 20:00Z | PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/s |
+| T161 | wording: the WORD-024 voice rule's pressure-word scan, the r | done | 2 | 2 h 1 min | 20:00Z | PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/s |
 | T607 | site: site.css brought up to the V6 reference (laftly-v6.css | QUEUED | 1 | 2 h 5 min | 19:21Z | review_missing on 2c1fc315ebe4 (D-3728): not proven reviewed or worker-made / (b) 5cb49e3317bc T607: NOTES entry in the  |
 | T555 | Decisions digest, piece 10: the next entries after the heade | done | 1 | 2 h 7 min | 17:51Z |  |
 | T715 | intake (harness): corrections to T671's walker: alarm answer | done | 3 | 113 min | 17:43Z | PLAN GAP: one TD-INT-52 sentence can't be met by intake as planned: "a two-word first text naming a trade opens its job  |
@@ -85,15 +85,14 @@ Updated 2026-11-19T21:07:33Z by runner 92c9356ca85b (actions).
 | T722 | payments: read a pick's disputes and record Casey's evidence | done | 1 | 45 min | 21:33Z |  |
 | T503 | Decisions digest, piece 4: the next entries after the header | done | 1 | 31 min | 21:30Z |  |
 | T483 | messaging, portals and server: the owner's "away until" date | done | 1 | 2 h 48 min | 21:13Z |  |
-| T702 | privacy and messaging: no blind-index key version is retired | done | 1 | 40 min | 21:07Z |  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 324 of 735 (44.1%) · partial 374 · unstarted 37
-**Tasks merged (throughput only):** 503 of 701
+**Requirements verified:** 325 of 735 (44.2%) · partial 375 · unstarted 35
+**Tasks merged (throughput only):** 504 of 701
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -115,8 +114,8 @@ Updated 2026-11-19T21:07:33Z by runner 92c9356ca85b (actions).
 | recurring | 10 | 1 | 0 | 11 |
 | security | 11 | 39 | 5 | 55 |
 | terms | 27 | 7 | 1 | 35 |
-| website | 17 | 10 | 3 | 30 |
-| wording | 23 | 5 | 4 | 32 |
+| website | 18 | 9 | 3 | 30 |
+| wording | 23 | 7 | 2 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -129,7 +128,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 146 of 284 done
+- stage 5: 147 of 284 done
 - stage 6: 0 of 64 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
