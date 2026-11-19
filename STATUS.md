@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T03:58:32Z by runner 547545f44116 (manual).
+Updated 2026-11-19T03:59:29Z by runner 5ba2bea829be (actions).
 
 **Building: T408 in progress since 03:29Z; 472 of 663 done; week 73% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 472 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T408 claimed 03:29Z, lease until 06:29Z; lane 2: T520 claimed 01:57Z, lease until 06:52Z; lane 5: T563 claimed 02:48Z, lease until 05:48Z; lane 6: T490 claimed 02:10Z, lease until 06:17Z; lane 7: T399 claimed 03:14Z, lease until 06:14Z
+- **Lane:** lane 1: T408 claimed 03:29Z, lease until 06:29Z; lane 2: T520 claimed 01:57Z, lease until 06:52Z; lane 5: T563 claimed 02:48Z, lease until 05:48Z; lane 6: T490 claimed 02:10Z, lease until 06:17Z; lane 7: T399 claimed 03:14Z, lease until 06:59Z
 - **Week:** 73% used, 42.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:52Z, 5 min before this update
+- **Last run:** 03:58Z, 0 min before this update
 - **Keeper:** last ran 03:33Z, next wake 05:50Z
 
 ## Needs attention
@@ -16,7 +16,7 @@ Updated 2026-11-19T03:58:32Z by runner 547545f44116 (manual).
 Evidence: `trade_check` passes no words when the first tex; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T715 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 62 problem(s) on tasks still to run (+281 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 59 problem(s) on tasks still to run (+280 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -92,31 +92,31 @@ Evidence: `trade_check` passes no words when the first tex; fix the plan (the ta
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 202 of 735 (27.5%) · partial 487 · unstarted 46
+**Requirements verified:** 295 of 735 (40.1%) · partial 394 · unstarted 46
 **Tasks merged (throughput only):** 472 of 663
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 13 | 22 | 0 | 35 |
-| ai | 7 | 19 | 3 | 29 |
-| businesses | 13 | 44 | 1 | 58 |
-| calls | 11 | 14 | 0 | 25 |
-| consent | 9 | 26 | 0 | 35 |
-| fees | 14 | 37 | 1 | 52 |
-| intake | 9 | 34 | 0 | 43 |
-| job-cards | 13 | 11 | 0 | 24 |
-| licensing | 27 | 21 | 0 | 48 |
-| lifecycle | 12 | 16 | 0 | 28 |
+| accessibility | 17 | 18 | 0 | 35 |
+| ai | 9 | 17 | 3 | 29 |
+| businesses | 17 | 40 | 1 | 58 |
+| calls | 12 | 13 | 0 | 25 |
+| consent | 14 | 21 | 0 | 35 |
+| fees | 23 | 28 | 1 | 52 |
+| intake | 10 | 33 | 0 | 43 |
+| job-cards | 14 | 10 | 0 | 24 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 18 | 10 | 0 | 28 |
 | messaging | 20 | 24 | 1 | 45 |
-| ops-recovery | 1 | 34 | 19 | 54 |
-| privacy | 9 | 21 | 1 | 31 |
+| ops-recovery | 3 | 32 | 19 | 54 |
+| privacy | 10 | 20 | 1 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
-| quotes-pick | 22 | 34 | 0 | 56 |
+| quotes-pick | 27 | 29 | 0 | 56 |
 | recurring | 7 | 4 | 0 | 11 |
-| security | 6 | 44 | 5 | 55 |
-| terms | 1 | 33 | 1 | 35 |
-| website | 0 | 25 | 5 | 30 |
-| wording | 2 | 21 | 9 | 32 |
+| security | 9 | 41 | 5 | 55 |
+| terms | 25 | 9 | 1 | 35 |
+| website | 9 | 16 | 5 | 30 |
+| wording | 12 | 11 | 9 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -140,7 +140,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T520 (lease until 2026-11-19T06:52:34Z)
 - lane 5: T563 (lease until 2026-11-19T05:48:39Z)
 - lane 6: T490 (lease until 2026-11-19T06:17:23Z)
-- lane 7: T399 (lease until 2026-11-19T06:14:57Z)
+- lane 7: T399 (lease until 2026-11-19T06:59:29Z)
 
 ## Last usage reading
 - {"task": "T484", "at": "2026-11-19T03:26:58Z", "input_tokens": 364, "cache_read_input_tokens": 21961281, "cache_creation_input_tokens": 392508, "output_tokens": 105413}
