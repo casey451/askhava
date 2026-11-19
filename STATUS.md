@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T00:48:42Z by runner 214a35f59645 (actions).
+Updated 2026-11-19T00:49:07Z by runner 214a35f59645 (actions).
 
 **Building: T488 in progress since 23:28Z; 465 of 663 done; week 70% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 465 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T488 claimed 23:28Z, lease until 03:21Z; lane 2: T205 claimed 22:21Z, lease until 03:21Z; lane 3: T505 claimed 23:48Z, lease until 02:48Z; lane 4: T306 claimed 23:42Z, lease until 02:42Z; lane 6: T563 claimed 23:58Z, lease until 03:42Z
+- **Lane:** lane 1: T488 claimed 23:28Z, lease until 03:21Z; lane 3: T505 claimed 23:48Z, lease until 02:48Z; lane 4: T306 claimed 23:42Z, lease until 02:42Z; lane 6: T563 claimed 23:58Z, lease until 03:42Z
 - **Week:** 70% used, 46.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 00:48Z, 0 min before this update
 - **Keeper:** last ran 00:48Z, next wake 02:45Z
@@ -19,6 +19,7 @@ Updated 2026-11-19T00:48:42Z by runner 214a35f59645 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T205 | portals: owner refunds with a review step and the audit log  | MERGE_PENDING | 2 | 2 h 26 min | 00:48Z | PLAN GAP: `payments` has no public reader that ties a dispute to its pick (or its charge, business or job). Without one, |
 | T708 | intake: a quote-count update due in quiet hours goes at the  | MERGE_PENDING | 1 | 50 min | 00:40Z |  |
 | T364 | server and portals: the business step-up code page is served | MERGE_PENDING | 2 | 70 min | 00:32Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
 | T701 | messaging: a per-number opt-out lock, and the listing key an | done | 1 | 45 min | 23:02Z |  |
@@ -38,7 +39,7 @@ Updated 2026-11-19T00:48:42Z by runner 214a35f59645 (actions).
 | T501 | Decisions digest, piece 2: the next entries after the header | done | 1 | 73 min | 19:42Z |  |
 | T711 | intake (harness): the dispatcher's two jobs in one request:  | done | 1 | 77 min | 19:29Z |  |
 | T624 | server: two failed in-process health checks in a row raise o | check_failed | 1 | 96 min | 18:26Z | Ci: failure; Python: failure / Python failed at step: Unit, contract and drill tests (pytest) / T705: about 21877 tokens |
-| T205 | portals: owner refunds with a review step and the audit log  | BLOCKED | 1 | 58 min | 18:23Z | PLAN GAP: `payments` has no public reader that ties a dispute to its pick (or its charge, business or job). Without one, |
+| T205 | portals: owner refunds with a review step and the audit log  | BLOCKED | 1 | 58 min | 18:23Z |  |
 | T500 | Decisions digest, piece 1: from the first entry, at most 300 | done | 1 | 71 min | 18:18Z |  |
 | T671 | intake (harness): a homeowner's texts after the consent text | done | 2 | 102 min | 17:25Z | PLAN GAP: three tests outside T671's scope fail because of the new behaviour (worker edited none of them): / 1. tests/in |
 | T621 | portals: the scorecard's go and stop line settings and its p | done | 1 | 38 min | 17:03Z |  |
@@ -134,10 +135,9 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T488 (lease until 2026-11-19T03:21:31Z)
-- lane 2: T205 (lease until 2026-11-19T03:21:08Z)
 - lane 3: T505 (lease until 2026-11-19T02:48:09Z)
 - lane 4: T306 (lease until 2026-11-19T02:42:52Z)
 - lane 6: T563 (lease until 2026-11-19T03:42:07Z)
 
 ## Last usage reading
-- {"task": "T708", "at": "2026-11-19T00:40:33Z", "cache_read_input_tokens": 2621618, "input_tokens": 86, "cache_creation_input_tokens": 138179, "output_tokens": 42100}
+- {"task": "T205", "at": "2026-11-19T00:48:40Z", "cache_creation_input_tokens": 253802, "output_tokens": 61585, "cache_read_input_tokens": 7782505, "input_tokens": 206}
