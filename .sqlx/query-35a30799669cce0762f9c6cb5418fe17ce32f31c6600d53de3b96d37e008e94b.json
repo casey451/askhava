@@ -1,0 +1,36 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO messaging.spanish_switch (is_on, reviewed_on, reviewer, reviewed, note_on, note_reference, sample, changed_by, changed_at) SELECT $1, $2::text::date, $3, $4::jsonb, $5::text::date, $6, $7, $8, GREATEST($9, (SELECT max(changed_at) + interval '1 microsecond' FROM messaging.spanish_switch)) RETURNING id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "messaging.spanish_switch",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Bool",
+        "Text",
+        "Text",
+        "Jsonb",
+        "Text",
+        "Text",
+        "Text",
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "35a30799669cce0762f9c6cb5418fe17ce32f31c6600d53de3b96d37e008e94b"
+}

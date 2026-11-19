@@ -4,7 +4,10 @@
     T484 (CON-035, PICK-048, D-3753): the owner-recorded opt-out and Stripe's written answer,
     with the newest filing; a change is confirmed here on screen, never by text.
     T407 (CALL-019, CALL-022, SEC-043, D-3134): the safety voice call switch, off at launch; on
-    needs the attorney approval's date and reference; a refusal lists the unmet CALL-022 items. -#}
+    needs the attorney approval's date and reference; a refusal lists the unmet CALL-022 items.
+    T480 (TXT-039, TXT-043, D-427, D-3844): the Spanish conversations switch, off at launch; on
+    needs the professional review (date, reviewer, every Spanish text's version), the campaign
+    update and a Spanish sample; a refusal lists what is missing. -#}
 {% block title %}Owner settings{% endblock %}
 {% block main %}
 <link rel="stylesheet" href="/static/portals/forms.css">
@@ -33,6 +36,33 @@
 <p><label for="safety-reference">Reference number on the approval</label></p>
 <p><input type="text" id="safety-reference" name="reference" maxlength="200"></p>
 <p><button type="submit">Turn the safety voice call on</button></p>
+</form>{% endif %}
+<h2>Spanish conversations</h2>
+{% if !spanish_missing.is_empty() %}<ul id="spanish-missing">{% for item in spanish_missing %}<li>{{ item }}</li>{% endfor %}</ul>{% endif %}
+{% if let Some(s) = spanish %}<p id="spanish-state">Spanish conversations are on. People who write in Spanish get Spanish texts. {{ s.reviewer }} checked all the Spanish texts on {{ s.reviewed_on }}. You updated the campaign on {{ s.note_on }} (reference {{ s.note_reference }}).</p>
+<form method="post" action="{{ spanish_route }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="to" value="off">
+<p><button type="submit">Turn Spanish conversations off</button></p>
+</form>
+{% else %}<p id="spanish-state">Spanish conversations are off. People who write in Spanish get English texts, except the safety, help and stop texts. To turn them on, fill in three things below. First, a paid professional review of every Spanish text. Then the date you updated the campaign. Last, a Spanish sample text.</p>
+<form method="post" action="{{ spanish_route }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="to" value="on">
+<p><label for="spanish-reviewed-on">Date of the professional translation review</label></p>
+<p><input type="date" id="spanish-reviewed-on" name="reviewed_on"></p>
+<p><label for="spanish-reviewer">Reviewer's name</label></p>
+<p><input type="text" id="spanish-reviewer" name="reviewer" maxlength="200"></p>
+<p><label for="spanish-versions">Texts the review covered</label></p>
+<p id="spanish-versions-hint">One per line: the text's name, a space, then its version as shown. The list below shows each Spanish text's current version. A text that changes gets a new version and needs a new review.</p>
+<p><textarea id="spanish-versions" name="versions" rows="6" aria-describedby="spanish-versions-hint"></textarea></p>
+<p id="spanish-versions-title">Spanish texts and their current versions ({{ spanish_versions.len() }}):</p>
+<ul id="spanish-versions-list" aria-labelledby="spanish-versions-title">{% for (parts, version) in spanish_versions %}<li>{% for part in parts %}{{ part }}{% if !loop.last %}_<wbr>{% endif %}{% endfor %} {{ version }}</li>{% endfor %}</ul>
+<p><label for="spanish-note-on">Date you updated the campaign description to say texts are in English or Spanish</label></p>
+<p><input type="date" id="spanish-note-on" name="note_on"></p>
+<p><label for="spanish-note-reference">Reference for that campaign update</label></p>
+<p><input type="text" id="spanish-note-reference" name="note_reference" maxlength="200"></p>
+<p><label for="spanish-sample">Spanish sample message on file with the campaign</label></p>
+<p><textarea id="spanish-sample" name="sample" rows="3" maxlength="1600"></textarea></p>
+<p><button type="submit">Turn Spanish conversations on</button></p>
 </form>{% endif %}
 <h2>Stop texts to a number</h2>
 <form method="post" action="{{ opt_out_route }}" novalidate>
