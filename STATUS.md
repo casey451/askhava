@@ -1,24 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-19T15:26:24Z by runner a9a577a1b0a0 (actions).
+Updated 2026-11-19T15:26:35Z by runner 0b7b95db2bd6 (actions).
 
-**Building: T541 in progress since 13:09Z; 495 of 668 done; week 84% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T407 in progress since 14:19Z; 495 of 668 done; week 84% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 495 of 668 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T541 claimed 13:09Z, lease until 18:01Z; lane 6: T407 claimed 14:19Z, lease until 17:19Z
+- **Lane:** lane 6: T407 claimed 14:19Z, lease until 17:19Z
 - **Week:** 84% used, 21.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:25Z, 0 min before this update
+- **Last run:** 15:26Z, 0 min before this update
 - **Keeper:** last ran 15:13Z, next wake 17:22Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 65 problem(s) on tasks still to run (+319 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 64 problem(s) on tasks still to run (+315 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T541 | payments, portals and adapters: a card saved or changed from | MERGE_PENDING | 1 | 2 h 16 min | 15:25Z |  |
 | T470 | messaging and server: the worker task that sends queued emai | MERGE_PENDING | 3 | 2 h 18 min | 15:24Z | Fix-round review (after the one allowed findings round) still found a problem at head 1830747e4; no reviewer approved a  |
 | T593 | site and server: the home hero in D-3331's wording with the  | MERGE_PENDING | 2 | 75 min | 15:11Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T554 | Decisions digest, piece 9: the next entries after the header | done | 1 | 110 min | 15:03Z |  |
@@ -143,8 +144,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T541 (lease until 2026-11-19T18:01:14Z)
+- nothing
 - lane 6: T407 (lease until 2026-11-19T17:19:51Z)
 
 ## Last usage reading
-- {"task": "T470", "at": "2026-11-19T15:24:56Z", "cache_read_input_tokens": 29511835, "input_tokens": 454, "output_tokens": 136009, "cache_creation_input_tokens": 422996}
+- {"task": "T541", "at": "2026-11-19T15:25:56Z", "cache_creation_input_tokens": 337837, "input_tokens": 246, "cache_read_input_tokens": 12500746, "output_tokens": 93313}
