@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T07:51:38Z by runner bf2db38bac38 (actions).
+Updated 2026-11-19T07:58:35Z by runner 9d21a189c9a3 (actions).
 
 **Building: T456 in progress since 06:58Z; 482 of 664 done; week 76% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 482 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T456 claimed 06:58Z, lease until 09:58Z; lane 3: T216 claimed 06:32Z, lease until 10:50Z; lane 5: T622 claimed 07:06Z, lease until 10:06Z; lane 6: T476 claimed 06:22Z, lease until 10:39Z
+- **Lane:** lane 1: T456 claimed 06:58Z, lease until 09:58Z; lane 3: T216 claimed 06:32Z, lease until 10:50Z; lane 5: T622 claimed 07:06Z, lease until 10:58Z; lane 6: T476 claimed 06:22Z, lease until 10:39Z
 - **Week:** 76% used, 38.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:51Z, 0 min before this update
+- **Last run:** 07:51Z, 6 min before this update
 - **Keeper:** last ran 07:25Z, next wake 09:25Z
 
 ## Needs attention
@@ -16,7 +16,7 @@ Updated 2026-11-19T07:51:38Z by runner bf2db38bac38 (actions).
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T663 (since 2026-11-19T06:58:02Z, no attempt used; a plan change fixes it): T663: dependency T408 is DONE but its owned file app/server/src/release_hold.rs is not on main; T663: dependency T408 is DONE but its owned file app/server/tests/safe_mode_release.rs is not on main
 - PLAN GAP T707 (since 2026-11-19T06:58:02Z, no attempt used; a plan change fixes it): T707: dependency T408 is DONE but its owned file app/server/src/release_hold.rs is not on main; T707: dependency T408 is DONE but its owned file app/server/tests/safe_mode_release.rs is not on main
-- Strict plan check red: 60 problem(s) on tasks still to run (+301 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 58 problem(s) on tasks still to run (+300 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -90,7 +90,6 @@ Updated 2026-11-19T07:51:38Z by runner bf2db38bac38 (actions).
 | T658 | privacy: the scrubber removes lower-case Spanish addresses a | QUEUED | 1 | 89 min | 08:11Z |  |
 | T640 | harness: Ci handles the merge train's throwaway refs and cou | done | 1 | 64 min | 08:02Z |  |
 | T619 | quotes, picks and intake: the quote-median, lapsed-pick, win | done | 2 | 40 min | 08:02Z | T619 readers are correct per three Opus reviews, but the test file still misses wrong implementations; no reviewer appro |
-| T482 | messaging and intake: the plain-word auto-answers after HELP | done | 1 | 2 h 29 min | 07:56Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -143,7 +142,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T456 (lease until 2026-11-19T09:58:02Z)
 - lane 3: T216 (lease until 2026-11-19T10:50:38Z)
-- lane 5: T622 (lease until 2026-11-19T10:06:52Z)
+- lane 5: T622 (lease until 2026-11-19T10:58:35Z)
 - lane 6: T476 (lease until 2026-11-19T10:39:30Z)
 
 ## Last usage reading
