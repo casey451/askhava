@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T03:29:28Z by runner 3e0ed6eb7d4b (actions).
+Updated 2026-11-19T03:33:17Z by runner 3e0ed6eb7d4b (actions).
 
 **Building: T408 in progress since 03:29Z; 471 of 663 done; week 73% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-19T03:29:28Z by runner 3e0ed6eb7d4b (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T408 claimed 03:29Z, lease until 06:29Z; lane 2: T520 claimed 01:57Z, lease until 06:00Z; lane 5: T563 claimed 02:48Z, lease until 05:48Z; lane 6: T490 claimed 02:10Z, lease until 06:17Z; lane 7: T399 claimed 03:14Z, lease until 06:14Z
 - **Week:** 73% used, 42.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:28Z, 0 min before this update
+- **Last run:** 03:33Z, 0 min before this update
 - **Keeper:** last ran 03:28Z, next wake 03:48Z
 
 ## Needs attention
@@ -89,7 +89,6 @@ Evidence: `trade_check` passes no words when the first tex; fix the plan (the ta
 | T623 | payments: a Stripe key refusal (401 or 403) takes the Stripe | done | 1 | 63 min | 03:46Z |  |
 | T151 | ops and messaging: HELP requests with one owner notification | done | 1 | 34 min | 03:40Z |  |
 | T647 | payments: rebuild_charge reports Booked inside a caller's tr | done | 1 | 82 min | 03:35Z |  |
-| T619 | quotes, picks and intake: the quote-median, lapsed-pick, win | QUEUED | 1 | 69 min | 03:31Z |  |
 
 ### Plan and harness merges on main
 - none
