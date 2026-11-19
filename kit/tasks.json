@@ -30074,14 +30074,15 @@
    "id": "T744",
    "slug": "final-status-ends-picks",
    "title": "picks: a job that reaches a final status ends its pick awaiting Confirm or in Payment pending and cancels the PaymentIntent",
-   "goal": "Plan change D-4748 (Fable's decision (4); FEE-021, PICK-038; D-4361, D-4349, D-1576). After T681, `jobs::service::move_to` queues one `jobs.final_status` task `{job, status}` when a job enters a final status and its handler in `app/picks/src/aftermath.rs` sends `no_longer_active` (`:319`); a pick still awaiting Confirm or in Payment pending on that job is left as it was, so its Confirm window, reminders and open PaymentIntent outlive the job and a late payment is caught only by the Left-and-refund path (FEE-021). This task, after T681: (1) the new `app/picks/src/final_status_end.rs` `end_for_final(tx, job, status, at)`, called by that handler in the same transaction before `no_longer_active`, sends every waiting, not-ended pick on the job (`awaiting_confirm` and Payment pending alike) through T663's `picks::api::end_pending` with a new reason `job_final` (added in `app/picks/src/connect.rs`), which ends the PaymentIntent through `payments`' own pick end so it is cancelled at Stripe and a charge that still succeeds is refunded (FEE-021, D-2958); an `awaiting_confirm` pick can have a PICK-048 auto-confirm charge in flight (`charge_off_session`, `app/picks/src/auto_confirm.rs:280`), and with no PaymentIntent the cancel is a no-op; its queued Confirm reminders and window end then act on nothing, as `cant_take` leaves them. `picks.pick.end_reason` is CHECK-constrained (`pick_end_reason_check`, last replaced by `migrations/0189_picks_fee_terms_changed.sql:7` to `:11`), so the new `migrations/0214_picks_job_final_end.sql` (after T745's 0213 and before T729's 0215 in the runner's serial order, which is why this task also waits for T745) replaces it the same way (NOT VALID, then VALIDATE) with every value the check allows on `main` at claim (re-read the newest migration that replaces it) plus `job_final`; re-check the number at claim against the migration-order rule; a pick already `paid`, `free` or ended is untouched; the job is not moved again (it is already final) and no backup is offered (the job is over). (2) A second delivery of the same task finds nothing to end and sends nothing twice (the shared dedupe key, D-1576). The Left-and-refund path is unchanged and stays the backstop. Tests in the new `tests/integration/tests/final_status_pick_end.rs`, PostgreSQL and the Stripe stand-in, fake data only: a job the homeowner closes with a pick awaiting Confirm ends the pick and no reminder or Confirm-end task acts after; a job cancelled in Payment pending cancels its PaymentIntent once and a late `payment_intent.succeeded` is refunded; a job closed while a PICK-048 auto-confirm charge is in flight on its `awaiting_confirm` pick ends the pick, cancels that intent and refunds a charge that still succeeds; a paid pick is untouched; a replayed task changes nothing. T681's `tests/integration/tests/aftermath_notices.rs` passes unchanged. Money: Opus worker, Opus money, privacy and security review, two review rounds. Update the `picks` notes, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4748 (Fable's decision (4); FEE-021, PICK-038; D-4361, D-4349, D-1576). After T681, `jobs::service::move_to` queues one `jobs.final_status` task `{job, status}` when a job enters a final status and its handler in `app/picks/src/aftermath.rs` sends `no_longer_active` (`:319`); a pick still awaiting Confirm or in Payment pending on that job is left as it was, so its Confirm window, reminders and open PaymentIntent outlive the job and a late payment is caught only by the Left-and-refund path (FEE-021). This task, after T681: (1) the new `app/picks/src/final_status_end.rs` `end_for_final(tx, job, status, at)`, called by that handler in the same transaction before `no_longer_active`, sends every waiting, not-ended pick on the job (`awaiting_confirm` and Payment pending alike) through T663's `picks::api::end_pending` with a new reason `job_final` (added in `app/picks/src/connect.rs`), which ends the PaymentIntent through `payments`' own pick end so it is cancelled at Stripe and a charge that still succeeds is refunded (FEE-021, D-2958); an `awaiting_confirm` pick can have a PICK-048 auto-confirm charge in flight (`charge_off_session`, `app/picks/src/auto_confirm.rs:280`), and with no PaymentIntent the cancel is a no-op; its queued Confirm reminders and window end then act on nothing, as `cant_take` leaves them. `picks.pick.end_reason` is CHECK-constrained (`pick_end_reason_check`, last replaced by `migrations/0189_picks_fee_terms_changed.sql:7` to `:11`), so the new `migrations/0214_picks_job_final_end.sql` (after T745's 0213 and before T729's 0215 in the runner's serial order, which is why this task also waits for T745) replaces it the same way (NOT VALID, then VALIDATE) with every value the check allows on `main` at claim (re-read the newest migration that replaces it) plus `job_final`; re-check the number at claim against the migration-order rule; a pick already `paid`, `free` or ended is untouched; the job is not moved again (it is already final) and no backup is offered (the job is over). (1b) The handler first, before ending any pick or sending any notice, calls T573's `messaging::api::expire_job_rows(conn, job, closed_at)` in the same transaction, with `closed_at` the job's final-status time from the task's payload or `jobs.status_history` (never the handler's own `at`), so a text queued or held for the closed job before the close is expired, never sent, and a replayed delivery cannot expire the notices the first delivery queued (QH-007; Fable's texting audit, D-4764). (2) A second delivery of the same task finds nothing to end and sends nothing twice (the shared dedupe key, D-1576). The Left-and-refund path is unchanged and stays the backstop. Tests in the new `tests/integration/tests/final_status_pick_end.rs`, PostgreSQL and the Stripe stand-in, fake data only: a job the homeowner closes with a pick awaiting Confirm ends the pick and no reminder or Confirm-end task acts after; a job cancelled in Payment pending cancels its PaymentIntent once and a late `payment_intent.succeeded` is refunded; a job closed while a PICK-048 auto-confirm charge is in flight on its `awaiting_confirm` pick ends the pick, cancels that intent and refunds a charge that still succeeds; a paid pick is untouched; a replayed task changes nothing, and a `job_no_longer_active` row the first delivery queued and quiet hours held survives the replay. T681's `tests/integration/tests/aftermath_notices.rs` passes unchanged. Money: Opus worker, Opus money, privacy and security review, two review rounds. Update the `picks` notes, `docs/architecture.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": "picks",
    "deps": [
     "T681",
-    "T745"
+    "T745",
+    "T573"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -30103,12 +30104,14 @@
     "docs/code-docs.md",
     "docs/spec/fees.md",
     "docs/spec/quotes-pick.md",
-    "docs/spec/lifecycle.md"
+    "docs/spec/lifecycle.md",
+    "docs/spec/quiet-hours.md"
    ],
    "requirements": [
     "FEE-021",
     "PICK-038",
-    "PICK-048"
+    "PICK-048",
+    "QH-007"
    ],
    "tests": [],
    "decisions": [
@@ -30116,7 +30119,8 @@
     "D-2958",
     "D-4349",
     "D-4361",
-    "D-4748"
+    "D-4748",
+    "D-4764"
    ],
    "cites": [],
    "budget": {
@@ -33592,6 +33596,7 @@
     "T747",
     "T748",
     "T749",
+    "T755",
     "T756",
     "T757"
    ],
@@ -35046,6 +35051,7 @@
     "T749",
     "T750",
     "T752",
+    "T755",
     "T756",
     "T757"
    ],
@@ -37910,6 +37916,7 @@
     "T735",
     "T743",
     "T744",
+    "T755",
     "T756",
     "T757"
    ],
@@ -38007,6 +38014,7 @@
     "T432",
     "T743",
     "T744",
+    "T755",
     "T756",
     "T757"
    ],
@@ -38100,6 +38108,7 @@
     "T432",
     "T743",
     "T744",
+    "T755",
     "T756",
     "T757"
    ],
@@ -38397,6 +38406,7 @@
     "T735",
     "T743",
     "T744",
+    "T755",
     "T756",
     "T757"
    ],
@@ -42243,7 +42253,7 @@
    "id": "T573",
    "slug": "business-outbox-rows-sent",
    "title": "messaging and server: queued business texts are addressed to the phone's line ID and sent (D-2042)",
-   "goal": "Plan change D-4051 (Casey's outside code audit, item B2, Nov 16, 2026): business texts are queued and never sent. The business auto reply (`auto_reply`, `app/server/src/inbound_text.rs:1037`) stores the outbox row's `recipient` as the business ID, because `messaging::api::sender_business` (`app/messaging/src/service.rs:421`) answers only the business, while `businesses::api::may_text(business, phone)` and the notice worker (`app/messaging/src/business_notices.rs` `store_texts`) use the phone's line ID (D-2042 (1)); and `models::due` (`app/messaging/src/models.rs:372`) takes only `recipient_kind = 'homeowner'` rows, so the outbox sender (`app/messaging/src/outbox_sender.rs`, its doc `:18`) never sends a business row (D-3147 (1)). D-2042 said the gap must close before an outbox sender is registered, and one now is. This task closes it, before T526 turns business texting on from the stored switch (T526 depends on it): (1) `sender_business` (or a new `messaging::api` call beside it, exported by one line in the shared `api.rs`) also returns the linked phone's line ID, and `auto_reply` stores that line ID as the recipient; (2) `models::due` also takes queued business rows, and the sender resolves a business row's number from its line's sealed phone in `messaging`, checks `may_text` for that business and phone at send time through a gate (a refused or unlinked phone expires the row with one `messaging.text_expired` audit row, as D-3149 does for a homeowner row that can never be sent), sends it on the business line (`mode::send_on_line`, `Audience::Business`; with the business switch off or no business number the row waits, TXT-022's rule for the homeowner line). `OutboxSender` (`app/messaging/src/outbox_sender.rs:67` to `:98`) has neither a gate nor a business number today (it carries only the homeowner `number`, and `:152` calls `load_lines(.., (number, None))`): this task adds a builder on `OutboxSender` that takes a gate implementing `messaging::api::SendChecks` (`app/messaging/src/business_notices.rs:79`, whose `may_text` is the check; a narrower trait for `may_text` alone is allowed) and an optional business `SendingNumber`, which `load_lines` then gets as its business number; `new` and `register_send_due`'s callers keep their signatures, so `tests/integration/tests/outbox.rs` passes unchanged, and without the builder no business row is sent (it waits); the shared `app/server/src/lib.rs` composition passes `NoticeChecks` (`:1374`) as the gate, and production's business number stays `None` until T526 passes the configured one. This task's tests build the sender with a fake business number under the same quiet-hour, suppression and retry rules as a homeowner row; a row whose recipient is still a business ID (queued before this change) is expired, never guessed. It is a harness task because it changes `tests/integration/tests/inbound_first_contact.rs` (T256's and T317's), whose TD-BIZ-39 case pins the business ID as the recipient (`:294` to `:302`, D-2042 says so): that assertion, and only it, changes to the line ID. Tests in the new `tests/integration/tests/outbox_business_rows.rs`, against PostgreSQL with the Twilio stand-in, fake data only: with the business switch on and the sender built with a fake business number, a business notice row and an auto reply to a consented linked phone are sent once on the business line; a phone without the CON-019 box is not texted and its row expires; with the switch off the rows wait; a homeowner row's behaviour is unchanged (`tests/integration/tests/outbox.rs` passes). Update the `messaging` and `server` `CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4051 (Casey's outside code audit, item B2, Nov 16, 2026): business texts are queued and never sent. The business auto reply (`auto_reply`, `app/server/src/inbound_text.rs:1037`) stores the outbox row's `recipient` as the business ID, because `messaging::api::sender_business` (`app/messaging/src/service.rs:421`) answers only the business, while `businesses::api::may_text(business, phone)` and the notice worker (`app/messaging/src/business_notices.rs` `store_texts`) use the phone's line ID (D-2042 (1)); and `models::due` (`app/messaging/src/models.rs:372`) takes only `recipient_kind = 'homeowner'` rows, so the outbox sender (`app/messaging/src/outbox_sender.rs`, its doc `:18`) never sends a business row (D-3147 (1)). D-2042 said the gap must close before an outbox sender is registered, and one now is. This task closes it, before T526 turns business texting on from the stored switch (T526 depends on it): (1) `sender_business` (or a new `messaging::api` call beside it, exported by one line in the shared `api.rs`) also returns the linked phone's line ID, and `auto_reply` stores that line ID as the recipient; (2) `models::due` also takes queued business rows, and the sender resolves a business row's number from its line's sealed phone in `messaging`, checks `may_text` for that business and phone at send time through a gate (a refused or unlinked phone expires the row with one `messaging.text_expired` audit row, as D-3149 does for a homeowner row that can never be sent), sends it on the business line (`mode::send_on_line`, `Audience::Business`; with the business switch off or no business number the row waits, TXT-022's rule for the homeowner line). `OutboxSender` (`app/messaging/src/outbox_sender.rs:67` to `:98`) has neither a gate nor a business number today (it carries only the homeowner `number`, and `:152` calls `load_lines(.., (number, None))`): this task adds a builder on `OutboxSender` that takes a gate implementing `messaging::api::SendChecks` (`app/messaging/src/business_notices.rs:79`, whose `may_text` is the check; a narrower trait for `may_text` alone is allowed) and an optional business `SendingNumber`, which `load_lines` then gets as its business number; `new` and `register_send_due`'s callers keep their signatures, so `tests/integration/tests/outbox.rs` passes unchanged, and without the builder no business row is sent (it waits); the shared `app/server/src/lib.rs` composition passes `NoticeChecks` (`:1374`) as the gate, and production's business number stays `None` until T526 passes the configured one. This task's tests build the sender with a fake business number under the same quiet-hour, suppression and retry rules as a homeowner row; a row whose recipient is still a business ID (queued before this change) is expired, never guessed. It is a harness task because it changes `tests/integration/tests/inbound_first_contact.rs` (T256's and T317's), whose TD-BIZ-39 case pins the business ID as the recipient (`:294` to `:302`, D-2042 says so): that assertion, and only it, changes to the line ID. Tests in the new `tests/integration/tests/outbox_business_rows.rs`, against PostgreSQL with the Twilio stand-in, fake data only: with the business switch on and the sender built with a fake business number, a business notice row and an auto reply to a consented linked phone are sent once on the business line; a phone without the CON-019 box is not texted and its row expires; with the switch off the rows wait; a homeowner row's behaviour is unchanged (`tests/integration/tests/outbox.rs` passes). Plan change D-4764 (Fable's texting audit, T2, T3, T5; QH-007, QH-001, QH-003, CON-013): (3) a queued or held row whose job has closed is expired, never sent: `send_one` addresses every row as `Relation::OpenRequest` (`app/messaging/src/outbox_sender.rs:190` to `:193`) and `rules::plan_release` (QH-007, `app/messaging/src/rules.rs:340`) has no production caller, so a row held overnight for a job closed meanwhile goes out at 8 a.m. `messaging` may not call `jobs` (`kit/layers.json`), so the close reaches it from the job's side: this task adds `messaging::api::expire_job_rows(conn, job, at)` (exported by one line in the shared `api.rs`), which applies `plan_release`'s rule (QH-007, widened here from held rows to queued or held rows, bounded by the created-before-close rule) to the queued and held rows whose `subject_ids` hold `job` and that were created before `closed_at`, the job's final-status time passed in by the caller (never the caller's own clock), each expired with one `messaging.text_expired` audit row. `announces_close` exists only in the pure rule (`app/messaging/src/rules.rs:326`), not as an outbox column, so the exempt rows are named by template ID in one constant beside the new call, each kept with its own test: the close texts themselves (`closed_no_pick`, JOB-012; `intake_closed_no_reply`, INT-019; and `job_closed`, `jobs_closed`, `closed_no_quotes`, `closed_no_quote_left`, `line_closed_cancelled`, `unreachable_closed`); the opt-out confirmation and the HELP reply (`opt_out_confirmation` and `help_reply`, `rules::CONFIRMATION_TEMPLATE` and `HELP_TEMPLATE`, CON-009, CON-018); and the notices the close itself produces (`job_no_longer_active`, PICK-026 and PICK-038; every `pick_lost*` template; the refund notice `unreachable_refunded` and any receipt or refund text). The worker re-reads `app/messaging/templates/en.json` at claim and adds any other text a close produces, listing each in the decision entry. T744's `jobs.final_status` handler calls it (D-4764); a row the sender does send is then never a closed job's, so `Relation::OpenRequest` holds for it; (4) the quiet-hours clock is read for each row in `send_one` (today one `now` per batch, `outbox_sender.rs:136`), so a long batch never sends a row after 8 p.m.; (5) the tests also assert that a business phone with an out-of-Arizona area code (fake 213-555-01xx) gets that zone's quiet hours as well as Arizona's (QH-001, QH-003), since `business_notices.rs:168` checks Arizona only at enqueue. These cases join `tests/integration/tests/outbox_business_rows.rs`. Update the `messaging` and `server` `CLAUDE.md` and `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -42274,26 +42284,31 @@
     "docs/code-docs.md",
     "docs/spec/messaging.md",
     "docs/spec/businesses.md",
-    "docs/spec/consent.md"
+    "docs/spec/consent.md",
+    "docs/spec/quiet-hours.md"
    ],
    "requirements": [
     "BIZ-032",
     "BIZ-036",
     "CON-019",
-    "TXT-035"
+    "TXT-035",
+    "QH-007",
+    "QH-001",
+    "QH-003"
    ],
    "tests": [],
    "decisions": [
     "D-2042",
     "D-3147",
     "D-3149",
-    "D-4051"
+    "D-4051",
+    "D-4764"
    ],
    "cites": [],
    "budget": {
     "files": 6,
-    "lines": 550,
-    "context_pct": 28
+    "lines": 650,
+    "context_pct": 33
    },
    "checks": [
     "Ci",
@@ -42302,7 +42317,7 @@
    ],
    "branch": "claude/task/T573-business-outbox-rows-sent",
    "prompt": "kit/prompts/T573.md",
-   "acceptance": "`tests/integration/tests/outbox_business_rows.rs` passes against PostgreSQL with every listed case, the send cases failing on `main` before the change (business rows are never sent there); `tests/integration/tests/inbound_first_contact.rs` passes with only the TD-BIZ-39 recipient assertion changed to the line ID; `tests/integration/tests/outbox.rs` and `tests/integration/tests/business_notices.rs` pass unchanged."
+   "acceptance": "`tests/integration/tests/outbox_business_rows.rs` passes against PostgreSQL with every listed case, the send cases failing on `main` before the change (business rows are never sent there); `tests/integration/tests/inbound_first_contact.rs` passes with only the TD-BIZ-39 recipient assertion changed to the line ID; `tests/integration/tests/outbox.rs` and `tests/integration/tests/business_notices.rs` pass unchanged. A held row of a closed job is expired (a close announcement excepted), each row is checked against its own send time, and a 213 business phone is held by its zone's quiet hours. Each exempt template survives `expire_job_rows`; a row created after the close time is never expired."
   },
   {
    "id": "T594",
@@ -49291,10 +49306,68 @@
    "acceptance": "`tests/integration/tests/zero_fee_after_intent.rs` passes against PostgreSQL and the Stripe stand-in, failing on `main`; every Confirm route, waiver and release test passes unchanged; `app/payments/` stays at or above 95%; no pick is both charged and released as free."
   },
   {
+   "id": "T755",
+   "slug": "optout-words-spacing",
+   "title": "messaging: a sole opt-out word counts with any spacing (\"STOP ALL\"), and decomposed accents fold",
+   "goal": "Plan change D-4764 (Fable's texting audit of `main` a9e2cb79, findings T1 (major) and T4; CON-008, CON-010, CON-035; D-020, D-477). `detect_opt_out` (`app/messaging/src/rules.rs:503`) compares the folded text with each sole opt-out word, but `fold` (`:574`) keeps an inner space, so \"STOP ALL\", \"stop all\" or \"Stop  all\" (CON-008's stopall said as two words) and \"opt  out\" spaced oddly are not opt-outs; and `fold` maps only precomposed accents, so a phrase typed with decomposed accents (a base letter followed by a combining mark, U+0300 to U+036F, as some phones send it: \"qu\\u{0069}\\u{0301}tenme de la lista\") misses the Spanish CON-010 phrases. This task, in `app/messaging/src/rules.rs` only: (1) a text is a sole opt-out word when the folded text with every space removed equals a listed word (`PROVIDER_OPT_OUT_WORDS`, `APP_OPT_OUT_WORDS`) with its spaces removed, English and Spanish alike; the strict rule stays: only a text that is nothing but an opt-out word or phrase is one, so \"stop please\" and \"please stop\" are still not opt-outs (a spec question left for later, recorded in D-4764), and no ordinary word pair may collapse into a listed word (the test lists the word list's pairs and asserts none is a common two-word phrase); (2) `fold` drops combining marks (U+0300 to U+036F) after lower-casing, so a decomposed accent folds as its precomposed letter does; the phrase match (CON-010) and the word match both use it. Tests: new cases in `app/messaging/src/tests/optout_words.rs` (its existing cases unchanged): \"STOP ALL\", \"stop all\", \"Stop  all\", \"opt out\", \"OPT-OUT\", \"PARAR\" and \"Baja.\" opt out; \"stop please\", \"please stop\", \"can stop by at 3\" do not; each Spanish CON-010 phrase typed with decomposed accents is detected; `app/messaging/src/tests/prop_optout_props.rs` passes unchanged. Every opt-out integration test passes unchanged. Consent: Opus worker (Fable once the runner's `models` map names it, D-4761), Opus security and compliance review. Update the `messaging` notes and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "messaging",
+   "deps": [
+    "T029",
+    "T421",
+    "T100",
+    "T517"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "compliance",
+    "privacy"
+   ],
+   "owns": [
+    "app/messaging/src/rules.rs",
+    "app/messaging/src/tests/optout_words.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/consent.md"
+   ],
+   "requirements": [
+    "CON-008",
+    "CON-010",
+    "CON-035"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-020",
+    "D-477",
+    "D-4764"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 200,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T755-optout-words-spacing",
+   "prompt": "kit/prompts/T755.md",
+   "acceptance": "`app/messaging/src/tests/optout_words.rs` passes with its new cases and its existing cases unchanged; `prop_optout_props.rs` and every opt-out integration test pass unchanged; \"stop please\" is still not an opt-out."
+  },
+  {
    "id": "T756",
    "slug": "scrub-connector-runs",
    "title": "privacy: the scrubber catches phones split by connector words, spaced dots, percent-encoded addresses and spaced keycap digits",
-   "goal": "Plan change D-4765 (Fable's privacy audit of `main` 4ed3a4ff, finding P1; AI-020, AI-002, PRIV-005, AI-003; TD-AI-09). The scrubber's text feeds `quotes.job_description` (the job card a business sees before a paid pick) and the AI, and four contact shapes pass it: (1) connector words split a spelled or digit phone into runs under 7 digits, each kept (`mark_digit_runs` and `spoken_gap`, `app/privacy/src/scrub.rs:637` to `:664`): \"nine two eight and five five five and zero one two three\"; (2) a lone \".\" between a label and a top-level domain is not taken as a dot (`:666` to `:684`): \"name at gmail . com\"; (3) a percent-encoded address is checked undecoded (`:566` to `:594`): \"name%40example.com\"; (4) keycap-emoji digits with spaces between them. This task, in `scrub.rs` only: a connector word (`y`, `and`, `then`, `luego`) may sit inside a spelled or digit run only when digits lie on both sides of it and the joined run reaches 7 or more digits, so ordinary text keeps its words (\"2 and 3 bedrooms\", \"between 9 and 5\", \"de 2 y 3 recámaras\"); a token's key is percent-decoded before the contact checks; a lone \".\" between a label and a top-level domain counts as a dot; spaced keycap digits join as digits do. Tests: new corpus cases in `app/privacy/src/tests/scrub.rs` for each shape, English and Spanish, with the ordinary-text guards above kept intact; its existing cases and TD-AI-09's recall floor unchanged; `prop_scrub_props.rs` and `scrub_context.rs` pass unchanged. Privacy: Opus worker (Fable once the runner's `models` map names it, D-4761), Opus privacy and security review. Update the `privacy` notes and `docs/decisions.md`.",
+   "goal": "Plan change D-4765 (Fable's privacy audit of `main` 4ed3a4ff, finding P1; AI-020, AI-002, PRIV-005, AI-003; TD-AI-09). The scrubber's text feeds `quotes.job_description` (the job card a business sees before a paid pick) and the AI, and four contact shapes pass it: (1) connector words split a spelled or digit phone into runs under 7 digits, each kept (`mark_digit_runs` and `spoken_gap`, `app/privacy/src/scrub.rs:637` to `:664`): \"nine two eight and five five five and zero one two three\"; (2) a lone \".\" between a label and a top-level domain is not taken as a dot (`:666` to `:684`): \"name at gmail . com\"; (3) a percent-encoded address is checked undecoded (`:566` to `:594`): \"name%40example.com\"; (4) keycap-emoji digits with spaces between them. This task, in `scrub.rs` only: a connector word (`y`, `and`, `then`, `luego`) may sit inside a spelled or digit run only when digits lie on both sides of it and the joined run's total is a phone length (exactly 7, 10 or 11 digits), so ordinary text keeps its words (\"2 and 3 bedrooms\", \"between 9 and 5\", \"de 2 y 3 recámaras\", \"the 1200 and 1300 block\", \"built between 2015 and 2018\", \"1500 and 2000 square feet\", \"$25 and $75\"); the known residual (\"150 and 2000\" joins to 7 digits and is cut) is recorded in D-4765; a token's key is percent-decoded once before the contact checks (one pass, an invalid sequence left as typed, so the result is deterministic: \"name%2540example.com\" decodes to \"name%40example.com\" and is checked as that); a lone \".\" between a label and a top-level domain counts as a dot only when an `at`, `arroba` or `@` appears earlier in the same run, since the TLD list (`:341` to `:343`) holds common words such as `me`, `us` and `co` (\"the AC died . me and my husband\" and \"se rompió . me urge\" keep every word); spaced keycap digits join as digits do. Tests: new corpus cases in `app/privacy/src/tests/scrub.rs` for each shape, English and Spanish, with every kept case above (the connector cases, \"the AC died . me and my husband\", \"se rompió . me urge\") left unchanged and the \"%2540\" case giving its stated result; its existing cases and TD-AI-09's recall floor unchanged; `prop_scrub_props.rs` and `scrub_context.rs` pass unchanged. Privacy: Opus worker (Fable once the runner's `models` map names it, D-4761), Opus privacy and security review. Update the `privacy` notes and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -49343,7 +49416,7 @@
    ],
    "branch": "claude/task/T756-scrub-connector-runs",
    "prompt": "kit/prompts/T756.md",
-   "acceptance": "`app/privacy/src/tests/scrub.rs` passes with the new corpus cases and its existing cases unchanged; \"2 and 3 bedrooms\" and \"between 9 and 5\" are untouched; TD-AI-09's recall floor holds; the scrub property tests pass unchanged."
+   "acceptance": "`app/privacy/src/tests/scrub.rs` passes with the new corpus cases and its existing cases unchanged; every kept case in the goal is untouched (connector runs not of phone length, a lone \".\" with no earlier at or @); TD-AI-09's recall floor holds; the scrub property tests pass unchanged."
   },
   {
    "id": "T757",

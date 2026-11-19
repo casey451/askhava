@@ -3525,6 +3525,11 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **Payment fixes:** a business owed a free introduction after its card page opened a payment is no longer stuck (T754); a payment Stripe reports that we can't match now alerts you instead of only being logged (T754); an auto-confirm pick that should be free charges nothing and waits for the business's normal Confirm (T689).
 - Our choice (Fable's findings); nothing needs you now.
 
+## Texting fixes from the opt-out audit (D-4764)
+
+- **What will change:** a text of "STOP ALL" (with a space) now stops all texts, as "STOPALL" does, and Spanish opt-out phrases typed with accents from any phone are caught (T755). A text waiting for the morning is dropped if its job closed overnight, each queued text is checked against the clock at its own send moment, and a business phone from another time zone gets that zone's quiet hours too (T573, T744).
+- **Left for later:** "stop please" still does not count as an opt-out (the rule says a text must be only the opt-out word); say if you want that changed.
+
 ## Two privacy fixes from the privacy audit (D-4765)
 
 - **What will change:** the filter that removes phone numbers and emails before a business or the AI sees a job description now also catches a number split by "and" or "y", "gmail . com" written with spaces, an encoded email and spaced number emoji, while leaving "2 and 3 bedrooms" alone (T756). "Delete my data" now also deletes the words of her problem and help messages at once, instead of within 30 days (T757).
