@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-19T23:34:22Z by runner dbbf2ecc1e6e (actions).
+Updated 2026-11-19T23:35:03Z by runner dbbf2ecc1e6e (actions).
 
 **Building: T758 in progress since 23:07Z; 510 of 703 done; week 11% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 510 of 703 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T758 claimed 23:07Z, lease until 02:07Z; lane 5: T663 claimed 23:33Z, lease until 02:33Z; lane 7: T613 claimed 23:22Z, lease until 02:22Z
-- **Week:** 11% used, 169.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 2: T758 claimed 23:07Z, lease until 02:07Z; lane 4: T541 claimed 23:34Z, lease until 02:34Z; lane 5: T663 claimed 23:33Z, lease until 02:33Z; lane 7: T613 claimed 23:22Z, lease until 02:22Z
+- **Week:** 11% used, 167.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:34Z, 0 min before this update
 - **Keeper:** last ran 23:34Z, next wake 23:54Z
 
@@ -121,7 +121,7 @@ Updated 2026-11-19T23:34:22Z by runner dbbf2ecc1e6e (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-19T23:32:21Z (week)): week: 24.5M used, 169.5M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T02:18:36Z.
+- Pacing (session_reading 2026-11-19T23:33:44Z (week)): week: 26.5M used, 167.5M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T02:19:52Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -138,6 +138,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T758 (lease until 2026-11-20T02:07:12Z)
+- lane 4: T541 (lease until 2026-11-20T02:34:46Z)
 - lane 5: T663 (lease until 2026-11-20T02:33:30Z)
 - lane 7: T613 (lease until 2026-11-20T02:22:00Z)
 
