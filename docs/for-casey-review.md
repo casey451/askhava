@@ -3497,3 +3497,12 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **What changed:** job cards, picks, receipts, reminders and homeowner emails that were stored but never sent now go out once a minute through the email provider, each once. An email the provider turns down, one tried for 23 hours without a clear answer, or one waiting 72 hours is dropped with an alert to you; an email to someone removed from a business, or to a business that left, is dropped unsent. The one exception: the "your notice email changed" warning to a business's old address still goes once the day's email limit resets, since that warning is what protects the account.
 - **The gap:** the "Got it" reply to a business's Get help form is stored under the team member's record, not their email, so it is dropped instead of sent. The fix belongs to the help form's task (queue it to the member's email with the business named).
 - Our choice; nothing needs you now.
+
+## Fable's first restart batch: ten new tasks and four widened ones (D-4748 to D-4750)
+
+- **What will change:** a text opt-out keeps working after the phone-lookup key is replaced, and an old key can finally be retired (T743; Gate C now waits for it). Closing or cancelling a job ends a pick still waiting to be accepted or paid, and its payment is cancelled (T744). Businesses see the homeowner's answers on the Quote and Confirm pages (T745, T746), and a returning homeowner's second job from an "ALSO" text gets the $0 repeat-customer fee it should. Choosing "emergency" by text now gives the 60-minute emergency windows (T747). An unused business text is removed (T749).
+- **Help form:** until it asks for an email address, its "got your message" screen stops promising a reply (T748); then the form asks for an email and the owner's reply goes there (T740, T742).
+- **For you to review later:** the privacy policy draft gains "An opted-out number is kept as long as needed to honor the opt-out." (T750), and a Spanish draft of the home page's texting consent line is written for a native speaker to check (T725). Neither is published or shown until you say so.
+- **Test tools:** the payment test stand-in learns to remove a saved card (T751), and an old catalog comment saying "2 businesses" is corrected to 1 (T752).
+- **Dates noted:** the picomatch exception is re-checked December 10; the pacer is re-measured 48 hours after its fix lands.
+- Our choice (Fable's decisions); nothing needs you now.
