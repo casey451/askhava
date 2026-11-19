@@ -1,20 +1,22 @@
 # Ask Hava build status
 
-Updated 2026-11-19T04:26:23Z by runner 09c77368bd30 (actions).
+Updated 2026-11-19T04:26:54Z by runner 09c77368bd30 (actions).
 
 **Building: T408 in progress since 03:29Z; 474 of 663 done; week 74% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 474 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T408 claimed 03:29Z, lease until 06:29Z; lane 3: T203 claimed 04:08Z, lease until 07:08Z; lane 6: T490 claimed 02:10Z, lease until 07:07Z
-- **Week:** 74% used, 43.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:24Z, 1 min before this update
+- **Lane:** lane 1: T408 claimed 03:29Z, lease until 06:29Z; lane 3: T203 claimed 04:08Z, lease until 07:08Z; lane 4: T562 claimed 04:26Z, lease until 07:26Z; lane 6: T490 claimed 02:10Z, lease until 07:07Z
+- **Week:** 74% used, 41.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 04:24Z, 2 min before this update
 - **Keeper:** last ran 04:24Z, next wake 04:44Z
 
 ## Needs attention
 - BLOCKED T715: plan gap reported: PLAN GAP: one TD-INT-52 sentence can't be met by intake as planned: "a two-word first text naming a trade opens its job at the ZIP's step 5 and gets the coverage line". D-4441 gives the job-type question before the count to T716, and without that question the coverage line never comes. Today a homeowner who texts "sticky door" gets INT-017's "not covered" reply and the request is closed, even though two covering handyman businesses exist. Amend TD-INT-52 or move this case to T716; the test's assertion then changes to the coverage line.
 Evidence: `trade_check` passes no words when the first tex; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T715 --plan-fix D-### --reason "..."` (D-2859)
+- PLAN GAP T310 (since 2026-11-19T04:26:11Z, no attempt used; a plan change fixes it): T310: dependency T484 is DONE but its owned file tests/integration/tests/owner_tools.rs is not on main; T310: dependency T484 is DONE but its owned file app/calls/src/owner_calls.rs is not on main; T310: dependency T484 is DONE but its owned file app/messaging/src/alert_contact.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
+- PLAN GAP T456 (since 2026-11-19T04:26:11Z, no attempt used; a plan change fixes it): T456: dependency T399 is DONE but its owned file app/server/tests/approve_link_route.rs is not on main
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - Strict plan check red: 57 problem(s) on tasks still to run (+278 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
@@ -124,7 +126,7 @@ Evidence: `trade_check` passes no words when the first tex; fix the plan (the ta
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-19T04:07:32Z (week)): week: 150.3M used, 43.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T04:05:45Z.
+- Pacing (session_reading 2026-11-19T04:24:00Z (week)): week: 152.8M used, 41.2M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T01:44:05Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -141,6 +143,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T408 (lease until 2026-11-19T06:29:11Z)
 - lane 3: T203 (lease until 2026-11-19T07:08:12Z)
+- lane 4: T562 (lease until 2026-11-19T07:26:11Z)
 - lane 6: T490 (lease until 2026-11-19T07:07:31Z)
 
 ## Last usage reading
