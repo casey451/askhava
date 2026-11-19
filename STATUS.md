@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-19T02:09:31Z by runner c5a97a0b8910 (actions).
+Updated 2026-11-19T02:10:36Z by runner 5504717c09aa (actions).
 
-**Building: T715 in progress since 01:59Z; 469 of 663 done; week 71% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T715 in progress since 01:59Z; 470 of 663 done; week 71% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 469 of 663 build tasks (owner gates not counted)
+- **Tasks done:** 470 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T715 claimed 01:59Z, lease until 04:59Z; lane 2: T520 claimed 01:57Z, lease until 04:57Z; lane 4: T484 claimed 02:04Z, lease until 05:04Z; lane 5: T306 claimed 01:43Z, lease until 04:43Z
 - **Week:** 71% used, 47.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
@@ -16,14 +16,14 @@ Updated 2026-11-19T02:09:31Z by runner c5a97a0b8910 (actions).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T490 (since 2026-11-19T01:57:04Z, no attempt used; a plan change fixes it): T490: dependency T488 is DONE but its owned file app/portals/templates/es_business_signup.html is not on main; T490: dependency T488 is DONE but its owned file app/server/tests/es_business_signup_route.rs is not on main
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 52 problem(s) on tasks still to run (+272 on DONE tasks); first: T563: stored context_pct 22% but it measures 26%; regenerate
+- Strict plan check red: 55 problem(s) on tasks still to run (+275 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T203 | Wording scan: the required statements, business copy lines a | MERGE_PENDING | 2 | 41 min | 01:40Z | PLAN GAP: `app/portals/templates/quote_page.html:101` (owned by DONE tasks T052, T095, T294, T308, T384, T388, T393, T44 |
 | T563 | intake and privacy: the daily consent sweep removes consent  | check_failed | 2 | 99 min | 01:37Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
-| T505 | Decisions digest, piece 6: the next entries after the header | MERGE_PENDING | 1 | 99 min | 01:27Z |  |
+| T505 | Decisions digest, piece 6: the next entries after the header | done | 1 | 99 min | 01:27Z |  |
 | T488 | portals and server: the business sign-up served in Spanish o | done | 1 | 111 min | 01:20Z |  |
 | T306 | server and portals: the complaints page, the emergency-email | resync | 1 | 77 min | 00:59Z | merging main into the reviewed head conflicts in tests/a11y/page_states.ts; a resync merges it in on this attempt (D-891 |
 | T205 | portals: owner refunds with a review step and the audit log  | done | 2 | 2 h 26 min | 00:48Z | PLAN GAP: `payments` has no public reader that ties a dispute to its pick (or its charge, business or job). Without one, |
@@ -96,7 +96,7 @@ Updated 2026-11-19T02:09:31Z by runner c5a97a0b8910 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 294 of 735 (40.0%) · partial 391 · unstarted 50
-**Tasks merged (throughput only):** 469 of 663
+**Tasks merged (throughput only):** 470 of 663
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -132,7 +132,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 112 of 262 done
+- stage 5: 113 of 262 done
 - stage 6: 0 of 48 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
