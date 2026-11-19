@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE picks.pick SET confirm_due = $2 WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "1d1c6f921de4a08fa05b1d23697d2ca8f6b10d446cf32d1bbd555f164d88f2b6"
+}
