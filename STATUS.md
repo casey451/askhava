@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T16:18:51Z by runner 2cf51500b706 (actions).
+Updated 2026-11-19T16:19:57Z by runner 2cf51500b706 (actions).
 
-**Building: T210 in progress since 15:35Z; 497 of 670 done; week 86% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T724 in progress since 16:18Z; 497 of 670 done; week 86% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 497 of 670 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T210 claimed 15:35Z, lease until 18:35Z; lane 3: T530 claimed 15:41Z, lease until 18:41Z; lane 4: T555 claimed 15:44Z, lease until 18:44Z; lane 7: T715 claimed 15:50Z, lease until 18:50Z
-- **Week:** 86% used, 21.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:18Z, 0 min before this update
+- **Lane:** lane 1: T724 claimed 16:18Z, lease until 19:18Z; lane 2: T210 claimed 15:35Z, lease until 18:35Z; lane 3: T530 claimed 15:41Z, lease until 18:41Z; lane 4: T555 claimed 15:44Z, lease until 18:44Z; lane 7: T715 claimed 15:50Z, lease until 18:50Z
+- **Week:** 86% used, 17.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 16:18Z, 1 min before this update
 - **Keeper:** last ran 16:10Z, next wake 16:30Z
 
 ## Needs attention
@@ -92,7 +92,6 @@ Updated 2026-11-19T16:18:51Z by runner 2cf51500b706 (actions).
 | T621 | portals: the scorecard's go and stop line settings and its p | done | 1 | 38 min | 17:03Z |  |
 | T720 | Decision digest prerequisites (harness): the digest plan and | done | 1 | 67 min | 16:51Z |  |
 | T624 | server: two failed in-process health checks in a row raise o | resync | 1 | 49 min | 16:38Z |  |
-| T592 | jobs, quotes and site: the home page's numbers read every jo | done | 1 | 40 min | 16:19Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -128,7 +127,7 @@ Updated 2026-11-19T16:18:51Z by runner 2cf51500b706 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-19T15:32:11Z (week)): week: 172.4M used, 21.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T09:54:55Z.
+- Pacing (session_reading 2026-11-19T16:10:04Z (week)): week: 176.4M used, 17.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T12:30:46Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -143,7 +142,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T724 (lease until 2026-11-19T19:18:33Z)
 - lane 2: T210 (lease until 2026-11-19T18:35:36Z)
 - lane 3: T530 (lease until 2026-11-19T18:41:09Z)
 - lane 4: T555 (lease until 2026-11-19T18:44:06Z)
