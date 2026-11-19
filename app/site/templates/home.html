@@ -5,8 +5,11 @@
     come from `quotes`' card and quote records and show only past the setting (D-466, D-468).
     The hero (T216, WEB-027, D-3331, D-4252) puts the decorative photo above the headline on
     phones and beside the text from 1024 px; under 768 px the phone crop replaces it (WebP only
-    for now, D-4630), and no text ever sits on the photo. -#}
-{% block title %}Local quotes for Havasu homes{% endblock %}
+    for now, D-4630), and no text ever sits on the photo. T593 (D-3331, D-4098): the hero's words
+    and the request box, whose form posts her words (`words`) to /request (never a URL) with the `csrf` token
+    server's chat layer sets, to land on the CON-025 start screen with them in the chat box; the
+    market names come from docs/catalog/markets.yaml (`market`, D-1515, INT-048), never typed. -#}
+{% block title %}Local quotes for {{ market.short_name }} homes{% endblock %}
 {% block content %}
 <div class="hero">
 <picture class="hero-photo">
@@ -14,25 +17,43 @@
 <img src="/static/site/photos/hero-kitchen.webp" width="557" height="941" alt="" fetchpriority="high">
 </picture>
 <div class="hero-text">
-<p>For homes in Lake Havasu City</p>
-<h1>Get quotes from Havasu businesses without giving out your number.</h1>
-<p>Tell us what needs doing, and we'll ask around for you. Havasu businesses that do that work send their quotes, and you see them on one page. Pick one, or none.</p>
-<p><a href="/request">Get quotes</a></p>
-<p><a href="/how-it-works">See how it works</a></p>
-<p>Start in the chat on this site. You don't need to text or call.</p>
-<p>Free for you. The business you pick pays {{ askhava_core::api::brand().display_name() }} a set introduction fee.</p>
+<p class="kicker">{{ market.name }}, {{ market.state_name }}</p>
+<h1>Get local quotes without giving out your number.</h1>
+<p class="lede">Tell us what needs doing. We'll ask {{ market.short_name }} businesses that do that work and show you their quotes on one page.</p>
+<form class="request-box" method="post" action="/request" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<label for="job">What needs doing?</label>
+<p class="hint" id="job-hint">For example: the AC runs but blows warm air.</p>
+<textarea id="job" name="words" rows="3" maxlength="{{ words_max }}" aria-describedby="job-hint"></textarea>
+<button type="submit">Get quotes</button>
+<p class="cost">Free for you. The business you pick pays {{ askhava_core::api::brand().display_name() }} a set introduction fee.</p>
+</form>
+<p class="more"><a href="/how-it-works">See how it works</a></p>
 </div>
 </div>
 
+<h2>Pools, AC, boats, yards and more</h2>
+<p>We're adding more. Send us any job and we'll tell you if we cover it. <a href="/coverage">See the full list</a></p>
+
 <h2>How it works</h2>
-<ol>
-<li>Tell us what you need. Answer a few short questions and add a photo if you have one. Unless it's an emergency, you see the request before it goes out. Your name and number are never on it.</li>
-<li>Havasu businesses quote. Your request goes to Havasu businesses that take this kind of job. Each one has 24 hours to quote. Every quote lists the same details: the price, what's included and when they can come. Not every business answers.</li>
-<li>You pick one. Check their license and reviews, then choose. You hire the business directly. If nothing fits, you don't have to pick anyone.</li>
+<p>Start in the chat on this site. You don't need to know which trade to ask for.</p>
+<ol class="steps">
+<li>
+<h3>Tell us what you need.</h3>
+<p>Answer a few short questions and add a photo if you have one. Unless it's an emergency, you see the request before it goes out. Your name and number are never on it.</p>
+</li>
+<li>
+<h3>{{ market.short_name }} businesses quote.</h3>
+<p>It goes to {{ market.short_name }} businesses that take this kind of job. Each one has 24 hours to quote. Every quote lists the same details: the price, what's included and when they can come. Not every business answers.</p>
+</li>
+<li>
+<h3>You pick one, or none.</h3>
+<p>Check their license and reviews, then choose. You hire the business directly.</p>
+</li>
 </ol>
 {%- if let Some(n) = numbers %}
 
-<h2>Havasu requests so far</h2>
+<h2>{{ market.short_name }} requests so far</h2>
 <ul>
 <li>Requests sent to businesses: {{ n.requests }}</li>
 {%- if let Some(wait) = n.wait %}
@@ -47,11 +68,14 @@
 <p>Your number stays with us. Businesses see the job, not you. Your number is never shared. Your first name and address go only to the business you pick.</p>
 <p>Nobody pays to be first. Quotes show in the order they came in.
 {{ askhava_core::api::brand().display_name() }} doesn't rank or rate businesses, and no business can pay for a better spot.</p>
+<p>Asking costs you nothing. {{ askhava_core::api::brand().display_name() }} is a quote-request service; the business you choose pays {{ askhava_core::api::brand().display_name() }} a set introduction fee. That's ${{ fees.small }}, ${{ fees.medium }} or ${{ fees.large }}, by quote size. You pay {{ askhava_core::api::brand().display_name() }} nothing. If no quote fits, close the request.</p>
 
 <h2>For businesses</h2>
 <p>Quote for free. Pay only if a homeowner picks you.</p>
-<p>If the homeowner picks you, you pay a fixed introduction fee by job size.
-That's ${{ fees.small }}, ${{ fees.medium }} or ${{ fees.large }}, set by the size of your quote. It's never a share of the job.</p>
+<p>When a homeowner sends a job you do, we email you the details and you decide whether to quote. Every card says how many businesses got it. You quote once. No bidding rounds, no paid placement.</p>
+<p>If the homeowner picks you, you pay a fixed introduction fee by job size,
+never a share of the job.</p>
+<p>${{ fees.small }} for a quote under $500. ${{ fees.medium }} for $500 to $1,500. ${{ fees.large }} for over $1,500.</p>
 <p data-fixed="WEB-005">Launch offer: your first win is free, on any job size, when you join in the first 90 days or within 90 days after your trade opens.</p>
 
 <h2>Who runs {{ askhava_core::api::brand().display_name() }}</h2>

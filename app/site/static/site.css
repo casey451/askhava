@@ -284,20 +284,67 @@ button:active {
   object-position: 50% 57%;
 }
 
-.hero-text > p:first-child {
+/* The kicker, in evergreen (DESIGN_SPEC sections 2 and 5). */
+.kicker {
   margin: 0 0 4px;
+  color: var(--evergreen);
+  font-weight: 700;
 }
 
 .hero-text h1 {
   margin-bottom: 10px;
 }
 
-.hero-text h1 + p {
+.hero-text .lede {
   margin: 0 0 14px;
 }
 
-.hero-text h1 + p + p {
-  margin: 0;
+/* The request box (T593; DESIGN_SPEC section 5, D-3331, D-4252): no card under 1024 px, one
+   visible label, the hint above the field, the textarea 84 px on phones and 104 px from 768 px,
+   the full-width 56 px primary button, then the fixed cost line. No placeholder (A11Y-029). */
+.request-box label {
+  display: block;
+  margin: 0 0 2px;
+}
+
+.request-box .hint {
+  margin: 0 0 6px;
+  color: var(--ink-soft);
+}
+
+.request-box textarea {
+  display: block;
+  width: 100%;
+  height: 84px;
+  min-height: 84px;
+  resize: vertical;
+  font-size: 18px;
+}
+
+.request-box textarea:focus-visible {
+  border-color: var(--evergreen);
+  box-shadow: 0 0 0 8px rgba(36, 88, 73, 0.12);
+}
+
+.request-box button {
+  display: block;
+  width: 100%;
+  min-height: 56px;
+  margin: 10px 0 0;
+  font-size: 18px;
+}
+
+.request-box .cost {
+  margin: 8px 0 0;
+  color: var(--ink-soft);
+}
+
+.hero-text .more {
+  margin: 8px 0 0;
+}
+
+.steps h3 {
+  margin: 0 0 4px;
 }
 
 @media (max-width: 359px) {
@@ -305,6 +352,18 @@ button:active {
     height: clamp(124px, 100vh - 616px, 252px);
     height: clamp(124px, 100svh - 616px, 252px);
     margin-bottom: 12px;
+  }
+
+  .hero-text .lede {
+    margin-bottom: 10px;
+  }
+
+  .request-box .hint {
+    margin-bottom: 4px;
+  }
+
+  .request-box button {
+    margin-top: 8px;
   }
 }
 
@@ -350,6 +409,11 @@ button:active {
   .hero-photo img {
     object-position: 50% 62%;
   }
+
+  .request-box textarea {
+    height: 104px;
+    min-height: 104px;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -375,6 +439,15 @@ button:active {
   .hero-text {
     grid-column: 1;
     grid-row: 1;
+  }
+
+  .request-box {
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    box-shadow: 0 0 0 1px rgba(30, 41, 38, 0.06), 0 1px 2px rgba(30, 41, 38, 0.06),
+      0 12px 32px -16px rgba(30, 41, 38, 0.22);
   }
 }
 
