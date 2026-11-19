@@ -211,6 +211,10 @@ pub use crate::quote_page::{
 pub use crate::receipts_page::{
     Basis, WHY_CHARGED_ROUTE, WhyCharged, why_charged_page, why_charged_page_without_basis,
 };
+pub use crate::scorecard::{
+    MinutesForm, MinutesNotice, OWNER_SCORECARD_MINUTES_ROUTE, OWNER_SCORECARD_ROUTE,
+    ScorecardInputs, owner_record_minutes, owner_scorecard_page,
+};
 pub use crate::scorecard_lines::{
     Color, LadderRung, LinesError, Measure, ScorecardLines, color, ladder_rung,
 };
