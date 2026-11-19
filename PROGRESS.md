@@ -7976,3 +7976,4 @@
 - 2026-11-19T17:13:37Z runner c4bec68edf72 (actions): {}
 - 2026-11-19T17:15:36Z runner b05c08a0d168 (actions): {"T407": "MERGE_PENDING -> DONE"}
 - 2026-11-19T17:16:06Z runner b05c08a0d168 (actions): {"T607": "QUEUED -> IN_PROGRESS"}; T607 estimated 1.3M tokens (calibrated); week has 190.7M left (no five-hour budget, D-3056) after 3.3M still running in another lane (session_reading 2026-11-19T17:10:41Z (week)); claimed
+- 2026-11-19T17:18:53Z runner 82ae7f077915 (actions): {"T480": "QUEUED -> IN_PROGRESS"}; T480 estimated 1.7M tokens (calibrated); week has 189.5M left (no five-hour budget, D-3056) after 4.5M still running in another lane (session_reading 2026-11-19T17:10:41Z (week)); claimed
