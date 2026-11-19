@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T22:59:13Z by runner 6bbb1275f56e (actions).
+Updated 2026-11-19T22:59:40Z by runner 6bbb1275f56e (actions).
 
 **Building: T726 in progress since 22:06Z; 507 of 703 done; week 11% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 507 of 703 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T726 claimed 22:06Z, lease until 01:06Z; lane 3: T109 claimed 21:53Z, lease until 00:53Z; lane 6: T707 claimed 21:38Z, lease until 00:38Z
+- **Lane:** lane 1: T726 claimed 22:06Z, lease until 01:06Z; lane 3: T109 claimed 21:53Z, lease until 00:53Z
 - **Week:** 11% used, 166.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 22:58Z, 1 min before this update
 - **Keeper:** last ran 22:57Z, next wake 00:41Z
@@ -19,6 +19,7 @@ Updated 2026-11-19T22:59:13Z by runner 6bbb1275f56e (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T707 | server: an emergency pick's address re-release waits while s | MERGE_PENDING | 1 | 80 min | 22:59Z |  |
 | T541 | payments, portals and adapters: a card saved or changed from | MERGE_PENDING | 2 | 91 min | 22:55Z | Ci: failure; Coverage: failure; E2e: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refus |
 | T480 | messaging, server and portals: the stored "Spanish conversat | MERGE_PENDING | 1 | 104 min | 22:23Z |  |
 | T717 | intake (harness): corrections to T711's two jobs: two_jobs a | MERGE_PENDING | 1 | 2 h 11 min | 22:21Z |  |
@@ -135,7 +136,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T726 (lease until 2026-11-20T01:06:39Z)
 - lane 3: T109 (lease until 2026-11-20T00:53:21Z)
-- lane 6: T707 (lease until 2026-11-20T00:38:53Z)
 
 ## Last usage reading
-- {"task": "T541", "at": "2026-11-19T22:55:57Z", "input_tokens": 137, "cache_creation_input_tokens": 134579, "cache_read_input_tokens": 3857535, "output_tokens": 28705}
+- {"task": "T707", "at": "2026-11-19T22:59:09Z", "cache_read_input_tokens": 11389570, "input_tokens": 268, "output_tokens": 89094, "cache_creation_input_tokens": 320150}
