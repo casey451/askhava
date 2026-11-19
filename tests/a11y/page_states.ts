@@ -442,6 +442,46 @@ const OWNER_STEP_UP_STATES: readonly PageState[] = [
   ],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: OWNER_STEP_UP_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
+const COMPLAINTS_ROUTE = "/b/complaints";
+const EMERGENCY_ROUTE = "/b/emergency-emails";
+const NOTICE_LOG_ROUTE = "/b/picks/{pick}/notices";
+
+/** The complaints page (T306; BIZ-029): the owner, one fake complaint with its reply box open. */
+const COMPLAINTS_STATES: readonly PageState[] = [
+  [
+    "complaints, reply box open",
+    "No show",
+    "Your reply was not sent",
+    businessSql(`,
+    k AS (INSERT INTO businesses.complaint (business_id, job_id, kind, safety, received_at)
+      SELECT business_id, gen_random_uuid(), 'no_show', false, now() - interval '1 hour' FROM m)`),
+  ],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: COMPLAINTS_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
+/** The emergency-email switch (T306; BIZ-007, BIZ-042): the owner, switch off, with the after-hours box. */
+const EMERGENCY_STATES: readonly PageState[] = [
+  ["emergency emails, switch off", "Turn on emergency emails at any hour", "Did your phone alert you", businessSql("")],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: EMERGENCY_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
+/** The job's notice log (T306; BIZ-045): the owner's pick on a carded job, nothing sent yet; reads the vault. */
+const NOTICE_LOG_STATES: readonly PageState[] = [
+  [
+    "notice log, nothing sent yet",
+    "What we sent you about job",
+    "find that page",
+    businessSql(`,
+    j AS (INSERT INTO jobs.job (id, status, emergency, created_at, status_at, timer_from)
+      VALUES (gen_random_uuid(), 'awaiting_confirm', false, now(), now(), now()) RETURNING id),
+    n AS (UPDATE jobs.job_number_next SET next = next + 1 RETURNING next - 1 AS n),
+    num AS (INSERT INTO jobs.job_number (number, job_id, issued_at) SELECT n.n, j.id, now() FROM n, j),
+    c AS (INSERT INTO quotes.job_card (job_id, business_id, handyman, sent_at) SELECT j.id, m.business_id, false, now() FROM j, m),
+    p AS (INSERT INTO picks.pick (id, job_id, business_id, quote_number, channel, status, picked_at)
+      SELECT ':pick', j.id, m.business_id, 1, 'page', 'awaiting_confirm', now() FROM j, m RETURNING id, job_id, business_id),
+    f AS (INSERT INTO payments.pick_fee (pick_id, business_id, job_id, mode, kind, amount_cents, terms_version, fixed_at)
+      SELECT p.id, p.business_id, p.job_id, t.mode, 'fee_free', 0, t.authorization_version, now() FROM p, payments.fee_terms t)`),
+  ],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: NOTICE_LOG_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
 /** Every page's entry: its route, its states and its seed function. Append a new page's entry. */
 export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: QUOTE_ROUTE, seed: tokenSeed, states: QUOTE_STATES },
@@ -483,6 +523,9 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: "/request", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/request") },
   { route: OWNER_SIGNIN_ROUTE, seed: (state) => state.route, states: OWNER_SIGNIN_STATES },
   { route: OWNER_STEP_UP_ROUTE, seed: portalSeed(false), states: OWNER_STEP_UP_STATES },
+  { route: COMPLAINTS_ROUTE, seed: portalSeed(false), states: COMPLAINTS_STATES },
+  { route: EMERGENCY_ROUTE, seed: portalSeed(false), states: EMERGENCY_STATES },
+  { route: NOTICE_LOG_ROUTE, seed: portalSeed(true), states: NOTICE_LOG_STATES },
 ];
 
 /** Every state of every page, in entry order. */
