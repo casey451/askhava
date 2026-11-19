@@ -1891,6 +1891,44 @@ mod tests {
         assert_eq!(states, ["try_later", "try_later", "ended", "ended", "paid"]);
     }
 
+    /// TD-SEC-70 (SEC-038, FEE-014, T541): each save outcome's words; only a change without a
+    /// code links the step-up page, under its own label; an unticked box, a decline or an end
+    /// keep their words.
+    #[test]
+    fn td_sec_70_the_reply_says_what_became_of_the_card() {
+        let state = |s: &'static str| said(s, "before", Some(PORTAL_LINK));
+        let cases = [
+            ("waiting", SavePlan::New, true, PAID_SAVED_LINE),
+            ("waiting", SavePlan::NeedsCode, false, PAID_CODE_LINE),
+            ("waiting", SavePlan::Change, false, PAID_NOT_SAVED_LINE),
+            (
+                "approve",
+                SavePlan::NeedsCode,
+                false,
+                APPROVE_NOT_SAVED_LINE,
+            ),
+            ("confirmed", SavePlan::Change, true, CONFIRMED_SAVED_LINE),
+            ("confirmed", SavePlan::NeedsCode, false, CONFIRMED_CODE_LINE),
+            ("confirmed", SavePlan::New, false, CONFIRMED_NOT_SAVED_LINE),
+            ("declined", SavePlan::New, false, "before"),
+            ("waiting", SavePlan::Not, false, "before"),
+        ];
+        for (at, plan, saved, words) in cases {
+            let reply = with_save(state(at), plan, saved);
+            assert_eq!(reply.message, words, "{at} {plan:?}");
+            let coded = plan == SavePlan::NeedsCode && at != "approve";
+            let link = if coded {
+                BUSINESS_STEP_UP_ROUTE
+            } else {
+                PORTAL_LINK
+            };
+            assert_eq!(reply.link, Some(link));
+            assert_eq!(reply.link_label, coded.then_some(SAVE_CODE_LABEL));
+        }
+        assert!(SavePlan::New.stores() && SavePlan::Change.stores());
+        assert!(!SavePlan::Not.stores() && !SavePlan::NeedsCode.stores());
+    }
+
     #[test]
     fn money_groups_thousands() {
         assert_eq!(money(123_456_789), "$1,234,567.89");
