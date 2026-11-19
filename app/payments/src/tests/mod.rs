@@ -7,6 +7,7 @@ mod fee_at_pick;
 mod fee_tiers;
 mod held_release;
 mod ledger_append;
+mod money_view;
 mod prop_fee_props;
 mod prop_ledger_matches_stripe;
 mod prop_no_homeowner_charge;

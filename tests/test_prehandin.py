@@ -914,3 +914,31 @@ def test_the_ally_step_fails_only_on_failed_tests_and_skips_what_it_cannot_judge
     for line in wanted:
         assert line in done.stdout, (line, done.stdout)
     assert "green" not in done.stdout or report == "green" and code == 0
+
+
+def _pg16_function(script: str, fake: Path) -> str:
+    """The script's own `pg16_path` function, with the directory moved to a fake layout (D-4708)."""
+    text = (ROOT / "scripts" / script).read_text(encoding="utf-8")
+    body = re.search(r"^pg16_path\(\) \{\n.*?^\}\n", text, re.MULTILINE | re.DOTALL)
+    assert body and text.count("/usr/lib/postgresql/16/bin") == 1, script
+    return body.group(0).replace("/usr/lib/postgresql/16/bin", str(fake))
+
+
+@pytest.mark.parametrize("script", ["smoke.sh", "prehandin.sh"])
+@pytest.mark.parametrize("present", [True, False])
+def test_each_script_puts_postgresql_16_first_on_path_or_says_why_not(tmp_path: Path, script: str, present: bool) -> None:
+    """D-4708: with the directory, it comes first on PATH; without it, the script says so, names it and goes on."""
+    fake = tmp_path / "pg16"
+    if present:
+        fake.mkdir()
+    text = (ROOT / "scripts" / script).read_text(encoding="utf-8")
+    assert re.search(r"^ *pg16_path$", text, re.MULTILINE), script
+    run = _pg16_function(script, fake) + 'pg16_path\nprintf "%s" "$PATH"\n'
+    done = subprocess.run(["bash", "-euo", "pipefail", "-c", run], env={"PATH": "/usr/bin:/bin"}, capture_output=True,
+                          text=True, check=False)
+    assert done.returncode == 0, done.stderr
+    if present:
+        assert done.stdout == f"{fake}:/usr/bin:/bin" and done.stderr == ""
+    else:
+        assert done.stdout == "/usr/bin:/bin"
+        assert done.stderr == f"{fake} is missing: PostgreSQL 16's initdb, pg_ctl and pg_dump are not on the path (D-4708)\n"
