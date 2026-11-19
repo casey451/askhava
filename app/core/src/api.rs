@@ -37,7 +37,9 @@ pub use crate::rate_limit::{
     prune_batch as prune_rate_limit_batch, prune_cutoff as rate_limit_prune_cutoff,
     run_prune_at as run_rate_limit_prune_at, schedule_prune as schedule_rate_limit_prune,
 };
-pub use crate::settings::{Environment, Settings, SettingsError, Vendor, check_base_url};
+pub use crate::settings::{
+    DEFAULT_SPOT_CHECK_EVERY_DAYS, Environment, Settings, SettingsError, Vendor, check_base_url,
+};
 pub use crate::task_queries::unfinished;
 pub use crate::tasks::{
     ClaimTick, Claimed, DEFAULT_MAX_ATTEMPTS, HandlerError, HandlerFuture, LEASE_EXPIRED, Lease,
