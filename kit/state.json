@@ -26668,7 +26668,7 @@
     "T429",
     "T488"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "wording-voice-scan",
    "type": "build",
@@ -26686,8 +26686,8 @@
     "model": "claude-opus-5-5",
     "alias": "opus"
    },
-   "reason": "plan gap reported: PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/site-copy.md:7` to `:79` (D-3890 (3)). On `main` the home page does not match that file, and I can't fix either side. `app/site/templates/home.html` belongs to T102, T203, T216, T593 and T608. `docs/copy/site-copy.md` belongs to T429, T593 and T615. Smallest plan change: move `test_site_copy_blocks.py` to T593, which already owns both files and rewrites both to D-3331's wording, or make T161 depend on T593. T161 keeps its other seven files.\nEvidence: site-copy.md:32 \"It goes t; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T161 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/site-copy.md:7` to `:79` (D-3890 (3)). On `main` the home page does not match that file, and I can't fix either side. `app/site/templates/home.html` belongs to T102, T203, T216, T593 and T608. `docs/copy/site-copy.md` belongs to T429, T593 and T615. Smallest plan change: move `test_site_copy_blocks.py` to T593, which already owns both files and rewrites both to D-3331's wording, or make T161 depend on T593. T161 keeps its other seven files.\nEvidence: site-copy.md:32 \"It goes to Havasu businesses\" vs home.html:30 \"Your request goes to\"; site-copy.md:35 \"or you can pick none\" vs home.html:31 \"you don't have to pick anyone\"; fair 3 (:47), coverage title/line (:50, :53), business text (:61), WEB-024 business line (:68) and texting consent line (:23) are absent from home.html and site_layout.html. T593's goal (D-4098) says \"the home page still renders the October 28 draft\" and rewrites both files; T161 depends on T203, T202, T429, T488, not T593; no cycle either way.\nReviewer (opus, ab595414359dfc49d) confirmed (a)-(d) with file:line evidence: PLAN-GAP: CONFIRMED.",
+   "reason": null,
+   "last_failure": "PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/site-copy.md:7` to `:79` (D-3890 (3)). On `main` the home page does not match that file, and I can't fix either side. `app/site/templates/home.html` belongs to T102, T203, T216, T593 and T608. `docs/copy/site-copy.md` belongs to T429, T593 and T615. Smallest plan change: move `test_site_copy_blocks.py` to T593, which already owns both files and rewrites both to D-3331's wording, or make T161 depend on T593. T161 keeps its other seven files.\nEvidence: site-copy.md:32 \"It goes to Havasu businesses\" vs home.html:30 \"Your request goes to\"; site-copy.md:35 \"or you can pick none\" vs home.html:31 \"you don't have to pick anyone\"; fair 3 (:47), coverage title/line (:50, :53), business text (:61), WEB-024 business line (:68) and texting consent line (:23) are absent from home.html and site_layout.html. T593's goal (D-4098) says \"the home page still renders the October 28 draft\" and rewrites both files; T161 depends on T203, T202, T429, T488, not T593; no cycle either way.\nReviewer (opus, ab595414359dfc49d) confirmed (a)-(d) with file:line evidence: PLAN-GAP: CONFIRMED.\nre-queued after plan fix D-4669: D-4669 (PR #1106): T161 follows T593; site-copy check is a site-crate test by heading with two reasoned skips; T593 places fair 3/business blocks",
    "history": [
     {
      "attempt": 1,
@@ -26711,6 +26711,21 @@
        "turns": 8
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-19T09:17:40Z",
+     "reason": "D-4669 (PR #1106): T161 follows T593; site-copy check is a site-crate test by heading with two reasoned skips; T593 places fair 3/business blocks",
+     "by": "manual-b5a714fcc291",
+     "was": "plan gap reported: PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/site-copy.md:7` to `:79` (D-3890 (3)). On `main` the home page does not match that file, and I can't fix either side. `app/site/templates/home.html` belongs to T102, T203, T216, T593 and T608. `docs/copy/site-copy.md` belongs to T429, T593 and T615. Smallest plan change: move `test_site_copy_blocks.py` to T593, which already owns both files and rewrites both to D-3331's wording, or make T161 depend on T593. T161 keeps its other seven files.\nEvidence: site-copy.md:32 \"It goes t; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T161 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-4669",
+     "plan_since": "2026-11-19T08:37:10Z",
+     "plan_base": "25c9a14919a446dcdf78956b44e4e3adc0d3c4bf",
+     "plan_head": "358c022b2c5765ec68674c13fac8c2a50fff01bc",
+     "plan_then": "f0c08c50de1fa43229646f63d68dd96bf6c8c9543f83c300ff5d92b12026824b",
+     "plan_now": "38961550c33a69aead728c80609d779662570d854cfea717e6e75ae0771ec1ce"
     }
    ]
   },
@@ -91679,7 +91694,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T09:17:15Z",
+ "updated_at": "2026-11-19T09:17:40Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -91777,8 +91792,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "4ca5171581b84801f94083afdc9bf142cfb24bab",
- "starter": "actions",
+ "runner_sha": "358c022b2c5765ec68674c13fac8c2a50fff01bc",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "09c77368bd303d841ce3203a20ab5744d81c1fb1",
