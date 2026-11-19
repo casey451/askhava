@@ -5,12 +5,12 @@ Version 0.2 (draft) · November 13, 2026 · Not yet in effect
 
 ## Our target
 
-Laftly aims for the Web Content Accessibility Guidelines, WCAG 2.2 Level AA, on laftly.com, the homeowner quote pages and the business portal. Every page is tested with automated checks (axe-core) at phone, tablet and desktop widths, and with keyboard-only use, before it goes live.
+Laftly aims for WCAG 2.2 Level AA, a level in the Web Content Accessibility Guidelines. That covers laftly.com, the homeowner quote pages and the business portal. Before a page goes live, we test it with automated checks (axe-core). We test it at phone, tablet and desktop widths, and with keyboard-only use.
 
 ## How the site is built
 
-- Pages are built to work without JavaScript, with screen readers, when zoomed and with larger text spacing, and these are checked automatically.
-- Every business notice is an email with a plain-text part and also shows in the portal, so no notice needs a phone call or audio.
+- Pages are built to work without JavaScript, with screen readers, when zoomed and with larger text spacing. These are checked automatically.
+- Every business notice is an email with a plain-text part. It also shows in the portal, so no notice needs a phone call or audio.
 - Homeowners can use Laftly by text, by the chat on laftly.com, or by email and their quote page.
 - Masked calls between a homeowner and the business they chose work with 711 relay services.
 
