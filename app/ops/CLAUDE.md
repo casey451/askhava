@@ -13,7 +13,7 @@ The layer-1 crate that keeps Ask Hava's operating records: the append-only audit
 - `ops` depends on `core` only (for `enqueue`; layer 1, `kit/layers.json`); it sends nothing itself.
 - A stream event commits or rolls back with its row: `tests/integration/tests/offdb_stream.rs::every_stream_event_reaches_storage_as_it_happens`.
 - The banner clears only by Casey and its history cannot be rewritten: `tests/integration/tests/suspension_mode.rs::td_txt_33_a_restore_keeps_texting_off_and_only_casey_clears_the_banner`.
-- Safe mode starts at 24:00:00 after an unacknowledged pushed High alert (never for a delivery or unpushed alert), ends only when none is open, and is read only by `payments`' `charges_paused`, never by a text path: `tests/integration/tests/safe_mode.rs` (T487).
+- Safe mode starts at 24:00:00 after an unacknowledged pushed critical alert or High alert of one of `SAFE_MODE_KINDS` (never for a delivery, email-limit, vault-read, call-back or unpushed alert; `safe_mode_kinds.rs`), ends only when none is open, and is read only by `payments`' `charges_paused`, never by a text path: `tests/integration/tests/safe_mode.rs` (T487).
 - At most one text-delivery alert is open, a second waits for 97% of 200 after an acknowledgement, and only the delivery path acknowledges here: `tests/integration/tests/ops_alert_conditions.rs` (T105).
 - A scheduled check raising through `raise_kind_once` or `raise_alert_once` leaves one open alert while its condition lasts, and `raise_alert` stays one alert per call: `tests/integration/tests/alert_dedupe.rs` (T320).
 - A not-a-fit answer is one per business and job, writes nothing outside its own row, and neither it nor a minutes entry can be changed by the app role: `tests/integration/tests/not_a_fit.rs` (T479).
