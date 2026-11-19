@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T08:43:12Z by runner df9e147aa320 (actions).
+Updated 2026-11-19T08:48:25Z by runner 25c9a14919a4 (actions).
 
-**Building: T710 in progress since 08:40Z; 484 of 664 done; week 76% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T553 in progress since 08:48Z; 484 of 664 done; week 76% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 484 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T710 claimed 08:40Z, lease until 11:40Z; lane 4: T536 claimed 08:14Z, lease until 11:14Z; lane 5: T622 claimed 07:06Z, lease until 11:39Z; lane 6: T476 claimed 06:22Z, lease until 11:34Z; lane 7: T375 claimed 08:04Z, lease until 11:04Z
-- **Week:** 76% used, 35.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:42Z, 0 min before this update
+- **Lane:** lane 2: T553 claimed 08:48Z, lease until 11:48Z; lane 3: T710 claimed 08:40Z, lease until 11:40Z; lane 4: T536 claimed 08:14Z, lease until 11:14Z; lane 5: T622 claimed 07:06Z, lease until 11:39Z; lane 6: T476 claimed 06:22Z, lease until 11:34Z; lane 7: T375 claimed 08:04Z, lease until 11:04Z
+- **Week:** 76% used, 35.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 08:43Z, 5 min before this update
 - **Keeper:** last ran 08:42Z, next wake 09:02Z
 
 ## Needs attention
@@ -19,7 +19,7 @@ Evidence: site-copy.md:32 "It goes t; fix the plan (the task's kit/tasks.json en
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T540 (since 2026-11-19T08:04:18Z, no attempt used; a plan change fixes it): T540: dependency T310 is DONE but its owned file app/server/src/owner_portal.rs is not on main; T540: dependency T310 is DONE but its owned file app/server/tests/owner_portal_route.rs is not on main; T540: dependency T310 is DONE but its owned file tests/e2e/owner_portal_served.spec.ts is not on main
 - OWNED GAP T216 (DONE, since 2026-11-19T08:36:02Z; a later task or plan change must add it): T216: app/site/static/photos/hero-kitchen-phone.avif missing on main
-- Strict plan check red: 61 problem(s) on tasks still to run (+301 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 62 problem(s) on tasks still to run (+302 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -128,7 +128,7 @@ Evidence: site-copy.md:32 "It goes t; fix the plan (the task's kit/tasks.json en
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-19T08:36:18Z (week)): week: 158.5M used, 35.5M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T07:25:06Z.
+- Pacing (session_reading 2026-11-19T08:42:12Z (week)): week: 158.6M used, 35.4M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T07:33:01Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -144,6 +144,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
+- lane 2: T553 (lease until 2026-11-19T11:48:12Z)
 - lane 3: T710 (lease until 2026-11-19T11:40:16Z)
 - lane 4: T536 (lease until 2026-11-19T11:14:06Z)
 - lane 5: T622 (lease until 2026-11-19T11:39:50Z)
