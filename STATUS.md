@@ -1,27 +1,27 @@
 # Ask Hava build status
 
-Updated 2026-11-19T06:57:04Z by runner 54cd43c2721b (actions).
+Updated 2026-11-19T06:57:20Z by runner 7c090605e7a9 (actions).
 
-**Building: T310 in progress since 06:04Z; 478 of 664 done; week 75% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T310 in progress since 06:04Z; 479 of 664 done; week 75% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 478 of 664 build tasks (owner gates not counted)
+- **Tasks done:** 479 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T310 claimed 06:04Z, lease until 09:04Z; lane 3: T216 claimed 06:32Z, lease until 09:32Z; lane 4: T562 claimed 04:26Z, lease until 09:57Z; lane 6: T476 claimed 06:22Z, lease until 09:22Z; lane 7: T229 claimed 04:42Z, lease until 09:05Z
 - **Week:** 75% used, 38.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:56Z, 0 min before this update
+- **Last run:** 06:57Z, 0 min before this update
 - **Keeper:** last ran 06:24Z, next wake 09:07Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T542 (since 2026-11-19T06:04:46Z, no attempt used; a plan change fixes it): T542: dependency T490 is DONE but its owned file app/server/tests/email_provider_workers.rs is not on main; T542: dependency T490 is DONE but its owned file app/server/src/account_directory.rs is not on main
-- Strict plan check red: 60 problem(s) on tasks still to run (+286 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 60 problem(s) on tasks still to run (+292 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T506 | Decisions digest, piece 7: the next entries after the header | MERGE_PENDING | 1 | 102 min | 06:55Z |  |
-| T408 | server: a release waits while safe mode is on and goes ahead | MERGE_PENDING | 3 | 2 h 48 min | 06:17Z | PLAN GAP: kit/prompts/T408.md:54 "Size budget: at most 6 files, 800 changed lines" cannot be met. The prompt's own plan  |
+| T408 | server: a release waits while safe mode is on and goes ahead | done | 3 | 2 h 48 min | 06:17Z | PLAN GAP: kit/prompts/T408.md:54 "Size budget: at most 6 files, 800 changed lines" cannot be met. The prompt's own plan  |
 | T203 | Wording scan: the required statements, business copy lines a | done | 4 | 42 min | 04:50Z | PLAN GAP: app/portals/templates/es_business_signup.html:82 ("Licencia de control de plagas") and :88 ("Mi licencia inclu |
 | T490 | server (harness): the email provider passed to the sign-up m | done | 1 | 2 h 25 min | 04:35Z |  |
 | T520 | portals and messaging: the portal stylesheets and email colo | done | 1 | 2 h 21 min | 04:18Z |  |
@@ -94,8 +94,8 @@ Updated 2026-11-19T06:57:04Z by runner 54cd43c2721b (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 308 of 735 (41.9%) · partial 386 · unstarted 41
-**Tasks merged (throughput only):** 478 of 663
+**Requirements verified:** 306 of 735 (41.6%) · partial 388 · unstarted 41
+**Tasks merged (throughput only):** 479 of 664
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -105,8 +105,8 @@ Updated 2026-11-19T06:57:04Z by runner 54cd43c2721b (actions).
 | calls | 12 | 13 | 0 | 25 |
 | consent | 15 | 20 | 0 | 35 |
 | fees | 23 | 28 | 1 | 52 |
-| intake | 10 | 33 | 0 | 43 |
-| job-cards | 14 | 10 | 0 | 24 |
+| intake | 9 | 34 | 0 | 43 |
+| job-cards | 13 | 11 | 0 | 24 |
 | licensing | 34 | 14 | 0 | 48 |
 | lifecycle | 18 | 10 | 0 | 28 |
 | messaging | 20 | 24 | 1 | 45 |
@@ -131,7 +131,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 121 of 263 done
+- stage 5: 122 of 263 done
 - stage 6: 0 of 48 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
