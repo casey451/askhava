@@ -5,7 +5,7 @@
 //! folds the words (lower case, Spanish accents and apostrophes dropped), removes street-address
 //! patterns first so "100 Smoketree Test Ave" is not smoke (D-165), and never looks at the answer to the
 //! name-and-address question. It holds only the INT-004 911 list: a gas or propane smell or hiss, a
-//! CO alarm or detector going off, smoke, fire or flames, a sparking, smoking or burning outlet,
+//! CO alarm or detector going off, smoke, fire, flames or a burning smell (D-4777), a sparking, smoking or burning outlet,
 //! plug, cord, switch, breaker or panel, and a downed power line. Floods, heat, no heat, symptoms
 //! and a detector that chirps are not on it (D-436); a smoke or CO alarm said only to beep gets the
 //! INT-037 question instead. The AI's emergency field never stands in for this match (INT-026).
@@ -66,8 +66,11 @@ pub enum Check {
 }
 
 const GAS_WORDS: &[&str] = &["gas", "propane", "propano"];
+/// The signs a gas word needs, English and Spanish stems, anywhere in the message ("huelo gas en
+/// la cocina", "hay una fuga en la tuberia de gas", D-4777).
 const GAS_SIGNS: &[&str] = &[
-    "leak", "hiss", "whistl", "smell", "odor", "odour", "stink", "fume",
+    "leak", "hiss", "whistl", "smell", "odor", "odour", "stink", "fume", "huel", "olor", "fuga",
+    "escap",
 ];
 const GAS_PHRASES: &[&str] = &[
     "rotten egg",
@@ -119,6 +122,20 @@ const NOT_SMOKE: &[&str] = &[
 const NOT_SMOKE_WORDS: &[&str] = &["smoker", "smokers", "smokeless", "nonsmoker"];
 const FIRE_PHRASES: &[&str] = &["en llamas"];
 const FIRE_STEMS: &[&str] = &["smok", "flame", "humo", "fuego", "incendi"];
+/// Something burning with no electric part named, a smoke or fire report (D-4777): these phrases,
+/// or a burning word beside a smell word ("burning smell", "burnt toast smell": any burning smell
+/// errs toward 911), never "se quema el foco" or "the bulb burned out", which name no smell.
+const BURNING_PHRASES: &[&str] = &[
+    "something is burning",
+    "something burning",
+    "somethings burning",
+    "se esta quemando",
+    "se estan quemando",
+];
+/// Spanish burnt words read beside a smell word ("huele a quemado", "olor a quemado", D-4777).
+const BURNT_ES: &[&str] = &["quemado", "quemada", "quemados", "quemadas"];
+/// Smell stems a burning word needs to name a burning smell (D-4777).
+const SMELL_STEMS: &[&str] = &["smell", "odor", "odour", "stink", "huel", "olor"];
 const ELECTRIC_PARTS: &[&str] = &[
     "outlet",
     "plug",
@@ -225,6 +242,7 @@ const HAZARD_LISTS: &[&[&str]] = &[
     ELECTRIC_PARTS,
     ELECTRIC_STEMS,
     BURNING,
+    BURNT_ES,
     HAZARD_STEMS,
 ];
 #[cfg(test)]
@@ -243,6 +261,9 @@ pub(crate) const WORD_LISTS: &[&[&str]] = &[
     NOT_SMOKE_WORDS,
     FIRE_PHRASES,
     FIRE_STEMS,
+    BURNING_PHRASES,
+    BURNT_ES,
+    SMELL_STEMS,
     ELECTRIC_PARTS,
     NOT_ELECTRIC,
     ELECTRIC_STEMS,
@@ -299,10 +320,17 @@ fn hazard(text: &Folded) -> Option<Hazard> {
     }
     let fire = Folded::new(&text.without(NOT_SMOKE));
     let burning = fire.any_word(&["fire", "fires"]) || fire.any_phrase(FIRE_PHRASES);
-    if burning || fire.smoke_or(FIRE_STEMS) {
+    if burning || fire.smoke_or(FIRE_STEMS) || burning_smell(&fire) {
         return Some(Hazard::SmokeFire);
     }
     None
+}
+
+/// Whether the folded message names something burning with no electric part (INT-002, D-4777):
+/// a [`BURNING_PHRASES`] phrase, or a burning word (`BURNING`, `BURNT_ES`) beside a smell word.
+fn burning_smell(text: &Folded) -> bool {
+    let burnt = text.any_word(BURNING) || text.any_word(BURNT_ES);
+    text.any_phrase(BURNING_PHRASES) || (burnt && text.any_stem(SMELL_STEMS))
 }
 
 /// Removes street-address patterns (INT-002, D-165, D-982, D-2202, D-3438): a street suffix and
