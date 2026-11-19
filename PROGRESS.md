@@ -7864,3 +7864,4 @@
 - 2026-11-19T13:13:32Z runner 5339e72a662e (actions): {"T554": "QUEUED -> IN_PROGRESS"}; T554 estimated 569k tokens (calibrated); week has 26.3M left (no five-hour budget, D-3056) after 7.7M still running in another lane (session_reading 2026-11-19T13:04:36Z (week)); running to the limit (model window, D-2225), claimed
 - 2026-11-19T13:17:06Z runner 5339e72a662e (actions): {}
 - 2026-11-19T13:17:40Z runner 5339e72a662e (actions): {}
+- 2026-11-19T13:18:05Z runner 345380f4824a (manual): {"T109": "BLOCKED -> QUEUED"}
