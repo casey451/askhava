@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{#- The owner's pilot scorecard (T158; OPS-039, CALL-024, OPS-046, OPS-047; D-458, D-3753, D-4280).
+    Every figure as scorecard.rs words it, per trade and in total, this week and the pilot to date,
+    each colored figure with its color as a word; the ladder, the count lists, T622's panels and the
+    weekly minutes form. The page decides nothing. -#}
+{% block title %}{% if refused.is_some() %}Error: {% endif %}Pilot scorecard{% endblock %}
+{% block main %}{% if refused.is_some() %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>Fix this to save your minutes</h2>
+<ul><li><a href="#recruiting">Enter whole minutes in both boxes, up to 10,080 (one full week).</a></li></ul>
+</div>{% endif %}
+<h1>Pilot scorecard</h1>
+<p>Pilot week {{ pilot_week }}. Green means a figure has reached its go line. Amber means it's between its go and stop lines. Red means it's past its stop line. Figures with no line have no color. This page only shows the numbers. It never acts on them.</p>
+<div role="status" aria-live="polite">{% if saved %}<p id="minutes-saved">Your minutes for this week are saved.</p>{% endif %}</div>
+<h2>Paid introductions this month</h2>
+<p id="ladder">{{ paid_month.text }} paid introductions{% if let Some(c) = paid_month.color %} ({{ c }}){% endif %}, {{ rung }}. Monthly targets: {{ ladder[0] }} for the pilot, {{ ladder[1] }} for $20,000 a year and {{ ladder[2] }} for $50,000 a year.</p>
+{% for s in scopes %}<h2>{{ s.title }}</h2>
+<table class="scorecard">
+<caption>{{ s.title }}: this week and the pilot to date</caption>
+<thead><tr><th scope="col">Measure</th><th scope="col">This week</th><th scope="col">Pilot to date</th></tr></thead>
+<tbody>
+{% for r in s.rows %}<tr><th scope="row">{{ r.label }}</th><td>{{ r.week.text }}{% if let Some(c) = r.week.color %} <span class="sc-{{ c }}">({{ c }})</span>{% endif %}</td><td>{{ r.pilot.text }}{% if let Some(c) = r.pilot.color %} <span class="sc-{{ c }}">({{ c }})</span>{% endif %}</td></tr>
+{% endfor %}</tbody>
+</table>
+{% endfor %}{% for (title, week, pilot) in lists %}<h2>{{ title }}</h2>
+<h3>This week</h3>
+{% if week.is_empty() %}<p>None yet.</p>{% else %}<ul>{% for (k, n) in week %}<li>{{ k }}: {{ n }}</li>{% endfor %}</ul>{% endif %}
+<h3>Pilot to date</h3>
+{% if pilot.is_empty() %}<p>None yet.</p>{% else %}<ul>{% for (k, n) in pilot %}<li>{{ k }}: {{ n }}</li>{% endfor %}</ul>{% endif %}
+{% endfor %}{% if let Some(e) = email %}<h2>Email in the first six weeks</h2>
+{% if e.alert_open %}<p id="deferral-alert"><strong>Alert:</strong> yesterday more than 5% of emails were deferred (the receiving server said to try later).</p>{% endif %}
+<table id="email-days">
+<caption>Emails each day</caption>
+<thead><tr><th scope="col">Day</th><th scope="col">Sent</th><th scope="col">Deferred</th><th scope="col">Bounced</th><th scope="col">Complaints</th></tr></thead>
+<tbody>
+{% for d in e.days %}<tr><th scope="row">{{ d.day }}</th><td>{{ d.sends }}</td><td>{{ d.deferrals }}</td><td>{{ d.bounces }}</td><td>{{ d.complaints }}</td></tr>
+{% endfor %}</tbody>
+</table>
+{% endif %}{% for (when, trades) in panels %}<h2>Quote effort in the trades you're pushing: {{ when }}</h2>
+{% for t in trades %}<h3>{{ t.trade }}</h3>
+<p>Median minutes a business spent on a quote: {{ t.minutes }}</p>
+<ul>{% for (b, q) in t.per_pick %}<li>Business {{ b }}: {{ q }} quotes per pick</li>{% endfor %}
+{% for (r, n) in t.not_a_fit %}<li>"Not a fit" cards, {{ r }}: {{ n }}</li>{% endfor %}
+{% for (r, n) in t.refunds %}<li>Refund requests, {{ r }}: {{ n }}</li>{% endfor %}</ul>
+{% endfor %}{% endfor %}<h2>Your minutes this week</h2>
+<form method="post" action="{{ minutes_route }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+{% if refused.is_some() %}<p id="minutes-error" class="field-error">Error: Enter whole minutes in both boxes, up to 10,080 (one full week).</p>
+{% endif %}<label for="recruiting">Minutes spent recruiting businesses</label>
+<input type="text" id="recruiting" name="recruiting" inputmode="numeric" value="{% if let Some(f) = refused %}{{ f.recruiting }}{% endif %}"{% if refused.is_some() %} aria-describedby="minutes-error" aria-invalid="true"{% endif %}>
+<label for="other">Minutes spent on everything else</label>
+<input type="text" id="other" name="other" inputmode="numeric" value="{% if let Some(f) = refused %}{{ f.other }}{% endif %}"{% if refused.is_some() %} aria-describedby="minutes-error" aria-invalid="true"{% endif %}>
+<button type="submit">Save minutes</button>
+</form>
+{% endblock %}
