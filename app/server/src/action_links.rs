@@ -30,7 +30,14 @@
 //! before its transaction (else the sign-in or step-up answer, link unused), and approves the
 //! phone with `approve_phone` only when the link was issued at or after the phone's current
 //! `number_set_at`; an older link or a refused approval rolls back (409, link unused), another
-//! business's or a declined phone is not found (BIZ-033, SEC-038). Every other kind's `POST` gets the one not-found
+//! business's or a declined phone is not found (BIZ-033, SEC-038). Hold (object: the waiting
+//! pick; T456, PICK-043, D-3890) acts by the link alone: the link is checked open, the pick's
+//! facts read (`picks::api::hold_ask`; a pick that does not wait is the one not-found answer, so a
+//! wrong-kind link stays unused), `use_action_link` gets them, and `hold_pick` adds the HOLD's
+//! business hours once in the same transaction; the page names the new end in Arizona time. A
+//! refused Hold (emergency, held before, Away-delayed, window not running) rolls back, so the link
+//! stays unused, and says why (409), but only after the link's person was proved by a second,
+//! rolled-back `use_action_link`. Every other kind's `POST` gets the one not-found
 //! answer before any token read (D-3675). A wrong kind, object, person, an ended, used or
 //! unknown token, a removed member's token and a job with no sent card or no rules all get the
 //! same bare 404. Every response is `no-store`. After a stored quote the job page carries
@@ -41,13 +48,16 @@ use std::net::IpAddr;
 use std::sync::Arc;
 
 use askhava_businesses::api::{
-    Acting, BusinessesError, TeamError, approve_phone, capabilities, pause_self, resume_self,
-    waiting_phones,
+    Acting, BusinessesError, Roles, TeamError, approve_phone, capabilities, pause_self,
+    resume_self, waiting_phones,
 };
-use askhava_core::api::{Clock, SystemClock};
+use askhava_core::api::{Clock, SystemClock, arizona_time};
 use askhava_intake::api::Admission;
 use askhava_jobs::api::{job_facts, job_number};
 use askhava_payments::api::{JobCodes, JobFeeFacts, receipt_for, resolve_fee_facts};
+use askhava_picks::api::{
+    HoldAsk, PicksError, TimeRefusal, WindowRules, hold_allowed, hold_ask, hold_pick,
+};
 use askhava_portals::api::{
     ACTION_ROUTE, ActionFacts, ActionGrant, ActionKind, ActionLinkError, BUSINESS_STEP_UP_ROUTE,
     ChargeAsked, CookieJar, CsrfField, CsrfForm, FactsForm, LargestWarning, NotAFitChoice,
@@ -441,7 +451,7 @@ impl Posted {
 
 /// `POST /b/a/{kind}/{object}/{token}`: after the cross-site and CSRF checks, a Quote link acts
 /// by the link alone, Pause, Resume and Ask about a charge with a business session (D-3839),
-/// Approve with the owner's session and a fresh step-up (T399);
+/// Approve with the owner's session and a fresh step-up (T399), Hold by the link alone (T456);
 /// every other kind is the one not-found answer before any token read (D-3675).
 async fn act(
     State(links): State<Links>,
@@ -462,6 +472,10 @@ async fn act(
         }
         ActionKind::Approve => {
             let acted = approve_post(&links, (object, &token), &jar).await;
+            acted.unwrap_or_else(IntoResponse::into_response)
+        }
+        ActionKind::Hold => {
+            let acted = hold_post(&links, (object, &token)).await;
             acted.unwrap_or_else(IntoResponse::into_response)
         }
         _ => Stop::NotFound.into_response(),
@@ -536,6 +550,97 @@ async fn session_post(
             )
         }
     })
+}
+
+/// PICK-043, BIZ-038, SEC-025, SEC-026, D-1956, D-3890: the Hold link's `POST`, by the link
+/// alone. An ended or unknown link, or a pick that no longer waits, is the one not-found answer
+/// before anything is used; then `use_action_link` with the pick's facts, and `hold_pick` in the
+/// same transaction, committed only when the window moved. Every refusal rolls back (link unused)
+/// and answers [`not_held`]; one found before the link is used is told only to the link's own
+/// current person ([`hold_person`]).
+async fn hold_post(links: &Links, (pick, token): (Uuid, &str)) -> Result<Response, Stop> {
+    let now = links.clock.now();
+    let kind_pick = (ActionKind::Hold, pick);
+    let mut tx = links.pool.begin().await.map_err(failed)?;
+    open_action_link(&mut tx, kind_pick, token, now)
+        .await
+        .map_err(link_stop)?;
+    let found = hold_ask(&mut tx, pick, Roles::BOTH).await.map_err(failed)?;
+    let (business, ask) = found.ok_or(Stop::NotFound)?;
+    if let Err(refusal) = hold_allowed(ask) {
+        let person = hold_person(&mut tx, (pick, token), now).await;
+        tx.rollback().await.map_err(failed)?;
+        person?;
+        return Ok(not_held(refusal));
+    }
+    let grant = use_action_link(&mut tx, kind_pick, token, Some(ask), now).await;
+    if grant.map_err(link_stop)?.business() != business {
+        return Err(Stop::NotFound);
+    }
+    let rules = WindowRules::default();
+    let held = match hold_pick(&mut tx, pick, Roles::BOTH, now, rules).await {
+        Ok(held) => held,
+        Err(PicksError::MovedOn) => Err(TimeRefusal::Ended),
+        Err(_) => return Err(Stop::Failed),
+    };
+    match held {
+        Ok(due) => {
+            tx.commit().await.map_err(failed)?;
+            Ok(held_page(due))
+        }
+        Err(refusal) => {
+            tx.rollback().await.map_err(failed)?;
+            Ok(not_held(refusal))
+        }
+    }
+}
+
+/// SEC-025, D-1956: whether the Hold link `token` for `pick` would grant (its member still
+/// current with the Hold role), asked with facts that pass `hold_allowed` so the token and role
+/// alone decide; else the one not-found answer. The caller rolls back, so nothing is used.
+async fn hold_person(
+    tx: &mut PgConnection,
+    (pick, token): (Uuid, &str),
+    now: Timestamp,
+) -> Result<(), Stop> {
+    let open = HoldAsk {
+        by: Roles::BOTH,
+        emergency: false,
+        held: false,
+        away_delayed: false,
+    };
+    let grant = use_action_link(tx, (ActionKind::Hold, pick), token, Some(open), now).await;
+    grant.map(drop).map_err(link_stop)
+}
+
+/// PICK-043, PICK-045: the held window's new end, in Arizona time; the homeowner gets no text.
+fn held_page(due: Timestamp) -> Response {
+    let end = arizona_time(due)
+        .strftime("%-I:%M %p on %A, %B %-d")
+        .to_string();
+    let body = format!(
+        "<p id=\"new-end\">You now have until {end}, Arizona time, to confirm this pick.</p>\
+         <p>We don't text the homeowner about this.</p>"
+    );
+    done(StatusCode::OK, "Pick held", &body)
+}
+
+/// PICK-043, D-252, D-284, D-344: the window can't be extended, and why (409).
+fn not_held(refusal: TimeRefusal) -> Response {
+    let why = match refusal {
+        TimeRefusal::Emergency => "This job is an emergency, so its window can't be extended.",
+        TimeRefusal::AlreadyHeld => {
+            "This pick was already held once, so its window can't be extended again."
+        }
+        TimeRefusal::AwayDelayed => {
+            "This pick's window started when your away time ended, so it can't be extended."
+        }
+        TimeRefusal::Role | TimeRefusal::Ended | TimeRefusal::TooFar => {
+            "This pick's window isn't running, so it can't be extended."
+        }
+    };
+    let body = format!("<p id=\"why\">{why}</p>");
+    done(StatusCode::CONFLICT, "Window not extended", &body)
 }
 
 /// BIZ-028, BIZ-010: a self pause: done, or refused because the business is not active.
