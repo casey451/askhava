@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T09:06:03Z by runner 4ca5171581b8 (actions).
+Updated 2026-11-19T09:10:56Z by runner 4ca5171581b8 (actions).
 
 **Building: T470 in progress since 09:02Z; 485 of 664 done; week 77% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 485 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T470 claimed 09:02Z, lease until 12:02Z; lane 2: T553 claimed 08:48Z, lease until 11:48Z; lane 3: T710 claimed 08:40Z, lease until 11:40Z; lane 4: T652 claimed 09:05Z, lease until 12:05Z; lane 5: T622 claimed 07:06Z, lease until 12:04Z; lane 7: T375 claimed 08:04Z, lease until 11:04Z
+- **Lane:** lane 1: T470 claimed 09:02Z, lease until 12:02Z; lane 2: T553 claimed 08:48Z, lease until 11:48Z; lane 3: T710 claimed 08:40Z, lease until 11:40Z; lane 5: T622 claimed 07:06Z, lease until 12:04Z; lane 7: T375 claimed 08:04Z, lease until 11:04Z
 - **Week:** 77% used, 34.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:04Z, 1 min before this update
+- **Last run:** 09:06Z, 4 min before this update
 - **Keeper:** last ran 09:01Z, next wake 09:21Z
 
 ## Needs attention
@@ -16,6 +16,7 @@ Updated 2026-11-19T09:06:03Z by runner 4ca5171581b8 (actions).
 Evidence: site-copy.md:32 "It goes t; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T161 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T536: plan gap reported: PLAN GAP: tests/e2e/j2.ts:150 (owned by T099, `e2e-j2-business`; T644 also lists it). Smallest plan change: make the `notices` count in `closing` leave out the quiet-hours re-queue (rows whose `dedupe_key` starts with `messaging.business_notice.held.`), or count notices by `template`. Without that, the asserts at `tests/e2e/j2_business.spec.ts:57`–`:59` and `:78`–`:80` fail.
 Evidence: with the worker now started on keyedEnv, the business-notice handler registers (app/server/src/lib.rs:1840-1868); a non-emergency notice handled during Arizona quiet hours re-queues a second `messaging.business_n; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T536 --plan-fix D-### --reason "..."` (D-2859)
+- BLOCKED T652: plan gap reported: PLAN GAP: tests/integration/tests/safe_mode.rs:246,281,320,378,407 (owned by T487 and T408; T652's prompt :11 and :47 say it must pass unchanged) plant Severity::High alerts of the made-up kind "ops.ledger_difference" and expect safe mode to start. D-4310 (docs/decisions.md:2366) lets a High alert start safe mode only for ops.vendor_errors, ops.health_check_failed, payments.ledger_mismatch or messaging.number_suspended. The worker made a trial edit (not committed) and `cargo test -p askhava-integration --test safe_mode` gave 3 passed, 4 failed: td_ops_01_safe_mode_at_24_00_00_not_at_23_59_59, ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T652 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T116 (since 2026-11-19T08:37:10Z, no attempt used; a plan change fixes it): T116: dependency T216 is DONE but its owned file app/site/static/photos/hero-kitchen-phone.avif is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
@@ -27,6 +28,7 @@ Evidence: with the worker now started on keyedEnv, the business-notice handler r
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T652 | ops: safe mode starts only on OPS-001's alert kinds, and a d | BLOCKED | 1 | 5 min | 09:10Z | PLAN GAP: tests/integration/tests/safe_mode.rs:246,281,320,378,407 (owned by T487 and T408; T652's prompt :11 and :47 sa |
 | T536 | E2e harness: clock-advancing journeys last, a keyed worker,  | BLOCKED | 1 | 46 min | 09:00Z | PLAN GAP: tests/e2e/j2.ts:150 (owned by T099, `e2e-j2-business`; T644 also lists it). Smallest plan change: make the `no |
 | T476 | portals: the owner health page with every OPS-008 figure and | MERGE_PENDING | 1 | 2 h 27 min | 08:50Z |  |
 | T161 | wording: the WORD-024 voice rule's pressure-word scan, the r | BLOCKED | 1 | 4 min | 08:41Z | PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/s |
@@ -150,9 +152,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - T470 (lease until 2026-11-19T12:02:31Z)
 - lane 2: T553 (lease until 2026-11-19T11:48:12Z)
 - lane 3: T710 (lease until 2026-11-19T11:40:16Z)
-- lane 4: T652 (lease until 2026-11-19T12:05:43Z)
 - lane 5: T622 (lease until 2026-11-19T12:04:37Z)
 - lane 7: T375 (lease until 2026-11-19T11:04:18Z)
 
 ## Last usage reading
-- {"task": "T536", "at": "2026-11-19T09:00:35Z", "cache_read_input_tokens": 3662993, "cache_creation_input_tokens": 129746, "output_tokens": 31484, "input_tokens": 120}
+- {"task": "T652", "at": "2026-11-19T09:10:55Z", "input_tokens": 62, "cache_creation_input_tokens": 77743, "cache_read_input_tokens": 1348691, "output_tokens": 11946}

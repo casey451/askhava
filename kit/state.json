@@ -82883,8 +82883,8 @@
     "T105",
     "T204"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "safe-mode-kinds",
    "type": "build",
    "stage": "5",
@@ -82900,7 +82900,34 @@
    "window_model": {
     "model": "claude-opus-5-5",
     "alias": "opus"
-   }
+   },
+   "reason": "plan gap reported: PLAN GAP: tests/integration/tests/safe_mode.rs:246,281,320,378,407 (owned by T487 and T408; T652's prompt :11 and :47 say it must pass unchanged) plant Severity::High alerts of the made-up kind \"ops.ledger_difference\" and expect safe mode to start. D-4310 (docs/decisions.md:2366) lets a High alert start safe mode only for ops.vendor_errors, ops.health_check_failed, payments.ledger_mismatch or messaging.number_suspended. The worker made a trial edit (not committed) and `cargo test -p askhava-integration --test safe_mode` gave 3 passed, 4 failed: td_ops_01_safe_mode_at_24_00_00_not_at_23_59_59, ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T652 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: tests/integration/tests/safe_mode.rs:246,281,320,378,407 (owned by T487 and T408; T652's prompt :11 and :47 say it must pass unchanged) plant Severity::High alerts of the made-up kind \"ops.ledger_difference\" and expect safe mode to start. D-4310 (docs/decisions.md:2366) lets a High alert start safe mode only for ops.vendor_errors, ops.health_check_failed, payments.ledger_mismatch or messaging.number_suspended. The worker made a trial edit (not committed) and `cargo test -p askhava-integration --test safe_mode` gave 3 passed, 4 failed: td_ops_01_safe_mode_at_24_00_00_not_at_23_59_59, td_fee_20_safe_mode_stops_and_resumes_both_payment_timers, td_ops_06_safe_mode_ends_when_no_other_high_alert_is_open, td_ops_06_a_press_in_safe_mode_is_refused_before_any_stripe_call. \"ops.ledger_difference\" appears nowhere in app/ or migrations, so no alias exists. The reviewer (Opus) confirmed the ownership and the contradiction. Fix: let T652 own tests/integration/tests/safe_mode.rs, or add a harness task, and swap the kind for askhava_ops::api::LEDGER_ALERT (\"payments.ledger_mismatch\"), with the assertions unchanged; check ordering against T408. Nothing was committed.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 42,
+     "head_sha": "4ca5171581b84801f94083afdc9bf142cfb24bab",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-19T09:05:43Z",
+     "ended_at": "2026-11-19T09:10:55Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 1263663,
+       "turns": 24
+      },
+      "reviewer": {
+       "tokens": 174779,
+       "turns": 7
+      }
+     }
+    }
+   ]
   },
   {
    "id": "T653",
@@ -86001,12 +86028,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T536",
-   "at": "2026-11-19T09:00:35Z",
-   "cache_read_input_tokens": 3662993,
-   "cache_creation_input_tokens": 129746,
-   "output_tokens": 31484,
-   "input_tokens": 120
+   "task": "T652",
+   "at": "2026-11-19T09:10:55Z",
+   "input_tokens": 62,
+   "cache_creation_input_tokens": 77743,
+   "cache_read_input_tokens": 1348691,
+   "output_tokens": 11946
   },
   "source": "session_reading 2026-11-19T09:01:15Z (week)",
   "by_task": {
@@ -91604,17 +91631,27 @@
    },
    "T652": {
     "estimated_bytes": 452124,
-    "estimated_tokens": 1316711
+    "estimated_tokens": 1316711,
+    "usage_counting": "message_id",
+    "input_tokens": 62,
+    "cache_creation_input_tokens": 77743,
+    "cache_read_input_tokens": 1348691,
+    "output_tokens": 11946,
+    "worker_tokens": 1263663,
+    "worker_turns": 24,
+    "reviewer_tokens": 174779,
+    "reviewer_turns": 7,
+    "last_model": "claude-opus-5-5"
    }
   },
   "windows": {
    "five_hour": {
     "start": "2026-11-19T06:17:52Z",
-    "tokens": 11536226
+    "tokens": 11760846
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 356065060
+    "tokens": 356289680
    }
   },
   "session_reading": {
@@ -91625,7 +91662,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T09:06:03Z",
+ "updated_at": "2026-11-19T09:10:56Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
