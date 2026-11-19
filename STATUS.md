@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T03:14:37Z by runner 3e0ed6eb7d4b (manual).
+Updated 2026-11-19T03:15:14Z by runner 3e0ed6eb7d4b (actions).
 
 **Building: T715 in progress since 01:59Z; 471 of 663 done; week 72% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 471 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T715 claimed 01:59Z, lease until 06:05Z; lane 2: T520 claimed 01:57Z, lease until 06:00Z; lane 3: T114 claimed 02:14Z, lease until 05:45Z; lane 4: T484 claimed 02:04Z, lease until 06:01Z; lane 5: T563 claimed 02:48Z, lease until 05:48Z; lane 6: T490 claimed 02:10Z, lease until 05:10Z
-- **Week:** 72% used, 41.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:10Z, 3 min before this update
+- **Lane:** lane 1: T715 claimed 01:59Z, lease until 06:05Z; lane 2: T520 claimed 01:57Z, lease until 06:00Z; lane 3: T114 claimed 02:14Z, lease until 05:45Z; lane 4: T484 claimed 02:04Z, lease until 06:01Z; lane 5: T563 claimed 02:48Z, lease until 05:48Z; lane 6: T490 claimed 02:10Z, lease until 05:10Z; lane 7: T399 claimed 03:14Z, lease until 06:14Z
+- **Week:** 72% used, 42.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 03:14Z, 0 min before this update
 - **Keeper:** last ran 03:10Z, next wake 03:30Z
 
 ## Needs attention
@@ -91,36 +91,36 @@ Updated 2026-11-19T03:14:37Z by runner 3e0ed6eb7d4b (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 201 of 735 (27.3%) · partial 484 · unstarted 50
+**Requirements verified:** 294 of 735 (40.0%) · partial 391 · unstarted 50
 **Tasks merged (throughput only):** 471 of 663
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 13 | 22 | 0 | 35 |
-| ai | 7 | 19 | 3 | 29 |
-| businesses | 13 | 44 | 1 | 58 |
-| calls | 11 | 14 | 0 | 25 |
-| consent | 9 | 26 | 0 | 35 |
-| fees | 14 | 37 | 1 | 52 |
-| intake | 9 | 34 | 0 | 43 |
-| job-cards | 13 | 11 | 0 | 24 |
-| licensing | 27 | 21 | 0 | 48 |
-| lifecycle | 12 | 16 | 0 | 28 |
+| accessibility | 17 | 18 | 0 | 35 |
+| ai | 9 | 17 | 3 | 29 |
+| businesses | 17 | 40 | 1 | 58 |
+| calls | 12 | 13 | 0 | 25 |
+| consent | 14 | 21 | 0 | 35 |
+| fees | 23 | 28 | 1 | 52 |
+| intake | 10 | 33 | 0 | 43 |
+| job-cards | 14 | 10 | 0 | 24 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 18 | 10 | 0 | 28 |
 | messaging | 20 | 24 | 1 | 45 |
-| ops-recovery | 1 | 34 | 19 | 54 |
-| privacy | 8 | 22 | 1 | 31 |
+| ops-recovery | 3 | 32 | 19 | 54 |
+| privacy | 9 | 21 | 1 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
-| quotes-pick | 22 | 34 | 0 | 56 |
+| quotes-pick | 27 | 29 | 0 | 56 |
 | recurring | 7 | 2 | 2 | 11 |
-| security | 6 | 44 | 5 | 55 |
-| terms | 1 | 31 | 3 | 35 |
-| website | 0 | 25 | 5 | 30 |
-| wording | 2 | 21 | 9 | 32 |
+| security | 9 | 41 | 5 | 55 |
+| terms | 25 | 7 | 3 | 35 |
+| website | 9 | 16 | 5 | 30 |
+| wording | 12 | 11 | 9 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-19T02:34:03Z (week)): week: 152.3M used, 41.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T04:39:17Z.
+- Pacing (session_reading 2026-11-19T03:09:28Z (week)): week: 152.0M used, 42.0M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T05:05:46Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -141,6 +141,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 4: T484 (lease until 2026-11-19T06:01:37Z)
 - lane 5: T563 (lease until 2026-11-19T05:48:39Z)
 - lane 6: T490 (lease until 2026-11-19T05:10:22Z)
+- lane 7: T399 (lease until 2026-11-19T06:14:57Z)
 
 ## Last usage reading
 - {"task": "T203", "at": "2026-11-19T03:08:39Z", "output_tokens": 15650, "cache_read_input_tokens": 1164633, "input_tokens": 77, "cache_creation_input_tokens": 116044}
