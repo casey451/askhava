@@ -5,7 +5,8 @@
     follows the English text, plain copy, on every step (T595). AI-026's line
     shows while `ai_on`. One question per page, the chat so far above it. `csrf` is the token
     server's chat layer sets; `message` is this form's PRIV-008 message ID (D-3189). The typed
-    number goes back only in the code form's hidden field (D-4044). -#}
+    number goes back only in the code form's hidden field (D-4044). `words` is the home request
+    box's text carried into the chat box, escaped, never stored (T593). -#}
 {% block title %}{% if error %}Error: {% endif %}Get quotes{% endblock %}
 {% block content %}
 {%- let brand = askhava_core::api::brand().display_name() %}
@@ -42,7 +43,7 @@
 <input type="hidden" name="step" value="message">
 <p><label for="chat-words">What job do you need done?</label></p>
 <p id="chat-words-hint">Say what's wrong and where in the house. Leave out your name, phone and address.</p>
-<p><textarea id="chat-words" name="words" rows="4" aria-describedby="chat-words-hint{% if error %} chat-notice{% endif %}"></textarea></p>
+<p><textarea id="chat-words" name="words" rows="4" maxlength="{{ crate::chat::WORDS_MAX_CHARS }}" aria-describedby="chat-words-hint{% if error %} chat-notice{% endif %}">{{ words }}</textarea></p>
 <p><button type="submit">Send</button></p>
 {%- when Ask::Number %}
 <input type="hidden" name="step" value="number">
