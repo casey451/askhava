@@ -25536,7 +25536,8 @@
   {
    "id": "T143",
    "deps": [
-    "T142"
+    "T142",
+    "T761"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -89797,7 +89798,8 @@
    "deps": [
     "T726",
     "T700",
-    "T753"
+    "T753",
+    "T762"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -90504,6 +90506,32 @@
    "attempts": 0,
    "slug": "also-job-coverage",
    "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T761",
+   "deps": [
+    "T663",
+    "T664",
+    "T680"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "money-file-floors",
+   "type": "harness",
+   "stage": "6"
+  },
+  {
+   "id": "T762",
+   "deps": [
+    "T724",
+    "T753",
+    "T726"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "review-missing-commit-line",
+   "type": "harness",
    "stage": "5"
   }
  ],
@@ -96476,7 +96504,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T22:29:58Z",
+ "updated_at": "2026-11-19T22:30:32Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
