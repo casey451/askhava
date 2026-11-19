@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T19:21:38Z by runner 2c1fc315ebe4 (actions).
+Updated 2026-11-19T19:22:06Z by runner b05c08a0d168 (actions).
 
 **Building: T753 in progress since 19:06Z; 501 of 698 done; week 6% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,13 +9,13 @@ Updated 2026-11-19T19:21:38Z by runner 2c1fc315ebe4 (actions).
 - **Lane:** lane 1: T753 claimed 19:06Z, lease until 22:06Z; lane 2: T161 claimed 17:58Z, lease until 20:58Z; lane 3: T307 claimed 17:47Z, lease until 20:47Z; lane 6: T480 claimed 17:18Z, lease until 20:18Z
 - **Week:** 6% used, 181.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 19:21Z, 0 min before this update
-- **Keeper:** last ran 19:16Z, next wake 20:18Z
+- **Keeper:** last ran 19:22Z, next wake 19:42Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T755 (since 2026-11-19T19:06:54Z, no attempt used; a plan change fixes it): T755: prompt kit/prompts/T755.md is missing; run scripts/gen_prompts.py; T755: branch claude/task/T755-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
-- Strict plan check red: 68 problem(s) on tasks still to run (+340 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 57 problem(s) on tasks still to run (+327 on DONE tasks); first: T403: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
