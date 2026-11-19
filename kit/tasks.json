@@ -33601,7 +33601,8 @@
     "T756",
     "T757",
     "T758",
-    "T759"
+    "T759",
+    "T760"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -35063,7 +35064,8 @@
     "T558",
     "T726",
     "T758",
-    "T759"
+    "T759",
+    "T760"
    ],
    "model": null,
    "effort": null,
@@ -36418,7 +36420,8 @@
     "T675",
     "T719",
     "T736",
-    "T741"
+    "T741",
+    "T760"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -37931,7 +37934,8 @@
     "T757",
     "T514",
     "T758",
-    "T759"
+    "T759",
+    "T760"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -38032,7 +38036,8 @@
     "T756",
     "T757",
     "T758",
-    "T759"
+    "T759",
+    "T760"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -38128,7 +38133,8 @@
     "T756",
     "T757",
     "T758",
-    "T759"
+    "T759",
+    "T760"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -38430,7 +38436,8 @@
     "T756",
     "T757",
     "T758",
-    "T759"
+    "T759",
+    "T760"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -47203,7 +47210,7 @@
    "id": "T717",
    "slug": "intake-two-jobs-corrections",
    "title": "intake (harness): corrections to T711's two jobs: two_jobs after the first ZIP question, ALSO and SPLIT opened the walker's own way, nothing during a SAFE hold, SPLIT only right after its offer",
-   "goal": "Plan change D-4441, follow-ups to D-4439. T671 merged (`11c03c196`) and T711 was claimed on D-4439's plan before D-4441 could merge, so their entries stand and D-4441's reviewed corrections are built here as required behaviour. Read the merged code first; keep what already conforms, change what does not, and add a test for each part either way. `routing.rs`, `conversation.rs` and `service.rs` are not edited (D-4360). This task: INT-032's two jobs as T711 builds them in `app/intake/src/order_dispatch.rs` on D-4439's plan, which sends `two_jobs` \"in the same turn as its other texts, after the consent text\", opens an ALSO after the ZIP through `conversation::begin_job` and a SPLIT through `routing::split_request`. Required: (1) a first message naming two trades gets `two_jobs` once, right after the first ZIP question in the same turn: at the first text on the `Clear` path (CON-031 keeps the consent text and the first question together), and on the 911 and INT-037 paths only when the first ZIP question goes, after SAFE or the INT-037 answer, never during a SAFE hold or while the INT-037 question is open. (2) ALSO or TAMBIÉN opens the second trade's job through `open_job` (property `none`, no INT-009 lookup, no INT-007 word count), never through `begin_job`, which refuses the one-word ALSO (`app/intake/src/conversation.rs:132`, `rules::opens_job`), so D-4439's \"after the ZIP, through `begin_job`\" would never open it; an ALSO while a SAFE hold waits gets nothing and opens nothing; an ALSO that opens the job answers no step: its coverage line goes through `routing::tell_coverage` at once when step 5 is done, else right after the first job's, and the open question is sent again through T715's `ask_open_again`. (3) SPLIT or DIVIDIR (`routing::is_split_reply`) counts only as the first reply after the turn that sent a `Coverage::Split` offer of the same request (T671 asks the next question in that same turn, so \"the latest text\" never matches; read from stored rows: the `trade_check` marker and the request's heard rows after it), never at any other point (D-1020); it opens the job of the candidates' other trade through `open_job`, not `routing::split_request` (which opens through `begin_job`, `app/intake/src/routing.rs:474`), answers no step, and the open question is sent again through `ask_open_again`. No ALSO or SPLIT reply is kept as words. T711's `tests/integration/tests/intake_order_two_jobs.rs` changes only where a case asserts behaviour this goal corrects, each change citing D-4441 and its requirement, nothing else removed or loosened. Tests (TD-INT-54) in the new `tests/integration/tests/intake_order_two_jobs_rules.rs`, PostgreSQL, fake data and 555 numbers only, through `intake::api::receive_raw_reply`. Plan change D-4777 (Fable's intake audit, finding I4, MED; INT-032, INT-017): an ALSO job opened before her ZIP (`order_dispatch.rs:379` to `:416`, `:445` to `:447`, as on `main` a91fb80e after T715) is never told its coverage; once the town is stored, each linked job of the request that has had no trade check gets one (the coverage line or INT-017's reply for its trade), once per job, in the turn that stores the town; its cases join `tests/integration/tests/intake_order_two_jobs_rules.rs`. Before hand-in, run every test that posts to `/webhooks/twilio/sms` or calls `receive_reply`/`receive_raw_reply`; a failing one not owned here is a plan gap to report, not to edit. Update `app/intake/CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4441, follow-ups to D-4439. T671 merged (`11c03c196`) and T711 was claimed on D-4439's plan before D-4441 could merge, so their entries stand and D-4441's reviewed corrections are built here as required behaviour. Read the merged code first; keep what already conforms, change what does not, and add a test for each part either way. `routing.rs`, `conversation.rs` and `service.rs` are not edited (D-4360). This task: INT-032's two jobs as T711 builds them in `app/intake/src/order_dispatch.rs` on D-4439's plan, which sends `two_jobs` \"in the same turn as its other texts, after the consent text\", opens an ALSO after the ZIP through `conversation::begin_job` and a SPLIT through `routing::split_request`. Required: (1) a first message naming two trades gets `two_jobs` once, right after the first ZIP question in the same turn: at the first text on the `Clear` path (CON-031 keeps the consent text and the first question together), and on the 911 and INT-037 paths only when the first ZIP question goes, after SAFE or the INT-037 answer, never during a SAFE hold or while the INT-037 question is open. (2) ALSO or TAMBIÉN opens the second trade's job through `open_job` (property `none`, no INT-009 lookup, no INT-007 word count), never through `begin_job`, which refuses the one-word ALSO (`app/intake/src/conversation.rs:132`, `rules::opens_job`), so D-4439's \"after the ZIP, through `begin_job`\" would never open it; an ALSO while a SAFE hold waits gets nothing and opens nothing; an ALSO that opens the job answers no step: its coverage line goes through `routing::tell_coverage` at once when step 5 is done, else right after the first job's, and the open question is sent again through T715's `ask_open_again`. (3) SPLIT or DIVIDIR (`routing::is_split_reply`) counts only as the first reply after the turn that sent a `Coverage::Split` offer of the same request (T671 asks the next question in that same turn, so \"the latest text\" never matches; read from stored rows: the `trade_check` marker and the request's heard rows after it), never at any other point (D-1020); it opens the job of the candidates' other trade through `open_job`, not `routing::split_request` (which opens through `begin_job`, `app/intake/src/routing.rs:474`), answers no step, and the open question is sent again through `ask_open_again`. No ALSO or SPLIT reply is kept as words. T711's `tests/integration/tests/intake_order_two_jobs.rs` changes only where a case asserts behaviour this goal corrects, each change citing D-4441 and its requirement, nothing else removed or loosened. Tests (TD-INT-54) in the new `tests/integration/tests/intake_order_two_jobs_rules.rs`, PostgreSQL, fake data and 555 numbers only, through `intake::api::receive_raw_reply`. Before hand-in, run every test that posts to `/webhooks/twilio/sms` or calls `receive_reply`/`receive_raw_reply`; a failing one not owned here is a plan gap to report, not to edit. Update `app/intake/CLAUDE.md` and `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -47251,14 +47258,13 @@
     "D-1020",
     "D-4360",
     "D-4439",
-    "D-4441",
-    "D-4777"
+    "D-4441"
    ],
    "cites": [],
    "budget": {
     "files": 3,
-    "lines": 550,
-    "context_pct": 30
+    "lines": 450,
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -49619,6 +49625,59 @@
    "branch": "claude/task/T759-close-which-expiry",
    "prompt": "kit/prompts/T759.md",
    "acceptance": "`tests/integration/tests/close_which_expiry.rs` passes against PostgreSQL; every close test passes unchanged."
+  },
+  {
+   "id": "T760",
+   "slug": "also-job-coverage",
+   "title": "intake: an ALSO job opened before the ZIP gets its coverage check once the town is stored",
+   "goal": "Plan change D-4777 (Fable's intake audit, finding I4, MED; INT-032, INT-017; split from T717, which was claimed before this change merged). An ALSO job opened before her ZIP (`app/intake/src/order_dispatch.rs:379` to `:416`, `:445` to `:447`, as on `main` a91fb80e after T715) is never told its coverage: once the town is stored, each linked job of the request that has had no trade check gets one (the coverage line or INT-017's reply for its trade), once per job, in the turn that stores the town. After T717 and T736, read the merged `order_dispatch.rs` first and keep what already conforms; `routing.rs`, `conversation.rs` and `service.rs` are not edited (D-4360). Tests in the new `tests/integration/tests/intake_also_coverage.rs`, PostgreSQL, fake data and 555 numbers only, through `intake::api::receive_raw_reply`: an ALSO job opened before the ZIP gets its coverage line once the ZIP is stored, and only once; a job already checked gets nothing more; every intake order test passes unchanged. Opus worker (Fable once the runner's `models` map names it, D-4761), Opus security and licensing review. Update the `intake` notes and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T717",
+    "T736"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "licensing"
+   ],
+   "owns": [
+    "app/intake/src/order_dispatch.rs",
+    "tests/integration/tests/intake_also_coverage.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/intake.md"
+   ],
+   "requirements": [
+    "INT-032",
+    "INT-017"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-4360",
+    "D-4777"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 300,
+    "context_pct": 17
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T760-also-job-coverage",
+   "prompt": "kit/prompts/T760.md",
+   "acceptance": "`tests/integration/tests/intake_also_coverage.rs` passes against PostgreSQL; every intake order test passes unchanged."
   }
  ]
 }
