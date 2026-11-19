@@ -189,7 +189,7 @@ jobs:
       group: ${{ needs.gate.outputs.lane == '1' && 'backup-runner' || format('backup-runner-lane-{0}', needs.gate.outputs.lane) }}
       cancel-in-progress: false
     if: needs.gate.outputs.run == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # The runner smokes main before every claim (scripts/smoke.sh) and the worker runs the same
     # checks on its branch, so this job carries what Ci carries: Postgres 16, pytest and PyYAML.
     # The first cycle under the token marked main red because none of these were here (D-498).
@@ -244,6 +244,12 @@ jobs:
         run: |
           echo "JOB_START=$(date -u +%Y-%m-%dT%H:%M:%S)" >> "$GITHUB_ENV"
           git worktree add -q --detach "$RUNNER_TEMP/keeper" HEAD
+      - name: PostgreSQL 16's initdb, pg_ctl and pg_dump first on the path (D-4708)
+        run: |
+          pg16=/usr/lib/postgresql/16/bin; echo "Image: ${ImageOS:-unknown} ${ImageVersion:-unknown}"
+          major="$("$pg16/initdb" --version 2>/dev/null | awk '{split($3, v, "."); print v[1]}')" || major=""
+          [ "$major" = 16 ] || { echo "::error::$pg16/initdb is missing or not PostgreSQL 16 (major '${major:-none}'): PostgreSQL 16's initdb, pg_ctl and pg_dump are not on the path (D-4708)"; exit 1; }
+          "$pg16/initdb" --version && echo "$pg16" >> "$GITHUB_PATH"
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.12"
@@ -305,10 +311,10 @@ jobs:
           # take the newest snapshot of the same lock, then any. Since D-3143 the family keeps only its newest
           # entry, saved from main's ref only, holding the registry alone (target/debug is emptied first and seeded
           # from the smoke build before the session); an older full entry still restores while one is left.
-          key: rust-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}-${{ github.sha }}
+          key: rust-${{ runner.os }}-ubuntu-24.04-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}-${{ github.sha }}
           restore-keys: |
-            rust-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}-
-            rust-${{ runner.os }}-
+            rust-${{ runner.os }}-ubuntu-24.04-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}-
+            rust-${{ runner.os }}-ubuntu-24.04-
       - name: Smoke build cache, restore (D-1890, D-1911)
         # The runner's smoke builds main into `target/smoke` with mtimes pinned by content, so a restored copy
         # rebuilds only the members a commit changed. With no entry yet, the runner seeds it from the worker's
@@ -319,11 +325,11 @@ jobs:
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: target/smoke
-          key: rust-smoke-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: rust-smoke-${{ runner.os }}-ubuntu-24.04-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            rust-smoke-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}-${{ github.sha }}-
-            rust-smoke-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}-
-            rust-smoke-${{ runner.os }}-
+            rust-smoke-${{ runner.os }}-ubuntu-24.04-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}-${{ github.sha }}-
+            rust-smoke-${{ runner.os }}-ubuntu-24.04-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}-
+            rust-smoke-${{ runner.os }}-ubuntu-24.04-
       - name: Smoke-test prerequisites (what Ci installs for itself)
         run: |
           python3 -m pip install --quiet pytest==9.1.1 PyYAML==6.0.1
