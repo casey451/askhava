@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T04:06:39Z by runner 82a5f5d741df (actions).
+Updated 2026-11-19T04:06:51Z by runner 82a5f5d741df (actions).
 
 **Building: T408 in progress since 03:29Z; 473 of 663 done; week 73% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 473 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T408 claimed 03:29Z, lease until 06:29Z; lane 2: T520 claimed 01:57Z, lease until 06:52Z; lane 5: T563 claimed 02:48Z, lease until 07:01Z; lane 6: T490 claimed 02:10Z, lease until 06:17Z
+- **Lane:** lane 1: T408 claimed 03:29Z, lease until 06:29Z; lane 2: T520 claimed 01:57Z, lease until 06:52Z; lane 6: T490 claimed 02:10Z, lease until 06:17Z
 - **Week:** 73% used, 42.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:06Z, 0 min before this update
 - **Keeper:** last ran 04:03Z, next wake 04:23Z
@@ -21,6 +21,7 @@ Evidence: `trade_check` passes no words when the first tex; fix the plan (the ta
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T563 | intake and privacy: the daily consent sweep removes consent  | MERGE_PENDING | 3 | 77 min | 04:05Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T399 | server: the email's Approve link approves the phone, only wi | MERGE_PENDING | 1 | 46 min | 04:01Z |  |
 | T484 | portals and quotes: "Call from the Laftly number", the owner | done | 1 | 82 min | 03:26Z |  |
 | T114 | Terms-match-code checks and recurring pricing copy | done | 1 | 71 min | 03:26Z |  |
@@ -28,7 +29,7 @@ Evidence: `trade_check` passes no words when the first tex; fix the plan (the ta
 | T203 | Wording scan: the required statements, business copy lines a | BLOCKED | 3 | 29 min | 03:08Z | PLAN GAP: app/portals/templates/es_business_signup.html:82 ("Licencia de control de plagas") and :88 ("Mi licencia inclu |
 | T306 | server and portals: the complaints page, the emergency-email | done | 1 | 38 min | 02:21Z |  |
 | T203 | Wording scan: the required statements, business copy lines a | check_failed | 2 | 41 min | 01:40Z |  |
-| T563 | intake and privacy: the daily consent sweep removes consent  | check_failed | 2 | 99 min | 01:37Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
+| T563 | intake and privacy: the daily consent sweep removes consent  | check_failed | 2 | 99 min | 01:37Z |  |
 | T505 | Decisions digest, piece 6: the next entries after the header | done | 1 | 99 min | 01:27Z |  |
 | T488 | portals and server: the business sign-up served in Spanish o | done | 1 | 111 min | 01:20Z |  |
 | T306 | server and portals: the complaints page, the emergency-email | resync | 1 | 77 min | 00:59Z |  |
@@ -139,8 +140,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T408 (lease until 2026-11-19T06:29:11Z)
 - lane 2: T520 (lease until 2026-11-19T06:52:34Z)
-- lane 5: T563 (lease until 2026-11-19T07:01:29Z)
 - lane 6: T490 (lease until 2026-11-19T06:17:23Z)
 
 ## Last usage reading
-- {"task": "T399", "at": "2026-11-19T04:01:49Z", "input_tokens": 137, "cache_creation_input_tokens": 190219, "cache_read_input_tokens": 6378971, "output_tokens": 42903}
+- {"task": "T563", "at": "2026-11-19T04:05:56Z", "input_tokens": 92, "cache_read_input_tokens": 2091388, "cache_creation_input_tokens": 120526, "output_tokens": 20430}
