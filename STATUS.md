@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T09:01:31Z by runner 8f7225ce27f9 (actions).
+Updated 2026-11-19T09:01:48Z by runner bf2db38bac38 (actions).
 
 **Building: T553 in progress since 08:48Z; 484 of 664 done; week 77% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-19T09:01:31Z by runner 8f7225ce27f9 (actions).
 - **Lane:** lane 2: T553 claimed 08:48Z, lease until 11:48Z; lane 3: T710 claimed 08:40Z, lease until 11:40Z; lane 5: T622 claimed 07:06Z, lease until 11:53Z; lane 7: T375 claimed 08:04Z, lease until 11:04Z
 - **Week:** 77% used, 35.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:01Z, 0 min before this update
-- **Keeper:** last ran 08:57Z, next wake 11:06Z
+- **Keeper:** last ran 09:01Z, next wake 09:21Z
 
 ## Needs attention
 - BLOCKED T161: plan gap reported: PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/site-copy.md:7` to `:79` (D-3890 (3)). On `main` the home page does not match that file, and I can't fix either side. `app/site/templates/home.html` belongs to T102, T203, T216, T593 and T608. `docs/copy/site-copy.md` belongs to T429, T593 and T615. Smallest plan change: move `test_site_copy_blocks.py` to T593, which already owns both files and rewrites both to D-3331's wording, or make T161 depend on T593. T161 keeps its other seven files.
@@ -21,7 +21,7 @@ Evidence: with the worker now started on keyedEnv, the business-notice handler r
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T540 (since 2026-11-19T08:04:18Z, no attempt used; a plan change fixes it): T540: dependency T310 is DONE but its owned file app/server/src/owner_portal.rs is not on main; T540: dependency T310 is DONE but its owned file app/server/tests/owner_portal_route.rs is not on main; T540: dependency T310 is DONE but its owned file tests/e2e/owner_portal_served.spec.ts is not on main
 - OWNED GAP T216 (DONE, since 2026-11-19T08:36:02Z; a later task or plan change must add it): T216: app/site/static/photos/hero-kitchen-phone.avif missing on main
-- Strict plan check red: 62 problem(s) on tasks still to run (+301 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 60 problem(s) on tasks still to run (+301 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
