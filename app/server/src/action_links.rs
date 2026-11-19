@@ -25,28 +25,40 @@
 //! and `resume_self` (BIZ-028, BIZ-010), Ask about a charge (object: the charged pick) reads
 //! `receipt_for`, enqueues `ask_about_charge` and answers with `charge_answer` and the
 //! `/b/charges/{pick}` link (BIZ-032, D-225). A refused pause or resume rolls back, so the link
-//! stays unused, and says why (409). Every other kind's `POST` gets the one not-found
+//! stays unused, and says why (409). Approve (object: the phone line; T399, D-3081, D-3744)
+//! acts only with the link's own owner's session and a step-up in the last 5 minutes, checked
+//! before its transaction (else the sign-in or step-up answer, link unused), and approves the
+//! phone with `approve_phone` only when the link was issued at or after the phone's current
+//! `number_set_at`; an older link or a refused approval rolls back (409, link unused), another
+//! business's or a declined phone is not found (BIZ-033, SEC-038). Every other kind's `POST` gets the one not-found
 //! answer before any token read (D-3675). A wrong kind, object, person, an ended, used or
 //! unknown token, a removed member's token and a job with no sent card or no rules all get the
-//! same bare 404. Every response is `no-store`.
+//! same bare 404. Every response is `no-store`. After a stored quote the job page carries
+//! "Not a fit for us" (`job_details_page_choice`, PICK-057), posting to `NOT_A_FIT_ROUTE`, which
+//! `business_portal` serves behind the business session (T306, D-4551).
 
 use std::net::IpAddr;
 use std::sync::Arc;
 
-use askhava_businesses::api::{BusinessesError, capabilities, pause_self, resume_self};
+use askhava_businesses::api::{
+    Acting, BusinessesError, TeamError, approve_phone, capabilities, pause_self, resume_self,
+    waiting_phones,
+};
 use askhava_core::api::{Clock, SystemClock};
 use askhava_intake::api::Admission;
 use askhava_jobs::api::{job_facts, job_number};
 use askhava_payments::api::{JobCodes, JobFeeFacts, receipt_for, resolve_fee_facts};
 use askhava_portals::api::{
-    ACTION_ROUTE, ActionFacts, ActionKind, ActionLinkError, ChargeAsked, CookieJar, CsrfField,
-    CsrfForm, FactsForm, LargestWarning, PriceForm, QuoteFormFacts, SIGNIN_ROUTE, UseBy,
-    WHY_CHARGED_ROUTE, WebSecurity, action_page, admit_quote, ask_about_charge, business_principal,
-    charge_answer, charge_reply_line, csrf_token, ensure_pre_session, fee_lines, job_details_page,
-    largest_job_warning, open_action_link, parse_facts, prefill, quote_form_page_priced,
-    refuse_cross_site, security_event_client, session_may, use_action_link,
+    ACTION_ROUTE, ActionFacts, ActionGrant, ActionKind, ActionLinkError, BUSINESS_STEP_UP_ROUTE,
+    ChargeAsked, CookieJar, CsrfField, CsrfForm, FactsForm, LargestWarning, NotAFitChoice,
+    PriceForm, QuoteFormFacts, SIGNIN_ROUTE, UseBy, WHY_CHARGED_ROUTE, WebSecurity, action_page,
+    admit_quote, ask_about_charge, business_principal, charge_answer, charge_reply_line,
+    csrf_token, ensure_pre_session, fee_lines, job_details_page_choice, largest_job_warning,
+    not_a_fit_action, open_action_link, parse_facts, prefill, quote_form_page_priced,
+    refuse_cross_site, require_step_up, security_event_client, session_may, use_action_link,
 };
 use askhava_portals::api::{JobPageLinks, no_store};
+use askhava_portals::api::{SensitiveChange, StepUpError};
 use askhava_quotes::api::{
     Bounce, NoteProblem, PageParts, Price, PriceFields, PriceProblem, QuoteForm, QuoteRules,
     Submitted, check_note, job_page, last_facts, parse_price, parse_quote, quote_rules, sent_card,
@@ -428,7 +440,8 @@ impl Posted {
 }
 
 /// `POST /b/a/{kind}/{object}/{token}`: after the cross-site and CSRF checks, a Quote link acts
-/// by the link alone, Pause, Resume and Ask about a charge with a business session (D-3839);
+/// by the link alone, Pause, Resume and Ask about a charge with a business session (D-3839),
+/// Approve with the owner's session and a fresh step-up (T399);
 /// every other kind is the one not-found answer before any token read (D-3675).
 async fn act(
     State(links): State<Links>,
@@ -445,6 +458,10 @@ async fn act(
         ActionKind::Quote => quote_post(&links, (object, &token), ip, &posted, jar).await,
         ActionKind::Pause | ActionKind::Resume | ActionKind::AskCharge => {
             let acted = session_post(&links, (kind, object, &token), &jar).await;
+            acted.unwrap_or_else(IntoResponse::into_response)
+        }
+        ActionKind::Approve => {
+            let acted = approve_post(&links, (object, &token), &jar).await;
             acted.unwrap_or_else(IntoResponse::into_response)
         }
         _ => Stop::NotFound.into_response(),
@@ -601,6 +618,109 @@ fn done(status: StatusCode, title: &str, body: &str) -> Response {
     (status, Html(page)).into_response()
 }
 
+/// BIZ-033, BIZ-038, SEC-004, SEC-025, SEC-038, SEC-048, D-3081: the Approve link's `POST`.
+/// Signed out is the sign-in answer; a person who may not approve is the one not-found answer;
+/// without a step-up in the last 5 minutes (`require_step_up` on its own connection, so its
+/// `authz_denied` event is kept) the step-up answer; then the link is used, must be the signed-in
+/// owner's own, and [`approve`] decides in the same transaction, rolled back unless the phone
+/// was approved, so every refusal leaves the link unused.
+async fn approve_post(
+    links: &Links,
+    (line, token): (Uuid, &str),
+    jar: &CookieJar,
+) -> Result<Response, Stop> {
+    let now = links.clock.now();
+    let mut conn = links.pool.acquire().await.map_err(failed)?;
+    let principal = business_principal(&mut conn, jar, now)
+        .await
+        .map_err(failed)?;
+    let Some(principal) = principal else {
+        return Ok(signed_out());
+    };
+    if !session_may(&principal, ActionKind::Approve, principal.business()) {
+        return Err(Stop::NotFound);
+    }
+    let change = (SensitiveChange::ApprovePhone, ACTION_ROUTE);
+    match require_step_up(&mut conn, &principal, change, now).await {
+        Ok(()) => {}
+        Err(StepUpError::NeedsCode) => return Ok(step_up_first()),
+        Err(StepUpError::Database) => return Err(Stop::Failed),
+    }
+    drop(conn);
+    let mut tx = links.pool.begin().await.map_err(failed)?;
+    let kind_line = (ActionKind::Approve, line);
+    let grant = use_action_link(&mut tx, kind_line, token, None, now).await;
+    let grant = grant.map_err(link_stop)?;
+    if !grant.same_person(&principal) {
+        return Err(Stop::NotFound);
+    }
+    Ok(match approve(&mut tx, &grant, line, now).await? {
+        Outcome::Done(title, body) => {
+            tx.commit().await.map_err(failed)?;
+            done(StatusCode::OK, title, &body)
+        }
+        Outcome::Refused(title, why) => {
+            tx.rollback().await.map_err(failed)?;
+            let body = format!("<p id=\"why\">{why}</p>");
+            done(StatusCode::CONFLICT, title, &body)
+        }
+    })
+}
+
+/// BIZ-033, D-3081, D-3744: approves `line` as the number its owner was emailed about. A link
+/// issued before the phone's current `number_set_at` approves nothing (a newer email is queued,
+/// T398). A line not waiting for this business has no number to name, so `approve_phone` is
+/// asked with the link's issue time and only says why (`NotWaiting` for the business's own
+/// approved phone, `UnknownPhone` for a declined or another business's phone); it cannot approve.
+async fn approve(
+    tx: &mut PgConnection,
+    grant: &ActionGrant,
+    line: Uuid,
+    now: Timestamp,
+) -> Result<Outcome, Stop> {
+    let by = Acting {
+        business: grant.business(),
+        member: grant.member(),
+    };
+    let waiting = waiting_phones(tx, by.business).await.map_err(failed)?;
+    let set_at = waiting
+        .iter()
+        .find(|p| p.line == line)
+        .map(|p| p.number_set_at);
+    if set_at.is_some_and(|at| grant.issued_at() < at) {
+        return Ok(Outcome::Refused(NOT_APPROVED, NEWER_EMAIL));
+    }
+    let named = set_at.unwrap_or_else(|| grant.issued_at());
+    Ok(match approve_phone(tx, by, (line, named), now).await {
+        Ok(()) => Outcome::Done(
+            "Phone approved",
+            "<p>This phone now works for your business.</p>".to_owned(),
+        ),
+        Err(TeamError::NotWaiting | TeamError::PhoneTaken | TeamError::NumberChanged) => {
+            Outcome::Refused(NOT_APPROVED, COULD_NOT)
+        }
+        Err(TeamError::UnknownPhone | TeamError::NotAllowed) => return Err(Stop::NotFound),
+        Err(_) => return Err(Stop::Failed),
+    })
+}
+
+/// The heading of a refused approval.
+const NOT_APPROVED: &str = "Phone not approved";
+/// A refused approval: approved already, its number taken or changed (BIZ-033).
+const COULD_NOT: &str = "We could not approve this phone. Nothing changed.";
+/// A link from an email about an earlier number (D-3081).
+const NEWER_EMAIL: &str = "This phone's number changed after this email was sent, so nothing \
+was approved. A newer email about the new number is on its way.";
+
+/// SEC-038: the Approve `POST` with no step-up in the last 5 minutes: 401 and a link to the
+/// step-up page; the link is not used.
+fn step_up_first() -> Response {
+    let body = format!(
+        "<p><a href=\"{BUSINESS_STEP_UP_ROUTE}\">Get a code</a>, then open the link again.</p>"
+    );
+    done(StatusCode::UNAUTHORIZED, "Confirm it's you", &body)
+}
+
 /// SEC-004: a session kind's `POST` with no business person: 401, a link to sign in, no detail.
 fn signed_out() -> Response {
     let body = format!("<p><a href=\"{SIGNIN_ROUTE}\">Sign in</a>, then open the link again.</p>");
@@ -651,7 +771,12 @@ async fn send_quote(
             if stored.await.map_err(failed)? != Submitted::Saved {
                 return Err(Stop::NotFound);
             }
-            let shown = done_page(&mut tx, link, &form).await?;
+            let action = not_a_fit_action(job, token);
+            let choice = NotAFitChoice {
+                action: &action,
+                csrf,
+            };
+            let shown = done_page(&mut tx, link, &form, choice).await?;
             tx.commit().await.map_err(failed)?;
             Ok(Sent::Page(shown))
         }
@@ -762,11 +887,13 @@ fn again(form: &ReadForm, csrf: &str, posted: &Posted, problems: &Problems) -> O
     price.ok()
 }
 
-/// CARD-023: after a stored quote, the job page with the counts read now, the new quote counted.
+/// CARD-023, PICK-057: after a stored quote, the job page with the counts read now, the new quote
+/// counted, and the "Not a fit for us" `choice` (served by `business_portal`, T306).
 async fn done_page(
     tx: &mut PgConnection,
     link: JobLink,
     form: &ReadForm,
+    choice: NotAFitChoice<'_>,
 ) -> Result<Option<String>, Stop> {
     let shown = job_page(tx, (link.job, link.business), &form.parts).await;
     let shown = shown.map_err(failed)?.ok_or(Stop::NotFound)?;
@@ -775,5 +902,5 @@ async fn done_page(
         photos: &[],
         concept: None,
     };
-    Ok(job_details_page(&shown, &links).ok())
+    Ok(job_details_page_choice(&shown, &links, None, choice).ok())
 }

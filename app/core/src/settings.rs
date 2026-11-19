@@ -41,6 +41,7 @@ const CITY_LICENSE_COST: &str = "ASKHAVA_CITY_LICENSE_COST";
 const CITY_LICENSE_TIME: &str = "ASKHAVA_CITY_LICENSE_TIME";
 const CITY_LICENSE_URL: &str = "ASKHAVA_CITY_LICENSE_URL";
 const DB_VOLUME_BYTES: &str = "ASKHAVA_DB_VOLUME_BYTES";
+const OWNER_PHONE: &str = "ASKHAVA_OWNER_PHONE";
 
 /// Every key the parser accepts; any other `ASKHAVA_*` key stops startup (D-493).
 const KEYS: &[&str] = &[
@@ -85,6 +86,9 @@ const KEYS: &[&str] = &[
     // The database volume's size in bytes for the daily volume check, optional here; `server`'s
     // `watch_checks` registration requires it in `test` and `live` (T525, OPS-052, D-4044, D-4280).
     DB_VOLUME_BYTES,
+    // Casey's own phone for the owner calls, optional here; `server`'s owner-call registration
+    // requires it in `test` and `live` (T484, OPS-028, OPS-035, D-3890).
+    OWNER_PHONE,
     // T106 (OPS-007, OPS-049, D-3144, D-4044): parsed by `server`'s `liveness` and `healthz`: how
     // long a failed liveness check may last before the process exits, and how long due work may
     // wait before `/healthz` reports the worker down.
@@ -416,6 +420,7 @@ pub struct Settings {
     city_guide: [Option<String>; 3],
     scorecard: [u32; SCORECARD_DEFAULTS.len()],
     db_volume_bytes: Option<u64>,
+    owner_phone: Option<SecretString>,
 }
 
 impl Settings {
@@ -472,6 +477,7 @@ impl Settings {
                 .map(|key| raw.remove(key).map(|v| v.trim().to_owned())),
             scorecard: scorecard(&mut raw)?,
             db_volume_bytes: volume_bytes(raw.remove(DB_VOLUME_BYTES))?,
+            owner_phone: e164(raw.remove(OWNER_PHONE), OWNER_PHONE)?.map(SecretString::from),
         })
     }
 
@@ -590,6 +596,13 @@ impl Settings {
     #[must_use]
     pub fn main_number(&self) -> Option<&str> {
         self.main_number.as_deref()
+    }
+
+    /// Casey's own phone (`ASKHAVA_OWNER_PHONE`, E.164, trimmed, a secret never logged), which the
+    /// owner calls dial (OPS-028, OPS-035, D-3890); `None` while unset.
+    #[must_use]
+    pub fn owner_phone(&self) -> Option<&SecretString> {
+        self.owner_phone.as_ref()
     }
 
     /// Stripe's publishable key (`ASKHAVA_STRIPE_PUBLISHABLE_KEY`, trimmed, `pk_test_` or
@@ -888,6 +901,12 @@ fn per_minute(raw: Option<String>) -> Result<Option<u32>, SettingsError> {
 /// CALL-022: `ASKHAVA_MAIN_NUMBER`, if set, is `+` and 8 to 15 digits, the first not 0 (E.164);
 /// a bad value is refused by key only.
 fn main_number(raw: Option<String>) -> Result<Option<String>, SettingsError> {
+    e164(raw, MAIN_NUMBER)
+}
+
+/// The phone setting `key`, if set, as E.164 (`+` and 8 to 15 digits, the first not 0, trimmed);
+/// a bad value is refused by key only (CALL-022, OPS-035).
+fn e164(raw: Option<String>, key: &'static str) -> Result<Option<String>, SettingsError> {
     let Some(raw) = raw else {
         return Ok(None);
     };
@@ -899,7 +918,7 @@ fn main_number(raw: Option<String>) -> Result<Option<String>, SettingsError> {
     if e164 {
         Ok(Some(number.to_owned()))
     } else {
-        Err(SettingsError::Invalid(MAIN_NUMBER))
+        Err(SettingsError::Invalid(key))
     }
 }
 
