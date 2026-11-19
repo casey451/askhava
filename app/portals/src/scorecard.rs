@@ -414,10 +414,12 @@ async fn scope_figs(
     Ok(figs)
 }
 
-/// OPS-039: the weekly minutes entries of every Arizona week in `w`, per paid introduction.
+/// OPS-039: the weekly minutes entries of every Arizona week in `w`, per paid introduction: from
+/// the Monday of the week holding `w.0` through the week holding `w.1`, whatever weekday and hour
+/// the window starts on.
 async fn minutes_fig(c: &mut PgConnection, w: Window, paid: i64) -> Result<Fig, OwnerToolError> {
-    let (mut recruiting, mut other, mut at) = (0_i64, 0_i64, w.0);
-    while at < w.1 {
+    let (mut recruiting, mut other, mut at) = (0_i64, 0_i64, arizona_monday(w.0)?);
+    while at <= w.1 {
         if let Some(m) = read!(minutes_for_week(c, at)) {
             recruiting += i64::from(m.recruiting());
             other += i64::from(m.other());
@@ -510,15 +512,21 @@ fn panel_trade(f: TradeFigures) -> PanelTrade {
     }
 }
 
+/// The start (00:00 Arizona time) of the Monday of the Arizona week holding `t`.
+fn arizona_monday(t: Timestamp) -> Result<Timestamp, OwnerToolError> {
+    let az = arizona_time(t);
+    let monday = i64::from(az.date().weekday().to_monday_zero_offset());
+    let today = az.start_of_day().map_err(db)?.timestamp();
+    Ok(today - SignedDuration::from_hours(24 * monday))
+}
+
 /// The page's week and pilot windows, the Arizona month's start and the pilot week at `now`.
 fn windows(
     now: Timestamp,
     start: Timestamp,
 ) -> Result<(Window, Window, Timestamp, u32), OwnerToolError> {
     let az = arizona_time(now);
-    let monday = i64::from(az.date().weekday().to_monday_zero_offset());
-    let today = az.start_of_day().map_err(db)?.timestamp();
-    let week = (today - SignedDuration::from_hours(24 * monday), now);
+    let week = (arizona_monday(now)?, now);
     let month = az
         .first_of_month()
         .and_then(|d| d.start_of_day())

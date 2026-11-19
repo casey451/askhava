@@ -87,6 +87,69 @@ async fn plant(db: &mut PgConnection) {
     run(db, charge, (id(3), id(12), "t158.charge.3", at(7), None)).await;
     run(db, charge, (id(4), id(14), "t158.charge.4", at(21), None)).await;
     plant_calls_and_panels(db).await;
+    plant_routing(db).await;
+    plant_before_this_week(db).await;
+}
+
+/// The jobs rows of jobs 1 to 4 (this week) and 5 (`at(-408)`, Saturday Sep 26, before this
+/// Monday and this month but inside the pilot); an expired pick on job 1 (no win); a $2.50 Stripe
+/// fee on job 3; one complaint on job 3 against active business 12.
+async fn plant_routing(db: &mut PgConnection) {
+    let job = "INSERT INTO jobs.job (id, status, created_at, status_at, timer_from) \
+        VALUES ($1, 'open', $4, $4, $4)";
+    let facts = "INSERT INTO jobs.job_facts (job_id, seq, category, job_types, set_at) \
+        VALUES ($1, 1, $3, '{fake_type}', $4)";
+    for (n, trade, h) in [
+        (1, "plumbing", 0),
+        (2, "plumbing", 0),
+        (3, "electrical", 0),
+        (4, "pool", 0),
+        (5, "plumbing", -408),
+    ] {
+        run(db, job, (id(n), id(0), trade, at(h), None)).await;
+        run(db, facts, (id(n), id(0), trade, at(h), None)).await;
+    }
+    let pick = "INSERT INTO picks.pick (job_id, business_id, quote_number, channel, status, \
+        picked_at) VALUES ($1, $2, 1, 'page', $3, $4)";
+    run(db, pick, (id(1), id(11), "expired", at(13), None)).await;
+    let fee = "INSERT INTO payments.ledger_entry (kind, business_id, job_id, amount_cents, \
+        idempotency_key, recorded_at) VALUES ('processing-fee', $2, $1, 250, $3, $4)";
+    run(db, fee, (id(3), id(12), "t158.fee.3", at(7), None)).await;
+    let business = "INSERT INTO businesses.business (id, status, created_at, status_changed_at) \
+        VALUES ($2, $3, $4, $4)";
+    run(db, business, (id(0), id(12), "active", at(-500), None)).await;
+    let complaint = "INSERT INTO businesses.complaint (business_id, job_id, kind, safety, \
+        received_at) VALUES ($2, $1, $3, false, $4)";
+    run(db, complaint, (id(3), id(12), "late", at(10), None)).await;
+}
+
+/// Job 5 (plumbing, before this week): carded, quoted by business 11 eight hours later, picked
+/// and charged $25; a web chat through `?g=cp` and a text request this week; a sign-up through
+/// `?g=oo` answering "Facebook group" this week.
+async fn plant_before_this_week(db: &mut PgConnection) {
+    let card = "INSERT INTO quotes.shown_card (request_id, job_id, digest, card_text, town, place, \
+        photo_ids, category, candidates, emergency, recorded_at, sent_at) VALUES ($1, $1, \
+        repeat('a', 32), 'Fake card.', 'Lake Havasu City', 'house', '{}', $3, '{}', false, $4, $4)";
+    run(db, card, (id(5), id(0), "plumbing", at(-408), None)).await;
+    let quote = "INSERT INTO quotes.quote (job_id, business_id, format, amount_cents, \
+        confirm_on_site, notes, original, ai_read, confirmed, received_at, quote_minutes) \
+        VALUES ($1, $2, $3, 20000, false, '', '', false, true, $4, $5)";
+    run(db, quote, (id(5), id(11), "firm", at(-400), None)).await;
+    let pick = "INSERT INTO picks.pick (job_id, business_id, quote_number, channel, status, \
+        picked_at) VALUES ($1, $2, 1, 'page', $3, $4)";
+    run(db, pick, (id(5), id(11), "paid", at(-398), None)).await;
+    let charge = "INSERT INTO payments.ledger_entry (kind, business_id, job_id, amount_cents, \
+        idempotency_key, recorded_at) VALUES ('charge', $2, $1, 2500, $3, $4)";
+    run(db, charge, (id(5), id(11), "t158.charge.5", at(-397), None)).await;
+    let chat = "WITH h AS (INSERT INTO intake.homeowner (contact_id, created_at) VALUES ($1, $4) \
+        RETURNING id) INSERT INTO intake.conversation (homeowner_id, language, first_inbox_id, \
+        consent_template, consent_sent_at, opened_at, request_source) SELECT h.id, 'en', $2, \
+        'fake_consent', $4, $4, $3 FROM h";
+    run(db, chat, (id(901), id(902), "cp", at(1), None)).await;
+    run(db, chat, (id(903), id(904), "text", at(2), None)).await;
+    let signup = "INSERT INTO businesses.signup (business_id, mailbox_id, g_code, heard_from, \
+        submitted_at) VALUES ($1, $2, $3, 'facebook_group', $4)";
+    run(db, signup, (id(12), id(905), "oo", at(3), None)).await;
 }
 
 /// Two masked calls on job 3, one answered by a person; a not-a-fit answer on job 3; one email
@@ -141,7 +204,9 @@ fn inputs() -> ScorecardInputs {
     ScorecardInputs {
         lines: ScorecardLines::from_pairs(settings.scorecard_lines()).expect("lines"),
         set_aside_basis_points: settings.sales_tax_set_aside_basis_points(),
-        pilot_start: now() - HOUR * (24 * 7 * 10),
+        // A Friday noon 76 days back: the pilot starts later in the week than the page is read
+        // (Thursday), so a walk in 7-day steps from it would skip this week's minutes entry.
+        pilot_start: now() - HOUR * (24 * 76),
         pushed: vec!["electrical".to_owned()],
     }
 }
@@ -272,8 +337,13 @@ async fn td_ops_15_the_scorecard_shows_each_trade_colored_against_its_lines(pool
     let fee = row(&html, "All trades", "Average introduction fee by job size");
     assert!(fee.contains(&cell("$75.00", "green")), "{fee}");
     let minutes = row(&html, "All trades", "Your minutes per paid introduction");
-    let entry = "40.0 minutes (30 recruiting, 50 everything else)";
-    assert!(minutes.contains(&cell(entry, "amber")), "{minutes}");
+    let entry = |m: &str| format!("{m} minutes (30 recruiting, 50 everything else)");
+    let both = cell(&entry("40.0"), "amber") + &cell(&entry("26.7"), "amber");
+    assert!(
+        minutes.contains(&both),
+        "the pilot reads this week's entry: {minutes}"
+    );
+    the_derived_figures_split_the_week_from_the_pilot(&html);
     assert!(html.contains(
         "2 paid introductions (red), below the pilot target. Monthly targets: 15 for the pilot, 50 for $20,000 a year and 115 for $50,000 a year."
     ));
@@ -287,6 +357,61 @@ async fn td_ops_15_the_scorecard_shows_each_trade_colored_against_its_lines(pool
     );
     assert!(html.contains("Business 00000000-0000-0000-0000-00000000000c: 1.0 quotes per pick"));
     assert!(html.contains("\"Not a fit\" cards, not_my_town: 1"));
+}
+
+/// TD-OPS-15, D-468, D-4702: quotes per win (over confirmed picks), complaints per 20 jobs,
+/// requests started per week, net per paid introduction and the by-source lists, each with a
+/// different week and pilot figure (job 5 falls before this Monday).
+fn the_derived_figures_split_the_week_from_the_pilot(html: &str) {
+    let red = |t: &str| format!("<td>{t} <span class=\"sc-red\">(red)</span></td>");
+    let green = |t: &str| format!("<td>{t} <span class=\"sc-green\">(green)</span></td>");
+    let quoted = "Requests with 1 or more quotes within 24 hours";
+    let expect = [
+        // 4 quotes over 1 confirmed pick (the expired one is no win); pilot 5 over 2.
+        (
+            "All trades",
+            "Quotes per win",
+            "<td>4.0</td><td>2.5</td>".to_owned(),
+        ),
+        // 1 complaint times 20 over 4 jobs, then over 5.
+        (
+            "All trades",
+            "Homeowner complaints per 20 jobs",
+            red("5.0") + &red("4.0"),
+        ),
+        (
+            "Trade: electrical",
+            "Homeowner complaints per 20 jobs",
+            red("20.0") + &red("20.0"),
+        ),
+        // 4 requests in 1 week; 5 requests over the pilot's 11 weeks.
+        (
+            "All trades",
+            "Requests started per week",
+            red("4.0") + &red("0.5"),
+        ),
+        // $150 less the 8.6% set-aside ($12.90) and $2.50 Stripe fee, over 2; pilot $175 over 3.
+        (
+            "All trades",
+            "Net per paid introduction",
+            green("$67.30") + &green("$52.48"),
+        ),
+        (
+            "All trades",
+            quoted,
+            green("75.0% (3 of 4)") + &green("80.0% (4 of 5)"),
+        ),
+    ];
+    for (scope, label, cells) in expect {
+        let r = row(html, scope, label);
+        assert!(r.contains(&cells), "{scope}, {label}: {r}");
+    }
+    for entry in ["cp: 1", "text: 1", "link oo, answer facebook_group: 1"] {
+        assert!(
+            html.contains(&format!("<li>{entry}</li>")),
+            "INT-047, BIZ-053: {entry}"
+        );
+    }
 }
 
 /// OPS-039: before any data each figure reads "No data yet" uncolored, and a refused minutes form
