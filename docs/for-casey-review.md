@@ -3474,3 +3474,10 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **The gap:** under D-4602's plan, a request like "pool heater" or "water heater leak" would have lost its licensed-only job type the second time its job types were read, so the count and the card could have reached a business without the license that job needs.
 - **Fix:** T716 adds one small reader so those licensed-only job types are kept every time, and its tests check it; T723 reads the same way and names the row that marks a job type as "not certain".
 - Our choice; nothing needs you now.
+
+## Twelve wiring tasks from the November 19 sweep (D-4727)
+
+- **The gap:** some finished pieces were never connected: "2 YES" texts did not pick, the quote page had no "updates by email" choice, several business portal buttons (auto-confirm, withdraw a quote, leave, service area, shared inbox, contact card) posted to pages that do not exist, the owner's AI switch had no page, owner settings errors were not shown accessibly, and two owner actions were not logged.
+- **Fix:** tasks T728 to T739 connect each one, with tests; nothing changes for homeowners or businesses until each lands.
+- **Cleanup note:** the `business_pick_waiting` text has no sender and looks replaced by the pick-notice emails; it can be removed in a cleanup.
+- Our choice; nothing needs you now.
