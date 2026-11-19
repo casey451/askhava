@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T04:02:48Z by runner 5ba2bea829be (actions).
+Updated 2026-11-19T04:03:16Z by runner 3e0ed6eb7d4b (actions).
 
 **Building: T408 in progress since 03:29Z; 472 of 663 done; week 73% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,15 +8,15 @@ Updated 2026-11-19T04:02:48Z by runner 5ba2bea829be (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T408 claimed 03:29Z, lease until 06:29Z; lane 2: T520 claimed 01:57Z, lease until 06:52Z; lane 5: T563 claimed 02:48Z, lease until 07:01Z; lane 6: T490 claimed 02:10Z, lease until 06:17Z
 - **Week:** 73% used, 42.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:02Z, 0 min before this update
-- **Keeper:** last ran 03:33Z, next wake 05:50Z
+- **Last run:** 04:03Z, 0 min before this update
+- **Keeper:** last ran 04:03Z, next wake 04:23Z
 
 ## Needs attention
 - BLOCKED T715: plan gap reported: PLAN GAP: one TD-INT-52 sentence can't be met by intake as planned: "a two-word first text naming a trade opens its job at the ZIP's step 5 and gets the coverage line". D-4441 gives the job-type question before the count to T716, and without that question the coverage line never comes. Today a homeowner who texts "sticky door" gets INT-017's "not covered" reply and the request is closed, even though two covering handyman businesses exist. Amend TD-INT-52 or move this case to T716; the test's assertion then changes to the coverage line.
 Evidence: `trade_check` passes no words when the first tex; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T715 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 59 problem(s) on tasks still to run (+280 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 58 problem(s) on tasks still to run (+277 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
