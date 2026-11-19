@@ -15,15 +15,21 @@
 //
 // The keyed binary (T452, D-3674): a second web binary from the same build on `keyedPort()`, no
 // worker of its own, with the suite's environment plus the Twilio Verify stand-in, a one-number
-// masked pool, its own ID secret and both vault keys, all fake and made per run, and no public base
-// URL (so it serves no Twilio webhook). Since T492 (D-3813) it also gets the Stripe stand-in
+// masked pool, the run's ID secret and both vault keys, all fake and made per run. Since T536
+// (D-3889, D-3892) it also gets a fake public base URL and the keyed Twilio auth token, so it serves
+// the Twilio webhooks, and `twilio_signature.ts` signs a fake inbound text for it. Since T492 (D-3813) it also gets the Stripe stand-in
 // settings: stand-in mode and base URL, an `sk_test_` key the stand-in accepts, a webhook secret, an
 // account, a `pk_test_` publishable key and a fixed launch date, all fake, so it builds the Stripe
 // webhook and serves the Confirm route (SEC-032, D-019). Since T515 (D-3862) its webhook secret is
-// one of the keyed values, so `keyed.ts` can sign a delivery the binary accepts. The suite's own web
-// binary, worker and stand-ins never see those values: the keyed values go into this process's
-// environment under `E2E_KEYED_*` names, which `appEnv` drops, for `keyed.ts` in the test workers,
-// as `controlSecret()` does.
+// one of the keyed values, so `keyed.ts` can sign a delivery the binary accepts. The keyed values go
+// into this process's environment under `E2E_KEYED_*` names, which `appEnv` drops, for `keyed.ts`
+// and `twilio_signature.ts` in the test workers, as `controlSecret()` does.
+//
+// T536 (D-3889, D-3892): `keyedEnv` is made once and the worker starts with it too, so it registers
+// the outbox senders and the Stripe jobs and its tasks run in the journeys. One per-run ID secret,
+// `keyedSecrets().idSecret`, serves the worker and both web binaries, so a key, link or token the
+// worker mints for a row either binary wrote agrees with it. The suite's own web binary and the
+// stand-ins still get no vault key, Twilio token or Stripe or Resend key.
 import { type ChildProcess, spawn, spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { mkdtempSync, rmSync } from "node:fs";
@@ -58,14 +64,18 @@ export function keyedPort(): number {
 }
 
 /**
- * The keyed binary's per-run fake ID secret, vault keys (`1:` and 32 random bytes in base64) and
- * Stripe webhook secret (`whsec_` and 24 random bytes in hex, D-3862), never printed or logged.
+ * The run's fake ID secret (shared by the worker and both web binaries, D-3892), vault keys (`1:`
+ * and 32 random bytes in base64), Stripe webhook secret (`whsec_` and 24 random bytes in hex,
+ * D-3862), Twilio auth token (20 random bytes in hex) and the keyed binary's fake public base URL
+ * (T536), all made per run and never printed or logged.
  */
 export interface KeyedSecrets {
   idSecret: string;
   vaultKey: string;
   vaultIndexKey: string;
   stripeWebhookSecret: string;
+  twilioAuthToken: string;
+  publicBaseUrl: string;
 }
 
 /**
@@ -78,11 +88,15 @@ export function keyedSecrets(): KeyedSecrets {
   process.env.E2E_KEYED_VAULT_KEY ??= key();
   process.env.E2E_KEYED_VAULT_INDEX_KEY ??= key();
   process.env.E2E_KEYED_STRIPE_WEBHOOK_SECRET ??= `whsec_${randomBytes(24).toString("hex")}`;
+  process.env.E2E_KEYED_TWILIO_AUTH_TOKEN ??= randomBytes(20).toString("hex");
+  process.env.E2E_KEYED_PUBLIC_BASE_URL ??= "https://keyed.e2e.example.test";
   return {
     idSecret: process.env.E2E_KEYED_ID_SECRET,
     vaultKey: process.env.E2E_KEYED_VAULT_KEY,
     vaultIndexKey: process.env.E2E_KEYED_VAULT_INDEX_KEY,
     stripeWebhookSecret: process.env.E2E_KEYED_STRIPE_WEBHOOK_SECRET,
+    twilioAuthToken: process.env.E2E_KEYED_TWILIO_AUTH_TOKEN,
+    publicBaseUrl: process.env.E2E_KEYED_PUBLIC_BASE_URL,
   };
 }
 
@@ -94,7 +108,7 @@ function requireEnv(name: string): string {
   return value;
 }
 
-/** The environment both binaries start with: CI settings, the stand-ins, a shared clock file. */
+/** The suite's web binary's environment: CI settings, the stand-ins, the run's ID secret, a shared clock file. */
 function appEnv(scratch: string): NodeJS.ProcessEnv {
   const database = requireEnv("DATABASE_URL");
   const inherited = Object.fromEntries(
@@ -109,7 +123,7 @@ function appEnv(scratch: string): NodeJS.ProcessEnv {
     ASKHAVA_ADAPTER_MODE_TWILIO: "stand_in",
     ASKHAVA_TWILIO_BASE_URL: `http://127.0.0.1:${String(STAND_IN_PORT)}/twilio`,
     ASKHAVA_STORAGE_BASE_URL: `file://${join(scratch, "storage")}`,
-    ASKHAVA_ID_SECRET: randomBytes(24).toString("hex"),
+    ASKHAVA_ID_SECRET: keyedSecrets().idSecret,
     ASKHAVA_TEST_CONTROL_CLOCK_FILE: join(scratch, "clock"),
     // The license lists and the sign-up record reads come from the fake fixture directory (T385, D-2954).
     ASKHAVA_LICENSE_BASE_URL: `file://${join(REPO_ROOT, "tests", "fixtures", "license_source")}`,
@@ -118,8 +132,9 @@ function appEnv(scratch: string): NodeJS.ProcessEnv {
 }
 
 /**
- * The keyed binary's environment: the suite's `env` plus fake Verify, pool, ID secret, vault keys
- * and Stripe stand-in settings (D-3813). The Stripe values are made per run and never printed.
+ * The keyed binary's and the worker's environment, made once per run (T536): the suite's `env` plus
+ * fake Verify, pool, vault keys, Twilio auth token, public base URL and Stripe stand-in settings
+ * (D-3813). The Stripe values are made per run and never printed.
  * T490 (SEC-025, D-3750, D-3882): the fake Resend stand-in too, with a per-run fake key carrying
  * the stand-in's `re_stand_in_` prefix (`stand_ins/server.py`), a fake sending domain and a fake
  * postal line, so the keyed binary's mailers send to the stand-in, whose sent emails T414's control
@@ -131,12 +146,12 @@ function keyedEnv(env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
     ...env,
     PORT: String(keyedPort()),
     ASKHAVA_TWILIO_ACCOUNT_SID: `AC${"0".repeat(32)}`,
-    ASKHAVA_TWILIO_AUTH_TOKEN: randomBytes(20).toString("hex"),
+    ASKHAVA_TWILIO_AUTH_TOKEN: secrets.twilioAuthToken,
+    ASKHAVA_PUBLIC_BASE_URL: secrets.publicBaseUrl,
     ASKHAVA_TWILIO_VERIFY_SERVICE_SID: `VA${"e".repeat(32)}`,
     ASKHAVA_TWILIO_VERIFY_BASE_URL: `http://127.0.0.1:${String(STAND_IN_PORT)}/twilio`,
     ASKHAVA_MASKED_POOL_SIZE: "1",
     ASKHAVA_MASKED_NUMBERS: "+15005550100",
-    ASKHAVA_ID_SECRET: secrets.idSecret,
     VAULT_KEY: secrets.vaultKey,
     VAULT_INDEX_KEY: secrets.vaultIndexKey,
     ASKHAVA_ADAPTER_MODE_STRIPE: "stand_in",
@@ -222,6 +237,7 @@ function stop(child: ChildProcess): Promise<void> {
 export default async function setup(): Promise<() => Promise<void>> {
   const scratch = mkdtempSync(join(tmpdir(), "askhava-e2e-"));
   const env = appEnv(scratch);
+  const keyed = keyedEnv(env);
   const children: ChildProcess[] = [];
   const teardown = async (): Promise<void> => {
     await Promise.all(children.map(stop));
@@ -239,9 +255,9 @@ export default async function setup(): Promise<() => Promise<void>> {
     };
     const crashes = [
       start("stand-ins", "python3", ["-m", "stand_ins.server", "--port", String(STAND_IN_PORT)]),
-      start("worker", join(REPO_ROOT, "target", "debug", "worker"), []),
+      start("worker", join(REPO_ROOT, "target", "debug", "worker"), [], keyed),
       start("web", join(REPO_ROOT, "target", "debug", "server"), []),
-      start("keyed web", join(REPO_ROOT, "target", "debug", "server"), [], keyedEnv(env)),
+      start("keyed web", join(REPO_ROOT, "target", "debug", "server"), [], keyed),
     ];
     const deadline = Date.now() + START_TIMEOUT_MS;
     const ports = [STAND_IN_PORT, webPort(), keyedPort()];

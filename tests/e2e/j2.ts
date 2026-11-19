@@ -139,15 +139,25 @@ export async function acceptAuthorization(page: Page, business: string): Promise
 /** The count `sql` returns. */
 const count = (sql: string): number => Number(psql(sql));
 
+/**
+ * D-4675: the dedupe-key prefix of the copy a business notice handled in Arizona quiet hours
+ * re-queues of itself (app/messaging/src/business_notices.rs), which is no new notice for the pick.
+ */
+const HELD_NOTICE = "messaging.business_notice.held.";
+
 /** What J2's closing checks read about `pick` on `job` of `business`. */
 export interface Closing { releases: number; basis: string; notices: number; lines: number; charges: number; ledger: string }
 
-/** J2's closing-check reads (PICK-022, PICK-024, CALL-001, FEE-016): rows the release and the fee left. */
+/**
+ * J2's closing-check reads (PICK-022, PICK-024, CALL-001, FEE-016): rows the release and the fee left;
+ * `notices` counts only the notices the pick enqueued, never a quiet-hours re-queue (D-4675).
+ */
 export function closing(business: string, pick: string, job: string): Closing {
   return {
     releases: count(`SELECT count(*) FROM picks.release WHERE pick_id = '${pick}'`),
     basis: psql(`SELECT string_agg(basis, ',') FROM picks.release WHERE pick_id = '${pick}'`),
-    notices: count(`SELECT count(*) FROM core.task WHERE kind = 'messaging.business_notice' AND payload->>'pick' = '${pick}'`),
+    notices: count(`SELECT count(*) FROM core.task WHERE kind = 'messaging.business_notice' AND payload->>'pick' = '${pick}'
+      AND NOT starts_with(coalesce(dedupe_key, ''), '${HELD_NOTICE}')`),
     lines: count(`SELECT count(*) FROM calls.number_pool WHERE job_id = '${job}' AND business_id = '${business}' AND closed_at IS NULL`),
     charges: count(`SELECT count(*) FROM payments.ledger_entry WHERE job_id = '${job}' AND kind = 'charge'`),
     ledger: psql(`SELECT string_agg(kind || ':' || amount_cents, ',' ORDER BY seq) FROM payments.ledger_entry

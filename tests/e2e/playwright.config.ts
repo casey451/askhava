@@ -7,9 +7,18 @@
 // import `test` and `expect` from ./fixtures. In CI (`CI` set; the Ci job's "E2e" part, T173) a
 // stray `test.only` fails the run and each failure is also an annotation on the commit; no test is
 // retried, so one failing assertion turns `Ci` red. Run: npx playwright test --config tests/e2e/playwright.config.ts
+//
+// T536 (D-3889, D-3892): the test clock is forward-only and shared by every binary, so the journeys
+// that advance it by hours to days (`LATE`) form a second project, `late`, that depends on `main`
+// and runs after every other spec, whose seeded sessions and links would otherwise have expired.
+// Playwright runs a dependency project unfiltered, so a single-file run of a late spec runs all of
+// `main` first: add `--no-deps` while iterating on one late spec.
 import { defineConfig } from "@playwright/test";
 import type { ControlOptions } from "./fixtures";
 import { controlSecret, webPort } from "./webserver";
+
+/** The clock-advancing journeys, run last in the `late` project (D-3892). */
+const LATE = ["**/j1_full*.spec.ts", "**/j2_full*.spec.ts", "**/j1_j2_web_email*.spec.ts", "**/j3_*.spec.ts", "**/j4_*.spec.ts"];
 
 export default defineConfig<ControlOptions>({
   testDir: ".",
@@ -25,4 +34,8 @@ export default defineConfig<ControlOptions>({
     baseURL: `http://127.0.0.1:${String(webPort())}`,
     controlSecret: controlSecret(),
   },
+  projects: [
+    { name: "main", testIgnore: LATE },
+    { name: "late", testMatch: LATE, dependencies: ["main"] },
+  ],
 });
