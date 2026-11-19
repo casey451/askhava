@@ -1,19 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-19T08:58:28Z by runner 8f7225ce27f9 (actions).
+Updated 2026-11-19T09:00:35Z by runner 8f7225ce27f9 (actions).
 
 **Building: T553 in progress since 08:48Z; 484 of 664 done; week 77% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 484 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T553 claimed 08:48Z, lease until 11:48Z; lane 3: T710 claimed 08:40Z, lease until 11:40Z; lane 4: T536 claimed 08:14Z, lease until 11:58Z; lane 5: T622 claimed 07:06Z, lease until 11:53Z; lane 7: T375 claimed 08:04Z, lease until 11:04Z
+- **Lane:** lane 2: T553 claimed 08:48Z, lease until 11:48Z; lane 3: T710 claimed 08:40Z, lease until 11:40Z; lane 5: T622 claimed 07:06Z, lease until 11:53Z; lane 7: T375 claimed 08:04Z, lease until 11:04Z
 - **Week:** 77% used, 35.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:58Z, 0 min before this update
+- **Last run:** 08:58Z, 1 min before this update
 - **Keeper:** last ran 08:57Z, next wake 11:06Z
 
 ## Needs attention
 - BLOCKED T161: plan gap reported: PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/site-copy.md:7` to `:79` (D-3890 (3)). On `main` the home page does not match that file, and I can't fix either side. `app/site/templates/home.html` belongs to T102, T203, T216, T593 and T608. `docs/copy/site-copy.md` belongs to T429, T593 and T615. Smallest plan change: move `test_site_copy_blocks.py` to T593, which already owns both files and rewrites both to D-3331's wording, or make T161 depend on T593. T161 keeps its other seven files.
 Evidence: site-copy.md:32 "It goes t; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T161 --plan-fix D-### --reason "..."` (D-2859)
+- BLOCKED T536: plan gap reported: PLAN GAP: tests/e2e/j2.ts:150 (owned by T099, `e2e-j2-business`; T644 also lists it). Smallest plan change: make the `notices` count in `closing` leave out the quiet-hours re-queue (rows whose `dedupe_key` starts with `messaging.business_notice.held.`), or count notices by `template`. Without that, the asserts at `tests/e2e/j2_business.spec.ts:57`–`:59` and `:78`–`:80` fail.
+Evidence: with the worker now started on keyedEnv, the business-notice handler registers (app/server/src/lib.rs:1840-1868); a non-emergency notice handled during Arizona quiet hours re-queues a second `messaging.business_n; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T536 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T116 (since 2026-11-19T08:37:10Z, no attempt used; a plan change fixes it): T116: dependency T216 is DONE but its owned file app/site/static/photos/hero-kitchen-phone.avif is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
@@ -24,6 +26,7 @@ Evidence: site-copy.md:32 "It goes t; fix the plan (the task's kit/tasks.json en
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T536 | E2e harness: clock-advancing journeys last, a keyed worker,  | BLOCKED | 1 | 46 min | 09:00Z | PLAN GAP: tests/e2e/j2.ts:150 (owned by T099, `e2e-j2-business`; T644 also lists it). Smallest plan change: make the `no |
 | T476 | portals: the owner health page with every OPS-008 figure and | MERGE_PENDING | 1 | 2 h 27 min | 08:50Z |  |
 | T161 | wording: the WORD-024 voice rule's pressure-word scan, the r | BLOCKED | 1 | 4 min | 08:41Z | PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/s |
 | T456 | picks and server: "Hold for 2 more hours" is stored, honoure | MERGE_PENDING | 1 | 97 min | 08:35Z |  |
@@ -146,9 +149,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T553 (lease until 2026-11-19T11:48:12Z)
 - lane 3: T710 (lease until 2026-11-19T11:40:16Z)
-- lane 4: T536 (lease until 2026-11-19T11:58:28Z)
 - lane 5: T622 (lease until 2026-11-19T11:53:20Z)
 - lane 7: T375 (lease until 2026-11-19T11:04:18Z)
 
 ## Last usage reading
-- {"task": "T476", "at": "2026-11-19T08:50:06Z", "cache_creation_input_tokens": 279847, "output_tokens": 77708, "cache_read_input_tokens": 8237577, "input_tokens": 232}
+- {"task": "T536", "at": "2026-11-19T09:00:35Z", "cache_read_input_tokens": 3662993, "cache_creation_input_tokens": 129746, "output_tokens": 31484, "input_tokens": 120}
