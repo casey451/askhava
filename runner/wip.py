@@ -1,0 +1,211 @@
+"""The kept work of a failed attempt (D-4720): the `claude/wip/<task>-a<n>` ref names, and the path rules and the
+scan that decide whether a head may be pushed to one.
+
+A failed attempt's unpushed commits are kept on a WIP ref only when nothing in them could harm a public repository
+or the next attempt: no changed path under `kit/tasks.json` `protected_paths`, among the plan lock's locked files
+(`scripts/*.py`, `scripts/*.sh`, `kit/runner.json`, ...), a `.gitattributes` or a `.gitleaks*` file (`blocked_paths`);
+no binary or image (`binary_paths`); and a clean `scan`: no added `gitleaks:allow`, gitleaks over every commit of
+`<main>..<head>` and over the head tree, and main's `scripts/pii_scan.py` over each commit's changed files, the head
+tree and the commit messages. Every scanner is main's copy, written from `git show <main>:<path>` into a temporary
+directory, never the checkout's (the worker's branch). The whole scan has one time bound (WIP_SCAN_SECONDS), and a
+missing tool, a non-zero exit, the bound or any exception is a refusal with a one-line reason: it fails closed.
+`GitHubEnv.wip_check`, `push_wip`, `wip_refs`, `delete_wip_ref` and `prepare_branch` use this module; nothing here
+touches the network. Standard library only.
+"""
+
+from __future__ import annotations
+
+import ast
+import fnmatch
+import importlib.util
+import os
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
+from collections.abc import Callable, Iterable
+from pathlib import Path, PurePosixPath
+from types import ModuleType
+
+WIP_REF = re.compile(r"claude/wip/(T[0-9]+[A-Za-z]?)-a([0-9]+)", re.ASCII)  # a WIP ref (D-4720)
+WIP_SCAN_SECONDS = 120  # the one time bound of a whole scan; past it the head is refused (D-4720)
+PII_FILES = ("scripts/pii_scan.py", "scripts/brand.py", "app/core/data/brand.json")  # main's PII scanner and its brand
+GITLEAKS_FILES = (".gitleaks.toml", ".gitleaksignore")  # main's gitleaks config, when main has one
+GITLEAKS_FLAGS = ("--no-banner", "--redact", "--exit-code", "1")
+ALLOW_MARK = "gitleaks:allow"
+IMAGE_SUFFIXES = (".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".ico", ".bmp", ".tif", ".tiff", ".heic", ".avif")
+# Never handed to a scanner: a token, or a gitleaks config the environment could name.
+DROPPED_ENV = ("RUNNER_PUSH_TOKEN", "RUNNER_CHECKS_TOKEN", "GH_TOKEN", "GITHUB_TOKEN", "GITLEAKS_CONFIG", "GITLEAKS_CONFIG_TOML")
+
+Bounded = Callable[[list[str], Path, float], tuple[int, str, str]]
+
+
+class Refused(Exception):
+    """A scan's refusal; its message is the one-line reason."""
+
+
+def wip_ref(task_id: str, attempt: int) -> str:
+    """`claude/wip/<task>-a<attempt>`; ValueError when that is not a WIP_REF name."""
+    name = f"claude/wip/{task_id}-a{int(attempt)}"
+    if not WIP_REF.fullmatch(name):
+        raise ValueError(f"not a WIP ref: {name[:80]!r}")
+    return name
+
+
+def run_bounded(args: list[str], cwd: Path, seconds: float) -> tuple[int, str, str]:
+    """One scanner or git call with what is left of the bound, without any token in its environment;
+    Refused when it outruns the bound."""
+    env = {k: v for k, v in os.environ.items() if k not in DROPPED_ENV}
+    try:
+        done = subprocess.run(args, cwd=cwd, capture_output=True, timeout=seconds, check=False, env=env)
+    except subprocess.TimeoutExpired as exc:
+        raise Refused(f"the WIP scan passed its {WIP_SCAN_SECONDS}-second bound ({Path(args[0]).name})") from exc
+    return done.returncode, done.stdout.decode("utf-8", "replace"), done.stderr.decode("utf-8", "replace")
+
+
+def locked_patterns(source: str) -> list[str]:
+    """`LOCKED_FILES` and `LOCKED_GLOBS` of a `scripts/check_plan_lock.py` text, read as literals (never run).
+    The globs cover a file main does not have yet too, so this is at least `locked_paths()`. ValueError when
+    either is missing or not a literal."""
+    found: dict[str, list[str]] = {}
+    for node in ast.parse(source).body:
+        if isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
+            if node.targets[0].id in ("LOCKED_FILES", "LOCKED_GLOBS"):
+                found[node.targets[0].id] = [str(p) for p in ast.literal_eval(node.value)]
+    if len(found) != 2:
+        raise ValueError("check_plan_lock.py has no LOCKED_FILES or LOCKED_GLOBS literal")
+    return found["LOCKED_FILES"] + found["LOCKED_GLOBS"]
+
+
+def blocked_paths(paths: Iterable[str], protected: Iterable[str], locked: Iterable[str]) -> list[str]:
+    """The paths a WIP ref may never carry (D-4720): under a `protected_paths` entry (a `/` entry is a
+    directory), matching a locked file or glob, or named `.gitattributes` or `.gitleaks*` anywhere."""
+    guarded, frozen = tuple(protected), tuple(locked)
+    return [p for p in paths if _blocked(p, guarded, frozen)]
+
+
+def _blocked(path: str, protected: tuple[str, ...], locked: tuple[str, ...]) -> bool:
+    name = PurePosixPath(path).name
+    if name == ".gitattributes" or name.startswith(".gitleaks"):
+        return True
+    if any(path == q or (q.endswith("/") and path.startswith(q)) for q in protected):
+        return True
+    return any(path == q or fnmatch.fnmatchcase(path, q) for q in locked)
+
+
+def binary_paths(numstat: str) -> list[str]:
+    """The paths `git diff --numstat` (rows split by newline or NUL) reports as binary (`-`), and any image by
+    its name: a public repository never keeps a photo or a binary on a WIP ref (D-4720)."""
+    found = []
+    for row in re.split(r"[\0\n]", numstat):
+        parts = row.split("\t", 2)
+        if len(parts) == 3 and parts[2] and ("-" in parts[:2] or parts[2].lower().endswith(IMAGE_SUFFIXES)):
+            found.append(parts[2])
+    return found
+
+
+def scan(root: Path, main: str, head: str, run: Bounded = run_bounded, seconds: float = WIP_SCAN_SECONDS,
+         clock: Callable[[], float] = time.monotonic) -> str:
+    """'' only when `<main>..<head>` passes every check in the module docstring, else the one-line reason.
+    `root` is the clone (any checkout: only main's scanners and git objects are read)."""
+    deadline = clock() + seconds
+
+    def bounded(args: list[str], cwd: Path) -> tuple[int, str, str]:
+        left = deadline - clock()
+        if left <= 0:
+            raise Refused(f"the WIP scan passed its {seconds:g}-second bound")
+        return run(args, cwd, left)
+
+    try:
+        with tempfile.TemporaryDirectory() as tmp:
+            return _scan(bounded, root, (main, head), Path(tmp))
+    except Refused as exc:
+        return str(exc)[:300]
+    except Exception as exc:  # noqa: BLE001  # any failure is a refusal, never a pass (fail closed, D-4720)
+        return f"the WIP scan failed: {type(exc).__name__}: {str(exc)[:200]}"
+
+
+def _scan(bounded: Callable[[list[str], Path], tuple[int, str, str]], root: Path, span: tuple[str, str], tmp: Path) -> str:
+    main, head = span
+    rng = f"{main}..{head}"
+    added = _git(bounded, root, "log", "-p", "--no-color", "--no-textconv", "--no-ext-diff", "--format=", rng)
+    if any(line.startswith("+") and ALLOW_MARK in line for line in added.splitlines()):
+        raise Refused(f"an added line in {rng[:40]} carries {ALLOW_MARK}")
+    base = tmp / "main"
+    _write_main(bounded, root, main, base)
+    tree = tmp / "head"
+    _git(bounded, root, "worktree", "add", "--detach", str(tree), head)
+    try:
+        _gitleaks(bounded, tree, rng, base)
+        _pii(bounded, root, rng, tree, base)
+    finally:
+        subprocess.run(["git", "worktree", "remove", "--force", str(tree)], cwd=root, capture_output=True, timeout=60, check=False)
+    return ""
+
+
+def _git(bounded: Callable[[list[str], Path], tuple[int, str, str]], cwd: Path, *args: str) -> str:
+    code, out, err = bounded(["git", *args], cwd)
+    if code != 0:
+        raise Refused(f"git {' '.join(args[:2])} failed (exit {code}): {err.strip()[:160]}")
+    return out
+
+
+def _write_main(bounded: Callable[[list[str], Path], tuple[int, str, str]], root: Path, main: str, base: Path) -> None:
+    """Main's PII scanner, its brand files and any gitleaks config, written under `base` at their own paths."""
+    for path in (*PII_FILES, *GITLEAKS_FILES):
+        code, out, _ = bounded(["git", "show", f"{main}:{path}"], root)
+        if code != 0 and path in PII_FILES:
+            raise Refused(f"main has no {path}")
+        if code == 0:
+            (base / path).parent.mkdir(parents=True, exist_ok=True)
+            (base / path).write_text(out, encoding="utf-8")
+
+
+def _gitleaks(bounded: Callable[[list[str], Path], tuple[int, str, str]], tree: Path, rng: str, base: Path) -> None:
+    """gitleaks over exactly the commits of `rng` and over the head tree, with main's config and ignore file."""
+    exe = shutil.which("gitleaks")
+    if not exe:
+        raise Refused("gitleaks is not installed")
+    opts = [*GITLEAKS_FLAGS, "--gitleaks-ignore-path", str(base)]
+    if (base / ".gitleaks.toml").is_file():
+        opts += ["--config", str(base / ".gitleaks.toml")]
+    for args in ([exe, "git", "--log-opts", rng, *opts, str(tree)], [exe, "dir", *opts, str(tree)]):
+        code, _, _ = bounded(args, base)
+        if code != 0:
+            raise Refused(f"gitleaks {args[1]}: " + ("a leak was found" if code == 1 else f"exit {code}"))
+
+
+def _pii(bounded: Callable[[list[str], Path], tuple[int, str, str]], root: Path, rng: str, tree: Path, base: Path) -> None:
+    """Main's PII scanner over each commit's changed files as of that commit, the commit messages, then the head tree."""
+    module = _load(base / "scripts" / "pii_scan.py")
+    prefixes, files = tuple(getattr(module, "SKIP_PREFIXES", ())), tuple(getattr(module, "SKIP_FILES", ()))
+    for commit in _git(bounded, root, "rev-list", "--reverse", rng).split():
+        names = _git(bounded, root, "diff-tree", "--root", "--cc", "-r", "--no-commit-id", "--name-only", "-z",
+                     "--no-renames", "--diff-filter=d", commit)
+        for path in (p for p in names.split("\0") if p and not p.startswith(prefixes) and p not in files):
+            if module.scan_text(path, _git(bounded, root, "show", f"{commit}:{path}")):
+                raise Refused(f"PII scan: {path} in {commit[:12]}")
+    if module.scan_text("commit message", _git(bounded, root, "log", "--format=%B", rng)):
+        raise Refused(f"PII scan: a commit message in {rng[:40]}")
+    code, out, _ = bounded([sys.executable, "-I", str(base / "scripts" / "pii_scan.py"), "--root", str(tree)], base)
+    if code != 0:
+        last = (out.strip().splitlines() or [""])[-1]
+        raise Refused(f"PII scan of the head tree: exit {code}; {last[:120]}")
+
+
+def _load(path: Path) -> ModuleType:
+    """Main's pii_scan.py loaded from its temporary copy, with no cached `brand` module of the checkout's in the way."""
+    spec = importlib.util.spec_from_file_location("wip_pii_scan", path)
+    if spec is None or spec.loader is None:
+        raise Refused("main's pii_scan.py cannot be loaded")
+    saved = sys.modules.pop("brand", None)
+    try:
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+    finally:
+        sys.modules.pop("brand", None)
+        if saved is not None:
+            sys.modules["brand"] = saved
+    return module
