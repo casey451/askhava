@@ -6,6 +6,7 @@
 use std::collections::BTreeSet;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use askhava_adapters::api::{
     AdapterError, AdapterMode, Charge, IdempotencyKey, IntentMetadata, MaskedPool, PaymentIntent,
@@ -253,10 +254,7 @@ async fn paid(pool: &PgPool, (business, job, pick): (Uuid, Uuid, Uuid)) {
         now: PickNow::Payable,
     };
     let charged = confirm_and_pay(pool, &stripe, &secret, &press, now()).await;
-    assert!(matches!(
-        charged.expect("charge"),
-        ChargeOutcome::Succeeded(_)
-    ));
+    assert!(matches!(charged, Ok(ChargeOutcome::Succeeded(_))));
 }
 
 /// Every task queued since the last call, claimed once.
@@ -277,8 +275,7 @@ async fn counts(pool: &PgPool, pick: Uuid) -> (usize, usize) {
 
 /// The tasks of `kind` for `pick`.
 fn of(tasks: &[Claimed], kind: &str, pick: Uuid) -> Vec<Claimed> {
-    let pick = pick.to_string();
-    let named = |t: &&Claimed| t.kind == kind && t.payload["pick"].as_str() == Some(pick.as_str());
+    let named = |t: &&Claimed| t.kind == kind && t.payload["pick"] == pick.to_string();
     tasks.iter().filter(named).cloned().collect()
 }
 
@@ -414,8 +411,7 @@ async fn one_held(pool: &PgPool, pick: Uuid, due: Timestamp) -> Claimed {
     let mut held = of(&queued, HELD_RELEASE_KIND, pick);
     assert_eq!(held.len(), 1, "one held-release task");
     let task = held.remove(0);
-    let due = due.to_string();
-    assert_eq!(task.payload["run_at"].as_str(), Some(due.as_str()));
+    assert_eq!(task.payload["run_at"], due.to_string());
     task
 }
 
@@ -432,11 +428,7 @@ async fn ends_and_releases_once(
         .await
         .expect("released");
     assert!(released(pool, (job, pick)).await.0);
-    assert_eq!(
-        counts(pool, pick).await,
-        (0, 1),
-        "one notice, no further run"
-    );
+    assert_eq!(counts(pool, pick).await, (0, 1), "one notice, no run");
 }
 
 /// TD-OPS-40 (OPS-001, OPS-024): with safe mode on a verified success releases nothing and
@@ -466,22 +458,29 @@ async fn td_ops_40_a_success_in_safe_mode_is_held_then_released_once_it_ends(poo
         .expect("held again");
     let due = now() + HOLD_EVERY + HOLD_EVERY + HOLD_EVERY;
     ends_and_releases_once(&pool, &hooks, (job, pick, alert), due).await;
-    assert!(
-        released(&pool, (job, pick)).await.1,
-        "the masked line opens"
-    );
+    assert!(released(&pool, (job, pick)).await.1, "masked line");
 }
 
 /// TD-OPS-40 (OPS-001, SEC-030): a failed safe-mode read fails closed: the route answers 500,
-/// nothing is released and nothing is queued. The sink's pool runs as `pg_monitor`, which cannot
-/// use schema `ops`, since this file may hold no SQL (TD-SEC-10, D-4021).
+/// nothing is released or queued. The sink's pool reuses no connection; only its first, the gate's,
+/// runs as `pg_monitor` (no use of `ops`), so a gate failing open would release (D-4021).
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn td_ops_40_a_failed_safe_mode_read_releases_and_queues_nothing(pool: PgPool) {
     let (business, job, pick) = picked(&pool).await;
     paid(&pool, (business, job, pick)).await;
-    let options = pool.connect_options().as_ref().clone();
-    let no_ops = options.options([("role", "pg_monitor")]);
-    let unreadable = PgPoolOptions::new().connect_lazy_with(no_ops);
+    let first = AtomicBool::new(true);
+    let unreadable = PgPoolOptions::new()
+        .before_acquire(|_, _| Box::pin(async { Ok(false) }))
+        .after_connect(move |conn, _| {
+            let gate = first.swap(false, Ordering::SeqCst);
+            Box::pin(async move {
+                if gate {
+                    sqlx::query!("SET ROLE pg_monitor").execute(conn).await?;
+                }
+                Ok(())
+            })
+        })
+        .connect_lazy_with(pool.connect_options().as_ref().clone());
     let hooks = hooks_with((&pool, &unreadable), pick, "succeeded");
     let answer = deliver(hooks, pick, "evt_fake408c").await;
     assert_eq!(answer, StatusCode::INTERNAL_SERVER_ERROR);
