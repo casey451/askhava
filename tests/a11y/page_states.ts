@@ -469,6 +469,7 @@ const OWNER_RELEASE_STATES: readonly PageState[] = [
 const COMPLAINTS_ROUTE = "/b/complaints";
 const EMERGENCY_ROUTE = "/b/emergency-emails";
 const NOTICE_LOG_ROUTE = "/b/picks/{pick}/notices";
+const JOB_TYPES_ROUTE = "/b/job-types";
 
 /** The complaints page (T306; BIZ-029): the owner, one fake complaint with its reply box open. */
 const COMPLAINTS_STATES: readonly PageState[] = [
@@ -486,6 +487,11 @@ const COMPLAINTS_STATES: readonly PageState[] = [
 const EMERGENCY_STATES: readonly PageState[] = [
   ["emergency emails, switch off", "Turn on emergency emails at any hour", "Did your phone alert you", businessSql("")],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: EMERGENCY_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
+/** The Job types page (T375; BIZ-004, BIZ-049): the owner of a fake business with no license, so only no-license rows show. */
+const JOB_TYPES_STATES: readonly PageState[] = [
+  ["job types, nothing saved yet", "Your job types", "Nothing was saved", businessSql("")],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: JOB_TYPES_ROUTE, name, shows, hides, sql, statusRegions: ["job-types-result"] }));
 
 /** The job's notice log (T306; BIZ-045): the owner's pick on a carded job, nothing sent yet; reads the vault. */
 const NOTICE_LOG_STATES: readonly PageState[] = [
@@ -597,6 +603,7 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: OWNER_HOME_ROUTE, seed: portalSeed(false), states: OWNER_HOME_STATES },
   { route: OWNER_SETTINGS_ROUTE, seed: portalSeed(false), states: OWNER_SETTINGS_STATES },
   { route: OWNER_RELEASE_ROUTE, seed: portalSeed(false), states: OWNER_RELEASE_STATES },
+  { route: JOB_TYPES_ROUTE, seed: portalSeed(false), states: JOB_TYPES_STATES },
 ];
 
 /** Every state of every page, in entry order. */

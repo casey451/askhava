@@ -7,7 +7,7 @@
 //! pool. The Twilio stand-in models no `Gather` or `Redirect` (D-2763), so the cases read the
 //! returned TwiML. Every number is fictional.
 
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use askhava_calls::api::{
     SAFETY_KEY_LOST_ALERT, SAFETY_KEY_PATH, SAFETY_KEY_RETRY_ATTEMPTS, SAFETY_KEY_RETRY_KIND,
@@ -15,6 +15,7 @@ use askhava_calls::api::{
 };
 use askhava_core::api::{Claimed, Environment, ManualClock};
 use askhava_intake::api::rules::Settings as IntakeSettings;
+use askhava_integration::log_capture;
 use askhava_ops::api::{NewAlert, Severity, raise_alert};
 use askhava_privacy::api::{NewContact, Vault, store_contact};
 use axum::body::Body;
@@ -30,9 +31,6 @@ use sqlx::PgPool;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::types::Uuid;
 use tower::ServiceExt;
-use tracing::field::{Field, Visit};
-use tracing::span::{Attributes, Id, Record};
-use tracing::{Event, Metadata, Subscriber};
 
 /// The shared Twilio webhook state, compiled in for `voice_status`.
 #[path = r"../../../app/server/src/inbound_text.rs"]
@@ -191,8 +189,7 @@ async fn retry(pool: &PgPool, payload: &Value, attempts: i32) -> bool {
 /// phone. Fails on `main`, where the key is only logged.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn a_nine_lost_to_a_database_error_is_queued_and_taken(pool: PgPool) {
-    let lines = Lines::default();
-    let _guard = tracing::subscriber::set_default(lines.clone());
+    let lines = log_capture::start();
     let call = emergency(&pool).await;
     break_suppression(&pool, true).await;
     let answer = post(&hooks(&pool), &key_url(&call), &[CALL_SID, ("Digits", "9")]).await;
@@ -225,7 +222,7 @@ async fn a_nine_lost_to_a_database_error_is_queued_and_taken(pool: PgPool) {
         .expect("alerts");
     assert_eq!(in_alerts, 0);
     assert!(!tasks[0].to_string().contains(PHONE_DIGITS));
-    let logged = lines.0.lock().expect("lines").clone();
+    let logged = lines.lines();
     assert!(logged.iter().any(|l| l.contains("step failed")));
     assert!(logged.iter().all(|l| !l.contains(PHONE_DIGITS)));
 }
@@ -277,34 +274,4 @@ async fn a_double_failure_redirects_at_most_three_times(pool: PgPool) {
     assert!(!answer.contains("<Redirect"));
     assert!(answer.contains(&format!("<Say>{}</Say><Hangup/>", voice_status::STOP_LINE)));
     assert_eq!(listed(&pool).await, 0);
-}
-
-/// Every log line's fields, for the test's thread.
-#[derive(Clone, Default)]
-struct Lines(Arc<Mutex<Vec<String>>>);
-
-struct Line<'a>(&'a mut String);
-
-impl Visit for Line<'_> {
-    fn record_debug(&mut self, field: &Field, value: &dyn std::fmt::Debug) {
-        self.0.push_str(&format!(" {}={value:?}", field.name()));
-    }
-}
-
-impl Subscriber for Lines {
-    fn enabled(&self, _: &Metadata<'_>) -> bool {
-        true
-    }
-    fn new_span(&self, _: &Attributes<'_>) -> Id {
-        Id::from_u64(1)
-    }
-    fn record(&self, _: &Id, _: &Record<'_>) {}
-    fn record_follows_from(&self, _: &Id, _: &Id) {}
-    fn event(&self, event: &Event<'_>) {
-        let mut line = String::new();
-        event.record(&mut Line(&mut line));
-        self.0.lock().expect("lines").push(line);
-    }
-    fn enter(&self, _: &Id) {}
-    fn exit(&self, _: &Id) {}
 }
