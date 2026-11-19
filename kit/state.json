@@ -76186,11 +76186,11 @@
      }
     }
    ],
-   "reviewed_sha": "9caae39c4a2fa48a029582829be38a979f505433",
+   "reviewed_sha": "9b282cdd2b50a93e9320414f94105a390690b5e7",
    "review_lease": {
     "task": "T540",
-    "session": "actions-44499097316",
-    "expires": "2026-11-19T14:26:20Z",
+    "session": "actions-44523023132",
+    "expires": "2026-11-19T16:45:24Z",
     "lane": "6"
    },
    "branch": "claude/task/T540-owner-release-button",
@@ -76199,7 +76199,6 @@
     "why": "auto-merge on #1114 (gh pr merge)",
     "head": "9caae39c4a2fa48a029582829be38a979f505433"
    },
-   "merge_turn_since": "2026-11-19T12:20:16Z",
    "runner_closed_prs": [
     1114
    ],
@@ -76224,6 +76223,16 @@
     }
    ],
    "last_failure": "merging main into the reviewed head conflicts in tests/a11y/page_states.ts; a resync merges it in on this attempt (D-891)",
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "025ddc8e92842536f154c916d70a8b0798fdaf5d",
+     "to": "9b282cdd2b50a93e9320414f94105a390690b5e7",
+     "main": "345380f4824aa1470c0f0e4c11605448de7bb2d8",
+     "how": "hand-in",
+     "at": "2026-11-19T13:47:45Z"
+    }
+   ],
    "update_waiting_since": null,
    "update_push_failures": null
   },
@@ -93063,7 +93072,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T13:45:25Z",
+ "updated_at": "2026-11-19T13:47:45Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
