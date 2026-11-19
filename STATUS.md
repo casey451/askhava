@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T10:02:05Z by runner 7be551b7caec (actions).
+Updated 2026-11-19T10:02:29Z by runner 7be551b7caec (actions).
 
 **Building: T470 in progress since 09:02Z; 485 of 664 done; week 78% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-19T10:02:05Z by runner 7be551b7caec (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T470 claimed 09:02Z, lease until 12:55Z; lane 2: T553 claimed 08:48Z, lease until 12:13Z; lane 3: T710 claimed 08:40Z, lease until 12:37Z; lane 4: T705 claimed 09:16Z, lease until 12:16Z
 - **Week:** 78% used, 34.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:01Z, 0 min before this update
-- **Keeper:** last ran 09:49Z, next wake 12:04Z
+- **Last run:** 10:02Z, 0 min before this update
+- **Keeper:** last ran 10:02Z, next wake 12:16Z
 
 ## Needs attention
 - PLAN GAP T116 (since 2026-11-19T08:37:10Z, no attempt used; a plan change fixes it): T116: dependency T216 is DONE but its owned file app/site/static/photos/hero-kitchen-phone.avif is not on main
