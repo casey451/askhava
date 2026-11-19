@@ -8,7 +8,9 @@
 //! of the pick it names) has not left (BIZ-051: leaving
 //! stops all notices) and its mailbox is still one of that business's: a current member's main
 //! address or a member's verified, not-removed backup (BIZ-043; a removed member gets nothing,
-//! SEC-024); a row naming no such business is `Gone`, and the drain drops it unsent, since it holds
+//! SEC-024); the one exception is SEC-024's `business_address_changed` email to the old address,
+//! which no member has any more: it goes while a named business has not left (D-4671). A row
+//! naming no such business is `Gone`, and the drain drops it unsent, since it holds
 //! that person's sign-in link. The address is then read with `privacy::api::read_business_mailbox`
 //! under `BusinessPurpose::Notice` on the handler's bare connection (one audited read). No address
 //! is stored or logged here.
@@ -27,6 +29,10 @@ use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
 const FAILED: HandlerError = HandlerError("the notice address could not be read");
+/// SEC-024, D-4671: the email telling a member's old address its notice address changed. It goes
+/// to a mailbox no member has any more and holds no sign-in link, so the drain sends it while its
+/// business has not left, without the current-mailbox check.
+const ADDRESS_CHANGED_EMAIL: &str = "business_address_changed";
 /// The notice purposes a backup may receive (account notices go to main addresses only).
 const BACKUP_PURPOSES: [NoticePurpose; 3] = [
     NoticePurpose::Cards,
@@ -50,7 +56,8 @@ impl NoticeAddresses {
 
 impl BusinessAddresses for NoticeAddresses {
     /// BIZ-051, SEC-024, BIZ-043, D-4196: the owner inbox for its rows, else the mailbox's
-    /// address while it is one of a named business's that has not left, else `Gone`.
+    /// address while it is one of a named business's that has not left (for the address-changed
+    /// email, the old one, while a named business has not left), else `Gone`.
     async fn address(
         &self,
         db: &mut PgConnection,
@@ -63,7 +70,12 @@ impl BusinessAddresses for NoticeAddresses {
                 .map(DueAddress::To)
                 .ok_or(HandlerError("no owner inbox address is set"));
         }
-        if !current(db, row.recipient, row.subjects).await? {
+        let kept = if row.template == ADDRESS_CHANGED_EMAIL {
+            !open_businesses(db, row.subjects).await?.is_empty()
+        } else {
+            current(db, row.recipient, row.subjects).await?
+        };
+        if !kept {
             return Ok(DueAddress::Gone);
         }
         let purpose = BusinessPurpose::Notice;
@@ -82,11 +94,7 @@ async fn current(
     mailbox: Uuid,
     subjects: &[Uuid],
 ) -> Result<bool, HandlerError> {
-    for named in named_businesses(db, subjects).await? {
-        // BIZ-051: `removed` is the status leaving sets; compared by code (SEC-031).
-        if named.status.code() == "removed" {
-            continue;
-        }
+    for named in open_businesses(db, subjects).await? {
         let team = members(db, named.id).await.map_err(|_| FAILED)?;
         if team.iter().any(|m| m.mailbox == mailbox) {
             return Ok(true);
@@ -101,6 +109,17 @@ async fn current(
         }
     }
     Ok(false)
+}
+
+/// BIZ-051: the businesses a row names that have not left.
+async fn open_businesses(
+    db: &mut PgConnection,
+    subjects: &[Uuid],
+) -> Result<Vec<Business>, HandlerError> {
+    let mut named = named_businesses(db, subjects).await?;
+    // BIZ-051: `removed` is the status leaving sets; compared by code (SEC-031).
+    named.retain(|b| b.status.code() != "removed");
+    Ok(named)
 }
 
 /// The businesses a row names: each subject ID that is a business (a business notice names its

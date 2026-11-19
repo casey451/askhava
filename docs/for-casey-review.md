@@ -3470,6 +3470,6 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 ## Queued emails now go out, and one help reply has no address yet (D-4670 to D-4673)
 
-- **What changed:** job cards, picks, receipts, reminders and homeowner emails that were stored but never sent now go out once a minute through the email provider, each once. An email the provider turns down, one tried for 23 hours without a clear answer, or one waiting 72 hours is dropped with an alert to you; an email to someone removed from a business, or to a business that left, is dropped unsent.
+- **What changed:** job cards, picks, receipts, reminders and homeowner emails that were stored but never sent now go out once a minute through the email provider, each once. An email the provider turns down, one tried for 23 hours without a clear answer, or one waiting 72 hours is dropped with an alert to you; an email to someone removed from a business, or to a business that left, is dropped unsent. The one exception: the "your notice email changed" warning to a business's old address still goes once the day's email limit resets, since that warning is what protects the account.
 - **The gap:** the "Got it" reply to a business's Get help form is stored under the team member's record, not their email, so it is dropped instead of sent. The fix belongs to the help form's task (queue it to the member's email with the business named).
 - Our choice; nothing needs you now.

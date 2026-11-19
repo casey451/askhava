@@ -652,6 +652,55 @@ async fn self_sending_rows_go_only_when_held_and_owner_alerts_never(pool: PgPool
     );
 }
 
+/// SEC-024, D-4671: a held "notice address changed" email to the member's old address, which no
+/// member has any more, goes once after its time; one for a business that left is dropped.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_held_address_changed_email_goes_to_the_old_address(pool: PgPool) {
+    let f = Fix::plain(&pool);
+    let mut db = f.db().await;
+    let (b, owner, _, om, _) = team(&mut db, &f.vault).await;
+    let moved_to = mailbox(&mut db, &f.vault, "pat.new@example.test").await;
+    sqlx::query("UPDATE businesses.team_member SET mailbox_id = $2 WHERE id = $1")
+        .bind(owner.member)
+        .bind(moved_to)
+        .execute(&mut *db)
+        .await
+        .expect("moved");
+    let gone = create(&mut db, false, at(0)).await.expect("business");
+    let sam = mailbox(&mut db, &f.vault, "sam.left@example.test").await;
+    let changed = "business_address_changed";
+    let (told, left) = (
+        row(
+            &mut db,
+            (changed, "business", om, &[b, Uuid::new_v4()]),
+            ("notice", "Fake"),
+            0,
+        )
+        .await,
+        row(
+            &mut db,
+            (changed, "business", sam, &[gone, Uuid::new_v4()]),
+            ("notice", "Fake"),
+            0,
+        )
+        .await,
+    );
+    leave(&mut db, gone, at(1)).await.expect("left");
+    let hold = "UPDATE messaging.email_outbox SET waiting_for = 'daily_limit', \
+                not_before = to_timestamp($2) WHERE id = $1";
+    for id in [told, left] {
+        exec(&mut db, hold, id, mins(10)).await;
+    }
+    f.run_at(mins(5)).await;
+    assert!(f.mail.calls().is_empty(), "nothing before its time");
+    f.run_at(mins(11)).await;
+    f.run_at(mins(20)).await;
+    let to: Vec<String> = f.mail.calls().into_iter().map(|c| c.1).collect();
+    assert_eq!(to, [OWNER.to_owned()], "once, to the old address");
+    assert_eq!(status(&mut db, told).await, "sent");
+    assert_eq!(status(&mut db, left).await, "dropped");
+}
+
 /// The self-sending list names every handler's own template.
 #[test]
 fn the_self_sending_list_names_every_own_sender() {
