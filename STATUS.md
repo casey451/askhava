@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T22:22:09Z by runner fb447a5e3071 (actions).
+Updated 2026-11-19T22:22:37Z by runner a91fb80e6806 (actions).
 
 **Building: T726 in progress since 22:06Z; 507 of 701 done; week 11% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-19T22:22:09Z by runner fb447a5e3071 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T726 claimed 22:06Z, lease until 01:06Z; lane 3: T109 claimed 21:53Z, lease until 00:53Z; lane 4: T480 claimed 20:38Z, lease until 23:38Z; lane 5: T541 claimed 21:24Z, lease until 00:24Z; lane 6: T707 claimed 21:38Z, lease until 00:38Z
 - **Week:** 11% used, 166.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:21Z, 0 min before this update
-- **Keeper:** last ran 22:05Z, next wake 22:25Z
+- **Last run:** 22:22Z, 0 min before this update
+- **Keeper:** last ran 22:22Z, next wake 23:41Z
 
 ## Needs attention
 - BLOCKED T663: plan gap reported: PLAN GAP: tests/test_coverage_floor.py:125 asserts floors["future"] == [], contradicting T663 goal (5), which requires a `future` entry for app/portals/src/confirm_moves.rs. Also the test at :183-196 requires per-file floors and files_measured to hold the same paths, on disk, and named in D-3974, so the new connect.rs and confirm_moves.rs floors fail it. T663 does not own tests/test_coverage_floor.py (T264/T324 do). Reviewer confirmed. Smallest fix: relax the floor tests to accept reasoned future entries, or drop goal (5) from T663. Reviewer also found TD-JOB-18 cases untested (paid settle, he; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T663 --plan-fix D-### --reason "..."` (D-2859)
