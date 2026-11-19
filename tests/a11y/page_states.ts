@@ -459,6 +459,13 @@ const OWNER_SETTINGS_STATES: readonly PageState[] = [
   ["owner settings", "Each change needs a code from your authenticator app", "Pause or resume", OWNER_SESSION_SQL],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: OWNER_SETTINGS_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
+const OWNER_RELEASE_ROUTE = "/owner/release";
+
+/** The owner's release button (T540; PICK-022, PICK-023): the empty form, no refusal. */
+const OWNER_RELEASE_STATES: readonly PageState[] = [
+  ["owner release button", "Re-send the release notice", "Nothing was sent", OWNER_SESSION_SQL],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: OWNER_RELEASE_ROUTE, name, shows, hides, sql, statusRegions: ["release-status"] }));
+
 const COMPLAINTS_ROUTE = "/b/complaints";
 const EMERGENCY_ROUTE = "/b/emergency-emails";
 const NOTICE_LOG_ROUTE = "/b/picks/{pick}/notices";
@@ -595,6 +602,7 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: BUSINESS_STEP_UP_ROUTE, seed: portalSeed(false), states: BUSINESS_STEP_UP_STATES },
   { route: OWNER_HOME_ROUTE, seed: portalSeed(false), states: OWNER_HOME_STATES },
   { route: OWNER_SETTINGS_ROUTE, seed: portalSeed(false), states: OWNER_SETTINGS_STATES },
+  { route: OWNER_RELEASE_ROUTE, seed: portalSeed(false), states: OWNER_RELEASE_STATES },
   { route: JOB_TYPES_ROUTE, seed: portalSeed(false), states: JOB_TYPES_STATES },
 ];
 

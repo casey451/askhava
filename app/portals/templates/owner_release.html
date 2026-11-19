@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{#- The owner's release button (T540; PICK-022, PICK-023, SEC-006, SEC-042, A11Y-030, A11Y-031;
+    D-074, D-3890, D-3892). One form: the job number and a one-time press ID. It only re-sends a
+    release that already went out; a refusal puts "Error: " in the title and a focused summary
+    first, linked to the field, and keeps the number. No homeowner detail is ever shown. The form
+    posts with novalidate and never disables its button. -#}
+{% block title %}{% if failed %}Error: {% endif %}Re-send a release notice{% endblock %}
+{% block main %}<h1>Re-send a release notice</h1>
+{% if failed %}{% if let Some(line) = line %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>Nothing was sent</h2>
+<p><a href="#job">{{ line }}</a></p>
+</div>
+{% endif %}{% endif %}<div id="release-status" role="status" aria-live="polite">{% if !failed %}{% if let Some(line) = line %}<p>{{ line }}</p>{% endif %}{% endif %}</div>
+<p>Use this when a business says a job's release notice never reached them. It sends the business the same notice again.</p>
+<p>This only works for a job that's already been released. It won't release a job, charge anyone or share the homeowner's phone number.</p>
+<form method="post" action="{{ route }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="press" value="{{ press }}">
+<p><label for="job">Job number</label></p>
+<p id="job-hint">The number on the job's texts, like 1042.</p>
+{% if failed %}{% if let Some(line) = line %}<p id="job-error">Error: {{ line }}</p>
+{% endif %}{% endif %}<p><input type="text" id="job" name="job" inputmode="numeric" autocomplete="off" spellcheck="false" value="{{ typed }}" aria-describedby="job-hint{% if failed %} job-error{% endif %}"{% if failed %} aria-invalid="true"{% endif %}></p>
+<p><button type="submit" id="release-button">Re-send the release notice</button></p>
+</form>
+{% endblock %}
