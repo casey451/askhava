@@ -4,8 +4,8 @@ TD-WORD-11 (WORD-027, WORD-028; D-452, D-474): `scripts/check_ai_smell.py` scans
 template, text and email template file, message file and stylesheet under `app/` and finds nothing
 in them; a copy of each real file kind with "seamless", an em dash, "not just a quote, but",
 "Text us. They quote. You pick.", an exclamation mark or an emoji planted fails with the rule named;
-the words the cold reads logged as "AI-smell list: add" are on
-the list; `docs/voice.md` keeps its AI-smell section and `BUILD_BRIEF.md` section 7 step 4 names
+the logged cold-read phrases that no customer file holds are on the list (the rest are
+left out with their reasons in D-4654); `docs/voice.md` keeps its AI-smell section and `BUILD_BRIEF.md` section 7 step 4 names
 AI smell among the reviewer's checks. The general scanner cases live in
 `tests/test_check_ai_smell.py` (the page habits in a portal stylesheet and template, and the
 skipped 911 row, INT-004); this file covers the app's real templates. Fake text only.
@@ -38,7 +38,7 @@ PLANTED = (
     ("Your quotes are in \U0001f389", "emoji"),
 )
 
-# The cold reads' logged words (docs/decisions.md, "AI-smell list: add"), now on the list.
+# The cold reads' logged phrases that D-4654 added to the list (the left-out ones are named there).
 LOGGED = (
     "lo enviaremos",
     "contact wording",

@@ -54,6 +54,7 @@ def lists() -> check_ai_smell.Lists:
 def pressure_hits(text: str) -> list[str]:
     """The pressure-word rules `text` breaks, by rule name."""
     names = {f"word '{word}'" for word in pressure_words()}
+    text = text.replace("\u2019", "'").replace("\u2018", "'")
     hits = check_ai_smell.scan_text(lists(), "planted", 1, text)
     return [hit.rule for hit in hits if hit.rule in names]
 
@@ -84,6 +85,11 @@ def test_td_word_08_a_planted_pressure_word_fails(word: str, audience: str) -> N
     planted = f"{good} {word[0].upper()}{word[1:]}, reply today."
     assert pressure_hits(good) == []
     assert pressure_hits(planted) == [f"word '{word}'"]
+
+
+def test_td_word_08_a_curly_apostrophe_does_not_hide_a_pressure_word() -> None:
+    assert pressure_hits("Don\u2019t miss out on quotes.") == ["word 'don't miss out'"]
+    assert pressure_hits("Don\u2018t miss out on quotes.") == ["word 'don't miss out'"]
 
 
 @pytest.mark.parametrize(("lang", "key", "audience", "text"), templates(), ids=lambda v: str(v)[:40])
