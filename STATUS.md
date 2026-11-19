@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T15:11:47Z by runner 0fdc47513622 (actions).
+Updated 2026-11-19T15:12:13Z by runner 0fdc47513622 (actions).
 
 **Building: T541 in progress since 13:09Z; 493 of 668 done; week 84% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 493 of 668 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T541 claimed 13:09Z, lease until 18:01Z; lane 5: T470 claimed 13:05Z, lease until 17:30Z; lane 6: T407 claimed 14:19Z, lease until 17:19Z; lane 7: T593 claimed 13:55Z, lease until 18:07Z
+- **Lane:** lane 1: T541 claimed 13:09Z, lease until 18:01Z; lane 5: T470 claimed 13:05Z, lease until 17:30Z; lane 6: T407 claimed 14:19Z, lease until 17:19Z
 - **Week:** 84% used, 21.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:08Z, 3 min before this update
 - **Keeper:** last ran 15:05Z, next wake 16:57Z
@@ -19,12 +19,13 @@ Updated 2026-11-19T15:11:47Z by runner 0fdc47513622 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T593 | site and server: the home hero in D-3331's wording with the  | MERGE_PENDING | 2 | 75 min | 15:11Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T554 | Decisions digest, piece 9: the next entries after the header | MERGE_PENDING | 1 | 110 min | 15:03Z |  |
 | T652 | ops: safe mode starts only on OPS-001's alert kinds, and a d | MERGE_PENDING | 2 | 112 min | 15:03Z | PLAN GAP: tests/integration/tests/safe_mode.rs:246,281,320,378,407 (owned by T487 and T408; T652's prompt :11 and :47 sa |
 | T158 | portals: the owner's pilot scorecard page with go and stop l | MERGE_PENDING | 1 | 2 h 57 min | 14:37Z |  |
 | T540 | portals and server: the owner's release button re-sends an e | done | 1 | 53 min | 13:47Z |  |
 | T470 | messaging and server: the worker task that sends queued emai | QUEUED | 2 | 2 h 21 min | 13:03Z | Fix-round review (after the one allowed findings round) still found a problem at head 1830747e4; no reviewer approved a  |
-| T593 | site and server: the home hero in D-3331's wording with the  | check_failed | 1 | 95 min | 12:35Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
+| T593 | site and server: the home hero in D-3331's wording with the  | check_failed | 1 | 95 min | 12:35Z |  |
 | T536 | E2e harness: clock-advancing journeys last, a keyed worker,  | done | 2 | 107 min | 12:33Z | PLAN GAP: tests/e2e/j2.ts:150 (owned by T099, `e2e-j2-business`; T644 also lists it). Smallest plan change: make the `no |
 | T109 | recovery: backup checks and the nightly encrypted export | BLOCKED | 1 | 20 min | 11:47Z | PLAN GAP: `deny.toml:3` (owned by T009 and T604, both outside T109; T109 does not own it): every `age` release fails `ca |
 | T540 | portals and server: the owner's release button re-sends an e | resync | 1 | 54 min | 11:29Z |  |
@@ -144,7 +145,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - T541 (lease until 2026-11-19T18:01:14Z)
 - lane 5: T470 (lease until 2026-11-19T17:30:20Z)
 - lane 6: T407 (lease until 2026-11-19T17:19:51Z)
-- lane 7: T593 (lease until 2026-11-19T18:07:48Z)
 
 ## Last usage reading
-- {"task": "T554", "at": "2026-11-19T15:03:50Z", "input_tokens": 366, "cache_creation_input_tokens": 477996, "cache_read_input_tokens": 11446078, "output_tokens": 90081}
+- {"task": "T593", "at": "2026-11-19T15:11:44Z", "cache_creation_input_tokens": 114124, "output_tokens": 16281, "cache_read_input_tokens": 2126166, "input_tokens": 87}
