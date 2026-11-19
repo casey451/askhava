@@ -11,7 +11,10 @@
 //! `no-store`. TD-BIZ-50: a price above the business's largest job is warned and sent only when
 //! posted again with the warned cents; a business with no capability row is never warned. The
 //! security events of the refusals are checked over HTTP by `door_matrix.rs` (TD-SEC-61). Every
-//! name, phone and ID is fake.
+//! name, phone and ID is fake. T456 (PICK-043, D-3890): the Hold link's `POST` acts by the link
+//! alone, once, moving the stored Confirm end; a refused Hold says why (409) and leaves the link
+//! unused, and a removed member's link on a held pick is the one not-found answer (the emergency
+//! and Away refusals are `tests/integration/tests/hold_away.rs`').
 
 use std::collections::BTreeSet;
 use std::sync::{Arc, Mutex, PoisonError};
@@ -26,7 +29,7 @@ use askhava_core::api::{Guarded, SystemClock};
 use askhava_jobs::api::{JobStatus, create, move_to, record_job_facts};
 use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
 use askhava_ops::api::Actor as AuditActor;
-use askhava_picks::api::HoldAsk;
+use askhava_picks::api::{ConfirmSettings, HoldAsk, PagePick, hold_ask, notice_sent, page_pick};
 use askhava_portals::api::{
     ActionKind, ActionTarget, CookieJar, PortalsError, SIGNIN_LINK_ROUTE, SignIn, SignInAddress,
     SignInMail, csrf_token, ensure_pre_session, mint_action_link, open_action_link,
@@ -770,4 +773,84 @@ async fn td_sec_44_another_persons_link_or_no_charge_is_not_found(pool: PgPool) 
         "no charge of this business (BIZ-032, FEE-031)"
     );
     assert!(unused(&w, &uncharged).await, "and the link stays unused");
+}
+
+/// PICK-043: `w`'s job quoted through its Quote link, then picked on the page, its Confirm
+/// window started now (no SQL here: TD-SEC-10 keeps the server's tests to the crates' `api`).
+async fn waiting_pick(w: &World) -> Uuid {
+    let quote = path_of(&live(w, ActionKind::Quote, w.job).await);
+    let sent = send(w, (&Method::POST, &quote, &firm()), Site::Own).await;
+    assert_eq!(sent.status, 200, "{}", sent.text);
+    let now = Timestamp::now();
+    let mut tx = w.pool.begin().await.expect("tx");
+    let made = page_pick(&mut tx, (w.job, false), 1, AuditActor::System, now).await;
+    let PagePick::Picked(pick) = made.expect("pick") else {
+        panic!("no pick")
+    };
+    let due = notice_sent(&mut tx, pick, now, ConfirmSettings::default()).await;
+    assert!(due.expect("sent").is_some(), "a running window");
+    tx.commit().await.expect("commit");
+    pick
+}
+
+/// Whether a HOLD is stored for waiting pick `pick` (PICK-043).
+async fn held(w: &World, pick: Uuid) -> bool {
+    let mut db = w.pool.acquire().await.expect("db");
+    let ask = hold_ask(&mut db, pick, Roles::BOTH).await.expect("ask");
+    ask.expect("waits").1.held
+}
+
+/// TD-SEC-44, PICK-043, BIZ-038, D-3890: the Hold link's `GET`, twice, changes nothing; a
+/// cross-site `POST` is refused; its own `POST` holds the pick by the link alone, once, and
+/// names the new end; the used link is then the one not-found answer.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_44_the_hold_link_holds_the_pick_once(pool: PgPool) {
+    let w = world(&pool).await;
+    let pick = waiting_pick(&w).await;
+    let path = path_of(&live(&w, ActionKind::Hold, pick).await);
+    for _ in 0..2 {
+        let page = send(&w, (&Method::GET, &path, ""), Site::Own).await;
+        assert_eq!((page.status, page.no_store), (200, true));
+    }
+    let cross = send(&w, (&Method::POST, &path, ""), Site::Cross).await;
+    assert_eq!(cross.status, 403);
+    assert!(!held(&w, pick).await, "nothing held yet");
+    assert!(unused(&w, &path).await);
+    let done = send(&w, (&Method::POST, &path, ""), Site::Own).await;
+    assert_eq!((done.status, done.no_store), (200, true), "{}", done.text);
+    assert!(done.text.contains("id=\"new-end\""), "{}", done.text);
+    assert!(held(&w, pick).await, "the HOLD is stored");
+    assert!(!unused(&w, &path).await, "the link is used");
+    let again = send(&w, (&Method::POST, &path, ""), Site::Own).await;
+    assert_eq!(again, not_found(&w, &Method::POST).await);
+}
+
+/// TD-SEC-44, PICK-043, SEC-025, D-252, D-1956: a second Hold says why (409) and changes
+/// nothing, its link unused; a removed member's Hold link is the one not-found answer.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_44_a_refused_hold_says_why_and_uses_nothing(pool: PgPool) {
+    let w = world(&pool).await;
+    let pick = waiting_pick(&w).await;
+    let first = path_of(&live(&w, ActionKind::Hold, pick).await);
+    let second = path_of(&live(&w, ActionKind::Hold, pick).await);
+    let by = Acting {
+        business: w.team.business,
+        member: w.team.member,
+    };
+    let mut db = pool.acquire().await.expect("db");
+    let billing = Roles::new(false, true).expect("roles");
+    let gone = add_member(&mut db, by, Uuid::new_v4(), billing, Timestamp::now()).await;
+    let gone = gone.expect("member");
+    let removed = live_for(&w, (ActionKind::Hold, pick), gone).await;
+    let out = remove_member(&mut db, by, gone, Timestamp::now()).await;
+    out.expect("removed");
+    let done = send(&w, (&Method::POST, &first, ""), Site::Own).await;
+    assert_eq!(done.status, 200, "{}", done.text);
+    let refused = send(&w, (&Method::POST, &second, ""), Site::Own).await;
+    assert_eq!(refused.status, 409);
+    assert!(refused.text.contains("already held"), "{}", refused.text);
+    assert!(unused(&w, &second).await, "a refused Hold uses nothing");
+    let theirs = send(&w, (&Method::POST, &removed, ""), Site::Own).await;
+    assert_eq!(theirs, not_found(&w, &Method::POST).await, "SEC-025");
+    assert!(unused(&w, &removed).await);
 }
