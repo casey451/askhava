@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT c.homeowner_id AS homeowner, c.closed_at IS NULL AS \"open!\", c.job_id AS job,\n             EXISTS (SELECT 1 FROM intake.intake_answer a WHERE a.conversation_id = c.id\n               AND a.question_id = 'zip') AS \"zip_asked!\",\n             p.town AS \"town?\", p.zip AS \"zip?\",\n             ARRAY(SELECT a.choice FROM intake.intake_answer a WHERE a.conversation_id = c.id\n               AND a.question_id = $2 AND a.choice IS NOT NULL\n               ORDER BY a.answered_at, a.id) AS \"trades!: Vec<String>\",\n             EXISTS (SELECT 1 FROM intake.intake_answer a WHERE a.conversation_id = c.id\n               AND a.question_id = $3) AS \"told!\",\n             EXISTS (SELECT 1 FROM intake.emergency_event e WHERE e.conversation_id = c.id\n               AND e.text_queued_at IS NOT NULL AND e.safe_at IS NULL) AS \"waiting_safe!\",\n             ARRAY(SELECT split_part(a.question_id, '.', 2) FROM intake.intake_answer a\n               WHERE a.conversation_id = c.id AND a.question_id LIKE 'job.%')\n               AS \"job_trades!: Vec<String>\",\n             (SELECT a.choice FROM intake.intake_answer a WHERE a.conversation_id = c.id\n               AND a.question_id = $4 AND NOT EXISTS (SELECT 1 FROM intake.intake_answer b\n                 WHERE b.conversation_id = c.id AND b.question_id = $5\n                 AND b.answered_at >= a.answered_at)\n               ORDER BY a.answered_at DESC LIMIT 1) AS \"split_trade?\"\n           FROM intake.conversation c\n           LEFT JOIN LATERAL (SELECT q.town, q.zip FROM intake.property q\n             WHERE q.homeowner_id = c.homeowner_id AND q.created_at >= c.opened_at\n             ORDER BY q.created_at DESC, q.id DESC LIMIT 1) p ON true\n           WHERE c.id = $1",
+  "query": "SELECT c.homeowner_id AS homeowner, c.closed_at IS NULL AS \"open!\", c.job_id AS job,\n             EXISTS (SELECT 1 FROM intake.intake_answer a WHERE a.conversation_id = c.id\n               AND a.question_id = 'zip') AS \"zip_asked!\",\n             p.town AS \"town?\", p.zip AS \"zip?\",\n             ARRAY(SELECT a.choice FROM intake.intake_answer a WHERE a.conversation_id = c.id\n               AND a.question_id = $2 AND a.choice IS NOT NULL\n               ORDER BY a.answered_at, a.id) AS \"trades!: Vec<String>\",\n             EXISTS (SELECT 1 FROM intake.intake_answer a WHERE a.conversation_id = c.id\n               AND a.question_id = $3) AS \"told!\",\n             EXISTS (SELECT 1 FROM intake.emergency_event e WHERE e.conversation_id = c.id\n               AND e.text_queued_at IS NOT NULL AND e.safe_at IS NULL) AS \"waiting_safe!\",\n             ARRAY(SELECT split_part(a.question_id, '.', 2) FROM intake.intake_answer a\n               WHERE a.conversation_id = c.id AND a.question_id LIKE 'job.%')\n               AS \"job_trades!: Vec<String>\"\n           FROM intake.conversation c\n           LEFT JOIN LATERAL (SELECT q.town, q.zip FROM intake.property q\n             WHERE q.homeowner_id = c.homeowner_id AND q.created_at >= c.opened_at\n             ORDER BY q.created_at DESC, q.id DESC LIMIT 1) p ON true\n           WHERE c.id = $1",
   "describe": {
     "columns": [
       {
@@ -82,19 +82,11 @@
         "name": "job_trades!: Vec<String>",
         "type_info": "TextArray",
         "origin": "Expression"
-      },
-      {
-        "ordinal": 10,
-        "name": "split_trade?",
-        "type_info": "Text",
-        "origin": "Expression"
       }
     ],
     "parameters": {
       "Left": [
         "Uuid",
-        "Text",
-        "Text",
         "Text",
         "Text"
       ]
@@ -109,9 +101,8 @@
       null,
       null,
       null,
-      null,
       null
     ]
   },
-  "hash": "e421240d78ca986c9bf4cd2380d0d5b774af44c7be092f9beae70faf38a9ad98"
+  "hash": "f0b99d29102a9b2ec33916fa95a16f225fa4c8c2b740ef540c2ae0ef66ac9fd4"
 }
