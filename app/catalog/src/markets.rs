@@ -75,8 +75,15 @@ pub struct MarketDef {
     pub id: String,
     /// Its name.
     pub name: String,
+    /// The name in running text ("Havasu businesses"); optional so older fixtures still parse
+    /// (D-1515, D-4098, T593).
+    #[serde(default)]
+    pub short_name: Option<String>,
     /// Its two-letter state.
     pub state: String,
+    /// The state spelled out, for the home page's kicker (D-1515, D-4098, T593).
+    #[serde(default)]
+    pub state_name: Option<String>,
     /// Its IANA time zone.
     pub time_zone: String,
     /// The identity sources for its no-license categories (LIC-011).
