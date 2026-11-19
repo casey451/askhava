@@ -155,6 +155,11 @@ pub use crate::service::{
     enqueue_exempt, may_text, send, sender_add, sender_business, sender_remove,
 };
 pub use crate::signin_mail::{LINK_MARK, SIGNIN_LINK_TEMPLATE, SignInLinkSender};
+pub use crate::spanish_switch::{
+    Missing, SPANISH_SWITCH_ACTION, SpanishChange, SpanishInForce, SpanishRecords, SpanishSwitch,
+    SpanishSwitchError, missing, spanish_switch, spanish_template_versions, template_version,
+    turn_spanish_off, turn_spanish_on,
+};
 pub use crate::status::DeliveryStatus;
 pub use crate::suppression_versions::{SuppressionVersionsError, check_suppression_versions};
 pub use crate::templates::{

@@ -56,6 +56,7 @@ mod sender_held;
 mod sender_pending;
 mod service;
 mod signin_mail;
+mod spanish_switch;
 mod status;
 mod suppression_versions;
 mod templates;

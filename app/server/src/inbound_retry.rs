@@ -7,7 +7,10 @@
 //! the body back from Twilio's copy (`SmsBodyRead::fetch_message_body`, outside any transaction)
 //! and runs `inbound_text::rerun`, the route's steps after the inbox insert, in one transaction.
 //! The body is held only in memory, as a `SecretString`, and is never stored or logged (D-801).
-//! A retry that ran every step writes one [`HANDLED`] audit row about its inbox row.
+//! A retry that ran every step writes one [`HANDLED`] audit row about its inbox row. Like the
+//! route, each run reads the stored safety-call and Spanish-conversations switches for its message
+//! (`inbound_text::rerun`; CON-031, TXT-039; D-3889, T480), so a change made after the text
+//! arrived is honoured.
 //!
 //! Rules: (a) opt-out and HELP always run (CON-008, CON-018); (b) when a newer inbox row from the
 //! same sender was processed (no open T325 alert about it, or a [`HANDLED`] mark) the retry runs
@@ -72,7 +75,9 @@ pub struct RetryKeys {
     pub id_secret: SecretString,
     /// The vault (PRIV-002).
     pub vault: Vault,
-    /// The owner settings `intake` reads.
+    /// The owner settings `intake` reads; both switches in it are replaced per message by the
+    /// stored ones (`calls::api::safety_switch` and `messaging::api::spanish_switch`), read by
+    /// `inbound_text::rerun` as the route reads them (CON-031, TXT-039; D-3753, D-3889, T480).
     pub intake: IntakeSettings,
     /// The worker's clock (D-863).
     pub clock: Arc<dyn Clock>,
