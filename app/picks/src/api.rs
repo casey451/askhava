@@ -150,6 +150,9 @@ pub use crate::release::{
     RELEASE_NO_RECIPIENT_ALERT, RELEASE_TEMPLATE, RELEASE_TEXT_TEMPLATE, ReleaseFacts, ReleaseStep,
     ReleaseView, Released, check_ins_at_release, plan_release, release, release_notice,
 };
+pub use crate::release_resend::{
+    RELEASE_RESEND_ACTION, ResendPress, Resent, resend_key, resend_release,
+};
 pub use crate::released_view::{Seat, ViewAnswer, ViewFacts, may_view, released_view};
 pub use crate::scorecard_inputs::{confirmed_share, diagnostic_share, picked_requests};
 pub use crate::service::FEE_FACTS_ALERT;
