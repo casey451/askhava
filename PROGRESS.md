@@ -7599,3 +7599,4 @@
 - 2026-11-19T03:28:38Z runner eefaef098fd3 (actions): {}
 - 2026-11-19T03:28:51Z runner 3a116c21da66 (actions): {}
 - 2026-11-19T03:29:15Z runner 3e0ed6eb7d4b (actions): {}
+- 2026-11-19T03:29:28Z runner 3e0ed6eb7d4b (actions): {"T408": "QUEUED -> IN_PROGRESS"}; T408 estimated 1.4M tokens (calibrated); week has 42.2M left (no five-hour budget, D-3056) after 5.8M still running in another lane (session_reading 2026-11-19T03:28:00Z (week)); running to the limit (model window, D-2225), claimed
