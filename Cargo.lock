@@ -634,6 +634,7 @@ dependencies = [
  "argon2",
  "askama",
  "askhava-adapters",
+ "askhava-ai",
  "askhava-businesses",
  "askhava-calls",
  "askhava-catalog",
