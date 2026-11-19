@@ -21,24 +21,38 @@
 //! same transaction, refusing another pick's. Both need the SEC-043 fresh factor and audit with
 //! the owner as actor and P as subject. [`owner_audit_log_page`] lists the audit log with each
 //! row's actor. `server` (T304) serves these.
+//!
+//! T484 (OPS-028, OPS-035, CON-035, PICK-048; D-3753, D-3890): each pushed critical alert about
+//! an inbound text offers the bridge press ([`owner_bridge_press`]), which only queues one
+//! `calls::api::OWNER_BRIDGE_KIND` task (alert and press IDs, one per press) for `server`'s
+//! handler. The settings page records an opt-out a homeowner asked for by any other contact
+//! ([`owner_record_opt_out`], `messaging::api::suppress` with `RevokeChannel::Owner`, confirmed on
+//! screen, never by text) and files Stripe's written answer ([`owner_file_stripe_answer`],
+//! `quotes::api::file_stripe_answer`), showing the newest filing. All three need the SEC-043 fresh
+//! factor. `server` (T310) serves their `POST`s.
 
 use askama::Template;
 use askhava_businesses::api::{needs_review_signups, review_target_line};
+use askhava_calls::api::OWNER_BRIDGE_KIND;
 use askhava_catalog::api::{CatalogError, category, category_list, set_category_enabled};
+use askhava_core::api::{NewTask, brand, enqueue};
 use askhava_messaging::api::{
-    Audience, CONSENT_KEEP_YEARS, LaunchChannel, ModeStateError, NumberState, Week, WeekRate,
-    alert_percent, launch_channel, load_lines, record_restore, record_suspension,
-    set_launch_channel, switch_off, switch_on, weekly_optout_rates,
+    Audience, CONSENT_KEEP_YEARS, LaunchChannel, ModeStateError, NumberState, OutboxError,
+    RevokeChannel, Week, WeekRate, alert_percent, launch_channel, load_lines, record_restore,
+    record_suspension, set_launch_channel, suppress, switch_off, switch_on, weekly_optout_rates,
 };
 use askhava_ops::api::{
-    Actor, AuditEntry, AuditRow, Change, DELIVERY_ALERT, Switch, acknowledge_pushed_alert, audit,
-    audit_once, banner_shown, clear_banner, export_audit, is_paused, pushed_alerts, set_switch,
+    Actor, AuditEntry, AuditRow, Change, DELIVERY_ALERT, Switch, acknowledge_pushed_alert,
+    alert_subject, audit, audit_once, banner_shown, clear_banner, export_audit, is_paused,
+    pushed_alerts, set_switch,
 };
 use askhava_payments::api::{
     DisputeView, FeeMode, MoneyEventError, OwnerSubmission, PickRefundState, RefundOutcome,
     RefundStripe, RefundTrigger, disputes_of, fee_terms_in_force, record_pick_owner_submission,
     refund_state, request_refund, switch_fee_mode,
 };
+use askhava_privacy::api::Vault;
+use askhava_quotes::api::{AutoConfirmError, file_stripe_answer, latest_stripe_answer};
 use jiff::{Timestamp, tz};
 use secrecy::SecretString;
 use serde::Deserialize;
@@ -73,6 +87,14 @@ pub const OWNER_REFUND_PRESS_ROUTE: &str = "/owner/refunds/{pick}/refund";
 pub const OWNER_EVIDENCE_ROUTE: &str = "/owner/refunds/{pick}/evidence";
 /// The audit log viewer (`GET`, `?after=<row ID>`; SEC-006, OPS-010).
 pub const OWNER_AUDIT_LOG_ROUTE: &str = "/owner/audit-log";
+/// OPS-028: the bridge press for one pushed critical alert (alert and press IDs in the body).
+pub const OWNER_BRIDGE_ROUTE: &str = "/owner/call-homeowner";
+/// CON-035: the owner-recorded opt-out (the number in the body).
+pub const OWNER_OPT_OUT_ROUTE: &str = "/owner/opt-out";
+/// PICK-048: the Stripe written answer filing.
+pub const OWNER_STRIPE_ANSWER_ROUTE: &str = "/owner/stripe-answer";
+/// OPS-028: the audit action of one queued bridge press, subject the alert.
+pub const OWNER_BRIDGE_ACTION: &str = "portals.owner_bridge_press";
 /// The audit action of the owner's refund press, about the pick (SEC-006, D-074).
 pub const OWNER_REFUND_ACTION: &str = "portals.owner_refund";
 /// The audit action of the owner's own evidence submission, about the pick (SEC-006, D-4481).
@@ -229,11 +251,7 @@ pub async fn apply_owner_change(
     now: Timestamp,
 ) -> Result<bool, OwnerToolError> {
     if let Some(action) = change.needs_fresh_factor() {
-        let gate = require_owner_step_up(conn, principal, (action, change.posts_to()), now).await;
-        match gate {
-            Err(OwnerAuthError::NeedsFreshFactor) => return Err(OwnerToolError::NeedsFreshFactor),
-            other => other.map_err(store)?,
-        }
+        fresh_factor(conn, principal, (action, change.posts_to()), now).await?;
     }
     let owner = principal.owner();
     let by = (owner, now);
@@ -258,6 +276,20 @@ pub async fn apply_owner_change(
         OwnerChange::AcknowledgeAlert(alert) => acknowledge_pushed_alert(conn, alert, owner, now)
             .await
             .map_err(store),
+    }
+}
+
+/// SEC-043: the owner's fresh second factor for `action` on `route`; a refusal is a security event
+/// and changes nothing.
+async fn fresh_factor(
+    conn: &mut PgConnection,
+    principal: &OwnerPrincipal,
+    (action, route): (OwnerAction, &str),
+    now: Timestamp,
+) -> Result<(), OwnerToolError> {
+    match require_owner_step_up(conn, principal, (action, route), now).await {
+        Err(OwnerAuthError::NeedsFreshFactor) => Err(OwnerToolError::NeedsFreshFactor),
+        other => other.map_err(store),
     }
 }
 
@@ -316,6 +348,10 @@ struct AlertRow {
     /// OPS-025, D-4283: a text-delivery alert, which only the delivery path acknowledges, so the
     /// page offers no button for it.
     delivery: bool,
+    /// OPS-028: a critical alert about an inbound text, which offers the bridge press.
+    bridge: bool,
+    /// A fresh press ID for this render's bridge form, so a resubmitted form queues nothing more.
+    press: String,
 }
 
 /// One audience's week of opt-outs (CON-024).
@@ -339,7 +375,8 @@ struct ReviewRow {
 #[template(path = "owner_home.html")]
 struct HomeView<'a> {
     csrf: &'a str,
-    routes: [&'static str; 7],
+    brand: &'a str,
+    routes: [&'static str; 8],
     alerts: Vec<AlertRow>,
     pauses: Vec<SwitchRow>,
     flat: bool,
@@ -357,6 +394,10 @@ struct HomeView<'a> {
 #[template(path = "owner_settings.html")]
 struct SettingsView<'a> {
     csrf: &'a str,
+    notice: Option<&'static str>,
+    opt_out_route: &'static str,
+    stripe_route: &'static str,
+    stripe: Option<StripeRow>,
     category_route: &'static str,
     step_up_route: &'static str,
     home_route: &'static str,
@@ -415,6 +456,8 @@ async fn alert_rows(conn: &mut PgConnection) -> Result<Vec<AlertRow>, OwnerToolE
         .map(|a| AlertRow {
             id: a.id.to_string(),
             delivery: a.subject.kind == DELIVERY_ALERT,
+            bridge: bridgeable(&a.subject.severity, a.subject.subject_kind.as_deref()),
+            press: Uuid::new_v4().to_string(),
             subject: a
                 .subject
                 .subject_kind
@@ -507,7 +550,9 @@ pub async fn owner_home_page(
             OWNER_BANNER_ROUTE,
             OWNER_SETTINGS_ROUTE,
             OWNER_STEP_UP_ROUTE,
+            OWNER_BRIDGE_ROUTE,
         ],
+        brand: brand().display_name(),
         alerts: alert_rows(conn).await?,
         pauses: pause_rows(conn).await?,
         flat: terms.mode() == FeeMode::Flat,
@@ -537,6 +582,22 @@ pub async fn owner_settings_page(
     conn: &mut PgConnection,
     csrf: &str,
 ) -> Result<String, OwnerToolError> {
+    owner_settings_page_with(conn, csrf, None).await
+}
+
+/// LIC-002, CON-035, PICK-048, D-3753: the owner settings page with the on-screen confirmation of
+/// the change just made, if any: the category switches, the opt-out form, the Stripe-answer form
+/// and the newest filed answer.
+///
+/// # Errors
+///
+/// [`OwnerToolError::Database`] for a failed read or render.
+pub async fn owner_settings_page_with(
+    conn: &mut PgConnection,
+    csrf: &str,
+    done: Option<SettingsNotice>,
+) -> Result<String, OwnerToolError> {
+    let stripe = latest_stripe_answer(conn).await.map_err(store)?;
     let list = category_list(conn).await.map_err(store)?;
     let categories = list
         .categories
@@ -550,6 +611,15 @@ pub async fn owner_settings_page(
         .collect();
     SettingsView {
         csrf,
+        notice: done.map(SettingsNotice::line),
+        opt_out_route: OWNER_OPT_OUT_ROUTE,
+        stripe_route: OWNER_STRIPE_ANSWER_ROUTE,
+        stripe: stripe.map(|a| StripeRow {
+            answered_on: a.answered_on,
+            reference: a.reference,
+            allows: a.allows,
+            filed: arizona(a.filed_at),
+        }),
         category_route: OWNER_CATEGORY_ROUTE,
         step_up_route: OWNER_STEP_UP_ROUTE,
         home_route: OWNER_HOME_ROUTE,
@@ -861,4 +931,185 @@ pub async fn owner_audit_log_page(
     }
     .render()
     .map_err(store)
+}
+
+/// OPS-028: whether an alert of `severity` about a `subject_kind` record offers the bridge press:
+/// a critical alert about an inbound text, whose sender the bridge can dial.
+fn bridgeable(severity: &str, subject_kind: Option<&str>) -> bool {
+    severity == "critical" && subject_kind == Some("messaging.inbox")
+}
+
+/// The newest filed Stripe written answer as shown (PICK-048).
+#[derive(Debug, Clone)]
+struct StripeRow {
+    answered_on: String,
+    reference: String,
+    allows: bool,
+    filed: String,
+}
+
+/// The settings page's on-screen confirmation of the change just made (CON-035, PICK-048).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SettingsNotice {
+    /// The number is now on the suppression list.
+    OptOutListed,
+    /// The number was already on the list; nothing changed.
+    OptOutAlready,
+    /// Stripe's written answer was filed.
+    StripeAnswerFiled,
+}
+
+impl SettingsNotice {
+    /// The confirmation line.
+    fn line(self) -> &'static str {
+        match self {
+            Self::OptOutListed => "Done. We won't text or auto-call that number again.",
+            Self::OptOutAlready => "That number was already off our texts. Nothing changed.",
+            Self::StripeAnswerFiled => "Saved. Stripe's answer is below.",
+        }
+    }
+}
+
+/// The body of the bridge press: the alert and this render's press ID. The CSRF field is read by
+/// `server`'s `CsrfForm`.
+#[derive(Debug, Clone, Default, Deserialize)]
+pub struct BridgeForm {
+    /// The pushed critical alert's ID.
+    pub alert: String,
+    /// The press ID the page rendered into the form.
+    pub press: String,
+}
+
+/// OPS-028, SEC-043, D-3753, D-3890: the bridge press after the fresh factor: one
+/// [`OWNER_BRIDGE_KIND`] task holding the alert and press IDs only (deduplicated per press) and
+/// one [`OWNER_BRIDGE_ACTION`] audit row, in one transaction; true when queued, false for a repeat
+/// of the same press. Nothing is dialled here: `server`'s handler rings Casey.
+///
+/// # Errors
+///
+/// [`OwnerToolError::NeedsFreshFactor`], [`OwnerToolError::Refused`] (a bad ID, or an alert that is
+/// not critical about an inbound text) or [`OwnerToolError::Database`].
+pub async fn owner_bridge_press(
+    conn: &mut PgConnection,
+    principal: &OwnerPrincipal,
+    form: &BridgeForm,
+    now: Timestamp,
+) -> Result<bool, OwnerToolError> {
+    fresh_factor(
+        conn,
+        principal,
+        (OwnerAction::Settings, OWNER_BRIDGE_ROUTE),
+        now,
+    )
+    .await?;
+    let parse = |id: &str| Uuid::parse_str(id.trim()).map_err(|_| OwnerToolError::Refused);
+    let (alert, press) = (parse(&form.alert)?, parse(&form.press)?);
+    let subject = alert_subject(conn, alert).await.map_err(store)?;
+    let subject = subject.ok_or(OwnerToolError::Refused)?;
+    if !bridgeable(&subject.severity, subject.subject_kind.as_deref()) {
+        return Err(OwnerToolError::Refused);
+    }
+    let payload = serde_json::json!({ "alert": alert, "press": press });
+    let mut task = NewTask::new(OWNER_BRIDGE_KIND, payload, now);
+    task.dedupe_key = Some(format!("{OWNER_BRIDGE_KIND}:{alert}:{press}"));
+    let mut tx = conn.begin().await.map_err(store)?;
+    if enqueue(&mut tx, &task).await.map_err(store)?.is_none() {
+        return Ok(false);
+    }
+    let entry = AuditEntry {
+        actor: Actor::Owner(principal.owner()),
+        action: OWNER_BRIDGE_ACTION,
+        subject_kind: "ops.alert",
+        subject_id: alert,
+        change: Change::Action,
+    };
+    audit(&mut tx, &entry).await.map_err(store)?;
+    tx.commit().await.map_err(store)?;
+    Ok(true)
+}
+
+/// The owner-recorded opt-out's body: the number the homeowner asked, by any other contact, to stop
+/// texting. Its `Debug` never prints the number (PRIV-016).
+#[derive(Clone, Default, Deserialize)]
+pub struct OptOutForm {
+    /// The phone number as typed.
+    pub phone: String,
+}
+
+impl std::fmt::Debug for OptOutForm {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("OptOutForm { phone: [redacted] }")
+    }
+}
+
+/// CON-035, SEC-043, D-3753: after the fresh factor, lists the number at once through
+/// `messaging::api::suppress` with [`RevokeChannel::Owner`] (logged with its channel and time);
+/// confirmed on screen by the returned notice, never by text.
+///
+/// # Errors
+///
+/// [`OwnerToolError::NeedsFreshFactor`], [`OwnerToolError::Refused`] for a number that is not a
+/// phone number, or [`OwnerToolError::Database`].
+pub async fn owner_record_opt_out(
+    conn: &mut PgConnection,
+    vault: &Vault,
+    principal: &OwnerPrincipal,
+    form: &OptOutForm,
+    now: Timestamp,
+) -> Result<SettingsNotice, OwnerToolError> {
+    fresh_factor(
+        conn,
+        principal,
+        (OwnerAction::Settings, OWNER_OPT_OUT_ROUTE),
+        now,
+    )
+    .await?;
+    let how = (RevokeChannel::Owner, "owner_recorded");
+    match suppress(conn, vault, form.phone.trim(), how, now).await {
+        Ok(true) => Ok(SettingsNotice::OptOutListed),
+        Ok(false) => Ok(SettingsNotice::OptOutAlready),
+        Err(OutboxError::BadPhone) => Err(OwnerToolError::Refused),
+        Err(_) => Err(OwnerToolError::Database),
+    }
+}
+
+/// The Stripe-answer filing's body: the answer's date (`YYYY-MM-DD`), the reference and `yes` or
+/// `no` for whether it allows charges without the business present.
+#[derive(Debug, Clone, Default, Deserialize)]
+pub struct StripeAnswerForm {
+    /// The date of Stripe's written answer.
+    pub answered_on: String,
+    /// The reference, 1 to 200 characters.
+    pub reference: String,
+    /// `yes` or `no`.
+    pub allows: String,
+}
+
+/// PICK-048, SEC-043, D-2783, D-3753: after the fresh factor, files Stripe's written answer once
+/// through `quotes::api::file_stripe_answer` at `now`; the newest filing is the one in force.
+///
+/// # Errors
+///
+/// [`OwnerToolError::NeedsFreshFactor`], [`OwnerToolError::Refused`] for a bad date, reference or
+/// choice, or [`OwnerToolError::Database`].
+pub async fn owner_file_stripe_answer(
+    conn: &mut PgConnection,
+    principal: &OwnerPrincipal,
+    form: &StripeAnswerForm,
+    now: Timestamp,
+) -> Result<SettingsNotice, OwnerToolError> {
+    let route = (OwnerAction::StripeAnswer, OWNER_STRIPE_ANSWER_ROUTE);
+    fresh_factor(conn, principal, route, now).await?;
+    let day = form.answered_on.trim().parse::<jiff::civil::Date>();
+    let day = day.map_err(|_| OwnerToolError::Refused)?;
+    let allows = match form.allows.as_str() {
+        "yes" => true,
+        "no" => false,
+        _ => return Err(OwnerToolError::Refused),
+    };
+    match file_stripe_answer(conn, (day, &form.reference, allows), now).await {
+        Ok(()) => Ok(SettingsNotice::StripeAnswerFiled),
+        Err(AutoConfirmError::BadField) => Err(OwnerToolError::Refused),
+        Err(_) => Err(OwnerToolError::Database),
+    }
 }
