@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T01:27:14Z by runner eb7832a9c252 (actions).
+Updated 2026-11-19T01:27:41Z by runner eb7832a9c252 (actions).
 
-**Building: T505 in progress since 23:48Z; 467 of 663 done; week 71% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T563 in progress since 23:58Z; 467 of 663 done; week 71% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 467 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T505 claimed 23:48Z, lease until 03:55Z; lane 6: T563 claimed 23:58Z, lease until 04:16Z; lane 7: T203 claimed 00:59Z, lease until 03:59Z
+- **Lane:** lane 6: T563 claimed 23:58Z, lease until 04:16Z; lane 7: T203 claimed 00:59Z, lease until 03:59Z
 - **Week:** 71% used, 48.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:21Z, 5 min before this update
 - **Keeper:** last ran 01:06Z, next wake 03:44Z
@@ -19,6 +19,7 @@ Updated 2026-11-19T01:27:14Z by runner eb7832a9c252 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T505 | Decisions digest, piece 6: the next entries after the header | MERGE_PENDING | 1 | 99 min | 01:27Z |  |
 | T488 | portals and server: the business sign-up served in Spanish o | MERGE_PENDING | 1 | 111 min | 01:20Z |  |
 | T306 | server and portals: the complaints page, the emergency-email | MERGE_PENDING | 1 | 77 min | 00:59Z |  |
 | T205 | portals: owner refunds with a review step and the audit log  | MERGE_PENDING | 2 | 2 h 26 min | 00:48Z | PLAN GAP: `payments` has no public reader that ties a dispute to its pick (or its charge, business or job). Without one, |
@@ -137,9 +138,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 3: T505 (lease until 2026-11-19T03:55:34Z)
 - lane 6: T563 (lease until 2026-11-19T04:16:01Z)
 - lane 7: T203 (lease until 2026-11-19T03:59:10Z)
 
 ## Last usage reading
-- {"task": "T488", "at": "2026-11-19T01:20:10Z", "output_tokens": 95646, "input_tokens": 288, "cache_read_input_tokens": 12878496, "cache_creation_input_tokens": 361986}
+- {"task": "T505", "at": "2026-11-19T01:27:12Z", "input_tokens": 158, "output_tokens": 60477, "cache_read_input_tokens": 6661870, "cache_creation_input_tokens": 304649}
