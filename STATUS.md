@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T00:32:14Z by runner 44d63b391927 (actions).
+Updated 2026-11-19T00:32:37Z by runner 44d63b391927 (actions).
 
 **Building: T488 in progress since 23:28Z; 465 of 663 done; week 70% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 465 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T488 claimed 23:28Z, lease until 03:21Z; lane 2: T205 claimed 22:21Z, lease until 03:21Z; lane 3: T505 claimed 23:48Z, lease until 02:48Z; lane 4: T306 claimed 23:42Z, lease until 02:42Z; lane 5: T708 claimed 23:50Z, lease until 02:50Z; lane 6: T563 claimed 23:58Z, lease until 02:58Z; lane 7: T364 claimed 23:21Z, lease until 03:07Z
+- **Lane:** lane 1: T488 claimed 23:28Z, lease until 03:21Z; lane 2: T205 claimed 22:21Z, lease until 03:21Z; lane 3: T505 claimed 23:48Z, lease until 02:48Z; lane 4: T306 claimed 23:42Z, lease until 02:42Z; lane 5: T708 claimed 23:50Z, lease until 02:50Z; lane 6: T563 claimed 23:58Z, lease until 02:58Z
 - **Week:** 70% used, 46.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:21Z, 10 min before this update
+- **Last run:** 00:21Z, 11 min before this update
 - **Keeper:** last ran 23:37Z, next wake 23:57Z
 
 ## Needs attention
@@ -19,10 +19,11 @@ Updated 2026-11-19T00:32:14Z by runner 44d63b391927 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T364 | server and portals: the business step-up code page is served | MERGE_PENDING | 2 | 70 min | 00:32Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
 | T701 | messaging: a per-number opt-out lock, and the listing key an | done | 1 | 45 min | 23:02Z |  |
 | T583 | intake and server: the quote-count update text is sent at mo | done | 2 | 55 min | 22:50Z | PLAN GAP: kit/prompts/T583.md:51 (budget of 450 changed lines in 3 files) The smallest plan change: raise T583's budget  |
 | T504 | Decisions digest, piece 5: the next entries after the header | done | 1 | 39 min | 22:47Z |  |
-| T364 | server and portals: the business step-up code page is served | resync | 2 | 52 min | 22:05Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
+| T364 | server and portals: the business step-up code page is served | resync | 2 | 52 min | 22:05Z |  |
 | T651 | server and portals: owner step-up try limit, the passkey pat | done | 1 | 2 h 7 min | 21:52Z |  |
 | T722 | payments: read a pick's disputes and record Casey's evidence | done | 1 | 45 min | 21:33Z |  |
 | T503 | Decisions digest, piece 4: the next entries after the header | done | 1 | 31 min | 21:30Z |  |
@@ -137,7 +138,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 4: T306 (lease until 2026-11-19T02:42:52Z)
 - lane 5: T708 (lease until 2026-11-19T02:50:23Z)
 - lane 6: T563 (lease until 2026-11-19T02:58:31Z)
-- lane 7: T364 (lease until 2026-11-19T03:07:25Z)
 
 ## Last usage reading
-- {"task": "T701", "at": "2026-11-18T23:02:33Z", "input_tokens": 114, "output_tokens": 34459, "cache_creation_input_tokens": 132792, "cache_read_input_tokens": 3821220}
+- {"task": "T364", "at": "2026-11-19T00:32:12Z", "cache_creation_input_tokens": 87947, "input_tokens": 82, "output_tokens": 12851, "cache_read_input_tokens": 1164618}
