@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T04:18:31Z by runner c95edf6b7d53 (actions).
+Updated 2026-11-19T04:18:54Z by runner c95edf6b7d53 (actions).
 
 **Building: T408 in progress since 03:29Z; 473 of 663 done; week 73% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 473 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T408 claimed 03:29Z, lease until 06:29Z; lane 2: T520 claimed 01:57Z, lease until 06:52Z; lane 3: T203 claimed 04:08Z, lease until 07:08Z; lane 6: T490 claimed 02:10Z, lease until 07:07Z
+- **Lane:** lane 1: T408 claimed 03:29Z, lease until 06:29Z; lane 3: T203 claimed 04:08Z, lease until 07:08Z; lane 6: T490 claimed 02:10Z, lease until 07:07Z
 - **Week:** 73% used, 43.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:13Z, 5 min before this update
 - **Keeper:** last ran 04:13Z, next wake 04:33Z
@@ -21,6 +21,7 @@ Evidence: `trade_check` passes no words when the first tex; fix the plan (the ta
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T520 | portals and messaging: the portal stylesheets and email colo | MERGE_PENDING | 1 | 2 h 21 min | 04:18Z |  |
 | T563 | intake and privacy: the daily consent sweep removes consent  | MERGE_PENDING | 3 | 77 min | 04:05Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T399 | server: the email's Approve link approves the phone, only wi | MERGE_PENDING | 1 | 46 min | 04:01Z |  |
 | T484 | portals and quotes: "Call from the Laftly number", the owner | done | 1 | 82 min | 03:26Z |  |
@@ -139,9 +140,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T408 (lease until 2026-11-19T06:29:11Z)
-- lane 2: T520 (lease until 2026-11-19T06:52:34Z)
 - lane 3: T203 (lease until 2026-11-19T07:08:12Z)
 - lane 6: T490 (lease until 2026-11-19T07:07:31Z)
 
 ## Last usage reading
-- {"task": "T563", "at": "2026-11-19T04:05:56Z", "input_tokens": 92, "cache_read_input_tokens": 2091388, "cache_creation_input_tokens": 120526, "output_tokens": 20430}
+- {"task": "T520", "at": "2026-11-19T04:18:30Z", "cache_creation_input_tokens": 170050, "cache_read_input_tokens": 3495237, "output_tokens": 41151, "input_tokens": 157}
