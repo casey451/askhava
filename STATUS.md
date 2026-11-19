@@ -1,27 +1,27 @@
 # Ask Hava build status
 
-Updated 2026-11-19T06:24:20Z by runner 5ee8ef90fc50 (actions).
+Updated 2026-11-19T06:30:06Z by runner 7c090605e7a9 (actions).
 
-**Building: T310 in progress since 06:04Z; 477 of 664 done; week 75% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T310 in progress since 06:04Z; 478 of 664 done; week 75% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 477 of 664 build tasks (owner gates not counted)
+- **Tasks done:** 478 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T310 claimed 06:04Z, lease until 09:04Z; lane 4: T562 claimed 04:26Z, lease until 09:13Z; lane 5: T506 claimed 05:13Z, lease until 09:21Z; lane 6: T476 claimed 06:22Z, lease until 09:22Z; lane 7: T229 claimed 04:42Z, lease until 09:05Z
 - **Week:** 75% used, 40.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:24Z, 0 min before this update
+- **Last run:** 06:24Z, 5 min before this update
 - **Keeper:** last ran 06:24Z, next wake 09:07Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T542 (since 2026-11-19T06:04:46Z, no attempt used; a plan change fixes it): T542: dependency T490 is DONE but its owned file app/server/tests/email_provider_workers.rs is not on main; T542: dependency T490 is DONE but its owned file app/server/src/account_directory.rs is not on main
-- Strict plan check red: 61 problem(s) on tasks still to run (+291 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 60 problem(s) on tasks still to run (+292 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T408 | server: a release waits while safe mode is on and goes ahead | MERGE_PENDING | 3 | 2 h 48 min | 06:17Z | PLAN GAP: kit/prompts/T408.md:54 "Size budget: at most 6 files, 800 changed lines" cannot be met. The prompt's own plan  |
-| T203 | Wording scan: the required statements, business copy lines a | MERGE_PENDING | 4 | 42 min | 04:50Z | PLAN GAP: app/portals/templates/es_business_signup.html:82 ("Licencia de control de plagas") and :88 ("Mi licencia inclu |
+| T203 | Wording scan: the required statements, business copy lines a | done | 4 | 42 min | 04:50Z | PLAN GAP: app/portals/templates/es_business_signup.html:82 ("Licencia de control de plagas") and :88 ("Mi licencia inclu |
 | T490 | server (harness): the email provider passed to the sign-up m | done | 1 | 2 h 25 min | 04:35Z |  |
 | T520 | portals and messaging: the portal stylesheets and email colo | done | 1 | 2 h 21 min | 04:18Z |  |
 | T563 | intake and privacy: the daily consent sweep removes consent  | done | 3 | 77 min | 04:05Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
@@ -93,20 +93,20 @@ Updated 2026-11-19T06:24:20Z by runner 5ee8ef90fc50 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 293 of 735 (39.9%) · partial 396 · unstarted 46
-**Tasks merged (throughput only):** 477 of 664
+**Requirements verified:** 306 of 735 (41.6%) · partial 388 · unstarted 41
+**Tasks merged (throughput only):** 478 of 664
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 17 | 18 | 0 | 35 |
 | ai | 9 | 17 | 3 | 29 |
-| businesses | 17 | 40 | 1 | 58 |
+| businesses | 18 | 39 | 1 | 58 |
 | calls | 12 | 13 | 0 | 25 |
-| consent | 14 | 21 | 0 | 35 |
+| consent | 15 | 20 | 0 | 35 |
 | fees | 23 | 28 | 1 | 52 |
 | intake | 9 | 34 | 0 | 43 |
 | job-cards | 13 | 11 | 0 | 24 |
-| licensing | 33 | 15 | 0 | 48 |
+| licensing | 34 | 14 | 0 | 48 |
 | lifecycle | 18 | 10 | 0 | 28 |
 | messaging | 20 | 24 | 1 | 45 |
 | ops-recovery | 3 | 32 | 19 | 54 |
@@ -115,9 +115,9 @@ Updated 2026-11-19T06:24:20Z by runner 5ee8ef90fc50 (actions).
 | quotes-pick | 27 | 29 | 0 | 56 |
 | recurring | 7 | 4 | 0 | 11 |
 | security | 9 | 41 | 5 | 55 |
-| terms | 25 | 9 | 1 | 35 |
-| website | 9 | 16 | 5 | 30 |
-| wording | 12 | 11 | 9 | 32 |
+| terms | 26 | 8 | 1 | 35 |
+| website | 13 | 13 | 4 | 30 |
+| wording | 17 | 10 | 5 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -130,7 +130,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 120 of 263 done
+- stage 5: 121 of 263 done
 - stage 6: 0 of 48 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
