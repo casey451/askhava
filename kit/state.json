@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "phase": "kit",
- "current": "T724",
+ "current": "T607",
  "backup_runner": "on",
  "ruleset_verified": true,
  "lease": null,
@@ -27006,13 +27006,7 @@
      "plan_then": "f0c08c50de1fa43229646f63d68dd96bf6c8c9543f83c300ff5d92b12026824b",
      "plan_now": "38961550c33a69aead728c80609d779662570d854cfea717e6e75ae0771ec1ce"
     }
-   ],
-   "plan_gap": {
-    "at": "2026-11-19T15:50:24Z",
-    "problems": [
-     "T161: dependency T593 is DONE but its owned file app/server/tests/home_request_box.rs is not on main"
-    ]
-   }
+   ]
   },
   {
    "id": "T162",
@@ -70567,7 +70561,19 @@
    "attempts": 0,
    "slug": "spanish-conversations-switch",
    "type": "build",
-   "stage": "5"
+   "stage": "5",
+   "plan_gap": {
+    "at": "2026-11-19T17:15:21Z",
+    "problems": [
+     "T480: dependency T407 is DONE but its owned file migrations/0203_calls_safety_switch.sql is not on main",
+     "T480: dependency T407 is DONE but its owned file app/calls/src/safety_switch.rs is not on main",
+     "T480: dependency T407 is DONE but its owned file tests/integration/tests/safety_switch.rs is not on main",
+     "T480: dependency T470 is DONE but its owned file migrations/0207_messaging_email_lease.sql is not on main",
+     "T480: dependency T470 is DONE but its owned file app/messaging/src/email_due.rs is not on main",
+     "T480: dependency T470 is DONE but its owned file app/server/src/email_due.rs is not on main",
+     "T480: dependency T470 is DONE but its owned file tests/integration/tests/email_due.rs is not on main"
+    ]
+   }
   },
   {
    "id": "T482",
@@ -81958,17 +81964,20 @@
     "T606",
     "T593"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 0,
    "slug": "site-v6-bringup",
    "type": "build",
    "stage": "5",
-   "plan_gap": {
-    "at": "2026-11-19T15:50:24Z",
-    "problems": [
-     "T607: dependency T593 is DONE but its owned file app/server/tests/home_request_box.rs is not on main"
-    ]
-   }
+   "attempt_started_at": "2026-11-19T17:15:21Z",
+   "lane": "5",
+   "decision_ids": [
+    4751,
+    4752,
+    4753,
+    4754,
+    4755
+   ]
   },
   {
    "id": "T608",
@@ -85536,7 +85545,16 @@
    "attempts": 0,
    "slug": "business-address-chars",
    "type": "build",
-   "stage": "5"
+   "stage": "5",
+   "plan_gap": {
+    "at": "2026-11-19T17:15:21Z",
+    "problems": [
+     "T661: dependency T470 is DONE but its owned file migrations/0207_messaging_email_lease.sql is not on main",
+     "T661: dependency T470 is DONE but its owned file app/messaging/src/email_due.rs is not on main",
+     "T661: dependency T470 is DONE but its owned file app/server/src/email_due.rs is not on main",
+     "T661: dependency T470 is DONE but its owned file tests/integration/tests/email_due.rs is not on main"
+    ]
+   }
   },
   {
    "id": "T662",
@@ -86308,7 +86326,16 @@
    "attempts": 0,
    "slug": "open-cards-email",
    "type": "build",
-   "stage": "5"
+   "stage": "5",
+   "plan_gap": {
+    "at": "2026-11-19T17:15:21Z",
+    "problems": [
+     "T684: dependency T470 is DONE but its owned file migrations/0207_messaging_email_lease.sql is not on main",
+     "T684: dependency T470 is DONE but its owned file app/messaging/src/email_due.rs is not on main",
+     "T684: dependency T470 is DONE but its owned file app/server/src/email_due.rs is not on main",
+     "T684: dependency T470 is DONE but its owned file tests/integration/tests/email_due.rs is not on main"
+    ]
+   }
   },
   {
    "id": "T685",
@@ -86333,7 +86360,16 @@
    "attempts": 0,
    "slug": "deliverability-retests",
    "type": "build",
-   "stage": "5"
+   "stage": "5",
+   "plan_gap": {
+    "at": "2026-11-19T17:15:21Z",
+    "problems": [
+     "T686: dependency T470 is DONE but its owned file migrations/0207_messaging_email_lease.sql is not on main",
+     "T686: dependency T470 is DONE but its owned file app/messaging/src/email_due.rs is not on main",
+     "T686: dependency T470 is DONE but its owned file app/server/src/email_due.rs is not on main",
+     "T686: dependency T470 is DONE but its owned file tests/integration/tests/email_due.rs is not on main"
+    ]
+   }
   },
   {
    "id": "T687",
@@ -88772,7 +88808,7 @@
    "output_tokens": 34551,
    "cache_creation_input_tokens": 136721
   },
-  "source": "session_reading 2026-11-19T16:10:04Z (week)",
+  "source": "session_reading 2026-11-19T17:10:41Z (week)",
   "by_task": {
    "FIX-MAIN": {
     "estimated_bytes": 3756447,
@@ -94577,6 +94613,10 @@
     "reviewer_tokens": 232625,
     "reviewer_turns": 6,
     "last_model": "claude-opus-5-5"
+   },
+   "T607": {
+    "estimated_bytes": 428198,
+    "estimated_tokens": 1254395
    }
   },
   "windows": {
@@ -94597,7 +94637,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T17:15:36Z",
+ "updated_at": "2026-11-19T17:16:06Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -94698,22 +94738,6 @@
  "runner_sha": "b05c08a0d16829edf7d1945e78d76b6fec4c7320",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "1fab3a0bc8d26d3b914c19af6a255ed52d369b82",
-   "ok": true,
-   "at": "2026-11-19T10:42:01Z",
-   "why": "start routine (ancestry reuse of 7be551b7caec, 2026-11-19T10:32:55Z)",
-   "reused": "2026-11-19T10:32:55Z",
-   "base": "7be551b7caecffd5e22c64de91c78f4b842c96c8"
-  },
-  {
-   "sha": "1fab3a0bc8d26d3b914c19af6a255ed52d369b82",
-   "ok": true,
-   "at": "2026-11-19T10:45:21Z",
-   "why": "start routine (ancestry reuse of 7be551b7caec, 2026-11-19T10:32:55Z)",
-   "reused": "2026-11-19T10:32:55Z",
-   "base": "7be551b7caecffd5e22c64de91c78f4b842c96c8"
-  },
   {
    "sha": "06d6439ca6d9dc5b6431874821520aeee4589fa6",
    "ok": true,
@@ -94855,24 +94879,39 @@
    "why": "start routine (ancestry reuse of dd768f848177, 2026-11-19T15:34:54Z)",
    "reused": "2026-11-19T15:34:54Z",
    "base": "dd768f84817756d60074af64bdf2150cee45d70b"
+  },
+  {
+   "sha": "b05c08a0d16829edf7d1945e78d76b6fec4c7320",
+   "ok": true,
+   "at": "2026-11-19T17:14:45Z",
+   "why": "start routine (pre-session, ancestor of 82ae7f077915)",
+   "seconds": 920
+  },
+  {
+   "sha": "82ae7f0779158797a67f32af3398d4b7a443e83f",
+   "ok": true,
+   "at": "2026-11-19T17:15:21Z",
+   "why": "start routine (ancestry reuse of b05c08a0d168, 2026-11-19T17:14:45Z)",
+   "reused": "2026-11-19T17:14:45Z",
+   "base": "b05c08a0d16829edf7d1945e78d76b6fec4c7320"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T724 estimated 725k tokens (calibrated); week has 17.6M left (no five-hour budget, D-3056) after 4.4M still running in another lane (session_reading 2026-11-19T16:10:04Z (week)); running to the limit (model window, D-2225), claimed",
-  "at": "2026-11-19T16:18:33Z",
+  "last": "T607 estimated 1.3M tokens (calibrated); week has 190.7M left (no five-hour budget, D-3056) after 3.3M still running in another lane (session_reading 2026-11-19T17:10:41Z (week)); claimed",
+  "at": "2026-11-19T17:15:21Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "week": {
-    "used": 176396014,
+    "used": 3275327,
     "budget": 194000000,
-    "left": 17603986,
-    "resets_at": "2026-11-19T17:00:00Z"
+    "left": 190724673,
+    "resets_at": "2026-11-26T17:00:00Z"
    }
   },
-  "remaining_estimate": 383616025,
-  "projected_finish": "2026-12-03T12:30:46Z"
+  "remaining_estimate": 401963359,
+  "projected_finish": "2026-12-04T05:20:52Z"
  },
  "main_red_history": [
   {
@@ -94990,7 +95029,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 4751,
+ "next_decision": 4756,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",

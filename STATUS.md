@@ -1,21 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-19T17:15:36Z by runner b05c08a0d168 (actions).
+Updated 2026-11-19T17:16:06Z by runner b05c08a0d168 (actions).
 
 **Building: T530 in progress since 15:41Z; 499 of 683 done; week 0% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 499 of 683 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T530 claimed 15:41Z, lease until 19:41Z; lane 4: T555 claimed 15:44Z, lease until 20:13Z; lane 7: T715 claimed 15:50Z, lease until 18:50Z
-- **Week:** 0% used, 17.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:13Z, 1 min before this update
+- **Lane:** lane 3: T530 claimed 15:41Z, lease until 19:41Z; lane 4: T555 claimed 15:44Z, lease until 20:13Z; lane 5: T607 claimed 17:15Z, lease until 20:15Z; lane 7: T715 claimed 15:50Z, lease until 18:50Z
+- **Week:** 0% used, 190.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 17:13Z, 2 min before this update
 - **Keeper:** last ran 17:11Z, next wake 17:31Z
 
 ## Needs attention
-- PLAN GAP T161 (since 2026-11-19T15:50:24Z, no attempt used; a plan change fixes it): T161: dependency T593 is DONE but its owned file app/server/tests/home_request_box.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
+- PLAN GAP T480 (since 2026-11-19T17:15:21Z, no attempt used; a plan change fixes it): T480: dependency T407 is DONE but its owned file migrations/0203_calls_safety_switch.sql is not on main; T480: dependency T407 is DONE but its owned file app/calls/src/safety_switch.rs is not on main; T480: dependency T407 is DONE but its owned file tests/integration/tests/safety_switch.rs is not on main; T480: dependency T470 is DONE but its owned file migrations/0207_messaging_email_lease.sql is not on main; T480: dependency T470 is DONE but its owned file app/messaging/src/email_due.rs is not on main; T480: dependency T470 is DONE but its owned file app/server/src/email_due.rs is not on main; T480: dependency T470 is DONE but its owned file tests/integration/tests/email_due.rs is not on main
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- PLAN GAP T607 (since 2026-11-19T15:50:24Z, no attempt used; a plan change fixes it): T607: dependency T593 is DONE but its owned file app/server/tests/home_request_box.rs is not on main
+- PLAN GAP T661 (since 2026-11-19T17:15:21Z, no attempt used; a plan change fixes it): T661: dependency T470 is DONE but its owned file migrations/0207_messaging_email_lease.sql is not on main; T661: dependency T470 is DONE but its owned file app/messaging/src/email_due.rs is not on main; T661: dependency T470 is DONE but its owned file app/server/src/email_due.rs is not on main; T661: dependency T470 is DONE but its owned file tests/integration/tests/email_due.rs is not on main
+- PLAN GAP T684 (since 2026-11-19T17:15:21Z, no attempt used; a plan change fixes it): T684: dependency T470 is DONE but its owned file migrations/0207_messaging_email_lease.sql is not on main; T684: dependency T470 is DONE but its owned file app/messaging/src/email_due.rs is not on main; T684: dependency T470 is DONE but its owned file app/server/src/email_due.rs is not on main; T684: dependency T470 is DONE but its owned file tests/integration/tests/email_due.rs is not on main
+- PLAN GAP T686 (since 2026-11-19T17:15:21Z, no attempt used; a plan change fixes it): T686: dependency T470 is DONE but its owned file migrations/0207_messaging_email_lease.sql is not on main; T686: dependency T470 is DONE but its owned file app/messaging/src/email_due.rs is not on main; T686: dependency T470 is DONE but its owned file app/server/src/email_due.rs is not on main; T686: dependency T470 is DONE but its owned file tests/integration/tests/email_due.rs is not on main
 - Strict plan check red: 58 problem(s) on tasks still to run (+326 on DONE tasks); first: T403: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
@@ -126,7 +128,7 @@ Updated 2026-11-19T17:15:36Z by runner b05c08a0d168 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-19T16:10:04Z (week)): week: 176.4M used, 17.6M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T12:30:46Z.
+- Pacing (session_reading 2026-11-19T17:10:41Z (week)): week: 3.3M used, 190.7M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-04T05:20:52Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -144,6 +146,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 3: T530 (lease until 2026-11-19T19:41:19Z)
 - lane 4: T555 (lease until 2026-11-19T20:13:37Z)
+- lane 5: T607 (lease until 2026-11-19T20:15:21Z)
 - lane 7: T715 (lease until 2026-11-19T18:50:24Z)
 
 ## Last usage reading
