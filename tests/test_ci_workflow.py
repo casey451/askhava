@@ -13,6 +13,7 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -223,3 +224,104 @@ def test_twin_and_ally_skip_train_refs_and_governance_skips_their_heads() -> Non
                                                "!startsWith(github.event.workflow_run.head_branch, 'claude/train/')")
     ci_branches = _ci()[True]["push"]["branches"]
     assert "claude/**" in ci_branches and not any("train" in b for b in ci_branches)
+
+
+PINNED_FILES = ("ci.yml", "backup-runner.yml", "nightly-main.yml")
+PINNED = {("ci.yml", "checks"), ("ci.yml", "lint"), ("ci.yml", "coverage"), ("ci.yml", "e2e"),
+          ("backup-runner.yml", "backup"), ("nightly-main.yml", "named-mutants"), ("nightly-main.yml", "cargo-mutants")}
+RUST_RUN = re.compile(r"cargo (\S+ )?(test|llvm-cov|mutants)\b|run_named_mutants\.py|smoke\.sh|prehandin\.sh")
+PG16 = "/usr/lib/postgresql/16/bin"
+IMAGE = "ubuntu-24.04"
+
+
+def _flow(name: str) -> dict[str, Any]:
+    return yaml.safe_load((ROOT / ".github/workflows" / name).read_text(encoding="utf-8"))
+
+
+def _is_preflight(step: dict[str, Any]) -> bool:
+    run = str(step.get("run", ""))
+    return f"pg16={PG16};" in run and 'echo "$pg16" >> "$GITHUB_PATH"' in run and "D-4708" in run
+
+
+def _cache_problems(job: dict[str, Any]) -> list[str]:
+    ids = {s.get("id"): s for s in job["steps"] if s.get("id")}
+    problems = []
+    for step in job["steps"]:
+        uses, given = str(step.get("uses", "")), step.get("with", {})
+        if uses.startswith("Swatinem/rust-cache@") and IMAGE not in str(given.get("shared-key", "")):
+            problems.append(f"rust-cache shared-key {given.get('shared-key')!r}")
+        if not uses.startswith("actions/cache"):
+            continue
+        key = str(given.get("key", ""))
+        derived = re.fullmatch(r"\$\{\{ steps\.([\w-]+)\.outputs\.cache-primary-key \}\}", key)
+        if not (IMAGE in key or (derived and IMAGE in str(ids.get(derived.group(1), {}).get("with", {}).get("key")))):
+            problems.append(f"cache key {key!r}")
+        problems += [f"restore key {k!r}" for k in str(given.get("restore-keys", "")).splitlines() if IMAGE not in k]
+    return problems
+
+
+def _pin_problems(job: dict[str, Any]) -> list[str]:
+    """D-4708: a job that runs Rust tests, the mutants or the smoke and gate scripts runs on ubuntu-24.04, puts
+    PostgreSQL 16's tools on the path before its first cargo or script step, and keys every cache by the image."""
+    runs = [str(s.get("run", "")) for s in job["steps"]]
+    if not any(RUST_RUN.search(run) for run in runs):
+        return []
+    problems = [] if job.get("runs-on") == IMAGE else [f"runs-on {job.get('runs-on')!r}"]
+    first = next((i for i, run in enumerate(runs) if re.search(r"\bcargo |scripts/|runner\.", run)), len(runs))
+    if not any(_is_preflight(s) for s in job["steps"][:first]):
+        problems.append("no PostgreSQL 16 preflight before the first cargo or script step")
+    return problems + _cache_problems(job)
+
+
+def test_every_rust_test_job_is_pinned_with_the_preflight_and_image_keyed_caches() -> None:
+    """D-4708: exactly the seven named jobs match, and each passes."""
+    found = {(name, job_name) for name in PINNED_FILES for job_name, job in _flow(name)["jobs"].items()
+             if "steps" in job and any(RUST_RUN.search(str(s.get("run", ""))) for s in job["steps"])}
+    assert found == PINNED
+    for name, job_name in sorted(PINNED):
+        assert _pin_problems(_flow(name)["jobs"][job_name]) == [], (name, job_name)
+
+
+def _planted(name: str, job_name: str, cut: str) -> dict[str, Any]:
+    job = _flow(name)["jobs"][job_name]
+    if cut == "pin":
+        job["runs-on"] = "ubuntu-latest"
+    elif cut == "preflight":
+        job["steps"] = [s for s in job["steps"] if not _is_preflight(s)]
+    elif cut == "path":
+        for s in filter(_is_preflight, job["steps"]):
+            s["run"] = s["run"].replace('echo "$pg16" >> "$GITHUB_PATH"', "true")
+    else:
+        for s in job["steps"]:
+            for field in ("key", "shared-key", "restore-keys"):
+                if field in s.get("with", {}):
+                    s["with"][field] = s["with"][field].replace(IMAGE + "-", "", 1).replace("-" + IMAGE, "", 1)
+    return job
+
+
+@pytest.mark.parametrize("cut", ["pin", "preflight", "path", "cache"])
+@pytest.mark.parametrize(("name", "job_name"), sorted(PINNED))
+def test_a_planted_job_without_the_pin_preflight_path_or_image_key_fails(name: str, job_name: str, cut: str) -> None:
+    """D-4708: each of the four parts is checked on its own (cargo-mutants has no cache to cut)."""
+    problems = _pin_problems(_planted(name, job_name, cut))
+    if cut == "cache" and job_name == "cargo-mutants":
+        assert problems == []
+    else:
+        assert problems, (name, job_name, cut)
+
+
+@pytest.mark.parametrize(("version", "code"), [("16.10 (Ubuntu 16.10-0ubuntu0.24.04.1)", 0), ("18.1", 1), (None, 1)])
+def test_the_preflight_fails_unless_initdb_there_is_postgresql_16(tmp_path: Path, version: str | None, code: int) -> None:
+    """D-4708: run under Actions' `bash -e` with the path moved to a fake layout; only a 16 passes and adds the path."""
+    (step,) = [s for s in _flow("ci.yml")["jobs"]["checks"]["steps"] if _is_preflight(s)]
+    fake = tmp_path / "pg16"
+    fake.mkdir()
+    if version:
+        (fake / "initdb").write_text(f"#!/bin/sh\necho 'initdb (PostgreSQL) {version}'\n", encoding="utf-8")
+        (fake / "initdb").chmod(0o755)
+    env = {"PATH": "/usr/bin:/bin", "GITHUB_PATH": str(tmp_path / "path")}
+    done = subprocess.run(["bash", "-e", "-c", step["run"].replace(PG16, str(fake))], env=env, capture_output=True,
+                          text=True, check=False)
+    assert done.returncode == code
+    written = (tmp_path / "path").read_text(encoding="utf-8") if code == 0 else ""
+    assert (written == f"{fake}\n") if code == 0 else (f"{fake}/initdb is missing" in done.stdout and "D-4708" in done.stdout)

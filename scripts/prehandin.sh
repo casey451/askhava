@@ -179,6 +179,17 @@ ally_hint() {
   fi
 }
 
+pg16_path() {
+  # D-4708: initdb and pg_ctl live only in PostgreSQL 16's bin directory and /usr/bin/pg_dump is Debian's
+  # pg_wrapper, so the tests that run them by name need it first on PATH (Ci's preflight step does the same).
+  local pg16=/usr/lib/postgresql/16/bin
+  if [ -d "${pg16}" ]; then
+    export PATH="${pg16}:${PATH}"
+  else
+    echo "${pg16} is missing: PostgreSQL 16's initdb, pg_ctl and pg_dump are not on the path (D-4708)" >&2
+  fi
+}
+
 ally_database() {
   # DATABASE_URL as given (Ci), else a fresh askhava_ally database on the local PostgreSQL 16 that
   # scripts/smoke.sh starts, with smoke.sh's roles and a fresh password never printed. Fails, never exits.
@@ -311,6 +322,7 @@ coverage() {
   rm -f "${report}" "${report}.log"
 }
 
+pg16_path
 if [ -n "${ALLY}" ]; then
   ally_part
   printf '\nprehandin --ally: %s\n' "${ALLY_VERDICT}"
