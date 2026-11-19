@@ -152,7 +152,9 @@ tests/               the Rust test-layer crates integration, security and recove
                      `tests/fixtures` (T010) is the fake-data crate; Playwright in TypeScript for e2e and a11y;
                      `tests/e2e/fixtures.ts` gives every spec the `control` fixture over the test-control router,
                      `tests/e2e/webserver.ts` (the config's `globalSetup`, D-958) builds and starts the stand-ins,
-                     worker and web binary with `test-control` and stops them after the run;
+                     worker and web binary with `test-control` and stops them after the run (since T536 the
+                     worker shares the keyed binary's environment and all three share one ID secret, and the
+                     clock-advancing journeys run last in each config's `late` project, D-4649);
                      `tests/a11y/` (T053, D-1238 to D-1241) reuses that `globalSetup`, reads its page list from
                      the GET routes in app/*/src (a route with no seeded state fails), takes each route's states
                      and seed function from the shared data file `tests/a11y/page_states.ts` (T267, D-1788,
