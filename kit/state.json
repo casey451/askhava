@@ -70994,7 +70994,27 @@
      "expires": "2026-11-19T20:18:37Z",
      "lane": "6"
     }
-   ]
+   ],
+   "reviewed_sha": "7da51cbe448e357f8578fae55f4d5e10fd7e9097",
+   "review_lease": {
+    "task": "T480",
+    "session": "actions-44606104980",
+    "expires": "2026-11-19T23:38:50Z",
+    "lane": "4"
+   },
+   "branch": "claude/task/T480-spanish-conversations-switch",
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "c311c6f335119a9c27688d4ac12de9197ea74efd",
+     "to": "7da51cbe448e357f8578fae55f4d5e10fd7e9097",
+     "main": "c625369f5c87a9cc58c5b2869aea76195ef64f76",
+     "how": "hand-in",
+     "at": "2026-11-19T22:23:04Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T482",
@@ -96402,7 +96422,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T22:22:37Z",
+ "updated_at": "2026-11-19T22:23:04Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -96500,7 +96520,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "a91fb80e680659b3addc6cbd20fde03a7d29bbe0",
+ "runner_sha": "c311c6f335119a9c27688d4ac12de9197ea74efd",
  "starter": "actions",
  "smoke_runs": [
   {
