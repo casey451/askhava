@@ -67690,8 +67690,8 @@
     "T456",
     "T490"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "email-outbox-send",
    "type": "build",
    "stage": "5",
@@ -67706,7 +67706,33 @@
    "window_model": {
     "model": "claude-opus-5-5",
     "alias": "opus"
-   }
+   },
+   "last_failure": "Fix-round review (after the one allowed findings round) still found two problems at head d9889d9b8; no reviewer approved a head.\n1. app/messaging/src/email_due.rs:81 (BATCH = 10) and :209: core cancels a task handler after 2 minutes (app/core/src/tasks.rs:142-145, hold_lease -> TIMED_OUT). 10 rows x 15 s adapter timeout = 150 s exceeds that; the lease-margin check guards only the 5-minute STALE_AFTER. In a Resend outage the run is killed around row 8-9, `release` never runs, unreached rows stay `sending`, and 5 minutes later are retaken as stale with first_unsure_at set though no call was made (starts the 23-hour give-up instead of 72-hour expiry; the drain task fails every minute). Fix: bound the run by the handler timeout too (BATCH = 6, or stop once lease + min(STALE_AFTER, 2 min) - LEASE_MARGIN has passed); add a test where the adapter ticks the clock 15 s per call; correct the \"150 seconds\" line in D-4671.\n2. app/messaging/src/email_due.rs:212 (and :189): send_batch passes `lease` (run start) as `now` to send_leased -> send_email, so mark_email_sent stamps sent_at up to ~4 minutes early, and the daily count and 429 pause use that stale time. OPS-038: a window counting from a send (PICK-001, PICK-019) starts only when it is actually sent. Fix: call send_leased(db, drain, row, drain.clock.now()) and keep `lease` only for the margin check and release.\nEarlier findings (lease outliving run, size overrun reported in D-4671, AccountStatus::Removed.code()) were confirmed fixed. email_due integration tests 27/27 passed; smoke and prehandin green at d9889d9b8.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 260,
+     "head_sha": "d9889d9b84f951e7559d2ffe839b89730cd9617f",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-19T09:02:31Z",
+     "ended_at": "2026-11-19T10:35:45Z",
+     "result": "QUEUED",
+     "usage": {
+      "worker": {
+       "tokens": 17851997,
+       "turns": 151
+      },
+      "reviewer": {
+       "tokens": 2147748,
+       "turns": 36
+      }
+     }
+    }
+   ]
   },
   {
    "id": "T471",
@@ -86457,12 +86483,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T710",
-   "at": "2026-11-19T10:06:14Z",
-   "cache_read_input_tokens": 1388035,
-   "output_tokens": 19196,
-   "cache_creation_input_tokens": 110538,
-   "input_tokens": 76
+   "task": "T470",
+   "at": "2026-11-19T10:35:45Z",
+   "cache_creation_input_tokens": 390032,
+   "input_tokens": 363,
+   "cache_read_input_tokens": 19486986,
+   "output_tokens": 122364
   },
   "source": "session_reading 2026-11-19T10:33:46Z (week)",
   "by_task": {
@@ -92096,7 +92122,17 @@
    },
    "T470": {
     "estimated_bytes": 594153,
-    "estimated_tokens": 1730339
+    "estimated_tokens": 1730339,
+    "usage_counting": "message_id",
+    "cache_creation_input_tokens": 390032,
+    "input_tokens": 363,
+    "cache_read_input_tokens": 19486986,
+    "output_tokens": 122364,
+    "worker_tokens": 17851997,
+    "worker_turns": 151,
+    "reviewer_tokens": 2147748,
+    "reviewer_turns": 36,
+    "last_model": "claude-opus-5-5"
    },
    "T652": {
     "estimated_bytes": 452124,
@@ -92124,11 +92160,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-19T06:17:52Z",
-    "tokens": 15459553
+    "tokens": 17921010
    },
    "week": {
     "start": "2026-11-12T19:03:13Z",
-    "tokens": 359988387
+    "tokens": 362449844
    }
   },
   "session_reading": {
@@ -92139,7 +92175,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T10:35:44Z",
+ "updated_at": "2026-11-19T10:36:01Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -92237,7 +92273,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "7be551b7caecffd5e22c64de91c78f4b842c96c8",
+ "runner_sha": "d9889d9b84f951e7559d2ffe839b89730cd9617f",
  "starter": "actions",
  "smoke_runs": [
   {

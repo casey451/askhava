@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T10:35:44Z by runner 7be551b7caec (actions).
+Updated 2026-11-19T10:36:01Z by runner d9889d9b84f9 (actions).
 
-**Building: T470 in progress since 09:02Z; 487 of 664 done; week 78% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T705 in progress since 09:16Z; 487 of 664 done; week 78% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 487 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T470 claimed 09:02Z, lease until 13:32Z; lane 4: T705 claimed 09:16Z, lease until 13:34Z; lane 6: T540 claimed 10:35Z, lease until 13:35Z
+- **Lane:** lane 4: T705 claimed 09:16Z, lease until 13:34Z; lane 6: T540 claimed 10:35Z, lease until 13:35Z
 - **Week:** 78% used, 35.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 10:35Z, 0 min before this update
 - **Keeper:** last ran 10:34Z, next wake 10:54Z
@@ -15,11 +15,12 @@ Updated 2026-11-19T10:35:44Z by runner 7be551b7caec (actions).
 - PLAN GAP T109 (since 2026-11-19T10:35:23Z, no attempt used; a plan change fixes it): T109: dependency T476 is DONE but its owned file app/portals/src/health_page.rs is not on main; T109: dependency T476 is DONE but its owned file app/portals/templates/health.html is not on main; T109: dependency T476 is DONE but its owned file tests/integration/tests/health_page.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 60 problem(s) on tasks still to run (+305 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 65 problem(s) on tasks still to run (+306 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T470 | messaging and server: the worker task that sends queued emai | QUEUED | 1 | 93 min | 10:35Z | Fix-round review (after the one allowed findings round) still found two problems at head d9889d9b8; no reviewer approved |
 | T710 | quotes and licensing (harness): a launch-open category takes | MERGE_PENDING | 1 | 85 min | 10:06Z |  |
 | T553 | Decisions digest, piece 8: the next entries after the header | done | 1 | 76 min | 10:04Z |  |
 | T622 | portals: the scorecard's first-six-weeks email panel and OPS | MERGE_PENDING | 1 | 2 h 41 min | 09:47Z |  |
@@ -143,9 +144,9 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T470 (lease until 2026-11-19T13:32:40Z)
+- nothing
 - lane 4: T705 (lease until 2026-11-19T13:34:42Z)
 - lane 6: T540 (lease until 2026-11-19T13:35:23Z)
 
 ## Last usage reading
-- {"task": "T710", "at": "2026-11-19T10:06:14Z", "cache_read_input_tokens": 1388035, "output_tokens": 19196, "cache_creation_input_tokens": 110538, "input_tokens": 76}
+- {"task": "T470", "at": "2026-11-19T10:35:45Z", "cache_creation_input_tokens": 390032, "input_tokens": 363, "cache_read_input_tokens": 19486986, "output_tokens": 122364}
