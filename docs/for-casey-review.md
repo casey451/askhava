@@ -3485,4 +3485,15 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - **What changed:** safe mode (charges and releases paused) now starts only when a payment-error, app-down, ledger-difference or suspended-number alert, or a critical alert, waits 24 hours after reaching your phone. A texting-delivery, email-limit, unusual-vault-reading or call-back alert no longer starts it. A business-line texting drop is now alerted even if the homeowner-line alert was just cleared.
 - **Accepted risk:** an unusual-vault-reading alert you leave for 24 hours no longer pauses charges; safe mode never stopped vault reads anyway.
+## Thirteen wiring tasks from the November 19 sweep (D-4727)
+
+- **The gap:** some finished pieces were never connected: "2 YES" texts did not pick, the quote page had no "updates by email" choice, several business portal buttons (auto-confirm, withdraw a quote, leave, service area, shared inbox, contact card) posted to pages that do not exist, the owner's AI switch had no page, owner settings errors were not shown accessibly, and two owner actions were not logged.
+- **Fix:** tasks T728 to T739 and T741 connect each one, with tests; nothing changes for homeowners or businesses until each lands.
+- **Cleanup note:** the `business_pick_waiting` text has no sender and looks replaced by the pick-notice emails; it can be removed in a cleanup.
+- Our choice; nothing needs you now.
+
+## Queued emails now go out, and one help reply has no address yet (D-4670 to D-4673)
+
+- **What changed:** job cards, picks, receipts, reminders and homeowner emails that were stored but never sent now go out once a minute through the email provider, each once. An email the provider turns down, one tried for 23 hours without a clear answer, or one waiting 72 hours is dropped with an alert to you; an email to someone removed from a business, or to a business that left, is dropped unsent. The one exception: the "your notice email changed" warning to a business's old address still goes once the day's email limit resets, since that warning is what protects the account.
+- **The gap:** the "Got it" reply to a business's Get help form is stored under the team member's record, not their email, so it is dropped instead of sent. The fix belongs to the help form's task (queue it to the member's email with the business named).
 - Our choice; nothing needs you now.

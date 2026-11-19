@@ -56,7 +56,8 @@ async fn main() -> io::Result<()> {
         .map_err(io::Error::other)?;
     let lists = askhava_licensing::api::DailyListSettings::from_pairs(std::env::vars())
         .map_err(io::Error::other)?;
-    schedule_start(&pool, clock.now(), lists).await?;
+    let email = askhava_server::email_drain_ready(&settings, std::env::vars())?;
+    schedule_start(&pool, clock.now(), (lists, email)).await?;
     let parts = (texts, confirm);
     let registry = askhava_server::worker_registry(&settings, stream, parts, std::env::vars())?;
     let worker = Worker {
@@ -102,9 +103,19 @@ async fn schedule_messaging(conn: &mut sqlx::PgConnection, now: jiff::Timestamp)
 }
 
 /// The first nightly Stripe reconcile (T433), then the first runs of `watch_checks`' hourly
-/// vault-read check and daily volume check (T525, SEC-047, OPS-052) and `intake`'s daily consent
-/// sweep (T563, CON-022), each under its own dedupe key.
-async fn schedule_checks(conn: &mut sqlx::PgConnection, now: jiff::Timestamp) -> io::Result<()> {
+/// vault-read check and daily volume check (T525, SEC-047, OPS-052), `intake`'s daily consent
+/// sweep (T563, CON-022) and, only when `email` (the provider and vault exist), `messaging`'s
+/// queued-email drain (T470, D-3750), each under its own dedupe key.
+async fn schedule_checks(
+    conn: &mut sqlx::PgConnection,
+    now: jiff::Timestamp,
+    email: bool,
+) -> io::Result<()> {
+    if email {
+        askhava_messaging::api::schedule_email_due(conn, now)
+            .await
+            .map_err(io::Error::other)?;
+    }
     askhava_server::payment_jobs::schedule_reconcile(conn, now)
         .await
         .map_err(io::Error::other)?;
@@ -127,7 +138,7 @@ async fn schedule_checks(conn: &mut sqlx::PgConnection, now: jiff::Timestamp) ->
 async fn schedule_start(
     pool: &sqlx::PgPool,
     now: jiff::Timestamp,
-    lists: askhava_licensing::api::DailyListSettings,
+    (lists, email): (askhava_licensing::api::DailyListSettings, bool),
 ) -> io::Result<()> {
     let mut conn = pool.acquire().await.map_err(io::Error::other)?;
     schedule_verify(&mut conn, now)
@@ -170,7 +181,7 @@ async fn schedule_start(
     askhava_licensing::api::schedule_daily_lists(&mut conn, now, lists)
         .await
         .map_err(io::Error::other)?;
-    schedule_checks(&mut conn, now).await?;
+    schedule_checks(&mut conn, now, email).await?;
     askhava_intake::api::run_golden(&mut conn, now)
         .await
         .map(|_| ())
