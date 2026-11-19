@@ -27,6 +27,7 @@ pub use crate::accepted_quote_email::{
     ACCEPTED_QUOTE_TEMPLATE, AcceptedQuoteFacts, AcceptedQuoteSender, queue_accepted_quote,
     render_accepted_quote,
 };
+pub use crate::alert_contact::alert_contact;
 pub use crate::alert_emails::{
     ALERT_ADDRESS, ALERT_EMAIL_TEMPLATE, ALERT_PUSH_KIND, AlertEmailSender, DAYTIME_EMAIL_TEMPLATE,
     EmailLimits, HOURLY_CHECKS_KIND, OWNER_ALERT_CALL_KIND, alert_lines, check_email_use,

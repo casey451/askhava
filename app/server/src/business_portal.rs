@@ -26,6 +26,16 @@
 //! (`businesses::api::review_links`); `POST` [`REVIEW_LINKS_ROUTE`] stores them through
 //! `portals::api::save_home_links` with `GuardedOpener` (owner only; a link off its site's domain
 //! or that does not open is a 422 with the reason, nothing stored).
+//!
+//! T306 (BIZ-007, BIZ-029, BIZ-045, PICK-057; D-2128, D-2711, D-3112, D-4551): `GET`
+//! [`COMPLAINTS_ROUTE`] and `POST` [`COMPLAINT_REPLY_ROUTE`] (owner or "Confirm and billing"; a
+//! complaint not on the business's own list is the not-found answer; a reply after 5 days is a
+//! 422 that stores nothing), `GET` and `POST` [`EMERGENCY_SWITCH_ROUTE`] (the caller's own person
+//! only, `Acting` from the session; the after-hours step through `post_step`), `GET`
+//! [`NOTICE_LOG_ROUTE`] (the pick's job from `payments::api::pick_fee`, checked before any vault
+//! read) and `POST` [`NOT_A_FIT_ROUTE`] (the session proves the business, a card for the job
+//! proves the job; the path's token is never read, since the job page that offers the choice is
+//! shown after its Quote link was used, D-4551).
 
 use std::io;
 use std::net::IpAddr;
@@ -33,27 +43,33 @@ use std::sync::Arc;
 
 use askhava_adapters::api::PoolNumber;
 use askhava_businesses::api::{
-    GuardedOpener, LinkRefusal, NoticeChannel, NoticePurpose, may_get_notices, notice_addresses,
-    notice_channel, open_cards_times, returned_mailboxes, review_links, sign_in_lines,
+    Acting, Complaint, ComplaintError, EMERGENCY_YES_LIFE, GuardedOpener, LinkRefusal,
+    NoticeChannel, NoticePurpose, SwitchError, after_hours_box, complaints, may_get_notices,
+    notice_addresses, notice_channel, open_cards_times, returned_mailboxes, review_links,
+    sign_in_lines, switch_off_warns, switch_state,
 };
 use askhava_core::api::{Clock, Settings, SystemClock, arizona_time};
-use askhava_jobs::api::finished_counts;
+use askhava_jobs::api::{finished_counts, job_number};
 use askhava_messaging::api::still_away;
 use askhava_ops::api::away_until;
-use askhava_payments::api::{Statement, business_statement, saved_cards};
+use askhava_payments::api::{Statement, business_statement, pick_fee, saved_cards};
 use askhava_picks::api::pick_numbers;
 use askhava_portals::api::{
-    BILLING_ROUTE, BUSINESS_HOME_ROUTE, BusinessPrincipal, ChannelChangeError, ChannelFacts,
-    CookieJar, CsrfField, CsrfForm, HomeExtras, InboxSwitch, JOB_RELEASE_ROUTE, JobFacts,
-    LinksChangeError, NOTICE_SETTINGS_ROUTE, Need, NoticeAddress, OPEN_CARDS_ROUTE, PaymentMethod,
-    REVIEW_LINKS_ROUTE, SESSION_COOKIE, STATEMENT_ROUTE, SecurityEvent, SecurityEventKind,
-    WebSecurity, YourNumbers, admit_security_event, billing_page, business_home_page_with,
-    business_principal, change_channel, csrf_token, inbox_shared, job_release_page, no_store,
-    notice_settings_page, record_security_event, refuse_cross_site, save_home_links,
-    save_open_cards_times, security_event_client, signed_out, statement_csv,
+    ACTION_ROUTE, ActionKind, AfterHoursBox, BILLING_ROUTE, BUSINESS_HOME_ROUTE, BusinessPrincipal,
+    COMPLAINT_REPLY_ROUTE, COMPLAINTS_ROUTE, ChannelChangeError, ChannelFacts, CookieJar,
+    CsrfField, CsrfForm, EMERGENCY_SWITCH_ROUTE, HomeExtras, InboxSwitch, JOB_RELEASE_ROUTE,
+    JobFacts, LinksChangeError, NOT_A_FIT_ROUTE, NOTICE_SETTINGS_ROUTE, Need, NotAFitChoice,
+    NotAFitOutcome, NotAFitState, NoticeAddress, NoticeLogPage, OPEN_CARDS_ROUTE, PaymentMethod,
+    REVIEW_LINKS_ROUTE, RefusedReply, SESSION_COOKIE, STATEMENT_ROUTE, SecurityEvent,
+    SecurityEventKind, SwitchStep, WebSecurity, YourNumbers, admit_security_event,
+    answer_not_a_fit, billing_page, business_home_page_with, business_principal, change_channel,
+    complaints_page, csrf_token, emergency_switch_page_with_box, inbox_shared, job_release_page,
+    no_store, not_a_fit_action, not_a_fit_page, notice_log_page, notice_settings_page,
+    parse_reason, post_step, record_security_event, refuse_cross_site, reply_to_complaint,
+    save_home_links, save_open_cards_times, security_event_client, signed_out, statement_csv,
 };
 use askhava_privacy::api::{BusinessContactError, BusinessPurpose, Vault, read_business_mailbox};
-use askhava_quotes::api::quote_numbers;
+use askhava_quotes::api::{card_holders, quote_numbers};
 use axum::Router;
 use axum::extract::{Extension, FromRef, MatchedPath, Path, Request, State};
 use axum::http::StatusCode;
@@ -68,6 +84,10 @@ use sqlx::{PgConnection, PgPool};
 
 use crate::inbound_text::Webhooks;
 use crate::inbound_voice::VoiceHooks;
+
+/// BIZ-045, D-3112: the job page's notice log, under the caller's own pick (the pick gives the job
+/// and its number, since the door probe fills `{pick}` and no `{job}`).
+pub const NOTICE_LOG_ROUTE: &str = "/b/picks/{pick}/notices";
 
 /// TXT-035: business texting is off, so the notice channel is email alone (BIZ-036).
 const TEXTING_ON: bool = false;
@@ -120,8 +140,8 @@ struct Site {
 }
 
 /// The portal's routes over `pool`, reading the vault from `vault` and listing the masked
-/// `numbers` on the home page's calls card (BIZ-046), behind `no-store` and the cross-site
-/// refusal (SEC-034, SEC-042).
+/// `numbers` on the home page's calls card (BIZ-046), behind the cross-site refusal and, outside
+/// it, `no-store`, so a refusal's 403 is `no-store` too (SEC-034, SEC-042, TD-SEC-49).
 pub fn routes(pool: PgPool, vault: PortalVault, numbers: &[PoolNumber]) -> Router {
     let clock: Arc<dyn Clock> = Arc::new(SystemClock);
     let security = WebSecurity::new(pool.clone(), Arc::clone(&clock));
@@ -140,10 +160,15 @@ pub fn routes(pool: PgPool, vault: PortalVault, numbers: &[PoolNumber]) -> Route
         .route(BILLING_ROUTE, get(billing))
         .route(STATEMENT_ROUTE, get(statement))
         .route(NOTICE_SETTINGS_ROUTE, get(notices).post(save_channel))
+        .route(NOTICE_LOG_ROUTE, get(notice_log))
+        .route(COMPLAINTS_ROUTE, get(complaints_get))
+        .route(COMPLAINT_REPLY_ROUTE, post(complaint_reply))
+        .route(EMERGENCY_SWITCH_ROUTE, get(switch_get).post(switch_post))
+        .route(NOT_A_FIT_ROUTE, post(not_a_fit))
         .route_layer(from_fn(note_site))
         .with_state(state)
-        .layer(from_fn(no_store))
         .layer(from_fn_with_state(security, refuse_cross_site))
+        .layer(from_fn(no_store))
 }
 
 /// The routes `build_router` merges: `main`'s own `vault`, else the Twilio webhooks' vault, and
@@ -722,4 +747,369 @@ async fn save_channel(
         }
         Err(ChannelChangeError::Database) => failed("notice channel"),
     }
+}
+
+/// BIZ-029, SEC-019: `who`, with the owner or "Confirm and billing" role, and the business's own
+/// complaints, else the answer to send (D-4551).
+async fn complaint_facts(
+    portal: &Portal,
+    site: &Site,
+    jar: &CookieJar,
+) -> Result<(BusinessPrincipal, Vec<Complaint>), Box<Response>> {
+    let who = signed_in(portal, site, jar).await?;
+    if !who.may(who.business(), Need::ConfirmAndBilling) {
+        return Err(Box::new(denied(portal, site, &who).await));
+    }
+    let Ok(mut db) = portal.pool.acquire().await else {
+        return Err(Box::new(failed("connection")));
+    };
+    match complaints(&mut db, who.business()).await {
+        Ok(list) => Ok((who, list)),
+        Err(_) => Err(Box::new(failed("complaints"))),
+    }
+}
+
+/// `GET` [`COMPLAINTS_ROUTE`] (BIZ-029, D-200): each complaint's kind and date, no homeowner
+/// detail, the reply box while it is open. Changes nothing.
+async fn complaints_get(
+    State(portal): State<Portal>,
+    Extension(site): Extension<Site>,
+    jar: CookieJar,
+) -> Response {
+    let list = match complaint_facts(&portal, &site, &jar).await {
+        Ok((_, list)) => list,
+        Err(answer) => return *answer,
+    };
+    let Some(csrf) = csrf_token(&jar) else {
+        return failed("csrf token");
+    };
+    match complaints_page(&list, (portal.clock.now(), None), &csrf) {
+        Ok(html) => Html(html).into_response(),
+        Err(_) => failed("complaints page"),
+    }
+}
+
+/// The reply form: its CSRF token and the reply's words (BIZ-029); any other field is refused
+/// (SEC-010). No `Debug`: the words are the business's own (rust-production R6).
+#[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ReplyForm {
+    #[serde(default)]
+    csrf: String,
+    #[serde(default)]
+    reply: String,
+}
+
+impl CsrfField for ReplyForm {
+    fn csrf(&self) -> &str {
+        &self.csrf
+    }
+}
+
+/// `POST` [`COMPLAINT_REPLY_ROUTE`] (BIZ-029, SEC-009, SEC-042, SEC-019): the business's one
+/// reply, stored before the box closes at exactly 5 days; a complaint not on its own list is the
+/// not-found answer; an empty, too long or late reply stores nothing and shows why (422).
+async fn complaint_reply(
+    State(portal): State<Portal>,
+    Extension(site): Extension<Site>,
+    jar: CookieJar,
+    Path(complaint): Path<String>,
+    CsrfForm(form): CsrfForm<ReplyForm>,
+) -> Response {
+    let (who, list) = match complaint_facts(&portal, &site, &jar).await {
+        Ok(facts) => facts,
+        Err(answer) => return *answer,
+    };
+    let id = Uuid::try_parse(&complaint).ok();
+    let Some(id) = id.filter(|id| list.iter().any(|c| c.id == *id)) else {
+        return denied(&portal, &site, &who).await;
+    };
+    let (now, Ok(mut db)) = (portal.clock.now(), portal.pool.acquire().await) else {
+        return failed("connection");
+    };
+    let error = match reply_to_complaint(&mut db, &who, (id, &form.reply), now).await {
+        Ok(()) => return see_other(COMPLAINTS_ROUTE),
+        Err(ComplaintError::Database | ComplaintError::Audit) => return failed("complaint reply"),
+        Err(error) => error,
+    };
+    let refused = RefusedReply {
+        complaint: id,
+        error,
+        words: &form.reply,
+    };
+    let csrf = csrf_token(&jar).unwrap_or_default();
+    match complaints_page(&list, (now, Some(refused)), &csrf) {
+        Ok(html) => (StatusCode::UNPROCESSABLE_ENTITY, Html(html)).into_response(),
+        Err(_) => failed("complaints page"),
+    }
+}
+
+/// The signed-in person as `businesses` names who acts: never a person from the browser.
+fn acting(who: &BusinessPrincipal) -> Acting {
+    Acting {
+        business: who.business(),
+        member: who.member(),
+    }
+}
+
+/// BIZ-007, BIZ-042: the switch page for `by` now, with the after-hours box for the owner or a
+/// "Confirm and billing" member.
+async fn switch_html(
+    db: &mut PgConnection,
+    by: Acting,
+    csrf: &str,
+    now: Timestamp,
+) -> Result<String, SwitchError> {
+    let state = switch_state(db, by, (now, EMERGENCY_YES_LIFE)).await?;
+    let warns = state.on && switch_off_warns(db, by).await?;
+    let after_hours = after_hours_box(db, by).await?.map(|t| AfterHoursBox {
+        ticked: t.ticked,
+        refused: false,
+        suspended: t.suspended,
+    });
+    emergency_switch_page_with_box(state, (warns, false), after_hours, csrf)
+        .map_err(|_| SwitchError::Database)
+}
+
+/// `GET` [`EMERGENCY_SWITCH_ROUTE`] (BIZ-007, BIZ-037, BIZ-042): the caller's own switch. Changes
+/// nothing.
+async fn switch_get(
+    State(portal): State<Portal>,
+    Extension(site): Extension<Site>,
+    jar: CookieJar,
+) -> Response {
+    let who = match signed_in(&portal, &site, &jar).await {
+        Ok(who) => who,
+        Err(answer) => return *answer,
+    };
+    let (Some(csrf), Ok(mut db)) = (csrf_token(&jar), portal.pool.acquire().await) else {
+        return failed("csrf token or connection");
+    };
+    match switch_html(&mut db, acting(&who), &csrf, portal.clock.now()).await {
+        Ok(html) => Html(html).into_response(),
+        Err(_) => failed("emergency switch page"),
+    }
+}
+
+/// The switch form: its CSRF token and the step (BIZ-007, BIZ-042); any other field is refused
+/// (SEC-010).
+#[derive(Debug, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct StepForm {
+    #[serde(default)]
+    csrf: String,
+    #[serde(default)]
+    step: String,
+}
+
+impl CsrfField for StepForm {
+    fn csrf(&self) -> &str {
+        &self.csrf
+    }
+}
+
+/// `POST` [`EMERGENCY_SWITCH_ROUTE`] (BIZ-007, BIZ-037, BIZ-042, SEC-042, D-2711): one step for the
+/// caller's own person (`Acting` from the session); the after-hours step by anyone but the owner
+/// or a "Confirm and billing" member is the not-found answer; an unknown step is a 422; a Yes
+/// before a test changes nothing and shows the page again.
+async fn switch_post(
+    State(portal): State<Portal>,
+    Extension(site): Extension<Site>,
+    jar: CookieJar,
+    CsrfForm(form): CsrfForm<StepForm>,
+) -> Response {
+    let who = match signed_in(&portal, &site, &jar).await {
+        Ok(who) => who,
+        Err(answer) => return *answer,
+    };
+    let Some(step) = SwitchStep::from_form(&form.step) else {
+        return StatusCode::UNPROCESSABLE_ENTITY.into_response();
+    };
+    let Ok(mut db) = portal.pool.acquire().await else {
+        return failed("connection");
+    };
+    let csrf = csrf_token(&jar).unwrap_or_default();
+    match post_step(&mut db, acting(&who), (step, &csrf), portal.clock.now()).await {
+        Ok(html) => Html(html).into_response(),
+        Err(SwitchError::NotAllowed | SwitchError::UnknownMember) => {
+            drop(db);
+            denied(&portal, &site, &who).await
+        }
+        Err(SwitchError::NoTest | SwitchError::NoCover) => see_other(EMERGENCY_SWITCH_ROUTE),
+        Err(SwitchError::Database) => failed("emergency switch"),
+    }
+}
+
+/// BIZ-045, SEC-019: `raw`'s job when it is a pick of `who`'s business (`pick_fee`, as the Confirm
+/// page reads it), else `None`; read before anything from the vault.
+async fn own_pick_job(
+    db: &mut PgConnection,
+    who: &BusinessPrincipal,
+    raw: &str,
+) -> Result<Option<Uuid>, ()> {
+    let Ok(pick) = Uuid::try_parse(raw) else {
+        return Ok(None);
+    };
+    let fee = pick_fee(db, pick).await.map_err(|_| ())?;
+    Ok(fee
+        .filter(|f| who.may(f.business.0, Need::Member))
+        .map(|f| f.job))
+}
+
+/// BIZ-045, SEC-024: every notice address of `business` (each purpose's, then any returned one)
+/// by mailbox ID, opened from the vault; an address the vault no longer holds is left out.
+async fn log_addresses(
+    portal: &Portal,
+    vault: &Vault,
+    business: Uuid,
+) -> Option<Vec<(Uuid, String)>> {
+    let mut db = portal.pool.acquire().await.ok()?;
+    let mut ids: Vec<Uuid> = returned_mailboxes(&mut db, business).await.ok()?;
+    for purpose in [
+        NoticePurpose::Cards,
+        NoticePurpose::PicksAndRelease,
+        NoticePurpose::Account,
+        NoticePurpose::Money,
+    ] {
+        ids.extend(notice_addresses(&mut db, business, purpose).await.ok()?);
+    }
+    ids.sort_unstable();
+    ids.dedup();
+    let mut list = Vec::with_capacity(ids.len());
+    for id in ids {
+        match read_business_mailbox(&mut db, vault, BusinessPurpose::AccountEmail, id).await {
+            Ok(address) => list.push((id, address.expose_secret().to_owned())),
+            Err(BusinessContactError::NotFound) => {}
+            Err(_) => return None,
+        }
+    }
+    Some(list)
+}
+
+/// `GET` [`NOTICE_LOG_ROUTE`] (BIZ-045, OPS-037, SEC-019, D-3112): the notice log of the job of
+/// the caller's own pick; another business's or an unknown pick is the not-found answer with
+/// nothing read from the vault. Changes nothing but the vault's read audit.
+async fn notice_log(
+    State(portal): State<Portal>,
+    Extension(site): Extension<Site>,
+    jar: CookieJar,
+    Path(pick): Path<String>,
+) -> Response {
+    let who = match signed_in(&portal, &site, &jar).await {
+        Ok(who) => who,
+        Err(answer) => return *answer,
+    };
+    let Ok(mut db) = portal.pool.acquire().await else {
+        return failed("connection");
+    };
+    let job = match own_pick_job(&mut db, &who, &pick).await {
+        Ok(Some(job)) => job,
+        Ok(None) => {
+            drop(db);
+            return denied(&portal, &site, &who).await;
+        }
+        Err(()) => return failed("pick fee"),
+    };
+    let (Some(vault), Ok(number)) = (portal.vault.get(), job_number(&mut db, job).await) else {
+        return failed("no vault or job number");
+    };
+    let Some(addresses) = log_addresses(&portal, vault, who.business()).await else {
+        return failed("notice addresses");
+    };
+    let number = u32::try_from(number).unwrap_or(0);
+    let page = notice_log_page(&mut db, who.business(), (job, number), &addresses).await;
+    match page {
+        Ok(NoticeLogPage::Shown(html)) => Html(html).into_response(),
+        Ok(NoticeLogPage::NotFound) => {
+            drop(db);
+            denied(&portal, &site, &who).await
+        }
+        Err(_) => failed("notice log page"),
+    }
+}
+
+/// The "Not a fit for us" form: its CSRF token and the tapped reason (PICK-057); any other field
+/// is refused (SEC-010); a missing or unknown reason shows the reasons again.
+#[derive(Debug, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct FitForm {
+    #[serde(default)]
+    csrf: String,
+    #[serde(default)]
+    reason: Option<String>,
+}
+
+impl CsrfField for FitForm {
+    fn csrf(&self) -> &str {
+        &self.csrf
+    }
+}
+
+/// PICK-057: the page after a tap on `job` (number `number`), linking back to its Quote link page.
+fn fit_page(state: NotAFitState<'_>, number: i64, (job, token): (Uuid, &str)) -> Response {
+    let back = (ACTION_ROUTE.replace("{kind}", ActionKind::Quote.slug()))
+        .replace("{object}", &job.to_string())
+        .replace("{token}", token);
+    let status = match state {
+        NotAFitState::Refused(_) => StatusCode::UNPROCESSABLE_ENTITY,
+        NotAFitState::Saved(_) | NotAFitState::AlreadyAnswered => StatusCode::OK,
+    };
+    match not_a_fit_page(state, &number.to_string(), &back) {
+        Ok(html) => (status, Html(html)).into_response(),
+        Err(_) => failed("not a fit page"),
+    }
+}
+
+/// `POST` [`NOT_A_FIT_ROUTE`] (PICK-057, OPS-039, SEC-004, SEC-019, SEC-042, D-4551): the signed-in
+/// owner or "Cards and quotes" member's answer for a job its business holds a card for, stored
+/// through `answer_not_a_fit` (no routing or fee change); any other job is the not-found answer.
+async fn not_a_fit(
+    State(portal): State<Portal>,
+    Extension(site): Extension<Site>,
+    jar: CookieJar,
+    Path((object, token)): Path<(String, String)>,
+    CsrfForm(form): CsrfForm<FitForm>,
+) -> Response {
+    let who = match signed_in(&portal, &site, &jar).await {
+        Ok(who) => who,
+        Err(answer) => return *answer,
+    };
+    let (job, Ok(mut db)) = (Uuid::try_parse(&object).ok(), portal.pool.acquire().await) else {
+        return failed("connection");
+    };
+    let holds = match job {
+        Some(job) => card_holders(&mut db, job)
+            .await
+            .map(|h| h.contains(&who.business())),
+        None => Ok(false),
+    };
+    let (Some(job), Ok(true)) = (
+        job.filter(|_| who.may(who.business(), Need::CardsAndQuotes)),
+        holds,
+    ) else {
+        drop(db);
+        return denied(&portal, &site, &who).await;
+    };
+    let Ok(number) = job_number(&mut db, job).await else {
+        return failed("job number");
+    };
+    let Some(reason) = parse_reason(form.reason.as_deref()) else {
+        let (action, csrf) = (
+            not_a_fit_action(job, &token),
+            csrf_token(&jar).unwrap_or_default(),
+        );
+        let choice = NotAFitChoice {
+            action: &action,
+            csrf: &csrf,
+        };
+        return fit_page(NotAFitState::Refused(choice), number, (job, &token));
+    };
+    let state =
+        match answer_not_a_fit(&mut db, (job, who.business()), reason, portal.clock.now()).await {
+            Ok(NotAFitOutcome::Saved) => NotAFitState::Saved(reason),
+            Ok(NotAFitOutcome::AlreadyAnswered) => NotAFitState::AlreadyAnswered,
+            Ok(NotAFitOutcome::NoCard) => return denied(&portal, &site, &who).await,
+            Err(_) => return failed("not a fit"),
+        };
+    fit_page(state, number, (job, &token))
 }
