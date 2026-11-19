@@ -3,12 +3,12 @@
 TD-WORD-11 (WORD-027, WORD-028; D-452, D-474): `scripts/check_ai_smell.py` scans every page
 template, text and email template file, message file and stylesheet under `app/` and finds nothing
 in them; a copy of each real file kind with "seamless", an em dash, "not just a quote, but",
-"Text us. They quote. You pick.", an exclamation mark or an emoji planted fails with the rule named,
-as do a `linear-gradient(` in a portal stylesheet and `class="badge"` in a template; the 911 text's
-spec row (INT-004) is not scanned; the words the cold reads logged as "AI-smell list: add" are on
+"Text us. They quote. You pick.", an exclamation mark or an emoji planted fails with the rule named;
+the words the cold reads logged as "AI-smell list: add" are on
 the list; `docs/voice.md` keeps its AI-smell section and `BUILD_BRIEF.md` section 7 step 4 names
 AI smell among the reviewer's checks. The general scanner cases live in
-`tests/test_check_ai_smell.py`; this file covers the app's real templates. Fake text only.
+`tests/test_check_ai_smell.py` (the page habits in a portal stylesheet and template, and the
+skipped 911 row, INT-004); this file covers the app's real templates. Fake text only.
 
 Run: python3 -m pytest tests/docs/test_ai_smell_app.py -q -p no:cacheprovider
 """
@@ -106,24 +106,6 @@ def test_td_word_11_a_planted_smell_in_a_real_file_fails(tmp_path: Path, real: P
     planted = f"{source}\n{line}\n"
     assert planted != source
     assert rule in plant(root, rel, planted)
-
-
-@pytest.mark.parametrize(
-    ("rel", "text", "rule"),
-    [
-        ("app/portals/static/portal.css", ".card{background:linear-gradient(90deg,#fff,#eee)}", "linear gradient"),
-        ("app/portals/templates/fake_page.html", '<span class="badge">New</span>', "badge or pill"),
-        ("app/site/templates/fake_page.html", '<p class="pill">Fast</p>', "badge or pill"),
-    ],
-)
-def test_td_word_11_planted_page_habits_fail(tmp_path: Path, rel: str, text: str, rule: str) -> None:
-    assert rule in plant(fake_repo(tmp_path), rel, text)
-
-
-def test_td_word_11_the_911_row_is_not_scanned(tmp_path: Path) -> None:
-    root = fake_repo(tmp_path)
-    assert plant(root, "docs/spec/intake.md", '- **INT-004** "Leave now!" Source: fake.\n') == set()
-    assert "exclamation mark" in plant(root, "docs/spec/website.md", '- **WEB-099** "Leave now!" Source: fake.\n')
 
 
 def test_word_028_logged_words_are_listed_and_fail() -> None:

@@ -135,45 +135,23 @@ fn page_text(html: &str) -> String {
         .join(" ")
 }
 
-/// `text` with its HTML character references decoded (named, decimal and hexadecimal).
-fn decoded(text: &str) -> String {
-    let mut out = String::with_capacity(text.len());
-    let mut rest = text;
-    while let Some(at) = rest.find('&') {
-        out.push_str(&rest[..at]);
-        rest = &rest[at..];
-        let entity = rest.find(';').map(|end| (&rest[1..end], end));
-        match entity.and_then(|(name, end)| character(name).map(|c| (c, end))) {
-            Some((c, end)) => {
-                out.push(c);
-                rest = &rest[end + 1..];
-            }
-            None => {
-                out.push('&');
-                rest = &rest[1..];
-            }
-        }
-    }
-    out.push_str(rest);
-    out
-}
+/// The character references askama's HTML escaper writes, and what each stands for.
+const ENTITIES: [(&str, &str); 8] = [
+    ("&lt;", "<"),
+    ("&gt;", ">"),
+    ("&quot;", "\""),
+    ("&#34;", "\""),
+    ("&#39;", "'"),
+    ("&#x27;", "'"),
+    ("&nbsp;", " "),
+    ("&amp;", "&"),
+];
 
-/// The character one HTML reference `name` (without `&` and `;`) stands for.
-fn character(name: &str) -> Option<char> {
-    let code = match name {
-        "amp" => return Some('&'),
-        "lt" => return Some('<'),
-        "gt" => return Some('>'),
-        "quot" => return Some('"'),
-        "apos" => return Some('\''),
-        "nbsp" => return Some(' '),
-        _ => name.strip_prefix('#')?,
-    };
-    let value = match code.strip_prefix(['x', 'X']) {
-        Some(hex) => u32::from_str_radix(hex, 16).ok()?,
-        None => code.parse().ok()?,
-    };
-    char::from_u32(value)
+/// `text` with the escaper's character references decoded, `&amp;` last.
+fn decoded(text: &str) -> String {
+    ENTITIES
+        .iter()
+        .fold(text.to_owned(), |out, (entity, c)| out.replace(entity, c))
 }
 
 /// The first of `block`'s sentences missing from `text` in order, or `None` when all show.
@@ -253,25 +231,20 @@ fn word_029_the_block_check_fails_planted_differences() {
         heading: "Home · planted".to_owned(),
         words: words.to_owned(),
     };
-    assert_eq!(
-        missing(&text, &block("First one. Second & last link (WEB-004)")),
-        None
-    );
-    assert_eq!(
-        missing(&text, &block("First one. Second & first link")).as_deref(),
-        Some("Second & first link")
-    );
-    assert_eq!(
-        missing(&text, &block("Second & last link. First one")).as_deref(),
-        Some("First one")
-    );
-    assert_eq!(
-        missing(&text, &block("First one. A third one.")).as_deref(),
-        Some("A third one")
-    );
+    for (words, gap) in [
+        ("First one. Second & last link (WEB-004)", None),
+        (
+            "First one. Second & first link",
+            Some("Second & first link"),
+        ),
+        ("Second & last link. First one", Some("First one")),
+        ("First one. A third one.", Some("A third one")),
+    ] {
+        assert_eq!(missing(&text, &block(words)).as_deref(), gap, "{words}");
+    }
     assert_eq!(without_citation("Pick one (or none)"), "Pick one (or none)");
     assert_eq!(without_citation("Go. (CON-005; carrier rules)"), "Go.");
-    assert_eq!(decoded("it&#x27;s &#39;a&#39; &bogus;"), "it's 'a' &bogus;");
+    assert_eq!(decoded("it&#x27;s &#39;a&#39; &amp;lt;"), "it's 'a' &lt;");
 }
 
 /// D-3890 (3), WEB-017: while the start line names the texting number, only its chat sentence is
