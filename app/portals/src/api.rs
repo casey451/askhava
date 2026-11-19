@@ -144,6 +144,10 @@ pub use crate::job_release::{
     CallAttempt, EMAIL_CHOSEN_LINE, JOB_RELEASE_ROUTE, JobFacts, JobReleaseError, MissedText,
     TIP_LINE, job_release_page,
 };
+pub use crate::job_types_page::{
+    JOB_TYPES_ROUTE, JobTypesOutcome, JobTypesPage, job_types_page, posted_choice, shown_offer,
+    within,
+};
 pub use crate::limits::{
     CODE_SENDS_PER_IP, CODE_SENDS_PER_NUMBER, CODE_SENDS_UNKNOWN, CODE_TRIES_PER_BUSINESS,
     CODE_TRIES_PER_IP, LINKS_PER_BUSINESS, LINKS_PER_IP, OWNER_CHALLENGES_PER_IP,
