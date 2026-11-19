@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T00:40:34Z by runner 737c9db4d99b (actions).
+Updated 2026-11-19T00:41:03Z by runner 737c9db4d99b (actions).
 
 **Building: T488 in progress since 23:28Z; 465 of 663 done; week 70% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 465 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T488 claimed 23:28Z, lease until 03:21Z; lane 2: T205 claimed 22:21Z, lease until 03:21Z; lane 3: T505 claimed 23:48Z, lease until 02:48Z; lane 4: T306 claimed 23:42Z, lease until 02:42Z; lane 5: T708 claimed 23:50Z, lease until 03:36Z; lane 6: T563 claimed 23:58Z, lease until 02:58Z
+- **Lane:** lane 1: T488 claimed 23:28Z, lease until 03:21Z; lane 2: T205 claimed 22:21Z, lease until 03:21Z; lane 3: T505 claimed 23:48Z, lease until 02:48Z; lane 4: T306 claimed 23:42Z, lease until 02:42Z; lane 6: T563 claimed 23:58Z, lease until 02:58Z
 - **Week:** 70% used, 46.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:38Z, 1 min before this update
+- **Last run:** 00:38Z, 2 min before this update
 - **Keeper:** last ran 00:38Z, next wake 02:45Z
 
 ## Needs attention
@@ -19,6 +19,7 @@ Updated 2026-11-19T00:40:34Z by runner 737c9db4d99b (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T708 | intake: a quote-count update due in quiet hours goes at the  | MERGE_PENDING | 1 | 50 min | 00:40Z |  |
 | T364 | server and portals: the business step-up code page is served | MERGE_PENDING | 2 | 70 min | 00:32Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
 | T701 | messaging: a per-number opt-out lock, and the listing key an | done | 1 | 45 min | 23:02Z |  |
 | T583 | intake and server: the quote-count update text is sent at mo | done | 2 | 55 min | 22:50Z | PLAN GAP: kit/prompts/T583.md:51 (budget of 450 changed lines in 3 files) The smallest plan change: raise T583's budget  |
@@ -136,8 +137,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T205 (lease until 2026-11-19T03:21:08Z)
 - lane 3: T505 (lease until 2026-11-19T02:48:09Z)
 - lane 4: T306 (lease until 2026-11-19T02:42:52Z)
-- lane 5: T708 (lease until 2026-11-19T03:36:39Z)
 - lane 6: T563 (lease until 2026-11-19T02:58:31Z)
 
 ## Last usage reading
-- {"task": "T364", "at": "2026-11-19T00:32:12Z", "cache_creation_input_tokens": 87947, "input_tokens": 82, "output_tokens": 12851, "cache_read_input_tokens": 1164618}
+- {"task": "T708", "at": "2026-11-19T00:40:33Z", "cache_read_input_tokens": 2621618, "input_tokens": 86, "cache_creation_input_tokens": 138179, "output_tokens": 42100}
