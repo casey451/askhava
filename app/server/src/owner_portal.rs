@@ -7,7 +7,10 @@
 //! [`OWNER_BANNER_ROUTE`] and [`OWNER_ALERT_ACK_ROUTE`] (each read by `parse_change` for its own
 //! route and made by `apply_owner_change`); the bridge press [`OWNER_BRIDGE_ROUTE`] (it only
 //! queues `calls.owner_bridge`); the owner-recorded opt-out [`OWNER_OPT_OUT_ROUTE`] (through the
-//! vault) and the Stripe-answer record [`OWNER_STRIPE_ANSWER_ROUTE`]. Every path is fixed under
+//! vault), the Stripe-answer record [`OWNER_STRIPE_ANSWER_ROUTE`] and the safety voice call
+//! switch [`OWNER_SAFETY_CALL_ROUTE`] (T407, CALL-019, CALL-022: `portals::owner_safety_call`
+//! with `calls::api::SAFETY_CONDITIONS`, its fresh factor `SafetyCallSwitch`; a refusal naming
+//! what is missing is a 400 with the settings page). Every path is fixed under
 //! `/owner/`, record IDs travel in the form body (D-3890). Every response is `no-store`, a
 //! cross-site refusal too (the `no_store` layer is outermost); every
 //! `POST` passes `refuse_cross_site` and then the CSRF form check before the owner-session check
@@ -35,12 +38,12 @@ use askhava_portals::api::{
     BridgeForm, ChangeForm, CookieJar, CsrfField, CsrfForm, OWNER_ALERT_ACK_ROUTE,
     OWNER_BANNER_ROUTE, OWNER_BRIDGE_ROUTE, OWNER_CATEGORY_ROUTE, OWNER_FEE_MODE_ROUTE,
     OWNER_HOME_ROUTE, OWNER_OPT_OUT_ROUTE, OWNER_PAUSE_ROUTE, OWNER_RELEASE_ROUTE,
-    OWNER_SETTINGS_ROUTE, OWNER_STRIPE_ANSWER_ROUTE, OWNER_TEXTING_ROUTE, OptOutForm,
-    OwnerPrincipal, OwnerToolError, ReleaseForm, ReleaseScreen, SettingsNotice, StepUpScreen,
-    StripeAnswerForm, WebSecurity, apply_owner_change, csrf_token, no_store, owner_bridge_press,
-    owner_file_stripe_answer, owner_home_page, owner_record_opt_out, owner_release_page,
-    owner_release_resend, owner_settings_page_with, owner_signed_out, owner_step_up_page,
-    parse_change, refuse_cross_site,
+    OWNER_SAFETY_CALL_ROUTE, OWNER_SETTINGS_ROUTE, OWNER_STRIPE_ANSWER_ROUTE, OWNER_TEXTING_ROUTE,
+    OptOutForm, OwnerPrincipal, OwnerToolError, ReleaseForm, ReleaseScreen, SafetyCallForm,
+    SettingsNotice, StepUpScreen, StripeAnswerForm, WebSecurity, apply_owner_change, csrf_token,
+    no_store, owner_bridge_press, owner_file_stripe_answer, owner_home_page, owner_record_opt_out,
+    owner_release_page, owner_release_resend, owner_safety_call, owner_settings_page_with,
+    owner_signed_out, owner_step_up_page, parse_change, refuse_cross_site,
 };
 use askhava_privacy::api::Vault;
 use axum::Router;
@@ -162,6 +165,25 @@ impl CsrfField for StripeBody {
     }
 }
 
+/// The safety voice call form with its CSRF token (CALL-019).
+#[derive(serde::Deserialize)]
+struct SafetyBody {
+    #[serde(default)]
+    csrf: String,
+    #[serde(default)]
+    to: String,
+    #[serde(default)]
+    approved_on: String,
+    #[serde(default)]
+    reference: String,
+}
+
+impl CsrfField for SafetyBody {
+    fn csrf(&self) -> &str {
+        &self.csrf
+    }
+}
+
 /// The release press with its CSRF token (D-3892).
 #[derive(serde::Deserialize)]
 struct ReleaseBody {
@@ -218,6 +240,7 @@ pub fn routes(pool: PgPool, vault: Option<Arc<Vault>>, webhooks: Option<&Arc<Web
         .route(OWNER_BRIDGE_ROUTE, post(bridge))
         .route(OWNER_OPT_OUT_ROUTE, post(opt_out))
         .route(OWNER_STRIPE_ANSWER_ROUTE, post(stripe_answer))
+        .route(OWNER_SAFETY_CALL_ROUTE, post(safety_call))
         .route(OWNER_RELEASE_ROUTE, get(release_page).post(release_press))
         .route_layer(from_fn(note_owner_site))
         .with_state(state)
@@ -438,6 +461,41 @@ async fn stripe_answer(
         Ok(notice) => {
             let shown = (Page::Settings, Some(notice));
             page_answer(&tools, &jar, shown, StatusCode::OK).await
+        }
+        Err(error) => not_made(&tools, &jar, &error, Page::Settings).await,
+    }
+}
+
+/// `POST` [`OWNER_SAFETY_CALL_ROUTE`] (CALL-019, CALL-022, SEC-043, D-3134): after the fresh
+/// factor, turns the safety voice call on or off with `calls::api::SAFETY_CONDITIONS` and shows
+/// the settings page with the outcome: 200 when made, 400 naming what is missing when refused.
+async fn safety_call(
+    State(tools): State<Tools>,
+    Extension(site): Extension<OwnerSite>,
+    jar: CookieJar,
+    CsrfForm(body): CsrfForm<SafetyBody>,
+) -> Response {
+    let (principal, now) = match owner(&tools, &jar, &site).await {
+        Ok(owner) => owner,
+        Err(refused) => return *refused,
+    };
+    let Ok(mut db) = tools.pool.acquire().await else {
+        return failed("database");
+    };
+    let form = SafetyCallForm {
+        to: body.to,
+        approved_on: body.approved_on,
+        reference: body.reference,
+    };
+    let met = &askhava_calls::api::SAFETY_CONDITIONS;
+    match owner_safety_call(&mut db, &principal, (&form, met), now).await {
+        Ok(notice) => {
+            let status = if notice.refused() {
+                StatusCode::BAD_REQUEST
+            } else {
+                StatusCode::OK
+            };
+            page_answer(&tools, &jar, (Page::Settings, Some(notice)), status).await
         }
         Err(error) => not_made(&tools, &jar, &error, Page::Settings).await,
     }
