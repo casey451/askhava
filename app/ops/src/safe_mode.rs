@@ -11,9 +11,8 @@
 //! push is [`SAFE_MODE_AFTER`] old and off once no such alert is open (any push age: "no other
 //! High alert open", TD-OPS-06), each change with one audit row. [`safe_mode_on`] answers the
 //! flag OR an overdue alert by the database's `now()`, so safe mode never fails open between
-//! checks or with the worker stopped. Only `payments::handlers::charges_paused` and `server`'s
-//! release gate (`release_sink.rs`, `release_hold.rs`) read it: texts never do (D-133, D-4026).
-//! Nothing here starts a charge or a release when safe mode ends (FEE-016).
+//! checks or with the worker stopped. Only `charges_paused` and `server`'s `release_sink.rs` and
+//! `release_hold.rs` read it, texts never (D-133, D-4026); nothing here starts either (FEE-016).
 
 use askhava_core::api::{HandlerError, NewTask, enqueue};
 use jiff::{SignedDuration, Timestamp};
