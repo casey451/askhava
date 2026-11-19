@@ -103,7 +103,8 @@ pub enum DeliveryOutcome {
 /// the `ops.delivery` lock. A line at 97% of 200 notes its recovery time and acknowledges the
 /// open delivery alert raised on that line (by the system, one [`ALERT_ACKNOWLEDGED_ACTION`]
 /// audit row, which the digest lists). A low line raises a High [`DELIVERY_ALERT`] only when no
-/// delivery alert is open and, if one was ever resolved, the line reached 97% at or after that.
+/// delivery alert is open and, if one of this line's own was ever resolved, the line reached 97%
+/// at or after that (D-4310).
 ///
 /// # Errors
 ///
@@ -179,15 +180,16 @@ async fn acknowledge_one(tx: &mut PgConnection, id: Uuid, at: Timestamp) -> Resu
     audit(tx, &entry).await.map(drop)
 }
 
-/// OPS-025, D-163: raises the High delivery alert for `audience` unless held since the last
-/// resolved delivery alert (no recovery to 97% of 200 on this line at or after its resolution).
+/// OPS-025, OPS-004, D-163, D-4310: raises the High delivery alert for `audience` unless held
+/// since this line's own last resolved delivery alert (no recovery to 97% of 200 on this line at
+/// or after its resolution); another line's acknowledged alert never holds it (TD-OPS-47).
 async fn raise_delivery(
     tx: &mut PgConnection,
     audience: Audience,
 ) -> Result<DeliveryOutcome, OpsError> {
     let held = sqlx::query_scalar!(
         r#"SELECT COALESCE((SELECT max(a.resolved_at) FROM ops.alert a
-             JOIN ops.delivery_alert d ON d.alert_id = a.id)
+             JOIN ops.delivery_alert d ON d.alert_id = a.id WHERE d.audience = $1)
            > COALESCE((SELECT recovered_at FROM ops.delivery_line WHERE audience = $1),
                       '-infinity'), false) AS "held!""#,
         audience.code(),
