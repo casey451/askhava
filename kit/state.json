@@ -91430,7 +91430,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T08:50:09Z",
+ "updated_at": "2026-11-19T08:50:33Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -91528,8 +91528,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "988bbf1c1224ae0de1988329bf6ad370415b3916",
- "starter": "actions",
+ "runner_sha": "25c9a14919a446dcdf78956b44e4e3adc0d3c4bf",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "ace77c016ba8d073b779d3754bcdf3433145d29b",
@@ -91822,7 +91822,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 4669,
+ "next_decision": 4670,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
@@ -93081,6 +93081,12 @@
    "at": "2026-11-19T05:27:32Z",
    "reason": "T723 pre-claim scout: licensed-only job types (LICENSED_ONLY) dropped on T716/T723 read-back of stored job_type.<trade> rows; name the not-certain step-marker row",
    "session": "manual-fdb75889f80d"
+  },
+  {
+   "number": 4669,
+   "at": "2026-11-19T08:50:33Z",
+   "reason": "T161 PLAN GAP: test_site_copy_blocks.py vs home page; T161 deps T593, heading-based test with two reasoned skips; T593 places fair 3, business text, business fee blocks",
+   "session": "manual-75d7bf5efbd2"
   }
  ],
  "lanes_fallback_history": [
