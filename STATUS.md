@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T17:36:16Z by runner 9cae918e901f (actions).
+Updated 2026-11-19T17:38:58Z by runner 9cae918e901f (actions).
 
-**Building: T530 in progress since 15:41Z; 499 of 683 done; week 0% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T555 in progress since 15:44Z; 499 of 683 done; week 0% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 499 of 683 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T530 claimed 15:41Z, lease until 20:36Z; lane 4: T555 claimed 15:44Z, lease until 20:13Z; lane 5: T607 claimed 17:15Z, lease until 20:15Z; lane 6: T480 claimed 17:18Z, lease until 20:18Z; lane 7: T715 claimed 15:50Z, lease until 18:50Z
+- **Lane:** lane 4: T555 claimed 15:44Z, lease until 20:13Z; lane 5: T607 claimed 17:15Z, lease until 20:15Z; lane 6: T480 claimed 17:18Z, lease until 20:18Z; lane 7: T715 claimed 15:50Z, lease until 18:50Z
 - **Week:** 0% used, 189.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:33Z, 2 min before this update
+- **Last run:** 17:36Z, 2 min before this update
 - **Keeper:** last ran 17:11Z, next wake 17:31Z
 
 ## Needs attention
@@ -19,6 +19,7 @@ Updated 2026-11-19T17:36:16Z by runner 9cae918e901f (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T530 | portals: the owner help page and its screened reply box (D-3 | QUEUED | 1 | 117 min | 17:38Z | Review round 2 on head 9cae918e901f6738321e0450589f137ab939da2f: REVIEW-VERDICT: FINDINGS (the one fix round is used). / |
 | T724 | harness: Ci's Rust-test jobs, the worker job and the nightly | MERGE_PENDING | 1 | 50 min | 17:09Z |  |
 | T210 | payments: the money view's sales-tax set-aside and manual ex | MERGE_PENDING | 1 | 53 min | 16:29Z |  |
 | T407 | calls, portals and server: the owner-portal safety voice cal | done | 1 | 102 min | 16:01Z |  |
@@ -139,11 +140,10 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 3: T530 (lease until 2026-11-19T20:36:16Z)
 - lane 4: T555 (lease until 2026-11-19T20:13:37Z)
 - lane 5: T607 (lease until 2026-11-19T20:15:21Z)
 - lane 6: T480 (lease until 2026-11-19T20:18:37Z)
 - lane 7: T715 (lease until 2026-11-19T18:50:24Z)
 
 ## Last usage reading
-- {"task": "T724", "at": "2026-11-19T17:09:10Z", "input_tokens": 98, "cache_read_input_tokens": 3439044, "output_tokens": 34551, "cache_creation_input_tokens": 136721}
+- {"task": "T530", "at": "2026-11-19T17:38:57Z", "cache_creation_input_tokens": 307915, "output_tokens": 77173, "input_tokens": 266, "cache_read_input_tokens": 10596246}
