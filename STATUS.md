@@ -1,27 +1,27 @@
 # Ask Hava build status
 
-Updated 2026-11-19T01:16:02Z by runner 9e53929b8aee (actions).
+Updated 2026-11-19T01:20:07Z by runner c5a97a0b8910 (actions).
 
-**Building: T488 in progress since 23:28Z; 466 of 663 done; week 71% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T488 in progress since 23:28Z; 467 of 663 done; week 71% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 466 of 663 build tasks (owner gates not counted)
+- **Tasks done:** 467 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T488 claimed 23:28Z, lease until 03:59Z; lane 3: T505 claimed 23:48Z, lease until 03:55Z; lane 6: T563 claimed 23:58Z, lease until 04:16Z; lane 7: T203 claimed 00:59Z, lease until 03:59Z
 - **Week:** 71% used, 48.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:06Z, 9 min before this update
+- **Last run:** 01:16Z, 3 min before this update
 - **Keeper:** last ran 01:06Z, next wake 03:44Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 59 problem(s) on tasks still to run (+274 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 53 problem(s) on tasks still to run (+271 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T306 | server and portals: the complaints page, the emergency-email | MERGE_PENDING | 1 | 77 min | 00:59Z |  |
 | T205 | portals: owner refunds with a review step and the audit log  | MERGE_PENDING | 2 | 2 h 26 min | 00:48Z | PLAN GAP: `payments` has no public reader that ties a dispute to its pick (or its charge, business or job). Without one, |
-| T708 | intake: a quote-count update due in quiet hours goes at the  | MERGE_PENDING | 1 | 50 min | 00:40Z |  |
+| T708 | intake: a quote-count update due in quiet hours goes at the  | done | 1 | 50 min | 00:40Z |  |
 | T364 | server and portals: the business step-up code page is served | done | 2 | 70 min | 00:32Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
 | T701 | messaging: a per-number opt-out lock, and the listing key an | done | 1 | 45 min | 23:02Z |  |
 | T583 | intake and server: the quote-count update text is sent at mo | done | 2 | 55 min | 22:50Z | PLAN GAP: kit/prompts/T583.md:51 (budget of 450 changed lines in 3 files) The smallest plan change: raise T583's budget  |
@@ -92,7 +92,7 @@ Updated 2026-11-19T01:16:02Z by runner 9e53929b8aee (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 294 of 735 (40.0%) · partial 391 · unstarted 50
-**Tasks merged (throughput only):** 466 of 663
+**Tasks merged (throughput only):** 467 of 663
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -128,7 +128,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 109 of 262 done
+- stage 5: 110 of 262 done
 - stage 6: 0 of 48 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
