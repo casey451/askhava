@@ -5,7 +5,8 @@ every requirement in docs/spec/ (read with scripts/trace_spec.py), every
 test-design entry (TD-...) and every end-to-end journey is covered by a task;
 owned paths stay out of protected paths unless the task is a harness task;
 no two tasks that can run in either order own the same path; each task fits
-its size budget; models are valid full IDs; money, privacy, security and
+its size budget; models are full IDs from the file's `models` map (Fable, when
+named there, counts as Opus, D-4761); money, privacy, security and
 recovery tasks (and every harness task) have an Opus reviewer; reads, decisions
 and citations resolve; and the owner gates sit where BUILD_BRIEF.md section 6
 puts them. Plan change P-1 (D-485) adds: build and harness tasks name tests or an
@@ -28,6 +29,7 @@ import re
 import sys
 from collections import Counter
 from dataclasses import dataclass, field
+from functools import partial
 from pathlib import Path
 from typing import Any
 
@@ -47,6 +49,8 @@ MODELS = frozenset({"claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5"})
 OPUS = "claude-opus-5-5"
 HAIKU = "claude-haiku-5-5"
 REVIEWERS = frozenset({"claude-sonnet-5-5", OPUS})
+FABLE_KEY = "fable"  # the `models` key naming Fable, an Opus-class model wherever a rule asks for Opus (D-4761)
+MODEL_ID = re.compile(r"^claude-[a-z]+(-[0-9]+)+$")
 EFFORTS = frozenset({"low", "medium", "high"})
 TYPES = frozenset({"build", "harness", "docs", "cleanup", "audit", "gate"})
 UNCOVERED_TYPES = frozenset({"cleanup", "gate"})
@@ -259,6 +263,25 @@ REQUIRED_KEYS: dict[str, type | tuple[type, ...]] = {
 Task = dict[str, Any]
 
 
+@dataclass(frozen=True)
+class Models:
+    """The full model IDs a task may name: every value of the file's `models` map (D-4761), the fixed three
+    without one. `opus` holds the Opus-class IDs: Opus and the map's Fable entry, if any."""
+
+    ids: frozenset[str] = MODELS
+    opus: frozenset[str] = frozenset({OPUS})
+
+
+def plan_models(data: dict[str, Any]) -> Models:
+    """The Models of a tasks file; the fixed three when it has no `models` map or no full ID in it."""
+    raw = data.get("models")
+    if not isinstance(raw, dict):
+        return Models()
+    ids = frozenset(v for v in raw.values() if isinstance(v, str) and MODEL_ID.match(v))
+    fable = raw.get(FABLE_KEY)
+    return Models(ids or MODELS, frozenset({OPUS} | ({fable} if fable in ids else set())))
+
+
 @dataclass
 class Graph:
     tasks: list[Task]
@@ -344,24 +367,25 @@ def check_areas(task: Task) -> list[str]:
     return errors
 
 
-def check_models(task: Task) -> list[str]:
-    """Full model IDs; Opus for money, privacy, security and recovery work; effort rules."""
+def check_models(task: Task, models: Models = Models()) -> list[str]:
+    """Full model IDs (`models.ids`); Opus-class (`models.opus`, Fable included, D-4761) for money, privacy,
+    security and recovery work; effort rules."""
     errors: list[str] = []
     areas = set(task["review_areas"]) | derived_areas(task)
     if task["type"] == "gate":
         if task["model"] or task["effort"] or task["reviewer_model"]:
             errors.append(f"{where(task)}: a gate runs no model")
         return errors
-    if task["model"] not in MODELS:
+    if task["model"] not in models.ids:
         errors.append(f"{where(task)}: model {task['model']!r} is not a full model ID")
-    if task["reviewer_model"] not in REVIEWERS:
+    if task["reviewer_model"] not in REVIEWERS | models.opus:
         errors.append(
             f"{where(task)}: reviewer_model {task['reviewer_model']!r} is not Sonnet or Opus"
         )
     if task["effort"] not in EFFORTS:
         errors.append(f"{where(task)}: effort {task['effort']!r} is not low, medium or high")
     needs_opus = areas & OPUS_REVIEW_AREAS or task["type"] == "harness"
-    if needs_opus and task["reviewer_model"] != OPUS:
+    if needs_opus and task["reviewer_model"] not in models.opus:
         errors.append(
             f"{where(task)}: money, privacy, security, recovery and harness tasks"
             " need an Opus reviewer"
@@ -375,13 +399,13 @@ def check_models(task: Task) -> list[str]:
     writes_sensitive_code = task["type"] == "build" and owns_app_code and bool(
         derived_areas(task) or areas & OPUS_REVIEW_AREAS
     )
-    if writes_sensitive_code and task["model"] != OPUS:
+    if writes_sensitive_code and task["model"] not in models.opus:
         errors.append(
             f"{where(task)}: money, privacy, security and recovery application code"
             " runs on Opus (BUILD_BRIEF.md:498); test-only, docs and harness work in those areas may"
             " run on Sonnet with an Opus reviewer (D-483)"
         )
-    if task["effort"] == "high" and task["model"] != OPUS:
+    if task["effort"] == "high" and task["model"] not in models.opus:
         errors.append(f"{where(task)}: high effort is only for Opus tasks")
     if task["model"] == HAIKU and areas & OPUS_REVIEW_AREAS:
         errors.append(f"{where(task)}: Haiku may not do money, privacy, security or recovery work")
@@ -395,7 +419,7 @@ def context_limit(task: Task) -> int:
     return {"harness": MAX_HARNESS_CONTEXT_PCT, "cleanup": MAX_CLEANUP_CONTEXT_PCT}.get(task["type"], MAX_CONTEXT_PCT)
 
 
-def check_size(task: Task) -> list[str]:
+def check_size(task: Task, models: Models = Models()) -> list[str]:
     """The task fits the size budget: few files, few lines, a small slice of context."""
     errors: list[str] = []
     budget = task["budget"]
@@ -426,7 +450,7 @@ def check_size(task: Task) -> list[str]:
         )
     if has_dir and task["type"] not in ("cleanup", "harness"):
         errors.append(f"{where(task)}: only cleanup and harness tasks may own a directory")
-    if has_dir and task["reviewer_model"] != OPUS:
+    if has_dir and task["reviewer_model"] not in models.opus:
         errors.append(f"{where(task)}: a task owning a directory needs an Opus reviewer")
     return errors
 
@@ -492,31 +516,32 @@ def check_deletes(task: Task) -> list[str]:
     ]
 
 
-def check_rules_reviewer(task: Task) -> list[str]:
+def check_rules_reviewer(task: Task, models: Models = Models()) -> list[str]:
     """V6: the owner of a cargo-mutants rules file has an Opus reviewer."""
     targets = [f"app/{m}/src/rules.rs" for m in MUTANT_RULE_MODULES]
     owned = [t for t in targets if any(overlaps(t, p) for p in task["owns"])]
-    if owned and task["type"] != "gate" and task["reviewer_model"] != OPUS:
+    if owned and task["type"] != "gate" and task["reviewer_model"] not in models.opus:
         return [f"{where(task)}: owns {owned[0]}, a cargo-mutants target, and needs an Opus reviewer"]
     return []
 
 
-def check_task(task: Task) -> list[str]:
-    """All per-task checks; the shape check runs first because the rest rely on it."""
+def check_task(task: Task, models: Models = Models()) -> list[str]:
+    """All per-task checks; the shape check runs first because the rest rely on it. `models`: the
+    tasks file's (plan_models, D-4761)."""
     errors = check_shape(task)
     if errors:
         return errors
     for check in (
         check_identity,
         check_areas,
-        check_models,
-        check_size,
+        partial(check_models, models=models),
+        partial(check_size, models=models),
         check_gate_fields,
         check_coverage_fields,
         check_done_defined,
         check_goal,
         check_deletes,
-        check_rules_reviewer,
+        partial(check_rules_reviewer, models=models),
     ):
         errors += check(task)
     return errors
@@ -1025,6 +1050,9 @@ def check_file_header(data: dict[str, Any]) -> list[str]:
         errors.append(f"tasks file: kit_outputs must be exactly {list(KIT_OUTPUTS)}")
     if not isinstance(data.get("tasks"), list) or not data["tasks"]:
         errors.append("tasks file: 'tasks' must be a non-empty list")
+    raw = data.get("models", {})
+    if not isinstance(raw, dict) or not all(isinstance(v, str) and MODEL_ID.match(v) for v in raw.values()):
+        errors.append("tasks file: 'models' must map each name to a full model ID")
     return errors
 
 
@@ -1057,8 +1085,9 @@ def run(root: Path, tasks_path: Path | None = None) -> Report:
     if errors:
         return Report([], 0, 0, errors)
     tasks: list[Task] = [t if isinstance(t, dict) else {"id": "?"} for t in data["tasks"]]
+    models = plan_models(data)
     for task in tasks:
-        errors += check_task(task)
+        errors += check_task(task, models)
     if errors:
         return Report(tasks, 0, 0, errors)
     graph, graph_errors = build_graph(tasks)
