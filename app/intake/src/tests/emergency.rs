@@ -209,11 +209,33 @@ fn td_int_01_burning_smells_match_smoke_fire() {
         assert_eq!(check(spanish, false), fire, "{spanish}");
     }
     for words in [
+        "huele a algo quemándose",
+        "algo se quemó y hay mucho olor",
+        "se quema la casa",
+        "se quema mi casa",
+        "se quema algo en la cocina",
+        "my house is burning",
+        "the garage is burning",
+        "the house's burning down",
+    ] {
+        assert_eq!(
+            check(words, false),
+            Check::Match(Hazard::SmokeFire),
+            "{words}"
+        );
+    }
+    for words in [
         "se quema el foco",
         "se quema el fusible",
         "se quemó el motor",
         "el motor está quemado",
         "the bulb burned out",
+        "se quema la bombilla",
+        "se quema la luz",
+        "se quema mi foco",
+        "I burned my hand on the pan",
+        "the toast burned",
+        "el quemador huele raro",
     ] {
         assert_eq!(check(words, false), Check::Clear, "{words}");
     }

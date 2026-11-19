@@ -132,9 +132,38 @@ const BURNING_PHRASES: &[&str] = &[
     "se esta quemando",
     "se estan quemando",
     "algo se quema",
+    "se quema algo",
+    "se quema la casa",
+    "se quema mi casa",
+    "se quema la cocina",
 ];
-/// Spanish burnt words read beside a smell word ("huele a quemado", "olor a quemado", D-4777).
+/// Spanish burnt words, kept whole for the street-name check (D-3438).
 const BURNT_ES: &[&str] = &["quemado", "quemada", "quemados", "quemadas"];
+/// The Spanish burning stem read beside a smell word, any form ("huele a quemado", "quemándose",
+/// "se quemó y hay olor", D-4777); with no smell word "se quemó el motor" stays clear.
+const BURN_STEM_ES: &[&str] = &["quem"];
+/// Words with the burning stem that name no fire, a stove burner or a burn on the skin (D-4777).
+const NOT_BURNT_ES: &[&str] = &["quemador", "quemadores", "quemadura", "quemaduras"];
+/// Places that, burning, are a fire however it is said ("my house is burning", D-4777); never a
+/// bulb, a hand or toast, so "the bulb burned out" and "the toast burned" stay clear.
+const BURNING_PLACES: &[&str] = &[
+    "house",
+    "houses",
+    "home",
+    "garage",
+    "kitchen",
+    "roof",
+    "attic",
+    "wall",
+    "yard",
+    "shed",
+    "trailer",
+    "building",
+    "apartment",
+    "room",
+];
+/// The linking words allowed between a place and "burning" ("the garage is burning", D-4777).
+const BURNING_LINKS: &[&str] = &["is", "are", "s"];
 /// Smell stems a burning word needs to name a burning smell (D-4777).
 const SMELL_STEMS: &[&str] = &["smell", "odor", "odour", "stink", "huel", "olor"];
 const ELECTRIC_PARTS: &[&str] = &[
@@ -264,6 +293,10 @@ pub(crate) const WORD_LISTS: &[&[&str]] = &[
     FIRE_STEMS,
     BURNING_PHRASES,
     BURNT_ES,
+    BURN_STEM_ES,
+    NOT_BURNT_ES,
+    BURNING_PLACES,
+    BURNING_LINKS,
     SMELL_STEMS,
     ELECTRIC_PARTS,
     NOT_ELECTRIC,
@@ -328,10 +361,27 @@ fn hazard(text: &Folded) -> Option<Hazard> {
 }
 
 /// Whether the folded message names something burning with no electric part (INT-002, D-4777):
-/// a [`BURNING_PHRASES`] phrase, or a burning word (`BURNING`, `BURNT_ES`) beside a smell word.
+/// a [`BURNING_PHRASES`] phrase, a place burning ([`place_burning`]), or a burning word
+/// (`BURNING`, any `BURN_STEM_ES` form but the `NOT_BURNT_ES` words) beside a smell word.
 fn burning_smell(text: &Folded) -> bool {
-    let burnt = text.any_word(BURNING) || text.any_word(BURNT_ES);
-    text.any_phrase(BURNING_PHRASES) || (burnt && text.any_stem(SMELL_STEMS))
+    let quem = text
+        .words()
+        .filter(|w| !NOT_BURNT_ES.contains(w))
+        .any(|w| BURN_STEM_ES.iter().any(|s| w.starts_with(s)));
+    let burnt = text.any_word(BURNING) || quem;
+    let smell = burnt && text.any_stem(SMELL_STEMS);
+    text.any_phrase(BURNING_PHRASES) || place_burning(text) || smell
+}
+
+/// Whether "burning" follows one of [`BURNING_PLACES`], directly or after one of
+/// [`BURNING_LINKS`] ("my house is burning", "the garage burning", INT-002, D-4777).
+fn place_burning(text: &Folded) -> bool {
+    let words: Vec<&str> = text.words().collect();
+    let place = |i: usize| BURNING_PLACES.contains(&words[i]);
+    let link = |i: usize| BURNING_LINKS.contains(&words[i]);
+    words.iter().enumerate().any(|(i, w)| {
+        *w == "burning" && i > 0 && (place(i - 1) || (i > 1 && link(i - 1) && place(i - 2)))
+    })
 }
 
 /// Removes street-address patterns (INT-002, D-165, D-982, D-2202, D-3438): a street suffix and
