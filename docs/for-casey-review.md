@@ -2,11 +2,18 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
-## Home page copy check: it now waits for the home page rewrite, and two consent questions are open (D-4669, November 19)
+## Backups: a new encryption library with one dated exception, and the test machines pinned (D-4707, D-4708, November 19)
+
+- **What happened.** The nightly backup step (T109) stopped: the encryption library it needs, `age`, uses a small helper that is no longer maintained, and our dependency check refuses that. The newer `age` release is worse: it brings in a part with a known security problem.
+- **What changed.** T109 uses the older `age` release and adds one exception to the dependency check, for that unmaintained helper only. The helper runs only while the code is being built, never when the site runs. The exception has a review date, January 31, 2027, and a test fails the build if the helper ever reaches us any other way. The part with the security problem is never allowed. The backup can be opened only with your offline key, as before.
+- **Also.** GitHub's test machines moved to a newer Ubuntu that has only a newer version of the database tools. A small step (T724) keeps the test machines on the previous Ubuntu, so the backup tests use the same database version as the live site. A later change will install that version on newer machines before GitHub retires the old one.
+- **Nothing needs you now.**
+
+## Home page copy check: it now waits for the home page rewrite, and the two consent questions are settled (D-4669, D-4709, November 19)
 
 - **What happened.** The step that checks the site's words against the approved copy file (T161) stopped: the home page does not yet show several approved blocks, and that step may not change the page.
 - **What changed.** The home page rewrite (T593) now also puts the third "keep it fair" line and the business text and fee lines on the page word for word, and T161 checks every home and footer block after it. Two blocks are left out of the check on purpose: the texting consent line (it shows only with the texting number, after Gate C) and the business email line (it belongs on the business page).
-- **Open item.** The home page's texting consent line (`docs/copy/site-copy.md:23`) covers only texting in; it does not mention the chat path (typing your mobile number and the code) that the consent rule CON-005 includes. And no step yet puts the texting number with its consent line on the home page at Gate C. No consent wording was changed; both need a decision before Gate C.
+- **Settled (D-4709).** The home page's texting consent line (`docs/copy/site-copy.md:23`) keeps its words. It only ever sits next to the texting number, so it speaks to people who text in; the chat has its own consent text above the chat box, and the texting terms the line links to cover both ways in (texting us, or typing your mobile number and the code in the chat). A new step (T725) now puts the texting number and this line on the home page together, only after Gate C, with tests that the number never shows without the line. The Spanish home page shows neither until a Spanish version of the line is written.
 - **Nothing needs you now.**
 
 ## Texting records: the daily 5-year cleanup is built, and an opted-out number's locked phone stays (D-4387, D-2208, November 19)

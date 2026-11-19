@@ -9,8 +9,17 @@
 // to test-results/a11y-report/results.json. Any failed check fails the run, which turns `Ally` red
 // once T173 runs it there.
 // Run: npx playwright test --config tests/a11y/playwright.config.ts
+//
+// T536 (D-3889, D-3892): the test clock is forward-only and shared by every binary, so the journeys
+// that advance it (`LATE`) form a second project, `late`, that depends on `main` and runs after
+// every other spec, whose PAGE_STATES sessions and 15-minute and 2-hour links would otherwise have
+// expired. Playwright runs a dependency project unfiltered, so a single-file run of a late spec
+// runs all of `main` first: add `--no-deps` while iterating on one late spec.
 import { defineConfig } from "@playwright/test";
 import { webPort } from "../e2e/webserver";
+
+/** The clock-advancing journeys, run last in the `late` project (D-3892). */
+const LATE = ["**/j_full_keyboard*.spec.ts", "**/j3_*.spec.ts", "**/j4_*.spec.ts"];
 
 export default defineConfig({
   testDir: ".",
@@ -24,4 +33,8 @@ export default defineConfig({
   use: {
     baseURL: `http://127.0.0.1:${String(webPort())}`,
   },
+  projects: [
+    { name: "main", testIgnore: LATE },
+    { name: "late", testMatch: LATE, dependencies: ["main"] },
+  ],
 });

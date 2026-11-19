@@ -56,6 +56,7 @@ mod open_cards_email;
 mod pick_ended;
 mod pick_withdrawn;
 mod release;
+mod release_resend;
 mod released_view;
 mod rules;
 mod scorecard_inputs;
