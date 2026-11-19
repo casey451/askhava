@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T02:08:57Z by runner c5a97a0b8910 (actions).
+Updated 2026-11-19T02:09:31Z by runner c5a97a0b8910 (actions).
 
 **Building: T715 in progress since 01:59Z; 469 of 663 done; week 71% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-19T02:08:57Z by runner c5a97a0b8910 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T715 claimed 01:59Z, lease until 04:59Z; lane 2: T520 claimed 01:57Z, lease until 04:57Z; lane 4: T484 claimed 02:04Z, lease until 05:04Z; lane 5: T306 claimed 01:43Z, lease until 04:43Z
 - **Week:** 71% used, 47.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:08Z, 0 min before this update
-- **Keeper:** last ran 01:47Z, next wake 02:07Z
+- **Last run:** 02:09Z, 0 min before this update
+- **Keeper:** last ran 02:09Z, next wake 02:29Z
 
 ## Needs attention
 - PLAN GAP T114 (since 2026-11-19T01:57:04Z, no attempt used; a plan change fixes it): T114: dependency T488 is DONE but its owned file app/portals/templates/es_business_signup.html is not on main; T114: dependency T488 is DONE but its owned file app/server/tests/es_business_signup_route.rs is not on main
