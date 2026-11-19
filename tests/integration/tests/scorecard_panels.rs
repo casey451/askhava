@@ -322,6 +322,22 @@ async fn td_ops_21_each_ops_047_figure_comes_from_planted_rows(pool: PgPool) {
     assert!(roofing.refund_reasons.is_empty());
 }
 
+/// TD-OPS-21 (OPS-047): a window ending exactly at Arizona midnight on the 1st (all of October)
+/// counts the not-a-fit answers of the closing month only, read at `to`'s last second: an answer
+/// on October 31 counts, one on November 1 does not.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_ops_21_a_month_window_counts_not_a_fit_in_the_closing_month(pool: PgPool) {
+    let db = &mut *pool.acquire().await.expect("conn");
+    card(db, 21, "plumbing", 11).await;
+    not_a_fit(db, (21, 5), "plumbing", NotAFitReason::Other, 30).await;
+    not_a_fit(db, (21, 6), "plumbing", NotAFitReason::NotMyTown, 31).await;
+    let october = (at(0, 0), at(31, 0));
+    let figures = trade_figures(db, &["plumbing"], october)
+        .await
+        .expect("figures");
+    assert_eq!(figures[0].not_a_fit, [(NotAFitReason::Other, 1)]);
+}
+
 /// OPS-047: quotes per pick in tenths rounds half up and needs a pick.
 #[test]
 fn quotes_per_pick_rounds_half_up_in_tenths() {
