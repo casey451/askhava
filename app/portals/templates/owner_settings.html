@@ -2,7 +2,9 @@
 {#- The owner settings page (T108; LIC-002, SEC-043; D-3744, D-3890): one switch per category.
     A change needs a code from the last 5 minutes. The category code goes in the form body.
     T484 (CON-035, PICK-048, D-3753): the owner-recorded opt-out and Stripe's written answer,
-    with the newest filing; a change is confirmed here on screen, never by text. -#}
+    with the newest filing; a change is confirmed here on screen, never by text.
+    T407 (CALL-019, CALL-022, SEC-043, D-3134): the safety voice call switch, off at launch; on
+    needs the attorney approval's date and reference; a refusal lists the unmet CALL-022 items. -#}
 {% block title %}Owner settings{% endblock %}
 {% block main %}
 <link rel="stylesheet" href="/static/portals/forms.css">
@@ -16,6 +18,22 @@
 <p>{{ c.label }} is {% if c.on %}on{% else %}off{% endif %}. <button type="submit">Turn {{ c.label }} {% if c.on %}off{% else %}on{% endif %}</button></p>
 </form></li>
 {% endfor %}</ul>
+<h2>Safety voice call</h2>
+{% if !unmet.is_empty() %}<ul id="safety-call-missing">{% for item in unmet %}<li>{{ item }}</li>{% endfor %}</ul>{% endif %}
+{% if let Some((approved_on, reference)) = safety %}<p id="safety-call-state">The safety voice call is on. Your attorney approved it in writing on {{ approved_on }}, reference {{ reference }}.</p>
+<form method="post" action="{{ safety_route }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="to" value="off">
+<p><button type="submit">Turn the safety voice call off</button></p>
+</form>
+{% else %}<p id="safety-call-state">The safety voice call is off. Once on, it works only when we can't send texts. Then anyone who texts us about gas, smoke or fire gets one recorded call. It tells them to leave and call 911. To turn it on, enter your attorney's written approval below.</p>
+<form method="post" action="{{ safety_route }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="to" value="on">
+<p><label for="safety-date">Date of your attorney's written approval</label></p>
+<p><input type="date" id="safety-date" name="approved_on"></p>
+<p><label for="safety-reference">Reference number on the approval</label></p>
+<p><input type="text" id="safety-reference" name="reference" maxlength="200"></p>
+<p><button type="submit">Turn the safety voice call on</button></p>
+</form>{% endif %}
 <h2>Stop texts to a number</h2>
 <form method="post" action="{{ opt_out_route }}" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">

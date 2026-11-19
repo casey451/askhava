@@ -48,7 +48,8 @@
 //! `raise_emergency` raises the critical alert once per message, `ops::api` turns the WEB-007
 //! banner on, `queue_paused_safety` asks for the INT-004 email or Casey's call list, and intake's
 //! safety call is asked for only where the plan keeps it; intake's own step then runs as usual and
-//! nothing here texts. Nothing here logs a phone, a body or a URL (PRIV-016). This file is also
+//! nothing here texts. The owner settings' `safety_call_on` is read per message from the stored
+//! switch (`calls::api::safety_switch`, T407, CON-031). Nothing here logs a phone, a body or a URL (PRIV-016). This file is also
 //! compiled into `tests/integration/tests/inbound_text_route.rs` with `#[path]`, so it names no
 //! `crate::` item.
 //!
@@ -72,7 +73,7 @@ use askhava_businesses::api::{
     AUTO_REPLY_TEMPLATE, BusinessesError, ConsentError, auto_reply_due, phone_standing,
     phone_stopped, public_names,
 };
-use askhava_calls::api::{CallsError, link_pin, link_reply};
+use askhava_calls::api::{CallsError, link_pin, link_reply, safety_switch};
 use askhava_core::api::{Clock, Environment, NewTask, enqueue as enqueue_task};
 use askhava_intake::api::rules::{
     Check, Inbound, Settings as IntakeSettings, check, safety_call_trigger, wanted_language,
@@ -559,9 +560,10 @@ async fn failure_alert(db: &mut PgConnection, inbox_id: Uuid, step: &'static str
     Ok(())
 }
 
-/// The steps after the repeat check for inbox row `inbox_id`, in order.
+/// The steps after the repeat check for inbox row `inbox_id`, in order, with `safety_call_on`
+/// read from the stored owner-portal switch for this message ([`switched`]).
 async fn handle(
-    h: &Ctx<'_>,
+    ctx: &Ctx<'_>,
     db: &mut PgConnection,
     fields: &Fields<'_>,
     (inbox_id, now): (Uuid, Timestamp),
@@ -571,6 +573,7 @@ async fn handle(
         (Some(from), Some(to)) => (from, to),
         _ => return Err(Halt::Ends("no_number")),
     };
+    let h = &switched(ctx, db).await?;
     let (contact, relation) = sender(db, h.vault, from).await?;
     let (read, unread) = read(h, db, fields.body, (contact, relation)).await?;
     let answer = address_answer(db, (contact, relation), fields.body).await?;
@@ -604,6 +607,23 @@ async fn handle(
         return Err(Halt::Failed("vault", error));
     }
     intake(h, db, (&msg, &read, fields.body), (resubscribed, now)).await
+}
+
+/// CALL-019, CALL-022, CON-031, TXT-024, D-3134 (T407): `ctx` with `safety_call_on` read from the
+/// stored owner-portal switch (`calls::api::safety_switch`) for each message, so the consent text
+/// carries CALL-022's call sentence and a 911-list message during a suspension asks for the
+/// safety call from the moment the switch is on and never before. A failed read is
+/// `Halt::Database`: the delivery rolls back and Twilio sends it again.
+async fn switched<'a>(ctx: &Ctx<'a>, db: &mut PgConnection) -> Step<Ctx<'a>> {
+    let on = safety_switch(db).await.map_err(|_| Halt::Database)?.is_on();
+    Ok(Ctx {
+        id_secret: ctx.id_secret,
+        vault: ctx.vault,
+        intake: IntakeSettings {
+            safety_call_on: on,
+            ..ctx.intake
+        },
+    })
 }
 
 /// The scrubbed words every step after the read gets (INT-027, PRIV-001, D-3705): for her answer

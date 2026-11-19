@@ -1371,17 +1371,10 @@ fn stripe_wanted(settings: &Settings, pairs: &[(String, String)]) -> bool {
     )
 }
 
-/// The safety voice call switch, read on every `calls.safety_call` run, so the registration holds
-/// no value (CALL-019, D-3134): off, the launch state (D-384), until T407 replaces this body with
-/// the stored owner-portal switch and Casey's recorded approval.
-fn safety_switch() -> askhava_calls::api::SafetySwitch {
-    askhava_calls::api::SafetySwitch::off()
-}
-
 /// What the `calls.safety_call` handler dials with (CALL-019, CALL-022, D-3134): the Twilio voice
 /// client and masked pool of the Twilio settings, `ASKHAVA_MAIN_NUMBER`, the `ID_SECRET`, the
 /// public base URL, the vault (both vault keys) and the worker clock; none of it is read while
-/// the switch is off.
+/// the stored switch is off.
 struct SafetyParts {
     voice: askhava_adapters::api::TwilioVoice,
     pool: askhava_adapters::api::MaskedPool,
@@ -1395,27 +1388,30 @@ struct SafetyParts {
 const SAFETY_FAILED: askhava_core::api::HandlerError =
     askhava_core::api::HandlerError("the safety call step failed");
 
-/// The `calls.safety_call` handler (CALL-019, CALL-022, D-1705, D-3134): reads the switch first;
-/// off (the default), no call is placed and the task completes. On, it dials from the first pool
-/// number that is not the main number through `calls::api::place_safety_call`, which re-checks
-/// the switch, the 30 minutes, the calling number and the suppression list and dials at most once
-/// per alert; a missing main number, public base URL or vault, or no pool number other than the
-/// main number, fails the task, never dials.
+/// The `calls.safety_call` handler (CALL-019, CALL-022, D-1705, D-3134, D-3890): reads the stored
+/// owner-portal switch first (`calls::api::safety_switch`, on every run, so a change after start
+/// is honoured by the next task, T407); off (the default) or with no main number set, no call is
+/// placed and the task completes. On, it dials from the first pool number that is not the main
+/// number through `calls::api::place_safety_call`, which re-checks the switch, the 30 minutes,
+/// the calling number and the suppression list and dials at most once per alert; a missing
+/// public base URL or vault, or no pool number other than the main number, fails the task, never
+/// dials.
 async fn run_safety_call(
     pool: PgPool,
     parts: Arc<SafetyParts>,
     task: askhava_core::api::Claimed,
 ) -> Result<(), askhava_core::api::HandlerError> {
-    use askhava_calls::api::{SafetyCall, SafetyDialer, place_safety_call};
+    use askhava_calls::api::{SafetyCall, SafetyDialer, place_safety_call, safety_switch};
     let call = SafetyCall::from_payload(&task.payload).ok_or(askhava_core::api::HandlerError(
         "safety call payload is malformed",
     ))?;
-    let switch = safety_switch();
-    if !switch.is_on() {
-        return Ok(());
-    }
+    let mut db = pool.acquire().await.map_err(|_| SAFETY_FAILED)?;
+    let switch = safety_switch(&mut db).await.map_err(|_| SAFETY_FAILED)?;
     let p = &*parts;
-    let (Some(main), Some(public_base), Some(vault)) = (&p.main, &p.public_base, &p.vault) else {
+    let (true, Some(main)) = (switch.is_on(), &p.main) else {
+        return Ok(());
+    };
+    let (Some(public_base), Some(vault)) = (&p.public_base, &p.vault) else {
         return Err(SAFETY_FAILED);
     };
     let numbers = p.pool.numbers();
@@ -1431,7 +1427,6 @@ async fn run_safety_call(
         secret: &p.secret,
         public_base,
     };
-    let mut db = pool.acquire().await.map_err(|_| SAFETY_FAILED)?;
     place_safety_call(&mut db, vault, &dialer, &call, p.clock.now())
         .await
         .map(|_| ())
@@ -1613,8 +1608,8 @@ fn register_whos_calling(
 
 /// T330 (CALL-019, CALL-022, D-2288, D-3134): registers `calls.safety_call` inside the Twilio
 /// settings branch, over the same settings as `picks.line_retry`, with [`SafetyParts`] built once;
-/// the switch is not captured ([`safety_switch`] is read on each run). T571 (CON-035, D-4051):
-/// beside it `calls.safety_key_retry` over the same parts' vault and clock.
+/// the switch is not captured (`calls::api::safety_switch` is read on each run, T407). T571
+/// (CON-035, D-4051): beside it `calls.safety_key_retry` over the same parts' vault and clock.
 fn register_safety_call(
     registry: &mut Registry,
     settings: &Settings,
