@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T08:35:16Z by runner ee18d0c046b3 (actions).
+Updated 2026-11-19T08:35:44Z by runner ee18d0c046b3 (actions).
 
-**Building: T456 in progress since 06:58Z; 483 of 664 done; week 76% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T536 in progress since 08:14Z; 483 of 664 done; week 76% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 483 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T456 claimed 06:58Z, lease until 11:30Z; lane 4: T536 claimed 08:14Z, lease until 11:14Z; lane 5: T622 claimed 07:06Z, lease until 10:58Z; lane 6: T476 claimed 06:22Z, lease until 11:34Z; lane 7: T375 claimed 08:04Z, lease until 11:04Z
+- **Lane:** lane 4: T536 claimed 08:14Z, lease until 11:14Z; lane 5: T622 claimed 07:06Z, lease until 10:58Z; lane 6: T476 claimed 06:22Z, lease until 11:34Z; lane 7: T375 claimed 08:04Z, lease until 11:04Z
 - **Week:** 76% used, 37.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 08:34Z, 0 min before this update
 - **Keeper:** last ran 08:16Z, next wake 08:36Z
@@ -20,6 +20,7 @@ Updated 2026-11-19T08:35:16Z by runner ee18d0c046b3 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T456 | picks and server: "Hold for 2 more hours" is stored, honoure | MERGE_PENDING | 1 | 97 min | 08:35Z |  |
 | T216 | site: the hero photo and mark (photography assets) | MERGE_PENDING | 1 | 97 min | 08:10Z |  |
 | T310 | server and portals: the owner home and settings pages and th | done | 1 | 74 min | 07:19Z |  |
 | T562 | server and portals: "Why was I charged?" is served with the  | done | 1 | 2 h 43 min | 07:09Z |  |
@@ -137,11 +138,11 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T456 (lease until 2026-11-19T11:30:20Z)
+- nothing
 - lane 4: T536 (lease until 2026-11-19T11:14:06Z)
 - lane 5: T622 (lease until 2026-11-19T10:58:35Z)
 - lane 6: T476 (lease until 2026-11-19T11:34:27Z)
 - lane 7: T375 (lease until 2026-11-19T11:04:18Z)
 
 ## Last usage reading
-- {"task": "T216", "at": "2026-11-19T08:10:08Z", "cache_read_input_tokens": 6713688, "input_tokens": 181, "cache_creation_input_tokens": 162389, "output_tokens": 48113}
+- {"task": "T456", "at": "2026-11-19T08:35:13Z", "input_tokens": 208, "output_tokens": 67110, "cache_read_input_tokens": 11330930, "cache_creation_input_tokens": 222708}
