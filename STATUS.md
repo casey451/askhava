@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T09:20:08Z by runner 2d195cdcb334 (actions).
+Updated 2026-11-19T09:20:42Z by runner b7f0cf41b372 (actions).
 
 **Building: T470 in progress since 09:02Z; 485 of 664 done; week 77% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-19T09:20:08Z by runner 2d195cdcb334 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T470 claimed 09:02Z, lease until 12:02Z; lane 2: T553 claimed 08:48Z, lease until 12:13Z; lane 3: T710 claimed 08:40Z, lease until 11:40Z; lane 4: T705 claimed 09:16Z, lease until 12:16Z; lane 5: T622 claimed 07:06Z, lease until 12:04Z
 - **Week:** 77% used, 34.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:19Z, 0 min before this update
-- **Keeper:** last ran 09:12Z, next wake 09:32Z
+- **Last run:** 09:20Z, 0 min before this update
+- **Keeper:** last ran 09:20Z, next wake 11:42Z
 
 ## Needs attention
 - BLOCKED T652: plan gap reported: PLAN GAP: tests/integration/tests/safe_mode.rs:246,281,320,378,407 (owned by T487 and T408; T652's prompt :11 and :47 say it must pass unchanged) plant Severity::High alerts of the made-up kind "ops.ledger_difference" and expect safe mode to start. D-4310 (docs/decisions.md:2366) lets a High alert start safe mode only for ops.vendor_errors, ops.health_check_failed, payments.ledger_mismatch or messaging.number_suspended. The worker made a trial edit (not committed) and `cargo test -p askhava-integration --test safe_mode` gave 3 passed, 4 failed: td_ops_01_safe_mode_at_24_00_00_not_at_23_59_59, ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T652 --plan-fix D-### --reason "..."` (D-2859)
@@ -19,7 +19,7 @@ Updated 2026-11-19T09:20:08Z by runner 2d195cdcb334 (actions).
 - PLAN GAP T540 (since 2026-11-19T08:04:18Z, no attempt used; a plan change fixes it): T540: dependency T310 is DONE but its owned file app/server/src/owner_portal.rs is not on main; T540: dependency T310 is DONE but its owned file app/server/tests/owner_portal_route.rs is not on main; T540: dependency T310 is DONE but its owned file tests/e2e/owner_portal_served.spec.ts is not on main
 - PLAN GAP T593 (since 2026-11-19T09:02:31Z, no attempt used; a plan change fixes it): T593: dependency T216 is DONE but its owned file app/site/static/photos/hero-kitchen-phone.avif is not on main
 - OWNED GAP T216 (DONE, since 2026-11-19T08:36:02Z; a later task or plan change must add it): T216: app/site/static/photos/hero-kitchen-phone.avif missing on main
-- Strict plan check red: 61 problem(s) on tasks still to run (+301 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 58 problem(s) on tasks still to run (+301 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
