@@ -369,7 +369,7 @@ def attempt_model(task: dict[str, Any], attempts: int, models: dict[str, str]) -
     """The task's own model first; from the second attempt Fable when `models` names it (D-4761), else Opus
     for a task named on any other model (D-2474: a Sonnet task that failed once moves up at once) and Opus on
     the last try (BUILD_BRIEF.md:540). A task whose entry holds FABLE_OFF (a Fable refusal or usage limit)
-    runs on Opus wherever this would name Fable."""
+    runs on Opus wherever this would name the Fable model that record names (`from`, D-4770)."""
     fable = models.get(FABLE)
     if attempts >= 1 and fable:
         model = fable
@@ -377,7 +377,15 @@ def attempt_model(task: dict[str, Any], attempts: int, models: dict[str, str]) -
         model = models["opus"]
     else:
         model = str(task["model"])
-    return models["opus"] if task.get(FABLE_OFF) and model == fable else model
+    return models["opus"] if fable and model == fable and fable_is_off(task, fable) else model
+
+
+def fable_is_off(task: dict[str, Any], fable: str) -> bool:
+    """Whether TASK (a plan task merged with its state entry, or the entry alone) holds a FABLE_OFF record
+    for the Fable model ID FABLE: a record names the one ID that refused or hit its limit (`from`), so the
+    worker (attempt_model), the reviewer (reviewer_model) and _fable_limit agree after `models` names a
+    new Fable ID: the new one gets its own try, and its own record (D-4770)."""
+    return (task.get(FABLE_OFF) or {}).get("from") == fable
 
 
 def with_fable_off(task: dict[str, Any], entry: dict[str, Any]) -> dict[str, Any]:
@@ -388,8 +396,9 @@ def with_fable_off(task: dict[str, Any], entry: dict[str, Any]) -> dict[str, Any
 def fable_off(state: State, tid: str, why: str, now: datetime, models: dict[str, str]) -> State:
     """Record that Fable refused TID or hit its usage limit (D-4761): this and every later attempt of TID runs
     on Opus, and so does its reviewer (`from` and `to` name the two model IDs for reviewer_model, D-4769).
-    The first record stays; a second call returns the state unchanged, so the choice is logged once."""
-    if st.entry(state, tid).get(FABLE_OFF):
+    A record for the current Fable ID stays; a second call returns the state unchanged, so the choice is
+    logged once. A record for an earlier Fable ID is replaced (D-4770)."""
+    if fable_is_off(st.entry(state, tid), models[FABLE]):
         return state
     off = {"at": st.iso(now), "why": " ".join(why.split())[:160], "from": models[FABLE], "to": models["opus"]}
     return st.with_task(state, tid, **{FABLE_OFF: off})
@@ -407,11 +416,15 @@ def fable_limited(res: WorkerResult) -> bool:
 def _fable_limit(
     state: State, task: dict[str, Any], res: WorkerResult, cfg: Config, model: str, now: datetime
 ) -> State | None:
-    """A Fable attempt, not one the model window chose, that hit a usage limit (D-4761): the task goes back to
-    QUEUED with its attempts unchanged and FABLE_OFF set, so the re-run is on Opus. None for any other end."""
+    """An attempt whose worker or reviewer is on Fable, not one the model window chose, that hit a usage limit
+    (D-4761, D-4770): the task goes back to QUEUED with its attempts unchanged and FABLE_OFF set, so the
+    re-run's worker and reviewer are on Opus. None for any other end. Which of the two hit the limit is not
+    known; either way Fable is off for the task."""
     tid = task["id"]
     fable = cfg.models.get(FABLE)
-    if not fable or model != fable or model_window.mark_of(task) or st.entry(state, tid).get(FABLE_OFF):
+    if not fable or model_window.mark_of(task) or fable_is_off(st.entry(state, tid), fable):
+        return None
+    if fable not in (model, reviewer_model(task)):
         return None
     if not fable_limited(res):
         return None
@@ -430,12 +443,12 @@ def worker_model(task: dict[str, Any], attempts: int, models: dict[str, str]) ->
 def reviewer_model(task: dict[str, Any]) -> str | None:
     """The model the attempt's reviewer runs on: the window's mark when the task has a reviewer (D-2225),
     else the task's own `reviewer_model` (None: no review required). A reviewer on Fable runs on Opus once
-    the task's FABLE_OFF record names that Fable model (`from`, its Opus `to`; D-4769)."""
+    the task's FABLE_OFF record names that Fable model (`from`, its Opus `to`; D-4769, D-4770)."""
     mark, want = model_window.mark_of(task), task.get("reviewer_model")
     if mark and want:
         return str(mark["model"])
     off = task.get(FABLE_OFF) or {}
-    return str(off["to"]) if want and off.get("to") and want == off.get("from") else want
+    return str(off["to"]) if want and off.get("to") and fable_is_off(task, want) else want
 
 
 def with_claim_mark(task: dict[str, Any], entry: dict[str, Any]) -> dict[str, Any]:

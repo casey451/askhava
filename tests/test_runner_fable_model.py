@@ -48,7 +48,8 @@ def test_a_failed_once_task_goes_to_fable_and_to_opus_without_a_fable_entry() ->
 
 
 def test_a_fable_fallback_keeps_every_later_attempt_on_opus() -> None:
-    off = make_task("T001", model=FABLE, **{cycle.FABLE_OFF: {"at": st.iso(NOW), "why": "usage limit"}})
+    record = {"at": st.iso(NOW), "why": "usage limit", "from": FABLE, "to": MODELS["opus"]}
+    off = make_task("T001", model=FABLE, **{cycle.FABLE_OFF: record})
     assert [cycle.attempt_model(off, n, WITH_FABLE) for n in range(3)] == [MODELS["opus"]] * 3
     assert cycle.attempt_model(dict(off, model=MODELS["sonnet"]), 0, WITH_FABLE) == MODELS["sonnet"]
 
@@ -175,6 +176,39 @@ def test_a_fable_usage_limit_moves_the_reviewer_to_opus_too(tmp_path: Path) -> N
     cycle.run_cycle(cfg, env, NOW + timedelta(minutes=1))
     merged = {**st.entry(env.store, "T001"), **make_task("T001", reviewer_model=FABLE)}
     assert merged[cycle.FABLE_OFF]["from"] == FABLE and cycle.reviewer_model(merged) == MODELS["opus"]
+
+
+def test_a_usage_limit_with_only_the_reviewer_on_fable_reruns_on_opus(tmp_path: Path) -> None:
+    env = FakeEnv(lambda t, m, log: cycle.WorkerResult("usage_limit", reset_at=NOW + timedelta(hours=5)))
+    cfg = fable_config([make_task("T001", model=MODELS["opus"], reviewer_model=FABLE)], tmp_path)
+    assert cycle.run_cycle(cfg, env, NOW) == st.QUEUED
+    entry = st.entry(env.store, "T001")
+    assert env.runs[-1][1] == MODELS["opus"] and entry["attempts"] == 0
+    assert "limit_hit" not in (env.store.get("usage") or {}) and entry[cycle.FABLE_OFF]["from"] == FABLE
+    assert cs.check(env.store) == []
+    merged = {**entry, **make_task("T001", model=MODELS["opus"], reviewer_model=FABLE)}
+    assert cycle.reviewer_model(merged) == MODELS["opus"]
+    assert cycle.run_cycle(cfg, env, NOW + timedelta(minutes=1)) == st.RETRY_AFTER_RESET  # Fable is off: a real wait
+
+
+def test_a_new_fable_id_gets_its_own_try_for_worker_and_reviewer_alike(tmp_path: Path) -> None:
+    newer = "claude-fable-5-3"
+    old = {"at": st.iso(NOW), "why": "usage limit", "from": FABLE, "to": MODELS["opus"]}
+    tsk = make_task("T001", model=MODELS["opus"], reviewer_model=newer, **{cycle.FABLE_OFF: old})
+    moved = {**MODELS, "fable": newer}
+    assert cycle.attempt_model(tsk, 1, moved) == newer and cycle.reviewer_model(tsk) == newer
+    assert cycle.attempt_model(tsk, 1, WITH_FABLE) == MODELS["opus"]
+    env = FakeEnv(lambda t, m, log: cycle.WorkerResult("handed_off"))
+    plan = make_task("T001", model=MODELS["opus"], reviewer_model=newer)
+    cfg = dataclasses.replace(config([plan], tmp_path), models=moved)
+    assert cycle.run_cycle(cfg, env, NOW) == "handed_off"
+    env.store = st.with_task(env.store, "T001", **{cycle.FABLE_OFF: old})
+    assert cycle.model_fallback(cfg, env, REFUSAL).startswith(f"fable: {newer} refused for T001")
+    record = st.entry(env.store, "T001")[cycle.FABLE_OFF]
+    assert record["from"] == newer and record["why"].startswith("refused: ")
+    merged = {**st.entry(env.store, "T001"), **plan}
+    assert cycle.reviewer_model(merged) == MODELS["opus"] and cycle.attempt_model(merged, 1, moved) == MODELS["opus"]
+    assert "nothing to fall back from" in cycle.model_fallback(cfg, env, REFUSAL)
 
 
 def test_a_refused_fable_reviewer_reruns_on_opus_with_the_count_unchanged(tmp_path: Path) -> None:
