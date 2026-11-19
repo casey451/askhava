@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T03:08:40Z by runner 49e0ad77e339 (actions).
+Updated 2026-11-19T03:09:29Z by runner 49e0ad77e339 (actions).
 
 **Building: T715 in progress since 01:59Z; 471 of 663 done; week 72% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-19T03:08:40Z by runner 49e0ad77e339 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T715 claimed 01:59Z, lease until 06:05Z; lane 2: T520 claimed 01:57Z, lease until 06:00Z; lane 3: T114 claimed 02:14Z, lease until 05:45Z; lane 4: T484 claimed 02:04Z, lease until 06:01Z; lane 5: T563 claimed 02:48Z, lease until 05:48Z; lane 6: T490 claimed 02:10Z, lease until 05:10Z
 - **Week:** 72% used, 41.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:05Z, 2 min before this update
+- **Last run:** 03:09Z, 0 min before this update
 - **Keeper:** last ran 02:34Z, next wake 02:54Z
 
 ## Needs attention
@@ -87,7 +87,6 @@ Updated 2026-11-19T03:08:40Z by runner 49e0ad77e339 (actions).
 | T647 | payments: rebuild_charge reports Booked inside a caller's tr | done | 1 | 82 min | 03:35Z |  |
 | T619 | quotes, picks and intake: the quote-median, lapsed-pick, win | QUEUED | 1 | 69 min | 03:31Z |  |
 | T639 | Runner (harness): the smoke warm-up is skipped when the pre- | done | 1 | 76 min | 03:14Z |  |
-| T108 | portals: owner tools for pauses, fee mode, categories and se | done | 1 | 2 h 45 min | 03:08Z |  |
 
 ### Plan and harness merges on main
 - none
