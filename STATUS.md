@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T02:05:07Z by runner 3a116c21da66 (actions).
+Updated 2026-11-19T02:08:57Z by runner c5a97a0b8910 (actions).
 
 **Building: T715 in progress since 01:59Z; 469 of 663 done; week 71% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-19T02:05:07Z by runner 3a116c21da66 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T715 claimed 01:59Z, lease until 04:59Z; lane 2: T520 claimed 01:57Z, lease until 04:57Z; lane 4: T484 claimed 02:04Z, lease until 05:04Z; lane 5: T306 claimed 01:43Z, lease until 04:43Z
 - **Week:** 71% used, 47.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:59Z, 5 min before this update
+- **Last run:** 02:08Z, 0 min before this update
 - **Keeper:** last ran 01:47Z, next wake 02:07Z
 
 ## Needs attention
@@ -16,7 +16,7 @@ Updated 2026-11-19T02:05:07Z by runner 3a116c21da66 (actions).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T490 (since 2026-11-19T01:57:04Z, no attempt used; a plan change fixes it): T490: dependency T488 is DONE but its owned file app/portals/templates/es_business_signup.html is not on main; T490: dependency T488 is DONE but its owned file app/server/tests/es_business_signup_route.rs is not on main
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 56 problem(s) on tasks still to run (+274 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 52 problem(s) on tasks still to run (+272 on DONE tasks); first: T563: stored context_pct 22% but it measures 26%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
