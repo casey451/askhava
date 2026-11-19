@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T23:32:52Z by runner dbbf2ecc1e6e (actions).
+Updated 2026-11-19T23:33:09Z by runner c625369f5c87 (actions).
 
 **Building: T758 in progress since 23:07Z; 510 of 703 done; week 11% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,13 +9,13 @@ Updated 2026-11-19T23:32:52Z by runner dbbf2ecc1e6e (actions).
 - **Lane:** lane 2: T758 claimed 23:07Z, lease until 02:07Z; lane 7: T613 claimed 23:22Z, lease until 02:22Z
 - **Week:** 11% used, 168.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:32Z, 0 min before this update
-- **Keeper:** last ran 23:30Z, next wake 23:50Z
+- **Keeper:** last ran 23:32Z, next wake 23:52Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T672 (since 2026-11-19T23:07:12Z, no attempt used; a plan change fixes it): T672: dependency T717 is DONE but its owned file tests/integration/tests/intake_order_two_jobs_rules.rs is not on main
-- Strict plan check red: 72 problem(s) on tasks still to run (+361 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 64 problem(s) on tasks still to run (+354 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -92,8 +92,8 @@ Updated 2026-11-19T23:32:52Z by runner dbbf2ecc1e6e (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 323 of 735 (43.9%) · partial 377 · unstarted 35
-**Tasks merged (throughput only):** 510 of 703
+**Requirements verified:** 325 of 735 (44.2%) · partial 375 · unstarted 35
+**Tasks merged (throughput only):** 510 of 701
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -102,14 +102,14 @@ Updated 2026-11-19T23:32:52Z by runner dbbf2ecc1e6e (actions).
 | businesses | 21 | 36 | 1 | 58 |
 | calls | 14 | 11 | 0 | 25 |
 | consent | 16 | 19 | 0 | 35 |
-| fees | 21 | 31 | 0 | 52 |
+| fees | 22 | 30 | 0 | 52 |
 | intake | 8 | 35 | 0 | 43 |
 | job-cards | 12 | 12 | 0 | 24 |
 | licensing | 33 | 15 | 0 | 48 |
 | lifecycle | 16 | 12 | 0 | 28 |
 | messaging | 22 | 22 | 1 | 45 |
 | ops-recovery | 9 | 27 | 18 | 54 |
-| privacy | 8 | 22 | 1 | 31 |
+| privacy | 9 | 21 | 1 | 31 |
 | quiet-hours | 3 | 6 | 0 | 9 |
 | quotes-pick | 25 | 31 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
