@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-19T20:02:30Z by runner 79e9b499dfce (actions).
+Updated 2026-11-19T20:05:31Z by runner a91fb80e6806 (actions).
 
-**Building: T753 in progress since 19:06Z; 501 of 698 done; week 7% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T753 in progress since 19:06Z; 502 of 698 done; week 7% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 501 of 698 build tasks (owner gates not counted)
+- **Tasks done:** 502 of 698 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T753 claimed 19:06Z, lease until 22:06Z; lane 3: T307 claimed 17:47Z, lease until 20:47Z; lane 5: T748 claimed 19:26Z, lease until 22:26Z; lane 6: T480 claimed 17:18Z, lease until 20:18Z
 - **Week:** 7% used, 177.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:02Z, 0 min before this update
+- **Last run:** 20:02Z, 2 min before this update
 - **Keeper:** last ran 20:02Z, next wake 20:21Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 67 problem(s) on tasks still to run (+339 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 57 problem(s) on tasks still to run (+341 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -22,7 +22,7 @@ Updated 2026-11-19T20:02:30Z by runner 79e9b499dfce (actions).
 | T161 | wording: the WORD-024 voice rule's pressure-word scan, the r | MERGE_PENDING | 2 | 2 h 1 min | 20:00Z | PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/s |
 | T607 | site: site.css brought up to the V6 reference (laftly-v6.css | QUEUED | 1 | 2 h 5 min | 19:21Z | review_missing on 2c1fc315ebe4 (D-3728): not proven reviewed or worker-made / (b) 5cb49e3317bc T607: NOTES entry in the  |
 | T555 | Decisions digest, piece 10: the next entries after the heade | MERGE_PENDING | 1 | 2 h 7 min | 17:51Z |  |
-| T715 | intake (harness): corrections to T671's walker: alarm answer | MERGE_PENDING | 3 | 113 min | 17:43Z | PLAN GAP: one TD-INT-52 sentence can't be met by intake as planned: "a two-word first text naming a trade opens its job  |
+| T715 | intake (harness): corrections to T671's walker: alarm answer | done | 3 | 113 min | 17:43Z | PLAN GAP: one TD-INT-52 sentence can't be met by intake as planned: "a two-word first text naming a trade opens its job  |
 | T530 | portals: the owner help page and its screened reply box (D-3 | QUEUED | 1 | 117 min | 17:38Z | Review round 2 on head 9cae918e901f6738321e0450589f137ab939da2f: REVIEW-VERDICT: FINDINGS (the one fix round is used). / |
 | T724 | harness: Ci's Rust-test jobs, the worker job and the nightly | done | 1 | 50 min | 17:09Z |  |
 | T210 | payments: the money view's sales-tax set-aside and manual ex | done | 1 | 53 min | 16:29Z |  |
@@ -94,8 +94,8 @@ Updated 2026-11-19T20:02:30Z by runner 79e9b499dfce (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 336 of 735 (45.7%) · partial 362 · unstarted 37
-**Tasks merged (throughput only):** 501 of 683
+**Requirements verified:** 328 of 735 (44.6%) · partial 370 · unstarted 37
+**Tasks merged (throughput only):** 502 of 698
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -104,19 +104,19 @@ Updated 2026-11-19T20:02:30Z by runner 79e9b499dfce (actions).
 | businesses | 21 | 36 | 1 | 58 |
 | calls | 14 | 11 | 0 | 25 |
 | consent | 16 | 19 | 0 | 35 |
-| fees | 25 | 27 | 0 | 52 |
+| fees | 22 | 30 | 0 | 52 |
 | intake | 9 | 34 | 0 | 43 |
 | job-cards | 12 | 12 | 0 | 24 |
-| licensing | 35 | 13 | 0 | 48 |
+| licensing | 34 | 14 | 0 | 48 |
 | lifecycle | 18 | 10 | 0 | 28 |
 | messaging | 22 | 22 | 1 | 45 |
 | ops-recovery | 9 | 27 | 18 | 54 |
-| privacy | 10 | 20 | 1 | 31 |
-| quiet-hours | 5 | 4 | 0 | 9 |
+| privacy | 9 | 21 | 1 | 31 |
+| quiet-hours | 3 | 6 | 0 | 9 |
 | quotes-pick | 25 | 31 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
 | security | 11 | 39 | 5 | 55 |
-| terms | 28 | 6 | 1 | 35 |
+| terms | 27 | 7 | 1 | 35 |
 | website | 17 | 10 | 3 | 30 |
 | wording | 23 | 5 | 4 | 32 |
 
@@ -131,7 +131,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 144 of 281 done
+- stage 5: 145 of 281 done
 - stage 6: 0 of 64 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
