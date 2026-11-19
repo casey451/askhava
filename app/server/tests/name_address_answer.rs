@@ -7,17 +7,27 @@
 //! waited for the address has it released once through T255's path. A hazard sent while the
 //! question is open keeps its 911 text, and SAFE is not her answer (D-3705).
 //!
-//! The ZIP step is not wired to a live text yet (D-3702), so her first text and the area check
-//! run through `intake::api::receive_text` and `answer_zip`; this crate reads no module's table
-//! (TD-SEC-10), so what was asked is read through `name_address_open`, the audit log and the
-//! intake replies. Fake data only (555-01xx numbers, made-up names and streets).
+//! Setup (D-4544, INT-043): step 11 comes only after step 5 told a count, so `her_request` loads
+//! the catalog, imports a fake city list and seeds two active handyman businesses serving her town
+//! through module APIs only (when no job is named for her), sends her first text, a handyman door
+//! job, through `intake::api::receive_raw_reply` (its trade reading and early job kept), then
+//! stores her ZIP through `answer_zip`; her next reply gets the count, then the question. This
+//! crate reads no module's table (TD-SEC-10), so what was asked is read through
+//! `name_address_open`, the audit log and the intake replies. Fake data only (555-01xx numbers,
+//! made-up names and streets).
 
 use std::collections::BTreeSet;
 use std::fmt::Write as _;
 use std::sync::{Arc, Mutex};
 
-use askhava_adapters::api::{MaskedPool, TwilioConfig};
-use askhava_businesses::api::{AccountStatus, add_owner};
+use askhava_adapters::api::{
+    AdapterError, Charge, IdempotencyKey, MaskedPool, PaymentIntent, PaymentsAdapter, TwilioConfig,
+};
+use askhava_businesses::api::{
+    AccountStatus, Checks, Event as BusinessEvent, JobTypeChoice, SignUpForm, add_owner, apply,
+    request_welcome, save_business_name, set_job_types, set_towns, sign_up, welcome_sent,
+};
+use askhava_catalog::api::load_embedded;
 use askhava_core::api::{
     Claimed, Environment, Guarded, MIGRATOR, ManualClock, Settings, WorkerId, claim,
 };
@@ -27,10 +37,10 @@ use askhava_intake::api::rules::{
 use askhava_intake::api::{
     ADDRESS_IN_KIND, Answer, RawReply, Reply, Taken, TextIn, ZipStep, answer_zip,
     ask_last_question, emergency_events, name_address_open, reads_as_address, receive_raw_reply,
-    receive_text, record_answer, run_address_needed, safe_hold,
+    record_answer, run_address_needed, safe_hold,
 };
 use askhava_jobs::api::{JobStatus, create, move_to, record_job_facts};
-use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
+use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind, import_city_list};
 use askhava_ops::api::{Actor, export_audit};
 use askhava_payments::api::{EntryKind, LedgerEntry, NewEntry, ledger_append, no_fee_release};
 use askhava_picks::api::{ADDRESS_NEEDED_KIND, PagePick, Released, page_pick};
@@ -189,9 +199,97 @@ fn her_text(contact: Uuid, words: &str) -> TextIn<'_> {
     }
 }
 
-/// Her vault contact (phone only), her request opened by her first text, each of `jobs` named in
-/// it and her ZIP checked: `(contact, request)`.
+/// A fake city list naming the two seeded businesses (no name the privacy checks search for).
+const CITY: &str = "license_number,business_name,trade_name,owner_name,issued_on\n\
+CL-7301,Hinge Works One LLC,,,2019-03-04\nCL-7302,Hinge Works Two LLC,,,2019-03-04\n";
+/// Her first text: a handyman door job, which needs no licence (D-4544).
+const FIRST: &str = "my front door is sticking badly";
+
+/// A Stripe that only makes customers, for `sign_up` (D-4544).
+struct SignUpStripe;
+
+impl PaymentsAdapter for SignUpStripe {
+    async fn create_customer(&self, _: &IdempotencyKey, _: &str) -> Result<String, AdapterError> {
+        Ok(format!("cus_fake{}", Uuid::new_v4().simple()))
+    }
+
+    async fn create_payment_intent(
+        &self,
+        _: &IdempotencyKey,
+        _: Charge<'_>,
+    ) -> Result<PaymentIntent, AdapterError> {
+        Err(AdapterError::NotSent)
+    }
+
+    async fn fetch_payment_intent(&self, _: &str) -> Result<PaymentIntent, AdapterError> {
+        Err(AdapterError::NotSent)
+    }
+
+    async fn create_refund(&self, _: &IdempotencyKey, _: &str) -> Result<String, AdapterError> {
+        Err(AdapterError::NotSent)
+    }
+}
+
+/// D-4544, INT-043: the catalog, the fake city list and two active, welcomed handyman businesses
+/// serving her town and ticking door repair, so step 5 tells a count (setup only).
+async fn coverage(pool: &PgPool) {
+    let mut db = pool.acquire().await.expect("db");
+    load_embedded(&mut db).await.expect("catalog");
+    let day = jiff::civil::date(2026, 11, 1);
+    import_city_list(&mut db, day, CITY)
+        .await
+        .expect("city list");
+    drop(db);
+    for name in ["Hinge Works One LLC", "Hinge Works Two LLC"] {
+        handyman(pool, name).await;
+    }
+}
+
+/// One business signed up for the handyman trade, then made active as `business()` in
+/// `tests/integration/tests/intake_order_area_trade.rs` does, with no raw SQL (D-4544).
+async fn handyman(pool: &PgPool, name: &str) {
+    let form = SignUpForm {
+        categories: vec!["handyman".to_owned()],
+        mailbox_id: Some(Uuid::new_v4()),
+        heard_from: None,
+        g_code: None,
+    };
+    let map = ClassMap::shipped().expect("map");
+    let up = sign_up(pool, (&SignUpStripe, &secret()), map, &form, now()).await;
+    let b = up.expect("signed up").business;
+    let mut db = pool.acquire().await.expect("db");
+    add_owner(&mut db, b, Uuid::new_v4(), now())
+        .await
+        .expect("owner");
+    let ok = Checks {
+        code_done: true,
+        match_passed: true,
+        flagged: false,
+    };
+    let checked = apply(&mut db, b, BusinessEvent::Checked(ok), Actor::System, now()).await;
+    checked.expect("active");
+    request_welcome(&mut db, b, now()).await.expect("welcome");
+    welcome_sent(&mut db, b, now()).await.expect("sent");
+    save_business_name(&mut db, b, (name, None), None)
+        .await
+        .expect("name");
+    let actor = Actor::Business(b);
+    let town = "lake_havasu_city";
+    set_towns(&mut db, b, &[town], actor).await.expect("towns");
+    let choice = JobTypeChoice::new("handyman", "door repair");
+    let allowed: BTreeSet<_> = [choice.clone()].into();
+    set_job_types(&mut db, b, &[choice], &allowed, actor)
+        .await
+        .expect("job types");
+}
+
+/// Her vault contact (phone only), her request opened by her first text through
+/// `receive_raw_reply`, each of `jobs` named in it and her ZIP checked: `(contact, request)`.
+/// With no job named, two covering businesses are seeded first (D-4544, INT-043).
 async fn her_request(pool: &PgPool, jobs: &[Uuid]) -> (Uuid, Uuid) {
+    if jobs.is_empty() {
+        coverage(pool).await;
+    }
     let mut db = pool.acquire().await.expect("db");
     let new = NewContact {
         phone: Some(SecretString::from(HER)),
@@ -201,9 +299,18 @@ async fn her_request(pool: &PgPool, jobs: &[Uuid]) -> (Uuid, Uuid) {
         .await
         .expect("contact");
     let (secret, settings) = (secret(), IntakeSettings::default());
-    let first = her_text(contact, "my AC is out");
-    let handled = receive_text(&mut db, &secret, &first, settings).await;
-    let request = handled.expect("request").conversation.expect("open");
+    let first = her_text(contact, FIRST);
+    let raw = SecretString::from(FIRST);
+    let vault = vault();
+    let keys = RawReply {
+        raw: &raw,
+        vault: &vault,
+    };
+    let handled = receive_raw_reply(&mut db, &secret, (&first, keys), (settings, &[])).await;
+    let Reply::Handled(handled) = handled.expect("first text") else {
+        panic!("a first text");
+    };
+    let request = handled.conversation.expect("open");
     for (i, job) in jobs.iter().enumerate() {
         let code = job.simple().to_string();
         let question = format!("job.hvac.p{i}");
