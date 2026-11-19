@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T03:24:05Z by runner c5a97a0b8910 (actions).
+Updated 2026-11-19T03:26:03Z by runner a232e28b4569 (actions).
 
 **Building: T520 in progress since 01:57Z; 471 of 663 done; week 73% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-19T03:24:05Z by runner c5a97a0b8910 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T520 claimed 01:57Z, lease until 06:00Z; lane 3: T114 claimed 02:14Z, lease until 06:15Z; lane 4: T484 claimed 02:04Z, lease until 06:01Z; lane 5: T563 claimed 02:48Z, lease until 05:48Z; lane 6: T490 claimed 02:10Z, lease until 06:17Z; lane 7: T399 claimed 03:14Z, lease until 06:14Z
 - **Week:** 73% used, 42.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:23Z, 0 min before this update
+- **Last run:** 03:24Z, 1 min before this update
 - **Keeper:** last ran 03:24Z, next wake 03:44Z
 
 ## Needs attention
@@ -16,7 +16,7 @@ Updated 2026-11-19T03:24:05Z by runner c5a97a0b8910 (actions).
 Evidence: `trade_check` passes no words when the first tex; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T715 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 51 problem(s) on tasks still to run (+273 on DONE tasks); first: T563: stored context_pct 22% but it measures 26%; regenerate
+- Strict plan check red: 55 problem(s) on tasks still to run (+275 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
