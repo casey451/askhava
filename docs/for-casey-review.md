@@ -3540,3 +3540,10 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **What changed:** the tasks that tidy the code notes and guides for future AI sessions now run after your account checkpoint and before the handover pack, instead of before the checkpoint; the AI-cost limits no longer wait for your war-games go (the war games themselves still do). The longest remaining chain drops from 42 tasks to 34.
 - **Risk:** notes written after the tidy-up could undo some of it; a final cleanup pass before the finish catches that.
 - Fable's decision, as you asked; nothing needs you now.
+
+## Intake fixes from the intake audit, one for safety first (D-4777)
+
+- **Safety, first in line:** Spanish texts like "huelo gas en la cocina" or "huele a quemado" now get the 911 message, as the English ones do; "calentador de gas no funciona" still does not (T758).
+- **Licences:** a request such as "handyman needed, breaker panel keeps tripping" no longer counts handymen without an electrical licence, and "water heater" keeps its job type in the count (T716).
+- **Smaller fixes:** a "Close which?" question no longer stays open forever, "never mind" with no job now gets a reply (T759), and a second job opened with "ALSO" before the ZIP now gets its coverage answer (T760).
+- Fable's findings; nothing needs you now.
