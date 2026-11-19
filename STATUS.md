@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T06:58:19Z by runner 7c090605e7a9 (actions).
+Updated 2026-11-19T06:59:56Z by runner 216c2f414f1b (actions).
 
 **Building: T456 in progress since 06:58Z; 479 of 664 done; week 75% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-19T06:58:19Z by runner 7c090605e7a9 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T456 claimed 06:58Z, lease until 09:58Z; lane 2: T310 claimed 06:04Z, lease until 09:04Z; lane 3: T216 claimed 06:32Z, lease until 09:32Z; lane 4: T562 claimed 04:26Z, lease until 09:57Z; lane 6: T476 claimed 06:22Z, lease until 09:22Z; lane 7: T229 claimed 04:42Z, lease until 09:05Z
 - **Week:** 75% used, 38.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:57Z, 0 min before this update
+- **Last run:** 06:58Z, 1 min before this update
 - **Keeper:** last ran 06:57Z, next wake 09:07Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-19T06:58:19Z by runner 7c090605e7a9 (actions).
 - PLAN GAP T652 (since 2026-11-19T06:58:02Z, no attempt used; a plan change fixes it): T652: dependency T408 is DONE but its owned file app/server/src/release_hold.rs is not on main; T652: dependency T408 is DONE but its owned file app/server/tests/safe_mode_release.rs is not on main
 - PLAN GAP T663 (since 2026-11-19T06:58:02Z, no attempt used; a plan change fixes it): T663: dependency T408 is DONE but its owned file app/server/src/release_hold.rs is not on main; T663: dependency T408 is DONE but its owned file app/server/tests/safe_mode_release.rs is not on main
 - PLAN GAP T707 (since 2026-11-19T06:58:02Z, no attempt used; a plan change fixes it): T707: dependency T408 is DONE but its owned file app/server/src/release_hold.rs is not on main; T707: dependency T408 is DONE but its owned file app/server/tests/safe_mode_release.rs is not on main
-- Strict plan check red: 60 problem(s) on tasks still to run (+292 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 58 problem(s) on tasks still to run (+288 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
