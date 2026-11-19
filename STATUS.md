@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T19:36:20Z by runner a569d63ba923 (actions).
+Updated 2026-11-19T19:51:20Z by runner a569d63ba923 (actions).
 
 **Building: T753 in progress since 19:06Z; 501 of 698 done; week 6% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-19T19:36:20Z by runner a569d63ba923 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T753 claimed 19:06Z, lease until 22:06Z; lane 2: T161 claimed 17:58Z, lease until 20:58Z; lane 3: T307 claimed 17:47Z, lease until 20:47Z; lane 5: T748 claimed 19:26Z, lease until 22:26Z; lane 6: T480 claimed 17:18Z, lease until 20:18Z
 - **Week:** 6% used, 177.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:36Z, 0 min before this update
+- **Last run:** 19:51Z, 0 min before this update
 - **Keeper:** last ran 19:36Z, next wake 20:21Z
 
 ## Needs attention
@@ -87,7 +87,6 @@ Updated 2026-11-19T19:36:20Z by runner a569d63ba923 (actions).
 | T502 | Decisions digest, piece 3: the next entries after the header | done | 1 | 38 min | 20:31Z |  |
 | T364 | server and portals: the business step-up code page is served | check_failed | 1 | 2 h 1 min | 20:29Z |  |
 | T702 | privacy and messaging: no blind-index key version is retired | resync | 1 | 59 min | 20:21Z |  |
-| T501 | Decisions digest, piece 2: the next entries after the header | done | 1 | 73 min | 19:42Z |  |
 
 ### Plan and harness merges on main
 - none
