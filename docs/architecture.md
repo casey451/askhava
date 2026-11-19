@@ -227,6 +227,7 @@ wargames/            the Phase 2 war games (Python, standard library): personas,
 - Masked lines close on job end (T662, D-4338, D-4398; CALL-009, CALL-010, JOB-005, JOB-015): `jobs` and `intake` may not call `calls`, so an applied cancel (`intake`'s text and page cancel and the INT-038 cancel) and an applied check-in PROBLEM or NO (`jobs::followups::answer_check_in`) queue one core task `calls.close_line` (`jobs::api::queue_line_close`, `jobs::line_close`) in the move's transaction, payload `{job, number, reason}` (`cancelled`, `complaint`, `no_show`), keyed per move by the job's version after it; `server` registers `calls::api::run_close_line` for it, which calls `close_line` (a cancel tells the business, no strike; a job with no open line closes nothing). The daily `calls.close_expired` sweep (`calls::close_tasks`, seeded by `worker`'s `schedule_start`, each run queuing the next a day later first) closes lines 30 days old. `picks`' `picks.line_retry` opens no line for a job in a final status (`jobs::api::current`).
 - Watch checks (T525, D-4434, D-4435; SEC-047, OPS-052): `server::watch_checks` registers two worker tasks in `worker_registry`, each first queued by `worker.rs`'s `schedule_checks` under its hour's or UTC day's dedupe key and re-queued by each run: `privacy.read_rate_check` (hourly, `privacy::api::check_read_rates` for the hour in its payload, then queues the next hour due when that hour ends, so a late run skips no hour, D-4435) and `ops.volume_check` (daily, `ops::api::check_volume`, which reads `pg_database_size(current_database())` and raises through `raise_kind_once` `ops.volume_low` (`normal`) from 70% and `ops.volume_high` (`high`, daytime push, never safe mode) from 85% of the setting `ASKHAVA_DB_VOLUME_BYTES`). The setting is optional in `core`'s `Settings`; the registration refuses a missing one in test and live, and in dev and Ci the volume check raises nothing.
 - Owner health page (T476, D-4624; OPS-008, OPS-009, SEC-002, SEC-036): `portals::health_page::owner_health_page` renders `/owner/health` (`OWNER_HEALTH_ROUTE`; T304 serves it) from T475's readers only (`messaging::api` text, email, sent-count and timing figures, `quotes::api::card_figures` and `spot_check_cards`, `payments::api::payment_errors`, `ai::api::ai_figures`; `portals` now depends on `ai`), plus a `HealthInputs` the route passes in: email limits, quote limit, `Settings::spot_check_every_days` (`ASKHAVA_SPOT_CHECK_EVERY_DAYS`, above 0, default 30, D-4625), web time since start, the `/healthz` worker state, one `SecretLine` (name, present, parsed, environment-matched; no value) per required secret and the four SEC-036 `AccountIds`. Windows end at `now`: last 7 days, Arizona day and month, and the last N days for the 10-card spot-check. Last backup reads "Not yet recorded" until T109.
+- Homeowner portal served (T307, D-3967, D-4025, D-4010; SEC-008, SEC-014, SEC-034, SEC-042, SEC-046, PRIV-021, CON-035): `server::homeowner_portal` serves `GET`/`POST /h/sign-in`, `POST /h/sign-in/code`, `GET /h` and `POST /h/texts-off`, always merged by `build_router` (in `business_pages`), with the Twilio webhooks' vault and ID secret and the optional `RouterParts::with_homeowner_verify` part (`homeowner_verify` in `main`; none: no send, no check, never a 5xx); the code is sent in a spawned task after the limits admit it, so the code page never waits on Verify, D-4013). Calls: `portals::api` (`admit_code_send`, `admit_code_try`, `send_sign_in_code`, `finish_sign_in`, `OnFile::read`, `HomeFacts::read`, `turn_texts_off`), `privacy::api::find_by_phone` (index only, no plaintext read) and `intake::api::conversations_of_contact`/`conversation` for the language. `HomeFacts::read` in `portals` reads her phone and address through `read_own_contact` and calls the new `messaging::api::texts_on` (`messaging::held_messages`, a new `portals` to `messaging` read), which derives the suppression digests as `optout.rs` does. The `/h/my-data` routes are T561's.
 
 ## 3. Modules, what each owns, and its tables
 
@@ -649,11 +650,11 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | POST | /owner/safety-call | server | yes |
 | GET | /owner/release | server | yes |
 | POST | /owner/release | server | yes |
-| GET | /h | portals | T307 |
-| GET | /h/sign-in | portals | T307 |
-| POST | /h/sign-in | portals | T307 |
-| POST | /h/sign-in/code | portals | T307 |
-| POST | /h/texts-off | portals | T307 |
+| GET | /h | portals | yes |
+| GET | /h/sign-in | portals | yes |
+| POST | /h/sign-in | portals | yes |
+| POST | /h/sign-in/code | portals | yes |
+| POST | /h/texts-off | portals | yes |
 | GET | /h/my-data | portals | T561 |
 | POST | /h/my-data/request | portals | T561 |
 | POST | /h/my-data/code | portals | T561 |

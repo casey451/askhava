@@ -13,15 +13,17 @@
 //! [`turn_texts_off`] puts her number on the one suppression list at once, logged with channel
 //! `portal` and the time, and [`TEXTS_OFF_LINE`] confirms it on screen, never by text (CON-035).
 //! [`homeowner_page`] renders every screen of `templates/homeowner_home.html`, which asks for no
-//! SSN, driver's license or tax ID image and has no file field (PRIV-012). The Verify send caps are
-//! T089's (PICK-055, D-493), so no route here is served yet (D-1934); address and language changes
-//! wait on a vault update and a stored language (D-1935).
+//! SSN, driver's license or tax ID image and has no file field (PRIV-012). [`HomeFacts::read`]
+//! reads the home's facts through her own proof alone, with `texts_on` from `messaging`'s
+//! suppression reader (D-4025). `server::homeowner_portal` serves the sign-in, home and texts-off
+//! routes (T307); the data routes wait on T561; address and language changes wait on a vault update
+//! and a stored language (D-1935).
 
 use std::fmt;
 
 use askama::Template;
 use askhava_adapters::api::{CodeChannel, IdempotencyKey, VerifyAdapter};
-use askhava_messaging::api::{RevokeChannel, suppress};
+use askhava_messaging::api::{RevokeChannel, suppress, texts_on};
 use askhava_picks::api::rules::parse_code;
 use askhava_privacy::api::{
     Field, HomeownerSessionProof, Vault, VaultError, find_by_phone, read_own_contact,
@@ -37,17 +39,17 @@ use crate::data_download::DataRequestKind;
 use crate::security::{SecurityEvent, SecurityEventKind, record_security_event};
 use crate::session::{Realm, start_session};
 
-/// The portal home's path (not served yet, D-1934).
+/// The portal home's path (served by `server::homeowner_portal`, T307).
 pub const HOMEOWNER_HOME_ROUTE: &str = "/h";
 
-/// The sign-in page's path (not served yet, D-1934).
+/// The sign-in page's path (served by `server::homeowner_portal`, T307).
 pub const HOMEOWNER_SIGNIN_ROUTE: &str = "/h/sign-in";
 
-/// The sign-in code step's path: the code page posts the code and the typed number here (not
-/// served yet, D-1934).
+/// The sign-in code step's path: the code page posts the code and the typed number here (served
+/// by `server::homeowner_portal`, T307).
 pub const HOMEOWNER_CODE_ROUTE: &str = "/h/sign-in/code";
 
-/// The texts-off switch's path (not served yet, D-1934).
+/// The texts-off switch's path (served by `server::homeowner_portal`, T307).
 pub const TEXTS_OFF_ROUTE: &str = "/h/texts-off";
 
 /// A homeowner session lasts 30 days on its device (SEC-008).
@@ -268,6 +270,39 @@ pub struct HomeFacts {
     pub spanish: bool,
     /// Her number is not on the suppression list.
     pub texts_on: bool,
+}
+
+impl HomeFacts {
+    /// PRIV-021, SEC-046, CON-035, D-4025: the home's facts of the contact `proof` names, and of
+    /// no other: her phone and address through `read_own_contact` alone, `phone_last4` the
+    /// number's last four digits, `texts_on` whether `messaging` finds the number off the
+    /// suppression list, and `spanish` as the caller read it from her latest request.
+    ///
+    /// # Errors
+    /// `None` when the contact has no phone; a [`VaultError`] when the read is refused or fails,
+    /// or [`VaultError::Database`] when the suppression list cannot be read (never "texts on").
+    pub async fn read(
+        db: &mut PgConnection,
+        vault: &Vault,
+        proof: &HomeownerSessionProof,
+        spanish: bool,
+    ) -> Result<Option<Self>, VaultError> {
+        let fields = [Field::Phone, Field::Address];
+        let own = read_own_contact(db, vault, proof, &fields).await?;
+        let Some(phone) = own.phone else {
+            return Ok(None);
+        };
+        let phone = phone.expose_secret();
+        let texts_on = texts_on(db, vault, phone).await;
+        let digits: Vec<char> = phone.chars().filter(char::is_ascii_digit).collect();
+        let last4 = digits[digits.len().saturating_sub(4)..].iter().collect();
+        Ok(Some(Self {
+            phone_last4: last4,
+            address: own.address.map(|a| a.expose_secret().to_owned()),
+            spanish,
+            texts_on: texts_on.map_err(|_| VaultError::Database)?,
+        }))
+    }
 }
 
 impl fmt::Debug for HomeFacts {
