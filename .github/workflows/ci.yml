@@ -34,7 +34,7 @@ env:
 jobs:
   checks:
     name: "Checks"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # 40, not 25: a change to tests/mutation/mutants.toml or its script runs every named mutant (D-1285).
     timeout-minutes: 40
     # Postgres for the Rust integration tests (D-453), pinned by digest (SEC-021, SEC-045). Dependabot's
@@ -63,6 +63,13 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 200
+
+      - name: PostgreSQL 16's initdb, pg_ctl and pg_dump first on the path (D-4708)
+        run: |
+          pg16=/usr/lib/postgresql/16/bin; echo "Image: ${ImageOS:-unknown} ${ImageVersion:-unknown}"
+          major="$("$pg16/initdb" --version 2>/dev/null | awk '{split($3, v, "."); print v[1]}')" || major=""
+          [ "$major" = 16 ] || { echo "::error::$pg16/initdb is missing or not PostgreSQL 16 (major '${major:-none}'): PostgreSQL 16's initdb, pg_ctl and pg_dump are not on the path (D-4708)"; exit 1; }
+          "$pg16/initdb" --version && echo "$pg16" >> "$GITHUB_PATH"
 
       - name: Sources unchanged (fingerprint)
         run: |
@@ -216,7 +223,7 @@ jobs:
         if: steps.changes.outputs.rust == 'true' && hashFiles('Cargo.lock') != ''
         uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
-          shared-key: checks
+          shared-key: checks-ubuntu-24.04
           # Restored on every run, saved only on main (D-2782): a branch's entry is readable by that branch
           # alone, and each one (about 1.5 GB) pushed main's entries out of the 10 GB cache.
           save-if: ${{ github.ref == 'refs/heads/main' }}
@@ -268,7 +275,7 @@ jobs:
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.cargo/sqlx-cli
-          key: sqlx-cli-0.9.0-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}
+          key: sqlx-cli-0.9.0-${{ runner.os }}-ubuntu-24.04-${{ hashFiles('rust-toolchain.toml') }}
 
       - name: Install sqlx-cli 0.9.0 on a cache miss
         if: steps.sqlx-cli-cache.outputs.cache-hit != 'true' && steps.changes.outputs.rust == 'true' && hashFiles('migrations/*.sql') != ''
@@ -344,7 +351,7 @@ jobs:
     # of which fmt and clippy about 105 s, the query check about 30 s and the trybuild and TD-AI-03 tests about
     # 225 s, all in sequence. The same commands as before; the test command is Checks' with the filters.
     name: "Lint and slow tests"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     services:
       postgres:
@@ -366,6 +373,13 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 200
+
+      - name: PostgreSQL 16's initdb, pg_ctl and pg_dump first on the path (D-4708)
+        run: |
+          pg16=/usr/lib/postgresql/16/bin; echo "Image: ${ImageOS:-unknown} ${ImageVersion:-unknown}"
+          major="$("$pg16/initdb" --version 2>/dev/null | awk '{split($3, v, "."); print v[1]}')" || major=""
+          [ "$major" = 16 ] || { echo "::error::$pg16/initdb is missing or not PostgreSQL 16 (major '${major:-none}'): PostgreSQL 16's initdb, pg_ctl and pg_dump are not on the path (D-4708)"; exit 1; }
+          "$pg16/initdb" --version && echo "$pg16" >> "$GITHUB_PATH"
 
       - name: Does this change touch Rust? (Checks' rule, kept equal by tests/test_ci_workflow.py)
         id: changes
@@ -411,7 +425,7 @@ jobs:
         if: steps.changes.outputs.rust == 'true' && hashFiles('Cargo.lock') != ''
         uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
-          shared-key: lint
+          shared-key: lint-ubuntu-24.04
           cache-directories: target/tests/trybuild
           save-if: ${{ github.ref == 'refs/heads/main' }}
 
@@ -437,7 +451,7 @@ jobs:
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.cargo/sqlx-cli
-          key: sqlx-cli-0.9.0-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml') }}
+          key: sqlx-cli-0.9.0-${{ runner.os }}-ubuntu-24.04-${{ hashFiles('rust-toolchain.toml') }}
 
       - name: Install sqlx-cli 0.9.0 on a cache miss
         if: steps.sqlx-cli-cache.outputs.cache-hit != 'true' && steps.changes.outputs.rust == 'true' && hashFiles('migrations/*.sql') != ''
@@ -502,7 +516,7 @@ jobs:
 
   coverage:
     name: "Coverage"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     services:
       postgres:
@@ -530,6 +544,13 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 200
+
+      - name: PostgreSQL 16's initdb, pg_ctl and pg_dump first on the path (D-4708)
+        run: |
+          pg16=/usr/lib/postgresql/16/bin; echo "Image: ${ImageOS:-unknown} ${ImageVersion:-unknown}"
+          major="$("$pg16/initdb" --version 2>/dev/null | awk '{split($3, v, "."); print v[1]}')" || major=""
+          [ "$major" = 16 ] || { echo "::error::$pg16/initdb is missing or not PostgreSQL 16 (major '${major:-none}'): PostgreSQL 16's initdb, pg_ctl and pg_dump are not on the path (D-4708)"; exit 1; }
+          "$pg16/initdb" --version && echo "$pg16" >> "$GITHUB_PATH"
 
       - name: Does this change touch Rust? (same rule as Checks, D-489)
         id: changes
@@ -577,7 +598,7 @@ jobs:
         if: steps.changes.outputs.rust == 'true'
         uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
-          shared-key: coverage
+          shared-key: coverage-ubuntu-24.04
           key: ${{ env.NIGHTLY }}
           workspaces: ". -> target/llvm-cov-target"
           save-if: ${{ github.ref == 'refs/heads/main' }}
@@ -638,7 +659,7 @@ jobs:
     # not an image, so globalSetup starts it rather than `services:`; Postgres and stripe-mock are
     # services, each pinned by digest (SEC-021, SEC-045). Any failed assertion fails this job and so Ci.
     name: "E2e"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     services:
       postgres:
@@ -664,6 +685,13 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 200
+
+      - name: PostgreSQL 16's initdb, pg_ctl and pg_dump first on the path (D-4708)
+        run: |
+          pg16=/usr/lib/postgresql/16/bin; echo "Image: ${ImageOS:-unknown} ${ImageVersion:-unknown}"
+          major="$("$pg16/initdb" --version 2>/dev/null | awk '{split($3, v, "."); print v[1]}')" || major=""
+          [ "$major" = 16 ] || { echo "::error::$pg16/initdb is missing or not PostgreSQL 16 (major '${major:-none}'): PostgreSQL 16's initdb, pg_ctl and pg_dump are not on the path (D-4708)"; exit 1; }
+          "$pg16/initdb" --version && echo "$pg16" >> "$GITHUB_PATH"
 
       - name: Does this change touch the app or the journeys? (same idea as Checks, D-489)
         id: changes
@@ -706,7 +734,7 @@ jobs:
         if: steps.changes.outputs.run == 'true'
         uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
-          shared-key: e2e
+          shared-key: e2e-ubuntu-24.04
           save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Build server and worker with test-control (never the release build, SEC-035)
@@ -734,7 +762,7 @@ jobs:
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          key: playwright-${{ runner.os }}-ubuntu-24.04-${{ hashFiles('package-lock.json') }}
 
       - name: Chromium and its system libraries
         if: steps.changes.outputs.run == 'true'

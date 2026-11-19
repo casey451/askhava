@@ -3504,3 +3504,39 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **What it changes:** from the moment it is on, new homeowners' first text includes the recorded-call sentence, and a gas, smoke or fire text while our texting is down can get one recorded call. Off again, both stop with the next message.
 - **Not covered yet:** the web chat's welcome text never mentions the recorded call, even with the switch on. That chat part belongs to another module and needs its own small change.
 - Our choice; nothing needs you now.
+
+## Fable's first restart batch: ten new tasks and four widened ones (D-4748 to D-4750)
+
+- **What will change:** a text opt-out keeps working after the phone-lookup key is replaced, and an old key can finally be retired (T743; Gate C now waits for it). Closing or cancelling a job ends a pick still waiting to be accepted or paid, and its payment is cancelled (T744). Businesses see the homeowner's answers on the Quote and Confirm pages (T745, T746), and a returning homeowner's second job from an "ALSO" text gets the $0 repeat-customer fee it should. Choosing "emergency" by text now gives the 60-minute emergency windows (T747). An unused business text is removed (T749).
+- **Help form:** until it asks for an email address, its "got your message" screen stops promising a reply (T748); then the form asks for an email and the owner's reply goes there (T740, T742).
+- **For you to review later:** the privacy policy draft gains "An opted-out number is kept as long as needed to honor the opt-out." (T750), and a Spanish draft of the home page's texting consent line is written for a native speaker to check (T725). Neither is published or shown until you say so.
+- **Test tools:** the payment test stand-in learns to remove a saved card (T751), and an old catalog comment saying "2 businesses" is corrected to 1 (T752).
+- **Dates noted:** the picomatch exception is re-checked December 10; the pacer is re-measured 48 hours after its fix lands.
+- Our choice (Fable's decisions); nothing needs you now.
+
+## Fable takes the retries, and the next tasks in line (D-4761)
+
+- **What will change:** a new runner task (T753) lets a task be assigned to Fable and sends any task that failed once to Fable for its next try; if Fable refuses or runs out of usage, Opus takes over without losing a try. The next tasks claimed are, in order: T724, T753, T726, T727, T748, T740, T742.
+- Your instruction (Nov 19); nothing needs you now.
+
+## Shorter path to Gate C, and three payment fixes (D-4762, D-4763)
+
+- **Faster order:** a few tasks were waiting on others only by habit: the Twilio voice sandbox, the AI and security scans of the test site, the cancel refund and the three-part code audit now start sooner (the audit parts run side by side). Nothing is skipped.
+- **Payment fixes:** a business owed a free introduction after its card page opened a payment is no longer stuck (T754); a payment Stripe reports that we can't match now alerts you instead of only being logged (T754); an auto-confirm pick that should be free charges nothing and waits for the business's normal Confirm (T689).
+- Our choice (Fable's findings); nothing needs you now.
+
+## Texting fixes from the opt-out audit (D-4764)
+
+- **What will change:** a text of "STOP ALL" (with a space) now stops all texts, as "STOPALL" does, and Spanish opt-out phrases typed with accents from any phone are caught (T755). A text waiting for the morning is dropped if its job closed overnight, each queued text is checked against the clock at its own send moment, and a business phone from another time zone gets that zone's quiet hours too (T573, T744).
+- **Left for later:** "stop please" still does not count as an opt-out (the rule says a text must be only the opt-out word); say if you want that changed.
+
+## Two privacy fixes from the privacy audit (D-4765)
+
+- **What will change:** the filter that removes phone numbers and emails before a business or the AI sees a job description now also catches a number split by "and" or "y", "gmail . com" written with spaces, an encoded email and spaced number emoji, while leaving "2 and 3 bedrooms" alone (T756). "Delete my data" now also deletes the words of her problem and help messages at once, instead of within 30 days (T757).
+- Our choice (Fable's findings); nothing needs you now.
+
+## Shorter path: docs tidy-up moves after the account setup, and AI budgets no longer wait for the war games (D-4771)
+
+- **What changed:** the tasks that tidy the code notes and guides for future AI sessions now run after your account checkpoint and before the handover pack, instead of before the checkpoint; the AI-cost limits no longer wait for your war-games go (the war games themselves still do). The longest remaining chain drops from 42 tasks to 34.
+- **Risk:** notes written after the tidy-up could undo some of it; a final cleanup pass before the finish catches that.
+- Fable's decision, as you asked; nothing needs you now.
