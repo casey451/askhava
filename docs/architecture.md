@@ -579,6 +579,9 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | GET | /b/billing/statement.csv | portals | yes |
 | GET | /b/notices | portals | yes |
 | POST | /b/notices | portals | yes |
+| GET | /b/step-up | portals | yes |
+| POST | /b/step-up/send | portals | yes |
+| POST | /b/step-up/check | portals | yes |
 | GET | /b/picks/{pick}/confirm | portals | yes |
 | POST | /b/picks/{pick}/confirm | portals | yes |
 | GET | /b/picks/{pick}/cant-take | portals | yes |
