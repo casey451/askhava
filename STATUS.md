@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T21:34:02Z by runner d68fb0f0ae65 (actions).
+Updated 2026-11-19T21:36:17Z by runner a2df2ce40208 (manual).
 
 **Building: T607 in progress since 21:16Z; 505 of 701 done; week 9% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,14 @@ Updated 2026-11-19T21:34:02Z by runner d68fb0f0ae65 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T607 claimed 21:16Z, lease until 00:16Z; lane 4: T480 claimed 20:38Z, lease until 23:38Z; lane 5: T541 claimed 21:24Z, lease until 00:24Z; lane 7: T717 claimed 20:10Z, lease until 23:59Z
 - **Week:** 9% used, 171.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:33Z, 0 min before this update
+- **Last run:** 21:36Z, 0 min before this update
 - **Keeper:** last ran 21:34Z, next wake 21:54Z
 
 ## Needs attention
 - BLOCKED T663: plan gap reported: PLAN GAP: tests/test_coverage_floor.py:125 asserts floors["future"] == [], contradicting T663 goal (5), which requires a `future` entry for app/portals/src/confirm_moves.rs. Also the test at :183-196 requires per-file floors and files_measured to hold the same paths, on disk, and named in D-3974, so the new connect.rs and confirm_moves.rs floors fail it. T663 does not own tests/test_coverage_floor.py (T264/T324 do). Reviewer confirmed. Smallest fix: relax the floor tests to accept reasoned future entries, or drop goal (5) from T663. Reviewer also found TD-JOB-18 cases untested (paid settle, he; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T663 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 56 problem(s) on tasks still to run (+342 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 56 problem(s) on tasks still to run (+343 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -90,31 +90,31 @@ Updated 2026-11-19T21:34:02Z by runner d68fb0f0ae65 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 329 of 735 (44.8%) · partial 371 · unstarted 35
-**Tasks merged (throughput only):** 505 of 698
+**Requirements verified:** 80 of 735 (10.9%) · partial 620 · unstarted 35
+**Tasks merged (throughput only):** 505 of 701
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 18 | 17 | 0 | 35 |
-| ai | 8 | 18 | 3 | 29 |
-| businesses | 21 | 36 | 1 | 58 |
-| calls | 14 | 11 | 0 | 25 |
-| consent | 16 | 19 | 0 | 35 |
-| fees | 22 | 30 | 0 | 52 |
-| intake | 9 | 34 | 0 | 43 |
-| job-cards | 12 | 12 | 0 | 24 |
-| licensing | 34 | 14 | 0 | 48 |
-| lifecycle | 18 | 10 | 0 | 28 |
-| messaging | 22 | 22 | 1 | 45 |
-| ops-recovery | 9 | 27 | 18 | 54 |
-| privacy | 9 | 21 | 1 | 31 |
-| quiet-hours | 3 | 6 | 0 | 9 |
-| quotes-pick | 25 | 31 | 0 | 56 |
-| recurring | 10 | 1 | 0 | 11 |
-| security | 11 | 39 | 5 | 55 |
-| terms | 27 | 7 | 1 | 35 |
+| accessibility | 3 | 32 | 0 | 35 |
+| ai | 1 | 25 | 3 | 29 |
+| businesses | 1 | 56 | 1 | 58 |
+| calls | 1 | 24 | 0 | 25 |
+| consent | 3 | 32 | 0 | 35 |
+| fees | 1 | 51 | 0 | 52 |
+| intake | 1 | 42 | 0 | 43 |
+| job-cards | 0 | 24 | 0 | 24 |
+| licensing | 0 | 48 | 0 | 48 |
+| lifecycle | 0 | 28 | 0 | 28 |
+| messaging | 0 | 44 | 1 | 45 |
+| ops-recovery | 7 | 29 | 18 | 54 |
+| privacy | 0 | 30 | 1 | 31 |
+| quiet-hours | 0 | 9 | 0 | 9 |
+| quotes-pick | 0 | 56 | 0 | 56 |
+| recurring | 3 | 8 | 0 | 11 |
+| security | 0 | 50 | 5 | 55 |
+| terms | 25 | 9 | 1 | 35 |
 | website | 18 | 9 | 3 | 30 |
-| wording | 23 | 7 | 2 | 32 |
+| wording | 16 | 14 | 2 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
