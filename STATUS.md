@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T22:23:04Z by runner c311c6f33511 (actions).
+Updated 2026-11-19T22:23:29Z by runner c311c6f33511 (actions).
 
 **Building: T726 in progress since 22:06Z; 507 of 701 done; week 11% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 507 of 701 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T726 claimed 22:06Z, lease until 01:06Z; lane 3: T109 claimed 21:53Z, lease until 00:53Z; lane 4: T480 claimed 20:38Z, lease until 23:38Z; lane 5: T541 claimed 21:24Z, lease until 00:24Z; lane 6: T707 claimed 21:38Z, lease until 00:38Z
+- **Lane:** lane 1: T726 claimed 22:06Z, lease until 01:06Z; lane 3: T109 claimed 21:53Z, lease until 00:53Z; lane 5: T541 claimed 21:24Z, lease until 00:24Z; lane 6: T707 claimed 21:38Z, lease until 00:38Z
 - **Week:** 11% used, 166.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 22:22Z, 0 min before this update
 - **Keeper:** last ran 22:22Z, next wake 23:41Z
@@ -20,6 +20,7 @@ Updated 2026-11-19T22:23:04Z by runner c311c6f33511 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T480 | messaging, server and portals: the stored "Spanish conversat | MERGE_PENDING | 1 | 104 min | 22:23Z |  |
 | T717 | intake (harness): corrections to T711's two jobs: two_jobs a | MERGE_PENDING | 1 | 2 h 11 min | 22:21Z |  |
 | T607 | site: site.css brought up to the V6 reference (laftly-v6.css | MERGE_PENDING | 2 | 41 min | 21:57Z | review_missing on 2c1fc315ebe4 (D-3728): not proven reviewed or worker-made / (b) 5cb49e3317bc T607: NOTES entry in the  |
 | T663 | picks, jobs and payments (harness): a confirmed pick moves i | BLOCKED | 1 | 30 min | 21:32Z | PLAN GAP: tests/test_coverage_floor.py:125 asserts floors["future"] == [], contradicting T663 goal (5), which requires a |
@@ -136,9 +137,8 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T726 (lease until 2026-11-20T01:06:39Z)
 - lane 3: T109 (lease until 2026-11-20T00:53:21Z)
-- lane 4: T480 (lease until 2026-11-19T23:38:50Z)
 - lane 5: T541 (lease until 2026-11-20T00:24:08Z)
 - lane 6: T707 (lease until 2026-11-20T00:38:53Z)
 
 ## Last usage reading
-- {"task": "T717", "at": "2026-11-19T22:21:14Z", "input_tokens": 279, "output_tokens": 96909, "cache_read_input_tokens": 10108143, "cache_creation_input_tokens": 322655}
+- {"task": "T480", "at": "2026-11-19T22:23:02Z", "input_tokens": 244, "cache_creation_input_tokens": 256614, "cache_read_input_tokens": 15130818, "output_tokens": 80283}
