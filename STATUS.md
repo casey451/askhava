@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T09:19:02Z by runner 2d195cdcb334 (actions).
+Updated 2026-11-19T09:19:30Z by runner 2d195cdcb334 (actions).
 
 **Building: T470 in progress since 09:02Z; 485 of 664 done; week 77% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 485 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T470 claimed 09:02Z, lease until 12:02Z; lane 2: T553 claimed 08:48Z, lease until 12:13Z; lane 3: T710 claimed 08:40Z, lease until 11:40Z; lane 4: T705 claimed 09:16Z, lease until 12:16Z; lane 5: T622 claimed 07:06Z, lease until 12:04Z; lane 7: T375 claimed 08:04Z, lease until 12:16Z
+- **Lane:** lane 1: T470 claimed 09:02Z, lease until 12:02Z; lane 2: T553 claimed 08:48Z, lease until 12:13Z; lane 3: T710 claimed 08:40Z, lease until 11:40Z; lane 4: T705 claimed 09:16Z, lease until 12:16Z; lane 5: T622 claimed 07:06Z, lease until 12:04Z
 - **Week:** 77% used, 34.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:18Z, 0 min before this update
 - **Keeper:** last ran 09:12Z, next wake 09:32Z
@@ -24,6 +24,7 @@ Updated 2026-11-19T09:19:02Z by runner 2d195cdcb334 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T375 | portals and server: the business's Job types page lets the o | MERGE_PENDING | 1 | 74 min | 09:18Z |  |
 | T652 | ops: safe mode starts only on OPS-001's alert kinds, and a d | BLOCKED | 1 | 5 min | 09:10Z | PLAN GAP: tests/integration/tests/safe_mode.rs:246,281,320,378,407 (owned by T487 and T408; T652's prompt :11 and :47 sa |
 | T536 | E2e harness: clock-advancing journeys last, a keyed worker,  | BLOCKED | 1 | 46 min | 09:00Z | PLAN GAP: tests/e2e/j2.ts:150 (owned by T099, `e2e-j2-business`; T644 also lists it). Smallest plan change: make the `no |
 | T476 | portals: the owner health page with every OPS-008 figure and | MERGE_PENDING | 1 | 2 h 27 min | 08:50Z |  |
@@ -150,7 +151,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 3: T710 (lease until 2026-11-19T11:40:16Z)
 - lane 4: T705 (lease until 2026-11-19T12:16:58Z)
 - lane 5: T622 (lease until 2026-11-19T12:04:37Z)
-- lane 7: T375 (lease until 2026-11-19T12:16:13Z)
 
 ## Last usage reading
-- {"task": "T652", "at": "2026-11-19T09:10:55Z", "input_tokens": 62, "cache_creation_input_tokens": 77743, "cache_read_input_tokens": 1348691, "output_tokens": 11946}
+- {"task": "T375", "at": "2026-11-19T09:18:59Z", "input_tokens": 184, "cache_creation_input_tokens": 222863, "output_tokens": 49124, "cache_read_input_tokens": 11044228}
