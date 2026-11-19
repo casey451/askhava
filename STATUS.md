@@ -1,24 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-19T21:25:30Z by runner 9a58cedd8922 (actions).
+Updated 2026-11-19T21:32:54Z by runner 3ae63a2924fb (actions).
 
 **Building: T607 in progress since 21:16Z; 505 of 701 done; week 8% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 505 of 701 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T607 claimed 21:16Z, lease until 00:16Z; lane 4: T480 claimed 20:38Z, lease until 23:38Z; lane 5: T541 claimed 21:24Z, lease until 00:24Z; lane 6: T663 claimed 21:02Z, lease until 00:02Z; lane 7: T717 claimed 20:10Z, lease until 23:59Z
+- **Lane:** lane 2: T607 claimed 21:16Z, lease until 00:16Z; lane 4: T480 claimed 20:38Z, lease until 23:38Z; lane 5: T541 claimed 21:24Z, lease until 00:24Z; lane 7: T717 claimed 20:10Z, lease until 23:59Z
 - **Week:** 8% used, 171.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:25Z, 0 min before this update
+- **Last run:** 21:25Z, 7 min before this update
 - **Keeper:** last ran 21:25Z, next wake 23:41Z
 
 ## Needs attention
+- BLOCKED T663: plan gap reported: PLAN GAP: tests/test_coverage_floor.py:125 asserts floors["future"] == [], contradicting T663 goal (5), which requires a `future` entry for app/portals/src/confirm_moves.rs. Also the test at :183-196 requires per-file floors and files_measured to hold the same paths, on disk, and named in D-3974, so the new connect.rs and confirm_moves.rs floors fail it. T663 does not own tests/test_coverage_floor.py (T264/T324 do). Reviewer confirmed. Smallest fix: relax the floor tests to accept reasoned future entries, or drop goal (5) from T663. Reviewer also found TD-JOB-18 cases untested (paid settle, he; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T663 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 56 problem(s) on tasks still to run (+343 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 69 problem(s) on tasks still to run (+350 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T663 | picks, jobs and payments (harness): a confirmed pick moves i | BLOCKED | 1 | 30 min | 21:32Z | PLAN GAP: tests/test_coverage_floor.py:125 asserts floors["future"] == [], contradicting T663 goal (5), which requires a |
 | T753 | runner (harness): `fable` is a model the plan can name, a ta | MERGE_PENDING | 1 | 112 min | 20:59Z |  |
 | T307 | server and portals: the homeowner portal's sign-in, home pag | MERGE_PENDING | 2 | 2 h 45 min | 20:33Z | PLAN GAP: tests/security/tests/vault_readers.rs:23 lets only `portals` call `read_own_contact` (line 19 lets only `messa |
 | T748 | portals: the help-page form's confirmation promises no reply | done | 1 | 41 min | 20:08Z |  |
@@ -83,7 +85,6 @@ Updated 2026-11-19T21:25:30Z by runner 9a58cedd8922 (actions).
 | T364 | server and portals: the business step-up code page is served | resync | 2 | 52 min | 22:05Z |  |
 | T651 | server and portals: owner step-up try limit, the passkey pat | done | 1 | 2 h 7 min | 21:52Z |  |
 | T722 | payments: read a pick's disputes and record Casey's evidence | done | 1 | 45 min | 21:33Z |  |
-| T503 | Decisions digest, piece 4: the next entries after the header | done | 1 | 31 min | 21:30Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -138,8 +139,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T607 (lease until 2026-11-20T00:16:12Z)
 - lane 4: T480 (lease until 2026-11-19T23:38:50Z)
 - lane 5: T541 (lease until 2026-11-20T00:24:08Z)
-- lane 6: T663 (lease until 2026-11-20T00:02:19Z)
 - lane 7: T717 (lease until 2026-11-19T23:59:26Z)
 
 ## Last usage reading
-- {"task": "T753", "at": "2026-11-19T20:59:28Z", "input_tokens": 346, "output_tokens": 100486, "cache_creation_input_tokens": 395306, "cache_read_input_tokens": 9112770}
+- {"task": "T663", "at": "2026-11-19T21:32:53Z", "cache_creation_input_tokens": 262824, "input_tokens": 233, "output_tokens": 76311, "cache_read_input_tokens": 14719874}
