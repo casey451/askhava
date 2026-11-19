@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T23:31:27Z by runner e167ef5edf4f (actions).
+Updated 2026-11-19T23:31:51Z by runner e167ef5edf4f (actions).
 
-**Building: T726 in progress since 22:06Z; 510 of 703 done; week 11% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T758 in progress since 23:07Z; 510 of 703 done; week 11% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 510 of 703 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T726 claimed 22:06Z, lease until 01:06Z; lane 2: T758 claimed 23:07Z, lease until 02:07Z; lane 7: T613 claimed 23:22Z, lease until 02:22Z
+- **Lane:** lane 2: T758 claimed 23:07Z, lease until 02:07Z; lane 7: T613 claimed 23:22Z, lease until 02:22Z
 - **Week:** 11% used, 168.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:30Z, 0 min before this update
+- **Last run:** 23:30Z, 1 min before this update
 - **Keeper:** last ran 23:30Z, next wake 23:50Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Updated 2026-11-19T23:31:27Z by runner e167ef5edf4f (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T726 | Runner (harness): a failed attempt's unpushed work can be ke | MERGE_PENDING | 1 | 84 min | 23:31Z |  |
 | T109 | recovery: backup checks and the nightly encrypted export | MERGE_PENDING | 2 | 93 min | 23:26Z | PLAN GAP: `deny.toml:3` (owned by T009 and T604, both outside T109; T109 does not own it): every `age` release fails `ca |
 | T707 | server: an emergency pick's address re-release waits while s | MERGE_PENDING | 1 | 80 min | 22:59Z |  |
 | T541 | payments, portals and adapters: a card saved or changed from | check_failed | 2 | 91 min | 22:55Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-19T |
@@ -135,9 +136,9 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T726 (lease until 2026-11-20T01:06:39Z)
+- nothing
 - lane 2: T758 (lease until 2026-11-20T02:07:12Z)
 - lane 7: T613 (lease until 2026-11-20T02:22:00Z)
 
 ## Last usage reading
-- {"task": "T109", "at": "2026-11-19T23:26:29Z", "input_tokens": 314, "cache_read_input_tokens": 19555824, "output_tokens": 112495, "cache_creation_input_tokens": 387177}
+- {"task": "T726", "at": "2026-11-19T23:31:25Z", "cache_creation_input_tokens": 230153, "input_tokens": 170, "cache_read_input_tokens": 5212961, "output_tokens": 88481}
