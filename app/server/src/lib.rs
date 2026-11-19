@@ -54,6 +54,7 @@ pub mod inbound_voice;
 pub mod liveness;
 pub mod no_handler_alert;
 pub mod offdb_stream;
+pub mod owner_portal;
 pub mod owner_signin;
 pub mod payment_jobs;
 pub mod release_sink;
@@ -293,7 +294,8 @@ impl ApprovalSecret for StripeApproval {
 /// route (T261) from the Stripe hooks, with the parts' Confirm settings, else none; the "Can't
 /// take it" page and button ([`cant_take_route`], T472), always; the business step-up page
 /// ([`business_step_up`], T364), always, sending codes only with its part; and the
-/// owner's sign-in, step-up and sign-out routes ([`owner_signin`], T303), always.
+/// owner's sign-in, step-up and sign-out routes ([`owner_signin`], T303) and home, settings and
+/// switches ([`owner_portal`], T310, the opt-out with the portal's vault), always.
 fn business_pages(
     parts: BusinessParts,
     pool: PgPool,
@@ -311,7 +313,11 @@ fn business_pages(
             approval: Arc::new(StripeApproval(hooks.stripe.clone())),
         })
     });
-    let owner = owner_signin::routes(pool.clone());
+    let owner = owner_signin::routes(pool.clone()).merge(owner_portal::routes(
+        pool.clone(),
+        parts.vault.clone(),
+        webhooks,
+    ));
     let cant_take = cant_take_route::routes(pool.clone());
     let step_up = business_step_up::routes(pool.clone(), parts.step_up);
     let portal = business_portal::served(pool, parts.vault, (webhooks, voice))

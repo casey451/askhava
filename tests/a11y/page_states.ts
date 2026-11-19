@@ -442,6 +442,23 @@ const OWNER_STEP_UP_STATES: readonly PageState[] = [
   ],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: OWNER_STEP_UP_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
+/** A fake owner session (T310): its own `portals.owner_session` row, for the token hashing to `:hash`. */
+const OWNER_SESSION_SQL = `WITH s AS (INSERT INTO portals.session (token_sha256, realm, actor_id, created_at, expires_at)
+      VALUES (decode(':hash', 'hex'), 'owner', gen_random_uuid(), now(), now() + interval '30 minutes') RETURNING id)
+    INSERT INTO portals.owner_session (session_id, last_seen_at, factor_at) SELECT id, now(), now() FROM s`;
+const OWNER_HOME_ROUTE = "/owner/home";
+const OWNER_SETTINGS_ROUTE = "/owner/settings";
+
+/** The owner home (T310; OPS-003, FEE-007, BIZ-027): the switches, fee mode, rates and sign-ups. */
+const OWNER_HOME_STATES: readonly PageState[] = [
+  ["owner home", "Pause or resume", "Each change needs a code from your authenticator app", OWNER_SESSION_SQL],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: OWNER_HOME_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
+/** The owner settings (T310; LIC-002, CON-035, PICK-048): the category switches and both forms. */
+const OWNER_SETTINGS_STATES: readonly PageState[] = [
+  ["owner settings", "Each change needs a code from your authenticator app", "Pause or resume", OWNER_SESSION_SQL],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: OWNER_SETTINGS_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
 const COMPLAINTS_ROUTE = "/b/complaints";
 const EMERGENCY_ROUTE = "/b/emergency-emails";
 const NOTICE_LOG_ROUTE = "/b/picks/{pick}/notices";
@@ -533,6 +550,8 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: EMERGENCY_ROUTE, seed: portalSeed(false), states: EMERGENCY_STATES },
   { route: NOTICE_LOG_ROUTE, seed: portalSeed(true), states: NOTICE_LOG_STATES },
   { route: BUSINESS_STEP_UP_ROUTE, seed: portalSeed(false), states: BUSINESS_STEP_UP_STATES },
+  { route: OWNER_HOME_ROUTE, seed: portalSeed(false), states: OWNER_HOME_STATES },
+  { route: OWNER_SETTINGS_ROUTE, seed: portalSeed(false), states: OWNER_SETTINGS_STATES },
 ];
 
 /** Every state of every page, in entry order. */
