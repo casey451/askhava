@@ -3454,3 +3454,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **Fix:** the follow-up task T716 now keeps the job type such a text names (as a code, never her words) and counts the businesses for it, with no extra question. A new small task, T723, handles a homeowner who answers "Not sure" to "Which fits best?" (or a trade like pool repair that has no such question): the request goes to the businesses that cover every option; if none covers them all, she gets a new text asking for a little more about what's wrong or a photo (draft wording from the spec, for the copy panel), and you get the usual "no business covers this" email. She is told "We don't cover that yet" only when no business covers any of the options. T715's test now checks only that one job opens after the ZIP.
 - **The monthly "not covered" count:** each time she gets that "tell us a little more" text, the request counts once toward the month's not-covered number in your email and in the recruiting list, even if her next text then finds businesses. We chose this so the count matches the emails you get.
 - Our choice; nothing needs you now.
+
+## A gas pool heater or water heater job could have lost its license check (D-4618)
+
+- **The gap:** under D-4602's plan, a request like "pool heater" or "water heater leak" would have lost its licensed-only job type the second time its job types were read, so the count and the card could have reached a business without the license that job needs.
+- **Fix:** T716 adds one small reader so those licensed-only job types are kept every time, and its tests check it; T723 reads the same way and names the row that marks a job type as "not certain".
+- Our choice; nothing needs you now.
