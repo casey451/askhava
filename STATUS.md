@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T21:33:49Z by runner 3ae63a2924fb (actions).
+Updated 2026-11-19T21:34:02Z by runner d68fb0f0ae65 (actions).
 
 **Building: T607 in progress since 21:16Z; 505 of 701 done; week 9% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,13 +9,13 @@ Updated 2026-11-19T21:33:49Z by runner 3ae63a2924fb (actions).
 - **Lane:** lane 2: T607 claimed 21:16Z, lease until 00:16Z; lane 4: T480 claimed 20:38Z, lease until 23:38Z; lane 5: T541 claimed 21:24Z, lease until 00:24Z; lane 7: T717 claimed 20:10Z, lease until 23:59Z
 - **Week:** 9% used, 171.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:33Z, 0 min before this update
-- **Keeper:** last ran 21:25Z, next wake 23:41Z
+- **Keeper:** last ran 21:34Z, next wake 21:54Z
 
 ## Needs attention
 - BLOCKED T663: plan gap reported: PLAN GAP: tests/test_coverage_floor.py:125 asserts floors["future"] == [], contradicting T663 goal (5), which requires a `future` entry for app/portals/src/confirm_moves.rs. Also the test at :183-196 requires per-file floors and files_measured to hold the same paths, on disk, and named in D-3974, so the new connect.rs and confirm_moves.rs floors fail it. T663 does not own tests/test_coverage_floor.py (T264/T324 do). Reviewer confirmed. Smallest fix: relax the floor tests to accept reasoned future entries, or drop goal (5) from T663. Reviewer also found TD-JOB-18 cases untested (paid settle, he; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T663 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 69 problem(s) on tasks still to run (+350 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 56 problem(s) on tasks still to run (+342 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -90,8 +90,8 @@ Updated 2026-11-19T21:33:49Z by runner 3ae63a2924fb (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 325 of 735 (44.2%) · partial 375 · unstarted 35
-**Tasks merged (throughput only):** 505 of 701
+**Requirements verified:** 329 of 735 (44.8%) · partial 371 · unstarted 35
+**Tasks merged (throughput only):** 505 of 698
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -101,10 +101,10 @@ Updated 2026-11-19T21:33:49Z by runner 3ae63a2924fb (actions).
 | calls | 14 | 11 | 0 | 25 |
 | consent | 16 | 19 | 0 | 35 |
 | fees | 22 | 30 | 0 | 52 |
-| intake | 8 | 35 | 0 | 43 |
+| intake | 9 | 34 | 0 | 43 |
 | job-cards | 12 | 12 | 0 | 24 |
-| licensing | 33 | 15 | 0 | 48 |
-| lifecycle | 16 | 12 | 0 | 28 |
+| licensing | 34 | 14 | 0 | 48 |
+| lifecycle | 18 | 10 | 0 | 28 |
 | messaging | 22 | 22 | 1 | 45 |
 | ops-recovery | 9 | 27 | 18 | 54 |
 | privacy | 9 | 21 | 1 | 31 |
