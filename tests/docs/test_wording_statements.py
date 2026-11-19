@@ -3,7 +3,7 @@
 TD-WORD-05, TD-WORD-02 (the insurance, privacy and independent-business cases, D-493), TD-WORD-04,
 TD-WEB-03 (WEB-010, WEB-021), TD-LIC-18 (WEB-010, WEB-015, WORD-002, WORD-006, WORD-007, WORD-014,
 WORD-017, WORD-021, WEB-018, WEB-021, WEB-025, BIZ-030, CARD-020, PICK-017, TERMS-004, LIC-042;
-D-356, D-3155, D-3879, D-3889, D-4258).
+D-356, D-3155, D-3879, D-3889, D-4258, D-4596).
 
 Every expected line is read from `docs/spec/` (`test_wording_scan.spec_quotes`) and the brand from
 the brand file; Rust-built text is matched in its placeholder form (`{name}`, `{brand}`, D-3889).
@@ -200,6 +200,8 @@ PEST_A = (
     "Pest control license", "My license includes the wood-destroying organism (termite) category",
     "My license includes the weed control category", "never names pest control on the home page",
     "for a home inspection, or a termite report, for a home sale, purchase or refinance",
+    "Licencia de control de plagas",
+    "Mi licencia incluye la categoría de organismos que destruyen la madera (termitas)",
 )
 PEST = compiled(
     r"\bpests?\b", r"\bexterminat\w*", r"\btermites?\b", r"\bfumigat\w*", r"\bscorpions?\b", r"\binsects?\b",
