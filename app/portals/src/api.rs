@@ -211,3 +211,8 @@ pub use crate::session::{
     ensure_pre_session, run_session_sweep_at, schedule_session_sweep, start_session,
     sweep_batch as session_sweep_batch,
 };
+pub use crate::step_up_page::{
+    BUSINESS_STEP_UP_CHECK_ROUTE, BUSINESS_STEP_UP_ROUTE, BUSINESS_STEP_UP_SEND_ROUTE,
+    BusinessStepUpScreen, CODE_LIFE as STEP_UP_CODE_LIFE, ReturnPath, StepUpCodes,
+    business_step_up_page, check_step_up_code, send_step_up_code,
+};

@@ -1,0 +1,33 @@
+{% extends "business_layout.html" %}
+{#- The business step-up page (T364; SEC-038, A11Y-030, A11Y-031; D-3744, D-4045). A button sends
+    a code to the member's own phone or email; the code form checks it. A wrong code puts "Error: "
+    in the title and a focused summary first, linked to the field. Every form carries the CSRF
+    token and the same-site path to go back to. Forms post with novalidate and never disable their
+    button. -#}
+{% block title %}{% if screen == BusinessStepUpScreen::Wrong %}Error: {% endif %}Confirm it's you{% endblock %}
+{% block main %}<h1>Confirm it's you</h1>
+{% match screen %}{% when BusinessStepUpScreen::Wrong %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>That code didn't work</h2>
+<p><a href="#code">Type the last code we sent you</a></p>
+</div>
+{% when BusinessStepUpScreen::Sent %}<p id="step-up-sent" role="status">We sent you a 6-digit code. It works for 10 minutes.</p>
+{% when BusinessStepUpScreen::Fresh %}<p id="step-up-fresh" role="status">You confirmed it's you in the last 5 minutes, so we didn't send another code. <a href="{{ back }}">Go back and make your change</a>.</p>
+{% when BusinessStepUpScreen::Done %}<p id="step-up-done" role="status">That worked. You have 5 minutes to make your change. <a href="{{ back }}">Go back to your change</a>.</p>
+{% when BusinessStepUpScreen::Refused %}<p id="step-up-refused" role="status">You've asked for too many codes, so we didn't send or check one. Try again later today. <a href="{{ back }}">Go back to the page you came from</a>.</p>
+{% when BusinessStepUpScreen::Unavailable %}<p id="step-up-unavailable" role="status">We can't send codes right now, so nothing has changed. Try again in a little while. <a href="{{ back }}">Go back to the page you came from</a>.</p>
+{% when BusinessStepUpScreen::Ask %}{% endmatch %}<p>Some changes need a code first: changing someone's role, removing someone from your team, or changing your monthly limit. We send a code to your own phone, or to your sign-in email if you don't get texts from us. This way nobody else can change your team or your monthly limit.</p>
+{% if code_form %}<form method="post" action="{{ check_route }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="return" value="{{ back }}">
+<p><label for="code">Code</label></p>
+<p id="code-hint">Type the 6-digit code we just sent you.</p>
+{% if screen == BusinessStepUpScreen::Wrong %}<p id="code-error">Error: That code is wrong or too old. Type the last code we sent you.</p>
+{% endif %}<p><input type="text" id="code" name="code" inputmode="numeric" autocomplete="one-time-code" spellcheck="false" aria-describedby="code-hint{% if screen == BusinessStepUpScreen::Wrong %} code-error{% endif %}"{% if screen == BusinessStepUpScreen::Wrong %} aria-invalid="true"{% endif %}></p>
+<p><button type="submit" id="check-button">Check code</button></p>
+</form>
+{% else %}<form method="post" action="{{ send_route }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="return" value="{{ back }}">
+<p><button type="submit" id="send-button">Send me a code</button></p>
+</form>
+{% endif %}{% endblock %}
