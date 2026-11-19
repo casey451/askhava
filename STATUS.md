@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-19T01:37:51Z by runner 9e53929b8aee (actions).
+Updated 2026-11-19T01:38:25Z by runner 29f55bf35465 (actions).
 
 **Building: T563 in progress since 23:58Z; 468 of 663 done; week 71% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 468 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 6: T563 claimed 23:58Z, lease until 04:16Z; lane 7: T203 claimed 00:59Z, lease until 03:59Z
+- **Lane:** lane 6: T563 claimed 23:58Z, lease until 04:16Z; lane 7: T203 claimed 00:59Z, lease until 04:38Z
 - **Week:** 71% used, 48.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:32Z, 5 min before this update
+- **Last run:** 01:32Z, 6 min before this update
 - **Keeper:** last ran 01:28Z, next wake 01:48Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 59 problem(s) on tasks still to run (+274 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 53 problem(s) on tasks still to run (+271 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -139,7 +139,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 6: T563 (lease until 2026-11-19T04:16:01Z)
-- lane 7: T203 (lease until 2026-11-19T03:59:10Z)
+- lane 7: T203 (lease until 2026-11-19T04:38:25Z)
 
 ## Last usage reading
 - {"task": "T505", "at": "2026-11-19T01:27:12Z", "input_tokens": 158, "output_tokens": 60477, "cache_read_input_tokens": 6661870, "cache_creation_input_tokens": 304649}
