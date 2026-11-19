@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T03:26:59Z by runner b6d101550a11 (actions).
+Updated 2026-11-19T03:27:24Z by runner b6d101550a11 (actions).
 
 **Building: T520 in progress since 01:57Z; 471 of 663 done; week 73% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 471 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T520 claimed 01:57Z, lease until 06:00Z; lane 4: T484 claimed 02:04Z, lease until 06:01Z; lane 5: T563 claimed 02:48Z, lease until 05:48Z; lane 6: T490 claimed 02:10Z, lease until 06:17Z; lane 7: T399 claimed 03:14Z, lease until 06:14Z
+- **Lane:** lane 2: T520 claimed 01:57Z, lease until 06:00Z; lane 5: T563 claimed 02:48Z, lease until 05:48Z; lane 6: T490 claimed 02:10Z, lease until 06:17Z; lane 7: T399 claimed 03:14Z, lease until 06:14Z
 - **Week:** 73% used, 42.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 03:26Z, 0 min before this update
 - **Keeper:** last ran 03:24Z, next wake 03:44Z
@@ -21,6 +21,7 @@ Evidence: `trade_check` passes no words when the first tex; fix the plan (the ta
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T484 | portals and quotes: "Call from the Laftly number", the owner | MERGE_PENDING | 1 | 82 min | 03:26Z |  |
 | T114 | Terms-match-code checks and recurring pricing copy | MERGE_PENDING | 1 | 71 min | 03:26Z |  |
 | T715 | intake (harness): corrections to T671's walker: alarm answer | BLOCKED | 2 | 83 min | 03:22Z | PLAN GAP: one TD-INT-52 sentence can't be met by intake as planned: "a two-word first text naming a trade opens its job  |
 | T203 | Wording scan: the required statements, business copy lines a | BLOCKED | 3 | 29 min | 03:08Z | PLAN GAP: app/portals/templates/es_business_signup.html:82 ("Licencia de control de plagas") and :88 ("Mi licencia inclu |
@@ -141,10 +142,9 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T520 (lease until 2026-11-19T06:00:16Z)
-- lane 4: T484 (lease until 2026-11-19T06:01:37Z)
 - lane 5: T563 (lease until 2026-11-19T05:48:39Z)
 - lane 6: T490 (lease until 2026-11-19T06:17:23Z)
 - lane 7: T399 (lease until 2026-11-19T06:14:57Z)
 
 ## Last usage reading
-- {"task": "T114", "at": "2026-11-19T03:26:01Z", "cache_creation_input_tokens": 272683, "cache_read_input_tokens": 5209653, "output_tokens": 82715, "input_tokens": 148}
+- {"task": "T484", "at": "2026-11-19T03:26:58Z", "input_tokens": 364, "cache_read_input_tokens": 21961281, "cache_creation_input_tokens": 392508, "output_tokens": 105413}
