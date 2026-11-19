@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T13:49:37Z by runner de9f7793b42e (actions).
+Updated 2026-11-19T13:50:02Z by runner 345380f4824a (actions).
 
 **Building: T541 in progress since 13:09Z; 492 of 666 done; week 81% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -15,7 +15,7 @@ Updated 2026-11-19T13:49:37Z by runner de9f7793b42e (actions).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T397 (since 2026-11-19T13:05:58Z, no attempt used; a plan change fixes it): T397: dependency T536 is DONE but its owned file tests/e2e/twilio_signature.ts is not on main
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 61 problem(s) on tasks still to run (+311 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 61 problem(s) on tasks still to run (+312 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -97,8 +97,8 @@ Updated 2026-11-19T13:49:37Z by runner de9f7793b42e (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 309 of 735 (42.0%) · partial 387 · unstarted 39
-**Tasks merged (throughput only):** 492 of 664
+**Requirements verified:** 308 of 735 (41.9%) · partial 388 · unstarted 39
+**Tasks merged (throughput only):** 492 of 666
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -106,7 +106,7 @@ Updated 2026-11-19T13:49:37Z by runner de9f7793b42e (actions).
 | ai | 9 | 17 | 3 | 29 |
 | businesses | 19 | 38 | 1 | 58 |
 | calls | 12 | 13 | 0 | 25 |
-| consent | 15 | 20 | 0 | 35 |
+| consent | 14 | 21 | 0 | 35 |
 | fees | 23 | 28 | 1 | 52 |
 | intake | 9 | 34 | 0 | 43 |
 | job-cards | 13 | 11 | 0 | 24 |
