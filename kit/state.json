@@ -21839,8 +21839,8 @@
     "T441",
     "T102"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 1,
+   "status": "QUEUED",
+   "attempts": 2,
    "slug": "wording-statements-scan",
    "type": "build",
    "stage": "5",
@@ -21858,7 +21858,7 @@
     "alias": "opus"
    },
    "reason": null,
-   "last_failure": "PLAN GAP: `app/portals/templates/quote_page.html:101` (owned by DONE tasks T052, T095, T294, T308, T384, T388, T393, T440 and T441, and by QUEUED T608). WORD-002 (`docs/spec/wording.md:6`) and TD-WORD-05 (`docs/test-design.md:683`) say the long not-a-contractor statement must be \"at the top of the quote page\". The template has only the first sentence, and only at the bottom (line 101 of 103); it extends `app/site/templates/base.html`, which has no contractor line. T203 owns only tests/docs/test_wording_statements.py and tests/docs/test_introduction_fee_wording.py and may not write copy (kit/prompts/T203.md:94), so a correct TD-WORD-05 test fails on main. Smallest plan change: let T203 own that one line of quote_page.html, or add a task (or extend T608) that puts the full long statement (brand from brand()) at the top of the page.\nSecond gap (reviewer confirmed): WORD-007 (`docs/spec/wording.md:11`, via TD-WORD-02 in T203's prompt line 66) wants \"Your number is never shared\" with \"Your first name and address go only to the business you pick.\" `app/site/templates/home.html:36` has only the second sentence (\"Your number stays with us.\"); no app .html has \"never shared\". home.html owners: T102 (DONE), T593, T216, T608 (QUEUED). Either add the sentence via an owning task or state that WORD-007 covers only the privacy policy.\nReviewer (fresh-eyes, Opus) confirmed both gaps independently. No commit made; branch unchanged at b1fe64c6f.\nre-queued after plan fix D-4258: D-4258 (PR #993) fixes T203's reported plan gap: T203 owns the WORD-002 quote-page statement and the WORD-007 home line, with closed scan lists",
+   "last_failure": "Ci: failure; Python: failure\nPython failed at step: Unit, contract and drill tests (pytest)\nE         +     'termitas',\nE         + ]\ntests/docs/test_wording_statements.py:385: AssertionError\n=========================== short test summary info ============================\nFAILED tests/docs/test_wording_statements.py::test_td_web_03_td_lic_18_td_word_04_scanned_files_pass_every_statements_scan[app/portals/templates/es_business_signup.html] - AssertionError: app/portals/\nassert ['plagas', 'termitas'] == []\n  Left contains 2 more items, first extra item: 'plagas'\n  Full diff:\n  - []\n  + [\n  +     'plagas',\n  +     'termitas',\n  + ]\n1 failed, 4387 passed, 11 skipped in 158.86s (0:02:38)\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: failure, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
    "history": [
     {
      "attempt": 1,
@@ -21888,13 +21888,58 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 88,
      "head_sha": "29f55bf35465e99188686532ff53c2110b9fb9cf",
-     "pr": null,
-     "checks": null,
+     "pr": 1082,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "failure"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "failure"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-19T00:59:10Z",
      "ended_at": "2026-11-19T01:40:48Z",
-     "result": "MERGE_PENDING",
+     "result": "check_failed",
      "usage": {
       "worker": {
        "tokens": 3695160,
@@ -39723,7 +39768,8 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merge_turn_since": "2026-11-19T02:33:15Z"
   },
   {
    "id": "T307",
@@ -89083,7 +89129,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T02:27:14Z",
+ "updated_at": "2026-11-19T02:33:28Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -90779,6 +90825,15 @@
     {
      "at": "2026-11-17T10:29:48Z",
      "why": "T202 check_failed: Ci: failure; Checks: failure\nChecks failed at step: Rust dependency audit (cargo-audit, cargo-deny)\nVersion:   3.20.3\nTitle:     Partial requests on keep-alive connections can bypass the request heade"
+    }
+   ]
+  },
+  "7": {
+   "count": 1,
+   "last": [
+    {
+     "at": "2026-11-19T02:33:15Z",
+     "why": "T203 check_failed: Ci: failure; Python: failure\nPython failed at step: Unit, contract and drill tests (pytest)\nE         +     'termitas',\nE         + ]\ntests/docs/test_wording_statements.py:385: AssertionError\n========"
     }
    ]
   }

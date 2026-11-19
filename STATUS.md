@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T02:27:14Z by runner eefaef098fd3 (actions).
+Updated 2026-11-19T02:33:28Z by runner eefaef098fd3 (actions).
 
 **Building: T715 in progress since 01:59Z; 470 of 663 done; week 72% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-19T02:27:14Z by runner eefaef098fd3 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T715 claimed 01:59Z, lease until 04:59Z; lane 2: T520 claimed 01:57Z, lease until 04:57Z; lane 3: T114 claimed 02:14Z, lease until 05:14Z; lane 4: T484 claimed 02:04Z, lease until 05:04Z; lane 6: T490 claimed 02:10Z, lease until 05:10Z
 - **Week:** 72% used, 44.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:27Z, 0 min before this update
+- **Last run:** 02:27Z, 5 min before this update
 - **Keeper:** last ran 02:27Z, next wake 04:59Z
 
 ## Needs attention
@@ -20,7 +20,7 @@ Updated 2026-11-19T02:27:14Z by runner eefaef098fd3 (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T306 | server and portals: the complaints page, the emergency-email | MERGE_PENDING | 1 | 38 min | 02:21Z | merging main into the reviewed head conflicts in tests/a11y/page_states.ts; a resync merges it in on this attempt (D-891 |
-| T203 | Wording scan: the required statements, business copy lines a | MERGE_PENDING | 2 | 41 min | 01:40Z | PLAN GAP: `app/portals/templates/quote_page.html:101` (owned by DONE tasks T052, T095, T294, T308, T384, T388, T393, T44 |
+| T203 | Wording scan: the required statements, business copy lines a | check_failed | 2 | 41 min | 01:40Z | Ci: failure; Python: failure / Python failed at step: Unit, contract and drill tests (pytest) / E         +     'termita |
 | T563 | intake and privacy: the daily consent sweep removes consent  | check_failed | 2 | 99 min | 01:37Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T505 | Decisions digest, piece 6: the next entries after the header | done | 1 | 99 min | 01:27Z |  |
 | T488 | portals and server: the business sign-up served in Spanish o | done | 1 | 111 min | 01:20Z |  |
