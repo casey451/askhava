@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T01:38:25Z by runner 29f55bf35465 (actions).
+Updated 2026-11-19T01:38:30Z by runner 9e53929b8aee (actions).
 
-**Building: T563 in progress since 23:58Z; 468 of 663 done; week 71% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T203 in progress since 00:59Z; 468 of 663 done; week 71% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 468 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 6: T563 claimed 23:58Z, lease until 04:16Z; lane 7: T203 claimed 00:59Z, lease until 04:38Z
+- **Lane:** lane 7: T203 claimed 00:59Z, lease until 04:38Z
 - **Week:** 71% used, 48.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:32Z, 6 min before this update
 - **Keeper:** last ran 01:28Z, next wake 01:48Z
@@ -14,11 +14,12 @@ Updated 2026-11-19T01:38:25Z by runner 29f55bf35465 (actions).
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 53 problem(s) on tasks still to run (+271 on DONE tasks); first: T488: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 59 problem(s) on tasks still to run (+274 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T563 | intake and privacy: the daily consent sweep removes consent  | MERGE_PENDING | 2 | 99 min | 01:37Z | PLAN GAP: app/messaging/src/optout.rs:311 (suppress/record, owned by T029 and later tasks; T563 owns no messaging file)  |
 | T505 | Decisions digest, piece 6: the next entries after the header | MERGE_PENDING | 1 | 99 min | 01:27Z |  |
 | T488 | portals and server: the business sign-up served in Spanish o | MERGE_PENDING | 1 | 111 min | 01:20Z |  |
 | T306 | server and portals: the complaints page, the emergency-email | resync | 1 | 77 min | 00:59Z | merging main into the reviewed head conflicts in tests/a11y/page_states.ts; a resync merges it in on this attempt (D-891 |
@@ -62,7 +63,7 @@ Updated 2026-11-19T01:38:25Z by runner 29f55bf35465 (actions).
 | T700 | Runner (harness): a merge-line task whose turn ran out goes  | done | 1 | 29 min | 12:08Z |  |
 | T200 | ops and portals: the owner help page with its screened reply | QUEUED | 1 | 2 h 57 min | 12:02Z |  |
 | T408 | server: a release waits while safe mode is on and goes ahead | BLOCKED | 2 | 2 h 21 min | 11:34Z | PLAN GAP: kit/prompts/T408.md:54 "Size budget: at most 6 files, 800 changed lines" cannot be met. The prompt's own plan  |
-| T563 | intake and privacy: the daily consent sweep removes consent  | BLOCKED | 1 | 85 min | 11:21Z | PLAN GAP: app/messaging/src/optout.rs:311 (suppress/record, owned by T029 and later tasks; T563 owns no messaging file)  |
+| T563 | intake and privacy: the daily consent sweep removes consent  | BLOCKED | 1 | 85 min | 11:21Z |  |
 | T658 | privacy: the scrubber removes lower-case Spanish addresses a | done | 2 | 51 min | 11:04Z | Fix-round review of head 18e4fd102f38620e11d1055ecb4d77813e2b2965 returned FINDINGS after the one allowed fix round (fir |
 | T650 | intake: the under-13 stop also deletes the request's job pho | done | 1 | 90 min | 10:39Z |  |
 | T641 | Runner (harness): merge train depth 2, the next branch's upd | done | 1 | 55 min | 10:29Z |  |
@@ -138,8 +139,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 6: T563 (lease until 2026-11-19T04:16:01Z)
 - lane 7: T203 (lease until 2026-11-19T04:38:25Z)
 
 ## Last usage reading
-- {"task": "T505", "at": "2026-11-19T01:27:12Z", "input_tokens": 158, "output_tokens": 60477, "cache_read_input_tokens": 6661870, "cache_creation_input_tokens": 304649}
+- {"task": "T563", "at": "2026-11-19T01:37:50Z", "output_tokens": 93225, "input_tokens": 246, "cache_read_input_tokens": 11651005, "cache_creation_input_tokens": 377381}
