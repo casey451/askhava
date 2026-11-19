@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T17:18:53Z by runner 82ae7f077915 (actions).
+Updated 2026-11-19T17:33:43Z by runner 53f3063b8bea (manual).
 
 **Building: T530 in progress since 15:41Z; 499 of 683 done; week 0% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-19T17:18:53Z by runner 82ae7f077915 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T530 claimed 15:41Z, lease until 19:41Z; lane 4: T555 claimed 15:44Z, lease until 20:13Z; lane 5: T607 claimed 17:15Z, lease until 20:15Z; lane 6: T480 claimed 17:18Z, lease until 20:18Z; lane 7: T715 claimed 15:50Z, lease until 18:50Z
 - **Week:** 0% used, 189.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:16Z, 2 min before this update
+- **Last run:** 17:19Z, 14 min before this update
 - **Keeper:** last ran 17:11Z, next wake 17:31Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 68 problem(s) on tasks still to run (+338 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 65 problem(s) on tasks still to run (+338 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -88,15 +88,14 @@ Updated 2026-11-19T17:18:53Z by runner 82ae7f077915 (actions).
 | T624 | server: two failed in-process health checks in a row raise o | check_failed | 1 | 96 min | 18:26Z | Ci: failure; Python: failure / Python failed at step: Unit, contract and drill tests (pytest) / T705: about 21877 tokens |
 | T205 | portals: owner refunds with a review step and the audit log  | BLOCKED | 1 | 58 min | 18:23Z |  |
 | T500 | Decisions digest, piece 1: from the first entry, at most 300 | done | 1 | 71 min | 18:18Z |  |
-| T671 | intake (harness): a homeowner's texts after the consent text | done | 2 | 102 min | 17:25Z | PLAN GAP: three tests outside T671's scope fail because of the new behaviour (worker edited none of them): / 1. tests/in |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 295 of 735 (40.1%) · partial 402 · unstarted 38
-**Tasks merged (throughput only):** 499 of 683
+**Requirements verified:** 291 of 735 (39.6%) · partial 406 · unstarted 38
+**Tasks merged (throughput only):** 499 of 693
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -105,19 +104,19 @@ Updated 2026-11-19T17:18:53Z by runner 82ae7f077915 (actions).
 | businesses | 18 | 39 | 1 | 58 |
 | calls | 12 | 13 | 0 | 25 |
 | consent | 13 | 22 | 0 | 35 |
-| fees | 23 | 28 | 1 | 52 |
+| fees | 21 | 30 | 1 | 52 |
 | intake | 8 | 35 | 0 | 43 |
 | job-cards | 12 | 12 | 0 | 24 |
 | licensing | 34 | 14 | 0 | 48 |
 | lifecycle | 18 | 10 | 0 | 28 |
 | messaging | 19 | 25 | 1 | 45 |
 | ops-recovery | 5 | 31 | 18 | 54 |
-| privacy | 10 | 20 | 1 | 31 |
+| privacy | 9 | 21 | 1 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
 | quotes-pick | 23 | 33 | 0 | 56 |
 | recurring | 7 | 4 | 0 | 11 |
 | security | 9 | 41 | 5 | 55 |
-| terms | 25 | 9 | 1 | 35 |
+| terms | 24 | 10 | 1 | 35 |
 | website | 13 | 14 | 3 | 30 |
 | wording | 17 | 11 | 4 | 32 |
 
