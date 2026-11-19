@@ -611,7 +611,7 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | GET | /b/complaints | portals | yes |
 | POST | /b/complaints/{complaint}/reply | portals | yes |
 | POST | /b/not-a-fit/{object}/{token} | portals | yes |
-| GET | /b/charges/{pick} | portals | T562 |
+| GET | /b/charges/{pick} | portals | yes |
 | GET | /b/emergency-emails | portals | yes |
 | POST | /b/emergency-emails | portals | yes |
 | GET | /b/picks/{pick}/notices | portals | yes |

@@ -7,13 +7,21 @@
 //! "Confirm and billing" member's; another business's pick, complaint or job and a missing role
 //! get the one not-found answer and read nothing from the vault; no session gets a 4xx linking to
 //! `/b/sign-in`; every answer is `no-store`; a cross-site or wrong-token `POST` is a 403 that
-//! changes nothing and is one `csrf_rejected` event. "Why was I charged?" is T562's. People sign
-//! in through `portals`' emailed link, as `business_portal_route.rs` does. Every value is fake.
+//! changes nothing and is one `csrf_rejected` event. People sign in through `portals`' emailed
+//! link, as `business_portal_route.rs` does. Every value is fake.
+//!
+//! T562 (FEE-031, SEC-019, SEC-034, SEC-048; D-3112, D-3890, D-4603): `/b/charges/{pick}` shows
+//! "Why was I charged?" for the business's own charge, paid through `payments::api::confirm_and_pay`
+//! with a test-local fake Stripe as the door probe's `released_pick::charge` does: with the basis
+//! line when the basis derived from the accepted quote gives the fee fixed at the pick, without it
+//! when a flat fee mode fixed another; another business's pick and a missing role get the same
+//! not-found answer and read nothing from the vault; no session gets a 4xx linking to `/b/sign-in`.
 
 use std::collections::BTreeSet;
 use std::net::SocketAddr;
 use std::sync::{Arc, Mutex, PoisonError};
 
+use askhava_adapters::api::{AdapterError, Charge, IdempotencyKey, PaymentIntent, PaymentsAdapter};
 use askhava_businesses::api::{
     AccountStatus, Acting, EMERGENCY_YES_LIFE, NewComplaint, Roles, add_member, add_owner,
     after_hours_box, complaints, create, record_complaint, switch_state,
@@ -25,6 +33,11 @@ use askhava_intake::api::{Answer, TextIn, receive_text, record_answer};
 use askhava_jobs::api::{JobStatus, create as create_job, move_to, record_job_facts};
 use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
 use askhava_ops::api::{Actor as AuditActor, EXPORT_PAGE_MAX, export_audit};
+use askhava_payments::api::{
+    BusinessId, ChargeOutcome, FeeMode, IntentStripe, PickNow, Press, SavedCard,
+    accept_authorization, confirm_and_pay, ensure_customer, fee_terms_in_force, pick_fee,
+    save_card, switch_fee_mode,
+};
 use askhava_picks::api::{PagePick, page_pick};
 use askhava_portals::api::{
     CookieJar, PortalsError, SIGNIN_LINK_ROUTE, SIGNIN_ROUTE, SignIn, SignInAddress, SignInMail,
@@ -234,8 +247,8 @@ async fn person(pool: &PgPool, address: &str, of: Option<(Acting, Roles)>) -> Pe
     Person { by, jar }
 }
 
-/// A job opened, carded to `business` with an AC repair card and quoted by it at $325.
-async fn quoted_job(db: &mut PgConnection, business: Uuid, now: Timestamp) -> Uuid {
+/// A job opened, carded to `business` with an AC repair card and quoted by it at `cents`.
+async fn quoted_job(db: &mut PgConnection, (business, cents): (Uuid, u64), now: Timestamp) -> Uuid {
     let job = create_job(db, now, false, AuditActor::System)
         .await
         .expect("job");
@@ -252,7 +265,7 @@ async fn quoted_job(db: &mut PgConnection, business: Uuid, now: Timestamp) -> Uu
     let cards = send_cards(db, map, job, &card, &[to], now).await;
     assert_eq!(cards.expect("card").len(), 1);
     sent(db, job, now).await;
-    let (form, rules) = firm();
+    let (form, rules) = firm(cents);
     let quote = parse_quote(form, &rules).expect("quote");
     submit_quote(db, (job, business), &quote, now)
         .await
@@ -316,10 +329,10 @@ async fn sent(db: &mut PgConnection, job: Uuid, now: Timestamp) {
     assert!(mark_card_sent(db, job, &digest, now).await.expect("sent"));
 }
 
-/// A firm $325 quote form and its rules.
-fn firm() -> (QuoteForm, QuoteRules) {
+/// A firm quote form at `cents` and its rules.
+fn firm(cents: u64) -> (QuoteForm, QuoteRules) {
     let form = QuoteForm {
-        price: Price::Firm(32_500),
+        price: Price::Firm(cents),
         notes: "Parts and labor included.".to_owned(),
         original: "325 parts and labor included".to_owned(),
         ai_read: false,
@@ -335,15 +348,22 @@ fn firm() -> (QuoteForm, QuoteRules) {
     (form, rules)
 }
 
-/// `business`'s page pick on a new quoted job her fake text request names: (pick, job).
+/// `business`'s page pick on a new job it quoted at $325 that her fake text request names:
+/// (pick, job).
 async fn picked(pool: &PgPool, business: Uuid) -> (Uuid, Uuid) {
+    picked_at(pool, (business, 32_500), "+19285550193").await
+}
+
+/// `business`'s page pick on a new job it quoted at `cents` that her fake text request from
+/// `phone` names.
+async fn picked_at(pool: &PgPool, (business, cents): (Uuid, u64), phone: &str) -> (Uuid, Uuid) {
     let (mut db, now) = (pool.acquire().await.expect("db"), Timestamp::now());
     load_embedded(&mut db).await.expect("catalog");
-    let job = quoted_job(&mut db, business, now).await;
+    let job = quoted_job(&mut db, (business, cents), now).await;
     let types = ["AC not cooling".to_owned()];
     let facts = record_job_facts(&mut db, job, "hvac_repair", &types).await;
     facts.expect("job facts");
-    her_request(&mut db, job, now).await;
+    her_request(&mut db, (job, phone), now).await;
     drop(db);
     let mut tx = pool.begin().await.expect("tx");
     let pick = page_pick(&mut tx, (job, false), 1, AuditActor::System, now).await;
@@ -354,11 +374,11 @@ async fn picked(pool: &PgPool, business: Uuid) -> (Uuid, Uuid) {
     (pick, job)
 }
 
-/// Her fake vault contact and her text request naming `job`.
-async fn her_request(db: &mut PgConnection, job: Uuid, now: Timestamp) {
+/// Her fake vault contact with `phone` and her text request naming `job`.
+async fn her_request(db: &mut PgConnection, (job, phone): (Uuid, &str), now: Timestamp) {
     let new = NewContact {
         name: Some(SecretString::from(HER_NAME)),
-        phone: Some(SecretString::from("+19285550193")),
+        phone: Some(SecretString::from(phone.to_owned())),
         email: None,
         address: Some(SecretString::from("301 Fake Lane")),
         onsite_contact: None,
@@ -788,4 +808,224 @@ async fn td_sec_49_signed_out_cross_site_and_wrong_token_change_nothing(pool: Pg
     let mut db = pool.acquire().await.expect("db");
     let state = switch_state(&mut db, x.by, (Timestamp::now(), EMERGENCY_YES_LIFE)).await;
     assert!(!state.expect("state").on, "the switch is unchanged");
+}
+
+/// A fake Stripe answering `succeeded` for one pick of one business (as `door_matrix`'s
+/// `released_pick` does); no vendor is reached.
+struct FakeStripe {
+    business: Uuid,
+    pick: Uuid,
+    cents: u64,
+}
+
+impl FakeStripe {
+    fn customer(&self) -> String {
+        format!("cus_fake{}", self.business.simple())
+    }
+
+    fn intent(&self) -> String {
+        format!("pi_fake{}", self.pick.simple())
+    }
+
+    fn succeeded(&self, id: &str) -> Result<PaymentIntent, AdapterError> {
+        let body = serde_json::json!({
+            "id": id,
+            "status": "succeeded",
+            "amount": self.cents,
+            "currency": "usd",
+            "customer": self.customer(),
+            "metadata": {"pick_id": self.pick.to_string()},
+            "livemode": false,
+            "latest_charge": format!("ch_fake{}", self.pick.simple()),
+        });
+        Ok(serde_json::from_value(body).expect("a fake intent"))
+    }
+}
+
+impl PaymentsAdapter for FakeStripe {
+    async fn create_customer(&self, _: &IdempotencyKey, _: &str) -> Result<String, AdapterError> {
+        Ok(self.customer())
+    }
+
+    async fn create_payment_intent(
+        &self,
+        _: &IdempotencyKey,
+        _: Charge<'_>,
+    ) -> Result<PaymentIntent, AdapterError> {
+        Err(AdapterError::NotSent)
+    }
+
+    async fn fetch_payment_intent(&self, id: &str) -> Result<PaymentIntent, AdapterError> {
+        self.succeeded(id)
+    }
+
+    async fn create_refund(&self, _: &IdempotencyKey, _: &str) -> Result<String, AdapterError> {
+        Err(AdapterError::NotSent)
+    }
+}
+
+impl IntentStripe for FakeStripe {
+    async fn create_intent(
+        &self,
+        _: &IdempotencyKey,
+        _: &str,
+        _: u32,
+        _: &str,
+    ) -> Result<String, AdapterError> {
+        Ok(self.intent())
+    }
+
+    async fn confirm_intent(
+        &self,
+        _: &IdempotencyKey,
+        intent: &str,
+        _: &str,
+    ) -> Result<PaymentIntent, AdapterError> {
+        self.succeeded(intent)
+    }
+}
+
+/// `business`'s fake Stripe customer and saved card, the fee terms in force accepted (FEE-014,
+/// FEE-015): the card's ID.
+async fn card_on_file(pool: &PgPool, stripe: &FakeStripe, business: Uuid) -> String {
+    let (secret, id) = (secret(), BusinessId(business));
+    ensure_customer(pool, stripe, &secret, id)
+        .await
+        .expect("customer");
+    let card = format!("pm_fake{}", business.simple());
+    let saved = SavedCard::new(&card, "card", "visa", "4242").expect("card");
+    let accepted = Timestamp::now() - SignedDuration::from_mins(1);
+    let mut db = pool.acquire().await.expect("db");
+    save_card(&mut db, id, &saved, accepted)
+        .await
+        .expect("saved");
+    let terms = fee_terms_in_force(&mut db).await;
+    let text = "Fake authorization text for a test.";
+    accept_authorization(&mut db, id, terms.expect("terms"), text, accepted)
+        .await
+        .expect("accepted");
+    card
+}
+
+fn secret() -> SecretString {
+    SecretString::from("test-only-id-secret-not-a-real-key".to_owned())
+}
+
+/// Confirms and pays `pick` of `business` on `job` at the fee fixed at the pick (FEE-005).
+async fn charge(pool: &PgPool, (business, job, pick): (Uuid, Uuid, Uuid)) {
+    let mut db = pool.acquire().await.expect("db");
+    let fixed = pick_fee(&mut db, pick).await.expect("read").expect("fixed");
+    drop(db);
+    let stripe = FakeStripe {
+        business,
+        pick,
+        cents: fixed.cents,
+    };
+    let card = card_on_file(pool, &stripe, business).await;
+    let press = Press {
+        pick,
+        business: BusinessId(business),
+        job,
+        amount_cents: u32::try_from(fixed.cents).expect("cents"),
+        payment_method: &card,
+        press: Uuid::new_v4(),
+        emergency: false,
+        now: PickNow::Payable,
+    };
+    let paid = confirm_and_pay(pool, &stripe, &secret(), &press, Timestamp::now()).await;
+    assert_eq!(
+        paid.expect("charge"),
+        ChargeOutcome::Succeeded(stripe.intent())
+    );
+}
+
+/// TD-SEC-49 (FEE-031, SEC-019, SEC-034, SEC-048, D-4603): `/b/charges/{pick}` shows "Why was I
+/// charged?" for the business's own charge to its owner and its "Confirm and billing" member,
+/// with the basis line from the accepted quote, and without it when a flat fee mode fixed another
+/// tier; another business's pick, a "Cards and quotes"-only member, an uncharged and an unknown
+/// pick get the one not-found answer, read nothing from the vault and are `authz_denied` events;
+/// no session gets a `no-store` 4xx linking to `/b/sign-in`.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_sec_49_why_charged_shows_the_own_charge_and_refuses_the_rest(pool: PgPool) {
+    let x = person(&pool, "owner@x.example", None).await;
+    let y = person(&pool, "owner@y.example", None).await;
+    let payer = Roles::new(false, true).expect("roles");
+    let payer = person(&pool, "billing@x.example", Some((x.by, payer))).await;
+    let quoter = Roles::new(true, false).expect("roles");
+    let quoter = person(&pool, "quotes@x.example", Some((x.by, quoter))).await;
+    let app = app(&pool);
+    let (pick, job) = picked(&pool, x.by.business).await;
+    charge(&pool, (x.by.business, job, pick)).await;
+    let path = format!("/b/charges/{pick}");
+    for who in [&x, &payer] {
+        let page = send(&app, (&Method::GET, &path), &who.jar, "").await;
+        assert!(page.status == 200 && page.no_store, "{page:?}");
+        assert!(page.text.contains("Why was I charged for job"), "{page:?}");
+        assert!(
+            page.text.contains("$325 (Firm price)"),
+            "the accepted quote"
+        );
+        assert!(page.text.contains("id=\"basis-line\""), "the derived basis");
+        assert!(
+            page.text
+                .contains("The fee basis from your quote is $325.00")
+        );
+        assert!(!page.text.contains("Dana"), "no homeowner detail");
+    }
+    let (uncharged, _) = picked_at(&pool, (y.by.business, 32_500), "+19285550195").await;
+    let events = Events::default();
+    let _guard = tracing::subscriber::set_default(events.clone());
+    let reads = actions(&pool).await;
+    let cases = [
+        (&y.jar, path.clone()),
+        (&quoter.jar, path.clone()),
+        (&y.jar, format!("/b/charges/{uncharged}")),
+        (&x.jar, format!("/b/charges/{}", Uuid::new_v4())),
+        (&x.jar, "/b/charges/not-an-id".to_owned()),
+    ];
+    let first = send(&app, (&Method::GET, &cases[0].1), cases[0].0, "").await;
+    assert!(first.status == 404 && first.no_store, "{first:?}");
+    for (jar, path) in &cases {
+        assert_eq!(
+            send(&app, (&Method::GET, path), jar, "").await,
+            first,
+            "{path}"
+        );
+    }
+    assert_eq!(actions(&pool).await, reads, "nothing read from the vault");
+    assert_eq!(events.count("authz_denied"), cases.len() + 1);
+    let anon = ensure_pre_session(CookieJar::new()).expect("pre-session");
+    let out = send(&app, (&Method::GET, &path), &anon, "").await;
+    let refused = (400..500).contains(&out.status) && out.text.contains("/b/sign-in");
+    assert!(refused && out.no_store, "{out:?}");
+}
+
+/// TD-SEC-49 (FEE-031, FEE-007, D-3890, D-4603): under the flat fee mode a $2,000 quote's charge
+/// is fixed at the category's set tier, not the large tier its basis gives, so the page shows
+/// every other line and no basis line rather than a guessed one.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_sec_49_why_charged_shows_no_basis_line_when_the_tier_differs(pool: PgPool) {
+    let x = person(&pool, "owner@x.example", None).await;
+    let app = app(&pool);
+    let mut db = pool.acquire().await.expect("db");
+    let flat = switch_fee_mode(&mut db, Uuid::new_v4(), FeeMode::Flat).await;
+    assert!(flat.expect("switched").is_some());
+    drop(db);
+    let (pick, job) = picked_at(&pool, (x.by.business, 200_000), "+19285550194").await;
+    charge(&pool, (x.by.business, job, pick)).await;
+    let page = send(
+        &app,
+        (&Method::GET, &format!("/b/charges/{pick}")),
+        &x.jar,
+        "",
+    )
+    .await;
+    assert!(page.status == 200 && page.no_store, "{page:?}");
+    assert!(
+        page.text.contains("$2,000 (Firm price)"),
+        "the accepted quote"
+    );
+    assert!(page.text.contains("id=\"tier-line\""), "{page:?}");
+    assert!(!page.text.contains("id=\"basis-line\""), "no guessed basis");
+    assert!(!page.text.contains("large job"), "{page:?}");
 }
