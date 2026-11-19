@@ -1,22 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-19T08:01:04Z by runner df9e147aa320 (actions).
+Updated 2026-11-19T08:04:33Z by runner b7f0cf41b372 (actions).
 
 **Building: T456 in progress since 06:58Z; 483 of 664 done; week 76% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 483 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T456 claimed 06:58Z, lease until 09:58Z; lane 3: T216 claimed 06:32Z, lease until 10:50Z; lane 5: T622 claimed 07:06Z, lease until 10:58Z; lane 6: T476 claimed 06:22Z, lease until 10:39Z
-- **Week:** 76% used, 38.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:59Z, 2 min before this update
+- **Lane:** lane 1: T456 claimed 06:58Z, lease until 09:58Z; lane 3: T216 claimed 06:32Z, lease until 10:50Z; lane 5: T622 claimed 07:06Z, lease until 10:58Z; lane 6: T476 claimed 06:22Z, lease until 10:39Z; lane 7: T375 claimed 08:04Z, lease until 11:04Z
+- **Week:** 76% used, 38.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 08:01Z, 3 min before this update
 - **Keeper:** last ran 07:25Z, next wake 09:25Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- PLAN GAP T663 (since 2026-11-19T06:58:02Z, no attempt used; a plan change fixes it): T663: dependency T408 is DONE but its owned file app/server/src/release_hold.rs is not on main; T663: dependency T408 is DONE but its owned file app/server/tests/safe_mode_release.rs is not on main
-- PLAN GAP T707 (since 2026-11-19T06:58:02Z, no attempt used; a plan change fixes it): T707: dependency T408 is DONE but its owned file app/server/src/release_hold.rs is not on main; T707: dependency T408 is DONE but its owned file app/server/tests/safe_mode_release.rs is not on main
-- Strict plan check red: 61 problem(s) on tasks still to run (+301 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- PLAN GAP T540 (since 2026-11-19T08:04:18Z, no attempt used; a plan change fixes it): T540: dependency T310 is DONE but its owned file app/server/src/owner_portal.rs is not on main; T540: dependency T310 is DONE but its owned file app/server/tests/owner_portal_route.rs is not on main; T540: dependency T310 is DONE but its owned file tests/e2e/owner_portal_served.spec.ts is not on main
+- Strict plan check red: 58 problem(s) on tasks still to run (+301 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -88,8 +87,6 @@ Updated 2026-11-19T08:01:04Z by runner df9e147aa320 (actions).
 | T644 | tests (harness): the remaining Playwright specs and helpers  | done | 1 | 43 min | 09:48Z |  |
 | T660 | quotes (harness): the quote-note AI screener takes scrubbed  | done | 1 | 56 min | 08:52Z |  |
 | T658 | privacy: the scrubber removes lower-case Spanish addresses a | QUEUED | 1 | 89 min | 08:11Z |  |
-| T640 | harness: Ci handles the merge train's throwaway refs and cou | done | 1 | 64 min | 08:02Z |  |
-| T619 | quotes, picks and intake: the quote-median, lapsed-pick, win | done | 2 | 40 min | 08:02Z | T619 readers are correct per three Opus reviews, but the test file still misses wrong implementations; no reviewer appro |
 
 ### Plan and harness merges on main
 - none
@@ -125,7 +122,7 @@ Updated 2026-11-19T08:01:04Z by runner df9e147aa320 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-19T07:01:42Z (week)): week: 155.3M used, 38.7M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T06:05:46Z.
+- Pacing (session_reading 2026-11-19T07:24:39Z (week)): week: 155.5M used, 38.5M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T04:11:44Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -144,6 +141,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 3: T216 (lease until 2026-11-19T10:50:38Z)
 - lane 5: T622 (lease until 2026-11-19T10:58:35Z)
 - lane 6: T476 (lease until 2026-11-19T10:39:30Z)
+- lane 7: T375 (lease until 2026-11-19T11:04:18Z)
 
 ## Last usage reading
 - {"task": "T310", "at": "2026-11-19T07:19:03Z", "input_tokens": 189, "output_tokens": 60602, "cache_creation_input_tokens": 232917, "cache_read_input_tokens": 10435974}

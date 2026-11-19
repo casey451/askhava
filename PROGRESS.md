@@ -7709,3 +7709,4 @@
 - 2026-11-19T07:51:38Z runner bf2db38bac38 (actions): {"T562": "MERGE_PENDING -> DONE"}
 - 2026-11-19T07:58:35Z runner 9d21a189c9a3 (actions): {}
 - 2026-11-19T08:01:04Z runner df9e147aa320 (actions): {"T310": "MERGE_PENDING -> DONE"}
+- 2026-11-19T08:04:33Z runner b7f0cf41b372 (actions): {"T375": "QUEUED -> IN_PROGRESS"}; T375 estimated 1.4M tokens (calibrated); week has 38.5M left (no five-hour budget, D-3056) after 3.5M still running in another lane (session_reading 2026-11-19T07:24:39Z (week)); running to the limit (model window, D-2225), claimed
