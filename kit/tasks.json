@@ -29562,7 +29562,7 @@
    "id": "T724",
    "slug": "ci-runner-ubuntu-2404",
    "title": "harness: Ci's Rust-test jobs, the worker job and the nightly mutant jobs run on ubuntu-24.04 with a PostgreSQL 16 preflight",
-   "goal": "Plan change D-4708 (Nov 19, 2026; Fable's decision, before T109 retries). GitHub's `ubuntu-latest` is now Ubuntu 26.04 with only PostgreSQL 18's client tools (`main`'s Ci run 44516373948 logs `Image: ubuntu-26.04`); every database server stays the pinned `postgres:16@sha256:…` service, but T109's export test runs the runner's `pg_dump` and T648's TD-OPS-26 test runs `initdb` and `pg_ctl`, which must be PostgreSQL 16's. (1) Set `runs-on: ubuntu-24.04` on exactly these jobs, each of which runs Rust tests, `scripts/smoke.sh` or `scripts/prehandin.sh`: in `.github/workflows/ci.yml`, `checks` (\"Checks\"), `lint` (\"Lint and slow tests\"), `coverage` (\"Coverage\") and `e2e` (\"E2e\", which runs `cargo test -p askhava-security`); in `.github/workflows/backup-runner.yml`, `backup` (\"backup lane N\", where the worker runs `smoke.sh` and `prehandin.sh`); in `.github/workflows/nightly-main.yml`, `named-mutants` and `cargo-mutants` (its `ci` job reuses `ci.yml`). Leave `python`, `ci`, `gate`, `keeper`, `stripe-ips`, `record` and `twin.yml`'s and `a11y.yml`'s jobs as they are; if another job is found to run Rust tests, pin it too and say so in the decision entry. (2) In each pinned job, before its first cargo or script step, a preflight step fails with a message naming the path and D-4708 when `/usr/lib/postgresql/16/bin/initdb` is missing or its `--version` major is not 16, and once it passes appends `/usr/lib/postgresql/16/bin` to `$GITHUB_PATH` (`initdb` and `pg_ctl` live only there, and `/usr/bin/pg_dump` is Debian's `pg_wrapper`), so T109's path helper finds every PostgreSQL 16 binary by name; this workflow step is the only place the path is named. (3) Key every `Swatinem/rust-cache` and `actions/cache` entry in those jobs by `ubuntu-24.04`, in its `key:`, `shared-key` or prefix and in every one of its `restore-keys` lines, so nothing built on 26.04's newer glibc is restored onto 24.04: the four rust-cache `shared-key`s of `ci.yml` (`checks`, `lint`, `coverage`, `e2e`) and `nightly-main.yml`'s `mutants`, the `sqlx-cli` caches (`ci.yml:271`, `:440`), the e2e Playwright browser cache (`ci.yml:737`), and `backup-runner.yml`'s `rust-` and `rust-smoke-` caches with their restore keys (`:308` to `:311`, `:322` to `:326`). Jobs left on `ubuntu-latest` keep their keys; the split of the Playwright cache between E2e (24.04) and `a11y.yml`'s Ally (still `ubuntu-latest`) is accepted. (4) `tests/test_ci_workflow.py` gains a check: a job in those three files that runs `cargo test`, `cargo llvm-cov`, `cargo mutants`, `run_named_mutants.py`, `smoke.sh` or `prehandin.sh` fails unless it has `runs-on: ubuntu-24.04`, the preflight with its `$GITHUB_PATH` line, and `ubuntu-24.04` in every cache `key`, `shared-key` and `restore-keys` line, with planted failing cases for each. (5) If the preflight fails on `ubuntu-24.04`, report a PLAN GAP; the fallback is installing `postgresql-16` from the PostgreSQL apt repository pinned by the full fingerprint of its signing key, which T109's `Dockerfile` then uses too. Record in the decision entry, from this task's own run logs, each pinned job's `Image:` line and the preflight's output. Nothing in `runner/` changes.",
+   "goal": "Plan change D-4708 (Nov 19, 2026; Fable's decision, before T109 retries). GitHub's `ubuntu-latest` is now Ubuntu 26.04 with only PostgreSQL 18's client tools (`main`'s Ci run 44516373948 logs `Image: ubuntu-26.04`); every database server stays the pinned `postgres:16@sha256:…` service, but T109's export test runs the runner's `pg_dump` and T648's TD-OPS-26 test runs `initdb` and `pg_ctl`, which must be PostgreSQL 16's. (1) Set `runs-on: ubuntu-24.04` on exactly these jobs, each of which runs Rust tests, `scripts/smoke.sh` or `scripts/prehandin.sh`: in `.github/workflows/ci.yml`, `checks` (\"Checks\"), `lint` (\"Lint and slow tests\"), `coverage` (\"Coverage\") and `e2e` (\"E2e\", which runs `cargo test -p askhava-security`); in `.github/workflows/backup-runner.yml`, `backup` (\"backup lane N\", where the worker runs `smoke.sh` and `prehandin.sh`); in `.github/workflows/nightly-main.yml`, `named-mutants` and `cargo-mutants` (its `ci` job reuses `ci.yml`). Leave `python`, `ci`, `gate`, `keeper`, `stripe-ips`, `record` and `twin.yml`'s and `a11y.yml`'s jobs as they are; if another job is found to run Rust tests, pin it too and say so in the decision entry. (2) In each pinned job, before its first cargo or script step, a preflight step fails with a message naming the path and D-4708 when `/usr/lib/postgresql/16/bin/initdb` is missing or its `--version` major is not 16, and once it passes appends `/usr/lib/postgresql/16/bin` to `$GITHUB_PATH` (`initdb` and `pg_ctl` live only there, and `/usr/bin/pg_dump` is Debian's `pg_wrapper`), so T109's path helper finds every PostgreSQL 16 binary by name; this workflow step is the only place the path is named. (3) Key every `Swatinem/rust-cache` and `actions/cache` entry in those jobs by `ubuntu-24.04`, in its `key:`, `shared-key` or prefix and in every one of its `restore-keys` lines, so nothing built on 26.04's newer glibc is restored onto 24.04: the four rust-cache `shared-key`s of `ci.yml` (`checks`, `lint`, `coverage`, `e2e`) and `nightly-main.yml`'s `mutants`, the `sqlx-cli` caches (`ci.yml:271`, `:440`), the e2e Playwright browser cache (`ci.yml:737`), and `backup-runner.yml`'s `rust-` and `rust-smoke-` caches with their restore keys (`:308` to `:311`, `:322` to `:326`). Jobs left on `ubuntu-latest` keep their keys; the split of the Playwright cache between E2e (24.04) and `a11y.yml`'s Ally (still `ubuntu-latest`) is accepted. (4) `tests/test_ci_workflow.py` gains a check: a job in those three files that runs `cargo test`, `cargo llvm-cov`, `cargo mutants`, `run_named_mutants.py`, `smoke.sh` or `prehandin.sh` fails unless it has `runs-on: ubuntu-24.04`, the preflight with its `$GITHUB_PATH` line, and `ubuntu-24.04` in every cache `key`, `shared-key` and `restore-keys` line, with planted failing cases for each. (5) If the preflight fails on `ubuntu-24.04`, report a PLAN GAP; the fallback is installing `postgresql-16` from the PostgreSQL apt repository pinned by the full fingerprint of its signing key, which T109's `Dockerfile` then uses too. (6) Local sessions: `scripts/smoke.sh` (where it starts the local PostgreSQL 16 cluster, `:20` to `:26`, before `cargo test --workspace` at `:90`) and `scripts/prehandin.sh` (where it starts the cluster, `:183` to `:187`) each gain one step that puts `/usr/lib/postgresql/16/bin` first on `PATH` when that directory exists, and otherwise prints a clear message naming the path and D-4708, matching the `Ci` preflight's wording (smoke.sh keeps its existing no-PostgreSQL path: it already says integration tests run in `Ci` only); `/usr/bin/pg_dump` is Debian's `pg_wrapper` and `initdb` and `pg_ctl` live only in that directory, so without it T648's no-skip test would fail every local smoke after T648. `tests/test_prehandin.py` gains a case for each script: run against a fake directory layout, the step puts the directory first on `PATH` when it exists and prints the message when it does not. Record in the decision entry, from this task's own run logs, each pinned job's `Image:` line and the preflight's output. Nothing in `runner/` changes.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -29582,12 +29582,13 @@
     ".github/workflows/ci.yml",
     ".github/workflows/backup-runner.yml",
     ".github/workflows/nightly-main.yml",
-    "tests/test_ci_workflow.py"
+    "tests/test_ci_workflow.py",
+    "scripts/smoke.sh",
+    "scripts/prehandin.sh",
+    "tests/test_prehandin.py"
    ],
    "reads": [
-    "docs/code-docs.md",
-    "scripts/prehandin.sh",
-    "scripts/smoke.sh"
+    "docs/code-docs.md"
    ],
    "requirements": [],
    "tests": [],
@@ -29599,9 +29600,9 @@
    ],
    "cites": [],
    "budget": {
-    "files": 4,
-    "lines": 200,
-    "context_pct": 24
+    "files": 7,
+    "lines": 260,
+    "context_pct": 32
    },
    "checks": [
     "Ci",
@@ -29610,7 +29611,7 @@
    ],
    "branch": "claude/task/T724-ci-runner-ubuntu-2404",
    "prompt": "kit/prompts/T724.md",
-   "acceptance": "`python3 -m pytest tests/test_ci_workflow.py tests/test_prehandin.py` passes, the new check failing on each planted job without the pin or the preflight; actionlint reports nothing new on the three workflows; this task's own Ci run logs `Image: ubuntu-24.04` and a passing preflight in Checks, Lint and slow tests, Coverage and E2e; `git diff origin/main -- runner/` is empty."
+   "acceptance": "`python3 -m pytest tests/test_ci_workflow.py tests/test_prehandin.py` passes, the new check failing on each planted job without the pin or the preflight and the new script cases passing; `bash scripts/smoke.sh` in a local session with PostgreSQL 16 installed finds `initdb` by name; actionlint reports nothing new on the three workflows; this task's own Ci run logs `Image: ubuntu-24.04` and a passing preflight in Checks, Lint and slow tests, Coverage and E2e; `git diff origin/main -- runner/` is empty."
   },
   {
    "id": "T109",
