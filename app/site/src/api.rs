@@ -5,6 +5,7 @@
 //! WEB-015, WEB-023, T201), and the Spanish home, business and business help pages (WEB-002,
 //! WEB-018 to WEB-021, WEB-024, T202), and the request page and web chat (CON-025, WEB-014, AI-026, T489).
 
+pub use crate::chat::WORDS_MAX_CHARS;
 pub use crate::chat::{ChatCsrf, ChatKeys, REQUEST_PATH, chat_routes};
 pub use crate::legal_pages::{
     BUSINESS_DATA_PATH, ES_BUSINESS_DATA_PATH, ES_YOUR_DATA_PATH, LegalDoc, PRIVACY_PATH,

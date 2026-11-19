@@ -2,13 +2,16 @@
 // sections 5 and 9; D-3331, D-3844, D-3890, D-4246, D-4252).
 //
 // At 390 by 844 and 320 by 740, normal text size, the hero photo (found through its `<img>`, which
-// draws the phone crop) and the whole "Get quotes" link are inside the first viewport, and no text
-// box on the page overlaps the photo's box. The photo is decorative (`alt=""`, width and height
+// draws the phone crop), the request box's whole textarea and the whole "Get quotes" button
+// (T593, D-4098) are inside the first viewport, and no text box on the page overlaps the photo's
+// box. axe-core finds 0 violations on the home page and on the start screen the request box
+// lands on with her words in the chat box (T593). The photo is decorative (`alt=""`, width and height
 // set); every served crop is the right image type, 100 KB or less, and its bytes hold no `Exif`,
 // `<x:xmpmeta` or `GPS` block (D-4252; an AVIF crop, once one ships, joins PHOTOS, D-4630). The mark sits
 // beside, not inside, the home link, hidden from assistive tech, and the served mark.svg has no
 // script. Fake data only: the page shows no person's details.
 import type { Page } from "@playwright/test";
+import { axeScan, WIDTHS } from "../a11y/fixtures";
 import { test, expect } from "./fixtures";
 
 /** The two first screens DESIGN_SPEC section 9 measures. */
@@ -49,7 +52,7 @@ async function openHome(page: Page, width: number, height: number): Promise<void
 }
 
 for (const { width, height } of SCREENS) {
-  test(`WEB-027 D-4252: at ${String(width)} by ${String(height)} the photo and Get quotes are on the first screen and no text sits on the photo`, async ({ page }) => {
+  test(`WEB-027 D-4252 T593: at ${String(width)} by ${String(height)} the photo, the textarea and Get quotes are on the first screen and no text sits on the photo`, async ({ page }) => {
     await openHome(page, width, height);
     const img = page.locator("main picture img");
     await expect(img).toHaveCount(1);
@@ -62,7 +65,11 @@ for (const { width, height } of SCREENS) {
     expect(photo.height, "the photo shows").toBeGreaterThanOrEqual(120);
     expect(photo.y, "photo top").toBeGreaterThanOrEqual(0);
     expect(photo.y + photo.height, "photo bottom").toBeLessThanOrEqual(height);
-    const button = await page.getByRole("link", { name: "Get quotes", exact: true }).first().boundingBox();
+    const box = await page.locator("main form textarea").boundingBox();
+    if (!box) throw new Error("the textarea has no box");
+    expect(box.y, "textarea top").toBeGreaterThanOrEqual(photo.y + photo.height);
+    expect(box.y + box.height, "textarea bottom").toBeLessThanOrEqual(height);
+    const button = await page.locator("main form").getByRole("button", { name: "Get quotes", exact: true }).boundingBox();
     if (!button) throw new Error("Get quotes has no box");
     expect(button.y, "Get quotes top").toBeGreaterThanOrEqual(photo.y + photo.height);
     expect(button.y + button.height, "Get quotes bottom").toBeLessThanOrEqual(height);
@@ -97,4 +104,18 @@ test("WEB-027 D-3890: the mark sits beside the home link, hidden, and the served
   const svg = await reply.text();
   expect(svg).toContain('id="mark"');
   expect(svg).not.toMatch(/<script|<title|<metadata| on[a-z]+=/i);
+});
+
+test("A11Y-001 WEB-009 T593: the home page and the pre-filled start screen have 0 axe-core violations", async ({ page }) => {
+  const words = "the fake porch light flickers";
+  for (const width of WIDTHS) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/");
+    expect((await axeScan(page)).violations, `home at ${String(width)} px`).toEqual([]);
+    await page.getByLabel("What needs doing?").fill(words);
+    await page.getByRole("button", { name: "Get quotes", exact: true }).click();
+    await expect(page.locator("#chat-words")).toHaveValue(words);
+    expect(page.url(), "her words are in no URL").not.toContain("porch");
+    expect((await axeScan(page)).violations, `start screen at ${String(width)} px`).toEqual([]);
+  }
 });

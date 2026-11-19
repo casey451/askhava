@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT (table_schema || '.' || table_name)::text AS \"name!\",\n             (xpath('/row/n/text()', query_to_xml(\n                 format('SELECT count(*) AS n FROM %I.%I', table_schema, table_name),\n                 false, true, '')))[1]::text::bigint AS \"n!\"\n           FROM information_schema.tables\n           WHERE table_type = 'BASE TABLE' AND table_schema::text = ANY($1)\n           ORDER BY 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "name!",
+        "type_info": "Text",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "n!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "TextArray"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "84b50f9dc33e1379909e8877d1c8c383bd7baaef7cda88bf86c452b8b43041cd"
+}
