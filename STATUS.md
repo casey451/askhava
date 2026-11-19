@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T08:10:09Z by runner 982555ced6d1 (actions).
+Updated 2026-11-19T08:10:37Z by runner 982555ced6d1 (actions).
 
 **Building: T456 in progress since 06:58Z; 483 of 664 done; week 76% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 483 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T456 claimed 06:58Z, lease until 09:58Z; lane 3: T216 claimed 06:32Z, lease until 10:50Z; lane 5: T622 claimed 07:06Z, lease until 10:58Z; lane 6: T476 claimed 06:22Z, lease until 10:39Z; lane 7: T375 claimed 08:04Z, lease until 11:04Z
+- **Lane:** lane 1: T456 claimed 06:58Z, lease until 09:58Z; lane 5: T622 claimed 07:06Z, lease until 10:58Z; lane 6: T476 claimed 06:22Z, lease until 10:39Z; lane 7: T375 claimed 08:04Z, lease until 11:04Z
 - **Week:** 76% used, 38.5M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 08:04Z, 5 min before this update
 - **Keeper:** last ran 07:25Z, next wake 09:25Z
@@ -20,6 +20,7 @@ Updated 2026-11-19T08:10:09Z by runner 982555ced6d1 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T216 | site: the hero photo and mark (photography assets) | MERGE_PENDING | 1 | 97 min | 08:10Z |  |
 | T310 | server and portals: the owner home and settings pages and th | done | 1 | 74 min | 07:19Z |  |
 | T562 | server and portals: "Why was I charged?" is served with the  | done | 1 | 2 h 43 min | 07:09Z |  |
 | T229 | Legal drafts: reading-grade check and plain-language rewrite | done | 1 | 2 h 17 min | 06:59Z |  |
@@ -138,10 +139,9 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T456 (lease until 2026-11-19T09:58:02Z)
-- lane 3: T216 (lease until 2026-11-19T10:50:38Z)
 - lane 5: T622 (lease until 2026-11-19T10:58:35Z)
 - lane 6: T476 (lease until 2026-11-19T10:39:30Z)
 - lane 7: T375 (lease until 2026-11-19T11:04:18Z)
 
 ## Last usage reading
-- {"task": "T310", "at": "2026-11-19T07:19:03Z", "input_tokens": 189, "output_tokens": 60602, "cache_creation_input_tokens": 232917, "cache_read_input_tokens": 10435974}
+- {"task": "T216", "at": "2026-11-19T08:10:08Z", "cache_read_input_tokens": 6713688, "input_tokens": 181, "cache_creation_input_tokens": 162389, "output_tokens": 48113}
