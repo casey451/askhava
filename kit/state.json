@@ -21839,7 +21839,7 @@
     "T441",
     "T102"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 3,
    "slug": "wording-statements-scan",
    "type": "build",
@@ -21857,8 +21857,8 @@
     "model": "claude-opus-5-5",
     "alias": "opus"
    },
-   "reason": "plan gap reported: PLAN GAP: app/portals/templates/es_business_signup.html:82 (\"Licencia de control de plagas\") and :88 (\"Mi licencia incluye la categor\u00eda de organismos que destruyen la madera (termitas)\") are flagged by the WEB-010 pest scan (tests/docs/test_wording_statements.py:385, ['plagas', 'termitas']), which checks against the closed List A of D-4258 rule (1). Rule (5) of kit/prompts/T203.md:9 says the worker \"stops with PLAN GAP: <file:line> and the rule and adds no exemption of its own\". The lines are the Spanish twins (same {% if pest %} pest-attestation fieldset, T488) of app/portals/templates/busine; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T203 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: app/portals/templates/es_business_signup.html:82 (\"Licencia de control de plagas\") and :88 (\"Mi licencia incluye la categor\u00eda de organismos que destruyen la madera (termitas)\") are flagged by the WEB-010 pest scan (tests/docs/test_wording_statements.py:385, ['plagas', 'termitas']), which checks against the closed List A of D-4258 rule (1). Rule (5) of kit/prompts/T203.md:9 says the worker \"stops with PLAN GAP: <file:line> and the rule and adds no exemption of its own\". The lines are the Spanish twins (same {% if pest %} pest-attestation fieldset, T488) of app/portals/templates/business_signup.html:90 (\"Pest control license\") and :96 (\"My license includes the wood-destroying organism (termite) category\"), already on List A; they are a license attestation, not pest advertising. Plan fix: add the two Spanish lines word for word to T203's D-4258 rule (1) List A. Evidence: pytest tests/docs/test_wording_statements.py -> 1 failed, 220 passed (the es_business_signup.html case). The worker's own exemption (a0c92e258) was reverted in 49e0ad77e per rule (5); re-applying it passes once List A is amended. Reviewer acc0244933ca848f7 confirmed: PLAN GAP CONFIRMED.",
+   "reason": null,
+   "last_failure": "PLAN GAP: app/portals/templates/es_business_signup.html:82 (\"Licencia de control de plagas\") and :88 (\"Mi licencia incluye la categor\u00eda de organismos que destruyen la madera (termitas)\") are flagged by the WEB-010 pest scan (tests/docs/test_wording_statements.py:385, ['plagas', 'termitas']), which checks against the closed List A of D-4258 rule (1). Rule (5) of kit/prompts/T203.md:9 says the worker \"stops with PLAN GAP: <file:line> and the rule and adds no exemption of its own\". The lines are the Spanish twins (same {% if pest %} pest-attestation fieldset, T488) of app/portals/templates/business_signup.html:90 (\"Pest control license\") and :96 (\"My license includes the wood-destroying organism (termite) category\"), already on List A; they are a license attestation, not pest advertising. Plan fix: add the two Spanish lines word for word to T203's D-4258 rule (1) List A. Evidence: pytest tests/docs/test_wording_statements.py -> 1 failed, 220 passed (the es_business_signup.html case). The worker's own exemption (a0c92e258) was reverted in 49e0ad77e per rule (5); re-applying it passes once List A is amended. Reviewer acc0244933ca848f7 confirmed: PLAN GAP CONFIRMED.\nre-queued after plan fix D-4596: D-4596 (PR #1084) adds exactly the two Spanish pest-attestation lines T203's attempt 3 reported as a plan gap to rule (1) List A",
    "history": [
     {
      "attempt": 1,
@@ -21988,6 +21988,19 @@
      "plan_head": "c00d003c00ee25caad9c7e38f13eb5b20b490316",
      "plan_then": "02537151efa52251c5c6c72365c436378b81deeac009ca7f1fee844da26738ef",
      "plan_now": "d2b12843662d21ffb9b7de5a7fe6b112cd6045d80a6b58a79b27ad540bd157f7"
+    },
+    {
+     "at": "2026-11-19T03:14:37Z",
+     "reason": "D-4596 (PR #1084) adds exactly the two Spanish pest-attestation lines T203's attempt 3 reported as a plan gap to rule (1) List A",
+     "by": "manual-193ef684f11e",
+     "was": "plan gap reported: PLAN GAP: app/portals/templates/es_business_signup.html:82 (\"Licencia de control de plagas\") and :88 (\"Mi licencia incluye la categor\u00eda de organismos que destruyen la madera (termitas)\") are flagged by the WEB-010 pest scan (tests/docs/test_wording_statements.py:385, ['plagas', 'termitas']), which checks against the closed List A of D-4258 rule (1). Rule (5) of kit/prompts/T203.md:9 says the worker \"stops with PLAN GAP: <file:line> and the rule and adds no exemption of its own\". The lines are the Spanish twins (same {% if pest %} pest-attestation fieldset, T488) of app/portals/templates/busine; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T203 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 3,
+     "plan_fix": "D-4596",
+     "plan_since": "2026-11-19T02:39:05Z",
+     "plan_base": "eefaef098fd3b14ead39ecbf82dffedfc7d6881c",
+     "plan_head": "3e0ed6eb7d4bb2f160b84c33ef73c5948d4062d1",
+     "plan_then": "d2b12843662d21ffb9b7de5a7fe6b112cd6045d80a6b58a79b27ad540bd157f7",
+     "plan_now": "0b5d934590bc7142570023520540c9046a35a392a84533c78692e1661f70d518"
     }
    ],
    "reviewed_sha": "14b5758f46bd4fc16a201f3fce0f523fbedb3880",
@@ -89228,7 +89241,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T03:10:22Z",
+ "updated_at": "2026-11-19T03:14:37Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -89326,8 +89339,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "eefaef098fd3b14ead39ecbf82dffedfc7d6881c",
- "starter": "actions",
+ "runner_sha": "3e0ed6eb7d4bb2f160b84c33ef73c5948d4062d1",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "2425d18559d23c0955d68acf36b4056e711eabce",

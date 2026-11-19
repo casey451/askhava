@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T03:10:22Z by runner eefaef098fd3 (actions).
+Updated 2026-11-19T03:14:37Z by runner 3e0ed6eb7d4b (manual).
 
 **Building: T715 in progress since 01:59Z; 471 of 663 done; week 72% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,13 @@ Updated 2026-11-19T03:10:22Z by runner eefaef098fd3 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T715 claimed 01:59Z, lease until 06:05Z; lane 2: T520 claimed 01:57Z, lease until 06:00Z; lane 3: T114 claimed 02:14Z, lease until 05:45Z; lane 4: T484 claimed 02:04Z, lease until 06:01Z; lane 5: T563 claimed 02:48Z, lease until 05:48Z; lane 6: T490 claimed 02:10Z, lease until 05:10Z
 - **Week:** 72% used, 41.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:10Z, 0 min before this update
+- **Last run:** 03:10Z, 3 min before this update
 - **Keeper:** last ran 03:10Z, next wake 03:30Z
 
 ## Needs attention
-- BLOCKED T203: plan gap reported: PLAN GAP: app/portals/templates/es_business_signup.html:82 ("Licencia de control de plagas") and :88 ("Mi licencia incluye la categoría de organismos que destruyen la madera (termitas)") are flagged by the WEB-010 pest scan (tests/docs/test_wording_statements.py:385, ['plagas', 'termitas']), which checks against the closed List A of D-4258 rule (1). Rule (5) of kit/prompts/T203.md:9 says the worker "stops with PLAN GAP: <file:line> and the rule and adds no exemption of its own". The lines are the Spanish twins (same {% if pest %} pest-attestation fieldset, T488) of app/portals/templates/busine; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T203 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 55 problem(s) on tasks still to run (+275 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 59 problem(s) on tasks still to run (+276 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -86,38 +85,37 @@ Updated 2026-11-19T03:10:22Z by runner eefaef098fd3 (actions).
 | T151 | ops and messaging: HELP requests with one owner notification | done | 1 | 34 min | 03:40Z |  |
 | T647 | payments: rebuild_charge reports Booked inside a caller's tr | done | 1 | 82 min | 03:35Z |  |
 | T619 | quotes, picks and intake: the quote-median, lapsed-pick, win | QUEUED | 1 | 69 min | 03:31Z |  |
-| T639 | Runner (harness): the smoke warm-up is skipped when the pre- | done | 1 | 76 min | 03:14Z |  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 294 of 735 (40.0%) · partial 391 · unstarted 50
+**Requirements verified:** 201 of 735 (27.3%) · partial 484 · unstarted 50
 **Tasks merged (throughput only):** 471 of 663
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 17 | 18 | 0 | 35 |
-| ai | 9 | 17 | 3 | 29 |
-| businesses | 17 | 40 | 1 | 58 |
-| calls | 12 | 13 | 0 | 25 |
-| consent | 14 | 21 | 0 | 35 |
-| fees | 23 | 28 | 1 | 52 |
-| intake | 10 | 33 | 0 | 43 |
-| job-cards | 14 | 10 | 0 | 24 |
-| licensing | 33 | 15 | 0 | 48 |
-| lifecycle | 18 | 10 | 0 | 28 |
+| accessibility | 13 | 22 | 0 | 35 |
+| ai | 7 | 19 | 3 | 29 |
+| businesses | 13 | 44 | 1 | 58 |
+| calls | 11 | 14 | 0 | 25 |
+| consent | 9 | 26 | 0 | 35 |
+| fees | 14 | 37 | 1 | 52 |
+| intake | 9 | 34 | 0 | 43 |
+| job-cards | 13 | 11 | 0 | 24 |
+| licensing | 27 | 21 | 0 | 48 |
+| lifecycle | 12 | 16 | 0 | 28 |
 | messaging | 20 | 24 | 1 | 45 |
-| ops-recovery | 3 | 32 | 19 | 54 |
-| privacy | 9 | 21 | 1 | 31 |
+| ops-recovery | 1 | 34 | 19 | 54 |
+| privacy | 8 | 22 | 1 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
-| quotes-pick | 27 | 29 | 0 | 56 |
+| quotes-pick | 22 | 34 | 0 | 56 |
 | recurring | 7 | 2 | 2 | 11 |
-| security | 9 | 41 | 5 | 55 |
-| terms | 25 | 7 | 3 | 35 |
-| website | 9 | 16 | 5 | 30 |
-| wording | 12 | 11 | 9 | 32 |
+| security | 6 | 44 | 5 | 55 |
+| terms | 1 | 31 | 3 | 35 |
+| website | 0 | 25 | 5 | 30 |
+| wording | 2 | 21 | 9 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
