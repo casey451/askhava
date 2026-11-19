@@ -496,6 +496,7 @@ pub enum EmailSent {
 /// # Errors
 ///
 /// [`EmailError::NotFound`], [`EmailError::RecipientKind`], [`EmailError::NoAddress`],
+/// [`EmailError::Refused`] (a 400 or 422: the row is `dropped` with one alert, D-4327),
 /// [`EmailError::Provider`] (the row stays `sending`; a resend carries the same key) or
 /// [`EmailError::Database`].
 pub async fn send_email(
@@ -524,13 +525,38 @@ pub async fn send_email(
         html: &claim.rendered.html,
         text: &claim.rendered.plain,
     };
-    match provider.send_email(&key, &email).await {
+    let answer = provider.send_email(&key, &email).await;
+    provider_answer(db, id, answer, sent_today >= i64::from(limit.per_day), now).await
+}
+
+/// The High alert raised once per row the provider refused (a 400 or 422, D-4327).
+pub const REFUSED_ALERT: &str = "messaging.email_refused";
+/// The High alert a 401, 403 or 404 opens once while open: a key or domain fault (D-4327).
+pub const SETUP_ALERT: &str = "messaging.email_provider_setup";
+/// The subject kind of an alert about one email row; it names the row ID only (PRIV-016).
+pub const EMAIL_ROW: &str = "messaging.email_outbox";
+
+/// What the provider's `answer` on row `id` means (SEC-018, OPS-038, D-4327): sent; a 429 holds
+/// it (until the reset when the day is `full`); a 400 or 422 drops it with one alert; a 401, 403
+/// or 404 opens one setup alert; any other answer has an unknown outcome and records the lease's
+/// start in `first_unsure_at`. Both of the last leave the row `sending` for the caller.
+async fn provider_answer(
+    db: &mut PgConnection,
+    id: Uuid,
+    answer: Result<String, AdapterError>,
+    full: bool,
+    now: Timestamp,
+) -> Result<EmailSent, EmailError> {
+    let status = match answer {
         Ok(provider_id) => {
             models::mark_email_sent(db, id, &provider_id, now).await?;
-            Ok(EmailSent::Sent(provider_id))
+            return Ok(EmailSent::Sent(provider_id));
         }
-        Err(AdapterError::Vendor { status: 429, .. }) => {
-            let full = sent_today >= i64::from(limit.per_day);
+        Err(AdapterError::Vendor { status, .. }) => Some(status),
+        Err(_) => None,
+    };
+    match status {
+        Some(429) => {
             let until = if full {
                 next_reset(now)
             } else {
@@ -539,7 +565,30 @@ pub async fn send_email(
             models::hold_email(db, id, until, "provider_limit").await?;
             Ok(EmailSent::Waiting(until))
         }
-        Err(_) => Err(EmailError::Provider),
+        Some(400 | 422) => {
+            if models::drop_email(db, id).await? {
+                let subject = Some((EMAIL_ROW, id));
+                let alert = NewAlert {
+                    kind: REFUSED_ALERT,
+                    severity: Severity::High,
+                    subject,
+                };
+                raise_alert(db, &alert)
+                    .await
+                    .map_err(|_| EmailError::Database)?;
+            }
+            Err(EmailError::Refused)
+        }
+        Some(401 | 403 | 404) => {
+            raise_kind_once(db, SETUP_ALERT, Severity::High)
+                .await
+                .map_err(|_| EmailError::Database)?;
+            Err(EmailError::Provider)
+        }
+        _ => {
+            models::mark_unsure(db, id, now).await?;
+            Err(EmailError::Provider)
+        }
     }
 }
 

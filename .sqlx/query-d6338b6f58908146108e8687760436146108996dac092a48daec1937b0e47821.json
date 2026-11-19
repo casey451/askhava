@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE messaging.email_outbox SET status = 'queued', claimed_at = NULL, not_before = $2::timestamptz + make_interval(mins => LEAST(60, power(2, LEAST(lease_count, 6))::int)), lease_count = LEAST(lease_count, 1000) + 1 WHERE id = $1 AND status = 'sending'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "d6338b6f58908146108e8687760436146108996dac092a48daec1937b0e47821"
+}
