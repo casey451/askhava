@@ -12,11 +12,12 @@
 //! failure is logged with no phone or body; a second emergency text inside her open request and
 //! a resubscribing START with emergency words count nothing. All data is fake.
 
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use askhava_core::api::{Environment, ManualClock};
 use askhava_intake::api::rules::Settings as IntakeSettings;
 use askhava_intake::api::{REQUESTS_ALL, REQUESTS_PER_PHONE};
+use askhava_integration::log_capture;
 use askhava_privacy::api::Vault;
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
@@ -30,9 +31,6 @@ use sha1::Sha1;
 use sqlx::PgPool;
 use sqlx::types::Uuid;
 use tower::ServiceExt;
-use tracing::field::{Field, Visit};
-use tracing::span::{Attributes, Id, Record};
-use tracing::{Event, Metadata, Subscriber};
 
 /// The route under test, compiled into this test crate.
 #[path = r"../../../app/server/src/inbound_text.rs"]
@@ -211,52 +209,6 @@ async fn sec_015_a_resubscribing_emergency_start_counts_nothing(pool: PgPool) {
     );
 }
 
-/// Every app (non-sqlx) log line's fields, for the test's thread.
-#[derive(Clone, Default)]
-struct Lines(Arc<Mutex<Vec<String>>>);
-
-struct Line<'a>(&'a mut String);
-
-impl Visit for Line<'_> {
-    fn record_debug(&mut self, field: &Field, value: &dyn std::fmt::Debug) {
-        self.0.push_str(&format!(" {}={value:?}", field.name()));
-    }
-}
-
-impl Lines {
-    fn push(&self, line: String) {
-        self.0.lock().expect("lines").push(line);
-    }
-    fn all(&self) -> String {
-        self.0.lock().expect("lines").join("\n")
-    }
-}
-
-impl Subscriber for Lines {
-    fn enabled(&self, meta: &Metadata<'_>) -> bool {
-        !meta.target().starts_with("sqlx")
-    }
-    fn new_span(&self, span: &Attributes<'_>) -> Id {
-        let mut line = String::new();
-        span.record(&mut Line(&mut line));
-        self.push(line);
-        Id::from_u64(1)
-    }
-    fn record(&self, _: &Id, values: &Record<'_>) {
-        let mut line = String::new();
-        values.record(&mut Line(&mut line));
-        self.push(line);
-    }
-    fn record_follows_from(&self, _: &Id, _: &Id) {}
-    fn event(&self, event: &Event<'_>) {
-        let mut line = String::new();
-        event.record(&mut Line(&mut line));
-        self.push(line);
-    }
-    fn enter(&self, _: &Id) {}
-    fn exit(&self, _: &Id) {}
-}
-
 /// INT-002, INT-004, D-3613: with the all-numbers counter failing (a fake trigger on its table),
 /// an emergency first text still opens its request and queues its 911 text, the route answers
 /// 200, and the failure is logged once, with no phone or body.
@@ -271,11 +223,8 @@ async fn int_002_a_failing_counter_never_changes_the_emergency(pool: PgPool) {
         sqlx::query(sql).execute(&pool).await.expect("trigger");
     }
     let h = hooks(&pool);
-    let lines = Lines::default();
-    let status = {
-        let _guard = tracing::subscriber::set_default(lines.clone());
-        text(&h, 1, HOME, GAS).await
-    };
+    let lines = log_capture::start_skipping("sqlx");
+    let status = text(&h, 1, HOME, GAS).await;
     assert_eq!(status, StatusCode::OK);
     assert_eq!(count(&pool, REQUESTS).await, 1, "the request opens");
     assert_eq!(count(&pool, SAFETY).await, 1, "the 911 text is queued");

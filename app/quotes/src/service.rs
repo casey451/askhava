@@ -14,9 +14,9 @@
 //!
 //! T679 (LIC-046, INT-017, OPS-006, D-4360): [`request_coverage`] is the coverage intake asks for
 //! a new request: a category that is not "Open now", or a launch-open one with fewer than
-//! [`MIN_ACTIVE_BUSINESSES`] active businesses category-wide (`businesses::api::active_in_category`),
-//! is [`Coverage::NotCovered`]; otherwise it loads the job's pool and counts as
-//! [`coverage_in_reach`] does.
+//! [`MIN_ACTIVE_BUSINESSES`] (1, D-4421) active businesses category-wide
+//! (`businesses::api::active_in_category`), is [`Coverage::NotCovered`]; otherwise it loads the
+//! job's pool and counts as [`coverage_in_reach`] does.
 
 use askhava_businesses::api::active_in_category;
 use askhava_jobs::api::current;
@@ -31,8 +31,8 @@ use crate::models::{self, CardBusiness, CardJob, Coverage, Pool, QuotesError, Re
 use crate::rules;
 
 /// Active businesses a launch-open category needs, category-wide, before it takes homeowner
-/// requests (LIC-046, OPS-006; the setting's default, D-4360).
-pub const MIN_ACTIVE_BUSINESSES: u32 = 2;
+/// requests: at least 1 (LIC-046, OPS-006; the setting's default, D-4360; 1 since D-4421, was 2).
+pub const MIN_ACTIVE_BUSINESSES: u32 = 1;
 
 /// CARD-001, CARD-002, CARD-003: chooses every business that receives the job's card, with no cap,
 /// and records a card for each one not already holding one. Returns the recipients chosen.
