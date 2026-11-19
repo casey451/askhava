@@ -202,6 +202,7 @@ fn td_int_01_burning_smells_match_smoke_fire() {
         ("there is fire in the kitchen", "hay fuego"),
         ("there is smoke in the hall", "hay humo"),
         ("burnt toast smell", "olor a quemado en la sala"),
+        ("something burning in here", "algo se quema en la cocina"),
     ] {
         let fire = Check::Match(Hazard::SmokeFire);
         assert_eq!(check(english, false), fire, "{english}");

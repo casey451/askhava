@@ -131,6 +131,7 @@ const BURNING_PHRASES: &[&str] = &[
     "somethings burning",
     "se esta quemando",
     "se estan quemando",
+    "algo se quema",
 ];
 /// Spanish burnt words read beside a smell word ("huele a quemado", "olor a quemado", D-4777).
 const BURNT_ES: &[&str] = &["quemado", "quemada", "quemados", "quemadas"];
