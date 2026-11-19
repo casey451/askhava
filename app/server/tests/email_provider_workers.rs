@@ -15,13 +15,12 @@ use std::sync::{Arc, Mutex, PoisonError};
 
 use askhava_adapters::api::{AdapterError, Charge, IdempotencyKey, PaymentIntent, PaymentsAdapter};
 use askhava_businesses::api::{
-    AccountDirectory, Acting, Returned, Roles, SignUpForm, WELCOME_KIND, add_member, add_owner,
-    create, mark_returned, may_get_cards, sign_up,
+    AccountDirectory, Acting, Checks, Event, Returned, Roles, SignUpForm, add_member, add_owner,
+    apply, create, mark_returned, may_get_cards, request_welcome, sign_up, verified_by_link,
 };
-use askhava_core::api::{
-    Clock, Lease, MIGRATOR, NewTask, Settings, SystemClock, WorkerId, claim, enqueue,
-};
+use askhava_core::api::{Clock, Lease, MIGRATOR, Settings, SystemClock, WorkerId, claim};
 use askhava_licensing::api::ClassMap;
+use askhava_ops::api::Actor;
 use askhava_picks::api::ConfirmSettings;
 use askhava_privacy::api::{Vault, mailbox_for};
 use askhava_server::account_directory::VaultAccountDirectory;
@@ -37,7 +36,6 @@ use base64::Engine as _;
 use base64::engine::general_purpose::STANDARD;
 use jiff::Timestamp;
 use secrecy::SecretString;
-use serde_json::json;
 use sqlx::PgPool;
 use sqlx::types::Uuid;
 
@@ -136,8 +134,8 @@ async fn run_due(pool: &PgPool, registry: &askhava_core::api::Registry) {
     }
 }
 
-/// A business with a verified owner at [`OWNER`] and member at [`MEMBER`], its welcome requested
-/// and queued; returns the business and the member's mailbox.
+/// An active business with a verified owner at [`OWNER`] and member at [`MEMBER`], its welcome
+/// requested and queued through the app's own code; returns the business and the member's mailbox.
 async fn business(pool: &PgPool) -> (Uuid, Uuid) {
     let now = Timestamp::now();
     let mut db = pool.acquire().await.expect("db");
@@ -148,25 +146,23 @@ async fn business(pool: &PgPool) -> (Uuid, Uuid) {
     let acting = Acting { business, member };
     let member_box = mailbox_for(&mut db, &vault(), MEMBER).await.expect("box");
     let added = add_member(&mut db, acting, member_box, Roles::BOTH, now).await;
-    for (mailbox, who) in [(owner_box, member), (member_box, added.expect("member"))] {
-        sqlx::query(
-            "INSERT INTO businesses.mailbox_check (business_id, member_id, mailbox_id, open, \
-             sent_at, window_at, verified_at) VALUES ($1, $2, $3, false, now(), now(), now())",
-        )
-        .bind(business)
-        .bind(who)
-        .bind(mailbox)
-        .execute(&mut *db)
-        .await
-        .expect("verified");
+    let other = Acting {
+        business,
+        member: added.expect("member"),
+    };
+    for (by, mailbox) in [(acting, owner_box), (other, member_box)] {
+        let verified = verified_by_link(&mut db, by, mailbox, now).await;
+        verified.expect("verified");
     }
-    sqlx::query("INSERT INTO businesses.welcome (business_id, requested_at) VALUES ($1, now())")
-        .bind(business)
-        .execute(&mut *db)
-        .await
-        .expect("welcome row");
-    let task = NewTask::new(WELCOME_KIND, json!({"business": business}), now);
-    enqueue(&mut db, &task).await.expect("welcome task");
+    let ok = Checks {
+        code_done: true,
+        match_passed: true,
+        flagged: false,
+    };
+    let active = apply(&mut db, business, Event::Checked(ok), Actor::System, now).await;
+    active.expect("active");
+    let queued = request_welcome(&mut db, business, now).await;
+    assert!(queued.expect("welcome"), "welcome queued");
     (business, member_box)
 }
 
