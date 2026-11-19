@@ -9,6 +9,8 @@
 
 use sqlx::PgConnection;
 
+pub mod log_capture;
+
 /// The role `web` and `worker` connect as; it owns nothing (D-092, postgres brain P3).
 pub const APP_ROLE: &str = "askhava_app";
 
