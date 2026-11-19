@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T06:18:59Z by runner 4b0eb67e704a (actions).
+Updated 2026-11-19T06:19:31Z by runner 3e0ed6eb7d4b (actions).
 
 **Building: T310 in progress since 06:04Z; 477 of 664 done; week 75% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,15 +8,15 @@ Updated 2026-11-19T06:18:59Z by runner 4b0eb67e704a (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T310 claimed 06:04Z, lease until 09:04Z; lane 4: T562 claimed 04:26Z, lease until 09:13Z; lane 5: T506 claimed 05:13Z, lease until 08:13Z; lane 7: T229 claimed 04:42Z, lease until 09:05Z
 - **Week:** 75% used, 41.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:18Z, 0 min before this update
-- **Keeper:** last ran 05:18Z, next wake 06:31Z
+- **Last run:** 06:19Z, 0 min before this update
+- **Keeper:** last ran 06:19Z, next wake 06:39Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T536 (since 2026-11-19T06:04:46Z, no attempt used; a plan change fixes it): T536: dependency T490 is DONE but its owned file app/server/tests/email_provider_workers.rs is not on main; T536: dependency T490 is DONE but its owned file app/server/src/account_directory.rs is not on main
 - PLAN GAP T542 (since 2026-11-19T06:04:46Z, no attempt used; a plan change fixes it): T542: dependency T490 is DONE but its owned file app/server/tests/email_provider_workers.rs is not on main; T542: dependency T490 is DONE but its owned file app/server/src/account_directory.rs is not on main
-- Strict plan check red: 58 problem(s) on tasks still to run (+281 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 56 problem(s) on tasks still to run (+279 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
