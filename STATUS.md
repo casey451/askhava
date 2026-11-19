@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T11:48:40Z by runner ff354758f85f (actions).
+Updated 2026-11-19T11:48:54Z by runner ff354758f85f (actions).
 
 **Building: T470 in progress since 10:42Z; 490 of 664 done; week 79% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-19T11:48:40Z by runner ff354758f85f (actions).
 - **Lane:** lane 1: T470 claimed 10:42Z, lease until 13:42Z; lane 2: T536 claimed 10:45Z, lease until 13:45Z; lane 3: T158 claimed 11:39Z, lease until 14:39Z; lane 7: T593 claimed 11:00Z, lease until 14:00Z
 - **Week:** 79% used, 28.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:48Z, 0 min before this update
-- **Keeper:** last ran 11:36Z, next wake 11:56Z
+- **Keeper:** last ran 11:48Z, next wake 12:08Z
 
 ## Needs attention
 - BLOCKED T109: plan gap reported: PLAN GAP: `deny.toml:3` (owned by T009 and T604, both outside T109; T109 does not own it): every `age` release fails `cargo deny check`, so `Ci` and prehandin go red. age 0.11.5: `cargo deny check licenses bans sources advisories` exit 1, error[unmaintained] proc-macro-error2 (RUSTSEC-2026-0173) via i18n-embed-fl 0.9.4 (non-optional dependency of age). age 0.12.1: exit 1, error[vulnerability] RUSTSEC-2026-0387 on crypto-bigint 0.5.5 via hpke/p256 -> elliptic-curve 0.13 (non-optional). Clean main: advisories ok. With one ignore line `{ id = "RUSTSEC-2026-0173", reason = "proc-macro-error2 is un; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T109 --plan-fix D-### --reason "..."` (D-2859)
