@@ -26,6 +26,7 @@ The layer-3 crate through which all money moves (FEE-032, `docs/architecture.md`
 - FEE-014, D-3792: `saved_cards` gives brand and last four only (`CardOnFile` has no other field), never a removed card or a `pm_` ID: `tests/integration/tests/business_numbers.rs`.
 - `rebuild_charge` never calls Stripe, books one listed charge once (one `charge` row) and books nothing for a refunded, unknown-pick, other-intent or attempt-less charge: `tests/integration/tests/replay_helpers.rs` (T481).
 - Never lock an existing `charge_attempt` row after its pick's `pick_intent` row (lock the attempt first) (`record`, `rebuild_charge`; D-2958, D-4305), and write `payments.charge_evidence` only under the `pick_intent` lock: `tests/integration/tests/rebuild_charge_locks.rs` (TD-OPS-45).
+- FEE-046, D-4728: an expense lives only in `payments.expense` (SELECT and INSERT only for the app role) and never becomes a ledger entry; the money view's collected, set aside, expenses and left always add up: `src/tests/money_view.rs`.
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/payments/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/payments/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).
