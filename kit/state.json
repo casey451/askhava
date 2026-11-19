@@ -78101,7 +78101,8 @@
    "last_failure": "Ci: failure; E2e: failure\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n{\"timestamp\":\"2026-11-19T23:01:05.346379Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1037,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-19T23:01:05.347770Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1039,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-19T23:01:05.348174Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1038,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-19T23:01:05.552052Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1041,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-19T23:01:05.553016Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1040,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n  \u2718   98 [main] \u203a tests/e2e/web_chat.spec.ts:129:1 \u203a TD-CON-10 TD-INT-09 TD-INT-30 TD-A11Y-02 TD-SEC-73 CON-025 A11Y-035 SEC-042: one question per page; only the Verify code until the right code, whic\n##[error]  1) [main] \u203a tests/e2e/web_chat.spec.ts:129:1 \u203a TD-CON-10 TD-INT-09 TD-INT-30 TD-A11Y-02 TD-SEC-73 CON-025 A11Y-035 SEC-042: one question per page; only the Verify code until the right code,\nCi failed at step: All five jobs passed\n##[error]Process completed with exit code 1.",
    "lane": "4",
    "runner_closed_prs": [
-    1128
+    1128,
+    1153
    ],
    "update_merges": [
     {
@@ -96996,7 +96997,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T23:35:03Z",
+ "updated_at": "2026-11-19T23:35:11Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
