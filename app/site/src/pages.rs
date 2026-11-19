@@ -838,7 +838,7 @@ mod tests {
         assert!(html.contains("<input type=\"hidden\" name=\"csrf\" value=\"fake-token\">"));
         assert!(html.contains("<label for=\"job\">What needs doing?</label>"));
         assert!(html.contains(&format!(
-            "<textarea id=\"job\" name=\"job\" rows=\"3\" maxlength=\"{WORDS_MAX_CHARS}\" aria-describedby=\"job-hint\">"
+            "<textarea id=\"job\" name=\"words\" rows=\"3\" maxlength=\"{WORDS_MAX_CHARS}\" aria-describedby=\"job-hint\">"
         )));
         assert!(html.contains("<button type=\"submit\">Get quotes</button>"));
         assert!(!html.contains("placeholder"));

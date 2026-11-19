@@ -43,7 +43,7 @@
 <input type="hidden" name="step" value="message">
 <p><label for="chat-words">What job do you need done?</label></p>
 <p id="chat-words-hint">Say what's wrong and where in the house. Leave out your name, phone and address.</p>
-<p><textarea id="chat-words" name="words" rows="4" maxlength="{{ words_max }}" aria-describedby="chat-words-hint{% if error %} chat-notice{% endif %}">{{ words }}</textarea></p>
+<p><textarea id="chat-words" name="words" rows="4" maxlength="{{ crate::chat::WORDS_MAX_CHARS }}" aria-describedby="chat-words-hint{% if error %} chat-notice{% endif %}">{{ words }}</textarea></p>
 <p><button type="submit">Send</button></p>
 {%- when Ask::Number %}
 <input type="hidden" name="step" value="number">

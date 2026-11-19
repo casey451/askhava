@@ -1,6 +1,6 @@
 //! T593 (WEB-009, WEB-012, CON-025, AI-021, A11Y-035, SEC-042, D-1515, D-3331, D-4098): the home
 //! request box served by the assembled router against PostgreSQL. A hero `POST /request` (the
-//! `job` field, no chat key) lands on the CON-025 start screen with her words in the chat box,
+//! `words` field, no chat key) lands on the CON-025 start screen with her words in the chat box,
 //! escaped and cut to `WORDS_MAX_CHARS`, writes no row in `intake`, `privacy`, `ai`, `messaging`,
 //! `jobs` or `core.task`, and puts her words in no log line; a token-less or cross-site hero post
 //! is refused (403); the hero post's answer and the three home paths are `no-store`; and `GET /`
@@ -29,8 +29,8 @@ const MARKER: &str = "fake-marker-t593 the pool pump hums but no water moves";
 const HOMES: [&str; 3] = ["/", "/categories", "/events"];
 /// The schemas whose rows a hero post must not change, beside `core.task`.
 const SCHEMAS: [&str; 5] = ["intake", "privacy", "ai", "messaging", "jobs"];
-/// The site copy, block by block.
-const SITE_COPY: &str = include_str!("../../../docs/copy/site-copy.md");
+/// The repository root, a run-time base; the site copy is `docs/copy/site-copy.md` under it.
+const ROOT: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../..");
 
 /// One answer: status, body, whether it is `no-store` and the pre-session cookie it set.
 struct Reply {
@@ -108,9 +108,9 @@ fn encoded(raw: &str) -> String {
         .collect()
 }
 
-/// The hero form: `csrf` (no field when `None`) and `job`.
+/// The hero form: `csrf` (no field when `None`) and her words as `words`.
 fn hero(csrf: Option<&str>, job: &str) -> String {
-    let job = format!("job={}", encoded(job));
+    let job = format!("words={}", encoded(job));
     csrf.map_or(job.clone(), |t| format!("csrf={t}&{job}"))
 }
 
@@ -382,7 +382,9 @@ fn page_text(html: &str) -> String {
 fn home_lines() -> Vec<(String, String)> {
     let mut out = Vec::new();
     let mut current: Option<String> = None;
-    for line in SITE_COPY.lines() {
+    let copy = std::fs::read_to_string(std::path::Path::new(ROOT).join("docs/copy/site-copy.md"))
+        .expect("site copy");
+    for line in copy.lines() {
         if let Some(head) = line.strip_prefix("## ") {
             let home = head.starts_with("Home ·") && !head.contains("fixed)");
             current = home.then(|| head.to_owned());

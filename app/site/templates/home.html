@@ -6,7 +6,7 @@
     The hero (T216, WEB-027, D-3331, D-4252) puts the decorative photo above the headline on
     phones and beside the text from 1024 px; under 768 px the phone crop replaces it (WebP only
     for now, D-4630), and no text ever sits on the photo. T593 (D-3331, D-4098): the hero's words
-    and the request box, whose form posts her words to /request (never a URL) with the `csrf` token
+    and the request box, whose form posts her words (`words`) to /request (never a URL) with the `csrf` token
     server's chat layer sets, to land on the CON-025 start screen with them in the chat box; the
     market names come from docs/catalog/markets.yaml (`market`, D-1515, INT-048), never typed. -#}
 {% block title %}Local quotes for {{ market.short_name }} homes{% endblock %}
@@ -24,7 +24,7 @@
 <input type="hidden" name="csrf" value="{{ csrf }}">
 <label for="job">What needs doing?</label>
 <p class="hint" id="job-hint">For example: the AC runs but blows warm air.</p>
-<textarea id="job" name="job" rows="3" maxlength="{{ words_max }}" aria-describedby="job-hint"></textarea>
+<textarea id="job" name="words" rows="3" maxlength="{{ words_max }}" aria-describedby="job-hint"></textarea>
 <button type="submit">Get quotes</button>
 <p class="cost">Free for you. The business you pick pays {{ askhava_core::api::brand().display_name() }} a set introduction fee.</p>
 </form>

@@ -14,10 +14,7 @@
 //! a URL (D-4044). The code step is the composition's [`ChatKeys`] (T103's `send_code` and
 //! `check_code` over the vault and Verify, D-963, D-3144); without it (dev and `Ci`) the code step sends and stores nothing and
 //! says codes can't be sent right now, answering 200 (D-3744). A new request SEC-014's limit
-//! refuses opens nothing and the page says to try again later. The cross-site and CSRF checks are
-//! `server`'s layer, which hands the page its token as [`ChatCsrf`] (D-3882). The home request
-//! box (T593, D-4098) posts `job` with no `chat` key: the answer is the start screen with her
-//! words in the chat box, cut to [`WORDS_MAX_CHARS`], and nothing stored (AI-021, A11Y-035).
+//! refuses opens nothing and the page says to try again later. The cross-site and CSRF checks are `server`'s layer, which hands the page its token as [`ChatCsrf`] (D-3882); [`carry`] takes the home request box's post (T593).
 
 use std::future::Future;
 use std::net::{IpAddr, SocketAddr};
@@ -52,10 +49,6 @@ pub const REQUEST_PATH: &str = "/request";
 
 /// The most chat lines a page carries forward.
 const MAX_SAID: usize = 20;
-
-/// AI-021, A11Y-035, T593: the most characters the chat box takes (its `maxlength`, and the home
-/// request box's); words carried from the home page are cut to it.
-pub const WORDS_MAX_CHARS: usize = 1000;
 
 /// SEC-042, D-3882: the page's CSRF token, which `server`'s chat layer puts in the request's
 /// extensions; the form posts it as `csrf`. No `Debug`, so it cannot reach a log (R6).
@@ -144,8 +137,6 @@ struct Posted {
     words: String,
     number: String,
     code: String,
-    /// The home request box's words (T593); with no `chat` key the post only carries them.
-    job: Option<String>,
 }
 
 /// The page's query: the INT-047 `g` code.
@@ -169,7 +160,6 @@ struct RequestPage {
     error: bool,
     message: String,
     words: String,
-    words_max: usize,
 }
 
 /// What a page carries from one turn to the next.
@@ -255,7 +245,7 @@ pub fn chat_routes<C: ChatKeys>(
         keys,
     };
     Router::new()
-        .route(REQUEST_PATH, get(page::<C>).post(post::<C>))
+        .route(REQUEST_PATH, get(page::<C>).post(carry::<C>))
         .with_state(chat)
 }
 
@@ -291,17 +281,13 @@ async fn page<C: ChatKeys>(
 }
 
 /// `POST` [`REQUEST_PATH`]: one turn of the chat; a form with no session key or message ID is a
-/// 400 (SEC-042's checks ran in `server`'s layer). The home request box's post (a `job` field and
-/// no `chat` key) only carries her words to the start screen (T593).
+/// 400 (SEC-042's checks ran in `server`'s layer).
 async fn post<C: ChatKeys>(
     State(chat): State<Chat<C>>,
     csrf: Option<Extension<ChatCsrf>>,
     client: Option<Extension<ConnectInfo<SocketAddr>>>,
     Form(form): Form<Posted>,
 ) -> Response {
-    if let Some(job) = form.job.as_deref().filter(|_| form.chat.is_empty()) {
-        return chat.carried(token(csrf), job).await;
-    }
     let turn = Turn::posted(&form, token(csrf));
     let id = Uuid::try_parse(&form.message);
     let (Some(mut turn), Ok(id)) = (turn, id) else {
@@ -322,6 +308,25 @@ async fn post<C: ChatKeys>(
         (Ask::Message, Some(FAILED))
     });
     chat.answer(turn, ask, notice).await
+}
+
+/// AI-021, A11Y-035, T593: the most characters the chat box takes (its `maxlength`, and the home
+/// request box's); words carried from the home page are cut to it.
+pub const WORDS_MAX_CHARS: usize = 1000;
+
+/// `POST` [`REQUEST_PATH`] (T593, D-4098): the home request box's post (its `words` field with
+/// no `chat` key and no `step`) only carries her words to the start screen ([`Chat::carried`]):
+/// nothing is stored (AI-021, A11Y-035). Any other post is a chat turn ([`post`]).
+async fn carry<C: ChatKeys>(
+    State(chat): State<Chat<C>>,
+    csrf: Option<Extension<ChatCsrf>>,
+    client: Option<Extension<ConnectInfo<SocketAddr>>>,
+    Form(form): Form<Posted>,
+) -> Response {
+    if form.chat.is_empty() && form.step.is_empty() {
+        return chat.carried(token(csrf), &form.words).await;
+    }
+    post(State(chat), csrf, client, Form(form)).await
 }
 
 type Step = Result<(Ask, Option<Notice>), ChatError>;
@@ -459,7 +464,6 @@ impl<C: ChatKeys> Chat<C> {
             error,
             message: fresh_id().to_string(),
             words,
-            words_max: WORDS_MAX_CHARS,
         };
         match page.render() {
             Ok(html) => Html(html).into_response(),
