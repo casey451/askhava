@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO portals.login_link (token_sha256, member_id, business_id, created_at, expires_at) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (token_sha256) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Bytea",
+        "Uuid",
+        "Uuid",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "fabd8f0c2cb89401c881265a0a0eb2035dda6913a5fadef657bd1ab2691d0459"
+}
