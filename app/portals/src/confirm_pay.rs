@@ -626,10 +626,6 @@ const CONFIRMED_LINE: &str =
 /// SEC-038, T541: the label of the step-up link a card change without a fresh code gets.
 pub const SAVE_CODE_LABEL: &str = "Enter a code to save this card";
 
-/// FEE-014, T541: a paid press whose card was stored.
-const PAID_SAVED_LINE: &str = "Payment sent. Your card is saved for next time. You'll get the \
-homeowner's details as soon as Stripe confirms the payment.";
-
 /// FEE-014, T541: a paid press whose card could not be stored.
 const PAID_NOT_SAVED_LINE: &str = "Payment sent, but we couldn't save your card. You'll get the \
 homeowner's details as soon as Stripe confirms the payment.";
@@ -1692,12 +1688,12 @@ async fn store_reported<S, R>(
 
 /// T541 (FEE-014, SEC-038): `reply` with what became of a ticked save box: saved, not saved, or
 /// not saved for want of a code (with the step-up page under [`SAVE_CODE_LABEL`]); a decline,
-/// an end or an unticked box keeps its words.
+/// an end, an unticked box or a paid press whose card was stored keeps its words (TD-FEE-45's
+/// journey pins a paid press's line, D-4711).
 fn with_save(reply: PressReply, plan: SavePlan, saved: bool) -> PressReply {
     let code = plan == SavePlan::NeedsCode;
     let message = match (reply.state, plan, saved) {
-        (_, SavePlan::Not, _) => return reply,
-        ("waiting", _, true) => PAID_SAVED_LINE,
+        (_, SavePlan::Not, _) | ("waiting", _, true) => return reply,
         ("waiting", _, false) if code => PAID_CODE_LINE,
         ("waiting", _, false) => PAID_NOT_SAVED_LINE,
         ("approve", _, _) => APPROVE_NOT_SAVED_LINE,
@@ -1919,7 +1915,7 @@ mod tests {
     fn td_sec_70_the_reply_says_what_became_of_the_card() {
         let state = |s: &'static str| said(s, "before", Some(PORTAL_LINK));
         let cases = [
-            ("waiting", SavePlan::New, true, PAID_SAVED_LINE),
+            ("waiting", SavePlan::New, true, "before"),
             ("waiting", SavePlan::NeedsCode, false, PAID_CODE_LINE),
             ("waiting", SavePlan::Change, false, PAID_NOT_SAVED_LINE),
             (

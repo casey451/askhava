@@ -609,7 +609,7 @@ async fn td_sec_70_a_ticked_box_stores_stripes_own_report(pool: PgPool) {
     no_method_logged(&logs);
     assert_eq!(status, 200);
     assert!(
-        reply.contains("Your card is saved for next time"),
+        reply.contains("as soon as Stripe confirms it.") && !reply.contains("couldn't save"),
         "{reply}"
     );
     assert!(
@@ -698,7 +698,8 @@ async fn td_sec_70_a_saved_card_changes_only_with_a_fresh_code(pool: PgPool) {
     let logs = log_capture::start();
     let (_, reply) = press(&s.app, &q, &ticked(POSTED)).await;
     no_method_logged(&logs);
-    assert!(reply.contains("Your card is saved") && !reply.contains(SAVE_CODE_LABEL));
+    assert!(reply.contains("as soon as Stripe confirms it."), "{reply}");
+    assert!(!reply.contains("couldn't save") && !reply.contains(SAVE_CODE_LABEL));
     let stored = cards(&pool, q.business).await;
     assert!(stored.iter().any(|c| c.0 == ANSWERED), "{stored:?}");
 }

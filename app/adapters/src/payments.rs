@@ -797,7 +797,7 @@ mod tests {
 
     use secrecy::{ExposeSecret, SecretString};
 
-    use super::{ChargeList, PaymentIntent, StripePayments, ThreeDs};
+    use super::{Charge, ChargeList, PaymentIntent, PaymentsAdapter, StripePayments, ThreeDs};
     use crate::base::{AdapterError, IdempotencyKey};
 
     /// A client for a vendor that answers one request with `answer` and hands back the request
@@ -1147,7 +1147,7 @@ mod tests {
         let (stripe, got) = scripted(r#"{"id":"pm_fake2","type":"us_bank_account"}"#);
         let facts = stripe.fetch_card_facts("pm_fake2").await.expect("facts");
         assert_eq!(facts.method_type, "us_bank_account");
-        assert!(facts.brand.is_empty() && facts.last4.is_empty());
+        assert_eq!((facts.brand.as_str(), facts.last4.as_str()), ("", ""));
         let request = got.recv().expect("request");
         assert!(
             request.starts_with("GET /stripe/v1/payment_methods/pm_fake2 "),
@@ -1181,5 +1181,102 @@ mod tests {
         ] {
             assert!(request.contains(field), "{request}");
         }
+    }
+
+    /// TD-SEC-70 (FEE-014, T541): a bad intent, card or method ID is refused before anything is
+    /// sent; a `py_` charge read is allowed.
+    #[tokio::test]
+    async fn td_sec_70_bad_ids_send_nothing() {
+        let (stripe, got) = scripted(
+            r#"{"id":"py_fake4","payment_method_details":{"type":"card","card":{"brand":"mastercard","last4":"4444"}}}"#,
+        );
+        let k = key("pick-fake-4-try1");
+        for (intent, card) in [("ch_fake4", "pm_card_visa"), ("pi_fake4", "card_fake4")] {
+            let saving = stripe.confirm_payment_intent_saving(&k, intent, card).await;
+            assert!(matches!(saving, Err(AdapterError::InvalidId)));
+        }
+        let form = [("usage", "off_session")];
+        let set = stripe.set_up_card(&k, &form, "card_fake4").await;
+        assert!(matches!(set, Err(AdapterError::InvalidId)));
+        assert!(matches!(
+            stripe.fetch_card_facts("").await,
+            Err(AdapterError::InvalidId)
+        ));
+        let facts = stripe.fetch_card_facts("py_fake4").await.expect("facts");
+        assert_eq!(
+            (facts.brand.as_str(), facts.last4.as_str()),
+            ("mastercard", "4444")
+        );
+        let request = got.recv().expect("only the py_ read was sent");
+        assert!(
+            request.starts_with("GET /stripe/v1/charges/py_fake4 "),
+            "{request}"
+        );
+    }
+
+    /// TD-SEC-70 (FEE-014, T541): a saving confirm the bank must approve keeps the client secret,
+    /// and `Debug` shows neither it nor the `pm_…`.
+    #[tokio::test]
+    async fn td_sec_70_a_saving_confirm_needing_approval_hides_its_secrets() {
+        let answer = r#"{"id":"pi_fake5","status":"requires_action","amount":7500,"currency":"usd","customer":"cus_fake5","metadata":{"pick_id":"pick-fake-5"},"payment_method":"pm_fake_held","client_secret":"pi_fake5_secret_fake","latest_charge":null}"#;
+        let (stripe, _got) = scripted(answer);
+        let held = stripe
+            .confirm_payment_intent_saving(&key("pick-fake-5-try1"), "pi_fake5", "pm_card_visa")
+            .await
+            .expect("held");
+        assert!(held.client_secret.is_some());
+        let shown = format!("{held:?}");
+        assert!(!shown.contains("pm_fake_held"), "{shown}");
+        assert!(!shown.contains("secret_fake"), "{shown}");
+    }
+
+    /// TD-SEC-70 (FEE-048, T541): a payment-method read of a card gives its brand and last four,
+    /// and a SetupIntent the bank must approve reads as `requires_action` with no ID shown.
+    #[tokio::test]
+    async fn td_sec_70_a_card_method_read_and_a_held_set_up() {
+        let (stripe, _got) =
+            scripted(r#"{"id":"pm_fake6","type":"card","card":{"brand":"visa","last4":"1881"}}"#);
+        let facts = stripe.fetch_card_facts("pm_fake6").await.expect("facts");
+        assert_eq!(facts.method_type, "card");
+        assert_eq!(
+            (facts.brand.as_str(), facts.last4.as_str()),
+            ("visa", "1881")
+        );
+        let (stripe, _got) = scripted(r#"{"id":"seti_fake6","status":"requires_action"}"#);
+        let form = [("usage", "off_session")];
+        let set = stripe
+            .set_up_card(&key("pick-fake-6-save"), &form, "pm_card_visa")
+            .await
+            .expect("held");
+        assert_eq!(set.status, "requires_action");
+        assert_eq!(set.payment_method, None);
+        assert!(format!("{set:?}").contains("requires_action"));
+    }
+
+    /// SEC-018, PRIV-016: a create, charge or refund with an ID of the wrong kind is refused
+    /// before anything reaches Stripe.
+    #[tokio::test]
+    async fn wrong_kind_ids_reach_no_vendor() {
+        let (stripe, got) = scripted("{}");
+        let k = key("pick-fake-7-try1");
+        let unconfirmed = stripe.create_unconfirmed_intent(&k, "pm_fake7", 7500, "pick-fake-7");
+        assert!(matches!(unconfirmed.await, Err(AdapterError::InvalidId)));
+        let charge = |customer, payment_method| Charge {
+            customer,
+            payment_method,
+            amount_cents: 7500,
+            pick_id: "pick-fake-7",
+        };
+        for (customer, method) in [("pm_fake7", "pm_fake7"), ("cus_fake7", "cus_fake7")] {
+            let made = stripe
+                .create_payment_intent(&k, charge(customer, method))
+                .await;
+            assert!(matches!(made, Err(AdapterError::InvalidId)));
+        }
+        let refund = stripe.send_refund(&k, "ch_fake7").await;
+        assert!(matches!(refund, Err(AdapterError::InvalidId)));
+        let read = stripe.read_refund("pi_fake7").await;
+        assert!(matches!(read, Err(AdapterError::InvalidId)));
+        assert!(got.try_recv().is_err(), "nothing was sent");
     }
 }
