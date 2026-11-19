@@ -22,7 +22,8 @@
 //! answer (the ZIP reply itself too, "86403 my sink leaks"); its job opens through [`open_job`]
 //! keyed with her new property, never `begin_job`, and nothing is written or sent when it names no
 //! trade. Step 11 (`order::ask_last_question`, once per request) is called last, only once step 5
-//! told the coverage (the `trade_check` marker; D-3702, D-4441).
+//! told the coverage (the `trade_check` marker; D-3702, D-4441), and not in a turn that sent a
+//! SPLIT offer ([`offered_now`]): it waits for her next reply, so SPLIT reaches [`second_job`].
 //!
 //! INT-032's two jobs (T711, D-4439, corrected by T717, D-4441): a first text whose two
 //! `trade_reading` rows opened the first trade's job gets the `two_jobs` text once, right after
@@ -47,6 +48,7 @@ use askhava_jobs::api::create;
 use askhava_ops::api::Actor;
 use askhava_quotes::api::{CardFacts, card_pool, description, request_coverage};
 use jiff::{SignedDuration, Timestamp};
+use jiff_sqlx::ToSqlx;
 use secrecy::SecretString;
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
@@ -284,11 +286,31 @@ pub(crate) async fn reply_step(
     if models::latest_answer(tx, conversation, TRADE_CHECK)
         .await?
         .is_some()
+        && !offered_now(tx, request).await?
     {
         let spanish_on = settings.spanish_conversations_on;
         texts.extend(ask_last_question(tx, secret, request, spanish_on).await?);
     }
     Ok(texts)
+}
+
+/// INT-032, D-1020, INT-027, D-4441: whether this reply's turn sent a SPLIT offer (its
+/// [`SPLIT_OFFER`] marker carries this reply's time). Step 11 then waits for her next reply, so
+/// a SPLIT or DIVIDIR answering the offer reaches [`second_job`], not the name-and-address answer.
+async fn offered_now(
+    tx: &mut PgConnection,
+    (msg, conversation): (&TextIn<'_>, Uuid),
+) -> Result<bool, IntakeError> {
+    sqlx::query_scalar!(
+        r#"SELECT EXISTS (SELECT 1 FROM intake.intake_answer WHERE conversation_id = $1
+             AND question_id = $2 AND answered_at = $3) AS "offered!""#,
+        conversation,
+        SPLIT_OFFER,
+        msg.received_at.to_sqlx() as _
+    )
+    .fetch_one(tx)
+    .await
+    .map_err(|_| IntakeError::Database)
 }
 
 /// INT-043, INT-049, INT-032: her clear reply read as the open step's answer: ALSO or SPLIT, the

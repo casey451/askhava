@@ -395,3 +395,29 @@ async fn td_int_54_split_later_or_with_no_offer_opens_nothing(mut db: Db) {
     );
     assert_eq!(kept(&mut db, none).await, [DOOR]);
 }
+
+/// TD-INT-54 (INT-032, D-1020, INT-027): a SPLIT offer told in the ZIP reply's turn (its marker at
+/// that reply's time) holds the name-and-address question; SPLIT next opens one more job keyed
+/// with her newest property, answers no step and then gets the held question.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_int_54_split_offered_at_step_5_holds_the_name_question(mut db: Db) {
+    setup(&mut db).await;
+    businesses(&mut db).await;
+    sent(&mut db, 0x0555_0311, DOOR, 0).await;
+    let id = request(&mut db, 0x0555_0311).await;
+    marker(&mut db, id, ("split_offer", "plumbing_repair"), 1).await;
+    let zip = sent(&mut db, 0x0555_0311, HOME_ZIP, 1).await;
+    assert_eq!(
+        zip,
+        [COUNT_MANY_TEMPLATE],
+        "step 11 waits for her next reply"
+    );
+    let split = sent(&mut db, 0x0555_0311, "SPLIT", 2).await;
+    assert_eq!(split, [NAME_ADDRESS_TEMPLATE], "no step answered");
+    let both = links(&mut db, id).await;
+    assert_eq!(both.len(), 2, "{both:?}");
+    assert_eq!(both[0], "job.handyman.none");
+    let keyed = both[1].strip_prefix("job.plumbing_repair.");
+    assert!(keyed.is_some_and(|p| p != "none"), "her property: {both:?}");
+    assert_eq!(kept(&mut db, id).await, [DOOR]);
+}

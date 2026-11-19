@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM intake.intake_answer WHERE conversation_id = $1\n             AND question_id = $2 AND answered_at = $3) AS \"offered!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "offered!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "84beba3e74e96c696fd8138ecbc94006dfd9197f6338f2b77be482e193f57780"
+}
