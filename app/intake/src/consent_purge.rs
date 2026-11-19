@@ -102,7 +102,8 @@ pub async fn due_number(
 /// suppression re-check (CON-022, CON-035, CON-036, D-079, D-3753, D-4387, D-4418): the old opt-out
 /// events and consent records, then the message log, each deleted row audited by ID, then the vault
 /// phone of a number still unlisted and past the 5 years, cleared last. A held contact row rolls
-/// everything back ([`SweepStep::Busy`]).
+/// everything back ([`SweepStep::Busy`]); a phone kept because its digests changed since
+/// [`due_number`] read them (a rotation or settle in between) waits for the next run.
 ///
 /// # Errors
 ///
@@ -128,7 +129,7 @@ pub async fn sweep_number(
             match clear_consent_phone(&mut tx, due.contact, &due.digests).await {
                 Ok(PhoneClear::Busy) => return Ok(SweepStep::Busy),
                 Ok(PhoneClear::Cleared) => step = SweepStep::Cleared,
-                Ok(PhoneClear::Kept) => {}
+                Ok(PhoneClear::Kept) => wait_for_key(&mut tx, due.contact).await?,
                 Err(_) => return Err(IntakeError::Database),
             }
         }
@@ -155,7 +156,8 @@ async fn take_phone_due(tx: &mut PgConnection, contact: Uuid) -> Result<bool, In
 }
 
 /// Lists the contact in `intake.consent_phone_wait`, so a later run clears its kept phone once a
-/// rotation gave it a digest under every configured version (D-4387, D-4418).
+/// rotation gave it a digest under every configured version, or with the digests read afresh after
+/// they changed under the step (D-4387, D-4418).
 async fn wait_for_key(tx: &mut PgConnection, contact: Uuid) -> Result<(), IntakeError> {
     sqlx::query!(
         "INSERT INTO intake.consent_phone_wait (contact_id, since) VALUES ($1, now())",

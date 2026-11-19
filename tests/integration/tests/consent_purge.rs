@@ -720,6 +720,27 @@ async fn td_con_30_the_sweep_across_an_index_key_rotation(pool: PgPool) {
     assert!(refused(&mut db, &new, listed_v1).await);
 }
 
+/// TD-CON-30 (T563, D-4387): a rotation that commits between `due_number` and the step changes
+/// the contact's digests, so the step keeps its phone and deletes its rows; the contact waits in
+/// `intake.consent_phone_wait` and the next run clears the phone (D-079, CON-022).
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_con_30_digests_changed_under_the_step_wait_for_the_next_run(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("connection");
+    let (old, new) = (v1(), both());
+    let her = person(&mut db, &old, "+19285550151").await;
+    seed(&mut db, her, PAST).await;
+    set_app_role(&mut db).await.expect("app role");
+    let due = due_number(&mut db, Some(&old), her).await.expect("due");
+    while rotate_batch(&mut db, &new, 10).await.expect("rotate") > 0 {}
+    assert_eq!(sweep_number(&mut db, &due).await, Ok(SweepStep::Kept));
+    assert_eq!(
+        (rows_of(&mut db, her).await, has_phone(&mut db, her).await),
+        (0, true)
+    );
+    assert_eq!(sweep_consent(&mut db, Some(&new)).await, Ok(1));
+    assert!(!has_phone(&mut db, her).await);
+}
+
 /// TD-CON-30 (T563, D-4418): while another transaction holds the number's `privacy.contact` row,
 /// its sweep step returns without waiting and clears and deletes nothing; a later run clears it.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
