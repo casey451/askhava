@@ -1,21 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-19T10:37:32Z by runner 7be551b7caec (actions).
+Updated 2026-11-19T10:42:14Z by runner 1fab3a0bc8d2 (actions).
 
-**Building: T705 in progress since 09:16Z; 487 of 664 done; week 78% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T470 in progress since 10:42Z; 487 of 664 done; week 78% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 487 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 4: T705 claimed 09:16Z, lease until 13:34Z; lane 6: T540 claimed 10:35Z, lease until 13:35Z
-- **Week:** 78% used, 35.9M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:37Z, 0 min before this update
+- **Lane:** lane 1: T470 claimed 10:42Z, lease until 13:42Z; lane 4: T705 claimed 09:16Z, lease until 13:34Z; lane 6: T540 claimed 10:35Z, lease until 13:35Z
+- **Week:** 78% used, 36.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
+- **Last run:** 10:37Z, 4 min before this update
 - **Keeper:** last ran 10:37Z, next wake 10:57Z
 
 ## Needs attention
 - PLAN GAP T109 (since 2026-11-19T10:35:23Z, no attempt used; a plan change fixes it): T109: dependency T476 is DONE but its owned file app/portals/src/health_page.rs is not on main; T109: dependency T476 is DONE but its owned file app/portals/templates/health.html is not on main; T109: dependency T476 is DONE but its owned file tests/integration/tests/health_page.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 60 problem(s) on tasks still to run (+305 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 62 problem(s) on tasks still to run (+307 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -93,7 +93,6 @@ Updated 2026-11-19T10:37:32Z by runner 7be551b7caec (actions).
 | T408 | server: a release waits while safe mode is on and goes ahead | BLOCKED | 2 | 2 h 21 min | 11:34Z |  |
 | T563 | intake and privacy: the daily consent sweep removes consent  | BLOCKED | 1 | 85 min | 11:21Z |  |
 | T658 | privacy: the scrubber removes lower-case Spanish addresses a | done | 2 | 51 min | 11:04Z | Fix-round review of head 18e4fd102f38620e11d1055ecb4d77813e2b2965 returned FINDINGS after the one allowed fix round (fir |
-| T650 | intake: the under-13 stop also deletes the request's job pho | done | 1 | 90 min | 10:39Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -129,7 +128,7 @@ Updated 2026-11-19T10:37:32Z by runner 7be551b7caec (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-19T10:33:46Z (week)): week: 158.1M used, 35.9M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T07:48:13Z.
+- Pacing (session_reading 2026-11-19T10:36:44Z (week)): week: 157.7M used, 36.3M left, resets 2026-11-19T17:00:00Z; projected finish 2026-12-03T08:51:23Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -144,7 +143,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T470 (lease until 2026-11-19T13:42:01Z)
 - lane 4: T705 (lease until 2026-11-19T13:34:42Z)
 - lane 6: T540 (lease until 2026-11-19T13:35:23Z)
 
