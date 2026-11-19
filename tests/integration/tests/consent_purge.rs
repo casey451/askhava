@@ -32,7 +32,10 @@ use askhava_messaging::api::{
     delete_message_log, due_numbers, listing_key, on_inbound_text, purge_optout_events,
     send_window, still_unlisted,
 };
-use askhava_privacy::api::{IndexPurpose, NewContact, Vault, rotate_batch, store_contact};
+use askhava_privacy::api::{
+    IndexPurpose, NewContact, PhoneClear, Vault, VaultError, clear_consent_phone, rotate_batch,
+    store_contact,
+};
 use base64::Engine as _;
 use base64::engine::general_purpose::STANDARD;
 use jiff::Timestamp;
@@ -769,4 +772,41 @@ async fn td_con_30_a_held_contact_row_is_left_for_the_next_run(pool: PgPool) {
         (rows_of(&mut db, her).await, has_phone(&mut db, her).await),
         (0, false)
     );
+}
+
+/// TD-CON-30 (T563, D-4418): `clear_consent_phone` keeps the phone of an unknown contact, of a
+/// check against no digests and of a contact whose phone is already gone, clears once, and answers
+/// `VaultError::Database` for a failure other than a held row (an aborted transaction).
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_con_30_the_phone_clear_keeps_what_it_cannot_prove(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("connection");
+    let vault = v1();
+    let her = person(&mut db, &vault, "+19285550152").await;
+    let checked = vault.blind_index(IndexPurpose::HomeownerPhone, "+19285550152");
+    set_app_role(&mut db).await.expect("app role");
+    let mut tx = db.begin().await.expect("begin");
+    let unknown = Uuid::from_u128(0x5563);
+    assert_eq!(
+        clear_consent_phone(&mut tx, unknown, &checked).await,
+        Ok(PhoneClear::Kept)
+    );
+    assert_eq!(
+        clear_consent_phone(&mut tx, her, &[]).await,
+        Ok(PhoneClear::Kept)
+    );
+    assert_eq!(
+        clear_consent_phone(&mut tx, her, &checked).await,
+        Ok(PhoneClear::Cleared)
+    );
+    assert_eq!(
+        clear_consent_phone(&mut tx, her, &checked).await,
+        Ok(PhoneClear::Kept)
+    );
+    assert!(sqlx::query("SELECT 1 / 0").execute(&mut *tx).await.is_err());
+    assert_eq!(
+        clear_consent_phone(&mut tx, her, &checked).await,
+        Err(VaultError::Database)
+    );
+    tx.rollback().await.expect("rollback");
+    assert!(has_phone(&mut db, her).await);
 }
