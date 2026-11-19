@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T23:38:10Z by runner dbbf2ecc1e6e (actions).
+Updated 2026-11-19T23:58:54Z by runner dbbf2ecc1e6e (actions).
 
 **Building: T758 in progress since 23:07Z; 510 of 703 done; week 12% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-19T23:38:10Z by runner dbbf2ecc1e6e (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T758 claimed 23:07Z, lease until 02:07Z; lane 4: T541 claimed 23:34Z, lease until 02:34Z; lane 5: T663 claimed 23:33Z, lease until 02:33Z; lane 7: T613 claimed 23:22Z, lease until 02:22Z
 - **Week:** 12% used, 167.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:38Z, 0 min before this update
+- **Last run:** 23:56Z, 2 min before this update
 - **Keeper:** last ran 23:38Z, next wake 02:10Z
 
 ## Needs attention
@@ -20,9 +20,9 @@ Updated 2026-11-19T23:38:10Z by runner dbbf2ecc1e6e (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T726 | Runner (harness): a failed attempt's unpushed work can be ke | MERGE_PENDING | 1 | 84 min | 23:31Z |  |
-| T109 | recovery: backup checks and the nightly encrypted export | MERGE_PENDING | 2 | 93 min | 23:26Z | PLAN GAP: `deny.toml:3` (owned by T009 and T604, both outside T109; T109 does not own it): every `age` release fails `ca |
-| T707 | server: an emergency pick's address re-release waits while s | MERGE_PENDING | 1 | 80 min | 22:59Z |  |
+| T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 1 | 84 min | 23:31Z | merging main into the reviewed head conflicts in kit/plan.lock, kit/runner.json; a resync merges it in on this attempt ( |
+| T109 | recovery: backup checks and the nightly encrypted export | resync | 2 | 93 min | 23:26Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
+| T707 | server: an emergency pick's address re-release waits while s | check_failed | 1 | 80 min | 22:59Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T541 | payments, portals and adapters: a card saved or changed from | check_failed | 2 | 91 min | 22:55Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-19T |
 | T480 | messaging, server and portals: the stored "Spanish conversat | done | 1 | 104 min | 22:23Z |  |
 | T717 | intake (harness): corrections to T711's two jobs: two_jobs a | done | 1 | 2 h 11 min | 22:21Z |  |

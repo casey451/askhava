@@ -23583,7 +23583,7 @@
     "T724",
     "T604"
    ],
-   "status": "MERGE_PENDING",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "recovery-backup-export",
    "type": "build",
@@ -23598,7 +23598,7 @@
     4701
    ],
    "reason": null,
-   "last_failure": "PLAN GAP: `deny.toml:3` (owned by T009 and T604, both outside T109; T109 does not own it): every `age` release fails `cargo deny check`, so `Ci` and prehandin go red. age 0.11.5: `cargo deny check licenses bans sources advisories` exit 1, error[unmaintained] proc-macro-error2 (RUSTSEC-2026-0173) via i18n-embed-fl 0.9.4 (non-optional dependency of age). age 0.12.1: exit 1, error[vulnerability] RUSTSEC-2026-0387 on crypto-bigint 0.5.5 via hpke/p256 -> elliptic-curve 0.13 (non-optional). Clean main: advisories ok. With one ignore line `{ id = \"RUSTSEC-2026-0173\", reason = \"proc-macro-error2 is unmaintained; reached only at compile time through age 0.11.5 -> i18n-embed-fl\" }` added to `[advisories] ignore` in a /tmp copy, cargo deny exits 0 (advisories, bans, licenses, sources ok). Ci (ci.yml:324) and prehandin.sh:153 run cargo deny with no softening flags; deny.toml has no unmaintained scope setting. The plan (D-3883) assumed age is \"allowed by deny.toml\" and its cargo-deny result \"proven by Ci\", never checked. Reviewer (agent a43170edff0848f3c) confirmed with its own runs. Smallest plan change: add deny.toml to T109's owns list so it can add the ignore entry; pin age = \"=0.11.5\". Second note: this runner and ubuntu-latest are now Ubuntu 26.04 with only PostgreSQL 18 client tools and no /usr/lib/postgresql/16/bin (CI server 16.15); T109's tests worked around it by using the newest pg_dump on PATH at or above the server's major, but T648's initdb test assumes /usr/lib/postgresql/16/bin and will fail. The finished but uncommitted work (29 files) is saved at /tmp/T109-wip.patch on this runner only.\nre-queued after plan fix D-4707: D-4707 (PR #1120): age =0.11.5 with one dated RUSTSEC-2026-0173 ignore and lock guard; waits on T724 (D-4708 ubuntu-24.04 pin)",
+   "last_failure": "merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891)",
    "history": [
     {
      "attempt": 1,
@@ -23628,13 +23628,58 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 239,
      "head_sha": "624fb7d0b8ae513f76c7133891c15861e352253e",
-     "pr": null,
-     "checks": null,
+     "pr": 1155,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-19T21:53:21Z",
      "ended_at": "2026-11-19T23:26:29Z",
-     "result": "MERGE_PENDING",
+     "result": "resync",
      "usage": {
       "worker": {
        "tokens": 18398269,
@@ -23674,7 +23719,33 @@
     "enabled": true,
     "why": "auto-merge on #1155 (gh pr merge)",
     "head": "624fb7d0b8ae513f76c7133891c15861e352253e"
-   }
+   },
+   "merge_turn_since": "2026-11-19T23:58:40Z",
+   "runner_closed_prs": [
+    1155
+   ],
+   "resync": {
+    "attempt": 2,
+    "from": "624fb7d0b8ae513f76c7133891c15861e352253e",
+    "main": "dbbf2ecc1e6e7d7795aef917992a61167d1f3215",
+    "paths": [
+     "docs/for-casey-review.md"
+    ],
+    "at": "2026-11-19T23:58:40Z"
+   },
+   "resyncs": [
+    {
+     "attempt": 2,
+     "from": "624fb7d0b8ae513f76c7133891c15861e352253e",
+     "main": "dbbf2ecc1e6e7d7795aef917992a61167d1f3215",
+     "paths": [
+      "docs/for-casey-review.md"
+     ],
+     "at": "2026-11-19T23:58:40Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T110",
@@ -88384,8 +88455,8 @@
    "deps": [
     "T408"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "safe-mode-address-in",
    "type": "build",
    "stage": "5",
@@ -88404,13 +88475,58 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 154,
      "head_sha": "6bbb1275f56e14cb90597571e9f9848c89a292cf",
-     "pr": null,
-     "checks": null,
+     "pr": 1154,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "failure"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "cancelled"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-19T21:38:53Z",
      "ended_at": "2026-11-19T22:59:09Z",
-     "result": "MERGE_PENDING",
+     "result": "check_failed",
      "usage": {
       "worker": {
        "tokens": 9501613,
@@ -88453,7 +88569,8 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-19T23:29:13Z"
+   "merge_turn_since": "2026-11-19T23:29:13Z",
+   "last_failure": "Ci: failure; Coverage: cancelled\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_sec_43_refusals_are_one_not_found_and_read_nothing ... ok\ntest result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.73s\n     Running tests/business_signin_route.rs (target/llvm-cov-target/debug/build/askhava-server/a0bcc78d54665842/out/business_signin_route-a0bcc78d54665842)\nrunning 7 tests\ntest d_3562_no_code_for_a_member_removed_after_the_link ... ok\ntest td_sec_40_no_code_configuration_refuses_to_start ... ok\ntest d_3220_an_encoded_code_field_name_still_counts_as_a_try ... ok\ntest d_3562_the_code_goes_to_the_members_own_line_else_own_address ... ok\ntest td_sec_40_a_link_signs_in_only_with_the_right_code ... ok\ntest td_sec_40_the_limits_refuse_before_any_email_or_verify ... ok\ntest td_sec_40_the_link_and_try_caps_hold_through_the_route ... ok\ntest result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.35s\n     Running tests/business_signup_route.rs (target/llvm-cov-target/debug/build/askhava-server/a38149a3e72a907d/out/business_signup_route-a38149a3e72a907d)\nrunning 18 tests\n##[error]The operation was canceled.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: cancelled, E2e: success\n##[error]Process completed with exit code 1."
   },
   {
    "id": "T702",
@@ -90198,7 +90315,7 @@
     "T724",
     "T641"
    ],
-   "status": "MERGE_PENDING",
+   "status": "QUEUED",
    "attempts": 0,
    "slug": "runner-wip-refs",
    "type": "harness",
@@ -90217,13 +90334,58 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 114,
      "head_sha": "e167ef5edf4ff9a8f75e1b3a13880fa28b47d068",
-     "pr": null,
-     "checks": null,
+     "pr": 1156,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-19T22:06:39Z",
      "ended_at": "2026-11-19T23:31:25Z",
-     "result": "MERGE_PENDING",
+     "result": "resync",
      "usage": {
       "worker": {
        "tokens": 4463758,
@@ -90247,7 +90409,36 @@
     "enabled": true,
     "why": "auto-merge on #1156 (gh pr merge)",
     "head": "e167ef5edf4ff9a8f75e1b3a13880fa28b47d068"
-   }
+   },
+   "merge_turn_since": "2026-11-19T23:58:40Z",
+   "runner_closed_prs": [
+    1156
+   ],
+   "resync": {
+    "attempt": 1,
+    "from": "e167ef5edf4ff9a8f75e1b3a13880fa28b47d068",
+    "main": "dbbf2ecc1e6e7d7795aef917992a61167d1f3215",
+    "paths": [
+     "kit/plan.lock",
+     "kit/runner.json"
+    ],
+    "at": "2026-11-19T23:58:40Z"
+   },
+   "resyncs": [
+    {
+     "attempt": 1,
+     "from": "e167ef5edf4ff9a8f75e1b3a13880fa28b47d068",
+     "main": "dbbf2ecc1e6e7d7795aef917992a61167d1f3215",
+     "paths": [
+      "kit/plan.lock",
+      "kit/runner.json"
+     ],
+     "at": "2026-11-19T23:58:40Z"
+    }
+   ],
+   "last_failure": "merging main into the reviewed head conflicts in kit/plan.lock, kit/runner.json; a resync merges it in on this attempt (D-891)",
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T727",
@@ -96997,7 +97188,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T23:38:10Z",
+ "updated_at": "2026-11-19T23:58:54Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -98865,11 +99056,15 @@
    ]
   },
   "6": {
-   "count": 0,
+   "count": 1,
    "last": [
     {
      "at": "2026-11-19T20:22:02Z",
      "why": "T480: the attempt could not write its review record (lost race)"
+    },
+    {
+     "at": "2026-11-19T23:58:40Z",
+     "why": "T707 check_failed: Ci: failure; Coverage: cancelled\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_sec_43_refusals_are_one_not_found_and_read_nothing ... ok\ntest result: ok. 9 pa"
     }
    ]
   }
