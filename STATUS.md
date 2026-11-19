@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T08:50:33Z by runner 25c9a14919a4 (manual).
+Updated 2026-11-19T08:50:40Z by runner 988bbf1c1224 (actions).
 
 **Building: T553 in progress since 08:48Z; 484 of 664 done; week 76% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 484 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T553 claimed 08:48Z, lease until 11:48Z; lane 3: T710 claimed 08:40Z, lease until 11:40Z; lane 4: T536 claimed 08:14Z, lease until 11:14Z; lane 5: T622 claimed 07:06Z, lease until 11:39Z; lane 6: T476 claimed 06:22Z, lease until 11:34Z; lane 7: T375 claimed 08:04Z, lease until 11:04Z
+- **Lane:** lane 2: T553 claimed 08:48Z, lease until 11:48Z; lane 3: T710 claimed 08:40Z, lease until 11:40Z; lane 4: T536 claimed 08:14Z, lease until 11:14Z; lane 5: T622 claimed 07:06Z, lease until 11:39Z; lane 7: T375 claimed 08:04Z, lease until 11:04Z
 - **Week:** 76% used, 35.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:48Z, 1 min before this update
+- **Last run:** 08:50Z, 0 min before this update
 - **Keeper:** last ran 08:42Z, next wake 09:02Z
 
 ## Needs attention
@@ -19,11 +19,12 @@ Evidence: site-copy.md:32 "It goes t; fix the plan (the task's kit/tasks.json en
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T540 (since 2026-11-19T08:04:18Z, no attempt used; a plan change fixes it): T540: dependency T310 is DONE but its owned file app/server/src/owner_portal.rs is not on main; T540: dependency T310 is DONE but its owned file app/server/tests/owner_portal_route.rs is not on main; T540: dependency T310 is DONE but its owned file tests/e2e/owner_portal_served.spec.ts is not on main
 - OWNED GAP T216 (DONE, since 2026-11-19T08:36:02Z; a later task or plan change must add it): T216: app/site/static/photos/hero-kitchen-phone.avif missing on main
-- Strict plan check red: 62 problem(s) on tasks still to run (+302 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 58 problem(s) on tasks still to run (+299 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T476 | portals: the owner health page with every OPS-008 figure and | MERGE_PENDING | 1 | 2 h 27 min | 08:50Z |  |
 | T161 | wording: the WORD-024 voice rule's pressure-word scan, the r | BLOCKED | 1 | 4 min | 08:41Z | PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/s |
 | T456 | picks and server: "Hold for 2 more hours" is stored, honoure | MERGE_PENDING | 1 | 97 min | 08:35Z |  |
 | T216 | site: the hero photo and mark (photography assets) | done | 1 | 97 min | 08:10Z |  |
@@ -99,31 +100,31 @@ Evidence: site-copy.md:32 "It goes t; fix the plan (the task's kit/tasks.json en
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 56 of 735 (7.6%) · partial 639 · unstarted 40
+**Requirements verified:** 306 of 735 (41.6%) · partial 389 · unstarted 40
 **Tasks merged (throughput only):** 484 of 664
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 2 | 33 | 0 | 35 |
-| ai | 2 | 24 | 3 | 29 |
-| businesses | 1 | 56 | 1 | 58 |
-| calls | 0 | 25 | 0 | 25 |
-| consent | 3 | 32 | 0 | 35 |
-| fees | 0 | 51 | 1 | 52 |
-| intake | 0 | 43 | 0 | 43 |
-| job-cards | 0 | 24 | 0 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 0 | 44 | 1 | 45 |
-| ops-recovery | 2 | 33 | 19 | 54 |
-| privacy | 0 | 30 | 1 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 0 | 56 | 0 | 56 |
-| recurring | 0 | 11 | 0 | 11 |
-| security | 0 | 50 | 5 | 55 |
-| terms | 23 | 11 | 1 | 35 |
+| accessibility | 17 | 18 | 0 | 35 |
+| ai | 9 | 17 | 3 | 29 |
+| businesses | 18 | 39 | 1 | 58 |
+| calls | 12 | 13 | 0 | 25 |
+| consent | 15 | 20 | 0 | 35 |
+| fees | 23 | 28 | 1 | 52 |
+| intake | 9 | 34 | 0 | 43 |
+| job-cards | 13 | 11 | 0 | 24 |
+| licensing | 34 | 14 | 0 | 48 |
+| lifecycle | 18 | 10 | 0 | 28 |
+| messaging | 20 | 24 | 1 | 45 |
+| ops-recovery | 3 | 32 | 19 | 54 |
+| privacy | 10 | 20 | 1 | 31 |
+| quiet-hours | 6 | 3 | 0 | 9 |
+| quotes-pick | 27 | 29 | 0 | 56 |
+| recurring | 7 | 4 | 0 | 11 |
+| security | 9 | 41 | 5 | 55 |
+| terms | 26 | 8 | 1 | 35 |
 | website | 13 | 13 | 4 | 30 |
-| wording | 10 | 18 | 4 | 32 |
+| wording | 17 | 11 | 4 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -148,8 +149,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 3: T710 (lease until 2026-11-19T11:40:16Z)
 - lane 4: T536 (lease until 2026-11-19T11:14:06Z)
 - lane 5: T622 (lease until 2026-11-19T11:39:50Z)
-- lane 6: T476 (lease until 2026-11-19T11:34:27Z)
 - lane 7: T375 (lease until 2026-11-19T11:04:18Z)
 
 ## Last usage reading
-- {"task": "T161", "at": "2026-11-19T08:41:30Z", "output_tokens": 18449, "input_tokens": 85, "cache_creation_input_tokens": 110860, "cache_read_input_tokens": 2506538}
+- {"task": "T476", "at": "2026-11-19T08:50:06Z", "cache_creation_input_tokens": 279847, "output_tokens": 77708, "cache_read_input_tokens": 8237577, "input_tokens": 232}
