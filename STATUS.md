@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T04:35:47Z by runner b24d30a3031c (manual).
+Updated 2026-11-19T04:36:08Z by runner 2d703e0022e9 (actions).
 
-**Building: T408 in progress since 03:29Z; 474 of 664 done; week 74% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T408 in progress since 03:29Z; 474 of 663 done; week 74% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 474 of 664 build tasks (owner gates not counted)
+- **Tasks done:** 474 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T408 claimed 03:29Z, lease until 06:29Z; lane 3: T203 claimed 04:08Z, lease until 07:08Z; lane 4: T562 claimed 04:26Z, lease until 07:26Z; lane 6: T490 claimed 02:10Z, lease until 07:07Z
 - **Week:** 74% used, 41.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:27Z, 8 min before this update
+- **Last run:** 04:35Z, 0 min before this update
 - **Keeper:** last ran 04:24Z, next wake 04:44Z
 
 ## Needs attention
@@ -16,7 +16,7 @@ Updated 2026-11-19T04:35:47Z by runner b24d30a3031c (manual).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T456 (since 2026-11-19T04:26:11Z, no attempt used; a plan change fixes it): T456: dependency T399 is DONE but its owned file app/server/tests/approve_link_route.rs is not on main
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 60 problem(s) on tasks still to run (+284 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 55 problem(s) on tasks still to run (+278 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -88,38 +88,37 @@ Updated 2026-11-19T04:35:47Z by runner b24d30a3031c (manual).
 | T642 | Runner (harness): the keeper starts a run for each free lane | done | 1 | 83 min | 06:05Z |  |
 | T601 | businesses and quotes: the card pool reads every service are | done | 1 | 50 min | 05:14Z |  |
 | T523 | jobs, ops and intake: the check-in answer recorder and the c | done | 3 | 46 min | 05:06Z | Review not approved after the one findings round (head bd99856fca96fb81973c28181ad9fd6e39e7ac91; flag_inputs tests 5 pas |
-| T638 | harness: Ci skips a compile its job already passed on a prov | done | 1 | 88 min | 04:35Z |  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 201 of 735 (27.3%) · partial 488 · unstarted 46
-**Tasks merged (throughput only):** 474 of 664
+**Requirements verified:** 295 of 735 (40.1%) · partial 394 · unstarted 46
+**Tasks merged (throughput only):** 474 of 663
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 13 | 22 | 0 | 35 |
-| ai | 7 | 19 | 3 | 29 |
-| businesses | 13 | 44 | 1 | 58 |
-| calls | 11 | 14 | 0 | 25 |
-| consent | 9 | 26 | 0 | 35 |
-| fees | 14 | 37 | 1 | 52 |
-| intake | 8 | 35 | 0 | 43 |
-| job-cards | 13 | 11 | 0 | 24 |
-| licensing | 27 | 21 | 0 | 48 |
-| lifecycle | 12 | 16 | 0 | 28 |
+| accessibility | 17 | 18 | 0 | 35 |
+| ai | 9 | 17 | 3 | 29 |
+| businesses | 17 | 40 | 1 | 58 |
+| calls | 12 | 13 | 0 | 25 |
+| consent | 14 | 21 | 0 | 35 |
+| fees | 23 | 28 | 1 | 52 |
+| intake | 10 | 33 | 0 | 43 |
+| job-cards | 14 | 10 | 0 | 24 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 18 | 10 | 0 | 28 |
 | messaging | 20 | 24 | 1 | 45 |
-| ops-recovery | 1 | 34 | 19 | 54 |
-| privacy | 9 | 21 | 1 | 31 |
+| ops-recovery | 3 | 32 | 19 | 54 |
+| privacy | 10 | 20 | 1 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
-| quotes-pick | 22 | 34 | 0 | 56 |
+| quotes-pick | 27 | 29 | 0 | 56 |
 | recurring | 7 | 4 | 0 | 11 |
-| security | 6 | 44 | 5 | 55 |
-| terms | 1 | 33 | 1 | 35 |
-| website | 0 | 25 | 5 | 30 |
-| wording | 2 | 21 | 9 | 32 |
+| security | 9 | 41 | 5 | 55 |
+| terms | 25 | 9 | 1 | 35 |
+| website | 9 | 16 | 5 | 30 |
+| wording | 12 | 11 | 9 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
