@@ -32,5 +32,5 @@ async fn forms_css_is_served_without_a_session() {
         .expect("body");
     let css = String::from_utf8(body.to_vec()).expect("utf-8");
     assert!(css.contains("appearance:none"), "{css}");
-    assert!(css.contains("#1f1d1b"), "{css}");
+    assert!(css.contains("#6e8077"), "{css}");
 }

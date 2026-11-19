@@ -10,6 +10,7 @@
 
 pub mod api;
 mod business_contacts;
+mod consent_phone;
 mod contact_fields;
 mod handlers;
 mod media_fetch;

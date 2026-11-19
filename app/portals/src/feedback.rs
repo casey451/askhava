@@ -40,28 +40,28 @@ use crate::session::{csrf_token, ensure_pre_session};
 /// The feedback page's route; the token is the job's quote-page link token (JOB-017).
 pub const FEEDBACK_ROUTE: &str = "/f/{token}";
 
-/// The page's own stylesheet: the share box drawn with a dark 2px edge and a filled centre when
-/// ticked, so its edge is at least 3:1 against the page (A11Y-007; the site's look is T101's).
+/// The page's own stylesheet: the share box drawn with a 2px `field-edge` edge on `surface` and an
+/// `ink` centre when ticked, so its edge is at least 3:1 against the page (A11Y-007, WEB-027).
 pub const FEEDBACK_CSS_ROUTE: &str = "/static/portals/feedback.css";
 
 /// The stylesheet [`FEEDBACK_CSS_ROUTE`] serves (same origin, so the CSP allows it, SEC-013).
 const FEEDBACK_CSS: &str = "#feedback-share{appearance:none;width:24px;height:24px;margin:0 8px 0 0;\
-vertical-align:middle;border:2px solid #1f1d1b;border-radius:3px;background:#fff}\
-#feedback-share:checked{background:#1f1d1b;box-shadow:inset 0 0 0 4px #fff}\
+vertical-align:middle;border:2px solid #6e8077;border-radius:3px;background:#fff}\
+#feedback-share:checked{background:#1e2926;box-shadow:inset 0 0 0 4px #fff}\
 #feedback-body{display:block;width:100%;max-width:40rem;box-sizing:border-box}\n";
 
 /// The shared form stylesheet a page with native checkboxes or radios links before the site's own
 /// (T101): Chromium reports a native box's edge as 0px and its fill as transparent, so each box is
-/// drawn with a dark 2px edge on white and each hint and error sits on its own line (A11Y-007,
-/// A11Y-009, D-3700). Served by [`feedback_routes`] so the security matrix reaches it.
+/// drawn with a 2px `field-edge` edge on `surface`, `ink` when checked, and each hint and error
+/// sits on its own line (A11Y-007, A11Y-009, WEB-027, D-3700, D-3878). Served by [`feedback_routes`] so the security matrix reaches it.
 pub const FORMS_CSS_ROUTE: &str = "/static/portals/forms.css";
 
 /// The stylesheet [`FORMS_CSS_ROUTE`] serves (same origin, so the CSP allows it, SEC-013). No
 /// `outline` rule, so the browser's focus outline stays visible.
 const FORMS_CSS: &str = "input[type=checkbox],input[type=radio]{appearance:none;width:24px;\
-height:24px;margin:0 8px 0 0;vertical-align:middle;border:2px solid #1f1d1b;background:#fff}\
+height:24px;margin:0 8px 0 0;vertical-align:middle;border:2px solid #6e8077;background:#fff}\
 input[type=checkbox]{border-radius:3px}input[type=radio]{border-radius:50%}\
-input[type=checkbox]:checked,input[type=radio]:checked{background:#1f1d1b;\
+input[type=checkbox]:checked,input[type=radio]:checked{background:#1e2926;\
 box-shadow:inset 0 0 0 4px #fff}span[id$=\"-hint\"],span[id$=\"-error\"]{display:block}\
 button{min-height:24px}\n";
 
@@ -704,5 +704,23 @@ mod brand_tests {
         assert!(html.contains(&fill(
             "<li>{brand} is not a contractor and does not perform, bid on or supervise work.</li>"
         )));
+    }
+}
+
+#[cfg(test)]
+mod token_tests {
+    //! TD-WEB-11 (WEB-027, D-3878): both served stylesheets use only DESIGN_SPEC section 2's
+    //! colours: `field-edge` borders, an `ink` fill when checked, `surface` behind.
+
+    use super::{FEEDBACK_CSS, FORMS_CSS};
+
+    /// TD-WEB-11: with the three tokens and the `#feedback-` ids taken out, no `#` is left.
+    #[test]
+    fn td_web_11_portal_stylesheets_use_only_design_tokens() {
+        for css in [FEEDBACK_CSS, FORMS_CSS] {
+            let tokens = ["#feedback-", "#6e8077", "#1e2926", "#fff"];
+            let left = tokens.iter().fold(css.to_owned(), |c, t| c.replace(t, ""));
+            assert!(!left.contains('#'), "{css}");
+        }
     }
 }

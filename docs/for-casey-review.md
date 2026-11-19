@@ -2,6 +2,12 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Texting records: the daily 5-year cleanup is built, and an opted-out number's locked phone stays (D-4387, D-2208, November 19)
+
+- **What happened.** The daily cleanup (T563) now removes, 5 years after a number's last message, its consent records, old opt-out records and message logs, and then the locked phone number itself unless the number opted out. It checks the opt-out list again under the per-number lock right before it removes the phone.
+- **Worth knowing.** A number that opted out keeps its locked phone past 5 years, so the opt-out survives a key change. The privacy policy says we keep the phone 5 years; you may want it to say opt-outs are kept for as long as needed to honor them. During a key change a phone is kept until the change finishes, then removed on a later day.
+- **Nothing needs you now.**
+
 ## Texting opt-outs: the 5-year cleanup of old numbers now re-checks the opt-out list under a lock (D-4418, November 18)
 
 - **What happened.** The daily cleanup that removes a phone number 5 years after its last message (T563) stopped: it checked whether the number had opted out a moment before removing the phone, so an opt-out in that moment could be missed.
@@ -3447,4 +3453,10 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **The gap:** a homeowner whose whole first text was "sticky door" would have been told "We don't cover that yet" after her ZIP, even with handyman businesses on Laftly that do that job. The short text kept no words, so the step that counts businesses saw no job type and found nobody.
 - **Fix:** the follow-up task T716 now keeps the job type such a text names (as a code, never her words) and counts the businesses for it, with no extra question. A new small task, T723, handles a homeowner who answers "Not sure" to "Which fits best?" (or a trade like pool repair that has no such question): the request goes to the businesses that cover every option; if none covers them all, she gets a new text asking for a little more about what's wrong or a photo (draft wording from the spec, for the copy panel), and you get the usual "no business covers this" email. She is told "We don't cover that yet" only when no business covers any of the options. T715's test now checks only that one job opens after the ZIP.
 - **The monthly "not covered" count:** each time she gets that "tell us a little more" text, the request counts once toward the month's not-covered number in your email and in the recruiting list, even if her next text then finds businesses. We chose this so the count matches the emails you get.
+- Our choice; nothing needs you now.
+
+## A gas pool heater or water heater job could have lost its license check (D-4618)
+
+- **The gap:** under D-4602's plan, a request like "pool heater" or "water heater leak" would have lost its licensed-only job type the second time its job types were read, so the count and the card could have reached a business without the license that job needs.
+- **Fix:** T716 adds one small reader so those licensed-only job types are kept every time, and its tests check it; T723 reads the same way and names the row that marks a job type as "not certain".
 - Our choice; nothing needs you now.
