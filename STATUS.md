@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T21:36:17Z by runner a2df2ce40208 (manual).
+Updated 2026-11-19T21:36:38Z by runner a2df2ce40208 (actions).
 
 **Building: T607 in progress since 21:16Z; 505 of 701 done; week 9% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -90,31 +90,31 @@ Updated 2026-11-19T21:36:17Z by runner a2df2ce40208 (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 80 of 735 (10.9%) · partial 620 · unstarted 35
+**Requirements verified:** 325 of 735 (44.2%) · partial 375 · unstarted 35
 **Tasks merged (throughput only):** 505 of 701
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 3 | 32 | 0 | 35 |
-| ai | 1 | 25 | 3 | 29 |
-| businesses | 1 | 56 | 1 | 58 |
-| calls | 1 | 24 | 0 | 25 |
-| consent | 3 | 32 | 0 | 35 |
-| fees | 1 | 51 | 0 | 52 |
-| intake | 1 | 42 | 0 | 43 |
-| job-cards | 0 | 24 | 0 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 0 | 44 | 1 | 45 |
-| ops-recovery | 7 | 29 | 18 | 54 |
-| privacy | 0 | 30 | 1 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 0 | 56 | 0 | 56 |
-| recurring | 3 | 8 | 0 | 11 |
-| security | 0 | 50 | 5 | 55 |
-| terms | 25 | 9 | 1 | 35 |
+| accessibility | 18 | 17 | 0 | 35 |
+| ai | 8 | 18 | 3 | 29 |
+| businesses | 21 | 36 | 1 | 58 |
+| calls | 14 | 11 | 0 | 25 |
+| consent | 16 | 19 | 0 | 35 |
+| fees | 22 | 30 | 0 | 52 |
+| intake | 8 | 35 | 0 | 43 |
+| job-cards | 12 | 12 | 0 | 24 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 16 | 12 | 0 | 28 |
+| messaging | 22 | 22 | 1 | 45 |
+| ops-recovery | 9 | 27 | 18 | 54 |
+| privacy | 9 | 21 | 1 | 31 |
+| quiet-hours | 3 | 6 | 0 | 9 |
+| quotes-pick | 25 | 31 | 0 | 56 |
+| recurring | 10 | 1 | 0 | 11 |
+| security | 11 | 39 | 5 | 55 |
+| terms | 27 | 7 | 1 | 35 |
 | website | 18 | 9 | 3 | 30 |
-| wording | 16 | 14 | 2 | 32 |
+| wording | 23 | 7 | 2 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
