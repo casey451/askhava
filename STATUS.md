@@ -1,21 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-19T12:55:09Z by runner de9f7793b42e (actions).
+Updated 2026-11-19T13:00:35Z by runner 1830747e4759 (actions).
 
 **Building: T470 in progress since 10:42Z; 491 of 664 done; week 80% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 491 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T470 claimed 10:42Z, lease until 14:53Z; lane 3: T158 claimed 11:39Z, lease until 14:39Z; lane 6: T540 claimed 12:54Z, lease until 15:54Z
+- **Lane:** lane 1: T470 claimed 10:42Z, lease until 16:00Z; lane 3: T158 claimed 11:39Z, lease until 14:39Z; lane 6: T540 claimed 12:54Z, lease until 15:54Z
 - **Week:** 80% used, 30.8M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:46Z, 8 min before this update
+- **Last run:** 12:55Z, 5 min before this update
 - **Keeper:** last ran 12:36Z, next wake 12:56Z
 
 ## Needs attention
 - BLOCKED T109: plan gap reported: PLAN GAP: `deny.toml:3` (owned by T009 and T604, both outside T109; T109 does not own it): every `age` release fails `cargo deny check`, so `Ci` and prehandin go red. age 0.11.5: `cargo deny check licenses bans sources advisories` exit 1, error[unmaintained] proc-macro-error2 (RUSTSEC-2026-0173) via i18n-embed-fl 0.9.4 (non-optional dependency of age). age 0.12.1: exit 1, error[vulnerability] RUSTSEC-2026-0387 on crypto-bigint 0.5.5 via hpke/p256 -> elliptic-curve 0.13 (non-optional). Clean main: advisories ok. With one ignore line `{ id = "RUSTSEC-2026-0173", reason = "proc-macro-error2 is un; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T109 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 61 problem(s) on tasks still to run (+311 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 64 problem(s) on tasks still to run (+311 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -139,7 +139,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T470 (lease until 2026-11-19T14:53:27Z)
+- T470 (lease until 2026-11-19T16:00:35Z)
 - lane 3: T158 (lease until 2026-11-19T14:39:32Z)
 - lane 6: T540 (lease until 2026-11-19T15:54:26Z)
 
