@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T20:39:40Z by runner d68fb0f0ae65 (actions).
+Updated 2026-11-19T20:59:26Z by runner afa3aafda832 (actions).
 
 **Building: T753 in progress since 19:06Z; 503 of 701 done; week 8% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 503 of 701 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T753 claimed 19:06Z, lease until 22:06Z; lane 4: T480 claimed 20:38Z, lease until 23:38Z; lane 7: T717 claimed 20:10Z, lease until 23:10Z
+- **Lane:** lane 1: T753 claimed 19:06Z, lease until 22:06Z; lane 4: T480 claimed 20:38Z, lease until 23:38Z; lane 7: T717 claimed 20:10Z, lease until 23:59Z
 - **Week:** 8% used, 175.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:35Z, 3 min before this update
+- **Last run:** 20:39Z, 19 min before this update
 - **Keeper:** last ran 20:35Z, next wake 20:55Z
 
 ## Needs attention
@@ -85,8 +85,6 @@ Updated 2026-11-19T20:39:40Z by runner d68fb0f0ae65 (actions).
 | T503 | Decisions digest, piece 4: the next entries after the header | done | 1 | 31 min | 21:30Z |  |
 | T483 | messaging, portals and server: the owner's "away until" date | done | 1 | 2 h 48 min | 21:13Z |  |
 | T702 | privacy and messaging: no blind-index key version is retired | done | 1 | 40 min | 21:07Z |  |
-| T706 | payments: held_release, the FEE-017 re-check that clears a p | done | 1 | 100 min | 20:54Z |  |
-| T715 | intake (harness): corrections to T671's walker: alarm answer | BLOCKED | 1 | 48 min | 20:53Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -139,7 +137,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T753 (lease until 2026-11-19T22:06:54Z)
 - lane 4: T480 (lease until 2026-11-19T23:38:50Z)
-- lane 7: T717 (lease until 2026-11-19T23:10:06Z)
+- lane 7: T717 (lease until 2026-11-19T23:59:26Z)
 
 ## Last usage reading
 - {"task": "T307", "at": "2026-11-19T20:33:29Z", "input_tokens": 403, "cache_creation_input_tokens": 446713, "cache_read_input_tokens": 21692156, "output_tokens": 109376}
