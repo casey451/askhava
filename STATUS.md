@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T15:36:01Z by runner dd768f848177 (actions).
+Updated 2026-11-19T15:41:30Z by runner dd768f848177 (actions).
 
-**Building: T210 in progress since 15:35Z; 495 of 668 done; week 84% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T210 in progress since 15:35Z; 496 of 668 done; week 84% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 495 of 668 build tasks (owner gates not counted)
+- **Tasks done:** 496 of 668 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T210 claimed 15:35Z, lease until 18:35Z; lane 6: T407 claimed 14:19Z, lease until 17:19Z
 - **Week:** 84% used, 24.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:32Z, 3 min before this update
+- **Last run:** 15:36Z, 5 min before this update
 - **Keeper:** last ran 15:32Z, next wake 15:52Z
 
 ## Needs attention
@@ -23,7 +23,7 @@ Updated 2026-11-19T15:36:01Z by runner dd768f848177 (actions).
 | T470 | messaging and server: the worker task that sends queued emai | MERGE_PENDING | 3 | 2 h 18 min | 15:24Z | Fix-round review (after the one allowed findings round) still found a problem at head 1830747e4; no reviewer approved a  |
 | T593 | site and server: the home hero in D-3331's wording with the  | MERGE_PENDING | 2 | 75 min | 15:11Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T554 | Decisions digest, piece 9: the next entries after the header | done | 1 | 110 min | 15:03Z |  |
-| T652 | ops: safe mode starts only on OPS-001's alert kinds, and a d | MERGE_PENDING | 2 | 112 min | 15:03Z | PLAN GAP: tests/integration/tests/safe_mode.rs:246,281,320,378,407 (owned by T487 and T408; T652's prompt :11 and :47 sa |
+| T652 | ops: safe mode starts only on OPS-001's alert kinds, and a d | done | 2 | 112 min | 15:03Z | PLAN GAP: tests/integration/tests/safe_mode.rs:246,281,320,378,407 (owned by T487 and T408; T652's prompt :11 and :47 sa |
 | T158 | portals: the owner's pilot scorecard page with go and stop l | done | 1 | 2 h 57 min | 14:37Z |  |
 | T540 | portals and server: the owner's release button re-sends an e | done | 1 | 53 min | 13:47Z |  |
 | T470 | messaging and server: the worker task that sends queued emai | QUEUED | 2 | 2 h 21 min | 13:03Z |  |
@@ -93,7 +93,6 @@ Updated 2026-11-19T15:36:01Z by runner dd768f848177 (actions).
 | T645 | intake and messaging: the web chat honours an opt-out word,  | BLOCKED | 1 | 4 min | 16:05Z | PLAN GAP: app/site/src/chat.rs:340 (owned by T593, then T646 and T649; T593 is not merged yet) calls `chat_message(db, & |
 | T621 | portals: the scorecard's go and stop line settings and its p | resync | 1 | 55 min | 15:55Z |  |
 | T665 | server tests (harness): the door matrix fills a business job | done | 1 | 81 min | 15:47Z |  |
-| T525 | server and ops: the hourly vault-read check and the daily da | done | 1 | 102 min | 15:41Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -101,7 +100,7 @@ Updated 2026-11-19T15:36:01Z by runner dd768f848177 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 310 of 735 (42.2%) · partial 386 · unstarted 39
-**Tasks merged (throughput only):** 495 of 668
+**Tasks merged (throughput only):** 496 of 668
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -137,7 +136,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 138 of 267 done
+- stage 5: 139 of 267 done
 - stage 6: 0 of 48 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
