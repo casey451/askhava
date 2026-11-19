@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T08:57:15Z by runner 25c9a14919a4 (actions).
+Updated 2026-11-19T08:57:49Z by runner 25c9a14919a4 (actions).
 
 **Building: T553 in progress since 08:48Z; 484 of 664 done; week 77% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-19T08:57:15Z by runner 25c9a14919a4 (actions).
 - **Lane:** lane 2: T553 claimed 08:48Z, lease until 11:48Z; lane 3: T710 claimed 08:40Z, lease until 11:40Z; lane 4: T536 claimed 08:14Z, lease until 11:14Z; lane 5: T622 claimed 07:06Z, lease until 11:53Z; lane 7: T375 claimed 08:04Z, lease until 11:04Z
 - **Week:** 77% used, 35.4M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 08:57Z, 0 min before this update
-- **Keeper:** last ran 08:51Z, next wake 11:06Z
+- **Keeper:** last ran 08:57Z, next wake 11:06Z
 
 ## Needs attention
 - BLOCKED T161: plan gap reported: PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/site-copy.md:7` to `:79` (D-3890 (3)). On `main` the home page does not match that file, and I can't fix either side. `app/site/templates/home.html` belongs to T102, T203, T216, T593 and T608. `docs/copy/site-copy.md` belongs to T429, T593 and T615. Smallest plan change: move `test_site_copy_blocks.py` to T593, which already owns both files and rewrites both to D-3331's wording, or make T161 depend on T593. T161 keeps its other seven files.
