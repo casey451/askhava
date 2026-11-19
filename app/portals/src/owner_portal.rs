@@ -37,6 +37,13 @@
 //! `calls::api`, each after the SEC-043 fresh factor; a refusal names what is missing: the
 //! approval, or the CALL-022 items the given `Conditions` leave false (production passes
 //! `calls::api::SAFETY_CONDITIONS`).
+//!
+//! T480 (TXT-039, TXT-043, SEC-043, D-427, D-3753, D-3844): the settings page shows the stored
+//! "Spanish conversations" switch, off at launch, with the review and campaign note in force while
+//! on, and lists each Spanish template's current version for the review record.
+//! [`owner_spanish`] turns it on (with the review's date, reviewer and versions, the campaign
+//! note's date and reference and the Spanish sample) or off through `messaging::api`, each after
+//! the SEC-043 fresh factor; a refusal names each missing record.
 
 use askama::Template;
 use askhava_businesses::api::{needs_review_signups, review_target_line};
@@ -50,6 +57,10 @@ use askhava_messaging::api::{
     Audience, CONSENT_KEEP_YEARS, LaunchChannel, ModeStateError, NumberState, OutboxError,
     RevokeChannel, Week, WeekRate, alert_percent, launch_channel, load_lines, record_restore,
     record_suspension, set_launch_channel, suppress, switch_off, switch_on, weekly_optout_rates,
+};
+use askhava_messaging::api::{
+    Missing, SpanishChange, SpanishInForce, SpanishRecords, spanish_switch,
+    spanish_template_versions, turn_spanish_off, turn_spanish_on,
 };
 use askhava_ops::api::{
     Actor, AuditEntry, AuditRow, Change, DELIVERY_ALERT, Switch, acknowledge_pushed_alert,
@@ -105,6 +116,8 @@ pub const OWNER_OPT_OUT_ROUTE: &str = "/owner/opt-out";
 pub const OWNER_STRIPE_ANSWER_ROUTE: &str = "/owner/stripe-answer";
 /// CALL-019, CALL-022, SEC-043: the safety voice call switch (`to` and the approval in the body).
 pub const OWNER_SAFETY_CALL_ROUTE: &str = "/owner/safety-call";
+/// The "Spanish conversations" switch `POST` (TXT-039, T480).
+pub const OWNER_SPANISH_ROUTE: &str = "/owner/spanish-conversations";
 /// OPS-028: the audit action of one queued bridge press, subject the alert.
 pub const OWNER_BRIDGE_ACTION: &str = "portals.owner_bridge_press";
 /// The audit action of the owner's refund press, about the pick (SEC-006, D-074).
@@ -413,6 +426,10 @@ struct SettingsView<'a> {
     safety_route: &'static str,
     safety: Option<(String, String)>,
     unmet: Vec<&'static str>,
+    spanish_route: &'static str,
+    spanish: Option<SpanishRow>,
+    spanish_missing: Vec<&'static str>,
+    spanish_versions: Vec<(Vec<String>, String)>,
     category_route: &'static str,
     step_up_route: &'static str,
     home_route: &'static str,
@@ -614,6 +631,8 @@ pub async fn owner_settings_page_with(
 ) -> Result<String, OwnerToolError> {
     let stripe = latest_stripe_answer(conn).await.map_err(store)?;
     let safety = safety_approval(conn).await.map_err(store)?;
+    let spanish = spanish_switch(conn).await.map_err(store)?;
+    let versions = spanish_template_versions().map_err(store)?;
     let list = category_list(conn).await.map_err(store)?;
     let categories = list
         .categories
@@ -631,6 +650,15 @@ pub async fn owner_settings_page_with(
         safety_route: OWNER_SAFETY_CALL_ROUTE,
         safety: safety.map(|a| (a.date.strftime("%B %-d, %Y").to_string(), a.reference)),
         unmet: done.map(SettingsNotice::unmet).unwrap_or_default(),
+        spanish_route: OWNER_SPANISH_ROUTE,
+        spanish: spanish.in_force().map(SpanishRow::of),
+        spanish_missing: done
+            .map(SettingsNotice::spanish_missing)
+            .unwrap_or_default(),
+        spanish_versions: versions
+            .into_iter()
+            .map(|(id, v)| (id.split('_').map(str::to_owned).collect(), grouped(&v)))
+            .collect(),
         opt_out_route: OWNER_OPT_OUT_ROUTE,
         stripe_route: OWNER_STRIPE_ANSWER_ROUTE,
         stripe: stripe.map(|a| StripeRow {
@@ -984,6 +1012,12 @@ pub enum SettingsNotice {
     SafetyCallNoApproval,
     /// Not turned on: these CALL-022 items are not met.
     SafetyCallUnmet(Conditions),
+    /// Spanish conversations are now on, with the records given.
+    SpanishOn,
+    /// Spanish conversations are now off (or already were).
+    SpanishOff,
+    /// Spanish conversations not turned on: these records are missing (TXT-039, TXT-043).
+    SpanishMissing(SpanishGaps),
 }
 
 impl SettingsNotice {
@@ -1001,13 +1035,29 @@ impl SettingsNotice {
             Self::SafetyCallUnmet(_) => {
                 "Not turned on. These parts of the safety call aren't built and tested yet:"
             }
+            Self::SpanishOn => "Saved. Spanish conversations are on.",
+            Self::SpanishOff => "Saved. Spanish conversations are off.",
+            Self::SpanishMissing(_) => {
+                "Spanish conversations are still off. Here's what's missing:"
+            }
         }
     }
 
     /// Whether the change was refused, so `server` answers 400 (CALL-019, CALL-022).
     #[must_use]
     pub fn refused(self) -> bool {
-        matches!(self, Self::SafetyCallNoApproval | Self::SafetyCallUnmet(_))
+        matches!(
+            self,
+            Self::SafetyCallNoApproval | Self::SafetyCallUnmet(_) | Self::SpanishMissing(_)
+        )
+    }
+
+    /// TXT-039, TXT-043: the missing records a Spanish refusal names, in words; empty otherwise.
+    fn spanish_missing(self) -> Vec<&'static str> {
+        let Self::SpanishMissing(gaps) = self else {
+            return Vec::new();
+        };
+        gaps.items().into_iter().map(missing_words).collect()
     }
 
     /// CALL-022: the unmet items a refusal names, in words; empty for any other notice.
@@ -1042,6 +1092,171 @@ fn condition_words(code: &'static str) -> &'static str {
         }
         other => other,
     }
+}
+
+/// The records a Spanish turn-on lacked, as a set that is `Copy` (TXT-039, TXT-043).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct SpanishGaps(u8);
+
+/// Every [`Missing`] item in the order the page names them.
+const MISSING_ORDER: [Missing; 6] = [
+    Missing::ReviewDate,
+    Missing::Reviewer,
+    Missing::ReviewedTemplates,
+    Missing::NoteDate,
+    Missing::NoteReference,
+    Missing::Sample,
+];
+
+impl SpanishGaps {
+    /// The set holding `items`.
+    #[must_use]
+    pub fn of(items: &[Missing]) -> Self {
+        let bits = MISSING_ORDER
+            .iter()
+            .enumerate()
+            .filter(|(_, m)| items.contains(m))
+            .fold(0u8, |acc, (i, _)| acc | (1 << i));
+        Self(bits)
+    }
+
+    /// The items in the set, in the page's order.
+    #[must_use]
+    pub fn items(self) -> Vec<Missing> {
+        MISSING_ORDER
+            .iter()
+            .enumerate()
+            .filter(|(i, _)| self.0 & (1 << i) != 0)
+            .map(|(_, m)| *m)
+            .collect()
+    }
+}
+
+/// D-3844: `version` in groups of 8 characters, so the page wraps it at any width (A11Y-008);
+/// the form joins the groups again. A template ID is shown split at each `_`, where the page
+/// offers a line break.
+fn grouped(version: &str) -> String {
+    version
+        .as_bytes()
+        .chunks(8)
+        .map(String::from_utf8_lossy)
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+/// TXT-039, TXT-043: one missing record in words for the settings page.
+fn missing_words(item: Missing) -> &'static str {
+    match item {
+        Missing::ReviewDate => "The date of the professional translation review.",
+        Missing::Reviewer => "The reviewer's name (200 characters at most).",
+        Missing::ReviewedTemplates => {
+            "A review that lists every Spanish text below at the version shown. A text added or changed since the review needs a new one."
+        }
+        Missing::NoteDate => {
+            "The date you updated the campaign description to say texts are in English or Spanish."
+        }
+        Missing::NoteReference => {
+            "The reference for that campaign update (200 characters at most)."
+        }
+        Missing::Sample => "A Spanish sample message (1,600 characters at most).",
+    }
+}
+
+/// The Spanish records in force as shown.
+#[derive(Debug, Clone)]
+struct SpanishRow {
+    reviewed_on: String,
+    reviewer: String,
+    note_on: String,
+    note_reference: String,
+}
+
+impl SpanishRow {
+    /// The records in force, their dates in words.
+    fn of(f: &SpanishInForce) -> Self {
+        Self {
+            reviewed_on: f.reviewed_on.strftime("%B %-d, %Y").to_string(),
+            reviewer: f.reviewer.clone(),
+            note_on: f.note_on.strftime("%B %-d, %Y").to_string(),
+            note_reference: f.note_reference.clone(),
+        }
+    }
+}
+
+/// The "Spanish conversations" form's body: `on` or `off`, and for `on` the review's date
+/// (`YYYY-MM-DD`), reviewer and versions (one `<template ID> <version>` per line), the campaign
+/// note's date and reference, and the Spanish sample (TXT-039, TXT-043).
+#[derive(Debug, Clone, Default, Deserialize)]
+pub struct SpanishForm {
+    /// `on` or `off`.
+    pub to: String,
+    /// The review's date.
+    pub reviewed_on: String,
+    /// The reviewer.
+    pub reviewer: String,
+    /// The reviewed versions, one `<template ID> <version>` per line; spaces inside a version
+    /// (as the page groups it) are dropped.
+    pub versions: String,
+    /// The campaign note's date.
+    pub note_on: String,
+    /// The campaign note's reference.
+    pub note_reference: String,
+    /// The Spanish sample message.
+    pub sample: String,
+}
+
+impl SpanishForm {
+    /// The records the form gives; a date that does not parse is missing.
+    fn records(&self) -> SpanishRecords {
+        let date = |d: &str| d.trim().parse::<jiff::civil::Date>().ok();
+        let reviewed = self
+            .versions
+            .lines()
+            .filter_map(|line| {
+                let mut words = line.split_whitespace();
+                let id = words.next()?;
+                let version: String = words.collect();
+                Some((id.to_owned(), version.to_ascii_lowercase()))
+            })
+            .collect();
+        SpanishRecords {
+            reviewed_on: date(&self.reviewed_on),
+            reviewer: self.reviewer.clone(),
+            reviewed,
+            note_on: date(&self.note_on),
+            note_reference: self.note_reference.clone(),
+            sample: self.sample.clone(),
+        }
+    }
+}
+
+/// TXT-039, TXT-043, SEC-043, D-427: after the fresh factor, turns Spanish conversations on (only
+/// with every record `messaging::api::turn_spanish_on` asks for) or off, which stores one row and
+/// one audit row per change. A refusal is a notice naming each missing record and stores nothing.
+///
+/// # Errors
+///
+/// [`OwnerToolError::NeedsFreshFactor`], [`OwnerToolError::Refused`] for a `to` other than `on`
+/// or `off`, or [`OwnerToolError::Database`].
+pub async fn owner_spanish(
+    conn: &mut PgConnection,
+    principal: &OwnerPrincipal,
+    form: &SpanishForm,
+    now: Timestamp,
+) -> Result<SettingsNotice, OwnerToolError> {
+    let route = (OwnerAction::Settings, OWNER_SPANISH_ROUTE);
+    fresh_factor(conn, principal, route, now).await?;
+    let owner = principal.owner();
+    let changed = match form.to.as_str() {
+        "off" => turn_spanish_off(conn, owner, now).await,
+        "on" => turn_spanish_on(conn, owner, &form.records(), now).await,
+        _ => return Err(OwnerToolError::Refused),
+    };
+    Ok(match changed.map_err(store)? {
+        SpanishChange::Refused(gaps) => SettingsNotice::SpanishMissing(SpanishGaps::of(&gaps)),
+        _ if form.to == "on" => SettingsNotice::SpanishOn,
+        _ => SettingsNotice::SpanishOff,
+    })
 }
 
 /// The safety voice call form's body: `on` or `off`, and for `on` the approval's date
