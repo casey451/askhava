@@ -20099,13 +20099,14 @@
    "id": "T536",
    "slug": "e2e-clock-and-keyed-worker",
    "title": "E2e harness: clock-advancing journeys last, a keyed worker, a Twilio webhook on the keyed binary",
-   "goal": "Plan change D-3889 (Fable's pre-claim check of T118 and T119, Nov 16, 2026; A11Y-021, D-491, D-492): (1) the test clock is forward-only and shared by every binary (`app/core/src/test_control.rs:343` to `:381`, `tests/e2e/webserver.ts:113`), both Playwright configs run one worker over one database in file-name order, and J3 and J4 advance it by hours while other specs seed sessions from the database's `now()` (`tests/e2e/keyed.ts:85`, `tests/a11y/page_states.ts:156`, `:195`, `:221`), so every spec after `j3_*` would get expired sessions. `tests/e2e/playwright.config.ts` and `tests/a11y/playwright.config.ts` each get a second project holding only the clock-advancing journeys (`j1_full*`, `j2_full*`, `j1_j2_web_email*`, `j3_*` and `j4_*` in e2e; `j_full_keyboard*`, `j3_*` and `j4_*` in a11y; T222, T532 and T533 move the clock by hours to days too, and `j_full_keyboard` sorts before the PAGE_STATES specs whose 15-minute and 2-hour links it would expire) that depends on the first, so they run after every other spec. (2) The suite's worker starts with `env` only (`tests/e2e/webserver.ts:233`), so it registers no outbox sender or Stripe jobs (`app/server/src/lib.rs:845` to `:866`): it now starts with `keyedEnv(env)`'s values, made once and shared with the keyed web binary (vault keys, ID secret, Twilio and Stripe stand-ins and T490's Resend values), so worker tasks run in the journeys. (3) The keyed binary gets a fake `ASKHAVA_PUBLIC_BASE_URL`, so it serves the Twilio webhook, and the new `tests/e2e/twilio_signature.ts` exports a helper that signs a fake inbound text as Twilio does with the keyed auth token (as `tests/e2e/j1_homeowner.spec.ts:102` to `:113` does for its own binary); `keyedSecrets()` gains the auth token and the public base URL under `E2E_KEYED_*` names, made once like the others, so the test workers can sign. One per-run ID secret serves all three binaries: the suite's web binary also takes `keyedSecrets().idSecret` (today `appEnv` gives it its own random one, `tests/e2e/webserver.ts:112`), so an idempotency key, link or token the worker mints for a row that binary wrote agrees with it (`app/server/src/offdb_stream.rs:52` reads it too); `tests/e2e/keyed.ts:33` to `:35` keeps working. A single-file run of a late-project spec runs the whole first project too, since Playwright applies no file filter to a dependency project: each config's header comment says to add `--no-deps` when iterating on one late spec, and the decision says so. Every existing e2e and a11y spec passes unchanged; a spec whose result changes because the worker now sends or the keyed binary now serves webhooks (T397's waiting-phones page shows the member's address once the webhooks part exists) is reported, not edited: the report opens with `PLAN GAP:` naming the spec and the line (for example `tests/e2e/j1_homeowner.spec.ts`, whose own binary seals with its own vault keys, so the keyed worker would hold its outbox rows, and whose `:266` to `:267` counts the stand-in's whole sent log; D-3892). No value is printed. A harness task because the two configs and `webserver.ts` are T173's, T227's, T053's and T490's. Update `docs/decisions.md`.",
+   "goal": "Plan change D-3889 (Fable's pre-claim check of T118 and T119, Nov 16, 2026; A11Y-021, D-491, D-492): (1) the test clock is forward-only and shared by every binary (`app/core/src/test_control.rs:343` to `:381`, `tests/e2e/webserver.ts:113`), both Playwright configs run one worker over one database in file-name order, and J3 and J4 advance it by hours while other specs seed sessions from the database's `now()` (`tests/e2e/keyed.ts:85`, `tests/a11y/page_states.ts:156`, `:195`, `:221`), so every spec after `j3_*` would get expired sessions. `tests/e2e/playwright.config.ts` and `tests/a11y/playwright.config.ts` each get a second project holding only the clock-advancing journeys (`j1_full*`, `j2_full*`, `j1_j2_web_email*`, `j3_*` and `j4_*` in e2e; `j_full_keyboard*`, `j3_*` and `j4_*` in a11y; T222, T532 and T533 move the clock by hours to days too, and `j_full_keyboard` sorts before the PAGE_STATES specs whose 15-minute and 2-hour links it would expire) that depends on the first, so they run after every other spec. (2) The suite's worker starts with `env` only (`tests/e2e/webserver.ts:233`), so it registers no outbox sender or Stripe jobs (`app/server/src/lib.rs:845` to `:866`): it now starts with `keyedEnv(env)`'s values, made once and shared with the keyed web binary (vault keys, ID secret, Twilio and Stripe stand-ins and T490's Resend values), so worker tasks run in the journeys. (3) The keyed binary gets a fake `ASKHAVA_PUBLIC_BASE_URL`, so it serves the Twilio webhook, and the new `tests/e2e/twilio_signature.ts` exports a helper that signs a fake inbound text as Twilio does with the keyed auth token (as `tests/e2e/j1_homeowner.spec.ts:102` to `:113` does for its own binary); `keyedSecrets()` gains the auth token and the public base URL under `E2E_KEYED_*` names, made once like the others, so the test workers can sign. One per-run ID secret serves all three binaries: the suite's web binary also takes `keyedSecrets().idSecret` (today `appEnv` gives it its own random one, `tests/e2e/webserver.ts:112`), so an idempotency key, link or token the worker mints for a row that binary wrote agrees with it (`app/server/src/offdb_stream.rs:52` reads it too); `tests/e2e/keyed.ts:33` to `:35` keeps working. A single-file run of a late-project spec runs the whole first project too, since Playwright applies no file filter to a dependency project: each config's header comment says to add `--no-deps` when iterating on one late spec, and the decision says so. Every existing e2e and a11y spec passes unchanged; a spec whose result changes because the worker now sends or the keyed binary now serves webhooks (T397's waiting-phones page shows the member's address once the webhooks part exists) is reported, not edited: the report opens with `PLAN GAP:` naming the spec and the line (for example `tests/e2e/j1_homeowner.spec.ts`, whose own binary seals with its own vault keys, so the keyed worker would hold its outbox rows, and whose `:266` to `:267` counts the stand-in's whole sent log; D-3892). No value is printed. A harness task because the two configs and `webserver.ts` are T173's, T227's, T053's and T490's. Update `docs/decisions.md`. Plan change D-4675: (4) With the keyed worker, a business notice handled in Arizona quiet hours re-queues itself under the dedupe key `messaging.business_notice.held.<task_id>` (`app/messaging/src/business_notices.rs:505`), so `closing()` in `tests/e2e/j2.ts` counts only the notices the pick enqueued: rows of kind `messaging.business_notice` for the pick whose `dedupe_key` does not start with `messaging.business_notice.held.`; the spec files are not edited and J2 still asserts one notice per pick at any hour (PICK-022).",
    "type": "harness",
    "phase": 1,
    "stage": "5",
    "module": null,
    "deps": [
-    "T490"
+    "T490",
+    "T644"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -20117,7 +20118,8 @@
     "tests/e2e/playwright.config.ts",
     "tests/a11y/playwright.config.ts",
     "tests/e2e/webserver.ts",
-    "tests/e2e/twilio_signature.ts"
+    "tests/e2e/twilio_signature.ts",
+    "tests/e2e/j2.ts"
    ],
    "reads": [
     "docs/architecture.md",
@@ -20130,13 +20132,14 @@
    "tests": [],
    "decisions": [
     "D-3889",
-    "D-3892"
+    "D-3892",
+    "D-4675"
    ],
    "cites": [],
    "budget": {
-    "files": 4,
+    "files": 5,
     "lines": 350,
-    "context_pct": 12
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -20145,7 +20148,7 @@
    ],
    "branch": "claude/task/T536-e2e-clock-and-keyed-worker",
    "prompt": "kit/prompts/T536.md",
-   "acceptance": "The e2e and a11y suites pass unchanged with the clock-advancing journeys (`j1_full*`, `j2_full*`, `j1_j2_web_email*`, `j3_*`, `j4_*`; in a11y `j_full_keyboard*`, `j3_*`, `j4_*`) in a project that runs after every other spec; the worker and both web binaries share one ID secret, the worker starts with the keyed values and the keyed binary serves a signed fake Twilio webhook; no secret value appears in any log. If an existing spec fails only because the worker now sends or the keyed binary now serves webhooks, the report opens with `PLAN GAP:` naming it."
+   "acceptance": "The e2e and a11y suites pass unchanged (apart from D-4675's notice count in `tests/e2e/j2.ts`) with the clock-advancing journeys (`j1_full*`, `j2_full*`, `j1_j2_web_email*`, `j3_*`, `j4_*`; in a11y `j_full_keyboard*`, `j3_*`, `j4_*`) in a project that runs after every other spec; the worker and both web binaries share one ID secret, the worker starts with the keyed values and the keyed binary serves a signed fake Twilio webhook; no secret value appears in any log. If an existing spec fails only because the worker now sends or the keyed binary now serves webhooks, the report opens with `PLAN GAP:` naming it."
   },
   {
    "id": "T118",
