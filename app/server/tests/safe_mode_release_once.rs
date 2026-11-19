@@ -412,7 +412,8 @@ async fn safe_mode_ends(pool: &PgPool, alert: Uuid) {
 
 /// TD-OPS-49 (OPS-024, FEE-017, FEE-021, D-2290, D-4789): a held paid pick whose job was
 /// cancelled while safe mode lasted releases nothing when it ends; its charge gets exactly one
-/// late-success refund, however often the run is tried.
+/// late-success refund, however often the run is tried, and a second verified event before that
+/// refund runs releases nothing either (D-4791).
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn td_ops_49_a_held_pick_whose_job_was_cancelled_is_refunded_once(pool: PgPool) {
     let (job, pick) = paid(&pool).await;
@@ -437,6 +438,9 @@ async fn td_ops_49_a_held_pick_whose_job_was_cancelled_is_refunded_once(pool: Pg
     );
     run(&pool, &hooks, owner, &held[0]).await;
     assert!(!released(&pool, pick).await);
+    let again = deliver(hooks.clone(), pick, "evt_fake707f").await;
+    assert_eq!(again, StatusCode::OK);
+    assert!(!released(&pool, pick).await, "redelivery released nothing");
     let (_, more, notices, late) = drained(&pool, pick).await;
     assert_eq!(
         (more.len(), notices, late),

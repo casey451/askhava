@@ -33,8 +33,8 @@
 //!
 //! T408 (OPS-001, OPS-024, D-3144): in safe mode `settle_and_release` holds the pick instead.
 //! T707 (D-4419): in safe mode an `intake.address_in` run releases nothing and queues the next
-//! run 15 minutes later (`address_in_due`); an unreadable safe mode fails closed. The held
-//! release's `release_now` leaves a pick whose job went final while held (FEE-017, FEE-021).
+//! run 15 minutes later (`address_in_due`); an unreadable safe mode fails closed. Every settle,
+//! held or not, leaves a pick whose job is already final (FEE-017, FEE-021, D-4791).
 
 use std::io;
 use std::net::{IpAddr, Ipv4Addr};
@@ -129,7 +129,7 @@ impl PickReleaser {
             return release_hold::hold(&mut conn, cleared.pick(), at).await;
         }
         drop(conn);
-        self.settle_release(cleared, at, false).await
+        self.settle_release(cleared, at).await
     }
 
     /// The releaser's clock: the instant a held release is cleared and released at (OPS-024).
@@ -139,23 +139,23 @@ impl PickReleaser {
 
     /// The held-release task's settle and release, after its own safe-mode read (OPS-024,
     /// FEE-017, FEE-021, PICK-022, D-4419): as [`Self::settle_and_release`] once safe mode is
-    /// off, except that a pick whose job went final (cancelled) while it was held is not moved: a
-    /// paid one gets its one late-success refund and the answer is `MovedOn`.
+    /// off: a pick whose job went final (cancelled) while it was held is not moved, a paid one
+    /// gets its one late-success refund and the answer is `MovedOn`.
     pub(crate) async fn release_now(
         &self,
         cleared: Releasable,
         at: Timestamp,
     ) -> Result<Released, ReleaseError> {
-        self.settle_release(cleared, at, true).await
+        self.settle_release(cleared, at).await
     }
 
-    /// Settles and releases `cleared` at `at`; with `held`, a pick moved now for a job already
-    /// final is rolled back and left (FEE-017, T707).
+    /// Settles and releases `cleared` at `at`; on every path (held or not, D-4791) a pick moved
+    /// now for a job already final is rolled back and left (FEE-017, PICK-022, T707), so a later
+    /// verified event for that pick releases nothing either.
     async fn settle_release(
         &self,
         cleared: Releasable,
         at: Timestamp,
-        held: bool,
     ) -> Result<Released, ReleaseError> {
         let mut tx = self
             .pool
@@ -165,7 +165,7 @@ impl PickReleaser {
         let mut settled = settle(&mut tx, &cleared)
             .await
             .map_err(|_| ReleaseError::Database)?;
-        if held && job_went_final(&mut tx, settled).await? {
+        if job_went_final(&mut tx, settled).await? {
             tx.rollback().await.map_err(|_| ReleaseError::Database)?;
             tx = self
                 .pool
