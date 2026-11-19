@@ -118,6 +118,25 @@ words:
   - imagine a
   - the truth is
   - in a world
+  # logged by cold reads as "AI-smell list: add" in docs/decisions.md (WORD-028, T161)
+  - "lo enviaremos"
+  - "contact wording"
+  - "your answers on this page stay"
+  - "the list we check"
+  - "goes by email to the email"
+  - "we can't read this text"
+  - "we read every message"
+  - "we still hold"
+  - "it reads as"
+  - "you accepted"
+  # pressure words (WORD-024, D-406): the one list; tests/docs/test_voice_rules.py reads it from here
+  - hurry
+  - don't miss out
+  - act now
+  - limited time
+  - last chance
+  - apúrese
+  - no se lo pierda
 
 # Regular expressions (Python syntax, case-insensitive). Each has a name, the pattern and what to do instead.
 patterns:
@@ -174,6 +193,7 @@ exempt_requirements:
 # Rows whose quotes are examples of what someone else types, or lists of banned words, not our copy.
 not_copy_requirements:
   - INT-012   # examples of homeowner replies ("Yes!")
+  - WORD-024  # lists the pressure words the voice rule bans ("hurry")
   - WORD-026  # lists words business copy must never use ("unlock")
   - WORD-027  # names the AI-smell examples it bans
   - WORD-028  # describes the cold read
