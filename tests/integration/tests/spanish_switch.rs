@@ -177,10 +177,14 @@ fn encode(text: &str) -> String {
         .collect()
 }
 
-/// The served "on" form for `r`.
+/// The served "on" form for `r`, each version split in two as the page groups it.
 fn on_form(r: &SpanishRecords) -> String {
     let date = |d: Option<jiff::civil::Date>| d.map(|d| d.to_string()).unwrap_or_default();
-    let versions: Vec<String> = r.reviewed.iter().map(|(i, v)| format!("{i} {v}")).collect();
+    let versions: Vec<String> = r
+        .reviewed
+        .iter()
+        .map(|(i, v)| format!("{i} {} {}", &v[..32], &v[32..]))
+        .collect();
     format!(
         "&to=on&reviewed_on={}&reviewer={}&versions={}&note_on={}&note_reference={}&sample={}",
         date(r.reviewed_on),

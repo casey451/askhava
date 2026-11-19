@@ -59,8 +59,8 @@ use askhava_messaging::api::{
     record_suspension, set_launch_channel, suppress, switch_off, switch_on, weekly_optout_rates,
 };
 use askhava_messaging::api::{
-    Missing, SpanishChange, SpanishRecords, spanish_switch, spanish_template_versions,
-    turn_spanish_off, turn_spanish_on,
+    Missing, SpanishChange, SpanishInForce, SpanishRecords, spanish_switch,
+    spanish_template_versions, turn_spanish_off, turn_spanish_on,
 };
 use askhava_ops::api::{
     Actor, AuditEntry, AuditRow, Change, DELIVERY_ALERT, Switch, acknowledge_pushed_alert,
@@ -429,7 +429,7 @@ struct SettingsView<'a> {
     spanish_route: &'static str,
     spanish: Option<SpanishRow>,
     spanish_missing: Vec<&'static str>,
-    spanish_versions: Vec<(String, String)>,
+    spanish_versions: Vec<(Vec<String>, String)>,
     category_route: &'static str,
     step_up_route: &'static str,
     home_route: &'static str,
@@ -651,16 +651,14 @@ pub async fn owner_settings_page_with(
         safety: safety.map(|a| (a.date.strftime("%B %-d, %Y").to_string(), a.reference)),
         unmet: done.map(SettingsNotice::unmet).unwrap_or_default(),
         spanish_route: OWNER_SPANISH_ROUTE,
-        spanish: spanish.in_force().map(|f| SpanishRow {
-            reviewed_on: f.reviewed_on.strftime("%B %-d, %Y").to_string(),
-            reviewer: f.reviewer.clone(),
-            note_on: f.note_on.strftime("%B %-d, %Y").to_string(),
-            note_reference: f.note_reference.clone(),
-        }),
+        spanish: spanish.in_force().map(SpanishRow::of),
         spanish_missing: done
             .map(SettingsNotice::spanish_missing)
             .unwrap_or_default(),
-        spanish_versions: versions.into_iter().collect(),
+        spanish_versions: versions
+            .into_iter()
+            .map(|(id, v)| (id.split('_').map(str::to_owned).collect(), grouped(&v)))
+            .collect(),
         opt_out_route: OWNER_OPT_OUT_ROUTE,
         stripe_route: OWNER_STRIPE_ANSWER_ROUTE,
         stripe: stripe.map(|a| StripeRow {
@@ -1134,6 +1132,18 @@ impl SpanishGaps {
     }
 }
 
+/// D-3844: `version` in groups of 8 characters, so the page wraps it at any width (A11Y-008);
+/// the form joins the groups again. A template ID is shown split at each `_`, where the page
+/// offers a line break.
+fn grouped(version: &str) -> String {
+    version
+        .as_bytes()
+        .chunks(8)
+        .map(String::from_utf8_lossy)
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
 /// TXT-039, TXT-043: one missing record in words for the settings page.
 fn missing_words(item: Missing) -> &'static str {
     match item {
@@ -1161,6 +1171,18 @@ struct SpanishRow {
     note_reference: String,
 }
 
+impl SpanishRow {
+    /// The records in force, their dates in words.
+    fn of(f: &SpanishInForce) -> Self {
+        Self {
+            reviewed_on: f.reviewed_on.strftime("%B %-d, %Y").to_string(),
+            reviewer: f.reviewer.clone(),
+            note_on: f.note_on.strftime("%B %-d, %Y").to_string(),
+            note_reference: f.note_reference.clone(),
+        }
+    }
+}
+
 /// The "Spanish conversations" form's body: `on` or `off`, and for `on` the review's date
 /// (`YYYY-MM-DD`), reviewer and versions (one `<template ID> <version>` per line), the campaign
 /// note's date and reference, and the Spanish sample (TXT-039, TXT-043).
@@ -1172,7 +1194,8 @@ pub struct SpanishForm {
     pub reviewed_on: String,
     /// The reviewer.
     pub reviewer: String,
-    /// The reviewed versions, one `<template ID> <version>` per line.
+    /// The reviewed versions, one `<template ID> <version>` per line; spaces inside a version
+    /// (as the page groups it) are dropped.
     pub versions: String,
     /// The campaign note's date.
     pub note_on: String,
@@ -1191,7 +1214,8 @@ impl SpanishForm {
             .lines()
             .filter_map(|line| {
                 let mut words = line.split_whitespace();
-                let (id, version) = (words.next()?, words.next()?);
+                let id = words.next()?;
+                let version: String = words.collect();
                 Some((id.to_owned(), version.to_ascii_lowercase()))
             })
             .collect();

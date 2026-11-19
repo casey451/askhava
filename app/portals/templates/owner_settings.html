@@ -52,11 +52,10 @@
 <p><label for="spanish-reviewer">Reviewer's name</label></p>
 <p><input type="text" id="spanish-reviewer" name="reviewer" maxlength="200"></p>
 <p><label for="spanish-versions">Texts the review covered</label></p>
-<p id="spanish-versions-hint">One per line: the text's name, a space, then its version. The list below shows each Spanish text's current version. A text that changes gets a new version and needs a new review.</p>
+<p id="spanish-versions-hint">One per line: the text's name, a space, then its version as shown. The list below shows each Spanish text's current version. A text that changes gets a new version and needs a new review.</p>
 <p><textarea id="spanish-versions" name="versions" rows="6" aria-describedby="spanish-versions-hint"></textarea></p>
-<details><summary>Spanish texts and their current versions ({{ spanish_versions.len() }})</summary>
-<ul id="spanish-versions-list">{% for (id, version) in spanish_versions %}<li><code>{{ id }} {{ version }}</code></li>{% endfor %}</ul>
-</details>
+<p id="spanish-versions-title">Spanish texts and their current versions ({{ spanish_versions.len() }}):</p>
+<ul id="spanish-versions-list" aria-labelledby="spanish-versions-title">{% for (parts, version) in spanish_versions %}<li>{% for part in parts %}{{ part }}{% if !loop.last %}_<wbr>{% endif %}{% endfor %} {{ version }}</li>{% endfor %}</ul>
 <p><label for="spanish-note-on">Date you updated the campaign description to say texts are in English or Spanish</label></p>
 <p><input type="date" id="spanish-note-on" name="note_on"></p>
 <p><label for="spanish-note-reference">Reference for that campaign update</label></p>
