@@ -69837,7 +69837,7 @@
      }
     }
    ],
-   "reviewed_sha": "52a270c730155c3b3ad5d5eb354bf01ecd10fd42",
+   "reviewed_sha": "dd222245811899036eb34960534e66e4966c92f3",
    "review_lease": {
     "task": "T490",
     "session": "actions-44441720660",
@@ -69857,10 +69857,23 @@
      "main": "b24d30a3031c094d287861d40d72fe88b4059e0e",
      "how": "hand-in",
      "at": "2026-11-19T04:36:08Z"
+    },
+    {
+     "from": "52a270c730155c3b3ad5d5eb354bf01ecd10fd42",
+     "to": "dd222245811899036eb34960534e66e4966c92f3",
+     "main": "bfe866faeae636ba9053e68b8265dbc6003f57b0",
+     "how": "runner",
+     "checks": {
+      "Ci": "success",
+      "Ally": "success",
+      "Twin": "success"
+     },
+     "at": "2026-11-19T05:33:05Z"
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merge_turn_since": "2026-11-19T05:33:05Z"
   },
   {
    "id": "T491",
@@ -72700,7 +72713,7 @@
    "deps": [
     "T101"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "portal-email-colour-tokens",
    "type": "harness",
@@ -72724,13 +72737,70 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 106,
      "head_sha": "c95edf6b7d535261a6727cdb3a911b8088e6282a",
-     "pr": null,
-     "checks": null,
+     "pr": 1089,
+     "checks": [
+      {
+       "name": "backup lane 2",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-19T01:57:04Z",
      "ended_at": "2026-11-19T04:18:30Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "usage": {
       "worker": {
        "tokens": 3217534,
@@ -72779,7 +72849,20 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-19T05:10:58Z"
+   "merge_turn_since": "2026-11-19T05:10:58Z",
+   "merged_sha": "bfe866faeae636ba9053e68b8265dbc6003f57b0",
+   "merged_at": "2026-11-19T05:31:18Z",
+   "files": [
+    "app/messaging/NOTES.md",
+    "app/messaging/src/business_notices.rs",
+    "app/messaging/src/checkin_email.rs",
+    "app/messaging/src/receipt_email.rs",
+    "app/messaging/templates/email_layout.html",
+    "app/portals/NOTES.md",
+    "app/portals/src/feedback.rs",
+    "app/portals/src/tests/forms_css.rs",
+    "docs/decisions.md"
+   ]
   },
   {
    "id": "T530",
@@ -90071,7 +90154,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T05:27:32Z",
+ "updated_at": "2026-11-19T05:33:19Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -90169,8 +90252,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "70b8f3dde6f7d512fbf3a6ee453b77db477caaf4",
- "starter": "manual",
+ "runner_sha": "bfe866faeae636ba9053e68b8265dbc6003f57b0",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "c59d9af9418eb7b3ab99803337e881a42303f44c",

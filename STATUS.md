@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T05:27:32Z by runner 70b8f3dde6f7 (manual).
+Updated 2026-11-19T05:33:19Z by runner bfe866faeae6 (actions).
 
-**Building: T408 in progress since 03:29Z; 475 of 664 done; week 74% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T408 in progress since 03:29Z; 476 of 664 done; week 74% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 475 of 664 build tasks (owner gates not counted)
+- **Tasks done:** 476 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T408 claimed 03:29Z, lease until 08:21Z; lane 4: T562 claimed 04:26Z, lease until 07:26Z; lane 5: T506 claimed 05:13Z, lease until 08:13Z; lane 7: T229 claimed 04:42Z, lease until 07:42Z
 - **Week:** 74% used, 42.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:21Z, 5 min before this update
+- **Last run:** 05:27Z, 5 min before this update
 - **Keeper:** last ran 05:18Z, next wake 06:31Z
 
 ## Needs attention
@@ -16,14 +16,14 @@ Updated 2026-11-19T05:27:32Z by runner 70b8f3dde6f7 (manual).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T456 (since 2026-11-19T04:26:11Z, no attempt used; a plan change fixes it): T456: dependency T399 is DONE but its owned file app/server/tests/approve_link_route.rs is not on main
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 62 problem(s) on tasks still to run (+289 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 61 problem(s) on tasks still to run (+290 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T203 | Wording scan: the required statements, business copy lines a | MERGE_PENDING | 4 | 42 min | 04:50Z | PLAN GAP: app/portals/templates/es_business_signup.html:82 ("Licencia de control de plagas") and :88 ("Mi licencia inclu |
 | T490 | server (harness): the email provider passed to the sign-up m | MERGE_PENDING | 1 | 2 h 25 min | 04:35Z |  |
-| T520 | portals and messaging: the portal stylesheets and email colo | MERGE_PENDING | 1 | 2 h 21 min | 04:18Z |  |
+| T520 | portals and messaging: the portal stylesheets and email colo | done | 1 | 2 h 21 min | 04:18Z |  |
 | T563 | intake and privacy: the daily consent sweep removes consent  | done | 3 | 77 min | 04:05Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T399 | server: the email's Approve link approves the phone, only wi | done | 1 | 46 min | 04:01Z |  |
 | T484 | portals and quotes: "Call from the Laftly number", the owner | done | 1 | 82 min | 03:26Z |  |
@@ -94,31 +94,31 @@ Updated 2026-11-19T05:27:32Z by runner 70b8f3dde6f7 (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 48 of 735 (6.5%) · partial 641 · unstarted 46
-**Tasks merged (throughput only):** 475 of 664
+**Requirements verified:** 293 of 735 (39.9%) · partial 396 · unstarted 46
+**Tasks merged (throughput only):** 476 of 664
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 2 | 33 | 0 | 35 |
-| ai | 2 | 24 | 3 | 29 |
-| businesses | 1 | 56 | 1 | 58 |
-| calls | 0 | 25 | 0 | 25 |
-| consent | 3 | 32 | 0 | 35 |
-| fees | 0 | 51 | 1 | 52 |
-| intake | 0 | 43 | 0 | 43 |
-| job-cards | 0 | 24 | 0 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 0 | 44 | 1 | 45 |
-| ops-recovery | 2 | 33 | 19 | 54 |
-| privacy | 0 | 30 | 1 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 0 | 56 | 0 | 56 |
-| recurring | 0 | 11 | 0 | 11 |
-| security | 0 | 50 | 5 | 55 |
-| terms | 22 | 12 | 1 | 35 |
+| accessibility | 17 | 18 | 0 | 35 |
+| ai | 9 | 17 | 3 | 29 |
+| businesses | 17 | 40 | 1 | 58 |
+| calls | 12 | 13 | 0 | 25 |
+| consent | 14 | 21 | 0 | 35 |
+| fees | 23 | 28 | 1 | 52 |
+| intake | 9 | 34 | 0 | 43 |
+| job-cards | 13 | 11 | 0 | 24 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 18 | 10 | 0 | 28 |
+| messaging | 20 | 24 | 1 | 45 |
+| ops-recovery | 3 | 32 | 19 | 54 |
+| privacy | 10 | 20 | 1 | 31 |
+| quiet-hours | 6 | 3 | 0 | 9 |
+| quotes-pick | 27 | 29 | 0 | 56 |
+| recurring | 7 | 4 | 0 | 11 |
+| security | 9 | 41 | 5 | 55 |
+| terms | 25 | 9 | 1 | 35 |
 | website | 9 | 16 | 5 | 30 |
-| wording | 7 | 16 | 9 | 32 |
+| wording | 12 | 11 | 9 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -131,7 +131,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 118 of 263 done
+- stage 5: 119 of 263 done
 - stage 6: 0 of 48 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
