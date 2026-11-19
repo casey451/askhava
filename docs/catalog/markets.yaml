@@ -1,6 +1,8 @@
 # Markets as reviewed data (INT-048, INT-022, LIC-011; D-1515, D-1518, D-1521, D-3113).
 #
-# Each market: an ID, a name, its two-letter state, its IANA time zone, the identity sources for
+# Each market: an ID, a name, `short_name` (the name in running text, such as "Havasu
+# businesses"), its two-letter state, `state_name` (the state spelled out, for the home page's
+# kicker; D-4098, T593), its IANA time zone, the identity sources for
 # its no-license categories (LIC-011; `city` is the licensing import source of the city
 # business-license list) and its towns. A town's code is the service-area town code (INT-022) that
 # intake routes on and businesses tick as towns served. `zips` are the ZCTAs the US Census
@@ -14,7 +16,9 @@
 markets:
   - id: lake-havasu-city
     name: Lake Havasu City
+    short_name: Havasu
     state: AZ
+    state_name: Arizona
     time_zone: America/Phoenix
     identity_sources: [city]
     towns:

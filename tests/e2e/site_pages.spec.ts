@@ -29,7 +29,11 @@ test("TD-WEB-01 TD-TXT-15 WEB-001 WEB-003 WEB-004 WEB-005 WEB-009 WORD-002: the 
   await expect(footer).toContainText("Local quotes. Your choice.");
   await expect(footer).toContainText(STATEMENT);
   await expect(page.locator("main")).toContainText("Launch offer: your first win is free, on any job size, when you join in the first 90 days or within 90 days after your trade opens.");
-  await expect(page.locator("main a[href='/request']").first()).toHaveText("Get quotes");
+  const box = page.locator("main form[method=post][action='/request']");
+  await expect(box.getByRole("button", { name: "Get quotes", exact: true })).toHaveCount(1);
+  const field = box.locator("textarea");
+  await expect(field).toHaveCount(1);
+  await expect(box.locator(`label[for="${String(await field.getAttribute("id"))}"]`)).toBeVisible();
   const hrefs = await page.locator("a").evaluateAll((all) => all.map((a) => a.getAttribute("href") ?? ""));
   for (const gone of ["/chat", "/categories", "/events"]) expect(hrefs, gone).not.toContain(gone);
   await expect(page.locator("body")).not.toContainText("More than quotes");
@@ -45,10 +49,12 @@ test("TD-WEB-07 WEB-022: the home page's Who runs block", async ({ page }) => {
 });
 
 test("TD-WEB-01 WEB-012: the old directory paths show the home page; other unknown paths stay 404", async ({ page, request }) => {
+  await page.goto("/");
+  const headline = await page.locator("h1").innerText();
   for (const path of ["/categories", "/events"]) {
     const answer = await page.goto(path);
     expect(answer?.status(), path).toBe(200);
-    await expect(page.locator("h1")).toHaveText("Get quotes from Havasu businesses without giving out your number.");
+    await expect(page.locator("h1")).toHaveText(headline);
   }
   expect((await request.get("/directory/no-such-page")).status()).toBe(404);
 });

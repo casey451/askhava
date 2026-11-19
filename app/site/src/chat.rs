@@ -15,7 +15,9 @@
 //! `check_code` over the vault and Verify, D-963, D-3144); without it (dev and `Ci`) the code step sends and stores nothing and
 //! says codes can't be sent right now, answering 200 (D-3744). A new request SEC-014's limit
 //! refuses opens nothing and the page says to try again later. The cross-site and CSRF checks are
-//! `server`'s layer, which hands the page its token as [`ChatCsrf`] (D-3882).
+//! `server`'s layer, which hands the page its token as [`ChatCsrf`] (D-3882). The home request
+//! box (T593, D-4098) posts `job` with no `chat` key: the answer is the start screen with her
+//! words in the chat box, cut to [`WORDS_MAX_CHARS`], and nothing stored (AI-021, A11Y-035).
 
 use std::future::Future;
 use std::net::{IpAddr, SocketAddr};
@@ -50,6 +52,10 @@ pub const REQUEST_PATH: &str = "/request";
 
 /// The most chat lines a page carries forward.
 const MAX_SAID: usize = 20;
+
+/// AI-021, A11Y-035, T593: the most characters the chat box takes (its `maxlength`, and the home
+/// request box's); words carried from the home page are cut to it.
+pub const WORDS_MAX_CHARS: usize = 1000;
 
 /// SEC-042, D-3882: the page's CSRF token, which `server`'s chat layer puts in the request's
 /// extensions; the form posts it as `csrf`. No `Debug`, so it cannot reach a log (R6).
@@ -138,6 +144,8 @@ struct Posted {
     words: String,
     number: String,
     code: String,
+    /// The home request box's words (T593); with no `chat` key the post only carries them.
+    job: Option<String>,
 }
 
 /// The page's query: the INT-047 `g` code.
@@ -160,6 +168,8 @@ struct RequestPage {
     notice: &'static str,
     error: bool,
     message: String,
+    words: String,
+    words_max: usize,
 }
 
 /// What a page carries from one turn to the next.
@@ -281,13 +291,17 @@ async fn page<C: ChatKeys>(
 }
 
 /// `POST` [`REQUEST_PATH`]: one turn of the chat; a form with no session key or message ID is a
-/// 400 (SEC-042's checks ran in `server`'s layer).
+/// 400 (SEC-042's checks ran in `server`'s layer). The home request box's post (a `job` field and
+/// no `chat` key) only carries her words to the start screen (T593).
 async fn post<C: ChatKeys>(
     State(chat): State<Chat<C>>,
     csrf: Option<Extension<ChatCsrf>>,
     client: Option<Extension<ConnectInfo<SocketAddr>>>,
     Form(form): Form<Posted>,
 ) -> Response {
+    if let Some(job) = form.job.as_deref().filter(|_| form.chat.is_empty()) {
+        return chat.carried(token(csrf), job).await;
+    }
     let turn = Turn::posted(&form, token(csrf));
     let id = Uuid::try_parse(&form.message);
     let (Some(mut turn), Ok(id)) = (turn, id) else {
@@ -393,8 +407,33 @@ impl<C: ChatKeys> Chat<C> {
         }
     }
 
+    /// CON-025, AI-021, A11Y-035, T593: the start screen of a new chat with the home request
+    /// box's words in the chat box, cut to [`WORDS_MAX_CHARS`], for her to send. Nothing is
+    /// written, queued, sent or logged: the words are only escaped into the page.
+    async fn carried(&self, csrf: String, job: &str) -> Response {
+        let turn = Turn {
+            csrf,
+            chat: fresh_id().simple().to_string(),
+            g: String::new(),
+            said: Vec::new(),
+            number: String::new(),
+        };
+        let words = job.chars().take(WORDS_MAX_CHARS).collect();
+        self.render(turn, (Ask::Message, None), words).await
+    }
+
     /// The page for `turn` asking `ask` with `notice` (WEB-014, WEB-006, AI-026, WEB-007).
-    async fn answer(&self, mut turn: Turn, ask: Ask, notice: Option<Notice>) -> Response {
+    async fn answer(&self, turn: Turn, ask: Ask, notice: Option<Notice>) -> Response {
+        self.render(turn, (ask, notice), String::new()).await
+    }
+
+    /// The page for `turn` asking `ask` with `notice`, `words` already in the chat box.
+    async fn render(
+        &self,
+        mut turn: Turn,
+        (ask, notice): (Ask, Option<Notice>),
+        words: String,
+    ) -> Response {
         if ask != Ask::Code {
             turn.number.clear();
         }
@@ -419,6 +458,8 @@ impl<C: ChatKeys> Chat<C> {
             notice,
             error,
             message: fresh_id().to_string(),
+            words,
+            words_max: WORDS_MAX_CHARS,
         };
         match page.render() {
             Ok(html) => Html(html).into_response(),

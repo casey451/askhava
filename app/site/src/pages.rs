@@ -11,6 +11,9 @@
 //! held by the router, and reads the banner and, on a miss, the numbers on one pooled connection
 //! (D-4098); [`home_html`] reads them uncached. The fee
 //! amounts come from `payments::api::Tier` (WEB-026). GET only; nothing is written.
+//! The home page (T593, D-3331, D-4098) has the request box, a form posting `job` to `/request`
+//! with the token `server`'s chat layer hands it as `ChatCsrf` (empty from [`home_html`]); its
+//! market names come from `catalog::api::markets` (D-1515), and missing ones are the bare 500.
 //!
 //! [`help_routes`] (T201) serves `/services` (one `#<category code>` section per switched-on
 //! trade, WEB-015), `/coverage` (WEB-023), both read from `catalog::api::category_list`
@@ -47,6 +50,7 @@ use jiff::SignedDuration;
 use sqlx::{PgConnection, PgPool};
 use uuid::Uuid;
 
+use crate::chat::{ChatCsrf, WORDS_MAX_CHARS};
 use crate::legal_pages::{LegalDoc, accessibility_statement};
 use crate::routes::{banner_shown, banner_shown_on};
 
@@ -172,7 +176,7 @@ impl SitePages {
 
 /// WEB-028: the numbers as the home page shows them.
 #[derive(Debug, Clone)]
-struct Shown {
+pub(crate) struct Shown {
     requests: u32,
     wait: Option<String>,
     per_request: String,
@@ -244,6 +248,43 @@ impl Fees {
     }
 }
 
+/// D-1515, INT-048, D-4098: the market names the home page reads from `markets.yaml`: the
+/// kicker's name and state, and the name in running text. Never typed into the template.
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct HomeMarket {
+    name: String,
+    short_name: String,
+    state_name: String,
+}
+
+/// Why the home page has no market values (D-1515): a refused markets file, no market, or a
+/// market without `short_name` or `state_name`. Carries no value.
+#[derive(Debug)]
+struct NoMarket;
+
+impl std::fmt::Display for NoMarket {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("home page market values missing")
+    }
+}
+
+impl std::error::Error for NoMarket {}
+
+/// D-1515, INT-048, T593: the one market `catalog::api::markets` lists (a unit test fails on a
+/// second one, so a second market forces the copy question), with both names it needs.
+fn home_market() -> Result<HomeMarket, NoMarket> {
+    let markets = askhava_catalog::api::markets().map_err(|_| NoMarket)?;
+    let market = markets.markets().first().ok_or(NoMarket)?;
+    let (Some(short_name), Some(state_name)) = (&market.short_name, &market.state_name) else {
+        return Err(NoMarket);
+    };
+    Ok(HomeMarket {
+        name: market.name.clone(),
+        short_name: short_name.clone(),
+        state_name: state_name.clone(),
+    })
+}
+
 #[derive(Template)]
 #[template(path = "home.html")]
 struct HomePage {
@@ -251,6 +292,9 @@ struct HomePage {
     numbers: Option<Shown>,
     who: WhoRuns,
     fees: Fees,
+    market: HomeMarket,
+    csrf: String,
+    words_max: usize,
 }
 
 #[derive(Template)]
@@ -464,7 +508,11 @@ pub fn page_routes_with(pool: PgPool, pages: SitePages, numbers: HomeNumbersCach
     let state = Arc::new((pool, pages));
     let home = {
         let (state, numbers) = (Arc::clone(&state), Arc::new(numbers));
-        move || async move { respond(home_read(&state.0, &state.1, Some(&numbers)).await) }
+        move |csrf: Option<Extension<ChatCsrf>>| async move {
+            let csrf = csrf.map(|Extension(ChatCsrf(token))| token);
+            let read = home_read(&state.0, &state.1, Some(&numbers), csrf.unwrap_or_default());
+            respond_home(read.await)
+        }
     };
     let how = {
         let pool = state.0.clone();
@@ -602,13 +650,26 @@ fn respond(page: Result<String, askama::Error>) -> Response {
     }
 }
 
-/// WEB-001, WEB-005, WEB-009, WEB-022, WEB-028: the home page, its numbers read as it renders.
+/// The served home page: a missing market value is the bare 500 with one warning and no values
+/// (R4, R5, D-1515); any other render failure as [`respond`].
+fn respond_home(page: Result<String, askama::Error>) -> Response {
+    match page {
+        Err(askama::Error::Custom(_)) => {
+            tracing::warn!("home page market values missing");
+            StatusCode::INTERNAL_SERVER_ERROR.into_response()
+        }
+        page => respond(page),
+    }
+}
+
+/// WEB-001, WEB-005, WEB-009, WEB-022, WEB-028: the home page, its numbers read as it renders,
+/// with an empty request-box token.
 ///
 /// # Errors
 ///
-/// The template's error.
+/// The template's error, or a custom error when the market values are missing (D-1515).
 pub async fn home_html(pool: &PgPool, pages: &SitePages) -> Result<String, askama::Error> {
-    home_read(pool, pages, None).await
+    home_read(pool, pages, None, String::new()).await
 }
 
 /// WEB-007, WEB-028, D-4098: the home page on one pooled connection: the banner, then the
@@ -618,10 +679,11 @@ async fn home_read(
     pool: &PgPool,
     pages: &SitePages,
     cache: Option<&HomeNumbersCache>,
+    csrf: String,
 ) -> Result<String, askama::Error> {
     let Ok(mut db) = pool.acquire().await else {
         tracing::warn!("home page database read failed; the page shows no banner and no numbers");
-        return home_page(pages, false, None);
+        return home_page(pages, false, None, csrf);
     };
     let banner_shown = banner_shown_on(&mut db).await;
     let numbers = match cache.and_then(HomeNumbersCache::fresh) {
@@ -634,20 +696,31 @@ async fn home_read(
             read.flatten()
         }
     };
-    home_page(pages, banner_shown, numbers)
+    home_page(pages, banner_shown, numbers, csrf)
 }
 
-/// The home page with its banner and numbers decided.
-fn home_page(
+/// The home page with its banner, numbers and request-box token `csrf` decided, its market names
+/// read from `markets.yaml` (D-1515, D-4098, D-4669); no database. `pub(crate)` for the crate's
+/// copy checks.
+///
+/// # Errors
+///
+/// The template's error, or `askama::Error::Custom` when the market values are missing.
+pub(crate) fn home_page(
     pages: &SitePages,
     banner_shown: bool,
     numbers: Option<Shown>,
+    csrf: String,
 ) -> Result<String, askama::Error> {
+    let market = home_market().map_err(|e| askama::Error::Custom(Box::new(e)))?;
     HomePage {
         banner_shown,
         numbers,
         who: pages.who.clone(),
         fees: Fees::from_tiers(),
+        market,
+        csrf,
+        words_max: WORDS_MAX_CHARS,
     }
     .render()
 }
@@ -719,20 +792,56 @@ mod tests {
 
     use super::{
         AccessibilityPage, BusinessFacts, BusinessHelpPage, BusinessPage, CityGuide, CoveragePage,
-        EsBusinessPage, EsHomePage, EsHowItWorksPage, Fees, HelpPage, HomePage, HowItWorksPage,
-        RocComplaintPage, SampleCard, ServicesPage, Settings, Waiting, WhoRuns, wait_words,
+        EsBusinessPage, EsHomePage, EsHowItWorksPage, Fees, HelpPage, HowItWorksPage,
+        RocComplaintPage, SampleCard, ServicesPage, Settings, SitePages, WORDS_MAX_CHARS, Waiting,
+        WhoRuns, home_market, home_page, wait_words,
     };
 
-    /// The home page with no numbers and `who`'s facts.
+    /// The home page with no numbers, `who`'s facts and a fake token.
     fn home(who: WhoRuns) -> String {
-        let fees = Fees::from_tiers();
-        let page = HomePage {
-            banner_shown: false,
-            numbers: None,
+        let pages = SitePages {
             who,
-            fees,
+            ..SitePages::default()
         };
-        page.render().expect("renders")
+        home_page(&pages, false, None, "fake-token".to_owned()).expect("renders")
+    }
+
+    /// D-1515, INT-048, T593: the home page reads the one market `markets.yaml` lists, so a second
+    /// market (T242's inventory) fails here and forces the copy question instead of a guess; and
+    /// every listed market has `short_name` and `state_name`, so a missing one fails `Ci`, not the
+    /// live page.
+    #[test]
+    fn d_1515_the_home_page_reads_the_one_market_with_both_names() {
+        let markets = askhava_catalog::api::markets().expect("markets").markets();
+        assert_eq!(
+            markets.len(),
+            1,
+            "D-1515: a second market needs the home copy decided (T242's inventory)"
+        );
+        for market in markets {
+            assert!(market.short_name.is_some(), "{} short_name", market.id);
+            assert!(market.state_name.is_some(), "{} state_name", market.id);
+        }
+        let market = home_market().expect("market");
+        let kicker = format!("{}, {}", market.name, market.state_name);
+        let html = home(WhoRuns::default());
+        assert!(html.contains(&format!("<p class=\"kicker\">{kicker}</p>")));
+        assert!(html.contains(&format!("Local quotes for {} homes", market.short_name)));
+    }
+
+    /// WEB-009, A11Y-029, SEC-042, T593: the request box posts to `/request` with the token, a
+    /// visible label, the hint tied by `aria-describedby`, no placeholder and the chat's limit.
+    #[test]
+    fn web_009_the_request_box_posts_with_a_label_and_the_token() {
+        let html = home(WhoRuns::default());
+        assert!(html.contains("<form class=\"request-box\" method=\"post\" action=\"/request\""));
+        assert!(html.contains("<input type=\"hidden\" name=\"csrf\" value=\"fake-token\">"));
+        assert!(html.contains("<label for=\"job\">What needs doing?</label>"));
+        assert!(html.contains(&format!(
+            "<textarea id=\"job\" name=\"job\" rows=\"3\" maxlength=\"{WORDS_MAX_CHARS}\" aria-describedby=\"job-hint\">"
+        )));
+        assert!(html.contains("<button type=\"submit\">Get quotes</button>"));
+        assert!(!html.contains("placeholder"));
     }
 
     /// A tier's fee in whole dollars, read from the fee settings.

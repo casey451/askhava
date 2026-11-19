@@ -12,6 +12,8 @@
 //! security event. Only a `POST` is checked, so other methods reach the router as they are. Every
 //! request gets a pre-session cookie (`ensure_pre_session`) and the page its token as
 //! `site::api::ChatCsrf`. The typed number is never logged, stored here or put in an error.
+//! [`home_guard`] gives the three home paths the same cookie and token for the home request box,
+//! which posts to `/request`, and marks them `no-store` (T593, D-4098).
 
 use std::io;
 use std::net::IpAddr;
@@ -28,7 +30,9 @@ use askhava_portals::api::{
     security_event_client,
 };
 use askhava_privacy::api::{CommonWords, Known, NameMemory, Vault, scrub};
-use askhava_site::api::{ChatCsrf, ChatKeys, REQUEST_PATH};
+use askhava_site::api::{
+    ChatCsrf, ChatKeys, HOME_PATH, OLD_CATEGORIES_PATH, OLD_EVENTS_PATH, REQUEST_PATH,
+};
 use axum::Router;
 use axum::body::{Body, to_bytes};
 use axum::extract::{FromRequest, Request, State};
@@ -173,6 +177,12 @@ async fn check_token(State(pool): State<PgPool>, request: Request, next: Next) -
         }
         request = Request::from_parts(parts, Body::from(bytes));
     }
+    with_token(jar, request, next).await
+}
+
+/// SEC-042: `request` passed on with a pre-session cookie (set when `jar` has none) and its token
+/// as `site::api::ChatCsrf`.
+async fn with_token(jar: CookieJar, mut request: Request, next: Next) -> Response {
     let Ok(jar) = ensure_pre_session(jar) else {
         tracing::error!("web-chat pre-session cookie failed");
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
@@ -180,6 +190,30 @@ async fn check_token(State(pool): State<PgPool>, request: Request, next: Next) -
     let token = csrf_token(&jar).unwrap_or_default();
     request.extensions_mut().insert(ChatCsrf(token));
     (jar, next.run(request).await).into_response()
+}
+
+/// SEC-042, WEB-009, WEB-012, T593, D-4098: `pages` with [`guard`]'s pre-session cookie and token
+/// on a `GET` of the three home paths (`/`, `/categories`, `/events`), whose request box posts to
+/// `/request`; each such answer is `no-store`, since it holds a per-visitor token. Every other
+/// path and method passes as it is.
+pub fn home_guard(pages: Router) -> Router {
+    pages.layer(from_fn(home_token))
+}
+
+/// [`home_guard`]'s layer.
+async fn home_token(request: Request, next: Next) -> Response {
+    let path = request.uri().path();
+    let home = [HOME_PATH, OLD_CATEGORIES_PATH, OLD_EVENTS_PATH].contains(&path);
+    if !home || !matches!(*request.method(), Method::GET | Method::HEAD) {
+        return next.run(request).await;
+    }
+    let jar = CookieJar::from_headers(request.headers());
+    let mut response = with_token(jar, request, next).await;
+    response.headers_mut().insert(
+        header::CACHE_CONTROL,
+        header::HeaderValue::from_static("no-store"),
+    );
+    response
 }
 
 /// The posted form's `csrf` field, empty when absent or when the body is no form. The rebuilt
