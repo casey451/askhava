@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T16:01:53Z by runner 5bb7409eb85f (actions).
+Updated 2026-11-19T16:02:25Z by runner 5bb7409eb85f (actions).
 
 **Building: T210 in progress since 15:35Z; 497 of 668 done; week 84% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 497 of 668 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T210 claimed 15:35Z, lease until 18:35Z; lane 3: T530 claimed 15:41Z, lease until 18:41Z; lane 4: T555 claimed 15:44Z, lease until 18:44Z; lane 6: T407 claimed 14:19Z, lease until 18:57Z; lane 7: T715 claimed 15:50Z, lease until 18:50Z
+- **Lane:** lane 2: T210 claimed 15:35Z, lease until 18:35Z; lane 3: T530 claimed 15:41Z, lease until 18:41Z; lane 4: T555 claimed 15:44Z, lease until 18:44Z; lane 7: T715 claimed 15:50Z, lease until 18:50Z
 - **Week:** 84% used, 21.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:57Z, 4 min before this update
+- **Last run:** 15:57Z, 5 min before this update
 - **Keeper:** last ran 15:32Z, next wake 15:52Z
 
 ## Needs attention
@@ -21,6 +21,7 @@ Updated 2026-11-19T16:01:53Z by runner 5bb7409eb85f (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T407 | calls, portals and server: the owner-portal safety voice cal | MERGE_PENDING | 1 | 102 min | 16:01Z |  |
 | T541 | payments, portals and adapters: a card saved or changed from | MERGE_PENDING | 1 | 2 h 16 min | 15:25Z |  |
 | T470 | messaging and server: the worker task that sends queued emai | MERGE_PENDING | 3 | 2 h 18 min | 15:24Z | Fix-round review (after the one allowed findings round) still found a problem at head 1830747e4; no reviewer approved a  |
 | T593 | site and server: the home hero in D-3331's wording with the  | done | 2 | 75 min | 15:11Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
@@ -147,8 +148,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T210 (lease until 2026-11-19T18:35:36Z)
 - lane 3: T530 (lease until 2026-11-19T18:41:09Z)
 - lane 4: T555 (lease until 2026-11-19T18:44:06Z)
-- lane 6: T407 (lease until 2026-11-19T18:57:02Z)
 - lane 7: T715 (lease until 2026-11-19T18:50:24Z)
 
 ## Last usage reading
-- {"task": "T541", "at": "2026-11-19T15:25:56Z", "cache_creation_input_tokens": 337837, "input_tokens": 246, "cache_read_input_tokens": 12500746, "output_tokens": 93313}
+- {"task": "T407", "at": "2026-11-19T16:01:51Z", "output_tokens": 80472, "cache_creation_input_tokens": 262279, "cache_read_input_tokens": 15308090, "input_tokens": 235}
