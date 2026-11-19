@@ -41036,7 +41036,8 @@
     "T596",
     "T597",
     "T700",
-    "T727"
+    "T727",
+    "T753"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -47445,7 +47446,8 @@
    ],
    "deps": [
     "T726",
-    "T700"
+    "T700",
+    "T753"
    ],
    "owns": [
     "runner/cycle.py",
@@ -48985,6 +48987,57 @@
    "branch": "claude/task/T752-launch-open-comment-oracle",
    "prompt": "kit/prompts/T752.md",
    "acceptance": "The comment says at least 1 active business; the oracle's `twin` map is unchanged and its `sources` hash matches the file; `Twin` and the catalog checks pass."
+  },
+  {
+   "id": "T753",
+   "slug": "fable-model-retry",
+   "title": "runner (harness): `fable` is a model the plan can name, a task that failed once retries on Fable, and Opus takes over on a Fable refusal or usage limit",
+   "goal": "Plan change D-4761 (Casey, Nov 19, 2026: \"optimize Fable to get this build done as quickly as possible and as accurately as possible\"; Fable's plan, `docs/handoff/2026-11-19-1715.md:17` to `:29`). The runner knows three models (`kit/tasks.json` `models`: haiku, sonnet, opus; `scripts/validate_tasks.py:46` `MODELS`), and `attempt_model` (`runner/cycle.py:366`) moves a task that failed once to Opus. This harness task: (1) Confirm the current Fable model ID first, from the runner's own model configuration and the model the Actions session actually runs (the November 12 window used `claude-fable-5-1`, `runner/model_window.py:8`, and the session that decided this plan ran on a later Fable ID); never hard-code a guess in code or tests, and if no source in the repository or the session confirms it, stop and report a plan gap. Record the confirmed ID and its source in the decision entry and the hand-in report: the plan change that follows this task's merge adds `\"fable\": \"<that ID>\"` to the `models` map in `kit/tasks.json` (a locked file this task does not own; tests use their own models maps). Make `scripts/validate_tasks.py` accept every value of that map as a task `model` (and as a `reviewer_model`) instead of the fixed three, with Fable treated as Opus-class wherever a rule asks for Opus (sensitive application code, high effort, Opus reviewers). (2) `attempt_model`: a task that failed once (attempts >= 1) runs on Fable when `models` names Fable, whatever its own model; with no Fable entry the rule is unchanged (Opus). The task's own model on the first attempt is unchanged. (3) Fallback: an attempt on Fable that the session hands back as a model refusal (`model_window.is_refusal`, the `--model-fallback` hand-back `cycle.model_fallback` reads, `runner/cycle.py:2998`) or as a usage limit (the readings `runner/usage_reading.py` and `runner/api_death.py` already classify) is re-run on Opus without counting an attempt, and the next attempts of that task stay on Opus; the choice is logged once. If the hand-back needs a change in `runner/__main__.py` (T726's) or `.github/workflows/backup-runner.yml` (T724's, then T727's), it is a plan gap to report, not an edit. (4) `runner/model_window.py`'s behaviour is unchanged: a window mark still wins over `attempt_model` (`worker_model`, D-2225) and every model-window test passes unchanged. Tests in the new `tests/test_runner_fable_model.py`: a first attempt keeps the task's model; a failed-once task goes to Fable, and to Opus with no Fable entry; a Fable refusal or usage limit moves the attempt to Opus with the attempt count unchanged; a window mark still wins; `validate_tasks` accepts `model` set to the Fable ID and refuses an unknown one. `tests/test_failure_drills.py::test_attempt_model_policy` passes unchanged (its models map names no Fable, so its expectations hold). Opus review (harness, `BUILD_BRIEF.md:70`). Update `docs/architecture.md` (the runner section) and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T700",
+    "T641"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "security"
+   ],
+   "owns": [
+    "runner/cycle.py",
+    "scripts/validate_tasks.py",
+    "tests/test_runner_fable_model.py"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "runner/model_window.py"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-2225",
+    "D-2474",
+    "D-4761"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 450,
+    "context_pct": 36
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T753-fable-model-retry",
+   "prompt": "kit/prompts/T753.md",
+   "acceptance": "`tests/test_runner_fable_model.py` passes; every model-window and runner test, `test_attempt_model_policy` included, passes unchanged; the confirmed Fable ID and its source are in the decision entry, never guessed in code; `validate_tasks.py` passes on the plan."
   }
  ]
 }

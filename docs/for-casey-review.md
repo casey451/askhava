@@ -3513,3 +3513,8 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **Test tools:** the payment test stand-in learns to remove a saved card (T751), and an old catalog comment saying "2 businesses" is corrected to 1 (T752).
 - **Dates noted:** the picomatch exception is re-checked December 10; the pacer is re-measured 48 hours after its fix lands.
 - Our choice (Fable's decisions); nothing needs you now.
+
+## Fable takes the retries, and the next tasks in line (D-4761)
+
+- **What will change:** a new runner task (T753) lets a task be assigned to Fable and sends any task that failed once to Fable for its next try; if Fable refuses or runs out of usage, Opus takes over without losing a try. The next tasks claimed are, in order: T724, T753, T726, T727, T748, T740, T742.
+- Your instruction (Nov 19); nothing needs you now.
