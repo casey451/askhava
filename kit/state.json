@@ -24973,6 +24973,7 @@
   {
    "id": "T125",
    "deps": [
+    "T549",
     "T550"
    ],
    "status": "QUEUED",
@@ -25303,12 +25304,12 @@
   {
    "id": "T131",
    "deps": [
-    "T130",
     "T275",
     "T336",
     "T378",
     "T414",
-    "T751"
+    "T751",
+    "T129"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -25332,7 +25333,8 @@
     "T623",
     "T664",
     "T746",
-    "T751"
+    "T751",
+    "T754"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -25391,7 +25393,8 @@
     "T132",
     "T663",
     "T664",
-    "T676"
+    "T676",
+    "T130"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -25402,8 +25405,8 @@
   {
    "id": "T137",
    "deps": [
-    "T136",
-    "T298"
+    "T298",
+    "T135"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -25414,7 +25417,7 @@
   {
    "id": "T138",
    "deps": [
-    "T136"
+    "T135"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -30779,7 +30782,8 @@
    "deps": [
     "T139",
     "T296",
-    "T298"
+    "T298",
+    "T136"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -53758,7 +53762,8 @@
     "T380",
     "T314",
     "T353",
-    "T722"
+    "T722",
+    "T754"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -76599,7 +76604,147 @@
   {
    "id": "T550",
    "deps": [
-    "T549"
+    "T101",
+    "T202",
+    "T103",
+    "T203",
+    "T204",
+    "T106",
+    "T107",
+    "T205",
+    "T109",
+    "T206",
+    "T111",
+    "T112",
+    "T113",
+    "T114",
+    "T115",
+    "T116",
+    "T117",
+    "T118",
+    "T119",
+    "T120",
+    "T548",
+    "T121",
+    "T122",
+    "T123",
+    "T200",
+    "T434",
+    "T161",
+    "T216",
+    "T170",
+    "T218",
+    "T219",
+    "T222",
+    "T229",
+    "T252",
+    "T303",
+    "T304",
+    "T305",
+    "T306",
+    "T307",
+    "T308",
+    "T309",
+    "T310",
+    "T320",
+    "T321",
+    "T324",
+    "T441",
+    "T363",
+    "T364",
+    "T565",
+    "T373",
+    "T375",
+    "T397",
+    "T399",
+    "T407",
+    "T420",
+    "T421",
+    "T427",
+    "T428",
+    "T422",
+    "T423",
+    "T424",
+    "T425",
+    "T426",
+    "T429",
+    "T430",
+    "T432",
+    "T438",
+    "T439",
+    "T446",
+    "T456",
+    "T463",
+    "T457",
+    "T458",
+    "T469",
+    "T470",
+    "T471",
+    "T472",
+    "T473",
+    "T475",
+    "T476",
+    "T477",
+    "T478",
+    "T479",
+    "T480",
+    "T481",
+    "T482",
+    "T483",
+    "T484",
+    "T488",
+    "T489",
+    "T490",
+    "T491",
+    "T496",
+    "T497",
+    "T518",
+    "T624",
+    "T623",
+    "T520",
+    "T522",
+    "T523",
+    "T619",
+    "T524",
+    "T525",
+    "T526",
+    "T527",
+    "T528",
+    "T605",
+    "T530",
+    "T531",
+    "T529",
+    "T532",
+    "T533",
+    "T536",
+    "T540",
+    "T541",
+    "T542",
+    "T543",
+    "T544",
+    "T561",
+    "T562",
+    "T563",
+    "T564",
+    "T570",
+    "T571",
+    "T572",
+    "T573",
+    "T580",
+    "T581",
+    "T582",
+    "T583",
+    "T584",
+    "T585",
+    "T586",
+    "T587",
+    "T588",
+    "T589",
+    "T590",
+    "T592",
+    "T593",
+    "T648",
+    "T708"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -86430,10 +86575,10 @@
     "T663",
     "T669",
     "T662",
-    "T402",
     "T667",
     "T650",
-    "T745"
+    "T745",
+    "T704"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -89063,7 +89208,8 @@
     "T732",
     "T541",
     "T664",
-    "T410"
+    "T410",
+    "T754"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -89153,6 +89299,20 @@
    "attempts": 0,
    "slug": "fable-model-retry",
    "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T754",
+   "deps": [
+    "T541",
+    "T664",
+    "T706",
+    "T333"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "zero-fee-after-intent",
+   "type": "build",
    "stage": "5"
   }
  ],
@@ -95041,7 +95201,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T18:27:27Z",
+ "updated_at": "2026-11-19T18:28:13Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -95139,8 +95299,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "599c4d8662c4ea0ccb7433ecc33d6014ba100974",
- "starter": "manual",
+ "runner_sha": "a9e2cb7968442f37d36f3253c7212cee058e07b1",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "5dc7a90cf33f9a08f44a429638390c90e1d79457",
