@@ -86586,7 +86586,7 @@
     "T324",
     "T471"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "connect-on-settle",
    "type": "harness",
@@ -86600,8 +86600,8 @@
     4786,
     4787
    ],
-   "reason": "plan gap reported: PLAN GAP: tests/test_coverage_floor.py:125 asserts floors[\"future\"] == [], contradicting T663 goal (5), which requires a `future` entry for app/portals/src/confirm_moves.rs. Also the test at :183-196 requires per-file floors and files_measured to hold the same paths, on disk, and named in D-3974, so the new connect.rs and confirm_moves.rs floors fail it. T663 does not own tests/test_coverage_floor.py (T264/T324 do). Reviewer confirmed. Smallest fix: relax the floor tests to accept reasoned future entries, or drop goal (5) from T663. Reviewer also found TD-JOB-18 cases untested (paid settle, he; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T663 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: tests/test_coverage_floor.py:125 asserts floors[\"future\"] == [], contradicting T663 goal (5), which requires a `future` entry for app/portals/src/confirm_moves.rs. Also the test at :183-196 requires per-file floors and files_measured to hold the same paths, on disk, and named in D-3974, so the new connect.rs and confirm_moves.rs floors fail it. T663 does not own tests/test_coverage_floor.py (T264/T324 do). Reviewer confirmed. Smallest fix: relax the floor tests to accept reasoned future entries, or drop goal (5) from T663. Reviewer also found TD-JOB-18 cases untested (paid settle, held_success run, safe-mode, late success) and connect.rs coverage unmeasured.",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/test_coverage_floor.py:125 asserts floors[\"future\"] == [], contradicting T663 goal (5), which requires a `future` entry for app/portals/src/confirm_moves.rs. Also the test at :183-196 requires per-file floors and files_measured to hold the same paths, on disk, and named in D-3974, so the new connect.rs and confirm_moves.rs floors fail it. T663 does not own tests/test_coverage_floor.py (T264/T324 do). Reviewer confirmed. Smallest fix: relax the floor tests to accept reasoned future entries, or drop goal (5) from T663. Reviewer also found TD-JOB-18 cases untested (paid settle, held_success run, safe-mode, late success) and connect.rs coverage unmeasured.\nre-queued after plan fix D-4788: plan gap fixed by D-4788 (#1149)",
    "history": [
     {
      "attempt": 1,
@@ -86625,6 +86625,21 @@
        "turns": 16
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-19T22:29:37Z",
+     "reason": "plan gap fixed by D-4788 (#1149)",
+     "by": "manual-a228da0ae970",
+     "was": "plan gap reported: PLAN GAP: tests/test_coverage_floor.py:125 asserts floors[\"future\"] == [], contradicting T663 goal (5), which requires a `future` entry for app/portals/src/confirm_moves.rs. Also the test at :183-196 requires per-file floors and files_measured to hold the same paths, on disk, and named in D-3974, so the new connect.rs and confirm_moves.rs floors fail it. T663 does not own tests/test_coverage_floor.py (T264/T324 do). Reviewer confirmed. Smallest fix: relax the floor tests to accept reasoned future entries, or drop goal (5) from T663. Reviewer also found TD-JOB-18 cases untested (paid settle, he; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T663 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-4788",
+     "plan_since": "2026-11-19T21:02:19Z",
+     "plan_base": "92c9356ca85b844ad43e9b245aea898737957d0d",
+     "plan_head": "eb0c533593c6f55f99b15b70c4e2dbe279da5867",
+     "plan_then": "0581aa08d550898024f75930ec45678fa8f831c3da7346562bbcd9ff1d162127",
+     "plan_now": "824a97f5dc8708827719c00795691ef25f75502f6a29e7842a9069a17106aade"
     }
    ]
   },
@@ -96461,7 +96476,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T22:29:08Z",
+ "updated_at": "2026-11-19T22:29:47Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -96559,8 +96574,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "c625369f5c87a9cc58c5b2869aea76195ef64f76",
- "starter": "actions",
+ "runner_sha": "eb0c533593c6f55f99b15b70c4e2dbe279da5867",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "7ab290e2ada6c4c8b01c449a9cdb5d36a50e4273",
