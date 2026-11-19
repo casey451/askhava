@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-19T11:00:20Z by runner 06d6439ca6d9 (actions).
+Updated 2026-11-19T11:08:45Z by runner 208fb4d7d73c (actions).
 
 **Building: T470 in progress since 10:42Z; 488 of 664 done; week 78% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 488 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T470 claimed 10:42Z, lease until 13:42Z; lane 2: T536 claimed 10:45Z, lease until 13:45Z; lane 4: T705 claimed 09:16Z, lease until 13:34Z; lane 6: T540 claimed 10:35Z, lease until 13:35Z; lane 7: T593 claimed 11:00Z, lease until 14:00Z
+- **Lane:** lane 1: T470 claimed 10:42Z, lease until 13:42Z; lane 2: T536 claimed 10:45Z, lease until 13:45Z; lane 4: T705 claimed 09:16Z, lease until 14:08Z; lane 6: T540 claimed 10:35Z, lease until 13:35Z; lane 7: T593 claimed 11:00Z, lease until 14:00Z
 - **Week:** 78% used, 32.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:58Z, 1 min before this update
+- **Last run:** 11:08Z, 0 min before this update
 - **Keeper:** last ran 10:37Z, next wake 10:57Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 61 problem(s) on tasks still to run (+308 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 59 problem(s) on tasks still to run (+306 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -91,7 +91,6 @@ Updated 2026-11-19T11:00:20Z by runner 06d6439ca6d9 (actions).
 | T200 | ops and portals: the owner help page with its screened reply | QUEUED | 1 | 2 h 57 min | 12:02Z |  |
 | T408 | server: a release waits while safe mode is on and goes ahead | BLOCKED | 2 | 2 h 21 min | 11:34Z |  |
 | T563 | intake and privacy: the daily consent sweep removes consent  | BLOCKED | 1 | 85 min | 11:21Z |  |
-| T658 | privacy: the scrubber removes lower-case Spanish addresses a | done | 2 | 51 min | 11:04Z | Fix-round review of head 18e4fd102f38620e11d1055ecb4d77813e2b2965 returned FINDINGS after the one allowed fix round (fir |
 
 ### Plan and harness merges on main
 - none
@@ -144,7 +143,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T470 (lease until 2026-11-19T13:42:01Z)
 - lane 2: T536 (lease until 2026-11-19T13:45:21Z)
-- lane 4: T705 (lease until 2026-11-19T13:34:42Z)
+- lane 4: T705 (lease until 2026-11-19T14:08:18Z)
 - lane 6: T540 (lease until 2026-11-19T13:35:23Z)
 - lane 7: T593 (lease until 2026-11-19T14:00:06Z)
 
