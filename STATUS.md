@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T10:04:15Z by runner c00335f40b5e (actions).
+Updated 2026-11-19T10:04:43Z by runner c00335f40b5e (actions).
 
 **Building: T470 in progress since 09:02Z; 485 of 664 done; week 78% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 485 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T470 claimed 09:02Z, lease until 12:55Z; lane 2: T553 claimed 08:48Z, lease until 12:13Z; lane 3: T710 claimed 08:40Z, lease until 12:37Z; lane 4: T705 claimed 09:16Z, lease until 12:16Z
+- **Lane:** lane 1: T470 claimed 09:02Z, lease until 12:55Z; lane 3: T710 claimed 08:40Z, lease until 12:37Z; lane 4: T705 claimed 09:16Z, lease until 12:16Z
 - **Week:** 78% used, 34.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 10:02Z, 1 min before this update
 - **Keeper:** last ran 10:02Z, next wake 12:16Z
@@ -22,6 +22,7 @@ Updated 2026-11-19T10:04:15Z by runner c00335f40b5e (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T553 | Decisions digest, piece 8: the next entries after the header | MERGE_PENDING | 1 | 76 min | 10:04Z |  |
 | T622 | portals: the scorecard's first-six-weeks email panel and OPS | MERGE_PENDING | 1 | 2 h 41 min | 09:47Z |  |
 | T375 | portals and server: the business's Job types page lets the o | MERGE_PENDING | 1 | 74 min | 09:18Z |  |
 | T652 | ops: safe mode starts only on OPS-001's alert kinds, and a d | BLOCKED | 1 | 5 min | 09:10Z | PLAN GAP: tests/integration/tests/safe_mode.rs:246,281,320,378,407 (owned by T487 and T408; T652's prompt :11 and :47 sa |
@@ -145,9 +146,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T470 (lease until 2026-11-19T12:55:21Z)
-- lane 2: T553 (lease until 2026-11-19T12:13:52Z)
 - lane 3: T710 (lease until 2026-11-19T12:37:32Z)
 - lane 4: T705 (lease until 2026-11-19T12:16:58Z)
 
 ## Last usage reading
-- {"task": "T622", "at": "2026-11-19T09:47:58Z", "cache_creation_input_tokens": 450849, "input_tokens": 295, "cache_read_input_tokens": 6398403, "output_tokens": 77145}
+- {"task": "T553", "at": "2026-11-19T10:04:12Z", "cache_read_input_tokens": 5757835, "cache_creation_input_tokens": 260215, "output_tokens": 49230, "input_tokens": 144}
