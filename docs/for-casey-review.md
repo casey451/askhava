@@ -3441,3 +3441,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **For the reviewer:** the Spanish words are in `app/portals/templates/es_business_signup.html` and `app/portals/src/business_signup.rs` (`ES_WORDS`, `ES_MORE` and the `es_` lines). The agreement beside the tick box stays in English, because that is the exact text saved with the sign-up; a Spanish line above it explains it.
 - **Still in English on those screens:** trade names, a few refusal messages about links and license numbers, and the business terms page. They are logged for a later step.
 - Our choice; it waits for the native-speaker review like every Spanish page.
+
+## A two-word text like "sticky door" would have been turned away (D-4602)
+
+- **The gap:** a homeowner whose whole first text was "sticky door" would have been told "We don't cover that yet" after her ZIP, even with handyman businesses on Laftly that do that job. The short text kept no words, so the step that counts businesses saw no job type and found nobody.
+- **Fix:** the follow-up task T716 now keeps the job type such a text names (as a code, never her words) and counts the businesses for it, with no extra question. If she answers "Not sure" to "Which fits best?", the request goes to the businesses that cover every option, or she is asked for a little more, never turned away. T715's test now checks only that one job opens after the ZIP.
+- Our choice; nothing needs you now.
