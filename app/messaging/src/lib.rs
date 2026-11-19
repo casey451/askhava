@@ -31,6 +31,7 @@ mod email_due;
 mod email_timing;
 mod handlers;
 mod health_figures;
+mod held_messages;
 mod help_answers;
 mod help_requests;
 mod keywords;

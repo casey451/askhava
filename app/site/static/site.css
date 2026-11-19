@@ -6,7 +6,14 @@
    ends on a whole pixel; nothing moves under prefers-reduced-motion (A11Y-009). Fonts: Gelasio and
    DM Sans, self-hosted at /static/site/fonts/ (SIL Open Font License, WEB-027, T166), shown with
    font-display: swap over Georgia and the system sans. The colour pairs are checked by
-   tests/a11y/design_tokens.spec.ts (TD-WEB-11, A11Y-028). */
+   tests/a11y/design_tokens.spec.ts (TD-WEB-11, A11Y-028).
+   T607 (D-4246, D-4252, WEB-027, A11Y-005, A11Y-009, A11Y-026): the components of the reference
+   docs/design/reference/ V6 stylesheet under its own class names, one rule a line, written to the
+   spec: shadows only as ink or evergreen rgba, every card keeps its 1 px line border for forced
+   colours, the open Menu list sits in the page flow, emphasis is upright, the kicker and small
+   labels are 700, a field in error gets a 2 px alert border, and the one transition (the 150 ms
+   button colour fade) runs only under prefers-reduced-motion: no-preference. The element rules
+   above the components still style the pages whose markup has no component classes yet. */
 @font-face {
   font-family: "Gelasio";
   font-style: normal;
@@ -66,6 +73,18 @@
   --sans: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
+/* The light-only scheme (DESIGN_SPEC section 2, D-4252), the three night and alert tokens the
+   components use, the card shadow of section 2 and the reference's layout steps. */
+:root {
+  color-scheme: light;
+  --on-night-soft: #DCE8E0;
+  --night-line: #557A6E;
+  --alert: #9B2C1F;
+  --paper-shadow: 0 0 0 1px rgba(30, 41, 38, 0.06), 0 1px 2px rgba(30, 41, 38, 0.06), 0 12px 32px -16px rgba(30, 41, 38, 0.22);
+  --gutter: 20px;
+  --header-h: 60px;
+}
+
 html {
   background: var(--canvas);
   color: var(--ink);
@@ -76,6 +95,21 @@ html {
 
 body {
   margin: 0;
+  overflow-wrap: break-word;
+}
+
+img {
+  max-width: 100%;
+}
+
+/* One italic accent a page at most (DESIGN_SPEC section 3, D-4252): emphasis and addresses stay
+   upright, emphasis by weight. */
+em, i, cite, address, dfn, var {
+  font-style: normal;
+}
+
+em {
+  font-weight: 500;
 }
 
 a {
@@ -246,6 +280,14 @@ select:hover {
   border-color: var(--ink);
 }
 
+/* A field in error (DESIGN_SPEC section 6, D-4252): a 2 px alert border beside its "Error:" text,
+   never colour alone (A11Y-011, A11Y-030). */
+input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"])[aria-invalid="true"],
+textarea[aria-invalid="true"],
+select[aria-invalid="true"] {
+  border: 2px solid var(--alert);
+}
+
 button {
   font: inherit;
   font-weight: 700;
@@ -255,7 +297,6 @@ button {
   border-radius: 12px;
   padding: 10px 20px;
   cursor: pointer;
-  transition: background-color 150ms;
 }
 
 button:hover,
@@ -347,6 +388,176 @@ button:active {
   margin: 0 0 4px;
 }
 
+/* The components of the V6 reference stylesheet in docs/design/reference/, one rule a line, under its
+   class names: T608 to T611 write the markup that uses them. Phones first; 768 and 1024 below. */
+.shell { width: min(100% - 2 * var(--gutter), 1160px); margin-inline: auto; }
+.nowrap { white-space: nowrap; }
+
+/* Header and Menu: not sticky (A11Y-026); the open list sits in the page flow and pushes main
+   down, so it never covers a focused element (WCAG 2.4.11, D-4252). */
+.site-header { background: var(--canvas); border-bottom: 1px solid var(--line); }
+.header-row { display: flex; align-items: flex-start; gap: 4px; min-height: var(--header-h); padding-block: calc((var(--header-h) - 44px) / 2); box-sizing: border-box; }
+.brand { display: inline-flex; align-items: center; gap: 9px; color: var(--ink); text-decoration: none; font: 700 24px/32px var(--sans); letter-spacing: -0.035em; margin-right: auto; min-height: 44px; white-space: nowrap; }
+.brand img, .brand .mark { width: 30px; height: 27px; }
+.site-nav { display: none; }
+.header-link { display: inline-flex; align-items: center; min-height: 44px; padding: 0 10px; font-size: 16px; line-height: 24px; font-weight: 500; color: var(--ink); text-decoration: none; }
+.header-link:hover { text-decoration: underline; }
+.menu { display: flex; flex-direction: column; align-items: flex-end; }
+.menu summary { list-style: none; display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 1px solid var(--field-edge); border-radius: 22px; background: var(--surface); font-size: 16px; line-height: 24px; font-weight: 500; cursor: pointer; box-sizing: border-box; }
+.menu summary:hover { border-color: var(--ink); }
+.menu summary::-webkit-details-marker { display: none; }
+.menu-list { position: static; width: min(280px, calc(100vw - 2 * var(--gutter))); margin: 8px 0 0; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 8px 0; list-style: none; box-shadow: 0 12px 28px rgba(30, 41, 38, 0.12); box-sizing: border-box; }
+.menu-list li { max-width: none; }
+.menu-list a { display: block; padding: 10px 20px; color: var(--ink); font-size: 18px; text-decoration: none; }
+.menu-list a:hover { text-decoration: underline; }
+
+/* Buttons: the primary one keeps its real 1 px evergreen-deep border, which forced colours keeps
+   when it drops the fill (D-4252); its edge is section 4's highlight, drop and evergreen shadow. */
+.button { display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; min-height: 56px; padding: 14px 28px; border: 1px solid var(--evergreen-deep); border-radius: 12px; background: var(--evergreen); color: var(--on-evergreen); font: 700 18px/24px var(--sans); letter-spacing: 0.005em; text-decoration: none; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 1px 0 var(--evergreen-deep), 0 6px 14px -8px rgba(36, 88, 73, 0.45); }
+.button:hover, .button:active { background: var(--evergreen-deep); text-decoration: none; }
+.button-wide { width: 100%; }
+.button-quiet { background: var(--surface); color: var(--ink); border-color: var(--field-edge); font-weight: 500; box-shadow: none; }
+.button-quiet:hover, .button-quiet:active { background: var(--band); border-color: var(--ink); }
+
+/* Type roles: px sizes only, none under 16 px (WEB-027); the kicker and small labels at 700, since
+   no 600 file is shipped (D-4252). */
+.kicker { font: 700 16px/24px var(--sans); letter-spacing: 0.01em; }
+.display { font: 500 30px/34px var(--serif); letter-spacing: -0.02em; text-wrap: balance; }
+.title { font: 500 30px/34px var(--serif); letter-spacing: -0.015em; }
+.section-title { font: 500 28px/34px var(--serif); letter-spacing: -0.012em; text-wrap: balance; }
+.lede { color: var(--ink-soft); }
+.small { font-size: 16px; line-height: 24px; }
+.soft { color: var(--ink-soft); }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+
+/* Paper: a real 1 px line border on every card beside paper-shadow's ring, since forced colours
+   removes every shadow and only the border is left (DESIGN_SPEC section 2, D-4252). */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 20px; box-shadow: var(--paper-shadow); }
+
+/* Form fields: no transition on the border (A11Y-009 allows only the button fade). */
+.field label { display: block; font: 700 16px/24px var(--sans); }
+.field .hint { margin: 2px 0 0; font-size: 16px; line-height: 24px; color: var(--ink-soft); }
+.field textarea, .field input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]) { display: block; width: 100%; margin-top: 6px; padding: 12px 14px; font: 400 18px/26px var(--sans); }
+.field textarea { min-height: 84px; resize: vertical; }
+.field input { height: 56px; }
+.field textarea:focus-visible, .field input:focus-visible { border-color: var(--evergreen); }
+
+/* Home hero (the T216 and T593 rules above hold the photo crops and the request box) */
+.hero { display: flex; flex-direction: column; padding-bottom: 40px; }
+.hero-photo { order: -1; }
+.hero .display { margin: 0 0 10px; }
+.request > .button { margin-top: 12px; }
+.request .cost { margin: 14px 0 0; }
+.request .field textarea:focus-visible { box-shadow: 0 0 0 8px rgba(36, 88, 73, 0.12); }
+.hero-more { margin: 6px 0 0; font-size: 16px; line-height: 24px; }
+.hero-more a { display: inline-flex; align-items: center; min-height: 44px; }
+
+/* Sections */
+.section { padding-block: 56px; }
+.section-head { margin-bottom: 28px; max-width: 640px; }
+.section-head .kicker { margin-bottom: 8px; }
+.section-head p:not(.kicker) { margin-top: 12px; }
+.tint { background: var(--band); border-block: 1px solid var(--line); }
+.cover { padding-block: 36px; }
+.cover-grid { display: grid; gap: 10px; }
+.cover-grid p { color: var(--ink-soft); }
+
+/* How it works: scoped to a list with numerals, so a plain numbered list keeps its markers. */
+.steps:has(.num) { list-style: none; padding: 0; margin: 0; display: grid; }
+.steps:has(.num) li { display: grid; grid-template-columns: 44px minmax(0, 1fr); column-gap: 12px; padding-block: 22px; border-top: 1px solid var(--line); max-width: none; }
+.steps:has(.num) li:last-child { border-bottom: 1px solid var(--line); }
+.steps .num { font: 400 44px/44px var(--serif); color: var(--evergreen); }
+.steps:has(.num) h3 { font: 500 22px/28px var(--serif); margin: 0 0 6px; }
+.steps:has(.num) p { color: var(--ink-soft); margin: 0; }
+
+/* Example quotes */
+.example-label { display: flex; justify-content: space-between; gap: 4px 16px; flex-wrap: wrap; font: 700 16px/24px var(--sans); color: var(--evergreen); margin: 0 0 12px; max-width: none; }
+.example-grid { display: grid; gap: 16px; }
+
+/* Quote card: identical every time, in arrival order; the #N row above a line hairline */
+.quote { display: flex; flex-direction: column; gap: 16px; }
+.quote p, .quote h3, .quote dl, .quote dd, .quote blockquote { margin: 0; }
+.quote-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: 16px; line-height: 24px; color: var(--ink-soft); padding-bottom: 14px; border-bottom: 1px solid var(--line); max-width: none; }
+.quote-top .no { font-weight: 700; color: var(--ink); }
+.quote-name { font: 500 26px/32px var(--serif); letter-spacing: -0.01em; }
+.quote-ind { font-size: 16px; line-height: 24px; color: var(--ink-soft); margin-top: 4px; }
+.quote-price { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 12px; }
+.quote-price .amount { font: 500 48px/52px var(--serif); letter-spacing: -0.02em; font-variant-numeric: lining-nums; }
+.quote-price .format { font-size: 16px; line-height: 24px; color: var(--ink-soft); }
+.facts { font-size: 16px; line-height: 24px; margin: 0; }
+.facts div { display: flex; justify-content: space-between; gap: 20px; padding-block: 11px; border-top: 1px solid var(--line); }
+.facts div:last-child { border-bottom: 1px solid var(--line); }
+.facts dt { color: var(--ink-soft); }
+.facts dd { margin: 0; font-weight: 500; text-align: right; }
+.words-label { font-size: 16px; line-height: 24px; color: var(--ink-soft); margin-bottom: 4px; }
+.words { font: 400 20px/30px var(--serif); margin: 0; }
+.words-none { color: var(--ink-soft); }
+.verify { display: grid; gap: 8px; font-size: 16px; line-height: 24px; }
+.verify .license { color: var(--ink-soft); }
+.checks { display: flex; flex-wrap: wrap; gap: 0 20px; }
+.checks a { display: inline-flex; align-items: center; min-height: 32px; font-weight: 500; }
+.pick { display: grid; gap: 10px; padding-top: 4px; }
+.reply { text-align: center; font-size: 16px; line-height: 24px; color: var(--ink-soft); }
+
+/* The fair band (night) */
+.night .soft { color: var(--on-night-soft); }
+.fair { padding-block: 56px; }
+.fair-list { list-style: none; padding: 0; margin: 24px 0 0; display: grid; }
+.fair-list li { padding-block: 20px; border-top: 1px solid var(--night-line); max-width: none; }
+.fair-list li:last-child { padding-bottom: 0; }
+.fair-list h3 { font: 500 22px/28px var(--serif); margin: 0 0 8px; }
+
+/* For businesses: the fee card, a card with no padding of its own */
+.biz-grid { display: grid; gap: 28px; }
+.biz-text p + p { margin-top: 12px; }
+.fee-card { padding: 0; overflow: hidden; }
+.fee-card h3 { font: 700 16px/24px var(--sans); margin: 0; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+.fee-card dl { margin: 0; }
+.fee-card dl div { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 14px 20px; border-bottom: 1px solid var(--line); }
+.fee-card dd { margin: 0; font: 500 28px/32px var(--serif); font-variant-numeric: lining-nums; }
+.fee-card .small { margin: 0; padding: 14px 20px 0; }
+.fee-card .small:last-child { padding-bottom: 16px; }
+
+/* Who runs it, the 911 note (a 2 px alert border, never a fill or a shadow), the closing action */
+.who { display: grid; gap: 28px; border-top: 1px solid var(--line); }
+.who-facts { font-size: 16px; line-height: 24px; }
+.who-facts div { padding-block: 8px; border-top: 1px solid var(--line); }
+.who-facts dt { font-weight: 700; }
+.who-facts dd { margin: 0; color: var(--ink-soft); }
+.note-911 { background: var(--surface); border: 2px solid var(--alert); border-radius: 14px; padding: 20px; }
+.note-911 h2 { font: 700 18px/28px var(--sans); color: var(--alert); margin: 0 0 4px; }
+.end { border-top: 1px solid var(--line); padding-block: 48px 56px; display: grid; gap: 20px; }
+
+/* Quote page */
+.page-head { padding-block: 28px 24px; display: grid; gap: 14px; }
+.page-head .kicker { margin-bottom: -6px; }
+.summary { padding: 0; }
+.summary div { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 12px 20px; }
+.summary div + div { border-top: 1px solid var(--line); }
+.summary dt { white-space: nowrap; font-size: 16px; line-height: 24px; color: var(--ink-soft); }
+.summary dd { margin: 0; font-weight: 500; text-align: right; }
+.notes { list-style: none; padding: 0; font-size: 16px; line-height: 24px; color: var(--ink-soft); }
+.notes li { padding-block: 12px; border-top: 1px solid var(--line); max-width: none; }
+.notes li:last-child { border-bottom: 1px solid var(--line); }
+.status-line:empty { display: none; }
+.quote-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 20px; }
+.quote-list li { max-width: none; }
+.after-list { padding-block: 24px 48px; }
+
+/* Footer: band with a line top edge; every link a 44 px row */
+.site-footer { background: var(--band); border-top: 1px solid var(--line); padding-block: 44px 28px; }
+.footer-grid { display: grid; gap: 28px; }
+.footer-brand { display: flex; align-items: center; gap: 9px; font: 700 24px/28px var(--sans); letter-spacing: -0.035em; }
+.footer-brand img, .footer-brand .mark { width: 30px; height: 27px; }
+.footer-line { font: 400 20px/28px var(--serif); margin: 10px 0 0; }
+.footer-statement { margin: 14px 0 0; max-width: 560px; }
+.footer-heading { font: 700 16px/24px var(--sans); margin: 0 0 2px; }
+.footer-links { list-style: none; padding: 0; margin: 0; }
+.footer-links a { color: var(--ink); display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; }
+.footer-links a:hover { text-decoration: underline; }
+.footer-base { margin: 28px 0 0; padding-top: 18px; border-top: 1px solid var(--line); font-size: 16px; line-height: 24px; color: var(--ink-soft); }
+
 @media (max-width: 359px) {
   .hero-photo {
     height: clamp(124px, 100vh - 616px, 252px);
@@ -365,6 +576,8 @@ button:active {
   .request-box button {
     margin-top: 8px;
   }
+
+  .field textarea { min-height: 76px; padding-block: 10px; }
 }
 
 /* The one deep band a page may hold (DESIGN_SPEC section 2): white text and links, and the focus
@@ -414,6 +627,30 @@ button:active {
     height: 104px;
     min-height: 104px;
   }
+
+  :root { --gutter: 40px; --header-h: 76px; }
+  .hero .kicker { margin-bottom: 10px; }
+  .display { font-size: 52px; line-height: 56px; }
+  .hero .display { margin-bottom: 16px; }
+  .hero .lede { font-size: 20px; line-height: 32px; max-width: 600px; margin-bottom: 24px; }
+  .request { max-width: 560px; }
+  .field textarea { min-height: 104px; }
+  .section-title { font-size: 36px; line-height: 42px; }
+  .title { font-size: 44px; line-height: 50px; }
+  .cover-grid { grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+  .steps:has(.num) { grid-template-columns: repeat(3, 1fr); column-gap: 36px; }
+  .steps:has(.num) li, .steps:has(.num) li:last-child { display: block; padding-block: 24px 0; border-top: 1px solid var(--ink); border-bottom: 0; }
+  .steps .num { display: block; font-size: 64px; line-height: 64px; margin-bottom: 20px; }
+  .steps:has(.num) h3 { font-size: 24px; line-height: 30px; margin-bottom: 8px; }
+  .example-grid { grid-template-columns: 1fr 1fr; gap: 20px; }
+  .fair-list { grid-template-columns: repeat(3, 1fr); column-gap: 36px; margin-top: 36px; }
+  .fair-list li, .fair-list li:last-child { padding-block: 24px 0; }
+  .who { grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+  .footer-grid { grid-template-columns: 2fr 1fr 1fr; gap: 48px; }
+  .quote-list, .page-head { max-width: 640px; }
+  .card { padding: 24px; }
+  .fee-card, .summary { padding: 0; }
+  .end { grid-template-columns: 1fr auto; align-items: center; }
 }
 
 @media (min-width: 1024px) {
@@ -441,14 +678,40 @@ button:active {
     grid-row: 1;
   }
 
-  .request-box {
+  .request-box,
+  .request {
     padding: 24px;
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: 20px;
-    box-shadow: 0 0 0 1px rgba(30, 41, 38, 0.06), 0 1px 2px rgba(30, 41, 38, 0.06),
-      0 12px 32px -16px rgba(30, 41, 38, 0.22);
+    box-shadow: var(--paper-shadow);
   }
+
+  .site-nav { display: flex; gap: 8px; margin-right: 12px; }
+  .menu { display: none; }
+  .hero { padding-block: 56px 72px; }
+  .hero .kicker { margin-bottom: 16px; }
+  .display { font-size: 64px; line-height: 68px; letter-spacing: -0.025em; }
+  .hero .display { margin-bottom: 20px; }
+  .hero .lede { max-width: 540px; margin-bottom: 28px; }
+  .section { padding-block: 96px; }
+  .section-head { margin-bottom: 44px; }
+  .section-title { font-size: 40px; line-height: 46px; }
+  .cover { padding-block: 44px; }
+  .cover-grid { gap: 88px; }
+  .steps:has(.num) { column-gap: 56px; }
+  .example { display: grid; grid-template-columns: 0.72fr 1.28fr; gap: 72px; align-items: center; }
+  .example .section-head { margin-bottom: 0; }
+  .fair { padding-block: 96px; }
+  .fair-list { column-gap: 56px; }
+  .biz-grid { grid-template-columns: 1.1fr 0.9fr; gap: 88px; align-items: center; }
+  .who { gap: 88px; }
+  .end { padding-block: 72px; }
+  .footer-grid { gap: 88px; }
+  .quote-page { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr); column-gap: 88px; align-items: start; }
+  .quote-page .page-head { padding-block: 48px; }
+  .quote-page .quote-list { padding-top: 48px; }
+  .quote-page .after-list { grid-column: 2; }
 }
 
 /* A phone at 400% zoom or turned sideways: the strip is at most 80 px, so the text is not pushed
@@ -459,9 +722,18 @@ button:active {
   }
 }
 
+/* The one transition: the 150 ms button colour fade, only for those who have not asked for less
+   motion; under reduce nothing animates, fades or scrolls smoothly (A11Y-009, D-4246). */
+@media (prefers-reduced-motion: no-preference) {
+  button, .button { transition: background-color 150ms ease; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  * {
-    transition: none !important;
-    animation: none !important;
-  }
+  *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+
+/* Forced colours drop every fill and shadow: a checkbox or radio goes back to the native control,
+   so its check never vanishes with the fill (DESIGN_SPEC section 6, D-4252). */
+@media (forced-colors: active) {
+  input[type="checkbox"], input[type="radio"] { appearance: auto; }
 }
