@@ -115,6 +115,9 @@ const KEYS: &[&str] = &[
     "ASKHAVA_EMAIL_DAILY_LIMIT",
     "ASKHAVA_EMAIL_MONTHLY_LIMIT",
     "ASKHAVA_EMAIL_BULK_HOLD_PERCENT",
+    // OPS-009's spot-check cadence in days (default 30), passed by the serving route (T304) to
+    // T476's owner health page (D-4280).
+    "ASKHAVA_SPOT_CHECK_EVERY_DAYS",
     // OPS-035's alert address, read as a `SecretString` by `askhava_server`'s alert email sender
     // and never logged (T204, D-3882, D-4044).
     "ASKHAVA_ALERT_EMAIL",

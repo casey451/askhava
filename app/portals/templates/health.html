@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{#- The owner health page (T476; OPS-008, OPS-009, SEC-002, SEC-036; D-3753, D-3844, D-3882,
+    D-4280, D-492). Every OPS-008 figure as worded by health_page.rs, a link to UptimeRobot's own
+    30-day uptime, the OPS-009 spot-check of 10 random cards (only the owner card view's fields),
+    and each required secret as present, parsed and environment-matched beside the SEC-036
+    account identifiers: never a value, a length or a hash. No business-call rate. Reads only. -#}
+{% block title %}System health{% endblock %}
+{% block main %}<h1>System health</h1>
+{% for s in sections %}<h2>{{ s.title }}</h2>
+<dl class="health-figures">
+{% for f in s.figures %}<dt>{{ f.label }}</dt><dd>{{ f.value }}</dd>
+{% endfor %}</dl>
+{% endfor %}<p>For uptime over the last 30 days, see <a href="{{ uptime_url }}">UptimeRobot</a>.</p>
+<h2>Spot-check</h2>
+<p>Every {{ spot_days }} days, open these 10 job cards, picked at random from the last {{ spot_days }} days. Check that each shows the right job and trade.</p>
+{% if spot.is_empty() %}<p id="spot-none">No job cards were sent in the last {{ spot_days }} days.</p>
+{% else %}<table id="spot-check">
+<caption>Random job cards to check</caption>
+<thead><tr><th scope="col">Card</th><th scope="col">Job</th><th scope="col">Trade</th><th scope="col">Sent</th></tr></thead>
+<tbody>
+{% for c in spot %}<tr><td>{{ c.card }}</td><td>{{ c.job }}</td><td>{{ c.trade }}</td><td>{{ c.sent }}</td></tr>
+{% endfor %}</tbody>
+</table>
+{% endif %}<h2>Secrets</h2>
+<p>Each secret shows if it's set, if it reads correctly and if it's the right one for this environment. This page never shows a secret's value.</p>
+<table id="secrets">
+<caption>Required secrets</caption>
+<thead><tr><th scope="col">Name</th><th scope="col">Set</th><th scope="col">Reads correctly</th><th scope="col">Right environment</th></tr></thead>
+<tbody>
+{% for x in secrets %}<tr><th scope="row">{{ x.name }}</th><td>{% if x.present %}Yes{% else %}No{% endif %}</td><td>{% if x.parsed %}Yes{% else %}No{% endif %}</td><td>{% if x.env_matched %}Yes{% else %}No{% endif %}</td></tr>
+{% endfor %}</tbody>
+</table>
+<h2>Accounts</h2>
+<dl id="accounts">
+{% for f in accounts %}<dt>{{ f.label }}</dt><dd>{{ f.value }}</dd>
+{% endfor %}</dl>
+{% endblock %}
