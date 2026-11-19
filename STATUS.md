@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T15:04:16Z by runner 3c7286e8de45 (actions).
+Updated 2026-11-19T15:04:40Z by runner 3c7286e8de45 (actions).
 
 **Building: T541 in progress since 13:09Z; 493 of 668 done; week 83% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 493 of 668 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T541 claimed 13:09Z, lease until 18:01Z; lane 2: T554 claimed 13:13Z, lease until 17:38Z; lane 5: T470 claimed 13:05Z, lease until 17:30Z; lane 6: T407 claimed 14:19Z, lease until 17:19Z; lane 7: T593 claimed 13:55Z, lease until 16:55Z
+- **Lane:** lane 1: T541 claimed 13:09Z, lease until 18:01Z; lane 5: T470 claimed 13:05Z, lease until 17:30Z; lane 6: T407 claimed 14:19Z, lease until 17:19Z; lane 7: T593 claimed 13:55Z, lease until 16:55Z
 - **Week:** 83% used, 21.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:04Z, 0 min before this update
 - **Keeper:** last ran 14:44Z, next wake 16:12Z
@@ -19,6 +19,7 @@ Updated 2026-11-19T15:04:16Z by runner 3c7286e8de45 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T554 | Decisions digest, piece 9: the next entries after the header | MERGE_PENDING | 1 | 110 min | 15:03Z |  |
 | T652 | ops: safe mode starts only on OPS-001's alert kinds, and a d | MERGE_PENDING | 2 | 112 min | 15:03Z | PLAN GAP: tests/integration/tests/safe_mode.rs:246,281,320,378,407 (owned by T487 and T408; T652's prompt :11 and :47 sa |
 | T158 | portals: the owner's pilot scorecard page with go and stop l | MERGE_PENDING | 1 | 2 h 57 min | 14:37Z |  |
 | T540 | portals and server: the owner's release button re-sends an e | done | 1 | 53 min | 13:47Z |  |
@@ -141,10 +142,9 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T541 (lease until 2026-11-19T18:01:14Z)
-- lane 2: T554 (lease until 2026-11-19T17:38:04Z)
 - lane 5: T470 (lease until 2026-11-19T17:30:20Z)
 - lane 6: T407 (lease until 2026-11-19T17:19:51Z)
 - lane 7: T593 (lease until 2026-11-19T16:55:50Z)
 
 ## Last usage reading
-- {"task": "T652", "at": "2026-11-19T15:03:20Z", "cache_creation_input_tokens": 176957, "cache_read_input_tokens": 7413634, "output_tokens": 40767, "input_tokens": 175}
+- {"task": "T554", "at": "2026-11-19T15:03:50Z", "input_tokens": 366, "cache_creation_input_tokens": 477996, "cache_read_input_tokens": 11446078, "output_tokens": 90081}
