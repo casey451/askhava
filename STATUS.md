@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T01:47:21Z by runner 3a116c21da66 (actions).
+Updated 2026-11-19T01:47:49Z by runner 3a116c21da66 (actions).
 
 **Building: T306 in progress since 01:43Z; 468 of 663 done; week 71% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-19T01:47:21Z by runner 3a116c21da66 (actions).
 - **Lane:** lane 5: T306 claimed 01:43Z, lease until 04:43Z
 - **Week:** 71% used, 52.0M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:47Z, 0 min before this update
-- **Keeper:** last ran 01:42Z, next wake 02:02Z
+- **Keeper:** last ran 01:47Z, next wake 02:07Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
@@ -89,7 +89,6 @@ Updated 2026-11-19T01:47:21Z by runner 3a116c21da66 (actions).
 | T151 | ops and messaging: HELP requests with one owner notification | resync | 1 | 2 h 14 min | 02:26Z |  |
 | T618 | Harness: a 4-hourly advisory watch on main that alerts Casey | done | 1 | 28 min | 02:22Z |  |
 | T604 | Dependencies: sentry without default features, so native-tls | done | 1 | 78 min | 01:49Z |  |
-| T478 | jobs, intake, calls, messaging and businesses: the scorecard | done | 1 | 2 h 23 min | 01:47Z |  |
 
 ### Plan and harness merges on main
 - none
