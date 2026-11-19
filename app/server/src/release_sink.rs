@@ -30,6 +30,10 @@
 //! address: `picks::api::awaiting_address`, `payments::api::reclear_release` (its only caller)
 //! and `picks::api::settle` in one transaction, then the same mint and release, so the masked
 //! line opens then.
+//!
+//! T408 (OPS-001, OPS-024, D-3144): while `ops::api::safe_mode_on` is true, `settle_and_release`
+//! settles and releases nothing and queues the pick's one held-release task (`release_hold`); an
+//! error reading safe mode is `ReleaseError::Database` (fails closed, Stripe sends again).
 
 use std::io;
 use std::net::{IpAddr, Ipv4Addr};
@@ -41,7 +45,7 @@ use askhava_core::api::{
     check_base_url,
 };
 use askhava_intake::api::{ADDRESS_IN_KIND, job_homeowner};
-use askhava_ops::api::{NewAlert, Severity, raise_alert};
+use askhava_ops::api::{NewAlert, Severity, raise_alert, safe_mode_on};
 use askhava_payments::api::{
     MoneyEventError, PickNow, Releasable, ReleaseError, ReleaseSink, StripeAccount, StripeWebhook,
     late_success, reclear_release,
@@ -53,7 +57,7 @@ use secrecy::SecretString;
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
-use crate::release_minter;
+use crate::{release_hold, release_minter};
 
 /// The Stripe webhook signing secret (`whsec_…`, SEC-039).
 pub const WEBHOOK_SECRET: &str = "ASKHAVA_STRIPE_WEBHOOK_SECRET";
@@ -99,13 +103,43 @@ impl PickReleaser {
 
     /// Settles, mints and releases `cleared` (see the module docs; PICK-022, PRIV-005, BIZ-014,
     /// D-1739): `MovedOn` for a pick that left awaiting confirm (a paid one's late-success refund
-    /// queued, FEE-021), else the release's answer.
+    /// queued, FEE-021), else the release's answer. While safe mode is on (OPS-001, OPS-024,
+    /// D-3144) nothing is settled or released: a pick already released answers `Already`, any
+    /// other queues its one held-release task (`release_hold`) and answers `MovedOn`.
     ///
     /// # Errors
-    /// [`ReleaseError::Database`] when the settle, the contact lookup, the vault read or the
-    /// release's writes fail; the release, once claimed, stands.
+    /// [`ReleaseError::Database`] when the safe-mode read (fails closed: nothing settled, released
+    /// or queued), the hold, the settle, the contact lookup, the vault read or the release's
+    /// writes fail; the release, once claimed, stands.
     pub async fn settle_and_release(&self, cleared: Releasable) -> Result<Released, ReleaseError> {
         let at = self.clock.now();
+        let mut conn = self
+            .pool
+            .acquire()
+            .await
+            .map_err(|_| ReleaseError::Database)?;
+        if safe_mode_on(&mut conn)
+            .await
+            .map_err(|_| ReleaseError::Database)?
+        {
+            return release_hold::hold(&mut conn, cleared.pick(), at).await;
+        }
+        drop(conn);
+        self.release_now(cleared, at).await
+    }
+
+    /// The releaser's clock: the instant a held release is cleared and released at (OPS-024).
+    pub(crate) fn now(&self) -> Timestamp {
+        self.clock.now()
+    }
+
+    /// The settle and release with no safe-mode read: [`Self::settle_and_release`] once safe mode
+    /// is off, and the held-release task after its own read (OPS-024, FEE-017, PICK-022).
+    pub(crate) async fn release_now(
+        &self,
+        cleared: Releasable,
+        at: Timestamp,
+    ) -> Result<Released, ReleaseError> {
         let mut tx = self
             .pool
             .begin()

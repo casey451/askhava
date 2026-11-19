@@ -448,12 +448,15 @@ fn sources(dir: &Path, found: &mut Vec<PathBuf>) {
     }
 }
 
-/// TD-OPS-01 property (OPS-001, OPS-003, D-133): every action gate on `main` reads the `all`
-/// switch with its own (texts: `texting`; charges: `charging`; cards: `trade`), and only the
-/// charge gate reads safe mode, so safety texts, STOP, HELP, consent and quote texts still go
-/// out in safe mode. The town switch's card-pool read is T251's.
+/// TD-OPS-01 property (OPS-001, OPS-003, D-133, D-4026): every action gate on `main` reads the
+/// `all` switch with its own (texts: `texting`; charges: `charging`; cards: `trade`), and only the
+/// charge and release gates read safe mode (the release gate in `server`'s `release_sink.rs` and
+/// `release_hold.rs`, each read inside `settle_and_release`, `address_in`, `run_held_release` or
+/// a non-`pub` `fn`), and no texting-gate file names either release file, so safety texts, STOP,
+/// HELP, consent and quote texts still go out in safe mode. The town switch's card-pool read is
+/// T251's.
 #[test]
-fn td_ops_01_every_action_checks_its_switches_and_only_charges_read_safe_mode() {
+fn td_ops_01_every_action_checks_its_switches_and_only_charges_and_releases_read_safe_mode() {
     let app = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../app");
     let mut files = Vec::new();
     sources(&app, &mut files);
@@ -480,8 +483,16 @@ fn td_ops_01_every_action_checks_its_switches_and_only_charges_read_safe_mode() 
         let name = path.to_string_lossy().replace('\\', "/");
         if text.contains("safe_mode_on(") {
             assert!(
-                name.ends_with("payments/src/handlers.rs") || name.contains("/ops/src/"),
-                "only charges read safe mode: {name}"
+                name.ends_with("payments/src/handlers.rs")
+                    || name.contains("/ops/src/")
+                    || RELEASE_GATES.iter().any(|g| name.ends_with(g)),
+                "only charges and releases read safe mode: {name}"
+            );
+        }
+        if name.contains("/messaging/src/") || name.ends_with("server/src/inbound_text.rs") {
+            assert!(
+                !text.contains("release_sink") && !text.contains("release_hold"),
+                "a texting gate names a release file: {name}"
             );
         }
         if text.contains("charges_paused(") {
@@ -491,4 +502,58 @@ fn td_ops_01_every_action_checks_its_switches_and_only_charges_read_safe_mode() 
             );
         }
     }
+    for gate in RELEASE_GATES {
+        release_gate_reads_safe_mode(&app.join(gate), gate);
+    }
+}
+
+/// The two `server` files whose release gate reads safe mode (OPS-001, D-4026).
+const RELEASE_GATES: [&str; 2] = ["server/src/release_sink.rs", "server/src/release_hold.rs"];
+
+/// The `fn`s of a release gate allowed to read safe mode, besides a non-`pub` one (D-4026).
+const RELEASE_READERS: [&str; 3] = ["settle_and_release", "address_in", "run_held_release"];
+
+/// D-4026 (iii), (iv): `gate` reads `safe_mode_on(` on a non-comment line, and each such read's
+/// nearest enclosing `fn` above it is one of [`RELEASE_READERS`] or not `pub`, so no exported
+/// wrapper of the safe-mode read exists.
+fn release_gate_reads_safe_mode(path: &Path, gate: &str) {
+    let text = std::fs::read_to_string(path).expect("release gate file");
+    let lines: Vec<&str> = text.lines().collect();
+    let mut reads = 0;
+    for (n, line) in lines.iter().enumerate() {
+        if line.trim().starts_with("//") || !line.contains("safe_mode_on(") {
+            continue;
+        }
+        reads += 1;
+        let header = lines[..n]
+            .iter()
+            .rev()
+            .map(|l| l.trim())
+            .find(|l| !l.starts_with("//") && fn_name(l).is_some())
+            .unwrap_or_else(|| panic!("{gate}:{}: no enclosing fn", n + 1));
+        let name = fn_name(header).unwrap_or_default();
+        assert!(
+            RELEASE_READERS.contains(&name) || !header.starts_with("pub"),
+            "{gate}:{}: safe mode read in exported fn {name}",
+            n + 1
+        );
+    }
+    assert!(
+        reads > 0,
+        "{gate} must read safe_mode_on( on a non-comment line"
+    );
+}
+
+/// The name of the `fn` a trimmed line declares, if it declares one.
+fn fn_name(line: &str) -> Option<&str> {
+    let (_, rest) = line.split_once("fn ")?;
+    let before = &line[..line.len() - rest.len() - 3];
+    let words = [
+        "", "pub ", "async ", "const ", "unsafe ", "(crate) ", "(super) ",
+    ];
+    let decl = before
+        .split_inclusive(' ')
+        .all(|w| words.contains(&w) || w.starts_with("pub(") || w.starts_with("extern"));
+    let end = rest.find(|c: char| !(c.is_alphanumeric() || c == '_'))?;
+    (decl && end > 0).then(|| &rest[..end])
 }
