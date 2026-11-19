@@ -1,6 +1,6 @@
 # Decisions in force
 
-Through D-2992. Reader layer over the append-only `docs/decisions.md` (D-3856, D-4447), shaped by `docs/reviews/decision-digest-plan.md` and checked by `python3 scripts/check_decision_digest.py`. One line per rule in force; the log keeps the full entry (`grep -n '^- \*\*D-####\*\* ' docs/decisions.md`). "The brand" is Laftly (D-3347); older entries say Ask Hava.
+Through D-3142. Reader layer over the append-only `docs/decisions.md` (D-3856, D-4447), shaped by `docs/reviews/decision-digest-plan.md` and checked by `python3 scripts/check_decision_digest.py`. One line per rule in force; the log keeps the full entry (`grep -n '^- \*\*D-####\*\* ' docs/decisions.md`). "The brand" is Laftly (D-3347); older entries say Ask Hava.
 
 ## Product and scope
 
@@ -25,7 +25,7 @@ Through D-2992. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1496 (product) Cold-email outreach is parked until Casey asks; any outreach needs its own provider and domain, never the transactional email account.
 - D-1499 (product) Casey's Nov 3 package defers to the repo (its draft numbers unused); ISO 27001/27701 and SOC 2 readiness is post-launch, not a build gate.
 - D-1515 (product) National-ready: market values (towns, time zone, licensing and identity sources, tax, launch date) come from data, never a literal unless a requirement names it; launch market open.
-- D-1518 (product) Markets are reviewed data (`docs/catalog/markets.yaml`); job locations are Census ZCTA centroids, never typed; each business sets its own base ZIP and radius, 1 to 100 miles.
+- D-1518, D-3113, D-3116 (product) Markets are reviewed data (`docs/catalog/markets.yaml`, compiled in; a non-AZ market needs a decision ID; the sync never sets `launched_at`); job locations are Census ZCTA centroids, never typed; each business sets its own base ZIP and radius, 1 to 100 miles, before sign-up finishes.
 - D-1947 (product) No push web app in the pilot: no push, subscription, manifest or service-worker route or file, and no push channel.
 
 ## Brand and wording
@@ -207,6 +207,11 @@ Through D-2992. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-2712, D-2741, D-2743, D-2744 (licensing) A business's holder (`licensing::api::holder_for`): agency rows, pest attestation, city standing and the Active classes of its latest daily-checked ROC number (the caller's only before any check); a handyman chose Handyman at sign-up.
 - D-2923, D-2943 (businesses) The business name (required) and trade name (optional), each at most 200 characters and screened, are given at sign-up and stored; `public_names` shows the trade name else the business name, re-screened, leaving out a failing one with one alert.
 - D-2954 (licensing) Sign-up reads the business's own state or city record once through `businesses::api::signup_record` (ROC number bound server-side at the license match); nothing from it is stored or logged; a name mismatch or no contact goes to review.
+- D-3033, D-3034, D-3037 (businesses) Business names, city license number and review links live in `businesses.business_name` and `review_link`, screened by `screen_public_name`; a review link must be a Business Profile or Yelp `/biz/` page shape with no embedded link or phone, and must open through the guarded fetch.
+- D-3044, D-3048 (businesses) Leaving (owner, step-up) is one transaction: reason stored once, status `removed`, waiting picks end `ineligible` with the backup applied, every unwithdrawn quote withdrawn, saved cards marked removed, sessions and links ended; ledger untouched; the pause question only after 14 days self-paused.
+- D-3070 (businesses) A Confirm-page terms acceptance is a `businesses.terms_acceptance` row on channel `confirm_page` with a unique `pick_id`; a second press for the pick stores nothing.
+- D-3081 (businesses) A phone a non-owner member links or renumbers works only once the owner approves that number (`approved_at`, `number_set_at`); until then its digests sit in `messaging.sender_held`, both routes and `notice_recipients` treat it as unknown, and a declined phone is deleted.
+- D-3100, D-3119, D-3120 (businesses) One catalog rule: a stored row, on or off, wins and a category with no stored row is off; the web server stores the catalog before serving and refuses to start if it cannot; a repeat load never switches a category on.
 
 ## Matching, quotes and picks
 
@@ -301,7 +306,10 @@ Through D-2992. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-2661, D-2662, D-2664 (matching) A backup counts only when bound with the pick after its code passed; a pick ending without acceptance moves once to an available backup through `page_pick`; a paused job takes none; a text pick has no backup.
 - D-2897 (matching) A job type's quote format is its own, else `firm` for a one-time job type of a recurring category, else the category's (`quotes::api::format_for`); the form shows only that format's fields.
 - D-2899 (matching) A quote note: at most 300 characters, the card gate's bounces, off-platform phrases (call, text or email me or us; cash; Venmo; Zelle; outside the brand), then the AI screener while AI is on; re-checked on every edit.
-- D-2992 (matching) The final Pick needs the PICK-049 share box ticked (never pre-checked); without it the review re-renders with the error and nothing is stored or sent.
+- D-2992, D-2993, D-3032 (matching) The final Pick needs the PICK-049 share box ticked (`share=yes`, never pre-checked) from that browser: unticked shows the review again with the error, sends no code and stores nothing; the tick is `picks.share_consent`, bound to the pick in the code step's store transaction.
+- D-2994, D-3024 (matching) "Can't take it" (`/b/picks/{pick}/cant-take`, only the pick ID in the notice's `cant_take` value) is for the owner or a Confirm and billing member on a waiting pick: it ends the pick `cancelled` (`cant_take`), no fee, nothing counted, then the backup choice runs.
+- D-3035 (matching) Quote cards show plain Google and Yelp link lines after the license lines when saved; no stars, counts or excerpts.
+- D-3074, D-3075, D-3076, D-3077, D-3078 (matching) The Confirm's settle move queues one `picks.accepted_quote` task (IDs only, per pick); its email says "picked", reads her address only at send time and adds no text template; the quote page shows the picked quote while the pick is `paid` or `free`.
 
 ## Money
 
@@ -359,7 +367,7 @@ Through D-2992. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1527, D-1528, D-1529, D-1531 (money) Refund rules are pure (facts from `picks`), one key per pick; attempts count within 72:00:00, in business hours unless emergency, 3 h apart; an answered call blocks a refund or no-show; nothing charged, no refund; T191 words the email.
 - D-1542, D-1545, D-1546, D-1753, D-2067 (money) One `payments.refund` row per charged pick under the pick lock; hourly tries replay the last key; a disputed charge blocks; first-failure alert only; ledger `refund` only on Stripe `succeeded`, a later failure appends a `refund-reversal`; a pending one is re-read every 30 minutes, never resent.
 - D-1543, D-1544 (money) A dispute is recorded once per `dp_…` with its $15 ledger fee and a High alert; auto-submit only when `picks` marks it (48 h before due); the evidence pack holds no contact; refund and dispute rows are never deleted.
-- D-1547, D-2290, D-2955, D-2958 (money) A success after the job moved on: `late_success` queues one refund (trigger `late-success`) and one High alert per pick, once whatever path sees it; it runs in the success's own transaction and in `end_pick` (lock order `charge_attempt`, `pick_intent`, `pay_timer`).
+- D-1547, D-2290, D-2955, D-2958, D-3007 (money) A success after the job moved on is stored with its evidence and answers `PickEnded` (kept, never released); `late_success`, in that same transaction and in `end_pick` (locks `charge_attempt`, `pick_intent`, `pay_timer`), queues one refund (`late-success`) and one High alert per pick, once.
 - D-1552, D-1553, D-1554, D-1555 (money) Nightly reconcile reads 7 days of charges, auto-matches known picks, refunds unknown, closed or second charges (never disputed), alerts once per unknown charge, never stops on one.
 - D-1558 (money) The FEE-033 tier-edge flag is a pure rule (5%, 3 of the last 10 bases by default) with no caller until a basis is stored at the pick.
 - D-1754, D-2071, D-2072, D-2073, D-2289 (money) Stripe events are recorded by ID in `payments.webhook_event` (a known ID answers 200); a `succeeded` refund is re-read from Stripe; a signed event the route cannot read gets a row and one High alert; an event arriving before its record answers 500; only Confirm's CSP allows `js.stripe.com`.
@@ -371,7 +379,7 @@ Through D-2992. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-2302, D-2713 (money) `no_fee_release` reads the pick's `payments.pick_fee` row and refuses when it is missing or names another business or job; the $0 ledger entry is checked against that row's pair, whatever the row's kind.
 - D-2303, D-2971, D-2972 (money) Only full refunds; a succeeded USD refund whose amount differs is booked at Stripe's amount with a High alert and no "refunded in full" notice; another currency or a missing amount books the charge amount with an alert; a reversal is at the latest refund entry's amount.
 - D-2210, D-2331 (money) The fee uses the quote's stored price and the job's latest `job_facts` row (`catalog`); a non-emergency job with no row, unknown code or mixed categories is refused; an emergency uses one-time defaults, High alert; a fee-free candidate frees it; a visit-fee or no-hours hourly quote is diagnostic.
-- D-2333, D-2898 (money) A per-visit price needs its visit schedule (weekly, every two weeks, monthly, quarterly, yearly); any other schedule is entered as a monthly amount; the pick maps visit and schedule to the fee period.
+- D-2333, D-2898, D-3020 (money) A per-visit price needs its visit schedule (weekly, every two weeks, monthly, quarterly, yearly); any other schedule is entered as a monthly amount; the schedule is stored beside `Price::Monthly`, never inside it; the pick maps visit and schedule to the fee period.
 - D-2623 (money) The success transaction stores the `ch_` ID, appends one `charge` entry at the pick's fixed fee keyed per pick and queues the receipt; a fee-free job type writes its $0 entry at Confirm; a charge refunded before any release is not an introduction.
 - D-2624 (money) A PaymentIntent carries a description and a statement-descriptor suffix with the job number from `IntentText`, never a brand literal in the adapter.
 - D-2625, D-2768, D-2771 (money) A dispute inquiry is an audit row and a High alert only; escalation (`charge.dispute.updated`) records the dispute once; a won one appends `countering-fee-return` and `dispute-reversal`; the reconcile counts only open or lost disputes.
@@ -380,6 +388,8 @@ Through D-2992. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-2767 (money) On `charge_already_refunded` the refund path lists the intent's refunds and records one only when it is the single succeeded or pending full-amount refund (with the pick's `metadata[pick_id]`); otherwise it alerts.
 - D-2783, D-2784, D-2785, D-2786 (money) Auto-confirm: one off-session charge per pick, only via `picks::auto_confirm` after the pick commits and with Stripe's written answer filed; a decline falls back to Confirm; a tick is void if member, card, fee or version changed or it came after the pick.
 - D-2944, D-2945, D-2946 (money) A signed Stripe success naming no valid pick, or a fraud warning matching no pick, is recorded with one High alert and releases nothing; a fraud warning before the evidence row raises `payments.fraud_warning` once and answers 500.
+- D-3018, D-3065, D-3067 (money) Webhook, check and reconcile refunds book through one reading (`amount_against`); the reconcile holds what the refund path booked; the `unreachable_refunded` notice goes only when `refund_in_full` is true (a missing amount or `NotSent` read counts as full).
+- D-3064, D-3066 (money) The reconcile reads pages of at most 100 by charge ID, each charge in its own transaction; a listed charge with an open row older than 7 days is settled by the retry; `payments.reconcile_checkpoint` only moves forward and is written after the match.
 
 ## Privacy and the contact vault
 
@@ -433,6 +443,8 @@ Through D-2992. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-2622 (privacy) The scrubber and the CARD-008 gate catch spaced gate codes, lower-case addresses, spoken "dash" phones, "it's X" and "X here" names, sign-offs and (at)/(dot) emails; the recall corpus only gains cases.
 - D-2626 (privacy) Key rotation re-seals photos in bounded batches (new object before the row moves, old deleted after commit); the drill runs contacts and photos until both return 0.
 - D-2872 (privacy) A picture text's media is fetched only through the SEC-041 guard, taken like an upload, then deleted at Twilio whatever the checks said; a refused fetch stores and deletes nothing; a failed delete is retried.
+- D-3019, D-3021, D-3022 (privacy) Quote text is gated as written and as a folded view that rejoins split domains (known endings) and keeps line breaks only in number lists that are not phone-shaped (no stretch of 7, 10 or 11 digits, under 3 number words); privacy wins over bare lists.
+- D-3079, D-3129 (privacy) A blocked call queues the link notice only once its PIN connects a line, naming that line's stored PIN (none stored: no notice); a pending link holds only sender digests for 24 hours; a LINK reply works only from the owner's main phone with the matching PIN, 3 refusals a day.
 
 ## Texting and email
 
@@ -520,10 +532,10 @@ Through D-2992. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1853, D-1854, D-1855 (texting) A daily `messaging.cut_bodies` task fails rows still queued or sending 30 days on (not through `give_up`); opt-out events keep the inbox ID as evidence.
 - D-1938 (texting) The homeowner portal switch only turns texts off; only START lifts a listing.
 - D-1992 (texting) `messaging.notice_log` keeps one row per business notice per address (opaque mailbox, provider status read from `email_event`); first open is stamped by the notice's own link page, never a pixel, redirect or open tracking.
-- D-2203 (texting) An `emergency: true` business notice passes the night hold, with CARD-021's subject and first line; its recipients were already chosen under QH-004 and BIZ-037.
+- D-2203, D-3097 (texting) An `emergency: true` business notice passes the night hold, with CARD-021's subject and first line (a payload missing either sends nothing); its recipients were already chosen under QH-004 and BIZ-037.
 - D-2185 (texting) Line mode is append-only `messaging.mode_state` (latest row per audience); no row means homeowner line on, business line off; Casey records suspensions and restores; a suspended line cannot switch on; web-and-email launch switches texting off.
 - D-2186, D-2187, D-2189 (texting) A 911-list emergency text while the homeowner line (or Casey's texting pause) is off turns on the banner and queues `messaging.paused_safety`: INT-004 by email, else Casey's call list; an opted-out number gets the same follow-up, never a voice call.
-- D-2307 (texting) An inbox row failed for a transient reason is retried 3 times (5 min, 30 min, 2 h) by reading the body back from Twilio, never stored or logged; opt-out and HELP always run; a newer processed row from the sender closes it; sends follow quiet hours.
+- D-2307, D-3135, D-3137, D-3138 (texting) An inbox row failed for a transient reason is retried as `messaging.inbound_retry` tasks (5 min, 30 min, 2 h) reading the body back from Twilio, never stored or logged; opt-out and HELP always run; a newer processed row from her closes it; sends follow quiet hours.
 - D-2628 (texting) The outbox sender claims a due `queued` row into `sending` in one statement, re-checks quiet hours at the send, never resends an unknown outcome (email copy, one alert); a closed line's queued rows expire.
 - D-2629 (texting) START into an open request restarts with the consent text; an opt-out while the line is off still gets CON-030's email; CANCEL calls `on_opt_out` in the delivery's transaction; CON-016's write-again is an `ops` audit row.
 - D-2630 (texting) The Canadian area-code set is derived from the quiet-hours zone table, one source with a drift test.
@@ -532,6 +544,8 @@ Through D-2992. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-2762 (texting) Voice creates carry inline TwiML (no number in a URL) and a status callback; the safety call is decided only by machine detection or a final status; its key presses reach a signed `/webhooks/twilio/voice/safety-key` route.
 - D-2765 (texting) A suppressed or failed email counts as not reached and shows in the notice log; the fake Resend keeps a suppression list.
 - D-2769 (texting) Every one-time code, email included, goes through Twilio Verify (its SendGrid integration is Casey's setup); a 60202 or 60203 answer becomes the flow's cooldown.
+- D-3095 (texting) The email footer's postal line is `ASKHAVA_POSTAL_ADDRESS`, checked as a P.O. box or private mailbox; without it dev and CI register no email sender and test and live refuse to start.
+- D-3106 (texting) Plain `enqueue` writes the any-hour quiet-hours exemption from the template ID; an emergency job's texts and direct replies need `enqueue_exempt`; the send-time recheck and due filter live in the outbox sender, so unmoved producers' texts wait for 8 a.m.
 
 ## AI
 
@@ -622,13 +636,18 @@ Through D-2992. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-2206 (security) Every served route calls its `admit_*` limit first; a new request by text is admitted in the delivery's transaction; a business's public name is the one it gave at sign-up, screened (D-2943).
 - D-2208 (security) Live and sandbox refuse to start without an explicit, proved `ASKHAVA_CLIENT_IP_HEADER`; a panic answers 500 with security headers, no panic text; the base URL has no path; CON-022 rows go 1,827 days after a number's last message, except a suppressed number's opt-out records.
 - D-2306 (security) A daily `core.rate_limit_prune` deletes rate-limit windows older than the longest window plus a day, in batches of at most 5,000; rows holding client addresses are kept no longer than that plus about a day.
-- D-2347 (security) Every external `uses:` in every workflow is pinned to a full commit SHA with the version in a trailing comment (SEC-045); T121's test fails on any that is not.
+- D-2347, D-3050 (security) Every external `uses:` in every workflow is pinned to a full commit SHA with the version in a trailing comment (SEC-045); Dependabot watches `github-actions` and proposes updates; T121's test fails on any that is not.
 - D-2348, D-2349 (security) Every Verify code is bound to a stored challenge of its purpose (homeowner sign-in and requests: `portals.code_challenge`, 10 minutes, 5 tries reserved before Verify; business: one reserved `portals.code_send` per link); no connection or transaction is held across a Verify call.
 - D-2410 (security) "This inbox is shared" needs a text phone to turn on and a fresh code to turn on or off; while shared, Confirm needs a fresh code; Quote, Hold and session actions never do.
 - D-2412 (security) The quote form's GET stamps the notice's first open once and never changes the link; no pixel or redirect.
 - D-2440 (security) Every served path of the doors (realms, public, action link, owner, `/c` link) has a section 13 `yes` row and is probed over HTTP by `app/server/tests/door_matrix.rs` with six actors; a new path parameter gets its fill by plan change.
 - D-2634, D-2635 (security) SEC-014's per-IP code limits cover the pick's code step; remembered-device rows never count toward the sign-in link limit.
 - D-2740 (security) `docs/compliance/` is draft ISO 27001 documentation only: nothing marked approved or certified, no secrets or identifiers, no build gate (R-21 is post-launch).
+- D-3025, D-3026, D-3027, D-3028 (security) A release-notice link's GET shows only a button; its POST emails the usual one-time link per membership; `?job=` (digits only) sends a finished sign-in to `/b/jobs/<n>`; the query is read leniently, never a 400; without `with_notice_links` it is plain sign-in.
+- D-3038, D-3039, D-3040, D-3041 (security) Sign-in admission: the link cap counts and inserts under a per-member advisory lock, mailing after commit; code tries are reserved in `portals.code_try` (5) and one code send per link in `portals.code_send` before Verify; no connection is held across Verify.
+- D-3069 (security) A Confirm code goes by Verify SMS only to the person's own phone (email-only: none sent); a code is accepted only after this pick and person's own send within 10 minutes, since Verify keys codes by phone alone; a network failure never says the code ran out.
+- D-3085, D-3087 (security) SEC-014's new-request count runs only for a homeowner with no open request, in a savepoint of the delivery's transaction just before `receive_reply`; a 911-list text and a START that lifted a listing are never counted; a refusal ends 200 with the inbox row kept.
+- D-3089 (security) In the door rule a `site` route under `/h`, `/b` or `/owner` gets that realm's door; only a path no realm prefix names is public.
 
 ## Operations
 
@@ -662,6 +681,8 @@ Through D-2992. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-2641 (ops) Daily purge and retention sweeps queue tomorrow's run first, run under `alert_if_last`, read only final jobs and use the worker's clock.
 - D-2763 (ops) Twilio webhooks use a console connection-override fragment for retries on 5xx, connect failures and read timeouts, plus a fallback URL to the same route (T122's checklist); the app is unchanged.
 - D-2764 (ops) Recovery matches outbox rows to Twilio's sent list by `To`, `From`, a `DateSent` window and a body digest, never by the app's key; an ambiguous match goes to Casey and is never resent.
+- D-3080 (ops) Gate C waits on `scripts/gate_c_ready.py`: `--ask` before the ask opens (P0 owner actions recorded, no open money, privacy or security row, clean vendor leak check, restore drill, signed release record, readiness re-issued), `--go-live` (also a real alert reached) before 'go live'.
+- D-3107 (ops) A `Halt::Failed` inbound text commits one High `messaging.inbound_text_failed` alert and one audit row naming the step (code names and IDs only); a failed alert or audit write is a 500 and a rollback.
 
 ## Code and architecture
 
@@ -784,15 +805,14 @@ Through D-2992. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-512 (runner) Every task PR merges on its own after the Opus review and `Ci`, `Twin`, `Ally`, `Governance`; no code-owner review.
 - D-513, D-583, D-584 (runner) The runner prepares each attempt's branch (continued with `main` merged in, else fresh `-a<n>`); a non-fast-forward push fails the attempt, other rejected pushes BLOCK; only a reviewed head, or exactly it plus `main`, merges.
 - D-514, D-1178 (runner) `actions/cache` keeps cargo, tools and `target/`, keyed on toolchain, `Cargo.lock` and the commit SHA; every check still runs; the runner's smoke uses that target and times out at 540 s as exit 124, never a strike or red `main`.
-- D-515, D-646, D-1128, D-2462, D-2810, D-2986 (runner) `lanes` is 4 (D-2986), changed only by a logged plan change; two harness-type strikes on a lane above 1 fall back to one lane; `leases` per lane mirror `lease`, written only through `with_lease`; lost races retry only while the lane is held.
+- D-515, D-646, D-1128, D-2462, D-2810, D-2986, D-3043 (runner) `lanes` is 5 (D-3043), changed only by a logged plan change; two harness-type strikes on a lane above 1 fall back to one lane; `leases` per lane mirror `lease`, written only through `with_lease`; lost races retry only while the lane is held.
 - D-518 (runner) The hourly tick only dispatches `backup-runner.yml`.
-- D-524 (runner) Pacing budget 30M weighted tokens per five hours, 500M per week; real limits still wait for the reset.
 - D-530, D-1029, D-1058, D-1144 (runner) Claims reserve blocks of five above main's and open plan PRs' numbers; plan changes use `--reserve-decision` (interim rule if refused); entries append at the end whatever the number; an attempt failing only on its own `not owned by` paths is free once.
 - D-551 (runner) Only a cleanup task may hand in no commits; the runner records stage 1's proof itself from checked results.
 - D-582, D-1263 (runner) gitleaks runs with `--verbose --redact` in `Ci` and smoke; a failed check's retry log carries the failed step and a masked excerpt (download retried once), else failure-level annotations.
 - D-620, D-630 (runner) Tasks in flight never share an owned path or stage; cleanup runs alone; FIX-MAIN has a reserved lane; update merges are exactly reviewed work plus `main`; two strikes fall back to one lane.
-- D-677 (runner) `--requeue T### --plan-fix D-###` gives a capped BLOCKED task one Opus attempt per plan change that lists the decision and changed its entry or prompt.
-- D-723 (runner) A merged pull request's run serves its lane; runs that move a task refill free lanes.
+- D-677, D-3031 (runner) `--requeue T### --plan-fix D-###` gives a capped BLOCKED task one Opus attempt per plan change that lists the decision and changed its entry or prompt, or when every failed job stopped at setup on an outside fault a logged harness decision has since fixed.
+- D-723, D-3140, D-3141 (runner) A merged pull request's run serves its lane; every run that ends having moved a task starts one run per refill lane (none while `main` is red); `--resolve-merges` closes merged MERGE_PENDING tasks before the smoke.
 - D-794 (runner) `tests/test_workflow_shell.py` runs `bash -n` on every workflow `run:` step.
 - D-891 (runner) Pure insertions in shared docs and `Cargo.toml` merge mechanically; other conflicts go to a reviewed worker resync on the same attempt (at most 2).
 - D-930 (runner) Decision IDs parse as three or more digits.
@@ -822,16 +842,20 @@ Through D-2992. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-2200, D-2284, D-2301, D-2329, D-2346 (runner) Each outside audit (fourth to seventh, the pentest) gets one disposition line per finding (taken with its task and decision, already owned, or declined with a reason) in its `docs/reviews/2026-11-*-dispositions.md`.
 - D-2225, D-2485 (runner) `kit/runner.json` `model_window` (model, alias, from, until, run_to_limit) sets the model of claims inside it, marked per attempt; the session model comes from `--session-model`; the Thursday window is closed (`until` = `from`, D-2485).
 - D-2463, D-2474, D-2506 (runner) Each task runs on the lowest model that does it well (Sonnet or Opus, never Haiku for code; money, privacy and security code on Opus); every reviewer is Opus; a below-Opus task retries on Opus, and its reviewer names a wrong implementation per test.
-- D-2540, D-2591 (runner) Claim order: a resync first, then `kit/runner.json` `claim_first` ids, then the longest open dependent chain (`order: critical_path`), state order breaking ties; ordering only, failing safe to state order.
+- D-2540, D-2591, D-3082 (runner) Claim order: a resync first, then `claim_first` ids, then the longest open dependent chain, then (with `prefer_disjoint_crates`) a task sharing no crate with work in flight, state order breaking ties; ordering only, failing safe to state order.
 - D-2550 (runner) Plan-health check (d) (`scripts/plan_pins.py`) warns, report-only, when a task's goal adds rows or routes that a test it cannot edit pins by exact list or count.
-- D-2560 (runner) A start routine may reuse the last green smoke on main's head (at most 6 h old, no red or timeout since, `main_red` unset); `main_red` clears only on the runner's own new green; a moved head's smoke runs in the background.
+- D-2560 (runner) A start routine may reuse the last green smoke on main's head (at most 6 h old, no red or timeout since, `main_red` unset); `main_red` clears only on the runner's own new green; a moved head's smoke runs in the background; a lane yields its own unfinished smoke to a same-head green (D-3058).
+- D-3058 (runner) Start smoke may also reuse a green up to `smoke_ancestry_reuse` (3) first-parent DONE squash merges back (base ≤6 h; every D-2560 refusal applies to head, base and each commit between). Casey (Nov 11): decisions meant for him go to a logged Fable agent; never §16 stop points or rule 1's explicit go.
 - D-2620, D-2631, D-2700 (runner) Code-review findings are checked against `main` and become new tasks or fold into the queued owner through the review gate; dispositions in `docs/reviews/2026-11-10-code-review-dispositions.md`.
-- D-2782 (runner) CI caches save only on `main`; pytest runs in its own `Python` job; `Ci` is green only when Checks, Python, Coverage and E2e all succeed; YAML loads with `CSafeLoader` when present.
+- D-2782, D-3142 (runner) CI caches save only on `main`; pytest runs in its own `Python` job; `Ci` is green only when Checks, Lint and slow tests (`SPLIT_TESTS` partitions the Rust tests), Python, Coverage and E2e all succeed; YAML loads with `CSafeLoader` when present.
 - D-2798 (runner) At hand-in a reviewed head behind `main` carries the deterministic update merge, adopted in the same state write (`how: hand-in`).
 - D-2821 (runner) A dependency exists only for a real input (code, table, route, fixture, shared file or test); a file several tasks add to is owned by each in a serial chain.
 - D-2859 (runner) A worker that cannot pass without a forbidden plan change opens its report `PLAN GAP:`; reviewer-confirmed, the task is BLOCKED for `--requeue --plan-fix` with an outbox item; the attempt still counts.
 - D-2870 (runner) A new state value needs its `kit/state_schema.json` entry and a `check_state` test in the same change.
 - D-2922 (runner) A task's optional `deletes` lists owned files its goal removes; plan health counts their absence as no gap once that task is DONE.
+- D-3030 (runner) The CI browser step bounds apt, retries install-deps three times and always runs a Chromium launch check; only optional fonts may be skipped, with a warning.
+- D-3056 (runner) No five-hour budget (`budget_tokens_five_hour` null): pacing uses the week alone; a real reading of any window at 100%, or a session reporting `usage_limit`, holds claims until its reset.
+- D-3057 (runner) The critical-path smoke test judges only what the runner can claim (tasks in flight and their dependents left out), never lane traffic.
 
 ## Superseded
 
@@ -903,6 +927,7 @@ Through D-2992. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-027 -> D-2407
 - D-154 -> D-2407
 - D-1143 -> D-2463
+- D-524 -> D-3056
 
 ## Task-scoped
 
@@ -1014,7 +1039,7 @@ Through D-2992. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - T290: D-2371, D-2386
 - T292: D-2387, D-2388
 - T293: D-2392, D-2394
-- T326: D-2247
+- T326: D-2247, D-3130
 - T328: D-2286
 - T329: D-2287, D-2706
 - T330: D-2288
@@ -1041,3 +1066,19 @@ Through D-2992. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - T332: D-2956, D-2957, D-2970
 - T164: D-2901
 - T384: D-2989, D-2990
+- T165: D-3036
+- T387: D-3049, D-3059
+- T232: D-3055, D-3071, D-3072
+- T313: D-3096, D-3098
+- T317: D-3083, D-3084, D-3086
+- T348: D-3090, D-3091, D-3092, D-3093
+- T360: D-3094
+- T228: D-3045, D-3046, D-3047
+- T378: D-3112
+- T355: D-3118
+- T368: D-3101
+- T352: D-3134
+- T248: D-3114, D-3115, D-3117
+- T400: D-3121
+- T401: D-3124, D-3125
+- T336: D-3136, D-3139
