@@ -1,0 +1,25 @@
+{% extends "business_layout.html" %}
+{#- The business's Job types page after sign-up (T375; BIZ-004, BIZ-049, BIZ-050, A11Y-012,
+    D-2730, D-3155, D-3700). The checklist as the sign-up capability step shows it: licensed trades
+    first, the stored ticks checked, no-license rows marked; a job type a license change removed is
+    not offered. The status region is there from first render and says what the last save did.
+    Native checkboxes, so forms.css comes first in `main`. -#}
+{% block title %}Your job types{% endblock %}
+{% block main %}
+<link rel="stylesheet" href="/static/portals/forms.css">
+<h1>Your job types</h1>
+<div id="job-types-result" role="status">{% if let Some(o) = page.outcome %}<p>{{ o.line() }}</p>{% endif %}</div>
+{% if page.offer.is_empty() %}<p>We have no jobs to send you right now. If your license changes, we'll email you about any new jobs it covers.</p>
+{% else %}<form method="post" action="{{ crate::job_types_page::JOB_TYPES_ROUTE }}" novalidate>
+<input type="hidden" name="csrf" value="{{ page.csrf }}">
+<fieldset id="job-types" aria-describedby="job-types-hint"><legend>Which jobs do you want?</legend>
+<p id="job-types-hint">Jobs your license covers are at the top. Under those are jobs that don't need a license. Check the ones you want and uncheck the ones you don't.</p>
+{% for trade in page.offer %}<fieldset id="trade-{{ trade.category }}"><legend>{{ trade.name }}{% if Self::no_license(trade) %} (no license needed){% endif %}</legend>
+{% for row in trade.rows %}{% let v = Self::value(row.choice) %}<p><input type="checkbox" id="jt-{{ v|urlencode_strict }}" name="job_type" value="{{ v }}"{% if ticked(row.choice) %} checked{% endif %}>
+<label for="jt-{{ v|urlencode_strict }}">{{ row.choice.job_type }}{% if !row.licensed && !Self::no_license(trade) %} (no license needed){% endif %}</label></p>
+{% endfor %}</fieldset>
+{% endfor %}</fieldset>
+<button type="submit">Save job types</button>
+</form>
+{% endif %}
+{% endblock %}
