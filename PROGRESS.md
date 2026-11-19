@@ -8089,3 +8089,4 @@
 - 2026-11-19T21:36:17Z runner a2df2ce40208 (manual): {}
 - 2026-11-19T21:36:38Z runner a2df2ce40208 (actions): {}
 - 2026-11-19T21:36:51Z runner a2df2ce40208 (actions): {}
+- 2026-11-19T21:39:08Z runner a2df2ce40208 (actions): {"T707": "QUEUED -> IN_PROGRESS"}; T707 estimated 1.4M tokens (calibrated); week has 169.7M left (no five-hour budget, D-3056) after 6.3M still running in another lane (session_reading 2026-11-19T21:36:17Z (week)); claimed
