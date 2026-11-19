@@ -3553,3 +3553,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **What happened:** the task that moves a job through "Payment pending" (T663) stopped on its first try because its plan asked it to add a coverage threshold that the existing coverage test does not allow. Two later tasks (T664, T680) had the same problem.
 - **Fix:** each of the three now proves its new payment code is at least 95% tested in its report, and one small follow-up task (T761) then locks those thresholds into the coverage test, raising them, never lowering any.
 - Our choice (Fable's review); nothing needs you now.
+
+## Fable now does the hard tasks and the retries; a hand-in snag fixed (D-4795, D-4796)
+
+- **What changed:** Fable is now named in the plan: the tasks on the longest remaining chain, the payment, privacy, security and texting-consent tasks, and the tool-and-workflow tasks run on Fable, and any task that fails once is retried on Fable, with Opus taking over if Fable is unavailable. Docs and routine tasks stay as they were.
+- **Hand-in fix:** some finished work was held because the worker's commit did not show in its log; workers are now told to commit in a way that always shows, and a held hand-in that cannot pass now says so at once (T762, first in line).
+- Fable's decisions; nothing needs you now.

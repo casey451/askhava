@@ -47801,7 +47801,8 @@
    ],
    "deps": [
     "T724",
-    "T641"
+    "T641",
+    "T762"
    ],
    "owns": [
     "runner/wip.py",
@@ -47862,7 +47863,8 @@
    "deps": [
     "T726",
     "T700",
-    "T753"
+    "T753",
+    "T762"
    ],
    "owns": [
     "runner/cycle.py",
@@ -49890,6 +49892,57 @@
    "branch": "claude/task/T761-money-file-floors",
    "prompt": "kit/prompts/T761.md",
    "acceptance": "`tests/test_coverage_floor.py` and `scripts/coverage_floor.py` pass with the new per-file floors; no floor is lowered and no assertion removed; each new floor is at or below its `cargo llvm-cov` measurement on `main`."
+  },
+  {
+   "id": "T762",
+   "slug": "review-missing-commit-line",
+   "title": "runner and workflow (harness): fix-round workers commit with a plain `git commit`, hold_review fails fast on a buried unproven commit, and the session prompt knows Fable",
+   "goal": "Plan change D-4796 (the `review_missing` holds of Nov 19: fix-round workers' commit lines missing from their transcripts; D-3728 rule (b), `runner/review_proof.py:4` to `:8`; and D-4767's follow-up for Fable). Rule (b) needs Git's `[<branch> <abbrev>]` line in a `--worker-agent` transcript for each commit, but the hand-offs a fix-round worker gets in `.github/workflows/backup-runner.yml` (step 4c's word-for-word list, `:531`; the 5a and 5b fix workers, `:533`, `:534`) never tell it to commit with plain `git commit`, so a `git commit -q` or a piped commit leaves no line and the hand-in is held. This harness task: (1) `backup-runner.yml`: step 4c's word-for-word list and the 5a and 5b fix-worker hand-offs each gain the sentence \"Commit with plain `git commit` in its own Bash call, never `-q`, redirected or piped, so Git's `[<branch> <abbrev>]` line is in your transcript (D-3728).\"; (2) also in `backup-runner.yml`, D-4767's follow-up: step 3's model aliases name `fable` beside haiku, sonnet and opus (the hand-off's `model` `claude-fable-5-2`, from `kit/tasks.json` `models`, maps to it), and an Agent call that refuses Fable or stops at its usage limit outside a model window is re-run on Opus and `--after` gets `--model-fallback` with the refusal text, as step 3d does inside a window (`runner/cycle.py` `model_fallback` and `_fable_limit` already handle both, D-4767); (3) `runner/__main__.py` `hold_review` (`:569`): when the refusal names rule (b) for a commit that is not the branch head (an unproven commit below a later one), it fails fast with one clear line naming that commit and saying a NEW worker must redo it (rewriting history is not allowed, so the hold cannot pass by a review alone), instead of holding once and failing on the next `--after`. D-3728 is not loosened: every commit still needs its line, and a hold still needs a NEW reviewer for (a). Tests in the new `tests/test_runner_review_missing.py`: `hold_review` holds once for a (b) head commit and fails fast for a (b) commit below the head; a check that the workflow's 4c, 5a and 5b texts and step 3 hold the new sentences (read from the file); every runner and review-proof test passes unchanged. Opus review (harness, `BUILD_BRIEF.md:70`). It goes first in `kit/runner.json` `claim_first`. Update `docs/architecture.md` (the runner section) and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T724",
+    "T753"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "security"
+   ],
+   "owns": [
+    ".github/workflows/backup-runner.yml",
+    "runner/__main__.py",
+    "tests/test_runner_review_missing.py"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "runner/review_proof.py"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-3728",
+    "D-4767",
+    "D-4796"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 250,
+    "context_pct": 22
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T762-review-missing-commit-line",
+   "prompt": "kit/prompts/T762.md",
+   "acceptance": "`tests/test_runner_review_missing.py` passes; every runner, review-proof and workflow test passes unchanged; D-3728's rules are unchanged; the workflow's 4c, 5a and 5b hand-offs carry the plain `git commit` sentence and step 3 names the `fable` alias with its Opus fallback."
   }
  ]
 }
