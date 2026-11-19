@@ -53,6 +53,11 @@
 //! done screen; a flagged one shows `Screen::Review` and keeps the cookie.
 //!
 //! T488 (WEB-019, D-4561): `lang=es` serves every step in Spanish (`Asked`, `Form::page`).
+//!
+//! T490 (SEC-025, BIZ-040, OPS-038, D-3750, D-3805): [`ServedSignUp::from_settings`] builds the
+//! code sender and the sign-in mailer over `crate::email_provider`'s one client and shared daily
+//! limit ([`provider_mail`]); with no provider (dev and CI without the Resend key) nothing is
+//! emailed, as before. [`send_signup_code`] is the one admitted code send both code routes use.
 
 use std::future::Future;
 use std::io;
@@ -339,7 +344,7 @@ impl ServedSignUp {
         let confirm = ConfirmSettings::from_pairs(pairs.clone()).map_err(io::Error::other)?;
         let mail = match mail {
             Some(mail) => mail,
-            None => unsent_mail(&pool, &pairs)?,
+            None => provider_mail(&pool, &pairs)?,
         };
         let start = start_adapters(raw, &pairs, (verify, mail))?;
         Ok(Self::new(pool, secret, confirm, start))
@@ -386,14 +391,27 @@ fn start_adapters(
     })
 }
 
-/// D-3186: the app builds no Resend client yet, so the email code and the sign-in link are
-/// stored but not emailed, as `ServedSignIn::from_settings` builds its mailer.
-fn unsent_mail(pool: &PgPool, pairs: &[(String, String)]) -> io::Result<SignupMail> {
+/// SEC-025, BIZ-040, OPS-038 (T490, D-3750): the sign-up's code sender and sign-in mailer over
+/// `crate::email_provider`'s one client, email key, postal line and shared daily limit, so code,
+/// sign-in and account emails count against one daily quota; with no provider or no vault (dev and
+/// CI without the Resend key) the code and link are stored but not emailed (D-3186).
+///
+/// # Errors
+///
+/// A bad setting, or a missing Resend or vault setting in test and live; never a value.
+pub fn provider_mail(pool: &PgPool, pairs: &[(String, String)]) -> io::Result<SignupMail> {
     let settings = Settings::from_pairs(pairs.to_vec()).map_err(io::Error::other)?;
     let vault = super::vault_from(&settings, pairs.to_vec())?.map(Arc::new);
+    let provider = crate::email_provider::email_provider(&settings, pairs.to_vec())?;
+    let link = provider.as_ref().map(|p| p.sign_in_sender()).transpose()?;
+    let code = provider.as_ref().map(|p| {
+        let keys = (p.secret().clone(), p.client().clone());
+        MailboxCodeSender::new(keys.0, keys.1, p.postal(), p.daily_limit())
+            .map_err(|_| io::Error::other("setting ASKHAVA_POSTAL_ADDRESS has an invalid value"))
+    });
     let clock: Arc<dyn Clock> = Arc::new(SystemClock);
-    let link = SignInMailer::<ResendEmail>::new((pool.clone(), clock), vault.clone(), None);
-    Ok(SignupMail::new(vault, None, link))
+    let link = SignInMailer::<ResendEmail>::new((pool.clone(), clock), vault.clone(), link);
+    Ok(SignupMail::new(vault, code.transpose()?, link))
 }
 
 /// A boxed email send's answer; the error carries no value (R5).
@@ -1105,7 +1123,7 @@ impl Form {
         self.email_code(db, business, (ip, now), csrf).await
     }
 
-    /// BIZ-040, SEC-014: one email code send ([`Form::send_email_code`]), then the email code
+    /// BIZ-040, SEC-014: one email code send ([`send_signup_code`]), then the email code
     /// screen, the same whether the send was admitted or refused.
     async fn email_code(
         &self,
@@ -1120,35 +1138,17 @@ impl Form {
         }
     }
 
-    /// SEC-014, SEC-015, SEC-025, BIZ-040: admitted first under `CODE_SENDS_PER_IP` then
-    /// [`SIGNUP_EMAIL_CODES_PER_BUSINESS`] (a refusal or counter error opens and sends nothing,
-    /// so the earlier code still works); then `start_signup_check` opens the check and the code
-    /// goes to the sign-up mailbox alone. The code is never logged or kept.
+    /// [`send_signup_code`] with this form's pool, email key and mailers.
     async fn send_email_code(
         &self,
         db: &mut PgConnection,
         business: Uuid,
         (ip, now): (IpAddr, Timestamp),
     ) -> Result<(), ()> {
-        let checks = [
-            (CODE_SENDS_PER_IP, Key::Ip(ip)),
-            (SIGNUP_EMAIL_CODES_PER_BUSINESS, Key::Record(business)),
-        ];
-        if !matches!(
-            admit(&self.pool, &checks, now).await,
-            Ok(Admission::Admitted)
-        ) {
-            tracing::info!("sign-up email code send refused");
-            return Ok(());
-        }
-        let secret = &self.start.id_secret;
-        let opened = start_signup_check(db, secret, business, now).await;
-        let Some(code) = opened.map_err(|_| ())? else {
-            return Ok(());
-        };
-        let mailbox = signup_mailbox(db, business).await.map_err(|_| ())?;
-        let code = SecretString::from(code);
-        self.start.mail.0.code(db, (mailbox, &code), now).await
+        let parts = (&self.pool, &self.start.id_secret, &self.start.mail);
+        send_signup_code(parts, db, business, (ip, now))
+            .await
+            .map_err(drop)
     }
 
     /// BIZ-040, BIZ-016, A11Y-030: the typed code through `confirm_mailbox`; a wrong or expired
@@ -1801,4 +1801,37 @@ impl<'a> Posted<'a> {
         let es = self.0.iter().any(|(n, v)| n == "lang" && v == "es");
         Asked::new(self.get("csrf"), es)
     }
+}
+
+/// SEC-014, SEC-015, SEC-025, BIZ-040: one sign-up email code send for `business` from `ip`,
+/// admitted first under `CODE_SENDS_PER_IP` then [`SIGNUP_EMAIL_CODES_PER_BUSINESS`] (a refusal or
+/// counter error opens and sends nothing, so the earlier code still works); then
+/// `start_signup_check` opens the check and `mail` sends the code to the sign-up mailbox alone.
+/// The code is never logged or kept.
+///
+/// # Errors
+///
+/// A failed check, mailbox read or send, as a fixed sentence (the route shows its failure page).
+pub async fn send_signup_code(
+    (pool, secret, mail): (&PgPool, &SecretString, &SignupMail),
+    db: &mut PgConnection,
+    business: Uuid,
+    (ip, now): (IpAddr, Timestamp),
+) -> io::Result<()> {
+    let failed = |_| io::Error::other("the sign-up email code send failed");
+    let checks = [
+        (CODE_SENDS_PER_IP, Key::Ip(ip)),
+        (SIGNUP_EMAIL_CODES_PER_BUSINESS, Key::Record(business)),
+    ];
+    if !matches!(admit(pool, &checks, now).await, Ok(Admission::Admitted)) {
+        tracing::info!("sign-up email code send refused");
+        return Ok(());
+    }
+    let opened = start_signup_check(db, secret, business, now).await;
+    let Some(code) = opened.map_err(|_| failed(()))? else {
+        return Ok(());
+    };
+    let mailbox = signup_mailbox(db, business).await.map_err(|_| failed(()))?;
+    let code = SecretString::from(code);
+    mail.0.code(db, (mailbox, &code), now).await.map_err(failed)
 }
