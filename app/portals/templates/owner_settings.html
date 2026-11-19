@@ -1,10 +1,13 @@
 {% extends "base.html" %}
 {#- The owner settings page (T108; LIC-002, SEC-043; D-3744, D-3890): one switch per category.
-    A change needs a code from the last 5 minutes. The category code goes in the form body. -#}
-{% block title %}Category settings{% endblock %}
+    A change needs a code from the last 5 minutes. The category code goes in the form body.
+    T484 (CON-035, PICK-048, D-3753): the owner-recorded opt-out and Stripe's written answer,
+    with the newest filing; a change is confirmed here on screen, never by text. -#}
+{% block title %}Owner settings{% endblock %}
 {% block main %}
 <link rel="stylesheet" href="/static/portals/forms.css">
-<h1>Category settings</h1>
+<h1>Owner settings</h1>
+{% if let Some(line) = notice %}<p id="settings-done" role="status">{{ line }}</p>{% endif %}
 <p><a href="{{ home_route }}">Owner home</a></p>
 <p>Each change needs a code from your authenticator app in the last 5 minutes. If yours is older, <a href="{{ step_up_route }}">get a new code</a> first. Every change is logged.</p>
 <ul id="categories">
@@ -13,4 +16,27 @@
 <p>{{ c.label }} is {% if c.on %}on{% else %}off{% endif %}. <button type="submit">Turn {{ c.label }} {% if c.on %}off{% else %}on{% endif %}</button></p>
 </form></li>
 {% endfor %}</ul>
+<h2>Stop texts to a number</h2>
+<form method="post" action="{{ opt_out_route }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<p><label for="opt-out-phone">Phone number to stop texting</label></p>
+<p id="opt-out-hint">Use this when someone asks you by phone, email or in person to stop our texts. The number gets no more texts or automated calls from us.</p>
+<p><input type="tel" id="opt-out-phone" name="phone" autocomplete="off" aria-describedby="opt-out-hint"></p>
+<p><button type="submit">Stop texts to this number</button></p>
+</form>
+<h2>Stripe's written answer</h2>
+{% if let Some(a) = stripe %}<p id="stripe-answer">Saved {{ a.filed }}: Stripe answered on {{ a.answered_on }}, case {{ a.reference }}. {% if a.allows %}It allows charging a saved card when the business is not there. Businesses with a saved card can see the auto-confirm box.{% else %}It does not allow charging a saved card when the business is not there. Businesses see no auto-confirm box.{% endif %}</p>
+{% else %}<p id="stripe-answer">No Stripe answer is saved yet. Businesses see no auto-confirm box until you save one that says yes.</p>{% endif %}
+<form method="post" action="{{ stripe_route }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<p><label for="stripe-date">Date of Stripe's answer</label></p>
+<p><input type="date" id="stripe-date" name="answered_on"></p>
+<p><label for="stripe-reference">Stripe case or ticket number</label></p>
+<p><input type="text" id="stripe-reference" name="reference" maxlength="200"></p>
+<fieldset><legend>Does Stripe allow charging a saved card when the business is not there?</legend>
+<p><input type="radio" id="stripe-yes" name="allows" value="yes"> <label for="stripe-yes">Yes</label></p>
+<p><input type="radio" id="stripe-no" name="allows" value="no"> <label for="stripe-no">No</label></p>
+</fieldset>
+<p><button type="submit">Save Stripe's answer</button></p>
+</form>
 {% endblock %}
