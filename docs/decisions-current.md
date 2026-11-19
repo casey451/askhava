@@ -807,7 +807,6 @@ Through D-3142. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-514, D-1178 (runner) `actions/cache` keeps cargo, tools and `target/`, keyed on toolchain, `Cargo.lock` and the commit SHA; every check still runs; the runner's smoke uses that target and times out at 540 s as exit 124, never a strike or red `main`.
 - D-515, D-646, D-1128, D-2462, D-2810, D-2986, D-3043 (runner) `lanes` is 5 (D-3043), changed only by a logged plan change; two harness-type strikes on a lane above 1 fall back to one lane; `leases` per lane mirror `lease`, written only through `with_lease`; lost races retry only while the lane is held.
 - D-518 (runner) The hourly tick only dispatches `backup-runner.yml`.
-- D-524 (runner) Pacing budget 30M weighted tokens per five hours, 500M per week; real limits still wait for the reset.
 - D-530, D-1029, D-1058, D-1144 (runner) Claims reserve blocks of five above main's and open plan PRs' numbers; plan changes use `--reserve-decision` (interim rule if refused); entries append at the end whatever the number; an attempt failing only on its own `not owned by` paths is free once.
 - D-551 (runner) Only a cleanup task may hand in no commits; the runner records stage 1's proof itself from checked results.
 - D-582, D-1263 (runner) gitleaks runs with `--verbose --redact` in `Ci` and smoke; a failed check's retry log carries the failed step and a masked excerpt (download retried once), else failure-level annotations.
@@ -855,7 +854,7 @@ Through D-3142. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-2870 (runner) A new state value needs its `kit/state_schema.json` entry and a `check_state` test in the same change.
 - D-2922 (runner) A task's optional `deletes` lists owned files its goal removes; plan health counts their absence as no gap once that task is DONE.
 - D-3030 (runner) The CI browser step bounds apt, retries install-deps three times and always runs a Chromium launch check; only optional fonts may be skipped, with a warning.
-- D-3056 (runner) No five-hour budget (`budget_tokens_five_hour` null): pacing uses the week alone; a real reading of any window at 100% holds claims until its reset.
+- D-3056 (runner) No five-hour budget (`budget_tokens_five_hour` null): pacing uses the week alone; a real reading of any window at 100%, or a session reporting `usage_limit`, holds claims until its reset.
 - D-3057 (runner) The critical-path smoke test judges only what the runner can claim (tasks in flight and their dependents left out), never lane traffic.
 
 ## Superseded
@@ -928,6 +927,7 @@ Through D-3142. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-027 -> D-2407
 - D-154 -> D-2407
 - D-1143 -> D-2463
+- D-524 -> D-3056
 
 ## Task-scoped
 
