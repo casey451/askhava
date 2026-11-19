@@ -1026,3 +1026,34 @@ async fn td_sec_49_why_charged_shows_no_basis_line_when_the_tier_differs(pool: P
     assert!(!page.text.contains("id=\"basis-line\""), "no guessed basis");
     assert!(!page.text.contains("large job"), "{page:?}");
 }
+
+/// TD-SEC-49 (FEE-031, FEE-007, D-3890, D-4603): under the flat fee mode a $325 quote's charge on
+/// an AC repair job is the job type's small tier, the same $25 its basis gives by chance; the fee
+/// was still set by job type, so the page shows no basis line.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_sec_49_why_charged_shows_no_basis_line_under_flat_fees_when_the_tiers_match(
+    pool: PgPool,
+) {
+    let x = person(&pool, "owner@x.example", None).await;
+    let app = app(&pool);
+    let mut db = pool.acquire().await.expect("db");
+    let flat = switch_fee_mode(&mut db, Uuid::new_v4(), FeeMode::Flat).await;
+    assert!(flat.expect("switched").is_some());
+    drop(db);
+    let (pick, job) = picked(&pool, x.by.business).await;
+    charge(&pool, (x.by.business, job, pick)).await;
+    let mut db = pool.acquire().await.expect("db");
+    let fixed = pick_fee(&mut db, pick).await.expect("read").expect("fee");
+    assert!(
+        fixed.mode == FeeMode::Flat && fixed.cents == 2_500,
+        "{fixed:?}"
+    );
+    drop(db);
+    let path = format!("/b/charges/{pick}");
+    let page = send(&app, (&Method::GET, &path), &x.jar, "").await;
+    assert!(page.status == 200 && page.no_store, "{page:?}");
+    assert!(page.text.contains("$325, firm price"), "the accepted quote");
+    assert!(page.text.contains("id=\"tier-line\""), "{page:?}");
+    assert!(!page.text.contains("id=\"basis-line\""), "no basis line");
+    assert!(!page.text.contains("fee basis from your quote"), "{page:?}");
+}

@@ -61,8 +61,9 @@ use askhava_jobs::api::{finished_counts, job_facts, job_number};
 use askhava_messaging::api::still_away;
 use askhava_ops::api::away_until;
 use askhava_payments::api::{
-    Fee, FeeQuote, JobCodes, JobFeeFacts, Period as FeePeriod, Statement, StoredPickFee, Tier,
-    business_statement, period_fee_for, pick_fee, receipt_for, resolve_fee_facts, saved_cards,
+    Fee, FeeMode, FeeQuote, JobCodes, JobFeeFacts, Period as FeePeriod, Statement, StoredPickFee,
+    Tier, business_statement, period_fee_for, pick_fee, receipt_for, resolve_fee_facts,
+    saved_cards,
 };
 use askhava_picks::api::pick_numbers;
 use askhava_portals::api::{
@@ -1100,14 +1101,19 @@ fn derived_basis(price: &Price, facts: JobFeeFacts) -> Option<(Basis, Tier)> {
     Some((basis, tier))
 }
 
-/// FEE-005, FEE-031, D-2331, D-4603: the basis to show for `price` on `job`, only when its tier's
-/// fee is the fee `fixed` at the pick; the job's fee facts as `picks` read them (unsettled facts
-/// are the emergency default, the only facts an unsettled pick was fixed on).
+/// FEE-005, FEE-007, FEE-031, D-2331, D-4603: the basis to show for `price` on `job`, only when
+/// `fixed` was set by tier under the tiered fee mode (a flat fee is set by job type, whatever the
+/// quote says) and its tier's fee is the fee `fixed` at the pick; the job's fee facts as `picks`
+/// read them (unsettled facts are the emergency default, the only facts an unsettled pick was
+/// fixed on).
 async fn shown_basis(
     db: &mut PgConnection,
     (job, price): (Uuid, &Price),
     fixed: &StoredPickFee,
 ) -> Result<Option<Basis>, &'static str> {
+    if fixed.mode != FeeMode::Tiers || !fixed.charged {
+        return Ok(None);
+    }
     let row = job_facts(db, job).await.map_err(|_| "job facts")?;
     let codes = row.as_ref().map(|r| JobCodes {
         category: &r.category,
@@ -1118,7 +1124,7 @@ async fn shown_basis(
         .map_err(|_| "fee facts")?
         .unwrap_or(JobFeeFacts::EMERGENCY_DEFAULT);
     Ok(derived_basis(price, facts)
-        .filter(|(_, tier)| fixed.charged && tier.cents() == fixed.cents)
+        .filter(|(_, tier)| tier.cents() == fixed.cents)
         .map(|(basis, _)| basis))
 }
 
