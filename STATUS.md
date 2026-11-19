@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T21:32:54Z by runner 3ae63a2924fb (actions).
+Updated 2026-11-19T21:33:49Z by runner 3ae63a2924fb (actions).
 
-**Building: T607 in progress since 21:16Z; 505 of 701 done; week 8% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T607 in progress since 21:16Z; 505 of 701 done; week 9% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 505 of 701 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T607 claimed 21:16Z, lease until 00:16Z; lane 4: T480 claimed 20:38Z, lease until 23:38Z; lane 5: T541 claimed 21:24Z, lease until 00:24Z; lane 7: T717 claimed 20:10Z, lease until 23:59Z
-- **Week:** 8% used, 171.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:25Z, 7 min before this update
+- **Week:** 9% used, 171.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 21:33Z, 0 min before this update
 - **Keeper:** last ran 21:25Z, next wake 23:41Z
 
 ## Needs attention
@@ -84,7 +84,6 @@ Updated 2026-11-19T21:32:54Z by runner 3ae63a2924fb (actions).
 | T504 | Decisions digest, piece 5: the next entries after the header | done | 1 | 39 min | 22:47Z |  |
 | T364 | server and portals: the business step-up code page is served | resync | 2 | 52 min | 22:05Z |  |
 | T651 | server and portals: owner step-up try limit, the passkey pat | done | 1 | 2 h 7 min | 21:52Z |  |
-| T722 | payments: read a pick's disputes and record Casey's evidence | done | 1 | 45 min | 21:33Z |  |
 
 ### Plan and harness merges on main
 - none
