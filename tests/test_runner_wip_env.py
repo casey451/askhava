@@ -29,7 +29,7 @@ echo "$@" >> "$FAKE_GITLEAKS_LOG"
 [ -n "$FAKE_GITLEAKS_SLEEP" ] && sleep "$FAKE_GITLEAKS_SLEEP"
 [ -n "$FAKE_GITLEAKS_EXIT" ] && exit "$FAKE_GITLEAKS_EXIT"
 src="${@: -1}"
-if [ "$1" = git ]; then git -C "$src" log -p "$3" | grep -q FAKESECRET && exit 1
+if [ "$1" = git ]; then git -C "$src" log -p $3 | grep -q "^+.*FAKESECRET" && exit 1
 else grep -rq --exclude=.git FAKESECRET "$src" && exit 1; fi
 exit 0
 """
@@ -99,7 +99,7 @@ def test_a_clean_range_passes_and_gitleaks_scans_exactly_the_range_and_the_tree(
     head = commit(world["root"], {"app/demo/notes.txt": "start\nmore\n"})
     assert world["env"].wip_check(head) == ""
     runs = scanned(world)
-    assert len(runs) == 2 and runs[0].startswith(f"git --log-opts {world['main']}..{head} --no-banner --redact --exit-code 1")
+    assert len(runs) == 2 and runs[0].startswith(f"git --log-opts --diff-merges=first-parent {world['main']}..{head} --no-banner --redact --exit-code 1")
     assert runs[1].startswith("dir --no-banner --redact --exit-code 1")
 
 
@@ -134,6 +134,31 @@ def test_a_leak_in_a_middle_commit_with_a_clean_head_tree_is_refused(world: dict
     commit(world["root"], {"app/demo/notes.txt": "start\nFAKESECRET\n"})
     head = commit(world["root"], {"app/demo/notes.txt": "start\n"})
     assert world["env"].wip_check(head) == "gitleaks git: a leak was found"
+
+
+def merge_main_adding(w: dict[str, Any], body: str) -> str:
+    """A `_merge_main`-style merge of a newer main into `work` whose resolution also adds `body` (D-4798)."""
+    root = w["root"]
+    commit(root, {"app/demo/branch.txt": "branch\n"})
+    git(root, "switch", "-q", "main")
+    w["main"] = commit(root, {"app/demo/main.txt": "newer main\n"})
+    git(root, "switch", "-q", "work")
+    git(root, "merge", "-q", "--no-ff", "--no-commit", "main")
+    return commit(root, {"app/demo/merged.txt": body}, "Merge main")
+
+
+def test_a_leak_added_in_a_merge_then_removed_is_refused(world: dict[str, Any]) -> None:
+    merge_main_adding(world, "FAKESECRET\n")
+    head = commit(world["root"], {"app/demo/merged.txt": None})
+    assert world["env"].wip_check(head) == "gitleaks git: a leak was found"
+
+
+def test_an_allow_mark_added_in_a_merge_is_refused_but_one_from_main_is_not(world: dict[str, Any]) -> None:
+    mark = "gitleaks:" + "allow"
+    head = merge_main_adding(world, f"value = 1  # {mark}\n")
+    assert mark in world["env"].wip_check(head)
+    log = f"@@@ -1,1 -1,1 +1,2 @@@\n+ from main {mark}\n +from the branch {mark}\n++merge {mark}\n@@ -1 +1 @@\n+plain {mark}\n"
+    assert list(wip.added_lines(log)) == [f"++merge {mark}", f"+plain {mark}"]
 
 
 def test_a_pii_hit_in_a_changed_file_is_refused(world: dict[str, Any]) -> None:

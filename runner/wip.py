@@ -130,8 +130,8 @@ def scan(root: Path, main: str, head: str, run: Bounded = run_bounded, seconds: 
 def _scan(bounded: Callable[[list[str], Path], tuple[int, str, str]], root: Path, span: tuple[str, str], tmp: Path) -> str:
     main, head = span
     rng = f"{main}..{head}"
-    added = _git(bounded, root, "log", "-p", "--no-color", "--no-textconv", "--no-ext-diff", "--format=", rng)
-    if any(line.startswith("+") and ALLOW_MARK in line for line in added.splitlines()):
+    log = _git(bounded, root, "log", "--cc", "--no-color", "--no-textconv", "--no-ext-diff", "--format=", rng)
+    if any(ALLOW_MARK in line for line in added_lines(log)):
         raise Refused(f"an added line in {rng[:40]} carries {ALLOW_MARK}")
     base = tmp / "main"
     _write_main(bounded, root, main, base)
@@ -143,6 +143,18 @@ def _scan(bounded: Callable[[list[str], Path], tuple[int, str, str]], root: Path
     finally:
         subprocess.run(["git", "worktree", "remove", "--force", str(tree)], cwd=root, capture_output=True, timeout=60, check=False)
     return ""
+
+
+def added_lines(log: str) -> Iterable[str]:
+    """The lines a `git log --cc` patch adds against every parent: `+` in a plain diff, `++` in a merge's combined
+    diff. A merge (`_merge_main` makes one on every retry) shows its own additions this way, and a line that came
+    from main (`+ `) or from the branch's earlier commits (` +`) is not one (D-4798)."""
+    width = 1
+    for line in log.splitlines():
+        if line.startswith("@@"):
+            width = len(line) - len(line.lstrip("@")) - 1
+        elif line[:width] == "+" * width:
+            yield line
 
 
 def _git(bounded: Callable[[list[str], Path], tuple[int, str, str]], cwd: Path, *args: str) -> str:
@@ -164,14 +176,15 @@ def _write_main(bounded: Callable[[list[str], Path], tuple[int, str, str]], root
 
 
 def _gitleaks(bounded: Callable[[list[str], Path], tuple[int, str, str]], tree: Path, rng: str, base: Path) -> None:
-    """gitleaks over exactly the commits of `rng` and over the head tree, with main's config and ignore file."""
+    """gitleaks over exactly the commits of `rng` and over the head tree, with main's config and ignore file. A
+    merge's patch is its diff against its first parent: `git log -p` prints none for a merge by default (D-4798)."""
     exe = shutil.which("gitleaks")
     if not exe:
         raise Refused("gitleaks is not installed")
     opts = [*GITLEAKS_FLAGS, "--gitleaks-ignore-path", str(base)]
     if (base / ".gitleaks.toml").is_file():
         opts += ["--config", str(base / ".gitleaks.toml")]
-    for args in ([exe, "git", "--log-opts", rng, *opts, str(tree)], [exe, "dir", *opts, str(tree)]):
+    for args in ([exe, "git", "--log-opts", f"--diff-merges=first-parent {rng}", *opts, str(tree)], [exe, "dir", *opts, str(tree)]):
         code, _, _ = bounded(args, base)
         if code != 0:
             raise Refused(f"gitleaks {args[1]}: " + ("a leak was found" if code == 1 else f"exit {code}"))
