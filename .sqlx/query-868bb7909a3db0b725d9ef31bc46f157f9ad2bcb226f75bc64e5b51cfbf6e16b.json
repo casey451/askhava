@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE messaging.email_outbox SET first_unsure_at = COALESCE(first_unsure_at, claimed_at, $2) WHERE id = $1 AND status = 'sending'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "868bb7909a3db0b725d9ef31bc46f157f9ad2bcb226f75bc64e5b51cfbf6e16b"
+}

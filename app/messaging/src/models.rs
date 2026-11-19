@@ -668,6 +668,10 @@ pub enum EmailError {
     /// The provider refused the send or its outcome is unknown; a resend carries the same key.
     #[error("the email provider did not confirm the send")]
     Provider,
+    /// The provider refused this one email (a 400 or 422): the row is `dropped`, never sent again
+    /// (D-4327).
+    #[error("the email provider refused this email")]
+    Refused,
     /// The email outbox has no row with this ID.
     #[error("no such email")]
     NotFound,
@@ -797,7 +801,8 @@ pub(crate) async fn mark_email_sent(
 ) -> Result<(), EmailError> {
     sqlx::query!(
         "UPDATE messaging.email_outbox SET status = 'sent', provider_id = $2, sent_at = $3, \
-         subject = NULL, html = NULL, plain = NULL WHERE id = $1 AND status = 'sending'",
+         subject = NULL, html = NULL, plain = NULL, claimed_at = NULL, lease_count = 0 \
+         WHERE id = $1 AND status = 'sending'",
         id,
         provider_id,
         now.to_sqlx() as _
@@ -808,7 +813,8 @@ pub(crate) async fn mark_email_sent(
     .map_err(|_| EmailError::Database)
 }
 
-/// Puts unsent email `id` back in the queue until `until`, recording what it waits for (OPS-038).
+/// Puts unsent email `id` back in the queue until `until`, recording what it waits for, with no
+/// lease and its back-off count reset; a `dropped` row is never held (OPS-038, D-3750, D-4327).
 pub(crate) async fn hold_email(
     db: &mut PgConnection,
     id: Uuid,
@@ -816,8 +822,8 @@ pub(crate) async fn hold_email(
     reason: &str,
 ) -> Result<(), EmailError> {
     sqlx::query!(
-        "UPDATE messaging.email_outbox SET status = 'queued', not_before = $2, waiting_for = $3 \
-         WHERE id = $1 AND status <> 'sent'",
+        "UPDATE messaging.email_outbox SET status = 'queued', not_before = $2, waiting_for = $3, \
+         claimed_at = NULL, lease_count = 0 WHERE id = $1 AND status NOT IN ('sent', 'dropped')",
         id,
         until.to_sqlx() as _,
         reason
@@ -848,6 +854,142 @@ pub(crate) async fn email_row(
         waiting_for: r.waiting_for,
         sent_at: r.sent_at.map(|t| t.to_jiff()),
     }))
+}
+
+/// One email the drain leased (D-3750): its IDs, its age and whether a body holds a mark.
+pub(crate) struct LeasedEmail {
+    pub(crate) id: Uuid,
+    pub(crate) template_id: String,
+    pub(crate) recipient: Uuid,
+    pub(crate) homeowner: bool,
+    pub(crate) subject: Vec<Uuid>,
+    pub(crate) queued_at: Timestamp,
+    pub(crate) first_unsure_at: Option<Timestamp>,
+    pub(crate) marked: bool,
+}
+
+/// Leases up to `batch` due emails at `now`, oldest first, in one statement under `FOR UPDATE SKIP
+/// LOCKED`: `queued` rows past `not_before`, and `sending` rows whose lease began before `stale`
+/// (or unset, `not_before` before `stale`), whose old lease start becomes `first_unsure_at`. Never
+/// a template in `never`, and one in `own` only once held (`waiting_for` set) (D-3750, D-4196,
+/// D-4327). `marks` are searched in the subject and both bodies.
+pub(crate) async fn lease_emails(
+    db: &mut PgConnection,
+    (now, stale, batch): (Timestamp, Timestamp, i64),
+    (never, own): (&[String], &[String]),
+    marks: [&str; 2],
+) -> Result<Vec<LeasedEmail>, EmailError> {
+    let rows = sqlx::query!(
+        "WITH due AS (SELECT id FROM messaging.email_outbox WHERE \
+         ((status = 'queued' AND not_before <= $1 AND (claimed_at IS NULL OR claimed_at <= $2)) \
+         OR (status = 'sending' AND (claimed_at <= $2 OR (claimed_at IS NULL AND not_before <= $2)))) \
+         AND template_id <> ALL($3) AND (template_id <> ALL($4) OR waiting_for IS NOT NULL) \
+         ORDER BY not_before, queued_at, id LIMIT $5 FOR UPDATE SKIP LOCKED) \
+         UPDATE messaging.email_outbox o SET status = 'sending', claimed_at = $1, \
+         first_unsure_at = CASE WHEN o.status = 'sending' \
+         THEN COALESCE(o.first_unsure_at, o.claimed_at, o.not_before) ELSE o.first_unsure_at END \
+         FROM due WHERE o.id = due.id RETURNING o.id, o.template_id, o.recipient_id, \
+         o.recipient_kind, o.subject_ids, o.queued_at, o.first_unsure_at, \
+         (strpos(o.subject || o.html || o.plain, $6) > 0 \
+         OR strpos(o.subject || o.html || o.plain, $7) > 0) AS \"marked!\" ",
+        now.to_sqlx() as _,
+        stale.to_sqlx() as _,
+        never,
+        own,
+        batch,
+        marks[0],
+        marks[1]
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| EmailError::Database)?;
+    Ok(rows
+        .into_iter()
+        .map(|r| LeasedEmail {
+            id: r.id,
+            template_id: r.template_id,
+            recipient: r.recipient_id,
+            homeowner: r.recipient_kind == "homeowner",
+            subject: r.subject_ids,
+            queued_at: r.queued_at.to_jiff(),
+            first_unsure_at: r.first_unsure_at.map(|t| t.to_jiff()),
+            marked: r.marked,
+        })
+        .collect())
+}
+
+/// Marks unsent email `id` `dropped`, never to be sent, its subject and bodies cleared in the same
+/// statement (D-3750, D-4327). Whether this call dropped it.
+pub(crate) async fn drop_email(db: &mut PgConnection, id: Uuid) -> Result<bool, EmailError> {
+    sqlx::query!(
+        "UPDATE messaging.email_outbox SET status = 'dropped', subject = NULL, html = NULL, \
+         plain = NULL, claimed_at = NULL, lease_count = 0 \
+         WHERE id = $1 AND status NOT IN ('sent', 'dropped')",
+        id
+    )
+    .execute(db)
+    .await
+    .map(|r| r.rows_affected() == 1)
+    .map_err(|_| EmailError::Database)
+}
+
+/// Records that the provider call on leased email `id` had an unknown outcome: `first_unsure_at`
+/// is set once, to the lease's start (its `claimed_at`, else `now`), never cleared (D-4327).
+pub(crate) async fn mark_unsure(
+    db: &mut PgConnection,
+    id: Uuid,
+    now: Timestamp,
+) -> Result<(), EmailError> {
+    sqlx::query!(
+        "UPDATE messaging.email_outbox SET first_unsure_at = \
+         COALESCE(first_unsure_at, claimed_at, $2) WHERE id = $1 AND status = 'sending'",
+        id,
+        now.to_sqlx() as _
+    )
+    .execute(db)
+    .await
+    .map(|_| ())
+    .map_err(|_| EmailError::Database)
+}
+
+/// Puts leased email `id` back to `queued` with no lease, `not_before` 1 minute after `now`
+/// doubling with each back-off in a row, capped at 60 minutes (D-4327).
+pub(crate) async fn back_off_email(
+    db: &mut PgConnection,
+    id: Uuid,
+    now: Timestamp,
+) -> Result<(), EmailError> {
+    sqlx::query!(
+        "UPDATE messaging.email_outbox SET status = 'queued', claimed_at = NULL, \
+         not_before = $2::timestamptz \
+         + make_interval(mins => LEAST(60, power(2, LEAST(lease_count, 6))::int)), \
+         lease_count = LEAST(lease_count, 1000) + 1 WHERE id = $1 AND status = 'sending'",
+        id,
+        now.to_sqlx() as _
+    )
+    .execute(db)
+    .await
+    .map(|_| ())
+    .map_err(|_| EmailError::Database)
+}
+
+/// Gives back the leases a run took at `leased` and did not reach: `queued` again, unchanged
+/// otherwise (D-3750).
+pub(crate) async fn release_emails(
+    db: &mut PgConnection,
+    ids: &[Uuid],
+    leased: Timestamp,
+) -> Result<(), EmailError> {
+    sqlx::query!(
+        "UPDATE messaging.email_outbox SET status = 'queued', claimed_at = NULL \
+         WHERE id = ANY($1) AND status = 'sending' AND claimed_at = $2",
+        ids,
+        leased.to_sqlx() as _
+    )
+    .execute(db)
+    .await
+    .map(|_| ())
+    .map_err(|_| EmailError::Database)
 }
 
 /// Homeowner `contact`'s stored update channel, if she chose one (TXT-018).
