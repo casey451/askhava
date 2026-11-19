@@ -92,6 +92,7 @@ pub struct TradeFigures {
     /// The median "minutes this quote took", to the second; `None` when no quote gave it.
     pub median_quote_minutes: Option<SignedDuration>,
     /// Each business that quoted, by business ID.
+    /// Only businesses that quoted inside the window: a pick in it on an earlier quote is not listed.
     pub quotes_per_pick: Vec<BusinessQuotes>,
     /// Not-a-fit answers by reason, in the page's reason order; a reason with none left out.
     /// These cover the whole Arizona calendar month of the window's last second, not the window.
