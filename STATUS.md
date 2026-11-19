@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T07:09:25Z by runner 54cd43c2721b (actions).
+Updated 2026-11-19T07:09:51Z by runner 54cd43c2721b (actions).
 
 **Building: T456 in progress since 06:58Z; 480 of 664 done; week 76% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 480 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T456 claimed 06:58Z, lease until 09:58Z; lane 2: T310 claimed 06:04Z, lease until 09:04Z; lane 3: T216 claimed 06:32Z, lease until 09:32Z; lane 4: T562 claimed 04:26Z, lease until 09:57Z; lane 5: T622 claimed 07:06Z, lease until 10:06Z; lane 6: T476 claimed 06:22Z, lease until 09:22Z
+- **Lane:** lane 1: T456 claimed 06:58Z, lease until 09:58Z; lane 2: T310 claimed 06:04Z, lease until 09:04Z; lane 3: T216 claimed 06:32Z, lease until 09:32Z; lane 5: T622 claimed 07:06Z, lease until 10:06Z; lane 6: T476 claimed 06:22Z, lease until 09:22Z
 - **Week:** 76% used, 38.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:08Z, 0 min before this update
+- **Last run:** 07:08Z, 1 min before this update
 - **Keeper:** last ran 07:08Z, next wake 09:07Z
 
 ## Needs attention
@@ -21,6 +21,7 @@ Updated 2026-11-19T07:09:25Z by runner 54cd43c2721b (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T562 | server and portals: "Why was I charged?" is served with the  | MERGE_PENDING | 1 | 2 h 43 min | 07:09Z |  |
 | T229 | Legal drafts: reading-grade check and plain-language rewrite | MERGE_PENDING | 1 | 2 h 17 min | 06:59Z |  |
 | T506 | Decisions digest, piece 7: the next entries after the header | done | 1 | 102 min | 06:55Z |  |
 | T408 | server: a release waits while safe mode is on and goes ahead | done | 3 | 2 h 48 min | 06:17Z | PLAN GAP: kit/prompts/T408.md:54 "Size budget: at most 6 files, 800 changed lines" cannot be met. The prompt's own plan  |
@@ -143,9 +144,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - T456 (lease until 2026-11-19T09:58:02Z)
 - lane 2: T310 (lease until 2026-11-19T09:04:46Z)
 - lane 3: T216 (lease until 2026-11-19T09:32:18Z)
-- lane 4: T562 (lease until 2026-11-19T09:57:04Z)
 - lane 5: T622 (lease until 2026-11-19T10:06:52Z)
 - lane 6: T476 (lease until 2026-11-19T09:22:42Z)
 
 ## Last usage reading
-- {"task": "T229", "at": "2026-11-19T06:59:52Z", "cache_read_input_tokens": 9140265, "cache_creation_input_tokens": 236899, "output_tokens": 83582, "input_tokens": 243}
+- {"task": "T562", "at": "2026-11-19T07:09:21Z", "input_tokens": 239, "output_tokens": 59219, "cache_read_input_tokens": 10465595, "cache_creation_input_tokens": 268871}
