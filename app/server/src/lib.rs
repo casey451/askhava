@@ -57,6 +57,7 @@ pub mod offdb_stream;
 pub mod owner_portal;
 pub mod owner_signin;
 pub mod payment_jobs;
+pub mod release_hold;
 pub mod release_sink;
 pub mod request_timeout;
 pub mod static_files;
@@ -1039,7 +1040,9 @@ where
     register_consent_sweep(&mut registry, settings, &clock, pairs.clone())?;
     register_opted_out_live(&mut registry, settings, &id_secret, pairs.clone())?;
     register_optout_followup(&mut registry, settings, &id_secret, pairs.clone())?;
-    let stripe = stripe_client(settings, &pairs)?;
+    let hooks = stripe_hooks(settings, &pairs)?;
+    let stripe = hooks.as_ref().map(|h| h.stripe.clone());
+    release_hold::register_held_release(&mut registry, hooks);
     let parts = (&id_secret, &clock);
     register_unreachable(
         &mut registry,
@@ -1319,9 +1322,8 @@ fn register_unreachable(
     Ok(())
 }
 
-/// The worker's one Stripe client, the Stripe webhook's (`release_sink::stripe_webhook`, read
-/// when [`stripe_wanted`]), shared by `picks`' steps and [`payment_jobs`] (D-3118, D-3134, T433):
-/// `None` in dev and CI without the webhook secret.
+/// The worker's one Stripe client, the Stripe webhook's ([`stripe_hooks`]); `None` in dev and CI
+/// without the webhook secret.
 ///
 /// # Errors
 /// A missing or bad Stripe setting in test or live, named, never its value.
@@ -1329,14 +1331,27 @@ fn stripe_client(
     settings: &Settings,
     pairs: &[(String, String)],
 ) -> io::Result<Option<askhava_adapters::api::StripePayments>> {
+    Ok(stripe_hooks(settings, pairs)?.map(|h| h.stripe.clone()))
+}
+
+/// The worker's Stripe webhook state (`release_sink::stripe_webhook`, read when
+/// [`stripe_wanted`]): its one Stripe client, shared by `picks`' steps and [`payment_jobs`]
+/// (D-3118, D-3134, T433), and the held-release task's client, account and releaser (T408,
+/// D-3144); `None` in dev and CI without the webhook secret.
+///
+/// # Errors
+/// A missing or bad Stripe setting in test or live, named, never its value.
+fn stripe_hooks(
+    settings: &Settings,
+    pairs: &[(String, String)],
+) -> io::Result<Option<release_sink::StripeHooks>> {
     use secrecy::ExposeSecret;
     if !stripe_wanted(settings, pairs) {
         return Ok(None);
     }
     let lazy = PgPool::connect_lazy(settings.database_url().expose_secret())
         .map_err(|_| io::Error::other("setting ASKHAVA_DATABASE_URL has an invalid value"))?;
-    let hooks = release_sink::stripe_webhook(settings, lazy, pairs.to_vec())?;
-    Ok(hooks.map(|h| h.stripe.clone()))
+    release_sink::stripe_webhook(settings, lazy, pairs.to_vec())
 }
 
 /// Whether the Stripe webhook's settings are read for the worker: in test and live always (they
