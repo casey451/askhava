@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T10:32:40Z by runner d9889d9b84f9 (actions).
+Updated 2026-11-19T10:33:27Z by runner 7be551b7caec (actions).
 
-**Building: T470 in progress since 09:02Z; 486 of 664 done; week 78% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T470 in progress since 09:02Z; 487 of 664 done; week 78% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 486 of 664 build tasks (owner gates not counted)
+- **Tasks done:** 487 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T470 claimed 09:02Z, lease until 13:32Z; lane 4: T705 claimed 09:16Z, lease until 12:16Z
 - **Week:** 78% used, 34.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:25Z, 7 min before this update
+- **Last run:** 10:32Z, 0 min before this update
 - **Keeper:** last ran 10:25Z, next wake 10:45Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-19T10:32:40Z by runner d9889d9b84f9 (actions).
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T540 (since 2026-11-19T08:04:18Z, no attempt used; a plan change fixes it): T540: dependency T310 is DONE but its owned file app/server/src/owner_portal.rs is not on main; T540: dependency T310 is DONE but its owned file app/server/tests/owner_portal_route.rs is not on main; T540: dependency T310 is DONE but its owned file tests/e2e/owner_portal_served.spec.ts is not on main
 - PLAN GAP T593 (since 2026-11-19T09:02:31Z, no attempt used; a plan change fixes it): T593: dependency T216 is DONE but its owned file app/site/static/photos/hero-kitchen-phone.avif is not on main
-- Strict plan check red: 66 problem(s) on tasks still to run (+305 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 60 problem(s) on tasks still to run (+305 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -28,7 +28,7 @@ Updated 2026-11-19T10:32:40Z by runner d9889d9b84f9 (actions).
 | T375 | portals and server: the business's Job types page lets the o | MERGE_PENDING | 1 | 74 min | 09:18Z |  |
 | T652 | ops: safe mode starts only on OPS-001's alert kinds, and a d | BLOCKED | 1 | 5 min | 09:10Z | PLAN GAP: tests/integration/tests/safe_mode.rs:246,281,320,378,407 (owned by T487 and T408; T652's prompt :11 and :47 sa |
 | T536 | E2e harness: clock-advancing journeys last, a keyed worker,  | BLOCKED | 1 | 46 min | 09:00Z | PLAN GAP: tests/e2e/j2.ts:150 (owned by T099, `e2e-j2-business`; T644 also lists it). Smallest plan change: make the `no |
-| T476 | portals: the owner health page with every OPS-008 figure and | MERGE_PENDING | 1 | 2 h 27 min | 08:50Z |  |
+| T476 | portals: the owner health page with every OPS-008 figure and | done | 1 | 2 h 27 min | 08:50Z |  |
 | T161 | wording: the WORD-024 voice rule's pressure-word scan, the r | BLOCKED | 1 | 4 min | 08:41Z | PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/s |
 | T456 | picks and server: "Hold for 2 more hours" is stored, honoure | done | 1 | 97 min | 08:35Z |  |
 | T216 | site: the hero photo and mark (photography assets) | done | 1 | 97 min | 08:10Z |  |
@@ -101,8 +101,8 @@ Updated 2026-11-19T10:32:40Z by runner d9889d9b84f9 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 306 of 735 (41.6%) · partial 389 · unstarted 40
-**Tasks merged (throughput only):** 486 of 664
+**Requirements verified:** 307 of 735 (41.8%) · partial 389 · unstarted 39
+**Tasks merged (throughput only):** 487 of 664
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -117,7 +117,7 @@ Updated 2026-11-19T10:32:40Z by runner d9889d9b84f9 (actions).
 | licensing | 34 | 14 | 0 | 48 |
 | lifecycle | 18 | 10 | 0 | 28 |
 | messaging | 20 | 24 | 1 | 45 |
-| ops-recovery | 3 | 32 | 19 | 54 |
+| ops-recovery | 4 | 32 | 18 | 54 |
 | privacy | 10 | 20 | 1 | 31 |
 | quiet-hours | 6 | 3 | 0 | 9 |
 | quotes-pick | 27 | 29 | 0 | 56 |
@@ -138,7 +138,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 129 of 263 done
+- stage 5: 130 of 263 done
 - stage 6: 0 of 48 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
