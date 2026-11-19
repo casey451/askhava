@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T17:06:34Z by runner b05c08a0d168 (actions).
+Updated 2026-11-19T17:06:47Z by runner b05c08a0d168 (actions).
 
 **Building: T724 in progress since 16:18Z; 498 of 683 done; week 0% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-19T17:06:34Z by runner b05c08a0d168 (actions).
 - **Lane:** lane 1: T724 claimed 16:18Z, lease until 20:06Z; lane 3: T530 claimed 15:41Z, lease until 19:41Z; lane 4: T555 claimed 15:44Z, lease until 18:44Z; lane 7: T715 claimed 15:50Z, lease until 18:50Z
 - **Week:** 0% used, 17.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 17:06Z, 0 min before this update
-- **Keeper:** last ran 16:40Z, next wake 18:43Z
+- **Keeper:** last ran 17:06Z, next wake 17:26Z
 
 ## Needs attention
 - PLAN GAP T161 (since 2026-11-19T15:50:24Z, no attempt used; a plan change fixes it): T161: dependency T593 is DONE but its owned file app/server/tests/home_request_box.rs is not on main
