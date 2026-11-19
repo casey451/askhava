@@ -20,6 +20,7 @@ The layer-5 crate for masked calls between a homeowner and the business she conn
 - A start is never moved by a repeat or late callback, a lost webhook start is created by the callback, and `call_log` returns the joined start: `tests/integration/tests/call_start.rs` (`td_call_15_*`).
 - Stored PINs unique on a number, no ID relation, the pool alert on used-up draws, 12 concurrent wrong tries never past 6 with one alert, repeats not counted, Arizona midnight: `tests/integration/tests/call_pins.rs` (`td_call_13_*`) and `src/pins.rs` `tests` (TD-CALL-20, T349: a failed draw costs one draw, rejected values are drawn again, a failing byte source gives `None`: `td_call_20_*`).
 - PIN prompts, code call, safety switch and call, Casey's bridge: `tests/integration/tests/voice_calls.rs` (`td_call_06_*`, `td_call_09_*`, `td_txt_09_*`, `ops_028_*`). Never add a `url` to `dial_twiml`'s `Number` or a `Play` to a prompt.
+- The safety voice call switch is stored append-only (`calls.safety_switch`, latest row in force, none is off) and read through `SafetySwitch::turn_on` with `SAFETY_CONDITIONS`, so it never reads on without a stored approval and every CALL-022 item; a refusal stores nothing: `tests/integration/tests/safety_switch.rs` (`td_call_26_*`).
 - A safety-call key whose step fails is queued (`calls.safety_key_retry`, IDs only) or redirected back at most 3 times, never only logged (CON-035, D-4051): `tests/integration/tests/safety_key_retry.rs`.
 
 ## Detail

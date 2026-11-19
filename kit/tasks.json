@@ -10747,7 +10747,8 @@
     "T564",
     "T650",
     "T662",
-    "T704"
+    "T704",
+    "T741"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -33294,7 +33295,18 @@
     "T724",
     "T725",
     "T726",
-    "T727"
+    "T727",
+    "T728",
+    "T729",
+    "T730",
+    "T732",
+    "T733",
+    "T734",
+    "T736",
+    "T737",
+    "T738",
+    "T739",
+    "T741"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -35966,7 +35978,7 @@
    "id": "T236",
    "slug": "ai-call-budgets",
    "title": "AI-call budgets per conversation and per job, and no AI call before the area check",
-   "goal": "Credit-drain defense for the war games (D-1154): AI-021's global daily cap stays, and below it AI-028's per-step budgets apply: no AI call before the consent text and the area check; 2 readings per inbound message, 1 reword per bank question (at most 8), 1 follow-up, card and project file 1 each plus 1 per EDIT (at most 3), 4 concept prompts, 2 screening calls a photo for at most 3 photos; backstops of 40 calls per conversation per Arizona day and 60 per job, with the card call always reserved so no budget lands on it; a verified web-chat session shares its phone's budget and an unverified one makes no call; quote reads 3 per business per job, outside the job's budget; only the first 1,600 characters of a scrubbed message are sent, while the AI-off card keeps her full scrubbed words. Past a budget the step runs on the AI-off path (INT-021) with nothing said and an `ai.call_stat` row with outcome `budget`; `models::calls_today` (`app/ai/src/models.rs`) excludes `budget` rows as it excludes `daily_cap` rows, so refused calls never use up the AI-021 cap. `IntakeCall` carries the conversation, job, step and (for quote reads) business it is for; the caller in `intake` passes them; the budgets are settings in `AiConfig`; the migration adds the `budget` outcome and the conversation, job, step and business columns to `ai.call_stat`. The global daily cap (AI-021, D-811) becomes an atomic admission: before the provider call, one statement reserves a slot for this Arizona day (a counter row per day updated with `... WHERE used < cap RETURNING`, or an equivalent single-statement reservation) on its own short transaction, so concurrent calls past the cap never reach the transport; a retry of one logical call uses its reservation, an abandoned or timed-out reservation still counts for that day, and the `ai.daily_cap` alert is raised once a day under the same race (D-1757). No database connection or open transaction is held across an AI provider await (AI-029, D-2038): the entry the app calls takes the pool, reads the AI-008 switch and makes the admission and the budget reservations each on its own short connection and releases it, awaits the provider (up to AI-023's timeout, retries and backoff included) with no connection held, then takes a connection again to record the call. With no connection held, every AI-028 budget check is a single-statement reservation like the AI-021 admission (only while the budget has room), so concurrent readings of one message (a duplicate or replayed webhook) cannot pass its 2-reading limit, the 1-reword limit or the per-day and per-job backstops together; a refused reservation makes no call and records outcome `budget`. Intake has no caller that applies a reading yet (`app/intake/src/question_bank.rs` calls only `accept_question`), so this task builds the first one in `app/intake/src/service.rs`: it reads one inbound message through the gated `read_intake` and applies the reading only if the step is still current on the new connection, which means the conversation has no inbound message and no `intake.intake_answer` row newer than the message the call was made for; otherwise the reading is recorded and discarded. Calling that function from the text and web-chat paths is T299's (IC-23, D-2065); the AI writing calls are IC-53's (no owner yet). `app/ai/src/switch.rs` (the gated `read_intake`) is this task's for that change. Other tasks' tests call `read_intake` with a `&mut PgConnection` (`app/ai/src/tests/adapter_calls.rs`, `tests/integration/tests/ai_zero_retention.rs`, `tests/integration/tests/prop_prompt_injection.rs`) and are not this task's to change: keep that form compiling for them as a thin wrapper that no app code calls. AI-029's other half, the inbound-text webhook committing before any AI call, is T299's, which wires the AI reading into the text path (IC-23, D-2065); that path makes no AI call yet. Ordering only: runs after T370, which changes one call in `app/intake/src/service.rs` (D-2703); its migration is `0210_ai_call_budget.sql` (V9, D-2707). Plan change D-3675: the migration is numbered 0209 (it was 0202; D-3881 moved it up one more, so T527's 0208 fits before it; D-3675 made it 0204, D-3722 moved it up one more, D-3750 one more, after T470's `0207_messaging_email_lease.sql`, D-3753 one more, after T480's `0208_messaging_spanish_switch.sql`, and D-3779 one more, because T486 took `0190_catalog_switched_on.sql` and every queued migration from 0190 up moved up one) because T456's `0205_picks_hold_away.sql` and `0206_businesses_away_busy.sql` run before this task in the serial order (`scripts/validate_tasks.py` V9). Plan change D-3883: this task's migration moved up one, to `0210_ai_call_budget.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history. Plan change D-4292: this task's migration moves to `migrations/0212_ai_call_budget.sql` for T645's `0210_messaging_web_chat_optout.sql` and `0211_intake_web_chat_language.sql`, which run earlier (V9); earlier numbers in this goal are history. Plan change D-4310: this task's migration moves to `migrations/0213_ai_call_budget.sql` for T653's `0212_licensing_btr_typed_unchecked.sql`, which runs earlier (V9); earlier numbers in this goal are history.",
+   "goal": "Credit-drain defense for the war games (D-1154): AI-021's global daily cap stays, and below it AI-028's per-step budgets apply: no AI call before the consent text and the area check; 2 readings per inbound message, 1 reword per bank question (at most 8), 1 follow-up, card and project file 1 each plus 1 per EDIT (at most 3), 4 concept prompts, 2 screening calls a photo for at most 3 photos; backstops of 40 calls per conversation per Arizona day and 60 per job, with the card call always reserved so no budget lands on it; a verified web-chat session shares its phone's budget and an unverified one makes no call; quote reads 3 per business per job, outside the job's budget; only the first 1,600 characters of a scrubbed message are sent, while the AI-off card keeps her full scrubbed words. Past a budget the step runs on the AI-off path (INT-021) with nothing said and an `ai.call_stat` row with outcome `budget`; `models::calls_today` (`app/ai/src/models.rs`) excludes `budget` rows as it excludes `daily_cap` rows, so refused calls never use up the AI-021 cap. `IntakeCall` carries the conversation, job, step and (for quote reads) business it is for; the caller in `intake` passes them; the budgets are settings in `AiConfig`; the migration adds the `budget` outcome and the conversation, job, step and business columns to `ai.call_stat`. The global daily cap (AI-021, D-811) becomes an atomic admission: before the provider call, one statement reserves a slot for this Arizona day (a counter row per day updated with `... WHERE used < cap RETURNING`, or an equivalent single-statement reservation) on its own short transaction, so concurrent calls past the cap never reach the transport; a retry of one logical call uses its reservation, an abandoned or timed-out reservation still counts for that day, and the `ai.daily_cap` alert is raised once a day under the same race (D-1757). No database connection or open transaction is held across an AI provider await (AI-029, D-2038): the entry the app calls takes the pool, reads the AI-008 switch and makes the admission and the budget reservations each on its own short connection and releases it, awaits the provider (up to AI-023's timeout, retries and backoff included) with no connection held, then takes a connection again to record the call. With no connection held, every AI-028 budget check is a single-statement reservation like the AI-021 admission (only while the budget has room), so concurrent readings of one message (a duplicate or replayed webhook) cannot pass its 2-reading limit, the 1-reword limit or the per-day and per-job backstops together; a refused reservation makes no call and records outcome `budget`. Intake has no caller that applies a reading yet (`app/intake/src/question_bank.rs` calls only `accept_question`), so this task builds the first one in `app/intake/src/service.rs`: it reads one inbound message through the gated `read_intake` and applies the reading only if the step is still current on the new connection, which means the conversation has no inbound message and no `intake.intake_answer` row newer than the message the call was made for; otherwise the reading is recorded and discarded. Calling that function from the text and web-chat paths is T299's (IC-23, D-2065); the AI writing calls are IC-53's (no owner yet). `app/ai/src/switch.rs` (the gated `read_intake`) is this task's for that change. Other tasks' tests call `read_intake` with a `&mut PgConnection` (`app/ai/src/tests/adapter_calls.rs`, `tests/integration/tests/ai_zero_retention.rs`, `tests/integration/tests/prop_prompt_injection.rs`) and are not this task's to change: keep that form compiling for them as a thin wrapper that no app code calls. AI-029's other half, the inbound-text webhook committing before any AI call, is T299's, which wires the AI reading into the text path (IC-23, D-2065); that path makes no AI call yet. Ordering only: runs after T370, which changes one call in `app/intake/src/service.rs` (D-2703); its migration is `0210_ai_call_budget.sql` (V9, D-2707). Plan change D-3675: the migration is numbered 0209 (it was 0202; D-3881 moved it up one more, so T527's 0208 fits before it; D-3675 made it 0204, D-3722 moved it up one more, D-3750 one more, after T470's `0207_messaging_email_lease.sql`, D-3753 one more, after T480's `0208_messaging_spanish_switch.sql`, and D-3779 one more, because T486 took `0190_catalog_switched_on.sql` and every queued migration from 0190 up moved up one) because T456's `0205_picks_hold_away.sql` and `0206_businesses_away_busy.sql` run before this task in the serial order (`scripts/validate_tasks.py` V9). Plan change D-3883: this task's migration moved up one, to `0210_ai_call_budget.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history. Plan change D-4292: this task's migration moves to `migrations/0212_ai_call_budget.sql` for T645's `0210_messaging_web_chat_optout.sql` and `0211_intake_web_chat_language.sql`, which run earlier (V9); earlier numbers in this goal are history. Plan change D-4310: this task's migration moves to `migrations/0213_ai_call_budget.sql` for T653's `0212_licensing_btr_typed_unchecked.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-4727: this task's migration moves to `migrations/0216_ai_call_budget.sql` for T729's `0215_update_email_choice.sql`, which runs earlier (V9); earlier numbers in this goal are history.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -35989,7 +36001,7 @@
     "app/ai/src/service.rs",
     "app/ai/src/models.rs",
     "app/ai/src/switch.rs",
-    "migrations/0213_ai_call_budget.sql",
+    "migrations/0216_ai_call_budget.sql",
     "tests/integration/tests/ai_budget.rs",
     "app/intake/src/service.rs"
    ],
@@ -36039,7 +36051,7 @@
    "budget": {
     "files": 8,
     "lines": 600,
-    "context_pct": 24
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -36076,7 +36088,9 @@
     "T649",
     "T656",
     "T675",
-    "T719"
+    "T719",
+    "T736",
+    "T741"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -36134,7 +36148,7 @@
    "budget": {
     "files": 7,
     "lines": 600,
-    "context_pct": 29
+    "context_pct": 33
    },
    "checks": [
     "Ci",
@@ -37579,7 +37593,9 @@
     "T687",
     "T713",
     "T740",
-    "T742"
+    "T742",
+    "T731",
+    "T735"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -38052,7 +38068,9 @@
     "T687",
     "T713",
     "T742",
-    "T740"
+    "T740",
+    "T731",
+    "T735"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -38090,7 +38108,7 @@
    "budget": {
     "files": 6,
     "lines": 400,
-    "context_pct": 36
+    "context_pct": 58
    },
    "checks": [
     "Ci",
@@ -45723,7 +45741,7 @@
    "id": "T685",
    "slug": "missed-cards-email",
    "title": "businesses, quotes and picks: the monthly missed-cards email goes, and the owner can switch it off",
-   "goal": "Plan change D-4361 (unwired sweep orphan 7 and its second pass, `main` 77a49d7cc; BIZ-044, BIZ-025; D-331, D-1994). `missed_email_due` (`app/messaging/src/missed_cards.rs:52`) and `missed_cards_line` (`app/picks/src/open_cards_email.rs:212`) have no caller, and D-1994 left two gaps: no column stores the owner's off switch, and no `quotes` reader gives last month's counts. (1) `migrations/0214_businesses_missed_cards_switch.sql` (headed `businesses`; after T236's `0213`, the dependency on T236 being for that order only, V9): the business's on/off switch for this email, default on; the read and the owner's write in the new `app/businesses/src/missed_cards_switch.rs` (the portal toggle is left to the settings page's owner, T306, noted in its decision). (2) The new `app/quotes/src/month_cards.rs`: last month's cards per business (got, quoted, ended without its quote), Arizona months. (3) The new `app/picks/src/missed_cards_run.rs`: a daily `picks.missed_cards_email` run (registered in the shared `app/server/src/lib.rs`, scheduled in the shared `app/server/src/bin/worker.rs`) that acts only when `first_of_month` holds and sends `missed_cards_line` once per business and month (dedupe key) when `missed_email_due` says so, as an account notice to the owner under the business's consent (CON-019), never marketing. `queue_email` renders only the closed `messaging::Notice` enum (`app/messaging/src/email.rs:151`), so this task adds a `Notice::MissedCards` variant there with its English and Spanish words (after T470 and T684, the queued owners of `email.rs`). Each email is stored with `messaging::api::queue_email` as `EmailClass::Bulk` (`app/messaging/src/email.rs:140` to `:146`, `:390`), never through the business-notice path, which stores every email as non-bulk (`app/messaging/src/business_notices.rs:409`), so above 90% of the day's email limit it waits for the reset (OPS-038). Tests in the new `tests/integration/tests/missed_cards_email.rs` (TD-BIZ-57), PostgreSQL, fake data only. Update `app/picks/NOTES.md`, `app/quotes/NOTES.md`, `app/businesses/NOTES.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4361 (unwired sweep orphan 7 and its second pass, `main` 77a49d7cc; BIZ-044, BIZ-025; D-331, D-1994). `missed_email_due` (`app/messaging/src/missed_cards.rs:52`) and `missed_cards_line` (`app/picks/src/open_cards_email.rs:212`) have no caller, and D-1994 left two gaps: no column stores the owner's off switch, and no `quotes` reader gives last month's counts. (1) `migrations/0214_businesses_missed_cards_switch.sql` (headed `businesses`; after T236's `0213`, the dependency on T236 being for that order only, V9): the business's on/off switch for this email, default on; the read and the owner's write in the new `app/businesses/src/missed_cards_switch.rs` (the portal toggle is left to the settings page's owner, T306, noted in its decision). (2) The new `app/quotes/src/month_cards.rs`: last month's cards per business (got, quoted, ended without its quote), Arizona months. (3) The new `app/picks/src/missed_cards_run.rs`: a daily `picks.missed_cards_email` run (registered in the shared `app/server/src/lib.rs`, scheduled in the shared `app/server/src/bin/worker.rs`) that acts only when `first_of_month` holds and sends `missed_cards_line` once per business and month (dedupe key) when `missed_email_due` says so, as an account notice to the owner under the business's consent (CON-019), never marketing. `queue_email` renders only the closed `messaging::Notice` enum (`app/messaging/src/email.rs:151`), so this task adds a `Notice::MissedCards` variant there with its English and Spanish words (after T470 and T684, the queued owners of `email.rs`). Each email is stored with `messaging::api::queue_email` as `EmailClass::Bulk` (`app/messaging/src/email.rs:140` to `:146`, `:390`), never through the business-notice path, which stores every email as non-bulk (`app/messaging/src/business_notices.rs:409`), so above 90% of the day's email limit it waits for the reset (OPS-038). Tests in the new `tests/integration/tests/missed_cards_email.rs` (TD-BIZ-57), PostgreSQL, fake data only. Update `app/picks/NOTES.md`, `app/quotes/NOTES.md`, `app/businesses/NOTES.md` and `docs/decisions.md`. Plan change D-4727: this task's migration moves to `migrations/0217_businesses_missed_cards_switch.sql`, after T236's `0216` and T729's `0215` (V9), and it now follows T730, the owner of `app/messaging/src/email.rs` before it; earlier numbers in this goal are history.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -45731,7 +45749,8 @@
    "deps": [
     "T470",
     "T684",
-    "T236"
+    "T236",
+    "T730"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -45741,7 +45760,7 @@
    ],
    "owns": [
     "app/messaging/src/email.rs",
-    "migrations/0214_businesses_missed_cards_switch.sql",
+    "migrations/0217_businesses_missed_cards_switch.sql",
     "app/businesses/src/missed_cards_switch.rs",
     "app/quotes/src/month_cards.rs",
     "app/picks/src/missed_cards_run.rs",
@@ -47344,6 +47363,873 @@
    "branch": "claude/task/T727-runner-wip-continue",
    "prompt": "kit/prompts/T727.md",
    "acceptance": "`python3 -m pytest tests/test_runner_wip.py tests/test_runner_logic.py tests/test_runner_merge_train.py tests/test_failure_drills.py` passes, the WIP cases failing against `main`'s runner; every other `tests/test_runner_*.py` and `tests/test_workflow_shell.py` passes unchanged; `python3 scripts/check_state.py` passes on a state with a `wip` record and on one without; actionlint reports nothing new on `backup-runner.yml`; `git diff origin/main -- runner/github_env.py runner/__main__.py runner/wip.py` is empty."
+  },
+  {
+   "id": "T728",
+   "slug": "intake-text-pick-reply",
+   "title": "intake: a homeowner's \"<n> YES\" text from her phone picks through `answer_text_pick`",
+   "goal": "Plan change D-4727 (A; PICK-015, PICK-030, PICK-031, PICK-016, TERMS-016, CON-013; D-050, D-1247, D-1612, D-1614). `intake::api::answer_text_pick` (`app/intake/src/service.rs:1061`) has no production caller (D-1247 left it \"until the inbound dispatcher\"), so a \"2 YES\" from her phone today goes through `reply_in` (`app/intake/src/replies.rs:160`) to `receive_text` and the order dispatcher as if it were an answer, while the LIST text, the PICK-046 lapse text and every quote page tell her to \"reply 1 YES\". (1) In `reply_in`, for a homeowner text from her phone only (`receive_raw_reply`, `raw` present; web chat's `receive_reply` never picks: PICK-015 says \"from the homeowner's own phone\"), in an open request, not an opt-out or HELP (`answered_elsewhere`), with no 911-list match (`msg.inbound.emergency` false: `receive_text` keeps the only 911 screen, INT-002), and whose words read as a text pick (`picks::api::read_text_pick` or the reading `text_pick` uses): after the LIST answer, `hear`, the under-18 stop and the close by text (`in_request`, `:210` to `:233`) and before the name-and-address answer, `receive_text` and the order dispatcher, the reply goes to the new `app/intake/src/text_pick_reply.rs` and ends there with a new `Reply::Picked` variant (its texts, if any, and the pick, if any); a `None` from the pick step (no live job, a pick the job moved away from) falls through to today's path unchanged. (2) Opted in: `answer_text_pick` as it stands (homeowner lock, CON-029 pauses, `text_pick`, one terms acceptance with channel `text_pick` and this inbound ID, TERMS-016, TERMS-033), its own `db.begin()` a savepoint inside the reply's transaction. The published homeowner terms it needs (`PublishedTerms`) reach intake through a new `app/core/src/homeowner_terms.rs` (`core::api::homeowner_terms() -> (version, text)`) that holds the `include_str!` of `docs/legal/homeowner-terms.md` and the \"Version <v>\" parse now in `app/server/src/lib.rs:551` to `:557`; the shared `lib.rs` then uses it, so there is one copy and `intake::Settings` (built field by field in 12 files) and `inbound_text.rs` are not changed. (3) A homeowner whose number is on the suppression list never reaches `reply_in`: `screen` turns `Outcome::Suppressed` into a listed sender and `help` ends it with `Halt::Ends(\"suppressed\")` after the CON-016 wrote-again follow-up (`app/server/src/inbound_text.rs:846` to `:876`, `:959`), so her \"<n> YES\" (PICK-030, `opted_out_yes`) is T741's, not this task's. Tests in the new `app/server/tests/text_pick_route.rs` (TD-PICK-71), through the assembled router's `POST /webhooks/twilio/sms` with a signed fake Twilio request, PostgreSQL, fake data and 555 numbers only (a test crate may not depend on `server`, D-736, so the route test lives in `app/server/tests/`); `text_pick.rs`, `withdrawn_optout_safety.rs`, `optout_followups.rs`, `email_pick_code.rs` and every intake order test pass unchanged. Update `app/intake/NOTES.md`, the `intake` and `core` `CLAUDE.md` files and `docs/decisions.md`. After T673, the last queued owner of `replies.rs`; `order_dispatch.rs` and `inbound_text.rs` are not edited, so no order against T675, T715 to T719, T723, T402, T299 or T683 is needed. Plan change D-4727 R1 (Opus round 1): the opted-out branch moved to T741, because a listed number never reaches `reply_in`, and the test runs through the assembled SMS route.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T673"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/intake/src/replies.rs",
+    "app/intake/src/text_pick_reply.rs",
+    "app/core/src/homeowner_terms.rs",
+    "app/server/tests/text_pick_route.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/intake.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/terms.md",
+    "app/intake/src/service.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "PICK-015",
+    "PICK-031",
+    "PICK-016",
+    "TERMS-016",
+    "INT-002"
+   ],
+   "tests": [
+    "TD-PICK-71"
+   ],
+   "decisions": [
+    "D-1247",
+    "D-736",
+    "D-4727"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 450,
+    "context_pct": 26
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T728-intake-text-pick-reply",
+   "prompt": "kit/prompts/T728.md",
+   "acceptance": "TD-PICK-71 passes through the assembled SMS route, failing on `main`; web chat's \"2 YES\" never picks; every text-pick and intake order test passes unchanged; `app/server/src/lib.rs` holds no second copy of the terms."
+  },
+  {
+   "id": "T729",
+   "slug": "update-email-choice",
+   "title": "portals and privacy: the quote page offers updates by email or by text and email, asks for the address and keeps it apart from code addresses",
+   "goal": "Plan change D-4727 (B, first of two; TXT-018, CON-035, SEC-028, PICK-029; D-422, D-460, D-1612 (4)). `messaging::api::set_update_channel` and `update_channel` (`app/messaging/src/email.rs:666`, `:648`) have no caller, `messaging.update_channel` (`migrations/0089_messaging_retries_email.sql:69`) is never written and the quote page has no control, so TXT-018 cannot be chosen. (1) Migration `migrations/0215_update_email_choice.sql`: a `privacy` table holding one sealed update address per contact (vault-encrypted as every contact field, PRIV-001) with `source` `quote_page` and `confirmed_at`, granted to the app role as its neighbours are, so an address typed on the quote page is never the contact's conversation email and no code path can take it (TXT-018: \"never a pick code or any other code\", PICK-029, D-477); and `messaging.update_channel` gains a nullable `reverted_at` (T730 writes it on a hard bounce). (2) New `app/privacy/src/update_email.rs`: store (format-checked by the email check sign-up uses, replacing an earlier one and clearing `confirmed_at`), confirm, read for T730 only under the existing `(Reader::Messaging, Purpose::Send)` grant's `Email` field (`app/privacy/src/models.rs:233`, its audit name `vault_read.messaging.send`; `GRANTS` and `Field` are not changed), and cleared with the contact: `purge_contact` (`app/privacy/src/purge.rs:376`, which nulls the contact's fields rather than deleting its row, so an `ON DELETE CASCADE` would never fire) also deletes the update address in the same statement group. (3) New `app/portals/src/update_channel.rs` with the quote page (`app/portals/src/quote_page.rs`, `app/portals/templates/quote_page.html`): two buttons, \"Get updates by email instead\" and \"Get updates by text and email\", posting to the new `POST /q/{token}/updates` (CSRF, the quote page's own token rules); either shows \"What email should we use? We never share it with businesses.\"; a malformed address is asked once more with an A11Y-030 error (an \"Error: \" title, a focused summary linking the field, `aria-invalid`, the typed value kept); a second malformed one keeps text and says so; a well-formed one is stored and `set_update_channel` records `Email` or `Both` in the same transaction; while it is unconfirmed the page shows \"Confirm this email\" posting to `POST /q/{token}/updates/confirm`, which sets `confirmed_at` (the first update email links to this page, T730); \"Get updates by text only\" sets `Text` back; while `reverted_at` is set and the channel is `Text` the page says \"Your email bounced, so updates go by text again.\" Copy passes `check_copy.py` and `check_ai_smell.py`. The address is never shown on a job card or business notice (PICK-018 stays the only way a business sees it). (4) `docs/architecture.md` section 13 rows `POST /q/{token}/updates` and `POST /q/{token}/updates/confirm` (added `T729` by D-4727) marked `yes`; the page's states go in the shared `tests/a11y/page_states.ts`. Tests in the new `tests/integration/tests/update_email_choice.rs` (TD-TXT-38), PostgreSQL, fake data only. Update the `portals`, `privacy` and `messaging` notes, `docs/architecture.md` section 8 (the new vault field) and `docs/decisions.md`. After T608, the queued owner of `quote_page.html`, and T600, the queued owner of `purge.rs` (Opus R1 finding 3).",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "portals",
+   "deps": [
+    "T608",
+    "T600"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security",
+    "accessibility"
+   ],
+   "owns": [
+    "migrations/0215_update_email_choice.sql",
+    "app/privacy/src/update_email.rs",
+    "app/privacy/src/purge.rs",
+    "app/portals/src/update_channel.rs",
+    "app/portals/src/quote_page.rs",
+    "app/portals/templates/quote_page.html",
+    "tests/integration/tests/update_email_choice.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/security.md",
+    "docs/spec/messaging.md",
+    "docs/spec/privacy.md",
+    "docs/spec/accessibility.md",
+    "docs/spec/consent.md",
+    "app/messaging/src/email.rs",
+    "app/picks/src/email_code.rs",
+    "docs/brains/accessibility-forms.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "TXT-018",
+    "CON-035",
+    "SEC-028",
+    "PICK-029",
+    "PRIV-001",
+    "A11Y-030"
+   ],
+   "tests": [
+    "TD-TXT-38"
+   ],
+   "decisions": [
+    "D-422",
+    "D-460",
+    "D-1612",
+    "D-4727"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 7,
+    "lines": 600,
+    "context_pct": 27
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T729-update-email-choice",
+   "prompt": "kit/prompts/T729.md",
+   "acceptance": "TD-TXT-38 passes against PostgreSQL; the door matrix and route wiring probe both new rows; Ally passes on the page's new states; no pick-code path can read the update address; every quote page test passes unchanged."
+  },
+  {
+   "id": "T730",
+   "slug": "update-email-sends",
+   "title": "messaging: a homeowner who chose email gets each quote update by email, the first with the confirm link, and a hard bounce puts her back on text",
+   "goal": "Plan change D-4727 (B, second of two; TXT-018, SEC-028, CON-035, TXT-027, TXT-030; D-422, D-460). After T729 stores her choice nothing reads it. (1) New `app/messaging/src/update_emails.rs` and a hook in `messaging::enqueue` (`app/messaging/src/service.rs:144`): for a homeowner recipient whose template is an update text and whose `update_channel` is `Email` or `Both`, an update email is stored with `queue_email` beside the text in the same transaction, and for `Email` the text row is not queued; for `Both` both. Update texts are exactly `quotes::api::UPDATE_TEXTS` (`app/quotes/src/update_texts.rs:82`); `messaging` may not call `quotes` (`kit/layers.json`), so `update_emails.rs` holds its own `UPDATE_TEMPLATES` list and a test in the new test file asserts it equals `UPDATE_TEXTS`' IDs. Never by email instead of text: the 911 text, any code, the who's-calling text (TXT-027), the missed-call text (TXT-030) and direct replies to her own texts (TXT-018's list; none of those is in `UPDATE_TEXTS`, and the test asserts it). (2) `app/messaging/src/email.rs` gains `Notice::Update` (the update's rendered words, her quote page link that every update carries, SEC-028's footer and an unsubscribe link feeding the one suppression list, CON-035) in English and Spanish; while the T729 address is unconfirmed each update email also carries \"Confirm this email\" linking to her quote page's confirm button, and nothing else is ever sent to it. The address is read only through T729's grant. (3) A hard bounce on an update email (the provider webhook path already in `email.rs` that sets `email.bounced`) sets `update_channel` back to `Text` and `reverted_at` (T729's column), so later updates go by text and the quote page shows its note. Tests in the new `tests/integration/tests/update_email_sends.rs` (TD-TXT-39), which also drive T729's quote-page choice to email end to end in PostgreSQL (T222's journey does not assert TXT-018's email option and no longer waits for this task, Opus R1 finding 2), PostgreSQL and the email stand-in, fake data only. Update `app/messaging/NOTES.md` and `docs/decisions.md`. After T729, T684 (the queued owner of `email.rs` before T685, which now follows this task) and T580 (the last queued owner of `service.rs`).",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "messaging",
+   "deps": [
+    "T729",
+    "T684",
+    "T580"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/messaging/src/update_emails.rs",
+    "app/messaging/src/email.rs",
+    "app/messaging/src/service.rs",
+    "tests/integration/tests/update_email_sends.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/messaging.md",
+    "docs/spec/security.md",
+    "docs/spec/consent.md",
+    "app/quotes/src/update_texts.rs",
+    "docs/brains/email-deliverability.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "TXT-018",
+    "SEC-028",
+    "CON-035",
+    "TXT-027",
+    "TXT-030"
+   ],
+   "tests": [
+    "TD-TXT-39"
+   ],
+   "decisions": [
+    "D-422",
+    "D-460",
+    "D-4727"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 500,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T730-update-email-sends",
+   "prompt": "kit/prompts/T730.md",
+   "acceptance": "TD-TXT-39 passes against PostgreSQL and the email stand-in; the list test fails if `UPDATE_TEMPLATES` and `UPDATE_TEXTS` differ; a code, the 911 text and TXT-027/TXT-030 still go by text with email only; every messaging and email test passes unchanged."
+  },
+  {
+   "id": "T731",
+   "slug": "auto-confirm-box-served",
+   "title": "server (harness): the quote form shows the PICK-048 auto-confirm box and its POST saves the tick",
+   "goal": "Plan change D-4727 (C (a); PICK-048, PICK-056, SEC-043, SEC-019; D-2785, D-2786, D-4361). `portals::api::auto_confirm_box` and `set_auto_confirm` (`app/portals/src/business_actions.rs:1136`, `:1199`) and `AUTO_CONFIRM_ROUTE` (`/b/quote/{job}/auto-confirm`, `:1117`) have no production caller: the quote form is built with no box (`app/server/src/action_links.rs:375` and `:991`, `quote_form_page_priced(.., (warning, None), ..)`), so no business can tick it and T689's charge never has a ticked quote. (1) In `action_links.rs`, both quote form renders pass `auto_confirm_box(..)`'s box when it offers one (a saved card, the owner's Stripe written answer that allows it, PICK-048) and `None` otherwise, never on an error. (2) `POST /b/quote/{job}/auto-confirm` served behind the business principal (`refuse_cross_site` and CSRF first, `no_store`), calling `set_auto_confirm` with its SEC-038-style fresh code (`SensitiveChange::AutoConfirm`); a stale code answers the step-up form, a refusal the form again with its A11Y-030 error, success 303 to the quote form; another business's or an unknown job is the one not-found answer (SEC-019). (3) The door probe cannot fill `{job}` (`app/server/tests/door_matrix.rs:1551` uses this very path as its unknown-parameter example): `{job}` joins `FILLS`, filled with each side's own carded job ID, the other side's ID being the one not-found answer, and the planted unknown-parameter case moves to a made-up path; nothing else in `door_matrix.rs` changes. Section 13 row `POST /b/quote/{job}/auto-confirm` (added `T731` by D-4727) marked `yes`. Tests in the new `app/server/tests/auto_confirm_box_route.rs` (TD-PICK-72), the assembled router, fake data only. Harness because `door_matrix.rs` is a harness-owned test (T665). After T689 (the charge) and T687 (the last queued owner of `action_links.rs`).",
+   "type": "harness",
+   "phase": 2,
+   "stage": "6",
+   "module": "server",
+   "deps": [
+    "T689",
+    "T687"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "security",
+    "harness"
+   ],
+   "owns": [
+    "app/server/src/action_links.rs",
+    "app/server/tests/door_matrix.rs",
+    "app/server/tests/auto_confirm_box_route.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/accessibility.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/security.md",
+    "app/portals/src/business_actions.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "PICK-048",
+    "PICK-056",
+    "SEC-043",
+    "SEC-019",
+    "A11Y-030"
+   ],
+   "tests": [
+    "TD-PICK-72"
+   ],
+   "decisions": [
+    "D-2785",
+    "D-2786",
+    "D-4361",
+    "D-4727"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 450,
+    "context_pct": 35
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T731-auto-confirm-box-served",
+   "prompt": "kit/prompts/T731.md",
+   "acceptance": "TD-PICK-72 passes through the assembled router; the door matrix probes the new row with the `{job}` fill; TD-PICK-70 and every action-link test pass unchanged."
+  },
+  {
+   "id": "T732",
+   "slug": "quote-withdraw-served",
+   "title": "server: the business job page's \"Withdraw your quote\" posts to a served route that withdraws it",
+   "goal": "Plan change D-4727 (C (b); PICK-051, SEC-019, CARD-019; D-2912). `quotes::api::withdraw_quote` (`app/quotes/src/edit_withdraw.rs:99`) has no caller and no route serves a withdrawal, while T666's job page renders PICK-051's withdraw form posting to `withdraw_action` (`app/portals/src/business_actions.rs:926`, `app/portals/templates/business_actions.html:47`). (1) In `app/server/src/job_page_route.rs` (after T666 and T668): `POST /b/jobs/{j}/withdraw` behind `business_principal` (`refuse_cross_site`, CSRF, `no_store`), the job found by T666's `quotes::api::carded_job` before anything else (another business's or an unknown number is the one not-found answer, SEC-019); `withdraw_quote` with the principal's business; `Withdrawn` and `AlreadyWithdrawn` 303 to `/b/jobs/{j}` (which then shows \"Send a new quote\"); `EditClosed` and `NoQuote` show the job page again with one line saying why and change nothing; the page's `withdraw_action` is this route. One section 13 row `POST /b/jobs/{j}/withdraw` (added `T732` by D-4727) marked `yes`; the door probe fills `{j}` (T665). Tests in the new `app/server/tests/quote_withdraw_route.rs` (TD-PICK-73), the assembled router, fake data only. Update `docs/decisions.md`. A new task rather than an amendment of T666, whose budget is already at 600 lines.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T668"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security"
+   ],
+   "owns": [
+    "app/server/src/job_page_route.rs",
+    "app/server/tests/quote_withdraw_route.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/job-cards.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/security.md",
+    "app/quotes/src/edit_withdraw.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "PICK-051",
+    "SEC-019",
+    "CARD-019"
+   ],
+   "tests": [
+    "TD-PICK-73"
+   ],
+   "decisions": [
+    "D-2912",
+    "D-4349",
+    "D-4727"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 300,
+    "context_pct": 15
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T732-quote-withdraw-served",
+   "prompt": "kit/prompts/T732.md",
+   "acceptance": "TD-PICK-73 passes through the assembled router; the door matrix probes the new row; TD-CARD-16 and every job page test pass unchanged."
+  },
+  {
+   "id": "T733",
+   "slug": "business-settings-routes",
+   "title": "server: the business portal serves the service-area settings, the shared-inbox switch and the contact card",
+   "goal": "Plan change D-4727 (C (d) first part and (e); BIZ-010, BIZ-058, SEC-027, BIZ-046, SEC-019, A11Y-030). Forms and links on `main` point at routes nothing serves: `SERVICE_AREA_SETTINGS_ROUTE` (`/b/settings/service-area`, `app/portals/src/business_actions.rs:1242`; the form at `app/portals/templates/business_actions.html:189`), `SHARED_INBOX_ROUTE` (`/b/shared-inbox`, `app/portals/src/business_portal.rs:392`; the form at `app/portals/templates/business_home.html:53`) and `CONTACT_CARD_ROUTE` (`/b/contact-card.vcf`, `:390`; links at `business_home.html:49` and `app/portals/templates/business_signup.html:36`). New `app/server/src/business_settings_routes.rs`, merged in the shared `build_router`, every route behind `business_principal` (`refuse_cross_site` and CSRF first on each `POST`, `no_store`): `GET /b/settings/service-area` renders `service_area_settings_page` with the stored base ZIP and radius; `POST` calls `change_service_area` (owner or \"Confirm and billing\" only, `NotAllowed` the portal's 4xx), a refusal re-rendering with its problems and typed values (A11Y-030), success with `saved`; `POST /b/shared-inbox` calls `set_inbox_shared` for the signed-in member (its step-up and `NeedsTextPhone` refusal as `business_portal.rs:481` decides), answering 303 to the business home or the step-up form; `GET /b/contact-card.vcf` serves the card file (`text/vcard`, `Content-Disposition: attachment` named as `contact_card_name()`) built from the current pool numbers by the existing builder (`business_portal.rs:396` to `:428`), no homeowner detail. `business_home.html` gains one link, \"Service area\", to the settings page. Section 13 rows (added `T733` by D-4727) marked `yes`; the settings page's states go in the shared `tests/a11y/page_states.ts`. Tests in the new `app/server/tests/business_settings_routes.rs` (TD-BIZ-61), the assembled router, fake data only. Update `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T665",
+    "T200",
+    "T483"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "accessibility"
+   ],
+   "owns": [
+    "app/server/src/business_settings_routes.rs",
+    "app/portals/templates/business_home.html",
+    "app/server/tests/business_settings_routes.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/accessibility.md",
+    "docs/spec/businesses.md",
+    "docs/spec/security.md",
+    "app/portals/src/business_portal.rs",
+    "app/portals/src/business_actions.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "BIZ-010",
+    "BIZ-058",
+    "SEC-027",
+    "BIZ-046",
+    "SEC-019",
+    "A11Y-030"
+   ],
+   "tests": [
+    "TD-BIZ-61"
+   ],
+   "decisions": [
+    "D-334",
+    "D-1515",
+    "D-4727"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 450,
+    "context_pct": 28
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T733-business-settings-routes",
+   "prompt": "kit/prompts/T733.md",
+   "acceptance": "TD-BIZ-61 passes through the assembled router; the door matrix probes the four new rows; Ally passes on the settings page; every business portal test passes unchanged."
+  },
+  {
+   "id": "T734",
+   "slug": "business-leave-served",
+   "title": "server and adapters: a business can leave in the portal, with the optional reason, its saved cards detached at Stripe",
+   "goal": "Plan change D-4727 (C (c); BIZ-051, BIZ-054, SEC-038, PICK-047, PICK-046, PICK-051; D-446, D-463, D-3045). `portals::api::leave`, `leave_page` and the pause question (`app/portals/src/business_left.rs:141`; `LEAVE_ROUTE` and `PAUSE_REASON_ROUTE` at `:36`, `:38`) are not served (\"not served yet\", D-3045) and no production type implements `CardDetach` (`:96`), so no business can leave and BIZ-054's pause question is never asked. (1) New `app/adapters/src/card_detach.rs`: the Stripe call `POST /v1/payment_methods/{pm}/detach` with the configured Stripe client (base URL, key and timeout as `app/adapters/src/payments.rs` reads them, never a key in a log), and `impl CardDetach` over it composed in the shared `build_router`. (2) New `app/server/src/business_leave_routes.rs`: `GET /b/leave` (the leave screen, the BIZ-054 question while `reason_asked` is false), `POST /b/leave` (owner only, the fresh code `leave` requires; a stale code answers the step-up form; success shows the left screen with every session already ended, so the response clears the session cookie), `GET /b/pause-reason` (the question once a self-pause passed `PAUSE_ASK_AFTER_DAYS`, `pause_ask_due`; otherwise 303 to the home) and `POST /b/pause-reason`; `refuse_cross_site` and CSRF first, `no_store`. For each `Left.picks` item the homeowner's PICK-047 (moved to her backup) or PICK-046 (no backup) text is queued by the sender T669's ended pending pick uses, never a second one; `Backup::Done` queues nothing. A detach failure is counted and logged once (the cards stay marked removed, so none can be charged); the Stripe stand-in has no detach endpoint (`stand_ins/stripe.py`), so the e2e and twin paths always record `detach_failed` until a harness task adds one (open in D-4727; TD-BIZ-62 notes it). (3) `business_home.html` gains \"Leave Laftly\" (owner only) and, while `pause_ask_due`, a link to the question. Section 13 rows (added `T734` by D-4727) marked `yes`; the three screens' states go in the shared `tests/a11y/page_states.ts`. Tests in the new `app/server/tests/business_leave_route.rs` (TD-BIZ-62), the assembled router with a fake `CardDetach` and one case with the adapter against a local fake HTTP server, fake data only. Update the `server` and `adapters` notes and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T733",
+    "T669",
+    "T541"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "security",
+    "accessibility"
+   ],
+   "owns": [
+    "app/adapters/src/card_detach.rs",
+    "app/server/src/business_leave_routes.rs",
+    "app/portals/templates/business_home.html",
+    "app/server/tests/business_leave_route.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/accessibility.md",
+    "docs/spec/businesses.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/security.md",
+    "app/portals/src/business_left.rs",
+    "docs/brains/payments-stripe.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "BIZ-051",
+    "BIZ-054",
+    "SEC-038",
+    "PICK-047",
+    "PICK-046",
+    "PICK-051",
+    "A11Y-030"
+   ],
+   "tests": [
+    "TD-BIZ-62"
+   ],
+   "decisions": [
+    "D-446",
+    "D-463",
+    "D-3045",
+    "D-4727"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 550,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T734-business-leave-served",
+   "prompt": "kit/prompts/T734.md",
+   "acceptance": "TD-BIZ-62 passes through the assembled router; the door matrix probes the new rows; TD-BIZ-32 and every leave and business portal test pass unchanged; no Stripe key appears in a log line."
+  },
+  {
+   "id": "T735",
+   "slug": "business-towns-hours",
+   "title": "portals, server and messaging: a business changes its towns and its own quiet times in the portal, and its notices keep to them",
+   "goal": "Plan change D-4727 (C (d) second part; BIZ-010, QH-002, QH-005, A11Y-030; D-085). After sign-up a business cannot change its towns or set its own quiet times: `businesses::api::set_towns` is called only by sign-up's `save_capability` (`app/businesses/src/capability.rs:407`), with no portal edit after sign-up, and `set_own_hours` (`app/businesses/src/service.rs:343`) has no caller, and `may_notify` (`app/businesses/src/rules.rs:184`) has no caller, so a stored own window would change nothing. (1) New `app/portals/src/business_towns_hours.rs` and `app/portals/templates/business_towns_hours.html`: the towns served (the sign-up list and checks, saved through the same `set_towns` path `save_capability` uses, under the business lock) and an optional own window (\"Send me job notices only between\", start and end inside 8 a.m. to 8 p.m. Arizona time, or \"Any time in the app's hours\"), labels and hints before inputs, A11Y-030 errors with values kept; owner or \"Confirm and billing\" only. (2) New `app/server/src/business_towns_hours_route.rs`: `GET` and `POST /b/settings/towns-hours` (CSRF, `no_store`); `business_home.html` gains the link. (3) In `app/messaging/src/business_notices.rs` (after T678): `SendChecks` gains the business's own hours (implemented in the shared `app/server/src/lib.rs` through `businesses::api`, as `may_text` is; `messaging` may not call `businesses`), and `business_notice` holds a non-emergency notice whose business's own window excludes the Arizona time to the start of that window by the same re-queue as `held_until` (QH-005), using `may_notify`; an EMERGENCY card keeps CARD-021's path. Section 13 rows (added `T735` by D-4727) marked `yes`; page states in the shared `tests/a11y/page_states.ts`. Tests in the new `app/server/tests/business_towns_hours_route.rs` and `tests/integration/tests/business_own_hours.rs` (TD-BIZ-63), fake data only. Update `docs/decisions.md`. Phase 2: after T678, the last queued owner of `business_notices.rs`, and T734 (`business_home.html`).",
+   "type": "build",
+   "phase": 2,
+   "stage": "6",
+   "module": "portals",
+   "deps": [
+    "T678",
+    "T734"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "accessibility"
+   ],
+   "owns": [
+    "app/portals/src/business_towns_hours.rs",
+    "app/portals/templates/business_towns_hours.html",
+    "app/server/src/business_towns_hours_route.rs",
+    "app/messaging/src/business_notices.rs",
+    "app/portals/templates/business_home.html",
+    "app/server/tests/business_towns_hours_route.rs",
+    "tests/integration/tests/business_own_hours.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/job-cards.md",
+    "docs/spec/businesses.md",
+    "docs/spec/quiet-hours.md",
+    "docs/spec/accessibility.md",
+    "app/businesses/src/rules.rs",
+    "docs/brains/accessibility-forms.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "BIZ-010",
+    "QH-002",
+    "QH-005",
+    "A11Y-030",
+    "CARD-021"
+   ],
+   "tests": [
+    "TD-BIZ-63"
+   ],
+   "decisions": [
+    "D-085",
+    "D-4727"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 7,
+    "lines": 600,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T735-business-towns-hours",
+   "prompt": "kit/prompts/T735.md",
+   "acceptance": "TD-BIZ-63 passes; the door matrix probes the new rows; Ally passes on the page; every business notice test passes unchanged."
+  },
+  {
+   "id": "T736",
+   "slug": "intake-follow-up-joins",
+   "title": "intake: a later text in an open request joins her job or opens a new one by INT-010's rule",
+   "goal": "Plan change D-4727 (D; INT-010, INT-022, INT-043; D-485). `rules::follow_up_joins` (`app/intake/src/rules.rs:375`), `joins_open_job` and `conversation::joining_job` (`app/intake/src/conversation.rs:209`) have no production caller; the dispatcher opens a job only by `opens_job` (`app/intake/src/order_dispatch.rs:168`), so a later message of another trade after two hours, or a same-trade one sharing few words, is taken as an answer to whatever step is current. In `order_dispatch.rs` (after T719, the last queued owner before T299, which now follows this task): when a clear homeowner text in an open request reaches the dispatcher with no step of hers waiting for an answer (every job of the request past the card step, or a step-marker showing nothing is asked), `follow_up_joins` decides with: the last homeowner message to her newest job (the time `joining_job` reads), the request's window setting (2 hours default) and share (`JOIN_SHARE_PERCENT`), `same_trade` from the stored keyword reading of this text against the job's trade, and the job's scrubbed description; joining keeps today's path (the text stays on that job); otherwise the text opens a new job in the request through the dispatcher's own `open_job` path as ALSO does (T717: property `none`, no INT-009 lookup), with its coverage line and its own step order; a text while a step waits is that step's answer, as today. No AI reading is used (AI-008 off path). Tests in the new `tests/integration/tests/intake_follow_up_joins.rs` (TD-INT-58): 1:59:59 joins another trade, 2:00:00 same trade 5 of 10 words joins, 49 of 100 opens a new job, another trade after the window opens a new job, a text while a question waits is its answer; TD-INT-35's unit cases pass unchanged. Update `app/intake/NOTES.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T719"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy"
+   ],
+   "owns": [
+    "app/intake/src/order_dispatch.rs",
+    "tests/integration/tests/intake_follow_up_joins.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/intake.md",
+    "app/intake/src/rules.rs",
+    "app/intake/src/conversation.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "INT-010",
+    "INT-022",
+    "INT-043"
+   ],
+   "tests": [
+    "TD-INT-58"
+   ],
+   "decisions": [
+    "D-485",
+    "D-4441",
+    "D-4727"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 400,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T736-intake-follow-up-joins",
+   "prompt": "kit/prompts/T736.md",
+   "acceptance": "TD-INT-58 passes against PostgreSQL through `receive_raw_reply`; every intake order test passes unchanged."
+  },
+  {
+   "id": "T737",
+   "slug": "owner-ai-switch",
+   "title": "portals, ai and server: the owner records the AI provider's terms and the policy wording and turns \"AI on scrubbed text\" on or off",
+   "goal": "Plan change D-4727 (E; AI-008, AI-018, SEC-043, SEC-006, A11Y-030; D-412, D-418, D-492, D-841). `ai::api::set_ai_switch` (`app/ai/src/switch.rs:140`) has no caller and nothing writes `ai.provider_terms` or `ai.privacy_policy_version` (`migrations/0041_ai_provider_terms.sql`), so `readiness` always finds them missing and the live gate is always keyword-only. (1) New `app/ai/src/checklist.rs`: `record_provider_terms` (URL, date checked, not used for training, retention days, flagged-retention days, the Console spend limit and expected monthly cost in cents, the zero-retention signing date if any) and `record_policy_version` (effective date, whether it carries the AI-018 sentence), each an insert with an IDs-only `Actor::Owner` audit row in one transaction (SEC-006); never edits or deletes (the grants allow insert only). (2) New `app/portals/src/owner_ai_switch.rs` and `app/portals/templates/owner_ai_switch.html`: the page lists what `readiness` finds missing in plain words, the two record forms and the switch; every change needs `OwnerAction::AiSwitch`'s fresh factor (SEC-043); a refused on names the first missing record; errors follow A11Y-030 (T540's `owner_release.html` pattern). (3) New `app/server/src/owner_ai_routes.rs`: `GET /owner/ai`, `POST /owner/ai/terms`, `POST /owner/ai/policy`, `POST /owner/ai/switch` behind T303's owner session (`refuse_cross_site`, CSRF, `no_store`); `owner_home.html` gains the link \"AI switch\". No AI call is made or enabled by this task in any environment beyond what `ai_mode` already allows; Gate C stays Casey's. Section 13 rows (added `T737` by D-4727) marked `yes`; page states in the shared `tests/a11y/page_states.ts`. Tests in the new `app/server/tests/owner_ai_switch_route.rs` (TD-AI-32), fake data only. Update the `ai`, `portals` and `server` notes and `docs/decisions.md`. After T712, the queued owner of `owner_home.html`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "portals",
+   "deps": [
+    "T712"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security",
+    "accessibility"
+   ],
+   "owns": [
+    "app/ai/src/checklist.rs",
+    "app/portals/src/owner_ai_switch.rs",
+    "app/portals/templates/owner_ai_switch.html",
+    "app/server/src/owner_ai_routes.rs",
+    "app/portals/templates/owner_home.html",
+    "app/server/tests/owner_ai_switch_route.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/ai.md",
+    "docs/spec/security.md",
+    "docs/spec/accessibility.md",
+    "app/ai/src/switch.rs",
+    "app/portals/templates/owner_release.html",
+    "docs/brains/ai-intake.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "AI-008",
+    "AI-018",
+    "SEC-043",
+    "SEC-006",
+    "A11Y-030"
+   ],
+   "tests": [
+    "TD-AI-32"
+   ],
+   "decisions": [
+    "D-412",
+    "D-418",
+    "D-492",
+    "D-841",
+    "D-4727"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 600,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T737-owner-ai-switch",
+   "prompt": "kit/prompts/T737.md",
+   "acceptance": "TD-AI-32 passes through the assembled router; the door matrix probes the new rows; Ally passes on the page; every owner portal and AI switch test passes unchanged."
+  },
+  {
+   "id": "T738",
+   "slug": "owner-settings-errors",
+   "title": "portals and server: owner settings refusals show an accessible error, and the opt-out and Stripe-answer filings are audit-logged",
+   "goal": "Plan change D-4727 (F and G; A11Y-030, CON-035, PICK-048, SEC-006, SEC-043; D-3753, D-3878). (F) A refused owner settings change (T484's opt-out number and Stripe answer, T310's category switches) answers 400 with the plain page again (`not_made`, `app/server/src/owner_portal.rs:282`): no \"Error: \" title, summary, field link, `aria-invalid` or kept value, because `SettingsNotice` (`app/portals/src/owner_portal.rs:953`) is success-only and `owner_settings.html:6` takes no error. Follow T540's `owner_release.html` pattern: the settings page takes an optional error naming its form and field and the typed value (never logged; the phone stays redacted in `Debug`); `not_made` passes it on `Refused`; the page shows \"Error: \" in the title, a focused summary linking the field, the message by the field with `aria-invalid` and `aria-describedby`, the value kept; the step-up and database answers stay as they are. (G) `owner_record_opt_out` (`:1053`, through `messaging::api::suppress`, `app/messaging/src/optout.rs:311`) and `owner_file_stripe_answer` (`:1095`, through `quotes::api::file_stripe_answer`, `app/quotes/src/auto_confirm_box.rs:262`) write no `ops.audit_log` row (SEC-006: every owner action). Each now runs in one portals transaction with one `Actor::Owner` audit row of IDs only: the opt-out event's ID (a new `suppress_logged` in `optout.rs` beside `suppress` returns it with the newly-listed flag; `suppress` and its callers are unchanged) and the new `quotes.stripe_written_answer` row's ID (`file_stripe_answer` returns it); no phone, digest or reference in the row. A repeat opt-out of a listed number writes its audit row too. Tests in the new `app/server/tests/owner_settings_errors.rs` (TD-SEC-81), the assembled router with T303's owner session, fake data only. Update `docs/decisions.md`. After T712 (the last queued owner of `app/server/src/owner_portal.rs`, after T527 for the portals file and template) and T645 (the queued owner of `optout.rs`).",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "portals",
+   "deps": [
+    "T712",
+    "T645"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "accessibility",
+    "privacy"
+   ],
+   "owns": [
+    "app/portals/src/owner_portal.rs",
+    "app/portals/templates/owner_settings.html",
+    "app/server/src/owner_portal.rs",
+    "app/messaging/src/optout.rs",
+    "app/quotes/src/auto_confirm_box.rs",
+    "app/server/tests/owner_settings_errors.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/accessibility.md",
+    "docs/spec/security.md",
+    "docs/spec/consent.md",
+    "app/portals/templates/owner_release.html",
+    "docs/brains/accessibility-forms.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "A11Y-030",
+    "CON-035",
+    "PICK-048",
+    "SEC-006",
+    "SEC-043"
+   ],
+   "tests": [
+    "TD-SEC-81"
+   ],
+   "decisions": [
+    "D-3753",
+    "D-3878",
+    "D-4727"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 500,
+    "context_pct": 27
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T738-owner-settings-errors",
+   "prompt": "kit/prompts/T738.md",
+   "acceptance": "TD-SEC-81 passes through the assembled router; Ally passes on the error states; every owner portal, opt-out and auto-confirm box test passes unchanged."
+  },
+  {
+   "id": "T739",
+   "slug": "release-resend-shows",
+   "title": "picks: the owner's re-send of a release goes only while the pick still shows its release",
+   "goal": "Plan change D-4727 (H; PICK-022, SEC-006, PRIV-005; D-1739, D-3890). `resend_release` (`app/picks/src/release_resend.rs:64`) re-sends the job's newest `picks.release` row whatever its pick's status, so a pick later refunded as fraud, marked no-show or failed in payment still gets its business a fresh release notice, although `status::shows_release` (`app/picks/src/status.rs:122`) allows the details again only while the pick is paid or free. The newest release's pick is read joined to `picks.pick` and its status; unless `shows_release` holds, `Resent::NotReleased` and nothing is queued or audited. Tests in the new `tests/integration/tests/release_resend_status.rs` (TD-PICK-74), PostgreSQL, fake data only: a paid and a free pick re-send once; each status `shows_release` refuses re-sends nothing; TD-PICK-41 passes unchanged. Update `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "picks",
+   "deps": [
+    "T540"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/picks/src/release_resend.rs",
+    "tests/integration/tests/release_resend_status.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/privacy.md",
+    "docs/spec/security.md",
+    "docs/spec/quotes-pick.md",
+    "app/picks/src/status.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "PICK-022",
+    "SEC-006",
+    "PRIV-005"
+   ],
+   "tests": [
+    "TD-PICK-74"
+   ],
+   "decisions": [
+    "D-1739",
+    "D-3890",
+    "D-4727"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 200,
+    "context_pct": 15
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T739-release-resend-shows",
+   "prompt": "kit/prompts/T739.md",
+   "acceptance": "TD-PICK-74 passes against PostgreSQL, failing on `main`; TD-PICK-41 passes unchanged."
+  },
+  {
+   "id": "T741",
+   "slug": "opted-out-text-pick",
+   "title": "server and intake: an opted-out homeowner's \"<n> YES\" picks with no text back",
+   "goal": "Plan change D-4727 (A, R1 finding 1; PICK-030, CON-013, CON-016, D-050, D-478, D-1612, D-1614). `picks::api::opted_out_yes` (`app/picks/src/email_code.rs:207`) has no production caller, and a homeowner whose number is on the suppression list never reaches intake: `screen` (`app/server/src/inbound_text.rs:836` to `:876`) maps `Outcome::Suppressed` to a listed sender, queues the CON-016 wrote-again follow-up (`FollowUp::WroteAgain`) and `help` ends the delivery with `Halt::Ends(\"suppressed\")` (`:959`). (1) In `inbound_text.rs`, for `Outcome::Suppressed` from a homeowner (not `Relation::Business`), with no provider keyword, no 911-list match (`msg.emergency` false; the paused-emergency path stays as it is) and words that `picks::api::read_text_pick` reads as a text pick: no wrote-again follow-up is queued, and the text goes, inside the delivery's transaction, to a new `intake::api::answer_opted_out_pick` in `app/intake/src/text_pick_reply.rs` (T728's file): her open request's live jobs under the homeowner lock, each pause read by `paused_under_lock`, then `opted_out_yes` with `Actor::Homeowner`; no text is queued on any branch (CON-013); `Picked` and `Same` store as D-1614 decided (channel `page`), `TermsFirst`, `Nothing` and `None` store nothing; then the delivery ends as `suppressed` does today. Any other listed text keeps today's path, wrote-again follow-up included. A module error is `Halt::Settled` as for every listed sender (D-2307). Open (D-1612 (1), (2)): PICK-030's emails (the Terms line with a one-time Pick button, the confirmation by email) have no sender and no conversation-address source; this task adds none. Tests in the new `app/server/tests/opted_out_pick_route.rs` (TD-PICK-75), the assembled router's `POST /webhooks/twilio/sms` with signed fake requests, PostgreSQL, fake data and 555 numbers only. Update `docs/decisions.md`. After T675, the last phase-1 queued owner of `inbound_text.rs`, and T728; T402 and T299 (phase 2 owners of `inbound_text.rs`) now follow it, and T683 follows both.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T675",
+    "T728"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/server/src/inbound_text.rs",
+    "app/intake/src/text_pick_reply.rs",
+    "app/server/tests/opted_out_pick_route.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/consent.md",
+    "app/picks/src/email_code.rs",
+    "app/intake/src/job_texts.rs",
+    "docs/brains/sms-compliance.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "PICK-030",
+    "CON-013",
+    "CON-016"
+   ],
+   "tests": [
+    "TD-PICK-75"
+   ],
+   "decisions": [
+    "D-050",
+    "D-478",
+    "D-1612",
+    "D-1614",
+    "D-2307",
+    "D-4727"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 400,
+    "context_pct": 30
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T741-opted-out-text-pick",
+   "prompt": "kit/prompts/T741.md",
+   "acceptance": "TD-PICK-75 passes through the assembled SMS route, failing on `main`; an opted-out \"1 YES\" queues no text and no wrote-again follow-up; any other listed text keeps its follow-up; every inbound text and opt-out test passes unchanged."
   },
   {
    "id": "T740",

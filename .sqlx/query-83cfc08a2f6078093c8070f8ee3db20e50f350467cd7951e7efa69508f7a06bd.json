@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE messaging.email_outbox SET status = 'queued', claimed_at = NULL WHERE id = ANY($1) AND status = 'sending' AND claimed_at = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "UuidArray",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "83cfc08a2f6078093c8070f8ee3db20e50f350467cd7951e7efa69508f7a06bd"
+}
