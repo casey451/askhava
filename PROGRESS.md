@@ -7558,3 +7558,4 @@
 - 2026-11-19T02:08:57Z runner c5a97a0b8910 (actions): {}
 - 2026-11-19T02:09:31Z runner c5a97a0b8910 (actions): {}
 - 2026-11-19T02:10:36Z runner 5504717c09aa (actions): {"T505": "MERGE_PENDING -> DONE"}
+- 2026-11-19T02:11:07Z runner 5504717c09aa (actions): {"T490": "QUEUED -> IN_PROGRESS"}; T490 estimated 1.7M tokens (calibrated); week has 46.1M left (no five-hour budget, D-3056) after 5.9M still running in another lane (session_reading 2026-11-19T02:08:56Z (week)); running to the limit (model window, D-2225), claimed
