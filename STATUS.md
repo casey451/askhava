@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T16:04:40Z by runner 2cf51500b706 (actions).
+Updated 2026-11-19T16:08:44Z by runner 6fdba0ca9501 (actions).
 
-**Building: T210 in progress since 15:35Z; 497 of 668 done; week 85% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T210 in progress since 15:35Z; 497 of 670 done; week 85% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 497 of 668 build tasks (owner gates not counted)
+- **Tasks done:** 497 of 670 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T210 claimed 15:35Z, lease until 18:35Z; lane 3: T530 claimed 15:41Z, lease until 18:41Z; lane 4: T555 claimed 15:44Z, lease until 18:44Z; lane 7: T715 claimed 15:50Z, lease until 18:50Z
 - **Week:** 85% used, 21.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:04Z, 0 min before this update
+- **Last run:** 16:04Z, 3 min before this update
 - **Keeper:** last ran 16:04Z, next wake 16:24Z
 
 ## Needs attention
@@ -16,7 +16,7 @@ Updated 2026-11-19T16:04:40Z by runner 2cf51500b706 (actions).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T607 (since 2026-11-19T15:50:24Z, no attempt used; a plan change fixes it): T607: dependency T593 is DONE but its owned file app/server/tests/home_request_box.rs is not on main
-- Strict plan check red: 64 problem(s) on tasks still to run (+322 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 64 problem(s) on tasks still to run (+325 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -93,7 +93,6 @@ Updated 2026-11-19T16:04:40Z by runner 2cf51500b706 (actions).
 | T720 | Decision digest prerequisites (harness): the digest plan and | done | 1 | 67 min | 16:51Z |  |
 | T624 | server: two failed in-process health checks in a row raise o | resync | 1 | 49 min | 16:38Z |  |
 | T592 | jobs, quotes and site: the home page's numbers read every jo | done | 1 | 40 min | 16:19Z |  |
-| T645 | intake and messaging: the web chat honours an opt-out word,  | BLOCKED | 1 | 4 min | 16:05Z | PLAN GAP: app/site/src/chat.rs:340 (owned by T593, then T646 and T649; T593 is not merged yet) calls `chat_message(db, & |
 
 ### Plan and harness merges on main
 - none
@@ -138,7 +137,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
 - stage 5: 140 of 267 done
-- stage 6: 0 of 48 done
+- stage 6: 0 of 50 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
 - stage kit: 14 of 15 done
