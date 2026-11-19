@@ -27,6 +27,7 @@ mod pins;
 mod routing;
 mod rules;
 mod safety_key_retry;
+mod safety_switch;
 mod scorecard_inputs;
 mod service;
 #[cfg(test)]

@@ -30,10 +30,20 @@
 //! screen, never by text) and files Stripe's written answer ([`owner_file_stripe_answer`],
 //! `quotes::api::file_stripe_answer`), showing the newest filing. All three need the SEC-043 fresh
 //! factor. `server` (T310) serves their `POST`s.
+//!
+//! T407 (CALL-019, CALL-022, SEC-043, D-275, D-384, D-3134): the settings page shows the stored
+//! "safety voice call" switch, off at launch, with the attorney approval in force while on.
+//! [`owner_safety_call`] turns it on (with the approval's date and reference) or off through
+//! `calls::api`, each after the SEC-043 fresh factor; a refusal names what is missing: the
+//! approval, or the CALL-022 items the given `Conditions` leave false (production passes
+//! `calls::api::SAFETY_CONDITIONS`).
 
 use askama::Template;
 use askhava_businesses::api::{needs_review_signups, review_target_line};
-use askhava_calls::api::OWNER_BRIDGE_KIND;
+use askhava_calls::api::{
+    Conditions, OWNER_BRIDGE_KIND, SwitchChange, safety_approval, turn_safety_switch_off,
+    turn_safety_switch_on, unmet_conditions,
+};
 use askhava_catalog::api::{CatalogError, category, category_list, set_category_enabled};
 use askhava_core::api::{NewTask, brand, enqueue};
 use askhava_messaging::api::{
@@ -93,6 +103,8 @@ pub const OWNER_BRIDGE_ROUTE: &str = "/owner/call-homeowner";
 pub const OWNER_OPT_OUT_ROUTE: &str = "/owner/opt-out";
 /// PICK-048: the Stripe written answer filing.
 pub const OWNER_STRIPE_ANSWER_ROUTE: &str = "/owner/stripe-answer";
+/// CALL-019, CALL-022, SEC-043: the safety voice call switch (`to` and the approval in the body).
+pub const OWNER_SAFETY_CALL_ROUTE: &str = "/owner/safety-call";
 /// OPS-028: the audit action of one queued bridge press, subject the alert.
 pub const OWNER_BRIDGE_ACTION: &str = "portals.owner_bridge_press";
 /// The audit action of the owner's refund press, about the pick (SEC-006, D-074).
@@ -398,6 +410,9 @@ struct SettingsView<'a> {
     opt_out_route: &'static str,
     stripe_route: &'static str,
     stripe: Option<StripeRow>,
+    safety_route: &'static str,
+    safety: Option<(String, String)>,
+    unmet: Vec<&'static str>,
     category_route: &'static str,
     step_up_route: &'static str,
     home_route: &'static str,
@@ -587,7 +602,7 @@ pub async fn owner_settings_page(
 
 /// LIC-002, CON-035, PICK-048, D-3753: the owner settings page with the on-screen confirmation of
 /// the change just made, if any: the category switches, the opt-out form, the Stripe-answer form
-/// and the newest filed answer.
+/// and the newest filed answer, and the safety voice call switch (CALL-019, T407).
 ///
 /// # Errors
 ///
@@ -598,6 +613,7 @@ pub async fn owner_settings_page_with(
     done: Option<SettingsNotice>,
 ) -> Result<String, OwnerToolError> {
     let stripe = latest_stripe_answer(conn).await.map_err(store)?;
+    let safety = safety_approval(conn).await.map_err(store)?;
     let list = category_list(conn).await.map_err(store)?;
     let categories = list
         .categories
@@ -612,6 +628,9 @@ pub async fn owner_settings_page_with(
     SettingsView {
         csrf,
         notice: done.map(SettingsNotice::line),
+        safety_route: OWNER_SAFETY_CALL_ROUTE,
+        safety: safety.map(|a| (a.date.strftime("%B %-d, %Y").to_string(), a.reference)),
+        unmet: done.map(SettingsNotice::unmet).unwrap_or_default(),
         opt_out_route: OWNER_OPT_OUT_ROUTE,
         stripe_route: OWNER_STRIPE_ANSWER_ROUTE,
         stripe: stripe.map(|a| StripeRow {
@@ -957,6 +976,14 @@ pub enum SettingsNotice {
     OptOutAlready,
     /// Stripe's written answer was filed.
     StripeAnswerFiled,
+    /// The safety voice call is now on (or already was).
+    SafetyCallOn,
+    /// The safety voice call is now off (or already was).
+    SafetyCallOff,
+    /// Not turned on: no approval date and reference (CALL-019).
+    SafetyCallNoApproval,
+    /// Not turned on: these CALL-022 items are not met.
+    SafetyCallUnmet(Conditions),
 }
 
 impl SettingsNotice {
@@ -966,8 +993,107 @@ impl SettingsNotice {
             Self::OptOutListed => "Done. We won't text or auto-call that number again.",
             Self::OptOutAlready => "That number was already off our texts. Nothing changed.",
             Self::StripeAnswerFiled => "Saved. Stripe's answer is below.",
+            Self::SafetyCallOn => "Saved. The safety voice call is on.",
+            Self::SafetyCallOff => "Saved. The safety voice call is off.",
+            Self::SafetyCallNoApproval => {
+                "Not turned on. Enter the date and reference of your attorney's written approval."
+            }
+            Self::SafetyCallUnmet(_) => {
+                "Not turned on. These parts of the safety call aren't built and tested yet:"
+            }
         }
     }
+
+    /// Whether the change was refused, so `server` answers 400 (CALL-019, CALL-022).
+    #[must_use]
+    pub fn refused(self) -> bool {
+        matches!(self, Self::SafetyCallNoApproval | Self::SafetyCallUnmet(_))
+    }
+
+    /// CALL-022: the unmet items a refusal names, in words; empty for any other notice.
+    fn unmet(self) -> Vec<&'static str> {
+        let Self::SafetyCallUnmet(met) = self else {
+            return Vec::new();
+        };
+        unmet_conditions(&met)
+            .into_iter()
+            .map(condition_words)
+            .collect()
+    }
+}
+
+/// CALL-022: one condition's code name in words for the settings page.
+fn condition_words(code: &'static str) -> &'static str {
+    match code {
+        "narrowed_trigger" => {
+            "Only gas, carbon monoxide, smoke, fire, burning, spark and shock words start a call."
+        }
+        "recent_only" => {
+            "A call goes only to the number that texted, within 30 minutes of the text."
+        }
+        "script" => {
+            "The recorded message runs under 30 seconds. It says to press 9 to stop our calls."
+        }
+        "other_number" => "The call comes from a number other than our main number.",
+        "list_checked" => "Before every call, we check the person hasn't asked us to stop.",
+        "consent_text" => "From the first day the call is on, the welcome text mentions it.",
+        "logged" => {
+            "Each call is logged: the text that started it, the message version, the time, the result and any key pressed."
+        }
+        other => other,
+    }
+}
+
+/// The safety voice call form's body: `on` or `off`, and for `on` the approval's date
+/// (`YYYY-MM-DD`) and reference (CALL-019).
+#[derive(Debug, Clone, Default, Deserialize)]
+pub struct SafetyCallForm {
+    /// `on` or `off`.
+    pub to: String,
+    /// The date of the attorney's written approval.
+    pub approved_on: String,
+    /// The approval's reference, 1 to 200 characters.
+    pub reference: String,
+}
+
+/// CALL-019, CALL-022, SEC-043, D-275, D-384: after the fresh factor, turns the safety voice call
+/// on (only with an approval date and reference and every item of `met`; production passes
+/// `calls::api::SAFETY_CONDITIONS`) or off through `calls::api`, which stores one row and one
+/// audit row per change. A refusal is a notice naming what is missing and stores nothing.
+///
+/// # Errors
+///
+/// [`OwnerToolError::NeedsFreshFactor`], [`OwnerToolError::Refused`] for a `to` other than `on`
+/// or `off`, or [`OwnerToolError::Database`].
+pub async fn owner_safety_call(
+    conn: &mut PgConnection,
+    principal: &OwnerPrincipal,
+    (form, met): (&SafetyCallForm, &Conditions),
+    now: Timestamp,
+) -> Result<SettingsNotice, OwnerToolError> {
+    let route = (OwnerAction::SafetyCallSwitch, OWNER_SAFETY_CALL_ROUTE);
+    fresh_factor(conn, principal, route, now).await?;
+    let owner = principal.owner();
+    let changed = match form.to.as_str() {
+        "off" => turn_safety_switch_off(conn, owner, now).await,
+        "on" => {
+            let Ok(date) = form.approved_on.trim().parse::<jiff::civil::Date>() else {
+                return Ok(SettingsNotice::SafetyCallNoApproval);
+            };
+            let approval = askhava_calls::api::Approval {
+                date,
+                reference: form.reference.clone(),
+            };
+            turn_safety_switch_on(conn, owner, (&approval, met), now).await
+        }
+        _ => return Err(OwnerToolError::Refused),
+    };
+    Ok(match (changed.map_err(store)?, form.to.as_str()) {
+        (SwitchChange::NoApproval, _) => SettingsNotice::SafetyCallNoApproval,
+        (SwitchChange::Unmet, _) => SettingsNotice::SafetyCallUnmet(*met),
+        (_, "on") => SettingsNotice::SafetyCallOn,
+        _ => SettingsNotice::SafetyCallOff,
+    })
 }
 
 /// The body of the bridge press: the alert and this render's press ID. The CSRF field is read by

@@ -3498,6 +3498,13 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **The gap:** the "Got it" reply to a business's Get help form is stored under the team member's record, not their email, so it is dropped instead of sent. The fix belongs to the help form's task (queue it to the member's email with the business named).
 - Our choice; nothing needs you now.
 
+## The safety voice call switch is now on your settings page, still off (D-4721)
+
+- **What's built:** your owner settings page shows the safety voice call switch. It is off. Turning it on asks for the date and reference of your TCPA attorney's written approval and a fresh code from your authenticator app; turning it off asks for the code too. Every change is logged without the reference.
+- **What it changes:** from the moment it is on, new homeowners' first text includes the recorded-call sentence, and a gas, smoke or fire text while our texting is down can get one recorded call. Off again, both stop with the next message.
+- **Not covered yet:** the web chat's welcome text never mentions the recorded call, even with the switch on. That chat part belongs to another module and needs its own small change.
+- Our choice; nothing needs you now.
+
 ## Fable's first restart batch: ten new tasks and four widened ones (D-4748 to D-4750)
 
 - **What will change:** a text opt-out keeps working after the phone-lookup key is replaced, and an old key can finally be retired (T743; Gate C now waits for it). Closing or cancelling a job ends a pick still waiting to be accepted or paid, and its payment is cancelled (T744). Businesses see the homeowner's answers on the Quote and Confirm pages (T745, T746), and a returning homeowner's second job from an "ALSO" text gets the $0 repeat-customer fee it should. Choosing "emergency" by text now gives the 60-minute emergency windows (T747). An unused business text is removed (T749).
