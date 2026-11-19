@@ -89476,7 +89476,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T03:52:34Z",
+ "updated_at": "2026-11-19T03:58:32Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -89574,8 +89574,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "c95edf6b7d535261a6727cdb3a911b8088e6282a",
- "starter": "actions",
+ "runner_sha": "547545f441162238021f6a4eb3f613d7dc1271ce",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "511cb565de5615f05844c7b261cf66c2d3c342a4",
@@ -89869,7 +89869,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 4602,
+ "next_decision": 4603,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
@@ -91116,6 +91116,12 @@
    "at": "2026-11-19T02:35:54Z",
    "reason": "T203 check_failed: T488's Spanish pest attestation (es_business_signup.html:82, :88) joins T203's WEB-010 List A",
    "session": "manual-5d062884eef1"
+  },
+  {
+   "number": 4602,
+   "at": "2026-11-19T03:58:32Z",
+   "reason": "T715 plan gap: TD-INT-52 two-word first text narrowed; T716 stores first-text job-type codes and applies INT-040 on KeepAll (Fable triage)",
+   "session": "manual-497392a02481"
   }
  ],
  "lanes_fallback_history": [
