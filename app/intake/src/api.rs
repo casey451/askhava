@@ -37,6 +37,10 @@ pub use crate::closing::{
     CLOSE_MENTION_TEMPLATE, CLOSE_WHICH_TEMPLATE, Closing, JOB_CLOSED_TEMPLATE,
     JOBS_CLOSED_TEMPLATE, answer_close, close_from_page,
 };
+pub use crate::consent_purge::{
+    CONSENT_PURGED, CONSENT_SWEEP_KIND, DueNumber, SweepStep, due_number, run_consent_sweep_at,
+    schedule_consent_sweep, sweep_consent, sweep_number,
+};
 pub use crate::conversation::name_address_open;
 pub use crate::conversation::{AfterQuestions, after_questions};
 pub use crate::conversation::{
