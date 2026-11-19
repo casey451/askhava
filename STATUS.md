@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T07:15:57Z by runner c2eaa68952bf (actions).
+Updated 2026-11-19T07:19:05Z by runner e16039f5adfd (actions).
 
 **Building: T456 in progress since 06:58Z; 480 of 664 done; week 76% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-19T07:15:57Z by runner c2eaa68952bf (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T456 claimed 06:58Z, lease until 09:58Z; lane 2: T310 claimed 06:04Z, lease until 10:15Z; lane 3: T216 claimed 06:32Z, lease until 09:32Z; lane 5: T622 claimed 07:06Z, lease until 10:06Z; lane 6: T476 claimed 06:22Z, lease until 09:22Z
 - **Week:** 76% used, 38.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:15Z, 0 min before this update
+- **Last run:** 07:16Z, 2 min before this update
 - **Keeper:** last ran 07:15Z, next wake 09:24Z
 
 ## Needs attention
@@ -16,7 +16,7 @@ Updated 2026-11-19T07:15:57Z by runner c2eaa68952bf (actions).
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T663 (since 2026-11-19T06:58:02Z, no attempt used; a plan change fixes it): T663: dependency T408 is DONE but its owned file app/server/src/release_hold.rs is not on main; T663: dependency T408 is DONE but its owned file app/server/tests/safe_mode_release.rs is not on main
 - PLAN GAP T707 (since 2026-11-19T06:58:02Z, no attempt used; a plan change fixes it): T707: dependency T408 is DONE but its owned file app/server/src/release_hold.rs is not on main; T707: dependency T408 is DONE but its owned file app/server/tests/safe_mode_release.rs is not on main
-- Strict plan check red: 60 problem(s) on tasks still to run (+297 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 62 problem(s) on tasks still to run (+294 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
