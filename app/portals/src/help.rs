@@ -424,8 +424,9 @@ struct HelpFormView<'a> {
     sign_in: &'a str,
 }
 
-/// OPS-036, CON-035, PRIV-031, SEC-014, D-4293: the page the site help form answers with; every
-/// screen but [`HelpFormScreen::TooMany`] links the homeowner sign-in.
+/// OPS-036, CON-035, PRIV-031, SEC-014, WORD-029, D-4293, D-4748: the page the site help form
+/// answers with; every screen but [`HelpFormScreen::TooMany`] links the homeowner sign-in, and
+/// none promises a reply, since the form keeps no sender address.
 ///
 /// # Errors
 ///
@@ -433,8 +434,7 @@ struct HelpFormView<'a> {
 pub fn help_form_page(screen: HelpFormScreen) -> Result<String, askama::Error> {
     let b = brand();
     let got = format!(
-        "The {} owner has your message. Replies usually come within 2 days, or within 24 hours if \
-         your request is urgent. In an emergency, call 911.",
+        "The {} owner has your message. In an emergency, call 911.",
         b.display_name()
     );
     let lines = match screen {
