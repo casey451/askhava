@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T12:45:39Z by runner 5339e72a662e (manual).
+Updated 2026-11-19T12:45:57Z by runner 5339e72a662e (manual).
 
 **Building: T470 in progress since 10:42Z; 491 of 664 done; week 80% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-19T12:45:39Z by runner 5339e72a662e (manual).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T470 claimed 10:42Z, lease until 14:53Z; lane 3: T158 claimed 11:39Z, lease until 14:39Z
 - **Week:** 80% used, 28.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:37Z, 8 min before this update
+- **Last run:** 12:45Z, 0 min before this update
 - **Keeper:** last ran 12:36Z, next wake 12:56Z
 
 ## Needs attention
@@ -89,7 +89,6 @@ Updated 2026-11-19T12:45:39Z by runner 5339e72a662e (manual).
 | T525 | server and ops: the hourly vault-read check and the daily da | done | 1 | 102 min | 15:41Z |  |
 | T200 | ops and portals: the owner help page with its screened reply | done | 2 | 2 h 25 min | 14:32Z | Review not approved after the one fix round (head 346acc872b66e2a8cd86b345b919fe4573f7db87). / Remaining finding (review |
 | T671 | intake (harness): a homeowner's texts after the consent text | BLOCKED | 1 | 44 min | 13:58Z |  |
-| T472 | server (harness): serve the "Can't take it" page and button  | done | 1 | 62 min | 12:45Z |  |
 
 ### Plan and harness merges on main
 - none
