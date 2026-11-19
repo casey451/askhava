@@ -5,7 +5,7 @@ Version 0.7 (draft, D-492 changes, email codes) · November 17, 2026 · Not yet 
 
 Effective [date]. Laftly LLC, [mailing address: P.O. box or registered agent, never a home address], Lake Havasu City, Arizona. Contact: help@laftly.com.
 
-This policy also serves as Laftly's privacy notice to the people who use it.
+This policy is also our privacy notice. It is for the people who use Laftly.
 
 ## 1. Who we are
 
@@ -15,15 +15,15 @@ Laftly is not a contractor and does not perform, bid on or supervise work. We pa
 
 ## 2. What we collect
 
-- **From homeowners and tenants:** your phone number; what you tell us about the job; the town and ZIP; your first name and the job address; and, if you choose, your email, photos of the job and pictures of the look you want.
-- **From businesses:** business and license details from public records, team members' names, emails and phones, notice settings, and payment details (card details are held by our payment processor, Stripe, not by Laftly).
-- **Automatically:** message and call records (who, when, how long; we never record calls), the times a business's notice emails were sent, delivered and their own links first opened, and basic website logs. We don't use advertising cookies, tracking pixels or email open tracking.
+- **From homeowners and tenants:** your phone number and what you tell us about the job. We also collect your town and ZIP, your first name and the job address, and, if you choose, your email, photos of the job and pictures of the look you want.
+- **From businesses:** business and license details from public records. Team members' names, emails and phones. Notice settings and payment details. Our payment processor, Stripe, holds card details, not Laftly.
+- **Automatically:** records of messages and calls (who, when and how long). We never record calls. For businesses, when each notice email was sent and delivered, and when each of its own links was first opened. Basic website logs. We don't use advertising cookies, tracking pixels or email open tracking.
 
 We never ask for Social Security numbers, driver's licenses, immigration status or ID images.
 
 ## 3. How we use it
 
-To run your request: send a description of the job to local businesses, show you their quotes, pass your choice to the business you choose, send you texts and emails about your request, keep the service safe, handle help requests and disputes, and meet legal duties. We don't use your information for advertising, and we don't send marketing texts.
+We use it to run your request. We send a description of the job to local businesses and show you their quotes. We pass your choice to the business you choose. We send you texts and emails about your request. We also use it to keep the service safe, handle help requests and disputes, and meet legal duties. We don't use your information for advertising, and we don't send marketing texts.
 
 ## 4. Who sees what, and when
 
@@ -35,19 +35,19 @@ When you send a request, Laftly sends a description of the job, with your name, 
 
 | Who | What they see | When |
 |---|---|---|
-| Local businesses in that trade | The job description with your name, phone, email and street address removed; town; timing; your answers to fixed questions; any photos you sent, with location data removed (faces, house numbers, license plates and readable text blurred once AI photo screening is on) | When the request goes out |
+| Local businesses in that trade | The job description with your name, phone, email and street address removed. Your town and timing. Your answers to fixed questions. Any photos you sent, with location data removed. Once AI photo screening is on, faces, house numbers, license plates and readable text are blurred. | When the request goes out |
 | Anyone on laftly.com | Your feedback, with your first name and town, only if you ticked the box allowing it | After your job is done |
-| The one business you pick | Your first name and the job address, plus your email if you chose to share it, and your photos at full size with location data removed | Only after you pick it, ask us to share them, and it confirms (and pays its introduction fee, when one is due) |
-| Businesses that get your job card | The job card you saw, your answers and the photos you kept, with no name, phone, email or street address | When the card goes out |
+| The one business you pick | Your first name and the job address. Your email too, if you chose to share it. Your photos at full size, with location data removed. | Only after you pick it, ask us to share them, and it confirms (and pays its introduction fee, when one is due) |
+| Businesses that get your job card | The job card you saw, your answers and the photos you kept. No name, phone, email or street address. | When the card goes out |
 | No business, ever | Your phone number | Never. Calls go through a masked Laftly number |
-| Vendors that run Laftly for us | Only what each needs to do its job | While providing the service, under their data-processing terms |
-| Police, courts or others | Only what a law requires, such as a subpoena or warrant | Only when the law requires it |
+| Vendors that run Laftly for us | Only what each needs to do its job. | While providing the service, under their data-processing terms |
+| Police, courts or others | Only what a law requires, such as a subpoena or warrant. | Only when the law requires it |
 
 Your number is never shared. Your first name and address go only to the business you pick. Laftly never gives your number to any business. If a business asks for it on the call, that's your choice.
 
 The business you pick may use your details only for your job and follow-up about it. Our business terms forbid marketing lists and resale.
 
-**Vendors** (under contract, only to run Laftly): texting and calls (Twilio), email (Resend), one-time codes sent by email (Twilio SendGrid, which sees the email address we send each code to), payments (Stripe), hosting and its 30-day logs (Railway), encrypted backup storage (Backblaze B2), error monitoring (Sentry), letters for business identity checks (Lob), website delivery and security (Cloudflare), and, only once it is switched on, automated text reading (Anthropic; see section 6).
+**Vendors** work under contract, only to run Laftly. They provide texting and calls (Twilio), email (Resend) and one-time codes sent by email (Twilio SendGrid, which sees the email address we send each code to). They also provide payments (Stripe), hosting and its 30-day logs (Railway) and encrypted backup storage (Backblaze B2). Others provide error monitoring (Sentry), letters for business identity checks (Lob) and website delivery and security (Cloudflare). We use automated text reading (Anthropic; see section 6) only once it is switched on.
 
 **Legal demands.** We'll tell you about a legal demand for your data unless the law forbids it.
 
@@ -81,7 +81,7 @@ Our texts are automated. Ask "is this a person?" at any time and we'll tell you.
 
 ## 7. Photos
 
-Photos are optional; a request goes out the same way without them. When you send one, our software removes its hidden data (location, device and time) before it is stored or shown to anyone, and our own server, not an outside AI, checks it for faces, people, house numbers and license plates, blurring or leaving out what it finds. You see each photo as businesses will see it and can remove it before your card goes out. Photos you keep go on your job card to the businesses that get it. Please leave people, house numbers and license plates out of photos. A photo sent by text is copied to our storage and deleted from our texting provider.
+Photos are optional; a request goes out the same way without them. When you send one, our software removes its hidden data (location, device and time) before it is stored or shown to anyone. Our own server, not an outside AI, checks it for faces, people, house numbers and license plates. It blurs or leaves out what it finds. You see each photo as businesses will see it and can remove it before your card goes out. Photos you keep go on your job card to the businesses that get it. Please leave people, house numbers and license plates out of photos. A photo sent by text is copied to our storage and deleted from our texting provider.
 
 ## 8. How long we keep it
 
@@ -100,7 +100,7 @@ You can see and change your details (properties, language, texts on or off) on y
 
 ## 10. How we protect it
 
-We encrypt contact details field by field and photos before they are stored, limit which parts of our software can read them, log every access, keep backups encrypted, and use multi-factor sign-in for our own accounts. The business you pick sees your first name and the job address only after it signs in to its Laftly account; we never put them in an email or a text. Our website uses an encrypted connection. Ordinary text messages and email are not end-to-end encrypted, and your mobile carrier, our texting provider or your email provider may keep copies, so please share sensitive details on laftly.com rather than by text. Card numbers are held by Stripe, not by Laftly. No system is perfect. We look into any suspected unauthorized access to personal information, and we tell affected people and government authorities when the law requires it. We may also tell you when we think it would help protect you.
+We encrypt contact details field by field, and photos, before they are stored. We limit which parts of our software can read them and log every access. We keep backups encrypted and use multi-factor sign-in for our own accounts. The business you pick sees your first name and the job address only after it signs in to its Laftly account. We never put them in an email or a text. Our website uses an encrypted connection. Ordinary text messages and email are not end-to-end encrypted. Your mobile carrier, our texting provider or your email provider may keep copies. Please share sensitive details on laftly.com rather than by text. Card numbers are held by Stripe, not by Laftly. No system is perfect. We look into any suspected unauthorized access to personal information. We tell affected people and government authorities when the law requires it. We may also tell you when we think it would help protect you.
 
 ## 11. Other people's details
 
@@ -112,12 +112,12 @@ Laftly is only for people 18 or older. If we learn that someone under 18 has con
 
 ## 13. Do Not Track
 
-We don't track you across other websites, so we treat browsers' Do Not Track signals the same as everyone else's: no cross-site tracking.
+We don't track you across other websites. So a browser's Do Not Track signal changes nothing: we don't track anyone across other websites.
 
 ## 14. Businesses
 
-The business data page explains what we keep about businesses and team members and for how long, who can see it, that call logs hold no recordings, that Laftly never asks about workers, and the notice-email and timing records we keep for each business. Business data goes to police or others only when a law requires it, and the business data page says: We'll tell you about any legal demand for your business's data unless the law forbids it.
+The business data page explains what we keep about businesses and team members, and for how long. It also covers who can see it and the notice-email and timing records we keep for each business. Call logs hold no recordings, and Laftly never asks about workers. Business data goes to police or others only when a law requires it. The business data page says: We'll tell you about any legal demand for your business's data unless the law forbids it.
 
 ## 15. Changes
 
-We'll post any change here with its effective date, and for an important change we'll tell you before it applies to information we already have. We never start using information you already gave us for a new purpose, such as training AI, without telling you and asking first.
+We'll post any change here with its effective date. For an important change, we'll tell you before it applies to information we already have. We never start using information you already gave us for a new purpose, such as training AI, without telling you and asking first.

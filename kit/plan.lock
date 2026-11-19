@@ -52,7 +52,7 @@
   "scripts/check_catalog.py": "22059b11f6cd4d8241344302857716a969dfc6434c298106646b8bdd648e86dd",
   "scripts/check_code_docs.py": "f3da2477ae7e99a255b918418e4fe2252883b69ab3309bee27a29bf9f7000163",
   "scripts/check_conflict_markers.py": "0c9985939c76ce85863f70275c88aaef5adb769cd3e938ec7de0e717eb4e0869",
-  "scripts/check_copy.py": "00f22a2a9d8300dfeb9fdd3838241546a4e10dea30d276f44d19535cd2079d2e",
+  "scripts/check_copy.py": "f2242252c6a180e361c2968c971ef3b0c2bb7788994dffffdc234894a0bfea98",
   "scripts/check_crates.py": "6191806bd18621eb13b6ead908507c4150859ce587426670dd26d1c55a8666bc",
   "scripts/check_decision_digest.py": "fe03f047d739ff4bfc39f952acce51d090276940180af7bd8af2aece0f681ca3",
   "scripts/check_duplicates.py": "241ceeed61d1131e2ab862d451ae7a7f7fa3e92893495d274395331d852ed224",

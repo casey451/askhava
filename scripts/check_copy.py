@@ -26,7 +26,13 @@ is removed. es_*.html files are skipped. In lang="es", text with a SPANISH and n
 more words with no SPANISH word are a problem. data-fixed="<ID>" (WORD-029, D-482) is skipped when the docs/spec/
 "- **ID**" line holds its text word for word ({{ x }} = any one word), else a problem.
 
-Usage: python3 scripts/check_copy.py [--root REPO_ROOT]
+Legal drafts (WORD-031, D-492, D-3889): each section (split at Markdown headings) of the six public drafts in
+LEGAL_DRAFTS is graded on its own limit, LEGAL_MAX_GRADE (homeowner 9, business 10; MAX_GRADE is not used). Each
+paragraph sentence, list item and table row counts as a sentence; a sentence a docs/spec/ requirement holds word
+for word, or Spanish text, is not measured; a section with fewer than 20 measured words is not graded. The
+README, the security program and the incident plan are internal and not measured. --legal-grades prints each grade.
+
+Usage: python3 scripts/check_copy.py [--root REPO_ROOT] [--legal-grades]
 Exit status 1 lists each problem.
 """
 
@@ -44,6 +50,15 @@ SITE_COPY = Path("docs/copy/site-copy.md")
 MAX_WORDS = 20
 MAX_GRADE = {"homeowner": 8.0, "business": 9.0}
 MIN_WORDS_FOR_GRADE = 20
+LEGAL_DRAFTS = {  # WORD-031, D-492: the six public drafts and their readers; internal documents are not measured
+    "docs/legal/homeowner-terms.md": "homeowner",
+    "docs/legal/business-terms.md": "business",
+    "docs/legal/privacy-policy.md": "homeowner",
+    "docs/legal/sms-terms.md": "homeowner",
+    "docs/legal/business-email-notices.md": "business",
+    "docs/legal/accessibility-statement.md": "homeowner",
+}
+LEGAL_MAX_GRADE = {"homeowner": 9.0, "business": 10.0}
 SUPERLATIVES = re.compile(
     r"\b(best|fastest|cheapest|easiest|greatest|leading|#1|number one|top-rated|guaranteed?|"
     r"most trusted|lowest prices?|unbeatable|perfect)\b",
@@ -366,17 +381,128 @@ def arrow_problems(root: Path) -> list[str]:
     return problems + template_arrow_problems(root) + style_arrow_problems(root)
 
 
+def markdown_plain(line: str) -> str:
+    """A Markdown unit's reading text: list marker, links, code ticks and emphasis removed."""
+    line = re.sub(r"^\s*(?:(?:[-*+]|\d+\.)\s+)?", "", line)
+    line = re.sub(r"!?\[([^\]]*)\]\([^)]*\)", r"\1", line)
+    return " ".join(re.sub(r"`|\*\*|__|(?<!\w)[*_]|[*_](?!\w)", "", line).split())
+
+
+def legal_units(lines: list[str]) -> list[str]:
+    """WORD-031 (D-3889): a section's paragraphs, each list item and each table row as its own unit."""
+    units: list[str] = []
+    current: list[str] = []
+    for raw in lines + [""]:
+        line = re.sub(r"^\s*>\s?", "", raw)
+        item = re.match(r"^\s*(?:[-*+]|\d+\.)\s+", line)
+        row = line.lstrip().startswith("|")
+        if not line.strip() or item or row:
+            units.append(" ".join(current))
+            current = []
+        if row and not re.fullmatch(r"\s*\|[\s:|-]*", line):
+            units.append(" ".join(cell.strip() for cell in line.strip().strip("|").split("|")))
+        elif line.strip() and not row:
+            current.append(line)
+    return [plain for unit in units if (plain := markdown_plain(unit))]
+
+
+def legal_sections(text: str) -> list[tuple[str, list[str]]]:
+    """WORD-031: the draft split at each Markdown heading (heading lines are labels, not measured)."""
+    sections: list[tuple[str, list[str]]] = [("opening", [])]
+    for line in text.splitlines():
+        head = re.match(r"^#{1,6}\s+(.+?)\s*$", line)
+        if head:
+            sections.append((head.group(1), []))
+        else:
+            sections[-1][1].append(line)
+    return [(name, legal_units(lines)) for name, lines in sections]
+
+
+def padded(text: str) -> str:
+    """Text as a space-padded string of lowered words, for word-for-word matching."""
+    return f" {' '.join(lowered_words(text))} "
+
+
+@dataclass
+class FixedText:
+    """WORD-031: what docs/spec/ fixes word for word: each requirement, and each quoted span of 5 or more words."""
+    requirements: list[str]
+    phrases: list[str]
+
+
+def fixed_text(root: Path) -> FixedText:
+    texts = list(load_requirements(root).values())
+    quoted = [q for t in texts for q in re.findall(r"[\"“]([^\"”]+)[\"”]", t) if len(lowered_words(q)) >= 5]
+    return FixedText([padded(t) for t in texts], [padded(q) for q in quoted])
+
+
+def measured_text(sentence: str, fixed: FixedText) -> str:
+    """WORD-031: the part of a sentence the legal measure grades: "" for a sentence a requirement holds word for
+    word or Spanish text (D-3878); otherwise the sentence without any requirement-quoted span it contains."""
+    found = lowered_words(sentence)
+    whole = padded(sentence)
+    if not found or any(whole in req for req in fixed.requirements):
+        return ""
+    if set(found) & SPANISH and not set(found) & ENGLISH:
+        return ""
+    rest = whole
+    for phrase in fixed.phrases:
+        rest = rest.replace(phrase, " ")
+    return sentence if rest == whole else " ".join(rest.split())
+
+
+def sentences_grade(sents: list[str]) -> float:
+    """Flesch-Kincaid grade of sentences already split (a list item or table row is one, D-3889)."""
+    ws = [w for s in sents for w in words(s)]
+    if not sents or not ws:
+        return 0.0
+    return 0.39 * len(ws) / len(sents) + 11.8 * sum(syllables(w) for w in ws) / len(ws) - 15.59
+
+
+def legal_grades(root: Path) -> list[tuple[str, str, float]]:
+    """WORD-031: (where, audience, grade) for each section of 20 or more measured words of the six drafts."""
+    fixed = fixed_text(root)
+    found: list[tuple[str, str, float]] = []
+    for rel, audience in LEGAL_DRAFTS.items():
+        path = root / rel
+        if not path.is_file():
+            continue
+        for name, units in legal_sections(path.read_text(encoding="utf-8")):
+            sents = [m for unit in units for s in sentences(unit) if (m := measured_text(s, fixed))]
+            if sum(len(words(s)) for s in sents) >= MIN_WORDS_FOR_GRADE:
+                found.append((f"{rel} · {name}", audience, sentences_grade(sents)))
+    return found
+
+
+def legal_grade_problem(where: str, audience: str, level: float) -> str | None:
+    """WORD-031: the problem for a legal section above its audience's limit (homeowner 9, business 10)."""
+    limit = LEGAL_MAX_GRADE[audience]
+    if level <= limit:
+        return None
+    readers = "businesses" if audience == "business" else "homeowners"
+    return f"{where}: reading grade {level:.1f} (legal limit {limit:.0f} for {readers})"
+
+
+def legal_problems(root: Path) -> list[str]:
+    """WORD-031: each over-grade section of the six public legal drafts."""
+    return [p for args in legal_grades(root) if (p := legal_grade_problem(*args))]
+
+
 def run(root: Path) -> list[str]:
     problems: list[str] = []
     for block in site_copy_blocks(root) + template_blocks(root):
         problems += check_block(block)
-    return problems + template_problems(root) + arrow_problems(root)
+    return problems + template_problems(root) + arrow_problems(root) + legal_problems(root)
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
+    parser.add_argument("--legal-grades", action="store_true", help="print each legal section's grade (WORD-031)")
     args = parser.parse_args(argv)
+    if args.legal_grades:
+        for where, audience, level in legal_grades(args.root):
+            print(f"{level:5.1f} {audience:9} {where}")
     problems = run(args.root)
     for problem in problems:
         print(problem)
