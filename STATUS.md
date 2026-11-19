@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T01:00:23Z by runner 85af034f1e4b (actions).
+Updated 2026-11-19T01:00:32Z by runner 85af034f1e4b (actions).
 
 **Building: T488 in progress since 23:28Z; 466 of 663 done; week 70% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 466 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T488 claimed 23:28Z, lease until 03:59Z; lane 3: T505 claimed 23:48Z, lease until 03:55Z; lane 4: T306 claimed 23:42Z, lease until 03:55Z; lane 6: T563 claimed 23:58Z, lease until 03:42Z; lane 7: T203 claimed 00:59Z, lease until 03:59Z
+- **Lane:** lane 1: T488 claimed 23:28Z, lease until 03:59Z; lane 3: T505 claimed 23:48Z, lease until 03:55Z; lane 6: T563 claimed 23:58Z, lease until 03:42Z; lane 7: T203 claimed 00:59Z, lease until 03:59Z
 - **Week:** 70% used, 48.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:00Z, 0 min before this update
 - **Keeper:** last ran 00:55Z, next wake 01:15Z
@@ -19,6 +19,7 @@ Updated 2026-11-19T01:00:23Z by runner 85af034f1e4b (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T306 | server and portals: the complaints page, the emergency-email | MERGE_PENDING | 1 | 77 min | 00:59Z |  |
 | T205 | portals: owner refunds with a review step and the audit log  | MERGE_PENDING | 2 | 2 h 26 min | 00:48Z | PLAN GAP: `payments` has no public reader that ties a dispute to its pick (or its charge, business or job). Without one, |
 | T708 | intake: a quote-count update due in quiet hours goes at the  | MERGE_PENDING | 1 | 50 min | 00:40Z |  |
 | T364 | server and portals: the business step-up code page is served | done | 2 | 70 min | 00:32Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
@@ -136,9 +137,8 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T488 (lease until 2026-11-19T03:59:58Z)
 - lane 3: T505 (lease until 2026-11-19T03:55:34Z)
-- lane 4: T306 (lease until 2026-11-19T03:55:37Z)
 - lane 6: T563 (lease until 2026-11-19T03:42:07Z)
 - lane 7: T203 (lease until 2026-11-19T03:59:10Z)
 
 ## Last usage reading
-- {"task": "T205", "at": "2026-11-19T00:48:40Z", "cache_creation_input_tokens": 253802, "output_tokens": 61585, "cache_read_input_tokens": 7782505, "input_tokens": 206}
+- {"task": "T306", "at": "2026-11-19T00:59:59Z", "input_tokens": 245, "cache_read_input_tokens": 17091075, "output_tokens": 74977, "cache_creation_input_tokens": 283839}
