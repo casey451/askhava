@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T09:17:40Z by runner 358c022b2c57 (manual).
+Updated 2026-11-19T09:18:00Z by runner 358c022b2c57 (manual).
 
 **Building: T470 in progress since 09:02Z; 485 of 664 done; week 77% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -12,8 +12,6 @@ Updated 2026-11-19T09:17:40Z by runner 358c022b2c57 (manual).
 - **Keeper:** last ran 09:12Z, next wake 09:32Z
 
 ## Needs attention
-- BLOCKED T536: plan gap reported: PLAN GAP: tests/e2e/j2.ts:150 (owned by T099, `e2e-j2-business`; T644 also lists it). Smallest plan change: make the `notices` count in `closing` leave out the quiet-hours re-queue (rows whose `dedupe_key` starts with `messaging.business_notice.held.`), or count notices by `template`. Without that, the asserts at `tests/e2e/j2_business.spec.ts:57`–`:59` and `:78`–`:80` fail.
-Evidence: with the worker now started on keyedEnv, the business-notice handler registers (app/server/src/lib.rs:1840-1868); a non-emergency notice handled during Arizona quiet hours re-queues a second `messaging.business_n; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T536 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T652: plan gap reported: PLAN GAP: tests/integration/tests/safe_mode.rs:246,281,320,378,407 (owned by T487 and T408; T652's prompt :11 and :47 say it must pass unchanged) plant Severity::High alerts of the made-up kind "ops.ledger_difference" and expect safe mode to start. D-4310 (docs/decisions.md:2366) lets a High alert start safe mode only for ops.vendor_errors, ops.health_check_failed, payments.ledger_mismatch or messaging.number_suspended. The worker made a trial edit (not committed) and `cargo test -p askhava-integration --test safe_mode` gave 3 passed, 4 failed: td_ops_01_safe_mode_at_24_00_00_not_at_23_59_59, ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T652 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T116 (since 2026-11-19T08:37:10Z, no attempt used; a plan change fixes it): T116: dependency T216 is DONE but its owned file app/site/static/photos/hero-kitchen-phone.avif is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json

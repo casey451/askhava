@@ -7758,3 +7758,4 @@
 - 2026-11-19T09:16:13Z runner 2d195cdcb334 (actions): {}
 - 2026-11-19T09:17:15Z runner 4ca5171581b8 (actions): {"T705": "QUEUED -> IN_PROGRESS"}; T705 estimated 338k tokens (calibrated); week has 34.7M left (no five-hour budget, D-3056) after 5.3M still running in another lane (session_reading 2026-11-19T09:11:37Z (week)); running to the limit (model window, D-2225), claimed
 - 2026-11-19T09:17:40Z runner 358c022b2c57 (manual): {"T161": "BLOCKED -> QUEUED"}
+- 2026-11-19T09:18:00Z runner 358c022b2c57 (manual): {"T536": "BLOCKED -> QUEUED"}
