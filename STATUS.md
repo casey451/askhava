@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T10:25:09Z by runner 7be551b7caec (actions).
+Updated 2026-11-19T10:32:40Z by runner d9889d9b84f9 (actions).
 
 **Building: T470 in progress since 09:02Z; 486 of 664 done; week 78% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 486 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T470 claimed 09:02Z, lease until 12:55Z; lane 4: T705 claimed 09:16Z, lease until 12:16Z
+- **Lane:** lane 1: T470 claimed 09:02Z, lease until 13:32Z; lane 4: T705 claimed 09:16Z, lease until 12:16Z
 - **Week:** 78% used, 34.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:24Z, 0 min before this update
+- **Last run:** 10:25Z, 7 min before this update
 - **Keeper:** last ran 10:25Z, next wake 10:45Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-19T10:25:09Z by runner 7be551b7caec (actions).
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T540 (since 2026-11-19T08:04:18Z, no attempt used; a plan change fixes it): T540: dependency T310 is DONE but its owned file app/server/src/owner_portal.rs is not on main; T540: dependency T310 is DONE but its owned file app/server/tests/owner_portal_route.rs is not on main; T540: dependency T310 is DONE but its owned file tests/e2e/owner_portal_served.spec.ts is not on main
 - PLAN GAP T593 (since 2026-11-19T09:02:31Z, no attempt used; a plan change fixes it): T593: dependency T216 is DONE but its owned file app/site/static/photos/hero-kitchen-phone.avif is not on main
-- Strict plan check red: 61 problem(s) on tasks still to run (+304 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 66 problem(s) on tasks still to run (+305 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -95,7 +95,6 @@ Updated 2026-11-19T10:25:09Z by runner 7be551b7caec (actions).
 | T563 | intake and privacy: the daily consent sweep removes consent  | BLOCKED | 1 | 85 min | 11:21Z |  |
 | T658 | privacy: the scrubber removes lower-case Spanish addresses a | done | 2 | 51 min | 11:04Z | Fix-round review of head 18e4fd102f38620e11d1055ecb4d77813e2b2965 returned FINDINGS after the one allowed fix round (fir |
 | T650 | intake: the under-13 stop also deletes the request's job pho | done | 1 | 90 min | 10:39Z |  |
-| T641 | Runner (harness): merge train depth 2, the next branch's upd | done | 1 | 55 min | 10:29Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -146,7 +145,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T470 (lease until 2026-11-19T12:55:21Z)
+- T470 (lease until 2026-11-19T13:32:40Z)
 - lane 4: T705 (lease until 2026-11-19T12:16:58Z)
 
 ## Last usage reading
