@@ -7827,3 +7827,4 @@
 - 2026-11-19T11:36:08Z runner ff354758f85f (actions): {}
 - 2026-11-19T11:39:59Z runner 69f9113f192f (actions): {"T158": "QUEUED -> IN_PROGRESS"}; T158 estimated 1.5M tokens (calibrated); week has 28.6M left (no five-hour budget, D-3056) after 7.4M still running in another lane (session_reading 2026-11-19T11:35:37Z (week)); running to the limit (model window, D-2225), claimed
 - 2026-11-19T11:45:58Z runner ff354758f85f (actions): {}
+- 2026-11-19T11:47:46Z runner ff354758f85f (actions): {"T109": "IN_PROGRESS -> BLOCKED"}

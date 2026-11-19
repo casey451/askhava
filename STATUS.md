@@ -1,17 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-19T11:45:58Z by runner ff354758f85f (actions).
+Updated 2026-11-19T11:47:46Z by runner ff354758f85f (actions).
 
 **Building: T470 in progress since 10:42Z; 490 of 664 done; week 79% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 490 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T470 claimed 10:42Z, lease until 13:42Z; lane 2: T536 claimed 10:45Z, lease until 13:45Z; lane 3: T158 claimed 11:39Z, lease until 14:39Z; lane 5: T109 claimed 11:27Z, lease until 14:45Z; lane 7: T593 claimed 11:00Z, lease until 14:00Z
+- **Lane:** lane 1: T470 claimed 10:42Z, lease until 13:42Z; lane 2: T536 claimed 10:45Z, lease until 13:45Z; lane 3: T158 claimed 11:39Z, lease until 14:39Z; lane 7: T593 claimed 11:00Z, lease until 14:00Z
 - **Week:** 79% used, 28.6M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:40Z, 5 min before this update
+- **Last run:** 11:46Z, 1 min before this update
 - **Keeper:** last ran 11:36Z, next wake 11:56Z
 
 ## Needs attention
+- BLOCKED T109: plan gap reported: PLAN GAP: `deny.toml:3` (owned by T009 and T604, both outside T109; T109 does not own it): every `age` release fails `cargo deny check`, so `Ci` and prehandin go red. age 0.11.5: `cargo deny check licenses bans sources advisories` exit 1, error[unmaintained] proc-macro-error2 (RUSTSEC-2026-0173) via i18n-embed-fl 0.9.4 (non-optional dependency of age). age 0.12.1: exit 1, error[vulnerability] RUSTSEC-2026-0387 on crypto-bigint 0.5.5 via hpke/p256 -> elliptic-curve 0.13 (non-optional). Clean main: advisories ok. With one ignore line `{ id = "RUSTSEC-2026-0173", reason = "proc-macro-error2 is un; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T109 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - Strict plan check red: 61 problem(s) on tasks still to run (+311 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
@@ -19,6 +20,7 @@ Updated 2026-11-19T11:45:58Z by runner ff354758f85f (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T109 | recovery: backup checks and the nightly encrypted export | BLOCKED | 1 | 20 min | 11:47Z | PLAN GAP: `deny.toml:3` (owned by T009 and T604, both outside T109; T109 does not own it): every `age` release fails `ca |
 | T540 | portals and server: the owner's release button re-sends an e | MERGE_PENDING | 1 | 54 min | 11:29Z |  |
 | T705 | Integration tests (harness): one shared log capture that a c | MERGE_PENDING | 1 | 114 min | 11:11Z |  |
 | T470 | messaging and server: the worker task that sends queued emai | QUEUED | 1 | 93 min | 10:35Z | Fix-round review (after the one allowed findings round) still found two problems at head d9889d9b8; no reviewer approved |
@@ -144,8 +146,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T470 (lease until 2026-11-19T13:42:01Z)
 - lane 2: T536 (lease until 2026-11-19T13:45:21Z)
 - lane 3: T158 (lease until 2026-11-19T14:39:32Z)
-- lane 5: T109 (lease until 2026-11-19T14:45:58Z)
 - lane 7: T593 (lease until 2026-11-19T14:00:06Z)
 
 ## Last usage reading
-- {"task": "T540", "at": "2026-11-19T11:29:39Z", "output_tokens": 58783, "cache_read_input_tokens": 11983841, "input_tokens": 217, "cache_creation_input_tokens": 223124}
+- {"task": "T109", "at": "2026-11-19T11:47:45Z", "output_tokens": 70908, "cache_creation_input_tokens": 196678, "cache_read_input_tokens": 12046035, "input_tokens": 201}
