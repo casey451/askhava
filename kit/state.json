@@ -79200,7 +79200,10 @@
    "update_waiting_since": null,
    "update_push_failures": null,
    "merge_turn_since": "2026-11-19T13:05:58Z",
-   "last_failure": "Ci: failure; Coverage: cancelled\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest server::tests::the_notice_senders_need_the_postal_setting_in_test_and_live ... ok\ntest server::tests::with_a_public_base_url_every_key_is_required_and_named ... ok\ntest server::tests::page_pick_keys_need_the_vault_the_id_secret_and_twilio ... ok\ntest server::tests::the_texting_client_asks_for_status_callbacks_only_with_a_public_base_url ... ok\ntest td_sec_58_the_daily_prune_deletes_windows_past_the_longest_plus_a_day ... ok\ntest td_sec_54_the_daily_sweep_deletes_sessions_expired_over_a_day ... ok\ntest result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.01s\n     Running tests/setup_intent.rs (target/llvm-cov-target/debug/build/askhava-integration/15b4e54ee7b729b1/out/setup_intent-15b4e54ee7b729b1)\nrunning 8 tests\ntest td_fee_10_authorizations_are_append_only ... ok\ntest td_fee_10_bank_debit_is_refused ... ok\ntest td_fee_10_customer_at_sign_up_has_no_card ... ok\ntest td_fee_10_app_role_may_remove_a_card ... ok\ntest td_fee_32_saved_card_is_for_off_session_use ... ok\n##[error]The operation was canceled.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: cancelled, E2e: success\n##[error]Process completed with exit code 1."
+   "last_failure": "Ci: failure; Coverage: cancelled\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest server::tests::the_notice_senders_need_the_postal_setting_in_test_and_live ... ok\ntest server::tests::with_a_public_base_url_every_key_is_required_and_named ... ok\ntest server::tests::page_pick_keys_need_the_vault_the_id_secret_and_twilio ... ok\ntest server::tests::the_texting_client_asks_for_status_callbacks_only_with_a_public_base_url ... ok\ntest td_sec_58_the_daily_prune_deletes_windows_past_the_longest_plus_a_day ... ok\ntest td_sec_54_the_daily_sweep_deletes_sessions_expired_over_a_day ... ok\ntest result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.01s\n     Running tests/setup_intent.rs (target/llvm-cov-target/debug/build/askhava-integration/15b4e54ee7b729b1/out/setup_intent-15b4e54ee7b729b1)\nrunning 8 tests\ntest td_fee_10_authorizations_are_append_only ... ok\ntest td_fee_10_bank_debit_is_refused ... ok\ntest td_fee_10_customer_at_sign_up_has_no_card ... ok\ntest td_fee_10_app_role_may_remove_a_card ... ok\ntest td_fee_32_saved_card_is_for_off_session_use ... ok\n##[error]The operation was canceled.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: cancelled, E2e: success\n##[error]Process completed with exit code 1.",
+   "runner_closed_prs": [
+    1119
+   ]
   },
   {
    "id": "T594",
@@ -93133,7 +93136,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T13:56:04Z",
+ "updated_at": "2026-11-19T13:56:10Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
