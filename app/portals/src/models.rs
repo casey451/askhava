@@ -262,6 +262,36 @@ pub(crate) async fn use_link(
     Ok(row.map(|r| (r.member_id, r.business_id)))
 }
 
+/// A used action link: its member, business and stored `created_at` (D-3744).
+pub(crate) struct UsedLink {
+    pub member: Uuid,
+    pub business: Uuid,
+    pub created_at: Timestamp,
+}
+
+/// As [`use_link`], also returning the link's stored `created_at`, which `action_links` turns
+/// into the issue time (BIZ-033, SEC-025, D-3081, D-3744).
+pub(crate) async fn use_action_row(
+    conn: &mut PgConnection,
+    token: &str,
+    now: Timestamp,
+) -> Result<Option<UsedLink>, PortalsError> {
+    let row = db(sqlx::query!(
+        "UPDATE portals.login_link SET used_at = $2 \
+         WHERE token_sha256 = $1 AND used_at IS NULL AND expires_at > $2 \
+         RETURNING member_id, business_id, created_at",
+        digest(token),
+        now.to_sqlx(),
+    )
+    .fetch_optional(conn)
+    .await)?;
+    Ok(row.map(|r| UsedLink {
+        member: r.member_id,
+        business: r.business_id,
+        created_at: r.created_at.to_jiff(),
+    }))
+}
+
 /// Names `business` as the business of session `session`.
 pub(crate) async fn insert_business_session(
     conn: &mut PgConnection,

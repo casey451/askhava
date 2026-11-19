@@ -14,6 +14,8 @@
 //! session ([`UseBy`]). The token never reaches a log: the minted link is a [`SecretString`].
 //! T199 (SEC-027): [`fresh_code_needed`] says when a Confirm press needs a fresh code (no
 //! session, or "This inbox is shared" on); Quote and Hold never do.
+//! T399 (D-3744): [`ActionGrant::issued_at`] gives the minting time back (`created_at` plus
+//! [`LINK_LIFE`]), so the Approve route can refuse a link older than the phone's number.
 
 use askhava_businesses::api::{Roles, members};
 use askhava_core::api::brand;
@@ -171,6 +173,7 @@ pub struct ActionTarget {
 pub struct ActionGrant {
     member: Uuid,
     business: Uuid,
+    issued_at: Timestamp,
 }
 
 impl ActionGrant {
@@ -184,6 +187,13 @@ impl ActionGrant {
     #[must_use]
     pub const fn business(&self) -> Uuid {
         self.business
+    }
+
+    /// BIZ-033, D-3081, D-3744: when the link was minted (its stored `created_at` plus
+    /// [`LINK_LIFE`], undoing the backdating that keeps it out of the sign-in link limits).
+    #[must_use]
+    pub const fn issued_at(&self) -> Timestamp {
+        self.issued_at
     }
 
     /// SEC-025: a signed-in person may act through a link only when it was emailed to them.
@@ -344,12 +354,24 @@ pub async fn use_action_link(
     now: Timestamp,
 ) -> Result<ActionGrant, ActionLinkError> {
     hold_ok(kind, hold, Roles::BOTH)?;
-    let used = models::use_link(db, &binding(kind, object, token), now).await?;
-    let Some((member, business)) = used else {
+    let used = models::use_action_row(db, &binding(kind, object, token), now).await?;
+    let Some(models::UsedLink {
+        member,
+        business,
+        created_at,
+    }) = used
+    else {
         return Err(ActionLinkError::Ended);
     };
+    let issued_at = created_at
+        .checked_add(LINK_LIFE)
+        .map_err(|_| PortalsError::BadLifetime)?;
     match current_roles(db, member, business).await? {
-        Some((owner, roles)) if kind.allowed(owner, roles) => Ok(ActionGrant { member, business }),
+        Some((owner, roles)) if kind.allowed(owner, roles) => Ok(ActionGrant {
+            member,
+            business,
+            issued_at,
+        }),
         _ => Err(ActionLinkError::NotAllowed),
     }
 }
