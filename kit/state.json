@@ -39661,12 +39661,12 @@
      }
     }
    ],
-   "reviewed_sha": "85af034f1e4b15d26cca6dc71989f33a68ee20f8",
+   "reviewed_sha": "57b20a742e15df518faffd27f99bbb28d8dde13e",
    "review_lease": {
     "task": "T306",
-    "session": "actions-44417857320",
-    "expires": "2026-11-19T03:55:37Z",
-    "lane": "4"
+    "session": "actions-44433789359",
+    "expires": "2026-11-19T05:18:41Z",
+    "lane": "5"
    },
    "branch": "claude/task/T306-business-account-pages-served",
    "auto_merge": {
@@ -39674,7 +39674,6 @@
     "why": "auto-merge on #1078 (gh pr merge)",
     "head": "85af034f1e4b15d26cca6dc71989f33a68ee20f8"
    },
-   "merge_turn_since": "2026-11-19T01:31:23Z",
    "runner_closed_prs": [
     1078
    ],
@@ -39699,6 +39698,16 @@
     }
    ],
    "last_failure": "merging main into the reviewed head conflicts in tests/a11y/page_states.ts; a resync merges it in on this attempt (D-891)",
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "664d20bcb40f1c3575e691e73976071bd4d0e98e",
+     "to": "57b20a742e15df518faffd27f99bbb28d8dde13e",
+     "main": "eefaef098fd3b14ead39ecbf82dffedfc7d6881c",
+     "how": "hand-in",
+     "at": "2026-11-19T02:21:40Z"
+    }
+   ],
    "update_waiting_since": null,
    "update_push_failures": null
   },
@@ -89060,7 +89069,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T02:18:41Z",
+ "updated_at": "2026-11-19T02:21:40Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
