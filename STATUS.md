@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-19T13:47:45Z by runner 025ddc8e9284 (actions).
+Updated 2026-11-19T13:48:11Z by runner 025ddc8e9284 (actions).
 
 **Building: T541 in progress since 13:09Z; 492 of 666 done; week 81% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 492 of 666 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T541 claimed 13:09Z, lease until 16:09Z; lane 2: T554 claimed 13:13Z, lease until 16:13Z; lane 3: T158 claimed 11:39Z, lease until 16:22Z; lane 4: T652 claimed 13:10Z, lease until 16:10Z; lane 5: T470 claimed 13:05Z, lease until 16:05Z; lane 6: T540 claimed 12:54Z, lease until 16:45Z
+- **Lane:** lane 1: T541 claimed 13:09Z, lease until 16:09Z; lane 2: T554 claimed 13:13Z, lease until 16:13Z; lane 3: T158 claimed 11:39Z, lease until 16:22Z; lane 4: T652 claimed 13:10Z, lease until 16:10Z; lane 5: T470 claimed 13:05Z, lease until 16:05Z
 - **Week:** 81% used, 26.3M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:45Z, 2 min before this update
 - **Keeper:** last ran 13:23Z, next wake 15:56Z
@@ -20,11 +20,12 @@ Updated 2026-11-19T13:47:45Z by runner 025ddc8e9284 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T540 | portals and server: the owner's release button re-sends an e | MERGE_PENDING | 1 | 53 min | 13:47Z | merging main into the reviewed head conflicts in tests/a11y/page_states.ts; a resync merges it in on this attempt (D-891 |
 | T470 | messaging and server: the worker task that sends queued emai | QUEUED | 2 | 2 h 21 min | 13:03Z | Fix-round review (after the one allowed findings round) still found a problem at head 1830747e4; no reviewer approved a  |
 | T593 | site and server: the home hero in D-3331's wording with the  | MERGE_PENDING | 1 | 95 min | 12:35Z |  |
 | T536 | E2e harness: clock-advancing journeys last, a keyed worker,  | done | 2 | 107 min | 12:33Z | PLAN GAP: tests/e2e/j2.ts:150 (owned by T099, `e2e-j2-business`; T644 also lists it). Smallest plan change: make the `no |
 | T109 | recovery: backup checks and the nightly encrypted export | BLOCKED | 1 | 20 min | 11:47Z | PLAN GAP: `deny.toml:3` (owned by T009 and T604, both outside T109; T109 does not own it): every `age` release fails `ca |
-| T540 | portals and server: the owner's release button re-sends an e | resync | 1 | 54 min | 11:29Z | merging main into the reviewed head conflicts in tests/a11y/page_states.ts; a resync merges it in on this attempt (D-891 |
+| T540 | portals and server: the owner's release button re-sends an e | resync | 1 | 54 min | 11:29Z |  |
 | T705 | Integration tests (harness): one shared log capture that a c | done | 1 | 114 min | 11:11Z |  |
 | T470 | messaging and server: the worker task that sends queued emai | QUEUED | 1 | 93 min | 10:35Z |  |
 | T710 | quotes and licensing (harness): a launch-open category takes | done | 1 | 85 min | 10:06Z |  |
@@ -145,7 +146,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 3: T158 (lease until 2026-11-19T16:22:18Z)
 - lane 4: T652 (lease until 2026-11-19T16:10:34Z)
 - lane 5: T470 (lease until 2026-11-19T16:05:58Z)
-- lane 6: T540 (lease until 2026-11-19T16:45:24Z)
 
 ## Last usage reading
-- {"task": "T470", "at": "2026-11-19T13:03:56Z", "input_tokens": 502, "cache_read_input_tokens": 29274634, "output_tokens": 152933, "cache_creation_input_tokens": 473033}
+- {"task": "T540", "at": "2026-11-19T13:47:43Z", "output_tokens": 9258, "input_tokens": 63, "cache_creation_input_tokens": 71056, "cache_read_input_tokens": 939186}
