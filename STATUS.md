@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T01:59:21Z by runner c5a97a0b8910 (actions).
+Updated 2026-11-19T02:04:39Z by runner 3a116c21da66 (actions).
 
 **Building: T715 in progress since 01:59Z; 469 of 663 done; week 71% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-19T01:59:21Z by runner c5a97a0b8910 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T715 claimed 01:59Z, lease until 04:59Z; lane 2: T520 claimed 01:57Z, lease until 04:57Z; lane 5: T306 claimed 01:43Z, lease until 04:43Z
 - **Week:** 71% used, 49.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:58Z, 1 min before this update
+- **Last run:** 01:59Z, 4 min before this update
 - **Keeper:** last ran 01:47Z, next wake 02:07Z
 
 ## Needs attention
@@ -17,13 +17,13 @@ Updated 2026-11-19T01:59:21Z by runner c5a97a0b8910 (actions).
 - PLAN GAP T484 (since 2026-11-19T01:43:18Z, no attempt used; a plan change fixes it): T484: dependency T205 is DONE but its owned file app/portals/templates/owner_refund.html is not on main; T484: dependency T205 is DONE but its owned file tests/e2e/owner_refund.spec.ts is not on main; T484: dependency T205 is DONE but its owned file app/portals/templates/owner_audit_log.html is not on main; T484: dependency T205 is DONE but its owned file tests/integration/tests/owner_refund.rs is not on main
 - PLAN GAP T490 (since 2026-11-19T01:57:04Z, no attempt used; a plan change fixes it): T490: dependency T488 is DONE but its owned file app/portals/templates/es_business_signup.html is not on main; T490: dependency T488 is DONE but its owned file app/server/tests/es_business_signup_route.rs is not on main
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 52 problem(s) on tasks still to run (+272 on DONE tasks); first: T563: stored context_pct 22% but it measures 26%; regenerate
+- Strict plan check red: 56 problem(s) on tasks still to run (+274 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T203 | Wording scan: the required statements, business copy lines a | MERGE_PENDING | 2 | 41 min | 01:40Z | PLAN GAP: `app/portals/templates/quote_page.html:101` (owned by DONE tasks T052, T095, T294, T308, T384, T388, T393, T44 |
-| T563 | intake and privacy: the daily consent sweep removes consent  | MERGE_PENDING | 2 | 99 min | 01:37Z | PLAN GAP: app/messaging/src/optout.rs:311 (suppress/record, owned by T029 and later tasks; T563 owns no messaging file)  |
+| T563 | intake and privacy: the daily consent sweep removes consent  | check_failed | 2 | 99 min | 01:37Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T505 | Decisions digest, piece 6: the next entries after the header | MERGE_PENDING | 1 | 99 min | 01:27Z |  |
 | T488 | portals and server: the business sign-up served in Spanish o | done | 1 | 111 min | 01:20Z |  |
 | T306 | server and portals: the complaints page, the emergency-email | resync | 1 | 77 min | 00:59Z | merging main into the reviewed head conflicts in tests/a11y/page_states.ts; a resync merges it in on this attempt (D-891 |
