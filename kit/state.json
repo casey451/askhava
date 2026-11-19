@@ -26666,7 +26666,8 @@
     "T203",
     "T202",
     "T429",
-    "T488"
+    "T488",
+    "T593"
    ],
    "status": "QUEUED",
    "attempts": 1,
@@ -29353,13 +29354,7 @@
     "app/site/templates/site_layout.html",
     "docs/decisions.md",
     "tests/e2e/home_first_screen.spec.ts"
-   ],
-   "owned_gap": {
-    "at": "2026-11-19T08:36:02Z",
-    "problems": [
-     "T216: app/site/static/photos/hero-kitchen-phone.avif missing on main"
-    ]
-   }
+   ]
   },
   {
    "id": "T167",
@@ -75224,7 +75219,8 @@
   {
    "id": "T536",
    "deps": [
-    "T490"
+    "T490",
+    "T644"
    ],
    "status": "QUEUED",
    "attempts": 1,
@@ -91768,7 +91764,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T09:20:42Z",
+ "updated_at": "2026-11-19T09:21:38Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -91866,7 +91862,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "b7f0cf41b372f4b82c92ef46022e4d9e53f635bd",
+ "runner_sha": "358c022b2c5765ec68674c13fac8c2a50fff01bc",
  "starter": "actions",
  "smoke_runs": [
   {
