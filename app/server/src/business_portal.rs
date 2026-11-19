@@ -36,6 +36,14 @@
 //! read) and `POST` [`NOT_A_FIT_ROUTE`] (the session proves the business, a card for the job
 //! proves the job; the path's token is never read, since the job page that offers the choice is
 //! shown after its Quote link was used, D-4551).
+//!
+//! T562 (FEE-031, SEC-019; D-3112, D-3890, D-3967, D-4603): `GET` [`WHY_CHARGED_ROUTE`] shows
+//! "Why was I charged?" for the caller's own charged pick (owner or "Confirm and billing"): the
+//! receipt from `payments::api::receipt_for`, the job number from `jobs::api::job_number`, the
+//! quote from `quotes::api::accepted_quote` and the fee basis derived from that quote's price
+//! through `payments::api::period_fee_for` on the job's fee facts, as `picks` fixed it. A derived
+//! tier other than the fee fixed at the pick (`payments::api::pick_fee`) shows no basis line; a
+//! quote that no longer reads back is the not-found answer. The page reads nothing from the vault.
 
 use std::io;
 use std::net::IpAddr;
@@ -49,27 +57,33 @@ use askhava_businesses::api::{
     sign_in_lines, switch_off_warns, switch_state,
 };
 use askhava_core::api::{Clock, Settings, SystemClock, arizona_time};
-use askhava_jobs::api::{finished_counts, job_number};
+use askhava_jobs::api::{finished_counts, job_facts, job_number};
 use askhava_messaging::api::still_away;
 use askhava_ops::api::away_until;
-use askhava_payments::api::{Statement, business_statement, pick_fee, saved_cards};
+use askhava_payments::api::{
+    Fee, FeeMode, FeeQuote, JobCodes, JobFeeFacts, Period as FeePeriod, Statement, StoredPickFee,
+    Tier, business_statement, period_fee_for, pick_fee, receipt_for, resolve_fee_facts,
+    saved_cards,
+};
 use askhava_picks::api::pick_numbers;
 use askhava_portals::api::{
-    ACTION_ROUTE, ActionKind, AfterHoursBox, BILLING_ROUTE, BUSINESS_HOME_ROUTE, BusinessPrincipal,
-    COMPLAINT_REPLY_ROUTE, COMPLAINTS_ROUTE, ChannelChangeError, ChannelFacts, CookieJar,
-    CsrfField, CsrfForm, EMERGENCY_SWITCH_ROUTE, HomeExtras, InboxSwitch, JOB_RELEASE_ROUTE,
-    JobFacts, LinksChangeError, NOT_A_FIT_ROUTE, NOTICE_SETTINGS_ROUTE, Need, NotAFitChoice,
-    NotAFitOutcome, NotAFitState, NoticeAddress, NoticeLogPage, OPEN_CARDS_ROUTE, PaymentMethod,
-    REVIEW_LINKS_ROUTE, RefusedReply, SESSION_COOKIE, STATEMENT_ROUTE, SecurityEvent,
-    SecurityEventKind, SwitchStep, WebSecurity, YourNumbers, admit_security_event,
-    answer_not_a_fit, billing_page, business_home_page_with, business_principal, change_channel,
-    complaints_page, csrf_token, emergency_switch_page_with_box, inbox_shared, job_release_page,
-    no_store, not_a_fit_action, not_a_fit_page, notice_log_page, notice_settings_page,
-    parse_reason, post_step, record_security_event, refuse_cross_site, reply_to_complaint,
-    save_home_links, save_open_cards_times, security_event_client, signed_out, statement_csv,
+    ACTION_ROUTE, ActionKind, AfterHoursBox, BILLING_ROUTE, BUSINESS_HOME_ROUTE, Basis,
+    BusinessPrincipal, COMPLAINT_REPLY_ROUTE, COMPLAINTS_ROUTE, ChannelChangeError, ChannelFacts,
+    CookieJar, CsrfField, CsrfForm, EMERGENCY_SWITCH_ROUTE, HomeExtras, InboxSwitch,
+    JOB_RELEASE_ROUTE, JobFacts, LinksChangeError, NOT_A_FIT_ROUTE, NOTICE_SETTINGS_ROUTE, Need,
+    NotAFitChoice, NotAFitOutcome, NotAFitState, NoticeAddress, NoticeLogPage, OPEN_CARDS_ROUTE,
+    PaymentMethod, REVIEW_LINKS_ROUTE, RefusedReply, SESSION_COOKIE, STATEMENT_ROUTE,
+    SecurityEvent, SecurityEventKind, SwitchStep, WHY_CHARGED_ROUTE, WebSecurity, WhyCharged,
+    YourNumbers, admit_security_event, answer_not_a_fit, billing_page, business_home_page_with,
+    business_principal, change_channel, complaints_page, csrf_token,
+    emergency_switch_page_with_box, inbox_shared, job_release_page, no_store, not_a_fit_action,
+    not_a_fit_page, notice_log_page, notice_settings_page, parse_reason, post_step,
+    record_security_event, refuse_cross_site, reply_to_complaint, save_home_links,
+    save_open_cards_times, security_event_client, signed_out, statement_csv, why_charged_page,
+    why_charged_page_without_basis,
 };
 use askhava_privacy::api::{BusinessContactError, BusinessPurpose, Vault, read_business_mailbox};
-use askhava_quotes::api::{card_holders, quote_numbers};
+use askhava_quotes::api::{Period, Price, accepted_quote, card_holders, quote_numbers};
 use axum::Router;
 use axum::extract::{Extension, FromRef, MatchedPath, Path, Request, State};
 use axum::http::StatusCode;
@@ -161,6 +175,7 @@ pub fn routes(pool: PgPool, vault: PortalVault, numbers: &[PoolNumber]) -> Route
         .route(STATEMENT_ROUTE, get(statement))
         .route(NOTICE_SETTINGS_ROUTE, get(notices).post(save_channel))
         .route(NOTICE_LOG_ROUTE, get(notice_log))
+        .route(WHY_CHARGED_ROUTE, get(why_charged))
         .route(COMPLAINTS_ROUTE, get(complaints_get))
         .route(COMPLAINT_REPLY_ROUTE, post(complaint_reply))
         .route(EMERGENCY_SWITCH_ROUTE, get(switch_get).post(switch_post))
@@ -1026,6 +1041,165 @@ async fn notice_log(
         }
         Err(_) => failed("notice log page"),
     }
+}
+
+/// FEE-031, FEE-044, REC-002, D-3890: the fee inputs of a stored `price`, as `picks` reads them at
+/// the pick (a diagnostic visit or an hourly rate with no hours priced as a visit); none for
+/// packages (which one was picked is not read here) or a per-visit price, whose visit schedule
+/// is not read here either.
+fn fee_quote(price: &Price) -> Option<(FeeQuote, Option<FeePeriod>)> {
+    Some(match price {
+        Price::Firm(cents) => (FeeQuote::Fixed(*cents), None),
+        Price::Range { low, high, .. } => (
+            FeeQuote::Range {
+                low: *low,
+                high: *high,
+            },
+            None,
+        ),
+        Price::Hourly { rate, hours } => (
+            FeeQuote::Hourly {
+                rate: *rate,
+                hours: *hours,
+            },
+            None,
+        ),
+        Price::VisitFee(fee) => (FeeQuote::DiagnosticVisit { visit_fee: *fee }, None),
+        Price::Monthly { cents, period, .. } => {
+            let period = match period {
+                Period::Week => FeePeriod::Weekly,
+                Period::Month => FeePeriod::Monthly,
+                Period::Quarter => FeePeriod::Quarterly,
+                Period::Year => FeePeriod::Yearly,
+                Period::Visit => return None,
+            };
+            (FeeQuote::Fixed(*cents), Some(period))
+        }
+        Price::Tiers(_) => return None,
+    })
+}
+
+/// FEE-031, FEE-003, FEE-004, FEE-044, D-3890: the basis line's [`Basis`] and the tier it gives
+/// for `price` on a job with fee `facts`: no basis (a set-tier visit) is [`Basis::OnSite`], a
+/// priced quote with a period [`Basis::FourMonths`], any other [`Basis::Quote`]; none when the
+/// price gives no charged fee.
+fn derived_basis(price: &Price, facts: JobFeeFacts) -> Option<(Basis, Tier)> {
+    let (quote, period) = fee_quote(price)?;
+    let visit = matches!(
+        quote,
+        FeeQuote::DiagnosticVisit { .. } | FeeQuote::Hourly { hours: None, .. }
+    );
+    let job = facts.period_job(visit, period.is_some());
+    let Ok(Fee::Charged { basis, tier }) = period_fee_for(quote, period, job) else {
+        return None;
+    };
+    let basis = match (basis, period) {
+        (None, _) => Basis::OnSite,
+        (Some(cents), Some(_)) => Basis::FourMonths(cents),
+        (Some(cents), None) => Basis::Quote(cents),
+    };
+    Some((basis, tier))
+}
+
+/// FEE-005, FEE-007, FEE-031, D-2331, D-4603: the basis to show for `price` on `job`, only when
+/// `fixed` was set by tier under the tiered fee mode (a flat fee is set by job type, whatever the
+/// quote says) and its tier's fee is the fee `fixed` at the pick; the job's fee facts as `picks`
+/// read them (unsettled facts are the emergency default, the only facts an unsettled pick was
+/// fixed on).
+async fn shown_basis(
+    db: &mut PgConnection,
+    (job, price): (Uuid, &Price),
+    fixed: &StoredPickFee,
+) -> Result<Option<Basis>, &'static str> {
+    if fixed.mode != FeeMode::Tiers || !fixed.charged {
+        return Ok(None);
+    }
+    let row = job_facts(db, job).await.map_err(|_| "job facts")?;
+    let codes = row.as_ref().map(|r| JobCodes {
+        category: &r.category,
+        job_types: &r.job_types,
+    });
+    let facts = resolve_fee_facts(db, codes)
+        .await
+        .map_err(|_| "fee facts")?
+        .unwrap_or(JobFeeFacts::EMERGENCY_DEFAULT);
+    Ok(derived_basis(price, facts)
+        .filter(|(_, tier)| tier.cents() == fixed.cents)
+        .map(|(basis, _)| basis))
+}
+
+/// FEE-031, SEC-019, D-3890: the page facts of `raw` when it is a charged pick of `who`'s
+/// business and `who` is its owner or a "Confirm and billing" member, with whether the basis line
+/// shows; `None` for any other pick or a quote that no longer reads back.
+async fn charge_facts(
+    db: &mut PgConnection,
+    who: &BusinessPrincipal,
+    raw: &str,
+) -> Result<Option<(WhyCharged, bool)>, &'static str> {
+    let Ok(pick) = Uuid::try_parse(raw) else {
+        return Ok(None);
+    };
+    let fixed = pick_fee(db, pick).await.map_err(|_| "pick fee")?;
+    let Some(fixed) = fixed.filter(|f| who.may(f.business.0, Need::ConfirmAndBilling)) else {
+        return Ok(None);
+    };
+    let receipt = receipt_for(db, pick, who.business()).await;
+    let Some(receipt) = receipt.map_err(|_| "receipt")? else {
+        return Ok(None);
+    };
+    let job = receipt.job;
+    let job_number = job_number(db, job).await.map_err(|_| "job number")?;
+    let accepted = accepted_quote(db, (job, who.business())).await;
+    let Some(quote) = accepted.map_err(|_| "accepted quote")? else {
+        return Ok(None);
+    };
+    let basis = shown_basis(db, (job, &quote.price), &fixed).await?;
+    let facts = WhyCharged {
+        receipt,
+        job_number,
+        quote: format!(
+            "{}, {}",
+            quote.amount(false),
+            quote.kind(false).to_lowercase()
+        ),
+        basis: basis.unwrap_or(Basis::OnSite),
+    };
+    Ok(Some((facts, basis.is_some())))
+}
+
+/// `GET` [`WHY_CHARGED_ROUTE`] (FEE-031, SEC-019, SEC-034, D-3112, D-3890): "Why was I charged?"
+/// for the caller's own charged pick; another business's pick, an uncharged or unknown one, a
+/// missing role or a quote that no longer reads back is the not-found answer. Changes nothing.
+async fn why_charged(
+    State(portal): State<Portal>,
+    Extension(site): Extension<Site>,
+    jar: CookieJar,
+    Path(pick): Path<String>,
+) -> Response {
+    let who = match signed_in(&portal, &site, &jar).await {
+        Ok(who) => who,
+        Err(answer) => return *answer,
+    };
+    let Ok(mut db) = portal.pool.acquire().await else {
+        return failed("connection");
+    };
+    let (facts, with_basis) = match charge_facts(&mut db, &who, &pick).await {
+        Ok(Some(found)) => found,
+        Ok(None) => {
+            drop(db);
+            return denied(&portal, &site, &who).await;
+        }
+        Err(what) => return failed(what),
+    };
+    let page = if with_basis {
+        why_charged_page(&facts)
+    } else {
+        why_charged_page_without_basis(&facts)
+    };
+    page.map_or_else(
+        |_| failed("why charged page"),
+        |html| Html(html).into_response(),
+    )
 }
 
 /// The "Not a fit for us" form: its CSRF token and the tapped reason (PICK-057); any other field

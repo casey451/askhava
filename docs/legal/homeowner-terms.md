@@ -42,9 +42,9 @@ You and the business make your own agreement; Laftly is not part of it and doesn
 
 ## 5. What we check, and what we don't
 
-- **Licensed trades:** we check the business's license status on the state's records each day and show the date we last checked, for example "ROC #<number> showed Active on the ROC website when we checked on <date>. Check it yourself."
+- **Licensed trades:** we check the business's license status on the state's records each day. We show the date we last checked, for example "ROC #<number> showed Active on the ROC website when we checked on <date>. Check it yourself."
 - **We don't check** workmanship, background, references, reviews or insurance. Google and Yelp links on a quote are links the business gave us; we don't rate or rank anyone. Insurance shown on a quote is what the business told us ("Insurance (business-reported)").
-- Check any business yourself before you hire it. For licensed contractors, the Arizona Registrar of Contractors takes complaints; our help page links to its complaint form at laftly.com/help/roc-complaint. Handymen are not licensed by the Registrar.
+- Check any business yourself before you hire it. For licensed contractors, the Arizona Registrar of Contractors takes complaints. Our help page links to its complaint form at laftly.com/help/roc-complaint. Handymen are not licensed by the Registrar.
 
 ## 6. Not an emergency service
 
@@ -100,7 +100,7 @@ We'll post any change with its effective date. A change applies only to requests
 
 ## 14. Contact
 
-Laftly LLC, [mailing address: P.O. box or registered agent, never a home address], Lake Havasu City, Arizona. Email help@laftly.com, or text HELP to the Laftly number. The Laftly owner gets HELP messages right away and usually replies within 2 days, or within 24 hours if your job is urgent.
+Laftly LLC is in Lake Havasu City, Arizona. Its mailing address is [mailing address: P.O. box or registered agent, never a home address]. Email help@laftly.com, or text HELP to the Laftly number. The Laftly owner gets HELP messages right away and usually replies within 2 days, or within 24 hours if your job is urgent.
 
 ## 15. General
 

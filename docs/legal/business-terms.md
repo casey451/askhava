@@ -124,9 +124,9 @@ You alone are responsible for:
 
 ## 10. Indemnity and liability
 
-- **Indemnity.** You will defend and indemnify Laftly against third-party claims arising from your work, your quotes and statements, your license status, your handling of homeowner details, or your breach of these terms. This does not apply to the extent a claim results from Laftly's sole negligence.
-- **No warranties.** Laftly gives no warranty of any kind about the service, the number of job requests, or any homeowner. Laftly doesn't promise any number of job cards, quotes, picks or jobs.
-- **Limit of liability.** To the extent the law allows, Laftly's total liability to you is limited to the introduction fees you paid in the 12 months before the claim. This limit does not apply to gross negligence, intentional misconduct, or anything the law does not allow us to limit.
+- **Indemnity.** You will defend and indemnify Laftly against certain third-party claims. These are claims arising from your work, your quotes and statements, your license status, your handling of homeowner details, or your breach of these terms. This does not apply to the extent a claim results from Laftly's sole negligence.
+- **No warranties.** Laftly gives no warranty of any kind about the service, the number of job requests or any homeowner. Laftly doesn't promise any number of job cards, quotes, picks or jobs.
+- **Limit of liability.** To the extent the law allows, Laftly's total liability to you is capped at the introduction fees you paid in the 12 months before the claim. This limit does not apply to gross negligence, intentional misconduct, or anything the law does not allow us to limit.
 
 ## 11. Complaints, pauses and leaving
 
@@ -139,7 +139,7 @@ You alone are responsible for:
 
 ## 12. Electronic records
 
-You agree to receive these terms, receipts and notices electronically, and your clicks in the portal (accepting these terms, "Confirm and pay") are electronic signatures under the Arizona Electronic Transactions Act (A.R.S. 44-7007) and the federal E-SIGN Act. We keep a record of each version you accepted and when, and of each charge.
+You agree to receive these terms, receipts and notices electronically. Your clicks in the portal (accepting these terms, "Confirm and pay") are electronic signatures. They count as signatures under the Arizona Electronic Transactions Act (A.R.S. 44-7007) and the federal E-SIGN Act. We keep a record of each version you accepted and when, and of each charge.
 
 ## 13. Law and courts
 

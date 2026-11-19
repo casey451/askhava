@@ -143,6 +143,7 @@ pub use crate::pick_ended::run_pick_ended;
 pub use crate::pick_withdrawn::{WITHDRAWN_TEMPLATE, run_pick_withdrawn};
 pub use crate::release::WHOS_CALLING_FAILED_ALERT;
 pub use crate::release::claim_still_open;
+pub use crate::release::is_released;
 pub use crate::release::{
     ADDRESS_NEEDED_KIND, EMAIL_CHOSEN_FIELDS, RELEASE_FIELDS, RELEASE_LINE_FAILED_ALERT,
     RELEASE_NO_RECIPIENT_ALERT, RELEASE_TEMPLATE, RELEASE_TEXT_TEMPLATE, ReleaseFacts, ReleaseStep,
