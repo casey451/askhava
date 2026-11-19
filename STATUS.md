@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T07:58:35Z by runner 9d21a189c9a3 (actions).
+Updated 2026-11-19T08:01:04Z by runner df9e147aa320 (actions).
 
-**Building: T456 in progress since 06:58Z; 482 of 664 done; week 76% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T456 in progress since 06:58Z; 483 of 664 done; week 76% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 482 of 664 build tasks (owner gates not counted)
+- **Tasks done:** 483 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T456 claimed 06:58Z, lease until 09:58Z; lane 3: T216 claimed 06:32Z, lease until 10:50Z; lane 5: T622 claimed 07:06Z, lease until 10:58Z; lane 6: T476 claimed 06:22Z, lease until 10:39Z
 - **Week:** 76% used, 38.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:51Z, 6 min before this update
+- **Last run:** 07:59Z, 2 min before this update
 - **Keeper:** last ran 07:25Z, next wake 09:25Z
 
 ## Needs attention
@@ -16,12 +16,12 @@ Updated 2026-11-19T07:58:35Z by runner 9d21a189c9a3 (actions).
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T663 (since 2026-11-19T06:58:02Z, no attempt used; a plan change fixes it): T663: dependency T408 is DONE but its owned file app/server/src/release_hold.rs is not on main; T663: dependency T408 is DONE but its owned file app/server/tests/safe_mode_release.rs is not on main
 - PLAN GAP T707 (since 2026-11-19T06:58:02Z, no attempt used; a plan change fixes it): T707: dependency T408 is DONE but its owned file app/server/src/release_hold.rs is not on main; T707: dependency T408 is DONE but its owned file app/server/tests/safe_mode_release.rs is not on main
-- Strict plan check red: 58 problem(s) on tasks still to run (+300 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 61 problem(s) on tasks still to run (+301 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T310 | server and portals: the owner home and settings pages and th | MERGE_PENDING | 1 | 74 min | 07:19Z |  |
+| T310 | server and portals: the owner home and settings pages and th | done | 1 | 74 min | 07:19Z |  |
 | T562 | server and portals: "Why was I charged?" is served with the  | done | 1 | 2 h 43 min | 07:09Z |  |
 | T229 | Legal drafts: reading-grade check and plain-language rewrite | done | 1 | 2 h 17 min | 06:59Z |  |
 | T506 | Decisions digest, piece 7: the next entries after the header | done | 1 | 102 min | 06:55Z |  |
@@ -97,7 +97,7 @@ Updated 2026-11-19T07:58:35Z by runner 9d21a189c9a3 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 306 of 735 (41.6%) · partial 389 · unstarted 40
-**Tasks merged (throughput only):** 482 of 664
+**Tasks merged (throughput only):** 483 of 664
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -133,7 +133,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 125 of 263 done
+- stage 5: 126 of 263 done
 - stage 6: 0 of 48 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
