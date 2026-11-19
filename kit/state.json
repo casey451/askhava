@@ -84038,7 +84038,7 @@
    "deps": [
     "T711"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 2,
    "slug": "intake-order-corrections",
    "type": "harness",
@@ -84056,8 +84056,8 @@
     "model": "claude-opus-5-5",
     "alias": "opus"
    },
-   "reason": "plan gap reported: PLAN GAP: one TD-INT-52 sentence can't be met by intake as planned: \"a two-word first text naming a trade opens its job at the ZIP's step 5 and gets the coverage line\". D-4441 gives the job-type question before the count to T716, and without that question the coverage line never comes. Today a homeowner who texts \"sticky door\" gets INT-017's \"not covered\" reply and the request is closed, even though two covering handyman businesses exist. Amend TD-INT-52 or move this case to T716; the test's assertion then changes to the coverage line.\nEvidence: `trade_check` passes no words when the first tex; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T715 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: one TD-INT-52 sentence can't be met by intake as planned: \"a two-word first text naming a trade opens its job at the ZIP's step 5 and gets the coverage line\". D-4441 gives the job-type question before the count to T716, and without that question the coverage line never comes. Today a homeowner who texts \"sticky door\" gets INT-017's \"not covered\" reply and the request is closed, even though two covering handyman businesses exist. Amend TD-INT-52 or move this case to T716; the test's assertion then changes to the coverage line.\nEvidence: `trade_check` passes no words when the first text opened no job, because the words are never kept (INT-007, INT-049), so `facts` reads `<trade>_other` (app/intake/src/matching.rs:400-402). docs/catalog/categories.yaml lists no `*_other` job type, so quotes::card_pool::candidate_jobs marks it unlisted (app/quotes/src/card_pool.rs:150). licensing::rules::no_license refuses an unlisted job type before it reads any ticked job type (app/licensing/src/rules.rs:81-82; handyman the same at :99). A job type at step 5 can come only from the \"Which fits best?\" question or stored candidate-code rows, both T716's (its prompt parts (1) and (2); D-4441 (3)). TD-INT-52's sentence also contradicts TD-INT-53, where \"Which fits best?\" comes before the coverage line.\nReviewer (agent a66dbff8ebfea7810) confirmed the plan gap independently and approved head 6230f48ff986a7cc97f7999936d2914d3957db27 as otherwise correct: all other Goal parts (1)-(6) built and tested (intake_order_corrections 5 passed, intake_order_area_trade 9, intake_order_two_jobs 6, name_address_answer 5; smoke and prehandin green per the workers). The branch's test now asserts the current not-covered outcome exactly, gap logged in D-4530; the branch can be reused on the requeue once TD-INT-52 is amended or the case is moved to T716.",
+   "reason": null,
+   "last_failure": "PLAN GAP: one TD-INT-52 sentence can't be met by intake as planned: \"a two-word first text naming a trade opens its job at the ZIP's step 5 and gets the coverage line\". D-4441 gives the job-type question before the count to T716, and without that question the coverage line never comes. Today a homeowner who texts \"sticky door\" gets INT-017's \"not covered\" reply and the request is closed, even though two covering handyman businesses exist. Amend TD-INT-52 or move this case to T716; the test's assertion then changes to the coverage line.\nEvidence: `trade_check` passes no words when the first text opened no job, because the words are never kept (INT-007, INT-049), so `facts` reads `<trade>_other` (app/intake/src/matching.rs:400-402). docs/catalog/categories.yaml lists no `*_other` job type, so quotes::card_pool::candidate_jobs marks it unlisted (app/quotes/src/card_pool.rs:150). licensing::rules::no_license refuses an unlisted job type before it reads any ticked job type (app/licensing/src/rules.rs:81-82; handyman the same at :99). A job type at step 5 can come only from the \"Which fits best?\" question or stored candidate-code rows, both T716's (its prompt parts (1) and (2); D-4441 (3)). TD-INT-52's sentence also contradicts TD-INT-53, where \"Which fits best?\" comes before the coverage line.\nReviewer (agent a66dbff8ebfea7810) confirmed the plan gap independently and approved head 6230f48ff986a7cc97f7999936d2914d3957db27 as otherwise correct: all other Goal parts (1)-(6) built and tested (intake_order_corrections 5 passed, intake_order_area_trade 9, intake_order_two_jobs 6, name_address_answer 5; smoke and prehandin green per the workers). The branch's test now asserts the current not-covered outcome exactly, gap logged in D-4530; the branch can be reused on the requeue once TD-INT-52 is amended or the case is moved to T716.\nre-queued after plan fix D-4602: D-4602 (PR #1090) narrows TD-INT-52 as T715 reported; the step-5 not-covered case moves to T716 (5) and new T723",
    "history": [
     {
      "attempt": 1,
@@ -84119,6 +84119,19 @@
      "plan_head": "0b3a6fc1de81dd97e54087d08472ad84809fe175",
      "plan_then": "aca159fe61645fb7adc9e1768995f01257d4f56ec90b7023754851dfece16dc0",
      "plan_now": "3765386ad2113a227677db9b758c0dfedb62c318259cad4b801f5a75e3e4a180"
+    },
+    {
+     "at": "2026-11-19T04:35:47Z",
+     "reason": "D-4602 (PR #1090) narrows TD-INT-52 as T715 reported; the step-5 not-covered case moves to T716 (5) and new T723",
+     "by": "manual-3361e078acf3",
+     "was": "plan gap reported: PLAN GAP: one TD-INT-52 sentence can't be met by intake as planned: \"a two-word first text naming a trade opens its job at the ZIP's step 5 and gets the coverage line\". D-4441 gives the job-type question before the count to T716, and without that question the coverage line never comes. Today a homeowner who texts \"sticky door\" gets INT-017's \"not covered\" reply and the request is closed, even though two covering handyman businesses exist. Amend TD-INT-52 or move this case to T716; the test's assertion then changes to the coverage line.\nEvidence: `trade_check` passes no words when the first tex; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T715 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 2,
+     "plan_fix": "D-4602",
+     "plan_since": "2026-11-19T01:59:03Z",
+     "plan_base": "5504717c09aa3126202a3397da470c8b9da2bb13",
+     "plan_head": "b24d30a3031c094d287861d40d72fe88b4059e0e",
+     "plan_then": "3765386ad2113a227677db9b758c0dfedb62c318259cad4b801f5a75e3e4a180",
+     "plan_now": "de20aa313ab38356b7451c6d9d84cd96e573580bbc3101c818d826856b225018"
     }
    ]
   },
@@ -89818,7 +89831,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T04:26:54Z",
+ "updated_at": "2026-11-19T04:35:47Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -89916,8 +89929,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "09c77368bd303d841ce3203a20ab5744d81c1fb1",
- "starter": "actions",
+ "runner_sha": "b24d30a3031c094d287861d40d72fe88b4059e0e",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "0ad3a89064cf7e52d304ef03533b06faeb13eac3",
