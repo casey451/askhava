@@ -7,7 +7,8 @@
 //! ends it (the business's own untick, or `picks`' void when the member, the card, the fee or the
 //! version no longer match); [`auto_confirm_of`] is the live tick `picks` reads at the pick, only
 //! one placed at or before the pick's own time;
-//! [`stripe_answer_filed`] reads the owner's filed Stripe answer (D-2783). This
+//! [`stripe_answer_filed`] reads the owner's filed Stripe answer (D-2783); T484's
+//! [`file_stripe_answer`] files one and [`latest_stripe_answer`] shows the newest (D-3753). This
 //! module never decides whether the box shows (the answer filed, a saved card and the member's
 //! role are the portals route's), never checks the fresh Verify code (the route's
 //! `require_step_up` first) and never charges anything.
@@ -223,4 +224,71 @@ pub async fn stripe_answer_filed(db_conn: &mut PgConnection) -> Result<bool, Aut
     .fetch_optional(db_conn)
     .await)?;
     Ok(allows == Some(true))
+}
+
+/// One filed Stripe written answer (PICK-048, D-2783): the date Stripe answered (`YYYY-MM-DD`),
+/// the owner's reference to it, whether it allows charges without the business present and when
+/// it was filed.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct StripeAnswer {
+    /// The date of Stripe's answer, `YYYY-MM-DD`.
+    pub answered_on: String,
+    /// The owner's reference (1 to 200 characters), such as a case number.
+    pub reference: String,
+    /// Whether the answer allows off-session charges.
+    pub allows: bool,
+    /// When the owner filed it.
+    pub filed_at: Timestamp,
+}
+
+/// PICK-048, FEE-014, D-2783, D-3753: files one Stripe written answer: one new append-only
+/// `quotes.stripe_written_answer` row, `filed_at` the call's `now`; the newest filing is the one in
+/// force for [`stripe_answer_filed`]. The owner portal calls it after the SEC-043 fresh factor.
+///
+/// # Errors
+/// [`AutoConfirmError::BadField`] for a reference that is blank or over 200 characters,
+/// [`AutoConfirmError::Database`] otherwise.
+pub async fn file_stripe_answer(
+    db_conn: &mut PgConnection,
+    (answered_on, reference, allows): (jiff::civil::Date, &str, bool),
+    now: Timestamp,
+) -> Result<(), AutoConfirmError> {
+    let reference = reference.trim();
+    if !(1..=200).contains(&reference.chars().count()) {
+        return Err(AutoConfirmError::BadField);
+    }
+    let day = answered_on.to_string();
+    db(sqlx::query!(
+        "INSERT INTO quotes.stripe_written_answer (answered_on, reference, allows, filed_at) \
+         VALUES ($1::text::date, $2, $3, $4)",
+        day,
+        reference,
+        allows as _,
+        now.to_sqlx() as _,
+    )
+    .execute(db_conn)
+    .await)?;
+    Ok(())
+}
+
+/// D-3753: the newest filed Stripe written answer, the one in force, for the owner settings page;
+/// `None` when none is filed.
+///
+/// # Errors
+/// [`AutoConfirmError::Database`].
+pub async fn latest_stripe_answer(
+    db_conn: &mut PgConnection,
+) -> Result<Option<StripeAnswer>, AutoConfirmError> {
+    let row = db(sqlx::query!(
+        r#"SELECT answered_on::text AS "answered_on!", reference, allows, filed_at
+           FROM quotes.stripe_written_answer ORDER BY filed_at DESC, id LIMIT 1"#
+    )
+    .fetch_optional(db_conn)
+    .await)?;
+    Ok(row.map(|r| StripeAnswer {
+        answered_on: r.answered_on,
+        reference: r.reference,
+        allows: r.allows,
+        filed_at: r.filed_at.to_jiff(),
+    }))
 }
