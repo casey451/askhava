@@ -28,7 +28,9 @@
 //! stays unused, and says why (409). Every other kind's `POST` gets the one not-found
 //! answer before any token read (D-3675). A wrong kind, object, person, an ended, used or
 //! unknown token, a removed member's token and a job with no sent card or no rules all get the
-//! same bare 404. Every response is `no-store`.
+//! same bare 404. Every response is `no-store`. After a stored quote the job page carries
+//! "Not a fit for us" (`job_details_page_choice`, PICK-057), posting to `NOT_A_FIT_ROUTE`, which
+//! `business_portal` serves behind the business session (T306, D-4551).
 
 use std::net::IpAddr;
 use std::sync::Arc;
@@ -40,11 +42,12 @@ use askhava_jobs::api::{job_facts, job_number};
 use askhava_payments::api::{JobCodes, JobFeeFacts, receipt_for, resolve_fee_facts};
 use askhava_portals::api::{
     ACTION_ROUTE, ActionFacts, ActionKind, ActionLinkError, ChargeAsked, CookieJar, CsrfField,
-    CsrfForm, FactsForm, LargestWarning, PriceForm, QuoteFormFacts, SIGNIN_ROUTE, UseBy,
-    WHY_CHARGED_ROUTE, WebSecurity, action_page, admit_quote, ask_about_charge, business_principal,
-    charge_answer, charge_reply_line, csrf_token, ensure_pre_session, fee_lines, job_details_page,
-    largest_job_warning, open_action_link, parse_facts, prefill, quote_form_page_priced,
-    refuse_cross_site, security_event_client, session_may, use_action_link,
+    CsrfForm, FactsForm, LargestWarning, NotAFitChoice, PriceForm, QuoteFormFacts, SIGNIN_ROUTE,
+    UseBy, WHY_CHARGED_ROUTE, WebSecurity, action_page, admit_quote, ask_about_charge,
+    business_principal, charge_answer, charge_reply_line, csrf_token, ensure_pre_session,
+    fee_lines, job_details_page_choice, largest_job_warning, not_a_fit_action, open_action_link,
+    parse_facts, prefill, quote_form_page_priced, refuse_cross_site, security_event_client,
+    session_may, use_action_link,
 };
 use askhava_portals::api::{JobPageLinks, no_store};
 use askhava_quotes::api::{
@@ -651,7 +654,12 @@ async fn send_quote(
             if stored.await.map_err(failed)? != Submitted::Saved {
                 return Err(Stop::NotFound);
             }
-            let shown = done_page(&mut tx, link, &form).await?;
+            let action = not_a_fit_action(job, token);
+            let choice = NotAFitChoice {
+                action: &action,
+                csrf,
+            };
+            let shown = done_page(&mut tx, link, &form, choice).await?;
             tx.commit().await.map_err(failed)?;
             Ok(Sent::Page(shown))
         }
@@ -762,11 +770,13 @@ fn again(form: &ReadForm, csrf: &str, posted: &Posted, problems: &Problems) -> O
     price.ok()
 }
 
-/// CARD-023: after a stored quote, the job page with the counts read now, the new quote counted.
+/// CARD-023, PICK-057: after a stored quote, the job page with the counts read now, the new quote
+/// counted, and the "Not a fit for us" `choice` (served by `business_portal`, T306).
 async fn done_page(
     tx: &mut PgConnection,
     link: JobLink,
     form: &ReadForm,
+    choice: NotAFitChoice<'_>,
 ) -> Result<Option<String>, Stop> {
     let shown = job_page(tx, (link.job, link.business), &form.parts).await;
     let shown = shown.map_err(failed)?.ok_or(Stop::NotFound)?;
@@ -775,5 +785,5 @@ async fn done_page(
         photos: &[],
         concept: None,
     };
-    Ok(job_details_page(&shown, &links).ok())
+    Ok(job_details_page_choice(&shown, &links, None, choice).ok())
 }
