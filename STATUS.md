@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T19:13:38Z by runner 17e7cbdd4e1b (manual).
+Updated 2026-11-19T19:15:14Z by runner 17e7cbdd4e1b (actions).
 
 **Building: T753 in progress since 19:06Z; 501 of 698 done; week 4% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-19T19:13:38Z by runner 17e7cbdd4e1b (manual).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T753 claimed 19:06Z, lease until 22:06Z; lane 2: T161 claimed 17:58Z, lease until 20:58Z; lane 3: T307 claimed 17:47Z, lease until 20:47Z; lane 5: T607 claimed 17:15Z, lease until 20:15Z; lane 6: T480 claimed 17:18Z, lease until 20:18Z
 - **Week:** 4% used, 181.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:10Z, 3 min before this update
+- **Last run:** 19:13Z, 1 min before this update
 - **Keeper:** last ran 18:29Z, next wake 20:17Z
 
 ## Needs attention
@@ -132,7 +132,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 144 of 291 done
+- stage 5: 144 of 293 done
 - stage 6: 0 of 52 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done

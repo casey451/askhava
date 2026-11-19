@@ -25216,7 +25216,9 @@
     "T747",
     "T748",
     "T749",
-    "T755"
+    "T755",
+    "T756",
+    "T757"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -25259,7 +25261,9 @@
     "T749",
     "T750",
     "T752",
-    "T755"
+    "T755",
+    "T756",
+    "T757"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -25521,7 +25525,9 @@
     "T735",
     "T743",
     "T744",
-    "T755"
+    "T755",
+    "T756",
+    "T757"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -30436,7 +30442,9 @@
     "T735",
     "T743",
     "T744",
-    "T755"
+    "T755",
+    "T756",
+    "T757"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -30461,7 +30469,9 @@
     "T432",
     "T743",
     "T744",
-    "T755"
+    "T755",
+    "T756",
+    "T757"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -30486,7 +30496,9 @@
     "T432",
     "T743",
     "T744",
-    "T755"
+    "T755",
+    "T756",
+    "T757"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -89444,6 +89456,32 @@
      "T755: branch claude/task/T755-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet"
     ]
    }
+  },
+  {
+   "id": "T756",
+   "deps": [
+    "T658",
+    "T351"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "scrub-connector-runs",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T757",
+   "deps": [
+    "T277",
+    "T448",
+    "T600",
+    "T729"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "delete-message-bodies",
+   "type": "build",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -95335,7 +95373,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T19:13:38Z",
+ "updated_at": "2026-11-19T19:15:14Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -95434,7 +95472,7 @@
   ]
  },
  "runner_sha": "17e7cbdd4e1bc91544e7a1975b1681774178c856",
- "starter": "manual",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "b110102be020e11b423ff9f82663bec7363ec7d2",
