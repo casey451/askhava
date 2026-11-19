@@ -164,7 +164,9 @@ def test_td_word_32_list_items_and_table_rows_are_sentences() -> None:
 def test_td_word_32_repository_drafts_are_graded_and_pass() -> None:
     """TD-WORD-32: every one of the six drafts is graded, and the drafts in the repository pass."""
     graded = {where.split(" · ")[0] for where, _, _ in cc.legal_grades(REPO_ROOT)}
-    assert graded == set(cc.LEGAL_DRAFTS)
+    drafts = ("homeowner-terms", "business-terms", "privacy-policy", "sms-terms", "business-email-notices",
+              "accessibility-statement")
+    assert graded == {f"docs/legal/{name}.md" for name in drafts}
     assert cc.legal_problems(REPO_ROOT) == []
 
 

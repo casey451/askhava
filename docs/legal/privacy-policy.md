@@ -47,7 +47,7 @@ Your number is never shared. Your first name and address go only to the business
 
 The business you pick may use your details only for your job and follow-up about it. Our business terms forbid marketing lists and resale.
 
-**Vendors** work under contract, only to run Laftly. They provide texting and calls (Twilio), email (Resend) and one-time codes sent by email (Twilio SendGrid, which sees the email address we send each code to). They also provide payments (Stripe), hosting and its 30-day logs (Railway) and encrypted backup storage (Backblaze B2). Others provide error monitoring (Sentry), letters for business identity checks (Lob) and website delivery and security (Cloudflare). We use automated text reading (Anthropic; see section 6) only once it is switched on.
+**Vendors** work under contract, only to run Laftly. They provide texting and calls (Twilio), email (Resend) and one-time codes sent by email (Twilio SendGrid, which sees the email address we send each code to). They also provide payments (Stripe), hosting and its 30-day logs (Railway) and encrypted backup storage (Backblaze B2). Other vendors provide error monitoring (Sentry), letters for business identity checks (Lob) and website delivery and security (Cloudflare). Our AI vendor provides automated text reading (Anthropic; see section 6) only once it is switched on.
 
 **Legal demands.** We'll tell you about a legal demand for your data unless the law forbids it.
 
