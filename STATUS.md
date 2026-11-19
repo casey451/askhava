@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T15:03:22Z by runner d3213a0ac312 (actions).
+Updated 2026-11-19T15:03:53Z by runner d3213a0ac312 (actions).
 
 **Building: T541 in progress since 13:09Z; 493 of 668 done; week 83% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 493 of 668 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T541 claimed 13:09Z, lease until 18:01Z; lane 2: T554 claimed 13:13Z, lease until 17:38Z; lane 4: T652 claimed 13:10Z, lease until 17:59Z; lane 5: T470 claimed 13:05Z, lease until 17:30Z; lane 6: T407 claimed 14:19Z, lease until 17:19Z; lane 7: T593 claimed 13:55Z, lease until 16:55Z
+- **Lane:** lane 1: T541 claimed 13:09Z, lease until 18:01Z; lane 2: T554 claimed 13:13Z, lease until 17:38Z; lane 5: T470 claimed 13:05Z, lease until 17:30Z; lane 6: T407 claimed 14:19Z, lease until 17:19Z; lane 7: T593 claimed 13:55Z, lease until 16:55Z
 - **Week:** 83% used, 21.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:01Z, 1 min before this update
+- **Last run:** 15:01Z, 2 min before this update
 - **Keeper:** last ran 14:44Z, next wake 16:12Z
 
 ## Needs attention
@@ -19,6 +19,7 @@ Updated 2026-11-19T15:03:22Z by runner d3213a0ac312 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T652 | ops: safe mode starts only on OPS-001's alert kinds, and a d | MERGE_PENDING | 2 | 112 min | 15:03Z | PLAN GAP: tests/integration/tests/safe_mode.rs:246,281,320,378,407 (owned by T487 and T408; T652's prompt :11 and :47 sa |
 | T158 | portals: the owner's pilot scorecard page with go and stop l | MERGE_PENDING | 1 | 2 h 57 min | 14:37Z |  |
 | T540 | portals and server: the owner's release button re-sends an e | done | 1 | 53 min | 13:47Z |  |
 | T470 | messaging and server: the worker task that sends queued emai | QUEUED | 2 | 2 h 21 min | 13:03Z | Fix-round review (after the one allowed findings round) still found a problem at head 1830747e4; no reviewer approved a  |
@@ -32,7 +33,7 @@ Updated 2026-11-19T15:03:22Z by runner d3213a0ac312 (actions).
 | T553 | Decisions digest, piece 8: the next entries after the header | done | 1 | 76 min | 10:04Z |  |
 | T622 | portals: the scorecard's first-six-weeks email panel and OPS | done | 1 | 2 h 41 min | 09:47Z |  |
 | T375 | portals and server: the business's Job types page lets the o | done | 1 | 74 min | 09:18Z |  |
-| T652 | ops: safe mode starts only on OPS-001's alert kinds, and a d | BLOCKED | 1 | 5 min | 09:10Z | PLAN GAP: tests/integration/tests/safe_mode.rs:246,281,320,378,407 (owned by T487 and T408; T652's prompt :11 and :47 sa |
+| T652 | ops: safe mode starts only on OPS-001's alert kinds, and a d | BLOCKED | 1 | 5 min | 09:10Z |  |
 | T536 | E2e harness: clock-advancing journeys last, a keyed worker,  | BLOCKED | 1 | 46 min | 09:00Z |  |
 | T476 | portals: the owner health page with every OPS-008 figure and | done | 1 | 2 h 27 min | 08:50Z |  |
 | T161 | wording: the WORD-024 voice rule's pressure-word scan, the r | BLOCKED | 1 | 4 min | 08:41Z | PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/s |
@@ -141,10 +142,9 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T541 (lease until 2026-11-19T18:01:14Z)
 - lane 2: T554 (lease until 2026-11-19T17:38:04Z)
-- lane 4: T652 (lease until 2026-11-19T17:59:06Z)
 - lane 5: T470 (lease until 2026-11-19T17:30:20Z)
 - lane 6: T407 (lease until 2026-11-19T17:19:51Z)
 - lane 7: T593 (lease until 2026-11-19T16:55:50Z)
 
 ## Last usage reading
-- {"task": "T158", "at": "2026-11-19T14:37:30Z", "output_tokens": 105625, "cache_read_input_tokens": 13093269, "cache_creation_input_tokens": 332718, "input_tokens": 254}
+- {"task": "T652", "at": "2026-11-19T15:03:20Z", "cache_creation_input_tokens": 176957, "cache_read_input_tokens": 7413634, "output_tokens": 40767, "input_tokens": 175}
