@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T04:51:29Z by runner 21b4c2edab3b (actions).
+Updated 2026-11-19T04:51:39Z by runner e2b74492a7a8 (actions).
 
 **Building: T408 in progress since 03:29Z; 474 of 664 done; week 74% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -16,7 +16,7 @@ Updated 2026-11-19T04:51:29Z by runner 21b4c2edab3b (actions).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T456 (since 2026-11-19T04:26:11Z, no attempt used; a plan change fixes it): T456: dependency T399 is DONE but its owned file app/server/tests/approve_link_route.rs is not on main
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 60 problem(s) on tasks still to run (+284 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 62 problem(s) on tasks still to run (+282 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -96,8 +96,8 @@ Updated 2026-11-19T04:51:29Z by runner 21b4c2edab3b (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 293 of 735 (39.9%) · partial 396 · unstarted 46
-**Tasks merged (throughput only):** 474 of 664
+**Requirements verified:** 295 of 735 (40.1%) · partial 394 · unstarted 46
+**Tasks merged (throughput only):** 474 of 663
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -107,8 +107,8 @@ Updated 2026-11-19T04:51:29Z by runner 21b4c2edab3b (actions).
 | calls | 12 | 13 | 0 | 25 |
 | consent | 14 | 21 | 0 | 35 |
 | fees | 23 | 28 | 1 | 52 |
-| intake | 9 | 34 | 0 | 43 |
-| job-cards | 13 | 11 | 0 | 24 |
+| intake | 10 | 33 | 0 | 43 |
+| job-cards | 14 | 10 | 0 | 24 |
 | licensing | 33 | 15 | 0 | 48 |
 | lifecycle | 18 | 10 | 0 | 28 |
 | messaging | 20 | 24 | 1 | 45 |
