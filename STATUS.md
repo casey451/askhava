@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T04:37:11Z by runner 2d703e0022e9 (actions).
+Updated 2026-11-19T04:37:48Z by runner 5504717c09aa (actions).
 
 **Building: T408 in progress since 03:29Z; 474 of 664 done; week 74% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,15 +8,15 @@ Updated 2026-11-19T04:37:11Z by runner 2d703e0022e9 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T408 claimed 03:29Z, lease until 06:29Z; lane 3: T203 claimed 04:08Z, lease until 07:08Z; lane 4: T562 claimed 04:26Z, lease until 07:26Z
 - **Week:** 74% used, 41.2M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:36Z, 0 min before this update
-- **Keeper:** last ran 04:24Z, next wake 04:44Z
+- **Last run:** 04:37Z, 0 min before this update
+- **Keeper:** last ran 04:37Z, next wake 04:57Z
 
 ## Needs attention
 - PLAN GAP T310 (since 2026-11-19T04:26:11Z, no attempt used; a plan change fixes it): T310: dependency T484 is DONE but its owned file tests/integration/tests/owner_tools.rs is not on main; T310: dependency T484 is DONE but its owned file app/calls/src/owner_calls.rs is not on main; T310: dependency T484 is DONE but its owned file app/messaging/src/alert_contact.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T456 (since 2026-11-19T04:26:11Z, no attempt used; a plan change fixes it): T456: dependency T399 is DONE but its owned file app/server/tests/approve_link_route.rs is not on main
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 55 problem(s) on tasks still to run (+278 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 53 problem(s) on tasks still to run (+277 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
