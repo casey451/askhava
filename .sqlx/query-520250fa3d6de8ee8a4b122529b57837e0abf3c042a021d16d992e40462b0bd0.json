@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO intake.consent_phone_wait (contact_id, since) VALUES ($1, now())",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "520250fa3d6de8ee8a4b122529b57837e0abf3c042a021d16d992e40462b0bd0"
+}
