@@ -18904,8 +18904,8 @@
    "id": "T652",
    "slug": "safe-mode-kinds",
    "title": "ops: safe mode starts only on OPS-001's alert kinds, and a delivery alert's hold is per line",
-   "goal": "Plan change D-4310 (Fable's decision on the ops spot review of `main` 4fee847d, findings 1 and 2; OPS-001 stands, no requirement amended). (1) Safe mode. `app/ops/src/safe_mode.rs` starts and holds safe mode on `a.severity IN ('high', 'critical') AND a.kind <> $1` in all three `EXISTS` clauses (`:52`, `:75`, `:78`), so every pushed High alert counts, including `privacy.vault_read_spike` and `privacy.vault_read_unregistered` (High, pushed at once through `PUSH_AT_ONCE` in `app/ops/src/alerts.rs`, D-4084) and the High `messaging.call_back_due` the daytime push lists (D-4087). OPS-001 (`docs/spec/ops-recovery.md:5`), D-075, D-942 and D-1719 name the set: an OPS-004 alert other than the email sending-limit one, or a critical alert. Add one `pub const SAFE_MODE_KINDS: [&str; 4]` = `ops.vendor_errors`, `ops.health_check_failed`, `payments.ledger_mismatch`, `messaging.number_suspended`, and make all three clauses `(a.severity = 'critical' OR (a.severity = 'high' AND a.kind = ANY($n)))` (review R1 N2), still for an open (`resolved_at IS NULL`) alert with an `ops.alert_push` row; the delivery alert (`ops.delivery_low`, OPS-001's own exception), `ops.email_limit`, both vault kinds and `messaging.call_back_due` never start it unless raised critical, and none of them is. Each `SAFE_MODE_KINDS` entry is the constant its raiser in `ops` uses (a unit test asserts equality where `ops` can name it, and the string otherwise, as D-4087 did). Keep `safe_mode_on`'s fail-closed read by the database's `now()` (D-3878) and the on and off audit rows (D-4000 (2), (3)); D-4000 (1)'s severity test and D-4087's \"never started safe mode\" clause are superseded by D-4310 (D-4087's push listing stays). Correct the docs that say \"a pushed High alert\" (`:41` to `:43`, `:58` to `:61`, the `SAFE_MODE_AFTER` doc) and the `app/ops/NOTES.md` line, if any. Accepted risk (Casey's review list): a vault spike Casey leaves for 24 hours no longer pauses charges; safe mode never contained vault reads. (2) Delivery hold per line (OPS-025, D-163; OPS-004 counts per audience): `raise_delivery`'s `held` (`alerts.rs:188` to `:195`) compares the newest resolved delivery alert of any audience with this line's `recovered_at`, so after the homeowner line's alert is acknowledged, a business line that dropped while it was open is held until it alone reaches 97%, and its outage is never alerted. Compute `held` only from resolved delivery alerts of the same audience (`JOIN ops.delivery_alert d ... WHERE d.audience = $1`); OPS-025's one-open-at-a-time rule in `record_delivery_counts` (`:127` to `:140`) is unchanged. Tests, fake data only, on PostgreSQL: TD-OPS-46 in `tests/integration/tests/safe_mode_kinds.rs` and TD-OPS-47 in `tests/integration/tests/delivery_hold_lines.rs`; `tests/integration/tests/safe_mode.rs` and `tests/integration/tests/ops_alert_conditions.rs` are other tasks' and stay unchanged. Ordering: after T408, which owns `safe_mode.rs`'s module doc sentence. Update `app/ops/NOTES.md` and `docs/decisions.md`.",
-   "type": "build",
+   "goal": "Plan change D-4310 (Fable's decision on the ops spot review of `main` 4fee847d, findings 1 and 2; OPS-001 stands, no requirement amended). (1) Safe mode. `app/ops/src/safe_mode.rs` starts and holds safe mode on `a.severity IN ('high', 'critical') AND a.kind <> $1` in all three `EXISTS` clauses (`:52`, `:75`, `:78`), so every pushed High alert counts, including `privacy.vault_read_spike` and `privacy.vault_read_unregistered` (High, pushed at once through `PUSH_AT_ONCE` in `app/ops/src/alerts.rs`, D-4084) and the High `messaging.call_back_due` the daytime push lists (D-4087). OPS-001 (`docs/spec/ops-recovery.md:5`), D-075, D-942 and D-1719 name the set: an OPS-004 alert other than the email sending-limit one, or a critical alert. Add one `pub const SAFE_MODE_KINDS: [&str; 4]` = `ops.vendor_errors`, `ops.health_check_failed`, `payments.ledger_mismatch`, `messaging.number_suspended`, and make all three clauses `(a.severity = 'critical' OR (a.severity = 'high' AND a.kind = ANY($n)))` (review R1 N2), still for an open (`resolved_at IS NULL`) alert with an `ops.alert_push` row; the delivery alert (`ops.delivery_low`, OPS-001's own exception), `ops.email_limit`, both vault kinds and `messaging.call_back_due` never start it unless raised critical, and none of them is. Each `SAFE_MODE_KINDS` entry is the constant its raiser in `ops` uses (a unit test asserts equality where `ops` can name it, and the string otherwise, as D-4087 did). Keep `safe_mode_on`'s fail-closed read by the database's `now()` (D-3878) and the on and off audit rows (D-4000 (2), (3)); D-4000 (1)'s severity test and D-4087's \"never started safe mode\" clause are superseded by D-4310 (D-4087's push listing stays). Correct the docs that say \"a pushed High alert\" (`:41` to `:43`, `:58` to `:61`, the `SAFE_MODE_AFTER` doc) and the `app/ops/NOTES.md` line, if any. Accepted risk (Casey's review list): a vault spike Casey leaves for 24 hours no longer pauses charges; safe mode never contained vault reads. (2) Delivery hold per line (OPS-025, D-163; OPS-004 counts per audience): `raise_delivery`'s `held` (`alerts.rs:188` to `:195`) compares the newest resolved delivery alert of any audience with this line's `recovered_at`, so after the homeowner line's alert is acknowledged, a business line that dropped while it was open is held until it alone reaches 97%, and its outage is never alerted. Compute `held` only from resolved delivery alerts of the same audience (`JOIN ops.delivery_alert d ... WHERE d.audience = $1`); OPS-025's one-open-at-a-time rule in `record_delivery_counts` (`:127` to `:140`) is unchanged. Tests, fake data only, on PostgreSQL: TD-OPS-46 in `tests/integration/tests/safe_mode_kinds.rs` and TD-OPS-47 in `tests/integration/tests/delivery_hold_lines.rs`; `tests/integration/tests/ops_alert_conditions.rs` is another task's and stays unchanged. Ordering: after T408, which owns `safe_mode.rs`'s module doc sentence. Update `app/ops/NOTES.md` and `docs/decisions.md`. Plan change D-4686 (T652 attempt 1's plan gap, Nov 19, 2026): `tests/integration/tests/safe_mode.rs` (T487, T408, both DONE) plants High alerts of the made-up kind `ops.ledger_difference` at `:246`, `:281`, `:320`, `:378` and `:407`; under D-4310 that kind no longer starts safe mode, so TD-OPS-01's 24-hour case, both TD-OPS-06 cases and TD-FEE-20 would fail. This task becomes a harness task (only a harness task takes over an earlier task's test, `scripts/validate_tasks.py:597`, as T408 did under D-4026), owns that file and swaps each planted kind for `askhava_ops::api::LEDGER_ALERT` (`payments.ledger_mismatch`, `app/ops/src/alerts.rs:359`; one more name in the file's `askhava_ops::api` import) and changes nothing else in it but the doc comments that say \"a pushed High alert\" (`:6`, `:240`, `:275`), which may be reworded to name D-4310's kinds (a pushed High alert of one of `SAFE_MODE_KINDS`, or a critical alert); every assertion, helper and test name stays as it is.",
+   "type": "harness",
    "phase": 1,
    "stage": "5",
    "module": "ops",
@@ -18919,20 +18919,21 @@
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "money",
-    "recovery"
+    "recovery",
+    "harness"
    ],
    "owns": [
     "app/ops/src/safe_mode.rs",
     "app/ops/src/alerts.rs",
     "tests/integration/tests/safe_mode_kinds.rs",
-    "tests/integration/tests/delivery_hold_lines.rs"
+    "tests/integration/tests/delivery_hold_lines.rs",
+    "tests/integration/tests/safe_mode.rs"
    ],
    "reads": [
     "docs/architecture.md",
     "docs/code-docs.md",
     "docs/spec/ops-recovery.md",
     "docs/spec/fees.md",
-    "tests/integration/tests/safe_mode.rs",
     "tests/integration/tests/ops_alert_conditions.rs",
     "docs/brains/rust-production.md"
    ],
@@ -18956,15 +18957,16 @@
     "D-4084",
     "D-163",
     "D-3878",
-    "D-477"
+    "D-477",
+    "D-4686"
    ],
    "cites": [
     "app/ops/src/safe_mode.rs:52",
     "app/ops/src/alerts.rs:188"
    ],
    "budget": {
-    "files": 4,
-    "lines": 350,
+    "files": 5,
+    "lines": 360,
     "context_pct": 21
    },
    "checks": [
@@ -18974,7 +18976,7 @@
    ],
    "branch": "claude/task/T652-safe-mode-kinds",
    "prompt": "kit/prompts/T652.md",
-   "acceptance": "TD-OPS-46 and TD-OPS-47 pass against PostgreSQL, the vault, call-back and cross-line cases failing on `main` before the change; `tests/integration/tests/safe_mode.rs`, `ops_alert_conditions.rs` and every existing ops and payments test pass unchanged."
+   "acceptance": "TD-OPS-46 and TD-OPS-47 pass against PostgreSQL, the vault, call-back and cross-line cases failing on `main` before the change; `tests/integration/tests/safe_mode.rs` passes with only its planted alert kinds changed to `LEDGER_ALERT` and its \"a pushed High alert\" doc comments (`:6`, `:240`, `:275`) naming D-4310's kinds (D-4686), no assertion changed, and `ops_alert_conditions.rs` and every other existing ops and payments test pass unchanged."
   },
   {
    "id": "T653",

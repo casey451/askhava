@@ -44,22 +44,31 @@
 //! through `payments::api::period_fee_for` on the job's fee facts, as `picks` fixed it. A derived
 //! tier other than the fee fixed at the pick (`payments::api::pick_fee`) shows no basis line; a
 //! quote that no longer reads back is the not-found answer. The page reads nothing from the vault.
+//!
+//! T375 (BIZ-004, BIZ-049, BIZ-050, SEC-004; D-2730, D-4644): `GET` and `POST` [`JOB_TYPES_ROUTE`]
+//! show and save the caller's own business's job-type ticks (owner or "Confirm and billing") over
+//! `offer_for` and `save_job_types`, which lifts a `no_covered_job_type` pause when the rules allow.
 
+use std::collections::BTreeSet;
 use std::io;
 use std::net::IpAddr;
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
 
 use askhava_adapters::api::PoolNumber;
 use askhava_businesses::api::{
-    Acting, Complaint, ComplaintError, EMERGENCY_YES_LIFE, GuardedOpener, LinkRefusal,
-    NoticeChannel, NoticePurpose, SwitchError, after_hours_box, complaints, may_get_notices,
-    notice_addresses, notice_channel, open_cards_times, returned_mailboxes, review_links,
-    sign_in_lines, switch_off_warns, switch_state,
+    Acting, BusinessesError, Complaint, ComplaintError, EMERGENCY_YES_LIFE, GuardedOpener,
+    JobTypeChoice, Known, LinkRefusal, NoticeChannel, NoticePurpose, SwitchError, TradeOffer,
+    after_hours_box, business, business_names, capabilities, complaints, job_types,
+    may_get_notices, notice_addresses, notice_channel, offer_for, open_cards_times,
+    returned_mailboxes, review_links, save_job_types, sign_in_lines, switch_off_warns,
+    switch_state,
 };
+use askhava_catalog::api::{Catalog, parse as parse_catalog};
 use askhava_core::api::{Clock, Settings, SystemClock, arizona_time};
 use askhava_jobs::api::{finished_counts, job_facts, job_number};
+use askhava_licensing::api::{CityRecord, ClassMap};
 use askhava_messaging::api::still_away;
-use askhava_ops::api::away_until;
+use askhava_ops::api::{Actor, away_until};
 use askhava_payments::api::{
     Fee, FeeMode, FeeQuote, JobCodes, JobFeeFacts, Period as FeePeriod, Statement, StoredPickFee,
     Tier, business_statement, period_fee_for, pick_fee, receipt_for, resolve_fee_facts,
@@ -70,17 +79,18 @@ use askhava_portals::api::{
     ACTION_ROUTE, ActionKind, AfterHoursBox, BILLING_ROUTE, BUSINESS_HOME_ROUTE, Basis,
     BusinessPrincipal, COMPLAINT_REPLY_ROUTE, COMPLAINTS_ROUTE, ChannelChangeError, ChannelFacts,
     CookieJar, CsrfField, CsrfForm, EMERGENCY_SWITCH_ROUTE, HomeExtras, InboxSwitch,
-    JOB_RELEASE_ROUTE, JobFacts, LinksChangeError, NOT_A_FIT_ROUTE, NOTICE_SETTINGS_ROUTE, Need,
-    NotAFitChoice, NotAFitOutcome, NotAFitState, NoticeAddress, NoticeLogPage, OPEN_CARDS_ROUTE,
-    PaymentMethod, REVIEW_LINKS_ROUTE, RefusedReply, SESSION_COOKIE, STATEMENT_ROUTE,
-    SecurityEvent, SecurityEventKind, SwitchStep, WHY_CHARGED_ROUTE, WebSecurity, WhyCharged,
-    YourNumbers, admit_security_event, answer_not_a_fit, billing_page, business_home_page_with,
-    business_principal, change_channel, complaints_page, csrf_token,
-    emergency_switch_page_with_box, inbox_shared, job_release_page, no_store, not_a_fit_action,
-    not_a_fit_page, notice_log_page, notice_settings_page, parse_reason, post_step,
-    record_security_event, refuse_cross_site, reply_to_complaint, save_home_links,
-    save_open_cards_times, security_event_client, signed_out, statement_csv, why_charged_page,
-    why_charged_page_without_basis,
+    JOB_RELEASE_ROUTE, JOB_TYPES_ROUTE, JobFacts, JobTypesOutcome, JobTypesPage, LinksChangeError,
+    NOT_A_FIT_ROUTE, NOTICE_SETTINGS_ROUTE, Need, NotAFitChoice, NotAFitOutcome, NotAFitState,
+    NoticeAddress, NoticeLogPage, OPEN_CARDS_ROUTE, PaymentMethod, REVIEW_LINKS_ROUTE,
+    RefusedReply, SESSION_COOKIE, STATEMENT_ROUTE, SecurityEvent, SecurityEventKind, SwitchStep,
+    WHY_CHARGED_ROUTE, WebSecurity, WhyCharged, YourNumbers, admit_security_event,
+    answer_not_a_fit, billing_page, business_home_page_with, business_principal, change_channel,
+    complaints_page, csrf_token, emergency_switch_page_with_box, inbox_shared, job_release_page,
+    job_types_page, no_store, not_a_fit_action, not_a_fit_page, notice_log_page,
+    notice_settings_page, parse_reason, post_step, posted_choice, record_security_event,
+    refuse_cross_site, reply_to_complaint, save_home_links, save_open_cards_times,
+    security_event_client, shown_offer, signed_out, statement_csv, why_charged_page,
+    why_charged_page_without_basis, within,
 };
 use askhava_privacy::api::{BusinessContactError, BusinessPurpose, Vault, read_business_mailbox};
 use askhava_quotes::api::{Period, Price, accepted_quote, card_holders, quote_numbers};
@@ -179,6 +189,7 @@ pub fn routes(pool: PgPool, vault: PortalVault, numbers: &[PoolNumber]) -> Route
         .route(COMPLAINTS_ROUTE, get(complaints_get))
         .route(COMPLAINT_REPLY_ROUTE, post(complaint_reply))
         .route(EMERGENCY_SWITCH_ROUTE, get(switch_get).post(switch_post))
+        .route(JOB_TYPES_ROUTE, get(job_types_get).post(job_types_post))
         .route(NOT_A_FIT_ROUTE, post(not_a_fit))
         .route_layer(from_fn(note_site))
         .with_state(state)
@@ -1286,4 +1297,197 @@ async fn not_a_fit(
             Err(_) => return failed("not a fit"),
         };
     fit_page(state, number, (job, &token))
+}
+
+/// The catalog file, compiled in and parsed once (LIC-001); `None` if it breaks a rule.
+static CATALOG: LazyLock<Option<Catalog>> =
+    LazyLock::new(|| parse_catalog(include_str!("../../../docs/catalog/categories.yaml")).ok());
+
+/// BIZ-004, SEC-019: `who` when the owner or a "Confirm and billing" member, else the answer to
+/// send (the one not-found answer for a "Cards and quotes" member, a security event).
+async fn job_types_who(
+    portal: &Portal,
+    site: &Site,
+    jar: &CookieJar,
+) -> Result<BusinessPrincipal, Box<Response>> {
+    let who = signed_in(portal, site, jar).await?;
+    if !who.may(who.business(), Need::ConfirmAndBilling) {
+        return Err(Box::new(denied(portal, site, &who).await));
+    }
+    Ok(who)
+}
+
+/// LIC-006, LIC-011: `business`'s own stored names for the city-list match, as the sign-up's
+/// capability step reads them; the outer `None` is a failed read. No name is logged or stored.
+async fn city_names(db: &mut PgConnection, business: Uuid) -> Option<Option<CityRecord>> {
+    let names = business_names(db, business).await.ok()?;
+    Some(names.map(|n| CityRecord {
+        business_name: n.business_name,
+        trade_name: n.trade_name,
+        owner_name: None,
+        license_number: n.city_license_number,
+    }))
+}
+
+/// BIZ-004, BIZ-049, BIZ-050, LIC-043: the offer `business`'s page shows (T368's offer from what it
+/// holds now, so a job type a license change removed is not in it, its recurring rows left out
+/// after a recurring "no") and its stored ticks; `None` when a read fails. Only `business` is read.
+async fn job_types_view(
+    db: &mut PgConnection,
+    business: Uuid,
+) -> Option<(Vec<TradeOffer>, BTreeSet<JobTypeChoice>)> {
+    let city = city_names(db, business).await?;
+    let known = Known {
+        roc_license: None,
+        city_names: city.as_ref(),
+    };
+    let (map, catalog) = (ClassMap::shipped().ok()?, CATALOG.as_ref()?);
+    let offer = offer_for(db, business, known, (map, catalog)).await.ok()?;
+    let answers = capabilities(db, &[business]).await.ok()?;
+    let recurring = answers.get(&business).is_none_or(|c| c.recurring);
+    let ticked = job_types(db, business).await.ok()?.into_iter().collect();
+    Some((shown_offer(offer, recurring), ticked))
+}
+
+/// The Job types page's answer over [`job_types_page`].
+fn job_types_html(
+    (offer, ticked): (&[TradeOffer], &BTreeSet<JobTypeChoice>),
+    outcome: Option<JobTypesOutcome>,
+    csrf: &str,
+) -> Response {
+    let page = JobTypesPage {
+        offer,
+        ticked,
+        outcome,
+        csrf,
+    };
+    match job_types_page(&page) {
+        Ok(html) => Html(html).into_response(),
+        Err(_) => failed("job types page"),
+    }
+}
+
+/// `GET` [`JOB_TYPES_ROUTE`] (BIZ-004, BIZ-049, BIZ-050, SEC-004, SEC-019): the caller's own
+/// business's checklist with its stored ticks. Changes nothing.
+async fn job_types_get(
+    State(portal): State<Portal>,
+    Extension(site): Extension<Site>,
+    jar: CookieJar,
+) -> Response {
+    let who = match job_types_who(&portal, &site, &jar).await {
+        Ok(who) => who,
+        Err(answer) => return *answer,
+    };
+    let (Some(csrf), Ok(mut db)) = (csrf_token(&jar), portal.pool.acquire().await) else {
+        return failed("csrf token or connection");
+    };
+    match job_types_view(&mut db, who.business()).await {
+        Some((offer, ticked)) => job_types_html((&offer, &ticked), None, &csrf),
+        None => failed("job types"),
+    }
+}
+
+/// The Job types form: its CSRF token and the ticked job types (BIZ-004).
+#[derive(Debug, serde::Deserialize)]
+#[serde(try_from = "Vec<(String, String)>")]
+struct JobTypesForm {
+    csrf: String,
+    ticks: Vec<JobTypeChoice>,
+}
+
+impl TryFrom<Vec<(String, String)>> for JobTypesForm {
+    type Error = String;
+
+    /// Splits the posted pairs into the token and the ticks; refuses an unknown field name or a
+    /// tick with no category (SEC-010).
+    fn try_from(pairs: Vec<(String, String)>) -> Result<Self, String> {
+        let mut form = Self {
+            csrf: String::new(),
+            ticks: Vec::new(),
+        };
+        for (name, value) in pairs {
+            match name.as_str() {
+                "csrf" => form.csrf = value,
+                "job_type" => form
+                    .ticks
+                    .push(posted_choice(&value).ok_or("a job type with no category")?),
+                _ => return Err(format!("unknown field `{name}`")),
+            }
+        }
+        Ok(form)
+    }
+}
+
+impl CsrfField for JobTypesForm {
+    fn csrf(&self) -> &str {
+        &self.csrf
+    }
+}
+
+/// BIZ-004, BIZ-050, D-2730: stores `ticks` for `business` through `save_job_types` (the offer
+/// rebuilt server-side, a `no_covered_job_type` pause lifted in the same transaction when the
+/// rules allow); `NotCovered` stores nothing. `None` on any other failure.
+async fn save_ticks(
+    db: &mut PgConnection,
+    business: Uuid,
+    ticks: &[JobTypeChoice],
+    now: Timestamp,
+) -> Option<JobTypesOutcome> {
+    let was_off = !self::business(db, business)
+        .await
+        .ok()?
+        .status
+        .receives_cards();
+    let city = city_names(db, business).await?;
+    let known = Known {
+        roc_license: None,
+        city_names: city.as_ref(),
+    };
+    let maps = (ClassMap::shipped().ok()?, CATALOG.as_ref()?);
+    let by = (Actor::Business(business), now);
+    match save_job_types(db, business, known, maps, ticks, by).await {
+        Ok(status) if was_off && status.receives_cards() => Some(JobTypesOutcome::Resumed),
+        Ok(_) => Some(JobTypesOutcome::Saved),
+        Err(BusinessesError::NotCovered) => Some(JobTypesOutcome::NotSaved),
+        Err(_) => None,
+    }
+}
+
+/// `POST` [`JOB_TYPES_ROUTE`] (BIZ-004, BIZ-049, BIZ-050, SEC-004, SEC-019, SEC-042, D-2730): the
+/// owner's or a "Confirm and billing" member's ticks for their own business; a tick outside the
+/// shown offer stores nothing. Shows the page again with the result.
+async fn job_types_post(
+    State(portal): State<Portal>,
+    Extension(site): Extension<Site>,
+    jar: CookieJar,
+    CsrfForm(form): CsrfForm<JobTypesForm>,
+) -> Response {
+    let who = match job_types_who(&portal, &site, &jar).await {
+        Ok(who) => who,
+        Err(answer) => return *answer,
+    };
+    let Ok(mut db) = portal.pool.acquire().await else {
+        return failed("connection");
+    };
+    let id = who.business();
+    let Some((offer, _)) = job_types_view(&mut db, id).await else {
+        return failed("job types");
+    };
+    let outcome = if within(&offer, &form.ticks) {
+        save_ticks(&mut db, id, &form.ticks, portal.clock.now()).await
+    } else {
+        Some(JobTypesOutcome::NotSaved)
+    };
+    let (Some(outcome), Some((offer, stored))) = (outcome, job_types_view(&mut db, id).await)
+    else {
+        return failed("job types save");
+    };
+    let posted: BTreeSet<JobTypeChoice> = form.ticks.into_iter().collect();
+    let shown = if outcome == JobTypesOutcome::NotSaved {
+        &posted
+    } else {
+        &stored
+    };
+    let csrf = csrf_token(&jar).unwrap_or_default();
+    job_types_html((&offer, shown), Some(outcome), &csrf)
 }
