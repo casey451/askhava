@@ -98,7 +98,7 @@
 </ul>
 </section>
 <fieldset id="consent-box"><legend>Cómo recibe las solicitudes de trabajo y los avisos</legend>
-<p id="consent-note">El acuerdo de abajo está en inglés porque es el texto exacto que guardamos con su registro. Dice tres cosas. Acepta recibir avisos de trabajo y de su cuenta por correo o por texto, como usted eligió. Nunca le llamamos. Puede cambiar esto cuando quiera en su portal. Para dejar de recibir mensajes de texto, responda PARAR; para pedir ayuda, responda AYUDA.</p>
+<p id="consent-note">El acuerdo de abajo está en inglés porque es el texto exacto que guardamos con su registro. En español dice: Acepta recibir de {{ askhava_core::api::brand().es().display_name() }} los avisos de trabajo y de su cuenta por correo electrónico, en la dirección de arriba, en lugar de en papel.{% if consent_channels.contains("text") %} Acepta recibir de {{ askhava_core::api::brand().es().display_name() }} textos con solicitudes de trabajo en el número de teléfono de arriba. La frecuencia de los mensajes varía. Pueden aplicarse tarifas de mensajes y datos. Para dejar de recibir textos, responda PARAR; para pedir ayuda, responda AYUDA.{% endif %} {{ askhava_core::api::brand().es().display_name() }} nunca le hace llamadas grabadas ni automáticas. Puede cambiar esto cuando quiera en su portal.</p>
 {% if let Some(reason) = error_for("consent") %}<p id="consent-error" class="error">Error: {{ reason }}</p>{% endif %}
 <p><input type="checkbox" id="consent" name="consent" value="yes" aria-describedby="consent-note{% if error_for("consent").is_some() %} consent-error{% endif %}"{% if error_for("consent").is_some() %} aria-invalid="true"{% endif %}>
 <label for="consent" lang="en">{{ consent }}</label></p>

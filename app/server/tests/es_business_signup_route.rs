@@ -150,6 +150,7 @@ async fn td_word_02_the_served_sign_up_follows_lang_es(pool: PgPool) {
         "CON-019: the stored words, unchanged"
     );
     assert!(es.1.contains("<label for=\"consent\" lang=\"en\">"));
+    assert_note(&es.1, false);
     let again = post(&app, &es, &[("lang", "es")]).await;
     assert_spanish(&again, "Error: Registre su negocio");
     assert!(again.contains("Marque la casilla para aceptar los avisos."));
@@ -242,4 +243,64 @@ fn both(screen: Screen<'_>, en: &str, es: &str) {
     assert!(!spanish.contains(en), "{es}: no English title");
     let english = signup_page(screen, &parts(PageLanguage::En)).expect("English page");
     assert_english(&english.replace("&#x27;", "&#39;"), en);
+}
+
+/// The Spanish note tied to the consent box by `aria-describedby`.
+fn consent_note(html: &str) -> &str {
+    let at = html.find("<p id=\"consent-note\">").expect("the note");
+    &html[at..at + html[at..].find("</p>").expect("note end")]
+}
+
+/// CON-019, D-4562: the note says in Spanish every part of `consent_wording` for the channels
+/// shown: notices by email not on paper, no recorded or automated calls, changeable in the
+/// portal, and only with texts the frequency, the message and data rates and PARAR/AYUDA.
+fn assert_note(html: &str, texts: bool) {
+    let note = consent_note(html);
+    let always = [
+        "por correo electrónico, en la dirección de arriba, en lugar de en papel.",
+        "nunca le hace llamadas grabadas ni automáticas.",
+        "Puede cambiar esto cuando quiera en su portal.",
+    ];
+    for line in always {
+        assert!(note.contains(line), "{line}");
+    }
+    let texting = [
+        "textos con solicitudes de trabajo en el número de teléfono de arriba.",
+        "La frecuencia de los mensajes varía.",
+        "Pueden aplicarse tarifas de mensajes y datos.",
+        "responda PARAR; para pedir ayuda, responda AYUDA.",
+    ];
+    for line in texting {
+        assert_eq!(note.contains(line), texts, "{line}");
+    }
+    assert!(!note.contains("tres cosas"));
+}
+
+/// TD-WORD-02 (CON-019, BIZ-036, D-4562): with texts chosen the box names texts and the Spanish
+/// note says the texting lines too; with email alone it says the email lines only.
+#[test]
+fn td_word_02_the_spanish_note_matches_the_consent_words() {
+    let fees = fee_numbers(ConfirmSettings::default(), WindowRules::default());
+    let cats = [("plumbing_repair".to_owned(), "Open now")];
+    for texts in [true, false] {
+        let entered = Entered {
+            problem: Some(("consent", "Marque la casilla para aceptar los avisos.")),
+            text_chosen: texts,
+            ..Entered::default()
+        };
+        let parts = Parts {
+            texting_on: true,
+            language: PageLanguage::Es,
+            csrf: "fake-csrf",
+            fees,
+        };
+        let html = signup_page(Screen::FormAgain(&cats, &entered), &parts).expect("page");
+        let channels = if texts {
+            vec![ConsentChannel::Email, ConsentChannel::Text]
+        } else {
+            vec![ConsentChannel::Email]
+        };
+        assert_eq!(consent_words(&html), consent_box(&channels).wording);
+        assert_note(&html, texts);
+    }
 }
