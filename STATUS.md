@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T13:56:29Z by runner 345380f4824a (actions).
+Updated 2026-11-19T14:01:32Z by runner 345380f4824a (manual).
 
 **Building: T541 in progress since 13:09Z; 492 of 666 done; week 81% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-19T13:56:29Z by runner 345380f4824a (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T541 claimed 13:09Z, lease until 16:09Z; lane 2: T554 claimed 13:13Z, lease until 16:13Z; lane 3: T158 claimed 11:39Z, lease until 16:22Z; lane 4: T652 claimed 13:10Z, lease until 16:10Z; lane 5: T470 claimed 13:05Z, lease until 16:05Z; lane 7: T593 claimed 13:55Z, lease until 16:55Z
 - **Week:** 81% used, 25.1M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:56Z, 0 min before this update
+- **Last run:** 13:56Z, 5 min before this update
 - **Keeper:** last ran 13:55Z, next wake 14:15Z
 
 ## Needs attention
@@ -90,38 +90,37 @@ Updated 2026-11-19T13:56:29Z by runner 345380f4824a (actions).
 | T665 | server tests (harness): the door matrix fills a business job | done | 1 | 81 min | 15:47Z |  |
 | T525 | server and ops: the hourly vault-read check and the daily da | done | 1 | 102 min | 15:41Z |  |
 | T200 | ops and portals: the owner help page with its screened reply | done | 2 | 2 h 25 min | 14:32Z | Review not approved after the one fix round (head 346acc872b66e2a8cd86b345b919fe4573f7db87). / Remaining finding (review |
-| T671 | intake (harness): a homeowner's texts after the consent text | BLOCKED | 1 | 44 min | 13:58Z |  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 308 of 735 (41.9%) · partial 388 · unstarted 39
+**Requirements verified:** 58 of 735 (7.9%) · partial 638 · unstarted 39
 **Tasks merged (throughput only):** 492 of 666
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 17 | 18 | 0 | 35 |
-| ai | 9 | 17 | 3 | 29 |
-| businesses | 19 | 38 | 1 | 58 |
-| calls | 12 | 13 | 0 | 25 |
-| consent | 14 | 21 | 0 | 35 |
-| fees | 23 | 28 | 1 | 52 |
-| intake | 9 | 34 | 0 | 43 |
-| job-cards | 13 | 11 | 0 | 24 |
-| licensing | 34 | 14 | 0 | 48 |
-| lifecycle | 18 | 10 | 0 | 28 |
-| messaging | 20 | 24 | 1 | 45 |
-| ops-recovery | 5 | 31 | 18 | 54 |
-| privacy | 10 | 20 | 1 | 31 |
-| quiet-hours | 6 | 3 | 0 | 9 |
-| quotes-pick | 27 | 29 | 0 | 56 |
-| recurring | 7 | 4 | 0 | 11 |
-| security | 9 | 41 | 5 | 55 |
-| terms | 26 | 8 | 1 | 35 |
+| accessibility | 2 | 33 | 0 | 35 |
+| ai | 2 | 24 | 3 | 29 |
+| businesses | 1 | 56 | 1 | 58 |
+| calls | 0 | 25 | 0 | 25 |
+| consent | 3 | 32 | 0 | 35 |
+| fees | 0 | 51 | 1 | 52 |
+| intake | 0 | 43 | 0 | 43 |
+| job-cards | 0 | 24 | 0 | 24 |
+| licensing | 0 | 48 | 0 | 48 |
+| lifecycle | 0 | 28 | 0 | 28 |
+| messaging | 0 | 44 | 1 | 45 |
+| ops-recovery | 4 | 32 | 18 | 54 |
+| privacy | 0 | 30 | 1 | 31 |
+| quiet-hours | 0 | 9 | 0 | 9 |
+| quotes-pick | 0 | 56 | 0 | 56 |
+| recurring | 0 | 11 | 0 | 11 |
+| security | 0 | 50 | 5 | 55 |
+| terms | 23 | 11 | 1 | 35 |
 | website | 13 | 13 | 4 | 30 |
-| wording | 17 | 11 | 4 | 32 |
+| wording | 10 | 18 | 4 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
