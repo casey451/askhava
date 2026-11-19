@@ -143,6 +143,10 @@ pub use crate::models::{
     RefundOutcome, RefundStep, RefundTrigger, RefundWhy, SavedCard, SetupIntentRequest,
     StripeCharge, attempt_label, intent_label, plan_charge, statement_prefix,
 };
+pub use crate::money_view::{
+    CSV_HEADER, Expense, ExpenseError, Month, NewExpense, OwnerMoneyView, add_expense,
+    money_view_csv, owner_money_view,
+};
 pub use crate::off_session::{
     OffSessionCharge, OffSessionOutcome, OffSessionStripe, charge_off_session, saved_card_of,
 };
