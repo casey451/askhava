@@ -25215,7 +25215,8 @@
     "T746",
     "T747",
     "T748",
-    "T749"
+    "T749",
+    "T755"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -25257,7 +25258,8 @@
     "T748",
     "T749",
     "T750",
-    "T752"
+    "T752",
+    "T755"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -25518,7 +25520,8 @@
     "T731",
     "T735",
     "T743",
-    "T744"
+    "T744",
+    "T755"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -30432,7 +30435,8 @@
     "T731",
     "T735",
     "T743",
-    "T744"
+    "T744",
+    "T755"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -30456,7 +30460,8 @@
     "T430",
     "T432",
     "T743",
-    "T744"
+    "T744",
+    "T755"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -30480,7 +30485,8 @@
     "T430",
     "T432",
     "T743",
-    "T744"
+    "T744",
+    "T755"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -89184,7 +89190,8 @@
    "id": "T744",
    "deps": [
     "T681",
-    "T745"
+    "T745",
+    "T573"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -89323,6 +89330,20 @@
    "status": "QUEUED",
    "attempts": 0,
    "slug": "zero-fee-after-intent",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T755",
+   "deps": [
+    "T029",
+    "T421",
+    "T100",
+    "T517"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "optout-words-spacing",
    "type": "build",
    "stage": "5"
   }
@@ -95212,7 +95233,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T18:53:18Z",
+ "updated_at": "2026-11-19T19:06:58Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -95310,8 +95331,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "4ed3a4ff4d66ca6ca1bccd74c9329c01da39a844",
- "starter": "manual",
+ "runner_sha": "599c4d8662c4ea0ccb7433ecc33d6014ba100974",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "5dc7a90cf33f9a08f44a429638390c90e1d79457",
