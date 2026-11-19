@@ -17,3 +17,5 @@ mod chat;
 mod legal_pages;
 mod pages;
 mod routes;
+#[cfg(test)]
+mod tests;
