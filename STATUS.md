@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T04:24:26Z by runner 547545f44116 (actions).
+Updated 2026-11-19T04:26:23Z by runner 09c77368bd30 (actions).
 
-**Building: T408 in progress since 03:29Z; 473 of 663 done; week 74% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
+**Building: T408 in progress since 03:29Z; 474 of 663 done; week 74% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 473 of 663 build tasks (owner gates not counted)
+- **Tasks done:** 474 of 663 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T408 claimed 03:29Z, lease until 06:29Z; lane 3: T203 claimed 04:08Z, lease until 07:08Z; lane 6: T490 claimed 02:10Z, lease until 07:07Z
 - **Week:** 74% used, 43.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:24Z, 0 min before this update
+- **Last run:** 04:24Z, 1 min before this update
 - **Keeper:** last ran 04:24Z, next wake 04:44Z
 
 ## Needs attention
@@ -16,14 +16,14 @@ Updated 2026-11-19T04:24:26Z by runner 547545f44116 (actions).
 Evidence: `trade_check` passes no words when the first tex; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T715 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 61 problem(s) on tasks still to run (+282 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
+- Strict plan check red: 57 problem(s) on tasks still to run (+278 on DONE tasks); first: T397: stored context_pct 13% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T520 | portals and messaging: the portal stylesheets and email colo | MERGE_PENDING | 1 | 2 h 21 min | 04:18Z |  |
 | T563 | intake and privacy: the daily consent sweep removes consent  | MERGE_PENDING | 3 | 77 min | 04:05Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
-| T399 | server: the email's Approve link approves the phone, only wi | MERGE_PENDING | 1 | 46 min | 04:01Z |  |
+| T399 | server: the email's Approve link approves the phone, only wi | done | 1 | 46 min | 04:01Z |  |
 | T484 | portals and quotes: "Call from the Laftly number", the owner | done | 1 | 82 min | 03:26Z |  |
 | T114 | Terms-match-code checks and recurring pricing copy | done | 1 | 71 min | 03:26Z |  |
 | T715 | intake (harness): corrections to T671's walker: alarm answer | BLOCKED | 2 | 83 min | 03:22Z | PLAN GAP: one TD-INT-52 sentence can't be met by intake as planned: "a two-word first text naming a trade opens its job  |
@@ -96,7 +96,7 @@ Evidence: `trade_check` passes no words when the first tex; fix the plan (the ta
 ## Progress (requirements verified)
 
 **Requirements verified:** 295 of 735 (40.1%) · partial 394 · unstarted 46
-**Tasks merged (throughput only):** 473 of 663
+**Tasks merged (throughput only):** 474 of 663
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -132,7 +132,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 116 of 262 done
+- stage 5: 117 of 262 done
 - stage 6: 0 of 48 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
