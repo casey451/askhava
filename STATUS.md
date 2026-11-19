@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-19T06:55:34Z by runner 6169da0e6040 (actions).
+Updated 2026-11-19T06:56:01Z by runner 6169da0e6040 (actions).
 
 **Building: T310 in progress since 06:04Z; 478 of 664 done; week 75% used, resets Thu 2026-11-19 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 478 of 664 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T310 claimed 06:04Z, lease until 09:04Z; lane 3: T216 claimed 06:32Z, lease until 09:32Z; lane 4: T562 claimed 04:26Z, lease until 09:13Z; lane 5: T506 claimed 05:13Z, lease until 09:21Z; lane 6: T476 claimed 06:22Z, lease until 09:22Z; lane 7: T229 claimed 04:42Z, lease until 09:05Z
+- **Lane:** lane 2: T310 claimed 06:04Z, lease until 09:04Z; lane 3: T216 claimed 06:32Z, lease until 09:32Z; lane 4: T562 claimed 04:26Z, lease until 09:13Z; lane 6: T476 claimed 06:22Z, lease until 09:22Z; lane 7: T229 claimed 04:42Z, lease until 09:05Z
 - **Week:** 75% used, 38.7M tokens left; resets Thu 2026-11-19 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:32Z, 22 min before this update
+- **Last run:** 06:32Z, 23 min before this update
 - **Keeper:** last ran 06:24Z, next wake 09:07Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Updated 2026-11-19T06:55:34Z by runner 6169da0e6040 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T506 | Decisions digest, piece 7: the next entries after the header | MERGE_PENDING | 1 | 102 min | 06:55Z |  |
 | T408 | server: a release waits while safe mode is on and goes ahead | MERGE_PENDING | 3 | 2 h 48 min | 06:17Z | PLAN GAP: kit/prompts/T408.md:54 "Size budget: at most 6 files, 800 changed lines" cannot be met. The prompt's own plan  |
 | T203 | Wording scan: the required statements, business copy lines a | done | 4 | 42 min | 04:50Z | PLAN GAP: app/portals/templates/es_business_signup.html:82 ("Licencia de control de plagas") and :88 ("Mi licencia inclu |
 | T490 | server (harness): the email provider passed to the sign-up m | done | 1 | 2 h 25 min | 04:35Z |  |
@@ -141,9 +142,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T310 (lease until 2026-11-19T09:04:46Z)
 - lane 3: T216 (lease until 2026-11-19T09:32:18Z)
 - lane 4: T562 (lease until 2026-11-19T09:13:54Z)
-- lane 5: T506 (lease until 2026-11-19T09:21:40Z)
 - lane 6: T476 (lease until 2026-11-19T09:22:42Z)
 - lane 7: T229 (lease until 2026-11-19T09:05:52Z)
 
 ## Last usage reading
-- {"task": "T408", "at": "2026-11-19T06:17:52Z", "output_tokens": 111993, "cache_creation_input_tokens": 356561, "input_tokens": 328, "cache_read_input_tokens": 14229221}
+- {"task": "T506", "at": "2026-11-19T06:55:32Z", "cache_creation_input_tokens": 270716, "input_tokens": 211, "cache_read_input_tokens": 9722510, "output_tokens": 59891}
