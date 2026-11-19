@@ -3475,6 +3475,12 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **Fix:** T716 adds one small reader so those licensed-only job types are kept every time, and its tests check it; T723 reads the same way and names the row that marks a job type as "not certain".
 - Our choice; nothing needs you now.
 
+## Safe mode now starts only on the serious alerts the spec names (D-4310, D-4676)
+
+- **What changed:** safe mode (charges and releases paused) now starts only when a payment-error, app-down, ledger-difference or suspended-number alert, or a critical alert, waits 24 hours after reaching your phone. A texting-delivery, email-limit, unusual-vault-reading or call-back alert no longer starts it. A business-line texting drop is now alerted even if the homeowner-line alert was just cleared.
+- **Accepted risk:** an unusual-vault-reading alert you leave for 24 hours no longer pauses charges; safe mode never stopped vault reads anyway.
+- Our choice; nothing needs you now.
+
 ## The safety voice call switch is now on your settings page, still off (D-4721)
 
 - **What's built:** your owner settings page shows the safety voice call switch. It is off. Turning it on asks for the date and reference of your TCPA attorney's written approval and a fresh code from your authenticator app; turning it off asks for the code too. Every change is logged without the reference.

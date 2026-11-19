@@ -2,8 +2,9 @@
 //! OPS-003, OPS-024, FEE-038; D-075, D-133, D-278, D-1427, D-3844, D-3878).
 //!
 //! Safe mode's flag is set by `ops::api::check_safe_mode` (the worker's minute check) and read,
-//! with the database-clock fallback, through `payments::api::charges_paused`. The push record a
-//! pushed High alert carries is T204's, so these tests insert it directly (D-3844). The timed
+//! with the database-clock fallback, through `payments::api::charges_paused`. Safe mode counts a
+//! pushed High alert of one of `SAFE_MODE_KINDS` (here `LEDGER_ALERT`), or a critical alert
+//! (D-4310); its push record is T204's, so these tests insert it directly (D-3844). The timed
 //! cases plant pushes in 2030, so the database-clock fallback stays off and only the check's own
 //! clock decides; the fallback cases plant pushes relative to the database's `now()`. The release
 //! clauses are T408's (TD-OPS-40). Stripe is a scripted fake that logs every call. Fake data only.
@@ -17,8 +18,8 @@ use askhava_adapters::api::{
 };
 use askhava_core::api::arizona;
 use askhava_ops::api::{
-    Actor, DELIVERY_ALERT, NewAlert, SAFE_MODE_OFF_ACTION, SAFE_MODE_ON_ACTION, Severity, Switch,
-    check_safe_mode, raise_alert, set_switch,
+    Actor, DELIVERY_ALERT, LEDGER_ALERT, NewAlert, SAFE_MODE_OFF_ACTION, SAFE_MODE_ON_ACTION,
+    Severity, Switch, check_safe_mode, raise_alert, set_switch,
 };
 use askhava_payments::api::{
     BusinessId, ChargeOutcome, FeeJob, FeeMode, FeeQuote, IntentStripe, PeriodJob, PickNow, Press,
@@ -237,13 +238,13 @@ async fn with_customer(pool: &PgPool) {
         .expect("customer");
 }
 
-/// TD-OPS-01 (OPS-001, D-278): a pushed High alert unacknowledged at 23:59:59 after its push
-/// leaves safe mode off; at 24:00:00 the check turns it on once, with one audit row.
+/// TD-OPS-01 (OPS-001, D-278, D-4310): a pushed High alert of one of `SAFE_MODE_KINDS`
+/// unacknowledged at 23:59:59 after its push leaves safe mode off; at 24:00:00 the check turns it on once, with one audit row.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_ops_01_safe_mode_at_24_00_00_not_at_23_59_59(pool: PgPool) {
     plant(
         &pool,
-        "ops.ledger_difference",
+        LEDGER_ALERT,
         Severity::High,
         Some("2030-03-04T17:00:00Z"),
     )
@@ -272,13 +273,13 @@ async fn td_ops_01_a_complaint_or_delivery_or_unpushed_alert_never_starts_it(poo
     assert!(!paused(&pool).await, "nor by the database clock");
 }
 
-/// TD-OPS-06 (OPS-023, OPS-024, FEE-016): safe mode ends only once no other pushed High alert is
-/// open, and its end starts no charge.
+/// TD-OPS-06 (OPS-023, OPS-024, FEE-016): safe mode ends only once no other pushed High alert of
+/// one of `SAFE_MODE_KINDS`, or critical alert, is open (D-4310), and its end starts no charge.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_ops_06_safe_mode_ends_when_no_other_high_alert_is_open(pool: PgPool) {
     let first = plant(
         &pool,
-        "ops.ledger_difference",
+        LEDGER_ALERT,
         Severity::High,
         Some("2030-03-04T17:00:00Z"),
     )
@@ -317,7 +318,7 @@ async fn td_ops_06_safe_mode_ends_when_no_other_high_alert_is_open(pool: PgPool)
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_ops_06_a_press_in_safe_mode_is_refused_before_any_stripe_call(pool: PgPool) {
     with_customer(&pool).await;
-    let alert = plant(&pool, "ops.ledger_difference", Severity::High, None).await;
+    let alert = plant(&pool, LEDGER_ALERT, Severity::High, None).await;
     sqlx::query("INSERT INTO ops.alert_push (alert_id, pushed_at) VALUES ($1, now() - interval '24 hours 1 minute')")
         .bind(alert)
         .execute(&pool)
@@ -375,7 +376,7 @@ async fn td_fee_20_safe_mode_stops_and_resumes_both_payment_timers(pool: PgPool)
     );
     let alert = plant(
         &pool,
-        "ops.ledger_difference",
+        LEDGER_ALERT,
         Severity::High,
         Some("2026-01-01T00:00:00Z"),
     )
@@ -404,7 +405,7 @@ async fn td_fee_20_safe_mode_stops_and_resumes_both_payment_timers(pool: PgPool)
 async fn td_ops_01_charges_pause_for_exactly_their_switches_and_safe_mode(pool: PgPool) {
     let alert = plant(
         &pool,
-        "ops.ledger_difference",
+        LEDGER_ALERT,
         Severity::High,
         Some("2030-03-04T17:00:00Z"),
     )

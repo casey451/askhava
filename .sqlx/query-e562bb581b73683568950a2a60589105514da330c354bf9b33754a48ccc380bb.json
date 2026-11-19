@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT COALESCE((SELECT \"on\" FROM ops.safe_mode), false) OR EXISTS (\n             SELECT 1 FROM ops.alert a JOIN ops.alert_push p ON p.alert_id = a.id\n             WHERE a.resolved_at IS NULL\n               AND (a.severity = 'critical' OR (a.severity = 'high' AND a.kind = ANY($1)))\n               AND p.pushed_at <= now() - make_interval(secs => $2)) AS \"on!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "on!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "TextArray",
+        "Float8"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "e562bb581b73683568950a2a60589105514da330c354bf9b33754a48ccc380bb"
+}

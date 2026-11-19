@@ -364,7 +364,10 @@ fn link_and_site_pages(
         .merge(action_links::routes(pool.clone()))
         .merge(static_files::router(statics))
         .merge(askhava_site::api::site_routes())
-        .merge(askhava_site::api::page_routes(pool.clone(), site))
+        .merge(chat_codes::home_guard(askhava_site::api::page_routes(
+            pool.clone(),
+            site,
+        )))
         .merge(askhava_site::api::legal_routes(pool.clone(), environment))
         .merge(askhava_site::api::help_routes(pool.clone(), environment))
         .merge(chat_codes::guard(chat, pool.clone()))
