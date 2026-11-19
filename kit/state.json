@@ -23579,7 +23579,9 @@
     "T204",
     "T151",
     "T106",
-    "T476"
+    "T476",
+    "T724",
+    "T604"
    ],
    "status": "QUEUED",
    "attempts": 1,
@@ -25190,7 +25192,9 @@
     "T714",
     "T719",
     "T722",
-    "T723"
+    "T723",
+    "T724",
+    "T725"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -72203,7 +72207,8 @@
    "id": "T499",
    "deps": [
     "T498",
-    "T640"
+    "T640",
+    "T724"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -87243,6 +87248,31 @@
    "slug": "intake-order-job-unsure",
    "type": "build",
    "stage": "5"
+  },
+  {
+   "id": "T724",
+   "deps": [
+    "T640",
+    "T642"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "ci-runner-ubuntu-2404",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T725",
+   "deps": [
+    "T526",
+    "T608",
+    "T161"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "home-texting-number",
+   "type": "build",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -93022,7 +93052,7 @@
    }
   }
  },
- "updated_at": "2026-11-19T13:22:38Z",
+ "updated_at": "2026-11-19T13:23:01Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -93120,7 +93150,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "fff40b2613a5ee8c504d2d9cfb5961ffe23f8670",
+ "runner_sha": "345380f4824aa1470c0f0e4c11605448de7bb2d8",
  "starter": "actions",
  "smoke_runs": [
   {
