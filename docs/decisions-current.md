@@ -28,7 +28,6 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1518 (product) Markets are reviewed data (`docs/catalog/markets.yaml`); job locations are Census ZCTA centroids, never typed; each business sets its own base ZIP and radius, 1 to 100 miles.
 - D-1947 (product) No push web app in the pilot: no push, subscription, manifest or service-worker route or file, and no push channel.
 
-
 ## Brand and wording
 
 - D-007 (wording) The opt-out confirmation says to text START to use the service again.
@@ -68,7 +67,6 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1710 (wording) A sign-up count of one says "the first <trade> business"; two or more use the spec's words exactly.
 - D-1817 (wording) No homeowner template says "Reply YES" (CON-004 guard); a yes/no question says "Text back YES or NO".
 - D-1959 (wording) Quote-form fee lines: "If picked, this quote's fee is $<fee> (<how> $<basis>)", ", capped at" for the recurring cap, one line per tier, "No introduction fee for this job." when fee-free; hourly with no hours shows no fee.
-
 
 ## Homeowner intake
 
@@ -117,7 +115,6 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1276 (intake) Card replies are the whole message: SEND/OK/YES/ENVIAR approve the last shown card, EDIT/CAMBIAR stop its timer and ask what to change; nothing goes until the new card is shown; an approved card is never shown again.
 - D-1751 (intake) A first-text `PhoneTaken` race re-reads the phone in the same transaction and continues with the winner; finding none rolls back the whole delivery so Twilio resends.
 - D-1752 (intake) Inbound text is scrubbed with the vault name and the contact's stated names (`privacy.stated_name`) by `read_inbound_for`, which returns no plaintext and so may run inside the delivery's transaction.
-
 
 ## Businesses and licensing
 
@@ -199,7 +196,6 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1846, D-1847, D-1850 (businesses) Activation waits on a verified sign-up email (6-digit code, 30 minutes, 5 tries); a notice-address change needs a step-up within 5 minutes, moves only on the new code and is audit-logged on the member; a returned mailbox gets no notices.
 - D-1900 (businesses) Open-cards email times per member (`businesses.open_cards_time`): at most two of 8 a.m., noon, 5 p.m.; no row means 5 p.m.; all off means none.
 - D-1914 (businesses) Any current member may send the one complaint reply for their own business, until exactly 5 days.
-
 
 ## Matching, quotes and picks
 
@@ -286,13 +282,12 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1957 (quotes) `quotes.quote.quote_minutes` is 1 to 600; quote-form facts prefill from the last quote for the job type; a per-visit recurring price shows no fee until the form asks the schedule.
 - D-1973 (picks) Confirm reminders every `reminder_minutes` (60) business minutes from the window start while before its current end, recomputed after a HOLD; one landing at 8 p.m. waits for 8 a.m.
 
-
 ## Money
 
 - D-009 (money) Fee basis is the chosen quote's amount: under $500.00 is $25, $500.00 to $1,500.00 inclusive is $75, over $1,500.00 is $199; no AI flag changes the tier.
 - D-010, D-159 (money) Recurring quotes convert to monthly first (weekly x 52/12, biweekly x 26/12, quarterly /3, yearly /12, per visit x visits; range midpoint first), then x 4; a recurring job type needs a period (REC-010).
 - D-019, D-151, D-152, D-195 (money) Free first win: businesses joining within 90 days of launch or of their category opening; one per entity (ROC number, city-list entity, card fingerprint, record contact, owner name); join date is the form submit date.
-- D-033, D-1874 (money) Compute exactly, then round the fee basis down to the cent before choosing the tier; a recurring range's 4-month basis comes from the sum of its ends, rounded once (never floor the midpoint first).
+- D-033, D-1866, D-1874 (money) Compute exactly, then round the fee basis down to the cent before choosing the tier; a recurring range's 4-month basis comes from the sum of its ends, rounded once (never floor the midpoint first).
 - D-034 (money) Trip-fee tiers map small, medium, large to $25, $75, $199; new rows take $25 unless the typical job is clearly $500 to $1,500.
 - D-037 (money) A quote with a period uses the 4-month rule; no period is one-time at face value, allowed in a recurring category only for its `one_time_job_types`.
 - D-047 (money) A no-show gets no refund; the call line closes, the no-show is recorded and Casey alerted; no automatic pause (TERMS-005).
@@ -348,11 +343,9 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1558 (money) The FEE-033 tier-edge flag is a pure rule (5%, 3 of the last 10 bases by default) with no caller until a basis is stored at the pick.
 - D-1754 (money) Stripe webhook events are recorded by ID in `payments.webhook_event`, one effect per event; refund, dispute and fraud events reach their handlers; only the Confirm page's CSP allows `js.stripe.com`.
 - D-1814, D-1819, D-1836 (money) Unreachable refund: `picks` decides, `payments` refunds; close, pick end and email only on Stripe `Succeeded`; a call's start is recorded (a lost start uses its end and counts as an attempt); a no-show ends a paid or free pick.
-- D-1866 (money) Third-audit findings were taken or declined in `docs/reviews/2026-11-07-third-audit-dispositions.md`; D-033's rounding and D-1759's 2-point total-floor margin stand.
 - D-1871 (money) Fee terms live in `payments.fee_terms`; the fee fixed at the pick (`payments.pick_fee`) is the only amount charged; a differing press is refused before Stripe; a pick made under another fee mode ends with no fee, not counted against the business.
 - D-1872 (money) A charge the reconcile cannot settle goes to `payments.reconcile_open` and is retried nightly until settled; one High alert after 7 days open; `LOOKBACK` stays 7 days.
 - D-1912, D-1915 (money) Billing page and CSV show only the business's money (no processing, dispute-fee or payout lines); refunds, credits and disputes are negative so the amount column sums to the net paid.
-
 
 ## Privacy and the contact vault
 
@@ -385,7 +378,7 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1602 (privacy) Grant `(Picks, PickCode, [Phone])` is read only through `read_for_pick_code` inside `picks`; `portals` never sees the number.
 - D-1679, D-1689 (privacy) `calls` keys homeowners and businesses by ID, never a phone; the app role may update only `number_pool.closed_at`; `calls.call_log` is append-only, caller by role, one row per call SID.
 - D-1681, D-1682 (privacy) Every automated call passes `automated_call_gate` (the one suppression list via `send_window`); only an on-screen code call skips it; an undialable safety call raises a High alert.
-- D-1684, D-1685, D-1755 (privacy) Each line has a random stored 4-digit PIN, unique on its number; wrong tries are counted per Arizona day under an HMAC of the calling number; the 3rd wrong try of a call or 6th of the day hangs up, and a 7th call that day is refused.
+- D-1684, D-1685, D-1755 (privacy) Each line has a random stored 4-digit PIN, unique on its number; wrong tries are counted per Arizona day under an HMAC of the calling number; the 3rd wrong try of a call or 6th of the day hangs up; after 6 wrong tries that day, a call from that number is refused before any prompt.
 - D-1686 (privacy) The read-back (first word of the name, address before its first comma) goes only to the paid business's linked phone on an A-attested call after two wrong PINs, connected on a key press.
 - D-1690, D-1691 (privacy) Only `human` counts as a person answering, `unknown` never; every bridge uses `dial_twiml` with `record="do-not-record"`; the log takes the dialed leg's own final callback.
 - D-1694, D-1695 (privacy) `close_line` closes and audits by reason; only a cancel tells the business; no strike; lines close at 30 days; a member-linked phone not yet approved is treated as unlinked.
@@ -396,7 +389,6 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1801, D-1802 (privacy) The 3-year text stage deletes `intake.intake_answer` rows; ledger, payment, audit and terms rows hold IDs only and are never purged by the app.
 - D-1803, D-1841 (privacy) Purge deletes sealed photo objects, orphans and day-31 Twilio bodies through additive `StorageDelete` and `SmsBodyDelete`; `write_once` publishes a private temp file by hard link; `photos/` has its own key.
 - D-1936, D-1937, D-1939 (privacy) A homeowner copy or delete request is an audit row acted on once, only with a correct code, within 30 days; the delete and its audit commit together; a download holds only her items, business contacts masked.
-
 
 ## Texting and email
 
@@ -484,7 +476,6 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1853, D-1854, D-1855 (texting) A daily `messaging.cut_bodies` task fails rows still queued or sending 30 days on (not through `give_up`); opt-out events keep the inbox ID as evidence.
 - D-1938 (texting) The homeowner portal switch only turns texts off; only START lifts a listing.
 
-
 ## AI
 
 - D-040 (ai) The real AI is tested in Phase 2 step 5 from the Railway test project, fake data only.
@@ -502,7 +493,6 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1112 (ai) AI quote summaries default Off; `check_summary` rejects any new word or number, reordering, or a dropped clause end, number or negation; `switch_on` needs a decision ID and a published policy holding AI-018's sentence; no summary column exists.
 - D-1757 (ai) The global daily AI cap is an atomic per-Arizona-day reservation before each call; the cap alert goes once a day.
 - D-1794, D-1795 (ai) A flagged or unscreened photo is left off the card, never blurred; photo screening calls the AI only once zero retention is signed and the photo sentence is live, after cleaning and her confirmation.
-
 
 ## Pages and accessibility
 
@@ -523,7 +513,6 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1603 (pages) The page pick allows 500 codes a day app-wide; its Terms are `docs/legal/homeowner-terms.md` compiled in, versioned from its second line, so the stored hash matches the text served.
 - D-1728, D-1772, D-1788 (pages) No `.route` for an unserved page in `app/`; the serving task writes it in `server` and adds its states to the shared, data-only `tests/a11y/page_states.ts`; `fixtures.ts` keeps the checks.
 - D-1868 (pages) `docs/architecture.md` section 13 is the route table; `app/server/tests/route_wiring.rs` fails a `yes` row not served or a task row served.
-
 
 ## Security
 
@@ -558,7 +547,6 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1726 (security) `business_principal`, re-read on every request, is the only way a route learns the business user; a removed member is signed out at once; Confirm is for the owner or "Confirm and billing" only.
 - D-1773, D-1774, D-1776, D-1777, D-1844 (security) A new device needs a 6-digit Verify code (text or email, one per link, 5 tries); known devices are 180-day cookie-bound rows; `server` serves sign-in only with `DeviceCodes`.
 - D-1870 (security) Every request has a whole-request limit, `ASKHAVA_REQUEST_TIMEOUT_SECS` (60, 10 to 300), answered 503 with `Retry-After: 5`.
-- D-1875 (security) Dynamic SQL (`DO`, `EXECUTE`, `format()` and kin) in a migration or query macro fails unless listed in `DYNAMIC_SQL_ALLOWED`.
 - D-1899, D-1913 (security) Every guarded business change calls `require_step_up` first (a code within 5 minutes; a refusal is one `authz_denied` event); billing changes check the role before it.
 - D-1917, D-1921 (security) Owner: argon2id password plus passkey or TOTP; 12-hour session, 30-minute idle; SEC-043 actions need a factor within 5 minutes (a recovery code never counts); `owner_power` gates pause, refund and release; no owner route before T089's limits.
 - D-1918 (security) The owner is created once by `server bootstrap-owner` in Casey's own terminal as the migration role; the app role can neither insert nor delete an owner.
@@ -568,7 +556,6 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1950, D-1953 (security) Rate limits go through `intake::api::admit` over `core.rate_limit`, narrowest first, keyed by IP, record ID or everyone, never a phone or email; one alert per scope and window (per-phone Normal, others High).
 - D-1951, D-1954 (security) Each route's owner calls its `admit_*` first and does nothing on a refusal; unknown and known numbers spend the same counter writes.
 - D-1955, D-1956 (security) Email action links live in `portals.login_link`, hashed with kind and object, single use, voided with the member, never a sign-in; each action has its role; Confirm without a session needs a code.
-
 
 ## Operations
 
@@ -598,7 +585,6 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1309 (ops) `ASKHAVA_PUBLIC_BASE_URL` is optional and https to a non-local host in live; unset means no Twilio routes in dev and CI and a start-up error in test and live.
 - D-1706 (ops) `ops::api::acknowledge_alert` resolves a critical alert with an audit row; a person answering the safety call acknowledges it.
 
-
 ## Code and architecture
 
 - D-036 (code) `scripts/check_catalog.py` restates the fee rules, recomputes the worked examples and scans the catalog for superseded values and banned words.
@@ -626,11 +612,10 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-725 (code) Vendor clients share one base: parsed base URL, encoded segments, no redirects, 15 s timeout; each consuming task adds its own `ASKHAVA_*` keys.
 - D-1281 (code) `npm run build` compiles only `app/*/static/*.ts` (strict) beside their sources; a pinned Node `browser` Docker stage builds them into `/srv/askhava/static/<crate>/`; Node never reaches the runtime image.
 - D-1495, D-1520, D-1537, D-1617, D-1632 (code) Every schema's default app-role table privilege is SELECT, INSERT; wider access is an explicit GRANT in the table's migration; a `core` migration may name other schemas only for REVOKE-only defaults.
-- D-1677 (code) Migrations hold no dynamic SQL (`DO`, `EXECUTE` of a string, `format` or `quote_*`) except paths in `DYNAMIC_SQL_ALLOWED` with a reason (T252, TD-SEC-36).
+- D-1677, D-1875 (code) Migrations and query macros hold no dynamic SQL (`DO`, `EXECUTE` of a string, `format` or `quote_*`) except paths in `DYNAMIC_SQL_ALLOWED` with a reason (T252, TD-SEC-36).
 - D-1592 (code) `rules_bridge` (a `server` binary) answers the twin in JSON lines: fee, quiet_hours, transition, card, job_types; a hand-written schema and subset validator, no JSON-schema crate.
 - D-1643, D-1666 (code) A cargo-audit advisory in an unused transitive crate is fixed by a patch bump in `Cargo.lock`, never an ignore; follow-up: `sentry` with `default-features = false`.
 - D-1867 (code) Files compiled in by `include_*!` must match `Ci`'s Rust path rules and `RUST_PATHS`; `scripts/check_include_paths.py` fails otherwise.
-
 
 ## Testing
 
@@ -668,7 +653,6 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1587 (testing) Named mutants cover the 4-month rule, tiers, free wins, the license at pick and card approval; the AI flag has no fee input to mutate, so it is noted, not faked.
 - D-1593, D-1594, D-1595, D-1596 (testing) The twin with `--bridge` takes fee, arrows and cards from `rules_bridge` (its 9 p.m. text close is a known gap); a fee probe fails on any difference; `python3 -m twin chaos` checks a baseline.
 - D-1896 (testing) Until a page is served, its e2e spec checks only the signed-out edge; the page's words are tested on the rendered template.
-
 
 ## Runner and governance
 
@@ -748,7 +732,6 @@ Through D-1985. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1678 (runner) Run `gen_prompts.py` in full and let its settled `context_pct` stand, done tasks included, so `--check --strict` and `plan_health.py --all` stay at zero.
 - D-1760, D-1835 (runner) `docs/integration-closure.md` registers cross-module handoffs; `stage_exit.py` fails open security, money or privacy rows owned only by finished tasks, unowned or closed without evidence; audit findings get dispositions files.
 - D-1869 (runner) A task whose owned files or route rows are missing on `main` at close still goes DONE, with an `owned_gap` mark and one outbox item.
-
 
 ## Superseded
 
