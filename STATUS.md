@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-19T21:12:35Z by runner 9a58cedd8922 (actions).
+Updated 2026-11-19T21:15:33Z by runner d68fb0f0ae65 (actions).
 
 **Building: T480 in progress since 20:38Z; 504 of 701 done; week 8% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-19T21:12:35Z by runner 9a58cedd8922 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 4: T480 claimed 20:38Z, lease until 23:38Z; lane 6: T663 claimed 21:02Z, lease until 00:02Z; lane 7: T717 claimed 20:10Z, lease until 23:59Z
 - **Week:** 8% used, 174.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:07Z, 4 min before this update
+- **Last run:** 21:15Z, 0 min before this update
 - **Keeper:** last ran 21:07Z, next wake 23:41Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 56 problem(s) on tasks still to run (+343 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 56 problem(s) on tasks still to run (+342 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -84,15 +84,14 @@ Updated 2026-11-19T21:12:35Z by runner 9a58cedd8922 (actions).
 | T651 | server and portals: owner step-up try limit, the passkey pat | done | 1 | 2 h 7 min | 21:52Z |  |
 | T722 | payments: read a pick's disputes and record Casey's evidence | done | 1 | 45 min | 21:33Z |  |
 | T503 | Decisions digest, piece 4: the next entries after the header | done | 1 | 31 min | 21:30Z |  |
-| T483 | messaging, portals and server: the owner's "away until" date | done | 1 | 2 h 48 min | 21:13Z |  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 325 of 735 (44.2%) · partial 375 · unstarted 35
-**Tasks merged (throughput only):** 504 of 701
+**Requirements verified:** 329 of 735 (44.8%) · partial 371 · unstarted 35
+**Tasks merged (throughput only):** 504 of 698
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -102,10 +101,10 @@ Updated 2026-11-19T21:12:35Z by runner 9a58cedd8922 (actions).
 | calls | 14 | 11 | 0 | 25 |
 | consent | 16 | 19 | 0 | 35 |
 | fees | 22 | 30 | 0 | 52 |
-| intake | 8 | 35 | 0 | 43 |
+| intake | 9 | 34 | 0 | 43 |
 | job-cards | 12 | 12 | 0 | 24 |
-| licensing | 33 | 15 | 0 | 48 |
-| lifecycle | 16 | 12 | 0 | 28 |
+| licensing | 34 | 14 | 0 | 48 |
+| lifecycle | 18 | 10 | 0 | 28 |
 | messaging | 22 | 22 | 1 | 45 |
 | ops-recovery | 9 | 27 | 18 | 54 |
 | privacy | 9 | 21 | 1 | 31 |
