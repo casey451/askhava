@@ -125,6 +125,10 @@ pub use crate::emergency_switch_page::{
     emergency_switch_page_with_box, held_back_link, missing_steps, post_step,
 };
 pub use crate::feedback::{FEEDBACK_ROUTE, feedback_routes, share_label};
+pub use crate::health_page::{
+    AccountIds, DEFAULT_QUOTED_WITHIN, HealthInputs, OWNER_HEALTH_ROUTE, SPOT_CHECK_CARDS,
+    SecretLine, UPTIME_HISTORY_URL, owner_health_page,
+};
 pub use crate::help::{
     GET_HELP_ANSWER_TEMPLATE, GET_HELP_MESSAGE_MAX, GET_HELP_ROUTE, GetHelpForm, GetHelpInput,
     GetHelpScreen, GetHelpSent, HELP_FORM_ALL, HELP_FORM_PER_IP, HELP_FORM_ROUTE, HelpError,
@@ -139,6 +143,10 @@ pub use crate::homeowner_portal::{
 pub use crate::job_release::{
     CallAttempt, EMAIL_CHOSEN_LINE, JOB_RELEASE_ROUTE, JobFacts, JobReleaseError, MissedText,
     TIP_LINE, job_release_page,
+};
+pub use crate::job_types_page::{
+    JOB_TYPES_ROUTE, JobTypesOutcome, JobTypesPage, job_types_page, posted_choice, shown_offer,
+    within,
 };
 pub use crate::limits::{
     CODE_SENDS_PER_IP, CODE_SENDS_PER_NUMBER, CODE_SENDS_UNKNOWN, CODE_TRIES_PER_BUSINESS,
