@@ -355,7 +355,7 @@ Through D-2406. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-2016 (money) The Stripe webhook needs `ASKHAVA_STRIPE_WEBHOOK_SECRET` (unset: no route in dev and CI, an error in test and live); `ASKHAVA_ADAPTER_MODE_STRIPE` is `live` only and always in live; errors name the key, never a value.
 - D-2302 (money) `no_fee_release` reads the pick's `payments.pick_fee` row and refuses when it is missing or names another business or job; the $0 ledger entry is checked against that row's pair.
 - D-2303 (money) Only full refunds; a succeeded refund in USD whose reported amount differs is booked at Stripe's amount with a High alert and no "refunded in full" notice; another currency or a missing amount books the charge amount with an unconfirmed alert.
-- D-2331 (money) Fee facts come from the job's latest `job_facts` row resolved through `catalog`; a non-emergency job with no row, unknown code or mixed categories is refused at the pick; an emergency proceeds on one-time defaults with a High alert; any fee-free candidate makes the pick fee-free.
+- D-2210, D-2331 (money) The fee uses the quote's stored price and the job's latest `job_facts` row (`catalog`); a non-emergency job with no row, unknown code or mixed categories is refused; an emergency uses one-time defaults, High alert; a fee-free candidate frees it; a visit-fee or no-hours hourly quote is diagnostic.
 - D-2333 (money) A per-visit price needs its visit schedule (weekly, every two weeks, monthly, quarterly, yearly); any other schedule is entered as a monthly amount; the pick maps visit and schedule to the fee period.
 
 ## Privacy and the contact vault
@@ -840,7 +840,6 @@ Through D-2406. Reader layer over the append-only `docs/decisions.md` (D-3856, D
 - D-1039 -> D-1271
 - D-1040 -> D-1272
 - D-1041 -> D-1273
-- D-2210 -> D-2331
 
 ## Task-scoped
 
