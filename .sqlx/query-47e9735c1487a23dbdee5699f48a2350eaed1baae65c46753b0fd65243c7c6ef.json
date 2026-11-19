@@ -1,0 +1,45 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT is_on, approved_on::text AS approved_on, reference\n           FROM calls.safety_switch ORDER BY changed_at DESC, id LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "is_on",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "calls.safety_switch",
+            "name": "is_on"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "approved_on",
+        "type_info": "Text",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "reference",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "calls.safety_switch",
+            "name": "reference"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      null,
+      true
+    ]
+  },
+  "hash": "47e9735c1487a23dbdee5699f48a2350eaed1baae65c46753b0fd65243c7c6ef"
+}

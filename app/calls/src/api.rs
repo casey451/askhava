@@ -21,6 +21,8 @@
 //! T390: [`link_after_dial`], the LINK notice and one pending link after a blocked call connected
 //! a line, and [`LINK_REQUEST_LIFE`] (CALL-011, CALL-003, D-3079). T571: [`queue_safety_key_retry`]
 //! and [`run_safety_key_retry`], the safety key kept through a database error (CON-035, D-4051).
+//! T407: [`safety_switch`], [`turn_safety_switch_on`] and [`turn_safety_switch_off`], the stored
+//! owner-portal switch and approval, gated by [`SAFETY_CONDITIONS`] (CALL-019, CALL-022, D-3134).
 //! T662: [`run_close_line`], `jobs`' queued line close after a cancel or a check-in PROBLEM or NO,
 //! and the daily [`CLOSE_EXPIRED_KIND`] sweep (CALL-009, CALL-010, D-4338). T484:
 //! [`place_owner_alert_call`], OPS-035's say-only call to Casey per critical alert, and
@@ -62,6 +64,10 @@ pub use crate::rules::{
 pub use crate::safety_key_retry::{
     SAFETY_KEY_LOST_ALERT, SAFETY_KEY_RETRY_ATTEMPTS, SAFETY_KEY_RETRY_KIND,
     queue_safety_key_retry, run_safety_key_retry, safety_key_lost,
+};
+pub use crate::safety_switch::{
+    SAFETY_CONDITIONS, SAFETY_SWITCH_ACTION, SwitchChange, safety_approval, safety_switch,
+    turn_safety_switch_off, turn_safety_switch_on, unmet_conditions,
 };
 pub use crate::scorecard_inputs::{CallsAnswered, calls_answered};
 pub use crate::service::{
