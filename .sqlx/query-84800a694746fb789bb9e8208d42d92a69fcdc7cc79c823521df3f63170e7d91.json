@@ -1,0 +1,65 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE jobs.job SET emergency = true, version = version + 1, timer_version = timer_version + 1 WHERE id = $1 AND NOT emergency AND status <> ALL($2::text[]) RETURNING status, version, timer_version, timer_from",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "status",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "jobs.job",
+            "name": "status"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "version",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "jobs.job",
+            "name": "version"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "timer_version",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "jobs.job",
+            "name": "timer_version"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "timer_from",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "jobs.job",
+            "name": "timer_from"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "TextArray"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "84800a694746fb789bb9e8208d42d92a69fcdc7cc79c823521df3f63170e7d91"
+}
