@@ -214,16 +214,18 @@ def test_only_the_plan_lock_and_change_rules_skip_a_train_ref() -> None:
 
 
 def test_twin_and_ally_skip_train_refs_and_governance_skips_their_heads() -> None:
-    """D-4281, T640: their results on X prove nothing; no pull request has a train head."""
+    """D-4281, T640: their results on X prove nothing; no pull request has a train head. D-4720 (T726): a
+    claude/wip/** ref, a failed attempt's kept work, starts no Ci, Twin or Ally run either."""
     for name in ("twin", "a11y"):
         flow = yaml.safe_load((ROOT / f".github/workflows/{name}.yml").read_text(encoding="utf-8"))
         branches = flow[True]["push"]["branches"]
-        assert branches == ["claude/**", "dependabot/**", "!claude/kit-state", "!claude/train/**"], name
+        assert branches == ["claude/**", "dependabot/**", "!claude/kit-state", "!claude/train/**", "!claude/wip/**"], name
     gov = yaml.safe_load((ROOT / ".github/workflows/governance.yml").read_text(encoding="utf-8"))
     assert gov["jobs"]["governance"]["if"] == ("github.event.workflow_run.head_branch != 'claude/kit-state' && "
                                                "!startsWith(github.event.workflow_run.head_branch, 'claude/train/')")
     ci_branches = _ci()[True]["push"]["branches"]
     assert "claude/**" in ci_branches and not any("train" in b for b in ci_branches)
+    assert "!claude/wip/**" in ci_branches
 
 
 PINNED_FILES = ("ci.yml", "backup-runner.yml", "nightly-main.yml")
