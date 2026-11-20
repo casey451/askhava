@@ -1,26 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-20T14:57:56Z by runner 696a43ed61d5 (actions).
+Updated 2026-11-20T15:09:56Z by runner 4af5a136714a (actions).
 
-**Building: T770 in progress since 14:33Z; 539 of 712 done; week 35% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T770 in progress since 14:33Z; 540 of 712 done; week 35% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 539 of 712 build tasks (owner gates not counted)
+- **Tasks done:** 540 of 712 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 6: T770 claimed 14:33Z, lease until 17:33Z
 - **Week:** 35% used, 120.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:56Z, 0 min before this update
+- **Last run:** 14:58Z, 11 min before this update
 - **Keeper:** last ran 14:56Z, next wake 17:36Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T524 (since 2026-11-20T12:53:17Z, no attempt used; a plan change fixes it): T524: dependency T648 is DONE but its owned file app/recovery/src/restore.rs is not on main; T524: dependency T648 is DONE but its owned file tests/recovery/tests/export_restores.rs is not on main
-- Strict plan check red: 39 problem(s) on tasks still to run (+410 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
+- Strict plan check red: 38 problem(s) on tasks still to run (+411 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T557 | Decisions digest, piece 12: the next entries after the heade | MERGE_PENDING | 1 | 65 min | 14:55Z |  |
+| T557 | Decisions digest, piece 12: the next entries after the heade | done | 1 | 65 min | 14:55Z |  |
 | T672 | intake: the dispatcher asks "How soon?", the night count and | MERGE_PENDING | 3 | 2 h 13 min | 14:53Z | runner smoke red on 3e9315b7399c (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
 | T206 | recovery: the local restore drill with no double send or cha | MERGE_PENDING | 1 | 89 min | 14:50Z |  |
 | T767 | tests (harness): the Confirm press fixtures get an Active ac | MERGE_PENDING | 1 | 108 min | 14:41Z |  |
@@ -92,8 +92,6 @@ Updated 2026-11-20T14:57:56Z by runner 696a43ed61d5 (actions).
 | T541 | payments, portals and adapters: a card saved or changed from | check_failed | 1 | 2 h 16 min | 15:25Z |  |
 | T470 | messaging and server: the worker task that sends queued emai | done | 3 | 2 h 18 min | 15:24Z | Fix-round review (after the one allowed findings round) still found a problem at head 1830747e4; no reviewer approved a  |
 | T593 | site and server: the home hero in D-3331's wording with the  | done | 2 | 75 min | 15:11Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
-| T554 | Decisions digest, piece 9: the next entries after the header | done | 1 | 110 min | 15:03Z |  |
-| T652 | ops: safe mode starts only on OPS-001's alert kinds, and a d | done | 2 | 112 min | 15:03Z | PLAN GAP: tests/integration/tests/safe_mode.rs:246,281,320,378,407 (owned by T487 and T408; T652's prompt :11 and :47 sa |
 
 ### Plan and harness merges on main
 - none
@@ -101,7 +99,7 @@ Updated 2026-11-20T14:57:56Z by runner 696a43ed61d5 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 325 of 735 (44.2%) · partial 389 · unstarted 21
-**Tasks merged (throughput only):** 539 of 712
+**Tasks merged (throughput only):** 540 of 712
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -137,7 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 182 of 294 done
+- stage 5: 183 of 294 done
 - stage 6: 0 of 65 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
