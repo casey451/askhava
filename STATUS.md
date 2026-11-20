@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T08:02:44Z by runner 37a05d29daa8 (manual).
+Updated 2026-11-20T08:05:41Z by runner 37a05d29daa8 (manual).
 
 **Building: T116 in progress since 07:58Z; 527 of 708 done; week 24% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-20T08:02:44Z by runner 37a05d29daa8 (manual).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T116 claimed 07:58Z, lease until 10:58Z; lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 4: T672 claimed 06:35Z, lease until 09:35Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z; lane 7: T669 claimed 07:12Z, lease until 10:12Z
 - **Week:** 24% used, 139.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:59Z, 2 min before this update
+- **Last run:** 08:03Z, 1 min before this update
 - **Keeper:** last ran 07:52Z, next wake 09:38Z
 
 ## Needs attention
@@ -97,7 +97,7 @@ Updated 2026-11-20T08:02:44Z by runner 37a05d29daa8 (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 262 of 735 (35.6%) · partial 447 · unstarted 26
+**Requirements verified:** 253 of 735 (34.4%) · partial 456 · unstarted 26
 **Tasks merged (throughput only):** 527 of 708
 
 | Area | Verified | Partial | Unstarted | Total |
@@ -105,21 +105,21 @@ Updated 2026-11-20T08:02:44Z by runner 37a05d29daa8 (manual).
 | accessibility | 16 | 19 | 0 | 35 |
 | ai | 7 | 19 | 3 | 29 |
 | businesses | 20 | 37 | 1 | 58 |
-| calls | 12 | 13 | 0 | 25 |
+| calls | 11 | 14 | 0 | 25 |
 | consent | 11 | 24 | 0 | 35 |
 | fees | 21 | 31 | 0 | 52 |
-| intake | 8 | 35 | 0 | 43 |
+| intake | 7 | 36 | 0 | 43 |
 | job-cards | 12 | 12 | 0 | 24 |
-| licensing | 33 | 15 | 0 | 48 |
+| licensing | 30 | 18 | 0 | 48 |
 | lifecycle | 12 | 16 | 0 | 28 |
 | messaging | 22 | 23 | 0 | 45 |
-| ops-recovery | 7 | 32 | 15 | 54 |
+| ops-recovery | 6 | 33 | 15 | 54 |
 | privacy | 8 | 23 | 0 | 31 |
 | quiet-hours | 3 | 6 | 0 | 9 |
-| quotes-pick | 23 | 33 | 0 | 56 |
+| quotes-pick | 22 | 34 | 0 | 56 |
 | recurring | 9 | 2 | 0 | 11 |
 | security | 10 | 40 | 5 | 55 |
-| terms | 12 | 23 | 0 | 35 |
+| terms | 10 | 25 | 0 | 35 |
 | website | 7 | 21 | 2 | 30 |
 | wording | 9 | 23 | 0 | 32 |
 
