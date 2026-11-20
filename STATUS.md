@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T14:50:35Z by runner 412c6c883bdb (actions).
+Updated 2026-11-20T14:51:02Z by runner 412c6c883bdb (actions).
 
-**Building: T206 in progress since 13:21Z; 538 of 712 done; week 35% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T557 in progress since 13:49Z; 538 of 712 done; week 35% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 538 of 712 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T206 claimed 13:21Z, lease until 16:21Z; lane 3: T557 claimed 13:49Z, lease until 16:49Z; lane 6: T770 claimed 14:33Z, lease until 17:33Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
+- **Lane:** lane 3: T557 claimed 13:49Z, lease until 16:49Z; lane 6: T770 claimed 14:33Z, lease until 17:33Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
 - **Week:** 35% used, 120.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:49Z, 0 min before this update
+- **Last run:** 14:49Z, 1 min before this update
 - **Keeper:** last ran 14:49Z, next wake 15:42Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Updated 2026-11-20T14:50:35Z by runner 412c6c883bdb (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T206 | recovery: the local restore drill with no double send or cha | MERGE_PENDING | 1 | 89 min | 14:50Z |  |
 | T767 | tests (harness): the Confirm press fixtures get an Active ac | MERGE_PENDING | 1 | 108 min | 14:41Z |  |
 | T670 | picks: the pick notice's send never records a pressed pick a | MERGE_PENDING | 1 | 86 min | 14:26Z |  |
 | T667 | picks and calls: a reconnected job's failed masked line is r | MERGE_PENDING | 1 | 58 min | 13:54Z |  |
@@ -142,10 +143,9 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T206 (lease until 2026-11-20T16:21:32Z)
 - lane 3: T557 (lease until 2026-11-20T16:49:23Z)
 - lane 6: T770 (lease until 2026-11-20T17:33:55Z)
 - lane 7: T672 (lease until 2026-11-20T15:39:52Z)
 
 ## Last usage reading
-- {"task": "T767", "at": "2026-11-20T14:41:35Z", "input_tokens": 265, "cache_creation_input_tokens": 289348, "cache_read_input_tokens": 7649792, "output_tokens": 67309}
+- {"task": "T206", "at": "2026-11-20T14:50:33Z", "output_tokens": 96002, "cache_read_input_tokens": 7484869, "input_tokens": 198, "cache_creation_input_tokens": 299349}
