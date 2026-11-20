@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T15:36:22Z by runner 696a43ed61d5 (actions).
+Updated 2026-11-20T15:36:27Z by runner 1ad57d7a8013 (actions).
 
 **Building: T530 in progress since 15:29Z; 541 of 712 done; week 36% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 541 of 712 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T530 claimed 15:29Z, lease until 18:29Z; lane 6: T770 claimed 14:33Z, lease until 17:33Z
+- **Lane:** lane 1: T530 claimed 15:29Z, lease until 18:29Z
 - **Week:** 36% used, 123.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:35Z, 0 min before this update
 - **Keeper:** last ran 15:23Z, next wake 15:43Z
@@ -21,6 +21,7 @@ Updated 2026-11-20T15:36:22Z by runner 696a43ed61d5 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T770 | ci (harness): the Coverage job's time limit goes from 25 to  | MERGE_PENDING | 1 | 61 min | 15:35Z |  |
 | T771 | a11y tests (harness): reflow_spacing's hidden-control check  | BLOCKED | 1 | 3 min | 15:22Z | PLAN GAP: kit/prompts/T771.md:9 (D-4970, docs/decisions.md:2604) contradicts itself: rule (1) checks the hidden Menu sum |
 | T557 | Decisions digest, piece 12: the next entries after the heade | done | 1 | 65 min | 14:55Z |  |
 | T672 | intake: the dispatcher asks "How soon?", the night count and | MERGE_PENDING | 3 | 2 h 13 min | 14:53Z | runner smoke red on 3e9315b7399c (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
@@ -142,7 +143,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T530 (lease until 2026-11-20T18:29:00Z)
-- lane 6: T770 (lease until 2026-11-20T17:33:55Z)
 
 ## Last usage reading
-- {"task": "T771", "at": "2026-11-20T15:22:12Z", "cache_creation_input_tokens": 47489, "input_tokens": 29, "output_tokens": 10277, "cache_read_input_tokens": 401633}
+- {"task": "T770", "at": "2026-11-20T15:35:25Z", "cache_creation_input_tokens": 52775, "output_tokens": 7110, "input_tokens": 49, "cache_read_input_tokens": 570147}
