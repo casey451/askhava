@@ -37,7 +37,8 @@
 //!
 //! T278 (JOB-015, D-1842): the claim's transaction also queues the day-3 and day-14 check-ins of
 //! a Connected job, from the release and the picked quote's earliest visit
-//! ([`check_ins_at_release`]).
+//! ([`check_ins_at_release`]), and restarts the Connected wait from the later of the two (T667,
+//! JOB-003, D-807, D-4349).
 //!
 //! T281 (D-1845): the claim's transaction also queues the unreachable-homeowner steps 24, 48, 72
 //! and 96 hours after it (`unreachable_steps::schedule_steps`), each once per pick.
@@ -52,7 +53,7 @@ use askhava_adapters::api::MaskedPool;
 use askhava_businesses::api::{NoticePurpose, notice_addresses};
 use askhava_calls::api::{Connected, WhosCalling, assign_number, queue_whos_calling};
 use askhava_core::api::{NewTask, enqueue};
-use askhava_jobs::api::{current, job_number, schedule_check_ins};
+use askhava_jobs::api::{current, job_number, restart_timer, schedule_check_ins};
 use askhava_ops::api::{NewAlert, Severity, raise_alert, raise_alert_once};
 use askhava_privacy::api::{
     ContactDetails, Field, ReleaseBasis, ReleaseProof, Vault, read_for_release,
@@ -510,7 +511,10 @@ async fn ask_again(
 /// JOB-015, D-1811 (2), D-1842: when job `job` is Connected, queues its day-3 and day-14
 /// check-ins (`jobs::api::schedule_check_ins`) in the caller's transaction, from the release at
 /// `at` and `business`'s quote's earliest visit (`quotes::api::earliest_visit`); `true` when
-/// queued. A job not Connected gets none: nothing moves a job to Connected yet (D-2015 (1)), and
+/// queued. It then restarts the Connected wait (`jobs::api::restart_timer`, JOB-003, D-807,
+/// D-4349) from the instant the check-ins count from, the later of the release and that visit,
+/// so a release that waited for the address or a later visit never shortens Connected's 21
+/// days; a restart never shortens a wait. A job not Connected gets none: nothing moves a job to Connected yet (D-2015 (1)), and
 /// a check-in tagged with an earlier version would never send (D-1812). The release's claim
 /// calls it, so a second release of the pick queues nothing more; the dedupe key is per job,
 /// version and day anyway.
@@ -532,7 +536,11 @@ pub async fn check_ins_at_release(
     schedule_check_ins(tx, job, at, visit)
         .await
         .map_err(|_| PicksError::Job)?;
-    Ok(true)
+    let from = visit.map_or(at, |v| v.max(at));
+    restart_timer(tx, job, (row.status, from))
+        .await
+        .map(|_| true)
+        .map_err(|_| PicksError::Job)
 }
 
 /// What the claim found under the pick's row lock (PICK-022, FEE-052, D-2627).
