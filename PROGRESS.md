@@ -8699,3 +8699,4 @@
 - 2026-11-20T18:02:38Z runner a8ff991fbade (actions): {}
 - 2026-11-20T18:03:28Z runner b858b557a1c3 (actions): {}
 - 2026-11-20T18:05:53Z runner f230bf40dfe5 (actions): {"T686": "MERGE_PENDING -> DONE"}
+- 2026-11-20T18:06:50Z runner f230bf40dfe5 (actions): {"T772": "QUEUED -> IN_PROGRESS"}; T772 estimated 1.4M tokens (calibrated); week has 109.4M left (no five-hour budget, D-3056) after 2.6M still running in another lane (session_reading 2026-11-20T18:02:37Z (week)); claimed

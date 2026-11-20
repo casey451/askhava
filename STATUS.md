@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T18:05:53Z by runner f230bf40dfe5 (actions).
+Updated 2026-11-20T18:06:50Z by runner f230bf40dfe5 (actions).
 
 **Building: T614 in progress since 17:26Z; 546 of 713 done; week 41% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 546 of 713 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T614 claimed 17:26Z, lease until 20:26Z; lane 7: T743 claimed 16:24Z, lease until 19:24Z
-- **Week:** 41% used, 113.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:03Z, 2 min before this update
+- **Lane:** lane 3: T614 claimed 17:26Z, lease until 20:26Z; lane 5: T772 claimed 18:05Z, lease until 21:05Z; lane 7: T743 claimed 16:24Z, lease until 19:24Z
+- **Week:** 41% used, 109.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 18:06Z, 0 min before this update
 - **Keeper:** last ran 18:03Z, next wake 19:27Z
 
 ## Needs attention
@@ -98,36 +98,36 @@ Updated 2026-11-20T18:05:53Z by runner f230bf40dfe5 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 325 of 735 (44.2%) · partial 391 · unstarted 19
+**Requirements verified:** 362 of 735 (49.3%) · partial 354 · unstarted 19
 **Tasks merged (throughput only):** 546 of 713
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 18 | 17 | 0 | 35 |
 | ai | 8 | 18 | 3 | 29 |
-| businesses | 21 | 36 | 1 | 58 |
-| calls | 14 | 11 | 0 | 25 |
-| consent | 16 | 19 | 0 | 35 |
-| fees | 22 | 30 | 0 | 52 |
-| intake | 8 | 35 | 0 | 43 |
+| businesses | 23 | 34 | 1 | 58 |
+| calls | 15 | 10 | 0 | 25 |
+| consent | 17 | 18 | 0 | 35 |
+| fees | 25 | 27 | 0 | 52 |
+| intake | 12 | 31 | 0 | 43 |
 | job-cards | 12 | 12 | 0 | 24 |
 | licensing | 33 | 15 | 0 | 48 |
-| lifecycle | 17 | 11 | 0 | 28 |
-| messaging | 23 | 22 | 0 | 45 |
-| ops-recovery | 9 | 33 | 12 | 54 |
-| privacy | 8 | 23 | 0 | 31 |
+| lifecycle | 21 | 7 | 0 | 28 |
+| messaging | 26 | 19 | 0 | 45 |
+| ops-recovery | 15 | 27 | 12 | 54 |
+| privacy | 10 | 21 | 0 | 31 |
 | quiet-hours | 3 | 6 | 0 | 9 |
-| quotes-pick | 25 | 31 | 0 | 56 |
+| quotes-pick | 26 | 30 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
-| security | 10 | 42 | 3 | 55 |
+| security | 13 | 39 | 3 | 55 |
 | terms | 27 | 8 | 0 | 35 |
-| website | 18 | 12 | 0 | 30 |
-| wording | 23 | 9 | 0 | 32 |
+| website | 20 | 10 | 0 | 30 |
+| wording | 28 | 4 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-20T17:22:34Z (week)): week: 80.3M used, 113.7M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T05:38:14Z.
+- Pacing (session_reading 2026-11-20T18:02:37Z (week)): week: 84.6M used, 109.4M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T06:06:48Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -144,6 +144,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 3: T614 (lease until 2026-11-20T20:26:36Z)
+- lane 5: T772 (lease until 2026-11-20T21:05:44Z)
 - lane 7: T743 (lease until 2026-11-20T19:24:15Z)
 
 ## Last usage reading
