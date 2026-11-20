@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT picked_at FROM picks.pick WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "picked_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "picks.pick",
+            "name": "picked_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "660cd5acfe02df813561a1232674c124cad117a5569d88287747e17775bafaaf"
+}
