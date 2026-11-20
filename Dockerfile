@@ -45,7 +45,7 @@ RUN cargo build --release --locked -p askhava-server --bins \
 # OPS-051, D-3155, D-4708): Debian trixie ships only 17, so they come from the PostgreSQL apt
 # repository, whose signing key is fetched here and refused unless its fingerprint is the pinned one;
 # curl and gnupg stay in this stage and never reach the runtime image.
-FROM debian:trixie-slim@sha256:f6b08b09a05725f9431502d3b5714f5c4576e82c1a84fa1debe0c24a7e0c3ec4 AS pgdg
+FROM debian:trixie-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2 AS pgdg
 ARG PGDG_FINGERPRINT=B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates curl gnupg \
@@ -53,7 +53,7 @@ RUN apt-get update \
     && test "$(gpg --show-keys --with-colons /tmp/pgdg.asc | awk -F: '$1 == "fpr" {print $10}')" = "${PGDG_FINGERPRINT}" \
     && gpg --dearmor -o /pgdg.gpg /tmp/pgdg.asc
 
-FROM debian:trixie-slim@sha256:f6b08b09a05725f9431502d3b5714f5c4576e82c1a84fa1debe0c24a7e0c3ec4 AS runtime
+FROM debian:trixie-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2 AS runtime
 COPY --from=pgdg /pgdg.gpg /usr/share/keyrings/pgdg.gpg
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates libssl3t64 \
