@@ -1,26 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-20T18:03:28Z by runner b858b557a1c3 (actions).
+Updated 2026-11-20T18:05:53Z by runner f230bf40dfe5 (actions).
 
-**Building: T614 in progress since 17:26Z; 545 of 713 done; week 41% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T614 in progress since 17:26Z; 546 of 713 done; week 41% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 545 of 713 build tasks (owner gates not counted)
+- **Tasks done:** 546 of 713 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T614 claimed 17:26Z, lease until 20:26Z; lane 7: T743 claimed 16:24Z, lease until 19:24Z
 - **Week:** 41% used, 113.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:03Z, 0 min before this update
+- **Last run:** 18:03Z, 2 min before this update
 - **Keeper:** last ran 18:03Z, next wake 19:27Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 38 problem(s) on tasks still to run (+412 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
+- Strict plan check red: 40 problem(s) on tasks still to run (+415 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T573 | messaging and server: queued business texts are addressed to | MERGE_PENDING | 4 | 41 min | 18:01Z | model claude-opus-5-5 ran, task names claude-fable-5-2 / re-queued after plan fix D-4969: Coverage time-limit cancel, fi |
-| T686 | businesses and server: a 90-day-old inbox or alert Yes gets  | MERGE_PENDING | 1 | 76 min | 17:39Z |  |
+| T686 | businesses and server: a 90-day-old inbox or alert Yes gets  | done | 1 | 76 min | 17:39Z |  |
 | T672 | intake: the dispatcher asks "How soon?", the night count and | MERGE_PENDING | 3 | 52 min | 17:14Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T530 | portals: the owner help page and its screened reply box (D-3 | MERGE_PENDING | 3 | 71 min | 16:40Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
 | T681 | picks and jobs: the businesses that lost a pick and every qu | MERGE_PENDING | 1 | 50 min | 16:38Z |  |
@@ -99,7 +99,7 @@ Updated 2026-11-20T18:03:28Z by runner b858b557a1c3 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 325 of 735 (44.2%) · partial 391 · unstarted 19
-**Tasks merged (throughput only):** 545 of 712
+**Tasks merged (throughput only):** 546 of 713
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -135,7 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 188 of 295 done
+- stage 5: 189 of 295 done
 - stage 6: 0 of 65 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
