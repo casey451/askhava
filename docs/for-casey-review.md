@@ -3593,3 +3593,7 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 
 - D-4971 (T206): after a real loss, the restore is three hand steps and one command. Fetch the newest export from storage, decrypt it with the offline key on a machine that is not the app host, run the role set-up on the fresh database, then run `server replay <file> <object name> <backup time>` with the worker stopped. It waits if Twilio or Stripe is down, sends and charges nothing, and raises one alert listing anything it could not match for you to call about. T117's runbook will spell the steps out.
 - D-4972 (T206): the drill's printed summary now shows how many replay rounds ran and both charge counts (booked now, already booked). If a vendor failed partway and the replay ran again, charges the first round booked show as already booked; the ledger is right either way, only the split between the two counts is approximate.
+
+## Open-cards email language (D-5017, November 20)
+
+- With no stored team-member language, the open-cards email goes in English. Say if it should follow the business's language setting instead.
