@@ -356,10 +356,12 @@ pub(crate) async fn stale_sending(
     .map_err(|_| OutboxError::Database)
 }
 
-/// One homeowner row the sender may try now: its ID, template, queue time and language, and
-/// whether its QH-004 exemption still holds at the instant asked about.
+/// One row the sender may try now: its ID, template, queue time and language, whether its
+/// QH-004 exemption still holds at the instant asked about, and whether it was queued for a
+/// business phone (its `recipient` is then the phone's line ID, D-2042).
 pub(crate) struct Due {
     pub(crate) id: Uuid,
+    pub(crate) business: bool,
     pub(crate) template_id: String,
     pub(crate) recipient: Uuid,
     pub(crate) queued_at: Timestamp,
@@ -367,20 +369,24 @@ pub(crate) struct Due {
     pub(crate) language: Option<String>,
 }
 
-/// The queued homeowner rows whose `not_before` has passed at `now` (or is unset), at most
-/// `limit`, oldest first (QH-006, D-2628). Business rows wait: their phone is not resolved here.
+/// The queued rows whose `not_before` has passed at `now` (or is unset), at most `limit`, oldest
+/// first (QH-006, D-2628): homeowner rows, and with `business` (the business line is open,
+/// TXT-035) business rows too; while it is closed they wait untaken, so they never fill the
+/// batch ahead of a homeowner row (D-3149, D-4898).
 pub(crate) async fn due(
     db: &mut PgConnection,
     now: Timestamp,
-    limit: i64,
+    (limit, business): (i64, bool),
 ) -> Result<Vec<Due>, OutboxError> {
     let rows = sqlx::query!(
         "SELECT id, template_id, recipient_id, created_at, language, \
+         recipient_kind = 'business' AS \"business!\", \
          COALESCE(quiet_exempt_until > $1, false) AS \"exempt!\" FROM messaging.outbox \
-         WHERE status = 'queued' AND recipient_kind = 'homeowner' \
+         WHERE status = 'queued' AND (recipient_kind = 'homeowner' OR $3) \
          AND (not_before IS NULL OR not_before <= $1) ORDER BY created_at LIMIT $2",
         now.to_sqlx() as _,
-        limit
+        limit,
+        business
     )
     .fetch_all(db)
     .await
@@ -389,6 +395,7 @@ pub(crate) async fn due(
         .into_iter()
         .map(|r| Due {
             id: r.id,
+            business: r.business,
             template_id: r.template_id,
             recipient: r.recipient_id,
             queued_at: r.created_at.to_jiff(),
@@ -426,6 +433,26 @@ pub(crate) async fn expire(db: &mut PgConnection, id: Uuid) -> Result<bool, Outb
     .execute(db)
     .await
     .map(|r| r.rows_affected() > 0)
+    .map_err(|_| OutboxError::Database)
+}
+
+/// D-4764, QH-007: marks `expired` (body dropped) every queued or held row about `job` created
+/// before `closed_at` whose template matches none of the `exempt` LIKE patterns; the IDs moved.
+pub(crate) async fn expire_job_rows(
+    db: &mut PgConnection,
+    (job, closed_at): (Uuid, Timestamp),
+    exempt: &[String],
+) -> Result<Vec<Uuid>, OutboxError> {
+    sqlx::query_scalar!(
+        "UPDATE messaging.outbox SET status = 'expired', body = NULL \
+         WHERE status = 'queued' AND $1 = ANY(subject_ids) AND created_at < $2 \
+         AND template_id NOT LIKE ALL($3) RETURNING id",
+        job,
+        closed_at.to_sqlx() as _,
+        exempt
+    )
+    .fetch_all(db)
+    .await
     .map_err(|_| OutboxError::Database)
 }
 
@@ -500,6 +527,21 @@ pub(crate) async fn find_sender(
          ON d.index_version = k.v AND d.digest = k.h LIMIT 1",
         &versions,
         &hashes
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| OutboxError::Database)
+}
+
+/// The business that sender-directory phone `line` is linked to; `None` for an unlinked phone or
+/// an ID that is no line, such as a business ID stored before D-2042 closed (D-492).
+pub(crate) async fn line_business(
+    db: &mut PgConnection,
+    line: Uuid,
+) -> Result<Option<Uuid>, OutboxError> {
+    sqlx::query_scalar!(
+        "SELECT business_id FROM messaging.sender_directory WHERE line_id = $1 LIMIT 1",
+        line
     )
     .fetch_optional(db)
     .await

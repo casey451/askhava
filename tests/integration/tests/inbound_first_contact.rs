@@ -298,9 +298,15 @@ async fn td_biz_39_auto_reply_only_when_due(pool: PgPool) {
         .await
         .expect("reply row");
     assert_eq!(kind, "business");
+    let line: Uuid =
+        sqlx::query_scalar("SELECT line_id FROM messaging.sender_directory WHERE business_id = $1")
+            .bind(business)
+            .fetch_one(&pool)
+            .await
+            .expect("line");
     assert_eq!(
-        recipient, business,
-        "D-2042: the business ID, not the line ID"
+        recipient, line,
+        "D-4051: the phone's line ID (D-2042 closed)"
     );
     assert_eq!(total(&pool, "privacy.contact").await, 0);
 }
