@@ -1,0 +1,43 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT s.index_version, s.digest FROM messaging.suppression s WHERE s.index_version <> $1 AND (s.index_version, s.digest) > ($2, $3) AND NOT EXISTS (SELECT 1 FROM messaging.suppression a WHERE a.index_version = $1 AND a.event_id = s.event_id) ORDER BY s.index_version, s.digest LIMIT $4",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "index_version",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "messaging.suppression",
+            "name": "index_version"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "digest",
+        "type_info": "Bytea",
+        "origin": {
+          "Table": {
+            "table": "messaging.suppression",
+            "name": "digest"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int2",
+        "Int2",
+        "Bytea",
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "20f504f9bade24fb83d3e1ee66ec38900e721cd733b832bd8e19941a5913b0f3"
+}
