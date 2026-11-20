@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T07:07:43Z by runner c403ea4898ac (actions).
+Updated 2026-11-20T07:08:23Z by runner 405a1fbf7832 (actions).
 
 **Building: T764 in progress since 06:34Z; 525 of 707 done; week 22% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-20T07:07:43Z by runner c403ea4898ac (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T764 claimed 06:34Z, lease until 09:34Z; lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 3: T762 claimed 06:35Z, lease until 09:35Z; lane 4: T672 claimed 06:35Z, lease until 09:35Z
 - **Week:** 22% used, 145.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:07Z, 0 min before this update
-- **Keeper:** last ran 06:34Z, next wake 06:54Z
+- **Last run:** 07:08Z, 0 min before this update
+- **Keeper:** last ran 07:07Z, next wake 09:14Z
 
 ## Needs attention
 - BLOCKED T573: plan gap reported: PLAN GAP: app/privacy/src/business_contacts.rs:124 (owned by T412, not T573). Item (2) needs the outbox sender to read a business line's phone number, which lives only in privacy.staff_phone; privacy::api::read_staff_phone refuses every purpose except BusinessPurpose::SignInCode (opens_phone at :124, refusal at :398). Messaging keeps no copy (sender directory holds blind-index digests only), and tests/security business_contact_readers.rs lets only privacy and server name read_staff_phone. Reusing SignInCode would falsify the SEC-047 audit. Smallest plan change: give T573 business_contacts.rs s; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T573 --plan-fix D-### --reason "..."` (D-2859)
@@ -17,7 +17,7 @@ Updated 2026-11-20T07:07:43Z by runner c403ea4898ac (actions).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T463 (since 2026-11-20T06:35:55Z, no attempt used; a plan change fixes it): T463: dependency T543 is DONE but its owned file migrations/0206_businesses_away_busy.sql is not on main; T463: dependency T543 is DONE but its owned file app/businesses/src/away_busy.rs is not on main; T463: dependency T543 is DONE but its owned file tests/integration/tests/away_until.rs is not on main
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 82 problem(s) on tasks still to run (+388 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 88 problem(s) on tasks still to run (+393 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
