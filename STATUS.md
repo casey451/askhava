@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T16:47:34Z by runner 6de3b012a771 (actions).
+Updated 2026-11-20T16:53:01Z by runner b858b557a1c3 (actions).
 
-**Building: T672 in progress since 16:21Z; 543 of 712 done; week 38% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T672 in progress since 16:21Z; 544 of 712 done; week 38% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 543 of 712 build tasks (owner gates not counted)
+- **Tasks done:** 544 of 712 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T672 claimed 16:21Z, lease until 19:21Z; lane 5: T686 claimed 16:22Z, lease until 19:22Z; lane 7: T743 claimed 16:24Z, lease until 19:24Z
 - **Week:** 38% used, 113.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:47Z, 0 min before this update
+- **Last run:** 16:47Z, 5 min before this update
 - **Keeper:** last ran 16:47Z, next wake 19:24Z
 
 ## Needs attention
@@ -28,7 +28,7 @@ The pick's window deadline (picks.pick.confirm_due) is read only by private code
 | T771 | a11y tests (harness): reflow_spacing's hidden-control check  | MERGE_PENDING | 2 | 50 min | 16:34Z | PLAN GAP: kit/prompts/T771.md:9 (D-4970, docs/decisions.md:2604) contradicts itself: rule (1) checks the hidden Menu sum |
 | T664 | portals: the Confirm press re-checks the license and account | BLOCKED | 1 | 5 min | 16:15Z | PLAN GAP: outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs / The pick's window deadline (picks.pic |
 | T684 | picks and server: the open-cards email goes at the times eac | BLOCKED | 1 | 4 min | 15:41Z | PLAN GAP: app/quotes/src/models.rs:265 `card_sent_at` is pub(crate); T684 owns no app/quotes/src file. quotes::api has n |
-| T770 | ci (harness): the Coverage job's time limit goes from 25 to  | MERGE_PENDING | 1 | 61 min | 15:35Z |  |
+| T770 | ci (harness): the Coverage job's time limit goes from 25 to  | done | 1 | 61 min | 15:35Z |  |
 | T771 | a11y tests (harness): reflow_spacing's hidden-control check  | BLOCKED | 1 | 3 min | 15:22Z |  |
 | T557 | Decisions digest, piece 12: the next entries after the heade | done | 1 | 65 min | 14:55Z |  |
 | T672 | intake: the dispatcher asks "How soon?", the night count and | resync | 3 | 2 h 13 min | 14:53Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
@@ -104,7 +104,7 @@ The pick's window deadline (picks.pick.confirm_due) is read only by private code
 ## Progress (requirements verified)
 
 **Requirements verified:** 325 of 735 (44.2%) · partial 391 · unstarted 19
-**Tasks merged (throughput only):** 543 of 712
+**Tasks merged (throughput only):** 544 of 712
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -140,7 +140,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 186 of 294 done
+- stage 5: 187 of 294 done
 - stage 6: 0 of 65 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
