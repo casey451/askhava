@@ -7,7 +7,8 @@
 // when an `animation` or `transition` (other than `none`) sits outside a
 // `prefers-reduced-motion: no-preference` block; when `@view-transition` appears; when a transition
 // (delay plus duration) lasts 350 ms or more; when an animation's end time (largest delay plus
-// duration times iterations) passes 900 ms; when the `rise` stagger has no `:nth-child(n+6)` cap;
+// duration times iterations) passes 900 ms (each counting the shorthand and the `-duration`,
+// `-delay` and `animation-iteration-count` longhands under the same selector); when the `rise` stagger has no `:nth-child(n+6)` cap;
 // when an iteration count is `infinite` or above 3; or when `linear-gradient(` appears. Each rule
 // has a planted stylesheet string that fails it. The italic accent's font answers 200 as
 // font/woff2 with the bytes of docs/design/fonts/, and the home page's first view at 390 by 844 (every response body until the load
@@ -116,24 +117,43 @@ function placeProblems(decls: Decl[]): string[] {
   });
 }
 
-/** WEB-029: every transition (delay plus duration) is under 350 ms. */
-function transitionProblems(decls: Decl[]): string[] {
-  return decls.filter((d) => /^transition(-duration)?$/.test(d.prop) && !isNone(d.value)).flatMap((d) =>
-    splitTop(resolve(d.value, decls)).map((item) => times(item).slice(0, 2).reduce((a, b) => a + b, 0))
-      .filter((ms) => ms >= 350).map((ms) => `transition at ${selectorOf(d)} lasts ${String(ms)} ms`));
+/** The times (ms) of every `prop` longhand whose selector contains `selector`. */
+function longhandTimes(decls: Decl[], prop: string, selector: string): number[] {
+  return decls.filter((x) => x.prop === prop && selectorOf(x).includes(selector))
+    .flatMap((x) => times(resolve(x.value, decls)));
 }
 
-/** WEB-029: no animation repeats more than 3 times, and each ends within 900 ms of load. */
+/**
+ * WEB-029: every transition (delay plus duration) is under 350 ms. The shorthand and the
+ * `transition-duration` longhand each count, with the largest `transition-delay` longhand under
+ * the same selector.
+ */
+function transitionProblems(decls: Decl[]): string[] {
+  return decls.filter((d) => /^transition(-duration)?$/.test(d.prop) && !isNone(d.value)).flatMap((d) => {
+    const delays = longhandTimes(decls, "transition-delay", selectorOf(d));
+    return splitTop(resolve(d.value, decls)).map((item) => {
+      const [duration = 0, delay = 0] = times(item);
+      return duration + Math.max(delay, ...delays);
+    }).filter((ms) => ms >= 350).map((ms) => `transition at ${selectorOf(d)} lasts ${String(ms)} ms`);
+  });
+}
+
+/**
+ * WEB-029: no animation repeats more than 3 times, and each ends within 900 ms of load. The
+ * shorthand and the `animation-duration` longhand each count, with the largest `animation-delay`
+ * and `animation-iteration-count` longhands under the same selector.
+ */
 function animationProblems(decls: Decl[]): string[] {
   const counts = decls.filter((d) => d.prop === "animation-iteration-count").map((d) => iterations(d.value));
   const out = counts.filter((n) => n > 3).map((n) => `animation repeats ${String(n)} times`);
-  for (const d of decls.filter((x) => x.prop === "animation" && !isNone(x.value))) {
+  for (const d of decls.filter((x) => /^animation(-duration)?$/.test(x.prop) && !isNone(x.value))) {
     const selector = selectorOf(d);
-    const delays = decls.filter((x) => x.prop === "animation-delay" && selectorOf(x).includes(selector))
-      .flatMap((x) => times(resolve(x.value, decls)));
+    const delays = longhandTimes(decls, "animation-delay", selector);
+    const longCounts = decls.filter((x) => x.prop === "animation-iteration-count" && selectorOf(x).includes(selector))
+      .map((x) => iterations(x.value));
     for (const item of splitTop(resolve(d.value, decls))) {
       const [duration = 0, delay = 0] = times(item);
-      const count = iterations(item);
+      const count = Math.max(iterations(item), ...longCounts);
       if (count > 3) out.push(`animation at ${selector} repeats ${String(count)} times`);
       const end = Math.max(delay, ...delays) + duration * count;
       if (end > 900) out.push(`animation at ${selector} ends at ${String(end)} ms`);
@@ -188,6 +208,12 @@ test("WEB-029 A11Y-009 D-4246 D-4252: each planted motion or gradient rule fails
     [".x { transition: color 100ms ease; }", "transition at .x outside prefers-reduced-motion: no-preference"],
     ["@view-transition { navigation: auto; }", "@view-transition appears"],
     [inMotion(".x { transition: transform 400ms ease; }"), "transition at .x lasts 400 ms"],
+    [inMotion(".pz-t { transition: transform 200ms; transition-delay: 300ms; }"), "transition at .pz-t lasts 500 ms"],
+    [inMotion(".pz-d { transition-property: transform; transition-duration: 360ms; }"), "transition at .pz-d lasts 360 ms"],
+    [inMotion(".pz-a { animation-name: rise; animation-duration: 2000ms; }"), "animation at .pz-a ends at 2000 ms"],
+    [inMotion(".pz-b { animation: rise 600ms; animation-delay: 400ms; }"), "animation at .pz-b ends at 1000 ms"],
+    [inMotion(".pz-c { animation-name: rise; animation-duration: 400ms; animation-iteration-count: 3; }"),
+      "animation at .pz-c ends at 1200 ms"],
     [inMotion(".rise:nth-child(n+6) { animation-delay: 500ms; }"), "animation at .rise ends at 950 ms"],
     [inMotion(".y { animation: rise 200ms infinite; }"), "animation at .y repeats Infinity times"],
     [inMotion(".y { animation: rise 100ms 4; }"), "animation at .y repeats 4 times"],
