@@ -90032,7 +90032,8 @@
     "T663",
     "T669",
     "T541",
-    "T767"
+    "T767",
+    "T772"
    ],
    "status": "QUEUED",
    "attempts": 1,
@@ -97400,6 +97401,18 @@
     "docs/decisions.md",
     "tests/a11y/reflow_spacing.spec.ts"
    ]
+  },
+  {
+   "id": "T772",
+   "deps": [
+    "T663",
+    "T669"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "confirm-refused-tail",
+   "type": "build",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -103927,7 +103940,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T17:41:13Z",
+ "updated_at": "2026-11-20T17:41:58Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -104025,7 +104038,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "6de3b012a771c649bcbdce161f6e8836498e8672",
+ "runner_sha": "e4d287328e44bd15c3cbed150c58f54046678543",
  "starter": "actions",
  "smoke_runs": [
   {

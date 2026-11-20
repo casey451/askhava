@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T17:41:13Z by runner 6de3b012a771 (actions).
+Updated 2026-11-20T17:41:58Z by runner e4d287328e44 (actions).
 
 **Building: T614 in progress since 17:26Z; 545 of 713 done; week 40% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -100,7 +100,7 @@ Updated 2026-11-20T17:41:13Z by runner 6de3b012a771 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 325 of 735 (44.2%) · partial 391 · unstarted 19
-**Tasks merged (throughput only):** 545 of 712
+**Tasks merged (throughput only):** 545 of 713
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -136,7 +136,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 188 of 294 done
+- stage 5: 188 of 295 done
 - stage 6: 0 of 65 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
