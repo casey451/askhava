@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T17:14:16Z by runner fc019b7ede34 (actions).
+Updated 2026-11-20T17:14:47Z by runner fc019b7ede34 (actions).
 
-**Building: T672 in progress since 16:21Z; 544 of 712 done; week 38% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T686 in progress since 16:22Z; 544 of 712 done; week 38% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 544 of 712 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T672 claimed 16:21Z, lease until 19:21Z; lane 5: T686 claimed 16:22Z, lease until 20:05Z; lane 7: T743 claimed 16:24Z, lease until 19:24Z
+- **Lane:** lane 5: T686 claimed 16:22Z, lease until 20:05Z; lane 7: T743 claimed 16:24Z, lease until 19:24Z
 - **Week:** 38% used, 113.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 17:05Z, 8 min before this update
 - **Keeper:** last ran 16:47Z, next wake 19:24Z
@@ -23,6 +23,7 @@ The pick's window deadline (picks.pick.confirm_due) is read only by private code
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T672 | intake: the dispatcher asks "How soon?", the night count and | MERGE_PENDING | 3 | 52 min | 17:14Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T530 | portals: the owner help page and its screened reply box (D-3 | MERGE_PENDING | 3 | 71 min | 16:40Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
 | T681 | picks and jobs: the businesses that lost a pick and every qu | MERGE_PENDING | 1 | 50 min | 16:38Z |  |
 | T771 | a11y tests (harness): reflow_spacing's hidden-control check  | MERGE_PENDING | 2 | 50 min | 16:34Z | PLAN GAP: kit/prompts/T771.md:9 (D-4970, docs/decisions.md:2604) contradicts itself: rule (1) checks the hidden Menu sum |
@@ -31,7 +32,7 @@ The pick's window deadline (picks.pick.confirm_due) is read only by private code
 | T770 | ci (harness): the Coverage job's time limit goes from 25 to  | done | 1 | 61 min | 15:35Z |  |
 | T771 | a11y tests (harness): reflow_spacing's hidden-control check  | BLOCKED | 1 | 3 min | 15:22Z |  |
 | T557 | Decisions digest, piece 12: the next entries after the heade | done | 1 | 65 min | 14:55Z |  |
-| T672 | intake: the dispatcher asks "How soon?", the night count and | resync | 3 | 2 h 13 min | 14:53Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
+| T672 | intake: the dispatcher asks "How soon?", the night count and | resync | 3 | 2 h 13 min | 14:53Z |  |
 | T206 | recovery: the local restore drill with no double send or cha | done | 1 | 89 min | 14:50Z |  |
 | T767 | tests (harness): the Confirm press fixtures get an Active ac | done | 1 | 108 min | 14:41Z |  |
 | T670 | picks: the pick notice's send never records a pressed pick a | done | 1 | 86 min | 14:26Z |  |
@@ -147,9 +148,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T672 (lease until 2026-11-20T19:21:35Z)
 - lane 5: T686 (lease until 2026-11-20T20:05:36Z)
 - lane 7: T743 (lease until 2026-11-20T19:24:15Z)
 
 ## Last usage reading
-- {"task": "T530", "at": "2026-11-20T16:40:11Z", "output_tokens": 65079, "cache_creation_input_tokens": 195429, "cache_read_input_tokens": 7110953, "input_tokens": 160}
+- {"task": "T672", "at": "2026-11-20T17:14:14Z", "output_tokens": 17373, "input_tokens": 84, "cache_creation_input_tokens": 110762, "cache_read_input_tokens": 1920031}
