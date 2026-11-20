@@ -1,0 +1,45 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT rolinherit AS \"inherit!\", rolconnlimit AS \"limit!\", rolconfig::text AS \"config!\" FROM pg_roles WHERE rolname = 'askhava_backup'",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "inherit!",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "pg_roles",
+            "name": "rolinherit"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "limit!",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "pg_roles",
+            "name": "rolconnlimit"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "config!",
+        "type_info": "Text",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      true,
+      true,
+      null
+    ]
+  },
+  "hash": "0eda6e5f9bcae3d0b632e90d7692dd17ce644427a54d6aa8540c616ba2ec1a8d"
+}

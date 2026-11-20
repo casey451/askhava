@@ -17,8 +17,9 @@ pub use crate::email::{Email, EmailAdapter, ResendEmail};
 pub use crate::letters::{LettersAdapter, LobLetters, SentLetter};
 pub use crate::license_sources::{LicenseLists, LicenseRecords, LicenseSource};
 pub use crate::payments::{
-    CHARGE_PAGE_MAX, Charge, ChargeList, ConfirmedIntent, IntentMetadata, ListedCharge,
-    PaymentIntent, PaymentsAdapter, StripePayments, StripeRefund, ThreeDs, UnconfirmedIntent,
+    CHARGE_PAGE_MAX, CardFacts, Charge, ChargeList, ConfirmedIntent, IntentMetadata, ListedCharge,
+    PaymentIntent, PaymentsAdapter, SetUpIntent, StripePayments, StripeRefund, ThreeDs,
+    UnconfirmedIntent,
 };
 pub use crate::resend_config::ResendConfig;
 pub use crate::signatures::{

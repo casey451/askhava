@@ -15,8 +15,9 @@
 //! time since start and the worker state `/healthz` reports), one [`SecretLine`] per required
 //! secret (name and three flags, converted from T304's `SecretReport`; never a value, length or
 //! hash, D-492) and the four SEC-036 [`AccountIds`] (D-3882). No uptime history is stored, so the
-//! page links UptimeRobot's own 30-day figure. The last backup reads "not yet recorded" until T109
-//! replaces it with `ops::api::latest_audit` (D-493). A GET: reads only, writes nothing.
+//! page links UptimeRobot's own 30-day figure. The last backup is the newest stored nightly export's
+//! time, read through `ops::api::latest_audit` (T109, OPS-013), with a failure newer than it shown
+//! beside it; "Not yet recorded" before the first. A GET: reads only, writes nothing.
 
 use askama::Template;
 use askhava_ai::api::ai_figures;
@@ -24,6 +25,7 @@ use askhava_core::api::arizona_time;
 use askhava_messaging::api::{
     EmailFigures, PerAudience, TextFigures, email_figures, emails_sent, notice_timing, text_figures,
 };
+use askhava_ops::api::{BACKUP_EXPORT_FAILED_ACTION, BACKUP_EXPORTED_ACTION, latest_audit};
 use askhava_payments::api::payment_errors;
 use askhava_quotes::api::{SpotCard, card_figures, spot_check_cards};
 use jiff::{SignedDuration, Timestamp};
@@ -291,6 +293,34 @@ async fn timing(
     })
 }
 
+/// The time of day an owner reads, in Arizona (OPS-008).
+fn shown_at(at: Timestamp) -> String {
+    arizona_time(at)
+        .strftime("%b %-d, %Y %-I:%M %p")
+        .to_string()
+}
+
+/// OPS-008, OPS-013: the newest stored export's time, and the newest failure when it is newer.
+fn backup_line(stored: Option<Timestamp>, failed: Option<Timestamp>) -> String {
+    match (stored, failed) {
+        (None, None) => "Not yet recorded".to_owned(),
+        (None, Some(f)) => format!("None stored; failed {}", shown_at(f)),
+        (Some(s), Some(f)) if f > s => format!("{}; failed since, {}", shown_at(s), shown_at(f)),
+        (Some(s), _) => shown_at(s),
+    }
+}
+
+/// OPS-008, OPS-013: the last-backup figure from the newest export audit rows (T109).
+async fn last_backup(conn: &mut PgConnection) -> Result<String, OwnerToolError> {
+    let stored = latest_audit(conn, BACKUP_EXPORTED_ACTION)
+        .await
+        .map_err(db)?;
+    let failed = latest_audit(conn, BACKUP_EXPORT_FAILED_ACTION)
+        .await
+        .map_err(db)?;
+    Ok(backup_line(stored.map(|a| a.at), failed.map(|a| a.at)))
+}
+
 /// OPS-008: payment errors, AI errors, uptime and the last backup.
 async fn errors_and_uptime(
     conn: &mut PgConnection,
@@ -301,6 +331,7 @@ async fn errors_and_uptime(
     let pay = payment_errors(conn, w.week, now).await.map_err(db)?;
     let ai = ai_figures(conn, w.week, now).await.map_err(db)?;
     let worker = if inputs.worker_up { "Up" } else { "Down" };
+    let backup = last_backup(conn).await?;
     Ok(Section {
         title: "Errors and uptime",
         figures: vec![
@@ -319,7 +350,7 @@ async fn errors_and_uptime(
             ),
             figure("Web app running for", running_for(inputs.web_up_for)),
             figure("Background worker", worker),
-            figure("Last backup", "Not yet recorded"),
+            figure("Last backup", backup),
         ],
     })
 }
@@ -329,9 +360,7 @@ fn spot_row(c: SpotCard) -> SpotRow {
         card: c.card.to_string(),
         job: c.job.to_string(),
         trade: c.trade.unwrap_or_else(|| "Not stored".to_owned()),
-        sent: arizona_time(c.sent_at)
-            .strftime("%b %-d, %Y %-I:%M %p")
-            .to_string(),
+        sent: shown_at(c.sent_at),
     }
 }
 
@@ -392,5 +421,22 @@ mod tests {
         assert_eq!(minutes(None), "No data yet");
         let up = SignedDuration::from_mins(2 * 1440 + 3 * 60 + 4);
         assert_eq!(running_for(up), "2 days, 3 hours, 4 minutes");
+    }
+
+    #[test]
+    fn the_last_backup_shows_a_newer_failure() {
+        let s: Timestamp = "2026-11-19T10:00:00Z".parse().unwrap();
+        let f: Timestamp = "2026-11-20T10:00:00Z".parse().unwrap();
+        assert_eq!(backup_line(None, None), "Not yet recorded");
+        assert_eq!(backup_line(Some(s), None), "Nov 19, 2026 3:00 AM");
+        assert_eq!(backup_line(Some(f), Some(s)), "Nov 20, 2026 3:00 AM");
+        assert_eq!(
+            backup_line(Some(s), Some(f)),
+            "Nov 19, 2026 3:00 AM; failed since, Nov 20, 2026 3:00 AM"
+        );
+        assert_eq!(
+            backup_line(None, Some(f)),
+            "None stored; failed Nov 20, 2026 3:00 AM"
+        );
     }
 }
