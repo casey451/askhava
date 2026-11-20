@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T16:16:09Z by runner 3e01fef06c14 (actions).
+Updated 2026-11-20T16:16:22Z by runner 3e01fef06c14 (actions).
 
 **Building: T530 in progress since 15:29Z; 542 of 712 done; week 37% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-20T16:16:09Z by runner 3e01fef06c14 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T530 claimed 15:29Z, lease until 18:29Z; lane 3: T771 claimed 15:44Z, lease until 18:44Z; lane 4: T681 claimed 15:47Z, lease until 18:47Z
 - **Week:** 37% used, 119.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:15Z, 0 min before this update
-- **Keeper:** last ran 15:43Z, next wake 16:03Z
+- **Last run:** 16:16Z, 0 min before this update
+- **Keeper:** last ran 16:16Z, next wake 16:36Z
 
 ## Needs attention
 - BLOCKED T664: plan gap reported: PLAN GAP: outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs
