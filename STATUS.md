@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T20:47:18Z by runner 46c0ebfef5b4 (actions).
+Updated 2026-11-20T20:49:13Z by runner 49b6ebefcabe (actions).
 
 **Building: T752 in progress since 20:45Z; 552 of 713 done; week 46% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 552 of 713 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T752 claimed 20:45Z, lease until 23:45Z; lane 2: T750 claimed 20:42Z, lease until 23:42Z; lane 3: T558 claimed 20:29Z, lease until 23:29Z; lane 4: T682 claimed 19:03Z, lease until 22:03Z; lane 6: T673 claimed 20:17Z, lease until 23:17Z
+- **Lane:** lane 1: T752 claimed 20:45Z, lease until 23:45Z; lane 2: T750 claimed 20:42Z, lease until 23:42Z; lane 3: T558 claimed 20:29Z, lease until 23:29Z; lane 6: T673 claimed 20:17Z, lease until 23:17Z
 - **Week:** 46% used, 97.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:47Z, 0 min before this update
+- **Last run:** 20:47Z, 1 min before this update
 - **Keeper:** last ran 20:47Z, next wake 22:06Z
 
 ## Needs attention
@@ -16,11 +16,12 @@ Updated 2026-11-20T20:47:18Z by runner 46c0ebfef5b4 (actions).
 - PLAN GAP T305 (since 2026-11-20T20:17:39Z, no attempt used; a plan change fixes it): T305: dependency T530 is DONE but its owned file app/portals/src/owner_help.rs is not on main; T305: dependency T530 is DONE but its owned file app/portals/templates/help_request.html is not on main; T305: dependency T530 is DONE but its owned file tests/security/tests/owner_help_reply.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 42 problem(s) on tasks still to run (+420 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
+- Strict plan check red: 40 problem(s) on tasks still to run (+419 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T682 | picks: a pick waiting for Confirm gets its hourly reminders, | QUEUED | 1 | 105 min | 20:49Z | app/picks/src/reminder_run.rs:316 (remind): a waiting pick whose job was cancelled or closed after the notice keeps gett |
 | T743 | messaging and privacy: opt-out listings are re-keyed to the  | MERGE_PENDING | 2 | 2 h 11 min | 20:36Z | Second review (head 7921ab0285f5916db9a9df89ee828c150908805e) ended FINDINGS: tests/integration/tests/suppression_rekey. |
 | T772 | picks: a public reader of a waiting pick's Confirm deadline  | MERGE_PENDING | 1 | 117 min | 20:02Z |  |
 | T756 | privacy: the scrubber catches phones split by connector word | done | 1 | 59 min | 19:57Z |  |
@@ -150,8 +151,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T752 (lease until 2026-11-20T23:45:20Z)
 - lane 2: T750 (lease until 2026-11-20T23:42:42Z)
 - lane 3: T558 (lease until 2026-11-20T23:29:10Z)
-- lane 4: T682 (lease until 2026-11-20T22:03:22Z)
 - lane 6: T673 (lease until 2026-11-20T23:17:39Z)
 
 ## Last usage reading
-- {"task": "T743", "at": "2026-11-20T20:36:13Z", "output_tokens": 76762, "input_tokens": 186, "cache_creation_input_tokens": 283533, "cache_read_input_tokens": 6513122}
+- {"task": "T682", "at": "2026-11-20T20:49:08Z", "output_tokens": 79676, "cache_read_input_tokens": 7829379, "cache_creation_input_tokens": 323874, "input_tokens": 208}
