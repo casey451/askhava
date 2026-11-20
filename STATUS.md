@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T06:36:14Z by runner 15d8c53415f5 (actions).
+Updated 2026-11-20T07:03:37Z by runner 405a1fbf7832 (actions).
 
-**Building: T764 in progress since 06:34Z; 524 of 707 done; week 22% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T764 in progress since 06:34Z; 525 of 707 done; week 22% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 524 of 707 build tasks (owner gates not counted)
+- **Tasks done:** 525 of 707 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T764 claimed 06:34Z, lease until 09:34Z; lane 3: T762 claimed 06:35Z, lease until 09:35Z; lane 4: T672 claimed 06:35Z, lease until 09:35Z; lane 7: T669 claimed 06:11Z, lease until 09:11Z
 - **Week:** 22% used, 147.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:35Z, 0 min before this update
+- **Last run:** 06:36Z, 26 min before this update
 - **Keeper:** last ran 06:34Z, next wake 06:54Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-20T06:36:14Z by runner 15d8c53415f5 (actions).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T463 (since 2026-11-20T06:35:55Z, no attempt used; a plan change fixes it): T463: dependency T543 is DONE but its owned file migrations/0206_businesses_away_busy.sql is not on main; T463: dependency T543 is DONE but its owned file app/businesses/src/away_busy.rs is not on main; T463: dependency T543 is DONE but its owned file tests/integration/tests/away_until.rs is not on main
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 82 problem(s) on tasks still to run (+389 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 88 problem(s) on tasks still to run (+393 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -25,7 +25,7 @@ Updated 2026-11-20T06:36:14Z by runner 15d8c53415f5 (actions).
 | T573 | messaging and server: queued business texts are addressed to | BLOCKED | 1 | 5 min | 06:27Z | PLAN GAP: app/privacy/src/business_contacts.rs:124 (owned by T412, not T573). Item (2) needs the outbox sender to read a |
 | T561 | server and portals: the homeowner's "Download my data" and h | MERGE_PENDING | 1 | 60 min | 06:26Z |  |
 | T765 | recovery (tests): the backup tests' fake binaries can no lon | MERGE_PENDING | 1 | 65 min | 06:11Z |  |
-| T751 | stand-ins (harness): the Stripe stand-in detaches a payment  | MERGE_PENDING | 1 | 51 min | 05:02Z |  |
+| T751 | stand-ins (harness): the Stripe stand-in detaches a payment  | done | 1 | 51 min | 05:02Z |  |
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | done | 2 | 36 min | 05:00Z | merging main into the reviewed head conflicts in kit/plan.lock, kit/runner.json; a resync merges it in on this attempt ( |
 | T543 | picks, businesses, portals and server: "Away until" is store | done | 1 | 64 min | 04:57Z |  |
 | T434 | portals: the monthly intake accuracy report page and the mon | done | 1 | 112 min | 04:55Z |  |
@@ -92,8 +92,6 @@ Updated 2026-11-20T06:36:14Z by runner 15d8c53415f5 (actions).
 | T216 | site: the hero photo and mark (photography assets) | done | 1 | 97 min | 08:10Z |  |
 | T310 | server and portals: the owner home and settings pages and th | done | 1 | 74 min | 07:19Z |  |
 | T562 | server and portals: "Why was I charged?" is served with the  | done | 1 | 2 h 43 min | 07:09Z |  |
-| T229 | Legal drafts: reading-grade check and plain-language rewrite | done | 1 | 2 h 17 min | 06:59Z |  |
-| T506 | Decisions digest, piece 7: the next entries after the header | done | 1 | 102 min | 06:55Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -101,7 +99,7 @@ Updated 2026-11-20T06:36:14Z by runner 15d8c53415f5 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 325 of 735 (44.2%) · partial 384 · unstarted 26
-**Tasks merged (throughput only):** 524 of 707
+**Tasks merged (throughput only):** 525 of 707
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -137,7 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 167 of 289 done
+- stage 5: 168 of 289 done
 - stage 6: 0 of 65 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
