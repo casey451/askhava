@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-20T15:37:30Z by runner 2de3f26c0335 (actions).
+Updated 2026-11-20T15:37:56Z by runner 4af5a136714a (actions).
 
 **Building: T530 in progress since 15:29Z; 541 of 712 done; week 36% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 541 of 712 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T530 claimed 15:29Z, lease until 18:29Z
-- **Week:** 36% used, 123.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T530 claimed 15:29Z, lease until 18:29Z; lane 4: T684 claimed 15:37Z, lease until 18:37Z
+- **Week:** 36% used, 120.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:37Z, 0 min before this update
 - **Keeper:** last ran 15:37Z, next wake 15:57Z
 
@@ -16,6 +16,7 @@ Updated 2026-11-20T15:37:30Z by runner 2de3f26c0335 (actions).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T524 (since 2026-11-20T12:53:17Z, no attempt used; a plan change fixes it): T524: dependency T648 is DONE but its owned file app/recovery/src/restore.rs is not on main; T524: dependency T648 is DONE but its owned file tests/recovery/tests/export_restores.rs is not on main
+- PLAN GAP T681 (since 2026-11-20T15:37:36Z, no attempt used; a plan change fixes it): T681: dependency T667 is DONE but its owned file app/calls/src/pick_line.rs is not on main; T681: dependency T667 is DONE but its owned file tests/integration/tests/reconnect_line.rs is not on main
 - Strict plan check red: 38 problem(s) on tasks still to run (+411 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
 
 ## Last 24 hours
@@ -127,7 +128,7 @@ Updated 2026-11-20T15:37:30Z by runner 2de3f26c0335 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-20T15:22:49Z (week)): week: 70.2M used, 123.8M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-08T02:35:47Z.
+- Pacing (session_reading 2026-11-20T15:36:44Z (week)): week: 73.2M used, 120.8M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-04T08:21:06Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -143,6 +144,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T530 (lease until 2026-11-20T18:29:00Z)
+- lane 4: T684 (lease until 2026-11-20T18:37:36Z)
 
 ## Last usage reading
 - {"task": "T770", "at": "2026-11-20T15:35:25Z", "cache_creation_input_tokens": 52775, "output_tokens": 7110, "input_tokens": 49, "cache_read_input_tokens": 570147}
