@@ -990,11 +990,18 @@ fn register_timer_backstop(registry: &mut Registry, clock: Arc<dyn Clock>) {
 }
 
 /// Registers `businesses`' daily license-map re-apply (`businesses.license_reapply`, T372,
-/// BIZ-050, D-2705) on the worker clock; `worker.rs`'s `schedule_start` seeds it.
+/// BIZ-050, D-2705) and daily deliverability re-test run (`businesses.deliverability_retests`,
+/// T686, BIZ-042, D-4361) on the worker clock; `worker.rs`'s `schedule_start` seeds the first and
+/// its `schedule_checks` the second.
 fn register_license_reapply(registry: &mut Registry, clock: Arc<dyn Clock>) {
+    let retest_clock = Arc::clone(&clock);
     registry.register(askhava_businesses::api::REAPPLY_KIND, move |pool, _task| {
         let now = clock.now();
         async move { askhava_businesses::api::run_reapply(&pool, now).await }
+    });
+    registry.register(askhava_businesses::api::RETEST_KIND, move |pool, _task| {
+        let now = retest_clock.now();
+        async move { askhava_businesses::api::run_retests(&pool, now).await }
     });
 }
 
@@ -1064,8 +1071,8 @@ fn register_daily_lists(
 /// postal setting (required in test and live) `messaging`'s business notices and charge receipts
 /// ([`register_notice_senders`], T313), the hourly
 /// dead-letter check ([`no_handler_alert`], OPS-004), `jobs`' daily timer backstop
-/// ([`register_timer_backstop`], T366), `businesses`' daily license-map re-apply
-/// ([`register_license_reapply`], T372), `licensing`'s daily ROC and city list run
+/// ([`register_timer_backstop`], T366), `businesses`' daily license-map re-apply and
+/// deliverability re-test run ([`register_license_reapply`], T372, T686), `licensing`'s daily ROC and city list run
 /// ([`register_daily_lists`], T371) and, with the Twilio settings in `pairs`
 /// (required in test and live, D-1688), `messaging`'s day-31 body delete (PRIV-027), `picks`'
 /// masked-line retry (CALL-001), the safety voice call ([`register_safety_call`], T330, D-3134)
