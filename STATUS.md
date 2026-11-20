@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T04:50:05Z by runner 6a414bc538bf (actions).
+Updated 2026-11-20T04:50:29Z by runner 6a414bc538bf (actions).
 
 **Building: T726 in progress since 04:23Z; 518 of 707 done; week 19% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 518 of 707 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T726 claimed 04:23Z, lease until 07:23Z; lane 2: T751 claimed 04:11Z, lease until 07:11Z; lane 3: T543 claimed 03:53Z, lease until 06:53Z; lane 4: T110 claimed 02:18Z, lease until 05:18Z; lane 5: T556 claimed 03:58Z, lease until 06:58Z; lane 6: T663 claimed 03:48Z, lease until 06:48Z; lane 7: T434 claimed 03:02Z, lease until 06:02Z
+- **Lane:** lane 1: T726 claimed 04:23Z, lease until 07:23Z; lane 2: T751 claimed 04:11Z, lease until 07:11Z; lane 3: T543 claimed 03:53Z, lease until 06:53Z; lane 4: T110 claimed 02:18Z, lease until 05:18Z; lane 6: T663 claimed 03:48Z, lease until 06:48Z; lane 7: T434 claimed 03:02Z, lease until 06:02Z
 - **Week:** 19% used, 148.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:25Z, 24 min before this update
 - **Keeper:** last ran 04:14Z, next wake 05:20Z
@@ -20,6 +20,7 @@ Updated 2026-11-20T04:50:05Z by runner 6a414bc538bf (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T556 | Decisions digest, piece 11: the next entries after the heade | MERGE_PENDING | 1 | 51 min | 04:50Z |  |
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 2 | 32 min | 04:08Z | merging main into the reviewed head conflicts in kit/plan.lock, kit/runner.json; a resync merges it in on this attempt ( |
 | T747 | intake and jobs: the homeowner's INT-029 emergency choice ma | done | 1 | 71 min | 03:25Z |  |
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 2 | 2 h 16 min | 03:22Z |  |
@@ -83,7 +84,6 @@ Updated 2026-11-20T04:50:05Z by runner 6a414bc538bf (actions).
 | T229 | Legal drafts: reading-grade check and plain-language rewrite | done | 1 | 2 h 17 min | 06:59Z |  |
 | T506 | Decisions digest, piece 7: the next entries after the header | done | 1 | 102 min | 06:55Z |  |
 | T408 | server: a release waits while safe mode is on and goes ahead | done | 3 | 2 h 48 min | 06:17Z | PLAN GAP: kit/prompts/T408.md:54 "Size budget: at most 6 files, 800 changed lines" cannot be met. The prompt's own plan  |
-| T203 | Wording scan: the required statements, business copy lines a | done | 4 | 42 min | 04:50Z | PLAN GAP: app/portals/templates/es_business_signup.html:82 ("Licencia de control de plagas") and :88 ("Mi licencia inclu |
 
 ### Plan and harness merges on main
 - none
@@ -138,9 +138,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T751 (lease until 2026-11-20T07:11:19Z)
 - lane 3: T543 (lease until 2026-11-20T06:53:34Z)
 - lane 4: T110 (lease until 2026-11-20T05:18:18Z)
-- lane 5: T556 (lease until 2026-11-20T06:58:39Z)
 - lane 6: T663 (lease until 2026-11-20T06:48:51Z)
 - lane 7: T434 (lease until 2026-11-20T06:02:51Z)
 
 ## Last usage reading
-- {"task": "T726", "at": "2026-11-20T04:08:21Z", "input_tokens": 67, "output_tokens": 10552, "cache_creation_input_tokens": 71498, "cache_read_input_tokens": 1022844}
+- {"task": "T556", "at": "2026-11-20T04:50:05Z", "cache_read_input_tokens": 6240578, "input_tokens": 189, "cache_creation_input_tokens": 297727, "output_tokens": 60919}
