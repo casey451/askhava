@@ -8757,3 +8757,4 @@
 - 2026-11-20T20:18:13Z runner 46c0ebfef5b4 (actions): {}
 - 2026-11-20T20:27:48Z runner 46c0ebfef5b4 (actions): {}
 - 2026-11-20T20:28:17Z runner 46c0ebfef5b4 (actions): {}
+- 2026-11-20T20:29:24Z runner 126f90388246 (actions): {"T558": "QUEUED -> IN_PROGRESS"}; T558 estimated 678k tokens (calibrated); week has 99.0M left (no five-hour budget, D-3056) after 5.0M still running in another lane (session_reading 2026-11-20T20:27:48Z (week)); claimed
