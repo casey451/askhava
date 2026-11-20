@@ -92261,7 +92261,16 @@
    "wip_claim": {
     "attempt": 2,
     "remote_sha": ""
-   }
+   },
+   "reviewed_sha": "800791708599056db7ee945294b99a284f84d6d3",
+   "review_lease": {
+    "task": "T682",
+    "session": "actions-44815136080",
+    "expires": "2026-11-20T23:56:14Z",
+    "lane": "5"
+   },
+   "branch": "claude/task/T682-confirm-reminders",
+   "head_check_since": null
   },
   {
    "id": "T683",
@@ -105739,7 +105748,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T22:21:45Z",
+ "updated_at": "2026-11-20T22:27:28Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -105837,7 +105846,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "8897b21133d602cd5f8081af48c4b76b2e244cb3",
+ "runner_sha": "800791708599056db7ee945294b99a284f84d6d3",
  "starter": "actions",
  "smoke_runs": [
   {

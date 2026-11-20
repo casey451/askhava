@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T22:21:45Z by runner 8897b21133d6 (actions).
+Updated 2026-11-20T22:27:28Z by runner 800791708599 (actions).
 
 **Building: T682 in progress since 20:56Z; 556 of 714 done; week 49% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-20T22:21:45Z by runner 8897b21133d6 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 5: T682 claimed 20:56Z, lease until 23:56Z
 - **Week:** 49% used, 97.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:21Z, 0 min before this update
+- **Last run:** 22:22Z, 5 min before this update
 - **Keeper:** last ran 22:21Z, next wake 23:58Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-20T22:21:45Z by runner 8897b21133d6 (actions).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T773 (since 2026-11-20T22:13:04Z, no attempt used; a plan change fixes it): T773: prompt kit/prompts/T773.md is missing; run scripts/gen_prompts.py; T773: branch claude/task/T773-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
-- Strict plan check red: 45 problem(s) on tasks still to run (+428 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 45 problem(s) on tasks still to run (+425 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -99,7 +99,6 @@ Updated 2026-11-20T22:21:45Z by runner 8897b21133d6 (actions).
 | T109 | recovery: backup checks and the nightly encrypted export | resync | 2 | 93 min | 23:26Z |  |
 | T707 | server: an emergency pick's address re-release waits while s | check_failed | 1 | 80 min | 22:59Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T541 | payments, portals and adapters: a card saved or changed from | check_failed | 2 | 91 min | 22:55Z |  |
-| T480 | messaging, server and portals: the stored "Spanish conversat | done | 1 | 104 min | 22:23Z |  |
 
 ### Plan and harness merges on main
 - none
