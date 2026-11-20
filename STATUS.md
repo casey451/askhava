@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T06:29:04Z by runner 9e195ff80197 (actions).
+Updated 2026-11-20T06:29:20Z by runner 9e195ff80197 (actions).
 
 **Building: T669 in progress since 06:11Z; 523 of 707 done; week 22% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-20T06:29:04Z by runner 9e195ff80197 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 7: T669 claimed 06:11Z, lease until 09:11Z
 - **Week:** 22% used, 146.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:28Z, 0 min before this update
-- **Keeper:** last ran 06:28Z, next wake 06:48Z
+- **Last run:** 06:29Z, 0 min before this update
+- **Keeper:** last ran 06:29Z, next wake 06:49Z
 
 ## Needs attention
 - BLOCKED T573: plan gap reported: PLAN GAP: app/privacy/src/business_contacts.rs:124 (owned by T412, not T573). Item (2) needs the outbox sender to read a business line's phone number, which lives only in privacy.staff_phone; privacy::api::read_staff_phone refuses every purpose except BusinessPurpose::SignInCode (opens_phone at :124, refusal at :398). Messaging keeps no copy (sender directory holds blind-index digests only), and tests/security business_contact_readers.rs lets only privacy and server name read_staff_phone. Reusing SignInCode would falsify the SEC-047 audit. Smallest plan change: give T573 business_contacts.rs s; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T573 --plan-fix D-### --reason "..."` (D-2859)
