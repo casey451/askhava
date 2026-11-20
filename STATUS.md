@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T02:56:09Z by runner 1ef120be8c2a (actions).
+Updated 2026-11-20T02:56:42Z by runner 1ef120be8c2a (actions).
 
 **Building: T747 in progress since 02:14Z; 515 of 704 done; week 17% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,15 +8,15 @@ Updated 2026-11-20T02:56:09Z by runner 1ef120be8c2a (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T747 claimed 02:14Z, lease until 05:14Z; lane 3: T726 claimed 01:05Z, lease until 04:05Z; lane 4: T110 claimed 02:18Z, lease until 05:18Z
 - **Week:** 17% used, 160.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:55Z, 0 min before this update
-- **Keeper:** last ran 02:27Z, next wake 04:08Z
+- **Last run:** 02:56Z, 0 min before this update
+- **Keeper:** last ran 02:56Z, next wake 03:16Z
 
 ## Needs attention
 - BLOCKED T648: plan gap reported: PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, but scripts/check_include_paths.py (D-1867, run in the smoke by tests/test_check_include_paths.py::test_td_ops_32_the_real_repository_passes) fails: scripts/bootstrap_roles.sql is not matched by the Checks and Coverage rules in .github/workflows/ci.yml (protected, harness-only) nor by RUST_PATHS in scripts/prehandin.sh:77 (locked in kit/plan.lock). T648 owns neither. Fix: a harness task adds scripts/bootstrap_roles\.sql to those three rules and rewrites kit/plan.lock. Reviewer; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T648 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T672: plan gap reported: PLAN GAP: tests/integration/tests/intake_order_two_jobs.rs:278 (owned by T711 and T717, not T672) also pins the old order, but D-4822 named only two functions in intake_order_two_jobs_rules.rs. Evidence: test td_int_45_also_after_the_zip_opens_the_second_job_through_open_job sends the ZIP reply then ALSO and expects only job.handyman.none linked ("question open", :284-:288); under D-4822 steps 6 to 8 come after the coverage line so "How soon?" is open, and ALSO opens a second job (left: ["job.handyman.none","job.plumbing_repair.none"]). kit/tasks.json: file owned by T711 and T717. Smallest pla; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T672 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 73 problem(s) on tasks still to run (+367 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 72 problem(s) on tasks still to run (+367 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
