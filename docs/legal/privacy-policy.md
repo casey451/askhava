@@ -88,7 +88,7 @@ Photos are optional; a request goes out the same way without them. When you send
 - **Your contact details** (name, email, address): deleted 180 days after your job closes, longer only while a complaint or dispute is open.
 - **Photos:** deleted 30 days after your job closes.
 - **Job descriptions** with contact details removed: 3 years.
-- **Your phone number, locked (encrypted), with your texting permission and opt-out records:** 5 years after our last message to that number, only as proof of your texting choices.
+- **Your phone number, locked (encrypted), with your texting permission and opt-out records:** 5 years after our last message to that number, only as proof of your texting choices. An opted-out number is kept as long as needed to honor the opt-out.
 - **Payment, ledger and tax records, and our audit log:** 7 years.
 - **Records of which terms you accepted, and each version of the terms:** 7 years after the last pick or charge made under them, with no contact details.
 - **Website request logs** (request IDs, pages and status codes, no contact details): 30 days, in our own logs and our host's.
