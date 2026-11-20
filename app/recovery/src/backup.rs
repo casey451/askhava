@@ -418,16 +418,52 @@ mod tests {
         dir
     }
 
+    /// Writes an executable script through a child shell, so this process never holds a write
+    /// descriptor a concurrent fork could inherit (ETXTBSY on exec; D-4864).
+    fn write_script(path: &Path, text: &str) {
+        let status = std::process::Command::new("/bin/sh")
+            .args(["-c", r#"printf %s "$2" > "$1" && chmod 755 "$1""#, "sh"])
+            .arg(path)
+            .arg(text)
+            .status()
+            .unwrap();
+        assert!(status.success(), "writing {} failed", path.display());
+    }
+
     /// A fake binary printing `version` to `--version`.
     fn fake_tool(dir: &Path, name: &str, version: &str) {
-        use std::os::unix::fs::PermissionsExt;
-        let path = dir.join(name);
-        std::fs::write(
-            &path,
-            format!("#!/bin/sh\necho '{name} (PostgreSQL) {version}'\n"),
-        )
-        .unwrap();
-        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755)).unwrap();
+        let text = format!("#!/bin/sh\necho '{name} (PostgreSQL) {version}'\n");
+        write_script(&dir.join(name), &text);
+    }
+
+    /// A thread body spawning `/bin/true` in a loop until `stop` is set.
+    fn fork_until(stop: std::sync::Arc<std::sync::atomic::AtomicBool>) -> impl FnOnce() {
+        move || {
+            while !stop.load(std::sync::atomic::Ordering::Relaxed) {
+                std::process::Command::new("/bin/true").status().unwrap();
+            }
+        }
+    }
+
+    #[test]
+    fn scripts_written_while_other_threads_fork_always_run() {
+        use std::sync::atomic::{AtomicBool, Ordering};
+        let stop = std::sync::Arc::new(AtomicBool::new(false));
+        let forkers: Vec<_> = (0..4)
+            .map(|_| std::thread::spawn(fork_until(std::sync::Arc::clone(&stop))))
+            .collect();
+        let path = scratch("race").join("script");
+        let ran = (0..200).all(|round| {
+            write_script(&path, &format!("#!/bin/sh\nexit 0\n# {round}\n"));
+            std::process::Command::new(&path)
+                .status()
+                .is_ok_and(|s| s.success())
+        });
+        stop.store(true, Ordering::Relaxed);
+        for forker in forkers {
+            forker.join().unwrap();
+        }
+        assert!(ran);
     }
 
     #[test]
@@ -708,10 +744,8 @@ mod tests {
 
     /// A fake `pg_dump` running `body`, and export settings to a fresh fake recipient.
     fn fake_dump(dir: &Path, body: &str) -> (PgTool, ExportSettings, age::x25519::Identity) {
-        use std::os::unix::fs::PermissionsExt;
         let path = dir.join("pg_dump");
-        std::fs::write(&path, format!("#!/bin/sh\n{body}\n")).unwrap();
-        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755)).unwrap();
+        write_script(&path, &format!("#!/bin/sh\n{body}\n"));
         let own = age::x25519::Identity::generate();
         let export = ExportSettings {
             recipient: own.to_public(),
