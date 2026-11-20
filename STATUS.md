@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T20:58:18Z by runner d20711035660 (actions).
+Updated 2026-11-20T20:58:45Z by runner d20711035660 (actions).
 
 **Building: T752 in progress since 20:45Z; 553 of 713 done; week 46% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 553 of 713 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T752 claimed 20:45Z, lease until 23:45Z; lane 2: T750 claimed 20:42Z, lease until 23:42Z; lane 3: T558 claimed 20:29Z, lease until 23:29Z; lane 4: T739 claimed 20:57Z, lease until 23:57Z; lane 5: T682 claimed 20:56Z, lease until 23:56Z; lane 6: T673 claimed 20:17Z, lease until 23:17Z
+- **Lane:** lane 1: T752 claimed 20:45Z, lease until 23:45Z; lane 2: T750 claimed 20:42Z, lease until 23:42Z; lane 4: T739 claimed 20:57Z, lease until 23:57Z; lane 5: T682 claimed 20:56Z, lease until 23:56Z; lane 6: T673 claimed 20:17Z, lease until 23:17Z
 - **Week:** 46% used, 97.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 20:57Z, 0 min before this update
 - **Keeper:** last ran 20:50Z, next wake 21:10Z
@@ -21,6 +21,7 @@ Updated 2026-11-20T20:58:18Z by runner d20711035660 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T558 | Decisions digest, piece 13: the next entries after the heade | MERGE_PENDING | 1 | 28 min | 20:57Z |  |
 | T682 | picks: a pick waiting for Confirm gets its hourly reminders, | QUEUED | 1 | 105 min | 20:49Z | app/picks/src/reminder_run.rs:316 (remind): a waiting pick whose job was cancelled or closed after the notice keeps gett |
 | T743 | messaging and privacy: opt-out listings are re-keyed to the  | MERGE_PENDING | 2 | 2 h 11 min | 20:36Z | Second review (head 7921ab0285f5916db9a9df89ee828c150908805e) ended FINDINGS: tests/integration/tests/suppression_rekey. |
 | T772 | picks: a public reader of a waiting pick's Confirm deadline  | done | 1 | 117 min | 20:02Z |  |
@@ -150,10 +151,9 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T752 (lease until 2026-11-20T23:45:20Z)
 - lane 2: T750 (lease until 2026-11-20T23:42:42Z)
-- lane 3: T558 (lease until 2026-11-20T23:29:10Z)
 - lane 4: T739 (lease until 2026-11-20T23:57:24Z)
 - lane 5: T682 (lease until 2026-11-20T23:56:14Z)
 - lane 6: T673 (lease until 2026-11-20T23:17:39Z)
 
 ## Last usage reading
-- {"task": "T682", "at": "2026-11-20T20:49:08Z", "output_tokens": 79676, "cache_read_input_tokens": 7829379, "cache_creation_input_tokens": 323874, "input_tokens": 208}
+- {"task": "T558", "at": "2026-11-20T20:57:46Z", "cache_read_input_tokens": 3908254, "input_tokens": 120, "output_tokens": 34820, "cache_creation_input_tokens": 147883}
