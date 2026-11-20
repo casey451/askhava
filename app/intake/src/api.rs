@@ -31,7 +31,7 @@ pub use crate::address_wait::{ADDRESS_IN_KIND, AskedAgain, ask_again, run_addres
 pub use crate::ai_on::ai_on;
 pub use crate::cards_out::{
     CARDS_OUT_TEMPLATE, CardsOutKeys, CardsSent, HOLD_RECHECK, run_cards_approved,
-    run_emergency_released, send_approved, send_emergency,
+    run_emergency_released, send_approved, send_emergency, send_emergency_job,
 };
 pub use crate::closing::{
     CLOSE_MENTION_TEMPLATE, CLOSE_WHICH_TEMPLATE, Closing, JOB_CLOSED_TEMPLATE,
