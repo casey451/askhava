@@ -21,6 +21,7 @@ mod accepted_quote_email;
 mod alert_contact;
 mod alert_emails;
 pub mod api;
+mod business_eligibility;
 mod business_notices;
 mod checkin_email;
 mod consent_alerts;
