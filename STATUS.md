@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T23:40:01Z by runner 692854aa6cfa (manual).
+Updated 2026-11-20T23:47:34Z by runner 0aad3182c72e (actions).
 
-**Building: T664 in progress since 23:09Z; 560 of 714 done; week 52% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T664 in progress since 23:09Z; 561 of 714 done; week 52% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 560 of 714 build tasks (owner gates not counted)
+- **Tasks done:** 561 of 714 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T664 claimed 23:09Z, lease until 02:09Z; lane 4: T677 claimed 23:11Z, lease until 02:11Z; lane 6: T526 claimed 23:08Z, lease until 02:08Z
 - **Week:** 52% used, 89.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:25Z, 14 min before this update
+- **Last run:** 23:40Z, 7 min before this update
 - **Keeper:** last ran 23:25Z, next wake 02:10Z
 
 ## Needs attention
@@ -20,7 +20,7 @@ Updated 2026-11-20T23:40:01Z by runner 692854aa6cfa (manual).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T773 | Runner (harness): the merge train can carry a third car, bui | MERGE_PENDING | 1 | 33 min | 23:17Z |  |
+| T773 | Runner (harness): the merge train can carry a third car, bui | done | 1 | 33 min | 23:17Z |  |
 | T682 | picks: a pick waiting for Confirm gets its hourly reminders, | done | 2 | 91 min | 22:27Z | app/picks/src/reminder_run.rs:316 (remind): a waiting pick whose job was cancelled or closed after the notice keeps gett |
 | T673 | intake (harness): the dispatcher builds and shows the card,  | done | 1 | 106 min | 22:03Z |  |
 | T739 | picks: the owner's re-send of a release goes only while the  | done | 1 | 52 min | 21:49Z |  |
@@ -101,31 +101,31 @@ Updated 2026-11-20T23:40:01Z by runner 692854aa6cfa (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 95 of 735 (12.9%) · partial 621 · unstarted 19
-**Tasks merged (throughput only):** 560 of 714
+**Requirements verified:** 362 of 735 (49.3%) · partial 354 · unstarted 19
+**Tasks merged (throughput only):** 561 of 714
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 3 | 32 | 0 | 35 |
-| ai | 1 | 25 | 3 | 29 |
-| businesses | 1 | 56 | 1 | 58 |
-| calls | 1 | 24 | 0 | 25 |
-| consent | 3 | 32 | 0 | 35 |
-| fees | 1 | 51 | 0 | 52 |
-| intake | 1 | 42 | 0 | 43 |
-| job-cards | 0 | 24 | 0 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 2 | 43 | 0 | 45 |
-| ops-recovery | 12 | 30 | 12 | 54 |
-| privacy | 1 | 30 | 0 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 0 | 56 | 0 | 56 |
-| recurring | 3 | 8 | 0 | 11 |
-| security | 2 | 50 | 3 | 55 |
-| terms | 25 | 10 | 0 | 35 |
+| accessibility | 18 | 17 | 0 | 35 |
+| ai | 8 | 18 | 3 | 29 |
+| businesses | 23 | 34 | 1 | 58 |
+| calls | 15 | 10 | 0 | 25 |
+| consent | 17 | 18 | 0 | 35 |
+| fees | 25 | 27 | 0 | 52 |
+| intake | 12 | 31 | 0 | 43 |
+| job-cards | 12 | 12 | 0 | 24 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 21 | 7 | 0 | 28 |
+| messaging | 26 | 19 | 0 | 45 |
+| ops-recovery | 15 | 27 | 12 | 54 |
+| privacy | 10 | 21 | 0 | 31 |
+| quiet-hours | 3 | 6 | 0 | 9 |
+| quotes-pick | 26 | 30 | 0 | 56 |
+| recurring | 10 | 1 | 0 | 11 |
+| security | 13 | 39 | 3 | 55 |
+| terms | 27 | 8 | 0 | 35 |
 | website | 20 | 10 | 0 | 30 |
-| wording | 19 | 13 | 0 | 32 |
+| wording | 28 | 4 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -138,7 +138,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 203 of 296 done
+- stage 5: 204 of 296 done
 - stage 6: 0 of 65 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
