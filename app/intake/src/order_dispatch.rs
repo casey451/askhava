@@ -61,7 +61,7 @@ use askhava_jobs::api::create;
 use askhava_messaging::api::Language;
 use askhava_ops::api::Actor;
 use askhava_quotes::api::{
-    CardFacts, CardParts, Place as Site, Timing, card_pool, description, request_coverage,
+    CardFacts, CardParts, Danger, Place as Site, Timing, card_pool, description, request_coverage,
 };
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
@@ -849,7 +849,8 @@ async fn timing_answer(
 
 /// INT-029, CARD-007, INT-030: the card `order::choose_with_card` stores before the choice can
 /// release the request's first job: its trade's and town's display names (`card_pool`), the
-/// candidates read from her kept words and the "How soon?" answer `soon`; the description is hers.
+/// candidates read from her kept words, the "How soon?" answer `soon` and, when a 911 text was
+/// sent, its situation ([`danger`]); the description is hers.
 async fn card_in(
     tx: &mut PgConnection,
     conversation: Uuid,
@@ -878,7 +879,7 @@ async fn card_in(
         description: String::new(),
         answers: Vec::new(),
         timing: Some(timing),
-        danger: None,
+        danger: danger(tx, conversation).await?,
         photos: Vec::new(),
         concept: None,
     };
@@ -888,6 +889,24 @@ async fn card_in(
         parts,
         category: trade.clone(),
         candidates: facts.candidates,
+    }))
+}
+
+/// CARD-007, INT-004 (D-436, D-4833): the situation of the request's latest 911 text that was
+/// sent, for the card's "911 text sent: ..." line; `None` when no 911 text went out.
+async fn danger(tx: &mut PgConnection, conversation: Uuid) -> Result<Option<Danger>, IntakeError> {
+    let kinds = [
+        (Hazard::Gas, Danger::Gas),
+        (Hazard::CoAlarm, Danger::CoAlarm),
+        (Hazard::SmokeFire, Danger::SmokeOrFire),
+        (Hazard::Electrical, Danger::Electrical),
+        (Hazard::PowerLine, Danger::PowerLine),
+    ];
+    let events = models::events(tx, conversation).await?;
+    let sent = events.iter().rev().find(|e| e.text_queued_at.is_some());
+    Ok(sent.and_then(|e| {
+        let kind = kinds.iter().find(|(hazard, _)| hazard.code() == e.matched);
+        kind.map(|(_, danger)| *danger)
     }))
 }
 

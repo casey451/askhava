@@ -19,7 +19,9 @@ use askhava_businesses::api::{
     set_emergency_emails, set_job_types, set_towns, welcome_sent,
 };
 use askhava_catalog::api::load_embedded;
-use askhava_intake::api::rules::{CONSENT_TEMPLATE, Inbound, SAFETY_TEMPLATE, Settings};
+use askhava_intake::api::rules::{
+    CONSENT_TEMPLATE, Inbound, NAME_ADDRESS_TEMPLATE, SAFETY_TEMPLATE, Settings,
+};
 use askhava_intake::api::{
     CHOICE_TEMPLATE, COUNT_MANY_TEMPLATE, EMERGENCY_RELEASED_KIND, HOW_SOON_TEMPLATE, Handled,
     NEEDED_BY_TEMPLATE, NIGHT_MANY_TEMPLATE, NIGHT_NONE_TEMPLATE, RawReply, Reply,
@@ -346,7 +348,8 @@ async fn td_int_46_urgent_emergency_releases_once_and_regular_never(mut db: Db) 
 
 /// TD-INT-46 (INT-005, INT-006, INT-025): the 911 path. SAFE comes before the ZIP, and any "How
 /// soon?" answer but 4 then offers the choice; a 911 text while the choice is open holds it (an
-/// answer then does nothing) until SAFE, which offers it again.
+/// answer then does nothing) until SAFE, which offers it again. The emergency card carries the
+/// latest 911 text's "911 text sent: ..." line (CARD-007, D-4833).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_int_46_on_the_911_path_no_choice_until_safe(mut db: Db) {
     setup(&mut db, false).await;
@@ -374,6 +377,14 @@ async fn td_int_46_on_the_911_path_no_choice_until_safe(mut db: Db) {
     assert_eq!(released(&mut db).await, 0);
     sent(&mut db, 0x0555_0406, "emergency", 7).await;
     assert_eq!(released(&mut db).await, 1);
+    let card: String =
+        sqlx::query_scalar("SELECT card_text FROM quotes.shown_card WHERE request_id = $1")
+            .bind(id)
+            .fetch_one(&mut *db)
+            .await
+            .expect("card");
+    let line = "911 text sent: smoke or fire";
+    assert!(card.lines().any(|l| l == line), "CARD-007: {card}");
 }
 
 /// TD-INT-46 (INT-033, INT-006): at 21:00 Arizona with 2 after-hours businesses the count text
@@ -399,8 +410,9 @@ async fn td_int_46_at_night_with_no_business_no_choice_is_offered(mut db: Db) {
     assert_eq!(released(&mut db).await, 0);
 }
 
-/// TD-INT-46 (INT-029): an Emergency choice stored before the ZIP releases the job when the ZIP
-/// comes in, once.
+/// TD-INT-46 (INT-029, INT-039): an Emergency choice stored before the ZIP releases the job when
+/// the ZIP comes in, once. The handyman set has no question marked for emergency jobs, so the
+/// name-and-address question follows the coverage line, with no "How soon?" and no choice.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_int_46_the_zip_after_an_emergency_choice_releases_the_job(mut db: Db) {
     setup(&mut db, false).await;
@@ -410,10 +422,18 @@ async fn td_int_46_the_zip_after_an_emergency_choice_releases_the_job(mut db: Db
     plant(&mut db, id, ("emergency_choice", "emergency"), 1).await;
     assert_eq!(released(&mut db).await, 0, "no ZIP yet");
     let zip = sent(&mut db, 0x0555_0409, HOME_ZIP, 2).await;
-    assert_eq!(zip.first(), Some(&COUNT_MANY_TEMPLATE));
+    let texts = [COUNT_MANY_TEMPLATE, NAME_ADDRESS_TEMPLATE];
+    assert_eq!(zip, texts, "every text, in order");
     assert_eq!(released(&mut db).await, 1);
-    sent(&mut db, 0x0555_0409, "1", 3).await;
+    let next = sent(&mut db, 0x0555_0409, "1", 3).await;
+    assert_eq!(
+        next,
+        [NAME_ADDRESS_TEMPLATE],
+        "no street number: asked again"
+    );
     assert_eq!(released(&mut db).await, 1, "once");
+    let card = "SELECT count(*) FROM quotes.shown_card WHERE request_id = $1 AND card_text LIKE '%911 text sent%'";
+    assert_eq!(count(&mut db, card, id).await, 0, "no 911 text, no line");
 }
 
 /// TD-INT-46 (TXT-041): while Spanish conversations are off, a Spanish first text gets the fixed
