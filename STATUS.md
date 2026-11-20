@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T12:53:29Z by runner 7d98387f34ed (actions).
+Updated 2026-11-20T12:53:58Z by runner 7d98387f34ed (actions).
 
 **Building: T496 in progress since 11:44Z; 536 of 710 done; week 31% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 536 of 710 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T496 claimed 11:44Z, lease until 14:44Z; lane 3: T727 claimed 11:55Z, lease until 14:55Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
-- **Week:** 31% used, 128.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:40Z, 12 min before this update
+- **Lane:** lane 2: T496 claimed 11:44Z, lease until 14:44Z; lane 3: T727 claimed 11:55Z, lease until 14:55Z; lane 5: T767 claimed 12:53Z, lease until 15:53Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
+- **Week:** 31% used, 126.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 12:40Z, 13 min before this update
 - **Keeper:** last ran 12:31Z, next wake 12:51Z
 
 ## Needs attention
@@ -33,9 +33,10 @@ Ci failed at step: All five jobs passed
 Checks: success, Lint and slow tests: success, Python: success, Coverage: cancelled, E2e: success
 ##[error]Process completed with exit code 1.
 - BLOCKED T614: plan gap reported: PLAN GAP: tests/a11y/reflow_spacing.spec.ts:49-54 (T053, protected) flags every TARGETS control with no box as "is hidden", but DESIGN_SPEC docs/design/DESIGN_SPEC.md:102 requires .site-nav hidden below 1024px and Menu hidden from 1024px, so the specified header fails at every width. Also: closed <details> Menu links keep boxes in Chromium (counted as Tab stops by j1_keyboard.spec.ts:56 and j2_keyboard.spec.ts:26) and the open Menu scrolls sideways at 320px (scrollWidth 375); both fixable only in app/site/static/site.css, not owned by T614 (CSP forbids inline style). Smallest plan change: a ta; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T614 --plan-fix D-### --reason "..."` (D-2859)
+- PLAN GAP T206 (since 2026-11-20T12:53:17Z, no attempt used; a plan change fixes it): T206: dependency T648 is DONE but its owned file app/recovery/src/restore.rs is not on main; T206: dependency T648 is DONE but its owned file tests/recovery/tests/export_restores.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- PLAN GAP T457 (since 2026-11-20T12:39:52Z, no attempt used; a plan change fixes it): T457: dependency T463 is DONE but its owned file tests/integration/tests/busy_for.rs is not on main
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
+- PLAN GAP T524 (since 2026-11-20T12:53:17Z, no attempt used; a plan change fixes it): T524: dependency T648 is DONE but its owned file app/recovery/src/restore.rs is not on main; T524: dependency T648 is DONE but its owned file tests/recovery/tests/export_restores.rs is not on main
 - Strict plan check red: 39 problem(s) on tasks still to run (+406 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
 
 ## Last 24 hours
@@ -145,7 +146,7 @@ Checks: success, Lint and slow tests: success, Python: success, Coverage: cancel
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-20T12:30:43Z (week)): week: 65.2M used, 128.8M left, resets 2026-11-26T17:00:00Z; projected finish 2026-11-29T19:14:09Z.
+- Pacing (session_reading 2026-11-20T12:30:43Z (week)): week: 67.2M used, 126.8M left, resets 2026-11-26T17:00:00Z; projected finish 2026-11-29T18:40:18Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -163,6 +164,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T496 (lease until 2026-11-20T14:44:53Z)
 - lane 3: T727 (lease until 2026-11-20T14:55:28Z)
+- lane 5: T767 (lease until 2026-11-20T15:53:17Z)
 - lane 6: T530 (lease until 2026-11-20T13:55:17Z)
 - lane 7: T672 (lease until 2026-11-20T15:39:52Z)
 
