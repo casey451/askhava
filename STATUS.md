@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T17:26:55Z by runner b858b557a1c3 (actions).
+Updated 2026-11-20T17:37:53Z by runner 9b0887171add (actions).
 
-**Building: T614 in progress since 17:26Z; 545 of 712 done; week 38% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T614 in progress since 17:26Z; 545 of 713 done; week 38% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 545 of 712 build tasks (owner gates not counted)
+- **Tasks done:** 545 of 713 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T614 claimed 17:26Z, lease until 20:26Z; lane 5: T686 claimed 16:22Z, lease until 20:05Z; lane 6: T573 claimed 17:20Z, lease until 20:20Z; lane 7: T743 claimed 16:24Z, lease until 19:24Z
+- **Lane:** lane 3: T614 claimed 17:26Z, lease until 20:26Z; lane 5: T686 claimed 16:22Z, lease until 20:37Z; lane 6: T573 claimed 17:20Z, lease until 20:20Z; lane 7: T743 claimed 16:24Z, lease until 19:24Z
 - **Week:** 38% used, 113.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:26Z, 0 min before this update
+- **Last run:** 17:26Z, 10 min before this update
 - **Keeper:** last ran 17:23Z, next wake 17:43Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ The pick's window deadline (picks.pick.confirm_due) is read only by private code
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T664 (since 2026-11-20T16:15:19Z, no attempt used; a plan change fixes it): outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs
-- Strict plan check red: 38 problem(s) on tasks still to run (+412 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
+- Strict plan check red: 41 problem(s) on tasks still to run (+413 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -149,7 +149,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 3: T614 (lease until 2026-11-20T20:26:36Z)
-- lane 5: T686 (lease until 2026-11-20T20:05:36Z)
+- lane 5: T686 (lease until 2026-11-20T20:37:53Z)
 - lane 6: T573 (lease until 2026-11-20T20:20:18Z)
 - lane 7: T743 (lease until 2026-11-20T19:24:15Z)
 
