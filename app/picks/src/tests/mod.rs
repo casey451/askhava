@@ -2,6 +2,7 @@
 
 mod confirm;
 mod confirm_hold_away;
+mod confirm_refused;
 mod find_view;
 mod pick_code_rules;
 mod prop_no_other_off_session_charge;
