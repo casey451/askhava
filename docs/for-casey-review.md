@@ -3599,3 +3599,4 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 ## Open-cards email language (D-5017, November 20)
 
 - With no stored team-member language, the open-cards email goes in English. Say if it should follow the business's language setting instead.
+- Confirm reminder emails reuse the pick notice's words under a "Reminder: accept job" subject, and an emergency pick's one reminder is never worded "Last reminder" (D-5034). Say if reminders should get their own wording.
