@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T04:01:38Z by runner 382efbfa9414 (actions).
+Updated 2026-11-20T04:08:22Z by runner 87f20c7d156a (actions).
 
 **Building: T726 in progress since 03:35Z; 517 of 705 done; week 19% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-20T04:01:38Z by runner 382efbfa9414 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T726 claimed 03:35Z, lease until 06:35Z; lane 3: T543 claimed 03:53Z, lease until 06:53Z; lane 4: T110 claimed 02:18Z, lease until 05:18Z; lane 5: T556 claimed 03:58Z, lease until 06:58Z; lane 6: T663 claimed 03:48Z, lease until 06:48Z; lane 7: T434 claimed 03:02Z, lease until 06:02Z
 - **Week:** 19% used, 149.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:01Z, 0 min before this update
+- **Last run:** 04:01Z, 6 min before this update
 - **Keeper:** last ran 04:01Z, next wake 05:20Z
 
 ## Needs attention
@@ -16,7 +16,7 @@ Updated 2026-11-20T04:01:38Z by runner 382efbfa9414 (actions).
 - BLOCKED T648: plan gap reported: PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, but scripts/check_include_paths.py (D-1867, run in the smoke by tests/test_check_include_paths.py::test_td_ops_32_the_real_repository_passes) fails: scripts/bootstrap_roles.sql is not matched by the Checks and Coverage rules in .github/workflows/ci.yml (protected, harness-only) nor by RUST_PATHS in scripts/prehandin.sh:77 (locked in kit/plan.lock). T648 owns neither. Fix: a harness task adds scripts/bootstrap_roles\.sql to those three rules and rewrites kit/plan.lock. Reviewer; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T648 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 77 problem(s) on tasks still to run (+375 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 80 problem(s) on tasks still to run (+377 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -86,8 +86,6 @@ Updated 2026-11-20T04:01:38Z by runner 382efbfa9414 (actions).
 | T203 | Wording scan: the required statements, business copy lines a | done | 4 | 42 min | 04:50Z | PLAN GAP: app/portals/templates/es_business_signup.html:82 ("Licencia de control de plagas") and :88 ("Mi licencia inclu |
 | T490 | server (harness): the email provider passed to the sign-up m | done | 1 | 2 h 25 min | 04:35Z |  |
 | T520 | portals and messaging: the portal stylesheets and email colo | done | 1 | 2 h 21 min | 04:18Z |  |
-| T563 | intake and privacy: the daily consent sweep removes consent  | done | 3 | 77 min | 04:05Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
-| T399 | server: the email's Approve link approves the phone, only wi | done | 1 | 46 min | 04:01Z |  |
 
 ### Plan and harness merges on main
 - none
