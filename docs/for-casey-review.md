@@ -3571,3 +3571,8 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 Items kept for after launch under the scope freeze (D-4824). Each is a note, not a task.
 
 - **Code digests coverage:** the digest tasks (T556 to T558) cover about 0.9 MB of the about 1.58 MB of code to summarise after D-3357; T514 or T142 weighs whether that matters before the handover.
+
+## The monthly backup test checks the backup's record (D-4835)
+
+- **What changed:** the monthly test restore (T648) cannot read the stored backup file back (by design, the storage key can only write it), so it now checks the backup's own record instead: the last nightly backup succeeded, is recent, and has its size and fingerprint recorded. Its first run waits until after the first nightly backup, so a new setup does not raise a false alarm.
+- Our choice (Fable's review); nothing needs you now.
