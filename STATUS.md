@@ -1,21 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-20T07:15:36Z by runner ec1360b19187 (actions).
+Updated 2026-11-20T07:18:18Z by runner ec1360b19187 (actions).
 
 **Building: T764 in progress since 06:34Z; 526 of 707 done; week 23% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 526 of 707 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T764 claimed 06:34Z, lease until 09:34Z; lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 3: T762 claimed 06:35Z, lease until 09:35Z; lane 4: T672 claimed 06:35Z, lease until 09:35Z; lane 7: T669 claimed 07:12Z, lease until 10:12Z
-- **Week:** 23% used, 143.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:13Z, 2 min before this update
+- **Lane:** lane 1: T764 claimed 06:34Z, lease until 09:34Z; lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 3: T762 claimed 06:35Z, lease until 09:35Z; lane 4: T672 claimed 06:35Z, lease until 09:35Z; lane 5: T561 claimed 07:18Z, lease until 10:18Z; lane 7: T669 claimed 07:12Z, lease until 10:12Z
+- **Week:** 23% used, 142.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 07:15Z, 2 min before this update
 - **Keeper:** last ran 07:08Z, next wake 07:28Z
 
 ## Needs attention
 - BLOCKED T573: plan gap reported: PLAN GAP: app/privacy/src/business_contacts.rs:124 (owned by T412, not T573). Item (2) needs the outbox sender to read a business line's phone number, which lives only in privacy.staff_phone; privacy::api::read_staff_phone refuses every purpose except BusinessPurpose::SignInCode (opens_phone at :124, refusal at :398). Messaging keeps no copy (sender directory holds blind-index digests only), and tests/security business_contact_readers.rs lets only privacy and server name read_staff_phone. Reusing SignInCode would falsify the SEC-047 audit. Smallest plan change: give T573 business_contacts.rs s; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T573 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T648: plan gap reported: PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, but scripts/check_include_paths.py (D-1867, run in the smoke by tests/test_check_include_paths.py::test_td_ops_32_the_real_repository_passes) fails: scripts/bootstrap_roles.sql is not matched by the Checks and Coverage rules in .github/workflows/ci.yml (protected, harness-only) nor by RUST_PATHS in scripts/prehandin.sh:77 (locked in kit/plan.lock). T648 owns neither. Fix: a harness task adds scripts/bootstrap_roles\.sql to those three rules and rewrites kit/plan.lock. Reviewer; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T648 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
-- PLAN GAP T463 (since 2026-11-20T06:35:55Z, no attempt used; a plan change fixes it): T463: dependency T543 is DONE but its owned file migrations/0206_businesses_away_busy.sql is not on main; T463: dependency T543 is DONE but its owned file app/businesses/src/away_busy.rs is not on main; T463: dependency T543 is DONE but its owned file tests/integration/tests/away_until.rs is not on main
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - Strict plan check red: 88 problem(s) on tasks still to run (+393 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
@@ -127,7 +126,7 @@ Updated 2026-11-20T07:15:36Z by runner ec1360b19187 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-20T07:08:15Z (week)): week: 50.1M used, 143.9M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T11:31:33Z.
+- Pacing (session_reading 2026-11-20T07:08:15Z (week)): week: 51.8M used, 142.2M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T11:11:56Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -146,6 +145,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T617 (lease until 2026-11-20T10:06:22Z)
 - lane 3: T762 (lease until 2026-11-20T09:35:28Z)
 - lane 4: T672 (lease until 2026-11-20T09:35:55Z)
+- lane 5: T561 (lease until 2026-11-20T10:18:02Z)
 - lane 7: T669 (lease until 2026-11-20T10:12:31Z)
 
 ## Last usage reading
