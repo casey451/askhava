@@ -1,24 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-20T18:37:21Z by runner c57e1151be39 (actions).
+Updated 2026-11-20T18:46:41Z by runner 431f3db7d6d4 (actions).
 
-**Building: T614 in progress since 17:26Z; 547 of 713 done; week 42% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T772 in progress since 18:05Z; 547 of 713 done; week 42% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 547 of 713 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T614 claimed 17:26Z, lease until 20:26Z; lane 5: T772 claimed 18:05Z, lease until 21:05Z; lane 6: T661 claimed 18:36Z, lease until 21:36Z; lane 7: T743 claimed 18:24Z, lease until 21:24Z
+- **Lane:** lane 5: T772 claimed 18:05Z, lease until 21:05Z; lane 6: T661 claimed 18:36Z, lease until 21:36Z; lane 7: T743 claimed 18:24Z, lease until 21:24Z
 - **Week:** 42% used, 105.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:35Z, 1 min before this update
+- **Last run:** 18:37Z, 9 min before this update
 - **Keeper:** last ran 18:35Z, next wake 18:55Z
 
 ## Needs attention
+- BLOCKED T614: plan gap reported: PLAN GAP: tests/integration/tests/quote_page.rs:172 (owner T052, protected) bans the word "summary" anywhere in the quote page's HTML, but T614 must put <details class="menu"><summary>Menu</summary> in the header of every page (docs/design/DESIGN_SPEC.md:102); quote_page.html extends base.html. Smallest plan change: a harness task narrows the check at quote_page.rs:170-174 to the page's <main>. Also D-4970's "two rules only" is not enough: a third rule is needed in site.css: .menu > summary { margin: calc((var(--header-h) - 44px) / 2) 0 calc((var(--header-h) - 44px) / 2) -12px; } (else the row; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T614 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 40 problem(s) on tasks still to run (+416 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
+- Strict plan check red: 38 problem(s) on tasks still to run (+412 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T614 | site: the V6 header in base.html (links, the Menu in the pag | BLOCKED | 2 | 80 min | 18:46Z | PLAN GAP: tests/integration/tests/quote_page.rs:172 (owner T052, protected) bans the word "summary" anywhere in the quot |
 | T743 | messaging and privacy: opt-out listings are re-keyed to the  | QUEUED | 1 | 112 min | 18:17Z | Second review (head 7921ab0285f5916db9a9df89ee828c150908805e) ended FINDINGS: tests/integration/tests/suppression_rekey. |
 | T573 | messaging and server: queued business texts are addressed to | done | 4 | 41 min | 18:01Z | model claude-opus-5-5 ran, task names claude-fable-5-2 / re-queued after plan fix D-4969: Coverage time-limit cancel, fi |
 | T686 | businesses and server: a 90-day-old inbox or alert Yes gets  | done | 1 | 76 min | 17:39Z |  |
@@ -40,7 +42,7 @@ Updated 2026-11-20T18:37:21Z by runner c57e1151be39 (actions).
 | T496 | a11y (harness): stub Stripe.js in the Ally suite and scan th | done | 1 | 81 min | 13:06Z |  |
 | T648 | recovery: the monthly test restore into a throwaway cluster, | done | 2 | 112 min | 12:29Z | PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, b |
 | T573 | messaging and server: queued business texts are addressed to | check_failed | 3 | 70 min | 12:25Z |  |
-| T614 | site: the V6 header in base.html (links, the Menu in the pag | BLOCKED | 1 | 16 min | 11:39Z | PLAN GAP: tests/a11y/reflow_spacing.spec.ts:49-54 (T053, protected) flags every TARGETS control with no box as "is hidde |
+| T614 | site: the V6 header in base.html (links, the Menu in the pag | BLOCKED | 1 | 16 min | 11:39Z |  |
 | T463 | businesses and server: "Busy for <n> days" pauses job cards  | done | 1 | 58 min | 11:16Z |  |
 | T768 | runner tests (harness): the seed test fakes free disk, so a  | done | 1 | 22 min | 10:38Z |  |
 | T573 | messaging and server: queued business texts are addressed to | QUEUED | 2 | 53 min | 09:48Z |  |
@@ -100,7 +102,7 @@ Updated 2026-11-20T18:37:21Z by runner c57e1151be39 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 362 of 735 (49.3%) · partial 354 · unstarted 19
-**Tasks merged (throughput only):** 547 of 713
+**Tasks merged (throughput only):** 547 of 712
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -144,10 +146,9 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 3: T614 (lease until 2026-11-20T20:26:36Z)
 - lane 5: T772 (lease until 2026-11-20T21:05:44Z)
 - lane 6: T661 (lease until 2026-11-20T21:36:41Z)
 - lane 7: T743 (lease until 2026-11-20T21:24:48Z)
 
 ## Last usage reading
-- {"task": "T743", "at": "2026-11-20T18:17:05Z", "input_tokens": 201, "output_tokens": 85753, "cache_creation_input_tokens": 301270, "cache_read_input_tokens": 5933856}
+- {"task": "T614", "at": "2026-11-20T18:46:41Z", "cache_read_input_tokens": 5291043, "cache_creation_input_tokens": 179789, "output_tokens": 82472, "input_tokens": 97}

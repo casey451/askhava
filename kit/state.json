@@ -85767,8 +85767,8 @@
     "T617",
     "T771"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 1,
+   "status": "BLOCKED",
+   "attempts": 2,
    "slug": "site-header",
    "type": "build",
    "stage": "5",
@@ -85781,8 +85781,8 @@
     4947,
     4948
    ],
-   "reason": null,
-   "last_failure": "PLAN GAP: tests/a11y/reflow_spacing.spec.ts:49-54 (T053, protected) flags every TARGETS control with no box as \"is hidden\", but DESIGN_SPEC docs/design/DESIGN_SPEC.md:102 requires .site-nav hidden below 1024px and Menu hidden from 1024px, so the specified header fails at every width. Also: closed <details> Menu links keep boxes in Chromium (counted as Tab stops by j1_keyboard.spec.ts:56 and j2_keyboard.spec.ts:26) and the open Menu scrolls sideways at 320px (scrollWidth 375); both fixable only in app/site/static/site.css, not owned by T614 (CSP forbids inline style). Smallest plan change: a task owning site.css adds `.menu:not([open]) .menu-list { display: none }` and fits the open list at 320px; T053's spacingProblems skips controls with getClientRects().length === 0. Reviewer (a5de7ec34ddad778b) confirmed: PLAN-GAP: CONFIRMED. Worker run showed 253 failed / 833 passed in tests/a11y.\nre-queued after plan fix D-4970: header plan gap fixed by D-4970 (#1206)",
+   "reason": "plan gap reported: PLAN GAP: tests/integration/tests/quote_page.rs:172 (owner T052, protected) bans the word \"summary\" anywhere in the quote page's HTML, but T614 must put <details class=\"menu\"><summary>Menu</summary> in the header of every page (docs/design/DESIGN_SPEC.md:102); quote_page.html extends base.html. Smallest plan change: a harness task narrows the check at quote_page.rs:170-174 to the page's <main>. Also D-4970's \"two rules only\" is not enough: a third rule is needed in site.css: .menu > summary { margin: calc((var(--header-h) - 44px) / 2) 0 calc((var(--header-h) - 44px) / 2) -12px; } (else the row; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T614 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: tests/integration/tests/quote_page.rs:172 (owner T052, protected) bans the word \"summary\" anywhere in the quote page's HTML, but T614 must put <details class=\"menu\"><summary>Menu</summary> in the header of every page (docs/design/DESIGN_SPEC.md:102); quote_page.html extends base.html. Smallest plan change: a harness task narrows the check at quote_page.rs:170-174 to the page's <main>. Also D-4970's \"two rules only\" is not enough: a third rule is needed in site.css: .menu > summary { margin: calc((var(--header-h) - 44px) / 2) 0 calc((var(--header-h) - 44px) / 2) -12px; } (else the row is 289px in 280px at 320px and home_first_screen.spec.ts:75 fails); plus .menu, .menu::details-content { display: contents; } and .menu-list flex: 0 0 100%; and each .site-nav link and Espanol wrapped in a <p> for unstyled axe runs (capability_setup.spec.ts:62, emergency_switch_after_hours.spec.ts:33). Work kept in /tmp/T614-attempt.patch (stash on the worker's machine). Reviewer ab0c98e06113eaf23 confirmed: PLAN-GAP: CONFIRMED.",
    "history": [
     {
      "attempt": 1,
@@ -85806,6 +85806,29 @@
        "turns": 10
       }
      }
+    },
+    {
+     "attempt": 2,
+     "model": "claude-fable-5-2",
+     "model_evidence_count": 91,
+     "head_sha": "431f3db7d6d49d1e8f3578991cd8a9e78ae4ef5e",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-20T17:26:36Z",
+     "ended_at": "2026-11-20T18:46:41Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 5432473,
+       "turns": 46
+      },
+      "reviewer": {
+       "tokens": 120928,
+       "turns": 5
+      }
+     }
     }
    ],
    "requeues": [
@@ -85822,11 +85845,7 @@
      "plan_then": "ec523d378cf52001a5fa98cc94cb29ba862d2679db4af41beb6179c42a4903ed",
      "plan_now": "15139af0f7e24cb7f3f69c860c9bd474f8c3ee7a231b83d7fa15c75002e40678"
     }
-   ],
-   "wip_claim": {
-    "attempt": 2,
-    "remote_sha": ""
-   }
+   ]
   },
   {
    "id": "T615",
@@ -97692,12 +97711,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T743",
-   "at": "2026-11-20T18:17:05Z",
-   "input_tokens": 201,
-   "output_tokens": 85753,
-   "cache_creation_input_tokens": 301270,
-   "cache_read_input_tokens": 5933856
+   "task": "T614",
+   "at": "2026-11-20T18:46:41Z",
+   "cache_read_input_tokens": 5291043,
+   "cache_creation_input_tokens": 179789,
+   "output_tokens": 82472,
+   "input_tokens": 97
   },
   "source": "session_reading 2026-11-20T18:34:49Z (week)",
   "by_task": {
@@ -103991,15 +104010,15 @@
     "estimated_bytes": 534526,
     "estimated_tokens": 1591272,
     "usage_counting": "message_id",
-    "input_tokens": 89,
-    "cache_creation_input_tokens": 120240,
-    "output_tokens": 37487,
-    "cache_read_input_tokens": 2524988,
-    "worker_tokens": 2353852,
-    "worker_turns": 36,
-    "reviewer_tokens": 328952,
-    "reviewer_turns": 10,
-    "last_model": "claude-opus-5-5"
+    "input_tokens": 186,
+    "cache_creation_input_tokens": 300029,
+    "output_tokens": 119959,
+    "cache_read_input_tokens": 7816031,
+    "worker_tokens": 7786325,
+    "worker_turns": 82,
+    "reviewer_tokens": 449880,
+    "reviewer_turns": 15,
+    "last_model": "claude-fable-5-2"
    },
    "T496": {
     "estimated_bytes": 363184,
@@ -104195,11 +104214,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-20T13:54:23Z",
-    "tokens": 11556966
+    "tokens": 12348428
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 71805027
+    "tokens": 72596489
    }
   },
   "session_reading": {
@@ -104210,7 +104229,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T18:37:21Z",
+ "updated_at": "2026-11-20T18:46:41Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -104308,7 +104327,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "c57e1151be39828704c3e8b1bebd23c8890501f7",
+ "runner_sha": "431f3db7d6d49d1e8f3578991cd8a9e78ae4ef5e",
  "starter": "actions",
  "smoke_runs": [
   {
