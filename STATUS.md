@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T22:13:40Z by runner 8897b21133d6 (actions).
+Updated 2026-11-20T22:13:43Z by runner 8897b21133d6 (actions).
 
 **Building: T682 in progress since 20:56Z; 556 of 714 done; week 49% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -16,6 +16,7 @@ Updated 2026-11-20T22:13:40Z by runner 8897b21133d6 (actions).
 - PLAN GAP T305 (since 2026-11-20T20:17:39Z, no attempt used; a plan change fixes it): T305: dependency T530 is DONE but its owned file app/portals/src/owner_help.rs is not on main; T305: dependency T530 is DONE but its owned file app/portals/templates/help_request.html is not on main; T305: dependency T530 is DONE but its owned file tests/security/tests/owner_help_reply.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
+- PLAN GAP T773 (since 2026-11-20T22:13:04Z, no attempt used; a plan change fixes it): T773: prompt kit/prompts/T773.md is missing; run scripts/gen_prompts.py; T773: branch claude/task/T773-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
 - Strict plan check red: 45 problem(s) on tasks still to run (+428 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
