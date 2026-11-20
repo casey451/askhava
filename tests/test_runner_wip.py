@@ -149,6 +149,15 @@ def test_a_task_branch_on_origin_or_the_flag_off_pushes_nothing(tmp_path: Path) 
     assert "wip" not in run(off, tmp_path) and off.wip_pushes == []
 
 
+def test_the_flag_turned_off_never_continues_a_kept_wip(tmp_path: Path) -> None:
+    env = WipEnv()
+    assert run(env, tmp_path)["wip"]["ref"] == REF  # kept while the flag was on
+    env.flag = False  # the overseer's kill switch in kit/runner.json (D-4720)
+    entry = run(env, tmp_path, 10)
+    assert env.offered == [None, None] and len(env.wip_pushes) == 1
+    assert "continued_from" not in entry["history"][-1] and "wip" not in entry
+
+
 def test_a_continued_attempt_once_only_then_fresh(tmp_path: Path) -> None:
     env = WipEnv()
     run(env, tmp_path)
