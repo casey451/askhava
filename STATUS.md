@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T03:34:36Z by runner ef998d36a6d5 (actions).
+Updated 2026-11-20T03:35:10Z by runner ef998d36a6d5 (actions).
 
 **Building: T110 in progress since 02:18Z; 517 of 705 done; week 18% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -22,7 +22,7 @@ Updated 2026-11-20T03:34:36Z by runner ef998d36a6d5 (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T747 | intake and jobs: the homeowner's INT-029 emergency choice ma | MERGE_PENDING | 1 | 71 min | 03:25Z |  |
-| T726 | Runner (harness): a failed attempt's unpushed work can be ke | MERGE_PENDING | 2 | 2 h 16 min | 03:22Z | T726 resync merged main cleanly, but fresh-eyes review of the WIP scan (runner/wip.py) found fail-open bypasses in three |
+| T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 2 | 2 h 16 min | 03:22Z | merging main into the reviewed head conflicts in kit/plan.lock, kit/runner.json; a resync merges it in on this attempt ( |
 | T617 | site: DM Sans from one weight-axis variable file (smaller th | BLOCKED | 1 | 2 min | 03:04Z | PLAN GAP: tests/a11y/design_tokens.spec.ts:221 and :242 (protected, not owned by T617) contradict the prompt's single DM |
 | T648 | recovery: the monthly test restore into a throwaway cluster, | BLOCKED | 1 | 21 min | 02:55Z | PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, b |
 | T763 | tests (harness): the web chat spec's fake numbers never coll | done | 1 | 25 min | 02:17Z |  |
