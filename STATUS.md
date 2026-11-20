@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T02:21:20Z by runner 5cb0d236b51a (actions).
+Updated 2026-11-20T02:23:57Z by runner 5cb0d236b51a (actions).
 
 **Building: T747 in progress since 02:14Z; 514 of 704 done; week 15% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-20T02:21:20Z by runner 5cb0d236b51a (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T747 claimed 02:14Z, lease until 05:14Z; lane 3: T726 claimed 01:05Z, lease until 04:05Z; lane 4: T110 claimed 02:18Z, lease until 05:18Z
 - **Week:** 15% used, 161.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:21Z, 0 min before this update
+- **Last run:** 02:23Z, 0 min before this update
 - **Keeper:** last ran 02:21Z, next wake 04:08Z
 
 ## Needs attention
@@ -87,7 +87,6 @@ Updated 2026-11-20T02:21:20Z by runner 5cb0d236b51a (actions).
 | T114 | Terms-match-code checks and recurring pricing copy | done | 1 | 71 min | 03:26Z |  |
 | T715 | intake (harness): corrections to T671's walker: alarm answer | BLOCKED | 2 | 83 min | 03:22Z |  |
 | T203 | Wording scan: the required statements, business copy lines a | BLOCKED | 3 | 29 min | 03:08Z |  |
-| T306 | server and portals: the complaints page, the emergency-email | done | 1 | 38 min | 02:21Z |  |
 
 ### Plan and harness merges on main
 - none
