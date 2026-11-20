@@ -33,7 +33,8 @@
 use askhava_businesses::api::{NoticePurpose, Roles, away_until, notice_addresses};
 use askhava_core::api::{Claimed, Guarded, HandlerError, NewTask, add_business_minutes, enqueue};
 use askhava_jobs::api::{
-    JobRow, JobStatus, current, job_number, move_to, restart_timer, rules::timeout,
+    JobRow, JobStatus, current, entered_payment_pending_since, job_number, move_to, restart_timer,
+    rules::timeout,
 };
 use askhava_ops::api::Actor;
 use jiff::Timestamp;
@@ -49,6 +50,7 @@ use crate::confirm::{
     WindowRules, confirm_by, hold, hold_allowed, window_start,
 };
 use crate::confirm_reminders::{Extension, extend_once, lapse};
+use crate::connect::{PendingEnd, end_pending};
 use crate::models::{self, PicksError};
 use crate::money_notices::BUSINESS_NOTICE_KIND;
 use crate::pick_ended::queue_backup_text;
@@ -125,8 +127,9 @@ pub async fn run_pick_notice(
 /// [`PicksError::MovedOn`] when the pick no longer waits or the job left Awaiting confirm; when
 /// `jobs` already returned the job to Quotes ready (its backstop or an emergency's 60 minutes fired
 /// before the send) the lapse runs first at `sent_at` (PICK-046, PICK-047), and in any other lost
-/// status the pick is stored as expired, so no "Accept by" goes for a dead pick (PICK-035,
-/// D-1503). [`PicksError::Job`] or [`PicksError::Database`].
+/// status the pick is stored as expired, or as `payment_failed` when its business had pressed
+/// Confirm (OPS-034, D-4349), so no "Accept by" goes for a dead pick (PICK-035, D-1503).
+/// [`PicksError::Job`] or [`PicksError::Database`].
 pub async fn notice_sent(
     db: &mut PgConnection,
     pick: Uuid,
@@ -143,7 +146,7 @@ pub async fn notice_sent(
         if returned_unconfirmed(row.status) {
             lapse_at(&mut tx, (pick, job, business), start).await?;
         } else {
-            models::expire_pick(&mut tx, pick, start).await?;
+            end_dead(&mut tx, (pick, job), start).await?;
         }
         tx.commit().await.map_err(|_| PicksError::Database)?;
         return Err(PicksError::MovedOn);
@@ -165,6 +168,30 @@ pub async fn notice_sent(
     }
     tx.commit().await.map_err(|_| PicksError::Database)?;
     Ok(Some(due))
+}
+
+/// OPS-034, PICK-035, PICK-046, D-4349, D-4932: ends waiting pick `pick`, locked by the caller,
+/// whose `job` closed or was cancelled before the notice went, at `at`. A pick whose business
+/// pressed Confirm (the job entered Payment pending at or after the pick's `picked_at`) ends
+/// through [`end_pending`] as `payment_failed`, so it is never counted as a lapsed pick; every
+/// other pick is stored as `expired`.
+async fn end_dead(
+    tx: &mut PgConnection,
+    (pick, job): (Uuid, Uuid),
+    at: Timestamp,
+) -> Result<(), PicksError> {
+    let picked = sqlx::query_scalar!("SELECT picked_at FROM picks.pick WHERE id = $1", pick)
+        .fetch_one(&mut *tx)
+        .await
+        .map_err(|_| PicksError::Database)?;
+    let pressed = entered_payment_pending_since(tx, job, picked.to_jiff()).await;
+    if pressed.map_err(|_| PicksError::Job)? {
+        let by = (Actor::System, at);
+        return end_pending(tx, (pick, job), PendingEnd::PaymentFailed, by)
+            .await
+            .map(drop);
+    }
+    models::expire_pick(tx, pick, at).await
 }
 
 /// PICK-044, D-3750: queues the emergency pick's [`CONFIRM_ENDS_KIND`] task at the end of `jobs`'
