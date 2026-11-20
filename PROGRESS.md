@@ -8296,3 +8296,4 @@
 - 2026-11-20T04:23:46Z runner bf7fb36b58e5 (actions): {"T765": "None -> QUEUED"}
 - 2026-11-20T04:24:07Z runner bf7fb36b58e5 (actions): {"T726": "MERGE_PENDING -> QUEUED"}
 - 2026-11-20T04:24:29Z runner bf7fb36b58e5 (actions): {"T726": "QUEUED -> IN_PROGRESS"}; T726 estimated 1.1M tokens (calibrated); week has 148.6M left (no five-hour budget, D-3056) after 7.4M still running in another lane (session_reading 2026-11-20T04:14:08Z (week)); claimed
+- 2026-11-20T04:25:22Z runner bf7fb36b58e5 (manual): {}
