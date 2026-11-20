@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-20T14:56:41Z by runner 6ee2ece5fcc7 (actions).
+Updated 2026-11-20T14:57:56Z by runner 696a43ed61d5 (actions).
 
-**Building: T770 in progress since 14:33Z; 538 of 712 done; week 35% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T770 in progress since 14:33Z; 539 of 712 done; week 35% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 538 of 712 build tasks (owner gates not counted)
+- **Tasks done:** 539 of 712 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 6: T770 claimed 14:33Z, lease until 17:33Z
 - **Week:** 35% used, 120.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
@@ -24,7 +24,7 @@ Updated 2026-11-20T14:56:41Z by runner 6ee2ece5fcc7 (actions).
 | T672 | intake: the dispatcher asks "How soon?", the night count and | MERGE_PENDING | 3 | 2 h 13 min | 14:53Z | runner smoke red on 3e9315b7399c (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
 | T206 | recovery: the local restore drill with no double send or cha | MERGE_PENDING | 1 | 89 min | 14:50Z |  |
 | T767 | tests (harness): the Confirm press fixtures get an Active ac | MERGE_PENDING | 1 | 108 min | 14:41Z |  |
-| T670 | picks: the pick notice's send never records a pressed pick a | MERGE_PENDING | 1 | 86 min | 14:26Z |  |
+| T670 | picks: the pick notice's send never records a pressed pick a | done | 1 | 86 min | 14:26Z |  |
 | T667 | picks and calls: a reconnected job's failed masked line is r | MERGE_PENDING | 1 | 58 min | 13:54Z |  |
 | T727 | Runner (harness): a retry after a review failure or a plan-f | done | 2 | 87 min | 13:23Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T496 | a11y (harness): stub Stripe.js in the Ally suite and scan th | done | 1 | 81 min | 13:06Z |  |
@@ -101,7 +101,7 @@ Updated 2026-11-20T14:56:41Z by runner 6ee2ece5fcc7 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 325 of 735 (44.2%) · partial 389 · unstarted 21
-**Tasks merged (throughput only):** 538 of 710
+**Tasks merged (throughput only):** 539 of 712
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -137,7 +137,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 181 of 294 done
+- stage 5: 182 of 294 done
 - stage 6: 0 of 65 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
