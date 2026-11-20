@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T07:08:56Z by runner bb875eedf856 (actions).
+Updated 2026-11-20T07:12:50Z by runner 405a1fbf7832 (actions).
 
 **Building: T764 in progress since 06:34Z; 525 of 707 done; week 23% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 525 of 707 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T764 claimed 06:34Z, lease until 09:34Z; lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 3: T762 claimed 06:35Z, lease until 09:35Z; lane 4: T672 claimed 06:35Z, lease until 09:35Z
-- **Week:** 23% used, 145.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:08Z, 0 min before this update
+- **Lane:** lane 1: T764 claimed 06:34Z, lease until 09:34Z; lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 3: T762 claimed 06:35Z, lease until 09:35Z; lane 4: T672 claimed 06:35Z, lease until 09:35Z; lane 7: T669 claimed 07:12Z, lease until 10:12Z
+- **Week:** 23% used, 143.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 07:09Z, 3 min before this update
 - **Keeper:** last ran 07:08Z, next wake 07:28Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-20T07:08:56Z by runner bb875eedf856 (actions).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T463 (since 2026-11-20T06:35:55Z, no attempt used; a plan change fixes it): T463: dependency T543 is DONE but its owned file migrations/0206_businesses_away_busy.sql is not on main; T463: dependency T543 is DONE but its owned file app/businesses/src/away_busy.rs is not on main; T463: dependency T543 is DONE but its owned file tests/integration/tests/away_until.rs is not on main
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 82 problem(s) on tasks still to run (+388 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 88 problem(s) on tasks still to run (+393 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -92,7 +92,6 @@ Updated 2026-11-20T07:08:56Z by runner bb875eedf856 (actions).
 | T456 | picks and server: "Hold for 2 more hours" is stored, honoure | done | 1 | 97 min | 08:35Z |  |
 | T216 | site: the hero photo and mark (photography assets) | done | 1 | 97 min | 08:10Z |  |
 | T310 | server and portals: the owner home and settings pages and th | done | 1 | 74 min | 07:19Z |  |
-| T562 | server and portals: "Why was I charged?" is served with the  | done | 1 | 2 h 43 min | 07:09Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -128,7 +127,7 @@ Updated 2026-11-20T07:08:56Z by runner bb875eedf856 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-20T06:33:53Z (week)): week: 48.5M used, 145.5M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T11:25:24Z.
+- Pacing (session_reading 2026-11-20T07:08:15Z (week)): week: 50.1M used, 143.9M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T11:31:33Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -147,6 +146,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T617 (lease until 2026-11-20T10:06:22Z)
 - lane 3: T762 (lease until 2026-11-20T09:35:28Z)
 - lane 4: T672 (lease until 2026-11-20T09:35:55Z)
+- lane 7: T669 (lease until 2026-11-20T10:12:31Z)
 
 ## Last usage reading
 - {"task": "T669", "at": "2026-11-20T07:07:42Z", "cache_creation_input_tokens": 247083, "cache_read_input_tokens": 6379667, "output_tokens": 55561, "input_tokens": 206}
