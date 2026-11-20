@@ -9,18 +9,27 @@
 //! `Sec-Fetch-Site` or `Origin`) or a wrong CSRF token is a 403, changes nothing and is logged as a
 //! `csrf_rejected` security event; a send past `admit_code_send`'s limit sends nothing and a check
 //! past `admit_code_try`'s limit calls no Verify; the code page never waits on Verify (TD-PICK-36,
-//! D-4013), so the cases wait for the send before checking a code. The `/h/my-data` cases are T561's. Fake data only.
+//! D-4013), so the cases wait for the send before checking a code.
+//!
+//! T561's data cases (PRIV-031, PRIV-011): "Download my data" holds only her own items, with
+//! contact details masked; a copy or delete request acts only after its code (a copy answers the
+//! file, a delete the PRIV-011 sentence) and its code can be texted again; a request send past
+//! `admit_code_send`'s limit sends nothing and a code check past `admit_code_try`'s limit calls no
+//! Verify; and the realm, `no-store`, cross-site and CSRF cases for the four data routes. Fake
+//! data only.
 
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex, PoisonError};
 
 use askhava_adapters::api::{AdapterError, CodeChannel, IdempotencyKey, VerifyAdapter};
 use askhava_core::api::{Settings, TestControl};
-use askhava_messaging::api::texts_on;
+use askhava_intake::api::rules::{Inbound, Settings as IntakeSettings};
+use askhava_intake::api::{TextIn, receive_text};
+use askhava_messaging::api::{NewText, Relation, enqueue, texts_on};
 use askhava_portals::api::{
     CookieJar, HomeFacts, Realm, TEXTS_OFF_LINE, csrf_token, ensure_pre_session, start_session,
 };
-use askhava_privacy::api::{NewContact, Vault, store_contact};
+use askhava_privacy::api::{DELETE_CONFIRMATION, NewContact, Vault, store_contact};
 use askhava_server::homeowner_portal::HomeownerVerify;
 use askhava_server::{RouterParts, build_router, session_minter, webhooks};
 use axum::Router;
@@ -620,4 +629,276 @@ async fn td_pick_36_the_code_page_does_not_wait_on_verify(pool: PgPool) {
     assert_eq!(reply.status, 200);
     assert!(reply.text.contains("If we have that number"));
     verify.sent(1).await;
+}
+
+/// One request of `contact`'s by text (`intake::api::receive_text`: her request, its consent
+/// record and the queued consent text) and one more queued text to her holding `body`.
+async fn held(pool: &PgPool, contact: Uuid, body: &str) {
+    let mut db = pool.acquire().await.expect("db");
+    let secret = SecretString::from("test-only-id-secret-not-a-real-key".to_owned());
+    let inbound = Inbound {
+        words: "my AC is warm",
+        opt_out: false,
+        help: false,
+        emergency: false,
+        ai_spanish: None,
+    };
+    let text = TextIn {
+        inbox_id: Uuid::new_v4(),
+        contact,
+        inbound,
+        received_at: Timestamp::now(),
+    };
+    let request = receive_text(&mut db, &secret, &text, IntakeSettings::default()).await;
+    request.expect("request");
+    let note = NewText {
+        template_id: "fake_notice",
+        subject: &[],
+        recipient: contact,
+        relation: Relation::OpenRequest,
+        body,
+    };
+    enqueue(&mut db, &secret, &note).await.expect("queued");
+}
+
+/// A 24-hour homeowner session on `contact`.
+async fn her_jar(pool: &PgPool, contact: Uuid) -> CookieJar {
+    let day = SignedDuration::from_hours(24);
+    session(pool, (Realm::Homeowner, contact), day).await
+}
+
+/// The request ID a request's code page carries.
+fn request_id(page: &str) -> String {
+    let (_, rest) = page
+        .split_once("name=\"request\" value=\"")
+        .expect("a request ID");
+    rest.split('"').next().expect("ID").to_owned()
+}
+
+/// Opens a `kind` request as `jar`'s homeowner; the code page's request ID.
+async fn open(app: &Router, jar: &CookieJar, kind: &str) -> String {
+    let form = format!("&kind={kind}");
+    let page = call(app, "/h/my-data/request", jar, (Some(&form), Site::Own)).await;
+    assert_eq!(page.status, 200, "the code step");
+    assert!(page.text.contains("action=\"/h/my-data/code\""));
+    assert!(page.text.contains("action=\"/h/my-data/resend\""));
+    request_id(&page.text)
+}
+
+/// TD-PRIV-21 (PRIV-031, SEC-046): her file is a JSON download holding only her own request,
+/// consent record and held text, the text's phone number and web address masked.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_priv_21_download_my_data_holds_only_her_own_items(pool: PgPool) {
+    let verify = FakeVerify::default();
+    let app = app(&pool, &verify);
+    let (her, other) = (contact(&pool, HER).await, contact(&pool, OTHER).await);
+    let mine = "Fake note for her: call 928-555-0199 or see https://example.test/q";
+    held(&pool, her, mine).await;
+    held(&pool, other, "Fake note for the other one").await;
+    let jar = her_jar(&pool, her).await;
+    let sent = request("/h/my-data", &jar, (None, Site::Own));
+    let answer = app.clone().oneshot(sent).await.expect("answer");
+    let saved = answer.headers().get(header::CONTENT_DISPOSITION);
+    assert_eq!(
+        saved.and_then(|v| v.to_str().ok()),
+        Some("attachment; filename=\"my-data.json\"")
+    );
+    let file = call(&app, "/h/my-data", &jar, (None, Site::Own)).await;
+    assert_eq!(file.status, 200);
+    let json: serde_json::Value = serde_json::from_str(&file.text).expect("a JSON file");
+    for (section, n) in [("requests", 1), ("quotes", 0), ("consent", 1)] {
+        assert_eq!(json[section].as_array().map(Vec::len), Some(n), "{section}");
+    }
+    let messages = json["messages"].as_array().map_or(0, Vec::len);
+    assert!(messages >= 2, "her consent text and the note");
+    let text = &file.text;
+    assert!(text.contains("Fake note for her") && text.contains("You agreed to our texts"));
+    assert!(!text.contains("the other one"));
+    assert!(!text.contains("0199") && !text.contains("example.test"));
+    assert_eq!(verify.sends.load(Ordering::SeqCst), 0);
+}
+
+/// TD-PRIV-21 (PRIV-031, D-2348): a copy request acts only after its code: a wrong code hands
+/// nothing over, "Text me the code again" sends it again, and the right code answers her file.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_priv_21_a_copy_request_hands_over_the_file_only_after_its_code(pool: PgPool) {
+    let verify = FakeVerify::default();
+    let app = app(&pool, &verify);
+    let her = contact(&pool, HER).await;
+    held(&pool, her, "Fake note for her").await;
+    let jar = her_jar(&pool, her).await;
+    let id = open(&app, &jar, "copy").await;
+    verify.sent(1).await;
+    let typed = |code: &str| format!("&kind=copy&request={id}&code={code}");
+    let wrong = call(
+        &app,
+        "/h/my-data/code",
+        &jar,
+        (Some(&typed("654321")), Site::Own),
+    )
+    .await;
+    assert_eq!(wrong.status, 400);
+    assert!(
+        wrong.text.contains("That code didn't work") && !wrong.text.contains("Fake note for her")
+    );
+    let again = format!("&request={id}");
+    let resent = call(&app, "/h/my-data/resend", &jar, (Some(&again), Site::Own)).await;
+    assert_eq!(resent.status, 200);
+    assert_eq!(request_id(&resent.text), id);
+    verify.sent(2).await;
+    let right = call(
+        &app,
+        "/h/my-data/code",
+        &jar,
+        (Some(&typed(CODE)), Site::Own),
+    )
+    .await;
+    assert_eq!(right.status, 200);
+    assert!(right.text.contains("Fake note for her"));
+    let used = call(
+        &app,
+        "/h/my-data/code",
+        &jar,
+        (Some(&typed(CODE)), Site::Own),
+    )
+    .await;
+    assert_eq!(used.status, 400, "a used code acts no more");
+    assert!(!used.text.contains("Fake note for her"));
+}
+
+/// TD-PRIV-21 (PRIV-031, PRIV-011): a delete request deletes nothing on a wrong code and, on the
+/// right one, answers the PRIV-011 sentence; her address is gone from her page.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_priv_21_a_delete_request_acts_only_after_its_code(pool: PgPool) {
+    let verify = FakeVerify::default();
+    let app = app(&pool, &verify);
+    let her = contact(&pool, HER).await;
+    let jar = her_jar(&pool, her).await;
+    let id = open(&app, &jar, "delete").await;
+    verify.sent(1).await;
+    let typed = |code: &str| format!("&kind=delete&request={id}&code={code}");
+    let wrong = call(
+        &app,
+        "/h/my-data/code",
+        &jar,
+        (Some(&typed("654321")), Site::Own),
+    )
+    .await;
+    assert_eq!(wrong.status, 400);
+    let home = call(&app, "/h", &jar, (None, Site::Own)).await;
+    assert!(home.text.contains(HER.1), "nothing deleted on a wrong code");
+    let done = call(
+        &app,
+        "/h/my-data/code",
+        &jar,
+        (Some(&typed(CODE)), Site::Own),
+    )
+    .await;
+    assert_eq!(done.status, 200);
+    assert!(done.text.contains(DELETE_CONFIRMATION));
+    let home = call(&app, "/h", &jar, (None, Site::Own)).await;
+    assert!(!home.text.contains(HER.1), "her address is deleted");
+}
+
+/// TD-PRIV-21 (SEC-014, D-2206): past the IP's send limit a request texts no code; past the IP's
+/// try limit even the right code on a sent request calls no Verify and hands nothing over.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_priv_21_request_codes_past_the_limits_send_and_check_nothing(pool: PgPool) {
+    let verify = FakeVerify::default();
+    let app = app(&pool, &verify);
+    let her = contact(&pool, HER).await;
+    held(&pool, her, "Fake note for her").await;
+    let jar = her_jar(&pool, her).await;
+    let id = open(&app, &jar, "copy").await;
+    verify.sent(1).await;
+    let anonymous = browser(&app).await;
+    let unknown = format!("{}&code={CODE}", phone_field(OTHER.0));
+    for n in 0..20 {
+        let tried = call(
+            &app,
+            "/h/sign-in/code",
+            &anonymous,
+            (Some(&unknown), Site::Own),
+        )
+        .await;
+        assert_eq!(tried.status, 400, "try {n}");
+    }
+    let right = format!("&kind=copy&request={id}&code={CODE}");
+    let past = call(&app, "/h/my-data/code", &jar, (Some(&right), Site::Own)).await;
+    assert_eq!(past.status, 400);
+    assert!(!past.text.contains("Fake note for her"));
+    assert_eq!(verify.checks.load(Ordering::SeqCst), 0);
+    for n in 0..10 {
+        let phone = phone_field(&format!("+1928555{:04}", 300 + n));
+        call(&app, "/h/sign-in", &anonymous, (Some(&phone), Site::Own)).await;
+    }
+    for (path, form) in [
+        ("/h/my-data/request", "&kind=copy".to_owned()),
+        ("/h/my-data/resend", format!("&request={id}")),
+    ] {
+        let refused = call(&app, path, &jar, (Some(&form), Site::Own)).await;
+        assert_eq!(refused.status, 429, "{path}");
+        assert!(
+            refused.text.contains("We couldn't text your code"),
+            "{path}"
+        );
+    }
+    verify.quiet(1).await;
+}
+
+/// TD-PRIV-21 (SEC-008, SEC-034, SEC-042, SEC-048): on the four data routes none, a business or
+/// owner session and an ended one get the 401 linking to `/h/sign-in` with no detail; a
+/// cross-site or wrong-token `POST` of hers is a 403, logged, that sends and checks nothing.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_priv_21_the_data_routes_keep_the_doors(pool: PgPool) {
+    let verify = FakeVerify::default();
+    let app = app(&pool, &verify);
+    let her = contact(&pool, HER).await;
+    held(&pool, her, "Fake note for her").await;
+    let day = SignedDuration::from_hours(24);
+    let jars = [
+        ensure_pre_session(CookieJar::new()).expect("pre-session"),
+        session(&pool, (Realm::Business, Uuid::new_v4()), day).await,
+        session(&pool, (Realm::Owner, Uuid::new_v4()), day).await,
+        session(
+            &pool,
+            (Realm::Homeowner, her),
+            SignedDuration::from_mins(30),
+        )
+        .await,
+    ];
+    let code = format!("&kind=copy&request=1&code={CODE}");
+    let routes = [
+        ("/h/my-data", None),
+        ("/h/my-data/request", Some("&kind=copy")),
+        ("/h/my-data/code", Some(code.as_str())),
+        ("/h/my-data/resend", Some("&request=1")),
+    ];
+    for jar in &jars {
+        for (path, form) in routes {
+            let reply = call(&app, path, jar, (form, Site::Own)).await;
+            assert_eq!(reply.status, 401, "{path}");
+            assert!(reply.text.contains("href=\"/h/sign-in\""), "{path}");
+            assert!(
+                !reply.text.contains("0111") && !reply.text.contains("Fake note for her"),
+                "{path}"
+            );
+        }
+    }
+    let jar = her_jar(&pool, her).await;
+    let events = Events::default();
+    let _guard = tracing::subscriber::set_default(events.clone());
+    let mut logged = 0;
+    for (path, form) in routes.iter().skip(1) {
+        for site in [Site::CrossFetch, Site::CrossOrigin, Site::WrongToken] {
+            let reply = call(&app, path, &jar, (*form, site)).await;
+            assert_eq!(reply.status, 403, "{path}");
+            assert!(!reply.text.contains("Fake note for her"), "{path}");
+            let now = events.count("csrf_rejected");
+            assert_eq!(now, logged + 1, "{path} logged once");
+            logged = now;
+        }
+    }
+    assert_eq!(verify.sends.load(Ordering::SeqCst), 0);
+    assert_eq!(verify.checks.load(Ordering::SeqCst), 0);
 }
