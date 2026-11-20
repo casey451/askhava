@@ -19,7 +19,7 @@
 //! CANCELAR (CON-029) and enqueues [`OPTED_OUT_LIVE_KIND`] for the CON-028 notice (D-129, D-372).
 
 use askhava_core::api::{NewTask, enqueue as enqueue_task};
-use askhava_jobs::api::current;
+use askhava_jobs::api::{current, mark_emergency};
 use askhava_messaging::api::{Language, NewText, Relation, enqueue, render};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
 use askhava_picks::api::{
@@ -651,8 +651,10 @@ async fn offer_choice(
     Ok(texts)
 }
 
-/// Stores the emergency-or-regular choice (INT-006); an emergency is released for cards at once
-/// when its other conditions are met ([`release_emergency`], INT-029).
+/// Stores the emergency-or-regular choice (INT-006); on emergency every job the request has
+/// opened (the first and each ALSO or SPLIT job) is marked one in `jobs` in the same transaction
+/// ([`mark_jobs`], PICK-044, PICK-043, D-4748), and released for cards at once when its other
+/// conditions are met ([`release_emergency`], INT-029). Regular changes no job.
 ///
 /// # Errors
 ///
@@ -669,6 +671,9 @@ pub async fn answer_choice(
     let ids = (conversation, msg.inbox_id);
     let answer = (CHOICE_QUESTION, choice.code());
     models::insert_answer(&mut tx, ids, answer, msg.received_at).await?;
+    if choice == Choice::Emergency {
+        mark_jobs(&mut tx, conversation, msg.received_at).await?;
+    }
     let released = choice == Choice::Emergency
         && release_emergency(&mut tx, conversation, msg.received_at).await?;
     tx.commit().await.map_err(|_| IntakeError::Database)?;
@@ -677,8 +682,9 @@ pub async fn answer_choice(
 
 /// Releases an emergency job for cards (INT-029, D-164): once consent is recorded, no 911 text
 /// waits for SAFE (INT-005), the homeowner chose emergency and the ZIP and area check stored her
-/// town, it enqueues one [`EMERGENCY_RELEASED_KIND`] event for `quotes`, before the trade
-/// questions, photos and the name-and-address question. `true` only when released by this call;
+/// town, it enqueues one [`EMERGENCY_RELEASED_KIND`] event for `quotes` per job with a stored
+/// emergency card (one request-wide event while none is stored; [`enqueue_release`], D-4748),
+/// before the trade questions, photos and the name-and-address question. `true` only when released by this call;
 /// the conversation calls it again once the ZIP is in.
 ///
 /// # Errors
@@ -694,13 +700,12 @@ pub async fn release_emergency(
         return Ok(false);
     }
     let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
-    let payload = serde_json::json!({ "conversation": conversation });
-    let mut task = NewTask::new(EMERGENCY_RELEASED_KIND, payload, at);
-    task.dedupe_key = Some(format!("{EMERGENCY_RELEASED_KIND}.{conversation}"));
-    let queued = enqueue_task(&mut tx, &task)
-        .await
-        .map_err(|_| IntakeError::Database)?;
-    if queued.is_some() {
+    let jobs = crate::cards_out::emergency_jobs(&mut tx, conversation).await?;
+    let mut released = jobs.is_empty() && enqueue_release(&mut tx, conversation, None, at).await?;
+    for job in jobs {
+        released |= enqueue_release(&mut tx, conversation, Some(job), at).await?;
+    }
+    if released {
         audit_action(
             &mut tx,
             Actor::System,
@@ -710,6 +715,49 @@ pub async fn release_emergency(
         .await?;
     }
     tx.commit().await.map_err(|_| IntakeError::Database)?;
+    Ok(released)
+}
+
+/// INT-029, PICK-044, PICK-043, D-4748: marks every job request `conversation` has opened an
+/// emergency in `jobs` (false to true only; a final job or one already marked is unchanged).
+async fn mark_jobs(
+    tx: &mut PgConnection,
+    conversation: Uuid,
+    at: Timestamp,
+) -> Result<(), IntakeError> {
+    for job in models::request_jobs(tx, conversation).await? {
+        mark_emergency(tx, job, at)
+            .await
+            .map_err(|_| IntakeError::Job)?;
+    }
+    Ok(())
+}
+
+/// Enqueues one [`EMERGENCY_RELEASED_KIND`] event (INT-029, D-4748): for job `job` under a key per
+/// job, so each emergency job of a request (a SPLIT's two) is released once; with no job (the
+/// request has no stored emergency card yet) the request-wide event and key used before T747.
+/// `true` when queued by this call.
+async fn enqueue_release(
+    tx: &mut PgConnection,
+    conversation: Uuid,
+    job: Option<Uuid>,
+    at: Timestamp,
+) -> Result<bool, IntakeError> {
+    let (payload, key) = match job {
+        Some(job) => (
+            serde_json::json!({ "conversation": conversation, "job": job }),
+            format!("{EMERGENCY_RELEASED_KIND}.{conversation}.{job}"),
+        ),
+        None => (
+            serde_json::json!({ "conversation": conversation }),
+            format!("{EMERGENCY_RELEASED_KIND}.{conversation}"),
+        ),
+    };
+    let mut task = NewTask::new(EMERGENCY_RELEASED_KIND, payload, at);
+    task.dedupe_key = Some(key);
+    let queued = enqueue_task(tx, &task)
+        .await
+        .map_err(|_| IntakeError::Database)?;
     Ok(queued.is_some())
 }
 
