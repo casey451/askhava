@@ -23,6 +23,7 @@ mod reader;
 mod released_reader;
 mod scrub;
 mod scrub_context;
+mod suppression_phone;
 mod vault;
 
 #[cfg(test)]

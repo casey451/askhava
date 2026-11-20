@@ -1,10 +1,15 @@
 //! The owner's "Re-send the release": one more release notice for a release that already stands
-//! (PICK-022, PICK-023, PICK-024, SEC-006; TD-PICK-41; T540, D-074, D-3890, D-3892).
+//! (PICK-022, PICK-023, PICK-024, SEC-006, PRIV-005; TD-PICK-41, TD-PICK-74; T540, T739, D-074,
+//! D-3890, D-3892, D-4727).
 //!
 //! [`resend_release`] never makes a release. It reads the job's newest `picks.release` row (by
 //! `released_at`; only that row is ever re-sent), so a pick with no release, whether paid or not,
 //! in safe mode or paused by the homeowner's CANCEL, gets [`Resent::NotReleased`] and nothing is
-//! queued. `release::release`, which makes a release from a proof and answers `Already` for a
+//! queued. The row is read joined to its `picks.pick` row, locked as the release claim and the
+//! fraud end lock it (D-2627), and re-sent only while that pick's status still shows its release
+//! ([`release_shown_codes`]: paid or free): a released pick later marked no-show, refunded as
+//! fraud or failed in payment also gets [`Resent::NotReleased`], with nothing queued or audited
+//! (D-4727). `release::release`, which makes a release from a proof and answers `Already` for a
 //! released pick, is never called here. For a standing release it queues, in one transaction, one
 //! [`BUSINESS_NOTICE_KIND`] task with [`release_notice`]'s payload (IDs and the job number only,
 //! never a homeowner detail, PICK-023, PICK-024) to the business's pick-and-release addresses,
@@ -23,6 +28,7 @@ use sqlx::{Connection, PgConnection};
 use crate::models::PicksError;
 use crate::money_notices::BUSINESS_NOTICE_KIND;
 use crate::release::release_notice;
+use crate::status::release_shown_codes;
 
 /// The audit action of one queued re-send, subject the released pick (SEC-006, D-3890).
 pub const RELEASE_RESEND_ACTION: &str = "picks.release_resend";
@@ -43,7 +49,8 @@ pub enum Resent {
     Queued,
     /// This press was already queued; nothing more.
     Repeat,
-    /// The job has no release; nothing queued.
+    /// The job has no release, or its newest release's pick no longer shows it (D-4727); nothing
+    /// queued.
     NotReleased,
     /// The business has no pick-and-release address; nothing queued.
     NoRecipient,
@@ -55,8 +62,9 @@ pub fn resend_key(pick: Uuid, press: Uuid) -> String {
     format!("{BUSINESS_NOTICE_KIND}.release_resend.{pick}.{press}")
 }
 
-/// PICK-022, PICK-023, PICK-024, SEC-006, D-074: re-sends job `job`'s newest standing release
-/// notice for `press`, at `now`; see the module docs. Creates no release.
+/// PICK-022, PICK-023, PICK-024, SEC-006, PRIV-005, D-074, D-4727: re-sends job `job`'s newest
+/// standing release notice for `press`, at `now`, only while its pick is still paid or free; see
+/// the module docs. Creates no release.
 ///
 /// # Errors
 ///
@@ -69,14 +77,16 @@ pub async fn resend_release(
 ) -> Result<Resent, PicksError> {
     let mut tx = conn.begin().await.map_err(|_| PicksError::Database)?;
     let newest = sqlx::query!(
-        "SELECT pick_id, business_id FROM picks.release WHERE job_id = $1 \
-         ORDER BY released_at DESC, pick_id DESC LIMIT 1",
-        job
+        "SELECT r.pick_id, r.business_id, (p.status = ANY($2)) AS \"shown!\" \
+         FROM picks.release r JOIN picks.pick p ON p.id = r.pick_id WHERE r.job_id = $1 \
+         ORDER BY r.released_at DESC, r.pick_id DESC LIMIT 1 FOR UPDATE OF p",
+        job,
+        &release_shown_codes()
     )
     .fetch_optional(&mut *tx)
     .await
     .map_err(|_| PicksError::Database)?;
-    let Some(row) = newest else {
+    let Some(row) = newest.filter(|row| row.shown) else {
         return Ok(Resent::NotReleased);
     };
     let (pick, business) = (row.pick_id, row.business_id);
