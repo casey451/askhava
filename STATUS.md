@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-20T08:50:12Z by runner adc433df0a11 (actions).
+Updated 2026-11-20T08:52:06Z by runner 201d17f9ff6e (actions).
 
-**Building: T617 in progress since 07:06Z; 528 of 708 done; week 25% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T617 in progress since 07:06Z; 529 of 708 done; week 25% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 528 of 708 build tasks (owner gates not counted)
+- **Tasks done:** 529 of 708 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 3: T727 claimed 08:23Z, lease until 11:23Z; lane 4: T766 claimed 08:11Z, lease until 11:11Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z
 - **Week:** 25% used, 139.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:50Z, 0 min before this update
+- **Last run:** 08:50Z, 1 min before this update
 - **Keeper:** last ran 08:50Z, next wake 10:09Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 82 problem(s) on tasks still to run (+393 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 86 problem(s) on tasks still to run (+399 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -22,7 +22,7 @@ Updated 2026-11-20T08:50:12Z by runner adc433df0a11 (actions).
 | T116 | Stage 0.5 static page set and the DNS records file | MERGE_PENDING | 1 | 50 min | 08:48Z |  |
 | T669 | picks: "Can't take it" and a business leaving end a pick in  | MERGE_PENDING | 2 | 80 min | 08:32Z | runner smoke red on c403ea4898ac (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
 | T672 | intake: the dispatcher asks "How soon?", the night count and | QUEUED | 2 | 89 min | 08:05Z | runner smoke red on 3e9315b7399c (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
-| T561 | server and portals: the homeowner's "Download my data" and h | MERGE_PENDING | 1 | 33 min | 07:51Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
+| T561 | server and portals: the homeowner's "Download my data" and h | done | 1 | 33 min | 07:51Z |  |
 | T762 | runner and workflow (harness): fix-round workers commit with | done | 1 | 68 min | 07:44Z |  |
 | T764 | ci and pre-hand-in gate (harness): scripts/bootstrap_roles.s | done | 1 | 54 min | 07:29Z |  |
 | T669 | picks: "Can't take it" and a business leaving end a pick in  | QUEUED | 1 | 56 min | 07:07Z |  |
@@ -97,7 +97,7 @@ Updated 2026-11-20T08:50:12Z by runner adc433df0a11 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 324 of 735 (44.1%) · partial 385 · unstarted 26
-**Tasks merged (throughput only):** 528 of 708
+**Tasks merged (throughput only):** 529 of 708
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -133,7 +133,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 171 of 290 done
+- stage 5: 172 of 290 done
 - stage 6: 0 of 65 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
