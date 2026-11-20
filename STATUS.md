@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T14:56:12Z by runner 4626f2e46b66 (actions).
+Updated 2026-11-20T14:56:41Z by runner 6ee2ece5fcc7 (actions).
 
 **Building: T770 in progress since 14:33Z; 538 of 712 done; week 35% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-20T14:56:12Z by runner 4626f2e46b66 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 6: T770 claimed 14:33Z, lease until 17:33Z
 - **Week:** 35% used, 120.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:55Z, 0 min before this update
-- **Keeper:** last ran 14:54Z, next wake 16:51Z
+- **Last run:** 14:56Z, 0 min before this update
+- **Keeper:** last ran 14:56Z, next wake 17:36Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
