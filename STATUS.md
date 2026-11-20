@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T08:39:39Z by runner 0931e09f36a1 (actions).
+Updated 2026-11-20T08:48:47Z by runner 5914cb41d39a (actions).
 
 **Building: T116 in progress since 07:58Z; 528 of 708 done; week 25% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-20T08:39:39Z by runner 0931e09f36a1 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T116 claimed 07:58Z, lease until 10:58Z; lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 3: T727 claimed 08:23Z, lease until 11:23Z; lane 4: T766 claimed 08:11Z, lease until 11:11Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z
 - **Week:** 25% used, 139.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:39Z, 0 min before this update
+- **Last run:** 08:39Z, 8 min before this update
 - **Keeper:** last ran 08:39Z, next wake 10:08Z
 
 ## Needs attention
@@ -90,7 +90,6 @@ Updated 2026-11-20T08:39:39Z by runner 0931e09f36a1 (actions).
 | T652 | ops: safe mode starts only on OPS-001's alert kinds, and a d | BLOCKED | 1 | 5 min | 09:10Z |  |
 | T536 | E2e harness: clock-advancing journeys last, a keyed worker,  | BLOCKED | 1 | 46 min | 09:00Z |  |
 | T476 | portals: the owner health page with every OPS-008 figure and | done | 1 | 2 h 27 min | 08:50Z |  |
-| T161 | wording: the WORD-024 voice rule's pressure-word scan, the r | BLOCKED | 1 | 4 min | 08:41Z |  |
 
 ### Plan and harness merges on main
 - none
