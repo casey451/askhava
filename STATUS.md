@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-20T16:20:30Z by runner 3e01fef06c14 (actions).
+Updated 2026-11-20T16:21:52Z by runner 6de3b012a771 (actions).
 
 **Building: T530 in progress since 15:29Z; 543 of 712 done; week 37% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 543 of 712 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T530 claimed 15:29Z, lease until 18:29Z; lane 3: T771 claimed 15:44Z, lease until 18:44Z; lane 4: T681 claimed 15:47Z, lease until 18:47Z
-- **Week:** 37% used, 119.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T530 claimed 15:29Z, lease until 18:29Z; lane 2: T672 claimed 16:21Z, lease until 19:21Z; lane 3: T771 claimed 15:44Z, lease until 18:44Z; lane 4: T681 claimed 15:47Z, lease until 18:47Z
+- **Week:** 37% used, 117.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:20Z, 0 min before this update
 - **Keeper:** last ran 16:20Z, next wake 16:40Z
 
@@ -18,7 +18,7 @@ The pick's window deadline (picks.pick.confirm_due) is read only by private code
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T664 (since 2026-11-20T16:15:19Z, no attempt used; a plan change fixes it): outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs
-- Strict plan check red: 38 problem(s) on tasks still to run (+411 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
+- Strict plan check red: 38 problem(s) on tasks still to run (+412 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -130,7 +130,7 @@ The pick's window deadline (picks.pick.confirm_due) is read only by private code
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-20T15:43:07Z (week)): week: 74.9M used, 119.1M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-02T12:27:10Z.
+- Pacing (session_reading 2026-11-20T16:19:56Z (week)): week: 76.9M used, 117.1M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-03T20:49:05Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -146,6 +146,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T530 (lease until 2026-11-20T18:29:00Z)
+- lane 2: T672 (lease until 2026-11-20T19:21:35Z)
 - lane 3: T771 (lease until 2026-11-20T18:44:21Z)
 - lane 4: T681 (lease until 2026-11-20T18:47:45Z)
 
