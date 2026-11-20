@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T12:55:49Z by runner 7d98387f34ed (actions).
+Updated 2026-11-20T12:59:58Z by runner 7d98387f34ed (actions).
 
-**Building: T496 in progress since 11:44Z; 536 of 710 done; week 31% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T670 in progress since 12:59Z; 536 of 710 done; week 31% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 536 of 710 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T496 claimed 11:44Z, lease until 14:44Z; lane 3: T727 claimed 11:55Z, lease until 14:55Z; lane 4: T667 claimed 12:55Z, lease until 15:55Z; lane 5: T767 claimed 12:53Z, lease until 15:53Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
-- **Week:** 31% used, 126.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:54Z, 1 min before this update
+- **Lane:** lane 1: T670 claimed 12:59Z, lease until 15:59Z; lane 2: T496 claimed 11:44Z, lease until 14:44Z; lane 3: T727 claimed 11:55Z, lease until 14:55Z; lane 4: T667 claimed 12:55Z, lease until 15:55Z; lane 5: T767 claimed 12:53Z, lease until 15:53Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
+- **Week:** 31% used, 125.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 12:56Z, 3 min before this update
 - **Keeper:** last ran 12:31Z, next wake 12:51Z
 
 ## Needs attention
@@ -146,7 +146,7 @@ Checks: success, Lint and slow tests: success, Python: success, Coverage: cancel
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-20T12:30:43Z (week)): week: 67.8M used, 126.2M left, resets 2026-11-26T17:00:00Z; projected finish 2026-11-29T18:42:39Z.
+- Pacing (session_reading 2026-11-20T12:30:43Z (week)): week: 68.4M used, 125.6M left, resets 2026-11-26T17:00:00Z; projected finish 2026-11-29T18:46:46Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -161,7 +161,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T670 (lease until 2026-11-20T15:59:44Z)
 - lane 2: T496 (lease until 2026-11-20T14:44:53Z)
 - lane 3: T727 (lease until 2026-11-20T14:55:28Z)
 - lane 4: T667 (lease until 2026-11-20T15:55:37Z)
