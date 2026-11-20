@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T20:49:51Z by runner 49b6ebefcabe (actions).
+Updated 2026-11-20T20:50:23Z by runner 84715a35a24b (actions).
 
 **Building: T752 in progress since 20:45Z; 552 of 713 done; week 46% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-20T20:49:51Z by runner 49b6ebefcabe (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T752 claimed 20:45Z, lease until 23:45Z; lane 2: T750 claimed 20:42Z, lease until 23:42Z; lane 3: T558 claimed 20:29Z, lease until 23:29Z; lane 6: T673 claimed 20:17Z, lease until 23:17Z
 - **Week:** 46% used, 97.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:49Z, 0 min before this update
-- **Keeper:** last ran 20:47Z, next wake 22:06Z
+- **Last run:** 20:50Z, 0 min before this update
+- **Keeper:** last ran 20:50Z, next wake 21:10Z
 
 ## Needs attention
 - BLOCKED T614: plan gap reported: PLAN GAP: tests/integration/tests/quote_page.rs:172 (owner T052, protected) bans the word "summary" anywhere in the quote page's HTML, but T614 must put <details class="menu"><summary>Menu</summary> in the header of every page (docs/design/DESIGN_SPEC.md:102); quote_page.html extends base.html. Smallest plan change: a harness task narrows the check at quote_page.rs:170-174 to the page's <main>. Also D-4970's "two rules only" is not enough: a third rule is needed in site.css: .menu > summary { margin: calc((var(--header-h) - 44px) / 2) 0 calc((var(--header-h) - 44px) / 2) -12px; } (else the row; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T614 --plan-fix D-### --reason "..."` (D-2859)
