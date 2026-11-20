@@ -22,6 +22,7 @@ use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
 pub use crate::business_numbers::{Figure, Finished, Move, finished_counts, move_out, tally};
+pub use crate::emergency_mark::mark_emergency;
 pub use crate::feedback_purge::{
     FEEDBACK_PURGE_KIND, FEEDBACK_PURGED, FeedbackStage, feedback_text_stage, purge_feedback,
 };

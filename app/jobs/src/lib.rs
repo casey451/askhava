@@ -7,6 +7,7 @@
 
 pub mod api;
 mod business_numbers;
+mod emergency_mark;
 mod feedback_purge;
 mod flag_inputs;
 mod followups;
