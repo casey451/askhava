@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-20T09:40:23Z by runner 0931e09f36a1 (actions).
+Updated 2026-11-20T09:44:12Z by runner 4e4208672e58 (actions).
 
-**Building: T573 in progress since 08:54Z; 529 of 709 done; week 27% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T573 in progress since 08:54Z; 529 of 710 done; week 27% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 529 of 709 build tasks (owner gates not counted)
+- **Tasks done:** 529 of 710 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 5: T573 claimed 08:54Z, lease until 11:54Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z
 - **Week:** 27% used, 139.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:40Z, 0 min before this update
+- **Last run:** 09:40Z, 3 min before this update
 - **Keeper:** last ran 09:40Z, next wake 10:23Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 82 problem(s) on tasks still to run (+393 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 42 problem(s) on tasks still to run (+399 on DONE tasks); first: T530: stored context_pct 12% but it measures 16%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -97,7 +97,7 @@ Updated 2026-11-20T09:40:23Z by runner 0931e09f36a1 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 324 of 735 (44.1%) · partial 385 · unstarted 26
-**Tasks merged (throughput only):** 529 of 708
+**Tasks merged (throughput only):** 529 of 709
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -133,7 +133,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 172 of 291 done
+- stage 5: 172 of 292 done
 - stage 6: 0 of 65 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
