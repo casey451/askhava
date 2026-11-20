@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T01:46:12Z by runner f5fc7912f4bd (actions).
+Updated 2026-11-20T01:46:43Z by runner f5fc7912f4bd (actions).
 
 **Building: T726 in progress since 01:05Z; 512 of 704 done; week 14% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 512 of 704 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T726 claimed 01:05Z, lease until 04:05Z; lane 4: T218 claimed 00:31Z, lease until 03:31Z
+- **Lane:** lane 3: T726 claimed 01:05Z, lease until 04:05Z
 - **Week:** 14% used, 162.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:42Z, 3 min before this update
 - **Keeper:** last ran 01:42Z, next wake 02:02Z
@@ -21,6 +21,7 @@ Updated 2026-11-20T01:46:12Z by runner f5fc7912f4bd (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T218 | Wording and template scans from the brains: sales phrases, n | MERGE_PENDING | 1 | 74 min | 01:46Z |  |
 | T663 | picks, jobs and payments (harness): a confirmed pick moves i | MERGE_PENDING | 2 | 2 h 7 min | 01:40Z | PLAN GAP: tests/test_coverage_floor.py:125 asserts floors["future"] == [], contradicting T663 goal (5), which requires a |
 | T527 | messaging, portals and server: the business-texting switch t | MERGE_PENDING | 1 | 93 min | 01:39Z |  |
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | QUEUED | 1 | 56 min | 01:00Z | T726 resync merged main cleanly, but fresh-eyes review of the WIP scan (runner/wip.py) found fail-open bypasses in three |
@@ -138,7 +139,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 3: T726 (lease until 2026-11-20T04:05:47Z)
-- lane 4: T218 (lease until 2026-11-20T03:31:28Z)
 
 ## Last usage reading
-- {"task": "T663", "at": "2026-11-20T01:40:55Z", "input_tokens": 471, "output_tokens": 135006, "cache_creation_input_tokens": 444468, "cache_read_input_tokens": 29990387}
+- {"task": "T218", "at": "2026-11-20T01:46:10Z", "output_tokens": 51167, "cache_read_input_tokens": 3625025, "cache_creation_input_tokens": 211321, "input_tokens": 155}
