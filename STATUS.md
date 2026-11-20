@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-20T01:06:20Z by runner c9b37a0e9036 (actions).
+Updated 2026-11-20T01:06:35Z by runner c9b37a0e9036 (actions).
 
 **Building: T527 in progress since 00:05Z; 511 of 704 done; week 14% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 511 of 704 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T527 claimed 00:05Z, lease until 03:05Z; lane 4: T218 claimed 00:31Z, lease until 03:31Z; lane 5: T663 claimed 23:33Z, lease until 02:33Z
-- **Week:** 14% used, 161.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T527 claimed 00:05Z, lease until 03:05Z; lane 3: T726 claimed 01:05Z, lease until 04:05Z; lane 4: T218 claimed 00:31Z, lease until 03:31Z; lane 5: T663 claimed 23:33Z, lease until 02:33Z
+- **Week:** 14% used, 162.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:01Z, 4 min before this update
 - **Keeper:** last ran 01:01Z, next wake 01:21Z
 
@@ -15,6 +15,7 @@ Updated 2026-11-20T01:06:20Z by runner c9b37a0e9036 (actions).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T672 (since 2026-11-19T23:07:12Z, no attempt used; a plan change fixes it): T672: dependency T717 is DONE but its owned file tests/integration/tests/intake_order_two_jobs_rules.rs is not on main
+- PLAN GAP T763 (since 2026-11-20T01:05:47Z, no attempt used; a plan change fixes it): T763: prompt kit/prompts/T763.md is missing; run scripts/gen_prompts.py; T763: branch claude/task/T763-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
 - Strict plan check red: 77 problem(s) on tasks still to run (+363 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
@@ -122,7 +123,7 @@ Updated 2026-11-20T01:06:20Z by runner c9b37a0e9036 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-20T00:07:16Z (week)): week: 32.5M used, 161.5M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T05:12:36Z.
+- Pacing (session_reading 2026-11-20T01:00:44Z (week)): week: 32.0M used, 162.0M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T05:58:44Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -138,6 +139,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T527 (lease until 2026-11-20T03:05:43Z)
+- lane 3: T726 (lease until 2026-11-20T04:05:47Z)
 - lane 4: T218 (lease until 2026-11-20T03:31:28Z)
 - lane 5: T663 (lease until 2026-11-20T02:33:30Z)
 
