@@ -415,6 +415,12 @@ const MEASURES: &[&str] = &[
 /// How many words after a code cue its digits may start, and how far a spaced run may reach.
 const CODE_REACH: usize = 3;
 const DOT_WORDS: &[&str] = &["dot", "punto"];
+/// Words that may join two digit runs into one phone number ("928 and 555 and 0142", D-4765).
+const CONNECTORS: &[&str] = &["y", "and", "then", "luego"];
+/// The only totals a connector-joined run may have: a phone number's 7, 10 or 11 digits (D-4765).
+const PHONE_LENGTHS: &[usize] = &[7, 10, 11];
+/// The marks that turn a digit into a keycap emoji: variation selector 16 and the enclosing keycap.
+const KEYCAP_MARKS: &[char] = &['\u{FE0F}', '\u{20E3}'];
 
 /// Text that passed [`scrub`]; the only text type `ai` accepts (AI-004). Its field is private and
 /// it has no public constructor, so no other crate can build one (`forge_scrubbed_text.rs`).
@@ -538,16 +544,46 @@ pub fn is_format(c: char) -> bool {
         | 0x1D173..=0x1D17A | 0xE0001 | 0xE0020..=0xE007F)
 }
 
-/// The lower-cased token without edge punctuation (a leading `@` kept), `(at)`, `[at]`, `(dot)`
-/// and `[dot]` read as `@` and `.` ("steve(at)gmail(dot)com", AI-020, D-2622).
+/// The lower-cased token, percent-decoded once ("name%40example.com" is checked as
+/// "name@example.com", D-4765), without edge punctuation (a leading `@` kept), `(at)`, `[at]`,
+/// `(dot)` and `[dot]` read as `@` and `.` ("steve(at)gmail(dot)com", AI-020, D-2622).
 fn key_of(token: &str) -> String {
-    let mut lower = token.to_lowercase();
+    let mut lower = percent_decode(token).to_lowercase();
     for (spelled, mark) in [("(at)", "@"), ("[at]", "@"), ("(dot)", "."), ("[dot]", ".")] {
         lower = lower.replace(spelled, mark);
     }
     lower
         .trim_matches(|c: char| !(c.is_alphanumeric() || c == '@'))
         .to_owned()
+}
+
+/// One pass of percent-decoding, so the result never depends on a second look ("%2540" gives
+/// "%40", which stays). A `%` without two hex digits, and a decoded byte that is not UTF-8,
+/// stays as typed, so a bad sequence cannot hide the address beside it (AI-020, D-4765).
+fn percent_decode(token: &str) -> String {
+    let bytes = token.as_bytes();
+    let hex = |i: usize| bytes.get(i).and_then(|b| char::from(*b).to_digit(16));
+    let (mut decoded, mut i) = (Vec::with_capacity(bytes.len()), 0);
+    while i < bytes.len() {
+        match (bytes[i], hex(i + 1), hex(i + 2)) {
+            (b'%', Some(high), Some(low)) => {
+                decoded.push(u8::try_from(high * 16 + low).unwrap_or(b'%'));
+                i += 3;
+            }
+            (byte, _, _) => {
+                decoded.push(byte);
+                i += 1;
+            }
+        }
+    }
+    let mut out = String::with_capacity(decoded.len());
+    for chunk in decoded.utf8_chunks() {
+        out.push_str(chunk.valid());
+        for byte in chunk.invalid() {
+            out.push_str(&format!("%{byte:02x}"));
+        }
+    }
+    out
 }
 
 fn render(tokens: &[Token], cut: &[bool]) -> String {
@@ -591,8 +627,8 @@ fn is_domain(key: &str) -> bool {
         && labels.last().is_some_and(|tld| TLDS.contains(tld))
 }
 
-/// The digits a token spells, mixing digits, separators, number words ("9two8", "twenty-eight")
-/// and, beside a digit, "o" for zero and "l" for one ("555-O1l2"), if it spells nothing else (AI-020).
+/// The digits a token spells, mixing digits, separators, keycap marks, number words ("9two8",
+/// "twenty-eight") and, beside a digit, "o" for zero and "l" for one ("555-O1l2"), if it spells nothing else (AI-020).
 fn digit_form(key: &str) -> Option<String> {
     let lookalikes = key.len() == 1 || key.contains(|c: char| c.is_ascii_digit());
     let (mut rest, mut out, mut tens) = (key, String::new(), false);
@@ -610,7 +646,7 @@ fn digit_form(key: &str) -> Option<String> {
             '0'..='9' => Some(c),
             'o' if lookalikes => Some('0'),
             'l' if lookalikes => Some('1'),
-            _ if ".-()/+#".contains(c) => None,
+            _ if ".-()/+#".contains(c) || KEYCAP_MARKS.contains(&c) => None,
             _ => return None,
         };
         if let Some(d) = digit {
@@ -631,29 +667,63 @@ fn number_word(rest: &str) -> Option<(&'static str, &'static str)> {
         .copied()
 }
 
+/// One run of number-spelling tokens: `start..=last`, holding `digits` digits.
+struct DigitRun {
+    start: usize,
+    last: usize,
+    digits: usize,
+}
+
 /// Runs of number-spelling tokens (separator-only tokens, a spoken "dash", "guion" or "space" and
 /// "double"/"triple" between them allowed) that together hold 7 or more digits: a phone number in
-/// any spelling (AI-002, AI-020, D-2622).
+/// any spelling (AI-002, AI-020, D-2622). Runs a connector word joins ("928 and 555 and 0142",
+/// "nueve dos ocho y cinco cinco cinco y ...") go together when their digits total a phone
+/// length, exactly 7, 10 or 11, so "2 and 3 bedrooms" and "the 1200 and 1300 block" keep every
+/// word (PRIV-005, D-4765).
 fn mark_digit_runs(tokens: &[Token], cut: &mut [bool]) {
-    let mut start = 0;
+    let (mut runs, mut start) = (Vec::new(), 0);
     while start < tokens.len() {
-        let (mut end, mut digits, mut last, mut times) = (start, 0, None, 1);
-        while end < tokens.len() {
-            let key = tokens[end].key.as_str();
-            let repeat = MULTIPLIERS.iter().find(|(w, _)| *w == key);
-            match (repeat, digit_form(key)) {
-                (Some(&(_, n)), _) => times = n,
-                (None, Some(d)) => (digits, last, times) = (digits + d.len() * times, Some(end), 1),
-                (None, None) if spoken_gap(key) && last.is_some() => {}
-                (None, None) => break,
-            }
-            end += 1;
-        }
-        if let Some(last) = last.filter(|_| digits >= 7) {
-            cut[start..=last].fill(true);
-        }
+        let (run, end) = digit_run(tokens, start);
+        runs.extend(run);
         start = end.max(start + 1);
     }
+    for (n, run) in runs.iter().enumerate() {
+        if run.digits >= 7 {
+            cut[run.start..=run.last].fill(true);
+        }
+        let mut total = run.digits;
+        for (before, after) in runs[n..].iter().zip(&runs[n + 1..]) {
+            if total >= 11 || !connected(tokens, before.last, after.start) {
+                break;
+            }
+            total += after.digits;
+            if PHONE_LENGTHS.contains(&total) {
+                cut[run.start..=after.last].fill(true);
+            }
+        }
+    }
+}
+
+/// The digit run that starts at `start`, if one does, and the index of the first token after it.
+fn digit_run(tokens: &[Token], start: usize) -> (Option<DigitRun>, usize) {
+    let (mut end, mut digits, mut last, mut times) = (start, 0, None, 1);
+    while end < tokens.len() {
+        let key = tokens[end].key.as_str();
+        let repeat = MULTIPLIERS.iter().find(|(w, _)| *w == key);
+        match (repeat, digit_form(key)) {
+            (Some(&(_, n)), _) => times = n,
+            (None, Some(d)) => (digits, last, times) = (digits + d.len() * times, Some(end), 1),
+            (None, None) if spoken_gap(key) && last.is_some() => {}
+            (None, None) => break,
+        }
+        end += 1;
+    }
+    let run = last.map(|last| DigitRun {
+        start,
+        last,
+        digits,
+    });
+    (run, end)
 }
 
 /// A token that may sit inside a digit run: separators only, or a spoken separator (D-2622).
@@ -661,11 +731,27 @@ fn spoken_gap(key: &str) -> bool {
     key.is_empty() || SPOKEN_SEPARATORS.contains(&key)
 }
 
+/// Whether only connector words and separators, with at least one connector, lie between the
+/// digit run ending at `last` and the one starting at `next`: digits on both sides (D-4765).
+fn connected(tokens: &[Token], last: usize, next: usize) -> bool {
+    let between = &tokens[last + 1..next];
+    let connector = |t: &Token| CONNECTORS.contains(&t.key.as_str());
+    between.iter().any(connector) && between.iter().all(|t| connector(t) || spoken_gap(&t.key))
+}
+
 /// "steve at gmail dot com", "steve at gmail.com", "gmail dot com", and a spaced `@` with both
-/// its sides ("steve @ gmail.com", "steve @gmail.com") (AI-020, D-2622).
+/// its sides ("steve @ gmail.com", "steve @gmail.com") (AI-020, D-2622). A lone "." before a
+/// top-level domain is a dot only in a run with an at ("steve at gmail . com", D-4765).
 fn mark_spelled_emails(tokens: &[Token], cut: &mut [bool]) {
     let key = |i: usize| tokens.get(i).map_or("", |t| t.key.as_str());
     for i in 0..tokens.len() {
+        if i > 0
+            && tokens[i].text == "."
+            && TLDS.contains(&key(i + 1))
+            && let Some(start) = at_run_start(tokens, i - 1)
+        {
+            cut[start..=i + 1].fill(true);
+        }
         let dotted = DOT_WORDS.contains(&key(i)) && TLDS.contains(&key(i + 1)) && i > 0;
         if dotted {
             cut[i - 1..=i + 1].fill(true);
@@ -683,6 +769,20 @@ fn mark_spelled_emails(tokens: &[Token], cut: &mut [bool]) {
             cut[i - 1..=(i + 1).min(tokens.len() - 1)].fill(true);
         }
     }
+}
+
+/// Where the spelled address ending at the label `end` starts, walking back over labels joined by
+/// "at", "arroba", `@`, "dot", "punto" or a lone "."; `None` when no at or `@` is in the run, since
+/// the top-level domains hold everyday words ("the AC died . me and my husband"; AI-020, D-4765).
+fn at_run_start(tokens: &[Token], end: usize) -> Option<usize> {
+    let at = |t: &Token| AT_WORDS.contains(&t.key.as_str()) || t.key == "@";
+    let dot = |t: &Token| DOT_WORDS.contains(&t.key.as_str()) || t.text == ".";
+    let (mut start, mut seen) = (end, tokens[end].key.contains('@'));
+    while start >= 2 && (at(&tokens[start - 1]) || dot(&tokens[start - 1])) {
+        seen |= at(&tokens[start - 1]);
+        start -= 2;
+    }
+    seen.then_some(start)
 }
 
 fn is_wordish(key: &str, common: &CommonWords) -> bool {
