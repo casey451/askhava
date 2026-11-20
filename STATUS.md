@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T07:44:09Z by runner 5404fe7e8b57 (actions).
+Updated 2026-11-20T07:44:34Z by runner 5404fe7e8b57 (actions).
 
 **Building: T617 in progress since 07:06Z; 526 of 708 done; week 23% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 526 of 708 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 3: T762 claimed 06:35Z, lease until 09:35Z; lane 4: T672 claimed 06:35Z, lease until 09:35Z; lane 5: T561 claimed 07:18Z, lease until 10:18Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z; lane 7: T669 claimed 07:12Z, lease until 10:12Z
+- **Lane:** lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 4: T672 claimed 06:35Z, lease until 09:35Z; lane 5: T561 claimed 07:18Z, lease until 10:18Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z; lane 7: T669 claimed 07:12Z, lease until 10:12Z
 - **Week:** 23% used, 140.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:31Z, 12 min before this update
+- **Last run:** 07:31Z, 13 min before this update
 - **Keeper:** last ran 07:30Z, next wake 09:37Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Updated 2026-11-20T07:44:09Z by runner 5404fe7e8b57 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T762 | runner and workflow (harness): fix-round workers commit with | MERGE_PENDING | 1 | 68 min | 07:44Z |  |
 | T764 | ci and pre-hand-in gate (harness): scripts/bootstrap_roles.s | MERGE_PENDING | 1 | 54 min | 07:29Z |  |
 | T669 | picks: "Can't take it" and a business leaving end a pick in  | QUEUED | 1 | 56 min | 07:07Z | runner smoke red on c403ea4898ac (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
 | T573 | messaging and server: queued business texts are addressed to | BLOCKED | 1 | 5 min | 06:27Z | PLAN GAP: app/privacy/src/business_contacts.rs:124 (owned by T412, not T573). Item (2) needs the outbox sender to read a |
@@ -142,11 +143,10 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T617 (lease until 2026-11-20T10:06:22Z)
-- lane 3: T762 (lease until 2026-11-20T09:35:28Z)
 - lane 4: T672 (lease until 2026-11-20T09:35:55Z)
 - lane 5: T561 (lease until 2026-11-20T10:18:02Z)
 - lane 6: T530 (lease until 2026-11-20T10:20:58Z)
 - lane 7: T669 (lease until 2026-11-20T10:12:31Z)
 
 ## Last usage reading
-- {"task": "T764", "at": "2026-11-20T07:29:09Z", "cache_read_input_tokens": 486510, "input_tokens": 37, "cache_creation_input_tokens": 43536, "output_tokens": 7402}
+- {"task": "T762", "at": "2026-11-20T07:44:08Z", "cache_read_input_tokens": 2410923, "cache_creation_input_tokens": 147170, "output_tokens": 31171, "input_tokens": 146}
