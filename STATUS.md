@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T19:01:14Z by runner 84715a35a24b (actions).
+Updated 2026-11-20T19:03:41Z by runner 84715a35a24b (actions).
 
 **Building: T756 in progress since 18:57Z; 548 of 713 done; week 42% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 548 of 713 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T756 claimed 18:57Z, lease until 21:57Z; lane 3: T530 claimed 18:54Z, lease until 21:54Z; lane 5: T772 claimed 18:05Z, lease until 21:05Z; lane 6: T661 claimed 18:36Z, lease until 21:36Z; lane 7: T743 claimed 18:24Z, lease until 21:24Z
-- **Week:** 42% used, 104.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:58Z, 2 min before this update
+- **Lane:** lane 1: T756 claimed 18:57Z, lease until 21:57Z; lane 3: T530 claimed 18:54Z, lease until 21:54Z; lane 4: T682 claimed 19:03Z, lease until 22:03Z; lane 5: T772 claimed 18:05Z, lease until 21:05Z; lane 6: T661 claimed 18:36Z, lease until 21:36Z; lane 7: T743 claimed 18:24Z, lease until 21:24Z
+- **Week:** 42% used, 103.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 19:01Z, 2 min before this update
 - **Keeper:** last ran 18:53Z, next wake 19:13Z
 
 ## Needs attention
@@ -130,7 +130,7 @@ Updated 2026-11-20T19:01:14Z by runner 84715a35a24b (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-20T18:52:51Z (week)): week: 89.1M used, 104.9M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-06T04:04:06Z.
+- Pacing (session_reading 2026-11-20T18:52:51Z (week)): week: 90.3M used, 103.7M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-06T02:37:27Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -147,6 +147,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T756 (lease until 2026-11-20T21:57:45Z)
 - lane 3: T530 (lease until 2026-11-20T21:54:21Z)
+- lane 4: T682 (lease until 2026-11-20T22:03:22Z)
 - lane 5: T772 (lease until 2026-11-20T21:05:44Z)
 - lane 6: T661 (lease until 2026-11-20T21:36:41Z)
 - lane 7: T743 (lease until 2026-11-20T21:24:48Z)
