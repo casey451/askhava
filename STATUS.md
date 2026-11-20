@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T14:26:20Z by runner a0c3cfd5c92c (actions).
+Updated 2026-11-20T14:26:47Z by runner a0c3cfd5c92c (actions).
 
-**Building: T670 in progress since 12:59Z; 538 of 712 done; week 34% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T206 in progress since 13:21Z; 538 of 712 done; week 34% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 538 of 712 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T670 claimed 12:59Z, lease until 15:59Z; lane 2: T206 claimed 13:21Z, lease until 16:21Z; lane 3: T557 claimed 13:49Z, lease until 16:49Z; lane 5: T767 claimed 12:53Z, lease until 15:53Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
+- **Lane:** lane 2: T206 claimed 13:21Z, lease until 16:21Z; lane 3: T557 claimed 13:49Z, lease until 16:49Z; lane 5: T767 claimed 12:53Z, lease until 15:53Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
 - **Week:** 34% used, 122.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:03Z, 22 min before this update
+- **Last run:** 14:03Z, 23 min before this update
 - **Keeper:** last ran 14:01Z, next wake 14:21Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Updated 2026-11-20T14:26:20Z by runner a0c3cfd5c92c (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T670 | picks: the pick notice's send never records a pressed pick a | MERGE_PENDING | 1 | 86 min | 14:26Z |  |
 | T667 | picks and calls: a reconnected job's failed masked line is r | MERGE_PENDING | 1 | 58 min | 13:54Z |  |
 | T727 | Runner (harness): a retry after a review failure or a plan-f | done | 2 | 87 min | 13:23Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T496 | a11y (harness): stub Stripe.js in the Ally suite and scan th | done | 1 | 81 min | 13:06Z |  |
@@ -140,11 +141,11 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T670 (lease until 2026-11-20T15:59:44Z)
+- nothing
 - lane 2: T206 (lease until 2026-11-20T16:21:32Z)
 - lane 3: T557 (lease until 2026-11-20T16:49:23Z)
 - lane 5: T767 (lease until 2026-11-20T15:53:17Z)
 - lane 7: T672 (lease until 2026-11-20T15:39:52Z)
 
 ## Last usage reading
-- {"task": "T667", "at": "2026-11-20T13:54:23Z", "cache_creation_input_tokens": 154775, "output_tokens": 42625, "cache_read_input_tokens": 4245034, "input_tokens": 123}
+- {"task": "T670", "at": "2026-11-20T14:26:18Z", "cache_creation_input_tokens": 183864, "output_tokens": 41117, "input_tokens": 161, "cache_read_input_tokens": 3019340}
