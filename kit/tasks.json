@@ -33613,7 +33613,8 @@
     "T759",
     "T760",
     "T763",
-    "T764"
+    "T764",
+    "T768"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -33663,7 +33664,8 @@
     "D-4349",
     "D-4360",
     "D-4708",
-    "D-4709"
+    "D-4709",
+    "D-4925"
    ],
    "cites": [
     "BUILD_BRIEF.md:488",
@@ -33672,7 +33674,7 @@
    "budget": {
     "files": 14,
     "lines": 800,
-    "context_pct": 53
+    "context_pct": 57
    },
    "checks": [
     "Ci",
@@ -45401,6 +45403,54 @@
    "acceptance": "TD-INT-45 passes against PostgreSQL; a first text gets the consent text then the next question; only the opening text's scrubbed words are kept, never a ZIP reply's; every done test listed in the goal passes, changed only by adding the step text INT-043 or CON-031 now sends, with no assertion removed or loosened; `routing.rs`, `conversation.rs` and `service.rs` are unchanged; no raw words or ZIP reach a log line or an AI call; A returning homeowner gets one job per request; step-marker rows carry no inbox ID; `inbound_first_contact.rs` and `optout_followups.rs` pass unchanged. The two D-4439 test changes are exactly as the goal's part (5) states: `quoted_job` expects `Opened::Existing` of the request's own job, and the TD-AI-19 scan finds only OTHER's kept words. No homeowner template is added (T711's). TD-INT-45's two-trade case in `intake_order_area_trade.rs` asserts only jobs and `trade_reading` rows, never texts, so T711 need not edit that file."
   },
   {
+   "id": "T768",
+   "slug": "cache-seed-test-disk",
+   "title": "runner tests (harness): the seed test fakes free disk, so a full runner disk cannot fail a task's smoke",
+   "goal": "Plan change D-4925 (T672 attempt 2 and T669 attempt 1 failed on `runner smoke red`, D-3530; D-4086 saw the same on T204). `tests/test_runner_cache.py::test_seed_copies_only_the_smoke_builds_dependency_artifacts` (`:61`) calls `cache.seed` with the real `shutil.disk_usage`; `runner/cache.py:83` to `:85` skips the copy when free space is at or under the need plus `SEED_MARGIN` (5 GiB, `runner/github_env.py:503`), so on a runner VM with a nearly full disk the test fails for any task. This harness task: the test takes `monkeypatch` and sets `cache.shutil.disk_usage` to answer `SimpleNamespace(free=cache.SEED_MARGIN * 4)` before its first `cache.seed` call, as `tests/test_runner_keeper.py:398` does. Every existing assertion of the test stays word for word; no other test and no file under `runner/` changes (`BUILD_BRIEF.md:69`: nothing weakened; the no-room branch stays pinned at `:79` to `:80`). Opus review (harness, `BUILD_BRIEF.md:70`). Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T591"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "low",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    "tests/test_runner_cache.py"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "runner/cache.py",
+    "tests/test_runner_keeper.py"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-4086",
+    "D-3530",
+    "D-4925"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 10,
+    "context_pct": 10
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T768-cache-seed-test-disk",
+   "prompt": "kit/prompts/T768.md",
+   "acceptance": "`python3 -m pytest tests/test_runner_cache.py -q` passes, and still passes with `shutil.disk_usage` in `runner/cache.py` forced to report 1 byte free for every test but `test_seed_copies_nothing_without_members_a_smoke_build_or_room`; the diff touches only that one test's signature and one added line; no assertion is removed or changed."
+  },
+  {
    "id": "T672",
    "slug": "intake-order-timing",
    "title": "intake: the dispatcher asks \"How soon?\", the night count and the emergency-or-regular choice, releases an emergency job, then asks the trade questions",
@@ -45412,7 +45462,8 @@
    "deps": [
     "T671",
     "T711",
-    "T717"
+    "T717",
+    "T768"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -45464,7 +45515,8 @@
     "D-4360",
     "D-4441",
     "D-4822",
-    "D-4851"
+    "D-4851",
+    "D-4925"
    ],
    "cites": [],
    "budget": {
