@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T03:25:45Z by runner 630ba4604aa4 (actions).
+Updated 2026-11-20T03:26:13Z by runner 630ba4604aa4 (actions).
 
-**Building: T747 in progress since 02:14Z; 517 of 704 done; week 18% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T110 in progress since 02:18Z; 517 of 704 done; week 18% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 517 of 704 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T747 claimed 02:14Z, lease until 05:14Z; lane 4: T110 claimed 02:18Z, lease until 05:18Z; lane 7: T434 claimed 03:02Z, lease until 06:02Z
+- **Lane:** lane 4: T110 claimed 02:18Z, lease until 05:18Z; lane 7: T434 claimed 03:02Z, lease until 06:02Z
 - **Week:** 18% used, 154.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 03:24Z, 1 min before this update
 - **Keeper:** last ran 03:23Z, next wake 03:43Z
@@ -22,6 +22,7 @@ Updated 2026-11-20T03:25:45Z by runner 630ba4604aa4 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T747 | intake and jobs: the homeowner's INT-029 emergency choice ma | MERGE_PENDING | 1 | 71 min | 03:25Z |  |
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | MERGE_PENDING | 2 | 2 h 16 min | 03:22Z | T726 resync merged main cleanly, but fresh-eyes review of the WIP scan (runner/wip.py) found fail-open bypasses in three |
 | T617 | site: DM Sans from one weight-axis variable file (smaller th | BLOCKED | 1 | 2 min | 03:04Z | PLAN GAP: tests/a11y/design_tokens.spec.ts:221 and :242 (protected, not owned by T617) contradict the prompt's single DM |
 | T648 | recovery: the monthly test restore into a throwaway cluster, | BLOCKED | 1 | 21 min | 02:55Z | PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, b |
@@ -89,7 +90,6 @@ Updated 2026-11-20T03:25:45Z by runner 630ba4604aa4 (actions).
 | T563 | intake and privacy: the daily consent sweep removes consent  | done | 3 | 77 min | 04:05Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T399 | server: the email's Approve link approves the phone, only wi | done | 1 | 46 min | 04:01Z |  |
 | T484 | portals and quotes: "Call from the Laftly number", the owner | done | 1 | 82 min | 03:26Z |  |
-| T114 | Terms-match-code checks and recurring pricing copy | done | 1 | 71 min | 03:26Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -141,9 +141,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T747 (lease until 2026-11-20T05:14:14Z)
 - lane 4: T110 (lease until 2026-11-20T05:18:18Z)
 - lane 7: T434 (lease until 2026-11-20T06:02:51Z)
 
 ## Last usage reading
-- {"task": "T726", "at": "2026-11-20T03:22:16Z", "cache_creation_input_tokens": 824993, "output_tokens": 254789, "cache_read_input_tokens": 16409443, "input_tokens": 626}
+- {"task": "T747", "at": "2026-11-20T03:25:43Z", "cache_read_input_tokens": 10962778, "output_tokens": 71112, "input_tokens": 279, "cache_creation_input_tokens": 318136}
