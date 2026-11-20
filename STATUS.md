@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T16:40:13Z by runner 454c0af261c1 (actions).
+Updated 2026-11-20T16:40:38Z by runner 454c0af261c1 (actions).
 
-**Building: T530 in progress since 15:29Z; 543 of 712 done; week 38% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T672 in progress since 16:21Z; 543 of 712 done; week 38% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 543 of 712 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T530 claimed 15:29Z, lease until 19:37Z; lane 2: T672 claimed 16:21Z, lease until 19:21Z; lane 5: T686 claimed 16:22Z, lease until 19:22Z; lane 7: T743 claimed 16:24Z, lease until 19:24Z
+- **Lane:** lane 2: T672 claimed 16:21Z, lease until 19:21Z; lane 5: T686 claimed 16:22Z, lease until 19:22Z; lane 7: T743 claimed 16:24Z, lease until 19:24Z
 - **Week:** 38% used, 113.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:39Z, 0 min before this update
 - **Keeper:** last ran 16:39Z, next wake 19:24Z
@@ -23,6 +23,7 @@ The pick's window deadline (picks.pick.confirm_due) is read only by private code
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T530 | portals: the owner help page and its screened reply box (D-3 | MERGE_PENDING | 3 | 71 min | 16:40Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
 | T681 | picks and jobs: the businesses that lost a pick and every qu | MERGE_PENDING | 1 | 50 min | 16:38Z |  |
 | T771 | a11y tests (harness): reflow_spacing's hidden-control check  | MERGE_PENDING | 2 | 50 min | 16:34Z | PLAN GAP: kit/prompts/T771.md:9 (D-4970, docs/decisions.md:2604) contradicts itself: rule (1) checks the hidden Menu sum |
 | T664 | portals: the Confirm press re-checks the license and account | BLOCKED | 1 | 5 min | 16:15Z | PLAN GAP: outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs / The pick's window deadline (picks.pic |
@@ -43,7 +44,7 @@ The pick's window deadline (picks.pick.confirm_due) is read only by private code
 | T463 | businesses and server: "Busy for <n> days" pauses job cards  | done | 1 | 58 min | 11:16Z |  |
 | T768 | runner tests (harness): the seed test fakes free disk, so a  | done | 1 | 22 min | 10:38Z |  |
 | T573 | messaging and server: queued business texts are addressed to | QUEUED | 2 | 53 min | 09:48Z |  |
-| T530 | portals: the owner help page and its screened reply box (D-3 | QUEUED | 2 | 2 h 25 min | 09:46Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
+| T530 | portals: the owner help page and its screened reply box (D-3 | QUEUED | 2 | 2 h 25 min | 09:46Z |  |
 | T727 | Runner (harness): a retry after a review failure or a plan-f | check_failed | 1 | 75 min | 09:38Z |  |
 | T617 | site: DM Sans from one weight-axis variable file (smaller th | done | 2 | 2 h 16 min | 09:22Z | PLAN GAP: tests/a11y/design_tokens.spec.ts:221 and :242 (protected, not owned by T617) contradict the prompt's single DM |
 | T766 | server tests (harness): a photo-link door and a {job} fill i | done | 1 | 53 min | 09:05Z |  |
@@ -146,10 +147,10 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T530 (lease until 2026-11-20T19:37:31Z)
+- nothing
 - lane 2: T672 (lease until 2026-11-20T19:21:35Z)
 - lane 5: T686 (lease until 2026-11-20T19:22:55Z)
 - lane 7: T743 (lease until 2026-11-20T19:24:15Z)
 
 ## Last usage reading
-- {"task": "T681", "at": "2026-11-20T16:38:18Z", "input_tokens": 147, "output_tokens": 37788, "cache_creation_input_tokens": 165355, "cache_read_input_tokens": 5711626}
+- {"task": "T530", "at": "2026-11-20T16:40:11Z", "output_tokens": 65079, "cache_creation_input_tokens": 195429, "cache_read_input_tokens": 7110953, "input_tokens": 160}
