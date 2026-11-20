@@ -43,6 +43,7 @@ mod business_numbers;
 mod cant_take;
 mod confirm;
 mod confirm_reminders;
+mod connect;
 mod contact_choice;
 mod digest_counts;
 mod dispute_steps;

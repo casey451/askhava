@@ -85,32 +85,43 @@ pub async fn pick_ended(
         return Ok(Backup::Done);
     };
     end_unpaid(tx, pick, at).await?;
+    after_end(tx, (job, pick, business), (Actor::System, at)).await
+}
+
+/// FEE-018, FEE-020, PICK-046, PICK-047, D-3579, D-4349: after waiting pick `pick` of `business`
+/// on `job` ended, in the caller's transaction: a job in Payment pending returns to Quotes ready
+/// (the `backup_choice` contract) as `actor`, the pick moves to her backup, a job left in Awaiting
+/// confirm with no waiting pick returns to Quotes ready, and her PICK-047 or PICK-046 text event
+/// is queued after the last job move. Shared by [`pick_ended`] and `connect::end_pending`.
+///
+/// # Errors
+///
+/// [`PicksError::Job`], [`PicksError::MovedOn`] (roll back) or the backup move's errors.
+pub(crate) async fn after_end(
+    tx: &mut PgConnection,
+    (job, pick, business): (Uuid, Uuid, Uuid),
+    (actor, at): (Actor, Timestamp),
+) -> Result<Backup, PicksError> {
     if awaits_charge(current(tx, job).await.map_err(|_| PicksError::Job)?.status) {
-        guarded_move(
-            tx,
-            job,
-            (JobStatus::PaymentPending, JobStatus::QuotesReady),
-            at,
-        )
-        .await?;
+        let arrow = (JobStatus::PaymentPending, JobStatus::QuotesReady);
+        guarded_move(tx, job, arrow, (actor, at)).await?;
     }
-    let backup = backup_choice(tx, pick, false, (Actor::System, at)).await?;
+    let backup = backup_choice(tx, pick, false, (actor, at)).await?;
     let status = current(tx, job).await.map_err(|_| PicksError::Job)?.status;
     if awaits_confirm(status) && models::waiting_pick(tx, job).await?.is_none() {
-        guarded_move(
-            tx,
-            job,
-            (JobStatus::AwaitingConfirm, JobStatus::QuotesReady),
-            at,
-        )
-        .await?;
+        let arrow = (JobStatus::AwaitingConfirm, JobStatus::QuotesReady);
+        guarded_move(tx, job, arrow, (actor, at)).await?;
     }
     queue_backup_text(tx, (job, pick, business), (backup, false), at).await?;
     Ok(backup)
 }
 
 /// Ends waiting pick `id` as [`PickStatus::PaymentFailed`] at `at` (FEE-018, FEE-020, FEE-041).
-async fn end_unpaid(tx: &mut PgConnection, id: Uuid, at: Timestamp) -> Result<(), PicksError> {
+pub(crate) async fn end_unpaid(
+    tx: &mut PgConnection,
+    id: Uuid,
+    at: Timestamp,
+) -> Result<(), PicksError> {
     sqlx::query!(
         "UPDATE picks.pick SET status = $2, ended_at = $3 WHERE id = $1 AND status = $4",
         id,
@@ -145,14 +156,14 @@ pub async fn ended_businesses(db: &mut PgConnection, job: Uuid) -> Result<Vec<Uu
     .map_err(|_| PicksError::Database)
 }
 
-/// Moves `job` along `arrow` (JOB-001, JOB-004); a job that moved on rolls the whole step back.
+/// Moves `job` along `arrow` as `actor` (JOB-001, JOB-004); a job that moved on rolls the whole step back.
 async fn guarded_move(
     tx: &mut PgConnection,
     job: Uuid,
     arrow: (JobStatus, JobStatus),
-    at: Timestamp,
+    (actor, at): (Actor, Timestamp),
 ) -> Result<(), PicksError> {
-    match move_to(tx, job, arrow, at, Actor::System).await {
+    match move_to(tx, job, arrow, at, actor).await {
         Ok(Guarded::Applied(())) => Ok(()),
         Ok(Guarded::MovedOn) => Err(PicksError::MovedOn),
         Err(_) => Err(PicksError::Job),
