@@ -927,7 +927,8 @@ fn register_held_success(registry: &mut Registry, hooks: Option<release_sink::St
 /// `picks`' notices to the business: the pick notice with the worker's Confirm window and its end
 /// (PICK-019, PICK-037, T063), the window's end and its lapse on the worker clock (PICK-046,
 /// PICK-047, T491, D-3882), the Payment pending wait's end on the worker clock (JOB-014, T663,
-/// D-4349) and the withdrawn-pick notice (PICK-032, CON-029, T330).
+/// D-4349), "This job is no longer active." on a final move (PICK-026, T681, D-4361) and the
+/// withdrawn-pick notice (PICK-032, CON-029, T330).
 fn register_pick_notices(
     registry: &mut Registry,
     confirm: askhava_picks::api::ConfirmSettings,
@@ -947,6 +948,10 @@ fn register_pick_notices(
             let now = clock.now();
             askhava_picks::api::run_payment_returned(pool, task, now)
         },
+    );
+    registry.register(
+        askhava_jobs::api::FINAL_STATUS_KIND,
+        askhava_picks::api::run_final_status,
     );
     registry.register(
         askhava_picks::api::PICK_WITHDRAWN_KIND,
