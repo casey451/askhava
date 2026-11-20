@@ -1,24 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-20T09:48:02Z by runner ec1360b19187 (actions).
+Updated 2026-11-20T09:48:23Z by runner edb2a42224bb (actions).
 
-**Building: T573 in progress since 08:54Z; 529 of 710 done; week 27% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Idle since 09:48Z; 529 of 710 done; week 27% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 529 of 710 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 5: T573 claimed 08:54Z, lease until 11:54Z
+- **Lane:** idle since 09:48Z (no task in progress)
 - **Week:** 27% used, 139.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:47Z, 0 min before this update
+- **Last run:** 09:48Z, 0 min before this update
 - **Keeper:** last ran 09:47Z, next wake 10:07Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 88 problem(s) on tasks still to run (+393 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 90 problem(s) on tasks still to run (+399 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T573 | messaging and server: queued business texts are addressed to | QUEUED | 2 | 53 min | 09:48Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
 | T530 | portals: the owner help page and its screened reply box (D-3 | QUEUED | 2 | 2 h 25 min | 09:46Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
 | T727 | Runner (harness): a retry after a review failure or a plan-f | MERGE_PENDING | 1 | 75 min | 09:38Z |  |
 | T617 | site: DM Sans from one weight-axis variable file (smaller th | MERGE_PENDING | 2 | 2 h 16 min | 09:22Z | PLAN GAP: tests/a11y/design_tokens.spec.ts:221 and :242 (protected, not owned by T617) contradict the prompt's single DM |
@@ -30,7 +31,7 @@ Updated 2026-11-20T09:48:02Z by runner ec1360b19187 (actions).
 | T762 | runner and workflow (harness): fix-round workers commit with | done | 1 | 68 min | 07:44Z |  |
 | T764 | ci and pre-hand-in gate (harness): scripts/bootstrap_roles.s | done | 1 | 54 min | 07:29Z |  |
 | T669 | picks: "Can't take it" and a business leaving end a pick in  | QUEUED | 1 | 56 min | 07:07Z |  |
-| T573 | messaging and server: queued business texts are addressed to | BLOCKED | 1 | 5 min | 06:27Z | PLAN GAP: app/privacy/src/business_contacts.rs:124 (owned by T412, not T573). Item (2) needs the outbox sender to read a |
+| T573 | messaging and server: queued business texts are addressed to | BLOCKED | 1 | 5 min | 06:27Z |  |
 | T561 | server and portals: the homeowner's "Download my data" and h | resync | 1 | 60 min | 06:26Z |  |
 | T765 | recovery (tests): the backup tests' fake binaries can no lon | done | 1 | 65 min | 06:11Z |  |
 | T751 | stand-ins (harness): the Stripe stand-in detaches a payment  | done | 1 | 51 min | 05:02Z |  |
@@ -96,8 +97,8 @@ Updated 2026-11-20T09:48:02Z by runner ec1360b19187 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 325 of 735 (44.2%) · partial 384 · unstarted 26
-**Tasks merged (throughput only):** 529 of 707
+**Requirements verified:** 324 of 735 (44.1%) · partial 385 · unstarted 26
+**Tasks merged (throughput only):** 529 of 708
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -117,7 +118,7 @@ Updated 2026-11-20T09:48:02Z by runner ec1360b19187 (actions).
 | quiet-hours | 3 | 6 | 0 | 9 |
 | quotes-pick | 25 | 31 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
-| security | 11 | 39 | 5 | 55 |
+| security | 10 | 40 | 5 | 55 |
 | terms | 27 | 8 | 0 | 35 |
 | website | 18 | 10 | 2 | 30 |
 | wording | 23 | 9 | 0 | 32 |
@@ -141,7 +142,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 5: T573 (lease until 2026-11-20T11:54:23Z)
 
 ## Last usage reading
-- {"task": "T530", "at": "2026-11-20T09:46:10Z", "input_tokens": 360, "cache_creation_input_tokens": 383086, "cache_read_input_tokens": 16362767, "output_tokens": 110983}
+- {"task": "T573", "at": "2026-11-20T09:48:02Z", "input_tokens": 233, "cache_read_input_tokens": 12361682, "cache_creation_input_tokens": 248515, "output_tokens": 75148}
