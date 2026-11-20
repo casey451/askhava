@@ -573,5 +573,10 @@
     "audience": "business",
     "segments": 3,
     "text": "{brand_short}: If our emails aren't reaching you, check your spam or junk folder. Mark our email as not spam so the next ones land in your inbox.\n{brand_short}: Got it. The {brand} owner has your message and usually replies within 2 days, or within 24 hours when a pick or an emergency job is waiting."
+  },
+  "hold_end_notice": {
+    "audience": "business",
+    "segments": 1,
+    "text": "{brand_short}: Job {job} is on hold. You now have until {time} to confirm. We don't text the homeowner about it."
   }
 }

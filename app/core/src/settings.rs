@@ -36,6 +36,7 @@ const LAUNCH_DATE: &str = "ASKHAVA_LAUNCH_DATE";
 const SET_ASIDE: &str = "ASKHAVA_SALES_TAX_SET_ASIDE_BASIS_POINTS";
 const HOME_NUMBERS_MIN_JOBS: &str = "ASKHAVA_HOME_NUMBERS_MIN_JOBS";
 const SPOT_CHECK_EVERY_DAYS: &str = "ASKHAVA_SPOT_CHECK_EVERY_DAYS";
+const GOLDEN_TARGET: &str = "ASKHAVA_GOLDEN_TARGET_PERCENT";
 const LLC_RECORD_URL: &str = "ASKHAVA_LLC_RECORD_URL";
 const CITY_LICENSE: &str = "ASKHAVA_CITY_BUSINESS_LICENSE_NUMBER";
 const CITY_LICENSE_COST: &str = "ASKHAVA_CITY_LICENSE_COST";
@@ -121,6 +122,9 @@ const KEYS: &[&str] = &[
     // OPS-009's spot-check cadence in days (default 30), read by the serving route (T304) for
     // T476's owner health page (D-4280, D-4625).
     SPOT_CHECK_EVERY_DAYS,
+    // OPS-040's golden-set target in whole percent (1 to 100, default 90), read by the serving
+    // route for T434's intake accuracy report (D-395, D-3890).
+    GOLDEN_TARGET,
     // OPS-035's alert address, read as a `SecretString` by `askhava_server`'s alert email sender
     // and never logged (T204, D-3882, D-4044).
     "ASKHAVA_ALERT_EMAIL",
@@ -221,6 +225,8 @@ const DEFAULT_REQUEST_TIMEOUT_SECS: u64 = 60;
 const DEFAULT_HOME_NUMBERS_MIN_JOBS: u32 = 50;
 /// OPS-009's default spot-check cadence in days (`ASKHAVA_SPOT_CHECK_EVERY_DAYS`, D-4280, D-4625).
 pub const DEFAULT_SPOT_CHECK_EVERY_DAYS: u32 = 30;
+/// OPS-040's default golden-set target: 90% of rows reach the right job type with no human (D-395).
+pub const DEFAULT_GOLDEN_TARGET_PERCENT: u32 = 90;
 /// OPS-039's go and stop lines and D-458's ladder with their `docs/PREBUILD.md` section 7 defaults,
 /// in whole percent, hours, dollars, minutes or counts as each key names; a missing key takes its
 /// default (T621, D-4280, D-4448). `portals::api::ScorecardLines::from_pairs` reads them by key.
@@ -427,7 +433,8 @@ pub struct Settings {
     launch_date: Option<jiff::Timestamp>,
     set_aside_basis_points: u16,
     home_numbers_min_jobs: u32,
-    spot_check_every_days: u32,
+    /// OPS-009's spot-check cadence in days and OPS-040's golden-set target in percent.
+    owner_reports: (u32, u32),
     llc_record_url: Option<String>,
     city_license: Option<String>,
     city_guide: [Option<String>; 3],
@@ -486,11 +493,7 @@ impl Settings {
                 HOME_NUMBERS_MIN_JOBS,
                 DEFAULT_HOME_NUMBERS_MIN_JOBS,
             )?,
-            spot_check_every_days: above_zero(
-                &mut raw,
-                SPOT_CHECK_EVERY_DAYS,
-                DEFAULT_SPOT_CHECK_EVERY_DAYS,
-            )?,
+            owner_reports: owner_reports(&mut raw)?,
             llc_record_url: raw.remove(LLC_RECORD_URL).map(|u| u.trim().to_owned()),
             city_license: raw.remove(CITY_LICENSE).map(|n| n.trim().to_owned()),
             city_guide: [CITY_LICENSE_COST, CITY_LICENSE_TIME, CITY_LICENSE_URL]
@@ -689,7 +692,14 @@ impl Settings {
     /// 0, default [`DEFAULT_SPOT_CHECK_EVERY_DAYS`]) for the owner health page (T476, D-4625).
     #[must_use]
     pub fn spot_check_every_days(&self) -> u32 {
-        self.spot_check_every_days
+        self.owner_reports.0
+    }
+
+    /// OPS-040's golden-set target (`ASKHAVA_GOLDEN_TARGET_PERCENT`, a whole percent from 1 to 100,
+    /// default [`DEFAULT_GOLDEN_TARGET_PERCENT`]) for the intake accuracy report (T434, D-3890).
+    #[must_use]
+    pub fn golden_target_percent(&self) -> u32 {
+        self.owner_reports.1
     }
 
     /// OPS-039's go and stop lines and D-458's ladder as `(key, value)` pairs, every
@@ -1057,6 +1067,16 @@ fn set_aside(raw: Option<String>) -> Result<u16, SettingsError> {
     match raw.trim().parse::<u16>() {
         Ok(points @ 0..=10_000) => Ok(points),
         _ => Err(SettingsError::Invalid(SET_ASIDE)),
+    }
+}
+
+/// OPS-009's spot-check cadence (days above 0) and OPS-040's golden-set target (a whole percent
+/// from 1 to 100), each its default when unset (D-4280, D-3890).
+fn owner_reports(raw: &mut HashMap<&'static str, String>) -> Result<(u32, u32), SettingsError> {
+    let days = above_zero(raw, SPOT_CHECK_EVERY_DAYS, DEFAULT_SPOT_CHECK_EVERY_DAYS)?;
+    match above_zero(raw, GOLDEN_TARGET, DEFAULT_GOLDEN_TARGET_PERCENT)? {
+        n @ 1..=100 => Ok((days, n)),
+        _ => Err(SettingsError::Invalid(GOLDEN_TARGET)),
     }
 }
 

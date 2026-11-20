@@ -172,6 +172,7 @@ const ACTION_ROUTE = "/b/a/{kind}/{object}/{token}";
 /** The action kind each action-link state opens, by state name (T301). */
 const ACTION_KINDS: Readonly<Record<string, string>> = {
   "action page: pause job cards": "pause",
+  "action page: away": "away",
   "quote form from a card's Quote link": "quote",
 };
 
@@ -222,9 +223,10 @@ const QUOTE_LINK = `WITH b AS (INSERT INTO businesses.business (status, created_
     INSERT INTO portals.login_link (token_sha256, member_id, business_id, created_at, expires_at)
       SELECT decode(':hash', 'hex'), m.id, m.business_id, now() - interval '1 day', now() + interval '2 hours' FROM m`;
 
-/** The email action links' pages (T301, BIZ-038): an action page and the priced quote form. */
+/** The email action links' pages (T301, BIZ-038): action pages (Away's hours field: T543, D-3892) and the priced quote form. */
 const ACTION_STATES: readonly PageState[] = [
   ["action page: pause job cards", "Pause job cards", "Send quote for job", PAUSE_LINK],
+  ["action page: away", "Hours until you're back", "Fix this to continue", PAUSE_LINK],
   ["quote form from a card's Quote link", "Send quote for job", "Fix these", QUOTE_LINK],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: ACTION_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 

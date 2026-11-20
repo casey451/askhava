@@ -8,6 +8,7 @@ The layer-8 crate that keeps Ask Hava recoverable: the nightly `pg_dump -Fc` exp
 - The export runs as `askhava_backup` (read-only, NOINHERIT, `pg_read_all_data` only, owns nothing, never granted to the app), its password only in `PGPASSWORD`, never on the command line or in a log: `td_ops_19_the_backup_role_dumps_what_the_app_role_cannot`.
 - `pg_tool` takes only a PostgreSQL 16 binary found by name on `PATH`, never a newer major and never a fixed folder; its error names the tool and the `PATH` searched (D-4708): `the_path_helper_takes_only_postgresql_16_and_names_what_it_searched`.
 - `recovery.backup_check` is append-only for the app role; each row commits with its audit entry.
+- The replay never resends a text Twilio's sent log already holds, never matches by a stored key, and moves no money (D-2764, D-3889): `src/tests/replay_ids.rs::td_ops_04_a_text_sent_before_the_restore_is_found_and_not_resent`, `td_ops_04_stripe_is_retried_and_unmatched_charges_are_flagged`.
 - `deny.toml`'s RUSTSEC-2026-0173 ignore holds only while `age` alone reaches `proc-macro-error2`: `tests/test_age_lock_guard.py` (D-4707).
 
 ## Detail
