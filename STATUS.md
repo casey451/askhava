@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T12:25:06Z by runner c5eb5e4bb8b0 (actions).
+Updated 2026-11-20T12:25:32Z by runner c5eb5e4bb8b0 (actions).
 
 **Building: T648 in progress since 10:37Z; 534 of 710 done; week 30% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 534 of 710 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T648 claimed 10:37Z, lease until 13:37Z; lane 2: T496 claimed 11:44Z, lease until 14:44Z; lane 3: T727 claimed 11:55Z, lease until 14:55Z; lane 4: T573 claimed 11:14Z, lease until 14:14Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z
+- **Lane:** lane 1: T648 claimed 10:37Z, lease until 13:37Z; lane 2: T496 claimed 11:44Z, lease until 14:44Z; lane 3: T727 claimed 11:55Z, lease until 14:55Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z
 - **Week:** 30% used, 128.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:13Z, 11 min before this update
+- **Last run:** 12:13Z, 12 min before this update
 - **Keeper:** last ran 11:51Z, next wake 12:11Z
 
 ## Needs attention
@@ -20,10 +20,11 @@ Updated 2026-11-20T12:25:06Z by runner c5eb5e4bb8b0 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T573 | messaging and server: queued business texts are addressed to | MERGE_PENDING | 3 | 70 min | 12:25Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
 | T614 | site: the V6 header in base.html (links, the Menu in the pag | BLOCKED | 1 | 16 min | 11:39Z | PLAN GAP: tests/a11y/reflow_spacing.spec.ts:49-54 (T053, protected) flags every TARGETS control with no box as "is hidde |
 | T463 | businesses and server: "Busy for <n> days" pauses job cards  | MERGE_PENDING | 1 | 58 min | 11:16Z |  |
 | T768 | runner tests (harness): the seed test fakes free disk, so a  | done | 1 | 22 min | 10:38Z |  |
-| T573 | messaging and server: queued business texts are addressed to | QUEUED | 2 | 53 min | 09:48Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
+| T573 | messaging and server: queued business texts are addressed to | QUEUED | 2 | 53 min | 09:48Z |  |
 | T530 | portals: the owner help page and its screened reply box (D-3 | QUEUED | 2 | 2 h 25 min | 09:46Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
 | T727 | Runner (harness): a retry after a review failure or a plan-f | check_failed | 1 | 75 min | 09:38Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T617 | site: DM Sans from one weight-axis variable file (smaller th | done | 2 | 2 h 16 min | 09:22Z | PLAN GAP: tests/a11y/design_tokens.spec.ts:221 and :242 (protected, not owned by T617) contradict the prompt's single DM |
@@ -142,8 +143,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T648 (lease until 2026-11-20T13:37:03Z)
 - lane 2: T496 (lease until 2026-11-20T14:44:53Z)
 - lane 3: T727 (lease until 2026-11-20T14:55:28Z)
-- lane 4: T573 (lease until 2026-11-20T14:14:12Z)
 - lane 6: T530 (lease until 2026-11-20T13:55:17Z)
 
 ## Last usage reading
-- {"task": "T614", "at": "2026-11-20T11:39:27Z", "input_tokens": 89, "cache_creation_input_tokens": 120240, "output_tokens": 37487, "cache_read_input_tokens": 2524988}
+- {"task": "T573", "at": "2026-11-20T12:25:04Z", "input_tokens": 166, "cache_creation_input_tokens": 248907, "output_tokens": 74687, "cache_read_input_tokens": 9097182}
