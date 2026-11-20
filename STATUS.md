@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T00:00:41Z by runner b1ce87256c56 (actions).
+Updated 2026-11-20T00:00:50Z by runner b1ce87256c56 (actions).
 
 **Building: T758 in progress since 23:07Z; 510 of 703 done; week 12% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 510 of 703 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T758 claimed 23:07Z, lease until 02:07Z; lane 4: T541 claimed 23:34Z, lease until 02:34Z; lane 5: T663 claimed 23:33Z, lease until 02:33Z; lane 7: T613 claimed 23:22Z, lease until 02:22Z
+- **Lane:** lane 2: T758 claimed 23:07Z, lease until 02:07Z; lane 5: T663 claimed 23:33Z, lease until 02:33Z; lane 7: T613 claimed 23:22Z, lease until 02:22Z
 - **Week:** 12% used, 167.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 00:00Z, 0 min before this update
 - **Keeper:** last ran 00:00Z, next wake 00:20Z
@@ -20,10 +20,11 @@ Updated 2026-11-20T00:00:41Z by runner b1ce87256c56 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T541 | payments, portals and adapters: a card saved or changed from | MERGE_PENDING | 3 | 25 min | 00:00Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-19T |
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 1 | 84 min | 23:31Z | merging main into the reviewed head conflicts in kit/plan.lock, kit/runner.json; a resync merges it in on this attempt ( |
 | T109 | recovery: backup checks and the nightly encrypted export | resync | 2 | 93 min | 23:26Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T707 | server: an emergency pick's address re-release waits while s | check_failed | 1 | 80 min | 22:59Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
-| T541 | payments, portals and adapters: a card saved or changed from | check_failed | 2 | 91 min | 22:55Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-19T |
+| T541 | payments, portals and adapters: a card saved or changed from | check_failed | 2 | 91 min | 22:55Z |  |
 | T480 | messaging, server and portals: the stored "Spanish conversat | done | 1 | 104 min | 22:23Z |  |
 | T717 | intake (harness): corrections to T711's two jobs: two_jobs a | done | 1 | 2 h 11 min | 22:21Z |  |
 | T607 | site: site.css brought up to the V6 reference (laftly-v6.css | done | 2 | 41 min | 21:57Z | review_missing on 2c1fc315ebe4 (D-3728): not proven reviewed or worker-made / (b) 5cb49e3317bc T607: NOTES entry in the  |
@@ -138,9 +139,8 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T758 (lease until 2026-11-20T02:07:12Z)
-- lane 4: T541 (lease until 2026-11-20T02:34:46Z)
 - lane 5: T663 (lease until 2026-11-20T02:33:30Z)
 - lane 7: T613 (lease until 2026-11-20T02:22:00Z)
 
 ## Last usage reading
-- {"task": "T726", "at": "2026-11-19T23:31:25Z", "cache_creation_input_tokens": 230153, "input_tokens": 170, "cache_read_input_tokens": 5212961, "output_tokens": 88481}
+- {"task": "T541", "at": "2026-11-20T00:00:19Z", "input_tokens": 77, "output_tokens": 15218, "cache_read_input_tokens": 1758710, "cache_creation_input_tokens": 103835}

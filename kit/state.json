@@ -78009,7 +78009,7 @@
     "T364",
     "T261"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 2,
    "slug": "saved-card-from-confirm",
    "type": "build",
@@ -78154,6 +78154,29 @@
        "turns": 21
       }
      }
+    },
+    {
+     "attempt": 3,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 23,
+     "head_sha": "b1ce87256c568423652a2bdd1e6a60f28f76aa44",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-19T23:34:46Z",
+     "ended_at": "2026-11-20T00:00:19Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 533140,
+       "turns": 14
+      },
+      "reviewer": {
+       "tokens": 1344700,
+       "turns": 26
+      }
+     }
     }
    ],
    "reviewed_sha": "b1ce87256c568423652a2bdd1e6a60f28f76aa44",
@@ -78166,16 +78189,15 @@
    "branch": "claude/task/T541-saved-card-from-confirm",
    "auto_merge": {
     "enabled": true,
-    "why": "auto-merge on #1153 (gh pr merge)",
-    "head": "e1b02edcfceda1795581472e4473d5e67fe25864"
+    "why": "auto-merge on #1157 (gh pr merge)",
+    "head": "b1ce87256c568423652a2bdd1e6a60f28f76aa44"
    },
    "last_failure": "Ci: failure; E2e: failure\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n{\"timestamp\":\"2026-11-19T23:01:05.346379Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1037,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-19T23:01:05.347770Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1039,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-19T23:01:05.348174Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1038,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-19T23:01:05.552052Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1041,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-19T23:01:05.553016Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1040,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n  \u2718   98 [main] \u203a tests/e2e/web_chat.spec.ts:129:1 \u203a TD-CON-10 TD-INT-09 TD-INT-30 TD-A11Y-02 TD-SEC-73 CON-025 A11Y-035 SEC-042: one question per page; only the Verify code until the right code, whic\n##[error]  1) [main] \u203a tests/e2e/web_chat.spec.ts:129:1 \u203a TD-CON-10 TD-INT-09 TD-INT-30 TD-A11Y-02 TD-SEC-73 CON-025 A11Y-035 SEC-042: one question per page; only the Verify code until the right code,\nCi failed at step: All five jobs passed\n##[error]Process completed with exit code 1.",
    "lane": "4",
    "runner_closed_prs": [
     1128,
     1153
-   ],
-   "head_check_since": null
+   ]
   },
   {
    "id": "T542",
@@ -91206,12 +91228,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T726",
-   "at": "2026-11-19T23:31:25Z",
-   "cache_creation_input_tokens": 230153,
-   "input_tokens": 170,
-   "cache_read_input_tokens": 5212961,
-   "output_tokens": 88481
+   "task": "T541",
+   "at": "2026-11-20T00:00:19Z",
+   "input_tokens": 77,
+   "output_tokens": 15218,
+   "cache_read_input_tokens": 1758710,
+   "cache_creation_input_tokens": 103835
   },
   "source": "session_reading 2026-11-19T23:33:44Z (week)",
   "by_task": {
@@ -96945,14 +96967,14 @@
     "estimated_bytes": 606948,
     "estimated_tokens": 1783252,
     "usage_counting": "message_id",
-    "cache_creation_input_tokens": 472416,
-    "input_tokens": 383,
-    "cache_read_input_tokens": 16358281,
-    "output_tokens": 122018,
-    "worker_tokens": 14538972,
-    "worker_turns": 148,
-    "reviewer_tokens": 2414126,
-    "reviewer_turns": 47,
+    "cache_creation_input_tokens": 576251,
+    "input_tokens": 460,
+    "cache_read_input_tokens": 18116991,
+    "output_tokens": 137236,
+    "worker_tokens": 15072112,
+    "worker_turns": 162,
+    "reviewer_tokens": 3758826,
+    "reviewer_turns": 73,
     "last_model": "claude-opus-5-5"
    },
    "T554": {
@@ -97163,11 +97185,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-19T22:21:14Z",
-    "tokens": 8674190
+    "tokens": 8969191
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 18570331
+    "tokens": 18865332
    }
   },
   "session_reading": {
@@ -97178,7 +97200,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T00:00:41Z",
+ "updated_at": "2026-11-20T00:00:50Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
