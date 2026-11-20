@@ -1,25 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-20T01:54:33Z by runner 87e12fc49601 (actions).
+Updated 2026-11-20T01:57:06Z by runner d6a8011a3e89 (actions).
 
-**Building: T726 in progress since 01:05Z; 513 of 704 done; week 14% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T726 in progress since 01:05Z; 514 of 704 done; week 14% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 513 of 704 build tasks (owner gates not counted)
+- **Tasks done:** 514 of 704 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T726 claimed 01:05Z, lease until 04:05Z; lane 6: T763 claimed 01:52Z, lease until 04:52Z
 - **Week:** 14% used, 164.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:54Z, 0 min before this update
+- **Last run:** 01:54Z, 2 min before this update
 - **Keeper:** last ran 01:54Z, next wake 02:14Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 75 problem(s) on tasks still to run (+366 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 74 problem(s) on tasks still to run (+367 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T218 | Wording and template scans from the brains: sales phrases, n | MERGE_PENDING | 1 | 74 min | 01:46Z |  |
+| T218 | Wording and template scans from the brains: sales phrases, n | done | 1 | 74 min | 01:46Z |  |
 | T663 | picks, jobs and payments (harness): a confirmed pick moves i | MERGE_PENDING | 2 | 2 h 7 min | 01:40Z | PLAN GAP: tests/test_coverage_floor.py:125 asserts floors["future"] == [], contradicting T663 goal (5), which requires a |
 | T527 | messaging, portals and server: the business-texting switch t | MERGE_PENDING | 1 | 93 min | 01:39Z |  |
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | QUEUED | 1 | 56 min | 01:00Z | T726 resync merged main cleanly, but fresh-eyes review of the WIP scan (runner/wip.py) found fail-open bypasses in three |
@@ -91,8 +91,8 @@ Updated 2026-11-20T01:54:33Z by runner 87e12fc49601 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 323 of 735 (43.9%) · partial 380 · unstarted 32
-**Tasks merged (throughput only):** 513 of 704
+**Requirements verified:** 324 of 735 (44.1%) · partial 382 · unstarted 29
+**Tasks merged (throughput only):** 514 of 704
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -106,7 +106,7 @@ Updated 2026-11-20T01:54:33Z by runner 87e12fc49601 (actions).
 | job-cards | 12 | 12 | 0 | 24 |
 | licensing | 33 | 15 | 0 | 48 |
 | lifecycle | 16 | 12 | 0 | 28 |
-| messaging | 22 | 22 | 1 | 45 |
+| messaging | 23 | 22 | 0 | 45 |
 | ops-recovery | 9 | 29 | 16 | 54 |
 | privacy | 8 | 23 | 0 | 31 |
 | quiet-hours | 3 | 6 | 0 | 9 |
@@ -115,7 +115,7 @@ Updated 2026-11-20T01:54:33Z by runner 87e12fc49601 (actions).
 | security | 11 | 39 | 5 | 55 |
 | terms | 27 | 7 | 1 | 35 |
 | website | 18 | 9 | 3 | 30 |
-| wording | 23 | 7 | 2 | 32 |
+| wording | 23 | 9 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -128,7 +128,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 156 of 286 done
+- stage 5: 157 of 286 done
 - stage 6: 0 of 65 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
