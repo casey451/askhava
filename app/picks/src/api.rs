@@ -159,6 +159,7 @@ pub use crate::release_resend::{
     RELEASE_RESEND_ACTION, ResendPress, Resent, resend_key, resend_release,
 };
 pub use crate::released_view::{Seat, ViewAnswer, ViewFacts, may_view, released_view};
+pub use crate::reminder_run::{CONFIRM_REMINDER_KIND, run_confirm_reminder_at};
 pub use crate::scorecard_inputs::{confirmed_share, diagnostic_share, picked_requests};
 pub use crate::service::FEE_FACTS_ALERT;
 pub use crate::service::PACKAGE_TEMPLATE;
