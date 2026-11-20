@@ -2285,10 +2285,10 @@ class GitHubEnv:
             self.log.append(f"WIP: refs not listed: {err.strip()[:200]}")
             return None
         refs = {}
-        for sha, _, ref in (line.partition("\t") for line in out.splitlines() if "\t" in line):
-            name = ref.strip().removeprefix("refs/heads/")
-            if wip.WIP_REF.fullmatch(name):
-                refs[name] = sha.strip()
+        for sha, _, ref in (line.partition("\t") for line in out.split("\n") if "\t" in line):  # "\n" only (D-4801)
+            name = ref.removeprefix("refs/heads/")  # never stripped: only an exact WIP_REF name counts
+            if wip.WIP_REF.fullmatch(name) and re.fullmatch(r"[0-9a-f]{40}", sha):
+                refs[name] = sha
         return refs
 
     def delete_wip_ref(self, name: str) -> bool:

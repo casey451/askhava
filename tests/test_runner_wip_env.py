@@ -238,6 +238,27 @@ def test_an_allow_mark_added_in_a_merge_is_refused_but_one_from_main_is_not(worl
     assert list(wip.added_lines(log)) == [f"++merge {mark}", f"+plain {mark}"]
 
 
+@pytest.mark.parametrize("cut", ["\x0b", "\x0c", "\x1c", "\x1d", "\x1e", "\x85", "\u2028", "\u2029", "\r"])
+def test_added_lines_split_on_newline_only_so_a_cut_allow_mark_stays_on_its_line(cut: str) -> None:
+    mark = "gitleaks:" + "allow"
+    log = f"@@ -0,0 +1 @@\n+token = FAKE{cut} # {mark}\n"
+    assert list(wip.added_lines(log)) == [f"+token = FAKE{cut} # {mark}"]
+
+
+def test_added_lines_keep_an_added_plus_plus_line_and_a_header_naming_the_mark() -> None:
+    mark = "gitleaks:" + "allow"
+    log = (f"diff --git a/x b/x\n--- a/x\n+++ b/x\n@@ -1 +1,2 @@\n+++ {mark}\n x\n"
+           f"diff --git a/{mark} b/{mark}\n--- /dev/null\n+++ b/{mark}\n@@ -0,0 +1 @@\n+y\n")
+    assert any(line == f"+++ {mark}" for line in wip.added_lines(log))
+    assert any(mark in line for line in wip.added_lines(log.replace(f"+++ {mark}\n", "+z\n")))
+
+
+def test_an_allow_mark_after_a_vertical_tab_is_refused(world: dict[str, Any]) -> None:
+    mark = "gitleaks:" + "allow"
+    head = commit(world["root"], {"app/demo/conf.txt": f"value = 1\x0b # {mark}\n"})
+    assert mark in world["env"].wip_check(head)
+
+
 def test_a_pii_hit_in_a_changed_file_is_refused(world: dict[str, Any]) -> None:
     commit(world["root"], {"app/demo/visit.txt": f"Visit {ADDRESS} soon.\n"})
     head = commit(world["root"], {"app/demo/visit.txt": None})
@@ -528,7 +549,7 @@ def test_a_ref_created_after_the_check_is_never_fast_forwarded(world: dict[str, 
 
 def test_wip_refs_lists_only_wip_ref_names(tmp_path: Path) -> None:
     subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
-    out = f"{'a' * 40}\trefs/heads/{REF}\n{'b' * 40}\trefs/heads/claude/wip/odd\n"
+    out = f"{'a' * 40}\trefs/heads/{REF}\n{'b' * 40}\trefs/heads/claude/wip/odd\n{'c' * 40}\trefs/heads/{REF}\u2028x\n{'d' * 40}\trefs/heads/{REF}\x0c\n"
     env = GitHubEnv(tmp_path, [], tmp_path, repo="o/r", starter="actions", runner_sha="x", run=lambda a, s, c: (0, out, ""))
     assert env.wip_refs() == {REF: "a" * 40}
     env._run = lambda a, s, c: (128, "", "no network")  # type: ignore[method-assign]

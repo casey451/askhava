@@ -140,7 +140,8 @@ def _repo(bounded: Callable[[list[str], Path], tuple[int, str, str]], root: Path
         raise Refused(f"the clone's git config sets {odd[0][:80]!r}, which a WIP scan does not allow")
     if _git(bounded, root, "rev-parse", "--is-shallow-repository").strip() != "false":
         raise Refused("the clone is shallow, which a WIP scan does not allow")
-    attributes = Path(root, _git(bounded, root, "rev-parse", "--git-common-dir").strip(), "info", "attributes")
+    common = _git(bounded, root, "rev-parse", "--git-common-dir").removesuffix("\n")  # a path, never stripped
+    attributes = Path(root, common, "info", "attributes")
     if attributes.is_file() and attributes.read_text(encoding="utf-8", errors="replace").strip():
         raise Refused("the clone has .git/info/attributes, which a WIP scan does not allow")
 
@@ -261,9 +262,12 @@ def attr_source(main: str) -> str:
 def added_lines(log: str) -> Iterable[str]:
     """The lines a `git log --cc` patch adds against every parent: `+` in a plain diff, `++` in a merge's combined
     diff. A merge (`_merge_main` makes one on every retry) shows its own additions this way, and a line that came
-    from main (`+ `) or from the branch's earlier commits (` +`) is not one (D-4798)."""
+    from main (`+ `) or from the branch's earlier commits (` +`) is not one (D-4798). Lines split on "\n" only, as
+    git and gitleaks do: `splitlines` also breaks at \x0b, \x0c, \x1c-\x1e, \x85, U+2028, U+2029 and a lone \r,
+    which would cut an added line's `gitleaks:allow` onto a line of its own. Nothing is stripped, and a `+++` line
+    inside a hunk (an added `++` line) is an added line, never skipped as a file header (D-4801)."""
     width = 1
-    for line in log.splitlines():
+    for line in log.split("\n"):
         if line.startswith("@@"):
             width = len(line) - len(line.lstrip("@")) - 1
         elif line[:width] == "+" * width:
@@ -327,7 +331,7 @@ def adding_commits(numstat: str) -> int:
     """How many commits of a `git log --numstat --format=%x00` add at least one text line (binary rows are `-`)."""
     blocks = numstat.split("\0")[1:]
     return sum(1 for block in blocks if any(r.split("\t")[0].isdigit() and int(r.split("\t")[0]) > 0
-                                             for r in block.splitlines() if r.count("\t") >= 2))
+                                             for r in block.split("\n") if r.count("\t") >= 2))
 
 
 def _pii(bounded: Callable[[list[str], Path], tuple[int, str, str]], root: Path, span: tuple[str, str], tree: Path,
