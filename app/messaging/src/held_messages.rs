@@ -7,9 +7,18 @@
 //! `Vault::blind_index(IndexPurpose::HomeownerPhone, ..)`, one digest per key version), and the
 //! in-file round-trip test fails the build if the two ever drift. A number it cannot digest is an
 //! error, never "not listed", so the portal shows its error state, not "texts on".
+//!
+//! [`held_words`] (T561, D-3877) returns the words of the texts to her that `messaging` still
+//! holds, for her "Download my data" file (PRIV-031): only an outbox row's body is kept, and only
+//! until its send is marked (a sent, blocked, failed or expired row keeps none, TXT-020), so these
+//! are her texts not yet sent. Inbound words are not kept here (`privacy.message_body` is the
+//! owner's read). Each body has its phone numbers and emails masked (`scrub_text`, PRIV-017).
 
+use askhava_core::api::scrub_text;
 use askhava_privacy::api::{IndexPurpose, Vault, normalize_phone};
+use jiff::Timestamp;
 use sqlx::PgConnection;
+use sqlx::types::Uuid;
 
 use crate::models::{self, OutboxError};
 
@@ -31,6 +40,32 @@ pub async fn texts_on(
         return Err(OutboxError::Database);
     }
     Ok(models::listing(db, &digests).await?.is_none())
+}
+
+/// PRIV-031, PRIV-017: the held words of the texts to the homeowner whose vault contact is
+/// `contact`, oldest first, each with when it was queued and with any phone number or email
+/// masked; no other recipient's row is read.
+///
+/// # Errors
+///
+/// [`OutboxError::Database`] when the read fails.
+pub async fn held_words(
+    db: &mut PgConnection,
+    contact: Uuid,
+) -> Result<Vec<(Timestamp, String)>, OutboxError> {
+    let rows = sqlx::query!(
+        r#"SELECT created_at, body AS "body!" FROM messaging.outbox
+           WHERE recipient_kind = 'homeowner' AND recipient_id = $1 AND body IS NOT NULL
+           ORDER BY created_at, id"#,
+        contact,
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| OutboxError::Database)?;
+    let words = rows
+        .into_iter()
+        .map(|r| (r.created_at.to_jiff(), scrub_text(&r.body)));
+    Ok(words.collect())
 }
 
 #[cfg(test)]
