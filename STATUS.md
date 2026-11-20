@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T15:38:55Z by runner 696a43ed61d5 (actions).
+Updated 2026-11-20T15:39:47Z by runner 0de177079f4f (manual).
 
 **Building: T530 in progress since 15:29Z; 541 of 712 done; week 36% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,10 @@ Updated 2026-11-20T15:38:55Z by runner 696a43ed61d5 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T530 claimed 15:29Z, lease until 18:29Z; lane 4: T684 claimed 15:37Z, lease until 18:37Z
 - **Week:** 36% used, 120.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:38Z, 0 min before this update
+- **Last run:** 15:39Z, 0 min before this update
 - **Keeper:** last ran 15:38Z, next wake 15:58Z
 
 ## Needs attention
-- BLOCKED T771: plan gap reported: PLAN GAP: kit/prompts/T771.md:9 (D-4970, docs/decisions.md:2604) contradicts itself: rule (1) checks the hidden Menu summary as before and rule (2) refuses links whose hidden container holds a non-a[href] control, so the DESIGN_SPEC.md:102 header at 1280 px (site.css:783 .menu display:none hides the whole details) still reports the Menu summary and its four links. Reviewer confirmed. Smallest fix: let rule (2) also cover the hidden Menu's own summary (boxless summary of a details inside or being the hidden container, when every other TARGETS control there is an a[href] with a passing same-href; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T771 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T524 (since 2026-11-20T12:53:17Z, no attempt used; a plan change fixes it): T524: dependency T648 is DONE but its owned file app/recovery/src/restore.rs is not on main; T524: dependency T648 is DONE but its owned file tests/recovery/tests/export_restores.rs is not on main
@@ -99,31 +98,31 @@ Updated 2026-11-20T15:38:55Z by runner 696a43ed61d5 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 325 of 735 (44.2%) · partial 389 · unstarted 21
+**Requirements verified:** 254 of 735 (34.6%) · partial 460 · unstarted 21
 **Tasks merged (throughput only):** 541 of 712
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 18 | 17 | 0 | 35 |
-| ai | 8 | 18 | 3 | 29 |
-| businesses | 21 | 36 | 1 | 58 |
-| calls | 14 | 11 | 0 | 25 |
-| consent | 16 | 19 | 0 | 35 |
-| fees | 22 | 30 | 0 | 52 |
-| intake | 8 | 35 | 0 | 43 |
+| accessibility | 16 | 19 | 0 | 35 |
+| ai | 7 | 19 | 3 | 29 |
+| businesses | 20 | 37 | 1 | 58 |
+| calls | 11 | 14 | 0 | 25 |
+| consent | 11 | 24 | 0 | 35 |
+| fees | 21 | 31 | 0 | 52 |
+| intake | 7 | 36 | 0 | 43 |
 | job-cards | 12 | 12 | 0 | 24 |
-| licensing | 33 | 15 | 0 | 48 |
-| lifecycle | 17 | 11 | 0 | 28 |
-| messaging | 23 | 22 | 0 | 45 |
-| ops-recovery | 9 | 31 | 14 | 54 |
+| licensing | 30 | 18 | 0 | 48 |
+| lifecycle | 13 | 15 | 0 | 28 |
+| messaging | 22 | 23 | 0 | 45 |
+| ops-recovery | 6 | 34 | 14 | 54 |
 | privacy | 8 | 23 | 0 | 31 |
 | quiet-hours | 3 | 6 | 0 | 9 |
-| quotes-pick | 25 | 31 | 0 | 56 |
-| recurring | 10 | 1 | 0 | 11 |
+| quotes-pick | 22 | 34 | 0 | 56 |
+| recurring | 9 | 2 | 0 | 11 |
 | security | 10 | 42 | 3 | 55 |
-| terms | 27 | 8 | 0 | 35 |
-| website | 18 | 12 | 0 | 30 |
-| wording | 23 | 9 | 0 | 32 |
+| terms | 10 | 25 | 0 | 35 |
+| website | 7 | 23 | 0 | 30 |
+| wording | 9 | 23 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 

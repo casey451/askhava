@@ -96622,7 +96622,7 @@
    "deps": [
     "T053"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "reflow-hidden-duplicates",
    "type": "harness",
@@ -96635,8 +96635,8 @@
     4989,
     4990
    ],
-   "reason": "plan gap reported: PLAN GAP: kit/prompts/T771.md:9 (D-4970, docs/decisions.md:2604) contradicts itself: rule (1) checks the hidden Menu summary as before and rule (2) refuses links whose hidden container holds a non-a[href] control, so the DESIGN_SPEC.md:102 header at 1280 px (site.css:783 .menu display:none hides the whole details) still reports the Menu summary and its four links. Reviewer confirmed. Smallest fix: let rule (2) also cover the hidden Menu's own summary (boxless summary of a details inside or being the hidden container, when every other TARGETS control there is an a[href] with a passing same-href; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T771 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: kit/prompts/T771.md:9 (D-4970, docs/decisions.md:2604) contradicts itself: rule (1) checks the hidden Menu summary as before and rule (2) refuses links whose hidden container holds a non-a[href] control, so the DESIGN_SPEC.md:102 header at 1280 px (site.css:783 .menu display:none hides the whole details) still reports the Menu summary and its four links. Reviewer confirmed. Smallest fix: let rule (2) also cover the hidden Menu's own summary (boxless summary of a details inside or being the hidden container, when every other TARGETS control there is an a[href] with a passing same-href counterpart outside).",
+   "reason": null,
+   "last_failure": "PLAN GAP: kit/prompts/T771.md:9 (D-4970, docs/decisions.md:2604) contradicts itself: rule (1) checks the hidden Menu summary as before and rule (2) refuses links whose hidden container holds a non-a[href] control, so the DESIGN_SPEC.md:102 header at 1280 px (site.css:783 .menu display:none hides the whole details) still reports the Menu summary and its four links. Reviewer confirmed. Smallest fix: let rule (2) also cover the hidden Menu's own summary (boxless summary of a details inside or being the hidden container, when every other TARGETS control there is an a[href] with a passing same-href counterpart outside).\nre-queued after plan fix D-4991: plan gap fixed by D-4991 (#1215)",
    "history": [
     {
      "attempt": 1,
@@ -96660,6 +96660,21 @@
        "turns": 4
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-20T15:39:47Z",
+     "reason": "plan gap fixed by D-4991 (#1215)",
+     "by": "manual-48c8d735d80f",
+     "was": "plan gap reported: PLAN GAP: kit/prompts/T771.md:9 (D-4970, docs/decisions.md:2604) contradicts itself: rule (1) checks the hidden Menu summary as before and rule (2) refuses links whose hidden container holds a non-a[href] control, so the DESIGN_SPEC.md:102 header at 1280 px (site.css:783 .menu display:none hides the whole details) still reports the Menu summary and its four links. Reviewer confirmed. Smallest fix: let rule (2) also cover the hidden Menu's own summary (boxless summary of a details inside or being the hidden container, when every other TARGETS control there is an a[href] with a passing same-href; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T771 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-4991",
+     "plan_since": "2026-11-20T15:18:51Z",
+     "plan_base": "4af5a136714aadd8220b370e7580a62767a9883a",
+     "plan_head": "0de177079f4f052802c83349a599e267d8a88953",
+     "plan_then": "2c9dfb8fd20c5411c058c965ca4c92662d0ca5cd508c21d4e76967ec379154cf",
+     "plan_now": "11c5c8340ecbfedc569e29436b2fe9719960faf1bb47f115b263ce4449e638e4"
     }
    ]
   }
@@ -103133,7 +103148,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T15:38:55Z",
+ "updated_at": "2026-11-20T15:39:47Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -103231,8 +103246,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "696a43ed61d5fdbdce19a15cc718b2a190305180",
- "starter": "actions",
+ "runner_sha": "0de177079f4f052802c83349a599e267d8a88953",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "14f0c6d1fa38bb16ab031e8ec36ce597d8637616",
