@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T12:30:43Z by runner ca06062e5a99 (actions).
+Updated 2026-11-20T12:31:14Z by runner 52076e95bd86 (actions).
 
 **Building: T496 in progress since 11:44Z; 535 of 710 done; week 31% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-20T12:30:43Z by runner ca06062e5a99 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T496 claimed 11:44Z, lease until 14:44Z; lane 3: T727 claimed 11:55Z, lease until 14:55Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z
 - **Week:** 31% used, 128.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:30Z, 0 min before this update
-- **Keeper:** last ran 12:26Z, next wake 12:46Z
+- **Last run:** 12:31Z, 0 min before this update
+- **Keeper:** last ran 12:31Z, next wake 12:51Z
 
 ## Needs attention
 - BLOCKED T614: plan gap reported: PLAN GAP: tests/a11y/reflow_spacing.spec.ts:49-54 (T053, protected) flags every TARGETS control with no box as "is hidden", but DESIGN_SPEC docs/design/DESIGN_SPEC.md:102 requires .site-nav hidden below 1024px and Menu hidden from 1024px, so the specified header fails at every width. Also: closed <details> Menu links keep boxes in Chromium (counted as Tab stops by j1_keyboard.spec.ts:56 and j2_keyboard.spec.ts:26) and the open Menu scrolls sideways at 320px (scrollWidth 375); both fixable only in app/site/static/site.css, not owned by T614 (CSP forbids inline style). Smallest plan change: a ta; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T614 --plan-fix D-### --reason "..."` (D-2859)
