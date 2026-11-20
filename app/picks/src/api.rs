@@ -85,7 +85,7 @@ pub use crate::aftermath::{
     LOST_OTHER_TYPE_TEMPLATE, LOST_SAME_TEMPLATE, LOST_SEVERAL_HIGHER_TEMPLATE,
     LOST_SEVERAL_LOWER_TEMPLATE, LOST_SEVERAL_SAME_TEMPLATE, LOST_TEMPLATE, LiveReply,
     LossSettings, compare, live_pick_reply, loss_template, lost_notices, no_longer_active,
-    refused_after_confirm,
+    refused_after_confirm, run_final_status,
 };
 pub use crate::auto_confirm::{
     AUTO_CONFIRM_VOID_KIND, AutoConfirmed, AutoFacts, AutoPlan, PickProof, Skip, Void,

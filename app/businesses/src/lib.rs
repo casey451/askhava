@@ -64,6 +64,7 @@ mod pest_identity;
 mod phone_approval;
 mod public_name;
 mod reply_link;
+mod retest_run;
 mod review_queue;
 mod rules;
 mod scorecard_inputs;
