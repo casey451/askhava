@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T20:36:15Z by runner efeef4bae51e (actions).
+Updated 2026-11-20T20:36:49Z by runner efeef4bae51e (actions).
 
 **Building: T558 in progress since 20:29Z; 551 of 713 done; week 45% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 551 of 713 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T558 claimed 20:29Z, lease until 23:29Z; lane 4: T682 claimed 19:03Z, lease until 22:03Z; lane 6: T673 claimed 20:17Z, lease until 23:17Z; lane 7: T743 claimed 18:24Z, lease until 21:24Z
+- **Lane:** lane 3: T558 claimed 20:29Z, lease until 23:29Z; lane 4: T682 claimed 19:03Z, lease until 22:03Z; lane 6: T673 claimed 20:17Z, lease until 23:17Z
 - **Week:** 45% used, 99.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:29Z, 6 min before this update
+- **Last run:** 20:29Z, 7 min before this update
 - **Keeper:** last ran 20:28Z, next wake 20:48Z
 
 ## Needs attention
@@ -21,12 +21,13 @@ Updated 2026-11-20T20:36:15Z by runner efeef4bae51e (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T743 | messaging and privacy: opt-out listings are re-keyed to the  | MERGE_PENDING | 2 | 2 h 11 min | 20:36Z | Second review (head 7921ab0285f5916db9a9df89ee828c150908805e) ended FINDINGS: tests/integration/tests/suppression_rekey. |
 | T772 | picks: a public reader of a waiting pick's Confirm deadline  | MERGE_PENDING | 1 | 117 min | 20:02Z |  |
 | T756 | privacy: the scrubber catches phones split by connector word | MERGE_PENDING | 1 | 59 min | 19:57Z |  |
 | T530 | portals: the owner help page and its screened reply box (D-3 | done | 3 | 49 min | 19:43Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T661 | privacy: a business notice address with spaces, commas or co | done | 1 | 27 min | 19:04Z |  |
 | T614 | site: the V6 header in base.html (links, the Menu in the pag | BLOCKED | 2 | 80 min | 18:46Z | PLAN GAP: tests/integration/tests/quote_page.rs:172 (owner T052, protected) bans the word "summary" anywhere in the quot |
-| T743 | messaging and privacy: opt-out listings are re-keyed to the  | QUEUED | 1 | 112 min | 18:17Z | Second review (head 7921ab0285f5916db9a9df89ee828c150908805e) ended FINDINGS: tests/integration/tests/suppression_rekey. |
+| T743 | messaging and privacy: opt-out listings are re-keyed to the  | QUEUED | 1 | 112 min | 18:17Z |  |
 | T573 | messaging and server: queued business texts are addressed to | done | 4 | 41 min | 18:01Z | model claude-opus-5-5 ran, task names claude-fable-5-2 / re-queued after plan fix D-4969: Coverage time-limit cancel, fi |
 | T686 | businesses and server: a 90-day-old inbox or alert Yes gets  | done | 1 | 76 min | 17:39Z |  |
 | T672 | intake: the dispatcher asks "How soon?", the night count and | done | 3 | 52 min | 17:14Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
@@ -150,7 +151,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 3: T558 (lease until 2026-11-20T23:29:10Z)
 - lane 4: T682 (lease until 2026-11-20T22:03:22Z)
 - lane 6: T673 (lease until 2026-11-20T23:17:39Z)
-- lane 7: T743 (lease until 2026-11-20T21:24:48Z)
 
 ## Last usage reading
-- {"task": "T772", "at": "2026-11-20T20:02:46Z", "cache_creation_input_tokens": 268362, "output_tokens": 74265, "cache_read_input_tokens": 8596400, "input_tokens": 242}
+- {"task": "T743", "at": "2026-11-20T20:36:13Z", "output_tokens": 76762, "input_tokens": 186, "cache_creation_input_tokens": 283533, "cache_read_input_tokens": 6513122}
