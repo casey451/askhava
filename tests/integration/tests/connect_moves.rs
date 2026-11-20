@@ -35,8 +35,8 @@ use askhava_payments::api::{
 };
 use askhava_picks::api::{
     BUSINESS_NOTICE_KIND, Backup, ConfirmMove, HELD_LONG_ALERT, HELD_SUCCESS_KIND, PagePick,
-    PendingEnd, Released, confirm_move, end_pending, is_released, page_pick, payment_returned,
-    run_payment_returned,
+    PendingEnd, Released, Settled, confirm_move, end_pending, is_released, page_pick,
+    payment_returned, run_payment_returned, settle,
 };
 use askhava_privacy::api::{NewContact, Vault, store_contact};
 use askhava_quotes::api::{
@@ -607,6 +607,31 @@ async fn td_job_18_the_zero_fee_path_connects(pool: PgPool) {
     assert!(released(&pool, pick).await);
 }
 
+/// TD-JOB-18 (PICK-022, PRIV-005): a clearing for a pick already ended (planted by hand) is
+/// `Left`: the job stays in Payment pending and nothing is released.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_job_18_a_clearing_for_an_ended_pick_is_left(pool: PgPool) {
+    let (business, job, pick) = picked(&pool).await;
+    assert_eq!(confirmed(&pool, (pick, job)).await, ConfirmMove::Moved);
+    free_win(&pool, (business, job)).await;
+    let mut db = pool.acquire().await.expect("db");
+    let cleared = no_fee_release(&mut db, pick, (business, job))
+        .await
+        .expect("cleared");
+    let planted = "UPDATE picks.pick SET ended_at = now() WHERE id = $1";
+    sqlx::query(planted)
+        .bind(pick)
+        .execute(&mut *db)
+        .await
+        .expect("ended");
+    let mut tx = pool.begin().await.expect("tx");
+    let done = settle(&mut tx, &cleared).await.expect("settled");
+    tx.commit().await.expect("commit");
+    assert_eq!(done, Settled::Left);
+    assert_eq!(status(&pool, job).await, "payment_pending");
+    assert!(!released(&pool, pick).await);
+}
+
 /// TD-JOB-18 (PICK-048): an auto-confirmed pick, its job still in Awaiting confirm, gets both
 /// moves in order at the settle (two history rows).
 #[sqlx::test(migrator = "MIGRATOR")]
@@ -741,7 +766,8 @@ async fn plant(pool: &PgPool, (business, job, pick): (Uuid, Uuid, Uuid), hold: H
 }
 
 /// TD-JOB-18 (JOB-014, FEE-018, FEE-020, FEE-038): a held pick restarts the wait from the run
-/// and the job stays in Payment pending; only a $0 decision queues a held success.
+/// and the job stays in Payment pending; only a $0 decision queues a held success, whose run
+/// releases the pick and connects the job.
 async fn stays_held(pool: PgPool, hold: Hold) {
     let (business, job, pick) = picked(&pool).await;
     assert_eq!(confirmed(&pool, (pick, job)).await, ConfirmMove::Moved);
@@ -760,8 +786,15 @@ async fn stays_held(pool: PgPool, hold: Hold) {
         hours(2),
         "an earlier run never shortens the wait"
     );
-    let held = of(&tasks(&pool).await, HELD_SUCCESS_KIND, ("pick", pick)).len();
-    assert_eq!(held, usize::from(matches!(hold, Hold::Free)));
+    let held = of(&tasks(&pool).await, HELD_SUCCESS_KIND, ("pick", pick));
+    assert_eq!(held.len(), usize::from(matches!(hold, Hold::Free)));
+    if let Some(task) = held.first() {
+        run_held_release(&pool, &hooks(&pool, pick), &task.payload)
+            .await
+            .expect("held success");
+        assert_eq!(status(&pool, job).await, "connected", "the $0 hold settles");
+        assert!(released(&pool, pick).await);
+    }
 }
 
 #[sqlx::test(migrator = "MIGRATOR")]
