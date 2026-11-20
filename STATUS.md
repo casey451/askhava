@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T17:37:53Z by runner 9b0887171add (actions).
+Updated 2026-11-20T17:39:14Z by runner 9b0887171add (actions).
 
 **Building: T614 in progress since 17:26Z; 545 of 713 done; week 38% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-20T17:37:53Z by runner 9b0887171add (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T614 claimed 17:26Z, lease until 20:26Z; lane 5: T686 claimed 16:22Z, lease until 20:37Z; lane 6: T573 claimed 17:20Z, lease until 20:20Z; lane 7: T743 claimed 16:24Z, lease until 19:24Z
 - **Week:** 38% used, 113.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:26Z, 10 min before this update
+- **Last run:** 17:38Z, 1 min before this update
 - **Keeper:** last ran 17:23Z, next wake 17:43Z
 
 ## Needs attention
@@ -96,7 +96,6 @@ The pick's window deadline (picks.pick.confirm_due) is read only by private code
 | T607 | site: site.css brought up to the V6 reference (laftly-v6.css | QUEUED | 1 | 2 h 5 min | 19:21Z |  |
 | T555 | Decisions digest, piece 10: the next entries after the heade | done | 1 | 2 h 7 min | 17:51Z |  |
 | T715 | intake (harness): corrections to T671's walker: alarm answer | done | 3 | 113 min | 17:43Z | PLAN GAP: one TD-INT-52 sentence can't be met by intake as planned: "a two-word first text naming a trade opens its job  |
-| T530 | portals: the owner help page and its screened reply box (D-3 | QUEUED | 1 | 117 min | 17:38Z |  |
 
 ### Plan and harness merges on main
 - none
