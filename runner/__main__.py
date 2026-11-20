@@ -110,6 +110,7 @@ import fnmatch
 import json
 import os
 import random
+import re
 import subprocess
 import sys
 import tempfile
@@ -570,9 +571,16 @@ def hold_review(res: cycle.WorkerResult) -> str:
     """REVIEW_HELD when `review_proof.check` refused the hand-in and each rule it names still has its one
     hold (hand-off counters `review_holds_a`, `review_holds_b`), else '' so `finish` fails the attempt as
     `tests_failed` with the refusal log naming each commit and rule (D-3728). Without a hand-off file
-    nothing is held. A held run writes no kit/state.json, as for a red gate."""
+    nothing is held. A held run writes no kit/state.json, as for a red gate. A rule (b) commit below the head
+    (`buried_commits`) fails fast with one line naming it: only a NEW worker's fresh history can replace it (D-4796)."""
     found = read_handoff()
     rules = review_proof.rules_in(res.log)
+    buried = buried_commits(res.log)
+    if buried:
+        print(f"runner: {REVIEW_HELD}: commit(s) {', '.join(buried)} below the branch head lack Git's commit line "
+              "(rule (b)); history cannot be rewritten, so no review can pass this hand-in: a NEW worker must redo "
+              "that work on a fresh attempt (D-3728, D-4796)")
+        return ""
     if not found or not rules or any(int(found.get(f"review_holds_{r}", 0)) >= 1 for r in rules):
         return ""
     found.update({f"review_holds_{r}": 1 for r in rules})
@@ -581,6 +589,17 @@ def hold_review(res: cycle.WorkerResult) -> str:
           "the reviewer model over the head (or, for (b), have a NEW worker redo the commit, then a NEW reviewer approve "
           "the new head), then run --after again naming every worker and reviewer agent id (D-3728):\n" + res.log)
     return REVIEW_HELD
+
+
+def buried_commits(log: str) -> list[str]:
+    """The 12-hex commits a `review_missing` log names under rule (b) that are not its head (the
+    `review_missing on <head>` first line): an unproven commit below a later one, which only a new worker's
+    fresh history can replace, so `hold_review` fails fast on it instead of holding once (D-4796)."""
+    first = re.match(rf"{review_proof.REVIEW_MISSING} on ([0-9a-f]{{12}}) ", log)
+    if not first:
+        return []
+    named = re.findall(r"^\(b\) ([0-9a-f]{12})\b", log, re.M)
+    return [sha for sha in named if sha != first.group(1)]
 
 
 def hold_red_gate(res: cycle.WorkerResult) -> str:
