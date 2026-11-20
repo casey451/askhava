@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T17:40:08Z by runner 9b0887171add (actions).
+Updated 2026-11-20T17:40:39Z by runner e4d287328e44 (manual).
 
 **Building: T614 in progress since 17:26Z; 545 of 713 done; week 40% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,17 +8,14 @@ Updated 2026-11-20T17:40:08Z by runner 9b0887171add (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T614 claimed 17:26Z, lease until 20:26Z; lane 6: T573 claimed 17:20Z, lease until 20:20Z; lane 7: T743 claimed 16:24Z, lease until 19:24Z
 - **Week:** 40% used, 113.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:39Z, 0 min before this update
+- **Last run:** 17:40Z, 0 min before this update
 - **Keeper:** last ran 17:23Z, next wake 17:43Z
 
 ## Needs attention
-- BLOCKED T664: plan gap reported: PLAN GAP: outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs
-The pick's window deadline (picks.pick.confirm_due) is read only by private code (handlers.rs store_due :263, hold_row :323); no public reader exists, and portals may not read picks tables. check_at_confirm needs it. Also the refused-at-confirm tail (job back to Quotes ready, PICK-046/047 text: end_waiting, queue_backup_text, waiting_pick) is crate-private in picks. A picks-side task must export a deadline reader and a refused-at-confirm tail first. Reviewer confirmed (GAP CONFIRMED). End/bond dates are also not s; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T664 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T684: plan gap reported: PLAN GAP: app/quotes/src/models.rs:265 `card_sent_at` is pub(crate); T684 owns no app/quotes/src file. quotes::api has no per-business card send-time reader (open_card_jobs returns job ids only; spot_check_cards is a random sample); picks may not query quotes.* (R8, docs/brains/rust-production.md:44). Smallest plan change: new app/quotes/src/open_cards.rs with open_cards(db, business, now) plus one mod line in lib.rs and one pub use in api.rs; raise budget to 4 files/~600 lines. Also: portals link trait implemented in server lib.rs; email recipient is member mailbox with subject ids starting w; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T684 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- PLAN GAP T664 (since 2026-11-20T16:15:19Z, no attempt used; a plan change fixes it): outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs
-- Strict plan check red: 41 problem(s) on tasks still to run (+413 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
+- Strict plan check red: 38 problem(s) on tasks still to run (+412 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -104,7 +101,7 @@ The pick's window deadline (picks.pick.confirm_due) is read only by private code
 ## Progress (requirements verified)
 
 **Requirements verified:** 325 of 735 (44.2%) · partial 391 · unstarted 19
-**Tasks merged (throughput only):** 545 of 712
+**Tasks merged (throughput only):** 545 of 713
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|

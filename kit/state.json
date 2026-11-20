@@ -90034,7 +90034,7 @@
     "T541",
     "T767"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "confirm-press-moves",
    "type": "build",
@@ -90048,18 +90048,8 @@
     5005,
     5006
    ],
-   "reason": "plan gap reported: PLAN GAP: outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs\nThe pick's window deadline (picks.pick.confirm_due) is read only by private code (handlers.rs store_due :263, hold_row :323); no public reader exists, and portals may not read picks tables. check_at_confirm needs it. Also the refused-at-confirm tail (job back to Quotes ready, PICK-046/047 text: end_waiting, queue_backup_text, waiting_pick) is crate-private in picks. A picks-side task must export a deadline reader and a refused-at-confirm tail first. Reviewer confirmed (GAP CONFIRMED). End/bond dates are also not s; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T664 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs\nThe pick's window deadline (picks.pick.confirm_due) is read only by private code (handlers.rs store_due :263, hold_row :323); no public reader exists, and portals may not read picks tables. check_at_confirm needs it. Also the refused-at-confirm tail (job back to Quotes ready, PICK-046/047 text: end_waiting, queue_backup_text, waiting_pick) is crate-private in picks. A picks-side task must export a deadline reader and a refused-at-confirm tail first. Reviewer confirmed (GAP CONFIRMED). End/bond dates are also not stored anywhere.",
-   "plan_gap": {
-    "at": "2026-11-20T16:15:19Z",
-    "problems": [
-     "outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs"
-    ],
-    "paths": [
-     "app/picks/src/handlers.rs",
-     "app/picks/src/confirm.rs"
-    ]
-   },
+   "reason": null,
+   "last_failure": "PLAN GAP: outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs\nThe pick's window deadline (picks.pick.confirm_due) is read only by private code (handlers.rs store_due :263, hold_row :323); no public reader exists, and portals may not read picks tables. check_at_confirm needs it. Also the refused-at-confirm tail (job back to Quotes ready, PICK-046/047 text: end_waiting, queue_backup_text, waiting_pick) is crate-private in picks. A picks-side task must export a deadline reader and a refused-at-confirm tail first. Reviewer confirmed (GAP CONFIRMED). End/bond dates are also not stored anywhere.\nre-queued after plan fix D-5017: plan gap fixed by D-5017 (#1223)",
    "history": [
     {
      "attempt": 1,
@@ -90083,6 +90073,21 @@
        "turns": 12
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-20T17:40:39Z",
+     "reason": "plan gap fixed by D-5017 (#1223)",
+     "by": "manual-1dca7f068ff5",
+     "was": "plan gap reported: PLAN GAP: outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs\nThe pick's window deadline (picks.pick.confirm_due) is read only by private code (handlers.rs store_due :263, hold_row :323); no public reader exists, and portals may not read picks tables. check_at_confirm needs it. Also the refused-at-confirm tail (job back to Quotes ready, PICK-046/047 text: end_waiting, queue_backup_text, waiting_pick) is crate-private in picks. A picks-side task must export a deadline reader and a refused-at-confirm tail first. Reviewer confirmed (GAP CONFIRMED). End/bond dates are also not s; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T664 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-5017",
+     "plan_since": "2026-11-20T16:09:43Z",
+     "plan_base": "3e01fef06c140069eb56fc9c1cbb0a53b0c082a9",
+     "plan_head": "e4d287328e44bd15c3cbed150c58f54046678543",
+     "plan_then": "f88fd26f9432444e8b04ef01fa5b50d4e3bf69c14d20b410fa32946d5eff94c7",
+     "plan_now": "1f6bb0bc242e1ffe8ceef70ce1e7bba827ac08ca69355fdcd35c07008595d9a9"
     }
    ]
   },
@@ -103907,7 +103912,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T17:40:08Z",
+ "updated_at": "2026-11-20T17:40:39Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -104005,8 +104010,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "9b0887171addd3aaa6df2974cda8f640bb07b324",
- "starter": "actions",
+ "runner_sha": "e4d287328e44bd15c3cbed150c58f54046678543",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "7d98387f34ed8cdf9508ff777ab4a5e2f5112fde",
