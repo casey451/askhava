@@ -136,8 +136,8 @@ async fn td_job_21_an_earlier_picks_press_does_not_count_for_a_later_pick(pool: 
     let by = (Actor::System, at(4));
     let ended = end_pending(&mut db, (first, job), PendingEnd::PaymentFailed, by).await;
     ended.expect("first pick ends");
-    let back = current(&mut db, job).await.expect("job").status;
-    assert_eq!(back, JobStatus::QuotesReady, "back to Quotes ready");
+    let back = current(&mut db, job).await.expect("job").status.code();
+    assert_eq!(back, "quotes_ready", "back to Quotes ready");
     let second = picked(&mut db, job, 5).await;
     assert_ne!(first, second, "a new pick");
     step(
