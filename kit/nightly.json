@@ -8,12 +8,12 @@
   "named_mutants": "success",
   "stripe_ips": "success"
  },
- "started_at": "2026-11-20T17:47:30Z",
- "ran_at": "2026-11-20T18:06:13Z",
+ "started_at": "2026-11-20T17:49:00Z",
+ "ran_at": "2026-11-20T18:17:21Z",
  "sha": "e4d287328e44bd15c3cbed150c58f54046678543",
  "last_green": {
   "sha": "e4d287328e44bd15c3cbed150c58f54046678543",
-  "ran_at": "2026-11-20T18:06:13Z"
+  "ran_at": "2026-11-20T18:17:21Z"
  },
  "failures_since_green": 0
 }
