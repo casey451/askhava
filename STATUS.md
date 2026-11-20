@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T08:15:39Z by runner 37a05d29daa8 (manual).
+Updated 2026-11-20T08:21:38Z by runner 0931e09f36a1 (actions).
 
-**Building: T116 in progress since 07:58Z; 527 of 708 done; week 24% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T116 in progress since 07:58Z; 528 of 708 done; week 24% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 527 of 708 build tasks (owner gates not counted)
+- **Tasks done:** 528 of 708 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T116 claimed 07:58Z, lease until 10:58Z; lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 4: T766 claimed 08:11Z, lease until 11:11Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z; lane 7: T669 claimed 07:12Z, lease until 10:12Z
 - **Week:** 24% used, 141.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:12Z, 3 min before this update
+- **Last run:** 08:15Z, 5 min before this update
 - **Keeper:** last ran 08:08Z, next wake 08:28Z
 
 ## Needs attention
@@ -21,7 +21,7 @@ Updated 2026-11-20T08:15:39Z by runner 37a05d29daa8 (manual).
 |---|---|---|---|---|---|---|
 | T672 | intake: the dispatcher asks "How soon?", the night count and | QUEUED | 2 | 89 min | 08:05Z | runner smoke red on 3e9315b7399c (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
 | T561 | server and portals: the homeowner's "Download my data" and h | MERGE_PENDING | 1 | 33 min | 07:51Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
-| T762 | runner and workflow (harness): fix-round workers commit with | MERGE_PENDING | 1 | 68 min | 07:44Z |  |
+| T762 | runner and workflow (harness): fix-round workers commit with | done | 1 | 68 min | 07:44Z |  |
 | T764 | ci and pre-hand-in gate (harness): scripts/bootstrap_roles.s | done | 1 | 54 min | 07:29Z |  |
 | T669 | picks: "Can't take it" and a business leaving end a pick in  | QUEUED | 1 | 56 min | 07:07Z | runner smoke red on c403ea4898ac (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
 | T573 | messaging and server: queued business texts are addressed to | BLOCKED | 1 | 5 min | 06:27Z | PLAN GAP: app/privacy/src/business_contacts.rs:124 (owned by T412, not T573). Item (2) needs the outbox sender to read a |
@@ -97,31 +97,31 @@ Updated 2026-11-20T08:15:39Z by runner 37a05d29daa8 (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 253 of 735 (34.4%) · partial 456 · unstarted 26
-**Tasks merged (throughput only):** 527 of 708
+**Requirements verified:** 324 of 735 (44.1%) · partial 385 · unstarted 26
+**Tasks merged (throughput only):** 528 of 708
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 16 | 19 | 0 | 35 |
-| ai | 7 | 19 | 3 | 29 |
-| businesses | 20 | 37 | 1 | 58 |
-| calls | 11 | 14 | 0 | 25 |
-| consent | 11 | 24 | 0 | 35 |
-| fees | 21 | 31 | 0 | 52 |
-| intake | 7 | 36 | 0 | 43 |
+| accessibility | 18 | 17 | 0 | 35 |
+| ai | 8 | 18 | 3 | 29 |
+| businesses | 21 | 36 | 1 | 58 |
+| calls | 14 | 11 | 0 | 25 |
+| consent | 16 | 19 | 0 | 35 |
+| fees | 22 | 30 | 0 | 52 |
+| intake | 8 | 35 | 0 | 43 |
 | job-cards | 12 | 12 | 0 | 24 |
-| licensing | 30 | 18 | 0 | 48 |
-| lifecycle | 12 | 16 | 0 | 28 |
-| messaging | 22 | 23 | 0 | 45 |
-| ops-recovery | 6 | 33 | 15 | 54 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 16 | 12 | 0 | 28 |
+| messaging | 23 | 22 | 0 | 45 |
+| ops-recovery | 9 | 30 | 15 | 54 |
 | privacy | 8 | 23 | 0 | 31 |
 | quiet-hours | 3 | 6 | 0 | 9 |
-| quotes-pick | 22 | 34 | 0 | 56 |
-| recurring | 9 | 2 | 0 | 11 |
+| quotes-pick | 25 | 31 | 0 | 56 |
+| recurring | 10 | 1 | 0 | 11 |
 | security | 10 | 40 | 5 | 55 |
-| terms | 10 | 25 | 0 | 35 |
-| website | 7 | 21 | 2 | 30 |
-| wording | 9 | 23 | 0 | 32 |
+| terms | 27 | 8 | 0 | 35 |
+| website | 18 | 10 | 2 | 30 |
+| wording | 23 | 9 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -134,7 +134,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 170 of 290 done
+- stage 5: 171 of 290 done
 - stage 6: 0 of 65 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done

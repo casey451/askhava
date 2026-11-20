@@ -80064,7 +80064,7 @@
      "resync": true
     }
    ],
-   "reviewed_sha": "649e5514f1a1c8991374e24d56d131c8669dce0f",
+   "reviewed_sha": "78f2ad00adb9a51531e4ba3c4494ed2999fd1a43",
    "review_lease": {
     "task": "T561",
     "session": "actions-44693342873",
@@ -80099,10 +80099,23 @@
      "main": "37a05d29daa8e0d49c8f0d1156e8833e2ec6aa64",
      "how": "hand-in",
      "at": "2026-11-20T07:51:19Z"
+    },
+    {
+     "from": "649e5514f1a1c8991374e24d56d131c8669dce0f",
+     "to": "78f2ad00adb9a51531e4ba3c4494ed2999fd1a43",
+     "main": "0931e09f36a1c6b002ca533fdc551fc03814a620",
+     "how": "runner",
+     "checks": {
+      "Ci": "success",
+      "Twin": "success",
+      "Ally": "success"
+     },
+     "at": "2026-11-20T08:21:26Z"
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merge_turn_since": "2026-11-20T08:21:26Z"
   },
   {
    "id": "T564",
@@ -93731,7 +93744,7 @@
     "T753",
     "T726"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "review-missing-commit-line",
    "type": "harness",
@@ -93751,13 +93764,70 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 85,
      "head_sha": "5404fe7e8b573382526fb41e9d64f6973c5bf837",
-     "pr": null,
-     "checks": null,
+     "pr": 1188,
+     "checks": [
+      {
+       "name": "backup lane 3",
+       "conclusion": "cancelled"
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-20T06:35:28Z",
      "ended_at": "2026-11-20T07:44:08Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "usage": {
       "worker": {
        "tokens": 1952702,
@@ -93805,7 +93875,16 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-20T07:58:32Z"
+   "merge_turn_since": "2026-11-20T07:58:32Z",
+   "merged_sha": "0931e09f36a1c6b002ca533fdc551fc03814a620",
+   "merged_at": "2026-11-20T08:19:31Z",
+   "files": [
+    ".github/workflows/backup-runner.yml",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "runner/__main__.py",
+    "tests/test_runner_review_missing.py"
+   ]
   },
   {
    "id": "T763",
@@ -100531,7 +100610,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T08:15:39Z",
+ "updated_at": "2026-11-20T08:21:38Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -100629,8 +100708,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "37a05d29daa8e0d49c8f0d1156e8833e2ec6aa64",
- "starter": "manual",
+ "runner_sha": "0931e09f36a1c6b002ca533fdc551fc03814a620",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "382efbfa9414fda64df615686feff7ebbe5928d3",
