@@ -15,7 +15,9 @@
 //! release step of the `migrate` service (D-092, SEC-052). `server bootstrap-owner` creates the
 //! one owner once, as the migration role, from the token in `ASKHAVA_OWNER_BOOTSTRAP_TOKEN` and
 //! a password read from standard input, and prints the first authenticator's secret and the
-//! recovery codes once to the operator's own terminal (SEC-044, SEC-007, D-1918).
+//! recovery codes once to the operator's own terminal (SEC-044, SEC-007, D-1918). `server replay`
+//! restores an operator's decrypted export into the fresh database and replays from the vendors'
+//! records (`askhava_server::replay_drill`; OPS-013, OPS-018, OPS-019, T206).
 
 use std::future::IntoFuture;
 use std::io;
@@ -33,6 +35,10 @@ async fn main() -> io::Result<()> {
     }
     if std::env::args().nth(1).as_deref() == Some("bootstrap-owner") {
         return bootstrap_owner(&settings).await;
+    }
+    if std::env::args().nth(1).as_deref() == Some("replay") {
+        let args: Vec<String> = std::env::args().skip(2).collect();
+        return askhava_server::replay_drill(&settings, std::env::vars().collect(), &args).await;
     }
     // The security-event cap and the SEC-040 client address, once per process (T319, D-3134).
     let client_ip = askhava_core::api::ClientIpPolicy::from_pairs(std::env::vars())

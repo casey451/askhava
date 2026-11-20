@@ -994,6 +994,30 @@ async fn picked(pool: &PgPool, job: Uuid, now: Timestamp) -> Uuid {
     pick
 }
 
+/// A fake ROC license number, and today's fake ROC list with it Active in class R-39.
+const ROC_NUMBER: &str = "ROC900039";
+const ROC_LIST: &str = "license_number,class,status,issued_on\nROC900039,R-39,Active,2016-01-01\n";
+
+/// PICK-020 (D-056, D-4897): makes `business` one that may Confirm: its account Active through
+/// its sign-up checks, and one fresh Active ROC check row of a fake license number, from a list
+/// dated today in Arizona (stored once, however many businesses call this).
+async fn eligible(db: &mut PgConnection, business: Uuid, now: Timestamp) {
+    // Imported here: a longer import block at the top would move the lines T643's prompt cites.
+    use askhava_businesses::api::{Checks, Event, apply};
+    use askhava_licensing::api::{DailyCheck, arizona_day, check_license, import_roc_list};
+    let ok = Checks {
+        code_done: true,
+        match_passed: true,
+        flagged: false,
+    };
+    let to = apply(db, business, Event::Checked(ok), AuditActor::System, now).await;
+    to.expect("active");
+    let listed = import_roc_list(db, arizona_day(now), ROC_LIST).await;
+    listed.expect("ROC list");
+    let check = check_license(db, business, ROC_NUMBER).await;
+    assert_eq!(check.expect("license check"), DailyCheck::Active);
+}
+
 /// Side `side`: a business with its owner, her job it quoted, her request and page pick of the
 /// quote, the job's quote token and number, a complaint and a Quote action link; and a second
 /// job of the business, quoted, page-picked and released to her contact on the $0 path (D-3106);
@@ -1011,6 +1035,7 @@ async fn side(pool: &PgPool, side: usize, now: Timestamp) -> Side {
         business,
         mailbox,
     };
+    eligible(&mut db, business, now).await;
     let job = quoted_job(&mut db, business, now).await;
     let contact = her_request(&mut db, side, job, now).await;
     let pick = picked(pool, job, now).await;

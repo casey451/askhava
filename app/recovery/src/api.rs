@@ -12,3 +12,4 @@ pub use crate::restore::{
     RESTORE_PASSED_ACTION, RestoreError, RestoreSettings, load_dump, register_restore,
     schedule_restore, test_restore,
 };
+pub use crate::service::{Drill, DrillError, DrillReport, REPLAY_LISTED_ALERT, run_drill};
