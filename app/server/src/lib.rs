@@ -366,6 +366,12 @@ fn business_pages(
         parts.vault.clone(),
         webhooks,
     ));
+    let owner = owner.merge(askhava_portals::api::owner_help_routes(
+        pool.clone(),
+        Arc::new(SystemClock),
+        Some(session_minter()),
+        webhooks.map(|hooks| hooks.id_secret.clone()),
+    ));
     let cant_take = cant_take_route::routes(pool.clone());
     let homeowner = homeowner_portal::routes(pool.clone(), webhooks, parts.homeowner);
     let step_up = business_step_up::routes(pool.clone(), parts.step_up);
