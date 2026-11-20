@@ -25,7 +25,7 @@ use askhava_intake::api::{
     ADDRESS_IN_KIND, Answer, AskedAgain, Taken, TextIn, ZipStep, answer_zip, ask_again,
     receive_text, record_answer, run_address_needed, take_name_address,
 };
-use askhava_jobs::api::{JobStatus, create, job_number, move_to, record_job_facts};
+use askhava_jobs::api::{JobStatus, create, current, job_number, move_to, record_job_facts};
 use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
 use askhava_ops::api::{Actor, export_audit};
 use askhava_payments::api::{
@@ -523,13 +523,9 @@ async fn td_int_39_a_pick_that_left_free_releases_nothing(pool: PgPool) {
     let first = released_free(&pool, (business, job, pick)).await;
     assert!(matches!(first, Released::WaitingForAddress));
     let mut db = pool.acquire().await.expect("db");
-    for arrow in [
-        (JobStatus::AwaitingConfirm, JobStatus::PaymentPending),
-        (JobStatus::PaymentPending, JobStatus::Connected),
-    ] {
-        let moved = move_to(&mut db, job, arrow, now(), Actor::System).await;
-        assert_eq!(moved.expect("move"), Guarded::Applied(()));
-    }
+    let status = current(&mut db, job).await.expect("job").status;
+    let connected = JobStatus::Connected.code();
+    assert_eq!(status.code(), connected, "the settle connected the job");
     let number = job_number(&mut db, job).await.expect("number");
     let case = ReleasedPick {
         pick,
