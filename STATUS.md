@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T09:22:33Z by runner fb2a658305cb (actions).
+Updated 2026-11-20T09:23:04Z by runner fb2a658305cb (actions).
 
-**Building: T617 in progress since 07:06Z; 529 of 709 done; week 26% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T727 in progress since 08:23Z; 529 of 709 done; week 26% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 529 of 709 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 3: T727 claimed 08:23Z, lease until 11:23Z; lane 5: T573 claimed 08:54Z, lease until 11:54Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z
+- **Lane:** lane 3: T727 claimed 08:23Z, lease until 11:23Z; lane 5: T573 claimed 08:54Z, lease until 11:54Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z
 - **Week:** 26% used, 139.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:16Z, 6 min before this update
 - **Keeper:** last ran 09:16Z, next wake 10:09Z
@@ -19,6 +19,7 @@ Updated 2026-11-20T09:22:33Z by runner fb2a658305cb (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T617 | site: DM Sans from one weight-axis variable file (smaller th | MERGE_PENDING | 2 | 2 h 16 min | 09:22Z | PLAN GAP: tests/a11y/design_tokens.spec.ts:221 and :242 (protected, not owned by T617) contradict the prompt's single DM |
 | T766 | server tests (harness): a photo-link door and a {job} fill i | MERGE_PENDING | 1 | 53 min | 09:05Z |  |
 | T116 | Stage 0.5 static page set and the DNS records file | MERGE_PENDING | 1 | 50 min | 08:48Z |  |
 | T669 | picks: "Can't take it" and a business leaving end a pick in  | MERGE_PENDING | 2 | 80 min | 08:32Z | runner smoke red on c403ea4898ac (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
@@ -40,7 +41,7 @@ Updated 2026-11-20T09:22:33Z by runner fb2a658305cb (actions).
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 2 | 32 min | 04:08Z |  |
 | T747 | intake and jobs: the homeowner's INT-029 emergency choice ma | done | 1 | 71 min | 03:25Z |  |
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 2 | 2 h 16 min | 03:22Z |  |
-| T617 | site: DM Sans from one weight-axis variable file (smaller th | BLOCKED | 1 | 2 min | 03:04Z | PLAN GAP: tests/a11y/design_tokens.spec.ts:221 and :242 (protected, not owned by T617) contradict the prompt's single DM |
+| T617 | site: DM Sans from one weight-axis variable file (smaller th | BLOCKED | 1 | 2 min | 03:04Z |  |
 | T648 | recovery: the monthly test restore into a throwaway cluster, | BLOCKED | 1 | 21 min | 02:55Z | PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, b |
 | T763 | tests (harness): the web chat spec's fake numbers never coll | done | 1 | 25 min | 02:17Z |  |
 | T672 | intake: the dispatcher asks "How soon?", the night count and | BLOCKED | 1 | 13 min | 02:12Z |  |
@@ -139,10 +140,9 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T617 (lease until 2026-11-20T10:06:22Z)
 - lane 3: T727 (lease until 2026-11-20T11:23:33Z)
 - lane 5: T573 (lease until 2026-11-20T11:54:23Z)
 - lane 6: T530 (lease until 2026-11-20T10:20:58Z)
 
 ## Last usage reading
-- {"task": "T766", "at": "2026-11-20T09:05:58Z", "input_tokens": 92, "cache_creation_input_tokens": 117265, "cache_read_input_tokens": 2601428, "output_tokens": 24282}
+- {"task": "T617", "at": "2026-11-20T09:22:31Z", "cache_creation_input_tokens": 130107, "input_tokens": 128, "cache_read_input_tokens": 2456311, "output_tokens": 26448}
