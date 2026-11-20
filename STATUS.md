@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T03:55:31Z by runner 50c8d83e368e (actions).
+Updated 2026-11-20T03:56:02Z by runner 50c8d83e368e (actions).
 
 **Building: T726 in progress since 03:35Z; 517 of 705 done; week 19% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-20T03:55:31Z by runner 50c8d83e368e (actions).
 - **Lane:** lane 1: T726 claimed 03:35Z, lease until 06:35Z; lane 3: T543 claimed 03:53Z, lease until 06:53Z; lane 4: T110 claimed 02:18Z, lease until 05:18Z; lane 6: T663 claimed 03:48Z, lease until 06:48Z; lane 7: T434 claimed 03:02Z, lease until 06:02Z
 - **Week:** 19% used, 152.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 03:55Z, 0 min before this update
-- **Keeper:** last ran 03:27Z, next wake 03:47Z
+- **Keeper:** last ran 03:56Z, next wake 04:16Z
 
 ## Needs attention
 - BLOCKED T617: plan gap reported: PLAN GAP: tests/a11y/design_tokens.spec.ts:221 and :242 (protected, not owned by T617) contradict the prompt's single DM Sans @font-face with font-weight: 100 1000 (kit/prompts/T617.md:9). loadedFonts() (:170-175) labels faces as family + declared weight; a range face reports "DM Sans 100 1000", so the expected "DM Sans 400"/"DM Sans 700" labels never appear. Worker's Chromium probe with one range block printed 'DM Sans 100 1000 loaded'; three blocks (400, 600, 700) all pointing at the one variable file printed 400/600/700 loaded with 1 font request. Smallest plan change: one @font-face per us; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T617 --plan-fix D-### --reason "..."` (D-2859)
