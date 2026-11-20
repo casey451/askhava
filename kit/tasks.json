@@ -37075,7 +37075,7 @@
    "id": "T305",
    "slug": "owner-reports-served",
    "title": "server and portals: the scorecard, the intake report, the money view and the owner help page are served",
-   "goal": "T158, T210 and T434 build the owner's scorecard, intake report and money view (with its expense-entry `POST`), and T200 the owner help page with its reply box, as portals pages no route serves (D-2128); the business Get help form is T309's. (1) `app/server/src/owner_reports.rs` builds them behind T303's owner session (none or another realm gets a 4xx with a link to `/owner/sign-in`); every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_reports_route.rs` (TD-SEC-48) and `tests/e2e/owner_reports_served.spec.ts`, which takes the browser half of TD-OPS-15 (T158's row), signing in as T303's spec does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. It adds one row per method and path it serves to section 13 (module `server`, Wired `yes`), every owner page under `/owner/` (the Owner door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744). Plan change D-3890 (Fable's pre-claim checks of the remaining stage-5 tasks, Nov 16, 2026): (1) The owner help page, its reply box and TD-OPS-23 are T530's since D-3883 (`app/portals/src/owner_help.rs`), not T200's: every mention of T200's owner help page above means T530's, which is a dependency; one request is addressed by a query or form field, not a path parameter (`app/server/tests/door_matrix.rs:89` fills no `{request}`). (2) The pages need `Settings` values and `build_router` gets none (`app/server/src/lib.rs:292`): `main` passes the set-aside basis points (T477's `ASKHAVA_SALES_TAX_SET_ASIDE_BASIS_POINTS`, which `owner_money_view` takes from its caller) and T158's scorecard settings through a new `RouterParts` builder; a caller that passes none gets the defaults, so `route_wiring.rs` and `door_matrix.rs` are unchanged. (3) Build notes go at the end of `app/server/NOTES.md` and `app/portals/NOTES.md`; `app/server/CLAUDE.md` is at its 8,192-byte cap and is not edited, whatever earlier sentences say. (4) If T434's CSV download (`money_view_csv`) is served, it gets its section 13 row and a reasoned `NOT_PAGES` line in `tests/a11y/fixtures.ts`; its month travels as a query value, not a path parameter. Plan change D-4202: OPS-039's leave and pause reasons (BIZ-054) come from T605's `businesses` reader through T478; no file this task writes may contain the text `leave_reason`, not even in a field, variable or function name or a comment (TD-BIZ-32's text scan, `tests/integration/tests/business_leaving.rs:462`).",
+   "goal": "T158, T210 and T434 build the owner's scorecard, intake report and money view (with its expense-entry `POST`), and T200 the owner help page with its reply box, as portals pages no route serves (D-2128); the business Get help form is T309's. (1) `app/server/src/owner_reports.rs` builds them behind T303's owner session (none or another realm gets a 4xx with a link to `/owner/sign-in`); every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_reports_route.rs` (TD-SEC-48) and `tests/e2e/owner_reports_served.spec.ts`, which takes the browser half of TD-OPS-15 (T158's row), signing in as T303's spec does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. It adds one row per method and path it serves to section 13 (module `server`, Wired `yes`), every owner page under `/owner/` (the Owner door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744). Plan change D-3890 (Fable's pre-claim checks of the remaining stage-5 tasks, Nov 16, 2026): (1) The owner help page, its reply box and TD-OPS-23 are T530's since D-3883 (`app/portals/src/owner_help.rs`), not T200's: every mention of T200's owner help page above means T530's, which is a dependency; one request is addressed by a query or form field, not a path parameter (`FILLS` in `app/server/tests/door_matrix.rs` has no `{request}`). (2) The pages need `Settings` values and `build_router` gets none (`build_router` in `app/server/src/lib.rs`): `main` passes the set-aside basis points (T477's `ASKHAVA_SALES_TAX_SET_ASIDE_BASIS_POINTS`, which `owner_money_view` takes from its caller) and T158's scorecard settings through a new `RouterParts::with_…` method (the struct exists); a caller that passes none gets the defaults, so `route_wiring.rs` and `door_matrix.rs` are unchanged. (3) Build notes go at the end of `app/server/NOTES.md` and `app/portals/NOTES.md`; `app/server/CLAUDE.md` is not edited, whatever earlier sentences say. (4) If T434's CSV download (`money_view_csv_file`, `app/portals/src/money_view.rs`) is served, it gets its section 13 row and a reasoned `NOT_PAGES` line in `tests/a11y/fixtures.ts`; its month travels as a query value, not a path parameter. Plan change D-4202: OPS-039's leave and pause reasons (BIZ-054) come from T605's `businesses` reader through T478; no file this task writes may contain the text `leave_reason`, not even in a field, variable or function name or a comment (TD-BIZ-32's text scan, `tests/integration/tests/business_leaving.rs:462`). Plan change D-4897 (Fable's pre-claim checks, Nov 20, 2026): the scorecard minutes POST (`OWNER_SCORECARD_MINUTES_ROUTE`, `/owner/scorecard/minutes`, `owner_record_minutes` in `app/portals/src/scorecard.rs`) is served too, behind the owner session, `refuse_cross_site` and the CSRF check like the expense POST, with its own section 13 row and a TD-SEC-48 case.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -37127,13 +37127,14 @@
     "D-3744",
     "D-3883",
     "D-3890",
-    "D-4202"
+    "D-4202",
+    "D-4897"
    ],
    "cites": [],
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 11
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -44774,10 +44775,65 @@
    "acceptance": "TD-JOB-18 passes against PostgreSQL, failing on `main` before the change, with every case its row names covered by a test, among them: a paid clearing settled to Connected in the settle's transaction, the $0 path, the auto-confirmed pick's two moves, a `Left` clearing refunded, the `picks.held_success` run releasing once and moving the job to Connected, the held-long High alert raised once, safe mode on leaving the job in Payment pending until the held release settles it, and a late success after `end_pending` refunded once; the three done tests change only by taking the real path in place of a planted move or the timer's own move, with the same assertions; every test the goal lists passes unchanged; the Payment pending wait's value is unchanged and no job leaves Payment pending while `payments` holds its pick; the hand-in quotes `cargo llvm-cov` branch figures at or above 95% for `connect.rs` and `settle.rs`, and `app/payments/` holds its floor; `tests/coverage_floor.json` and `tests/test_coverage_floor.py` are unchanged."
   },
   {
+   "id": "T767",
+   "slug": "confirm-press-fixtures-eligible",
+   "title": "tests (harness): the Confirm press fixtures get an Active account and a fresh Active license check, before T664's PICK-020 re-check",
+   "goal": "Plan change D-4897 (Fable's pre-claim checks, Nov 20, 2026): T664 makes the served Confirm press re-check the account and the stored license check (PICK-020, D-056; `picks::api::check_at_confirm`, `app/picks/src/confirm.rs`), and three done fixtures press it with a business that would be refused: `app/server/tests/confirm_route.rs` and `tests/integration/tests/saved_card.rs` make the business through `businesses::api::create(.., false, ..)` or `sign_up` (Pending, no check row), and `tests/e2e/keyed.ts`'s `seedPick` inserts an active business with no `licensing.license_check` row. This task changes only those fixtures: every business whose press is expected to go through has an Active account and one `licensing.license_check` row (`source` `roc`, `status` `active`, a fake license number, `list_date` today in Arizona, `checked_at` now), written through a public `businesses` or `licensing` call where one exists and otherwise by fixture SQL. No assertion, test name or expected value changes, and no test is added or removed; if a case needs the business Pending or unchecked, leave that case's business as it is and say so in the report. No file under `app/*/src/` changes. Fake data only.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T261",
+    "T541",
+    "T644"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    "app/server/tests/confirm_route.rs",
+    "tests/integration/tests/saved_card.rs",
+    "tests/e2e/keyed.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "app/picks/src/confirm.rs",
+    "app/licensing/src/own_record.rs"
+   ],
+   "requirements": [
+    "PICK-020"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-056",
+    "D-4897"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 120,
+    "context_pct": 28
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T767-confirm-press-fixtures-eligible",
+   "prompt": "kit/prompts/T767.md",
+   "acceptance": "`confirm_route.rs`, `saved_card.rs` and every e2e and a11y spec that imports `tests/e2e/keyed.ts` pass on `main` with no assertion changed (the diff shows fixture lines only); each pressed business has an Active account and a fresh Active `licensing.license_check` row."
+  },
+  {
    "id": "T664",
    "slug": "confirm-press-moves",
    "title": "portals: the Confirm press re-checks the license and account, and moves the job to Payment pending only when a charge will be attempted",
-   "goal": "Plan change D-4349 (JOB-013, JOB-014, PICK-019, PICK-020, PICK-044, FEE-020, OPS-024; D-056, D-805, D-807, D-1502 (1), D-2663). The served Confirm press (`pressed`, `app/portals/src/confirm_pay.rs:1244`) runs `waiting`, `confirm_code_needed`, `fee_terms_accepted`, `record_confirm_terms` and `decide_and_pay`, and nothing else: it never moves the job (D-2015 (1)) and never re-checks the license or account, though PICK-020 says an ineligible business can't confirm and the blueprint re-checks the license \"at this moment\" (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:174`): `picks::api::check_at_confirm` and `refused_at_confirm` (`app/picks/src/confirm.rs:202`, `:231`) have no caller (D-1502 (1) and D-2663 left it to the Confirm route). (1) PICK-020 after `fee_terms_accepted` and before the terms row, any $0 decision or any charge, from the stored results only (D-056): on the press that leaves Awaiting confirm, `check_at_confirm` with the pick's window deadline, and a refusal calls `refused_at_confirm`, closes the pick's idle intent (`payments::api::end_intent_unless_charging`), returns the job from Awaiting confirm to Quotes ready when no pick then waits, and queues her PICK-046 or PICK-047 text as `cant_take` does; on a retry press with the job already in Payment pending (inside FEE-020's card-fix hour, which may run past the window deadline) the window's `Expired` refusal is not applied, and an account or license refusal ends the pick through T663's `picks::api::end_pending` with `ineligible`. Either refusal commits, charges nothing, and answers \"ended\" with a plain line naming no license detail. (2) The move to Payment pending is T663's `picks::api::confirm_move`, made in `decide_and_pay`'s transaction after the $0 decision or the charge decision and before that transaction commits, never in `decide_at_confirm`, which also runs at page load in a rolled-back transaction (`confirm_pay.rs:1132`): on the $0 path always; on the paid path only when a charge will be attempted: the press carries a card (`pm_…`; the no-card answer, `confirm_pay.rs:1360`, now comes before the move), charges are not paused (T663's `payments::api::press_may_charge`; a pause answers \"try later\", charges nothing and moves nothing, OPS-024), and the business has a Stripe customer (`ensure_customer` runs before the press transaction, as the page load already does at `:1116`; its Stripe-down answer moves nothing). `Already` goes on (a retry press); `Lost` (the job left Awaiting confirm and Payment pending) rolls the press transaction back, so a $0 decision or free first win (FEE-010) recorded in it is not used for a pick that never connected, then ends the pick through `end_pending` in a new transaction, charges nothing and answers \"ended\". A FreeWin `Race` rolls the move back with the transaction. So the business keeps its 4-business-hour Confirm window (PICK-019) until a charge is really attempted, and FEE-020's hour applies only to a card that fails or needs bank approval. (3) The press does not restart `jobs`' wait: T663's Payment pending timer defers to `payments`' own FEE-020, FEE-018 and FEE-038 timers. New logic goes in a new `app/portals/src/confirm_moves.rs`, so `confirm_pay.rs` changes by its calls; it is money code and is held at 95% branch coverage (`BUILD_BRIEF.md:481`), and its 95% bar is shown, not floored (D-4788): the hand-in quotes `cargo llvm-cov` branch figures at or above 95% for `confirm_moves.rs`; its per-file floor is added by T761 after this task. Tests in the new `app/server/tests/confirm_press_moves.rs` (TD-JOB-19), through the assembled router with the Stripe stand-in, fake data only; it sets a charging pause through stored rows (as D-4326 (2) says for T408) and contains neither `safe_mode_on(` nor `charges_paused(`, which TD-OPS-01's source walk refuses outside their crates. `confirm_route.rs`, `auto_confirm.rs`, `saved_card.rs` and `safe_mode.rs` pass unchanged; `app/portals/src/confirm_pay.rs` stays at or above its 70% branch floor. After T663, T669 (the press's move goes live only once \"Can't take it\" and a business leaving handle Payment pending) and T541 (which also changes the press); T132, the other queued owner of `confirm_pay.rs`, runs after this task.",
+   "goal": "Plan change D-4349 (JOB-013, JOB-014, PICK-019, PICK-020, PICK-044, FEE-020, OPS-024; D-056, D-805, D-807, D-1502 (1), D-2663). The served Confirm press (`pressed`, `app/portals/src/confirm_pay.rs`) runs `waiting`, `confirm_code_needed`, `fee_terms_accepted`, `record_confirm_terms` and `decide_and_pay`, and nothing else: it never moves the job (D-2015 (1)) and never re-checks the license or account, though PICK-020 says an ineligible business can't confirm and the blueprint re-checks the license \"at this moment\" (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:174`): `picks::api::check_at_confirm` and `refused_at_confirm` (`app/picks/src/confirm.rs:202`, `:231`) have no caller (D-1502 (1) and D-2663 left it to the Confirm route). (1) PICK-020 after `fee_terms_accepted` and before the terms row, any $0 decision or any charge, from the stored results only (D-056): on the press that leaves Awaiting confirm, `check_at_confirm` with the pick's window deadline, and a refusal calls `refused_at_confirm`, closes the pick's idle intent (`payments::api::end_intent_unless_charging`), returns the job from Awaiting confirm to Quotes ready when no pick then waits, and queues her PICK-046 or PICK-047 text as `cant_take` does; on a retry press with the job already in Payment pending (inside FEE-020's card-fix hour, which may run past the window deadline) the window's `Expired` refusal is not applied, and an account or license refusal ends the pick through T663's `picks::api::end_pending` with `ineligible`. Either refusal commits, charges nothing, and answers \"ended\" with a plain line naming no license detail. (2) The move to Payment pending is T663's `picks::api::confirm_move`, made in `decide_and_pay`'s transaction after the $0 decision or the charge decision and before that transaction commits, never in `decide_at_confirm`, which also runs at page load in a rolled-back transaction (`waiver_now` in `confirm_pay.rs`): on the $0 path always; on the paid path only when a charge will be attempted: the press carries a card (`pm_…`; the no-card answer, in `charge` in `confirm_pay.rs`, now comes before the move), charges are not paused (T663's `payments::api::press_may_charge`; a pause answers \"try later\", charges nothing and moves nothing, OPS-024), and the business has a Stripe customer (`ensure_customer` runs before the press transaction, as the page load already does; its Stripe-down answer moves nothing). `Already` goes on (a retry press); `Lost` (the job left Awaiting confirm and Payment pending) rolls the press transaction back, so a $0 decision or free first win (FEE-010) recorded in it is not used for a pick that never connected, then ends the pick through `end_pending` in a new transaction, charges nothing and answers \"ended\". A FreeWin `Race` rolls the move back with the transaction. So the business keeps its 4-business-hour Confirm window (PICK-019) until a charge is really attempted, and FEE-020's hour applies only to a card that fails or needs bank approval. (3) The press does not restart `jobs`' wait: T663's Payment pending timer defers to `payments`' own FEE-020, FEE-018 and FEE-038 timers. New logic goes in a new `app/portals/src/confirm_moves.rs`, so `confirm_pay.rs` changes by its calls; it is money code and is held at 95% branch coverage (`BUILD_BRIEF.md:481`), and its 95% bar is shown, not floored (D-4788): the hand-in quotes `cargo llvm-cov` branch figures at or above 95% for `confirm_moves.rs`; its per-file floor is added by T761 after this task. Tests in the new `app/server/tests/confirm_press_moves.rs` (TD-JOB-19), through the assembled router with the Stripe stand-in, fake data only; it sets a charging pause through stored rows (as D-4326 (2) says for T408) and contains neither `safe_mode_on(` nor `charges_paused(`, which TD-OPS-01's source walk refuses outside their crates. `confirm_route.rs`, `auto_confirm.rs`, `saved_card.rs` and `safe_mode.rs` pass unchanged; `app/portals/src/confirm_pay.rs` stays at or above its 70% branch floor. After T663, T669 (the press's move goes live only once \"Can't take it\" and a business leaving handle Payment pending) and T541 (which also changes the press); T132, the other queued owner of `confirm_pay.rs`, runs after this task. Plan change D-4897 (Fable's pre-claim checks, Nov 20, 2026): (1) The license number for `check_at_confirm` is `licensing::api::bound_roc_number(business)`, the number of the business's latest stored check. `None` means no ROC check was ever stored: when the picked job's category needs an ROC class (license kind `Roc` or `RocAndStateAgency`) the press is refused as a license refusal; when it needs none (city-list or other-agency work) the ROC freshness check does not apply and the account and the end and bond dates still do. If `portals` cannot read the category's license kind through a call it may make, report a plan gap. (2) `StoredFacts.account` is the stored account status, never the session's. (3) `pressed` is about 46 lines, so the re-check is one call from it into `confirm_moves.rs`. (4) T767 runs first and gives the done press fixtures an Active account and a fresh Active check row, so `confirm_route.rs` and `saved_card.rs` pass unchanged here; `auto_confirm.rs` and `safe_mode.rs` never reach the press. This task's own tests seed the stale, not-Active, no-row and non-ROC cases.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -44785,7 +44841,8 @@
    "deps": [
     "T663",
     "T669",
-    "T541"
+    "T541",
+    "T767"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -44833,13 +44890,14 @@
     "D-1502",
     "D-2663",
     "D-4349",
-    "D-4788"
+    "D-4788",
+    "D-4897"
    ],
    "cites": [],
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 34
+    "context_pct": 38
    },
    "checks": [
     "Ci",
