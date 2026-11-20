@@ -3,14 +3,15 @@
 //! take it" (`cant_take`), on its business leaving (`ineligible`) and on a lapse
 //! (`payment_failed`, never `expired`): its intent ends through `payments`' own pick end, a later
 //! success is refunded once and nothing is released, the job returns to Quotes ready and her
-//! backup is offered with her text. `end_for_fee_terms` still refuses Payment pending.
+//! backup is offered with her text. `end_for_fee_terms` still refuses Payment pending. A backup
+//! pick made after that earlier Payment pending still lapses as `expired` with her PICK-046 text.
 //! PostgreSQL through each module's API over a fake Stripe; fake data only.
 
 use askhava_adapters::api::{
     AdapterError, Charge, IdempotencyKey, IntentMetadata, PaymentIntent, PaymentsAdapter,
 };
 use askhava_businesses::api::add_owner;
-use askhava_core::api::{Guarded, MIGRATOR};
+use askhava_core::api::{Claimed, Guarded, MIGRATOR};
 use askhava_jobs::api::{JobStatus, TEXT_KIND, current, move_to, record_job_facts};
 use askhava_ops::api::Actor;
 use askhava_payments::api::{
@@ -19,7 +20,7 @@ use askhava_payments::api::{
 };
 use askhava_picks::api::{
     Backup, ConfirmMove, PagePick, bind_backup, cant_take, choose_backup, confirm_move,
-    end_for_fee_terms, end_for_leaving, is_released, lapse, page_pick,
+    end_for_fee_terms, end_for_leaving, is_released, lapse, page_pick, run_confirm_ends_at,
 };
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
@@ -346,4 +347,50 @@ async fn td_job_20_lapse_after_the_press_is_payment_failed_not_expired(pool: PgP
     assert_eq!(lapsed.expect("lapse"), Backup::NoBackup);
     assert_eq!(ends(&pool, pick).await.0, "payment_failed");
     assert_eq!(returned(&pool, job).await, ("quotes_ready", true));
+}
+
+/// Her text events of `template` for ended pick `pick` (deduped by the pick).
+async fn pick_texts(pool: &PgPool, pick: Uuid, template: &str) -> i64 {
+    let sql = "SELECT count(*) FROM core.task WHERE kind = $1 AND dedupe_key = $2";
+    sqlx::query_scalar(sql)
+        .bind(TEXT_KIND)
+        .bind(format!("{TEXT_KIND}.{pick}.{template}"))
+        .fetch_one(pool)
+        .await
+        .expect(sql)
+}
+
+/// TD-JOB-20 (OPS-034, PICK-019, PICK-046): pick A ends on Payment pending into backup B; B was
+/// made after the job's stay in Payment pending, so B's window end lapses it as `expired` (a
+/// counted lapse, never `payment_failed`), with no backup left and her one PICK-046 event.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_job_20_a_backup_picked_after_payment_pending_still_lapses_as_expired(pool: PgPool) {
+    let (business, job, first) = pressed(&pool, true).await;
+    press(&pool, (business, job, first), "requires_payment_method").await;
+    let Backup::Moved(backup) = end(&pool, End::CantTake, (job, first)).await else {
+        panic!("moved to her backup");
+    };
+    let mut db = pool.acquire().await.expect("db");
+    let from = current(&mut db, job).await.expect("job").timer_from;
+    let task = json!({"pick": backup, "from": from.as_second(), "due": at(90).as_second()});
+    let claimed = Claimed {
+        id: 1,
+        kind: String::new(),
+        payload: task,
+        attempts: 1,
+    };
+    run_confirm_ends_at(pool.clone(), claimed, at(90))
+        .await
+        .expect("window end");
+    assert_eq!(ends(&pool, backup).await.0, "expired");
+    assert_eq!(
+        current(&mut db, job).await.expect("job").status.code(),
+        "quotes_ready"
+    );
+    assert_eq!(pick_texts(&pool, backup, "pick_lapsed").await, 1);
+    assert_eq!(
+        pick_texts(&pool, backup, "pick_moved").await,
+        0,
+        "no backup left"
+    );
 }
