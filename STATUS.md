@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T22:21:13Z by runner 8897b21133d6 (actions).
+Updated 2026-11-20T22:21:45Z by runner 8897b21133d6 (actions).
 
 **Building: T682 in progress since 20:56Z; 556 of 714 done; week 49% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-20T22:21:13Z by runner 8897b21133d6 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 5: T682 claimed 20:56Z, lease until 23:56Z
 - **Week:** 49% used, 97.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:20Z, 0 min before this update
-- **Keeper:** last ran 22:15Z, next wake 23:59Z
+- **Last run:** 22:21Z, 0 min before this update
+- **Keeper:** last ran 22:21Z, next wake 23:58Z
 
 ## Needs attention
 - BLOCKED T614: plan gap reported: PLAN GAP: tests/integration/tests/quote_page.rs:172 (owner T052, protected) bans the word "summary" anywhere in the quote page's HTML, but T614 must put <details class="menu"><summary>Menu</summary> in the header of every page (docs/design/DESIGN_SPEC.md:102); quote_page.html extends base.html. Smallest plan change: a harness task narrows the check at quote_page.rs:170-174 to the page's <main>. Also D-4970's "two rules only" is not enough: a third rule is needed in site.css: .menu > summary { margin: calc((var(--header-h) - 44px) / 2) 0 calc((var(--header-h) - 44px) / 2) -12px; } (else the row; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T614 --plan-fix D-### --reason "..."` (D-2859)
@@ -100,7 +100,6 @@ Updated 2026-11-20T22:21:13Z by runner 8897b21133d6 (actions).
 | T707 | server: an emergency pick's address re-release waits while s | check_failed | 1 | 80 min | 22:59Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T541 | payments, portals and adapters: a card saved or changed from | check_failed | 2 | 91 min | 22:55Z |  |
 | T480 | messaging, server and portals: the stored "Spanish conversat | done | 1 | 104 min | 22:23Z |  |
-| T717 | intake (harness): corrections to T711's two jobs: two_jobs a | done | 1 | 2 h 11 min | 22:21Z |  |
 
 ### Plan and harness merges on main
 - none
