@@ -3547,6 +3547,7 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **Licences:** a request such as "handyman needed, breaker panel keeps tripping" no longer counts handymen without an electrical licence, and "water heater" keeps its job type in the count (T716).
 - **Smaller fixes:** a "Close which?" question no longer stays open forever, "never mind" with no job now gets a reply (T759), and a second job opened with "ALSO" before the ZIP now gets its coverage answer (T760).
 - Fable's findings; nothing needs you now.
+- **Nightly backup (T109):** the app now makes a nightly encrypted copy of the database at 3 a.m. Arizona time, locked so only your offline key can open it, and the owner health page shows when the last one was stored. Before the test project runs it, two settings are needed on the worker only: the export's public key and the backup role's database address. Nothing needs you now.
 
 ## A planning snag in the payment-flow task, fixed without loosening any check (D-4788)
 
@@ -3570,3 +3571,8 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 Items kept for after launch under the scope freeze (D-4824). Each is a note, not a task.
 
 - **Code digests coverage:** the digest tasks (T556 to T558) cover about 0.9 MB of the about 1.58 MB of code to summarise after D-3357; T514 or T142 weighs whether that matters before the handover.
+
+## The monthly backup test checks the backup's record (D-4835)
+
+- **What changed:** the monthly test restore (T648) cannot read the stored backup file back (by design, the storage key can only write it), so it now checks the backup's own record instead: the last nightly backup succeeded, is recent, and has its size and fingerprint recorded. Its first run waits until after the first nightly backup, so a new setup does not raise a false alarm.
+- Our choice (Fable's review); nothing needs you now.

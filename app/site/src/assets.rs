@@ -8,6 +8,9 @@
 //! The fonts (T166, WEB-027, D-3331) are Gelasio 400 and 500 and DM Sans 400, 500 and 700, copied
 //! from `docs/design/fonts/` (SIL Open Font License; the license texts sit beside the originals
 //! there) and served at `/static/site/fonts/<name>` as `font/woff2`, so no page loads a font host.
+//! T613 (D-4246, D-4807) adds Gelasio 500 italic for the one italic accent a page, the latin
+//! subset of `@fontsource/gelasio@5.3.0` copied unchanged (the same OFL family and license text);
+//! a test pins its served bytes to `docs/design/fonts/gelasio-latin-500-italic.woff2`.
 //!
 //! The photos and the mark (T216, WEB-027, D-3331, D-4252) are the home hero, served through
 //! `<picture>` as the phone strip `photos/hero-kitchen-phone.webp` and the tablet and desktop
@@ -42,6 +45,11 @@ const ASSETS: &[Asset] = &[
         name: "fonts/gelasio-latin-500-normal.woff2",
         mime: "font/woff2",
         bytes: include_bytes!("../static/fonts/gelasio-latin-500-normal.woff2"),
+    },
+    Asset {
+        name: "fonts/gelasio-latin-500-italic.woff2",
+        mime: "font/woff2",
+        bytes: include_bytes!("../static/fonts/gelasio-latin-500-italic.woff2"),
     },
     Asset {
         name: "fonts/dm-sans-latin-400-normal.woff2",
@@ -84,10 +92,11 @@ pub(crate) fn find(name: &str) -> Option<&'static Asset> {
 mod tests {
     use super::find;
 
-    /// The five font files `site.css` names in its `@font-face` rules.
-    const FONTS: [&str; 5] = [
+    /// The six font files `site.css` names in its `@font-face` rules.
+    const FONTS: [&str; 6] = [
         "gelasio-latin-400-normal.woff2",
         "gelasio-latin-500-normal.woff2",
+        "gelasio-latin-500-italic.woff2",
         "dm-sans-latin-400-normal.woff2",
         "dm-sans-latin-500-normal.woff2",
         "dm-sans-latin-700-normal.woff2",
@@ -105,6 +114,17 @@ mod tests {
             assert!(css.contains(&format!("url(\"fonts/{file}\")")), "{file}");
         }
         assert!(!css.contains("http"), "the stylesheet names no other host");
+    }
+
+    /// WEB-027, D-4246: the served italic accent font is the reviewed file in `docs/design/fonts/`,
+    /// byte for byte.
+    #[test]
+    fn the_italic_font_is_the_reviewed_file() {
+        let served = find("fonts/gelasio-latin-500-italic.woff2").expect("listed");
+        let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+        let reviewed = std::fs::read(root.join("docs/design/fonts/gelasio-latin-500-italic.woff2"))
+            .expect("the reviewed font is in docs/design/fonts/");
+        assert_eq!(served.bytes, reviewed.as_slice());
     }
 
     /// WEB-001: the stylesheet is listed as CSS and holds the evergreen link colour.

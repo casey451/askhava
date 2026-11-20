@@ -31,6 +31,7 @@ askhava-picks = { path = "app/picks" }
 askhava-calls = { path = "app/calls" }
 askhava-payments = { path = "app/payments" }
 askhava-site = { path = "app/site" }
+askhava-recovery = { path = "app/recovery" }
 askhava-fixtures = { path = "tests/fixtures" }
 axum = { version = "=0.8.9", features = ["multipart"] }
 axum-extra = { version = "=0.12.6", features = ["cookie"] }
@@ -70,6 +71,7 @@ base64 = "=0.23.1"
 proptest = "=1.12.0"
 trybuild = "=1.0.122"
 toml = "=1.1.8"
+age = { version = "=0.11.5", default-features = false }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

@@ -38,6 +38,7 @@ pub use crate::help_requests::{
     add_owner_reply, help_keyword_recent, help_request, open_help_request, open_help_requests,
     record_help_keyword, set_help_closed,
 };
+pub use crate::latest_audit::{BACKUP_EXPORT_FAILED_ACTION, BACKUP_EXPORTED_ACTION, latest_audit};
 pub use crate::models::{
     Actor, AuditEntry, AuditRow, Change, NewAlert, OpsError, Severity, Switch, is_code_name,
 };
