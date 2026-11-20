@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T16:35:01Z by runner 67f4f16224e6 (actions).
+Updated 2026-11-20T16:35:34Z by runner 67f4f16224e6 (actions).
 
 **Building: T530 in progress since 15:29Z; 543 of 712 done; week 37% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 543 of 712 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T530 claimed 15:29Z, lease until 18:29Z; lane 2: T672 claimed 16:21Z, lease until 19:21Z; lane 3: T771 claimed 15:44Z, lease until 18:44Z; lane 4: T681 claimed 15:47Z, lease until 18:47Z; lane 5: T686 claimed 16:22Z, lease until 19:22Z; lane 7: T743 claimed 16:24Z, lease until 19:24Z
+- **Lane:** lane 1: T530 claimed 15:29Z, lease until 18:29Z; lane 2: T672 claimed 16:21Z, lease until 19:21Z; lane 4: T681 claimed 15:47Z, lease until 18:47Z; lane 5: T686 claimed 16:22Z, lease until 19:22Z; lane 7: T743 claimed 16:24Z, lease until 19:24Z
 - **Week:** 37% used, 113.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:24Z, 10 min before this update
 - **Keeper:** last ran 16:20Z, next wake 16:40Z
@@ -23,10 +23,11 @@ The pick's window deadline (picks.pick.confirm_due) is read only by private code
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T771 | a11y tests (harness): reflow_spacing's hidden-control check  | MERGE_PENDING | 2 | 50 min | 16:34Z | PLAN GAP: kit/prompts/T771.md:9 (D-4970, docs/decisions.md:2604) contradicts itself: rule (1) checks the hidden Menu sum |
 | T664 | portals: the Confirm press re-checks the license and account | BLOCKED | 1 | 5 min | 16:15Z | PLAN GAP: outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs / The pick's window deadline (picks.pic |
 | T684 | picks and server: the open-cards email goes at the times eac | BLOCKED | 1 | 4 min | 15:41Z | PLAN GAP: app/quotes/src/models.rs:265 `card_sent_at` is pub(crate); T684 owns no app/quotes/src file. quotes::api has n |
 | T770 | ci (harness): the Coverage job's time limit goes from 25 to  | MERGE_PENDING | 1 | 61 min | 15:35Z |  |
-| T771 | a11y tests (harness): reflow_spacing's hidden-control check  | BLOCKED | 1 | 3 min | 15:22Z | PLAN GAP: kit/prompts/T771.md:9 (D-4970, docs/decisions.md:2604) contradicts itself: rule (1) checks the hidden Menu sum |
+| T771 | a11y tests (harness): reflow_spacing's hidden-control check  | BLOCKED | 1 | 3 min | 15:22Z |  |
 | T557 | Decisions digest, piece 12: the next entries after the heade | done | 1 | 65 min | 14:55Z |  |
 | T672 | intake: the dispatcher asks "How soon?", the night count and | resync | 3 | 2 h 13 min | 14:53Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T206 | recovery: the local restore drill with no double send or cha | done | 1 | 89 min | 14:50Z |  |
@@ -146,10 +147,9 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T530 (lease until 2026-11-20T18:29:00Z)
 - lane 2: T672 (lease until 2026-11-20T19:21:35Z)
-- lane 3: T771 (lease until 2026-11-20T18:44:21Z)
 - lane 4: T681 (lease until 2026-11-20T18:47:45Z)
 - lane 5: T686 (lease until 2026-11-20T19:22:55Z)
 - lane 7: T743 (lease until 2026-11-20T19:24:15Z)
 
 ## Last usage reading
-- {"task": "T664", "at": "2026-11-20T16:15:19Z", "output_tokens": 23142, "input_tokens": 75, "cache_read_input_tokens": 2145782, "cache_creation_input_tokens": 138776}
+- {"task": "T771", "at": "2026-11-20T16:34:59Z", "input_tokens": 63, "cache_read_input_tokens": 1147191, "cache_creation_input_tokens": 77703, "output_tokens": 27723}
