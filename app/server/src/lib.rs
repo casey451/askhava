@@ -340,7 +340,8 @@ impl ApprovalSecret for StripeApproval {
 /// ([`business_step_up`], T364), always, sending codes only with its part; and the
 /// owner's sign-in, step-up and sign-out routes ([`owner_signin`], T303) and home, settings and
 /// switches ([`owner_portal`], T310, the opt-out with the portal's vault), always; and the
-/// homeowner portal's sign-in, home and texts-off routes ([`homeowner_portal`], T307), always,
+/// homeowner portal's sign-in, home, texts-off and data routes ([`homeowner_portal`], T307,
+/// T561), always,
 /// with the webhooks' vault and ID secret and the parts' Verify client.
 fn business_pages(
     parts: BusinessParts,
