@@ -1,21 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-20T05:42:56Z by runner 5871813c7e4f (actions).
+Updated 2026-11-20T05:45:52Z by runner bb875eedf856 (actions).
 
-**Building: T765 in progress since 05:06Z; 520 of 707 done; week 21% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T765 in progress since 05:06Z; 521 of 707 done; week 21% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 520 of 707 build tasks (owner gates not counted)
+- **Tasks done:** 521 of 707 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 5: T765 claimed 05:06Z, lease until 08:06Z; lane 6: T561 claimed 05:26Z, lease until 08:26Z
 - **Week:** 21% used, 153.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:42Z, 0 min before this update
+- **Last run:** 05:43Z, 2 min before this update
 - **Keeper:** last ran 05:42Z, next wake 08:08Z
 
 ## Needs attention
 - BLOCKED T648: plan gap reported: PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, but scripts/check_include_paths.py (D-1867, run in the smoke by tests/test_check_include_paths.py::test_td_ops_32_the_real_repository_passes) fails: scripts/bootstrap_roles.sql is not matched by the Checks and Coverage rules in .github/workflows/ci.yml (protected, harness-only) nor by RUST_PATHS in scripts/prehandin.sh:77 (locked in kit/plan.lock). T648 owns neither. Fix: a harness task adds scripts/bootstrap_roles\.sql to those three rules and rewrites kit/plan.lock. Reviewer; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T648 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 80 problem(s) on tasks still to run (+383 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 83 problem(s) on tasks still to run (+387 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -23,7 +23,7 @@ Updated 2026-11-20T05:42:56Z by runner 5871813c7e4f (actions).
 | T751 | stand-ins (harness): the Stripe stand-in detaches a payment  | MERGE_PENDING | 1 | 51 min | 05:02Z |  |
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | MERGE_PENDING | 2 | 36 min | 05:00Z | merging main into the reviewed head conflicts in kit/plan.lock, kit/runner.json; a resync merges it in on this attempt ( |
 | T543 | picks, businesses, portals and server: "Away until" is store | MERGE_PENDING | 1 | 64 min | 04:57Z |  |
-| T434 | portals: the monthly intake accuracy report page and the mon | MERGE_PENDING | 1 | 112 min | 04:55Z |  |
+| T434 | portals: the monthly intake accuracy report page and the mon | done | 1 | 112 min | 04:55Z |  |
 | T110 | recovery: replay with derived IDs | MERGE_PENDING | 1 | 2 h 36 min | 04:55Z |  |
 | T663 | picks, jobs and payments (harness): a confirmed pick moves i | done | 3 | 65 min | 04:54Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T556 | Decisions digest, piece 11: the next entries after the heade | done | 1 | 51 min | 04:50Z |  |
@@ -97,7 +97,7 @@ Updated 2026-11-20T05:42:56Z by runner 5871813c7e4f (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 325 of 735 (44.2%) · partial 383 · unstarted 27
-**Tasks merged (throughput only):** 520 of 707
+**Tasks merged (throughput only):** 521 of 707
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -133,7 +133,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 163 of 289 done
+- stage 5: 164 of 289 done
 - stage 6: 0 of 65 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
