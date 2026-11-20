@@ -907,9 +907,26 @@ fn register_job_texts(registry: &mut Registry, keys: &Arc<JobTextKeys>, clock: &
     });
 }
 
+/// Registers `picks.held_success` (`picks::api::HELD_SUCCESS_KIND`, T408's held-release payload)
+/// to T408's `run_held_release`, so a held success the Payment pending wait found is re-fetched,
+/// checked and released once (PICK-022, OPS-024, T663, D-4349); with no Stripe settings a run is a
+/// handler error, as the held release's is.
+fn register_held_success(registry: &mut Registry, hooks: Option<release_sink::StripeHooks>) {
+    registry.register(askhava_picks::api::HELD_SUCCESS_KIND, move |pool, task| {
+        let hooks = hooks.clone();
+        async move {
+            let hooks = hooks.ok_or(askhava_core::api::HandlerError(
+                "no Stripe settings for a held success",
+            ))?;
+            release_hold::run_held_release(&pool, &hooks, &task.payload).await
+        }
+    });
+}
+
 /// `picks`' notices to the business: the pick notice with the worker's Confirm window and its end
 /// (PICK-019, PICK-037, T063), the window's end and its lapse on the worker clock (PICK-046,
-/// PICK-047, T491, D-3882) and the withdrawn-pick notice (PICK-032, CON-029, T330).
+/// PICK-047, T491, D-3882), the Payment pending wait's end on the worker clock (JOB-014, T663,
+/// D-4349) and the withdrawn-pick notice (PICK-032, CON-029, T330).
 fn register_pick_notices(
     registry: &mut Registry,
     confirm: askhava_picks::api::ConfirmSettings,
@@ -918,10 +935,18 @@ fn register_pick_notices(
     registry.register(askhava_picks::api::PICK_MADE_KIND, move |pool, task| {
         askhava_picks::api::run_pick_notice(pool, confirm, task)
     });
+    let ends_clock = Arc::clone(&clock);
     registry.register(askhava_picks::api::CONFIRM_ENDS_KIND, move |pool, task| {
-        let now = clock.now();
+        let now = ends_clock.now();
         askhava_picks::api::run_confirm_ends_at(pool, task, now)
     });
+    registry.register(
+        askhava_jobs::api::PAYMENT_RETURNED_KIND,
+        move |pool, task| {
+            let now = clock.now();
+            askhava_picks::api::run_payment_returned(pool, task, now)
+        },
+    );
     registry.register(
         askhava_picks::api::PICK_WITHDRAWN_KIND,
         askhava_picks::api::run_pick_withdrawn,
@@ -1093,6 +1118,7 @@ where
     register_optout_followup(&mut registry, settings, &id_secret, pairs.clone())?;
     let hooks = stripe_hooks(settings, &pairs)?;
     let stripe = hooks.as_ref().map(|h| h.stripe.clone());
+    register_held_success(&mut registry, hooks.clone());
     release_hold::register_held_release(&mut registry, hooks);
     let parts = (&id_secret, &clock);
     register_unreachable(

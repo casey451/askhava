@@ -141,6 +141,7 @@ pub use crate::homeowner_portal::{
     HomeFacts, HomeownerError, OnFile, PortalScreen, TEXTS_OFF_LINE, TEXTS_OFF_ROUTE,
     finish_sign_in, homeowner_page, send_sign_in_code, turn_texts_off,
 };
+pub use crate::intake_report::{OWNER_INTAKE_REPORT_ROUTE, intake_report_page};
 pub use crate::job_release::{
     CallAttempt, EMAIL_CHOSEN_LINE, JOB_RELEASE_ROUTE, JobFacts, JobReleaseError, MissedText,
     TIP_LINE, job_release_page,
@@ -157,6 +158,11 @@ pub use crate::limits::{
     admit_code_try, admit_owner_account, admit_owner_ip, admit_owner_passkey_challenge,
     admit_owner_password, admit_owner_step_up, admit_quote, admit_sign_in_link, admit_sign_up,
     verify_all,
+};
+pub use crate::money_view::{
+    ExpenseAnswer, ExpenseForm, MonthQuery, OWNER_EXPENSE_ROUTE, OWNER_MONEY_CSV_ROUTE,
+    OWNER_MONEY_ROUTE, money_view_csv_file, money_view_page, month_start, parse_expense,
+    post_expense,
 };
 pub use crate::not_a_fit::{
     NOT_A_FIT_ERROR, NOT_A_FIT_FIELD, NOT_A_FIT_LINE, NOT_A_FIT_ROUTE, NotAFitChoice, NotAFitError,

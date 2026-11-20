@@ -63,6 +63,7 @@ mod ledger;
 mod models;
 mod money_view;
 mod off_session;
+mod payment_hold;
 mod pick_fee;
 mod purge;
 mod receipts;

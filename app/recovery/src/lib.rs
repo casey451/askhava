@@ -3,9 +3,15 @@
 //!
 //! T109 built the nightly export (`backup`): `pg_dump -Fc` as the read-only `askhava_backup`
 //! role, encrypted to an offline `age` recipient, stored under `exports/`, each result one
-//! `recovery.backup_check` row and one `ops` audit entry. Other crates reach it only through
+//! `recovery.backup_check` row and one `ops` audit entry.
+//! T110 built the replay after a restore (`replay`): texts and charges rebuilt from Twilio's and
+//! Stripe's records with derived IDs, so nothing replayed sends or charges twice (OPS-015 to
+//! OPS-017). Other crates reach it only through
 //! [`api`].
 
 pub mod api;
 mod backup;
 mod models;
+mod replay;
+#[cfg(test)]
+mod tests;
