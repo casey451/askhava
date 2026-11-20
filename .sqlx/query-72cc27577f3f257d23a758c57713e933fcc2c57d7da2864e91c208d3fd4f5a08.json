@@ -1,0 +1,38 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, failure AS \"failure!\" FROM recovery.backup_check\n               WHERE kind = 'restore' AND NOT ok",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "recovery.backup_check",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "failure!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "recovery.backup_check",
+            "name": "failure"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      true
+    ]
+  },
+  "hash": "72cc27577f3f257d23a758c57713e933fcc2c57d7da2864e91c208d3fd4f5a08"
+}
