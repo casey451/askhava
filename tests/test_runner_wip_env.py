@@ -80,7 +80,8 @@ def world(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
         monkeypatch.delenv(name, raising=False)
     env = GitHubEnv(root, [{"id": "T009", "branch": TASK_BRANCH}], tmp_path, repo="o/r", starter="actions",
                     runner_sha="x", run=no_gh)
-    return {"root": root, "main": main, "env": env, "log": tmp_path / "gitleaks.log"}
+    env._wip_url = lambda: str(origin)  # type: ignore[method-assign]  # GitHub's URL, played by the bare origin
+    return {"root": root, "main": main, "env": env, "log": tmp_path / "gitleaks.log", "tmp": tmp_path}
 
 
 def no_gh(args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str, str]:
@@ -271,6 +272,39 @@ def test_global_colour_signatures_and_hooks_neither_hide_a_leak_nor_run(world: d
     assert not marker.exists()
 
 
+@pytest.mark.parametrize("where", [".gitattributes", "app/demo/.gitattributes", "ignored"])
+def test_an_untracked_or_ignored_attributes_file_does_not_pass_a_binary(world: dict[str, Any], where: str) -> None:
+    """D-4800: `* diff` in a `.gitattributes` the worker leaves uncommitted would show a binary as text."""
+    root = world["root"]
+    head = commit(root, {"app/demo/blob.dat": b"\x00\x01\x02bin"})
+    if where == "ignored":
+        (root / ".git/info/exclude").write_text(".gitattributes\n", encoding="utf-8")
+    (root / (".gitattributes" if where == "ignored" else where)).write_text("* diff\n", encoding="utf-8")
+    assert "\t" + "app/demo/blob.dat" in git(root, "diff", "--numstat", f"{world['main']}..{head}")
+    assert "binary or an image: app/demo/blob.dat" in world["env"].wip_check(head)
+
+
+def test_an_untracked_attributes_file_does_not_hide_an_allow_mark(world: dict[str, Any]) -> None:
+    """D-4800: `* -diff` uncommitted would turn every patch into "Binary files differ"."""
+    head = commit(world["root"], {"app/demo/notes.txt": "start\nvalue = 1  # gitleaks:" + "allow\n"})
+    (world["root"] / ".gitattributes").write_text("* -diff\n", encoding="utf-8")
+    assert "gitleaks:allow" in wip.scan(world["root"], world["main"], head)
+    assert "gitleaks:allow" in world["env"].wip_check(head)
+    assert scanned(world) == []
+
+
+def test_an_origin_pointed_at_a_fake_main_does_not_shorten_the_range(world: dict[str, Any]) -> None:
+    """D-4800: the worker's own bare repo as `origin`, whose main is the leaking middle commit, is never main."""
+    root, fake = world["root"], world["tmp"] / "fake-origin.git"
+    commit(root, {"app/demo/notes.txt": "start\nFAKESECRET\n"})
+    subprocess.run(["git", "init", "-q", "--bare", "-b", "main", str(fake)], check=True)
+    git(root, "push", "-q", str(fake), "HEAD:refs/heads/main")
+    git(root, "remote", "set-url", "origin", str(fake))
+    head = commit(root, {"app/demo/notes.txt": "start\n"})
+    assert world["env"].wip_check(head) == "gitleaks git: a leak was found"
+    assert f"--diff-merges=first-parent {world['main']}..{head}" in scanned(world)[0]
+
+
 def test_no_commits_ahead_or_an_unreadable_range_is_refused(world: dict[str, Any]) -> None:
     assert "no commits ahead" in world["env"].wip_check(world["main"])
     assert wip.scan(world["root"], "0" * 40, world["main"]) != ""
@@ -325,6 +359,8 @@ def test_push_and_delete_use_the_job_tokens_credential_helper_never_the_pat(tmp_
         assert config["credential.https://github.com.helper"].endswith('echo "password=$RUNNER_CHECKS_TOKEN"; }; f')
         assert config["core.hooksPath"] == "/dev/null" and e["GIT_CONFIG_GLOBAL"] == "/dev/null" and "--no-verify" in args
         assert not any("fake-" in a or a.startswith("+") or a.startswith("--force") for a in args)
+    assert env.wip_refs() is None  # the planted launcher answers every ls-remote with 2; the call is what counts
+    assert calls and all("origin" not in args and "https://github.com/o/r.git" in args for args, _ in calls)  # D-4800
 
 
 @pytest.mark.parametrize("key", ["url.https://example.invalid/.insteadOf", "credential.helper", "core.hooksPath"])

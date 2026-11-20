@@ -2157,7 +2157,7 @@ class GitHubEnv:
             return False
 
     def wip_check(self, head: str) -> str:
-        """'' when `head` may be pushed to a WIP ref, else why (D-4720): commits ahead of origin's main, the same
+        """'' when `head` may be pushed to a WIP ref, else why (D-4720): commits ahead of GitHub's main, the same
         `.github` tree as main's, no blocked or binary path in `<main>...<head>` (`wip.blocked_paths` against main's
         `protected_paths` and plan-lock list, `wip.binary_paths`), then `wip.scan`. Any failure is a refusal."""
         try:
@@ -2166,13 +2166,14 @@ class GitHubEnv:
             return f"WIP check failed: {type(exc).__name__}: {str(exc)[:200]}"
 
     def _wip_refusal(self, head: str) -> str:
-        main = self.main_head()
-        if not main or not re.fullmatch(r"[0-9a-f]{40}", head or ""):
-            return "main or the head is unreadable"
-        why = wip.repo_refusal(self.root)  # first: every read below trusts the clone's own git state (D-4799)
+        why = wip.repo_refusal(self.root)  # first: every git call below trusts the clone's own git state (D-4799)
         if why:
             return why
+        main = self._wip_main()
+        if not main or not re.fullmatch(r"[0-9a-f]{40}", head or ""):
+            return "main or the head is unreadable"
         git = functools.partial(wip.git_read, self.root)
+        attr = wip.attr_source(main)  # attributes from main's tree, never the worker's working tree (D-4800)
         if int(git("rev-list", "--count", f"{main}..{head}") or "0") <= 0:
             return f"{head[:12]} has no commits ahead of main"
         if git("rev-parse", f"{head}:.github", check=False) != git("rev-parse", f"{main}:.github"):
@@ -2180,25 +2181,42 @@ class GitHubEnv:
         protected = json.loads(git("show", f"{main}:kit/tasks.json"))["protected_paths"]
         locked = wip.locked_patterns(git("show", f"{main}:scripts/check_plan_lock.py"))
         span, flags = f"{main}...{head}", ("--no-renames", "--no-ext-diff", "--no-textconv", "-z")
-        names = [p for p in git("diff", "--name-only", *flags, span).split("\0") if p]
+        names = [p for p in git(attr, "diff", "--name-only", *flags, span).split("\0") if p]
         blocked = wip.blocked_paths(names, protected, locked)
         if blocked:
             return f"{head[:12]} changes a protected or locked path: {', '.join(blocked[:3])[:200]}"
-        binary = wip.binary_paths(git("diff", "--numstat", *flags, span))
+        binary = wip.binary_paths(git(attr, "diff", "--numstat", *flags, span))
         if binary:
             return f"{head[:12]} adds a binary or an image: {', '.join(binary[:3])[:200]}"
         return wip.scan(self.root, main, head)
 
+    def _wip_url(self) -> str:
+        """The repository every WIP call names: GitHub's URL for this Env's repo, never the clone's `origin`,
+        whose URL the worker can point at a repository of its own (D-4800)."""
+        return f"https://github.com/{self.repo}.git"
+
+    def _wip_main(self) -> str:
+        """Main's head as `_wip_url` says (`ls-remote`, no fallback to `origin`), its objects fetched by sha with no
+        ref or FETCH_HEAD written; '' when either fails (D-4800)."""
+        code, out, _ = self._run(["git", "ls-remote", self._wip_url(), "refs/heads/main"], None, self.root)
+        sha = out.split("\t", 1)[0].strip() if code == 0 else ""
+        if not re.fullmatch(r"[0-9a-f]{40}", sha):
+            return ""
+        fetch = ["git", "fetch", "--quiet", "--no-tags", "--no-write-fetch-head", self._wip_url(), sha]
+        if self._run(fetch, None, self.root)[0] != 0:
+            return ""
+        return sha if wip.git_read(self.root, "cat-file", "-t", sha, check=False) == "commit" else ""
+
     def push_wip(self, ref: str, sha: str) -> bool:
         """Push `sha` as a create of `refs/heads/<ref>` with the job token only (D-4720): never forced, never a
         `claude/task/**` name, refused with no git call unless `ref` is exactly WIP_REF and this is the Actions
-        runner with RUNNER_CHECKS_TOKEN set. A ref already on origin or a rejected push is False with one log line."""
+        runner with RUNNER_CHECKS_TOKEN set. A ref already on GitHub or a rejected push is False with one log line."""
         if not self._wip_allowed(ref, "push") or not re.fullmatch(r"[0-9a-f]{40}", str(sha)) or not self._wip_clone_ok():
             return False
-        if self._run(["git", "ls-remote", "--exit-code", "origin", f"refs/heads/{ref}"], None, self.root)[0] != 2:
-            self.log.append(f"WIP: {ref} not pushed: it exists on origin or origin cannot be read")
+        url = self._wip_url()
+        if self._run(["git", "ls-remote", "--exit-code", url, f"refs/heads/{ref}"], None, self.root)[0] != 2:
+            self.log.append(f"WIP: {ref} not pushed: it exists on GitHub or GitHub cannot be read")
             return False
-        url = f"https://github.com/{self.repo}.git"
         code, out, err = self._run(["git", "push", "--porcelain", "--no-verify", url, f"{sha}:refs/heads/{ref}"], None, self.root)
         if code != 0:
             self.log.append(f"WIP: push of {ref} rejected: {(out.strip() + ' ' + err.strip()).strip()[:200]}")
@@ -2220,8 +2238,9 @@ class GitHubEnv:
         return not why
 
     def wip_refs(self) -> dict[str, str] | None:
-        """origin's `claude/wip/*` refs that match WIP_REF, name -> sha; None when the listing fails (D-4720)."""
-        code, out, err = self._run(["git", "ls-remote", "origin", "refs/heads/claude/wip/*"], None, self.root)
+        """GitHub's `claude/wip/*` refs (`_wip_url`, never `origin`, D-4800) that match WIP_REF, name -> sha; None
+        when the listing fails (D-4720)."""
+        code, out, err = self._run(["git", "ls-remote", self._wip_url(), "refs/heads/claude/wip/*"], None, self.root)
         if code != 0:
             self.log.append(f"WIP: refs not listed: {err.strip()[:200]}")
             return None
@@ -2236,8 +2255,7 @@ class GitHubEnv:
         """Delete one WIP ref with the job token (D-4720): exactly `:refs/heads/<name>`, a WIP_REF name only."""
         if not self._wip_allowed(name, "delete") or not self._wip_clone_ok():
             return False
-        url = f"https://github.com/{self.repo}.git"
-        code, out, err = self._run(["git", "push", "--porcelain", "--no-verify", url, f":refs/heads/{name}"], None, self.root)
+        code, out, err = self._run(["git", "push", "--porcelain", "--no-verify", self._wip_url(), f":refs/heads/{name}"], None, self.root)
         if code != 0:
             self.log.append(f"WIP: delete of {name} rejected: {(out.strip() + ' ' + err.strip()).strip()[:200]}")
         return code == 0

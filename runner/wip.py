@@ -13,7 +13,9 @@ The clone itself is the worker's: every git and scanner call runs with no system
 replace objects or grafts, no hooks, no fsmonitor, no colour and no signature checks forced through the
 environment (`git_env`), and the scan refuses a clone whose own `.git/config` sets any key outside
 LOCAL_CONFIG_KEYS or whose `info/attributes` says anything (`repo_refusal`, D-4799), so a local setting can
-neither hide a line from a scanner nor run worker code.
+neither hide a line from a scanner nor run worker code. Every read a `.gitattributes` could change takes its
+attributes from main's tree (`attr_source`), never the working tree (D-4800); gitleaks reads a fresh worktree of the
+head, which holds no untracked file.
 `GitHubEnv.wip_check`, `push_wip`, `wip_refs`, `delete_wip_ref` and `prepare_branch` use this module; nothing here
 touches the network. Standard library only.
 """
@@ -191,7 +193,8 @@ def _scan(bounded: Callable[[list[str], Path], tuple[int, str, str]], root: Path
     main, head = span
     rng = f"{main}..{head}"
     _repo(bounded, root)
-    log = _git(bounded, root, "log", "--cc", *NO_COLOR, "--format=", rng)
+    attr = attr_source(main)
+    log = _git(bounded, root, attr, "log", "--cc", *NO_COLOR, "--format=", rng)
     if any(ALLOW_MARK in line for line in added_lines(log)):
         raise Refused(f"an added line in {rng[:40]} carries {ALLOW_MARK}")
     base = tmp / "main"
@@ -200,11 +203,19 @@ def _scan(bounded: Callable[[list[str], Path], tuple[int, str, str]], root: Path
     _git(bounded, root, "worktree", "add", "--detach", str(tree), head)
     try:
         _gitleaks(bounded, tree, rng, base)
-        _pii(bounded, root, rng, tree, base)
+        _pii(bounded, root, (attr, rng), tree, base)
     finally:
         subprocess.run(["git", "worktree", "remove", "--force", str(tree)], cwd=root, capture_output=True, timeout=60,
                        check=False, env=git_env())
     return ""
+
+
+def attr_source(main: str) -> str:
+    """`--attr-source=<main>`, on every git read of a scan that a `.gitattributes` could change: git then reads
+    attributes from main's tree only, never from the worker's working tree, where an untracked or ignored
+    `.gitattributes` (`* diff` passes a binary as text, `* -diff` hides an added line) is no committed path that
+    `blocked_paths` sees (D-4800). A git older than 2.40 rejects the option: a refusal, never a pass."""
+    return f"--attr-source={main}"
 
 
 def added_lines(log: str) -> Iterable[str]:
@@ -252,15 +263,18 @@ def _gitleaks(bounded: Callable[[list[str], Path], tuple[int, str, str]], tree: 
             raise Refused(f"gitleaks {args[1]}: " + ("a leak was found" if code == 1 else f"exit {code}"))
 
 
-def _pii(bounded: Callable[[list[str], Path], tuple[int, str, str]], root: Path, rng: str, tree: Path, base: Path) -> None:
-    """Main's PII scanner over each commit's changed files as of that commit, the commit messages, then the head tree."""
+def _pii(bounded: Callable[[list[str], Path], tuple[int, str, str]], root: Path, span: tuple[str, str], tree: Path,
+         base: Path) -> None:
+    """Main's PII scanner over each commit's changed files as of that commit, the commit messages, then the head tree.
+    `span` is (`attr_source(main)`, `<main>..<head>`)."""
     module = _load(base / "scripts" / "pii_scan.py")
     prefixes, files = tuple(getattr(module, "SKIP_PREFIXES", ())), tuple(getattr(module, "SKIP_FILES", ()))
+    attr, rng = span
     for commit in _git(bounded, root, "rev-list", "--reverse", rng).split():
-        names = _git(bounded, root, "diff-tree", "--root", "--cc", "-r", "--no-commit-id", "--name-only", "-z",
+        names = _git(bounded, root, attr, "diff-tree", "--root", "--cc", "-r", "--no-commit-id", "--name-only", "-z",
                      "--no-renames", "--diff-filter=d", commit)
         for path in (p for p in names.split("\0") if p and not p.startswith(prefixes) and p not in files):
-            if module.scan_text(path, _git(bounded, root, "show", f"{commit}:{path}")):
+            if module.scan_text(path, _git(bounded, root, attr, "show", "--no-textconv", f"{commit}:{path}")):
                 raise Refused(f"PII scan: {path} in {commit[:12]}")
     if module.scan_text("commit message", _git(bounded, root, "log", *NO_COLOR, "--format=%B", rng)):
         raise Refused(f"PII scan: a commit message in {rng[:40]}")
