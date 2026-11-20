@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T13:54:24Z by runner 33233b4d9414 (actions).
+Updated 2026-11-20T13:54:50Z by runner 33233b4d9414 (actions).
 
 **Building: T670 in progress since 12:59Z; 538 of 710 done; week 33% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 538 of 710 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T670 claimed 12:59Z, lease until 15:59Z; lane 2: T206 claimed 13:21Z, lease until 16:21Z; lane 3: T557 claimed 13:49Z, lease until 16:49Z; lane 4: T667 claimed 12:55Z, lease until 15:55Z; lane 5: T767 claimed 12:53Z, lease until 15:53Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
+- **Lane:** lane 1: T670 claimed 12:59Z, lease until 15:59Z; lane 2: T206 claimed 13:21Z, lease until 16:21Z; lane 3: T557 claimed 13:49Z, lease until 16:49Z; lane 5: T767 claimed 12:53Z, lease until 15:53Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
 - **Week:** 33% used, 122.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:50Z, 4 min before this update
 - **Keeper:** last ran 13:39Z, next wake 13:57Z
@@ -41,6 +41,7 @@ Checks: success, Lint and slow tests: success, Python: success, Coverage: cancel
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T667 | picks and calls: a reconnected job's failed masked line is r | MERGE_PENDING | 1 | 58 min | 13:54Z |  |
 | T727 | Runner (harness): a retry after a review failure or a plan-f | done | 2 | 87 min | 13:23Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T496 | a11y (harness): stub Stripe.js in the Ally suite and scan th | done | 1 | 81 min | 13:06Z |  |
 | T648 | recovery: the monthly test restore into a throwaway cluster, | done | 2 | 112 min | 12:29Z | PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, b |
@@ -163,10 +164,9 @@ A requirement is verified only when every task naming it merged green, every tes
 - T670 (lease until 2026-11-20T15:59:44Z)
 - lane 2: T206 (lease until 2026-11-20T16:21:32Z)
 - lane 3: T557 (lease until 2026-11-20T16:49:23Z)
-- lane 4: T667 (lease until 2026-11-20T15:55:37Z)
 - lane 5: T767 (lease until 2026-11-20T15:53:17Z)
 - lane 6: T530 (lease until 2026-11-20T13:55:17Z)
 - lane 7: T672 (lease until 2026-11-20T15:39:52Z)
 
 ## Last usage reading
-- {"task": "T727", "at": "2026-11-20T13:23:04Z", "cache_creation_input_tokens": 124506, "cache_read_input_tokens": 1430913, "output_tokens": 20072, "input_tokens": 78}
+- {"task": "T667", "at": "2026-11-20T13:54:23Z", "cache_creation_input_tokens": 154775, "output_tokens": 42625, "cache_read_input_tokens": 4245034, "input_tokens": 123}
