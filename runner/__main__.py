@@ -709,6 +709,12 @@ def branch_note(prep: dict[str, Any]) -> str:
                 f"a resync (D-891). Run `git switch {name}`, then `git merge {str(prep.get('main') or 'origin/main')}` (a normal "
                 "merge commit), resolve the conflicts keeping both sides, and commit there; never create, reset or rebase "
                 "the branch, whatever step 3 of the prompt's start routine says (D-583, D-1317).")
+    if prep.get("continued_from"):
+        return (f"The runner made the local branch {name} from {prep['continued_from']}: an earlier attempt's unmerged work "
+                "with the latest main merged in (D-4720). Its failure record is this hand-off's `last_failure`: keep what is "
+                "sound and undo the rest with new commits or `git revert`, never reset, rebase or force. Run "
+                f"`git switch {name}` and commit there; never create, reset or rebase it, whatever step 3 of the prompt's "
+                "start routine says (D-583, D-1317).")
     where = "the latest main" if prep.get("base") == "main" else f"origin/{name} (the earlier attempt's work) with the latest main merged in"
     moved = f" The old branch {prep['renamed_from']} is kept for evidence: {prep.get('why')}." if prep.get("renamed_from") else ""
     return (f"The runner made the local branch {name} from {where}.{moved} Run `git switch {name}` and commit there; "
@@ -753,6 +759,8 @@ def write_handoff(cfg: cycle.Config, env: GitHubEnv) -> dict[str, Any]:
         # The branch is already made, on top of an earlier pushed attempt when there is one: never recreate it (D-583).
         "branch_ready": bool(env.prepared.get("branch_ready")), "base": env.prepared.get("base"),
         "branch_note": branch_note(env.prepared),
+        # The WIP ref this attempt's branch continues ('' when none): an earlier attempt's kept work (D-4720).
+        "continued_from": env.prepared.get("continued_from") or "",
         # Origin's task branch at the claim ('' when absent; None when not prepared), so an API-error death
         # with the branch unmoved costs no attempt (D-3443).
         "branch_prepared": env.prepared.get("branch"),
