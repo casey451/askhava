@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T09:48:46Z by runner edb2a42224bb (actions).
+Updated 2026-11-20T09:49:17Z by runner 201d17f9ff6e (actions).
 
 **Idle since 09:48Z; 529 of 710 done; week 27% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-20T09:48:46Z by runner edb2a42224bb (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 09:48Z (no task in progress)
 - **Week:** 27% used, 139.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:48Z, 0 min before this update
-- **Keeper:** last ran 09:47Z, next wake 10:07Z
+- **Last run:** 09:49Z, 0 min before this update
+- **Keeper:** last ran 09:49Z, next wake 10:09Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 90 problem(s) on tasks still to run (+399 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 86 problem(s) on tasks still to run (+399 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
