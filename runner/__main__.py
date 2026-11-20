@@ -110,6 +110,7 @@ import fnmatch
 import json
 import os
 import random
+import re
 import subprocess
 import sys
 import tempfile
@@ -570,17 +571,37 @@ def hold_review(res: cycle.WorkerResult) -> str:
     """REVIEW_HELD when `review_proof.check` refused the hand-in and each rule it names still has its one
     hold (hand-off counters `review_holds_a`, `review_holds_b`), else '' so `finish` fails the attempt as
     `tests_failed` with the refusal log naming each commit and rule (D-3728). Without a hand-off file
-    nothing is held. A held run writes no kit/state.json, as for a red gate."""
+    nothing is held. A held run writes no kit/state.json, as for a red gate. A rule (b) commit below the head
+    (`buried_commits`) holds once too, with a line naming it: an omitted or mistyped `--worker-agent` id
+    (D-1328) leaves a properly made commit unproven, so a re-run naming every id may pass (D-4908)."""
     found = read_handoff()
     rules = review_proof.rules_in(res.log)
     if not found or not rules or any(int(found.get(f"review_holds_{r}", 0)) >= 1 for r in rules):
         return ""
     found.update({f"review_holds_{r}": 1 for r in rules})
     (ROOT / HANDOFF).write_text(json.dumps(found), encoding="utf-8")
+    buried = buried_commits(res.log)
+    if buried:
+        print(f"runner: {REVIEW_HELD}: commit(s) {', '.join(buried)} below the branch head lack Git's commit line "
+              "(rule (b)); re-run --after naming every --worker-agent id (an omitted or mistyped id leaves its "
+              "commits unproven, D-1328); if they were all named, history cannot be rewritten, so a NEW worker must "
+              "redo that work on a fresh attempt (D-3728, D-4908)")
     print(f"runner: {REVIEW_HELD}: hand-in held once for rule(s) {', '.join(sorted(rules))}; run a NEW reviewer subagent on "
           "the reviewer model over the head (or, for (b), have a NEW worker redo the commit, then a NEW reviewer approve "
           "the new head), then run --after again naming every worker and reviewer agent id (D-3728):\n" + res.log)
     return REVIEW_HELD
+
+
+def buried_commits(log: str) -> list[str]:
+    """The 12-hex commits a `review_missing` log names under rule (b) that are not its head (the
+    `review_missing on <head>` first line): an unproven commit below a later one, which only a new worker's
+    fresh history can replace unless an omitted `--worker-agent` id hid its line, so `hold_review` names it in
+    its one hold (D-4796, D-4908)."""
+    first = re.match(rf"{review_proof.REVIEW_MISSING} on ([0-9a-f]{{12}}) ", log)
+    if not first:
+        return []
+    named = re.findall(r"^\(b\) ([0-9a-f]{12})\b", log, re.M)
+    return [sha for sha in named if sha != first.group(1)]
 
 
 def hold_red_gate(res: cycle.WorkerResult) -> str:
