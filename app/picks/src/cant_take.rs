@@ -9,7 +9,11 @@
 //! then moves at once to the homeowner's backup (`backup_choice`, PICK-047); with no backup and
 //! no other pick waiting the job goes back to Quotes ready. After that move her PICK-047 text
 //! event (a moved pick) or, with the job not paused, her PICK-046 one (no backup) is queued here
-//! at the job's new version, as `pick_ended` queues them (D-3722, D-3750).
+//! at the job's new version, as `pick_ended` queues them (D-3722, D-3750). On a job already in
+//! Payment pending (its business pressed Confirm) it ends the pick through
+//! `connect::end_pending` instead (T669, D-4349): the PaymentIntent ends through `payments`' own
+//! pick end, so a charge in flight that succeeds later is refunded (FEE-021) and nothing is
+//! released, the job returns to Quotes ready and her backup or PICK-046 text follows.
 //!
 //! [`end_for_fee_terms`] (T467; D-1871 (3), D-3722) ends a waiting pick the same way with the
 //! reason `fee_terms_changed` when the owner switched the fee mode after the pick: only while the
@@ -25,9 +29,10 @@ use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
 use crate::backup_choice::{Backup, backup_choice};
+use crate::connect::{PendingEnd, end_pending};
 use crate::models::{self, PicksError};
 use crate::pick_ended::{pick_business, queue_backup_text};
-use crate::status::{PickStatus, awaits_confirm};
+use crate::status::{PickStatus, awaits_charge, awaits_confirm};
 
 /// PICK-050, D-3024: the on-domain address of pick `pick`'s "Can't take it" page: the pick ID
 /// only, no token, secret or homeowner detail.
@@ -65,7 +70,9 @@ pub async fn cant_take_job(
 /// the backup she named ([`Backup::Moved`], queuing her PICK-047 text event); [`Backup::NoBackup`]
 /// queues her PICK-046 text event (not on a paused job). With no pick waiting after it, the job returns from Awaiting
 /// confirm to Quotes ready. `paused` is the job's homeowner pause (CON-029). A pick no longer
-/// waiting is [`Backup::Done`].
+/// waiting is [`Backup::Done`]. FEE-021, D-4349: on a job in Payment pending the pick ends
+/// through `end_pending` as `cant_take` (its intent ended, a later success refunded, the job back
+/// to Quotes ready), so the business is never charged for it nor given her details.
 ///
 /// # Errors
 ///
@@ -77,6 +84,10 @@ pub async fn cant_take(
     paused: bool,
     (actor, at): (Actor, Timestamp),
 ) -> Result<Backup, PicksError> {
+    let status = current(tx, job).await.map_err(|_| PicksError::Job)?.status;
+    if awaits_charge(status) {
+        return end_pending(tx, (pick, job), PendingEnd::CantTake, (actor, at)).await;
+    }
     end_waiting(tx, (pick, job), "cant_take", paused, (actor, at)).await
 }
 

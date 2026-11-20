@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM jobs.status_history WHERE job_id = $1 AND to_status = $2\n           AND at >= $3) AS \"entered!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "entered!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "f9780f0471d040c9de584690cb17840b603af304c5b3a5d13545e08a8c13bfc1"
+}
