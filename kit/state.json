@@ -80746,7 +80746,7 @@
     "T470",
     "T447"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "business-outbox-rows-sent",
    "type": "harness",
@@ -80760,8 +80760,8 @@
     4901,
     4902
    ],
-   "reason": "plan gap reported: PLAN GAP: app/privacy/src/business_contacts.rs:124 (owned by T412, not T573). Item (2) needs the outbox sender to read a business line's phone number, which lives only in privacy.staff_phone; privacy::api::read_staff_phone refuses every purpose except BusinessPurpose::SignInCode (opens_phone at :124, refusal at :398). Messaging keeps no copy (sender directory holds blind-index digests only), and tests/security business_contact_readers.rs lets only privacy and server name read_staff_phone. Reusing SignInCode would falsify the SEC-047 audit. Smallest plan change: give T573 business_contacts.rs s; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T573 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: app/privacy/src/business_contacts.rs:124 (owned by T412, not T573). Item (2) needs the outbox sender to read a business line's phone number, which lives only in privacy.staff_phone; privacy::api::read_staff_phone refuses every purpose except BusinessPurpose::SignInCode (opens_phone at :124, refusal at :398). Messaging keeps no copy (sender directory holds blind-index digests only), and tests/security business_contact_readers.rs lets only privacy and server name read_staff_phone. Reusing SignInCode would falsify the SEC-047 audit. Smallest plan change: give T573 business_contacts.rs so it adds a BusinessPurpose::BusinessText purpose (own audit action and SEC-047 label, BusinessPurpose::ALL entry, update the one-purpose test and TD-PRIV-28), with the read going through the server composition. Reviewer confirmed: PLAN-GAP: CONFIRMED.",
+   "reason": null,
+   "last_failure": "PLAN GAP: app/privacy/src/business_contacts.rs:124 (owned by T412, not T573). Item (2) needs the outbox sender to read a business line's phone number, which lives only in privacy.staff_phone; privacy::api::read_staff_phone refuses every purpose except BusinessPurpose::SignInCode (opens_phone at :124, refusal at :398). Messaging keeps no copy (sender directory holds blind-index digests only), and tests/security business_contact_readers.rs lets only privacy and server name read_staff_phone. Reusing SignInCode would falsify the SEC-047 audit. Smallest plan change: give T573 business_contacts.rs so it adds a BusinessPurpose::BusinessText purpose (own audit action and SEC-047 label, BusinessPurpose::ALL entry, update the one-purpose test and TD-PRIV-28), with the read going through the server composition. Reviewer confirmed: PLAN-GAP: CONFIRMED.\nre-queued after plan fix D-4913: plan gap fixed by D-4913 (#1183)",
    "history": [
     {
      "attempt": 1,
@@ -80785,6 +80785,21 @@
        "turns": 8
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-20T07:25:57Z",
+     "reason": "plan gap fixed by D-4913 (#1183)",
+     "by": "manual-f72cc113ca6b",
+     "was": "plan gap reported: PLAN GAP: app/privacy/src/business_contacts.rs:124 (owned by T412, not T573). Item (2) needs the outbox sender to read a business line's phone number, which lives only in privacy.staff_phone; privacy::api::read_staff_phone refuses every purpose except BusinessPurpose::SignInCode (opens_phone at :124, refusal at :398). Messaging keeps no copy (sender directory holds blind-index digests only), and tests/security business_contact_readers.rs lets only privacy and server name read_staff_phone. Reusing SignInCode would falsify the SEC-047 audit. Smallest plan change: give T573 business_contacts.rs s; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T573 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-4913",
+     "plan_since": "2026-11-20T06:22:10Z",
+     "plan_base": "9e195ff80197724abfe99c6bb779fb31dc9d58cf",
+     "plan_head": "adc433df0a114c7721244a32e305adbd93e7ddfa",
+     "plan_then": "2a3b3ba088a0ced17ce09e0aebd4ca258ccd5414f1d9604102083f35149237fa",
+     "plan_now": "1aca75e168e77cb8da6b7f06c04a2ffd093200bf31dae60359a30b96631cc108"
     }
    ]
   },
@@ -100220,7 +100235,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T07:21:18Z",
+ "updated_at": "2026-11-20T07:25:57Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -100318,8 +100333,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "ec1360b19187e1b7092aa331cc669387aca95d2c",
- "starter": "actions",
+ "runner_sha": "adc433df0a114c7721244a32e305adbd93e7ddfa",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "ef998d36a6d572638a9868ca6ffffd0ee842f141",

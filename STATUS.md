@@ -1,22 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-20T07:21:18Z by runner ec1360b19187 (actions).
+Updated 2026-11-20T07:25:57Z by runner adc433df0a11 (manual).
 
-**Building: T764 in progress since 06:34Z; 526 of 707 done; week 23% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T764 in progress since 06:34Z; 526 of 708 done; week 23% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 526 of 707 build tasks (owner gates not counted)
+- **Tasks done:** 526 of 708 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T764 claimed 06:34Z, lease until 09:34Z; lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 3: T762 claimed 06:35Z, lease until 09:35Z; lane 4: T672 claimed 06:35Z, lease until 09:35Z; lane 5: T561 claimed 07:18Z, lease until 10:18Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z; lane 7: T669 claimed 07:12Z, lease until 10:12Z
 - **Week:** 23% used, 140.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:18Z, 2 min before this update
+- **Last run:** 07:21Z, 4 min before this update
 - **Keeper:** last ran 07:08Z, next wake 07:28Z
 
 ## Needs attention
-- BLOCKED T573: plan gap reported: PLAN GAP: app/privacy/src/business_contacts.rs:124 (owned by T412, not T573). Item (2) needs the outbox sender to read a business line's phone number, which lives only in privacy.staff_phone; privacy::api::read_staff_phone refuses every purpose except BusinessPurpose::SignInCode (opens_phone at :124, refusal at :398). Messaging keeps no copy (sender directory holds blind-index digests only), and tests/security business_contact_readers.rs lets only privacy and server name read_staff_phone. Reusing SignInCode would falsify the SEC-047 audit. Smallest plan change: give T573 business_contacts.rs s; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T573 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T648: plan gap reported: PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, but scripts/check_include_paths.py (D-1867, run in the smoke by tests/test_check_include_paths.py::test_td_ops_32_the_real_repository_passes) fails: scripts/bootstrap_roles.sql is not matched by the Checks and Coverage rules in .github/workflows/ci.yml (protected, harness-only) nor by RUST_PATHS in scripts/prehandin.sh:77 (locked in kit/plan.lock). T648 owns neither. Fix: a harness task adds scripts/bootstrap_roles\.sql to those three rules and rewrites kit/plan.lock. Reviewer; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T648 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 88 problem(s) on tasks still to run (+393 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 82 problem(s) on tasks still to run (+393 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -96,31 +95,31 @@ Updated 2026-11-20T07:21:18Z by runner ec1360b19187 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 325 of 735 (44.2%) · partial 384 · unstarted 26
-**Tasks merged (throughput only):** 526 of 707
+**Requirements verified:** 262 of 735 (35.6%) · partial 447 · unstarted 26
+**Tasks merged (throughput only):** 526 of 708
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 18 | 17 | 0 | 35 |
-| ai | 8 | 18 | 3 | 29 |
-| businesses | 21 | 36 | 1 | 58 |
-| calls | 14 | 11 | 0 | 25 |
-| consent | 16 | 19 | 0 | 35 |
-| fees | 22 | 30 | 0 | 52 |
+| accessibility | 16 | 19 | 0 | 35 |
+| ai | 7 | 19 | 3 | 29 |
+| businesses | 20 | 37 | 1 | 58 |
+| calls | 12 | 13 | 0 | 25 |
+| consent | 11 | 24 | 0 | 35 |
+| fees | 21 | 31 | 0 | 52 |
 | intake | 8 | 35 | 0 | 43 |
 | job-cards | 12 | 12 | 0 | 24 |
 | licensing | 33 | 15 | 0 | 48 |
-| lifecycle | 16 | 12 | 0 | 28 |
-| messaging | 23 | 22 | 0 | 45 |
-| ops-recovery | 9 | 30 | 15 | 54 |
+| lifecycle | 12 | 16 | 0 | 28 |
+| messaging | 22 | 23 | 0 | 45 |
+| ops-recovery | 7 | 32 | 15 | 54 |
 | privacy | 8 | 23 | 0 | 31 |
 | quiet-hours | 3 | 6 | 0 | 9 |
-| quotes-pick | 25 | 31 | 0 | 56 |
-| recurring | 10 | 1 | 0 | 11 |
-| security | 11 | 39 | 5 | 55 |
-| terms | 27 | 8 | 0 | 35 |
-| website | 18 | 10 | 2 | 30 |
-| wording | 23 | 9 | 0 | 32 |
+| quotes-pick | 23 | 33 | 0 | 56 |
+| recurring | 9 | 2 | 0 | 11 |
+| security | 10 | 40 | 5 | 55 |
+| terms | 12 | 23 | 0 | 35 |
+| website | 7 | 21 | 2 | 30 |
+| wording | 9 | 23 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
