@@ -1,22 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-20T04:14:37Z by runner 841f62ae3c0e (actions).
+Updated 2026-11-20T04:19:41Z by runner bf7fb36b58e5 (manual).
 
-**Building: T751 in progress since 04:11Z; 518 of 705 done; week 19% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T751 in progress since 04:11Z; 518 of 706 done; week 19% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 518 of 705 build tasks (owner gates not counted)
+- **Tasks done:** 518 of 706 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T751 claimed 04:11Z, lease until 07:11Z; lane 3: T543 claimed 03:53Z, lease until 06:53Z; lane 4: T110 claimed 02:18Z, lease until 05:18Z; lane 5: T556 claimed 03:58Z, lease until 06:58Z; lane 6: T663 claimed 03:48Z, lease until 06:48Z; lane 7: T434 claimed 03:02Z, lease until 06:02Z
 - **Week:** 19% used, 149.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:14Z, 0 min before this update
+- **Last run:** 04:14Z, 4 min before this update
 - **Keeper:** last ran 04:14Z, next wake 05:20Z
 
 ## Needs attention
-- BLOCKED T617: plan gap reported: PLAN GAP: tests/a11y/design_tokens.spec.ts:221 and :242 (protected, not owned by T617) contradict the prompt's single DM Sans @font-face with font-weight: 100 1000 (kit/prompts/T617.md:9). loadedFonts() (:170-175) labels faces as family + declared weight; a range face reports "DM Sans 100 1000", so the expected "DM Sans 400"/"DM Sans 700" labels never appear. Worker's Chromium probe with one range block printed 'DM Sans 100 1000 loaded'; three blocks (400, 600, 700) all pointing at the one variable file printed 400/600/700 loaded with 1 font request. Smallest plan change: one @font-face per us; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T617 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T648: plan gap reported: PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, but scripts/check_include_paths.py (D-1867, run in the smoke by tests/test_check_include_paths.py::test_td_ops_32_the_real_repository_passes) fails: scripts/bootstrap_roles.sql is not matched by the Checks and Coverage rules in .github/workflows/ci.yml (protected, harness-only) nor by RUST_PATHS in scripts/prehandin.sh:77 (locked in kit/plan.lock). T648 owns neither. Fix: a harness task adds scripts/bootstrap_roles\.sql to those three rules and rewrites kit/plan.lock. Reviewer; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T648 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 78 problem(s) on tasks still to run (+379 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 77 problem(s) on tasks still to run (+379 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -86,38 +85,37 @@ Updated 2026-11-20T04:14:37Z by runner 841f62ae3c0e (actions).
 | T408 | server: a release waits while safe mode is on and goes ahead | done | 3 | 2 h 48 min | 06:17Z | PLAN GAP: kit/prompts/T408.md:54 "Size budget: at most 6 files, 800 changed lines" cannot be met. The prompt's own plan  |
 | T203 | Wording scan: the required statements, business copy lines a | done | 4 | 42 min | 04:50Z | PLAN GAP: app/portals/templates/es_business_signup.html:82 ("Licencia de control de plagas") and :88 ("Mi licencia inclu |
 | T490 | server (harness): the email provider passed to the sign-up m | done | 1 | 2 h 25 min | 04:35Z |  |
-| T520 | portals and messaging: the portal stylesheets and email colo | done | 1 | 2 h 21 min | 04:18Z |  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 324 of 735 (44.1%) · partial 384 · unstarted 27
-**Tasks merged (throughput only):** 518 of 705
+**Requirements verified:** 262 of 735 (35.6%) · partial 446 · unstarted 27
+**Tasks merged (throughput only):** 518 of 706
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 18 | 17 | 0 | 35 |
-| ai | 8 | 18 | 3 | 29 |
-| businesses | 21 | 36 | 1 | 58 |
-| calls | 14 | 11 | 0 | 25 |
-| consent | 16 | 19 | 0 | 35 |
-| fees | 21 | 31 | 0 | 52 |
+| accessibility | 16 | 19 | 0 | 35 |
+| ai | 7 | 19 | 3 | 29 |
+| businesses | 20 | 37 | 1 | 58 |
+| calls | 12 | 13 | 0 | 25 |
+| consent | 11 | 24 | 0 | 35 |
+| fees | 20 | 32 | 0 | 52 |
 | intake | 8 | 35 | 0 | 43 |
 | job-cards | 12 | 12 | 0 | 24 |
 | licensing | 33 | 15 | 0 | 48 |
-| lifecycle | 16 | 12 | 0 | 28 |
-| messaging | 23 | 22 | 0 | 45 |
-| ops-recovery | 9 | 29 | 16 | 54 |
+| lifecycle | 12 | 16 | 0 | 28 |
+| messaging | 22 | 23 | 0 | 45 |
+| ops-recovery | 7 | 31 | 16 | 54 |
 | privacy | 8 | 23 | 0 | 31 |
 | quiet-hours | 3 | 6 | 0 | 9 |
-| quotes-pick | 25 | 31 | 0 | 56 |
-| recurring | 10 | 1 | 0 | 11 |
+| quotes-pick | 23 | 33 | 0 | 56 |
+| recurring | 9 | 2 | 0 | 11 |
 | security | 11 | 39 | 5 | 55 |
-| terms | 27 | 8 | 0 | 35 |
-| website | 18 | 10 | 2 | 30 |
-| wording | 23 | 9 | 0 | 32 |
+| terms | 12 | 23 | 0 | 35 |
+| website | 7 | 21 | 2 | 30 |
+| wording | 9 | 23 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 

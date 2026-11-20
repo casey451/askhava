@@ -83988,7 +83988,7 @@
    "deps": [
     "T613"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "site-dm-sans-variable",
    "type": "build",
@@ -84002,8 +84002,8 @@
     4856,
     4857
    ],
-   "reason": "plan gap reported: PLAN GAP: tests/a11y/design_tokens.spec.ts:221 and :242 (protected, not owned by T617) contradict the prompt's single DM Sans @font-face with font-weight: 100 1000 (kit/prompts/T617.md:9). loadedFonts() (:170-175) labels faces as family + declared weight; a range face reports \"DM Sans 100 1000\", so the expected \"DM Sans 400\"/\"DM Sans 700\" labels never appear. Worker's Chromium probe with one range block printed 'DM Sans 100 1000 loaded'; three blocks (400, 600, 700) all pointing at the one variable file printed 400/600/700 loaded with 1 font request. Smallest plan change: one @font-face per us; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T617 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: tests/a11y/design_tokens.spec.ts:221 and :242 (protected, not owned by T617) contradict the prompt's single DM Sans @font-face with font-weight: 100 1000 (kit/prompts/T617.md:9). loadedFonts() (:170-175) labels faces as family + declared weight; a range face reports \"DM Sans 100 1000\", so the expected \"DM Sans 400\"/\"DM Sans 700\" labels never appear. Worker's Chromium probe with one range block printed 'DM Sans 100 1000 loaded'; three blocks (400, 600, 700) all pointing at the one variable file printed 400/600/700 loaded with 1 font request. Smallest plan change: one @font-face per used weight (400, 500, 600, 700) each pointing at the variable file. License, integrity, SHA-256 and size checks all passed. Reviewer confirmed the ownership/contradiction.",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/a11y/design_tokens.spec.ts:221 and :242 (protected, not owned by T617) contradict the prompt's single DM Sans @font-face with font-weight: 100 1000 (kit/prompts/T617.md:9). loadedFonts() (:170-175) labels faces as family + declared weight; a range face reports \"DM Sans 100 1000\", so the expected \"DM Sans 400\"/\"DM Sans 700\" labels never appear. Worker's Chromium probe with one range block printed 'DM Sans 100 1000 loaded'; three blocks (400, 600, 700) all pointing at the one variable file printed 400/600/700 loaded with 1 font request. Smallest plan change: one @font-face per used weight (400, 500, 600, 700) each pointing at the variable file. License, integrity, SHA-256 and size checks all passed. Reviewer confirmed the ownership/contradiction.\nre-queued after plan fix D-4863: plan gap fixed by D-4863 (#1173)",
    "history": [
     {
      "attempt": 1,
@@ -84027,6 +84027,21 @@
        "turns": 5
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-20T04:19:41Z",
+     "reason": "plan gap fixed by D-4863 (#1173)",
+     "by": "manual-62ac539e24e7",
+     "was": "plan gap reported: PLAN GAP: tests/a11y/design_tokens.spec.ts:221 and :242 (protected, not owned by T617) contradict the prompt's single DM Sans @font-face with font-weight: 100 1000 (kit/prompts/T617.md:9). loadedFonts() (:170-175) labels faces as family + declared weight; a range face reports \"DM Sans 100 1000\", so the expected \"DM Sans 400\"/\"DM Sans 700\" labels never appear. Worker's Chromium probe with one range block printed 'DM Sans 100 1000 loaded'; three blocks (400, 600, 700) all pointing at the one variable file printed 400/600/700 loaded with 1 font request. Smallest plan change: one @font-face per us; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T617 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-4863",
+     "plan_since": "2026-11-20T03:01:48Z",
+     "plan_base": "ef998d36a6d572638a9868ca6ffffd0ee842f141",
+     "plan_head": "bf7fb36b58e57ce97d3cd0d43268ee215e9e73cc",
+     "plan_then": "b520e6ffa1b4d94e638e3777e37fabf53e3380a2962cfa2523f5a6d0edcbebe1",
+     "plan_now": "dab4991ab07b9beb7f4d4b87ad1d7978343d91d57737cbe3d504fdcff4272be5"
     }
    ]
   },
@@ -98786,7 +98801,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T04:14:37Z",
+ "updated_at": "2026-11-20T04:19:41Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -98884,8 +98899,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "841f62ae3c0e7ed2329efecbc2c335ed5ab75ce8",
- "starter": "actions",
+ "runner_sha": "bf7fb36b58e57ce97d3cd0d43268ee215e9e73cc",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "dbbf2ecc1e6e7d7795aef917992a61167d1f3215",
