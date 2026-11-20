@@ -81763,12 +81763,12 @@
      "plan_now": "129ba8656b4eeb39ac1975261b9da297c85f9a491663787da0a7a83c6aaf369c"
     }
    ],
-   "reviewed_sha": "ebc944c3dfb03fbde39f3bb1b56ab2d719026530",
+   "reviewed_sha": "9769308c5438121bbab5b28e3ac106fd9a17eea9",
    "review_lease": {
     "task": "T573",
-    "session": "actions-44724788358",
-    "expires": "2026-11-20T14:14:12Z",
-    "lane": "4"
+    "session": "actions-44777026100",
+    "expires": "2026-11-20T20:20:18Z",
+    "lane": "6"
    },
    "branch": "claude/task/T573-business-outbox-rows-sent",
    "auto_merge": {
@@ -81776,25 +81776,25 @@
     "why": "auto-merge on #1203 (gh pr merge)",
     "head": "ebc944c3dfb03fbde39f3bb1b56ab2d719026530"
    },
-   "update_merges": [
-    {
-     "from": "c5eb5e4bb8b01d652c45c9b82fb44eb807652254",
-     "to": "ebc944c3dfb03fbde39f3bb1b56ab2d719026530",
-     "main": "7d98387f34ed8cdf9508ff777ab4a5e2f5112fde",
-     "how": "hand-in",
-     "at": "2026-11-20T12:25:05Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
-   "merge_turn_since": "2026-11-20T12:29:10Z",
    "wip_claim": {
     "attempt": 4,
     "remote_sha": "ebc944c3dfb03fbde39f3bb1b56ab2d719026530"
    },
    "runner_closed_prs": [
     1203
-   ]
+   ],
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "a8ff991fbadeb9399452641da958e61bf2bb141a",
+     "to": "9769308c5438121bbab5b28e3ac106fd9a17eea9",
+     "main": "f230bf40dfe5c49ad0c0208f4d2b25855eb91d3d",
+     "how": "hand-in",
+     "at": "2026-11-20T18:01:41Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T580",
@@ -103951,7 +103951,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T18:01:11Z",
+ "updated_at": "2026-11-20T18:01:41Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -104049,7 +104049,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "e4d287328e44bd15c3cbed150c58f54046678543",
+ "runner_sha": "a8ff991fbadeb9399452641da958e61bf2bb141a",
  "starter": "actions",
  "smoke_runs": [
   {

@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T18:01:11Z by runner e4d287328e44 (actions).
+Updated 2026-11-20T18:01:41Z by runner a8ff991fbade (actions).
 
 **Building: T614 in progress since 17:26Z; 545 of 713 done; week 41% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-20T18:01:11Z by runner e4d287328e44 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T614 claimed 17:26Z, lease until 20:26Z; lane 6: T573 claimed 17:20Z, lease until 20:20Z; lane 7: T743 claimed 16:24Z, lease until 19:24Z
 - **Week:** 41% used, 113.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:00Z, 0 min before this update
+- **Last run:** 18:01Z, 0 min before this update
 - **Keeper:** last ran 18:01Z, next wake 19:27Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 38 problem(s) on tasks still to run (+412 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
+- Strict plan check red: 39 problem(s) on tasks still to run (+412 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -98,7 +98,7 @@ Updated 2026-11-20T18:01:11Z by runner e4d287328e44 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 325 of 735 (44.2%) · partial 391 · unstarted 19
-**Tasks merged (throughput only):** 545 of 713
+**Tasks merged (throughput only):** 545 of 712
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
