@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T01:40:16Z by runner bce7a7de6371 (actions).
+Updated 2026-11-20T01:40:54Z by runner dbbf2ecc1e6e (actions).
 
 **Building: T726 in progress since 01:05Z; 512 of 704 done; week 14% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,14 +9,14 @@ Updated 2026-11-20T01:40:16Z by runner bce7a7de6371 (actions).
 - **Lane:** lane 3: T726 claimed 01:05Z, lease until 04:05Z; lane 4: T218 claimed 00:31Z, lease until 03:31Z; lane 5: T663 claimed 23:33Z, lease until 02:33Z
 - **Week:** 14% used, 162.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:40Z, 0 min before this update
-- **Keeper:** last ran 01:01Z, next wake 01:21Z
+- **Keeper:** last ran 01:40Z, next wake 02:00Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T672 (since 2026-11-19T23:07:12Z, no attempt used; a plan change fixes it): T672: dependency T717 is DONE but its owned file tests/integration/tests/intake_order_two_jobs_rules.rs is not on main
 - PLAN GAP T763 (since 2026-11-20T01:05:47Z, no attempt used; a plan change fixes it): T763: prompt kit/prompts/T763.md is missing; run scripts/gen_prompts.py; T763: branch claude/task/T763-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
-- Strict plan check red: 78 problem(s) on tasks still to run (+369 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 71 problem(s) on tasks still to run (+362 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -85,7 +85,6 @@ Updated 2026-11-20T01:40:16Z by runner bce7a7de6371 (actions).
 | T715 | intake (harness): corrections to T671's walker: alarm answer | BLOCKED | 2 | 83 min | 03:22Z |  |
 | T203 | Wording scan: the required statements, business copy lines a | BLOCKED | 3 | 29 min | 03:08Z |  |
 | T306 | server and portals: the complaints page, the emergency-email | done | 1 | 38 min | 02:21Z |  |
-| T203 | Wording scan: the required statements, business copy lines a | check_failed | 2 | 41 min | 01:40Z |  |
 
 ### Plan and harness merges on main
 - none
