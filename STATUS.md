@@ -1,27 +1,27 @@
 # Ask Hava build status
 
-Updated 2026-11-20T23:03:13Z by runner 3be39ca7193a (actions).
+Updated 2026-11-20T23:06:09Z by runner 241af707947a (actions).
 
-**Building: T773 in progress since 22:44Z; 558 of 714 done; week 50% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T773 in progress since 22:44Z; 559 of 714 done; week 50% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 558 of 714 build tasks (owner gates not counted)
+- **Tasks done:** 559 of 714 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T773 claimed 22:44Z, lease until 01:44Z
 - **Week:** 50% used, 94.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:03Z, 0 min before this update
+- **Last run:** 23:03Z, 2 min before this update
 - **Keeper:** last ran 23:03Z, next wake 01:47Z
 
 ## Needs attention
 - BLOCKED T614: plan gap reported: PLAN GAP: tests/integration/tests/quote_page.rs:172 (owner T052, protected) bans the word "summary" anywhere in the quote page's HTML, but T614 must put <details class="menu"><summary>Menu</summary> in the header of every page (docs/design/DESIGN_SPEC.md:102); quote_page.html extends base.html. Smallest plan change: a harness task narrows the check at quote_page.rs:170-174 to the page's <main>. Also D-4970's "two rules only" is not enough: a third rule is needed in site.css: .menu > summary { margin: calc((var(--header-h) - 44px) / 2) 0 calc((var(--header-h) - 44px) / 2) -12px; } (else the row; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T614 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 44 problem(s) on tasks still to run (+428 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 46 problem(s) on tasks still to run (+429 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T682 | picks: a pick waiting for Confirm gets its hourly reminders, | MERGE_PENDING | 2 | 91 min | 22:27Z | app/picks/src/reminder_run.rs:316 (remind): a waiting pick whose job was cancelled or closed after the notice keeps gett |
-| T673 | intake (harness): the dispatcher builds and shows the card,  | MERGE_PENDING | 1 | 106 min | 22:03Z |  |
+| T673 | intake (harness): the dispatcher builds and shows the card,  | done | 1 | 106 min | 22:03Z |  |
 | T739 | picks: the owner's re-send of a release goes only while the  | done | 1 | 52 min | 21:49Z |  |
 | T752 | catalog and twin (harness): the `launch_open` comment says a | done | 1 | 39 min | 21:24Z |  |
 | T750 | docs: the privacy policy draft says an opted-out number is k | done | 1 | 38 min | 21:20Z |  |
@@ -103,7 +103,7 @@ Updated 2026-11-20T23:03:13Z by runner 3be39ca7193a (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 362 of 735 (49.3%) · partial 354 · unstarted 19
-**Tasks merged (throughput only):** 558 of 714
+**Tasks merged (throughput only):** 559 of 714
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -139,7 +139,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 201 of 296 done
+- stage 5: 202 of 296 done
 - stage 6: 0 of 65 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
