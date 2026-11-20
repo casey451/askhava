@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T14:43:04Z by runner 7d98387f34ed (actions).
+Updated 2026-11-20T14:48:59Z by runner 2de3f26c0335 (actions).
 
 **Building: T206 in progress since 13:21Z; 538 of 712 done; week 35% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,14 @@ Updated 2026-11-20T14:43:04Z by runner 7d98387f34ed (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T206 claimed 13:21Z, lease until 16:21Z; lane 3: T557 claimed 13:49Z, lease until 16:49Z; lane 6: T770 claimed 14:33Z, lease until 17:33Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
 - **Week:** 35% used, 120.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:42Z, 0 min before this update
+- **Last run:** 14:48Z, 0 min before this update
 - **Keeper:** last ran 14:43Z, next wake 15:42Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T524 (since 2026-11-20T12:53:17Z, no attempt used; a plan change fixes it): T524: dependency T648 is DONE but its owned file app/recovery/src/restore.rs is not on main; T524: dependency T648 is DONE but its owned file tests/recovery/tests/export_restores.rs is not on main
-- Strict plan check red: 38 problem(s) on tasks still to run (+407 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
+- Strict plan check red: 39 problem(s) on tasks still to run (+410 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -98,7 +98,7 @@ Updated 2026-11-20T14:43:04Z by runner 7d98387f34ed (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 325 of 735 (44.2%) · partial 389 · unstarted 21
-**Tasks merged (throughput only):** 538 of 710
+**Tasks merged (throughput only):** 538 of 712
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
