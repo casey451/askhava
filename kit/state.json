@@ -91683,11 +91683,11 @@
      "resync": true
     }
    ],
-   "reviewed_sha": "b100e5e0811bd5c93456a7f7dd8dafc33624507d",
+   "reviewed_sha": "6984fff87ed6d554bb9d57a663bc78fac5e1b9f2",
    "review_lease": {
     "task": "T726",
-    "session": "actions-44665071876",
-    "expires": "2026-11-20T06:35:46Z"
+    "session": "actions-44673622768",
+    "expires": "2026-11-20T07:23:42Z"
    },
    "branch": "claude/task/T726-runner-wip-refs-a2",
    "auto_merge": {
@@ -91734,18 +91734,6 @@
    ],
    "last_failure": "merging main into the reviewed head conflicts in kit/plan.lock, kit/runner.json; a resync merges it in on this attempt (D-891)",
    "lane": "1",
-   "update_merges": [
-    {
-     "from": "87f20c7d156ade864546c60cd28b5b07ec0d5741",
-     "to": "b100e5e0811bd5c93456a7f7dd8dafc33624507d",
-     "main": "841f62ae3c0e7ed2329efecbc2c335ed5ab75ce8",
-     "how": "hand-in",
-     "at": "2026-11-20T04:08:22Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
-   "merge_turn_since": "2026-11-20T04:11:19Z",
    "resync": {
     "attempt": 2,
     "from": "b100e5e0811bd5c93456a7f7dd8dafc33624507d",
@@ -91755,7 +91743,19 @@
      "kit/runner.json"
     ],
     "at": "2026-11-20T04:23:42Z"
-   }
+   },
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "01acdc1e18482444fb9c4dfd5a2183fac172e633",
+     "to": "6984fff87ed6d554bb9d57a663bc78fac5e1b9f2",
+     "main": "0a0541d7d211b31dd48fae6102772683fc630265",
+     "how": "hand-in",
+     "at": "2026-11-20T05:00:03Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T727",
@@ -99131,7 +99131,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T04:59:17Z",
+ "updated_at": "2026-11-20T05:00:03Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -99229,7 +99229,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "50c8d83e368e7dc11943ae525d42c2d8c87dab64",
+ "runner_sha": "01acdc1e18482444fb9c4dfd5a2183fac172e633",
  "starter": "actions",
  "smoke_runs": [
   {
