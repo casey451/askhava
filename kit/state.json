@@ -88260,7 +88260,7 @@
     "T711",
     "T717"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "intake-order-timing",
    "type": "build",
@@ -88274,8 +88274,8 @@
     4833,
     4834
    ],
-   "reason": "plan gap reported: PLAN GAP: tests/integration/tests/intake_order_two_jobs.rs:278 (owned by T711 and T717, not T672) also pins the old order, but D-4822 named only two functions in intake_order_two_jobs_rules.rs. Evidence: test td_int_45_also_after_the_zip_opens_the_second_job_through_open_job sends the ZIP reply then ALSO and expects only job.handyman.none linked (\"question open\", :284-:288); under D-4822 steps 6 to 8 come after the coverage line so \"How soon?\" is open, and ALSO opens a second job (left: [\"job.handyman.none\",\"job.plumbing_repair.none\"]). kit/tasks.json: file owned by T711 and T717. Smallest pla; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T672 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: tests/integration/tests/intake_order_two_jobs.rs:278 (owned by T711 and T717, not T672) also pins the old order, but D-4822 named only two functions in intake_order_two_jobs_rules.rs. Evidence: test td_int_45_also_after_the_zip_opens_the_second_job_through_open_job sends the ZIP reply then ALSO and expects only job.handyman.none linked (\"question open\", :284-:288); under D-4822 steps 6 to 8 come after the coverage line so \"How soon?\" is open, and ALSO opens a second job (left: [\"job.handyman.none\",\"job.plumbing_repair.none\"]). kit/tasks.json: file owned by T711 and T717. Smallest plan change: add that function to T672's owned files under D-4822, changed like function (a). Reviewer confirmed.",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/integration/tests/intake_order_two_jobs.rs:278 (owned by T711 and T717, not T672) also pins the old order, but D-4822 named only two functions in intake_order_two_jobs_rules.rs. Evidence: test td_int_45_also_after_the_zip_opens_the_second_job_through_open_job sends the ZIP reply then ALSO and expects only job.handyman.none linked (\"question open\", :284-:288); under D-4822 steps 6 to 8 come after the coverage line so \"How soon?\" is open, and ALSO opens a second job (left: [\"job.handyman.none\",\"job.plumbing_repair.none\"]). kit/tasks.json: file owned by T711 and T717. Smallest plan change: add that function to T672's owned files under D-4822, changed like function (a). Reviewer confirmed.\nre-queued after plan fix D-4851: second plan gap fixed by D-4851 (#1168)",
    "history": [
     {
      "attempt": 1,
@@ -88299,6 +88299,21 @@
        "turns": 6
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-20T03:29:24Z",
+     "reason": "second plan gap fixed by D-4851 (#1168)",
+     "by": "manual-ccad231de83a",
+     "was": "plan gap reported: PLAN GAP: tests/integration/tests/intake_order_two_jobs.rs:278 (owned by T711 and T717, not T672) also pins the old order, but D-4822 named only two functions in intake_order_two_jobs_rules.rs. Evidence: test td_int_45_also_after_the_zip_opens_the_second_job_through_open_job sends the ZIP reply then ALSO and expects only job.handyman.none linked (\"question open\", :284-:288); under D-4822 steps 6 to 8 come after the coverage line so \"How soon?\" is open, and ALSO opens a second job (left: [\"job.handyman.none\",\"job.plumbing_repair.none\"]). kit/tasks.json: file owned by T711 and T717. Smallest pla; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T672 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-4851",
+     "plan_since": "2026-11-20T01:59:21Z",
+     "plan_base": "d6a8011a3e898f8caf8da5ab6e694061b9f6eafd",
+     "plan_head": "382efbfa9414fda64df615686feff7ebbe5928d3",
+     "plan_then": "3b3068cdf7301b42fbdf0b82dcbf7859158ed3d2cb387be3cdbc10dc1e5fc185",
+     "plan_now": "ab542bee0a89d340743a6fd1a8953db15b5c342e76abff81c07e44b701c4746e"
     }
    ]
   },
@@ -98556,7 +98571,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T03:27:56Z",
+ "updated_at": "2026-11-20T03:29:24Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -98654,8 +98669,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "ef998d36a6d572638a9868ca6ffffd0ee842f141",
- "starter": "actions",
+ "runner_sha": "382efbfa9414fda64df615686feff7ebbe5928d3",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "f0505596bdb52690d5efdc240484087366e864e5",
