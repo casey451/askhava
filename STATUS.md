@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T08:49:43Z by runner 5914cb41d39a (actions).
+Updated 2026-11-20T08:50:12Z by runner adc433df0a11 (actions).
 
 **Building: T617 in progress since 07:06Z; 528 of 708 done; week 25% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-20T08:49:43Z by runner 5914cb41d39a (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 3: T727 claimed 08:23Z, lease until 11:23Z; lane 4: T766 claimed 08:11Z, lease until 11:11Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z
 - **Week:** 25% used, 139.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:49Z, 0 min before this update
-- **Keeper:** last ran 08:39Z, next wake 10:08Z
+- **Last run:** 08:50Z, 0 min before this update
+- **Keeper:** last ran 08:50Z, next wake 10:09Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
@@ -90,7 +90,6 @@ Updated 2026-11-20T08:49:43Z by runner 5914cb41d39a (actions).
 | T375 | portals and server: the business's Job types page lets the o | done | 1 | 74 min | 09:18Z |  |
 | T652 | ops: safe mode starts only on OPS-001's alert kinds, and a d | BLOCKED | 1 | 5 min | 09:10Z |  |
 | T536 | E2e harness: clock-advancing journeys last, a keyed worker,  | BLOCKED | 1 | 46 min | 09:00Z |  |
-| T476 | portals: the owner health page with every OPS-008 figure and | done | 1 | 2 h 27 min | 08:50Z |  |
 
 ### Plan and harness merges on main
 - none
