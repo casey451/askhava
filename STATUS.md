@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T09:38:54Z by runner beaca5355667 (actions).
+Updated 2026-11-20T09:39:21Z by runner beaca5355667 (actions).
 
-**Building: T727 in progress since 08:23Z; 529 of 709 done; week 27% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T573 in progress since 08:54Z; 529 of 709 done; week 27% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 529 of 709 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T727 claimed 08:23Z, lease until 11:23Z; lane 5: T573 claimed 08:54Z, lease until 11:54Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z
+- **Lane:** lane 5: T573 claimed 08:54Z, lease until 11:54Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z
 - **Week:** 27% used, 139.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:36Z, 2 min before this update
 - **Keeper:** last ran 09:36Z, next wake 10:23Z
@@ -19,6 +19,7 @@ Updated 2026-11-20T09:38:54Z by runner beaca5355667 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T727 | Runner (harness): a retry after a review failure or a plan-f | MERGE_PENDING | 1 | 75 min | 09:38Z |  |
 | T617 | site: DM Sans from one weight-axis variable file (smaller th | MERGE_PENDING | 2 | 2 h 16 min | 09:22Z | PLAN GAP: tests/a11y/design_tokens.spec.ts:221 and :242 (protected, not owned by T617) contradict the prompt's single DM |
 | T766 | server tests (harness): a photo-link door and a {job} fill i | MERGE_PENDING | 1 | 53 min | 09:05Z |  |
 | T116 | Stage 0.5 static page set and the DNS records file | MERGE_PENDING | 1 | 50 min | 08:48Z |  |
@@ -140,9 +141,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 3: T727 (lease until 2026-11-20T11:23:33Z)
 - lane 5: T573 (lease until 2026-11-20T11:54:23Z)
 - lane 6: T530 (lease until 2026-11-20T10:20:58Z)
 
 ## Last usage reading
-- {"task": "T617", "at": "2026-11-20T09:22:31Z", "cache_creation_input_tokens": 130107, "input_tokens": 128, "cache_read_input_tokens": 2456311, "output_tokens": 26448}
+- {"task": "T727", "at": "2026-11-20T09:38:53Z", "cache_read_input_tokens": 6360213, "input_tokens": 142, "output_tokens": 67254, "cache_creation_input_tokens": 206571}
