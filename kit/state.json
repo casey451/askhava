@@ -91247,7 +91247,7 @@
     "T724",
     "T641"
    ],
-   "status": "MERGE_PENDING",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "runner-wip-refs",
    "type": "harness",
@@ -91418,13 +91418,50 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 33,
      "head_sha": "87f20c7d156ade864546c60cd28b5b07ec0d5741",
-     "pr": null,
-     "checks": null,
+     "pr": 1174,
+     "checks": [
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": null
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": null
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-20T03:35:46Z",
      "ended_at": "2026-11-20T04:08:21Z",
-     "result": "MERGE_PENDING",
+     "result": "resync",
      "usage": {
       "worker": {
        "tokens": 585007,
@@ -91452,7 +91489,8 @@
    },
    "runner_closed_prs": [
     1156,
-    1171
+    1171,
+    1174
    ],
    "resyncs": [
     {
@@ -91474,6 +91512,16 @@
       "kit/runner.json"
      ],
      "at": "2026-11-20T03:34:32Z"
+    },
+    {
+     "attempt": 2,
+     "from": "b100e5e0811bd5c93456a7f7dd8dafc33624507d",
+     "main": "bf7fb36b58e57ce97d3cd0d43268ee215e9e73cc",
+     "paths": [
+      "kit/plan.lock",
+      "kit/runner.json"
+     ],
+     "at": "2026-11-20T04:23:42Z"
     }
    ],
    "last_failure": "merging main into the reviewed head conflicts in kit/plan.lock, kit/runner.json; a resync merges it in on this attempt (D-891)",
@@ -91489,7 +91537,17 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-20T04:11:19Z"
+   "merge_turn_since": "2026-11-20T04:11:19Z",
+   "resync": {
+    "attempt": 2,
+    "from": "b100e5e0811bd5c93456a7f7dd8dafc33624507d",
+    "main": "bf7fb36b58e57ce97d3cd0d43268ee215e9e73cc",
+    "paths": [
+     "kit/plan.lock",
+     "kit/runner.json"
+    ],
+    "at": "2026-11-20T04:23:42Z"
+   }
   },
   {
    "id": "T727",
@@ -98813,7 +98871,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T04:23:46Z",
+ "updated_at": "2026-11-20T04:24:07Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
