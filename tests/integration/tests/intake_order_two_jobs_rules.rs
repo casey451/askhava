@@ -19,8 +19,8 @@ use askhava_intake::api::rules::{
     CONSENT_TEMPLATE, Inbound, NAME_ADDRESS_TEMPLATE, SAFETY_TEMPLATE, Settings,
 };
 use askhava_intake::api::{
-    BEEP_TEMPLATE, COUNT_MANY_TEMPLATE, Handled, NOT_COVERED_TEMPLATE, RawReply, Reply, TextIn,
-    ZIP_QUESTION_TEMPLATE, receive_raw_reply,
+    BEEP_TEMPLATE, COUNT_MANY_TEMPLATE, HOW_SOON_TEMPLATE, Handled, NOT_COVERED_TEMPLATE, RawReply,
+    Reply, TextIn, ZIP_QUESTION_TEMPLATE, receive_raw_reply,
 };
 use askhava_integration::set_app_role;
 use askhava_licensing::api::import_city_list;
@@ -324,7 +324,9 @@ async fn address_answered(db: &mut PgConnection, id: Uuid, minute: i64) {
 
 /// TD-INT-54 (INT-032, INT-027, INT-017): ALSO while the name-and-address question is open opens
 /// nothing; after step 5, once it is answered, ALSO opens exactly one more job with property
-/// `none` and gets its coverage line at once; TAMBIÉN does the same.
+/// `none` and gets its coverage line at once; TAMBIÉN does the same. D-4822: "How soon?" follows
+/// the coverage line, and steps 6 to 8 are answered (in the next few days, then the first option
+/// of each trade question) before the name-and-address question is open.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_int_54_also_or_tambien_after_step_5_tells_coverage_at_once(mut db: Db) {
     setup(&mut db).await;
@@ -332,12 +334,20 @@ async fn td_int_54_also_or_tambien_after_step_5_tells_coverage_at_once(mut db: D
     for (contact, word) in [(0x0555_0305, "ALSO"), (0x0555_0306, "TAMBIÉN")] {
         sent(&mut db, contact, TWO_TRADES, 0).await;
         let zip = sent(&mut db, contact, HOME_ZIP, 1).await;
-        assert_eq!(zip, [COUNT_MANY_TEMPLATE, NAME_ADDRESS_TEMPLATE], "{word}");
+        assert_eq!(zip, [COUNT_MANY_TEMPLATE, HOW_SOON_TEMPLATE], "{word}");
         let id = request(&mut db, contact).await;
-        sent(&mut db, contact, word, 2).await;
+        let mut asked = sent(&mut db, contact, "2", 2).await;
+        for minute in 3..12 {
+            if asked == [NAME_ADDRESS_TEMPLATE] {
+                break;
+            }
+            asked = sent(&mut db, contact, "1", minute).await;
+        }
+        assert_eq!(asked, [NAME_ADDRESS_TEMPLATE], "{word}: steps 6 to 8");
+        sent(&mut db, contact, word, 20).await;
         assert_eq!(links(&mut db, id).await, ["job.handyman.none"], "{word}");
-        address_answered(&mut db, id, 3).await;
-        let opened = sent(&mut db, contact, word, 4).await;
+        address_answered(&mut db, id, 21).await;
+        let opened = sent(&mut db, contact, word, 22).await;
         assert_eq!(opened, [NOT_COVERED_TEMPLATE], "{word}");
         let both = ["job.handyman.none", "job.plumbing_repair.none"];
         assert_eq!(links(&mut db, id).await, both, "{word}");
@@ -397,10 +407,10 @@ async fn td_int_54_split_later_or_with_no_offer_opens_nothing(mut db: Db) {
 }
 
 /// TD-INT-54 (INT-032, D-1020, INT-027): a SPLIT offer told in the ZIP reply's turn (its marker at
-/// that reply's time) holds the name-and-address question; SPLIT next opens one more job keyed
-/// with her newest property, answers no step and then gets the held question.
+/// that reply's time) holds the open question; SPLIT next opens one more job keyed with her newest
+/// property, answers no step and then gets the held question, which is "How soon?" (D-4822).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
-async fn td_int_54_split_offered_at_step_5_holds_the_name_question(mut db: Db) {
+async fn td_int_54_split_offered_at_step_5_holds_the_open_question(mut db: Db) {
     setup(&mut db).await;
     businesses(&mut db).await;
     sent(&mut db, 0x0555_0311, DOOR, 0).await;
@@ -410,10 +420,10 @@ async fn td_int_54_split_offered_at_step_5_holds_the_name_question(mut db: Db) {
     assert_eq!(
         zip,
         [COUNT_MANY_TEMPLATE],
-        "step 11 waits for her next reply"
+        "step 6 waits for her next reply"
     );
     let split = sent(&mut db, 0x0555_0311, "SPLIT", 2).await;
-    assert_eq!(split, [NAME_ADDRESS_TEMPLATE], "no step answered");
+    assert_eq!(split, [HOW_SOON_TEMPLATE], "no step answered");
     let both = links(&mut db, id).await;
     assert_eq!(both.len(), 2, "{both:?}");
     assert_eq!(both[0], "job.handyman.none");

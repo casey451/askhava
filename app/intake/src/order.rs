@@ -14,8 +14,14 @@
 //! and shows it in one transaction; [`choose_with_card`] stores the emergency path's card before
 //! `answer_choice` can release the job (INT-029); [`spanish_line`] sends TXT-041's line once;
 //! [`ask_last_question`] asks step 11, the name and address, once per request (INT-027, D-3702).
+//! [`bank_turn`] is step 8 for `order_dispatch` (T672, D-4360): `BankRun` cannot be rebuilt from
+//! rows, so each text replays the request's stored `bank.<question ID>` answers AI-off, keyed on
+//! the question ID, hears the reply and stores its answer through [`answer_narrowing`];
+//! [`answer_day`] stores the day after "By a certain day" (INT-030, D-4831).
 //! No raw words are stored and none go into a log line.
 
+use askhava_ai::api::WriteSources;
+use askhava_catalog::api::question_bank;
 use askhava_jobs::api::{FactsError, Recorded as Facts, record_job_facts};
 use askhava_messaging::api::Language;
 use askhava_privacy::api::{CommonWords, Known, NameMemory, scrub};
@@ -34,6 +40,7 @@ use crate::conversation::{
 };
 use crate::emergency::{Choice, choice};
 use crate::models::{self, IntakeError};
+use crate::question_bank::{AiTurn, BankRun, BankSettings, Given, Heard, NOT_SURE, Next, Prompt};
 use crate::rules::{Settings, wanted_language};
 use crate::service::{Answered, Queued, TextIn, answer_choice};
 use crate::summary_step::{Preview, Shown, card_digest, show_card};
@@ -390,4 +397,208 @@ pub async fn spanish_line(
     let template = (SPANISH_NOT_YET_TEMPLATE, Language::Es);
     let queued = queue_text(db, secret, contact, template, &[conversation], false).await?;
     Ok(Some(queued))
+}
+
+/// The code-built template ID of a trade question's text (INT-039): its body is the bank
+/// question's own `Prompt::render`, so no registry template holds it.
+pub const TRADE_QUESTION_TEMPLATE: &str = "trade_question";
+/// The question holding the day after "By a certain day" (INT-030, CARD-007).
+pub(crate) const NEEDED_BY: &str = "needed_by";
+/// The prefix of a stored trade-question answer's question ID (`bank.<question ID>`).
+const BANK: &str = "bank.";
+/// The weekdays read from the day answer as (stored code, phrase), English and Spanish (D-4831).
+const DAYS: [(&str, &str); 21] = [
+    ("mon", "monday"),
+    ("mon", "mon"),
+    ("mon", "lunes"),
+    ("tue", "tuesday"),
+    ("tue", "tue"),
+    ("tue", "martes"),
+    ("wed", "wednesday"),
+    ("wed", "wed"),
+    ("wed", "miércoles"),
+    ("thu", "thursday"),
+    ("thu", "thu"),
+    ("thu", "jueves"),
+    ("fri", "friday"),
+    ("fri", "fri"),
+    ("fri", "viernes"),
+    ("sat", "saturday"),
+    ("sat", "sat"),
+    ("sat", "sábado"),
+    ("sun", "sunday"),
+    ("sun", "sun"),
+    ("sun", "domingo"),
+];
+
+/// INT-030, CARD-007, INT-012, D-4831: stores her reply to the day question as [`NEEDED_BY`]: a
+/// weekday's code (`wed`, the card's "Needed by Wed"), else the code `text` (her words stay in
+/// the inbox). `false` only for an empty reply: the day is then asked again.
+///
+/// # Errors
+///
+/// [`IntakeError::Database`].
+pub(crate) async fn answer_day(
+    db: &mut PgConnection,
+    (msg, conversation): (&TextIn<'_>, Uuid),
+) -> Result<bool, IntakeError> {
+    let mut answer = Answer {
+        conversation,
+        question: NEEDED_BY,
+        options: Some(&DAYS),
+        words: msg.inbound.words,
+        reply: (msg.inbox_id, msg.received_at),
+    };
+    if record_answer(db, &answer).await? != Recorded::Unclear {
+        return Ok(true);
+    }
+    answer.options = None;
+    Ok(matches!(
+        record_answer(db, &answer).await?,
+        Recorded::Stored(_)
+    ))
+}
+
+/// What one text did to the request's trade questions (INT-039).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum BankTurn {
+    /// Send this question: the next one, or the open one again after an unusable reply.
+    Ask(Prompt),
+    /// A gas (1) or burning (2) smell answer was stored: the caller sends the INT-004 text and
+    /// holds the order until SAFE (INT-005).
+    Safety(u32),
+    /// The set is finished (or `MAX_ASKED` reached).
+    Done,
+}
+
+/// The stored trade-question answers of `conversation` as (question ID, choice), oldest first.
+async fn bank_answers(
+    db: &mut PgConnection,
+    conversation: Uuid,
+) -> Result<Vec<(String, String)>, IntakeError> {
+    let rows = sqlx::query!(
+        r#"SELECT substr(question_id, 6) AS "id!", choice AS "choice!"
+           FROM intake.intake_answer
+           WHERE conversation_id = $1 AND question_id LIKE 'bank.%' AND choice IS NOT NULL
+           ORDER BY answered_at, id"#,
+        conversation
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| IntakeError::Database)?;
+    Ok(rows.into_iter().map(|r| (r.id, r.choice)).collect())
+}
+
+/// INT-039, D-4360: walks `run` AI-off over the `stored` answers, each found by its question ID
+/// (never by its place, so a stored AI follow-up the replay cannot ask shifts nothing), and
+/// returns the first question with no stored answer.
+fn replay(
+    run: &mut BankRun<'_>,
+    stored: &[(String, String)],
+    (words, sources): (&str, &WriteSources<'_>),
+) -> Next {
+    loop {
+        let next = run.next(words, &AiTurn::default(), sources);
+        let Next::Ask(prompt) = &next else {
+            return next;
+        };
+        let Some((_, choice)) = stored.iter().find(|(id, _)| *id == prompt.id) else {
+            return next;
+        };
+        let said = if choice == "not_sure" {
+            NOT_SURE[0]
+        } else {
+            choice
+        };
+        if run.hear(said) == Heard::Again {
+            return next;
+        }
+    }
+}
+
+/// INT-039, INT-029, CARD-007, D-4360: one turn of step 8 for `job` of `conversation` in
+/// `category` (its set, with the remaining `candidates`; `emergency` asks only the questions
+/// marked for it, `spanish` the Spanish wording). The run is rebuilt by [`replay`]; with a `reply`
+/// the open question hears it and the answer (the option number, `not_sure` or `text`) is stored
+/// under `bank.<question ID>` through [`answer_narrowing`]; then the next question is returned.
+///
+/// # Errors
+///
+/// [`IntakeError::Catalog`], [`IntakeError::Quotes`] or [`answer_narrowing`]'s errors.
+pub(crate) async fn bank_turn(
+    db: &mut PgConnection,
+    (conversation, job): (Uuid, Uuid),
+    (category, candidates, (emergency, spanish)): (&str, &[String], (bool, bool)),
+    reply: Option<&TextIn<'_>>,
+) -> Result<BankTurn, IntakeError> {
+    let bank = question_bank().map_err(|_| IntakeError::Catalog)?;
+    let Some(set) = bank.sets.get(category) else {
+        return Ok(BankTurn::Done);
+    };
+    let stored = bank_answers(db, conversation).await?;
+    let kept = description(db, job).await;
+    let words = kept.map_err(|_| IntakeError::Quotes)?;
+    let words = words.map(|w| w.text()).unwrap_or_default();
+    let common = CommonWords::default();
+    let known = Known {
+        common: &common,
+        vault_name: None,
+    };
+    let scrubbed = scrub(&words, &known, &mut NameMemory::default());
+    let sources = WriteSources {
+        words: &scrubbed,
+        answers: &[],
+        photo_notes: &[],
+        business_names: &[],
+    };
+    let mut run = BankRun::new(set, spanish, emergency, BankSettings::default());
+    let next = replay(&mut run, &stored, (&words, &sources));
+    let (Some(msg), Next::Ask(prompt)) = (reply, &next) else {
+        return Ok(turn(next));
+    };
+    let heard = run.hear(msg.inbound.words);
+    let Some((_, given)) = run.answers().last().filter(|_| heard != Heard::Again) else {
+        return Ok(turn(next));
+    };
+    let ids = (conversation, job);
+    store_given(db, ids, (&prompt.id, *given), (msg, category, candidates)).await?;
+    Ok(match (heard, *given) {
+        (Heard::Safety911, Given::Option(kind)) => BankTurn::Safety(kind),
+        _ => turn(run.next(&words, &AiTurn::default(), &sources)),
+    })
+}
+
+/// The run's next step as a [`BankTurn`].
+fn turn(next: Next) -> BankTurn {
+    match next {
+        Next::Ask(prompt) => BankTurn::Ask(prompt),
+        Next::Done => BankTurn::Done,
+    }
+}
+
+/// INT-039, INT-012, CARD-007: stores the answer `given` to bank question `id` as its code (the
+/// option number, `not_sure` or `text`, never her words) through [`answer_narrowing`].
+async fn store_given(
+    db: &mut PgConnection,
+    (conversation, job): (Uuid, Uuid),
+    (id, given): (&str, Given),
+    (msg, category, candidates): (&TextIn<'_>, &str, &[String]),
+) -> Result<(), IntakeError> {
+    let code = match given {
+        Given::Option(n) => n.to_string(),
+        Given::NotSure => "not_sure".to_owned(),
+        Given::Text => "text".to_owned(),
+    };
+    let words = msg.inbound.words;
+    let option = [(code.as_str(), words)];
+    let question = format!("{BANK}{id}");
+    let answer = Answer {
+        conversation,
+        question: &question,
+        options: (given != Given::Text).then_some(&option[..]),
+        words,
+        reply: (msg.inbox_id, msg.received_at),
+    };
+    answer_narrowing(db, &answer, (job, category, candidates)).await?;
+    Ok(())
 }
