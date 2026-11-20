@@ -95,16 +95,19 @@ pub enum BusinessPurpose {
     PhoneApproval,
     /// The business notice and card emails (T470, D-3750): the address only.
     Notice,
+    /// A queued business text's send (T573, D-4913; BIZ-037): the linked phone only.
+    BusinessText,
 }
 
 impl BusinessPurpose {
     /// Every purpose.
-    pub const ALL: [Self; 5] = [
+    pub const ALL: [Self; 6] = [
         Self::SignInLink,
         Self::SignInCode,
         Self::AccountEmail,
         Self::PhoneApproval,
         Self::Notice,
+        Self::BusinessText,
     ];
 
     /// The audit action and read-count label, `vault_read.server.<purpose>` (SEC-047).
@@ -116,13 +119,15 @@ impl BusinessPurpose {
             Self::AccountEmail => "vault_read.server.account_email",
             Self::PhoneApproval => "vault_read.server.phone_approval",
             Self::Notice => "vault_read.server.notice",
+            Self::BusinessText => "vault_read.server.business_text",
         }
     }
 
-    /// Whether this purpose may open a texting phone: only the person's own code (SEC-004).
+    /// Whether this purpose may open a texting phone: only the person's own code (SEC-004) and a
+    /// queued business text's send (BIZ-037, D-4913).
     #[must_use]
     pub const fn opens_phone(self) -> bool {
-        matches!(self, Self::SignInCode)
+        matches!(self, Self::SignInCode | Self::BusinessText)
     }
 }
 
@@ -382,8 +387,8 @@ pub async fn read_business_mailbox(
 }
 
 /// Opens the texting phone of `line` for `purpose`, as [`read_business_mailbox`]; only
-/// [`BusinessPurpose::SignInCode`] may: any other purpose reads nothing and raises one High
-/// `privacy.vault_read_unregistered` alert naming the purpose and the line (SEC-004, SEC-047).
+/// [`BusinessPurpose::SignInCode`] and [`BusinessPurpose::BusinessText`] may: any other purpose
+/// reads nothing and raises one High `privacy.vault_read_unregistered` alert naming the purpose and the line (SEC-004, SEC-047).
 ///
 /// # Errors
 ///
@@ -621,7 +626,8 @@ mod tests {
         assert_eq!(bare_address("no-at-sign"), Err(E::BadAddress));
         let long = format!("{}@example.com", "a".repeat(250));
         assert_eq!(bare_address(&long), Err(E::BadAddress));
-        let only_sign_code = BusinessPurpose::ALL.iter().filter(|p| p.opens_phone());
-        assert_eq!(only_sign_code.count(), 1);
+        let phones = BusinessPurpose::ALL.into_iter().filter(|p| p.opens_phone());
+        let named = [BusinessPurpose::SignInCode, BusinessPurpose::BusinessText];
+        assert_eq!(phones.collect::<Vec<_>>(), named);
     }
 }
