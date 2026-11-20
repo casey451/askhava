@@ -44,6 +44,7 @@ pub use crate::purge_events::{
     PURGE_DUE_KIND, PURGE_STAGES, SWEEP_KIND, SWEEP_PAGE, enqueue_purge, final_jobs_page,
     run_sweep, run_sweep_at, schedule_sweep, sweep_closed, unqueued_finals,
 };
+pub use crate::report_facts::{ReportFacts, report_facts};
 pub use crate::request_counts::{
     REQUEST_COUNTS_KIND, report_request_counts, run_request_counts, schedule_request_counts,
 };
