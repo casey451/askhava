@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T13:46:28Z by runner 6ee2ece5fcc7 (actions).
+Updated 2026-11-20T13:49:40Z by runner 6ee2ece5fcc7 (actions).
 
 **Building: T670 in progress since 12:59Z; 538 of 710 done; week 33% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 538 of 710 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T670 claimed 12:59Z, lease until 15:59Z; lane 2: T206 claimed 13:21Z, lease until 16:21Z; lane 4: T667 claimed 12:55Z, lease until 15:55Z; lane 5: T767 claimed 12:53Z, lease until 15:53Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
-- **Week:** 33% used, 122.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:39Z, 6 min before this update
+- **Lane:** lane 1: T670 claimed 12:59Z, lease until 15:59Z; lane 2: T206 claimed 13:21Z, lease until 16:21Z; lane 3: T557 claimed 13:49Z, lease until 16:49Z; lane 4: T667 claimed 12:55Z, lease until 15:55Z; lane 5: T767 claimed 12:53Z, lease until 15:53Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
+- **Week:** 33% used, 122.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 13:46Z, 2 min before this update
 - **Keeper:** last ran 13:39Z, next wake 13:57Z
 
 ## Needs attention
@@ -110,7 +110,6 @@ Checks: success, Lint and slow tests: success, Python: success, Coverage: cancel
 | T554 | Decisions digest, piece 9: the next entries after the header | done | 1 | 110 min | 15:03Z |  |
 | T652 | ops: safe mode starts only on OPS-001's alert kinds, and a d | done | 2 | 112 min | 15:03Z | PLAN GAP: tests/integration/tests/safe_mode.rs:246,281,320,378,407 (owned by T487 and T408; T652's prompt :11 and :47 sa |
 | T158 | portals: the owner's pilot scorecard page with go and stop l | done | 1 | 2 h 57 min | 14:37Z |  |
-| T540 | portals and server: the owner's release button re-sends an e | done | 1 | 53 min | 13:47Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -146,7 +145,7 @@ Checks: success, Lint and slow tests: success, Python: success, Coverage: cancel
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-20T13:13:17Z (week)): week: 71.8M used, 122.2M left, resets 2026-11-26T17:00:00Z; projected finish 2026-11-29T19:38:01Z.
+- Pacing (session_reading 2026-11-20T13:38:53Z (week)): week: 71.4M used, 122.6M left, resets 2026-11-26T17:00:00Z; projected finish 2026-11-29T19:29:21Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -163,6 +162,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T670 (lease until 2026-11-20T15:59:44Z)
 - lane 2: T206 (lease until 2026-11-20T16:21:32Z)
+- lane 3: T557 (lease until 2026-11-20T16:49:23Z)
 - lane 4: T667 (lease until 2026-11-20T15:55:37Z)
 - lane 5: T767 (lease until 2026-11-20T15:53:17Z)
 - lane 6: T530 (lease until 2026-11-20T13:55:17Z)
