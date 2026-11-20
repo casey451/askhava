@@ -44,6 +44,12 @@
 //! [`owner_spanish`] turns it on (with the review's date, reviewer and versions, the campaign
 //! note's date and reference and the Spanish sample) or off through `messaging::api`, each after
 //! the SEC-043 fresh factor; a refusal names each missing record.
+//!
+//! T527 (TXT-035, TERMS-014, SEC-043, D-303, D-305, D-3881): the settings page shows the business
+//! texting switch, off by default, with the newest filed provider answer on business texting and
+//! why the switch cannot go on while that answer is not a yes with a campaign reference.
+//! [`owner_business_texting`] files an answer or turns the switch on or off through
+//! `messaging::api`, each after the SEC-043 fresh factor; a refused turn-on is a notice.
 
 use askama::Template;
 use askhava_businesses::api::{needs_review_signups, review_target_line};
@@ -57,6 +63,9 @@ use askhava_messaging::api::{
     Audience, CONSENT_KEEP_YEARS, LaunchChannel, ModeStateError, NumberState, OutboxError,
     RevokeChannel, Week, WeekRate, alert_percent, launch_channel, load_lines, record_restore,
     record_suspension, set_launch_channel, suppress, switch_off, switch_on, weekly_optout_rates,
+};
+use askhava_messaging::api::{
+    BusinessEligibility, business_eligibility, file_business_eligibility,
 };
 use askhava_messaging::api::{
     Missing, SpanishChange, SpanishInForce, SpanishRecords, spanish_switch,
@@ -118,6 +127,8 @@ pub const OWNER_STRIPE_ANSWER_ROUTE: &str = "/owner/stripe-answer";
 pub const OWNER_SAFETY_CALL_ROUTE: &str = "/owner/safety-call";
 /// The "Spanish conversations" switch `POST` (TXT-039, T480).
 pub const OWNER_SPANISH_ROUTE: &str = "/owner/spanish-conversations";
+/// The business texting `POST`: file the provider's answer or flip the switch (TXT-035, T527).
+pub const OWNER_BUSINESS_TEXTING_ROUTE: &str = "/owner/business-texting";
 /// OPS-028: the audit action of one queued bridge press, subject the alert.
 pub const OWNER_BRIDGE_ACTION: &str = "portals.owner_bridge_press";
 /// The audit action of the owner's refund press, about the pick (SEC-006, D-074).
@@ -430,6 +441,7 @@ struct SettingsView<'a> {
     spanish: Option<SpanishRow>,
     spanish_missing: Vec<&'static str>,
     spanish_versions: Vec<(Vec<String>, String)>,
+    business: BusinessView,
     category_route: &'static str,
     step_up_route: &'static str,
     home_route: &'static str,
@@ -659,6 +671,7 @@ pub async fn owner_settings_page_with(
             .into_iter()
             .map(|(id, v)| (id.split('_').map(str::to_owned).collect(), grouped(&v)))
             .collect(),
+        business: BusinessView::read(conn).await?,
         opt_out_route: OWNER_OPT_OUT_ROUTE,
         stripe_route: OWNER_STRIPE_ANSWER_ROUTE,
         stripe: stripe.map(|a| StripeRow {
@@ -1018,6 +1031,14 @@ pub enum SettingsNotice {
     SpanishOff,
     /// Spanish conversations not turned on: these records are missing (TXT-039, TXT-043).
     SpanishMissing(SpanishGaps),
+    /// The provider's answer on business texting is filed (TXT-035).
+    BusinessAnswerFiled,
+    /// Business texting is now on.
+    BusinessTextingOn,
+    /// Business texting is now off (or already was).
+    BusinessTextingOff,
+    /// Business texting not turned on: no filed answer says yes with a campaign (TXT-035).
+    BusinessTextingRefused,
 }
 
 impl SettingsNotice {
@@ -1040,6 +1061,12 @@ impl SettingsNotice {
             Self::SpanishMissing(_) => {
                 "Spanish conversations are still off. Here's what's missing:"
             }
+            Self::BusinessAnswerFiled => "Saved. The texting provider's answer is below.",
+            Self::BusinessTextingOn => "Done. Business texting is on.",
+            Self::BusinessTextingOff => "Done. Business texting is off.",
+            Self::BusinessTextingRefused => {
+                "Business texting is still off. You need the provider's yes and the campaign reference first."
+            }
         }
     }
 
@@ -1048,7 +1075,10 @@ impl SettingsNotice {
     pub fn refused(self) -> bool {
         matches!(
             self,
-            Self::SafetyCallNoApproval | Self::SafetyCallUnmet(_) | Self::SpanishMissing(_)
+            Self::SafetyCallNoApproval
+                | Self::SafetyCallUnmet(_)
+                | Self::SpanishMissing(_)
+                | Self::BusinessTextingRefused
         )
     }
 
@@ -1257,6 +1287,119 @@ pub async fn owner_spanish(
         _ if form.to == "on" => SettingsNotice::SpanishOn,
         _ => SettingsNotice::SpanishOff,
     })
+}
+
+/// The business texting part of the settings page (TXT-035).
+#[derive(Debug, Clone)]
+struct BusinessView {
+    route: &'static str,
+    on: bool,
+    permits: bool,
+    filed: Option<BusinessRow>,
+}
+
+/// The newest filed provider answer as shown.
+#[derive(Debug, Clone)]
+struct BusinessRow {
+    answered_on: String,
+    reference: String,
+    answer: String,
+    allowed: bool,
+    campaign: String,
+    filed: String,
+}
+
+impl BusinessView {
+    /// TXT-035: the stored business switch and the newest filed answer.
+    async fn read(conn: &mut PgConnection) -> Result<Self, OwnerToolError> {
+        let lines = load_lines(conn, (None, None)).await.map_err(store)?;
+        let filed = business_eligibility(conn).await.map_err(store)?;
+        Ok(Self {
+            route: OWNER_BUSINESS_TEXTING_ROUTE,
+            on: lines.business.texting_on,
+            permits: filed.as_ref().is_some_and(|(f, _)| f.permits()),
+            filed: filed.map(|(f, at)| BusinessRow {
+                answered_on: f.answered_on.strftime("%B %-d, %Y").to_string(),
+                reference: f.reference,
+                answer: f.answer,
+                allowed: f.allowed,
+                campaign: f.campaign_reference,
+                filed: arizona(at),
+            }),
+        })
+    }
+}
+
+/// The business texting form's body: `to` is `file` (with the answer's date `YYYY-MM-DD`,
+/// reference, text, `allowed` `yes` or `no`, and the business campaign's reference, if any), `on`
+/// or `off` (TXT-035).
+#[derive(Debug, Clone, Default, Deserialize)]
+pub struct BusinessTextingForm {
+    /// `file`, `on` or `off`.
+    pub to: String,
+    /// The date of the provider's written answer.
+    pub answered_on: String,
+    /// The provider's reference.
+    pub reference: String,
+    /// The answer text as received.
+    pub answer: String,
+    /// `yes` or `no`.
+    pub allowed: String,
+    /// The business campaign's registration reference; empty while none.
+    pub campaign_reference: String,
+}
+
+impl BusinessTextingForm {
+    /// The filing the form gives; `None` for a bad date or `allowed`.
+    fn filing(&self) -> Option<BusinessEligibility> {
+        let allowed = match self.allowed.as_str() {
+            "yes" => true,
+            "no" => false,
+            _ => return None,
+        };
+        Some(BusinessEligibility {
+            answered_on: self.answered_on.trim().parse().ok()?,
+            reference: self.reference.clone(),
+            answer: self.answer.clone(),
+            allowed,
+            campaign_reference: self.campaign_reference.clone(),
+        })
+    }
+}
+
+/// TXT-035, TERMS-014, SEC-043, D-303, D-305: after the fresh factor, files the provider's answer
+/// on business texting or turns the business switch on (refused unless the newest answer says yes
+/// and names a campaign) or off; the homeowner line is untouched.
+///
+/// # Errors
+///
+/// [`OwnerToolError::NeedsFreshFactor`], [`OwnerToolError::Refused`] for an unknown `to` or an
+/// incomplete filing, or [`OwnerToolError::Database`].
+pub async fn owner_business_texting(
+    conn: &mut PgConnection,
+    principal: &OwnerPrincipal,
+    form: &BusinessTextingForm,
+    now: Timestamp,
+) -> Result<SettingsNotice, OwnerToolError> {
+    let route = (OwnerAction::Settings, OWNER_BUSINESS_TEXTING_ROUTE);
+    fresh_factor(conn, principal, route, now).await?;
+    let owner = principal.owner();
+    let business = Audience::Business;
+    match form.to.as_str() {
+        "file" => {
+            let filing = form.filing().ok_or(OwnerToolError::Refused)?;
+            let filed = file_business_eligibility(conn, owner, &filing, now).await;
+            texting(filed.map(|_| true))?;
+            Ok(SettingsNotice::BusinessAnswerFiled)
+        }
+        "on" => match switch_on(conn, business, (owner, now)).await {
+            Err(ModeStateError::NotEligible) => Ok(SettingsNotice::BusinessTextingRefused),
+            other => texting(other).map(|_| SettingsNotice::BusinessTextingOn),
+        },
+        "off" => texting(switch_off(conn, business, (owner, now)).await)
+            .map(|_| SettingsNotice::BusinessTextingOff),
+        _ => Err(OwnerToolError::Refused),
+    }
 }
 
 /// The safety voice call form's body: `on` or `off`, and for `on` the approval's date
