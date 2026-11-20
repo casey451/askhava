@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH h AS (INSERT INTO intake.homeowner (contact_id, created_at) VALUES ($1, now()) RETURNING id), c AS (INSERT INTO intake.conversation (homeowner_id, language, first_inbox_id, consent_template, consent_sent_at, opened_at) SELECT id, 'en', gen_random_uuid(), 'consent_first', now(), now() FROM h RETURNING id, homeowner_id), r AS (INSERT INTO intake.consent_record (homeowner_id, conversation_id, channel, inbox_id, consent_version, consented_at) SELECT homeowner_id, id, 'sms', gen_random_uuid(), $2, now() FROM c RETURNING id) INSERT INTO messaging.outbox (idempotency_key, template_id, recipient_id, recipient_kind, subject_ids, body) SELECT encode(sha256(convert_to(gen_random_uuid()::text, 'UTF8')), 'hex'), 'fake.notice', $1, 'homeowner', ARRAY[]::uuid[], $3 FROM r",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "887e255b5dd002368a0c8248c0ea73b9c22825c125dae58f4558bc377fcf1863"
+}

@@ -8,15 +8,21 @@
 // codes modulo 1,000,000, six digits), as TD-BIZ-42 does; her home shows her own record, she turns
 // texts off, the page confirms it on screen and her number is on the suppression list. Every answer
 // is `no-store`. The sign-in and home pages' axe checks are their `PAGE_STATES` entries in
-// tests/a11y/page_states.ts; the data-file download is T561's. Fake data only; no key or value is
-// printed or logged.
+// tests/a11y/page_states.ts. T561's case: she downloads her data file, then opens a delete request
+// and its code screen (the answer to a POST, so no PAGE_STATES entry, D-4822) is axe-clean at 320,
+// 768 and 1280 pixels. Fake data only; no key or value is printed or logged.
 import { randomUUID } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { axeScan, WIDTHS } from "../a11y/fixtures";
 import { test, expect } from "./fixtures";
 import { blindIndex, keyedUrl, psql, seal } from "./keyed";
 
 /** Her fake numbers (E.164, as the vault stores them), one per test, and street. The keyed vault keys
  * are made per run, so a number's index digest never meets an earlier run's. */
 const HER = { phone: "+19285550176", wrongCodePhone: "+19285550178", street: "76 Example Way" };
+
+/** T561's fake number for the download case. */
+const DOWNLOAD_PHONE = "+19285550179";
 
 /** The code the Verify stand-in issues for `phone` (stand_ins/twilio.py `start_verification`). */
 function verifyCode(phone: string): string {
@@ -90,4 +96,32 @@ test("TD-PRIV-21: a wrong code does not sign her in", async ({ page }) => {
   const home = await page.request.get(`${keyedUrl()}/h`, { maxRedirects: 0 });
   expect(home.status()).toBe(401);
   expect(await home.text()).not.toContain(HER.street);
+});
+
+test("TD-PRIV-21: she downloads her data file and the request screen is axe-clean", async ({ page }) => {
+  const contact = seedHer(DOWNLOAD_PHONE);
+  await page.goto(`${keyedUrl()}/h/sign-in`);
+  await page.getByLabel("Your mobile number").fill(DOWNLOAD_PHONE);
+  await page.getByRole("button", { name: "Text me a code" }).click();
+  await expect.poll(() => challenged(contact), { message: "her code was sent" }).toBe(true);
+  await page.getByLabel("6-digit code").fill(verifyCode(DOWNLOAD_PHONE));
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page).toHaveURL(`${keyedUrl()}/h`);
+
+  const downloading = page.waitForEvent("download");
+  await page.getByRole("link", { name: "Download my data" }).click();
+  const download = await downloading;
+  expect(download.suggestedFilename()).toBe("my-data.json");
+  const file = JSON.parse(readFileSync(await download.path(), "utf8")) as Record<string, unknown>;
+  expect(Object.keys(file).sort()).toEqual(["consent", "messages", "quotes", "requests"]);
+  expect(JSON.stringify(file)).not.toContain(HER.street);
+
+  await page.getByRole("button", { name: "Delete my data" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Check it's you");
+  await expect(page.getByRole("button", { name: "Text me the code again" })).toBeVisible();
+  for (const width of WIDTHS) {
+    await page.setViewportSize({ width, height: 900 });
+    const { violations } = await axeScan(page);
+    expect(violations, `request screen at ${String(width)} px`).toEqual([]);
+  }
 });

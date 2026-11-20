@@ -17,7 +17,17 @@
 //! [`HomeownerVerify`] part (`RouterParts::with_homeowner_verify`, from [`homeowner_verify`] in
 //! `main`); without either a send sends nothing and a check calls nothing and answers the
 //! wrong-code page, never a 5xx. `server` names no vault read: her number never leaves `portals`
-//! except into the rendered page. The `/h/my-data` routes are T561's.
+//! except into the rendered page.
+//!
+//! The data routes (T561, D-3967, D-3877; PRIV-031, PRIV-011): `GET` [`DOWNLOAD_ROUTE`] answers
+//! her "Download my data" file (`download_file` over [`held_file`]: her requests and consent
+//! records through `intake::api`, her shown quotes through `quotes::api` with each business's
+//! public name, and the words `messaging` still holds for her through `held_words`). `POST`
+//! [`DATA_REQUEST_ROUTE`] opens a copy or delete request and texts its code, `POST`
+//! [`DATA_RESEND_ROUTE`] texts it again, and `POST` [`DATA_CODE_ROUTE`] acts only on her open
+//! request with the right code: a copy answers the same file, a delete the PRIV-011 sentence. Each
+//! send passes `admit_code_send` (the IP, then her contact) and each check `admit_code_try`
+//! first; a refused or impossible send answers [`not_sent`] and sends nothing.
 
 use std::future::Future;
 use std::io;
@@ -28,20 +38,27 @@ use std::sync::Arc;
 use askhava_adapters::api::{
     AdapterError, CodeChannel, IdempotencyKey, TwilioConfig, VerifyAdapter, twilio_clients,
 };
+use askhava_businesses::api::public_names;
 use askhava_core::api::{Clock, Environment, Settings, SystemClock};
-use askhava_intake::api::{Admission, conversation, conversations_of_contact};
+use askhava_intake::api::{
+    Admission, consent_records, conversation, conversations_of_contact, jobs_of_contact,
+};
+use askhava_messaging::api::held_words;
 use askhava_portals::api::{
-    ButtonForm, CookieJar, CsrfField, CsrfForm, HOMEOWNER_CODE_ROUTE, HOMEOWNER_HOME_ROUTE,
-    HOMEOWNER_SIGNIN_ROUTE, HomeFacts, HomeownerError, OnFile, PortalScreen, TEXTS_OFF_ROUTE,
-    VERIFY_DAILY_THRESHOLD, WebSecurity, admit_code_send, admit_code_try, csrf_token,
-    current_session, ensure_pre_session, finish_sign_in, homeowner_page, no_store,
-    refuse_cross_site, security_event_client, send_sign_in_code, turn_texts_off,
+    Acted, ButtonForm, CARD_FALLBACK_NAME, CookieJar, CsrfField, CsrfForm, DATA_CODE_ROUTE,
+    DATA_REQUEST_ROUTE, DOWNLOAD_ROUTE, DataRequestKind, HOMEOWNER_CODE_ROUTE,
+    HOMEOWNER_HOME_ROUTE, HOMEOWNER_SIGNIN_ROUTE, HeldItem, HomeFacts, HomeownerError, OnFile,
+    PortalScreen, RequestError, Section, TEXTS_OFF_ROUTE, VERIFY_DAILY_THRESHOLD, WebSecurity,
+    admit_code_send, admit_code_try, confirm_request, csrf_token, current_session, download_file,
+    ensure_pre_session, finish_sign_in, homeowner_page, no_store, open_request, refuse_cross_site,
+    resend_request_code, security_event_client, send_sign_in_code, turn_texts_off,
 };
 use askhava_privacy::api::{HomeownerSessionProof, find_by_phone};
+use askhava_quotes::api::{page_quotes, shown_quotes};
 use axum::Router;
 use axum::extract::{Extension, FromRef, Request, State};
 use axum::http::StatusCode;
-use axum::http::header::{HeaderValue, LOCATION};
+use axum::http::header::{CONTENT_DISPOSITION, CONTENT_TYPE, HeaderValue, LOCATION};
 use axum::middleware::{Next, from_fn, from_fn_with_state};
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{get, post};
@@ -150,7 +167,10 @@ impl FromRef<Portal> for WebSecurity {
 #[derive(Clone, Copy)]
 struct ClientIp(IpAddr);
 
-/// The five portal routes over `pool`, with the webhooks' vault and ID secret and `verify`.
+/// The path of a data request's "Text me the code again" form (T561, D-3877 (1), D-2348).
+pub const DATA_RESEND_ROUTE: &str = "/h/my-data/resend";
+
+/// The portal and data routes over `pool`, with the webhooks' vault and ID secret and `verify`.
 pub fn routes(
     pool: PgPool,
     hooks: Option<&Arc<Webhooks>>,
@@ -170,6 +190,10 @@ pub fn routes(
         .route(HOMEOWNER_CODE_ROUTE, post(check))
         .route(HOMEOWNER_HOME_ROUTE, get(home))
         .route(TEXTS_OFF_ROUTE, post(texts_off))
+        .route(DOWNLOAD_ROUTE, get(download))
+        .route(DATA_REQUEST_ROUTE, post(data_request))
+        .route(DATA_CODE_ROUTE, post(data_code))
+        .route(DATA_RESEND_ROUTE, post(data_resend))
         .route_layer(from_fn(note_client))
         .with_state(state)
         .layer(from_fn_with_state(security, refuse_cross_site))
@@ -435,4 +459,323 @@ async fn texts_off(
     }
     drop(db);
     home_page(&state, &jar, &proof).await
+}
+
+/// SEC-046: the number on file read through her session's proof, else the signed-out answer.
+async fn her(state: &Portal, jar: &CookieJar) -> Result<OnFile, Box<Response>> {
+    let proof = signed_in(state, jar).await?;
+    let Some(hooks) = state.hooks.as_deref() else {
+        return Err(Box::new(failed("vault")));
+    };
+    let Ok(mut db) = state.pool.acquire().await else {
+        return Err(Box::new(failed("connection")));
+    };
+    match OnFile::read(&mut db, &hooks.vault, &proof).await {
+        Ok(Some(her)) => Ok(her),
+        Ok(None) => Err(Box::new(signed_out())),
+        Err(_) => Err(Box::new(failed("her record"))),
+    }
+}
+
+/// The Arizona day of `at` (UTC-7 all year, no daylight saving), as "November 1, 2026".
+fn arizona_day(at: Timestamp) -> String {
+    let arizona = jiff::tz::TimeZone::fixed(jiff::tz::offset(-7));
+    at.to_zoned(arizona).strftime("%B %-d, %Y").to_string()
+}
+
+/// One held record of `contact`'s for the file.
+fn item(contact: Uuid, section: Section, at: Timestamp, words: String) -> HeldItem {
+    HeldItem {
+        contact,
+        section,
+        at,
+        words,
+    }
+}
+
+/// PRIV-031: her requests (`intake::api::conversations_of_contact`) and each one's consent
+/// records (`consent_records`).
+async fn request_items(
+    db: &mut PgConnection,
+    contact: Uuid,
+) -> Result<Vec<HeldItem>, &'static str> {
+    let mut items = Vec::new();
+    for id in conversations_of_contact(db, contact)
+        .await
+        .map_err(|_| "requests")?
+    {
+        let Some(row) = conversation(db, id).await.map_err(|_| "request")? else {
+            continue;
+        };
+        let language = if row.language == "es" {
+            "Spanish"
+        } else {
+            "English"
+        };
+        let state = row.closed_at.map_or_else(
+            || "still open".to_owned(),
+            |at| format!("closed {}", arizona_day(at)),
+        );
+        let words = format!("Job request, texts in {language}, {state}");
+        items.push(item(contact, Section::Requests, row.opened_at, words));
+        for record in consent_records(db, id).await.map_err(|_| "consent")? {
+            let by = if record.channel == "web_chat" {
+                "web chat"
+            } else {
+                "replying to a text"
+            };
+            let version = record.consent_version;
+            let words = format!("You agreed to our texts by {by} (wording {version})");
+            items.push(item(contact, Section::Consent, record.consented_at, words));
+        }
+    }
+    Ok(items)
+}
+
+/// PRIV-031: the quotes shown on her jobs (`quotes::api::shown_quotes`), each with its business's
+/// public name, time and wording (`page_quotes`, `businesses::api::public_names`).
+async fn quote_items(db: &mut PgConnection, contact: Uuid) -> Result<Vec<HeldItem>, &'static str> {
+    let mut items = Vec::new();
+    for job in jobs_of_contact(db, contact).await.map_err(|_| "jobs")? {
+        let shown = shown_quotes(db, job).await.map_err(|_| "shown quotes")?;
+        let quotes = page_quotes(db, job).await.map_err(|_| "quotes")?;
+        let quotes: Vec<_> = (quotes.into_iter())
+            .filter(|q| !q.withdrawn && shown.contains(&q.business))
+            .collect();
+        let ids: Vec<Uuid> = quotes.iter().map(|q| q.business).collect();
+        let names = public_names(db, &ids).await.map_err(|_| "business names")?;
+        for quote in quotes {
+            let name = (names.iter().find(|(id, _)| *id == quote.business))
+                .map_or(CARD_FALLBACK_NAME[0], |(_, name)| name.as_str());
+            let words = format!("Quote from {name}: {}", quote.original);
+            items.push(item(contact, Section::Quotes, quote.received_at, words));
+        }
+    }
+    Ok(items)
+}
+
+/// PRIV-031: her "Download my data" file: only her own items, on one connection held for the reads.
+async fn held_file(state: &Portal, her: &OnFile) -> Result<String, &'static str> {
+    let mut db = state.pool.acquire().await.map_err(|_| "connection")?;
+    let contact = her.contact();
+    let mut items = request_items(&mut db, contact).await?;
+    items.extend(quote_items(&mut db, contact).await?);
+    let held = held_words(&mut db, contact).await.map_err(|_| "messages")?;
+    let messages = held
+        .into_iter()
+        .map(|(at, words)| item(contact, Section::Messages, at, words));
+    items.extend(messages);
+    Ok(download_file(her, &items))
+}
+
+/// Her file as a JSON download, or the failed answer.
+async fn file_answer(state: &Portal, her: &OnFile) -> Response {
+    match held_file(state, her).await {
+        Ok(file) => {
+            let kind = (CONTENT_TYPE, "application/json; charset=utf-8");
+            let saved = (CONTENT_DISPOSITION, "attachment; filename=\"my-data.json\"");
+            (StatusCode::OK, [kind, saved], file).into_response()
+        }
+        Err(what) => failed(what),
+    }
+}
+
+/// `GET` [`DOWNLOAD_ROUTE`] (PRIV-031, SEC-034, SEC-046): her own file. Changes nothing.
+async fn download(State(state): State<Portal>, jar: CookieJar) -> Response {
+    match her(&state, &jar).await {
+        Ok(her) => file_answer(&state, &her).await,
+        Err(answer) => *answer,
+    }
+}
+
+/// The data-request forms: the CSRF token, the kind (`copy` or `delete`), the request's ID and,
+/// on the code step, the code. A missing field reads as empty, so CSRF and the realm come first.
+#[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct DataForm {
+    #[serde(default)]
+    csrf: String,
+    #[serde(default)]
+    kind: String,
+    #[serde(default)]
+    request: String,
+    #[serde(default)]
+    code: String,
+}
+
+impl CsrfField for DataForm {
+    fn csrf(&self) -> &str {
+        &self.csrf
+    }
+}
+
+impl DataForm {
+    /// The kind asked for; `None` for any other word.
+    fn kind(&self) -> Option<DataRequestKind> {
+        match self.kind.as_str() {
+            "copy" => Some(DataRequestKind::Copy),
+            "delete" => Some(DataRequestKind::Delete),
+            _ => None,
+        }
+    }
+
+    /// The request's ID; `None` when it is not a number.
+    fn request(&self) -> Option<i64> {
+        self.request.parse().ok()
+    }
+}
+
+/// A short page with `title`, `heading` and the paragraph `line` (no detail, never a value).
+fn note(status: StatusCode, (title, heading): (&str, &str), line: &str) -> Response {
+    let page = format!(
+        "<!doctype html><html lang=\"en\"><head><title>{title}</title></head><body><main>\
+         <h1>{heading}</h1><p>{line}</p></main></body></html>"
+    );
+    (status, Html(page)).into_response()
+}
+
+/// SEC-014: the answer when no code was sent (a limit refused it, or Verify is not set up or
+/// failed): a 429 linking back to her page; nothing was sent.
+fn not_sent() -> Response {
+    let line = format!(
+        "Nothing has changed. Wait a few minutes and try again, or <a \
+         href=\"{HOMEOWNER_HOME_ROUTE}\">go back to your page</a>."
+    );
+    let words = ("Code not sent", "We couldn't text your code");
+    note(StatusCode::TOO_MANY_REQUESTS, words, &line)
+}
+
+/// PRIV-031: the answer for a request that is not hers or has ended: a 404 linking to her page.
+fn ended() -> Response {
+    let line = format!(
+        "Delete and copy requests close after 30 days, and each code works once. <a \
+         href=\"{HOMEOWNER_HOME_ROUTE}\">Go back to your page</a> to start a new one."
+    );
+    note(
+        StatusCode::NOT_FOUND,
+        ("Request closed", "This data request has closed"),
+        &line,
+    )
+}
+
+/// The code step of request `request`; a 400 with the error summary when `failed`.
+fn request_screen(
+    jar: &CookieJar,
+    (kind, request): (DataRequestKind, i64),
+    failed: bool,
+) -> Response {
+    let status = if failed {
+        StatusCode::BAD_REQUEST
+    } else {
+        StatusCode::OK
+    };
+    let screen = PortalScreen::Request {
+        kind,
+        request,
+        failed,
+    };
+    shown(jar, &screen, status)
+}
+
+/// SEC-014, D-1951: the Verify parts when the per-IP and per-contact send limits admit one more
+/// code to her; `None` (send nothing) when refused or not set up.
+async fn admitted_send(
+    state: &Portal,
+    ip: IpAddr,
+    her: &OnFile,
+) -> Option<(Arc<Webhooks>, Arc<HomeownerVerify>)> {
+    let threshold = i32::try_from(VERIFY_DAILY_THRESHOLD).unwrap_or(i32::MAX);
+    let at = (state.clock.now(), threshold);
+    let limit = admit_code_send(&state.pool, (ip, Some(her.contact())), at).await;
+    let parts = state.hooks.clone().zip(state.verify.clone());
+    parts.filter(|_| passed(limit))
+}
+
+/// `POST` [`DATA_REQUEST_ROUTE`] (PRIV-031, SEC-014): opens her copy or delete request and texts
+/// its code after the send limits; the code step follows.
+async fn data_request(
+    State(state): State<Portal>,
+    Extension(ClientIp(ip)): Extension<ClientIp>,
+    jar: CookieJar,
+    CsrfForm(form): CsrfForm<DataForm>,
+) -> Response {
+    let her = match her(&state, &jar).await {
+        Ok(her) => her,
+        Err(answer) => return *answer,
+    };
+    let Some(kind) = form.kind() else {
+        return StatusCode::BAD_REQUEST.into_response();
+    };
+    let Some((hooks, verify)) = admitted_send(&state, ip, &her).await else {
+        return not_sent();
+    };
+    let keys = (verify.as_ref(), &hooks.id_secret);
+    match open_request(&state.pool, keys, &her, (kind, state.clock.now())).await {
+        Ok(request) => request_screen(&jar, (kind, request.id), false),
+        Err(RequestError::Verify) => not_sent(),
+        Err(_) => failed("data request"),
+    }
+}
+
+/// `POST` [`DATA_RESEND_ROUTE`] (PRIV-031, SEC-014, D-2348): texts her open request's code again
+/// after the send limits.
+async fn data_resend(
+    State(state): State<Portal>,
+    Extension(ClientIp(ip)): Extension<ClientIp>,
+    jar: CookieJar,
+    CsrfForm(form): CsrfForm<DataForm>,
+) -> Response {
+    let her = match her(&state, &jar).await {
+        Ok(her) => her,
+        Err(answer) => return *answer,
+    };
+    let Some(id) = form.request() else {
+        return StatusCode::BAD_REQUEST.into_response();
+    };
+    let Some((hooks, verify)) = admitted_send(&state, ip, &her).await else {
+        return not_sent();
+    };
+    let keys = (verify.as_ref(), &hooks.id_secret);
+    match resend_request_code(&state.pool, keys, &her, (id, state.clock.now())).await {
+        Ok(request) => request_screen(&jar, (request.kind, request.id), false),
+        Err(RequestError::NoRequest) => ended(),
+        Err(RequestError::Verify) => not_sent(),
+        Err(_) => failed("data resend"),
+    }
+}
+
+/// `POST` [`DATA_CODE_ROUTE`] (PRIV-031, PRIV-011, SEC-014): after the per-IP try limit, acts on
+/// her open request only with its right code: a copy answers her file, a delete the PRIV-011
+/// sentence; anything else changes nothing.
+async fn data_code(
+    State(state): State<Portal>,
+    Extension(ClientIp(ip)): Extension<ClientIp>,
+    jar: CookieJar,
+    CsrfForm(form): CsrfForm<DataForm>,
+) -> Response {
+    let her = match her(&state, &jar).await {
+        Ok(her) => her,
+        Err(answer) => return *answer,
+    };
+    let (Some(kind), Some(id)) = (form.kind(), form.request()) else {
+        return StatusCode::BAD_REQUEST.into_response();
+    };
+    let now = state.clock.now();
+    let admitted = passed(admit_code_try(&state.pool, (ip, None), now).await);
+    let Some(verify) = state.verify.as_deref().filter(|_| admitted) else {
+        return request_screen(&jar, (kind, id), true);
+    };
+    match confirm_request(&state.pool, verify, &her, (id, &form.code, now)).await {
+        Ok(Acted::Copy) => file_answer(&state, &her).await,
+        Ok(Acted::Deleted(sentence)) => note(
+            StatusCode::OK,
+            ("Data deleted", "Your data is deleted"),
+            sentence,
+        ),
+        Err(RequestError::NoRequest) => ended(),
+        Err(RequestError::Database) => failed("data code"),
+        Err(RequestError::WrongCode | RequestError::NoLiveCode | RequestError::Verify) => {
+            request_screen(&jar, (kind, id), true)
+        }
+    }
 }
