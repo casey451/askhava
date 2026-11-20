@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T00:48:27Z by runner c13ec120d4e6 (actions).
+Updated 2026-11-20T00:48:56Z by runner c13ec120d4e6 (actions).
 
 **Building: T527 in progress since 00:05Z; 511 of 703 done; week 13% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-20T00:48:27Z by runner c13ec120d4e6 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T527 claimed 00:05Z, lease until 03:05Z; lane 3: T726 claimed 00:03Z, lease until 03:03Z; lane 4: T218 claimed 00:31Z, lease until 03:31Z; lane 5: T663 claimed 23:33Z, lease until 02:33Z
 - **Week:** 13% used, 161.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:45Z, 3 min before this update
+- **Last run:** 00:48Z, 0 min before this update
 - **Keeper:** last ran 00:44Z, next wake 02:35Z
 
 ## Needs attention
@@ -87,7 +87,6 @@ Updated 2026-11-20T00:48:27Z by runner c13ec120d4e6 (actions).
 | T505 | Decisions digest, piece 6: the next entries after the header | done | 1 | 99 min | 01:27Z |  |
 | T488 | portals and server: the business sign-up served in Spanish o | done | 1 | 111 min | 01:20Z |  |
 | T306 | server and portals: the complaints page, the emergency-email | resync | 1 | 77 min | 00:59Z |  |
-| T205 | portals: owner refunds with a review step and the audit log  | done | 2 | 2 h 26 min | 00:48Z | PLAN GAP: `payments` has no public reader that ties a dispute to its pick (or its charge, business or job). Without one, |
 
 ### Plan and harness merges on main
 - none
