@@ -7,7 +7,10 @@
     needs the attorney approval's date and reference; a refusal lists the unmet CALL-022 items.
     T480 (TXT-039, TXT-043, D-427, D-3844): the Spanish conversations switch, off at launch; on
     needs the professional review (date, reviewer, every Spanish text's version), the campaign
-    update and a Spanish sample; a refusal lists what is missing. -#}
+    update and a Spanish sample; a refusal lists what is missing.
+    T527 (TXT-035, TERMS-014, D-303, D-305): the business texting switch, off by default; on needs
+    a saved provider answer that says yes with a business campaign reference, and the page says
+    why while there is none. -#}
 {% block title %}Owner settings{% endblock %}
 {% block main %}
 <link rel="stylesheet" href="/static/portals/forms.css">
@@ -64,6 +67,37 @@
 <p><textarea id="spanish-sample" name="sample" rows="3" maxlength="1600"></textarea></p>
 <p><button type="submit">Turn Spanish conversations on</button></p>
 </form>{% endif %}
+<h2>Business texting</h2>
+{% if business.on %}<p id="business-texting-state">Business texting is on. Businesses that said yes to texts get them from the business texting number.</p>
+<form method="post" action="{{ business.route }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="to" value="off">
+<p><button type="submit">Turn business texting off</button></p>
+</form>
+{% else %}<p id="business-texting-state">Business texting is off, so every business gets email. {% if business.permits %}Your texting provider said yes, so you can turn it on.{% else %}You can't turn it on yet. Save your texting provider's written yes below. Add the business campaign's reference too.{% endif %}</p>
+<form method="post" action="{{ business.route }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="to" value="on">
+<p><button type="submit">Turn business texting on</button></p>
+</form>{% endif %}
+{% if let Some(b) = business.filed %}<p id="business-answer">Saved {{ b.filed }}. The provider wrote back on {{ b.answered_on }} (case or ticket {{ b.reference }}). {% if b.allowed %}They said yes to business texting.{% else %}They said no to business texting.{% endif %} {% if b.campaign.is_empty() %}No business campaign reference is saved.{% else %}Business campaign reference: {{ b.campaign }}.{% endif %}</p>
+<p>The provider's answer, word for word: {{ b.answer }}</p>
+{% else %}<p id="business-answer">No provider answer on business texting is saved yet.</p>{% endif %}
+<form method="post" action="{{ business.route }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="to" value="file">
+<p><label for="business-date">Date of the provider's written answer</label></p>
+<p><input type="date" id="business-date" name="answered_on"></p>
+<p><label for="business-reference">Provider's case or ticket number</label></p>
+<p><input type="text" id="business-reference" name="reference" maxlength="200"></p>
+<p><label for="business-answer-text">The provider's answer, word for word</label></p>
+<p><textarea id="business-answer-text" name="answer" rows="4" maxlength="4000"></textarea></p>
+<fieldset><legend>Does the answer allow texting businesses?</legend>
+<p><input type="radio" id="business-yes" name="allowed" value="yes"> <label for="business-yes">Yes</label></p>
+<p><input type="radio" id="business-no" name="allowed" value="no"> <label for="business-no">No</label></p>
+</fieldset>
+<p><label for="business-campaign">Business campaign registration reference</label></p>
+<p id="business-campaign-hint">Business texts go out under their own campaign, on their own number. Leave this empty if that campaign isn't registered yet.</p>
+<p><input type="text" id="business-campaign" name="campaign_reference" maxlength="200" aria-describedby="business-campaign-hint"></p>
+<p><button type="submit">Save the provider's answer</button></p>
+</form>
 <h2>Stop texts to a number</h2>
 <form method="post" action="{{ opt_out_route }}" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">

@@ -34,6 +34,10 @@ pub use crate::alert_emails::{
     daytime_lines, push_alerts, push_daytime, register_alert_emails, schedule_alert_push,
     schedule_hourly_checks,
 };
+pub use crate::business_eligibility::{
+    BUSINESS_ELIGIBILITY_ACTION, BusinessEligibility, business_eligibility,
+    file_business_eligibility,
+};
 pub use crate::business_notices::{
     BUSINESS_NOTICE_KIND, JOB_CARD_TEMPLATE, LINK_LIFE, NoticeOutcome, NoticeSender, NoticeWorker,
     SIGN_IN_URL, SendChecks, business_notice, card_notice_accepted, held_until,
