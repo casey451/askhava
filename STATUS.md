@@ -1,24 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-20T08:05:41Z by runner 37a05d29daa8 (manual).
+Updated 2026-11-20T08:06:14Z by runner 3e9315b7399c (actions).
 
 **Building: T116 in progress since 07:58Z; 527 of 708 done; week 24% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 527 of 708 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T116 claimed 07:58Z, lease until 10:58Z; lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 4: T672 claimed 06:35Z, lease until 09:35Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z; lane 7: T669 claimed 07:12Z, lease until 10:12Z
+- **Lane:** lane 1: T116 claimed 07:58Z, lease until 10:58Z; lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z; lane 7: T669 claimed 07:12Z, lease until 10:12Z
 - **Week:** 24% used, 139.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:03Z, 1 min before this update
+- **Last run:** 08:05Z, 0 min before this update
 - **Keeper:** last ran 07:52Z, next wake 09:38Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 82 problem(s) on tasks still to run (+393 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 93 problem(s) on tasks still to run (+396 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T672 | intake: the dispatcher asks "How soon?", the night count and | QUEUED | 2 | 89 min | 08:05Z | runner smoke red on 3e9315b7399c (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
 | T561 | server and portals: the homeowner's "Download my data" and h | MERGE_PENDING | 1 | 33 min | 07:51Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
 | T762 | runner and workflow (harness): fix-round workers commit with | MERGE_PENDING | 1 | 68 min | 07:44Z |  |
 | T764 | ci and pre-hand-in gate (harness): scripts/bootstrap_roles.s | done | 1 | 54 min | 07:29Z |  |
@@ -39,7 +40,7 @@ Updated 2026-11-20T08:05:41Z by runner 37a05d29daa8 (manual).
 | T617 | site: DM Sans from one weight-axis variable file (smaller th | BLOCKED | 1 | 2 min | 03:04Z | PLAN GAP: tests/a11y/design_tokens.spec.ts:221 and :242 (protected, not owned by T617) contradict the prompt's single DM |
 | T648 | recovery: the monthly test restore into a throwaway cluster, | BLOCKED | 1 | 21 min | 02:55Z | PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, b |
 | T763 | tests (harness): the web chat spec's fake numbers never coll | done | 1 | 25 min | 02:17Z |  |
-| T672 | intake: the dispatcher asks "How soon?", the night count and | BLOCKED | 1 | 13 min | 02:12Z | PLAN GAP: tests/integration/tests/intake_order_two_jobs.rs:278 (owned by T711 and T717, not T672) also pins the old orde |
+| T672 | intake: the dispatcher asks "How soon?", the night count and | BLOCKED | 1 | 13 min | 02:12Z |  |
 | T218 | Wording and template scans from the brains: sales phrases, n | done | 1 | 74 min | 01:46Z |  |
 | T663 | picks, jobs and payments (harness): a confirmed pick moves i | check_failed | 2 | 2 h 7 min | 01:40Z |  |
 | T527 | messaging, portals and server: the business-texting switch t | done | 1 | 93 min | 01:39Z |  |
@@ -97,31 +98,31 @@ Updated 2026-11-20T08:05:41Z by runner 37a05d29daa8 (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 253 of 735 (34.4%) · partial 456 · unstarted 26
-**Tasks merged (throughput only):** 527 of 708
+**Requirements verified:** 325 of 735 (44.2%) · partial 384 · unstarted 26
+**Tasks merged (throughput only):** 527 of 707
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 16 | 19 | 0 | 35 |
-| ai | 7 | 19 | 3 | 29 |
-| businesses | 20 | 37 | 1 | 58 |
-| calls | 11 | 14 | 0 | 25 |
-| consent | 11 | 24 | 0 | 35 |
-| fees | 21 | 31 | 0 | 52 |
-| intake | 7 | 36 | 0 | 43 |
+| accessibility | 18 | 17 | 0 | 35 |
+| ai | 8 | 18 | 3 | 29 |
+| businesses | 21 | 36 | 1 | 58 |
+| calls | 14 | 11 | 0 | 25 |
+| consent | 16 | 19 | 0 | 35 |
+| fees | 22 | 30 | 0 | 52 |
+| intake | 8 | 35 | 0 | 43 |
 | job-cards | 12 | 12 | 0 | 24 |
-| licensing | 30 | 18 | 0 | 48 |
-| lifecycle | 12 | 16 | 0 | 28 |
-| messaging | 22 | 23 | 0 | 45 |
-| ops-recovery | 6 | 33 | 15 | 54 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 16 | 12 | 0 | 28 |
+| messaging | 23 | 22 | 0 | 45 |
+| ops-recovery | 9 | 30 | 15 | 54 |
 | privacy | 8 | 23 | 0 | 31 |
 | quiet-hours | 3 | 6 | 0 | 9 |
-| quotes-pick | 22 | 34 | 0 | 56 |
-| recurring | 9 | 2 | 0 | 11 |
-| security | 10 | 40 | 5 | 55 |
-| terms | 10 | 25 | 0 | 35 |
-| website | 7 | 21 | 2 | 30 |
-| wording | 9 | 23 | 0 | 32 |
+| quotes-pick | 25 | 31 | 0 | 56 |
+| recurring | 10 | 1 | 0 | 11 |
+| security | 11 | 39 | 5 | 55 |
+| terms | 27 | 8 | 0 | 35 |
+| website | 18 | 10 | 2 | 30 |
+| wording | 23 | 9 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -143,9 +144,8 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T116 (lease until 2026-11-20T10:58:32Z)
 - lane 2: T617 (lease until 2026-11-20T10:06:22Z)
-- lane 4: T672 (lease until 2026-11-20T09:35:55Z)
 - lane 6: T530 (lease until 2026-11-20T10:20:58Z)
 - lane 7: T669 (lease until 2026-11-20T10:12:31Z)
 
 ## Last usage reading
-- {"task": "T561", "at": "2026-11-20T07:51:17Z", "output_tokens": 6718, "cache_read_input_tokens": 556169, "input_tokens": 46, "cache_creation_input_tokens": 38498}
+- {"task": "T672", "at": "2026-11-20T08:05:51Z", "cache_creation_input_tokens": 385372, "input_tokens": 357, "output_tokens": 121998, "cache_read_input_tokens": 22342511}

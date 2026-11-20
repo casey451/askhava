@@ -89208,8 +89208,8 @@
     "T711",
     "T717"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 1,
+   "status": "QUEUED",
+   "attempts": 2,
    "slug": "intake-order-timing",
    "type": "build",
    "stage": "5",
@@ -89223,7 +89223,7 @@
     4834
    ],
    "reason": null,
-   "last_failure": "PLAN GAP: tests/integration/tests/intake_order_two_jobs.rs:278 (owned by T711 and T717, not T672) also pins the old order, but D-4822 named only two functions in intake_order_two_jobs_rules.rs. Evidence: test td_int_45_also_after_the_zip_opens_the_second_job_through_open_job sends the ZIP reply then ALSO and expects only job.handyman.none linked (\"question open\", :284-:288); under D-4822 steps 6 to 8 come after the coverage line so \"How soon?\" is open, and ALSO opens a second job (left: [\"job.handyman.none\",\"job.plumbing_repair.none\"]). kit/tasks.json: file owned by T711 and T717. Smallest plan change: add that function to T672's owned files under D-4822, changed like function (a). Reviewer confirmed.\nre-queued after plan fix D-4851: second plan gap fixed by D-4851 (#1168)",
+   "last_failure": "runner smoke red on 3e9315b7399c (bash scripts/smoke.sh, D-3530):\n        line = cache.seed(tmp_path, smoke, debug, lambda args: (0, _metadata(MEMBERS)))\n        left = sorted(str(p.relative_to(debug)) for p in debug.rglob(\"*\") if p.is_file())\n>       assert left == [\".fingerprint/serde-0123456789abcdef/lib\", \"build/ring-0123456789abcdef/out/x.o\",\n                        \"deps/libserde-0123456789abcdef.rlib\"]\nE       AssertionError: assert [] == ['.fingerprin...9abcdef.rlib']\nE         \nE         Right contains 3 more items, first extra item: '.fingerprint/serde-0123456789abcdef/lib'\nE         \nE         Full diff:\nE         + []\nE         - [\nE         -     '.fingerprint/serde-0123456789abcdef/lib',\nE         -     'build/ring-0123456789abcdef/out/x.o',\nE         -     'deps/libserde-0123456789abcdef.rlib',\nE         - ]\n\ntests/test_runner_cache.py:65: AssertionError\n=========================== short test summary info ============================\nFAILED tests/test_runner_cache.py::test_seed_copies_only_the_smoke_builds_dependency_artifacts - AssertionError: assert [] == ['.fingerprin...9abcdef.rlib']\n  \n  Right contains 3 more items, first extra item: '.fingerprint/serde-0123456789abcdef/lib'\n  \n  Full diff:\n  + []\n  - [\n  -     '.fingerprint/serde-0123456789abcdef/lib',\n  -     'build/ring-0123456789abcdef/out/x.o',\n  -     'deps/libserde-0123456789abcdef.rlib',\n  - ]\n1 failed, 5472 passed, 19 skipped in 278.21s (0:04:38)",
    "history": [
     {
      "attempt": 1,
@@ -89245,6 +89245,29 @@
       "reviewer": {
        "tokens": 145527,
        "turns": 6
+      }
+     }
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 253,
+     "head_sha": "3e9315b7399cf5cfac9154b6dcf70a373bb91ecd",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-20T06:35:55Z",
+     "ended_at": "2026-11-20T08:05:51Z",
+     "result": "QUEUED",
+     "usage": {
+      "worker": {
+       "tokens": 20688048,
+       "turns": 144
+      },
+      "reviewer": {
+       "tokens": 2162190,
+       "turns": 40
       }
      }
     }
@@ -94247,12 +94270,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T561",
-   "at": "2026-11-20T07:51:17Z",
-   "output_tokens": 6718,
-   "cache_read_input_tokens": 556169,
-   "input_tokens": 46,
-   "cache_creation_input_tokens": 38498
+   "task": "T672",
+   "at": "2026-11-20T08:05:51Z",
+   "cache_creation_input_tokens": 385372,
+   "input_tokens": 357,
+   "output_tokens": 121998,
+   "cache_read_input_tokens": 22342511
   },
   "source": "session_reading 2026-11-20T07:52:13Z (week)",
   "by_task": {
@@ -100266,14 +100289,14 @@
     "estimated_bytes": 667748,
     "estimated_tokens": 1990405,
     "usage_counting": "message_id",
-    "cache_creation_input_tokens": 194235,
-    "input_tokens": 126,
-    "output_tokens": 56168,
-    "cache_read_input_tokens": 7000794,
-    "worker_tokens": 7105796,
-    "worker_turns": 59,
-    "reviewer_tokens": 145527,
-    "reviewer_turns": 6,
+    "cache_creation_input_tokens": 579607,
+    "input_tokens": 483,
+    "output_tokens": 178166,
+    "cache_read_input_tokens": 29343305,
+    "worker_tokens": 27793844,
+    "worker_turns": 203,
+    "reviewer_tokens": 2307717,
+    "reviewer_turns": 46,
     "last_model": "claude-opus-5-5"
    },
    "T747": {
@@ -100480,11 +100503,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-20T03:25:43Z",
-    "tokens": 12871069
+    "tokens": 15613047
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 44734705
+    "tokens": 47476683
    }
   },
   "session_reading": {
@@ -100495,7 +100518,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T08:05:41Z",
+ "updated_at": "2026-11-20T08:06:14Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -100593,8 +100616,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "37a05d29daa8e0d49c8f0d1156e8833e2ec6aa64",
- "starter": "manual",
+ "runner_sha": "3e9315b7399cf5cfac9154b6dcf70a373bb91ecd",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "382efbfa9414fda64df615686feff7ebbe5928d3",
