@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T07:07:22Z by runner 405a1fbf7832 (actions).
+Updated 2026-11-20T07:07:43Z by runner c403ea4898ac (actions).
 
 **Building: T764 in progress since 06:34Z; 525 of 707 done; week 22% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 525 of 707 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T764 claimed 06:34Z, lease until 09:34Z; lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 3: T762 claimed 06:35Z, lease until 09:35Z; lane 4: T672 claimed 06:35Z, lease until 09:35Z; lane 7: T669 claimed 06:11Z, lease until 09:11Z
+- **Lane:** lane 1: T764 claimed 06:34Z, lease until 09:34Z; lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 3: T762 claimed 06:35Z, lease until 09:35Z; lane 4: T672 claimed 06:35Z, lease until 09:35Z
 - **Week:** 22% used, 145.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 07:07Z, 0 min before this update
 - **Keeper:** last ran 06:34Z, next wake 06:54Z
@@ -17,11 +17,12 @@ Updated 2026-11-20T07:07:22Z by runner 405a1fbf7832 (actions).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T463 (since 2026-11-20T06:35:55Z, no attempt used; a plan change fixes it): T463: dependency T543 is DONE but its owned file migrations/0206_businesses_away_busy.sql is not on main; T463: dependency T543 is DONE but its owned file app/businesses/src/away_busy.rs is not on main; T463: dependency T543 is DONE but its owned file tests/integration/tests/away_until.rs is not on main
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 88 problem(s) on tasks still to run (+393 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 82 problem(s) on tasks still to run (+388 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T669 | picks: "Can't take it" and a business leaving end a pick in  | QUEUED | 1 | 56 min | 07:07Z | runner smoke red on c403ea4898ac (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
 | T573 | messaging and server: queued business texts are addressed to | BLOCKED | 1 | 5 min | 06:27Z | PLAN GAP: app/privacy/src/business_contacts.rs:124 (owned by T412, not T573). Item (2) needs the outbox sender to read a |
 | T561 | server and portals: the homeowner's "Download my data" and h | MERGE_PENDING | 1 | 60 min | 06:26Z |  |
 | T765 | recovery (tests): the backup tests' fake binaries can no lon | MERGE_PENDING | 1 | 65 min | 06:11Z |  |
@@ -146,7 +147,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T617 (lease until 2026-11-20T10:06:22Z)
 - lane 3: T762 (lease until 2026-11-20T09:35:28Z)
 - lane 4: T672 (lease until 2026-11-20T09:35:55Z)
-- lane 7: T669 (lease until 2026-11-20T09:11:33Z)
 
 ## Last usage reading
-- {"task": "T573", "at": "2026-11-20T06:27:35Z", "cache_creation_input_tokens": 107144, "output_tokens": 13620, "input_tokens": 66, "cache_read_input_tokens": 1705668}
+- {"task": "T669", "at": "2026-11-20T07:07:42Z", "cache_creation_input_tokens": 247083, "cache_read_input_tokens": 6379667, "output_tokens": 55561, "input_tokens": 206}

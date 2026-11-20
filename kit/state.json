@@ -88830,8 +88830,8 @@
     "T467",
     "T471"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "pending-pick-ends",
    "type": "build",
    "stage": "5",
@@ -88843,6 +88843,32 @@
     4894,
     4895,
     4896
+   ],
+   "last_failure": "runner smoke red on c403ea4898ac (bash scripts/smoke.sh, D-3530):\n        line = cache.seed(tmp_path, smoke, debug, lambda args: (0, _metadata(MEMBERS)))\n        left = sorted(str(p.relative_to(debug)) for p in debug.rglob(\"*\") if p.is_file())\n>       assert left == [\".fingerprint/serde-0123456789abcdef/lib\", \"build/ring-0123456789abcdef/out/x.o\",\n                        \"deps/libserde-0123456789abcdef.rlib\"]\nE       AssertionError: assert [] == ['.fingerprin...9abcdef.rlib']\nE         \nE         Right contains 3 more items, first extra item: '.fingerprint/serde-0123456789abcdef/lib'\nE         \nE         Full diff:\nE         + []\nE         - [\nE         -     '.fingerprint/serde-0123456789abcdef/lib',\nE         -     'build/ring-0123456789abcdef/out/x.o',\nE         -     'deps/libserde-0123456789abcdef.rlib',\nE         - ]\n\ntests/test_runner_cache.py:65: AssertionError\n=========================== short test summary info ============================\nFAILED tests/test_runner_cache.py::test_seed_copies_only_the_smoke_builds_dependency_artifacts - AssertionError: assert [] == ['.fingerprin...9abcdef.rlib']\n  \n  Right contains 3 more items, first extra item: '.fingerprint/serde-0123456789abcdef/lib'\n  \n  Full diff:\n  + []\n  - [\n  -     '.fingerprint/serde-0123456789abcdef/lib',\n  -     'build/ring-0123456789abcdef/out/x.o',\n  -     'deps/libserde-0123456789abcdef.rlib',\n  - ]\n1 failed, 5366 passed, 19 skipped in 171.08s (0:02:51)",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 135,
+     "head_sha": "c403ea4898ac3dd3e902a34fcf00f623b4295bb4",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-20T06:11:33Z",
+     "ended_at": "2026-11-20T07:07:42Z",
+     "result": "QUEUED",
+     "usage": {
+      "worker": {
+       "tokens": 5507417,
+       "turns": 77
+      },
+      "reviewer": {
+       "tokens": 1175100,
+       "turns": 27
+      }
+     }
+    }
    ]
   },
   {
@@ -93846,12 +93872,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T573",
-   "at": "2026-11-20T06:27:35Z",
-   "cache_creation_input_tokens": 107144,
-   "output_tokens": 13620,
-   "input_tokens": 66,
-   "cache_read_input_tokens": 1705668
+   "task": "T669",
+   "at": "2026-11-20T07:07:42Z",
+   "cache_creation_input_tokens": 247083,
+   "cache_read_input_tokens": 6379667,
+   "output_tokens": 55561,
+   "input_tokens": 206
   },
   "source": "session_reading 2026-11-20T06:33:53Z (week)",
   "by_task": {
@@ -100017,7 +100043,17 @@
    },
    "T669": {
     "estimated_bytes": 562319,
-    "estimated_tokens": 1674871
+    "estimated_tokens": 1674871,
+    "usage_counting": "message_id",
+    "cache_creation_input_tokens": 247083,
+    "cache_read_input_tokens": 6379667,
+    "output_tokens": 55561,
+    "input_tokens": 206,
+    "worker_tokens": 5507417,
+    "worker_turns": 77,
+    "reviewer_tokens": 1175100,
+    "reviewer_turns": 27,
+    "last_model": "claude-opus-5-5"
    },
    "T573": {
     "estimated_bytes": 578238,
@@ -100045,11 +100081,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-20T03:25:43Z",
-    "tokens": 11310170
+    "tokens": 12250986
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 43173806
+    "tokens": 44114622
    }
   },
   "session_reading": {
@@ -100060,7 +100096,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T07:07:22Z",
+ "updated_at": "2026-11-20T07:07:43Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -100158,7 +100194,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "405a1fbf78321d4656c95a251e6b7156bc266d4c",
+ "runner_sha": "c403ea4898ac3dd3e902a34fcf00f623b4295bb4",
  "starter": "actions",
  "smoke_runs": [
   {
