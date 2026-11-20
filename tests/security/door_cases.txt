@@ -36,6 +36,7 @@ Public /help site
 Public / site
 Public /how-it-works site
 ActionLink /b/a/{kind}/{object}/{token}
+PhotoLink /photos/{token}
 Owner /owner
 Owner /owner/jobs
 Owner /owner/refunds/{pick}
