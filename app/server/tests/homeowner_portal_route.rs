@@ -23,7 +23,9 @@ use std::sync::{Arc, Mutex, PoisonError};
 
 use askhava_adapters::api::{AdapterError, CodeChannel, IdempotencyKey, VerifyAdapter};
 use askhava_core::api::{Settings, TestControl};
-use askhava_messaging::api::texts_on;
+use askhava_intake::api::rules::{Inbound, Settings as IntakeSettings};
+use askhava_intake::api::{TextIn, receive_text};
+use askhava_messaging::api::{NewText, Relation, enqueue, texts_on};
 use askhava_portals::api::{
     CookieJar, HomeFacts, Realm, TEXTS_OFF_LINE, csrf_token, ensure_pre_session, start_session,
 };
@@ -629,30 +631,34 @@ async fn td_pick_36_the_code_page_does_not_wait_on_verify(pool: PgPool) {
     verify.sent(1).await;
 }
 
-/// One request of `contact`'s with its text consent record (wording `version`) and one queued
-/// text to her holding `body`, as `intake` and `messaging` store them.
-async fn held(pool: &PgPool, contact: Uuid, (version, body): (&str, &str)) {
-    sqlx::query!(
-        "WITH h AS (INSERT INTO intake.homeowner (contact_id, created_at) VALUES ($1, now()) \
-         RETURNING id), \
-         c AS (INSERT INTO intake.conversation (homeowner_id, language, first_inbox_id, \
-         consent_template, consent_sent_at, opened_at) \
-         SELECT id, 'en', gen_random_uuid(), 'consent_first', now(), now() FROM h \
-         RETURNING id, homeowner_id), \
-         r AS (INSERT INTO intake.consent_record (homeowner_id, conversation_id, channel, \
-         inbox_id, consent_version, consented_at) \
-         SELECT homeowner_id, id, 'sms', gen_random_uuid(), $2, now() FROM c RETURNING id) \
-         INSERT INTO messaging.outbox (idempotency_key, template_id, recipient_id, \
-         recipient_kind, subject_ids, body) \
-         SELECT encode(sha256(convert_to(gen_random_uuid()::text, 'UTF8')), 'hex'), \
-         'fake.notice', $1, 'homeowner', ARRAY[]::uuid[], $3 FROM r",
+/// One request of `contact`'s by text (`intake::api::receive_text`: her request, its consent
+/// record and the queued consent text) and one more queued text to her holding `body`.
+async fn held(pool: &PgPool, contact: Uuid, body: &str) {
+    let mut db = pool.acquire().await.expect("db");
+    let secret = SecretString::from("test-only-id-secret-not-a-real-key".to_owned());
+    let inbound = Inbound {
+        words: "my AC is warm",
+        opt_out: false,
+        help: false,
+        emergency: false,
+        ai_spanish: None,
+    };
+    let text = TextIn {
+        inbox_id: Uuid::new_v4(),
         contact,
-        version,
+        inbound,
+        received_at: Timestamp::now(),
+    };
+    let request = receive_text(&mut db, &secret, &text, IntakeSettings::default()).await;
+    request.expect("request");
+    let note = NewText {
+        template_id: "fake_notice",
+        subject: &[],
+        recipient: contact,
+        relation: Relation::OpenRequest,
         body,
-    )
-    .execute(pool)
-    .await
-    .expect("held items");
+    };
+    enqueue(&mut db, &secret, &note).await.expect("queued");
 }
 
 /// A 24-hour homeowner session on `contact`.
@@ -687,13 +693,8 @@ async fn td_priv_21_download_my_data_holds_only_her_own_items(pool: PgPool) {
     let app = app(&pool, &verify);
     let (her, other) = (contact(&pool, HER).await, contact(&pool, OTHER).await);
     let mine = "Fake note for her: call 928-555-0199 or see https://example.test/q";
-    held(&pool, her, ("consent.her", mine)).await;
-    held(
-        &pool,
-        other,
-        ("consent.other", "Fake note for the other one"),
-    )
-    .await;
+    held(&pool, her, mine).await;
+    held(&pool, other, "Fake note for the other one").await;
     let jar = her_jar(&pool, her).await;
     let sent = request("/h/my-data", &jar, (None, Site::Own));
     let answer = app.clone().oneshot(sent).await.expect("answer");
@@ -705,17 +706,14 @@ async fn td_priv_21_download_my_data_holds_only_her_own_items(pool: PgPool) {
     let file = call(&app, "/h/my-data", &jar, (None, Site::Own)).await;
     assert_eq!(file.status, 200);
     let json: serde_json::Value = serde_json::from_str(&file.text).expect("a JSON file");
-    for (section, n) in [
-        ("requests", 1),
-        ("quotes", 0),
-        ("messages", 1),
-        ("consent", 1),
-    ] {
+    for (section, n) in [("requests", 1), ("quotes", 0), ("consent", 1)] {
         assert_eq!(json[section].as_array().map(Vec::len), Some(n), "{section}");
     }
+    let messages = json["messages"].as_array().map_or(0, Vec::len);
+    assert!(messages >= 2, "her consent text and the note");
     let text = &file.text;
-    assert!(text.contains("consent.her") && text.contains("Fake note for her"));
-    assert!(!text.contains("consent.other") && !text.contains("the other one"));
+    assert!(text.contains("Fake note for her") && text.contains("You agreed to our texts"));
+    assert!(!text.contains("the other one"));
     assert!(!text.contains("0199") && !text.contains("example.test"));
     assert_eq!(verify.sends.load(Ordering::SeqCst), 0);
 }
@@ -727,7 +725,7 @@ async fn td_priv_21_a_copy_request_hands_over_the_file_only_after_its_code(pool:
     let verify = FakeVerify::default();
     let app = app(&pool, &verify);
     let her = contact(&pool, HER).await;
-    held(&pool, her, ("consent.her", "Fake note for her")).await;
+    held(&pool, her, "Fake note for her").await;
     let jar = her_jar(&pool, her).await;
     let id = open(&app, &jar, "copy").await;
     verify.sent(1).await;
@@ -740,7 +738,9 @@ async fn td_priv_21_a_copy_request_hands_over_the_file_only_after_its_code(pool:
     )
     .await;
     assert_eq!(wrong.status, 400);
-    assert!(wrong.text.contains("That code didn't work") && !wrong.text.contains("consent.her"));
+    assert!(
+        wrong.text.contains("That code didn't work") && !wrong.text.contains("Fake note for her")
+    );
     let again = format!("&request={id}");
     let resent = call(&app, "/h/my-data/resend", &jar, (Some(&again), Site::Own)).await;
     assert_eq!(resent.status, 200);
@@ -754,7 +754,7 @@ async fn td_priv_21_a_copy_request_hands_over_the_file_only_after_its_code(pool:
     )
     .await;
     assert_eq!(right.status, 200);
-    assert!(right.text.contains("consent.her") && right.text.contains("Fake note for her"));
+    assert!(right.text.contains("Fake note for her"));
     let used = call(
         &app,
         "/h/my-data/code",
@@ -763,7 +763,7 @@ async fn td_priv_21_a_copy_request_hands_over_the_file_only_after_its_code(pool:
     )
     .await;
     assert_eq!(used.status, 400, "a used code acts no more");
-    assert!(!used.text.contains("consent.her"));
+    assert!(!used.text.contains("Fake note for her"));
 }
 
 /// TD-PRIV-21 (PRIV-031, PRIV-011): a delete request deletes nothing on a wrong code and, on the
@@ -807,7 +807,7 @@ async fn td_priv_21_request_codes_past_the_limits_send_and_check_nothing(pool: P
     let verify = FakeVerify::default();
     let app = app(&pool, &verify);
     let her = contact(&pool, HER).await;
-    held(&pool, her, ("consent.her", "Fake note for her")).await;
+    held(&pool, her, "Fake note for her").await;
     let jar = her_jar(&pool, her).await;
     let id = open(&app, &jar, "copy").await;
     verify.sent(1).await;
@@ -826,7 +826,7 @@ async fn td_priv_21_request_codes_past_the_limits_send_and_check_nothing(pool: P
     let right = format!("&kind=copy&request={id}&code={CODE}");
     let past = call(&app, "/h/my-data/code", &jar, (Some(&right), Site::Own)).await;
     assert_eq!(past.status, 400);
-    assert!(!past.text.contains("consent.her"));
+    assert!(!past.text.contains("Fake note for her"));
     assert_eq!(verify.checks.load(Ordering::SeqCst), 0);
     for n in 0..10 {
         let phone = phone_field(&format!("+1928555{:04}", 300 + n));
@@ -854,7 +854,7 @@ async fn td_priv_21_the_data_routes_keep_the_doors(pool: PgPool) {
     let verify = FakeVerify::default();
     let app = app(&pool, &verify);
     let her = contact(&pool, HER).await;
-    held(&pool, her, ("consent.her", "Fake note for her")).await;
+    held(&pool, her, "Fake note for her").await;
     let day = SignedDuration::from_hours(24);
     let jars = [
         ensure_pre_session(CookieJar::new()).expect("pre-session"),
@@ -880,7 +880,7 @@ async fn td_priv_21_the_data_routes_keep_the_doors(pool: PgPool) {
             assert_eq!(reply.status, 401, "{path}");
             assert!(reply.text.contains("href=\"/h/sign-in\""), "{path}");
             assert!(
-                !reply.text.contains("0111") && !reply.text.contains("consent.her"),
+                !reply.text.contains("0111") && !reply.text.contains("Fake note for her"),
                 "{path}"
             );
         }
@@ -893,7 +893,7 @@ async fn td_priv_21_the_data_routes_keep_the_doors(pool: PgPool) {
         for site in [Site::CrossFetch, Site::CrossOrigin, Site::WrongToken] {
             let reply = call(&app, path, &jar, (*form, site)).await;
             assert_eq!(reply.status, 403, "{path}");
-            assert!(!reply.text.contains("consent.her"), "{path}");
+            assert!(!reply.text.contains("Fake note for her"), "{path}");
             let now = events.count("csrf_rejected");
             assert_eq!(now, logged + 1, "{path} logged once");
             logged = now;
