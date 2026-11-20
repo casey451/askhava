@@ -368,6 +368,11 @@ async fn td_int_42_a_regular_answer_lands_on_her_own_contact(pool: PgPool) {
     let (contact, request) = her_request(&pool, &[]).await;
     assert!(!open(&pool, contact).await, "not before a reply");
     text(&pool, &logs, 2, "the unit upstairs").await;
+    // D-4851: steps 6 to 8 come first: "How soon?" (2), then the four trade questions; the
+    // texts after them are numbered 30 and up, so the timeline runs forward.
+    for (n, words) in (20..).zip(["2", "1", "1", "1", "none"]) {
+        text(&pool, &logs, n, words).await;
+    }
     assert!(open(&pool, contact).await, "asked after the area check");
     let mut db = pool.acquire().await.expect("db");
     let reply = her_text(contact, "the unit upstairs");
@@ -380,7 +385,7 @@ async fn td_int_42_a_regular_answer_lands_on_her_own_contact(pool: PgPool) {
         !read.contains("Sample Ave"),
         "the scrubber removes the street"
     );
-    text(&pool, &logs, 3, ANSWER).await;
+    text(&pool, &logs, 30, ANSWER).await;
     assert!(!open(&pool, contact).await, "answered");
     let (_, set) = audit(&pool, CONTACT_FIELDS_SET).await;
     assert_eq!(
@@ -394,7 +399,7 @@ async fn td_int_42_a_regular_answer_lands_on_her_own_contact(pool: PgPool) {
     let found = find_by_phone(&mut db, &vault(), HER).await.expect("find");
     assert_eq!(found, Some(contact), "the contact the release reads");
     drop(db);
-    text(&pool, &logs, 4, "thanks").await;
+    text(&pool, &logs, 31, "thanks").await;
     assert!(!open(&pool, contact).await, "not asked again");
     let (all, set) = audit(&pool, CONTACT_FIELDS_SET).await;
     assert_eq!(set.len(), 2, "a later text is no answer");
@@ -413,7 +418,12 @@ async fn td_int_42_a_street_is_no_hazard_and_no_number_asks_again(pool: PgPool) 
     let logs = Logs::default();
     let (contact, request) = her_request(&pool, &[]).await;
     text(&pool, &logs, 2, "the unit upstairs").await;
-    text(&pool, &logs, 3, "Testa on Sample Avenue").await;
+    // D-4851: steps 6 to 8 come first: "How soon?" (2), then the four trade questions; the
+    // texts after them are numbered 30 and up, so the timeline runs forward.
+    for (n, words) in (20..).zip(["2", "1", "1", "1", "none"]) {
+        text(&pool, &logs, n, words).await;
+    }
+    text(&pool, &logs, 30, "Testa on Sample Avenue").await;
     assert!(open(&pool, contact).await, "still waiting for the address");
     assert!(audit(&pool, CONTACT_FIELDS_SET).await.1.is_empty());
     let raw = SecretString::from("Testa near Sample Avenue");
@@ -435,7 +445,7 @@ async fn td_int_42_a_street_is_no_hazard_and_no_number_asks_again(pool: PgPool) 
         "the same words in any other reply would be a 911-list match"
     );
     drop(db);
-    text(&pool, &logs, 4, SMOKE_STREET).await;
+    text(&pool, &logs, 31, SMOKE_STREET).await;
     let mut db = pool.acquire().await.expect("db");
     let events = emergency_events(&mut db, request).await.expect("events");
     assert!(events.is_empty(), "no 911 text");
@@ -659,7 +669,12 @@ async fn td_int_42_a_hazard_keeps_its_911_text_and_safe_asks_again(pool: PgPool)
     let logs = Logs::default();
     let (contact, request) = her_request(&pool, &[]).await;
     text(&pool, &logs, 2, "the unit upstairs").await;
-    text(&pool, &logs, 3, OUTLET).await;
+    // D-4851: steps 6 to 8 come first: "How soon?" (2), then the four trade questions; the
+    // texts after them are numbered 30 and up, so the timeline runs forward.
+    for (n, words) in (20..).zip(["2", "1", "1", "1", "none"]) {
+        text(&pool, &logs, n, words).await;
+    }
+    text(&pool, &logs, 30, OUTLET).await;
     let mut db = pool.acquire().await.expect("db");
     let events = emergency_events(&mut db, request).await.expect("events");
     assert_eq!(events.len(), 1, "the 911 text");
@@ -690,7 +705,7 @@ async fn td_int_42_a_hazard_keeps_its_911_text_and_safe_asks_again(pool: PgPool)
         audit(&pool, CONTACT_FIELDS_SET).await.1.is_empty(),
         "SAFE is no answer"
     );
-    text(&pool, &logs, 4, ANSWER).await;
+    text(&pool, &logs, 31, ANSWER).await;
     assert_eq!(
         audit(&pool, CONTACT_FIELDS_SET).await.1,
         vec![contact, contact]
