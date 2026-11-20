@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T17:39:14Z by runner 9b0887171add (actions).
+Updated 2026-11-20T17:39:41Z by runner 9b0887171add (actions).
 
 **Building: T614 in progress since 17:26Z; 545 of 713 done; week 38% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 545 of 713 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T614 claimed 17:26Z, lease until 20:26Z; lane 5: T686 claimed 16:22Z, lease until 20:37Z; lane 6: T573 claimed 17:20Z, lease until 20:20Z; lane 7: T743 claimed 16:24Z, lease until 19:24Z
+- **Lane:** lane 3: T614 claimed 17:26Z, lease until 20:26Z; lane 6: T573 claimed 17:20Z, lease until 20:20Z; lane 7: T743 claimed 16:24Z, lease until 19:24Z
 - **Week:** 38% used, 113.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 17:38Z, 1 min before this update
 - **Keeper:** last ran 17:23Z, next wake 17:43Z
@@ -23,6 +23,7 @@ The pick's window deadline (picks.pick.confirm_due) is read only by private code
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T686 | businesses and server: a 90-day-old inbox or alert Yes gets  | MERGE_PENDING | 1 | 76 min | 17:39Z |  |
 | T672 | intake: the dispatcher asks "How soon?", the night count and | MERGE_PENDING | 3 | 52 min | 17:14Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T530 | portals: the owner help page and its screened reply box (D-3 | MERGE_PENDING | 3 | 71 min | 16:40Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
 | T681 | picks and jobs: the businesses that lost a pick and every qu | MERGE_PENDING | 1 | 50 min | 16:38Z |  |
@@ -148,9 +149,8 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 3: T614 (lease until 2026-11-20T20:26:36Z)
-- lane 5: T686 (lease until 2026-11-20T20:37:53Z)
 - lane 6: T573 (lease until 2026-11-20T20:20:18Z)
 - lane 7: T743 (lease until 2026-11-20T19:24:15Z)
 
 ## Last usage reading
-- {"task": "T672", "at": "2026-11-20T17:14:14Z", "output_tokens": 17373, "input_tokens": 84, "cache_creation_input_tokens": 110762, "cache_read_input_tokens": 1920031}
+- {"task": "T686", "at": "2026-11-20T17:39:13Z", "output_tokens": 27157, "input_tokens": 112, "cache_read_input_tokens": 2554774, "cache_creation_input_tokens": 155291}
