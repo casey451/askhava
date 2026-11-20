@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T19:26:26Z by runner 126f90388246 (actions).
+Updated 2026-11-20T19:43:39Z by runner af7731ff7440 (actions).
 
 **Building: T756 in progress since 18:57Z; 549 of 713 done; week 42% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,14 @@ Updated 2026-11-20T19:26:26Z by runner 126f90388246 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T756 claimed 18:57Z, lease until 21:57Z; lane 3: T530 claimed 18:54Z, lease until 21:54Z; lane 4: T682 claimed 19:03Z, lease until 22:03Z; lane 5: T772 claimed 18:05Z, lease until 21:05Z; lane 7: T743 claimed 18:24Z, lease until 21:24Z
 - **Week:** 42% used, 103.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:11Z, 14 min before this update
+- **Last run:** 19:26Z, 16 min before this update
 - **Keeper:** last ran 19:11Z, next wake 21:08Z
 
 ## Needs attention
 - BLOCKED T614: plan gap reported: PLAN GAP: tests/integration/tests/quote_page.rs:172 (owner T052, protected) bans the word "summary" anywhere in the quote page's HTML, but T614 must put <details class="menu"><summary>Menu</summary> in the header of every page (docs/design/DESIGN_SPEC.md:102); quote_page.html extends base.html. Smallest plan change: a harness task narrows the check at quote_page.rs:170-174 to the page's <main>. Also D-4970's "two rules only" is not enough: a third rule is needed in site.css: .menu > summary { margin: calc((var(--header-h) - 44px) / 2) 0 calc((var(--header-h) - 44px) / 2) -12px; } (else the row; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T614 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 42 problem(s) on tasks still to run (+420 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
+- Strict plan check red: 43 problem(s) on tasks still to run (+419 on DONE tasks); first: T530: stored context_pct 16% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
