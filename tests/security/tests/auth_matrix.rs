@@ -30,6 +30,10 @@
 //! homeowner, business, owner, action-link or public door must have a `yes` row in
 //! `docs/architecture.md` section 13 (which `route_wiring.rs` proves served), so `door_matrix.rs`
 //! reaches it. Both files assert the shared case list `tests/security/door_cases.txt`.
+//!
+//! T766 (TD-SEC-61, SEC-019, SEC-034, PRIV-028, D-4880) adds a tenth door, `PhotoLink` (`/photos`
+//! and below, T674's photo links: the token in the path is the key, no session opens it), probed
+//! over HTTP in `door_matrix.rs` only.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
@@ -123,6 +127,8 @@ enum Door {
     ActionLink,
     /// The owner portal: the owner's session only (SEC-005, SEC-006, SEC-007).
     Owner,
+    /// A photo link: the token in the path is the key, no session opens it (SEC-019, PRIV-028).
+    PhotoLink,
 }
 
 /// D-3641 (SEC-019, TD-SEC-61): the sign-up step paths open without a session, matched exactly,
@@ -175,6 +181,8 @@ fn door(path: &str, site: bool) -> Door {
         Door::Homeowner
     } else if under("/b") {
         Door::Business
+    } else if under("/photos") {
+        Door::PhotoLink
     } else if site {
         Door::Public
     } else {
@@ -186,7 +194,7 @@ fn door(path: &str, site: bool) -> Door {
 fn allowed(door: Door, actor: Actor) -> bool {
     match door {
         Door::Asset | Door::SignIn | Door::Public => true,
-        Door::Webhook | Door::ActionLink => false,
+        Door::Webhook | Door::ActionLink | Door::PhotoLink => false,
         Door::Owner => actor == Actor::Owner,
         Door::Link | Door::Homeowner => matches!(actor, Actor::HomeownerA | Actor::HomeownerB),
         Door::Business => matches!(actor, Actor::BusinessX | Actor::BusinessY),
@@ -603,7 +611,12 @@ fn yes_rows() -> BTreeSet<(String, String)> {
 fn probed_over_http(door: Door) -> bool {
     matches!(
         door,
-        Door::Homeowner | Door::Business | Door::Owner | Door::ActionLink | Door::Public
+        Door::Homeowner
+            | Door::Business
+            | Door::Owner
+            | Door::ActionLink
+            | Door::Public
+            | Door::PhotoLink
     )
 }
 
@@ -702,7 +715,12 @@ async fn td_sec_01_every_route_by_every_actor(pool: PgPool) {
                 Door::Webhook => probe_webhook(&path, who),
                 Door::Homeowner | Door::Business => probe_realm(&pool, &w, door, who).await,
                 // Probed over HTTP in app/server/tests/door_matrix.rs (TD-SEC-61, D-2440).
-                Door::Asset | Door::SignIn | Door::Public | Door::ActionLink | Door::Owner => {}
+                Door::Asset
+                | Door::SignIn
+                | Door::Public
+                | Door::ActionLink
+                | Door::Owner
+                | Door::PhotoLink => {}
             }
         }
     }
@@ -758,7 +776,7 @@ fn td_sec_61_the_shared_door_cases_hold_here() {
         assert_eq!(format!("{:?}", door(path, site)), listed, "{line}");
         seen.insert(listed);
     }
-    assert_eq!(seen.len(), 9, "every door has a case: {seen:?}");
+    assert_eq!(seen.len(), 10, "every door has a case: {seen:?}");
 }
 
 /// TD-SEC-61: the section 13 reader finds the served rows, and the owner door admits the owner

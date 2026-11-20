@@ -58,8 +58,9 @@ def _metadata(names: set[str]) -> str:
     return json.dumps({"packages": [{"name": n, "targets": [{"name": n.replace("-", "_")}]} for n in sorted(names)]})
 
 
-def test_seed_copies_only_the_smoke_builds_dependency_artifacts(tmp_path: Path) -> None:
+def test_seed_copies_only_the_smoke_builds_dependency_artifacts(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     smoke, debug = _target(tmp_path / "target" / "smoke" / "debug"), tmp_path / "target" / "debug"
+    monkeypatch.setattr(cache.shutil, "disk_usage", lambda path: SimpleNamespace(free=cache.SEED_MARGIN * 4))
     line = cache.seed(tmp_path, smoke, debug, lambda args: (0, _metadata(MEMBERS)))
     left = sorted(str(p.relative_to(debug)) for p in debug.rglob("*") if p.is_file())
     assert left == [".fingerprint/serde-0123456789abcdef/lib", "build/ring-0123456789abcdef/out/x.o",
