@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T01:39:08Z by runner bce7a7de6371 (actions).
+Updated 2026-11-20T01:39:41Z by runner bce7a7de6371 (actions).
 
-**Building: T527 in progress since 00:05Z; 512 of 704 done; week 14% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T726 in progress since 01:05Z; 512 of 704 done; week 14% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 512 of 704 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T527 claimed 00:05Z, lease until 03:05Z; lane 3: T726 claimed 01:05Z, lease until 04:05Z; lane 4: T218 claimed 00:31Z, lease until 03:31Z; lane 5: T663 claimed 23:33Z, lease until 02:33Z
+- **Lane:** lane 3: T726 claimed 01:05Z, lease until 04:05Z; lane 4: T218 claimed 00:31Z, lease until 03:31Z; lane 5: T663 claimed 23:33Z, lease until 02:33Z
 - **Week:** 14% used, 162.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:27Z, 11 min before this update
+- **Last run:** 01:27Z, 12 min before this update
 - **Keeper:** last ran 01:01Z, next wake 01:21Z
 
 ## Needs attention
@@ -21,6 +21,7 @@ Updated 2026-11-20T01:39:08Z by runner bce7a7de6371 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T527 | messaging, portals and server: the business-texting switch t | MERGE_PENDING | 1 | 93 min | 01:39Z |  |
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | QUEUED | 1 | 56 min | 01:00Z | T726 resync merged main cleanly, but fresh-eyes review of the WIP scan (runner/wip.py) found fail-open bypasses in three |
 | T613 | site: the D-4246 polish layer in site.css (tokens, layered s | MERGE_PENDING | 1 | 85 min | 00:47Z |  |
 | T758 | intake: Spanish gas and burning reports reach the 911 list,  | MERGE_PENDING | 1 | 90 min | 00:38Z |  |
@@ -135,10 +136,10 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T527 (lease until 2026-11-20T03:05:43Z)
+- nothing
 - lane 3: T726 (lease until 2026-11-20T04:05:47Z)
 - lane 4: T218 (lease until 2026-11-20T03:31:28Z)
 - lane 5: T663 (lease until 2026-11-20T02:33:30Z)
 
 ## Last usage reading
-- {"task": "T726", "at": "2026-11-20T01:00:06Z", "cache_read_input_tokens": 3490626, "input_tokens": 215, "cache_creation_input_tokens": 242082, "output_tokens": 66094}
+- {"task": "T527", "at": "2026-11-20T01:39:06Z", "output_tokens": 48991, "input_tokens": 183, "cache_creation_input_tokens": 180015, "cache_read_input_tokens": 8331605}

@@ -76792,7 +76792,7 @@
     "T310",
     "T407"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 0,
    "slug": "business-texting-eligibility-gate",
    "type": "build",
@@ -76805,6 +76805,31 @@
     4815,
     4816
    ],
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 132,
+     "head_sha": "bce7a7de63717efb69349365a109460a8e6d0e50",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-20T00:05:43Z",
+     "ended_at": "2026-11-20T01:39:06Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 7869349,
+       "turns": 79
+      },
+      "reviewer": {
+       "tokens": 691445,
+       "turns": 15
+      }
+     }
+    }
+   ],
    "reviewed_sha": "5a23f414620ab279ef928c28d84c420f85f37795",
    "review_lease": {
     "task": "T527",
@@ -76812,7 +76837,11 @@
     "expires": "2026-11-20T03:05:43Z"
    },
    "branch": "claude/task/T527-business-texting-eligibility-gate",
-   "head_check_since": null,
+   "auto_merge": {
+    "enabled": true,
+    "why": "auto-merge on #1162 (gh pr merge)",
+    "head": "5a23f414620ab279ef928c28d84c420f85f37795"
+   },
    "update_merges": [
     {
      "from": "bce7a7de63717efb69349365a109460a8e6d0e50",
@@ -91624,12 +91653,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T726",
-   "at": "2026-11-20T01:00:06Z",
-   "cache_read_input_tokens": 3490626,
-   "input_tokens": 215,
-   "cache_creation_input_tokens": 242082,
-   "output_tokens": 66094
+   "task": "T527",
+   "at": "2026-11-20T01:39:06Z",
+   "output_tokens": 48991,
+   "input_tokens": 183,
+   "cache_creation_input_tokens": 180015,
+   "cache_read_input_tokens": 8331605
   },
   "source": "session_reading 2026-11-20T01:00:44Z (week)",
   "by_task": {
@@ -97599,7 +97628,17 @@
    },
    "T527": {
     "estimated_bytes": 485161,
-    "estimated_tokens": 1425434
+    "estimated_tokens": 1425434,
+    "usage_counting": "message_id",
+    "output_tokens": 48991,
+    "input_tokens": 183,
+    "cache_creation_input_tokens": 180015,
+    "cache_read_input_tokens": 8331605,
+    "worker_tokens": 7869349,
+    "worker_turns": 79,
+    "reviewer_tokens": 691445,
+    "reviewer_turns": 15,
+    "last_model": "claude-opus-5-5"
    },
    "T218": {
     "estimated_bytes": 452656,
@@ -97609,11 +97648,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-19T22:21:14Z",
-    "tokens": 11732568
+    "tokens": 12794917
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 21628709
+    "tokens": 22691058
    }
   },
   "session_reading": {
@@ -97624,7 +97663,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T01:39:08Z",
+ "updated_at": "2026-11-20T01:39:41Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
