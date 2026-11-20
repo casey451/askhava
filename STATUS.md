@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T04:08:22Z by runner 87f20c7d156a (actions).
+Updated 2026-11-20T04:09:02Z by runner 87f20c7d156a (actions).
 
-**Building: T726 in progress since 03:35Z; 517 of 705 done; week 19% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T543 in progress since 03:53Z; 517 of 705 done; week 19% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 517 of 705 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T726 claimed 03:35Z, lease until 06:35Z; lane 3: T543 claimed 03:53Z, lease until 06:53Z; lane 4: T110 claimed 02:18Z, lease until 05:18Z; lane 5: T556 claimed 03:58Z, lease until 06:58Z; lane 6: T663 claimed 03:48Z, lease until 06:48Z; lane 7: T434 claimed 03:02Z, lease until 06:02Z
+- **Lane:** lane 3: T543 claimed 03:53Z, lease until 06:53Z; lane 4: T110 claimed 02:18Z, lease until 05:18Z; lane 5: T556 claimed 03:58Z, lease until 06:58Z; lane 6: T663 claimed 03:48Z, lease until 06:48Z; lane 7: T434 claimed 03:02Z, lease until 06:02Z
 - **Week:** 19% used, 149.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:01Z, 6 min before this update
+- **Last run:** 04:08Z, 0 min before this update
 - **Keeper:** last ran 04:01Z, next wake 05:20Z
 
 ## Needs attention
@@ -21,8 +21,9 @@ Updated 2026-11-20T04:08:22Z by runner 87f20c7d156a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T726 | Runner (harness): a failed attempt's unpushed work can be ke | MERGE_PENDING | 2 | 32 min | 04:08Z | merging main into the reviewed head conflicts in kit/plan.lock, kit/runner.json; a resync merges it in on this attempt ( |
 | T747 | intake and jobs: the homeowner's INT-029 emergency choice ma | MERGE_PENDING | 1 | 71 min | 03:25Z |  |
-| T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 2 | 2 h 16 min | 03:22Z | merging main into the reviewed head conflicts in kit/plan.lock, kit/runner.json; a resync merges it in on this attempt ( |
+| T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 2 | 2 h 16 min | 03:22Z |  |
 | T617 | site: DM Sans from one weight-axis variable file (smaller th | BLOCKED | 1 | 2 min | 03:04Z | PLAN GAP: tests/a11y/design_tokens.spec.ts:221 and :242 (protected, not owned by T617) contradict the prompt's single DM |
 | T648 | recovery: the monthly test restore into a throwaway cluster, | BLOCKED | 1 | 21 min | 02:55Z | PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, b |
 | T763 | tests (harness): the web chat spec's fake numbers never coll | done | 1 | 25 min | 02:17Z |  |
@@ -136,7 +137,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T726 (lease until 2026-11-20T06:35:46Z)
+- nothing
 - lane 3: T543 (lease until 2026-11-20T06:53:34Z)
 - lane 4: T110 (lease until 2026-11-20T05:18:18Z)
 - lane 5: T556 (lease until 2026-11-20T06:58:39Z)
@@ -144,4 +145,4 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 7: T434 (lease until 2026-11-20T06:02:51Z)
 
 ## Last usage reading
-- {"task": "T747", "at": "2026-11-20T03:25:43Z", "cache_read_input_tokens": 10962778, "output_tokens": 71112, "input_tokens": 279, "cache_creation_input_tokens": 318136}
+- {"task": "T726", "at": "2026-11-20T04:08:21Z", "input_tokens": 67, "output_tokens": 10552, "cache_creation_input_tokens": 71498, "cache_read_input_tokens": 1022844}
