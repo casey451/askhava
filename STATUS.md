@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T10:38:50Z by runner 8cca545bae66 (actions).
+Updated 2026-11-20T10:38:59Z by runner 8cca545bae66 (actions).
 
 **Building: T648 in progress since 10:37Z; 530 of 710 done; week 28% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 530 of 710 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T648 claimed 10:37Z, lease until 13:37Z; lane 5: T463 claimed 10:18Z, lease until 13:18Z; lane 6: T768 claimed 10:15Z, lease until 13:15Z
+- **Lane:** lane 1: T648 claimed 10:37Z, lease until 13:37Z; lane 5: T463 claimed 10:18Z, lease until 13:18Z
 - **Week:** 28% used, 137.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 10:38Z, 0 min before this update
 - **Keeper:** last ran 10:24Z, next wake 13:18Z
@@ -19,6 +19,7 @@ Updated 2026-11-20T10:38:50Z by runner 8cca545bae66 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T768 | runner tests (harness): the seed test fakes free disk, so a  | MERGE_PENDING | 1 | 22 min | 10:38Z |  |
 | T573 | messaging and server: queued business texts are addressed to | QUEUED | 2 | 53 min | 09:48Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
 | T530 | portals: the owner help page and its screened reply box (D-3 | QUEUED | 2 | 2 h 25 min | 09:46Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
 | T727 | Runner (harness): a retry after a review failure or a plan-f | MERGE_PENDING | 1 | 75 min | 09:38Z |  |
@@ -140,7 +141,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T648 (lease until 2026-11-20T13:37:03Z)
 - lane 5: T463 (lease until 2026-11-20T13:18:16Z)
-- lane 6: T768 (lease until 2026-11-20T13:15:59Z)
 
 ## Last usage reading
-- {"task": "T573", "at": "2026-11-20T09:48:02Z", "input_tokens": 233, "cache_read_input_tokens": 12361682, "cache_creation_input_tokens": 248515, "output_tokens": 75148}
+- {"task": "T768", "at": "2026-11-20T10:38:32Z", "input_tokens": 41, "output_tokens": 7352, "cache_creation_input_tokens": 42732, "cache_read_input_tokens": 536413}
