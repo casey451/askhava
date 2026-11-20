@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T15:23:21Z by runner 696a43ed61d5 (actions).
+Updated 2026-11-20T15:27:50Z by runner 4af5a136714a (manual).
 
 **Building: T770 in progress since 14:33Z; 540 of 712 done; week 35% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-20T15:23:21Z by runner 696a43ed61d5 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 6: T770 claimed 14:33Z, lease until 17:33Z
 - **Week:** 35% used, 123.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:23Z, 0 min before this update
+- **Last run:** 15:23Z, 4 min before this update
 - **Keeper:** last ran 15:23Z, next wake 15:43Z
 
 ## Needs attention
@@ -91,39 +91,37 @@ Updated 2026-11-20T15:23:21Z by runner 696a43ed61d5 (actions).
 | T724 | harness: Ci's Rust-test jobs, the worker job and the nightly | done | 1 | 50 min | 17:09Z |  |
 | T210 | payments: the money view's sales-tax set-aside and manual ex | done | 1 | 53 min | 16:29Z |  |
 | T407 | calls, portals and server: the owner-portal safety voice cal | done | 1 | 102 min | 16:01Z |  |
-| T541 | payments, portals and adapters: a card saved or changed from | check_failed | 1 | 2 h 16 min | 15:25Z |  |
-| T470 | messaging and server: the worker task that sends queued emai | done | 3 | 2 h 18 min | 15:24Z | Fix-round review (after the one allowed findings round) still found a problem at head 1830747e4; no reviewer approved a  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 325 of 735 (44.2%) · partial 389 · unstarted 21
+**Requirements verified:** 254 of 735 (34.6%) · partial 460 · unstarted 21
 **Tasks merged (throughput only):** 540 of 712
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 18 | 17 | 0 | 35 |
-| ai | 8 | 18 | 3 | 29 |
-| businesses | 21 | 36 | 1 | 58 |
-| calls | 14 | 11 | 0 | 25 |
-| consent | 16 | 19 | 0 | 35 |
-| fees | 22 | 30 | 0 | 52 |
-| intake | 8 | 35 | 0 | 43 |
+| accessibility | 16 | 19 | 0 | 35 |
+| ai | 7 | 19 | 3 | 29 |
+| businesses | 20 | 37 | 1 | 58 |
+| calls | 11 | 14 | 0 | 25 |
+| consent | 11 | 24 | 0 | 35 |
+| fees | 21 | 31 | 0 | 52 |
+| intake | 7 | 36 | 0 | 43 |
 | job-cards | 12 | 12 | 0 | 24 |
-| licensing | 33 | 15 | 0 | 48 |
-| lifecycle | 17 | 11 | 0 | 28 |
-| messaging | 23 | 22 | 0 | 45 |
-| ops-recovery | 9 | 31 | 14 | 54 |
+| licensing | 30 | 18 | 0 | 48 |
+| lifecycle | 13 | 15 | 0 | 28 |
+| messaging | 22 | 23 | 0 | 45 |
+| ops-recovery | 6 | 34 | 14 | 54 |
 | privacy | 8 | 23 | 0 | 31 |
 | quiet-hours | 3 | 6 | 0 | 9 |
-| quotes-pick | 25 | 31 | 0 | 56 |
-| recurring | 10 | 1 | 0 | 11 |
+| quotes-pick | 22 | 34 | 0 | 56 |
+| recurring | 9 | 2 | 0 | 11 |
 | security | 10 | 42 | 3 | 55 |
-| terms | 27 | 8 | 0 | 35 |
-| website | 18 | 12 | 0 | 30 |
-| wording | 23 | 9 | 0 | 32 |
+| terms | 10 | 25 | 0 | 35 |
+| website | 7 | 23 | 0 | 30 |
+| wording | 9 | 23 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
