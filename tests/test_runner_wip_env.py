@@ -351,7 +351,7 @@ def test_push_and_delete_use_the_job_tokens_credential_helper_never_the_pat(tmp_
     token_env(monkeypatch)
     env, calls = routed(tmp_path, monkeypatch)
     assert env.push_wip(REF, "a" * 40) and env.delete_wip_ref(REF)
-    pushes = [(args, e) for args, e in calls if args[:2] == ["git", "push"]]
+    pushes = [(args, e) for args, e in calls if args[:4] == [*ge.WIP_GIT, "push"]]
     assert [args[-1] for args, _ in pushes] == [f"{'a' * 40}:refs/heads/{REF}", f":refs/heads/{REF}"]
     for args, e in pushes:
         assert e is not None and "RUNNER_PUSH_TOKEN" not in e and "GH_TOKEN" not in e
@@ -400,11 +400,55 @@ def test_an_existing_ref_or_a_rejected_push_is_false(tmp_path: Path, monkeypatch
 
 
 def test_wip_refs_lists_only_wip_ref_names(tmp_path: Path) -> None:
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
     out = f"{'a' * 40}\trefs/heads/{REF}\n{'b' * 40}\trefs/heads/claude/wip/odd\n"
     env = GitHubEnv(tmp_path, [], tmp_path, repo="o/r", starter="actions", runner_sha="x", run=lambda a, s, c: (0, out, ""))
     assert env.wip_refs() == {REF: "a" * 40}
     env._run = lambda a, s, c: (128, "", "no network")  # type: ignore[method-assign]
     assert env.wip_refs() is None
+
+
+def test_wip_reads_run_once_in_the_locked_env_with_no_fallback(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """D-4801: main's ls-remote and fetch, the existence check and the listing run in `wip.git_env()` (no
+    global or system config, hooks off) with a github.com-only helper, and a refused call is never retried in
+    this process's own env."""
+    token_env(monkeypatch, GITHUB_ACTIONS=None)
+    env, calls = routed(tmp_path, monkeypatch)
+    monkeypatch.setattr(ge, "_run", lambda args, stdin, cwd, e, timeout=600: calls.append((args, e)) or
+                        subprocess.CompletedProcess(args, 128 if "ls-remote" in args else 0, "", "refused"))
+    assert env._wip_main() == "" and env.wip_refs() is None
+    assert [args[len(ge.WIP_GIT)] for args, _ in calls] == ["ls-remote", "ls-remote"]
+    for args, e in calls:
+        assert args[:len(ge.WIP_GIT)] == list(ge.WIP_GIT) and e is not None and e["GIT_CONFIG_GLOBAL"] == "/dev/null"
+        config = {e[f"GIT_CONFIG_KEY_{i}"]: e[f"GIT_CONFIG_VALUE_{i}"] for i in range(int(e["GIT_CONFIG_COUNT"]))}
+        assert config["core.hooksPath"] == "/dev/null" and e["GIT_CONFIG_NOSYSTEM"] == "1"
+        assert config["credential.https://github.com.helper"].endswith('echo "password=$RUNNER_PUSH_TOKEN"; }; f')
+    token_env(monkeypatch, GITHUB_ACTIONS=None, RUNNER_PUSH_TOKEN=None)
+    assert ge.run_command([*ge.WIP_GIT, "push", "https://github.com/o/r.git", "x"], None, tmp_path)[0] == 1
+    assert len(calls) == 2
+
+
+def test_a_global_insteadof_cannot_play_main_or_the_wip_listing(world: dict[str, Any], tmp_path: Path,
+                                                                  monkeypatch: pytest.MonkeyPatch) -> None:
+    """D-4801: a user-level `url.<fake>.insteadOf https://github.com/o/r.git` must not make the worker's own
+    commit "main" (the scan would then skip it) nor feed the listing; the real `_wip_url` is used."""
+    root, fake = world["root"], tmp_path / "fake.git"
+    leak = commit(root, {"app/demo/notes.txt": "start\nFAKESECRET\n"})
+    head = commit(root, {"app/demo/notes.txt": "start\n"})
+    subprocess.run(["git", "init", "-q", "--bare", "-b", "main", str(fake)], check=True)
+    git(root, "push", "-q", str(fake), f"{leak}:refs/heads/main", f"{leak}:refs/heads/{REF}")
+    (tmp_path / "home").mkdir()
+    (tmp_path / "home/.gitconfig").write_text(f'[url "file://{fake}"]\n\tinsteadOf = https://github.com/o/r.git\n', encoding="utf-8")
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(tmp_path / "home/.gitconfig"))
+    for name in ("HTTPS_PROXY", "https_proxy", "ALL_PROXY", "all_proxy"):
+        monkeypatch.setenv(name, "http://127.0.0.1:9")  # GitHub itself is never reached from a test
+    monkeypatch.delenv("NO_PROXY", raising=False)
+    monkeypatch.delenv("no_proxy", raising=False)
+    env = GitHubEnv(root, [], tmp_path, repo="o/r", starter="actions", runner_sha="x", run=no_gh)
+    assert git(root, "ls-remote", "https://github.com/o/r.git", "refs/heads/main").startswith(leak)
+    assert env._wip_main() == "" and env.wip_refs() is None
+    assert env.wip_check(head) == "main or the head is unreadable"
 
 
 # ---- prepare_branch

@@ -176,12 +176,14 @@ def run_command(args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str
 
     Remote git and gh calls go first with the long-lived token (D-519) and, if that is refused, once
     more exactly as before with the session's own credentials, so the change can never do worse."""
-    if _wip_push(args):
-        # A claude/wip push or delete goes only with the job token, never RUNNER_PUSH_TOKEN (D-4720).
-        job_env = _job_git_env()
-        if job_env is None:
+    kind = _wip_call(args)
+    if kind:
+        # A WIP call runs once in a locked-down env, a push only with the job token, never retried in this
+        # process's own env (D-4720, D-4801).
+        wip_env = _wip_git_env(push=kind == "push")
+        if wip_env is None:
             return 1, "", "no job token for a claude/wip push (D-4720)"
-        done = _run(args, stdin, cwd, job_env)
+        done = _run(args, stdin, cwd, wip_env)
         return done.returncode, done.stdout, done.stderr
     long_args = _long_token_args(args)
     if long_args is not None:
@@ -585,6 +587,8 @@ def _run(args: list[str], stdin: str | None, cwd: Path, env: dict[str, str] | No
 
 
 REMOTE_GIT = ("fetch", "push", "ls-remote")
+# The prefix of every WIP remote git call; run_command runs such a call only in `_wip_git_env` (D-4801).
+WIP_GIT = ("git", "-c", f"core.hooksPath={os.devnull}")
 
 
 def _long_token_args(args: list[str]) -> list[str] | None:
@@ -658,9 +662,41 @@ def _push_env(args: list[str]) -> dict[str, str] | None:
     return _git_token_env()
 
 
+def _wip_call(args: list[str]) -> str:
+    """'push' for a WIP push (`_wip_push`, or any push under WIP_GIT), 'read' for any other call under WIP_GIT,
+    else '' (D-4801)."""
+    wip_git = args[:len(WIP_GIT)] == list(WIP_GIT)
+    if _wip_push(args) or (wip_git and args[len(WIP_GIT):len(WIP_GIT) + 1] == ["push"]):
+        return "push"
+    return "read" if wip_git else ""
+
+
 def _wip_push(args: list[str]) -> bool:
     """A `git push` whose last argument is a refspec to a `claude/wip/` ref (a create or a delete, D-4720)."""
     return args[:2] == ["git", "push"] and len(args) > 3 and args[-1].partition(":")[2].startswith("refs/heads/claude/wip/")
+
+
+def _wip_git_env(push: bool) -> dict[str, str] | None:
+    """The env of every WIP git call (D-4801): `_job_git_env()` when this is the Actions runner with the job
+    token; else, for a read only, `wip.git_env()` (no system or global config, no hooks), with a credential
+    helper for RUNNER_PUSH_TOKEN when that is set; None for a push without the job token."""
+    job = _job_git_env()
+    if job is not None or push:
+        return job
+    token = os.environ.get("RUNNER_PUSH_TOKEN", "")
+    return _locked_git_env("RUNNER_PUSH_TOKEN", token) if token else wip.git_env()
+
+
+def _locked_git_env(name: str, token: str) -> dict[str, str]:
+    """`wip.git_env()` plus a credential helper that answers only https://github.com with the token in `name`
+    (put back in the env for the helper alone, never in argv or a file; D-4799, D-4801)."""
+    helper = f'!f() {{ echo username=x-access-token; echo "password=${name}"; }}; f'
+    pairs = [*wip.SAFE_GIT_CONFIG, ("http.https://github.com/.extraheader", ""), ("credential.helper", ""),
+             ("credential.https://github.com.helper", helper)]
+    env = {**wip.git_env(), name: token, "GIT_CONFIG_COUNT": str(len(pairs))}
+    for i, (key, value) in enumerate(pairs):
+        env[f"GIT_CONFIG_KEY_{i}"], env[f"GIT_CONFIG_VALUE_{i}"] = key, value
+    return env
 
 
 def _job_git_env() -> dict[str, str] | None:
@@ -671,15 +707,8 @@ def _job_git_env() -> dict[str, str] | None:
     plus RUNNER_CHECKS_TOKEN for the helper, which answers only for https://github.com."""
     if os.environ.get("GITHUB_ACTIONS") != "true" or os.environ.get("RUNNER_STARTER") != "actions":
         return None
-    if not os.environ.get("RUNNER_CHECKS_TOKEN"):
-        return None
-    helper = '!f() { echo username=x-access-token; echo "password=$RUNNER_CHECKS_TOKEN"; }; f'
-    pairs = [*wip.SAFE_GIT_CONFIG, ("http.https://github.com/.extraheader", ""), ("credential.helper", ""),
-             ("credential.https://github.com.helper", helper)]
-    env = {**wip.git_env(), "RUNNER_CHECKS_TOKEN": os.environ["RUNNER_CHECKS_TOKEN"], "GIT_CONFIG_COUNT": str(len(pairs))}
-    for i, (key, value) in enumerate(pairs):
-        env[f"GIT_CONFIG_KEY_{i}"], env[f"GIT_CONFIG_VALUE_{i}"] = key, value
-    return env
+    token = os.environ.get("RUNNER_CHECKS_TOKEN", "")
+    return _locked_git_env("RUNNER_CHECKS_TOKEN", token) if token else None
 
 
 def _git_token_env() -> dict[str, str]:
@@ -2198,11 +2227,11 @@ class GitHubEnv:
     def _wip_main(self) -> str:
         """Main's head as `_wip_url` says (`ls-remote`, no fallback to `origin`), its objects fetched by sha with no
         ref or FETCH_HEAD written; '' when either fails (D-4800)."""
-        code, out, _ = self._run(["git", "ls-remote", self._wip_url(), "refs/heads/main"], None, self.root)
+        code, out, _ = self._run([*WIP_GIT, "ls-remote", self._wip_url(), "refs/heads/main"], None, self.root)
         sha = out.split("\t", 1)[0].strip() if code == 0 else ""
         if not re.fullmatch(r"[0-9a-f]{40}", sha):
             return ""
-        fetch = ["git", "fetch", "--quiet", "--no-tags", "--no-write-fetch-head", self._wip_url(), sha]
+        fetch = [*WIP_GIT, "fetch", "--quiet", "--no-tags", "--no-write-fetch-head", self._wip_url(), sha]
         if self._run(fetch, None, self.root)[0] != 0:
             return ""
         return sha if wip.git_read(self.root, "cat-file", "-t", sha, check=False) == "commit" else ""
@@ -2214,10 +2243,10 @@ class GitHubEnv:
         if not self._wip_allowed(ref, "push") or not re.fullmatch(r"[0-9a-f]{40}", str(sha)) or not self._wip_clone_ok():
             return False
         url = self._wip_url()
-        if self._run(["git", "ls-remote", "--exit-code", url, f"refs/heads/{ref}"], None, self.root)[0] != 2:
+        if self._run([*WIP_GIT, "ls-remote", "--exit-code", url, f"refs/heads/{ref}"], None, self.root)[0] != 2:
             self.log.append(f"WIP: {ref} not pushed: it exists on GitHub or GitHub cannot be read")
             return False
-        code, out, err = self._run(["git", "push", "--porcelain", "--no-verify", url, f"{sha}:refs/heads/{ref}"], None, self.root)
+        code, out, err = self._run([*WIP_GIT, "push", "--porcelain", "--no-verify", url, f"{sha}:refs/heads/{ref}"], None, self.root)
         if code != 0:
             self.log.append(f"WIP: push of {ref} rejected: {(out.strip() + ' ' + err.strip()).strip()[:200]}")
         return code == 0
@@ -2230,17 +2259,20 @@ class GitHubEnv:
         return ok
 
     def _wip_clone_ok(self) -> bool:
-        """`wip.repo_refusal` before a push with the job token: a local `url.*.insteadOf`, credential helper or
-        hook could otherwise send the token elsewhere or run with it (D-4799). A refusal logs one line."""
+        """`wip.repo_refusal` before a push with the job token or a listing: a local `url.*.insteadOf`, credential
+        helper or hook could otherwise send the token elsewhere, run with it or redirect the read (D-4799,
+        D-4801). A refusal logs one line."""
         why = wip.repo_refusal(self.root)
         if why:
-            self.log.append(f"WIP: no push with the job token: {why[:200]}")
+            self.log.append(f"WIP: no call to GitHub: {why[:200]}")
         return not why
 
     def wip_refs(self) -> dict[str, str] | None:
         """GitHub's `claude/wip/*` refs (`_wip_url`, never `origin`, D-4800) that match WIP_REF, name -> sha; None
-        when the listing fails (D-4720)."""
-        code, out, err = self._run(["git", "ls-remote", self._wip_url(), "refs/heads/claude/wip/*"], None, self.root)
+        when the listing fails or the clone's config could redirect it (`_wip_clone_ok`, D-4720, D-4801)."""
+        if not self._wip_clone_ok():
+            return None
+        code, out, err = self._run([*WIP_GIT, "ls-remote", self._wip_url(), "refs/heads/claude/wip/*"], None, self.root)
         if code != 0:
             self.log.append(f"WIP: refs not listed: {err.strip()[:200]}")
             return None
@@ -2255,7 +2287,7 @@ class GitHubEnv:
         """Delete one WIP ref with the job token (D-4720): exactly `:refs/heads/<name>`, a WIP_REF name only."""
         if not self._wip_allowed(name, "delete") or not self._wip_clone_ok():
             return False
-        code, out, err = self._run(["git", "push", "--porcelain", "--no-verify", self._wip_url(), f":refs/heads/{name}"], None, self.root)
+        code, out, err = self._run([*WIP_GIT, "push", "--porcelain", "--no-verify", self._wip_url(), f":refs/heads/{name}"], None, self.root)
         if code != 0:
             self.log.append(f"WIP: delete of {name} rejected: {(out.strip() + ' ' + err.strip()).strip()[:200]}")
         return code == 0
