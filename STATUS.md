@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T14:55:16Z by runner 4626f2e46b66 (actions).
+Updated 2026-11-20T14:55:42Z by runner 4626f2e46b66 (actions).
 
-**Building: T557 in progress since 13:49Z; 538 of 712 done; week 35% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T770 in progress since 14:33Z; 538 of 712 done; week 35% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 538 of 712 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T557 claimed 13:49Z, lease until 16:49Z; lane 6: T770 claimed 14:33Z, lease until 17:33Z
+- **Lane:** lane 6: T770 claimed 14:33Z, lease until 17:33Z
 - **Week:** 35% used, 120.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:54Z, 0 min before this update
+- **Last run:** 14:55Z, 0 min before this update
 - **Keeper:** last ran 14:54Z, next wake 16:51Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Updated 2026-11-20T14:55:16Z by runner 4626f2e46b66 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T557 | Decisions digest, piece 12: the next entries after the heade | MERGE_PENDING | 1 | 65 min | 14:55Z |  |
 | T672 | intake: the dispatcher asks "How soon?", the night count and | MERGE_PENDING | 3 | 2 h 13 min | 14:53Z | runner smoke red on 3e9315b7399c (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
 | T206 | recovery: the local restore drill with no double send or cha | MERGE_PENDING | 1 | 89 min | 14:50Z |  |
 | T767 | tests (harness): the Confirm press fixtures get an Active ac | MERGE_PENDING | 1 | 108 min | 14:41Z |  |
@@ -144,8 +145,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 3: T557 (lease until 2026-11-20T16:49:23Z)
 - lane 6: T770 (lease until 2026-11-20T17:33:55Z)
 
 ## Last usage reading
-- {"task": "T672", "at": "2026-11-20T14:53:01Z", "input_tokens": 298, "cache_read_input_tokens": 15233607, "output_tokens": 129779, "cache_creation_input_tokens": 446013}
+- {"task": "T557", "at": "2026-11-20T14:55:14Z", "input_tokens": 148, "cache_read_input_tokens": 6696117, "output_tokens": 39570, "cache_creation_input_tokens": 242444}
