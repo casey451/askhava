@@ -72,7 +72,7 @@
   "scripts/plan_pages.py": "714c045b4117f0019cf83493c60e2b2e1b206cb8eaddcf7d0e4bc931a42c298f",
   "scripts/plan_pins.py": "582c52c071b58cdba5dc0933ff8e714855aa87ce4e6e623885f85d9c85cd61fb",
   "scripts/plan_symbols.py": "77dfb2676cd1b08ba5fec84c089d0307146d032370464c5e2f8d959842626b7e",
-  "scripts/prehandin.sh": "fbf156fd02daaa337aba67eeaaab78ea97e2d5299d6b7e6093b24a6986e7fe0c",
+  "scripts/prehandin.sh": "828fa8adbbc9e1e0fe93b77a8d1d2db5514a00e961f9cbb14ffe04032dbf9241",
   "scripts/prehandin_ally.py": "37fb5a6daed3e21728bac1e20f07ffdca2b2d319dc1af2ef731b8ed49f514d86",
   "scripts/progress.py": "6a31a132e709c974e5e71468a8e6fa8c212b753bad7501713250f39c0e5d08be",
   "scripts/quota_probe.py": "63f21117d06c02632e2e79698ef828a33668cefc1403cfc261cc2d813d3cf951",
