@@ -4,7 +4,8 @@
 // a `pm_…` ID, posts it with the form's one-time press ID, and writes the server's answer into the
 // page at once: a decline in the alert region, with the next press ID the server gave (the next
 // attempt key, FEE-016); a bank approval through Stripe's in-page 3-D Secure step; an over-limit
-// end with the portal link (FEE-041). After the bank step the page never shows a success of its
+// end with the portal link (FEE-041); a card change that needs a code first links the step-up page
+// under its own label (SEC-038, T541). After the bank step the page never shows a success of its
 // own: an error or a cancel shows the try-again line, and a finished step shows "Checking with
 // your bank" until the server, asked with a GET of the form's own address for JSON, gives the
 // attempt's state in the press reply's shape (D-3813). A $0 Confirm (the form's `data-paid="no"`) posts no card
@@ -40,6 +41,7 @@ interface PressReply {
   next_press: string | null;
   client_secret?: string;
   link?: string;
+  link_label?: string;
 }
 
 type StripeFactory = (key: string) => StripeClient;
@@ -82,13 +84,14 @@ function askState(form: HTMLFormElement): Promise<PressReply | null> {
   return answer(fetch(form.action, { method: "GET", headers: { accept: "application/json" } }));
 }
 
-function sayWithLink(words: string, href: string): void {
+/** The reply's words and its link, under the reply's own label or "Go to your portal" (T541). */
+function sayWithLink(words: string, href: string, label: string | undefined): void {
   const region = document.getElementById("confirm-status");
   if (region === null) return;
   region.textContent = `${words} `;
   const link = document.createElement("a");
   link.href = href;
-  link.textContent = "Go to your portal";
+  link.textContent = label ?? "Go to your portal";
   region.append(link);
 }
 
@@ -98,7 +101,7 @@ function write(form: HTMLFormElement, reply: PressReply): void {
   const press = field(form, "press");
   if (typeof reply.next_press === "string" && press !== null) press.value = reply.next_press;
   if (typeof reply.link === "string") {
-    sayWithLink(reply.message, reply.link);
+    sayWithLink(reply.message, reply.link, reply.link_label);
     return;
   }
   say(reply.state === "declined" ? "confirm-error" : "confirm-status", reply.message);
