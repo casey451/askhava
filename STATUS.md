@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T20:38:10Z by runner f230bf40dfe5 (actions).
+Updated 2026-11-20T20:41:38Z by runner 5b08505974c2 (actions).
 
-**Building: T558 in progress since 20:29Z; 551 of 713 done; week 45% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T558 in progress since 20:29Z; 552 of 713 done; week 45% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 551 of 713 build tasks (owner gates not counted)
+- **Tasks done:** 552 of 713 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T558 claimed 20:29Z, lease until 23:29Z; lane 4: T682 claimed 19:03Z, lease until 22:03Z; lane 6: T673 claimed 20:17Z, lease until 23:17Z
 - **Week:** 45% used, 99.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:37Z, 0 min before this update
+- **Last run:** 20:38Z, 3 min before this update
 - **Keeper:** last ran 20:38Z, next wake 20:58Z
 
 ## Needs attention
@@ -16,14 +16,14 @@ Updated 2026-11-20T20:38:10Z by runner f230bf40dfe5 (actions).
 - PLAN GAP T305 (since 2026-11-20T20:17:39Z, no attempt used; a plan change fixes it): T305: dependency T530 is DONE but its owned file app/portals/src/owner_help.rs is not on main; T305: dependency T530 is DONE but its owned file app/portals/templates/help_request.html is not on main; T305: dependency T530 is DONE but its owned file tests/security/tests/owner_help_reply.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 39 problem(s) on tasks still to run (+416 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
+- Strict plan check red: 46 problem(s) on tasks still to run (+424 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T743 | messaging and privacy: opt-out listings are re-keyed to the  | MERGE_PENDING | 2 | 2 h 11 min | 20:36Z | Second review (head 7921ab0285f5916db9a9df89ee828c150908805e) ended FINDINGS: tests/integration/tests/suppression_rekey. |
 | T772 | picks: a public reader of a waiting pick's Confirm deadline  | MERGE_PENDING | 1 | 117 min | 20:02Z |  |
-| T756 | privacy: the scrubber catches phones split by connector word | MERGE_PENDING | 1 | 59 min | 19:57Z |  |
+| T756 | privacy: the scrubber catches phones split by connector word | done | 1 | 59 min | 19:57Z |  |
 | T530 | portals: the owner help page and its screened reply box (D-3 | done | 3 | 49 min | 19:43Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T661 | privacy: a business notice address with spaces, commas or co | done | 1 | 27 min | 19:04Z |  |
 | T614 | site: the V6 header in base.html (links, the Menu in the pag | BLOCKED | 2 | 80 min | 18:46Z | PLAN GAP: tests/integration/tests/quote_page.rs:172 (owner T052, protected) bans the word "summary" anywhere in the quot |
@@ -104,7 +104,7 @@ Updated 2026-11-20T20:38:10Z by runner f230bf40dfe5 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 362 of 735 (49.3%) · partial 354 · unstarted 19
-**Tasks merged (throughput only):** 551 of 713
+**Tasks merged (throughput only):** 552 of 713
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -140,7 +140,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 194 of 295 done
+- stage 5: 195 of 295 done
 - stage 6: 0 of 65 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
