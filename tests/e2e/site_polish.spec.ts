@@ -62,11 +62,20 @@ function declarations(css: string): Decl[] {
   return out;
 }
 
-/** `value` with each `var(--name)` replaced by the custom property's first declared value. */
+/**
+ * `value` with each `var(--name)` replaced by the custom property's largest declared value (the
+ * longest time, then the highest count), since any rule declaring it may reach the element.
+ */
 function resolve(value: string, decls: Decl[]): string {
+  const weight = (v: string): [number, number] => [Math.max(0, ...times(v)), iterations(v)];
+  const largest = (name: string): string => decls.filter((d) => d.prop === name).map((d) => d.value)
+    .reduce((best, v) => {
+      const [a, b] = [weight(v), weight(best)];
+      return a[0] > b[0] || (a[0] === b[0] && a[1] > b[1]) ? v : best;
+    }, "0ms");
   let out = value;
   for (let round = 0; round < 5 && out.includes("var("); round += 1) {
-    out = out.replace(/var\((--[a-z0-9-]+)\)/g, (_, name: string) => decls.find((d) => d.prop === name)?.value ?? "0ms");
+    out = out.replace(/var\((--[a-z0-9-]+)\)/g, (_, name: string) => largest(name));
   }
   return out;
 }
@@ -117,6 +126,12 @@ function placeProblems(decls: Decl[]): string[] {
   });
 }
 
+/** WEB-029: an animation or transition value uses no `calc(`, whose time these checks cannot read. */
+function calcProblems(decls: Decl[]): string[] {
+  return decls.filter((d) => /^(animation|transition)(-|$)/.test(d.prop) && resolve(d.value, decls).includes("calc("))
+    .map((d) => `${d.prop} at ${selectorOf(d)} uses calc(`);
+}
+
 /**
  * The delays (ms) anywhere in the sheet for `kind` (`transition` or `animation`): every `-delay`
  * longhand and every shorthand item's second time. Taken sheet-wide, since a selector list, a
@@ -145,10 +160,12 @@ function transitionProblems(decls: Decl[]): string[] {
 /**
  * WEB-029: no animation repeats more than 3 times, and each ends within 900 ms of load. The
  * shorthand and the `animation-duration` longhand each count, with the largest delay and
- * iteration count anywhere in the sheet; a delay alone over 900 ms fails too.
+ * iteration count anywhere in the sheet (longhands and shorthand items alike); a delay alone over
+ * 900 ms fails too.
  */
 function animationProblems(decls: Decl[]): string[] {
-  const counts = decls.filter((d) => d.prop === "animation-iteration-count").map((d) => iterations(d.value));
+  const counts = decls.filter((d) => /^animation(-iteration-count)?$/.test(d.prop) && !isNone(d.value))
+    .flatMap((d) => splitTop(resolve(d.value, decls)).map(iterations));
   const out = counts.filter((n) => n > 3).map((n) => `animation repeats ${String(n)} times`);
   const delay = Math.max(0, ...sheetDelays(decls, "animation"));
   if (delay > 900) out.push(`animation-delay ${String(delay)} ms ends after 900 ms`);
@@ -177,6 +194,7 @@ function motionProblems(css: string): string[] {
   const decls = declarations(css);
   return [
     ...placeProblems(decls),
+    ...calcProblems(decls),
     ...transitionProblems(decls),
     ...animationProblems(decls),
     ...capProblems(decls),
@@ -226,6 +244,12 @@ test("WEB-029 A11Y-009 D-4246 D-4252: each planted motion or gradient rule fails
     [inMotion(".pz-g { animation-name: rise; animation-delay: 1200ms; }"), "animation-delay 1200 ms ends after 900 ms"],
     [inMotion(".pz-h { animation-iteration-count: 3; } .pz-h.x { animation: rise 400ms; }"),
       "animation at .pz-h.x ends at 1560 ms"],
+    [inMotion(".pz-i { animation: rise 100ms 3; } .pz-i.x { animation-duration: 400ms; }"),
+      "animation at .pz-i.x ends at 1560 ms"],
+    [`.pz-j { --pz-d: 100ms; } .pz-k { --pz-d: 2000ms; }${inMotion(".pz-l { animation: rise var(--pz-d); }")}`,
+      "animation at .pz-l ends at 2360 ms"],
+    [inMotion(".pz-m { animation: rise 300ms; animation-delay: calc(8 * 90ms); }"), "animation-delay at .pz-m uses calc("],
+    [inMotion(".pz-n { --pz-i: 3; transition: transform calc(var(--pz-i) * 90ms); }"), "transition at .pz-n uses calc("],
     [".z { background: linear-gradient(white, white); }", "linear-gradient( appears"],
   ];
   for (const [rules, reason] of planted) expect(motionProblems(css + rules), reason).toContain(reason);
