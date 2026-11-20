@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T02:19:06Z by runner d6a8011a3e89 (actions).
+Updated 2026-11-20T02:20:26Z by runner 0670a3544d74 (actions).
 
 **Building: T747 in progress since 02:14Z; 514 of 704 done; week 15% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 514 of 704 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T747 claimed 02:14Z, lease until 05:14Z; lane 3: T726 claimed 01:05Z, lease until 04:05Z; lane 4: T110 claimed 02:18Z, lease until 05:18Z; lane 6: T763 claimed 01:52Z, lease until 04:52Z
+- **Lane:** lane 2: T747 claimed 02:14Z, lease until 05:14Z; lane 3: T726 claimed 01:05Z, lease until 04:05Z; lane 4: T110 claimed 02:18Z, lease until 05:18Z
 - **Week:** 15% used, 161.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:14Z, 4 min before this update
+- **Last run:** 02:19Z, 1 min before this update
 - **Keeper:** last ran 02:13Z, next wake 02:33Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Updated 2026-11-20T02:19:06Z by runner d6a8011a3e89 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T763 | tests (harness): the web chat spec's fake numbers never coll | MERGE_PENDING | 1 | 25 min | 02:17Z |  |
 | T672 | intake: the dispatcher asks "How soon?", the night count and | BLOCKED | 1 | 13 min | 02:12Z | PLAN GAP: tests/integration/tests/intake_order_two_jobs.rs:278 (owned by T711 and T717, not T672) also pins the old orde |
 | T218 | Wording and template scans from the brains: sales phrases, n | done | 1 | 74 min | 01:46Z |  |
 | T663 | picks, jobs and payments (harness): a confirmed pick moves i | MERGE_PENDING | 2 | 2 h 7 min | 01:40Z | PLAN GAP: tests/test_coverage_floor.py:125 asserts floors["future"] == [], contradicting T663 goal (5), which requires a |
@@ -141,7 +142,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T747 (lease until 2026-11-20T05:14:14Z)
 - lane 3: T726 (lease until 2026-11-20T04:05:47Z)
 - lane 4: T110 (lease until 2026-11-20T05:18:18Z)
-- lane 6: T763 (lease until 2026-11-20T04:52:05Z)
 
 ## Last usage reading
-- {"task": "T672", "at": "2026-11-20T02:12:38Z", "cache_creation_input_tokens": 194235, "input_tokens": 126, "output_tokens": 56168, "cache_read_input_tokens": 7000794}
+- {"task": "T763", "at": "2026-11-20T02:17:31Z", "input_tokens": 69, "output_tokens": 10660, "cache_creation_input_tokens": 67544, "cache_read_input_tokens": 1076832}
