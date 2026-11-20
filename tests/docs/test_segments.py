@@ -1,11 +1,11 @@
 """Every text template's encoding and segment count against its recorded count (T218).
 
-TD-TXT-26 (TXT-044; D-490, D-491): reports each template's encoding (GSM-7 or UCS-2) and segment count
+TD-TXT-26 (TXT-043, TXT-044; D-490, D-491): reports each template's encoding (GSM-7 or UCS-2) and segment count
 beside the `segments` count recorded in its `en.json` or `es.json` entry, and fails when the English
 consent text (CON-031) needs UCS-2 or more than 2 segments, when the Spanish consent text is not
 GSM-7 and 2 segments, or when any template needs more segments than recorded. A Spanish template's
 UCS-2 encoding is reported, never failed. Brand tokens are filled by `scripts/brand.py` first. The
-refusal to turn Spanish conversations on without the campaign note is T480's, not tested here (D-3744).
+refusal to turn Spanish conversations on without the campaign note (TXT-043) is T480's, not tested here (D-3744).
 The planted cases below prove each failure turns the check red. Fake data only.
 
 Run: python3 -m pytest tests/docs/test_segments.py -q -p no:cacheprovider
