@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T10:55:33Z by runner 5d4f4b46c856 (actions).
+Updated 2026-11-20T11:11:10Z by runner 6fef039a5d29 (actions).
 
-**Building: T648 in progress since 10:37Z; 531 of 710 done; week 29% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T648 in progress since 10:37Z; 532 of 710 done; week 29% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 531 of 710 build tasks (owner gates not counted)
+- **Tasks done:** 532 of 710 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T648 claimed 10:37Z, lease until 13:37Z; lane 5: T463 claimed 10:18Z, lease until 13:18Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z
 - **Week:** 29% used, 134.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:54Z, 0 min before this update
+- **Last run:** 10:55Z, 15 min before this update
 - **Keeper:** last ran 10:54Z, next wake 11:14Z
 
 ## Needs attention
@@ -24,7 +24,7 @@ Updated 2026-11-20T10:55:33Z by runner 5d4f4b46c856 (actions).
 | T530 | portals: the owner help page and its screened reply box (D-3 | QUEUED | 2 | 2 h 25 min | 09:46Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
 | T727 | Runner (harness): a retry after a review failure or a plan-f | MERGE_PENDING | 1 | 75 min | 09:38Z |  |
 | T617 | site: DM Sans from one weight-axis variable file (smaller th | MERGE_PENDING | 2 | 2 h 16 min | 09:22Z | PLAN GAP: tests/a11y/design_tokens.spec.ts:221 and :242 (protected, not owned by T617) contradict the prompt's single DM |
-| T766 | server tests (harness): a photo-link door and a {job} fill i | MERGE_PENDING | 1 | 53 min | 09:05Z |  |
+| T766 | server tests (harness): a photo-link door and a {job} fill i | done | 1 | 53 min | 09:05Z |  |
 | T116 | Stage 0.5 static page set and the DNS records file | done | 1 | 50 min | 08:48Z |  |
 | T669 | picks: "Can't take it" and a business leaving end a pick in  | MERGE_PENDING | 2 | 80 min | 08:32Z | runner smoke red on c403ea4898ac (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
 | T672 | intake: the dispatcher asks "How soon?", the night count and | QUEUED | 2 | 89 min | 08:05Z | runner smoke red on 3e9315b7399c (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
@@ -96,7 +96,7 @@ Updated 2026-11-20T10:55:33Z by runner 5d4f4b46c856 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 324 of 735 (44.1%) · partial 390 · unstarted 21
-**Tasks merged (throughput only):** 531 of 710
+**Tasks merged (throughput only):** 532 of 710
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -132,7 +132,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 174 of 292 done
+- stage 5: 175 of 292 done
 - stage 6: 0 of 65 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
