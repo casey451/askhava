@@ -91252,7 +91252,27 @@
     4804,
     4805,
     4806
-   ]
+   ],
+   "reviewed_sha": "f4cc63aa990bef52f02fa58d6006d3c83055f46d",
+   "review_lease": {
+    "task": "T758",
+    "session": "actions-44629102961",
+    "expires": "2026-11-20T03:27:06Z",
+    "lane": "2"
+   },
+   "branch": "claude/task/T758-spanish-gas-signs",
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "1fce80f86b8a9aa24426ed8156536e6d1c438ee8",
+     "to": "f4cc63aa990bef52f02fa58d6006d3c83055f46d",
+     "main": "c9b37a0e90362346e42e8680ae7f2d85eabd5cf4",
+     "how": "hand-in",
+     "at": "2026-11-20T00:38:01Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T759",
@@ -97310,7 +97330,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T00:37:42Z",
+ "updated_at": "2026-11-20T00:38:01Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -97408,7 +97428,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "5861ab05906546b4b542ff5e4f35e411113d32db",
+ "runner_sha": "1fce80f86b8a9aa24426ed8156536e6d1c438ee8",
  "starter": "actions",
  "smoke_runs": [
   {
