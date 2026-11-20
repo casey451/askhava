@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T02:27:04Z by runner de3589011363 (actions).
+Updated 2026-11-20T02:27:32Z by runner de3589011363 (actions).
 
 **Building: T747 in progress since 02:14Z; 514 of 704 done; week 15% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-20T02:27:04Z by runner de3589011363 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T747 claimed 02:14Z, lease until 05:14Z; lane 3: T726 claimed 01:05Z, lease until 04:05Z; lane 4: T110 claimed 02:18Z, lease until 05:18Z
 - **Week:** 15% used, 161.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:26Z, 0 min before this update
-- **Keeper:** last ran 02:24Z, next wake 04:08Z
+- **Last run:** 02:27Z, 0 min before this update
+- **Keeper:** last ran 02:27Z, next wake 04:08Z
 
 ## Needs attention
 - BLOCKED T672: plan gap reported: PLAN GAP: tests/integration/tests/intake_order_two_jobs.rs:278 (owned by T711 and T717, not T672) also pins the old order, but D-4822 named only two functions in intake_order_two_jobs_rules.rs. Evidence: test td_int_45_also_after_the_zip_opens_the_second_job_through_open_job sends the ZIP reply then ALSO and expects only job.handyman.none linked ("question open", :284-:288); under D-4822 steps 6 to 8 come after the coverage line so "How soon?" is open, and ALSO opens a second job (left: ["job.handyman.none","job.plumbing_repair.none"]). kit/tasks.json: file owned by T711 and T717. Smallest pla; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T672 --plan-fix D-### --reason "..."` (D-2859)
