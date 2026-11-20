@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T22:49:08Z by runner f06d48ea5dc8 (actions).
+Updated 2026-11-20T22:58:32Z by runner 2d12908e33ff (actions).
 
 **Building: T773 in progress since 22:44Z; 558 of 714 done; week 50% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-20T22:49:08Z by runner f06d48ea5dc8 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T773 claimed 22:44Z, lease until 01:44Z
 - **Week:** 50% used, 94.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:48Z, 0 min before this update
+- **Last run:** 22:58Z, 0 min before this update
 - **Keeper:** last ran 22:49Z, next wake 01:47Z
 
 ## Needs attention
@@ -97,7 +97,6 @@ Updated 2026-11-20T22:49:08Z by runner f06d48ea5dc8 (actions).
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 1 | 84 min | 23:31Z |  |
 | T109 | recovery: backup checks and the nightly encrypted export | resync | 2 | 93 min | 23:26Z |  |
 | T707 | server: an emergency pick's address re-release waits while s | check_failed | 1 | 80 min | 22:59Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
-| T541 | payments, portals and adapters: a card saved or changed from | check_failed | 2 | 91 min | 22:55Z |  |
 
 ### Plan and harness merges on main
 - none
