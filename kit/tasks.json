@@ -5,7 +5,8 @@
  "models": {
   "haiku": "claude-haiku-5-5",
   "sonnet": "claude-sonnet-5-5",
-  "opus": "claude-opus-5-5"
+  "opus": "claude-opus-5-5",
+  "fable": "claude-fable-5-2"
  },
  "protected_paths": [
   ".github/",
@@ -10428,7 +10429,7 @@
     "T412",
     "T536"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -10657,7 +10658,7 @@
     "T747",
     "T759"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -10753,7 +10754,7 @@
     "T704",
     "T741"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -10793,7 +10794,7 @@
    "budget": {
     "files": 3,
     "lines": 220,
-    "context_pct": 25
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -10820,7 +10821,7 @@
     "T402",
     "T590"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -10857,7 +10858,7 @@
    "budget": {
     "files": 3,
     "lines": 200,
-    "context_pct": 13
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -14925,7 +14926,7 @@
     "T477",
     "T624"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -29939,7 +29940,7 @@
     "T645",
     "T585"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -29999,7 +30000,7 @@
    "budget": {
     "files": 6,
     "lines": 400,
-    "context_pct": 37
+    "context_pct": 41
    },
    "checks": [
     "Ci",
@@ -30090,7 +30091,7 @@
     "T745",
     "T573"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -30156,7 +30157,7 @@
     "T601",
     "T664"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -30206,7 +30207,7 @@
    "budget": {
     "files": 4,
     "lines": 400,
-    "context_pct": 20
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -30233,7 +30234,7 @@
     "T584",
     "T490"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -30284,7 +30285,7 @@
    "budget": {
     "files": 5,
     "lines": 550,
-    "context_pct": 27
+    "context_pct": 31
    },
    "checks": [
     "Ci",
@@ -30450,7 +30451,7 @@
     "T648",
     "T765"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -31386,7 +31387,7 @@
     "T664",
     "T675"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -31468,7 +31469,7 @@
     "T540",
     "T666"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -31505,7 +31506,7 @@
    "budget": {
     "files": 1,
     "lines": 600,
-    "context_pct": 11
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -31534,7 +31535,7 @@
     "T488",
     "T586"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -31585,7 +31586,7 @@
    "budget": {
     "files": 6,
     "lines": 550,
-    "context_pct": 36
+    "context_pct": 42
    },
    "checks": [
     "Ci",
@@ -32703,7 +32704,7 @@
     "T648",
     "T708"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -32896,7 +32897,7 @@
     "T648",
     "T708"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -32948,7 +32949,7 @@
     "T549",
     "T550"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -33004,7 +33005,7 @@
     "T410",
     "T527"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -33049,7 +33050,7 @@
    "budget": {
     "files": 7,
     "lines": 550,
-    "context_pct": 12
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -35172,7 +35173,7 @@
     "T336",
     "T377"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -35288,7 +35289,7 @@
     "T751",
     "T129"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -35375,7 +35376,7 @@
     "T751",
     "T754"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -35436,7 +35437,7 @@
    "budget": {
     "files": 7,
     "lines": 550,
-    "context_pct": 32
+    "context_pct": 40
    },
    "checks": [
     "Ci",
@@ -35461,7 +35462,7 @@
     "T584",
     "T751"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -35555,7 +35556,7 @@
     "T385",
     "T751"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -35608,7 +35609,7 @@
    "budget": {
     "files": 5,
     "lines": 400,
-    "context_pct": 15
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -35634,7 +35635,7 @@
     "T109",
     "T648"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -35679,7 +35680,7 @@
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 12
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -35761,7 +35762,7 @@
     "T376",
     "T127"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -35827,7 +35828,7 @@
     "T298",
     "T135"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -35898,7 +35899,7 @@
    "deps": [
     "T135"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -35951,7 +35952,7 @@
     "T138",
     "T137"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -35991,7 +35992,7 @@
    "budget": {
     "files": 2,
     "lines": 350,
-    "context_pct": 12
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -36017,7 +36018,7 @@
     "T298",
     "T136"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -36137,7 +36138,7 @@
     "T416",
     "T600"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -36182,7 +36183,7 @@
    "budget": {
     "files": 8,
     "lines": 800,
-    "context_pct": 18
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -36206,7 +36207,7 @@
     "T234",
     "T416"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -36240,7 +36241,7 @@
    "budget": {
     "files": 2,
     "lines": 600,
-    "context_pct": 10
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -36264,7 +36265,7 @@
     "T234",
     "T680"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -36439,7 +36440,7 @@
     "T741",
     "T760"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -37009,7 +37010,7 @@
     "T469",
     "T651"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -37090,7 +37091,7 @@
     "T348",
     "T530"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -37626,7 +37627,7 @@
     "T348",
     "T410"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -37672,7 +37673,7 @@
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 13
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -37956,7 +37957,7 @@
     "T759",
     "T760"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -38058,7 +38059,7 @@
     "T759",
     "T760"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -38113,7 +38114,7 @@
    "budget": {
     "files": 14,
     "lines": 800,
-    "context_pct": 16
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -38155,7 +38156,7 @@
     "T759",
     "T760"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -38210,7 +38211,7 @@
    "budget": {
     "files": 14,
     "lines": 800,
-    "context_pct": 16
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -38234,7 +38235,7 @@
     "T239",
     "T392"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -38270,7 +38271,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 11
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -39824,7 +39825,7 @@
     "T333",
     "T134"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -39865,7 +39866,7 @@
    "budget": {
     "files": 8,
     "lines": 450,
-    "context_pct": 29
+    "context_pct": 36
    },
    "checks": [
     "Ci",
@@ -40171,7 +40172,7 @@
     "T722",
     "T754"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -40586,7 +40587,7 @@
     "T464",
     "T564"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -40783,7 +40784,7 @@
    "deps": [
     "T364"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -40825,7 +40826,7 @@
    "budget": {
     "files": 4,
     "lines": 600,
-    "context_pct": 11
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -40918,7 +40919,7 @@
     "T412",
     "T490"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -40958,7 +40959,7 @@
    "budget": {
     "files": 4,
     "lines": 550,
-    "context_pct": 13
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -40980,7 +40981,7 @@
    "deps": [
     "T565"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -41016,7 +41017,7 @@
    "budget": {
     "files": 5,
     "lines": 400,
-    "context_pct": 11
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -41178,7 +41179,7 @@
     "T136",
     "T137"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -41217,7 +41218,7 @@
    "budget": {
     "files": 3,
     "lines": 450,
-    "context_pct": 10
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -41242,7 +41243,7 @@
     "T236",
     "T420"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -41298,7 +41299,7 @@
    "budget": {
     "files": 9,
     "lines": 600,
-    "context_pct": 24
+    "context_pct": 28
    },
    "checks": [
     "Ci",
@@ -41329,7 +41330,7 @@
     "T727",
     "T753"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -41635,7 +41636,7 @@
     "T494",
     "T495"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -41698,7 +41699,7 @@
     "T457",
     "T396"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -41735,7 +41736,7 @@
    "budget": {
     "files": 5,
     "lines": 600,
-    "context_pct": 13
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -44073,7 +44074,7 @@
     "T593",
     "T645"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -44136,7 +44137,7 @@
     "T645",
     "T646"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -44184,7 +44185,7 @@
    "budget": {
     "files": 4,
     "lines": 420,
-    "context_pct": 24
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -44393,7 +44394,7 @@
     "T469",
     "T652"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -44437,7 +44438,7 @@
    "budget": {
     "files": 4,
     "lines": 480,
-    "context_pct": 26
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -44801,7 +44802,7 @@
     "T644",
     "T766"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -44858,7 +44859,7 @@
     "T541",
     "T767"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -44993,7 +44994,7 @@
     "T665",
     "T540"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -45042,7 +45043,7 @@
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 25
+    "context_pct": 31
    },
    "checks": [
     "Ci",
@@ -45065,7 +45066,7 @@
    "deps": [
     "T663"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -45109,7 +45110,7 @@
    "budget": {
     "files": 4,
     "lines": 350,
-    "context_pct": 20
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -45264,7 +45265,7 @@
     "T669",
     "T543"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -45300,7 +45301,7 @@
    "budget": {
     "files": 2,
     "lines": 150,
-    "context_pct": 15
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -45545,7 +45546,7 @@
    "deps": [
     "T672"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -45679,7 +45680,7 @@
     "T561",
     "T766"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -45756,7 +45757,7 @@
     "T674",
     "T573"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -45811,7 +45812,7 @@
    "budget": {
     "files": 7,
     "lines": 550,
-    "context_pct": 39
+    "context_pct": 49
    },
    "checks": [
     "Ci",
@@ -46044,7 +46045,7 @@
     "T745",
     "T704"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -46258,7 +46259,7 @@
     "T675",
     "T714"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -46517,7 +46518,7 @@
     "T678",
     "T746"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -46553,7 +46554,7 @@
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 18
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -46637,7 +46638,7 @@
     "T132",
     "T380"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -46687,7 +46688,7 @@
    "budget": {
     "files": 5,
     "lines": 520,
-    "context_pct": 35
+    "context_pct": 41
    },
    "checks": [
     "Ci",
@@ -46840,7 +46841,7 @@
     "T672",
     "T573"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -46883,7 +46884,7 @@
    "budget": {
     "files": 4,
     "lines": 300,
-    "context_pct": 24
+    "context_pct": 31
    },
    "checks": [
     "Ci",
@@ -47154,7 +47155,7 @@
     "T470",
     "T661"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -47219,7 +47220,7 @@
     "T458",
     "T588"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -47553,7 +47554,7 @@
     "T675",
     "T654"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -47614,7 +47615,7 @@
    "budget": {
     "files": 6,
     "lines": 600,
-    "context_pct": 22
+    "context_pct": 27
    },
    "checks": [
     "Ci",
@@ -47639,7 +47640,7 @@
     "T716",
     "T717"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -47721,7 +47722,7 @@
     "T161",
     "T615"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -47763,7 +47764,7 @@
    "budget": {
     "files": 7,
     "lines": 400,
-    "context_pct": 23
+    "context_pct": 27
    },
    "checks": [
     "Ci",
@@ -47786,7 +47787,7 @@
    "deps": [
     "T723"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -47831,7 +47832,7 @@
    "budget": {
     "files": 3,
     "lines": 450,
-    "context_pct": 35
+    "context_pct": 39
    },
    "checks": [
     "Ci",
@@ -47854,7 +47855,7 @@
    "deps": [
     "T718"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -47899,7 +47900,7 @@
    "budget": {
     "files": 5,
     "lines": 450,
-    "context_pct": 31
+    "context_pct": 40
    },
    "checks": [
     "Ci",
@@ -48038,7 +48039,7 @@
    "deps": [
     "T673"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48104,7 +48105,7 @@
     "T608",
     "T600"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48156,7 +48157,7 @@
    "budget": {
     "files": 7,
     "lines": 600,
-    "context_pct": 27
+    "context_pct": 31
    },
    "checks": [
     "Ci",
@@ -48181,7 +48182,7 @@
     "T684",
     "T580"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48223,7 +48224,7 @@
    "budget": {
     "files": 4,
     "lines": 500,
-    "context_pct": 20
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -48249,7 +48250,7 @@
     "T746",
     "T766"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48445,7 +48446,7 @@
     "T541",
     "T751"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48586,7 +48587,7 @@
    "deps": [
     "T719"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48621,7 +48622,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 20
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -48644,7 +48645,7 @@
    "deps": [
     "T712"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48785,7 +48786,7 @@
    "deps": [
     "T540"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48846,7 +48847,7 @@
     "T675",
     "T728"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48917,7 +48918,7 @@
     "T309",
     "T609"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48986,7 +48987,7 @@
     "T600",
     "T151"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -49048,7 +49049,7 @@
     "T701",
     "T702"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -49121,7 +49122,7 @@
     "T410",
     "T754"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -49158,7 +49159,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 25
+    "context_pct": 31
    },
    "checks": [
     "Ci",
@@ -49559,7 +49560,7 @@
     "T706",
     "T333"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -49601,7 +49602,7 @@
    "budget": {
     "files": 4,
     "lines": 500,
-    "context_pct": 30
+    "context_pct": 35
    },
    "checks": [
     "Ci",
@@ -49627,7 +49628,7 @@
     "T100",
     "T517"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -49683,7 +49684,7 @@
     "T658",
     "T351"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -49740,7 +49741,7 @@
     "T600",
     "T729"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -49908,7 +49909,7 @@
     "T717",
     "T736"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
