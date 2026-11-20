@@ -110,6 +110,7 @@ pub use crate::confirm::{
     EmergencyPlan, HoldAsk, NightLine, TimeRefusal, TimeWord, WindowRules, away_for, away_until,
     emergency_fix_by, emergency_plan, hold, hold_allowed, read_time_word, window_start,
 };
+pub use crate::confirm_refused::{confirm_deadline, refuse_confirm};
 pub use crate::confirm_reminders::{
     Extension, LapsePlan, Reminder, claim_reminder, emergency_reminders, extend_once, lapse,
     lapse_plan, lapse_text, member_confirmed_line, owner_told, reminder_lines, reminders,
