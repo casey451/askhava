@@ -1,26 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-20T00:27:06Z by runner 1fce80f86b8a (actions).
+Updated 2026-11-20T00:29:00Z by runner c9b37a0e9036 (actions).
 
-**Building: T527 in progress since 00:05Z; 510 of 703 done; week 12% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T527 in progress since 00:05Z; 511 of 703 done; week 12% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 510 of 703 build tasks (owner gates not counted)
+- **Tasks done:** 511 of 703 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T527 claimed 00:05Z, lease until 03:05Z; lane 2: T758 claimed 23:07Z, lease until 03:27Z; lane 3: T726 claimed 00:03Z, lease until 03:03Z; lane 5: T663 claimed 23:33Z, lease until 02:33Z; lane 6: T109 claimed 00:04Z, lease until 03:04Z; lane 7: T613 claimed 23:22Z, lease until 03:14Z
 - **Week:** 12% used, 162.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:14Z, 12 min before this update
+- **Last run:** 00:27Z, 1 min before this update
 - **Keeper:** last ran 00:07Z, next wake 02:09Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T672 (since 2026-11-19T23:07:12Z, no attempt used; a plan change fixes it): T672: dependency T717 is DONE but its owned file tests/integration/tests/intake_order_two_jobs_rules.rs is not on main
-- Strict plan check red: 63 problem(s) on tasks still to run (+358 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
+- Strict plan check red: 77 problem(s) on tasks still to run (+363 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T541 | payments, portals and adapters: a card saved or changed from | MERGE_PENDING | 3 | 25 min | 00:00Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-19T |
+| T541 | payments, portals and adapters: a card saved or changed from | done | 3 | 25 min | 00:00Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-19T |
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 1 | 84 min | 23:31Z | merging main into the reviewed head conflicts in kit/plan.lock, kit/runner.json; a resync merges it in on this attempt ( |
 | T109 | recovery: backup checks and the nightly encrypted export | resync | 2 | 93 min | 23:26Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T707 | server: an emergency pick's address re-release waits while s | check_failed | 1 | 80 min | 22:59Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
@@ -94,7 +94,7 @@ Updated 2026-11-20T00:27:06Z by runner 1fce80f86b8a (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 323 of 735 (43.9%) · partial 377 · unstarted 35
-**Tasks merged (throughput only):** 510 of 703
+**Tasks merged (throughput only):** 511 of 703
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -130,7 +130,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 153 of 285 done
+- stage 5: 154 of 285 done
 - stage 6: 0 of 65 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
