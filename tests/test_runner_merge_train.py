@@ -1,6 +1,7 @@
 """The merge train, depth 2 (D-4281): while the turn holder A's head A' runs its checks, the runner merges the next
 "line" task B's reviewed head with A' and pushes it as a new throwaway ref `claude/train/<B>-<A' first 12 hex>`;
-stale train refs are deleted on every merge-line pass. The train reads and writes no state. Over the merge-line
+stale train refs are deleted on every merge-line pass. At depth 3 (D-5018) the "line" task C after B rides on that
+ref's tip X1 as `claude/train/<C>-<X1 first 12 hex>`. The train reads and writes no state. Over the merge-line
 fakes (test_runner_merge_line.LineEnv) and a GitHubEnv with a planted command runner. Fake data only.
 """
 
@@ -25,6 +26,8 @@ from test_runner_merge_line import LineEnv, branch, head, open_pr, pending
 A1 = "a1" * 20  # T001's update merge (A')
 A0 = "a0" * 20  # an older head of T001
 TRAIN = f"claude/train/T002-{A1[:12]}"
+X1 = "e1" * 20  # the second car's tip
+THIRD = f"claude/train/T003-{X1[:12]}"
 
 
 class TrainEnv(LineEnv):
@@ -35,6 +38,7 @@ class TrainEnv(LineEnv):
         self.refs: list[dict[str, Any]] = []
         self.merges: list[tuple[str, tuple[str, str], tuple[str, str]]] = []
         self.merge_answer: dict[str, Any] = {"status": "pushed", "sha": "x" * 40}
+        self.answers: dict[str, dict[str, Any]] = {}  # per ref name, before `merge_answer`
         self.deleted: list[str] = []
         self.delete_ok = True
 
@@ -43,7 +47,7 @@ class TrainEnv(LineEnv):
 
     def train_merge(self, name: str, task: tuple[str, str], base: tuple[str, str]) -> dict[str, Any]:
         self.merges.append((name, task, base))
-        return copy.deepcopy(self.merge_answer)
+        return copy.deepcopy(self.answers.get(name, self.merge_answer))
 
     def delete_train_ref(self, name: str) -> bool:
         self.deleted.append(name)
@@ -99,7 +103,7 @@ def test_depth_two_merges_bs_reviewed_head_with_a_prime_onto_the_train_ref_only(
     assert env.updates == [(branch("T001"), head("T001"))] and env.deleted == []
     assert f"pushed to {TRAIN}" in capsys.readouterr().out
     env.train_depth = lambda: 7  # type: ignore[method-assign]
-    assert cycle.train_depth(env) == 2
+    assert cycle.train_depth(env) == 3  # D-5018: 4 and above read as 3 (was 2 under D-4281)
 
 
 def test_a_head_already_current_with_pending_checks_is_a_train_base(tmp_path: Path) -> None:
@@ -239,7 +243,7 @@ def test_every_merge_line_fixture_gives_the_same_state_and_outcomes_at_depth_1_a
 
     def twin(state: st.State, env: Any, cfg: cycle.Config, now: Any, open_only: bool = False) -> Any:
         expected = real(copy.deepcopy(state), _copy(env, None), cfg, now, open_only)
-        for depth in (1, 2):
+        for depth in (1, 2, 3):
             got = real(copy.deepcopy(state), _copy(env, depth), cfg, now, open_only)
             assert (json.dumps(got[0], sort_keys=True), got[1]) == (json.dumps(expected[0], sort_keys=True), expected[1])
         return real(state, env, cfg, now, open_only)
@@ -303,7 +307,7 @@ class FakeMerge:
 
 
 def planted(env: GitHubEnv, merge: FakeMerge) -> None:
-    tips = {branch("T002"): "b" * 40, branch("T001"): A1}
+    tips = {branch("T002"): "b" * 40, branch("T001"): A1, branch("T003"): "b" * 40, TRAIN: X1}
     env.main_head = lambda: "c" * 40  # type: ignore[method-assign]
     env._remote_tip = lambda name: tips.get(name)  # type: ignore[method-assign]
     env._is_ancestor = lambda older, newer: older == "c" * 40  # type: ignore[method-assign]
@@ -317,6 +321,17 @@ def test_train_merge_pushes_exactly_a_create_of_the_train_ref(tmp_path: Path, mo
     assert env.train_merge(TRAIN, (branch("T002"), "b" * 40), (branch("T001"), A1)) == {"status": "pushed", "sha": "d" * 40}
     assert merge.made == [("b" * 40, A1, branch("T002"))]
     assert calls == [["git", "push", "--porcelain", "origin", f"{'d' * 40}:refs/heads/{TRAIN}"]]
+
+
+def test_train_merge_pushes_a_third_car_on_the_second_cars_tip_as_a_plain_create(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    env, calls = github_env(tmp_path, monkeypatch)
+    merge = FakeMerge("d" * 40, (True, X1))
+    planted(env, merge)
+    assert env.train_merge(THIRD, (branch("T003"), "b" * 40), (TRAIN, X1)) == {"status": "pushed", "sha": "d" * 40}
+    assert merge.made == [("b" * 40, X1, branch("T003"))]
+    assert calls == [["git", "push", "--porcelain", "origin", f"{'d' * 40}:refs/heads/{THIRD}"]]
+    merge.check = (True, A1)  # the tree check is against X1, not A'
+    assert env.train_merge(THIRD, (branch("T003"), "b" * 40), (TRAIN, X1))["status"] == "error" and len(calls) == 1
 
 
 @pytest.mark.parametrize(("merge", "status"), [(FakeMerge(None, (False, "")), "conflict"), (FakeMerge("d" * 40, (True, "e" * 40)), "error")])
@@ -431,3 +446,131 @@ def test_commit_at_reads_the_committer_time_fetching_the_branch_when_the_commit_
     env = GitHubEnv(tmp_path, [], tmp_path, repo="o/r", starter="actions", runner_sha="x", run=fake)
     assert env.commit_at(A1, branch("T001")) == want
     assert not any("push" in c for c in calls)
+
+
+# ---- depth 3 (D-5018): C's reviewed head on the second car's tip X1
+
+
+def three_open(tmp_path: Path, depth: Any = 3) -> tuple[TrainEnv, cycle.Config, st.State]:
+    """`two_open` plus T003 open behind T002, checks running; a pushed train merge answers X1."""
+    env, cfg, state = two_open(tmp_path, depth)
+    env.prs["T003"], env.merge_answer = open_pr("T003", 3), {"status": "pushed", "sha": X1}
+    return env, cfg, pending(state, "T003", 20, "3")
+
+
+def second(minutes_old: int = 10) -> dict[str, Any]:
+    return dict(ref("T002", A1, minutes_old), sha=X1)
+
+
+@pytest.mark.parametrize(("depth", "names"), [(1, []), (2, [TRAIN]), (3, [TRAIN, THIRD]), (4, [TRAIN, THIRD]), (99, [TRAIN, THIRD])])
+def test_depth_three_adds_exactly_cs_reviewed_head_on_the_second_cars_tip(tmp_path: Path, capsys: Any, depth: int, names: list[str]) -> None:
+    env, cfg, state = three_open(tmp_path, depth)
+    out, outcomes = run(env, cfg, copy.deepcopy(state))
+    want = [(TRAIN, (branch("T002"), head("T002")), (branch("T001"), A1)), (THIRD, (branch("T003"), head("T003")), (TRAIN, X1))]
+    assert env.merges == want[:len(names)] and env.deleted == [] and cycle.train_depth(env) == min(depth, 3)
+    assert (json.dumps(out, sort_keys=True), outcomes) == without_train(env, cfg, state)
+    assert env.updates == [(branch("T001"), head("T001"))]
+    assert (f"pushed to {THIRD}" in capsys.readouterr().out) == (depth >= 3)
+
+
+def test_a_live_second_car_carries_the_third_and_a_listed_third_is_left_as_it_is(tmp_path: Path) -> None:
+    env, cfg, state = three_open(tmp_path)
+    env.refs = [second()]
+    run(env, cfg, copy.deepcopy(state))
+    assert env.merges == [(THIRD, (branch("T003"), head("T003")), (TRAIN, X1))] and env.deleted == []
+    env.merges, env.refs = [], [second(), ref("T003", X1)]
+    run(env, cfg, copy.deepcopy(state))
+    assert env.merges == [] and env.deleted == []
+
+
+def no_third_cases() -> list[Any]:
+    red, fix_main = no_train_cases()[:2]
+
+    def c_late(env: TrainEnv, s: st.State) -> st.State:
+        env.prs["T003"]["checks"] = [{"name": "Governance", "sha": head("T003"), "conclusion": "failure"}]
+        return s
+
+    def c_stuck(env: TrainEnv, s: st.State) -> st.State:
+        return st.with_task(s, "T003", update_waiting_since=st.iso(NOW - timedelta(hours=1)))
+
+    def c_out(env: TrainEnv, s: st.State) -> st.State:
+        env.prs["T003"] = open_pr("T003", 3, checks="failed")
+        return s
+
+    def c_off_its_reviewed_head(env: TrainEnv, s: st.State) -> st.State:
+        env.prs["T003"] = dict(open_pr("T003", 3), head_sha=A0)
+        return s
+
+    def second_conflict(env: TrainEnv, s: st.State) -> st.State:
+        env.answers[TRAIN] = {"status": "conflict", "paths": ["app/t002/x.rs"]}
+        return s
+
+    def second_racing(env: TrainEnv, s: st.State) -> st.State:
+        env.answers[TRAIN] = {"status": "exists", "why": "! [rejected] (non-fast-forward)"}
+        return s
+
+    def second_too_old(env: TrainEnv, s: st.State) -> st.State:
+        env.refs = [second(minutes_old=6 * 60 + 1)]
+        return s
+
+    def third_conflict(env: TrainEnv, s: st.State) -> st.State:
+        env.answers[THIRD] = {"status": "conflict", "paths": ["app/t003/x.rs"]}
+        return s
+
+    def third_tree_check(env: TrainEnv, s: st.State) -> st.State:
+        env.answers[THIRD] = {"status": "error", "why": "the train merge failed its own tree check"}
+        return s
+
+    tried = {red: [], fix_main: [], second_too_old: [], third_conflict: [TRAIN, THIRD], third_tree_check: [TRAIN, THIRD]}
+    cases = [red, fix_main, c_late, c_stuck, c_out, c_off_its_reviewed_head, second_conflict, second_racing, second_too_old,
+             third_conflict, third_tree_check]
+    return [pytest.param(plant, tried.get(plant, [TRAIN]), id=plant.__name__) for plant in cases]
+
+
+@pytest.mark.parametrize(("plant", "tried"), no_third_cases())
+def test_no_third_car(tmp_path: Path, capsys: Any, plant: Any, tried: list[str]) -> None:
+    env, cfg, state = three_open(tmp_path)
+    state = plant(env, state)
+    out, outcomes = run(env, cfg, copy.deepcopy(state))
+    assert [m[0] for m in env.merges] == tried and f"pushed to {THIRD}" not in capsys.readouterr().out
+    assert (json.dumps(out, sort_keys=True), outcomes) == without_train(env, cfg, state)
+    assert env.deleted == [r["name"] for r in env.refs]  # only the over-age second car
+
+
+def third_stale_cases() -> list[Any]:
+    def b_merged(s: st.State) -> tuple[st.State, list[dict[str, Any]]]:
+        return s, [second(), ref("T003", X1)]
+
+    def c_done(s: st.State) -> tuple[st.State, list[dict[str, Any]]]:
+        return st.with_task(s, "T003", status=st.DONE), [second(), ref("T003", X1)]
+
+    def c_failed(s: st.State) -> tuple[st.State, list[dict[str, Any]]]:
+        return st.with_task(s, "T003", status=st.QUEUED), [second(), ref("T003", X1)]
+
+    def second_base_superseded(s: st.State) -> tuple[st.State, list[dict[str, Any]]]:
+        return st.with_task(s, "T001", reviewed_sha=A0), [second(), ref("T003", X1)]
+
+    def both_past_six_hours(s: st.State) -> tuple[st.State, list[dict[str, Any]]]:
+        return s, [second(6 * 60 + 1), ref("T003", X1, 6 * 60 + 1)]
+
+    def third_past_six_hours(s: st.State) -> tuple[st.State, list[dict[str, Any]]]:
+        return s, [second(), ref("T003", X1, 6 * 60 + 1)]
+
+    def second_gone(s: st.State) -> tuple[st.State, list[dict[str, Any]]]:
+        return s, [ref("T003", X1)]
+
+    def second_without_a_third(s: st.State) -> tuple[st.State, list[dict[str, Any]]]:
+        return s, [second()]
+
+    return [pytest.param(b_merged, False, id="b_merged")] + [pytest.param(c, True, id=c.__name__) for c in (
+        c_done, c_failed, second_base_superseded, both_past_six_hours, third_past_six_hours, second_gone, second_without_a_third)]
+
+
+@pytest.mark.parametrize("depth", [1, 3])
+@pytest.mark.parametrize(("plant", "gone"), third_stale_cases())
+def test_a_third_car_and_its_second_car_outlive_bs_squash_only_while_c_can_use_them(tmp_path: Path, plant: Any, gone: bool, depth: int) -> None:
+    env, cfg, state = three_open(tmp_path, depth)
+    state = st.with_task(st.with_task(state, "T001", status=st.DONE, reviewed_sha=A1), "T002", status=st.DONE)
+    state, env.refs = plant(state)
+    run(env, cfg, copy.deepcopy(state))
+    assert env.merges == [] and env.deleted == ([r["name"] for r in env.refs] if gone else [])
