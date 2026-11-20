@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T08:34:19Z by runner 405a1fbf7832 (actions).
+Updated 2026-11-20T08:38:10Z by runner 0931e09f36a1 (actions).
 
 **Building: T116 in progress since 07:58Z; 528 of 708 done; week 25% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-20T08:34:19Z by runner 405a1fbf7832 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T116 claimed 07:58Z, lease until 10:58Z; lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 3: T727 claimed 08:23Z, lease until 11:23Z; lane 4: T766 claimed 08:11Z, lease until 11:11Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z
 - **Week:** 25% used, 139.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:34Z, 0 min before this update
+- **Last run:** 08:38Z, 0 min before this update
 - **Keeper:** last ran 08:34Z, next wake 10:09Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 88 problem(s) on tasks still to run (+393 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 82 problem(s) on tasks still to run (+393 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -91,15 +91,14 @@ Updated 2026-11-20T08:34:19Z by runner 405a1fbf7832 (actions).
 | T536 | E2e harness: clock-advancing journeys last, a keyed worker,  | BLOCKED | 1 | 46 min | 09:00Z |  |
 | T476 | portals: the owner health page with every OPS-008 figure and | done | 1 | 2 h 27 min | 08:50Z |  |
 | T161 | wording: the WORD-024 voice rule's pressure-word scan, the r | BLOCKED | 1 | 4 min | 08:41Z |  |
-| T456 | picks and server: "Hold for 2 more hours" is stored, honoure | done | 1 | 97 min | 08:35Z |  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 325 of 735 (44.2%) · partial 384 · unstarted 26
-**Tasks merged (throughput only):** 528 of 707
+**Requirements verified:** 324 of 735 (44.1%) · partial 385 · unstarted 26
+**Tasks merged (throughput only):** 528 of 708
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -119,7 +118,7 @@ Updated 2026-11-20T08:34:19Z by runner 405a1fbf7832 (actions).
 | quiet-hours | 3 | 6 | 0 | 9 |
 | quotes-pick | 25 | 31 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
-| security | 11 | 39 | 5 | 55 |
+| security | 10 | 40 | 5 | 55 |
 | terms | 27 | 8 | 0 | 35 |
 | website | 18 | 10 | 2 | 30 |
 | wording | 23 | 9 | 0 | 32 |
