@@ -87395,7 +87395,7 @@
     "T109",
     "T764"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "recovery-monthly-test-restore",
    "type": "build",
@@ -87409,8 +87409,8 @@
     4849,
     4850
    ],
-   "reason": "plan gap reported: PLAN GAP: app/recovery/src/restore.rs:44 include_str!(\"../../../scripts/bootstrap_roles.sql\") is required by the goal, but scripts/check_include_paths.py (D-1867, run in the smoke by tests/test_check_include_paths.py::test_td_ops_32_the_real_repository_passes) fails: scripts/bootstrap_roles.sql is not matched by the Checks and Coverage rules in .github/workflows/ci.yml (protected, harness-only) nor by RUST_PATHS in scripts/prehandin.sh:77 (locked in kit/plan.lock). T648 owns neither. Fix: a harness task adds scripts/bootstrap_roles\\.sql to those three rules and rewrites kit/plan.lock. Reviewer; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T648 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: app/recovery/src/restore.rs:44 include_str!(\"../../../scripts/bootstrap_roles.sql\") is required by the goal, but scripts/check_include_paths.py (D-1867, run in the smoke by tests/test_check_include_paths.py::test_td_ops_32_the_real_repository_passes) fails: scripts/bootstrap_roles.sql is not matched by the Checks and Coverage rules in .github/workflows/ci.yml (protected, harness-only) nor by RUST_PATHS in scripts/prehandin.sh:77 (locked in kit/plan.lock). T648 owns neither. Fix: a harness task adds scripts/bootstrap_roles\\.sql to those three rules and rewrites kit/plan.lock. Reviewer a3d22f0629d9ff35a confirmed (GAP-VERDICT: CONFIRMED). Also: owned files are 551 + 348 lines vs 450 budget. Work uncommitted in tree; smoke 1 failed (that test only).",
+   "reason": null,
+   "last_failure": "PLAN GAP: app/recovery/src/restore.rs:44 include_str!(\"../../../scripts/bootstrap_roles.sql\") is required by the goal, but scripts/check_include_paths.py (D-1867, run in the smoke by tests/test_check_include_paths.py::test_td_ops_32_the_real_repository_passes) fails: scripts/bootstrap_roles.sql is not matched by the Checks and Coverage rules in .github/workflows/ci.yml (protected, harness-only) nor by RUST_PATHS in scripts/prehandin.sh:77 (locked in kit/plan.lock). T648 owns neither. Fix: a harness task adds scripts/bootstrap_roles\\.sql to those three rules and rewrites kit/plan.lock. Reviewer a3d22f0629d9ff35a confirmed (GAP-VERDICT: CONFIRMED). Also: owned files are 551 + 348 lines vs 450 budget. Work uncommitted in tree; smoke 1 failed (that test only).\nre-queued after plan fix D-4852: include-path gap fixed by T764 (D-4852, #1168)",
    "history": [
     {
      "attempt": 1,
@@ -87434,6 +87434,21 @@
        "turns": 8
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-20T08:02:44Z",
+     "reason": "include-path gap fixed by T764 (D-4852, #1168)",
+     "by": "manual-d93bde94ff23",
+     "was": "plan gap reported: PLAN GAP: app/recovery/src/restore.rs:44 include_str!(\"../../../scripts/bootstrap_roles.sql\") is required by the goal, but scripts/check_include_paths.py (D-1867, run in the smoke by tests/test_check_include_paths.py::test_td_ops_32_the_real_repository_passes) fails: scripts/bootstrap_roles.sql is not matched by the Checks and Coverage rules in .github/workflows/ci.yml (protected, harness-only) nor by RUST_PATHS in scripts/prehandin.sh:77 (locked in kit/plan.lock). T648 owns neither. Fix: a harness task adds scripts/bootstrap_roles\\.sql to those three rules and rewrites kit/plan.lock. Reviewer; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T648 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-4852",
+     "plan_since": "2026-11-20T02:33:22Z",
+     "plan_base": "1ef120be8c2adb8efb2d4462ae00ceb7dee3c1dc",
+     "plan_head": "37a05d29daa8e0d49c8f0d1156e8833e2ec6aa64",
+     "plan_then": "3f8a28836b19dde1cf4563036696eca4693fd1bd0470bfd1d54f38b2662fcee9",
+     "plan_now": "3bb461b39904ecdbe9c236eaac2213cdda915a3f39d9767ff78013ea6d1b4380"
     }
    ]
   },
@@ -100480,7 +100495,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T07:59:31Z",
+ "updated_at": "2026-11-20T08:02:44Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -100578,8 +100593,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "adc433df0a114c7721244a32e305adbd93e7ddfa",
- "starter": "actions",
+ "runner_sha": "37a05d29daa8e0d49c8f0d1156e8833e2ec6aa64",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "382efbfa9414fda64df615686feff7ebbe5928d3",
