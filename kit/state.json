@@ -81328,7 +81328,7 @@
     "T447",
     "T768"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 3,
    "slug": "business-outbox-rows-sent",
    "type": "harness",
@@ -81342,8 +81342,8 @@
     4901,
     4902
    ],
-   "reason": "Ci: failure; Coverage: cancelled\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest pages::tests::web_009_the_request_box_posts_with_a_label_and_the_token ... ok\ntest pages::tests::waits_read_in_minutes_then_hours ... ok\ntest pages::tests::web_020_city_guide_reads_its_three_settings ... ok\ntest routes::tests::td_web_01_banner_hidden_by_default_and_shown_when_on ... ok\ntest routes::tests::td_web_01_site_page_needs_no_script ... ok\ntest routes::tests::another_method_is_405_with_allow ... ok\ntest tests::site_copy_blocks::d_3890_the_start_line_matches_its_chat_sentence_while_it_names_the_number ... ok\ntest routes::tests::the_stylesheet_is_served_and_unknown_names_are_not ... ok\ntest tests::site_copy_blocks::word_029_the_block_check_fails_planted_differences ... ok\ntest tests::site_copy_blocks::word_029_every_home_and_footer_block_shows_on_the_page ... ok\ntest chat::tests::ai_line_follows_the_switch_and_consent_comes_first ... ok\ntest chat::tests::number_step_without_the_part_sends_and_stores_nothing ... ok\ntest tests::who_runs::td_web_10_record_link_and_license_follow_their_settings ... ok\ntest result: ok. 41 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.29s\n##[error]The operation was canceled.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: cancelled, E2e: success\n##[error]Process completed with exit code 1.",
-   "last_failure": "model claude-opus-5-5 ran, task names claude-fable-5-2",
+   "reason": null,
+   "last_failure": "model claude-opus-5-5 ran, task names claude-fable-5-2\nre-queued after plan fix D-4969: Coverage time-limit cancel, fixed by T770 (D-4969, #1206)",
    "history": [
     {
      "attempt": 1,
@@ -81469,6 +81469,19 @@
      "plan_head": "adc433df0a114c7721244a32e305adbd93e7ddfa",
      "plan_then": "2a3b3ba088a0ced17ce09e0aebd4ca258ccd5414f1d9604102083f35149237fa",
      "plan_now": "1aca75e168e77cb8da6b7f06c04a2ffd093200bf31dae60359a30b96631cc108"
+    },
+    {
+     "at": "2026-11-20T14:03:07Z",
+     "reason": "Coverage time-limit cancel, fixed by T770 (D-4969, #1206)",
+     "by": "manual-a8766cefd7db",
+     "was": "Ci: failure; Coverage: cancelled\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest pages::tests::web_009_the_request_box_posts_with_a_label_and_the_token ... ok\ntest pages::tests::waits_read_in_minutes_then_hours ... ok\ntest pages::tests::web_020_city_guide_reads_its_three_settings ... ok\ntest routes::tests::td_web_01_banner_hidden_by_default_and_shown_when_on ... ok\ntest routes::tests::td_web_01_site_page_needs_no_script ... ok\ntest routes::tests::another_method_is_405_with_allow ... ok\ntest tests::site_copy_blocks::d_3890_the_start_line_matches_its_chat_sentence_while_it_names_the_number ... ok\ntest routes::tests::the_stylesheet_is_served_and_unknown_names_are_not ... ok\ntest tests::site_copy_blocks::word_029_the_block_check_fails_planted_differences ... ok\ntest tests::site_copy_blocks::word_029_every_home_and_footer_block_shows_on_the_page ... ok\ntest chat::tests::ai_line_follows_the_switch_and_consent_comes_first ... ok\ntest chat::tests::number_step_without_the_part_sends_and_stores_nothing ... ok\ntest tests::who_runs::td_web_10_record_link_and_license_follow_their_settings ... ok\ntest result: ok. 41 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.29s\n##[error]The operation was canceled.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: cancelled, E2e: success\n##[error]Process completed with exit code 1.",
+     "attempts": 3,
+     "plan_fix": "D-4969",
+     "plan_since": "2026-11-20T11:14:12Z",
+     "plan_base": "6fef039a5d2976890e58e41d8be1b224f92c830a",
+     "plan_head": "2de3f26c0335736f78c75ae582a6354de4ab60a0",
+     "plan_then": "339ca357a3608368c5854ae7adbe1337d14faa7b4502909e9194f26031816415",
+     "plan_now": "129ba8656b4eeb39ac1975261b9da297c85f9a491663787da0a7a83c6aaf369c"
     }
    ],
    "reviewed_sha": "ebc944c3dfb03fbde39f3bb1b56ab2d719026530",
@@ -102421,7 +102434,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T14:01:44Z",
+ "updated_at": "2026-11-20T14:03:07Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -102519,8 +102532,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "6ee2ece5fcc7dff4382936af6ee87196d395dfaa",
- "starter": "actions",
+ "runner_sha": "2de3f26c0335736f78c75ae582a6354de4ab60a0",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "37a05d29daa8e0d49c8f0d1156e8833e2ec6aa64",

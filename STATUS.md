@@ -1,37 +1,17 @@
 # Ask Hava build status
 
-Updated 2026-11-20T14:01:44Z by runner 6ee2ece5fcc7 (actions).
+Updated 2026-11-20T14:03:07Z by runner 2de3f26c0335 (manual).
 
-**Building: T670 in progress since 12:59Z; 538 of 710 done; week 34% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T670 in progress since 12:59Z; 538 of 712 done; week 34% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 538 of 710 build tasks (owner gates not counted)
+- **Tasks done:** 538 of 712 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T670 claimed 12:59Z, lease until 15:59Z; lane 2: T206 claimed 13:21Z, lease until 16:21Z; lane 3: T557 claimed 13:49Z, lease until 16:49Z; lane 5: T767 claimed 12:53Z, lease until 15:53Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
 - **Week:** 34% used, 122.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:01Z, 0 min before this update
+- **Last run:** 14:02Z, 0 min before this update
 - **Keeper:** last ran 14:01Z, next wake 14:21Z
 
 ## Needs attention
-- BLOCKED T573: Ci: failure; Coverage: cancelled
-Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)
-test pages::tests::web_009_the_request_box_posts_with_a_label_and_the_token ... ok
-test pages::tests::waits_read_in_minutes_then_hours ... ok
-test pages::tests::web_020_city_guide_reads_its_three_settings ... ok
-test routes::tests::td_web_01_banner_hidden_by_default_and_shown_when_on ... ok
-test routes::tests::td_web_01_site_page_needs_no_script ... ok
-test routes::tests::another_method_is_405_with_allow ... ok
-test tests::site_copy_blocks::d_3890_the_start_line_matches_its_chat_sentence_while_it_names_the_number ... ok
-test routes::tests::the_stylesheet_is_served_and_unknown_names_are_not ... ok
-test tests::site_copy_blocks::word_029_the_block_check_fails_planted_differences ... ok
-test tests::site_copy_blocks::word_029_every_home_and_footer_block_shows_on_the_page ... ok
-test chat::tests::ai_line_follows_the_switch_and_consent_comes_first ... ok
-test chat::tests::number_step_without_the_part_sends_and_stores_nothing ... ok
-test tests::who_runs::td_web_10_record_link_and_license_follow_their_settings ... ok
-test result: ok. 41 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.29s
-##[error]The operation was canceled.
-Ci failed at step: All five jobs passed
-Checks: success, Lint and slow tests: success, Python: success, Coverage: cancelled, E2e: success
-##[error]Process completed with exit code 1.
 - BLOCKED T614: plan gap reported: PLAN GAP: tests/a11y/reflow_spacing.spec.ts:49-54 (T053, protected) flags every TARGETS control with no box as "is hidden", but DESIGN_SPEC docs/design/DESIGN_SPEC.md:102 requires .site-nav hidden below 1024px and Menu hidden from 1024px, so the specified header fails at every width. Also: closed <details> Menu links keep boxes in Chromium (counted as Tab stops by j1_keyboard.spec.ts:56 and j2_keyboard.spec.ts:26) and the open Menu scrolls sideways at 320px (scrollWidth 375); both fixable only in app/site/static/site.css, not owned by T614 (CSP forbids inline style). Smallest plan change: a ta; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T614 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
@@ -45,7 +25,7 @@ Checks: success, Lint and slow tests: success, Python: success, Coverage: cancel
 | T727 | Runner (harness): a retry after a review failure or a plan-f | done | 2 | 87 min | 13:23Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T496 | a11y (harness): stub Stripe.js in the Ally suite and scan th | done | 1 | 81 min | 13:06Z |  |
 | T648 | recovery: the monthly test restore into a throwaway cluster, | done | 2 | 112 min | 12:29Z | PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, b |
-| T573 | messaging and server: queued business texts are addressed to | check_failed | 3 | 70 min | 12:25Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
+| T573 | messaging and server: queued business texts are addressed to | check_failed | 3 | 70 min | 12:25Z | model claude-opus-5-5 ran, task names claude-fable-5-2 / re-queued after plan fix D-4969: Coverage time-limit cancel, fi |
 | T614 | site: the V6 header in base.html (links, the Menu in the pag | BLOCKED | 1 | 16 min | 11:39Z | PLAN GAP: tests/a11y/reflow_spacing.spec.ts:49-54 (T053, protected) flags every TARGETS control with no box as "is hidde |
 | T463 | businesses and server: "Busy for <n> days" pauses job cards  | done | 1 | 58 min | 11:16Z |  |
 | T768 | runner tests (harness): the seed test fakes free disk, so a  | done | 1 | 22 min | 10:38Z |  |
@@ -117,31 +97,31 @@ Checks: success, Lint and slow tests: success, Python: success, Coverage: cancel
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 325 of 735 (44.2%) · partial 389 · unstarted 21
-**Tasks merged (throughput only):** 538 of 710
+**Requirements verified:** 254 of 735 (34.6%) · partial 460 · unstarted 21
+**Tasks merged (throughput only):** 538 of 712
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 18 | 17 | 0 | 35 |
-| ai | 8 | 18 | 3 | 29 |
-| businesses | 21 | 36 | 1 | 58 |
-| calls | 14 | 11 | 0 | 25 |
-| consent | 16 | 19 | 0 | 35 |
-| fees | 22 | 30 | 0 | 52 |
-| intake | 8 | 35 | 0 | 43 |
+| accessibility | 16 | 19 | 0 | 35 |
+| ai | 7 | 19 | 3 | 29 |
+| businesses | 20 | 37 | 1 | 58 |
+| calls | 11 | 14 | 0 | 25 |
+| consent | 11 | 24 | 0 | 35 |
+| fees | 21 | 31 | 0 | 52 |
+| intake | 7 | 36 | 0 | 43 |
 | job-cards | 12 | 12 | 0 | 24 |
-| licensing | 33 | 15 | 0 | 48 |
-| lifecycle | 17 | 11 | 0 | 28 |
-| messaging | 23 | 22 | 0 | 45 |
-| ops-recovery | 9 | 31 | 14 | 54 |
+| licensing | 30 | 18 | 0 | 48 |
+| lifecycle | 13 | 15 | 0 | 28 |
+| messaging | 22 | 23 | 0 | 45 |
+| ops-recovery | 6 | 34 | 14 | 54 |
 | privacy | 8 | 23 | 0 | 31 |
 | quiet-hours | 3 | 6 | 0 | 9 |
-| quotes-pick | 25 | 31 | 0 | 56 |
-| recurring | 10 | 1 | 0 | 11 |
+| quotes-pick | 22 | 34 | 0 | 56 |
+| recurring | 9 | 2 | 0 | 11 |
 | security | 10 | 42 | 3 | 55 |
-| terms | 27 | 8 | 0 | 35 |
-| website | 18 | 12 | 0 | 30 |
-| wording | 23 | 9 | 0 | 32 |
+| terms | 10 | 25 | 0 | 35 |
+| website | 7 | 23 | 0 | 30 |
+| wording | 9 | 23 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
