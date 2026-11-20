@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T22:27:28Z by runner 800791708599 (actions).
+Updated 2026-11-20T22:27:56Z by runner 800791708599 (actions).
 
-**Building: T682 in progress since 20:56Z; 556 of 714 done; week 49% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Idle since 22:27Z; 556 of 714 done; week 49% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 556 of 714 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 5: T682 claimed 20:56Z, lease until 23:56Z
+- **Lane:** idle since 22:27Z (no task in progress)
 - **Week:** 49% used, 97.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 22:22Z, 5 min before this update
 - **Keeper:** last ran 22:21Z, next wake 23:58Z
@@ -22,12 +22,13 @@ Updated 2026-11-20T22:27:28Z by runner 800791708599 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T682 | picks: a pick waiting for Confirm gets its hourly reminders, | MERGE_PENDING | 2 | 91 min | 22:27Z | app/picks/src/reminder_run.rs:316 (remind): a waiting pick whose job was cancelled or closed after the notice keeps gett |
 | T673 | intake (harness): the dispatcher builds and shows the card,  | MERGE_PENDING | 1 | 106 min | 22:03Z |  |
 | T739 | picks: the owner's re-send of a release goes only while the  | MERGE_PENDING | 1 | 52 min | 21:49Z |  |
 | T752 | catalog and twin (harness): the `launch_open` comment says a | MERGE_PENDING | 1 | 39 min | 21:24Z |  |
 | T750 | docs: the privacy policy draft says an opted-out number is k | done | 1 | 38 min | 21:20Z |  |
 | T558 | Decisions digest, piece 13: the next entries after the heade | done | 1 | 28 min | 20:57Z |  |
-| T682 | picks: a pick waiting for Confirm gets its hourly reminders, | QUEUED | 1 | 105 min | 20:49Z | app/picks/src/reminder_run.rs:316 (remind): a waiting pick whose job was cancelled or closed after the notice keeps gett |
+| T682 | picks: a pick waiting for Confirm gets its hourly reminders, | QUEUED | 1 | 105 min | 20:49Z |  |
 | T743 | messaging and privacy: opt-out listings are re-keyed to the  | done | 2 | 2 h 11 min | 20:36Z | Second review (head 7921ab0285f5916db9a9df89ee828c150908805e) ended FINDINGS: tests/integration/tests/suppression_rekey. |
 | T772 | picks: a public reader of a waiting pick's Confirm deadline  | done | 1 | 117 min | 20:02Z |  |
 | T756 | privacy: the scrubber catches phones split by connector word | done | 1 | 59 min | 19:57Z |  |
@@ -150,7 +151,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 5: T682 (lease until 2026-11-20T23:56:14Z)
 
 ## Last usage reading
-- {"task": "T673", "at": "2026-11-20T22:03:51Z", "output_tokens": 78229, "cache_read_input_tokens": 7805548, "input_tokens": 205, "cache_creation_input_tokens": 334425}
+- {"task": "T682", "at": "2026-11-20T22:27:27Z", "input_tokens": 207, "cache_creation_input_tokens": 338636, "cache_read_input_tokens": 6886412, "output_tokens": 87116}
