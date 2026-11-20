@@ -34,6 +34,7 @@ use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection, PgPool};
 use thiserror::Error;
 
+use crate::business_eligibility::business_texting_allowed;
 use crate::email::{
     EmailClass, MailboxKind, NewEmail, Notice, PostalAddress, Recipient, audience_kind,
     homeowner_email, queue_email,
@@ -60,6 +61,13 @@ pub enum ModeStateError {
     /// The change is refused, such as switching on before the provider's restore (D-144).
     #[error(transparent)]
     Refused(#[from] ModeError),
+    /// TXT-035, TERMS-014: the business line stays off; the newest filed provider answer does not
+    /// say business texting is allowed or names no business campaign (none filed: the same).
+    #[error("business texting needs an allowed provider answer and a campaign on file")]
+    NotEligible,
+    /// TXT-035: a provider-answer filing with an empty or over-long field; nothing stored.
+    #[error("the provider answer filing is incomplete")]
+    BadFiling,
     /// The database refused or dropped a statement.
     #[error("the mode state statement failed")]
     Database,
@@ -106,18 +114,26 @@ pub async fn launch_channel(
     Ok(stored(db, audience).await?.launch)
 }
 
-/// TXT-021, TXT-024, D-144: Casey (`owner`) switches `audience`'s texting on; refused while the
-/// number is suspended, and a restored number becomes working. True when anything changed.
+/// TXT-021, TXT-024, TXT-035, D-144: Casey (`owner`) switches `audience`'s texting on; refused
+/// while the number is suspended, and a restored number becomes working. The business line is
+/// also refused unless the newest filed provider answer allows it and names a campaign (T527).
+/// True when anything changed.
 ///
 /// # Errors
 ///
-/// [`ModeStateError::Refused`] ([`ModeError::NotRestored`]) or [`ModeStateError::Database`].
+/// [`ModeStateError::Refused`] ([`ModeError::NotRestored`]), [`ModeStateError::NotEligible`] or
+/// [`ModeStateError::Database`].
 pub async fn switch_on(
     db: &mut PgConnection,
     audience: Audience,
     (owner, now): (Uuid, Timestamp),
 ) -> Result<bool, ModeStateError> {
-    change(db, audience, (owner, now), |s| {
+    let mut tx = db.begin().await.map_err(|_| ModeStateError::Database)?;
+    lock(&mut tx).await?;
+    if audience == Audience::Business && !business_texting_allowed(&mut tx).await? {
+        return Err(ModeStateError::NotEligible);
+    }
+    let changed = change(&mut tx, audience, (owner, now), |s| {
         let state = s.state.switch_on()?;
         Ok(Stored {
             texting_on: true,
@@ -125,7 +141,9 @@ pub async fn switch_on(
             ..s
         })
     })
-    .await
+    .await?;
+    tx.commit().await.map_err(|_| ModeStateError::Database)?;
+    Ok(changed)
 }
 
 /// TXT-021: Casey switches `audience`'s texting off (web-and-email mode); the other line is
@@ -220,12 +238,7 @@ async fn change(
     f: impl FnOnce(Stored) -> Result<Stored, ModeError>,
 ) -> Result<bool, ModeStateError> {
     let mut tx = db.begin().await.map_err(|_| ModeStateError::Database)?;
-    sqlx::query_scalar!(
-        r#"SELECT 1 AS "locked!" FROM (SELECT pg_advisory_xact_lock(hashtextextended('messaging.mode_state', 0))) AS lock"#
-    )
-    .fetch_one(&mut *tx)
-    .await
-    .map_err(|_| ModeStateError::Database)?;
+    lock(&mut tx).await?;
     let now_stored = stored(&mut tx, audience).await?;
     let next = f(now_stored)?;
     if next == now_stored {
@@ -244,6 +257,18 @@ async fn change(
         .map_err(|_| ModeStateError::Database)?;
     tx.commit().await.map_err(|_| ModeStateError::Database)?;
     Ok(true)
+}
+
+/// Takes `messaging.mode_state`'s advisory lock until the caller's transaction ends; the same
+/// session may take it again (a provider-answer filing switching the business line off, T527).
+pub(crate) async fn lock(tx: &mut PgConnection) -> Result<(), ModeStateError> {
+    sqlx::query_scalar!(
+        r#"SELECT 1 AS "locked!" FROM (SELECT pg_advisory_xact_lock(hashtextextended('messaging.mode_state', 0))) AS lock"#
+    )
+    .fetch_one(tx)
+    .await
+    .map_err(|_| ModeStateError::Database)?;
+    Ok(())
 }
 
 /// `audience`'s latest stored mode, or its default.

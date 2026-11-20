@@ -190,6 +190,9 @@ pub use crate::owner_portal::{
     owner_refund, owner_refund_page, owner_safety_call, owner_settings_page,
     owner_settings_page_with, owner_spanish, parse_change,
 };
+pub use crate::owner_portal::{
+    BusinessTextingForm, OWNER_BUSINESS_TEXTING_ROUTE, owner_business_texting,
+};
 pub use crate::owner_release::{
     OWNER_RELEASE_ROUTE, ReleaseForm, ReleaseScreen, owner_release_page, owner_release_resend,
 };

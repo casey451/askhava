@@ -12,7 +12,10 @@
 //! with `calls::api::SAFETY_CONDITIONS`, its fresh factor `SafetyCallSwitch`; a refusal naming
 //! what is missing is a 400 with the settings page) and the "Spanish conversations" switch
 //! [`OWNER_SPANISH_ROUTE`] (T480, TXT-039, TXT-043: `portals::owner_spanish`, its fresh factor
-//! `Settings`; a refusal naming each missing record is a 400 with the settings page). Every path is fixed under
+//! `Settings`; a refusal naming each missing record is a 400 with the settings page) and the
+//! business texting route [`OWNER_BUSINESS_TEXTING_ROUTE`] (T527, TXT-035: the provider-answer
+//! filing and the switch, `portals::owner_business_texting`, fresh factor `Settings`; a refused
+//! turn-on is a 400 with the settings page saying why). Every path is fixed under
 //! `/owner/`, record IDs travel in the form body (D-3890). Every response is `no-store`, a
 //! cross-site refusal too (the `no_store` layer is outermost); every
 //! `POST` passes `refuse_cross_site` and then the CSRF form check before the owner-session check
@@ -47,6 +50,9 @@ use askhava_portals::api::{
     owner_home_page, owner_record_opt_out, owner_release_page, owner_release_resend,
     owner_safety_call, owner_settings_page_with, owner_signed_out, owner_spanish,
     owner_step_up_page, parse_change, refuse_cross_site,
+};
+use askhava_portals::api::{
+    BusinessTextingForm, OWNER_BUSINESS_TEXTING_ROUTE, owner_business_texting,
 };
 use askhava_privacy::api::Vault;
 use axum::Router;
@@ -214,6 +220,31 @@ impl CsrfField for SpanishBody {
     }
 }
 
+/// The business texting form with its CSRF token (TXT-035, T527).
+#[derive(serde::Deserialize)]
+struct BusinessBody {
+    #[serde(default)]
+    csrf: String,
+    #[serde(default)]
+    to: String,
+    #[serde(default)]
+    answered_on: String,
+    #[serde(default)]
+    reference: String,
+    #[serde(default)]
+    answer: String,
+    #[serde(default)]
+    allowed: String,
+    #[serde(default)]
+    campaign_reference: String,
+}
+
+impl CsrfField for BusinessBody {
+    fn csrf(&self) -> &str {
+        &self.csrf
+    }
+}
+
 /// The release press with its CSRF token (D-3892).
 #[derive(serde::Deserialize)]
 struct ReleaseBody {
@@ -272,6 +303,7 @@ pub fn routes(pool: PgPool, vault: Option<Arc<Vault>>, webhooks: Option<&Arc<Web
         .route(OWNER_STRIPE_ANSWER_ROUTE, post(stripe_answer))
         .route(OWNER_SAFETY_CALL_ROUTE, post(safety_call))
         .route(OWNER_SPANISH_ROUTE, post(spanish))
+        .route(OWNER_BUSINESS_TEXTING_ROUTE, post(business_texting))
         .route(OWNER_RELEASE_ROUTE, get(release_page).post(release_press))
         .route_layer(from_fn(note_owner_site))
         .with_state(state)
@@ -557,6 +589,42 @@ async fn spanish(
         sample: body.sample,
     };
     match owner_spanish(&mut db, &principal, &form, now).await {
+        Ok(notice) => {
+            let status = if notice.refused() {
+                StatusCode::BAD_REQUEST
+            } else {
+                StatusCode::OK
+            };
+            page_answer(&tools, &jar, (Page::Settings, Some(notice)), status).await
+        }
+        Err(error) => not_made(&tools, &jar, &error, Page::Settings).await,
+    }
+}
+
+/// TXT-035, TERMS-014, SEC-043 (T527): the business texting filing or switch press; a refused
+/// turn-on is a 400 with the settings page saying why, a change a 200 with its line.
+async fn business_texting(
+    State(tools): State<Tools>,
+    Extension(site): Extension<OwnerSite>,
+    jar: CookieJar,
+    CsrfForm(body): CsrfForm<BusinessBody>,
+) -> Response {
+    let (principal, now) = match owner(&tools, &jar, &site).await {
+        Ok(owner) => owner,
+        Err(refused) => return *refused,
+    };
+    let Ok(mut db) = tools.pool.acquire().await else {
+        return failed("database");
+    };
+    let form = BusinessTextingForm {
+        to: body.to,
+        answered_on: body.answered_on,
+        reference: body.reference,
+        answer: body.answer,
+        allowed: body.allowed,
+        campaign_reference: body.campaign_reference,
+    };
+    match owner_business_texting(&mut db, &principal, &form, now).await {
         Ok(notice) => {
             let status = if notice.refused() {
                 StatusCode::BAD_REQUEST
