@@ -1,5 +1,6 @@
 """`--after`'s hold for a missing review proof (runner/__main__.py `hold_review`, D-3728, D-4796): a rule (b)
-commit at the branch head holds the hand-in once, one below the head fails fast with a line naming it; and the
+commit at the branch head holds the hand-in once, and so does one below the head, with a line naming it that says to
+re-name every `--worker-agent` id, else a NEW worker must redo it (D-4908, an omitted id, D-1328); and the
 backup-runner workflow tells every fix-round worker to commit plainly and names the `fable` alias with its
 Opus fallback (D-4767). Fake data only.
 """
@@ -43,13 +44,35 @@ def test_a_head_commit_under_rule_b_holds_once(handoff: Path) -> None:
     assert entry.hold_review(res) == "", "the second refusal fails the attempt"
 
 
-def test_a_commit_below_the_head_fails_fast(handoff: Path, capsys: pytest.CaptureFixture[str]) -> None:
+def test_a_commit_below_the_head_holds_once_naming_it(handoff: Path, capsys: pytest.CaptureFixture[str]) -> None:
     res = cycle.WorkerResult(outcome="submitted", log=refusal(BELOW, HEAD))
     assert entry.buried_commits(res.log) == [BELOW[:12]]
-    assert entry.hold_review(res) == ""
-    out = capsys.readouterr().out
-    assert BELOW[:12] in out and "a NEW worker must redo" in out and HEAD[:12] not in out.splitlines()[0]
-    assert "review_holds_b" not in json.loads(handoff.read_text(encoding="utf-8")), "no hold was spent"
+    assert entry.hold_review(res) == entry.REVIEW_HELD
+    first = capsys.readouterr().out.splitlines()[0]
+    assert BELOW[:12] in first and HEAD[:12] not in first
+    assert "naming every --worker-agent id" in first and "a NEW worker must redo" in first
+    assert json.loads(handoff.read_text(encoding="utf-8"))["review_holds_b"] == 1
+    assert entry.hold_review(res) == "", "the second refusal fails the attempt"
+
+
+def test_an_omitted_worker_id_holds_and_a_rerun_naming_it_passes(handoff: Path) -> None:
+    branch = "claude/task/K10-fake"
+    shas = {"c1": BELOW, "c2": HEAD}
+
+    def git(*args: str) -> str | None:
+        if args[0] == "rev-list":
+            return f"{HEAD} {BELOW}\n{BELOW} {'f' * 40}"
+        return next(s for s in shas.values() if s.startswith(args[1].split("=", 1)[1]))
+
+    def worker(sha: str) -> rp.Transcript:
+        return rp.Transcript(path=f"agent-{sha[:4]}.jsonl", models=[], texts=[],
+                             results=[f"[{branch} {sha[:9]}] Fake commit"])
+
+    omitted = rp.authorship_problems(branch, HEAD, ["e" * 40], [worker(HEAD)], git)
+    assert [sha for sha, rule, _ in omitted] == [BELOW] and omitted[0][1] == "b"
+    res = cycle.WorkerResult(outcome="submitted", log=refusal(BELOW))
+    assert entry.hold_review(res) == entry.REVIEW_HELD, "one hold lets the session re-name every id"
+    assert rp.authorship_problems(branch, HEAD, ["e" * 40], [worker(BELOW), worker(HEAD)], git) == []
 
 
 def test_other_logs_name_no_buried_commit() -> None:
