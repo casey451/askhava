@@ -41,8 +41,13 @@
 //! one hours field (`away_page`) and acts with the link's own person's business session, like
 //! Pause: the hours, 1 to the setting's limit, are bounded with `picks::api::away_for` and
 //! stored with `set_away`; a refusal rolls back (link unused) and shows the page again with its
-//! reason; the answer is "Away until <time>" in Arizona time. Every other kind's `POST` gets the one not-found
-//! answer before any token read (D-3675). A wrong kind, object, person, an ended, used or
+//! reason; the answer is "Away until <time>" in Arizona time. Busy (object: the business; T463,
+//! BIZ-028, D-309, D-3890) acts the same way with a business session: the days, 1 to 60
+//! (`busy_days`), go to `set_busy`, which pauses job cards and queues their resume at the end;
+//! a value outside that range shows the page again with `BUSY_DAYS_ERROR` by the field (422,
+//! A11Y-030), a business that is not active is refused with the reason (409), both rolled back
+//! so the link stays unused; the answer is `busy_until_line`. Every other kind's `POST` gets the
+//! one not-found answer before any token read (D-3675). A wrong kind, object, person, an ended, used or
 //! unknown token, a removed member's token and a job with no sent card or no rules all get the
 //! same bare 404. Every response is `no-store`. After a stored quote the job page carries
 //! "Not a fit for us" (`job_details_page_choice`, PICK-057), posting to `NOT_A_FIT_ROUTE`, which
@@ -53,7 +58,7 @@ use std::sync::Arc;
 
 use askhava_businesses::api::{
     Acting, BusinessesError, Roles, TeamError, approve_phone, capabilities, pause_self,
-    resume_self, set_away, waiting_phones,
+    resume_self, set_away, set_busy, waiting_phones,
 };
 use askhava_core::api::{Clock, SystemClock, arizona_time};
 use askhava_intake::api::Admission;
@@ -67,10 +72,10 @@ use askhava_portals::api::{
     BUSINESS_STEP_UP_ROUTE, ChargeAsked, CookieJar, CsrfField, CsrfForm, FactsForm, LargestWarning,
     NotAFitChoice, PriceForm, QuoteFormFacts, SIGNIN_ROUTE, UseBy, WHY_CHARGED_ROUTE, WebSecurity,
     action_page, admit_quote, ask_about_charge, away_hours, away_page, business_principal,
-    charge_answer, charge_reply_line, csrf_token, ensure_pre_session, fee_lines,
-    job_details_page_choice, largest_job_warning, not_a_fit_action, open_action_link, parse_facts,
-    prefill, quote_form_page_priced, refuse_cross_site, require_step_up, security_event_client,
-    session_may, use_action_link,
+    busy_days, busy_until_line, charge_answer, charge_reply_line, csrf_token, ensure_pre_session,
+    fee_lines, job_details_page_choice, largest_job_warning, not_a_fit_action, open_action_link,
+    parse_facts, prefill, quote_form_page_priced, refuse_cross_site, require_step_up,
+    security_event_client, session_may, use_action_link,
 };
 use askhava_portals::api::{JobPageLinks, no_store};
 use askhava_portals::api::{SensitiveChange, StepUpError};
@@ -431,6 +436,7 @@ struct Posted {
     over_largest: String,
     certified: String,
     hours: String,
+    days: String,
 }
 
 impl CsrfField for Posted {
@@ -477,7 +483,7 @@ impl Posted {
 /// `POST /b/a/{kind}/{object}/{token}`: after the cross-site and CSRF checks, a Quote link acts
 /// by the link alone, Pause, Resume and Ask about a charge with a business session (D-3839),
 /// Approve with the owner's session and a fresh step-up (T399), Hold by the link alone (T456),
-/// Away with a business session (T543); every other kind is the one not-found answer before any token read (D-3675).
+/// Away and Busy with a business session (T543, T463); every other kind is the one not-found answer before any token read (D-3675).
 async fn act(
     State(links): State<Links>,
     Extension(Client(ip)): Extension<Client>,
@@ -505,6 +511,10 @@ async fn act(
         }
         ActionKind::Away => {
             let acted = away_post(&links, (object, &token), &jar, &posted.hours).await;
+            acted.unwrap_or_else(IntoResponse::into_response)
+        }
+        ActionKind::Busy => {
+            let acted = busy_post(&links, (object, &token), &jar, &posted.days).await;
             acted.unwrap_or_else(IntoResponse::into_response)
         }
         _ => Stop::NotFound.into_response(),
@@ -686,22 +696,9 @@ async fn away_post(
 ) -> Result<Response, Stop> {
     let now = links.clock.now();
     let mut tx = links.pool.begin().await.map_err(failed)?;
-    let principal = business_principal(&mut tx, jar, now)
-        .await
-        .map_err(failed)?;
-    let Some(principal) = principal else {
+    let target = (ActionKind::Away, object, token);
+    let Some(by) = acting_by_link(&mut tx, target, jar, now).await? else {
         return Ok(signed_out());
-    };
-    let grant = use_action_link(&mut tx, (ActionKind::Away, object), token, None, now).await;
-    let grant = grant.map_err(link_stop)?;
-    let business = grant.business();
-    let may = session_may(&principal, ActionKind::Away, business);
-    if !grant.same_person(&principal) || !may || object != business {
-        return Err(Stop::NotFound);
-    }
-    let by = Acting {
-        business,
-        member: principal.member(),
     };
     let set = away_set(&mut tx, by, hours, now).await?;
     let csrf = csrf_token(jar).unwrap_or_default();
@@ -715,6 +712,85 @@ async fn away_post(
             away_again(&csrf, hours, refused)
         }
     }
+}
+
+/// SEC-004, SEC-025, SEC-026: the signed-in person acting on their own business through the
+/// session link `kind` on `object`, used in `tx`: `None` when signed out (before any token read);
+/// another person's link, one naming another business or a kind `session_may` refuses is the
+/// one not-found answer.
+async fn acting_by_link(
+    tx: &mut PgConnection,
+    (kind, object, token): (ActionKind, Uuid, &str),
+    jar: &CookieJar,
+    now: Timestamp,
+) -> Result<Option<Acting>, Stop> {
+    let principal = business_principal(tx, jar, now).await.map_err(failed)?;
+    let Some(principal) = principal else {
+        return Ok(None);
+    };
+    let grant = use_action_link(tx, (kind, object), token, None, now).await;
+    let grant = grant.map_err(link_stop)?;
+    let business = grant.business();
+    let may = session_may(&principal, kind, business);
+    if !grant.same_person(&principal) || !may || object != business {
+        return Err(Stop::NotFound);
+    }
+    Ok(Some(Acting {
+        business,
+        member: principal.member(),
+    }))
+}
+
+/// BIZ-028, BIZ-038, BIZ-010, SEC-004, SEC-025, SEC-026, D-309, D-3675, D-3890: the Busy link's
+/// `POST` (object: the business), by the link's own person's session as [`away_post`]. Days that
+/// are not 1 to 60 show the page again with `BUSY_DAYS_ERROR` (422, A11Y-030); a refused
+/// `set_busy` (the business is not active) says why (409); both roll back, so the link stays
+/// unused. Done, it answers with `busy_until_line` from today's Arizona date.
+async fn busy_post(
+    links: &Links,
+    (object, token): (Uuid, &str),
+    jar: &CookieJar,
+    days: &str,
+) -> Result<Response, Stop> {
+    let now = links.clock.now();
+    let mut tx = links.pool.begin().await.map_err(failed)?;
+    let target = (ActionKind::Busy, object, token);
+    let Some(by) = acting_by_link(&mut tx, target, jar, now).await? else {
+        return Ok(signed_out());
+    };
+    let Some(n) = busy_days(days) else {
+        tx.rollback().await.map_err(failed)?;
+        return busy_again(&csrf_token(jar).unwrap_or_default(), days);
+    };
+    match set_busy(&mut tx, by, n, now).await {
+        Ok(_) => {
+            tx.commit().await.map_err(failed)?;
+            let line = busy_until_line(arizona_time(now).date(), n);
+            let body = format!("<p id=\"busy-until\">{}</p>", escaped(&line));
+            Ok(done(StatusCode::OK, "Busy set", &body))
+        }
+        Err(BusinessesError::Refused | BusinessesError::MovedOn) => {
+            tx.rollback().await.map_err(failed)?;
+            let why = "<p id=\"why\">Only an active account can set Busy. Nothing changed.</p>";
+            Ok(done(StatusCode::CONFLICT, "Busy not set", why))
+        }
+        Err(_) => Err(Stop::Failed),
+    }
+}
+
+/// A11Y-030: the Busy page again with the posted `days` kept and `BUSY_DAYS_ERROR` by the field
+/// (422); nothing changed and the link stays unused.
+fn busy_again(csrf: &str, days: &str) -> Result<Response, Stop> {
+    let facts = ActionFacts {
+        kind: ActionKind::Busy,
+        job_number: "",
+        ends_at: None,
+        signed_in: true,
+        days: Some(days),
+        csrf,
+    };
+    let html = action_page(&facts).map_err(failed)?;
+    Ok((StatusCode::UNPROCESSABLE_ENTITY, Html(html)).into_response())
 }
 
 /// BIZ-034, D-285: bounds `hours` (a whole number from 1 to the setting's limit, read as the AWAY
