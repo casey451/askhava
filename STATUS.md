@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T09:06:00Z by runner c7c9c237e31b (actions).
+Updated 2026-11-20T09:06:28Z by runner c7c9c237e31b (actions).
 
 **Building: T617 in progress since 07:06Z; 529 of 708 done; week 25% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 529 of 708 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 3: T727 claimed 08:23Z, lease until 11:23Z; lane 4: T766 claimed 08:11Z, lease until 11:11Z; lane 5: T573 claimed 08:54Z, lease until 11:54Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z
+- **Lane:** lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 3: T727 claimed 08:23Z, lease until 11:23Z; lane 5: T573 claimed 08:54Z, lease until 11:54Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z
 - **Week:** 25% used, 139.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:56Z, 9 min before this update
+- **Last run:** 08:56Z, 10 min before this update
 - **Keeper:** last ran 08:55Z, next wake 10:08Z
 
 ## Needs attention
@@ -19,6 +19,7 @@ Updated 2026-11-20T09:06:00Z by runner c7c9c237e31b (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T766 | server tests (harness): a photo-link door and a {job} fill i | MERGE_PENDING | 1 | 53 min | 09:05Z |  |
 | T116 | Stage 0.5 static page set and the DNS records file | MERGE_PENDING | 1 | 50 min | 08:48Z |  |
 | T669 | picks: "Can't take it" and a business leaving end a pick in  | MERGE_PENDING | 2 | 80 min | 08:32Z | runner smoke red on c403ea4898ac (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
 | T672 | intake: the dispatcher asks "How soon?", the night count and | QUEUED | 2 | 89 min | 08:05Z | runner smoke red on 3e9315b7399c (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
@@ -142,9 +143,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T617 (lease until 2026-11-20T10:06:22Z)
 - lane 3: T727 (lease until 2026-11-20T11:23:33Z)
-- lane 4: T766 (lease until 2026-11-20T11:11:59Z)
 - lane 5: T573 (lease until 2026-11-20T11:54:23Z)
 - lane 6: T530 (lease until 2026-11-20T10:20:58Z)
 
 ## Last usage reading
-- {"task": "T116", "at": "2026-11-20T08:48:45Z", "output_tokens": 68825, "input_tokens": 195, "cache_creation_input_tokens": 268787, "cache_read_input_tokens": 4227731}
+- {"task": "T766", "at": "2026-11-20T09:05:58Z", "input_tokens": 92, "cache_creation_input_tokens": 117265, "cache_read_input_tokens": 2601428, "output_tokens": 24282}
