@@ -19,13 +19,17 @@ use askhava_adapters::api::{
     AdapterError, AdapterMode, CardFacts, Charge, ConfirmedIntent, IdempotencyKey, IntentMetadata,
     PaymentIntent, PaymentsAdapter, SetUpIntent,
 };
-use askhava_businesses::api::{Acting, SignUpForm, add_owner, record_step_up, sign_up};
+use askhava_businesses::api::{
+    Acting, Checks, Event, SignUpForm, add_owner, apply, record_step_up, sign_up,
+};
 use askhava_core::api::{ClientIpPolicy, Guarded, MIGRATOR, ManualClock, SystemClock};
 use askhava_intake::api::rules::{Inbound, Settings as IntakeSettings};
 use askhava_intake::api::{Answer as TextAnswer, TextIn, receive_text, record_answer};
 use askhava_integration::log_capture;
 use askhava_jobs::api::{JobStatus, create, move_to, record_job_facts};
-use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
+use askhava_licensing::api::{
+    ClassMap, DailyCheck, Holder, Job, LicenseKind, arizona_day, check_license, import_roc_list,
+};
 use askhava_ops::api::Actor;
 use askhava_payments::api::{
     AUTHORIZATION_TEXT, AUTHORIZATION_VERSION, BusinessId, IntentStripe, Releasable, ReleaseError,
@@ -520,6 +524,27 @@ struct Picked {
     jar: CookieJar,
 }
 
+/// A fake ROC license number, and today's fake ROC list with it Active in class R-39.
+const ROC_NUMBER: &str = "ROC900039";
+const ROC_LIST: &str = "license_number,class,status,issued_on\nROC900039,R-39,Active,2016-01-01\n";
+
+/// PICK-020 (D-056, D-4897): makes `business` one that may Confirm: its account Active through
+/// its sign-up checks, and one fresh Active ROC check row of a fake license number, from a list
+/// dated today in Arizona (stored once, however many businesses call this).
+async fn eligible(db: &mut PgConnection, business: Uuid, now: Timestamp) {
+    let ok = Checks {
+        code_done: true,
+        match_passed: true,
+        flagged: false,
+    };
+    let to = apply(db, business, Event::Checked(ok), Actor::System, now).await;
+    to.expect("active");
+    let listed = import_roc_list(db, arizona_day(now), ROC_LIST).await;
+    listed.expect("ROC list");
+    let check = check_license(db, business, ROC_NUMBER).await;
+    assert_eq!(check.expect("license check"), DailyCheck::Active);
+}
+
 /// [`Picked`]; with `signup`, signed up for hvac repair first, so a free first win is due.
 async fn picked(pool: &PgPool, signup: bool) -> Picked {
     let (secret, mailbox) = (SecretString::from(ID_SECRET), Uuid::new_v4());
@@ -542,6 +567,7 @@ async fn picked(pool: &PgPool, signup: bool) -> Picked {
     let owner = add_owner(&mut db, business, mailbox, now())
         .await
         .expect("owner");
+    eligible(&mut db, business, now()).await;
     drop(db);
     let job = quoted(pool, business).await;
     her_request(pool, job).await;

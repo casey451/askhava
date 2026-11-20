@@ -1,0 +1,50 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT replay_run_id, restore_seconds, outcome FROM recovery.restore_drill WHERE backup_object = 'exports/2026-11-01/7.age'",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "replay_run_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "recovery.restore_drill",
+            "name": "replay_run_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "restore_seconds",
+        "type_info": "Int4",
+        "origin": {
+          "Table": {
+            "table": "recovery.restore_drill",
+            "name": "restore_seconds"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "outcome",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "recovery.restore_drill",
+            "name": "outcome"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "f84f80c16da77749efdcfd8e64c3086591eda3c3a33749dc67c7b8bc7a5e104a"
+}
