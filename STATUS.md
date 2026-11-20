@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T00:39:43Z by runner dbbf2ecc1e6e (actions).
+Updated 2026-11-20T00:39:54Z by runner eb0c533593c6 (actions).
 
 **Building: T527 in progress since 00:05Z; 511 of 703 done; week 13% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,13 +9,13 @@ Updated 2026-11-20T00:39:43Z by runner dbbf2ecc1e6e (actions).
 - **Lane:** lane 1: T527 claimed 00:05Z, lease until 03:05Z; lane 3: T726 claimed 00:03Z, lease until 03:03Z; lane 4: T218 claimed 00:31Z, lease until 03:31Z; lane 5: T663 claimed 23:33Z, lease until 02:33Z; lane 7: T613 claimed 23:22Z, lease until 03:14Z
 - **Week:** 13% used, 161.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 00:39Z, 0 min before this update
-- **Keeper:** last ran 00:39Z, next wake 02:36Z
+- **Keeper:** last ran 00:39Z, next wake 02:35Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T672 (since 2026-11-19T23:07:12Z, no attempt used; a plan change fixes it): T672: dependency T717 is DONE but its owned file tests/integration/tests/intake_order_two_jobs_rules.rs is not on main
-- Strict plan check red: 71 problem(s) on tasks still to run (+362 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 62 problem(s) on tasks still to run (+356 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
