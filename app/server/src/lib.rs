@@ -870,6 +870,7 @@ where
     );
     register_request_counts(&mut registry, Arc::clone(&clock));
     register_safe_mode(&mut registry, Arc::clone(&clock));
+    register_late_cards(&mut registry, Arc::clone(&clock));
     registry.register(
         askhava_quotes::api::WINDOWS_KIND,
         askhava_quotes::api::run_windows_end,
@@ -898,6 +899,18 @@ where
         register_job_texts(&mut registry, &keys, &clock);
     }
     registry
+}
+
+/// `quotes`' late cards on `businesses.became_eligible` (CARD-018, CARD-020, T677, D-4360) on
+/// the worker's clock.
+fn register_late_cards(registry: &mut Registry, clock: Arc<dyn Clock>) {
+    registry.register(
+        askhava_businesses::api::BECAME_ELIGIBLE_KIND,
+        move |pool, task| {
+            let now = clock.now();
+            askhava_quotes::api::run_became_eligible(pool, task, now)
+        },
+    );
 }
 
 /// `intake`'s homeowner job texts (`jobs.homeowner_text`, D-1030 (A)) and quote-count update
