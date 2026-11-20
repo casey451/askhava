@@ -8530,3 +8530,4 @@
 - 2026-11-20T12:30:43Z runner ca06062e5a99 (actions): {}
 - 2026-11-20T12:31:14Z runner 52076e95bd86 (actions): {}
 - 2026-11-20T12:40:13Z runner a3ce8def2b0a (actions): {"T672": "QUEUED -> IN_PROGRESS"}; T672 estimated 2.0M tokens (calibrated); week has 128.8M left (no five-hour budget, D-3056) after 3.2M still running in another lane (session_reading 2026-11-20T12:30:43Z (week)); claimed
+- 2026-11-20T12:53:29Z runner 7d98387f34ed (actions): {"T573": "MERGE_PENDING -> BLOCKED", "T648": "MERGE_PENDING -> DONE"}

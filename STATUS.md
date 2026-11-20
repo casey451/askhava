@@ -1,28 +1,48 @@
 # Ask Hava build status
 
-Updated 2026-11-20T12:40:13Z by runner a3ce8def2b0a (actions).
+Updated 2026-11-20T12:53:29Z by runner 7d98387f34ed (actions).
 
-**Building: T496 in progress since 11:44Z; 535 of 710 done; week 31% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T496 in progress since 11:44Z; 536 of 710 done; week 31% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 535 of 710 build tasks (owner gates not counted)
+- **Tasks done:** 536 of 710 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T496 claimed 11:44Z, lease until 14:44Z; lane 3: T727 claimed 11:55Z, lease until 14:55Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
 - **Week:** 31% used, 128.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:31Z, 8 min before this update
+- **Last run:** 12:40Z, 12 min before this update
 - **Keeper:** last ran 12:31Z, next wake 12:51Z
 
 ## Needs attention
+- BLOCKED T573: Ci: failure; Coverage: cancelled
+Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)
+test pages::tests::web_009_the_request_box_posts_with_a_label_and_the_token ... ok
+test pages::tests::waits_read_in_minutes_then_hours ... ok
+test pages::tests::web_020_city_guide_reads_its_three_settings ... ok
+test routes::tests::td_web_01_banner_hidden_by_default_and_shown_when_on ... ok
+test routes::tests::td_web_01_site_page_needs_no_script ... ok
+test routes::tests::another_method_is_405_with_allow ... ok
+test tests::site_copy_blocks::d_3890_the_start_line_matches_its_chat_sentence_while_it_names_the_number ... ok
+test routes::tests::the_stylesheet_is_served_and_unknown_names_are_not ... ok
+test tests::site_copy_blocks::word_029_the_block_check_fails_planted_differences ... ok
+test tests::site_copy_blocks::word_029_every_home_and_footer_block_shows_on_the_page ... ok
+test chat::tests::ai_line_follows_the_switch_and_consent_comes_first ... ok
+test chat::tests::number_step_without_the_part_sends_and_stores_nothing ... ok
+test tests::who_runs::td_web_10_record_link_and_license_follow_their_settings ... ok
+test result: ok. 41 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.29s
+##[error]The operation was canceled.
+Ci failed at step: All five jobs passed
+Checks: success, Lint and slow tests: success, Python: success, Coverage: cancelled, E2e: success
+##[error]Process completed with exit code 1.
 - BLOCKED T614: plan gap reported: PLAN GAP: tests/a11y/reflow_spacing.spec.ts:49-54 (T053, protected) flags every TARGETS control with no box as "is hidden", but DESIGN_SPEC docs/design/DESIGN_SPEC.md:102 requires .site-nav hidden below 1024px and Menu hidden from 1024px, so the specified header fails at every width. Also: closed <details> Menu links keep boxes in Chromium (counted as Tab stops by j1_keyboard.spec.ts:56 and j2_keyboard.spec.ts:26) and the open Menu scrolls sideways at 320px (scrollWidth 375); both fixable only in app/site/static/site.css, not owned by T614 (CSP forbids inline style). Smallest plan change: a ta; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T614 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T457 (since 2026-11-20T12:39:52Z, no attempt used; a plan change fixes it): T457: dependency T463 is DONE but its owned file tests/integration/tests/busy_for.rs is not on main
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 35 problem(s) on tasks still to run (+403 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
+- Strict plan check red: 39 problem(s) on tasks still to run (+406 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T648 | recovery: the monthly test restore into a throwaway cluster, | MERGE_PENDING | 2 | 112 min | 12:29Z | PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, b |
-| T573 | messaging and server: queued business texts are addressed to | MERGE_PENDING | 3 | 70 min | 12:25Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
+| T648 | recovery: the monthly test restore into a throwaway cluster, | done | 2 | 112 min | 12:29Z | PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, b |
+| T573 | messaging and server: queued business texts are addressed to | check_failed | 3 | 70 min | 12:25Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
 | T614 | site: the V6 header in base.html (links, the Menu in the pag | BLOCKED | 1 | 16 min | 11:39Z | PLAN GAP: tests/a11y/reflow_spacing.spec.ts:49-54 (T053, protected) flags every TARGETS control with no box as "is hidde |
 | T463 | businesses and server: "Busy for <n> days" pauses job cards  | done | 1 | 58 min | 11:16Z |  |
 | T768 | runner tests (harness): the seed test fakes free disk, so a  | done | 1 | 22 min | 10:38Z |  |
@@ -96,8 +116,8 @@ Updated 2026-11-20T12:40:13Z by runner a3ce8def2b0a (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 324 of 735 (44.1%) · partial 390 · unstarted 21
-**Tasks merged (throughput only):** 535 of 710
+**Requirements verified:** 325 of 735 (44.2%) · partial 389 · unstarted 21
+**Tasks merged (throughput only):** 536 of 710
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -110,7 +130,7 @@ Updated 2026-11-20T12:40:13Z by runner a3ce8def2b0a (actions).
 | intake | 8 | 35 | 0 | 43 |
 | job-cards | 12 | 12 | 0 | 24 |
 | licensing | 33 | 15 | 0 | 48 |
-| lifecycle | 16 | 12 | 0 | 28 |
+| lifecycle | 17 | 11 | 0 | 28 |
 | messaging | 23 | 22 | 0 | 45 |
 | ops-recovery | 9 | 31 | 14 | 54 |
 | privacy | 8 | 23 | 0 | 31 |
@@ -133,7 +153,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 178 of 292 done
+- stage 5: 179 of 292 done
 - stage 6: 0 of 65 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done

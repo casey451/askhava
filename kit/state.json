@@ -81183,8 +81183,8 @@
     "T447",
     "T768"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 2,
+   "status": "BLOCKED",
+   "attempts": 3,
    "slug": "business-outbox-rows-sent",
    "type": "harness",
    "stage": "5",
@@ -81197,7 +81197,7 @@
     4901,
     4902
    ],
-   "reason": null,
+   "reason": "Ci: failure; Coverage: cancelled\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest pages::tests::web_009_the_request_box_posts_with_a_label_and_the_token ... ok\ntest pages::tests::waits_read_in_minutes_then_hours ... ok\ntest pages::tests::web_020_city_guide_reads_its_three_settings ... ok\ntest routes::tests::td_web_01_banner_hidden_by_default_and_shown_when_on ... ok\ntest routes::tests::td_web_01_site_page_needs_no_script ... ok\ntest routes::tests::another_method_is_405_with_allow ... ok\ntest tests::site_copy_blocks::d_3890_the_start_line_matches_its_chat_sentence_while_it_names_the_number ... ok\ntest routes::tests::the_stylesheet_is_served_and_unknown_names_are_not ... ok\ntest tests::site_copy_blocks::word_029_the_block_check_fails_planted_differences ... ok\ntest tests::site_copy_blocks::word_029_every_home_and_footer_block_shows_on_the_page ... ok\ntest chat::tests::ai_line_follows_the_switch_and_consent_comes_first ... ok\ntest chat::tests::number_step_without_the_part_sends_and_stores_nothing ... ok\ntest tests::who_runs::td_web_10_record_link_and_license_follow_their_settings ... ok\ntest result: ok. 41 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.29s\n##[error]The operation was canceled.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: cancelled, E2e: success\n##[error]Process completed with exit code 1.",
    "last_failure": "model claude-opus-5-5 ran, task names claude-fable-5-2",
    "history": [
     {
@@ -81251,13 +81251,54 @@
      "model": "claude-fable-5-2",
      "model_evidence_count": 124,
      "head_sha": "c5eb5e4bb8b01d652c45c9b82fb44eb807652254",
-     "pr": null,
-     "checks": null,
+     "pr": 1203,
+     "checks": [
+      {
+       "name": "Ci",
+       "conclusion": "failure"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "cancelled"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-20T11:14:12Z",
      "ended_at": "2026-11-20T12:25:04Z",
-     "result": "MERGE_PENDING",
+     "result": "check_failed",
      "usage": {
       "worker": {
        "tokens": 8403017,
@@ -88036,7 +88077,7 @@
     "T109",
     "T764"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 1,
    "slug": "recovery-monthly-test-restore",
    "type": "build",
@@ -88081,13 +88122,70 @@
      "model": "claude-fable-5-2",
      "model_evidence_count": 118,
      "head_sha": "ca06062e5a99bc189428c8dba8d34dd6ff0522a3",
-     "pr": null,
-     "checks": null,
+     "pr": 1204,
+     "checks": [
+      {
+       "name": "backup lane 1",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-20T10:37:03Z",
      "ended_at": "2026-11-20T12:29:39Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "usage": {
       "worker": {
        "tokens": 7274817,
@@ -88137,7 +88235,32 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merged_sha": "c91fee70b2dfa9b50ffd66ca6660c994bf641de5",
+   "merged_at": "2026-11-20T12:51:55Z",
+   "files": [
+    ".sqlx/query-62e3af2effbd8f3fc53bf6b266862087503efc7898653527d6255bf5c872e556.json",
+    ".sqlx/query-72cc27577f3f257d23a758c57713e933fcc2c57d7da2864e91c208d3fd4f5a08.json",
+    ".sqlx/query-8437678ebd973529f44dfbc219cb19a38f94237974c12dc906cf7b8b474385c3.json",
+    ".sqlx/query-ce2f5597bf6ff423459767828fd4015e838bcdb4e147d669e385538de9d3c17b.json",
+    ".sqlx/query-d34fb70c452ba1b6341345ead87e429d94395725675b040f4e07f7180d343dba.json",
+    ".sqlx/query-f19a900c0d80ef2e36ddb36f30358f1a56032ca057948726b605c389b79f451c.json",
+    "Cargo.lock",
+    "app/core/NOTES.md",
+    "app/core/src/settings.rs",
+    "app/recovery/CLAUDE.md",
+    "app/recovery/NOTES.md",
+    "app/recovery/src/api.rs",
+    "app/recovery/src/lib.rs",
+    "app/recovery/src/restore.rs",
+    "app/server/src/bin/worker.rs",
+    "app/server/src/lib.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "docs/for-casey-review.md",
+    "tests/recovery/Cargo.toml",
+    "tests/recovery/tests/export_restores.rs"
+   ]
   },
   {
    "id": "T651",
@@ -101959,7 +102082,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T12:40:13Z",
+ "updated_at": "2026-11-20T12:53:29Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -102057,7 +102180,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "a3ce8def2b0ae16b65c5b4b0df5139e6dd01a1cc",
+ "runner_sha": "7d98387f34ed8cdf9508ff777ab4a5e2f5112fde",
  "starter": "actions",
  "smoke_runs": [
   {
