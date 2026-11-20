@@ -1,21 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-20T11:56:07Z by runner 4b155e888570 (actions).
+Updated 2026-11-20T12:12:57Z by runner a3ce8def2b0a (actions).
 
-**Building: T648 in progress since 10:37Z; 533 of 710 done; week 30% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T648 in progress since 10:37Z; 534 of 710 done; week 30% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 533 of 710 build tasks (owner gates not counted)
+- **Tasks done:** 534 of 710 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T648 claimed 10:37Z, lease until 13:37Z; lane 2: T496 claimed 11:44Z, lease until 14:44Z; lane 3: T727 claimed 11:55Z, lease until 14:55Z; lane 4: T573 claimed 11:14Z, lease until 14:14Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z
 - **Week:** 30% used, 128.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:51Z, 4 min before this update
+- **Last run:** 11:56Z, 16 min before this update
 - **Keeper:** last ran 11:51Z, next wake 12:11Z
 
 ## Needs attention
 - BLOCKED T614: plan gap reported: PLAN GAP: tests/a11y/reflow_spacing.spec.ts:49-54 (T053, protected) flags every TARGETS control with no box as "is hidden", but DESIGN_SPEC docs/design/DESIGN_SPEC.md:102 requires .site-nav hidden below 1024px and Menu hidden from 1024px, so the specified header fails at every width. Also: closed <details> Menu links keep boxes in Chromium (counted as Tab stops by j1_keyboard.spec.ts:56 and j2_keyboard.spec.ts:26) and the open Menu scrolls sideways at 320px (scrollWidth 375); both fixable only in app/site/static/site.css, not owned by T614 (CSP forbids inline style). Smallest plan change: a ta; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T614 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 37 problem(s) on tasks still to run (+401 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
+- Strict plan check red: 36 problem(s) on tasks still to run (+402 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -29,7 +29,7 @@ Updated 2026-11-20T11:56:07Z by runner 4b155e888570 (actions).
 | T617 | site: DM Sans from one weight-axis variable file (smaller th | done | 2 | 2 h 16 min | 09:22Z | PLAN GAP: tests/a11y/design_tokens.spec.ts:221 and :242 (protected, not owned by T617) contradict the prompt's single DM |
 | T766 | server tests (harness): a photo-link door and a {job} fill i | done | 1 | 53 min | 09:05Z |  |
 | T116 | Stage 0.5 static page set and the DNS records file | done | 1 | 50 min | 08:48Z |  |
-| T669 | picks: "Can't take it" and a business leaving end a pick in  | MERGE_PENDING | 2 | 80 min | 08:32Z | runner smoke red on c403ea4898ac (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
+| T669 | picks: "Can't take it" and a business leaving end a pick in  | done | 2 | 80 min | 08:32Z | runner smoke red on c403ea4898ac (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
 | T672 | intake: the dispatcher asks "How soon?", the night count and | QUEUED | 2 | 89 min | 08:05Z | runner smoke red on 3e9315b7399c (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
 | T561 | server and portals: the homeowner's "Download my data" and h | done | 1 | 33 min | 07:51Z |  |
 | T762 | runner and workflow (harness): fix-round workers commit with | done | 1 | 68 min | 07:44Z |  |
@@ -96,7 +96,7 @@ Updated 2026-11-20T11:56:07Z by runner 4b155e888570 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 324 of 735 (44.1%) · partial 390 · unstarted 21
-**Tasks merged (throughput only):** 533 of 710
+**Tasks merged (throughput only):** 534 of 710
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -132,7 +132,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 176 of 292 done
+- stage 5: 177 of 292 done
 - stage 6: 0 of 65 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done

@@ -67630,7 +67630,7 @@
      }
     }
    ],
-   "reviewed_sha": "171185b81ecda7adfe128272bae50386d506c446",
+   "reviewed_sha": "0260ff26579fa19a441d2220edce57dd173ec595",
    "review_lease": {
     "task": "T463",
     "session": "actions-44713827341",
@@ -67650,10 +67650,23 @@
      "main": "6fef039a5d2976890e58e41d8be1b224f92c830a",
      "how": "hand-in",
      "at": "2026-11-20T11:16:32Z"
+    },
+    {
+     "from": "171185b81ecda7adfe128272bae50386d506c446",
+     "to": "0260ff26579fa19a441d2220edce57dd173ec595",
+     "main": "a3ce8def2b0ae16b65c5b4b0df5139e6dd01a1cc",
+     "how": "runner",
+     "checks": {
+      "Ci": "success",
+      "Twin": "success",
+      "Ally": "success"
+     },
+     "at": "2026-11-20T12:12:47Z"
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merge_turn_since": "2026-11-20T12:12:47Z"
   },
   {
    "id": "T457",
@@ -89450,7 +89463,7 @@
     "T467",
     "T471"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 1,
    "slug": "pending-pick-ends",
    "type": "build",
@@ -89494,13 +89507,70 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 122,
      "head_sha": "736a40941c530fa754d2a7c2e397dd050cdbfa24",
-     "pr": null,
-     "checks": null,
+     "pr": 1192,
+     "checks": [
+      {
+       "name": "backup lane 7",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-20T07:12:31Z",
      "ended_at": "2026-11-20T08:32:45Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "usage": {
       "worker": {
        "tokens": 5199231,
@@ -89606,7 +89676,22 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-20T11:50:04Z"
+   "merge_turn_since": "2026-11-20T11:50:04Z",
+   "merged_sha": "a3ce8def2b0ae16b65c5b4b0df5139e6dd01a1cc",
+   "merged_at": "2026-11-20T12:10:34Z",
+   "files": [
+    ".sqlx/query-e5f5036964b835a9460e7d14b6e20e4de803ff276dcdaecc3cfb64bdb60990d7.json",
+    ".sqlx/query-f9780f0471d040c9de584690cb17840b603af304c5b3a5d13545e08a8c13bfc1.json",
+    "app/jobs/NOTES.md",
+    "app/jobs/src/api.rs",
+    "app/jobs/src/payment_wait.rs",
+    "app/picks/NOTES.md",
+    "app/picks/src/business_left.rs",
+    "app/picks/src/cant_take.rs",
+    "app/picks/src/confirm_reminders.rs",
+    "docs/decisions.md",
+    "tests/integration/tests/pending_pick_ends.rs"
+   ]
   },
   {
    "id": "T670",
@@ -101697,7 +101782,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T11:56:07Z",
+ "updated_at": "2026-11-20T12:12:57Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -101795,7 +101880,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "4b155e8885707f89f6d1eac9bac229e9edf62088",
+ "runner_sha": "a3ce8def2b0ae16b65c5b4b0df5139e6dd01a1cc",
  "starter": "actions",
  "smoke_runs": [
   {
