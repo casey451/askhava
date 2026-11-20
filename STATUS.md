@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T20:29:27Z by runner 126f90388246 (actions).
+Updated 2026-11-20T20:36:15Z by runner efeef4bae51e (actions).
 
 **Building: T558 in progress since 20:29Z; 551 of 713 done; week 45% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-20T20:29:27Z by runner 126f90388246 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T558 claimed 20:29Z, lease until 23:29Z; lane 4: T682 claimed 19:03Z, lease until 22:03Z; lane 6: T673 claimed 20:17Z, lease until 23:17Z; lane 7: T743 claimed 18:24Z, lease until 21:24Z
 - **Week:** 45% used, 99.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:28Z, 0 min before this update
+- **Last run:** 20:29Z, 6 min before this update
 - **Keeper:** last ran 20:28Z, next wake 20:48Z
 
 ## Needs attention
@@ -16,7 +16,7 @@ Updated 2026-11-20T20:29:27Z by runner 126f90388246 (actions).
 - PLAN GAP T305 (since 2026-11-20T20:17:39Z, no attempt used; a plan change fixes it): T305: dependency T530 is DONE but its owned file app/portals/src/owner_help.rs is not on main; T305: dependency T530 is DONE but its owned file app/portals/templates/help_request.html is not on main; T305: dependency T530 is DONE but its owned file tests/security/tests/owner_help_reply.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 42 problem(s) on tasks still to run (+420 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
+- Strict plan check red: 41 problem(s) on tasks still to run (+417 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -96,7 +96,6 @@ Updated 2026-11-20T20:29:27Z by runner 126f90388246 (actions).
 | T607 | site: site.css brought up to the V6 reference (laftly-v6.css | done | 2 | 41 min | 21:57Z | review_missing on 2c1fc315ebe4 (D-3728): not proven reviewed or worker-made / (b) 5cb49e3317bc T607: NOTES entry in the  |
 | T663 | picks, jobs and payments (harness): a confirmed pick moves i | BLOCKED | 1 | 30 min | 21:32Z |  |
 | T753 | runner (harness): `fable` is a model the plan can name, a ta | done | 1 | 112 min | 20:59Z |  |
-| T307 | server and portals: the homeowner portal's sign-in, home pag | done | 2 | 2 h 45 min | 20:33Z | PLAN GAP: tests/security/tests/vault_readers.rs:23 lets only `portals` call `read_own_contact` (line 19 lets only `messa |
 
 ### Plan and harness merges on main
 - none
