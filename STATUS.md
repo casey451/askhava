@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T13:08:00Z by runner 4b155e888570 (actions).
+Updated 2026-11-20T13:12:00Z by runner addd51c9a141 (actions).
 
 **Building: T670 in progress since 12:59Z; 536 of 710 done; week 32% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 536 of 710 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T670 claimed 12:59Z, lease until 15:59Z; lane 3: T727 claimed 11:55Z, lease until 14:55Z; lane 4: T667 claimed 12:55Z, lease until 15:55Z; lane 5: T767 claimed 12:53Z, lease until 15:53Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
+- **Lane:** lane 1: T670 claimed 12:59Z, lease until 15:59Z; lane 3: T727 claimed 11:55Z, lease until 16:12Z; lane 4: T667 claimed 12:55Z, lease until 15:55Z; lane 5: T767 claimed 12:53Z, lease until 15:53Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
 - **Week:** 32% used, 125.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:07Z, 0 min before this update
+- **Last run:** 13:08Z, 3 min before this update
 - **Keeper:** last ran 13:08Z, next wake 13:58Z
 
 ## Needs attention
@@ -37,7 +37,7 @@ Checks: success, Lint and slow tests: success, Python: success, Coverage: cancel
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T524 (since 2026-11-20T12:53:17Z, no attempt used; a plan change fixes it): T524: dependency T648 is DONE but its owned file app/recovery/src/restore.rs is not on main; T524: dependency T648 is DONE but its owned file tests/recovery/tests/export_restores.rs is not on main
-- Strict plan check red: 34 problem(s) on tasks still to run (+404 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
+- Strict plan check red: 36 problem(s) on tasks still to run (+406 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -162,7 +162,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T670 (lease until 2026-11-20T15:59:44Z)
-- lane 3: T727 (lease until 2026-11-20T14:55:28Z)
+- lane 3: T727 (lease until 2026-11-20T16:12:00Z)
 - lane 4: T667 (lease until 2026-11-20T15:55:37Z)
 - lane 5: T767 (lease until 2026-11-20T15:53:17Z)
 - lane 6: T530 (lease until 2026-11-20T13:55:17Z)
