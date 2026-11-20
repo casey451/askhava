@@ -60,6 +60,7 @@ mod pick_withdrawn;
 mod release;
 mod release_resend;
 mod released_view;
+mod reminder_run;
 mod rules;
 mod scorecard_inputs;
 mod service;

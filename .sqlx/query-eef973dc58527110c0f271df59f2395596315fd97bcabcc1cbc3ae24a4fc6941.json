@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT pick_id, business_id FROM picks.release WHERE job_id = $1 ORDER BY released_at DESC, pick_id DESC LIMIT 1",
+  "query": "SELECT r.pick_id, r.business_id, (p.status = ANY($2)) AS \"shown!\" FROM picks.release r JOIN picks.pick p ON p.id = r.pick_id WHERE r.job_id = $1 ORDER BY r.released_at DESC, r.pick_id DESC LIMIT 1 FOR UPDATE OF p",
   "describe": {
     "columns": [
       {
@@ -24,17 +24,25 @@
             "name": "business_id"
           }
         }
+      },
+      {
+        "ordinal": 2,
+        "name": "shown!",
+        "type_info": "Bool",
+        "origin": "Expression"
       }
     ],
     "parameters": {
       "Left": [
-        "Uuid"
+        "Uuid",
+        "TextArray"
       ]
     },
     "nullable": [
       false,
-      false
+      false,
+      null
     ]
   },
-  "hash": "accdfc7e3964a1f9c1132c9f4828a3d9b270e69599ff9e3dcbb3c506f65c81da"
+  "hash": "eef973dc58527110c0f271df59f2395596315fd97bcabcc1cbc3ae24a4fc6941"
 }

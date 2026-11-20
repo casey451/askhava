@@ -63,7 +63,7 @@ use crate::conversation::{
 use crate::emergency::{Check, check};
 use crate::handlers::{answer_list, help_answered, help_follow_up, list_ask, queue_body};
 use crate::models::{self, IntakeError};
-use crate::order_dispatch::{first_text, reply_step};
+use crate::order_dispatch::{first_text, reply_step, show_card_step};
 use crate::rules::{
     AgeStop, CloseReading, Settings, age_stop, close_reading, language_from_code,
     split_name_address,
@@ -330,7 +330,9 @@ fn clear(words: &str) -> bool {
 /// D-3703, D-3705): screened with `Asked::NameAndAddress` when [`reads_as_address`] holds, else
 /// as any reply, so a hazard keeps its 911 text and ends here. Only a clear reply is her answer:
 /// its raw text goes to `take_name_address` (which queues T255's `address_arrived` itself) and
-/// [`Taken::Again`] asks once more; [`Taken::Stored`] and [`Taken::Ended`] send nothing. A SAFE
+/// [`Taken::Again`] asks once more; [`Taken::Ended`] sends nothing; [`Taken::Stored`] hands off to
+/// step 12, `order_dispatch::show_card_step`, whose card text joins the texts (INT-041, D-4880;
+/// nothing when that step is skipped, an error when it fails). A SAFE
 /// after a 911 text is never her answer: the question is asked once more.
 async fn answer_name_address(
     tx: &mut PgConnection,
@@ -362,6 +364,10 @@ async fn answer_name_address(
     if taken == Taken::Again {
         let again = ask_name_address(tx, secret, msg, conversation, spanish_on).await?;
         handled.texts.extend(again);
+    }
+    if matches!(taken, Taken::Stored(_)) {
+        let shown = show_card_step(tx, secret, (msg, conversation)).await?;
+        handled.texts.extend(shown);
     }
     Ok(Reply::NameAddress(taken, handled))
 }
@@ -534,7 +540,7 @@ async fn newest_job(
 }
 
 /// Her quote page `https://<domain>/q/<token>` with a token issued now (PICK-010, SEC-037).
-async fn quote_link(
+pub(crate) async fn quote_link(
     tx: &mut PgConnection,
     secret: &SecretString,
     job: Uuid,
