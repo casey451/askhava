@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T05:00:03Z by runner 01acdc1e1848 (actions).
+Updated 2026-11-20T05:00:26Z by runner 01acdc1e1848 (actions).
 
-**Building: T726 in progress since 04:23Z; 518 of 707 done; week 20% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T751 in progress since 04:11Z; 518 of 707 done; week 20% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 518 of 707 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T726 claimed 04:23Z, lease until 07:23Z; lane 2: T751 claimed 04:11Z, lease until 07:11Z
+- **Lane:** lane 2: T751 claimed 04:11Z, lease until 07:11Z
 - **Week:** 20% used, 148.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:59Z, 0 min before this update
 - **Keeper:** last ran 04:59Z, next wake 07:14Z
@@ -20,12 +20,13 @@ Updated 2026-11-20T05:00:03Z by runner 01acdc1e1848 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T726 | Runner (harness): a failed attempt's unpushed work can be ke | MERGE_PENDING | 2 | 36 min | 05:00Z | merging main into the reviewed head conflicts in kit/plan.lock, kit/runner.json; a resync merges it in on this attempt ( |
 | T543 | picks, businesses, portals and server: "Away until" is store | MERGE_PENDING | 1 | 64 min | 04:57Z |  |
 | T434 | portals: the monthly intake accuracy report page and the mon | MERGE_PENDING | 1 | 112 min | 04:55Z |  |
 | T110 | recovery: replay with derived IDs | MERGE_PENDING | 1 | 2 h 36 min | 04:55Z |  |
 | T663 | picks, jobs and payments (harness): a confirmed pick moves i | MERGE_PENDING | 3 | 65 min | 04:54Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T556 | Decisions digest, piece 11: the next entries after the heade | MERGE_PENDING | 1 | 51 min | 04:50Z |  |
-| T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 2 | 32 min | 04:08Z | merging main into the reviewed head conflicts in kit/plan.lock, kit/runner.json; a resync merges it in on this attempt ( |
+| T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 2 | 32 min | 04:08Z |  |
 | T747 | intake and jobs: the homeowner's INT-029 emergency choice ma | done | 1 | 71 min | 03:25Z |  |
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 2 | 2 h 16 min | 03:22Z |  |
 | T617 | site: DM Sans from one weight-axis variable file (smaller th | BLOCKED | 1 | 2 min | 03:04Z | PLAN GAP: tests/a11y/design_tokens.spec.ts:221 and :242 (protected, not owned by T617) contradict the prompt's single DM |
@@ -138,8 +139,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T726 (lease until 2026-11-20T07:23:42Z)
+- nothing
 - lane 2: T751 (lease until 2026-11-20T07:11:19Z)
 
 ## Last usage reading
-- {"task": "T543", "at": "2026-11-20T04:57:43Z", "cache_creation_input_tokens": 253007, "cache_read_input_tokens": 14659573, "output_tokens": 62080, "input_tokens": 254}
+- {"task": "T726", "at": "2026-11-20T05:00:00Z", "cache_creation_input_tokens": 62848, "input_tokens": 69, "cache_read_input_tokens": 1043406, "output_tokens": 9816}
