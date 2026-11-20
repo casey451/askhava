@@ -1,21 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-20T16:07:13Z by runner 3e01fef06c14 (actions).
+Updated 2026-11-20T16:10:00Z by runner 3e01fef06c14 (actions).
 
 **Building: T530 in progress since 15:29Z; 542 of 712 done; week 36% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 542 of 712 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T530 claimed 15:29Z, lease until 18:29Z; lane 3: T771 claimed 15:44Z, lease until 18:44Z; lane 4: T681 claimed 15:47Z, lease until 18:47Z
-- **Week:** 36% used, 120.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:48Z, 18 min before this update
+- **Lane:** lane 1: T530 claimed 15:29Z, lease until 18:29Z; lane 3: T771 claimed 15:44Z, lease until 18:44Z; lane 4: T681 claimed 15:47Z, lease until 18:47Z; lane 5: T664 claimed 16:09Z, lease until 19:09Z
+- **Week:** 36% used, 119.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 16:07Z, 2 min before this update
 - **Keeper:** last ran 15:43Z, next wake 16:03Z
 
 ## Needs attention
 - BLOCKED T684: plan gap reported: PLAN GAP: app/quotes/src/models.rs:265 `card_sent_at` is pub(crate); T684 owns no app/quotes/src file. quotes::api has no per-business card send-time reader (open_card_jobs returns job ids only; spot_check_cards is a random sample); picks may not query quotes.* (R8, docs/brains/rust-production.md:44). Smallest plan change: new app/quotes/src/open_cards.rs with open_cards(db, business, now) plus one mod line in lib.rs and one pub use in api.rs; raise budget to 4 files/~600 lines. Also: portals link trait implemented in server lib.rs; email recipient is member mailbox with subject ids starting w; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T684 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- PLAN GAP T524 (since 2026-11-20T12:53:17Z, no attempt used; a plan change fixes it): T524: dependency T648 is DONE but its owned file app/recovery/src/restore.rs is not on main; T524: dependency T648 is DONE but its owned file tests/recovery/tests/export_restores.rs is not on main
 - Strict plan check red: 38 problem(s) on tasks still to run (+411 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
 
 ## Last 24 hours
@@ -127,7 +126,7 @@ Updated 2026-11-20T16:07:13Z by runner 3e01fef06c14 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-20T15:43:07Z (week)): week: 73.4M used, 120.6M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-04T08:39:22Z.
+- Pacing (session_reading 2026-11-20T15:43:07Z (week)): week: 74.9M used, 119.1M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-02T12:27:10Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -145,6 +144,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T530 (lease until 2026-11-20T18:29:00Z)
 - lane 3: T771 (lease until 2026-11-20T18:44:21Z)
 - lane 4: T681 (lease until 2026-11-20T18:47:45Z)
+- lane 5: T664 (lease until 2026-11-20T19:09:43Z)
 
 ## Last usage reading
 - {"task": "T684", "at": "2026-11-20T15:41:42Z", "cache_read_input_tokens": 3936546, "output_tokens": 17916, "input_tokens": 123, "cache_creation_input_tokens": 139773}
