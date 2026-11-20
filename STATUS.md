@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T13:18:27Z by runner d0b19745dfcb (actions).
+Updated 2026-11-20T13:21:46Z by runner d0b19745dfcb (actions).
 
 **Building: T670 in progress since 12:59Z; 537 of 710 done; week 33% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 537 of 710 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T670 claimed 12:59Z, lease until 15:59Z; lane 3: T727 claimed 11:55Z, lease until 16:12Z; lane 4: T667 claimed 12:55Z, lease until 15:55Z; lane 5: T767 claimed 12:53Z, lease until 15:53Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
-- **Week:** 33% used, 125.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:14Z, 4 min before this update
+- **Lane:** lane 1: T670 claimed 12:59Z, lease until 15:59Z; lane 2: T206 claimed 13:21Z, lease until 16:21Z; lane 3: T727 claimed 11:55Z, lease until 16:12Z; lane 4: T667 claimed 12:55Z, lease until 15:55Z; lane 5: T767 claimed 12:53Z, lease until 15:53Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
+- **Week:** 33% used, 122.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 13:18Z, 3 min before this update
 - **Keeper:** last ran 13:13Z, next wake 13:57Z
 
 ## Needs attention
@@ -33,7 +33,6 @@ Ci failed at step: All five jobs passed
 Checks: success, Lint and slow tests: success, Python: success, Coverage: cancelled, E2e: success
 ##[error]Process completed with exit code 1.
 - BLOCKED T614: plan gap reported: PLAN GAP: tests/a11y/reflow_spacing.spec.ts:49-54 (T053, protected) flags every TARGETS control with no box as "is hidden", but DESIGN_SPEC docs/design/DESIGN_SPEC.md:102 requires .site-nav hidden below 1024px and Menu hidden from 1024px, so the specified header fails at every width. Also: closed <details> Menu links keep boxes in Chromium (counted as Tab stops by j1_keyboard.spec.ts:56 and j2_keyboard.spec.ts:26) and the open Menu scrolls sideways at 320px (scrollWidth 375); both fixable only in app/site/static/site.css, not owned by T614 (CSP forbids inline style). Smallest plan change: a ta; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T614 --plan-fix D-### --reason "..."` (D-2859)
-- PLAN GAP T206 (since 2026-11-20T12:53:17Z, no attempt used; a plan change fixes it): T206: dependency T648 is DONE but its owned file app/recovery/src/restore.rs is not on main; T206: dependency T648 is DONE but its owned file tests/recovery/tests/export_restores.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T524 (since 2026-11-20T12:53:17Z, no attempt used; a plan change fixes it): T524: dependency T648 is DONE but its owned file app/recovery/src/restore.rs is not on main; T524: dependency T648 is DONE but its owned file tests/recovery/tests/export_restores.rs is not on main
@@ -146,7 +145,7 @@ Checks: success, Lint and slow tests: success, Python: success, Coverage: cancel
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-20T12:30:43Z (week)): week: 68.4M used, 125.6M left, resets 2026-11-26T17:00:00Z; projected finish 2026-11-29T18:46:46Z.
+- Pacing (session_reading 2026-11-20T13:13:17Z (week)): week: 71.8M used, 122.2M left, resets 2026-11-26T17:00:00Z; projected finish 2026-11-29T19:38:01Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -162,6 +161,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T670 (lease until 2026-11-20T15:59:44Z)
+- lane 2: T206 (lease until 2026-11-20T16:21:32Z)
 - lane 3: T727 (lease until 2026-11-20T16:12:00Z)
 - lane 4: T667 (lease until 2026-11-20T15:55:37Z)
 - lane 5: T767 (lease until 2026-11-20T15:53:17Z)
