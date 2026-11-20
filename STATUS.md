@@ -1,17 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-20T15:19:30Z by runner 696a43ed61d5 (actions).
+Updated 2026-11-20T15:22:13Z by runner 4af5a136714a (actions).
 
-**Building: T771 in progress since 15:18Z; 540 of 712 done; week 35% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T770 in progress since 14:33Z; 540 of 712 done; week 35% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 540 of 712 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T771 claimed 15:18Z, lease until 18:18Z; lane 6: T770 claimed 14:33Z, lease until 17:33Z
+- **Lane:** lane 6: T770 claimed 14:33Z, lease until 17:33Z
 - **Week:** 35% used, 123.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:10Z, 9 min before this update
+- **Last run:** 15:19Z, 2 min before this update
 - **Keeper:** last ran 14:56Z, next wake 17:36Z
 
 ## Needs attention
+- BLOCKED T771: plan gap reported: PLAN GAP: kit/prompts/T771.md:9 (D-4970, docs/decisions.md:2604) contradicts itself: rule (1) checks the hidden Menu summary as before and rule (2) refuses links whose hidden container holds a non-a[href] control, so the DESIGN_SPEC.md:102 header at 1280 px (site.css:783 .menu display:none hides the whole details) still reports the Menu summary and its four links. Reviewer confirmed. Smallest fix: let rule (2) also cover the hidden Menu's own summary (boxless summary of a details inside or being the hidden container, when every other TARGETS control there is an a[href] with a passing same-href; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T771 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T524 (since 2026-11-20T12:53:17Z, no attempt used; a plan change fixes it): T524: dependency T648 is DONE but its owned file app/recovery/src/restore.rs is not on main; T524: dependency T648 is DONE but its owned file tests/recovery/tests/export_restores.rs is not on main
@@ -20,6 +21,7 @@ Updated 2026-11-20T15:19:30Z by runner 696a43ed61d5 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T771 | a11y tests (harness): reflow_spacing's hidden-control check  | BLOCKED | 1 | 3 min | 15:22Z | PLAN GAP: kit/prompts/T771.md:9 (D-4970, docs/decisions.md:2604) contradicts itself: rule (1) checks the hidden Menu sum |
 | T557 | Decisions digest, piece 12: the next entries after the heade | done | 1 | 65 min | 14:55Z |  |
 | T672 | intake: the dispatcher asks "How soon?", the night count and | MERGE_PENDING | 3 | 2 h 13 min | 14:53Z | runner smoke red on 3e9315b7399c (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
 | T206 | recovery: the local restore drill with no double send or cha | MERGE_PENDING | 1 | 89 min | 14:50Z |  |
@@ -141,8 +143,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T771 (lease until 2026-11-20T18:18:51Z)
+- nothing
 - lane 6: T770 (lease until 2026-11-20T17:33:55Z)
 
 ## Last usage reading
-- {"task": "T557", "at": "2026-11-20T14:55:14Z", "input_tokens": 148, "cache_read_input_tokens": 6696117, "output_tokens": 39570, "cache_creation_input_tokens": 242444}
+- {"task": "T771", "at": "2026-11-20T15:22:12Z", "cache_creation_input_tokens": 47489, "input_tokens": 29, "output_tokens": 10277, "cache_read_input_tokens": 401633}
