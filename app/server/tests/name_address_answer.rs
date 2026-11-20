@@ -368,6 +368,10 @@ async fn td_int_42_a_regular_answer_lands_on_her_own_contact(pool: PgPool) {
     let (contact, request) = her_request(&pool, &[]).await;
     assert!(!open(&pool, contact).await, "not before a reply");
     text(&pool, &logs, 2, "the unit upstairs").await;
+    // D-4851: steps 6 to 8 come first: "How soon?" (2), then the four trade questions.
+    for (n, words) in (20..).zip(["2", "1", "1", "1", "none"]) {
+        text(&pool, &logs, n, words).await;
+    }
     assert!(open(&pool, contact).await, "asked after the area check");
     let mut db = pool.acquire().await.expect("db");
     let reply = her_text(contact, "the unit upstairs");
@@ -413,6 +417,10 @@ async fn td_int_42_a_street_is_no_hazard_and_no_number_asks_again(pool: PgPool) 
     let logs = Logs::default();
     let (contact, request) = her_request(&pool, &[]).await;
     text(&pool, &logs, 2, "the unit upstairs").await;
+    // D-4851: steps 6 to 8 come first: "How soon?" (2), then the four trade questions.
+    for (n, words) in (20..).zip(["2", "1", "1", "1", "none"]) {
+        text(&pool, &logs, n, words).await;
+    }
     text(&pool, &logs, 3, "Testa on Sample Avenue").await;
     assert!(open(&pool, contact).await, "still waiting for the address");
     assert!(audit(&pool, CONTACT_FIELDS_SET).await.1.is_empty());
@@ -659,6 +667,10 @@ async fn td_int_42_a_hazard_keeps_its_911_text_and_safe_asks_again(pool: PgPool)
     let logs = Logs::default();
     let (contact, request) = her_request(&pool, &[]).await;
     text(&pool, &logs, 2, "the unit upstairs").await;
+    // D-4851: steps 6 to 8 come first: "How soon?" (2), then the four trade questions.
+    for (n, words) in (20..).zip(["2", "1", "1", "1", "none"]) {
+        text(&pool, &logs, n, words).await;
+    }
     text(&pool, &logs, 3, OUTLET).await;
     let mut db = pool.acquire().await.expect("db");
     let events = emergency_events(&mut db, request).await.expect("events");

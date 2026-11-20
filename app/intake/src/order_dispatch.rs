@@ -25,6 +25,19 @@
 //! told the coverage (the `trade_check` marker; D-3702, D-4441), and not in a turn that sent a
 //! SPLIT offer ([`offered_now`]): it waits for her next reply, so SPLIT reaches [`second_job`].
 //!
+//! Steps 6 to 8 (T672, D-4360, D-4822): once step 5 told the coverage, [`open_step`] reads the
+//! open step from the stored rows and [`ask_step`] asks it in the same turn (not in a SPLIT
+//! offer's): "How soon?" (`service::ask_how_soon`), the day after answer 4, the emergency-or-regular
+//! choice (`service::offer_emergency_choice`: at night the INT-033 count first, none offered at N
+//! of 0), then the trade questions ([`questions`], `order::bank_turn`) and, when they are done,
+//! step 11. Each later reply answers the open step ([`timing_answer`]: `service::answer_how_soon`,
+//! `order::answer_day`, `order::choose_with_card` with the card it stores first, INT-029); an
+//! unreadable one gets the question again. The choice is due after answer 1, or after any answer
+//! but 4 when a 911 text was queued before it (INT-006); a 911 text queued later (a smell answer,
+//! [`hold_911`]) holds the order until SAFE, which resumes at the open step ([`ask_open_again`]).
+//! An Emergency choice stored before her town is released when the ZIP comes in ([`zip_answer`]).
+//! TXT-041's Spanish line follows the first reply ([`first_text`]).
+//!
 //! INT-032's two jobs (T711, D-4439, corrected by T717, D-4441): a first text whose two
 //! `trade_reading` rows opened the first trade's job gets the `two_jobs` text once, right after
 //! the first ZIP question in the same turn ([`ask_first_zip`]): at the first text on the clear
@@ -45,8 +58,11 @@
 //! are logged.
 
 use askhava_jobs::api::create;
+use askhava_messaging::api::Language;
 use askhava_ops::api::Actor;
-use askhava_quotes::api::{CardFacts, card_pool, description, request_coverage};
+use askhava_quotes::api::{
+    CardFacts, CardParts, Place as Site, Timing, card_pool, description, request_coverage,
+};
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
 use secrecy::SecretString;
@@ -57,17 +73,25 @@ use askhava_messaging::api::render;
 
 use askhava_quotes::api::Coverage;
 
-use crate::conversation::name_address_open;
+use crate::conversation::{name_address_open, queue_text};
+use crate::emergency::{Hazard, Urgency};
 use crate::handlers::{queue_body, schedule_no_reply};
 use crate::matching::{Reading, candidates, keyword_reading, starts_second, trade_label};
 use crate::models::{self, IntakeError};
-use crate::order::{ask_last_question, keep_words};
+use crate::order::{
+    BankTurn, CardIn, NEEDED_BY, TRADE_QUESTION_TEMPLATE, answer_day, ask_last_question, bank_turn,
+    choose_with_card, keep_words, spanish_line,
+};
+use crate::question_bank::starts_now;
 use crate::routing::{
     Outcome, Request, Routing, SPLIT_TEMPLATE, apply, is_split_reply, route, tell_coverage,
     trade_is_open,
 };
-use crate::rules::{Settings, Then, opens_job};
-use crate::service::{Handled, Queued, Screened, TextIn, may_text, request_language};
+use crate::rules::{SAFETY_TEMPLATE, Settings, Then, opens_job};
+use crate::service::{
+    Handled, NEEDED_BY_TEMPLATE, Queued, Screened, TextIn, Trade, answer_how_soon, ask_how_soon,
+    audit_action, may_text, offer_emergency_choice, release_emergency, request_language,
+};
 use crate::zip_step::{
     ZIP_QUESTION_TEMPLATE, ZipPlace, ZipStep, answer_zip, ask_zip, read_zip, zip_body,
 };
@@ -88,6 +112,10 @@ pub(crate) const TWO_JOBS_TEMPLATE: &str = "two_jobs";
 const SPLIT_OFFER: &str = "split_offer";
 /// The row `conversation::hear` writes for each reply heard in a request, keyed with its inbox ID.
 const HEARD: &str = "heard";
+/// The answer row `service::answer_how_soon` writes: the INT-030 urgency code.
+const HOW_SOON: &str = "how_soon";
+/// The answer row of the INT-006 choice (`service::answer_choice`, or regular at a night count of 0).
+const CHOICE: &str = "emergency_choice";
 
 /// Where request `conversation` is in the order, read from its stored rows.
 struct Place {
@@ -144,9 +172,9 @@ async fn locked(db: &mut PgConnection, conversation: Uuid) -> Result<Option<Plac
     Ok(place(db, conversation).await?.filter(|p| p.open))
 }
 
-/// CON-031, INT-043, PRIV-008, INT-007, INT-009: the first text of a new request, after the consent
-/// text (and the 911 text or alarm question), as the module comment says. Its texts join
-/// `handled`'s.
+/// CON-031, INT-043, PRIV-008, INT-007, INT-009, TXT-041: the first text of a new request, after
+/// the consent text (and the 911 text or alarm question), as the module comment says: TXT-041's
+/// Spanish line once, then the ZIP question. Its texts join `handled`'s.
 ///
 /// # Errors
 ///
@@ -179,6 +207,8 @@ pub(crate) async fn first_text(
         let job = open_job(tx, ids, (trade, None), (emergency, at)).await?;
         keep_words(tx, (conversation, job), msg.inbox_id, (words, at)).await?;
     }
+    let line = spanish_line(tx, secret, (msg, conversation), settings).await?;
+    handled.texts.extend(line);
     if handled.screened == Screened::Clear {
         let asked = ask_first_zip(tx, secret, (msg, conversation), settings).await?;
         handled.texts.extend(asked);
@@ -283,13 +313,11 @@ pub(crate) async fn reply_step(
     } else {
         texts.extend(step_answer(tx, secret, request, &place, settings).await?);
     }
-    if models::latest_answer(tx, conversation, TRADE_CHECK)
-        .await?
-        .is_some()
+    if !place.told
         && !offered_now(tx, request).await?
+        && let Some(now) = locked(tx, conversation).await?.filter(|p| p.told)
     {
-        let spanish_on = settings.spanish_conversations_on;
-        texts.extend(ask_last_question(tx, secret, request, spanish_on).await?);
+        texts.extend(ask_step(tx, secret, request, &now, settings).await?);
     }
     Ok(texts)
 }
@@ -330,7 +358,7 @@ async fn step_answer(
             let reached = (town, place.zip.as_deref());
             trade_check(tx, secret, request, (place, reached), settings).await?
         }
-        (_, Some(_)) => Vec::new(),
+        (_, Some(_)) => timing_answer(tx, secret, request, place, settings).await?,
         (false, None) => ask_first_zip(tx, secret, request, settings).await?,
         (true, None) => zip_answer(tx, secret, request, place, settings).await?,
     })
@@ -378,7 +406,10 @@ pub(crate) async fn ask_open_again(
     }
     let (msg, conversation) = request;
     if place.town.is_some() {
-        return Ok(Vec::new());
+        return match place.told {
+            true => ask_step(tx, secret, request, &place, settings).await,
+            false => Ok(Vec::new()),
+        };
     }
     if !place.zip_asked {
         return ask_first_zip(tx, secret, request, settings).await;
@@ -391,7 +422,8 @@ pub(crate) async fn ask_open_again(
     Ok(vec![queued])
 }
 
-/// INT-049, INT-022: `answer_zip` on her reply; a stored town goes straight on to the trade check.
+/// INT-049, INT-022, INT-029: `answer_zip` on her reply; a stored town releases a job already
+/// chosen as an emergency (`service::release_emergency`) and goes straight on to the trade check.
 async fn zip_answer(
     tx: &mut PgConnection,
     secret: &SecretString,
@@ -402,6 +434,7 @@ async fn zip_answer(
     Ok(
         match answer_zip(tx, secret, (msg, conversation), settings).await? {
             ZipStep::Stored(ZipPlace::Town { town, .. }) => {
+                release_emergency(tx, conversation, msg.received_at).await?;
                 let reached = (town.as_str(), read_zip(msg.inbound.words));
                 trade_check(tx, secret, (msg, conversation), (place, reached), settings).await?
             }
@@ -681,4 +714,244 @@ fn facts(trade: &str, words: &str) -> CardFacts {
             .collect(),
         emergency: false,
     }
+}
+
+/// The open step after step 5, read from the stored rows (INT-043).
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Open {
+    /// Step 6: "How soon?" has no answer.
+    HowSoon,
+    /// Step 6, answer 4: the day has no answer.
+    Day,
+    /// Step 7: the choice is due and not made.
+    Choice,
+    /// Step 8 and after: the trade questions, then step 11.
+    Questions,
+}
+
+/// INT-030, INT-006, D-4360: the open step of `conversation` and its "How soon?" code. The choice
+/// is due with no `emergency_choice` row after answer 1, or after any answer but 4 when a 911 text
+/// was queued before that answer (as `service::answer_how_soon` reads it).
+async fn open_step(
+    db: &mut PgConnection,
+    conversation: Uuid,
+) -> Result<(Open, Option<String>), IntakeError> {
+    let r = sqlx::query!(
+        r#"SELECT h.choice AS "soon?",
+             EXISTS (SELECT 1 FROM intake.intake_answer a WHERE a.conversation_id = $1
+               AND a.question_id = $3) AS "day!",
+             EXISTS (SELECT 1 FROM intake.intake_answer a WHERE a.conversation_id = $1
+               AND a.question_id = $4) AS "chosen!",
+             EXISTS (SELECT 1 FROM intake.emergency_event e WHERE e.conversation_id = $1
+               AND e.text_queued_at IS NOT NULL AND e.created_at <= h.answered_at) AS "listed!"
+           FROM (VALUES (1)) one(n) LEFT JOIN LATERAL (SELECT a.choice, a.answered_at
+             FROM intake.intake_answer a WHERE a.conversation_id = $1 AND a.question_id = $2
+             ORDER BY a.answered_at DESC, a.id DESC LIMIT 1) h ON true"#,
+        conversation,
+        HOW_SOON,
+        NEEDED_BY,
+        CHOICE
+    )
+    .fetch_one(db)
+    .await
+    .map_err(|_| IntakeError::Database)?;
+    let open = match r.soon.as_deref() {
+        None => Open::HowSoon,
+        Some(s) if s == Urgency::ByDay.code() && !r.day => Open::Day,
+        Some(s) if s == Urgency::ByDay.code() => Open::Questions,
+        Some(s) if !r.chosen && (s == Urgency::Today.code() || r.listed) => Open::Choice,
+        Some(_) => Open::Questions,
+    };
+    Ok((open, r.soon))
+}
+
+/// INT-043, INT-030, INT-006, INT-033, INT-039, INT-027: asks the open step's question of a
+/// request step 5 told the coverage: "How soon?", the day, the choice (the night count first,
+/// INT-033; nothing while a SAFE hold waits, INT-005), else the next trade question or step 11.
+async fn ask_step(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    request: (&TextIn<'_>, Uuid),
+    place: &Place,
+    settings: Settings,
+) -> Result<Vec<Queued>, IntakeError> {
+    let (msg, conversation) = request;
+    let (Some(trade), Some(town)) = (place.trades.first(), place.town.as_deref()) else {
+        return Ok(Vec::new());
+    };
+    let label = trade_label(trade);
+    let within = Trade {
+        category: trade,
+        town,
+        label: &label,
+    };
+    Ok(match open_step(tx, conversation).await?.0 {
+        Open::HowSoon => vec![ask_how_soon(tx, secret, msg, conversation, settings).await?],
+        Open::Day => {
+            let template = (
+                NEEDED_BY_TEMPLATE,
+                request_language(tx, conversation).await?,
+            );
+            let (subject, on) = (
+                [conversation, msg.inbox_id],
+                settings.spanish_conversations_on,
+            );
+            vec![queue_text(tx, secret, msg.contact, template, &subject, on).await?]
+        }
+        Open::Choice => offer_emergency_choice(tx, secret, request, &within, settings).await?,
+        Open::Questions => questions(tx, secret, request, place, (settings, false)).await?,
+    })
+}
+
+/// INT-043, INT-030, INT-006, INT-029, INT-039: her reply read as the open step's answer after
+/// step 5, through the step's own function. An unreadable answer gets the question again; an
+/// answer that leaves no question open (2 or 3, the day, the choice, a night count of 0) goes on
+/// to the trade questions in the same turn, after the cards on the emergency path.
+async fn timing_answer(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    request: (&TextIn<'_>, Uuid),
+    place: &Place,
+    settings: Settings,
+) -> Result<Vec<Queued>, IntakeError> {
+    let (msg, conversation) = request;
+    let (Some(trade), Some(town)) = (place.trades.first(), place.town.as_deref()) else {
+        return Ok(Vec::new());
+    };
+    let label = trade_label(trade);
+    let within = Trade {
+        category: trade,
+        town,
+        label: &label,
+    };
+    let (mut texts, read) = match open_step(tx, conversation).await? {
+        (Open::HowSoon, _) => {
+            let answered = answer_how_soon(tx, secret, request, &within, settings).await?;
+            (answered.texts, answered.read.is_some())
+        }
+        (Open::Day, _) => (Vec::new(), answer_day(tx, request).await?),
+        (Open::Choice, soon) => {
+            let Some(card) = card_in(tx, conversation, place, soon.as_deref()).await? else {
+                return Ok(Vec::new());
+            };
+            let answered = choose_with_card(tx, msg, &card).await?;
+            (answered.texts, answered.read.is_some())
+        }
+        (Open::Questions, _) => {
+            return questions(tx, secret, request, place, (settings, true)).await;
+        }
+    };
+    if !read || open_step(tx, conversation).await?.0 == Open::Questions {
+        texts.extend(ask_step(tx, secret, request, place, settings).await?);
+    }
+    Ok(texts)
+}
+
+/// INT-029, CARD-007, INT-030: the card `order::choose_with_card` stores before the choice can
+/// release the request's first job: its trade's and town's display names (`card_pool`), the
+/// candidates read from her kept words and the "How soon?" answer `soon`; the description is hers.
+async fn card_in(
+    tx: &mut PgConnection,
+    conversation: Uuid,
+    place: &Place,
+    soon: Option<&str>,
+) -> Result<Option<CardIn>, IntakeError> {
+    let (Some(trade), Some(job), Some(town)) =
+        (place.trades.first(), place.job, place.town.as_deref())
+    else {
+        return Ok(None);
+    };
+    let facts = facts(trade, &kept_words(tx, job).await?);
+    let reached = (town, place.zip.as_deref());
+    let pool = card_pool(tx, (reached, &facts), String::new(), None)
+        .await
+        .map_err(|_| IntakeError::Quotes)?;
+    let timing = match soon {
+        Some(s) if s == Urgency::Today.code() => Timing::Today,
+        Some(s) if s == Urgency::NoRush.code() => Timing::NoRush,
+        _ => Timing::NextFewDays,
+    };
+    let parts = CardParts {
+        category: pool.category_name,
+        town: pool.town_name,
+        place: Site::House,
+        description: String::new(),
+        answers: Vec::new(),
+        timing: Some(timing),
+        danger: None,
+        photos: Vec::new(),
+        concept: None,
+    };
+    Ok(Some(CardIn {
+        conversation,
+        job,
+        parts,
+        category: trade.clone(),
+        candidates: facts.candidates,
+    }))
+}
+
+/// INT-039, INT-029, INT-004, INT-027: step 8 for the request's first job, through
+/// `order::bank_turn` (`hear`: this text answers the open question). Nothing while a job chosen as
+/// an emergency is not released (`question_bank::starts_now`). The next question goes as
+/// [`TRADE_QUESTION_TEMPLATE`]; a gas or burning smell answer holds the order ([`hold_911`]); when
+/// the set is done, step 11 (`order::ask_last_question`, once per request).
+async fn questions(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    request: (&TextIn<'_>, Uuid),
+    place: &Place,
+    (settings, hear): (Settings, bool),
+) -> Result<Vec<Queued>, IntakeError> {
+    let (msg, conversation) = request;
+    let (Some(trade), Some(job)) = (place.trades.first(), place.job) else {
+        return Ok(Vec::new());
+    };
+    let state = models::release_state(tx, conversation).await?;
+    if !starts_now(state.emergency, state.consented && state.area_done) {
+        return Ok(Vec::new());
+    }
+    let candidates = facts(trade, &kept_words(tx, job).await?).candidates;
+    let spanish_on = settings.spanish_conversations_on;
+    let spanish = spanish_on && request_language(tx, conversation).await? == Language::Es;
+    let about = (trade.as_str(), &candidates[..], (state.emergency, spanish));
+    let turn = bank_turn(tx, (conversation, job), about, hear.then_some(msg)).await?;
+    Ok(match turn {
+        BankTurn::Ask(prompt) => {
+            let (to, subject) = (
+                (msg.contact, TRADE_QUESTION_TEMPLATE),
+                [conversation, msg.inbox_id],
+            );
+            vec![queue_body(tx, secret, to, &subject, &prompt.render()).await?]
+        }
+        BankTurn::Safety(kind) => vec![hold_911(tx, secret, request, kind).await?],
+        BankTurn::Done => ask_last_question(tx, secret, request, spanish_on)
+            .await?
+            .into_iter()
+            .collect(),
+    })
+}
+
+/// INT-039, INT-004, INT-005: a smell answer of gas (`kind` 1) or burning (2) holds the order as a
+/// 911-list match does (`service::record_match` is private): the INT-004 text in the request's
+/// language (its Spanish stays on), the SAFE hold keyed with this reply's inbox ID, and the
+/// `intake.emergency_matched` audit row. SAFE then resumes at the next question.
+async fn hold_911(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    (msg, conversation): (&TextIn<'_>, Uuid),
+    kind: u32,
+) -> Result<Queued, IntakeError> {
+    let template = (SAFETY_TEMPLATE, request_language(tx, conversation).await?);
+    let subject = [conversation, msg.inbox_id];
+    let queued = queue_text(tx, secret, msg.contact, template, &subject, true).await?;
+    let hazard = if kind == 1 {
+        Hazard::Gas
+    } else {
+        Hazard::SmokeFire
+    };
+    let (ids, at) = ((conversation, msg.inbox_id), msg.received_at);
+    models::insert_event(tx, ids, hazard.code(), Some(at), at).await?;
+    audit_action(tx, Actor::System, "intake.emergency_matched", conversation).await?;
+    Ok(queued)
 }
