@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T00:48:00Z by runner c13ec120d4e6 (actions).
+Updated 2026-11-20T00:48:27Z by runner c13ec120d4e6 (actions).
 
 **Building: T527 in progress since 00:05Z; 511 of 703 done; week 13% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 511 of 703 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T527 claimed 00:05Z, lease until 03:05Z; lane 3: T726 claimed 00:03Z, lease until 03:03Z; lane 4: T218 claimed 00:31Z, lease until 03:31Z; lane 5: T663 claimed 23:33Z, lease until 02:33Z; lane 7: T613 claimed 23:22Z, lease until 03:14Z
+- **Lane:** lane 1: T527 claimed 00:05Z, lease until 03:05Z; lane 3: T726 claimed 00:03Z, lease until 03:03Z; lane 4: T218 claimed 00:31Z, lease until 03:31Z; lane 5: T663 claimed 23:33Z, lease until 02:33Z
 - **Week:** 13% used, 161.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:45Z, 2 min before this update
+- **Last run:** 00:45Z, 3 min before this update
 - **Keeper:** last ran 00:44Z, next wake 02:35Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Updated 2026-11-20T00:48:00Z by runner c13ec120d4e6 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T613 | site: the D-4246 polish layer in site.css (tokens, layered s | MERGE_PENDING | 1 | 85 min | 00:47Z |  |
 | T758 | intake: Spanish gas and burning reports reach the 911 list,  | MERGE_PENDING | 1 | 90 min | 00:38Z |  |
 | T109 | recovery: backup checks and the nightly encrypted export | MERGE_PENDING | 2 | 32 min | 00:37Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T541 | payments, portals and adapters: a card saved or changed from | done | 3 | 25 min | 00:00Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-19T |
@@ -141,7 +142,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 3: T726 (lease until 2026-11-20T03:03:34Z)
 - lane 4: T218 (lease until 2026-11-20T03:31:28Z)
 - lane 5: T663 (lease until 2026-11-20T02:33:30Z)
-- lane 7: T613 (lease until 2026-11-20T03:14:27Z)
 
 ## Last usage reading
-- {"task": "T758", "at": "2026-11-20T00:38:00Z", "cache_read_input_tokens": 3477679, "input_tokens": 207, "cache_creation_input_tokens": 258517, "output_tokens": 52587}
+- {"task": "T613", "at": "2026-11-20T00:47:57Z", "input_tokens": 295, "output_tokens": 96775, "cache_read_input_tokens": 7914459, "cache_creation_input_tokens": 402639}
