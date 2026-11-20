@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T16:41:36Z by runner 4af5a136714a (actions).
+Updated 2026-11-20T16:41:59Z by runner 6de3b012a771 (actions).
 
 **Building: T672 in progress since 16:21Z; 543 of 712 done; week 38% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -18,7 +18,7 @@ The pick's window deadline (picks.pick.confirm_due) is read only by private code
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T664 (since 2026-11-20T16:15:19Z, no attempt used; a plan change fixes it): outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs
-- Strict plan check red: 38 problem(s) on tasks still to run (+411 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
+- Strict plan check red: 38 problem(s) on tasks still to run (+412 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
