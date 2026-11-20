@@ -10,9 +10,14 @@ publish.workspace = true
 workspace = true
 
 [dev-dependencies]
+age = { workspace = true }
+askhava-adapters = { workspace = true }
 askhava-core = { workspace = true }
 askhava-jobs = { workspace = true }
+askhava-messaging = { workspace = true }
 askhava-ops = { workspace = true }
+askhava-payments = { workspace = true }
+askhava-privacy = { workspace = true }
 askhava-recovery = { workspace = true }
 jiff = { workspace = true }
 sqlx = { workspace = true }

@@ -809,9 +809,14 @@ dependencies = [
 name = "askhava-recovery-tests"
 version = "0.1.0"
 dependencies = [
+ "age",
+ "askhava-adapters",
  "askhava-core",
  "askhava-jobs",
+ "askhava-messaging",
  "askhava-ops",
+ "askhava-payments",
+ "askhava-privacy",
  "askhava-recovery",
  "jiff",
  "sqlx",
