@@ -1,0 +1,21 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(*) AS \"n!\" FROM pg_class c JOIN pg_roles r ON r.oid = c.relowner WHERE r.rolname = 'askhava_backup'",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "n!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "c55604cc1400020bfbd65234363c5080fe36c47c56337d32fa932e4fb867f36b"
+}

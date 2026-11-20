@@ -1074,7 +1074,7 @@ where
     let photo_clock = Arc::clone(&clock);
     askhava_privacy::api::register_photo_deletes(
         &mut registry,
-        photos,
+        Arc::clone(&photos),
         id_secret.clone(),
         photo_clock,
     );
@@ -1103,6 +1103,9 @@ where
         pairs.clone(),
     )?;
     payment_jobs::register(&mut registry, stripe, id_secret.clone(), Arc::clone(&clock));
+    let export = (Arc::clone(&photos), id_secret.clone(), Arc::clone(&clock));
+    askhava_recovery::api::register_export(&mut registry, settings, export)
+        .map_err(io::Error::other)?;
     register_whos_calling(&mut registry, settings, (&id_secret, &clock), pairs.clone())?;
     register_twilio_handlers(&mut registry, settings, (id_secret, clock), pairs)?;
     Ok(registry)

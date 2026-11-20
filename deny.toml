@@ -9,6 +9,7 @@ all-features = false
 yanked = "deny"
 ignore = [
     { id = "RUSTSEC-2026-0374", reason = "basic-toml is unmaintained; askama_derive reads askama.toml with it at compile time only, never at run time (docs/architecture.md section 11). Review by 2027-04-30 or when askama drops it." },
+    { id = "RUSTSEC-2026-0173", reason = "proc-macro-error2 is unmaintained; reached only via age -> i18n-embed-fl, a compile-time proc-macro, never at run time. Review by 2027-01-31; remove when age drops i18n-embed-fl or a 0.12.x clears RUSTSEC-2026-0387." },
 ]
 
 [licenses]
