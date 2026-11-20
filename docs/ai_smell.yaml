@@ -168,6 +168,72 @@ patterns:
     regex: "\\b(the result|the best part|the secret|here's how|the difference|the catch)\\s?:"
     fix: Just say it.
 
+# Invitation phrases no notice may hold (TXT-046, D-490). Notices stay transactional: a text or email about a job, a pick,
+# a fee or an opt-out never recruits, asks for a referral, offers a discount, sends a survey, announces a feature or asks for
+# a social-media follow. tests/docs/test_brain_phrases.py fails any template in app/messaging/templates/ that holds one
+# (case-insensitive, word boundaries). Add a phrase here, never an exemption in the test.
+non_transactional_invitations:
+  recruiting:
+    - join our team
+    - join our network
+    - we are hiring
+    - we're hiring
+    - become a partner
+    - sign up your friends
+    - invite other businesses
+    - únase a nuestra red
+    - estamos contratando
+  referral:
+    - refer a friend
+    - refer a business
+    - refer a neighbor
+    - tell your friends
+    - share with a friend
+    - invite a friend
+    - referral
+    - recomiende a un amigo
+    - invite a sus amigos
+  discount:
+    - discount
+    - coupon
+    - promo code
+    - special offer
+    - limited time
+    - "% off"
+    - free trial
+    - descuento
+    - cupón
+    - oferta especial
+  survey:
+    - take our survey
+    - quick survey
+    - rate your experience
+    - rate us
+    - leave a review
+    - how did we do
+    - encuesta
+    - califique su experiencia
+    - déjenos una reseña
+  new_feature:
+    - new feature
+    - introducing
+    - now available
+    - check out our new
+    - what's new
+    - nueva función
+    - presentamos
+  social_media:
+    - follow us
+    - like us on
+    - find us on facebook
+    - on instagram
+    - on facebook
+    - on twitter
+    - on tiktok
+    - síganos
+    - en facebook
+    - en instagram
+
 # Page habits that read as generated (checked in .html and .css files only).
 design_patterns:
   - name: linear gradient
