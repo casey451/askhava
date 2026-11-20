@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T20:02:47Z by runner a5a3f121c165 (actions).
+Updated 2026-11-20T20:03:13Z by runner a5a3f121c165 (actions).
 
 **Building: T682 in progress since 19:03Z; 550 of 713 done; week 43% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 550 of 713 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 4: T682 claimed 19:03Z, lease until 22:03Z; lane 5: T772 claimed 18:05Z, lease until 23:01Z; lane 7: T743 claimed 18:24Z, lease until 21:24Z
+- **Lane:** lane 4: T682 claimed 19:03Z, lease until 22:03Z; lane 7: T743 claimed 18:24Z, lease until 21:24Z
 - **Week:** 43% used, 103.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 20:01Z, 1 min before this update
 - **Keeper:** last ran 19:58Z, next wake 20:18Z
@@ -20,6 +20,7 @@ Updated 2026-11-20T20:02:47Z by runner a5a3f121c165 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T772 | picks: a public reader of a waiting pick's Confirm deadline  | MERGE_PENDING | 1 | 117 min | 20:02Z |  |
 | T756 | privacy: the scrubber catches phones split by connector word | MERGE_PENDING | 1 | 59 min | 19:57Z |  |
 | T530 | portals: the owner help page and its screened reply box (D-3 | MERGE_PENDING | 3 | 49 min | 19:43Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T661 | privacy: a business notice address with spaces, commas or co | done | 1 | 27 min | 19:04Z |  |
@@ -148,8 +149,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 4: T682 (lease until 2026-11-20T22:03:22Z)
-- lane 5: T772 (lease until 2026-11-20T23:01:17Z)
 - lane 7: T743 (lease until 2026-11-20T21:24:48Z)
 
 ## Last usage reading
-- {"task": "T756", "at": "2026-11-20T19:57:01Z", "cache_read_input_tokens": 1377527, "input_tokens": 59, "cache_creation_input_tokens": 100979, "output_tokens": 35279}
+- {"task": "T772", "at": "2026-11-20T20:02:46Z", "cache_creation_input_tokens": 268362, "output_tokens": 74265, "cache_read_input_tokens": 8596400, "input_tokens": 242}
