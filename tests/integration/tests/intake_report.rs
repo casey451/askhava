@@ -162,6 +162,26 @@ async fn td_ops_16_the_readers_list_no_quote_cards_and_more_info_quotes(pool: Pg
     );
 }
 
+/// TD-OPS-16, D-4858: a card sent in the last hours of a month with no quote is counted in its own
+/// month once its 24 hours are over, never dropped at the month edge.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_ops_16_a_card_at_the_month_edge_counts_in_its_own_month(pool: PgPool) {
+    let late = job(
+        &mut pool.acquire().await.expect("connection"),
+        "plumbing_repair",
+        ("leak", "leak"),
+        "2026-11-01T01:00:00Z",
+    )
+    .await;
+    let mut conn = app_conn(&pool).await;
+    let start: Timestamp = "2026-10-01T07:00:00Z".parse().expect("start");
+    let end: Timestamp = "2026-11-01T07:00:00Z".parse().expect("end");
+    let ids = intake_report_ids(&mut conn, (start, end), now())
+        .await
+        .expect("ids");
+    assert_eq!(ids.no_quote_jobs, vec![late]);
+}
+
 /// TD-OPS-16: the page groups by category and question set and shows the latest golden run.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_ops_16_the_page_groups_by_category_and_question_set(pool: PgPool) {

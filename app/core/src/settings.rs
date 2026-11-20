@@ -1070,8 +1070,6 @@ fn set_aside(raw: Option<String>) -> Result<u16, SettingsError> {
     }
 }
 
-/// WEB-028, D-468 (the home page's threshold) and OPS-009, D-4625 (the spot-check cadence): a
-/// whole number above 0, `default` when unset; a bad value names only the key.
 /// OPS-009's spot-check cadence (days above 0) and OPS-040's golden-set target (a whole percent
 /// from 1 to 100), each its default when unset (D-4280, D-3890).
 fn owner_reports(raw: &mut HashMap<&'static str, String>) -> Result<(u32, u32), SettingsError> {
@@ -1082,6 +1080,8 @@ fn owner_reports(raw: &mut HashMap<&'static str, String>) -> Result<(u32, u32), 
     }
 }
 
+/// WEB-028, D-468 (the home page's threshold) and OPS-009, D-4625 (the spot-check cadence): a
+/// whole number above 0, `default` when unset; a bad value names only the key.
 fn above_zero(
     raw: &mut HashMap<&'static str, String>,
     key: &'static str,

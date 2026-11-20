@@ -2,7 +2,8 @@
 //!
 //! [`intake_report_ids`] gives, for a window `[from, to)` (the page passes an Arizona month), the
 //! job of each job card sent in it whose own 24-hour window ([`QUOTE_WINDOW`]) is over by `now`
-//! and `to` with no quote of its business on the job that is not withdrawn (a withdrawn quote
+//! (a card sent near the end of the window still counts there once its 24 hours are over) with no
+//! quote of its business on the job that is not withdrawn (a withdrawn quote
 //! counts as none, D-3155), and each quote received in it, not withdrawn, that said the business
 //! needed more information: `confirm_on_site` ticked or the `diagnostic_visit` format. That is
 //! derived from the two stored fields only; the notes are never read or parsed (D-3155). IDs only,
@@ -45,8 +46,7 @@ pub async fn intake_report_ids(
     (from, to): (Timestamp, Timestamp),
     now: Timestamp,
 ) -> Result<IntakeReportIds, QuotesError> {
-    let end = to.min(now);
-    let ended_by = end.saturating_sub(QUOTE_WINDOW).unwrap_or(end);
+    let ended_by = now.saturating_sub(QUOTE_WINDOW).unwrap_or(now);
     let no_quote_jobs = sqlx::query_scalar!(
         "SELECT c.job_id FROM quotes.job_card c
           WHERE c.sent_at >= $1 AND c.sent_at < $2 AND c.sent_at <= $3 AND NOT EXISTS (
