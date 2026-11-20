@@ -8581,3 +8581,4 @@
 - 2026-11-20T14:34:11Z runner 2de3f26c0335 (actions): {"T770": "QUEUED -> IN_PROGRESS"}; T770 estimated 223k tokens (calibrated); week has 120.2M left (no five-hour budget, D-3056) after 3.8M still running in another lane (session_reading 2026-11-20T14:32:57Z (week)); claimed
 - 2026-11-20T14:34:13Z runner 2de3f26c0335 (actions): {}
 - 2026-11-20T14:41:37Z runner 80119fa300d7 (actions): {}
+- 2026-11-20T14:42:05Z runner 80119fa300d7 (actions): {"T767": "IN_PROGRESS -> MERGE_PENDING"}
