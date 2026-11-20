@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T05:33:59Z by runner 5871813c7e4f (actions).
+Updated 2026-11-20T05:34:06Z by runner 5871813c7e4f (actions).
 
 **Building: T765 in progress since 05:06Z; 520 of 707 done; week 21% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-20T05:33:59Z by runner 5871813c7e4f (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 5: T765 claimed 05:06Z, lease until 08:06Z; lane 6: T561 claimed 05:26Z, lease until 08:26Z
 - **Week:** 21% used, 153.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:33Z, 0 min before this update
-- **Keeper:** last ran 05:33Z, next wake 08:08Z
+- **Last run:** 05:34Z, 0 min before this update
+- **Keeper:** last ran 05:34Z, next wake 08:09Z
 
 ## Needs attention
 - BLOCKED T648: plan gap reported: PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, but scripts/check_include_paths.py (D-1867, run in the smoke by tests/test_check_include_paths.py::test_td_ops_32_the_real_repository_passes) fails: scripts/bootstrap_roles.sql is not matched by the Checks and Coverage rules in .github/workflows/ci.yml (protected, harness-only) nor by RUST_PATHS in scripts/prehandin.sh:77 (locked in kit/plan.lock). T648 owns neither. Fix: a harness task adds scripts/bootstrap_roles\.sql to those three rules and rewrites kit/plan.lock. Reviewer; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T648 --plan-fix D-### --reason "..."` (D-2859)
