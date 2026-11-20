@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT confirm_due FROM picks.pick WHERE id = $1 AND status = $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "confirm_due",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "picks.pick",
+            "name": "confirm_due"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "eb9b2dae7e393028d1b100610d70ade5c1f611a11c66e0f816e4fbdb2503b706"
+}
