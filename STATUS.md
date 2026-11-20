@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T21:49:26Z by runner 35b207973e7b (actions).
+Updated 2026-11-20T21:49:54Z by runner 35b207973e7b (actions).
 
-**Building: T739 in progress since 20:57Z; 556 of 713 done; week 48% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T682 in progress since 20:56Z; 556 of 713 done; week 48% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 556 of 713 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 4: T739 claimed 20:57Z, lease until 23:57Z; lane 5: T682 claimed 20:56Z, lease until 23:56Z; lane 6: T673 claimed 20:17Z, lease until 23:17Z
+- **Lane:** lane 5: T682 claimed 20:56Z, lease until 23:56Z; lane 6: T673 claimed 20:17Z, lease until 23:17Z
 - **Week:** 48% used, 97.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:46Z, 3 min before this update
 - **Keeper:** last ran 21:40Z, next wake 23:19Z
@@ -21,6 +21,7 @@ Updated 2026-11-20T21:49:26Z by runner 35b207973e7b (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T739 | picks: the owner's re-send of a release goes only while the  | MERGE_PENDING | 1 | 52 min | 21:49Z |  |
 | T752 | catalog and twin (harness): the `launch_open` comment says a | MERGE_PENDING | 1 | 39 min | 21:24Z |  |
 | T750 | docs: the privacy policy draft says an opted-out number is k | done | 1 | 38 min | 21:20Z |  |
 | T558 | Decisions digest, piece 13: the next entries after the heade | done | 1 | 28 min | 20:57Z |  |
@@ -150,9 +151,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 4: T739 (lease until 2026-11-20T23:57:24Z)
 - lane 5: T682 (lease until 2026-11-20T23:56:14Z)
 - lane 6: T673 (lease until 2026-11-20T23:17:39Z)
 
 ## Last usage reading
-- {"task": "T752", "at": "2026-11-20T21:24:28Z", "output_tokens": 5161, "cache_creation_input_tokens": 36670, "input_tokens": 29, "cache_read_input_tokens": 333504}
+- {"task": "T739", "at": "2026-11-20T21:49:24Z", "cache_read_input_tokens": 1507018, "cache_creation_input_tokens": 81352, "output_tokens": 21334, "input_tokens": 73}
