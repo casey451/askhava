@@ -76210,8 +76210,8 @@
     "T151",
     "T303"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 1,
+   "status": "QUEUED",
+   "attempts": 2,
    "slug": "owner-help-reply",
    "type": "build",
    "stage": "5",
@@ -76224,7 +76224,7 @@
     4736,
     4737
    ],
-   "last_failure": "Review round 2 on head 9cae918e901f6738321e0450589f137ab939da2f: REVIEW-VERDICT: FINDINGS (the one fix round is used).\nFinding: app/portals/src/owner_help.rs:194-202 (clean_path) and :166-170 (link replaced by \"here\") still let a contact detail past the reply screen through a laftly.com link:\n1. Percent-encoded email: \"Please use https://laftly.com/unsubscribe?email=fake.person%40example.com\" - the path has no literal @ and 2 digits, final_gate leaves the spaced path unchanged, so the link is set aside and the email reaches the homeowner. Fix: refuse a path holding % (or percent-decode before the @ and gate checks).\n2. Phone split across the link: \"https://laftly.com/928-555 0142\" - path has 6 digits (<7), the rest reads \"here 0142\", final_gate passes it, the text still shows a phone. Fix: put the link's spaced path words in its place instead of \"here\" so final_gate and the name check see digit runs crossing the link.\nAdd both strings to the hidden (refused) list in tests/security/tests/owner_help_reply.rs.\nRound 1 findings (bare scan-list name; phone/email in a laftly.com path) are fixed and tested (D-4735, D-4736).\nFix worker also saw prehandin --ally red twice at j2_keyboard.spec.ts:149 (business sign-up journey, stays on /b/signup/start); first worker's Ally run on fc64ddb97 was green; reviewer judges the diff cannot cause it (no route or page state added). Re-run Ally on the retry to confirm.\nsmoke.sh green and prehandin.sh green on 9cae918e9 per the fix worker; owner_help_reply 3 passed (reviewer ran it).",
+   "last_failure": "model claude-opus-5-5 ran, task names claude-fable-5-2",
    "history": [
     {
      "attempt": 1,
@@ -76246,6 +76246,29 @@
       "reviewer": {
        "tokens": 1245327,
        "turns": 28
+      }
+     }
+    },
+    {
+     "attempt": 2,
+     "model": "claude-fable-5-2",
+     "model_evidence_count": 254,
+     "head_sha": "033d5331217485c940012488f3f0512e4ce8cd21",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-20T07:20:58Z",
+     "ended_at": "2026-11-20T09:46:10Z",
+     "result": "QUEUED",
+     "usage": {
+      "worker": {
+       "tokens": 15036642,
+       "turns": 148
+      },
+      "reviewer": {
+       "tokens": 1820554,
+       "turns": 34
       }
      }
     }
@@ -94756,12 +94779,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T727",
-   "at": "2026-11-20T09:38:53Z",
-   "cache_read_input_tokens": 6360213,
-   "input_tokens": 142,
-   "output_tokens": 67254,
-   "cache_creation_input_tokens": 206571
+   "task": "T530",
+   "at": "2026-11-20T09:46:10Z",
+   "input_tokens": 360,
+   "cache_creation_input_tokens": 383086,
+   "cache_read_input_tokens": 16362767,
+   "output_tokens": 110983
   },
   "source": "session_reading 2026-11-20T08:49:42Z (week)",
   "by_task": {
@@ -100551,15 +100574,15 @@
     "estimated_bytes": 400590,
     "estimated_tokens": 1193160,
     "usage_counting": "message_id",
-    "cache_creation_input_tokens": 307915,
-    "output_tokens": 77173,
-    "input_tokens": 266,
-    "cache_read_input_tokens": 10596246,
-    "worker_tokens": 9736273,
-    "worker_turns": 103,
-    "reviewer_tokens": 1245327,
-    "reviewer_turns": 28,
-    "last_model": "claude-opus-5-5"
+    "cache_creation_input_tokens": 691001,
+    "output_tokens": 188156,
+    "input_tokens": 626,
+    "cache_read_input_tokens": 26959013,
+    "worker_tokens": 24772915,
+    "worker_turns": 251,
+    "reviewer_tokens": 3065881,
+    "reviewer_turns": 62,
+    "last_model": "claude-fable-5-2"
    },
    "T555": {
     "estimated_bytes": 203068,
@@ -101027,11 +101050,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-20T08:32:45Z",
-    "tokens": 3319410
+    "tokens": 5450115
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 50796093
+    "tokens": 52926798
    }
   },
   "session_reading": {
@@ -101042,7 +101065,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T09:46:00Z",
+ "updated_at": "2026-11-20T09:46:34Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -101140,8 +101163,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "f4c54d07a30dcb82526ae9b5a7c6442ee5d26e08",
- "starter": "manual",
+ "runner_sha": "033d5331217485c940012488f3f0512e4ce8cd21",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "382efbfa9414fda64df615686feff7ebbe5928d3",
