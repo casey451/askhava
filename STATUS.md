@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T03:26:13Z by runner 630ba4604aa4 (actions).
+Updated 2026-11-20T03:27:03Z by runner 630ba4604aa4 (actions).
 
 **Building: T110 in progress since 02:18Z; 517 of 704 done; week 18% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-20T03:26:13Z by runner 630ba4604aa4 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 4: T110 claimed 02:18Z, lease until 05:18Z; lane 7: T434 claimed 03:02Z, lease until 06:02Z
 - **Week:** 18% used, 154.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:24Z, 1 min before this update
+- **Last run:** 03:26Z, 0 min before this update
 - **Keeper:** last ran 03:23Z, next wake 03:43Z
 
 ## Needs attention
@@ -89,7 +89,6 @@ Updated 2026-11-20T03:26:13Z by runner 630ba4604aa4 (actions).
 | T520 | portals and messaging: the portal stylesheets and email colo | done | 1 | 2 h 21 min | 04:18Z |  |
 | T563 | intake and privacy: the daily consent sweep removes consent  | done | 3 | 77 min | 04:05Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T399 | server: the email's Approve link approves the phone, only wi | done | 1 | 46 min | 04:01Z |  |
-| T484 | portals and quotes: "Call from the Laftly number", the owner | done | 1 | 82 min | 03:26Z |  |
 
 ### Plan and harness merges on main
 - none
