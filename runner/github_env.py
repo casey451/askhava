@@ -2239,14 +2239,18 @@ class GitHubEnv:
     def push_wip(self, ref: str, sha: str) -> bool:
         """Push `sha` as a create of `refs/heads/<ref>` with the job token only (D-4720): never forced, never a
         `claude/task/**` name, refused with no git call unless `ref` is exactly WIP_REF and this is the Actions
-        runner with RUNNER_CHECKS_TOKEN set. A ref already on GitHub or a rejected push is False with one log line."""
+        runner with RUNNER_CHECKS_TOKEN set. A ref already on GitHub or a rejected push is False with one log line.
+        The create is atomic: `--force-with-lease=refs/heads/<ref>:` (an empty expected value) makes git refuse the
+        push unless the ref is absent in the same connection, so a ref made after the `ls-remote` check is never
+        fast-forwarded; with nothing to overwrite it never forces anything (no `+`, no `--force`; D-4801)."""
         if not self._wip_allowed(ref, "push") or not re.fullmatch(r"[0-9a-f]{40}", str(sha)) or not self._wip_clone_ok():
             return False
         url = self._wip_url()
         if self._run([*WIP_GIT, "ls-remote", "--exit-code", url, f"refs/heads/{ref}"], None, self.root)[0] != 2:
             self.log.append(f"WIP: {ref} not pushed: it exists on GitHub or GitHub cannot be read")
             return False
-        code, out, err = self._run([*WIP_GIT, "push", "--porcelain", "--no-verify", url, f"{sha}:refs/heads/{ref}"], None, self.root)
+        create = [*WIP_GIT, "push", "--porcelain", "--no-verify", f"--force-with-lease=refs/heads/{ref}:", url, f"{sha}:refs/heads/{ref}"]
+        code, out, err = self._run(create, None, self.root)
         if code != 0:
             self.log.append(f"WIP: push of {ref} rejected: {(out.strip() + ' ' + err.strip()).strip()[:200]}")
         return code == 0

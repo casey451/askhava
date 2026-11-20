@@ -21,6 +21,7 @@ from runner.__main__ import branch_note
 from runner.github_env import GitHubEnv
 
 ROOT = Path(__file__).resolve().parent.parent
+REAL_GITLEAKS = shutil.which("gitleaks")  # the real binary when installed, found before a fixture plants the fake
 MAIN_FILES = ("scripts/pii_scan.py", "scripts/brand.py", "app/core/data/brand.json", "scripts/check_plan_lock.py")
 REF = "claude/wip/T009-a1"
 TASK_BRANCH = "claude/task/T009-wip"
@@ -29,7 +30,9 @@ echo "$@" >> "$FAKE_GITLEAKS_LOG"
 [ -n "$FAKE_GITLEAKS_SLEEP" ] && sleep "$FAKE_GITLEAKS_SLEEP"
 [ -n "$FAKE_GITLEAKS_EXIT" ] && exit "$FAKE_GITLEAKS_EXIT"
 src="${@: -1}"
-if [ "$1" = git ]; then git -C "$src" log -p $3 | grep -q "^+.*FAKESECRET" && exit 1
+[ -n "$FAKE_GITLEAKS_ERR" ] && echo 'ERR error="stderr is not empty"' >&2
+if [ "$1" = git ]; then echo "INF $(git -C "$src" log --format=%H $3 | wc -l) commits scanned." >&2
+  git -C "$src" log -p $3 | grep -q "^+.*FAKESECRET" && exit 1
 else grep -rq --exclude=.git FAKESECRET "$src" && exit 1; fi
 exit 0
 """
@@ -76,7 +79,7 @@ def world(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict[str, Any]:
     (fake / "gitleaks").chmod(0o755)
     monkeypatch.setenv("PATH", f"{fake}:{Path(shutil.which('git') or '/usr/bin/git').parent}:/usr/bin:/bin")
     monkeypatch.setenv("FAKE_GITLEAKS_LOG", str(tmp_path / "gitleaks.log"))
-    for name in ("RUNNER_PUSH_TOKEN", "FAKE_GITLEAKS_EXIT", "FAKE_GITLEAKS_SLEEP", "GITHUB_ACTIONS"):
+    for name in ("RUNNER_PUSH_TOKEN", "FAKE_GITLEAKS_EXIT", "FAKE_GITLEAKS_SLEEP", "FAKE_GITLEAKS_ERR", "GITHUB_ACTIONS"):
         monkeypatch.delenv(name, raising=False)
     env = GitHubEnv(root, [{"id": "T009", "branch": TASK_BRANCH}], tmp_path, repo="o/r", starter="actions",
                     runner_sha="x", run=no_gh)
@@ -185,6 +188,35 @@ def test_a_scanner_exit_of_2_is_refused(world: dict[str, Any], monkeypatch: pyte
     head = commit(world["root"], {"app/demo/notes.txt": "start\nok\n"})
     monkeypatch.setenv("FAKE_GITLEAKS_EXIT", "2")
     assert world["env"].wip_check(head) == "gitleaks git: exit 2"
+
+
+def test_a_gitleaks_error_with_exit_0_or_a_short_commit_count_is_refused(world: dict[str, Any],
+                                                                          monkeypatch: pytest.MonkeyPatch) -> None:
+    """D-4801: gitleaks exits 0 after logging an error (git's stderr was not empty) and scanning 0 commits."""
+    head = commit(world["root"], {"app/demo/notes.txt": "start\nok\n"})
+    monkeypatch.setenv("FAKE_GITLEAKS_ERR", "1")
+    assert world["env"].wip_check(head) == "gitleaks git: it logged an error, so its exit 0 is no pass"
+    coloured = '\x1b[90m2:21AM\x1b[0m \x1b[31mERR\x1b[0m \x1b[36merror=\x1b[0m"stderr is not empty"\n'
+    assert "logged an error" in wip.gitleaks_refusal("dir", 0, coloured, 0)
+    assert "scanned 0 commits" in wip.gitleaks_refusal("git", 0, "INF 0 commits scanned.\n", 1)
+    assert "no count of" in wip.gitleaks_refusal("git", 0, "INF no leaks found\n", 0)
+    assert wip.gitleaks_refusal("git", 0, "INF 2 commits scanned.\nINF no leaks found\n", 2) == ""
+    assert wip.adding_commits("\0\n\n-\t-\tb.bin\n\0\n\n1\t1\ta.txt\n\0\n\n0\t3\ta.txt\n\0\n") == 1
+
+
+@pytest.mark.skipif(REAL_GITLEAKS is None, reason="the real gitleaks is not installed")
+def test_the_real_gitleaks_refuses_a_token_added_then_deleted(world: dict[str, Any], monkeypatch: pytest.MonkeyPatch) -> None:
+    """D-4801: with the real binary, a token added in one commit and deleted in the next (so `gitleaks dir` and the
+    PII scanner miss it) is found; under SAFE_GIT_ENV git prints nothing on stderr, which gitleaks reads as an error."""
+    git_dir = Path(shutil.which("git") or "/usr/bin/git").parent
+    monkeypatch.setenv("PATH", f"{Path(str(REAL_GITLEAKS)).parent}:{git_dir}:/usr/bin:/bin")
+    commit(world["root"], {"app/demo/blob.dat": "token = " + "glpat-" + "abcdefghij0123456789\n"})
+    head = commit(world["root"], {"app/demo/blob.dat": None})
+    assert wip.scan(world["root"], world["main"], head) == "gitleaks git: a leak was found"
+    assert wip.run_bounded(["git", "log", "-1", "--format=%H"], world["root"], 60) == (0, head + "\n", "")
+    git(world["root"], "switch", "-q", "-c", "clean", world["main"])
+    clean = commit(world["root"], {"app/demo/notes.txt": "start\nmore\n"})
+    assert wip.scan(world["root"], world["main"], clean) == ""
 
 
 def test_the_time_bound_is_a_refusal(world: dict[str, Any], monkeypatch: pytest.MonkeyPatch) -> None:
@@ -358,7 +390,9 @@ def test_push_and_delete_use_the_job_tokens_credential_helper_never_the_pat(tmp_
         config = {e[f"GIT_CONFIG_KEY_{i}"]: e[f"GIT_CONFIG_VALUE_{i}"] for i in range(int(e["GIT_CONFIG_COUNT"]))}
         assert config["credential.https://github.com.helper"].endswith('echo "password=$RUNNER_CHECKS_TOKEN"; }; f')
         assert config["core.hooksPath"] == "/dev/null" and e["GIT_CONFIG_GLOBAL"] == "/dev/null" and "--no-verify" in args
-        assert not any("fake-" in a or a.startswith("+") or a.startswith("--force") for a in args)
+        lease = [a for a in args if a.startswith("--force")]  # only the create guard, never a forced update (D-4801)
+        assert lease == ([f"--force-with-lease=refs/heads/{REF}:"] if args[-1].startswith("a") else [])
+        assert not any("fake-" in a or a.startswith("+") or a in ("-f", "--force") for a in args)
     assert env.wip_refs() is None  # the planted launcher answers every ls-remote with 2; the call is what counts
     assert calls and all("origin" not in args and "https://github.com/o/r.git" in args for args, _ in calls)  # D-4800
 
@@ -397,6 +431,26 @@ def test_an_existing_ref_or_a_rejected_push_is_false(tmp_path: Path, monkeypatch
     assert not env.push_wip(REF, "a" * 40)
     env._run = lambda a, s, c: (2 if "ls-remote" in a else 1, "", "rejected by a rule")  # type: ignore[method-assign]
     assert not env.push_wip(REF, "a" * 40) and "rejected" in env.log[-1]
+
+
+def test_a_ref_created_after_the_check_is_never_fast_forwarded(world: dict[str, Any], monkeypatch: pytest.MonkeyPatch) -> None:
+    """D-4801: the push is an atomic create. A ref another writer makes at an ancestor between the `ls-remote`
+    check and the push stays where it is, and the push is False."""
+    token_env(monkeypatch)
+    env, root = world["env"], world["root"]
+    head = commit(root, {"app/demo/notes.txt": "start\nmore\n"})
+    origin = env._wip_url()
+    real = env._run
+
+    def racing(args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str, str]:
+        result = real(args, stdin, cwd)
+        if "ls-remote" in args and "--exit-code" in args:
+            git(root, "push", "-q", origin, f"{world['main']}:refs/heads/{REF}")
+        return result
+
+    env._run = racing  # type: ignore[method-assign]
+    assert not env.push_wip(REF, head) and "rejected" in env.log[-1]
+    assert git(root, "ls-remote", origin, f"refs/heads/{REF}").split()[0] == world["main"]
 
 
 def test_wip_refs_lists_only_wip_ref_names(tmp_path: Path) -> None:

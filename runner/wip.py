@@ -8,7 +8,8 @@ no binary or image (`binary_paths`); and a clean `scan`: no added `gitleaks:allo
 `<main>..<head>` and over the head tree, and main's `scripts/pii_scan.py` over each commit's changed files, the head
 tree and the commit messages. Every scanner is main's copy, written from `git show <main>:<path>` into a temporary
 directory, never the checkout's (the worker's branch). The whole scan has one time bound (WIP_SCAN_SECONDS), and a
-missing tool, a non-zero exit, the bound or any exception is a refusal with a one-line reason: it fails closed.
+missing tool, a non-zero exit, a gitleaks exit 0 that logged an error or scanned too few commits
+(`gitleaks_refusal`, D-4801), the bound or any exception is a refusal with a one-line reason: it fails closed.
 The clone itself is the worker's: every git and scanner call runs with no system or global git config, no
 replace objects or grafts, no hooks, no fsmonitor, no colour and no signature checks forced through the
 environment (`git_env`), and the scan refuses a clone whose own `.git/config` sets any key outside
@@ -46,15 +47,21 @@ IMAGE_SUFFIXES = (".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".ico", ".bm
 # Never handed to a scanner: a token, or a gitleaks config the environment could name.
 DROPPED_ENV = ("RUNNER_PUSH_TOKEN", "RUNNER_CHECKS_TOKEN", "GH_TOKEN", "GITHUB_TOKEN", "GITLEAKS_CONFIG", "GITLEAKS_CONFIG_TOML")
 # Forced on every git call of a scan, gitleaks' own included, above any config file (D-4799).
+# The graft file is a path that cannot exist (under /dev/null): an existing one, even empty, makes git 2.43+ print
+# a deprecation hint on stderr, and `gitleaks git` then scans 0 commits and still exits 0 (D-4801).
 SAFE_GIT_ENV = {"GIT_NO_REPLACE_OBJECTS": "1", "GIT_CONFIG_NOSYSTEM": "1", "GIT_CONFIG_GLOBAL": os.devnull,
-                "GIT_ATTR_NOSYSTEM": "1", "GIT_GRAFT_FILE": os.devnull}
+                "GIT_ATTR_NOSYSTEM": "1", "GIT_GRAFT_FILE": os.path.join(os.devnull, "no-grafts")}
 SAFE_GIT_CONFIG = (("core.hooksPath", os.devnull), ("core.fsmonitor", "false"), ("core.attributesFile", os.devnull),
-                   ("core.commitGraph", "false"), ("color.ui", "never"), ("log.showSignature", "false"))
+                   ("core.commitGraph", "false"), ("color.ui", "never"), ("log.showSignature", "false"),
+                   ("advice.graftFileDeprecated", "false"))
 # The only keys the clone's own .git/config may set (an actions/checkout clone plus the runner's identity, D-4799).
 LOCAL_CONFIG_KEYS = ("core.repositoryformatversion", "core.filemode", "core.bare", "core.logallrefupdates",
                      "core.ignorecase", "core.precomposeunicode", "remote.origin.url", "remote.origin.fetch", "gc.auto",
                      "branch.*.remote", "branch.*.merge", "user.name", "user.email")
 NO_COLOR = ("--no-color", "--no-show-signature", "--no-textconv", "--no-ext-diff")  # on every git log (D-4799)
+ANSI = re.compile(r"\x1b\[[0-9;]*m")
+GITLEAKS_ERROR = re.compile(r"(?:^|\s)(?:ERR|FTL|error=)", re.MULTILINE)  # gitleaks' error and fatal log levels
+GITLEAKS_SCANNED = re.compile(r"\bINF\s+([0-9]+) commits scanned\b")
 
 Bounded = Callable[[list[str], Path, float], tuple[int, str, str]]
 
@@ -202,7 +209,8 @@ def _scan(bounded: Callable[[list[str], Path], tuple[int, str, str]], root: Path
     tree = tmp / "head"
     _git(bounded, root, "worktree", "add", "--detach", str(tree), head)
     try:
-        _gitleaks(bounded, tree, rng, base)
+        _gitleaks(bounded, tree, (rng, adding_commits(_git(bounded, root, attr, "log", *NO_COLOR, "--numstat",
+                                                          "--diff-merges=first-parent", "--format=%x00", rng))), base)
         _pii(bounded, root, (attr, rng), tree, base)
     finally:
         subprocess.run(["git", "worktree", "remove", "--force", str(tree)], cwd=root, capture_output=True, timeout=60,
@@ -248,19 +256,46 @@ def _write_main(bounded: Callable[[list[str], Path], tuple[int, str, str]], root
             (base / path).write_text(out, encoding="utf-8")
 
 
-def _gitleaks(bounded: Callable[[list[str], Path], tuple[int, str, str]], tree: Path, rng: str, base: Path) -> None:
+def _gitleaks(bounded: Callable[[list[str], Path], tuple[int, str, str]], tree: Path, span: tuple[str, int],
+              base: Path) -> None:
     """gitleaks over exactly the commits of `rng` and over the head tree, with main's config and ignore file. A
-    merge's patch is its diff against its first parent: `git log -p` prints none for a merge by default (D-4798)."""
+    merge's patch is its diff against its first parent: `git log -p` prints none for a merge by default (D-4798).
+    `span` is (`rng`, the commits of it that add a text line); each run must pass `gitleaks_refusal` (D-4801)."""
     exe = shutil.which("gitleaks")
     if not exe:
         raise Refused("gitleaks is not installed")
+    rng, least = span
     opts = [*GITLEAKS_FLAGS, "--gitleaks-ignore-path", str(base)]
     if (base / ".gitleaks.toml").is_file():
         opts += ["--config", str(base / ".gitleaks.toml")]
     for args in ([exe, "git", "--log-opts", " ".join((*NO_COLOR, "--diff-merges=first-parent", rng)), *opts, str(tree)], [exe, "dir", *opts, str(tree)]):
-        code, _, _ = bounded(args, base)
-        if code != 0:
-            raise Refused(f"gitleaks {args[1]}: " + ("a leak was found" if code == 1 else f"exit {code}"))
+        code, out, err = bounded(args, base)
+        why = gitleaks_refusal(args[1], code, out + "\n" + err, least)
+        if why:
+            raise Refused(why)
+
+
+def gitleaks_refusal(kind: str, code: int, output: str, least: int) -> str:
+    """'' when one gitleaks run (`kind` "git" or "dir") passed, else why. Exit 0 is not enough: gitleaks exits 0
+    after logging an error (a `git log` stderr line, even a hint, gives `ERR error="stderr is not empty"` and "0
+    commits scanned"), so any ERR or FTL line is a refusal, and a `git` run must report scanning at least `least`
+    commits, the ones that add a text line (gitleaks skips the rest). Fails closed (D-4801)."""
+    text = ANSI.sub("", output)
+    if code != 0:
+        return f"gitleaks {kind}: " + ("a leak was found" if code == 1 else f"exit {code}")
+    if GITLEAKS_ERROR.search(text):
+        return f"gitleaks {kind}: it logged an error, so its exit 0 is no pass"
+    counts = GITLEAKS_SCANNED.findall(text)
+    if kind == "git" and (len(counts) != 1 or int(counts[0]) < least):
+        return f"gitleaks git: scanned {counts[0] if len(counts) == 1 else 'no count of'} commits, not the {least} that add a line"
+    return ""
+
+
+def adding_commits(numstat: str) -> int:
+    """How many commits of a `git log --numstat --format=%x00` add at least one text line (binary rows are `-`)."""
+    blocks = numstat.split("\0")[1:]
+    return sum(1 for block in blocks if any(r.split("\t")[0].isdigit() and int(r.split("\t")[0]) > 0
+                                             for r in block.splitlines() if r.count("\t") >= 2))
 
 
 def _pii(bounded: Callable[[list[str], Path], tuple[int, str, str]], root: Path, span: tuple[str, str], tree: Path,
