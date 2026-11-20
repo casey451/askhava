@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T13:23:06Z by runner addd51c9a141 (actions).
+Updated 2026-11-20T13:23:32Z by runner addd51c9a141 (actions).
 
 **Building: T670 in progress since 12:59Z; 537 of 710 done; week 33% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 537 of 710 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T670 claimed 12:59Z, lease until 15:59Z; lane 2: T206 claimed 13:21Z, lease until 16:21Z; lane 3: T727 claimed 11:55Z, lease until 16:12Z; lane 4: T667 claimed 12:55Z, lease until 15:55Z; lane 5: T767 claimed 12:53Z, lease until 15:53Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
+- **Lane:** lane 1: T670 claimed 12:59Z, lease until 15:59Z; lane 2: T206 claimed 13:21Z, lease until 16:21Z; lane 4: T667 claimed 12:55Z, lease until 15:55Z; lane 5: T767 claimed 12:53Z, lease until 15:53Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
 - **Week:** 33% used, 122.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:22Z, 1 min before this update
 - **Keeper:** last ran 13:13Z, next wake 13:57Z
@@ -41,6 +41,7 @@ Checks: success, Lint and slow tests: success, Python: success, Coverage: cancel
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T727 | Runner (harness): a retry after a review failure or a plan-f | MERGE_PENDING | 2 | 87 min | 13:23Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T496 | a11y (harness): stub Stripe.js in the Ally suite and scan th | done | 1 | 81 min | 13:06Z |  |
 | T648 | recovery: the monthly test restore into a throwaway cluster, | done | 2 | 112 min | 12:29Z | PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, b |
 | T573 | messaging and server: queued business texts are addressed to | check_failed | 3 | 70 min | 12:25Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
@@ -49,7 +50,7 @@ Checks: success, Lint and slow tests: success, Python: success, Coverage: cancel
 | T768 | runner tests (harness): the seed test fakes free disk, so a  | done | 1 | 22 min | 10:38Z |  |
 | T573 | messaging and server: queued business texts are addressed to | QUEUED | 2 | 53 min | 09:48Z |  |
 | T530 | portals: the owner help page and its screened reply box (D-3 | QUEUED | 2 | 2 h 25 min | 09:46Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
-| T727 | Runner (harness): a retry after a review failure or a plan-f | check_failed | 1 | 75 min | 09:38Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
+| T727 | Runner (harness): a retry after a review failure or a plan-f | check_failed | 1 | 75 min | 09:38Z |  |
 | T617 | site: DM Sans from one weight-axis variable file (smaller th | done | 2 | 2 h 16 min | 09:22Z | PLAN GAP: tests/a11y/design_tokens.spec.ts:221 and :242 (protected, not owned by T617) contradict the prompt's single DM |
 | T766 | server tests (harness): a photo-link door and a {job} fill i | done | 1 | 53 min | 09:05Z |  |
 | T116 | Stage 0.5 static page set and the DNS records file | done | 1 | 50 min | 08:48Z |  |
@@ -162,11 +163,10 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T670 (lease until 2026-11-20T15:59:44Z)
 - lane 2: T206 (lease until 2026-11-20T16:21:32Z)
-- lane 3: T727 (lease until 2026-11-20T16:12:00Z)
 - lane 4: T667 (lease until 2026-11-20T15:55:37Z)
 - lane 5: T767 (lease until 2026-11-20T15:53:17Z)
 - lane 6: T530 (lease until 2026-11-20T13:55:17Z)
 - lane 7: T672 (lease until 2026-11-20T15:39:52Z)
 
 ## Last usage reading
-- {"task": "T496", "at": "2026-11-20T13:06:33Z", "cache_creation_input_tokens": 249259, "cache_read_input_tokens": 9760507, "output_tokens": 60906, "input_tokens": 314}
+- {"task": "T727", "at": "2026-11-20T13:23:04Z", "cache_creation_input_tokens": 124506, "cache_read_input_tokens": 1430913, "output_tokens": 20072, "input_tokens": 78}
