@@ -28,8 +28,8 @@ use std::sync::{Arc, Mutex, PoisonError};
 
 use askhava_businesses::api::{
     AccountStatus, Acting, Capability, CapabilityAnswers, Checks, Event, LargestJob, PauseReason,
-    Roles, add_member, add_owner, apply, away_until, business, create as create_business,
-    remove_member, save_capability,
+    Roles, add_member, add_owner, apply, away_until, business, busy_until,
+    create as create_business, remove_member, save_capability,
 };
 use askhava_catalog::api::load_embedded;
 use askhava_core::api::{Guarded, SystemClock};
@@ -936,16 +936,12 @@ async fn td_sec_44_another_persons_or_businesss_away_link_is_not_found(pool: PgP
     assert_eq!(away_end(&w).await, None, "nothing stored");
 }
 
-/// `w`'s business's stored "Busy until" end in whole hours from now; `None` when unset.
-async fn busy_end(w: &World) -> Option<i64> {
-    sqlx::query_scalar(
-        "SELECT floor(extract(epoch FROM busy_until - now()) / 3600)::bigint \
-         FROM businesses.business WHERE id = $1",
-    )
-    .bind(w.team.business)
-    .fetch_one(&w.pool)
-    .await
-    .expect("busy read")
+/// `w`'s business's stored "Busy until" end while it is ahead.
+async fn busy_end(w: &World) -> Option<Timestamp> {
+    let mut db = w.pool.acquire().await.expect("db");
+    busy_until(&mut db, w.team.business, Timestamp::now())
+        .await
+        .expect("busy read")
 }
 
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
@@ -1006,7 +1002,10 @@ async fn td_sec_44_the_busy_link_pauses_once_with_the_persons_session(pool: PgPo
         ("paused", Some("self")),
         "job cards paused"
     );
-    assert_eq!(busy_end(&w).await, Some(71), "the end is 3 days on");
+    let end = busy_end(&w).await.expect("the end is stored");
+    let ahead = end.duration_since(Timestamp::now());
+    let days = SignedDuration::from_hours(71)..=SignedDuration::from_hours(72);
+    assert!(days.contains(&ahead), "the end is 3 days on");
     let again = send_as(&w, (&Method::POST, &busy, "&days=3"), Site::Own, &jar).await;
     assert_eq!(
         again,

@@ -92,6 +92,26 @@ async fn field_audit(
         .map_err(|_| BusinessesError::Audit)
 }
 
+/// BIZ-028: business `business`'s "Busy until" end while it is after `now`; none when unset,
+/// past or no such business.
+///
+/// # Errors
+/// [`BusinessesError::Database`].
+pub async fn busy_until(
+    conn: &mut PgConnection,
+    business: Uuid,
+    now: Timestamp,
+) -> Result<Option<Timestamp>, BusinessesError> {
+    let until = sqlx::query_scalar!(
+        "SELECT busy_until FROM businesses.business WHERE id = $1 AND busy_until > $2",
+        business,
+        now.to_sqlx() as _,
+    )
+    .fetch_optional(conn)
+    .await;
+    Ok(db(until)?.flatten().map(|t| t.to_jiff()))
+}
+
 /// BIZ-028, BIZ-010, D-309, D-3890: "Busy for `days` days" set by `by` at `now`: job cards pause
 /// through `pause_self`, the end (`days` × 24 hours on, the same Arizona date as
 /// `portals::api::busy_until_line`) is stored in `busy_until` with one audit row, and one
