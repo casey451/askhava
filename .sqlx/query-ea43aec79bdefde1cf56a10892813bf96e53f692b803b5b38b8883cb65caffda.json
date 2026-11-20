@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT job_id, business_id, status, ended_at IS NOT NULL AS \"ended!\"\n           FROM picks.pick WHERE id = $1 FOR UPDATE",
+  "query": "SELECT job_id, business_id, status, ended_at IS NOT NULL AS \"ended!\", tier_index\n           FROM picks.pick WHERE id = $1 FOR UPDATE",
   "describe": {
     "columns": [
       {
@@ -41,6 +41,17 @@
         "name": "ended!",
         "type_info": "Bool",
         "origin": "Expression"
+      },
+      {
+        "ordinal": 4,
+        "name": "tier_index",
+        "type_info": "Int2",
+        "origin": {
+          "Table": {
+            "table": "picks.pick",
+            "name": "tier_index"
+          }
+        }
       }
     ],
     "parameters": {
@@ -52,8 +63,9 @@
       false,
       false,
       false,
-      null
+      null,
+      true
     ]
   },
-  "hash": "3025d520ba31e22ea8938993d9012de3a896e6be97767e41b16e942838de1256"
+  "hash": "ea43aec79bdefde1cf56a10892813bf96e53f692b803b5b38b8883cb65caffda"
 }
