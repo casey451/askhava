@@ -100900,7 +100900,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T09:13:21Z",
+ "updated_at": "2026-11-20T09:13:46Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -100998,8 +100998,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "201d17f9ff6e19f9d27ee29c04f81955c2a3f03f",
- "starter": "actions",
+ "runner_sha": "522d0ef3267e530166b0c50908961f40a3ffa6d7",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "382efbfa9414fda64df615686feff7ebbe5928d3",
@@ -101292,7 +101292,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 4931,
+ "next_decision": 4932,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
@@ -102773,6 +102773,12 @@
    "at": "2026-11-20T08:15:39Z",
    "reason": "Seed test fakes free disk (T768); T672 waits on it after two failures",
    "session": "manual-b59e305fb5c9"
+  },
+  {
+   "number": 4931,
+   "at": "2026-11-20T09:13:46Z",
+   "reason": "T526 and T678 over the 45% build context ceiling: trims or splits before claim",
+   "session": "manual-48b2cb191f9e"
   }
  ],
  "lanes_fallback_history": [
