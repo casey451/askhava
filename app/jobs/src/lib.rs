@@ -15,6 +15,7 @@ mod job_facts;
 mod job_lookup;
 mod line_close;
 mod models;
+mod payment_wait;
 mod purge_events;
 mod quote_token;
 mod request_counts;

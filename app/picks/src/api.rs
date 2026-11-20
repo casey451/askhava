@@ -115,6 +115,10 @@ pub use crate::confirm_reminders::{
     lapse_plan, lapse_text, member_confirmed_line, owner_told, reminder_lines, reminders,
     window_open,
 };
+pub use crate::connect::{
+    ConfirmMove, HELD_LONG, HELD_LONG_ALERT, HELD_SUCCESS_KIND, PendingEnd, confirm_move,
+    end_pending, payment_returned, run_payment_returned,
+};
 pub use crate::contact_choice::{ContactChoice, contact_choice, record_contact_choice};
 pub use crate::digest_counts::{NoShow, no_shows};
 pub use crate::dispute_steps::run_dispute_opened;

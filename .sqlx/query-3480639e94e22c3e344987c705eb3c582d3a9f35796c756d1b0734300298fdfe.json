@@ -1,0 +1,37 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT\n             EXISTS (SELECT 1 FROM payments.charge_attempt a\n                     WHERE a.pick_id = i.pick_id AND a.status = 'succeeded') AS \"paid!\",\n             EXISTS (SELECT 1 FROM payments.charge_attempt a WHERE a.pick_id = i.pick_id\n                     AND a.status IN ('sent', 'processing', 'needs_action')) AS \"in_flight!\",\n             EXISTS (SELECT 1 FROM payments.pay_timer t\n                     WHERE t.pick_id = i.pick_id AND t.ended_at IS NULL) AS \"timer!\"\n           FROM payments.pick_intent i WHERE i.pick_id = $1 AND i.ended_at IS NULL",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "paid!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "in_flight!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "timer!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "3480639e94e22c3e344987c705eb3c582d3a9f35796c756d1b0734300298fdfe"
+}
