@@ -1,2 +1,3 @@
 docs/decisions.md merge=union
 app/*/NOTES.md merge=union
+docs/for-casey-review.md merge=union
