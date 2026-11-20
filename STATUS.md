@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T19:57:03Z by runner 42a6f37da843 (actions).
+Updated 2026-11-20T19:57:31Z by runner 42a6f37da843 (actions).
 
-**Building: T756 in progress since 18:57Z; 550 of 713 done; week 43% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T682 in progress since 19:03Z; 550 of 713 done; week 43% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 550 of 713 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T756 claimed 18:57Z, lease until 21:57Z; lane 4: T682 claimed 19:03Z, lease until 22:03Z; lane 5: T772 claimed 18:05Z, lease until 21:05Z; lane 7: T743 claimed 18:24Z, lease until 21:24Z
+- **Lane:** lane 4: T682 claimed 19:03Z, lease until 22:03Z; lane 5: T772 claimed 18:05Z, lease until 21:05Z; lane 7: T743 claimed 18:24Z, lease until 21:24Z
 - **Week:** 43% used, 103.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:51Z, 5 min before this update
+- **Last run:** 19:51Z, 6 min before this update
 - **Keeper:** last ran 19:45Z, next wake 20:05Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Updated 2026-11-20T19:57:03Z by runner 42a6f37da843 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T756 | privacy: the scrubber catches phones split by connector word | MERGE_PENDING | 1 | 59 min | 19:57Z |  |
 | T530 | portals: the owner help page and its screened reply box (D-3 | MERGE_PENDING | 3 | 49 min | 19:43Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T661 | privacy: a business notice address with spaces, commas or co | done | 1 | 27 min | 19:04Z |  |
 | T614 | site: the V6 header in base.html (links, the Menu in the pag | BLOCKED | 2 | 80 min | 18:46Z | PLAN GAP: tests/integration/tests/quote_page.rs:172 (owner T052, protected) bans the word "summary" anywhere in the quot |
@@ -146,10 +147,10 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T756 (lease until 2026-11-20T21:57:45Z)
+- nothing
 - lane 4: T682 (lease until 2026-11-20T22:03:22Z)
 - lane 5: T772 (lease until 2026-11-20T21:05:44Z)
 - lane 7: T743 (lease until 2026-11-20T21:24:48Z)
 
 ## Last usage reading
-- {"task": "T530", "at": "2026-11-20T19:43:37Z", "output_tokens": 12578, "cache_read_input_tokens": 1238096, "input_tokens": 73, "cache_creation_input_tokens": 72556}
+- {"task": "T756", "at": "2026-11-20T19:57:01Z", "cache_read_input_tokens": 1377527, "input_tokens": 59, "cache_creation_input_tokens": 100979, "output_tokens": 35279}
