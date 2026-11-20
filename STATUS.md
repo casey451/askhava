@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T21:50:58Z by runner c93b0b6c6e97 (actions).
+Updated 2026-11-20T22:03:52Z by runner 1b3980e8c2cf (actions).
 
 **Building: T682 in progress since 20:56Z; 556 of 713 done; week 49% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-20T21:50:58Z by runner c93b0b6c6e97 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 5: T682 claimed 20:56Z, lease until 23:56Z; lane 6: T673 claimed 20:17Z, lease until 23:17Z
 - **Week:** 49% used, 97.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:50Z, 0 min before this update
+- **Last run:** 21:51Z, 12 min before this update
 - **Keeper:** last ran 21:50Z, next wake 23:19Z
 
 ## Needs attention
@@ -16,7 +16,7 @@ Updated 2026-11-20T21:50:58Z by runner c93b0b6c6e97 (actions).
 - PLAN GAP T305 (since 2026-11-20T20:17:39Z, no attempt used; a plan change fixes it): T305: dependency T530 is DONE but its owned file app/portals/src/owner_help.rs is not on main; T305: dependency T530 is DONE but its owned file app/portals/templates/help_request.html is not on main; T305: dependency T530 is DONE but its owned file tests/security/tests/owner_help_reply.rs is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 45 problem(s) on tasks still to run (+425 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 48 problem(s) on tasks still to run (+425 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -99,7 +99,6 @@ Updated 2026-11-20T21:50:58Z by runner c93b0b6c6e97 (actions).
 | T541 | payments, portals and adapters: a card saved or changed from | check_failed | 2 | 91 min | 22:55Z |  |
 | T480 | messaging, server and portals: the stored "Spanish conversat | done | 1 | 104 min | 22:23Z |  |
 | T717 | intake (harness): corrections to T711's two jobs: two_jobs a | done | 1 | 2 h 11 min | 22:21Z |  |
-| T607 | site: site.css brought up to the V6 reference (laftly-v6.css | done | 2 | 41 min | 21:57Z | review_missing on 2c1fc315ebe4 (D-3728): not proven reviewed or worker-made / (b) 5cb49e3317bc T607: NOTES entry in the  |
 
 ### Plan and harness merges on main
 - none
