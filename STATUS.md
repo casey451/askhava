@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T22:35:40Z by runner 3be39ca7193a (actions).
+Updated 2026-11-20T22:44:24Z by runner 2d12908e33ff (actions).
 
-**Idle since 22:33Z; 557 of 714 done; week 50% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Idle since 22:43Z; 558 of 714 done; week 50% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 557 of 714 build tasks (owner gates not counted)
+- **Tasks done:** 558 of 714 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** idle since 22:33Z (no task in progress)
+- **Lane:** idle since 22:43Z (no task in progress)
 - **Week:** 50% used, 97.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:29Z, 6 min before this update
+- **Last run:** 22:35Z, 8 min before this update
 - **Keeper:** last ran 22:28Z, next wake 22:48Z
 
 ## Needs attention
@@ -24,7 +24,7 @@ Updated 2026-11-20T22:35:40Z by runner 3be39ca7193a (actions).
 |---|---|---|---|---|---|---|
 | T682 | picks: a pick waiting for Confirm gets its hourly reminders, | MERGE_PENDING | 2 | 91 min | 22:27Z | app/picks/src/reminder_run.rs:316 (remind): a waiting pick whose job was cancelled or closed after the notice keeps gett |
 | T673 | intake (harness): the dispatcher builds and shows the card,  | MERGE_PENDING | 1 | 106 min | 22:03Z |  |
-| T739 | picks: the owner's re-send of a release goes only while the  | MERGE_PENDING | 1 | 52 min | 21:49Z |  |
+| T739 | picks: the owner's re-send of a release goes only while the  | done | 1 | 52 min | 21:49Z |  |
 | T752 | catalog and twin (harness): the `launch_open` comment says a | done | 1 | 39 min | 21:24Z |  |
 | T750 | docs: the privacy policy draft says an opted-out number is k | done | 1 | 38 min | 21:20Z |  |
 | T558 | Decisions digest, piece 13: the next entries after the heade | done | 1 | 28 min | 20:57Z |  |
@@ -107,7 +107,7 @@ Updated 2026-11-20T22:35:40Z by runner 3be39ca7193a (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 362 of 735 (49.3%) · partial 354 · unstarted 19
-**Tasks merged (throughput only):** 557 of 714
+**Tasks merged (throughput only):** 558 of 714
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -143,7 +143,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 200 of 296 done
+- stage 5: 201 of 296 done
 - stage 6: 0 of 65 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
