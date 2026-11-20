@@ -93324,7 +93324,10 @@
    "update_waiting_since": null,
    "update_push_failures": null,
    "merge_turn_since": "2026-11-20T11:19:44Z",
-   "last_failure": "Ci: failure; Coverage: cancelled\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_pick_52_the_first_release_follows_the_stored_choice ... ok\ntest result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.76s\n     Running tests/release_recovery.rs (target/llvm-cov-target/debug/build/askhava-server/ac52d219a2531c32/out/release_recovery-ac52d219a2531c32)\nrunning 6 tests\ntest td_pick_50_a_restart_after_the_settle_releases_once_on_the_retry ... ok\ntest td_pick_50_a_verified_success_settles_paid_and_releases_once ... ok\ntest td_pick_49_a_failed_vault_read_recovers_and_shows_once ... ok\ntest td_pick_50_a_failed_line_opens_on_the_retry_and_never_reopens ... ok\ntest td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing ... ok\ntest td_pick_50_an_error_before_the_claim_leaves_the_line_retry_unspent ... ok\ntest result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.65s\n     Running tests/released_view.rs (target/llvm-cov-target/debug/build/askhava-server/cffd3eaab7283bb6/out/released_view-cffd3eaab7283bb6)\nrunning 2 tests\ntest the_session_minter_is_one_mint_per_process ... ok\n##[error]The operation was canceled.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: cancelled, E2e: success\n##[error]Process completed with exit code 1."
+   "last_failure": "Ci: failure; Coverage: cancelled\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_pick_52_the_first_release_follows_the_stored_choice ... ok\ntest result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.76s\n     Running tests/release_recovery.rs (target/llvm-cov-target/debug/build/askhava-server/ac52d219a2531c32/out/release_recovery-ac52d219a2531c32)\nrunning 6 tests\ntest td_pick_50_a_restart_after_the_settle_releases_once_on_the_retry ... ok\ntest td_pick_50_a_verified_success_settles_paid_and_releases_once ... ok\ntest td_pick_49_a_failed_vault_read_recovers_and_shows_once ... ok\ntest td_pick_50_a_failed_line_opens_on_the_retry_and_never_reopens ... ok\ntest td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing ... ok\ntest td_pick_50_an_error_before_the_claim_leaves_the_line_retry_unspent ... ok\ntest result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.65s\n     Running tests/released_view.rs (target/llvm-cov-target/debug/build/askhava-server/cffd3eaab7283bb6/out/released_view-cffd3eaab7283bb6)\nrunning 2 tests\ntest the_session_minter_is_one_mint_per_process ... ok\n##[error]The operation was canceled.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: cancelled, E2e: success\n##[error]Process completed with exit code 1.",
+   "runner_closed_prs": [
+    1197
+   ]
   },
   {
    "id": "T740",
@@ -101694,7 +101697,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T11:55:45Z",
+ "updated_at": "2026-11-20T11:56:07Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
