@@ -21,11 +21,16 @@
    "lane": "4"
   },
   "5": null,
-  "6": null,
+  "6": {
+   "task": "T617",
+   "session": "actions-44664289473",
+   "expires": "2026-11-20T06:01:48Z",
+   "lane": "6"
+  },
   "7": null,
   "fix": null
  },
- "seq": 8200,
- "runner_sha": "9faf2e96f49b11fd8204a05b09b81a428f42c4b9",
- "starter": "manual"
+ "seq": 8201,
+ "runner_sha": "ef998d36a6d572638a9868ca6ffffd0ee842f141",
+ "starter": "actions"
 }
