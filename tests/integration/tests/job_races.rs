@@ -12,8 +12,11 @@ use std::time::Duration;
 
 use askhava_core::api::{Claimed, Guarded, WorkerId, claim};
 use askhava_jobs::api::rules::timeout;
-use askhava_jobs::api::{JobStatus, TEXT_KIND, TIMER_KIND, create, current, move_to, run_timer};
+use askhava_jobs::api::{
+    JobStatus, PAYMENT_RETURNED_KIND, TEXT_KIND, TIMER_KIND, create, current, move_to, run_timer,
+};
 use askhava_ops::api::Actor;
+use askhava_picks::api::run_payment_returned;
 use jiff::{SignedDuration, Timestamp};
 use sqlx::PgPool;
 use sqlx::types::Uuid;
@@ -35,17 +38,20 @@ fn due(status: JobStatus) -> Timestamp {
         .at
 }
 
-/// One of two colliding events: a move by a person or a vendor notice, or the job's live timer.
+/// One of two colliding events: a move by a person or a vendor notice, the job's live timer, or
+/// the Payment pending timer's `picks.payment_returned` task (D-4349: that timer moves nothing).
 #[derive(Clone, Copy)]
 enum Event {
     Move(JobStatus, JobStatus),
     Timer,
+    PaymentReturned,
 }
 
-/// An event ready to run: a timer is claimed first, as a worker would.
+/// An event ready to run: a timer or task is claimed first, as a worker would.
 enum Ready {
     Move(JobStatus, JobStatus),
     Timer(Claimed),
+    Returned(Claimed),
 }
 
 /// What a race leaves behind on one job, read before and after.
@@ -121,22 +127,37 @@ async fn timers_at(pool: &PgPool, id: Uuid, version: i32) -> Vec<String> {
         .expect("timers")
 }
 
-/// Makes `event` ready on job `id` at `at`: the job's live timer (its current version; earlier
-/// statuses' stale timers are due too) is claimed as a worker would claim it.
-async fn ready(pool: &PgPool, id: Uuid, event: Event, at: Timestamp) -> Ready {
-    let Event::Move(from, to) = event else {
-        let version = trace(pool, id).await.version;
-        let owner = WorkerId::new(pool).await.expect("worker");
-        let lease = SignedDuration::from_mins(5);
-        let claimed = claim(pool, owner, at, lease, 100).await.expect("claim");
-        let live = |t: &Claimed| {
-            t.kind == TIMER_KIND
-                && t.payload["job"] == id.to_string()
-                && t.payload["version"] == version
-        };
-        return Ready::Timer(claimed.into_iter().find(live).expect("the live timer"));
+/// Claims every task due at `at` as a worker would and keeps job `id`'s one of kind `kind` (a
+/// timer only at `version`).
+async fn claimed(pool: &PgPool, id: Uuid, (kind, version): (&str, i32), at: Timestamp) -> Claimed {
+    let owner = WorkerId::new(pool).await.expect("worker");
+    let lease = SignedDuration::from_mins(5);
+    let claimed = claim(pool, owner, at, lease, 100).await.expect("claim");
+    let live = |t: &Claimed| {
+        t.kind == kind
+            && t.payload["job"] == id.to_string()
+            && (kind != TIMER_KIND || t.payload["version"] == version)
     };
-    Ready::Move(from, to)
+    claimed.into_iter().find(live).expect("the live task")
+}
+
+/// Makes `event` ready on job `id` at `at`: the job's live timer (its current version; earlier
+/// statuses' stale timers are due too) is claimed as a worker would claim it; for the payment
+/// deadline the timer runs first and its `picks.payment_returned` task is claimed.
+async fn ready(pool: &PgPool, id: Uuid, event: Event, at: Timestamp) -> Ready {
+    let version = trace(pool, id).await.version;
+    match event {
+        Event::Move(from, to) => Ready::Move(from, to),
+        Event::Timer => Ready::Timer(claimed(pool, id, (TIMER_KIND, version), at).await),
+        Event::PaymentReturned => {
+            let timer = claimed(pool, id, (TIMER_KIND, version), at).await;
+            run_timer(pool.clone(), timer)
+                .await
+                .expect("the timer runs");
+            let task = claimed(pool, id, (PAYMENT_RETURNED_KIND, version), at).await;
+            Ready::Returned(task)
+        }
+    }
 }
 
 /// Runs one event on its own connection at `at`; a move answers whether it applied.
@@ -152,6 +173,12 @@ async fn run(pool: PgPool, id: Uuid, event: Ready, at: Timestamp) -> Option<bool
             run_timer(pool, task)
                 .await
                 .expect("a raced timer is no error");
+            None
+        }
+        Ready::Returned(task) => {
+            run_payment_returned(pool, task, at)
+                .await
+                .expect("a raced payment return is no error");
             None
         }
     }
@@ -188,7 +215,7 @@ async fn race(pool: &PgPool, id: Uuid, (first, second): (Ready, Ready), at: Time
     let b = tokio::spawn(run(pool.clone(), id, second, at));
     assert!(lock_waiters(pool, 2).await, "the second event waits");
     holder.commit().await.expect("release");
-    // A timer answers `None` (`run_timer` reports no outcome), so these two checks bind only
+    // A timer or task answers `None` (neither reports an outcome), so these two checks bind only
     // moves; a timer's win or loss is checked afterwards by `one_applied`'s full trace.
     assert_ne!(a.await.expect("first"), Some(false), "the first applies");
     assert_ne!(
@@ -258,13 +285,16 @@ async fn td_job_02_a_cancel_and_a_confirm_in_both_orders(pool: PgPool) {
 }
 
 /// TD-JOB-02: the Stripe payment notice and the payment deadline land together, in both orders;
-/// a lost deadline returns nothing to Quotes ready, a lost notice connects nothing.
+/// a lost deadline returns nothing to Quotes ready, a lost notice connects nothing. The deadline
+/// is the Payment pending timer firing and its `picks.payment_returned` task running with no
+/// payment held (no pick: the guarded move back to Quotes ready, D-4349).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_job_02_a_stripe_notice_and_the_payment_deadline_in_both_orders(pool: PgPool) {
     let paid = Event::Move(JobStatus::PaymentPending, JobStatus::Connected);
     let at = due(JobStatus::PaymentPending);
     let wins = ((JobStatus::Connected, 0), (JobStatus::QuotesReady, 0));
-    both_orders(&pool, &TO_PAYMENT, (paid, Event::Timer, at), wins).await;
+    let deadline = Event::PaymentReturned;
+    both_orders(&pool, &TO_PAYMENT, (paid, deadline, at), wins).await;
 }
 
 /// TD-JOB-02: a pick and the 3-day no-pick close land together, in both orders; only a winning
