@@ -42,6 +42,7 @@ mod business_left;
 mod business_numbers;
 mod cant_take;
 mod confirm;
+mod confirm_refused;
 mod confirm_reminders;
 mod connect;
 mod contact_choice;
