@@ -22,6 +22,10 @@
 //! [`ACCEPTED_QUOTE_KIND`] task (pick, job and business IDs only, deduped per pick), whose
 //! handler (`intake`'s) emails the homeowner a copy of the accepted quote; [`accepted_pick`] is the
 //! read of a job's `paid` or `free` pick that handler and the quote page use.
+//!
+//! The settle also connects the job (D-2930, D-4349): in its transaction the job moves to
+//! Connected before the pick moves (`connect::connect_on_settle`); a job not in Awaiting confirm
+//! or Payment pending ends the pick through `connect::end_pending` and answers [`Settled::Left`].
 
 use askhava_adapters::api::MaskedPool;
 use askhava_calls::api::{Connected, assign_number, job_had_line};
@@ -33,6 +37,7 @@ use serde_json::json;
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
+use crate::connect::{PendingEnd, connect_on_settle, end_pending};
 use crate::models::PicksError;
 use crate::status::{release_shown_codes, release_status, settle_action, settle_step};
 
@@ -70,9 +75,15 @@ pub enum Settled {
 
 /// Moves the pick `cleared` names from `awaiting_confirm` to `paid` (a paid charge) or `free` (a
 /// $0 decision), in the caller's transaction (PICK-022, PRIV-005, BIZ-014, D-1564, D-1739).
+/// Before it, in the same transaction, its job moves to Connected (`connect::connect_on_settle`:
+/// from Payment pending, or both moves from Awaiting confirm, PICK-048), so the release's claim
+/// sees Connected (D-2930, D-4349); a job in any other status is not settled: the pick ends as
+/// `payment_failed` through `connect::end_pending` and the answer is [`Settled::Left`] (the sink
+/// queues the FEE-021 refund and releases nothing, PRIV-005).
 ///
 /// # Errors
-/// [`PicksError::Database`] or [`PicksError::Audit`]; nothing is moved then.
+/// [`PicksError::Database`], [`PicksError::Audit`], [`PicksError::Job`] or
+/// [`PicksError::MovedOn`]; nothing is moved then.
 pub async fn settle(tx: &mut PgConnection, cleared: &Releasable) -> Result<Settled, PicksError> {
     let (pick, want) = (cleared.pick(), release_status(cleared.basis()));
     let row = sqlx::query!(
@@ -93,6 +104,11 @@ pub async fn settle(tx: &mut PgConnection, cleared: &Releasable) -> Result<Settl
         SettleStep::Move => {}
         SettleStep::Was => return Ok(Settled::Was(row.job_id)),
         SettleStep::Leave => return Ok(Settled::Left),
+    }
+    if !connect_on_settle(tx, row.job_id, Timestamp::now()).await? {
+        let by = (Actor::System, Timestamp::now());
+        end_pending(tx, (pick, row.job_id), PendingEnd::PaymentFailed, by).await?;
+        return Ok(Settled::Left);
     }
     sqlx::query!(
         "UPDATE picks.pick SET status = $2 WHERE id = $1",
@@ -216,8 +232,7 @@ pub async fn retry_line(
 }
 
 /// CALL-009, CALL-010, D-4338: whether job `job` reached a final status (cancelled, closed, done,
-/// closed early or not covered), so a late line retry opens nothing after the close ran. Connected
-/// is not required: released jobs sit in Awaiting confirm today (D-2015).
+/// closed early or not covered), so a late line retry opens nothing after the close ran.
 async fn job_ended(conn: &mut PgConnection, job: Uuid) -> Result<bool, HandlerError> {
     askhava_jobs::api::current(conn, job)
         .await
