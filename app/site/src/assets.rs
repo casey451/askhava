@@ -136,7 +136,8 @@ mod tests {
     }
 
     /// WEB-027, WEB-030, D-4252: the served variable DM Sans font is the reviewed file in
-    /// `docs/design/fonts/`, byte for byte, and no larger than the three static files together.
+    /// `docs/design/fonts/`, byte for byte, exactly the 36,932 bytes D-4853 records, and no
+    /// larger than the three static files together.
     #[test]
     fn the_variable_dm_sans_font_is_the_reviewed_file() {
         let served = find("fonts/dm-sans-latin-wght-normal.woff2").expect("listed");
@@ -145,6 +146,7 @@ mod tests {
             std::fs::read(root.join("docs/design/fonts/dm-sans-latin-wght-normal.woff2"))
                 .expect("the reviewed font is in docs/design/fonts/");
         assert_eq!(served.bytes, reviewed.as_slice());
+        assert_eq!(served.bytes.len(), 36_932, "the size D-4853 records");
         let statics: usize = STATIC_DM_SANS
             .iter()
             .map(|file| find(&format!("fonts/{file}")).expect(file).bytes.len())

@@ -564,7 +564,7 @@ a.card { display: block; color: var(--ink); text-decoration: none; }
 .steps:has(.num) p { color: var(--ink-soft); margin: 0; }
 
 /* Example quotes */
-.example-label { display: flex; justify-content: space-between; gap: 4px 16px; flex-wrap: wrap; font: 700 16px/24px var(--sans); color: var(--evergreen); margin: 0 0 12px; max-width: none; }
+.example-label { display: flex; justify-content: space-between; gap: 4px 16px; flex-wrap: wrap; font: 600 16px/24px var(--sans); color: var(--evergreen); margin: 0 0 12px; max-width: none; }
 .example-grid { display: grid; gap: 16px; }
 
 /* Quote card: identical every time, in arrival order; the #N row above a line hairline */
