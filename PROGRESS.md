@@ -8532,3 +8532,4 @@
 - 2026-11-20T12:40:13Z runner a3ce8def2b0a (actions): {"T672": "QUEUED -> IN_PROGRESS"}; T672 estimated 2.0M tokens (calibrated); week has 128.8M left (no five-hour budget, D-3056) after 3.2M still running in another lane (session_reading 2026-11-20T12:30:43Z (week)); claimed
 - 2026-11-20T12:53:29Z runner 7d98387f34ed (actions): {"T573": "MERGE_PENDING -> BLOCKED", "T648": "MERGE_PENDING -> DONE"}
 - 2026-11-20T12:53:58Z runner 7d98387f34ed (actions): {"T767": "QUEUED -> IN_PROGRESS"}; T767 estimated 661k tokens (default); week has 126.8M left (no five-hour budget, D-3056) after 5.2M still running in another lane (session_reading 2026-11-20T12:30:43Z (week)); claimed
+- 2026-11-20T12:55:49Z runner 7d98387f34ed (actions): {"T667": "QUEUED -> IN_PROGRESS"}; T667 estimated 516k tokens (default); week has 126.2M left (no five-hour budget, D-3056) after 5.8M still running in another lane (session_reading 2026-11-20T12:30:43Z (week)); claimed
