@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T13:06:35Z by runner 19bc572833b2 (actions).
+Updated 2026-11-20T13:07:02Z by runner 19bc572833b2 (actions).
 
 **Building: T670 in progress since 12:59Z; 536 of 710 done; week 31% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 536 of 710 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T670 claimed 12:59Z, lease until 15:59Z; lane 2: T496 claimed 11:44Z, lease until 14:44Z; lane 3: T727 claimed 11:55Z, lease until 14:55Z; lane 4: T667 claimed 12:55Z, lease until 15:55Z; lane 5: T767 claimed 12:53Z, lease until 15:53Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
+- **Lane:** lane 1: T670 claimed 12:59Z, lease until 15:59Z; lane 3: T727 claimed 11:55Z, lease until 14:55Z; lane 4: T667 claimed 12:55Z, lease until 15:55Z; lane 5: T767 claimed 12:53Z, lease until 15:53Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
 - **Week:** 31% used, 125.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:05Z, 0 min before this update
+- **Last run:** 13:05Z, 1 min before this update
 - **Keeper:** last ran 12:31Z, next wake 12:51Z
 
 ## Needs attention
@@ -42,6 +42,7 @@ Checks: success, Lint and slow tests: success, Python: success, Coverage: cancel
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T496 | a11y (harness): stub Stripe.js in the Ally suite and scan th | MERGE_PENDING | 1 | 81 min | 13:06Z |  |
 | T648 | recovery: the monthly test restore into a throwaway cluster, | done | 2 | 112 min | 12:29Z | PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, b |
 | T573 | messaging and server: queued business texts are addressed to | check_failed | 3 | 70 min | 12:25Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
 | T614 | site: the V6 header in base.html (links, the Menu in the pag | BLOCKED | 1 | 16 min | 11:39Z | PLAN GAP: tests/a11y/reflow_spacing.spec.ts:49-54 (T053, protected) flags every TARGETS control with no box as "is hidde |
@@ -161,7 +162,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T670 (lease until 2026-11-20T15:59:44Z)
-- lane 2: T496 (lease until 2026-11-20T14:44:53Z)
 - lane 3: T727 (lease until 2026-11-20T14:55:28Z)
 - lane 4: T667 (lease until 2026-11-20T15:55:37Z)
 - lane 5: T767 (lease until 2026-11-20T15:53:17Z)
@@ -169,4 +169,4 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 7: T672 (lease until 2026-11-20T15:39:52Z)
 
 ## Last usage reading
-- {"task": "T648", "at": "2026-11-20T12:29:39Z", "cache_read_input_tokens": 9662071, "input_tokens": 207, "cache_creation_input_tokens": 385613, "output_tokens": 116104}
+- {"task": "T496", "at": "2026-11-20T13:06:33Z", "cache_creation_input_tokens": 249259, "cache_read_input_tokens": 9760507, "output_tokens": 60906, "input_tokens": 314}
