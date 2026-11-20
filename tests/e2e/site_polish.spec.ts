@@ -6,10 +6,11 @@
 // over 25 KB through Node's zlib.gzipSync; when a @keyframes changes any property but `transform`;
 // when an `animation` or `transition` (other than `none`) sits outside a
 // `prefers-reduced-motion: no-preference` block; when `@view-transition` appears; when a transition
-// (delay plus duration) lasts 350 ms or more; when an animation's end time (largest delay plus
-// duration times iterations) passes 900 ms (each counting the shorthand and the `-duration`,
-// `-delay` and `animation-iteration-count` longhands under the same selector); when the `rise` stagger has no `:nth-child(n+6)` cap;
-// when an iteration count is `infinite` or above 3; or when `linear-gradient(` appears. Each rule
+// (delay plus duration) lasts 350 ms or more; when an animation's end time (delay plus duration
+// times iterations) passes 900 ms, with the largest delay and iteration count anywhere in the
+// sheet, each `var()` resolved to its largest declared value; when a delay alone is 350 ms or
+// more (transition) or over 900 ms (animation); when `calc(` appears in an animation or transition
+// value; when the `rise` stagger has no `:nth-child(n+6)` cap; when an iteration count is `infinite` or above 3; or when `linear-gradient(` appears. Each rule
 // has a planted stylesheet string that fails it. The italic accent's font answers 200 as
 // font/woff2 with the bytes of docs/design/fonts/, and the home page's first view at 390 by 844 (every response body until the load
 // event, decoded) is 280 KB or less, with a planted list of sizes that fails the same sum.
