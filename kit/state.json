@@ -85380,7 +85380,7 @@
     "T593",
     "T617"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "site-header",
    "type": "build",
@@ -85394,8 +85394,8 @@
     4947,
     4948
    ],
-   "reason": "plan gap reported: PLAN GAP: tests/a11y/reflow_spacing.spec.ts:49-54 (T053, protected) flags every TARGETS control with no box as \"is hidden\", but DESIGN_SPEC docs/design/DESIGN_SPEC.md:102 requires .site-nav hidden below 1024px and Menu hidden from 1024px, so the specified header fails at every width. Also: closed <details> Menu links keep boxes in Chromium (counted as Tab stops by j1_keyboard.spec.ts:56 and j2_keyboard.spec.ts:26) and the open Menu scrolls sideways at 320px (scrollWidth 375); both fixable only in app/site/static/site.css, not owned by T614 (CSP forbids inline style). Smallest plan change: a ta; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T614 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: tests/a11y/reflow_spacing.spec.ts:49-54 (T053, protected) flags every TARGETS control with no box as \"is hidden\", but DESIGN_SPEC docs/design/DESIGN_SPEC.md:102 requires .site-nav hidden below 1024px and Menu hidden from 1024px, so the specified header fails at every width. Also: closed <details> Menu links keep boxes in Chromium (counted as Tab stops by j1_keyboard.spec.ts:56 and j2_keyboard.spec.ts:26) and the open Menu scrolls sideways at 320px (scrollWidth 375); both fixable only in app/site/static/site.css, not owned by T614 (CSP forbids inline style). Smallest plan change: a task owning site.css adds `.menu:not([open]) .menu-list { display: none }` and fits the open list at 320px; T053's spacingProblems skips controls with getClientRects().length === 0. Reviewer (a5de7ec34ddad778b) confirmed: PLAN-GAP: CONFIRMED. Worker run showed 253 failed / 833 passed in tests/a11y.",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/a11y/reflow_spacing.spec.ts:49-54 (T053, protected) flags every TARGETS control with no box as \"is hidden\", but DESIGN_SPEC docs/design/DESIGN_SPEC.md:102 requires .site-nav hidden below 1024px and Menu hidden from 1024px, so the specified header fails at every width. Also: closed <details> Menu links keep boxes in Chromium (counted as Tab stops by j1_keyboard.spec.ts:56 and j2_keyboard.spec.ts:26) and the open Menu scrolls sideways at 320px (scrollWidth 375); both fixable only in app/site/static/site.css, not owned by T614 (CSP forbids inline style). Smallest plan change: a task owning site.css adds `.menu:not([open]) .menu-list { display: none }` and fits the open list at 320px; T053's spacingProblems skips controls with getClientRects().length === 0. Reviewer (a5de7ec34ddad778b) confirmed: PLAN-GAP: CONFIRMED. Worker run showed 253 failed / 833 passed in tests/a11y.\nre-queued after plan fix D-4970: header plan gap fixed by D-4970 (#1206)",
    "history": [
     {
      "attempt": 1,
@@ -85419,6 +85419,21 @@
        "turns": 10
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-20T14:03:24Z",
+     "reason": "header plan gap fixed by D-4970 (#1206)",
+     "by": "manual-d33921339ff6",
+     "was": "plan gap reported: PLAN GAP: tests/a11y/reflow_spacing.spec.ts:49-54 (T053, protected) flags every TARGETS control with no box as \"is hidden\", but DESIGN_SPEC docs/design/DESIGN_SPEC.md:102 requires .site-nav hidden below 1024px and Menu hidden from 1024px, so the specified header fails at every width. Also: closed <details> Menu links keep boxes in Chromium (counted as Tab stops by j1_keyboard.spec.ts:56 and j2_keyboard.spec.ts:26) and the open Menu scrolls sideways at 320px (scrollWidth 375); both fixable only in app/site/static/site.css, not owned by T614 (CSP forbids inline style). Smallest plan change: a ta; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T614 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-4970",
+     "plan_since": "2026-11-20T11:22:39Z",
+     "plan_base": "4b155e8885707f89f6d1eac9bac229e9edf62088",
+     "plan_head": "2de3f26c0335736f78c75ae582a6354de4ab60a0",
+     "plan_then": "ec523d378cf52001a5fa98cc94cb29ba862d2679db4af41beb6179c42a4903ed",
+     "plan_now": "15139af0f7e24cb7f3f69c860c9bd474f8c3ee7a231b83d7fa15c75002e40678"
     }
    ]
   },
@@ -102434,7 +102449,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T14:03:07Z",
+ "updated_at": "2026-11-20T14:03:24Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
