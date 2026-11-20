@@ -54,6 +54,9 @@ pub enum RecoveryError {
     /// The export passed its deadline; its `pg_dump` was killed (OPS-013).
     #[error("export timed out")]
     Timeout,
+    /// A vendor stayed unreachable through every retry of the replay (OPS-015).
+    #[error("vendor unreachable")]
+    Vendor,
 }
 
 impl RecoveryError {
@@ -69,6 +72,7 @@ impl RecoveryError {
             Self::Storage => "storage",
             Self::Database => "database",
             Self::Timeout => "timeout",
+            Self::Vendor => "vendor",
         }
     }
 }

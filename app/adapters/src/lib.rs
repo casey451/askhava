@@ -18,6 +18,7 @@ mod payments;
 mod resend_config;
 mod signatures;
 mod sms;
+mod sms_list;
 mod storage;
 #[cfg(test)]
 mod tests;
