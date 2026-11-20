@@ -59,6 +59,7 @@ mod not_a_fit;
 mod notice_log;
 mod notice_settings;
 mod owner_auth;
+mod owner_help;
 mod owner_portal;
 mod owner_release;
 mod owner_step_up_page;

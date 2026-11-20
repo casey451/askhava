@@ -185,6 +185,11 @@ pub use crate::owner_auth::{
     owner_signin_page, owner_step_up, passkey_registered, passkey_registration_options,
     passkey_sign_in_options, password_problem, require_owner_step_up, sign_out_everywhere,
 };
+pub use crate::owner_help::{
+    OWNER_HELP_CLOSE_ROUTE, OWNER_HELP_REPLY_ROUTE, OWNER_HELP_ROUTE, OWNER_REPLY_MAX,
+    OWNER_REPLY_TEMPLATE, ReplyRefusal, owner_help_routes, reply_body, screen_reply,
+    send_owner_reply,
+};
 pub use crate::owner_portal::{
     AUDIT_PAGE_ROWS, BridgeForm, ChangeForm, EvidenceForm, OPT_OUT_WEEKS, OWNER_ALERT_ACK_ROUTE,
     OWNER_AUDIT_LOG_ROUTE, OWNER_BANNER_ROUTE, OWNER_BRIDGE_ACTION, OWNER_BRIDGE_ROUTE,
