@@ -1,24 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-20T02:09:13Z by runner 5cb0d236b51a (actions).
+Updated 2026-11-20T02:12:39Z by runner d6a8011a3e89 (actions).
 
 **Building: T726 in progress since 01:05Z; 514 of 704 done; week 15% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 514 of 704 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T726 claimed 01:05Z, lease until 04:05Z; lane 4: T672 claimed 01:59Z, lease until 04:59Z; lane 6: T763 claimed 01:52Z, lease until 04:52Z
+- **Lane:** lane 3: T726 claimed 01:05Z, lease until 04:05Z; lane 6: T763 claimed 01:52Z, lease until 04:52Z
 - **Week:** 15% used, 164.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:09Z, 0 min before this update
+- **Last run:** 02:09Z, 3 min before this update
 - **Keeper:** last ran 02:09Z, next wake 02:29Z
 
 ## Needs attention
+- BLOCKED T672: plan gap reported: PLAN GAP: tests/integration/tests/intake_order_two_jobs.rs:278 (owned by T711 and T717, not T672) also pins the old order, but D-4822 named only two functions in intake_order_two_jobs_rules.rs. Evidence: test td_int_45_also_after_the_zip_opens_the_second_job_through_open_job sends the ZIP reply then ALSO and expects only job.handyman.none linked ("question open", :284-:288); under D-4822 steps 6 to 8 come after the coverage line so "How soon?" is open, and ALSO opens a second job (left: ["job.handyman.none","job.plumbing_repair.none"]). kit/tasks.json: file owned by T711 and T717. Smallest pla; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T672 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 74 problem(s) on tasks still to run (+366 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 77 problem(s) on tasks still to run (+367 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T672 | intake: the dispatcher asks "How soon?", the night count and | BLOCKED | 1 | 13 min | 02:12Z | PLAN GAP: tests/integration/tests/intake_order_two_jobs.rs:278 (owned by T711 and T717, not T672) also pins the old orde |
 | T218 | Wording and template scans from the brains: sales phrases, n | done | 1 | 74 min | 01:46Z |  |
 | T663 | picks, jobs and payments (harness): a confirmed pick moves i | MERGE_PENDING | 2 | 2 h 7 min | 01:40Z | PLAN GAP: tests/test_coverage_floor.py:125 asserts floors["future"] == [], contradicting T663 goal (5), which requires a |
 | T527 | messaging, portals and server: the business-texting switch t | MERGE_PENDING | 1 | 93 min | 01:39Z |  |
@@ -137,8 +139,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 3: T726 (lease until 2026-11-20T04:05:47Z)
-- lane 4: T672 (lease until 2026-11-20T04:59:21Z)
 - lane 6: T763 (lease until 2026-11-20T04:52:05Z)
 
 ## Last usage reading
-- {"task": "T218", "at": "2026-11-20T01:46:10Z", "output_tokens": 51167, "cache_read_input_tokens": 3625025, "cache_creation_input_tokens": 211321, "input_tokens": 155}
+- {"task": "T672", "at": "2026-11-20T02:12:38Z", "cache_creation_input_tokens": 194235, "input_tokens": 126, "output_tokens": 56168, "cache_read_input_tokens": 7000794}
