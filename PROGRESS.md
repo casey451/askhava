@@ -8234,3 +8234,4 @@
 - 2026-11-20T02:12:39Z runner d6a8011a3e89 (actions): {"T672": "IN_PROGRESS -> BLOCKED"}
 - 2026-11-20T02:13:24Z runner d6a8011a3e89 (actions): {}
 - 2026-11-20T02:13:38Z runner d6a8011a3e89 (actions): {}
+- 2026-11-20T02:14:32Z runner 87e12fc49601 (actions): {"T747": "QUEUED -> IN_PROGRESS"}; T747 estimated 1.4M tokens (calibrated); week has 162.7M left (no five-hour budget, D-3056) after 1.3M still running in another lane (session_reading 2026-11-20T02:13:08Z (week)); claimed
