@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T02:27:32Z by runner de3589011363 (actions).
+Updated 2026-11-20T02:30:40Z by runner 1ef120be8c2a (actions).
 
-**Building: T747 in progress since 02:14Z; 514 of 704 done; week 15% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T747 in progress since 02:14Z; 515 of 704 done; week 15% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 514 of 704 build tasks (owner gates not counted)
+- **Tasks done:** 515 of 704 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T747 claimed 02:14Z, lease until 05:14Z; lane 3: T726 claimed 01:05Z, lease until 04:05Z; lane 4: T110 claimed 02:18Z, lease until 05:18Z
 - **Week:** 15% used, 161.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:27Z, 0 min before this update
+- **Last run:** 02:27Z, 2 min before this update
 - **Keeper:** last ran 02:27Z, next wake 04:08Z
 
 ## Needs attention
@@ -20,7 +20,7 @@ Updated 2026-11-20T02:27:32Z by runner de3589011363 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T763 | tests (harness): the web chat spec's fake numbers never coll | MERGE_PENDING | 1 | 25 min | 02:17Z |  |
+| T763 | tests (harness): the web chat spec's fake numbers never coll | done | 1 | 25 min | 02:17Z |  |
 | T672 | intake: the dispatcher asks "How soon?", the night count and | BLOCKED | 1 | 13 min | 02:12Z | PLAN GAP: tests/integration/tests/intake_order_two_jobs.rs:278 (owned by T711 and T717, not T672) also pins the old orde |
 | T218 | Wording and template scans from the brains: sales phrases, n | done | 1 | 74 min | 01:46Z |  |
 | T663 | picks, jobs and payments (harness): a confirmed pick moves i | MERGE_PENDING | 2 | 2 h 7 min | 01:40Z | PLAN GAP: tests/test_coverage_floor.py:125 asserts floors["future"] == [], contradicting T663 goal (5), which requires a |
@@ -94,7 +94,7 @@ Updated 2026-11-20T02:27:32Z by runner de3589011363 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 324 of 735 (44.1%) · partial 382 · unstarted 29
-**Tasks merged (throughput only):** 514 of 704
+**Tasks merged (throughput only):** 515 of 704
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -130,7 +130,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 157 of 286 done
+- stage 5: 158 of 286 done
 - stage 6: 0 of 65 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
