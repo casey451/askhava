@@ -272,3 +272,32 @@ async fn td_int_47_a_long_card_is_shown_by_link(mut db: Db) {
         "its wait runs too"
     );
 }
+
+/// TD-INT-47 (INT-041, INT-043, D-5041): her name and address stored while a 911 text waits for
+/// SAFE show no card; SAFE then shows it for the first time with its wait, and SEND approves it.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_int_47_safe_shows_a_card_held_by_a_911_text(mut db: Db) {
+    setup(&mut db).await;
+    let new = NewContact {
+        name: None,
+        phone: Some(SecretString::from("+19285550171".to_owned())),
+        email: None,
+        address: None,
+        onsite_contact: None,
+    };
+    let her = store_contact(&mut db, &vault(), &new).await.expect("her");
+    let steps = [DOOR, "86403", "2", "door repair", "1", "not sure"];
+    for (minute, words) in (0..).zip(steps.into_iter().chain(["it sticks at the top"])) {
+        sent(&mut db, her, words, minute).await;
+    }
+    let alarm = one(&mut db, her, "now I smell gas in the kitchen", 7).await;
+    assert_eq!(alarm.0, SAFETY_TEMPLATE);
+    assert!(sent(&mut db, her, ANSWER, 8).await.is_empty(), "held");
+    assert_eq!(tasks(&mut db, CARD_TIMER_KIND).await, 0, "no card yet");
+    let (template, body) = one(&mut db, her, "SAFE", 9).await;
+    assert_eq!(template, CARD_SHOWN_TEMPLATE);
+    assert!(!CONTACT.iter().any(|c| body.contains(c)), "{body}");
+    assert_eq!(tasks(&mut db, CARD_TIMER_KIND).await, 1, "its wait runs");
+    assert!(sent(&mut db, her, "SEND", 10).await.is_empty());
+    assert_eq!(tasks(&mut db, CARDS_APPROVED_KIND).await, 1, "sent on SEND");
+}

@@ -65,6 +65,8 @@
 //! `summary_step::answer_card` (EDIT or SEND; any other reply sends nothing and the timer goes
 //! on), and the reply after EDIT is kept through `order::keep_words` (PRIV-008) and the new card
 //! shown. [`ask_open_again`] shows a shown, waiting card again ([`card_again`]).
+//! When her name and address were stored during a SAFE hold, so no card was shown, SAFE shows it
+//! for the first time ([`card_first`], D-5041); START never does.
 //!
 //! A ZIP reply, a trade answer, ALSO or SPLIT is never kept as words (INT-049). No words or ZIP
 //! are logged.
@@ -85,7 +87,7 @@ use askhava_messaging::api::render;
 
 use askhava_quotes::api::Coverage;
 
-use crate::conversation::{name_address_open, queue_text};
+use crate::conversation::{ADDRESS_CONTACT, name_address_open, queue_text};
 use crate::emergency::{Hazard, Urgency};
 use crate::handlers::{queue_body, schedule_no_reply};
 use crate::matching::{Reading, candidates, keyword_reading, starts_second, trade_label};
@@ -328,6 +330,9 @@ pub(crate) async fn reply_step(
     let mut texts = Vec::new();
     if screened == Screened::Safe || answered_beep(tx, request).await? {
         texts.extend(ask_open_again(tx, secret, request, settings).await?);
+        if screened == Screened::Safe && texts.is_empty() {
+            texts.extend(card_first(tx, secret, request).await?);
+        }
     } else {
         texts.extend(step_answer(tx, secret, request, &place, settings).await?);
     }
@@ -532,6 +537,26 @@ async fn card_again(
     };
     let state = models::latest_answer(tx, conversation, &card_question(job)).await?;
     if !state.is_some_and(|s| s.starts_with(CARD_SHOWN)) {
+        return Ok(Vec::new());
+    }
+    show_card_step(tx, secret, (msg, conversation)).await
+}
+
+/// INT-041, INT-043, INT-005, D-4360, D-5041: step 12 after SAFE when her name and address were
+/// stored while a 911 text waited (the hold skipped [`show_card_step`]): the card shown for the
+/// first time, so the job never stalls. Only with an `address_contact` row and no card row of the
+/// job; [`show_card_step`]'s own skip rules still hold. Never on START (TD-INT-54).
+async fn card_first(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    (msg, conversation): (&TextIn<'_>, Uuid),
+) -> Result<Vec<Queued>, IntakeError> {
+    let Some(job) = locked(tx, conversation).await?.and_then(|p| p.job) else {
+        return Ok(Vec::new());
+    };
+    let stored = models::latest_answer_time(tx, conversation, ADDRESS_CONTACT).await?;
+    let carded = models::latest_answer_time(tx, conversation, &card_question(job)).await?;
+    if stored.is_none() || carded.is_some() {
         return Ok(Vec::new());
     }
     show_card_step(tx, secret, (msg, conversation)).await
