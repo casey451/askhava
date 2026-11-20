@@ -93813,11 +93813,11 @@
      }
     }
    ],
-   "reviewed_sha": "0f2728637c6713b2f8ea97e0bb6070b2fcaed9b3",
+   "reviewed_sha": "a02196897451537fa082e8b9e2a86fcd6d496638",
    "review_lease": {
     "task": "T727",
-    "session": "actions-44699557520",
-    "expires": "2026-11-20T11:23:33Z",
+    "session": "actions-44730872991",
+    "expires": "2026-11-20T16:12:00Z",
     "lane": "3"
    },
    "branch": "claude/task/T727-runner-wip-continue",
@@ -93826,34 +93826,22 @@
     "why": "auto-merge on #1197 (gh pr merge)",
     "head": "ebca57858858c7ef6c160cd74afd5095dc7c578f"
    },
-   "update_merges": [
-    {
-     "from": "beaca53556679d5549284237f38dead86e48254c",
-     "to": "ebca57858858c7ef6c160cd74afd5095dc7c578f",
-     "main": "4e4208672e58ea959d84075079aa8d64ab008fc8",
-     "how": "hand-in",
-     "at": "2026-11-20T09:38:54Z"
-    },
-    {
-     "from": "ebca57858858c7ef6c160cd74afd5095dc7c578f",
-     "to": "0f2728637c6713b2f8ea97e0bb6070b2fcaed9b3",
-     "main": "4b155e8885707f89f6d1eac9bac229e9edf62088",
-     "how": "runner",
-     "checks": {
-      "Ci": "success",
-      "Twin": "success",
-      "Ally": "success"
-     },
-     "at": "2026-11-20T11:19:44Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
-   "merge_turn_since": "2026-11-20T11:19:44Z",
    "last_failure": "Ci: failure; Coverage: cancelled\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_pick_52_the_first_release_follows_the_stored_choice ... ok\ntest result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.76s\n     Running tests/release_recovery.rs (target/llvm-cov-target/debug/build/askhava-server/ac52d219a2531c32/out/release_recovery-ac52d219a2531c32)\nrunning 6 tests\ntest td_pick_50_a_restart_after_the_settle_releases_once_on_the_retry ... ok\ntest td_pick_50_a_verified_success_settles_paid_and_releases_once ... ok\ntest td_pick_49_a_failed_vault_read_recovers_and_shows_once ... ok\ntest td_pick_50_a_failed_line_opens_on_the_retry_and_never_reopens ... ok\ntest td_pick_50_a_zero_fee_releases_free_and_a_cancelled_pick_nothing ... ok\ntest td_pick_50_an_error_before_the_claim_leaves_the_line_retry_unspent ... ok\ntest result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.65s\n     Running tests/released_view.rs (target/llvm-cov-target/debug/build/askhava-server/cffd3eaab7283bb6/out/released_view-cffd3eaab7283bb6)\nrunning 2 tests\ntest the_session_minter_is_one_mint_per_process ... ok\n##[error]The operation was canceled.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: cancelled, E2e: success\n##[error]Process completed with exit code 1.",
    "runner_closed_prs": [
     1197
-   ]
+   ],
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "addd51c9a141af29e859c47dd54888d231301f54",
+     "to": "a02196897451537fa082e8b9e2a86fcd6d496638",
+     "main": "d0b19745dfcb05c6605f0011702a00e526ddb396",
+     "how": "hand-in",
+     "at": "2026-11-20T13:23:06Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T740",
@@ -102258,7 +102246,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T13:21:46Z",
+ "updated_at": "2026-11-20T13:23:06Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -102356,7 +102344,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "d0b19745dfcb05c6605f0011702a00e526ddb396",
+ "runner_sha": "addd51c9a141af29e859c47dd54888d231301f54",
  "starter": "actions",
  "smoke_runs": [
   {
