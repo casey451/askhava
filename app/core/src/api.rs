@@ -38,7 +38,8 @@ pub use crate::rate_limit::{
     run_prune_at as run_rate_limit_prune_at, schedule_prune as schedule_rate_limit_prune,
 };
 pub use crate::settings::{
-    DEFAULT_SPOT_CHECK_EVERY_DAYS, Environment, Settings, SettingsError, Vendor, check_base_url,
+    DEFAULT_GOLDEN_TARGET_PERCENT, DEFAULT_SPOT_CHECK_EVERY_DAYS, Environment, Settings,
+    SettingsError, Vendor, check_base_url,
 };
 pub use crate::task_queries::unfinished;
 pub use crate::tasks::{

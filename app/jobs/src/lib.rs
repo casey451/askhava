@@ -19,6 +19,7 @@ mod models;
 mod payment_wait;
 mod purge_events;
 mod quote_token;
+mod report_facts;
 mod request_counts;
 mod rules;
 mod scorecard_inputs;

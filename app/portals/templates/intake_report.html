@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{#- The monthly intake accuracy report (T434; OPS-040; D-395, D-492, D-493, D-3155, D-3890). Cards
+    that got no quote and quotes that asked for more information (confirm-on-site ticked or a
+    diagnostic visit; withdrawn quotes count in neither list), by category and question set, and
+    the latest stored golden-set run against the target setting. Counts only. Reads only. -#}
+{% block title %}Intake report, {{ month }}{% endblock %}
+{% block main %}<h1>Intake report, {{ month }}</h1>
+<form method="get" action="{{ route }}">
+<p><label for="month">Month</label>
+<span id="month-hint">For example, 2026-11</span>
+<input type="month" id="month" name="month" value="{{ month_value }}" aria-describedby="month-hint">
+<button type="submit">Show month</button></p>
+</form>
+<h2>Sample requests sorted right</h2>
+{% if let Some(g) = golden %}<p id="golden-share">{{ g.share }}% of the sample requests were sorted into the right job type on the first try ({{ g.right }} of {{ g.total }}, checked {{ g.ran_on }}). The goal is {{ target }}%.</p>
+<p id="golden-status">{% if g.met %}That's on target.{% else %}That's short of the goal. The table below shows which question sets to look at first.{% endif %}</p>
+{% else %}<p id="golden-share">The sample requests haven't been checked yet. The goal is {{ target }}%.</p>
+{% endif %}<h2>Jobs that may need better questions</h2>
+<p>This lists cards whose 24 hours ran out with no quote. It also lists quotes where the business ticked "confirm on site" or offered a visit to look first. Those mean it needed more to go on. Quotes the business took back are left out.</p>
+{% if rows.is_empty() %}<p id="report-none">Nothing to show for {{ month }}: no card went without a quote and no quote asked for more information.</p>
+{% else %}<table id="intake-report">
+<caption>By category and question set, {{ month }}</caption>
+<thead><tr><th scope="col">Category</th><th scope="col">Question set</th><th scope="col">Job types</th><th scope="col">Cards with no quote</th><th scope="col">Quotes asking for more information</th></tr></thead>
+<tbody>
+{% for (name, set, types, none, more) in rows %}<tr><th scope="row">{{ name }}</th><td>{{ set }}</td><td>{{ types }}</td><td>{{ none }}</td><td>{{ more }}</td></tr>
+{% endfor %}</tbody>
+</table>
+{% endif %}{% endblock %}
