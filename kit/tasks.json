@@ -45018,10 +45018,74 @@
    "acceptance": "`confirm_route.rs`, `saved_card.rs`, `door_matrix.rs` and every e2e and a11y spec that imports `tests/e2e/keyed.ts` pass on `main` with no assertion changed (the diff shows fixture lines only); each pressed business has an Active account and a fresh Active `licensing.license_check` row."
   },
   {
+   "id": "T772",
+   "slug": "confirm-refused-tail",
+   "title": "picks: a public reader of a waiting pick's Confirm deadline and the whole refused-at-Confirm ending",
+   "goal": "Plan change D-5017 (T664's confirmed plan gap; PICK-020, PICK-046, PICK-047; D-056, D-4349). `picks.pick.confirm_due` is read only by private code (`store_due`, `hold_row` in `app/picks/src/handlers.rs`) and the tail that returns the job to Quotes ready and queues her text (`end_waiting` in `cant_take.rs`, `lapse_at` in `handlers.rs`) is crate-private, so T664's press cannot do PICK-020. The new `app/picks/src/confirm_refused.rs` adds, exported by one `mod` line in the shared `lib.rs` and one `pub use` in the shared `api.rs`: (1) `confirm_deadline(db, pick) -> Result<Option<Timestamp>, PicksError>`, the stored `confirm_due` of a pick still awaiting confirm; `None` when the window has not started or the pick no longer waits. (2) `refuse_confirm(tx, (pick, job), refusal, paused, (actor, at)) -> Result<Backup, PicksError>`, in the caller's transaction: calls `refused_at_confirm`, then, as `lapse_at` does, moves the job from Awaiting confirm to Quotes ready only when no pick then waits (`MovedOn` is `PicksError::MovedOn`), and after that last move calls `queue_backup_text`; `Backup::Done` queues nothing. It closes no PaymentIntent (the caller does) and changes no existing file besides the two shared lines. Licensing code, 95% branch coverage shown in the hand-in. Tests in the new `app/picks/src/tests/confirm_refused.rs` (one line in the shared `tests/mod.rs`), PostgreSQL, fake data only. Update `app/picks/NOTES.md` lines for this file only if the task may; else `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "picks",
+   "deps": [
+    "T663",
+    "T669"
+   ],
+   "model": "claude-fable-5-2",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "compliance",
+    "privacy"
+   ],
+   "owns": [
+    "app/picks/src/confirm_refused.rs",
+    "app/picks/src/tests/confirm_refused.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/lifecycle.md",
+    "app/picks/src/cant_take.rs",
+    "app/picks/src/confirm.rs",
+    "app/picks/src/handlers.rs",
+    "app/picks/src/pick_ended.rs",
+    "app/picks/src/models.rs",
+    "app/picks/src/confirm_reminders.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "PICK-020",
+    "PICK-046",
+    "PICK-047"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-056",
+    "D-4349",
+    "D-5017"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 260,
+    "context_pct": 27
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T772-confirm-refused-tail",
+   "prompt": "kit/prompts/T772.md",
+   "acceptance": "The new tests pass against PostgreSQL: an expired, an account and a license refusal each end the pick, move to the backup or return the job to Quotes ready, and queue the PICK-047 or PICK-046 text once; a paused job gets no PICK-046 text; a pick no longer waiting changes nothing; `confirm_deadline` returns the stored end and `None`."
+  },
+  {
    "id": "T664",
    "slug": "confirm-press-moves",
    "title": "portals: the Confirm press re-checks the license and account, and moves the job to Payment pending only when a charge will be attempted",
-   "goal": "Plan change D-4349 (JOB-013, JOB-014, PICK-019, PICK-020, PICK-044, FEE-020, OPS-024; D-056, D-805, D-807, D-1502 (1), D-2663). The served Confirm press (`pressed`, `app/portals/src/confirm_pay.rs`) runs `waiting`, `confirm_code_needed`, `fee_terms_accepted`, `record_confirm_terms` and `decide_and_pay`, and nothing else: it never moves the job (D-2015 (1)) and never re-checks the license or account, though PICK-020 says an ineligible business can't confirm and the blueprint re-checks the license \"at this moment\" (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:174`): `picks::api::check_at_confirm` and `refused_at_confirm` (`app/picks/src/confirm.rs:202`, `:231`) have no caller (D-1502 (1) and D-2663 left it to the Confirm route). (1) PICK-020 after `fee_terms_accepted` and before the terms row, any $0 decision or any charge, from the stored results only (D-056): on the press that leaves Awaiting confirm, `check_at_confirm` with the pick's window deadline, and a refusal calls `refused_at_confirm`, closes the pick's idle intent (`payments::api::end_intent_unless_charging`), returns the job from Awaiting confirm to Quotes ready when no pick then waits, and queues her PICK-046 or PICK-047 text as `cant_take` does; on a retry press with the job already in Payment pending (inside FEE-020's card-fix hour, which may run past the window deadline) the window's `Expired` refusal is not applied, and an account or license refusal ends the pick through T663's `picks::api::end_pending` with `ineligible`. Either refusal commits, charges nothing, and answers \"ended\" with a plain line naming no license detail. (2) The move to Payment pending is T663's `picks::api::confirm_move`, made in `decide_and_pay`'s transaction after the $0 decision or the charge decision and before that transaction commits, never in `decide_at_confirm`, which also runs at page load in a rolled-back transaction (`waiver_now` in `confirm_pay.rs`): on the $0 path always; on the paid path only when a charge will be attempted: the press carries a card (`pm_…`; the no-card answer, in `charge` in `confirm_pay.rs`, now comes before the move), charges are not paused (T663's `payments::api::press_may_charge`; a pause answers \"try later\", charges nothing and moves nothing, OPS-024), and the business has a Stripe customer (`ensure_customer` runs before the press transaction, as the page load already does; its Stripe-down answer moves nothing). `Already` goes on (a retry press); `Lost` (the job left Awaiting confirm and Payment pending) rolls the press transaction back, so a $0 decision or free first win (FEE-010) recorded in it is not used for a pick that never connected, then ends the pick through `end_pending` in a new transaction, charges nothing and answers \"ended\". A FreeWin `Race` rolls the move back with the transaction. So the business keeps its 4-business-hour Confirm window (PICK-019) until a charge is really attempted, and FEE-020's hour applies only to a card that fails or needs bank approval. (3) The press does not restart `jobs`' wait: T663's Payment pending timer defers to `payments`' own FEE-020, FEE-018 and FEE-038 timers. New logic goes in a new `app/portals/src/confirm_moves.rs`, so `confirm_pay.rs` changes by its calls; it is money code and is held at 95% branch coverage (`BUILD_BRIEF.md:481`), and its 95% bar is shown, not floored (D-4788): the hand-in quotes `cargo llvm-cov` branch figures at or above 95% for `confirm_moves.rs`; its per-file floor is added by T761 after this task. Tests in the new `app/server/tests/confirm_press_moves.rs` (TD-JOB-19), through the assembled router with the Stripe stand-in, fake data only; it sets a charging pause through stored rows (as D-4326 (2) says for T408) and contains neither `safe_mode_on(` nor `charges_paused(`, which TD-OPS-01's source walk refuses outside their crates. `confirm_route.rs`, `auto_confirm.rs`, `saved_card.rs` and `safe_mode.rs` pass unchanged; `app/portals/src/confirm_pay.rs` stays at or above its 70% branch floor. After T663, T669 (the press's move goes live only once \"Can't take it\" and a business leaving handle Payment pending) and T541 (which also changes the press); T132, the other queued owner of `confirm_pay.rs`, runs after this task. Plan change D-4897 (Fable's pre-claim checks, Nov 20, 2026): (1) The license number for `check_at_confirm` is `licensing::api::bound_roc_number(business)`, the number of the business's latest stored check. `None` means no ROC check was ever stored: when the picked job's category needs an ROC class (license kind `Roc` or `RocAndStateAgency`) the press is refused as a license refusal; when it needs none (city-list or other-agency work) the ROC freshness check does not apply and the account and the end and bond dates still do. The kind is read as `jobs::api::job_facts` (the category code), `catalog::api::category` (`license_kind`) and `licensing::api::LicenseKind::parse`; a job with no facts row or an unreadable kind is refused as a license refusal. (2) `StoredFacts.account` is the stored account status, never the session's. (3) `pressed` is about 46 lines, so the re-check is one call from it into `confirm_moves.rs`. (4) T767 runs first and gives the done press fixtures (including `door_matrix.rs`'s Confirm probe) an Active account and a fresh Active check row, so `confirm_route.rs` and `saved_card.rs` pass unchanged here; `auto_confirm.rs` and `safe_mode.rs` never reach the press. This task's own tests seed the stale, not-Active, no-row and non-ROC cases.",
+   "goal": "Plan change D-4349 (JOB-013, JOB-014, PICK-019, PICK-020, PICK-044, FEE-020, OPS-024; D-056, D-805, D-807, D-1502 (1), D-2663). The served Confirm press (`pressed`, `app/portals/src/confirm_pay.rs`) runs `waiting`, `confirm_code_needed`, `fee_terms_accepted`, `record_confirm_terms` and `decide_and_pay`, and nothing else: it never moves the job (D-2015 (1)) and never re-checks the license or account, though PICK-020 says an ineligible business can't confirm and the blueprint re-checks the license \"at this moment\" (`sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:174`): `picks::api::check_at_confirm` and `refused_at_confirm` (`app/picks/src/confirm.rs:202`, `:231`) have no caller (D-1502 (1) and D-2663 left it to the Confirm route). (1) PICK-020 after `fee_terms_accepted` and before the terms row, any $0 decision or any charge, from the stored results only (D-056): on the press that leaves Awaiting confirm, `check_at_confirm` with the pick's window deadline, and a refusal calls `refused_at_confirm`, closes the pick's idle intent (`payments::api::end_intent_unless_charging`), returns the job from Awaiting confirm to Quotes ready when no pick then waits, and queues her PICK-046 or PICK-047 text as `cant_take` does; on a retry press with the job already in Payment pending (inside FEE-020's card-fix hour, which may run past the window deadline) the window's `Expired` refusal is not applied, and an account or license refusal ends the pick through T663's `picks::api::end_pending` with `ineligible`. Either refusal commits, charges nothing, and answers \"ended\" with a plain line naming no license detail. (2) The move to Payment pending is T663's `picks::api::confirm_move`, made in `decide_and_pay`'s transaction after the $0 decision or the charge decision and before that transaction commits, never in `decide_at_confirm`, which also runs at page load in a rolled-back transaction (`waiver_now` in `confirm_pay.rs`): on the $0 path always; on the paid path only when a charge will be attempted: the press carries a card (`pm_…`; the no-card answer, in `charge` in `confirm_pay.rs`, now comes before the move), charges are not paused (T663's `payments::api::press_may_charge`; a pause answers \"try later\", charges nothing and moves nothing, OPS-024), and the business has a Stripe customer (`ensure_customer` runs before the press transaction, as the page load already does; its Stripe-down answer moves nothing). `Already` goes on (a retry press); `Lost` (the job left Awaiting confirm and Payment pending) rolls the press transaction back, so a $0 decision or free first win (FEE-010) recorded in it is not used for a pick that never connected, then ends the pick through `end_pending` in a new transaction, charges nothing and answers \"ended\". A FreeWin `Race` rolls the move back with the transaction. So the business keeps its 4-business-hour Confirm window (PICK-019) until a charge is really attempted, and FEE-020's hour applies only to a card that fails or needs bank approval. (3) The press does not restart `jobs`' wait: T663's Payment pending timer defers to `payments`' own FEE-020, FEE-018 and FEE-038 timers. New logic goes in a new `app/portals/src/confirm_moves.rs`, so `confirm_pay.rs` changes by its calls; it is money code and is held at 95% branch coverage (`BUILD_BRIEF.md:481`), and its 95% bar is shown, not floored (D-4788): the hand-in quotes `cargo llvm-cov` branch figures at or above 95% for `confirm_moves.rs`; its per-file floor is added by T761 after this task. Tests in the new `app/server/tests/confirm_press_moves.rs` (TD-JOB-19), through the assembled router with the Stripe stand-in, fake data only; it sets a charging pause through stored rows (as D-4326 (2) says for T408) and contains neither `safe_mode_on(` nor `charges_paused(`, which TD-OPS-01's source walk refuses outside their crates. `confirm_route.rs`, `auto_confirm.rs`, `saved_card.rs` and `safe_mode.rs` pass unchanged; `app/portals/src/confirm_pay.rs` stays at or above its 70% branch floor. After T663, T669 (the press's move goes live only once \"Can't take it\" and a business leaving handle Payment pending) and T541 (which also changes the press); T132, the other queued owner of `confirm_pay.rs`, runs after this task. Plan change D-4897 (Fable's pre-claim checks, Nov 20, 2026): (1) The license number for `check_at_confirm` is `licensing::api::bound_roc_number(business)`, the number of the business's latest stored check. `None` means no ROC check was ever stored: when the picked job's category needs an ROC class (license kind `Roc` or `RocAndStateAgency`) the press is refused as a license refusal; when it needs none (city-list or other-agency work) the ROC freshness check does not apply and the account and the end and bond dates still do. The kind is read as `jobs::api::job_facts` (the category code), `catalog::api::category` (`license_kind`) and `licensing::api::LicenseKind::parse`; a job with no facts row or an unreadable kind is refused as a license refusal. (2) `StoredFacts.account` is the stored account status, never the session's. (3) `pressed` is about 46 lines, so the re-check is one call from it into `confirm_moves.rs`. (4) T767 runs first and gives the done press fixtures (including `door_matrix.rs`'s Confirm probe) an Active account and a fresh Active check row, so `confirm_route.rs` and `saved_card.rs` pass unchanged here; `auto_confirm.rs` and `safe_mode.rs` never reach the press. This task's own tests seed the stale, not-Active, no-row and non-ROC cases. Plan change D-5017: (1) the pick's window deadline is T772's `picks::api::confirm_deadline`; `None` (the window has not started) means no `Expired` refusal, so pass `Timestamp::MAX`. (2) A refusal on a job in Awaiting confirm calls `payments::api::end_intent_unless_charging`, then T772's `picks::api::refuse_confirm`, which itself returns the job to Quotes ready and queues her PICK-046 or PICK-047 text; this task changes no `app/picks` file. (3) No end or bond date is stored anywhere, so `StoredFacts.license_ends_on` and `bond_cancelled_on` are `None`; the latest stored check row being Active and fresh is the stored result D-056 means.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -45030,7 +45094,8 @@
     "T663",
     "T669",
     "T541",
-    "T767"
+    "T767",
+    "T772"
    ],
    "model": "claude-fable-5-2",
    "effort": "high",
@@ -45057,7 +45122,9 @@
     "docs/brains/payments-stripe.md",
     "docs/brains/rust-production.md",
     "docs/spec/ops-recovery.md",
-    "tests/integration/tests/safe_mode.rs"
+    "tests/integration/tests/safe_mode.rs",
+    "app/picks/src/cant_take.rs",
+    "app/picks/src/confirm_refused.rs"
    ],
    "requirements": [
     "JOB-013",
@@ -45079,7 +45146,8 @@
     "D-2663",
     "D-4349",
     "D-4788",
-    "D-4897"
+    "D-4897",
+    "D-5017"
    ],
    "cites": [],
    "budget": {
@@ -46496,7 +46564,7 @@
    "id": "T684",
    "slug": "open-cards-email",
    "title": "picks and server: the open-cards email goes at the times each card recipient chose",
-   "goal": "Plan change D-4361 (unwired sweep orphan 7 and its second pass, `main` 77a49d7cc; CARD-022, BIZ-037, BIZ-038; D-1993). The portal saves each member's open-cards times (`save_open_cards_times`, `app/server/src/business_portal.rs:407`) and `picks` builds the email (`open_cards_email` and `chosen_minutes`, `app/picks/src/open_cards_email.rs:179`, `:59`; `messaging::api::digest_goes`, `app/messaging/src/open_cards_digest.rs:57`), but no task kind, schedule or sender exists, so nobody ever gets it. The new `app/picks/src/open_cards_run.rs`: an hourly `picks.open_cards_email` run (registered in the shared `app/server/src/lib.rs`, scheduled in the shared `app/server/src/bin/worker.rs`, the worker clock's now) that, for each member who gets job cards (BIZ-037) whose chosen slot (8 a.m., noon or 5 p.m. Arizona time, 5 p.m. by default) is due, lists the cards the business has not quoted with at least 1 hour (a setting) of the window left, sends only when `digest_goes` says so, once per member and slot (dedupe key), with the pick-waiting subject and the pick first while a pick waits for that member's business, as one email; each card shows only trade, town, end time and its Quote link (BIZ-038, no homeowner detail). `queue_email` renders only the closed `messaging::Notice` enum (`app/messaging/src/email.rs:151`), so this task adds a `Notice::OpenCards` variant there with its English and Spanish words (after T470, the queued owners of `email.rs`). Each email is stored with `messaging::api::queue_email` as `EmailClass::Bulk` (`app/messaging/src/email.rs:140` to `:146`, `:390`), never through the business-notice path, which stores every email as non-bulk (`app/messaging/src/business_notices.rs:409`), so above 90% of the day's email limit it waits for the reset (OPS-038). Tests in the new `tests/integration/tests/open_cards_email_run.rs` (TD-CARD-18), PostgreSQL, fake data only. Update `app/picks/NOTES.md` and `docs/decisions.md`. Plan change D-4822 (Opus scout): `app/server/src/lib.rs` `worker_registry` (`:1054`) and the start-up scheduling are at or near clippy's `too_many_lines` limit (about 50 of 50 and 46 of 50 lines), so fold this task's new seed into the existing `schedule_checks` helper rather than adding lines to either function.",
+   "goal": "Plan change D-4361 (unwired sweep orphan 7 and its second pass, `main` 77a49d7cc; CARD-022, BIZ-037, BIZ-038; D-1993). The portal saves each member's open-cards times (`save_open_cards_times`, `app/server/src/business_portal.rs:407`) and `picks` builds the email (`open_cards_email` and `chosen_minutes`, `app/picks/src/open_cards_email.rs:179`, `:59`; `messaging::api::digest_goes`, `app/messaging/src/open_cards_digest.rs:57`), but no task kind, schedule or sender exists, so nobody ever gets it. The new `app/picks/src/open_cards_run.rs`: an hourly `picks.open_cards_email` run (registered in the shared `app/server/src/lib.rs`, scheduled in the shared `app/server/src/bin/worker.rs`, the worker clock's now) that, for each member who gets job cards (BIZ-037) whose chosen slot (8 a.m., noon or 5 p.m. Arizona time, 5 p.m. by default) is due, lists the cards the business has not quoted with at least 1 hour (a setting) of the window left, sends only when `digest_goes` says so, once per member and slot (dedupe key), with the pick-waiting subject and the pick first while a pick waits for that member's business, as one email; each card shows only trade, town, end time and its Quote link (BIZ-038, no homeowner detail). `queue_email` renders only the closed `messaging::Notice` enum (`app/messaging/src/email.rs:151`), so this task adds a `Notice::OpenCards` variant there with its English and Spanish words (after T470, the queued owners of `email.rs`). Each email is stored with `messaging::api::queue_email` as `EmailClass::Bulk` (`app/messaging/src/email.rs:140` to `:146`, `:390`), never through the business-notice path, which stores every email as non-bulk (`app/messaging/src/business_notices.rs:409`), so above 90% of the day's email limit it waits for the reset (OPS-038). Tests in the new `tests/integration/tests/open_cards_email_run.rs` (TD-CARD-18), PostgreSQL, fake data only. Update `app/picks/NOTES.md` and `docs/decisions.md`. Plan change D-4822 (Opus scout): `app/server/src/lib.rs` `worker_registry` (`:1054`) and the start-up scheduling are at or near clippy's `too_many_lines` limit (about 50 of 50 and 46 of 50 lines), so fold this task's new seed into the existing `schedule_checks` helper rather than adding lines to either function. Plan change D-5017: `picks` may not query `quotes.*` and `card_sent_at` is crate-private, so this task adds `app/quotes/src/open_cards.rs` with `open_cards(db, business, now)`, exported by one `mod` line in the shared `lib.rs` and one `pub use` in the shared `api.rs`: for each card the business holds and has not quoted, on a job still taking quotes, the job, trade, town and window end (send time plus `QUOTE_WINDOW`), no homeowner detail. The signed Quote and Confirm links come through a small link trait declared in `open_cards_run.rs` and implemented in the shared `app/server/src/lib.rs`, as `PortalNoticeParts` is. The recipient is the member's mailbox, as `business_notices.rs` addresses one. `Notice::OpenCards` carries its own English and Spanish words; with no stored member language the email goes in English, logged in `docs/for-casey-review.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -46513,7 +46581,8 @@
    "owns": [
     "app/messaging/src/email.rs",
     "app/picks/src/open_cards_run.rs",
-    "tests/integration/tests/open_cards_email_run.rs"
+    "tests/integration/tests/open_cards_email_run.rs",
+    "app/quotes/src/open_cards.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -46523,7 +46592,10 @@
     "app/picks/src/open_cards_email.rs",
     "app/messaging/src/open_cards_digest.rs",
     "docs/brains/rust-production.md",
-    "docs/spec/ops-recovery.md"
+    "docs/spec/ops-recovery.md",
+    "app/quotes/src/models.rs",
+    "app/quotes/src/job_page.rs",
+    "app/messaging/src/business_notices.rs"
    ],
    "requirements": [
     "CARD-022",
@@ -46537,13 +46609,14 @@
    "decisions": [
     "D-1993",
     "D-4361",
-    "D-4822"
+    "D-4822",
+    "D-5017"
    ],
    "cites": [],
    "budget": {
-    "files": 3,
-    "lines": 410,
-    "context_pct": 18
+    "files": 4,
+    "lines": 560,
+    "context_pct": 29
    },
    "checks": [
     "Ci",
