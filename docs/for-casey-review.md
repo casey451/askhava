@@ -3576,3 +3576,11 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 
 - **What changed:** the monthly test restore (T648) cannot read the stored backup file back (by design, the storage key can only write it), so it now checks the backup's own record instead: the last nightly backup succeeded, is recent, and has its size and fingerprint recorded. Its first run waits until after the first nightly backup, so a new setup does not raise a false alarm.
 - Our choice (Fable's review); nothing needs you now.
+
+## The Confirm press and a business with no stored ROC check (D-4897, November 20, open)
+
+- D-4897 (Fable, Nov 20): at the Confirm press, a business with no stored ROC check is refused only when the job's category needs an ROC licence; city-list and other-agency trades (no ROC number) still pass on account, end and bond dates. Say if you want every press to need a stored check.
+
+## Business texting: an early read-spike alert is expected (D-4913, November 20)
+
+- D-4913 (Fable, Nov 20): in the first two weeks of business texting, an hour with more than three business texts raises one High read-spike alert (no 14-day baseline yet); expected, the same as notice emails.
