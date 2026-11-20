@@ -3599,3 +3599,4 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 ## Open-cards email language (D-5017, November 20)
 
 - With no stored team-member language, the open-cards email goes in English. Say if it should follow the business's language setting instead.
+- The card a homeowner reviews before it goes out (T673, D-5040) holds her own words, the trade, town and timing, but not yet her answers to the trade questions, photos or "Needed by <day>"; a long card's link goes to her quote page. Say if either should change before launch.

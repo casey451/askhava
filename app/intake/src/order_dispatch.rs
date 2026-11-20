@@ -54,6 +54,18 @@
 //! through `routing::tell_coverage` at once when step 5 is done, else right after the first job's.
 //! Any other ALSO or SPLIT goes on as any other reply; nothing is sent during a SAFE hold.
 //!
+//! Step 12 (T673, D-4360, D-4880, D-5039): `replies::answer_name_address` calls
+//! [`show_card_step`] once her name and address are stored. It builds the card from her kept words
+//! ([`card_in`]) and shows it through `order::show_built_card` (INT-041: the card text when it
+//! fits 2 segments, else her page link), which queues the 30-minute `intake.card_timer`. It is
+//! skipped, with nothing built, stored or sent, when the request has no job, step 5 never told
+//! the coverage, the job was chosen as an emergency (its card went at the choice, INT-029), a 911
+//! text waits for SAFE or `service::may_text` refuses; any failure after that is an error. While a
+//! card row exists the next reply goes to [`card_answer`] before any other step: a shown card to
+//! `summary_step::answer_card` (EDIT or SEND; any other reply sends nothing and the timer goes
+//! on), and the reply after EDIT is kept through `order::keep_words` (PRIV-008) and the new card
+//! shown. [`ask_open_again`] shows a shown, waiting card again ([`card_again`]).
+//!
 //! A ZIP reply, a trade answer, ALSO or SPLIT is never kept as words (INT-049). No words or ZIP
 //! are logged.
 
@@ -80,9 +92,10 @@ use crate::matching::{Reading, candidates, keyword_reading, starts_second, trade
 use crate::models::{self, IntakeError};
 use crate::order::{
     BankTurn, CardIn, NEEDED_BY, TRADE_QUESTION_TEMPLATE, answer_day, ask_last_question, bank_turn,
-    choose_with_card, keep_words, spanish_line,
+    choose_with_card, keep_words, show_built_card, spanish_line,
 };
 use crate::question_bank::starts_now;
+use crate::replies::quote_link;
 use crate::routing::{
     Outcome, Request, Routing, SPLIT_TEMPLATE, apply, is_split_reply, route, tell_coverage,
     trade_is_open,
@@ -92,6 +105,7 @@ use crate::service::{
     Handled, NEEDED_BY_TEMPLATE, Queued, Screened, TextIn, Trade, answer_how_soon, ask_how_soon,
     audit_action, may_text, offer_emergency_choice, release_emergency, request_language,
 };
+use crate::summary_step::{AUTO_SEND_AFTER, CardStep, Shown, answer_card, card_reply};
 use crate::zip_step::{
     ZIP_QUESTION_TEMPLATE, ZipPlace, ZipStep, answer_zip, ask_zip, read_zip, zip_body,
 };
@@ -116,6 +130,10 @@ const HEARD: &str = "heard";
 const HOW_SOON: &str = "how_soon";
 /// The answer row of the INT-006 choice (`service::answer_choice`, or regular at a night count of 0).
 const CHOICE: &str = "emergency_choice";
+/// The card state `summary_step::answer_card` stores on EDIT: the next reply says what to change.
+const CARD_EDIT: &str = "edit";
+/// The prefix of the card state `summary_step::show_card` stores for a shown card.
+const CARD_SHOWN: &str = "shown.";
 
 /// Where request `conversation` is in the order, read from its stored rows.
 struct Place {
@@ -350,6 +368,9 @@ async fn step_answer(
     place: &Place,
     settings: Settings,
 ) -> Result<Vec<Queued>, IntakeError> {
+    if let Some(texts) = card_answer(tx, secret, request, place).await? {
+        return Ok(texts);
+    }
     if let Some(texts) = second_job(tx, secret, request, place, settings).await? {
         return Ok(texts);
     }
@@ -406,10 +427,14 @@ pub(crate) async fn ask_open_again(
     }
     let (msg, conversation) = request;
     if place.town.is_some() {
-        return match place.told {
-            true => ask_step(tx, secret, request, &place, settings).await,
-            false => Ok(Vec::new()),
-        };
+        if !place.told {
+            return Ok(Vec::new());
+        }
+        let mut texts = ask_step(tx, secret, request, &place, settings).await?;
+        if texts.is_empty() {
+            texts.extend(card_again(tx, secret, request, &place).await?);
+        }
+        return Ok(texts);
     }
     if !place.zip_asked {
         return ask_first_zip(tx, secret, request, settings).await;
@@ -420,6 +445,96 @@ pub(crate) async fn ask_open_again(
     let subject = [conversation, msg.inbox_id];
     let queued = queue_body(tx, secret, (msg.contact, template), &subject, &body).await?;
     Ok(vec![queued])
+}
+
+/// The step-marker question holding `job`'s card state, as `summary_step` writes it (INT-041).
+fn card_question(job: Uuid) -> String {
+    format!("card.{}", job.simple())
+}
+
+/// INT-041, INT-043, INT-029, CARD-007, PRIV-008, D-4360, D-4880: step 12, as the module comment
+/// says: the card of the request's first job built from her kept words and shown, with the wait
+/// before it goes out as shown. Empty when the step is skipped.
+///
+/// # Errors
+///
+/// `order::show_built_card`'s, [`IntakeError::Job`] or [`IntakeError::Database`]; never swallowed.
+pub(crate) async fn show_card_step(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    (msg, conversation): (&TextIn<'_>, Uuid),
+) -> Result<Vec<Queued>, IntakeError> {
+    let Some(place) = locked(tx, conversation).await?.filter(|p| p.told) else {
+        return Ok(Vec::new());
+    };
+    let emergency = models::release_state(tx, conversation).await?.emergency;
+    if emergency || place.waiting_safe || !may_text(tx, msg.contact).await? {
+        return Ok(Vec::new());
+    }
+    let soon = open_step(tx, conversation).await?.1;
+    let Some(card) = card_in(tx, conversation, &place, soon.as_deref()).await? else {
+        return Ok(Vec::new());
+    };
+    let at = msg.received_at;
+    let link = quote_link(tx, secret, card.job, at).await?;
+    let shown = show_built_card(tx, secret, &card, (&link, AUTO_SEND_AFTER, at)).await?;
+    Ok(match shown {
+        Shown::Texted(queued) => vec![queued],
+        Shown::Emergency | Shown::NotAllowed | Shown::AlreadySent => Vec::new(),
+    })
+}
+
+/// INT-041, PRIV-008, D-4360: her reply while the request's first job has a card row. A shown card
+/// takes EDIT or SEND (`summary_step::answer_card`; any other reply sends nothing); after EDIT the
+/// reply is kept as her words and the new card shown (a SEND or EDIT word there is not kept).
+/// `None` when no card waits (never shown, or already sent), so the reply goes on as before.
+async fn card_answer(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    (msg, conversation): (&TextIn<'_>, Uuid),
+    place: &Place,
+) -> Result<Option<Vec<Queued>>, IntakeError> {
+    let Some(job) = place.job.filter(|_| place.told) else {
+        return Ok(None);
+    };
+    let state = models::latest_answer(tx, conversation, &card_question(job)).await?;
+    match state.as_deref() {
+        Some(CARD_EDIT) => {
+            if card_reply(msg.inbound.words).is_none() {
+                let words = (msg.inbound.words, msg.received_at);
+                keep_words(tx, (conversation, job), msg.inbox_id, words).await?;
+            }
+            let shown = show_card_step(tx, secret, (msg, conversation)).await?;
+            Ok(Some(shown))
+        }
+        Some(shown) if shown.starts_with(CARD_SHOWN) => {
+            let step = answer_card(tx, secret, msg, (conversation, job)).await?;
+            Ok(Some(match step {
+                CardStep::Edit(asked) => vec![asked],
+                CardStep::Sent | CardStep::Nothing => Vec::new(),
+            }))
+        }
+        _ => Ok(None),
+    }
+}
+
+/// INT-041, INT-025, D-4360: the card shown again for [`ask_open_again`] (after SAFE or START):
+/// only a card that is shown and waiting (a new show with its own wait); nothing when none was
+/// shown, after EDIT or once it is sent.
+async fn card_again(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    (msg, conversation): (&TextIn<'_>, Uuid),
+    place: &Place,
+) -> Result<Vec<Queued>, IntakeError> {
+    let Some(job) = place.job else {
+        return Ok(Vec::new());
+    };
+    let state = models::latest_answer(tx, conversation, &card_question(job)).await?;
+    if !state.is_some_and(|s| s.starts_with(CARD_SHOWN)) {
+        return Ok(Vec::new());
+    }
+    show_card_step(tx, secret, (msg, conversation)).await
 }
 
 /// INT-049, INT-022, INT-029: `answer_zip` on her reply; a stored town releases a job already
