@@ -117,45 +117,47 @@ function placeProblems(decls: Decl[]): string[] {
   });
 }
 
-/** The times (ms) of every `prop` longhand whose selector contains `selector`. */
-function longhandTimes(decls: Decl[], prop: string, selector: string): number[] {
-  return decls.filter((x) => x.prop === prop && selectorOf(x).includes(selector))
-    .flatMap((x) => times(resolve(x.value, decls)));
-}
-
 /**
- * WEB-029: every transition (delay plus duration) is under 350 ms. The shorthand and the
- * `transition-duration` longhand each count, with the largest `transition-delay` longhand under
- * the same selector.
+ * The delays (ms) anywhere in the sheet for `kind` (`transition` or `animation`): every `-delay`
+ * longhand and every shorthand item's second time. Taken sheet-wide, since a selector list, a
+ * broader rule or a narrower one can each add a delay to an element.
  */
-function transitionProblems(decls: Decl[]): string[] {
-  return decls.filter((d) => /^transition(-duration)?$/.test(d.prop) && !isNone(d.value)).flatMap((d) => {
-    const delays = longhandTimes(decls, "transition-delay", selectorOf(d));
-    return splitTop(resolve(d.value, decls)).map((item) => {
-      const [duration = 0, delay = 0] = times(item);
-      return duration + Math.max(delay, ...delays);
-    }).filter((ms) => ms >= 350).map((ms) => `transition at ${selectorOf(d)} lasts ${String(ms)} ms`);
+function sheetDelays(decls: Decl[], kind: string): number[] {
+  return decls.filter((x) => (x.prop === `${kind}-delay` || x.prop === kind) && !isNone(x.value)).flatMap((x) => {
+    const items = splitTop(resolve(x.value, decls));
+    return x.prop === kind ? items.map((item) => times(item)[1] ?? 0) : items.flatMap(times);
   });
 }
 
 /**
+ * WEB-029: every transition (delay plus duration) is under 350 ms. The shorthand and the
+ * `transition-duration` longhand each count, with the largest delay anywhere in the sheet; a
+ * delay alone at 350 ms or more fails too.
+ */
+function transitionProblems(decls: Decl[]): string[] {
+  const delay = Math.max(0, ...sheetDelays(decls, "transition"));
+  const lone = delay >= 350 ? [`transition-delay ${String(delay)} ms is 350 ms or more`] : [];
+  return [...lone, ...decls.filter((d) => /^transition(-duration)?$/.test(d.prop) && !isNone(d.value)).flatMap((d) =>
+    splitTop(resolve(d.value, decls)).map((item) => (times(item)[0] ?? 0) + delay)
+      .filter((ms) => ms >= 350).map((ms) => `transition at ${selectorOf(d)} lasts ${String(ms)} ms`))];
+}
+
+/**
  * WEB-029: no animation repeats more than 3 times, and each ends within 900 ms of load. The
- * shorthand and the `animation-duration` longhand each count, with the largest `animation-delay`
- * and `animation-iteration-count` longhands under the same selector.
+ * shorthand and the `animation-duration` longhand each count, with the largest delay and
+ * iteration count anywhere in the sheet; a delay alone over 900 ms fails too.
  */
 function animationProblems(decls: Decl[]): string[] {
   const counts = decls.filter((d) => d.prop === "animation-iteration-count").map((d) => iterations(d.value));
   const out = counts.filter((n) => n > 3).map((n) => `animation repeats ${String(n)} times`);
+  const delay = Math.max(0, ...sheetDelays(decls, "animation"));
+  if (delay > 900) out.push(`animation-delay ${String(delay)} ms ends after 900 ms`);
   for (const d of decls.filter((x) => /^animation(-duration)?$/.test(x.prop) && !isNone(x.value))) {
     const selector = selectorOf(d);
-    const delays = longhandTimes(decls, "animation-delay", selector);
-    const longCounts = decls.filter((x) => x.prop === "animation-iteration-count" && selectorOf(x).includes(selector))
-      .map((x) => iterations(x.value));
     for (const item of splitTop(resolve(d.value, decls))) {
-      const [duration = 0, delay = 0] = times(item);
-      const count = Math.max(iterations(item), ...longCounts);
+      const count = Math.max(iterations(item), ...counts);
       if (count > 3) out.push(`animation at ${selector} repeats ${String(count)} times`);
-      const end = Math.max(delay, ...delays) + duration * count;
+      const end = delay + (times(item)[0] ?? 0) * count;
       if (end > 900) out.push(`animation at ${selector} ends at ${String(end)} ms`);
     }
   }
@@ -210,13 +212,20 @@ test("WEB-029 A11Y-009 D-4246 D-4252: each planted motion or gradient rule fails
     [inMotion(".x { transition: transform 400ms ease; }"), "transition at .x lasts 400 ms"],
     [inMotion(".pz-t { transition: transform 200ms; transition-delay: 300ms; }"), "transition at .pz-t lasts 500 ms"],
     [inMotion(".pz-d { transition-property: transform; transition-duration: 360ms; }"), "transition at .pz-d lasts 360 ms"],
-    [inMotion(".pz-a { animation-name: rise; animation-duration: 2000ms; }"), "animation at .pz-a ends at 2000 ms"],
+    [inMotion(".pz-a { animation-name: rise; animation-duration: 2000ms; }"), "animation at .pz-a ends at 2360 ms"],
     [inMotion(".pz-b { animation: rise 600ms; animation-delay: 400ms; }"), "animation at .pz-b ends at 1000 ms"],
     [inMotion(".pz-c { animation-name: rise; animation-duration: 400ms; animation-iteration-count: 3; }"),
-      "animation at .pz-c ends at 1200 ms"],
+      "animation at .pz-c ends at 1560 ms"],
     [inMotion(".rise:nth-child(n+6) { animation-delay: 500ms; }"), "animation at .rise ends at 950 ms"],
     [inMotion(".y { animation: rise 200ms infinite; }"), "animation at .y repeats Infinity times"],
     [inMotion(".y { animation: rise 100ms 4; }"), "animation at .y repeats 4 times"],
+    [inMotion(".button { transition-delay: 200ms; }"), "transition at button, .button lasts 420 ms"],
+    [inMotion(".pz-f { transition-delay: 400ms; }"), "transition-delay 400 ms is 350 ms or more"],
+    [inMotion(".a, .b { animation: rise 500ms; } .b { animation-delay: 600ms; }"), "animation at .a, .b ends at 1100 ms"],
+    [inMotion(".card { animation-delay: 800ms; } .card.x { animation: rise 300ms; }"), "animation at .card.x ends at 1100 ms"],
+    [inMotion(".pz-g { animation-name: rise; animation-delay: 1200ms; }"), "animation-delay 1200 ms ends after 900 ms"],
+    [inMotion(".pz-h { animation-iteration-count: 3; } .pz-h.x { animation: rise 400ms; }"),
+      "animation at .pz-h.x ends at 1560 ms"],
     [".z { background: linear-gradient(white, white); }", "linear-gradient( appears"],
   ];
   for (const [rules, reason] of planted) expect(motionProblems(css + rules), reason).toContain(reason);
