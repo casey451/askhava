@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T14:03:24Z by runner 2de3f26c0335 (manual).
+Updated 2026-11-20T14:26:20Z by runner a0c3cfd5c92c (actions).
 
 **Building: T670 in progress since 12:59Z; 538 of 712 done; week 34% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,14 @@ Updated 2026-11-20T14:03:24Z by runner 2de3f26c0335 (manual).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T670 claimed 12:59Z, lease until 15:59Z; lane 2: T206 claimed 13:21Z, lease until 16:21Z; lane 3: T557 claimed 13:49Z, lease until 16:49Z; lane 5: T767 claimed 12:53Z, lease until 15:53Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
 - **Week:** 34% used, 122.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:03Z, 0 min before this update
+- **Last run:** 14:03Z, 22 min before this update
 - **Keeper:** last ran 14:01Z, next wake 14:21Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T524 (since 2026-11-20T12:53:17Z, no attempt used; a plan change fixes it): T524: dependency T648 is DONE but its owned file app/recovery/src/restore.rs is not on main; T524: dependency T648 is DONE but its owned file tests/recovery/tests/export_restores.rs is not on main
-- Strict plan check red: 39 problem(s) on tasks still to run (+410 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
+- Strict plan check red: 38 problem(s) on tasks still to run (+407 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -96,31 +96,31 @@ Updated 2026-11-20T14:03:24Z by runner 2de3f26c0335 (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 254 of 735 (34.6%) · partial 460 · unstarted 21
-**Tasks merged (throughput only):** 538 of 712
+**Requirements verified:** 325 of 735 (44.2%) · partial 389 · unstarted 21
+**Tasks merged (throughput only):** 538 of 710
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 16 | 19 | 0 | 35 |
-| ai | 7 | 19 | 3 | 29 |
-| businesses | 20 | 37 | 1 | 58 |
-| calls | 11 | 14 | 0 | 25 |
-| consent | 11 | 24 | 0 | 35 |
-| fees | 21 | 31 | 0 | 52 |
-| intake | 7 | 36 | 0 | 43 |
+| accessibility | 18 | 17 | 0 | 35 |
+| ai | 8 | 18 | 3 | 29 |
+| businesses | 21 | 36 | 1 | 58 |
+| calls | 14 | 11 | 0 | 25 |
+| consent | 16 | 19 | 0 | 35 |
+| fees | 22 | 30 | 0 | 52 |
+| intake | 8 | 35 | 0 | 43 |
 | job-cards | 12 | 12 | 0 | 24 |
-| licensing | 30 | 18 | 0 | 48 |
-| lifecycle | 13 | 15 | 0 | 28 |
-| messaging | 22 | 23 | 0 | 45 |
-| ops-recovery | 6 | 34 | 14 | 54 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 17 | 11 | 0 | 28 |
+| messaging | 23 | 22 | 0 | 45 |
+| ops-recovery | 9 | 31 | 14 | 54 |
 | privacy | 8 | 23 | 0 | 31 |
 | quiet-hours | 3 | 6 | 0 | 9 |
-| quotes-pick | 22 | 34 | 0 | 56 |
-| recurring | 9 | 2 | 0 | 11 |
+| quotes-pick | 25 | 31 | 0 | 56 |
+| recurring | 10 | 1 | 0 | 11 |
 | security | 10 | 42 | 3 | 55 |
-| terms | 10 | 25 | 0 | 35 |
-| website | 7 | 23 | 0 | 30 |
-| wording | 9 | 23 | 0 | 32 |
+| terms | 27 | 8 | 0 | 35 |
+| website | 18 | 12 | 0 | 30 |
+| wording | 23 | 9 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
