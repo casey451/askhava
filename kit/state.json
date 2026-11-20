@@ -91150,7 +91150,7 @@
     "T724",
     "T641"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 1,
    "slug": "runner-wip-refs",
    "type": "harness",
@@ -91255,6 +91255,29 @@
       }
      },
      "resync": true
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 332,
+     "head_sha": "9aeee27f5aa8db8fbdebf9686b5eeab07d0b8f7b",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-20T01:05:47Z",
+     "ended_at": "2026-11-20T03:22:16Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 10346516,
+       "turns": 187
+      },
+      "reviewer": {
+       "tokens": 7143335,
+       "turns": 140
+      }
+     }
     }
    ],
    "reviewed_sha": "c6a77de7690669a93714bada1808e52e9c23a3dd",
@@ -91267,8 +91290,8 @@
    "branch": "claude/task/T726-runner-wip-refs-a2",
    "auto_merge": {
     "enabled": true,
-    "why": "auto-merge on #1156 (gh pr merge)",
-    "head": "e167ef5edf4ff9a8f75e1b3a13880fa28b47d068"
+    "why": "auto-merge on #1171 (gh pr merge)",
+    "head": "c6a77de7690669a93714bada1808e52e9c23a3dd"
    },
    "runner_closed_prs": [
     1156
@@ -91287,7 +91310,6 @@
    ],
    "last_failure": "T726 resync merged main cleanly, but fresh-eyes review of the WIP scan (runner/wip.py) found fail-open bypasses in three rounds (git replace, textconv/hooks, then color.ui=always hiding a leak from gitleaks and log.showSignature+gpg.program running worker code). Head ea1a6caeb unapproved. Reviewer advice: replace the config deny-list with an allow-list of local config keys, add --no-color --no-show-signature and -c log.showSignature=false -c color.ui=never to every git log, tests for each.",
    "lane": "3",
-   "head_check_since": null,
    "update_merges": [
     {
      "from": "9aeee27f5aa8db8fbdebf9686b5eeab07d0b8f7b",
@@ -92345,12 +92367,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T617",
-   "at": "2026-11-20T03:04:44Z",
-   "output_tokens": 8646,
-   "cache_creation_input_tokens": 54267,
-   "cache_read_input_tokens": 569493,
-   "input_tokens": 37
+   "task": "T726",
+   "at": "2026-11-20T03:22:16Z",
+   "cache_creation_input_tokens": 824993,
+   "output_tokens": 254789,
+   "cache_read_input_tokens": 16409443,
+   "input_tokens": 626
   },
   "source": "session_reading 2026-11-20T02:56:40Z (week)",
   "by_task": {
@@ -98280,14 +98302,14 @@
     "estimated_bytes": 364054,
     "estimated_tokens": 1076697,
     "usage_counting": "message_id",
-    "cache_creation_input_tokens": 472235,
-    "input_tokens": 385,
-    "cache_read_input_tokens": 8703587,
-    "output_tokens": 154575,
-    "worker_tokens": 6426985,
-    "worker_turns": 119,
-    "reviewer_tokens": 2903797,
-    "reviewer_turns": 82,
+    "cache_creation_input_tokens": 1297228,
+    "input_tokens": 1011,
+    "cache_read_input_tokens": 25113030,
+    "output_tokens": 409364,
+    "worker_tokens": 16773501,
+    "worker_turns": 306,
+    "reviewer_tokens": 10047132,
+    "reviewer_turns": 222,
     "last_model": "claude-opus-5-5"
    },
    "T758": {
@@ -98417,12 +98439,12 @@
   },
   "windows": {
    "five_hour": {
-    "start": "2026-11-19T22:21:14Z",
-    "tokens": 19246143
+    "start": "2026-11-20T03:22:16Z",
+    "tokens": 2721352
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 29142284
+    "tokens": 31863636
    }
   },
   "session_reading": {
@@ -98433,7 +98455,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T03:22:19Z",
+ "updated_at": "2026-11-20T03:22:48Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

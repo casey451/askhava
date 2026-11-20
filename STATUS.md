@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T03:22:19Z by runner 9aeee27f5aa8 (actions).
+Updated 2026-11-20T03:22:48Z by runner 9aeee27f5aa8 (actions).
 
 **Building: T747 in progress since 02:14Z; 517 of 704 done; week 18% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 517 of 704 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T747 claimed 02:14Z, lease until 05:14Z; lane 3: T726 claimed 01:05Z, lease until 04:05Z; lane 4: T110 claimed 02:18Z, lease until 05:18Z; lane 7: T434 claimed 03:02Z, lease until 06:02Z
+- **Lane:** lane 2: T747 claimed 02:14Z, lease until 05:14Z; lane 4: T110 claimed 02:18Z, lease until 05:18Z; lane 7: T434 claimed 03:02Z, lease until 06:02Z
 - **Week:** 18% used, 154.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 03:19Z, 3 min before this update
 - **Keeper:** last ran 03:05Z, next wake 03:25Z
@@ -22,6 +22,7 @@ Updated 2026-11-20T03:22:19Z by runner 9aeee27f5aa8 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T726 | Runner (harness): a failed attempt's unpushed work can be ke | MERGE_PENDING | 2 | 2 h 16 min | 03:22Z | T726 resync merged main cleanly, but fresh-eyes review of the WIP scan (runner/wip.py) found fail-open bypasses in three |
 | T617 | site: DM Sans from one weight-axis variable file (smaller th | BLOCKED | 1 | 2 min | 03:04Z | PLAN GAP: tests/a11y/design_tokens.spec.ts:221 and :242 (protected, not owned by T617) contradict the prompt's single DM |
 | T648 | recovery: the monthly test restore into a throwaway cluster, | BLOCKED | 1 | 21 min | 02:55Z | PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, b |
 | T763 | tests (harness): the web chat spec's fake numbers never coll | done | 1 | 25 min | 02:17Z |  |
@@ -29,7 +30,7 @@ Updated 2026-11-20T03:22:19Z by runner 9aeee27f5aa8 (actions).
 | T218 | Wording and template scans from the brains: sales phrases, n | done | 1 | 74 min | 01:46Z |  |
 | T663 | picks, jobs and payments (harness): a confirmed pick moves i | MERGE_PENDING | 2 | 2 h 7 min | 01:40Z | PLAN GAP: tests/test_coverage_floor.py:125 asserts floors["future"] == [], contradicting T663 goal (5), which requires a |
 | T527 | messaging, portals and server: the business-texting switch t | done | 1 | 93 min | 01:39Z |  |
-| T726 | Runner (harness): a failed attempt's unpushed work can be ke | QUEUED | 1 | 56 min | 01:00Z | T726 resync merged main cleanly, but fresh-eyes review of the WIP scan (runner/wip.py) found fail-open bypasses in three |
+| T726 | Runner (harness): a failed attempt's unpushed work can be ke | QUEUED | 1 | 56 min | 01:00Z |  |
 | T613 | site: the D-4246 polish layer in site.css (tokens, layered s | done | 1 | 85 min | 00:47Z |  |
 | T758 | intake: Spanish gas and burning reports reach the 911 list,  | done | 1 | 90 min | 00:38Z |  |
 | T109 | recovery: backup checks and the nightly encrypted export | done | 2 | 32 min | 00:37Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
@@ -89,7 +90,6 @@ Updated 2026-11-20T03:22:19Z by runner 9aeee27f5aa8 (actions).
 | T399 | server: the email's Approve link approves the phone, only wi | done | 1 | 46 min | 04:01Z |  |
 | T484 | portals and quotes: "Call from the Laftly number", the owner | done | 1 | 82 min | 03:26Z |  |
 | T114 | Terms-match-code checks and recurring pricing copy | done | 1 | 71 min | 03:26Z |  |
-| T715 | intake (harness): corrections to T671's walker: alarm answer | BLOCKED | 2 | 83 min | 03:22Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -142,9 +142,8 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T747 (lease until 2026-11-20T05:14:14Z)
-- lane 3: T726 (lease until 2026-11-20T04:05:47Z)
 - lane 4: T110 (lease until 2026-11-20T05:18:18Z)
 - lane 7: T434 (lease until 2026-11-20T06:02:51Z)
 
 ## Last usage reading
-- {"task": "T617", "at": "2026-11-20T03:04:44Z", "output_tokens": 8646, "cache_creation_input_tokens": 54267, "cache_read_input_tokens": 569493, "input_tokens": 37}
+- {"task": "T726", "at": "2026-11-20T03:22:16Z", "cache_creation_input_tokens": 824993, "output_tokens": 254789, "cache_read_input_tokens": 16409443, "input_tokens": 626}
