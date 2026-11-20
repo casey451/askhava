@@ -1,17 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-20T11:24:01Z by runner 4b155e888570 (actions).
+Updated 2026-11-20T11:39:28Z by runner 4b155e888570 (actions).
 
 **Building: T648 in progress since 10:37Z; 533 of 710 done; week 30% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 533 of 710 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T648 claimed 10:37Z, lease until 13:37Z; lane 2: T614 claimed 11:22Z, lease until 14:22Z; lane 4: T573 claimed 11:14Z, lease until 14:14Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z
+- **Lane:** lane 1: T648 claimed 10:37Z, lease until 13:37Z; lane 4: T573 claimed 11:14Z, lease until 14:14Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z
 - **Week:** 30% used, 131.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:23Z, 0 min before this update
+- **Last run:** 11:24Z, 15 min before this update
 - **Keeper:** last ran 11:24Z, next wake 13:40Z
 
 ## Needs attention
+- BLOCKED T614: plan gap reported: PLAN GAP: tests/a11y/reflow_spacing.spec.ts:49-54 (T053, protected) flags every TARGETS control with no box as "is hidden", but DESIGN_SPEC docs/design/DESIGN_SPEC.md:102 requires .site-nav hidden below 1024px and Menu hidden from 1024px, so the specified header fails at every width. Also: closed <details> Menu links keep boxes in Chromium (counted as Tab stops by j1_keyboard.spec.ts:56 and j2_keyboard.spec.ts:26) and the open Menu scrolls sideways at 320px (scrollWidth 375); both fixable only in app/site/static/site.css, not owned by T614 (CSP forbids inline style). Smallest plan change: a ta; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T614 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - Strict plan check red: 37 problem(s) on tasks still to run (+401 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
@@ -19,6 +20,7 @@ Updated 2026-11-20T11:24:01Z by runner 4b155e888570 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T614 | site: the V6 header in base.html (links, the Menu in the pag | BLOCKED | 1 | 16 min | 11:39Z | PLAN GAP: tests/a11y/reflow_spacing.spec.ts:49-54 (T053, protected) flags every TARGETS control with no box as "is hidde |
 | T463 | businesses and server: "Busy for <n> days" pauses job cards  | MERGE_PENDING | 1 | 58 min | 11:16Z |  |
 | T768 | runner tests (harness): the seed test fakes free disk, so a  | done | 1 | 22 min | 10:38Z |  |
 | T573 | messaging and server: queued business texts are addressed to | QUEUED | 2 | 53 min | 09:48Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
@@ -88,7 +90,6 @@ Updated 2026-11-20T11:24:01Z by runner 4b155e888570 (actions).
 | T593 | site and server: the home hero in D-3331's wording with the  | check_failed | 1 | 95 min | 12:35Z |  |
 | T536 | E2e harness: clock-advancing journeys last, a keyed worker,  | done | 2 | 107 min | 12:33Z | PLAN GAP: tests/e2e/j2.ts:150 (owned by T099, `e2e-j2-business`; T644 also lists it). Smallest plan change: make the `no |
 | T109 | recovery: backup checks and the nightly encrypted export | BLOCKED | 1 | 20 min | 11:47Z |  |
-| T540 | portals and server: the owner's release button re-sends an e | resync | 1 | 54 min | 11:29Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -140,9 +141,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T648 (lease until 2026-11-20T13:37:03Z)
-- lane 2: T614 (lease until 2026-11-20T14:22:39Z)
 - lane 4: T573 (lease until 2026-11-20T14:14:12Z)
 - lane 6: T530 (lease until 2026-11-20T13:55:17Z)
 
 ## Last usage reading
-- {"task": "T463", "at": "2026-11-20T11:16:31Z", "output_tokens": 50790, "input_tokens": 185, "cache_creation_input_tokens": 167540, "cache_read_input_tokens": 7527198}
+- {"task": "T614", "at": "2026-11-20T11:39:27Z", "input_tokens": 89, "cache_creation_input_tokens": 120240, "output_tokens": 37487, "cache_read_input_tokens": 2524988}
