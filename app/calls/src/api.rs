@@ -47,6 +47,7 @@ pub use crate::owner_calls::{
     OWNER_BRIDGE_KIND, OwnerDialer, alert_facts, bridge_owner, owner_alert_twiml,
     owner_alert_words, place_owner_alert_call,
 };
+pub use crate::pick_line::pick_has_line;
 pub use crate::pins::{
     PIN_DRAWS, PIN_TRY_LABEL, VoiceCall, VoiceKeys, VoiceReply, arizona_day, call_start,
     caller_digest, dialed_line, pin_tries_today, stored_pin, voice_confirm,
