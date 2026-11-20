@@ -101,12 +101,86 @@ pub struct UnconfirmedIntent {
 
 /// One confirm's answer (FEE-014, FEE-016): the intent as Stripe left it, and its client secret
 /// only while the bank must approve (`requires_action`), for the page's 3-D Secure step.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct ConfirmedIntent {
     /// The intent after the confirm; a decline is a 402 [`AdapterError::Vendor`] instead.
     pub intent: PaymentIntent,
     /// `Some` only when `intent.status` is `requires_action`.
     pub client_secret: Option<SecretString>,
+    /// FEE-014, FEE-048, T541: the `pm_…` Stripe's answer names as the intent's
+    /// `payment_method`, the one a saved card is stored under; `Debug` never shows it.
+    pub payment_method: Option<String>,
+}
+
+impl std::fmt::Debug for ConfirmedIntent {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ConfirmedIntent")
+            .field("intent", &self.intent)
+            .field("client_secret", &self.client_secret)
+            .finish_non_exhaustive()
+    }
+}
+
+/// FEE-014, D-073, T541: what Stripe reports of a payment method: its type and, for a card, its
+/// brand and last four (empty for any other type); no card data and no `pm_…` ID.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CardFacts {
+    /// Stripe's `type`, `card` for a card.
+    pub method_type: String,
+    /// `card.brand`, for example `visa`.
+    pub brand: String,
+    /// `card.last4`.
+    pub last4: String,
+}
+
+/// FEE-048, T541: a $0 Confirm's SetupIntent as Stripe answered its create-and-confirm: the
+/// status (`succeeded` once set up) and the `pm_…` it names; `Debug` never shows the ID.
+#[derive(Clone, serde::Deserialize)]
+pub struct SetUpIntent {
+    /// Stripe's status; `requires_action` saves no card.
+    pub status: String,
+    /// The SetupIntent's `payment_method`.
+    #[serde(default)]
+    pub payment_method: Option<String>,
+}
+
+impl std::fmt::Debug for SetUpIntent {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("SetUpIntent")
+            .field("status", &self.status)
+            .finish_non_exhaustive()
+    }
+}
+
+/// A payment method (`GET /v1/payment_methods/{id}`) or a charge's `payment_method_details`.
+#[derive(serde::Deserialize)]
+struct RawMethod {
+    #[serde(rename = "type")]
+    kind: String,
+    #[serde(default)]
+    card: Option<RawCard>,
+}
+
+#[derive(serde::Deserialize)]
+struct RawCard {
+    brand: String,
+    last4: String,
+}
+
+#[derive(serde::Deserialize)]
+struct RawChargeMethod {
+    payment_method_details: RawMethod,
+}
+
+impl RawMethod {
+    fn facts(self) -> CardFacts {
+        let (brand, last4) = self.card.map(|c| (c.brand, c.last4)).unwrap_or_default();
+        CardFacts {
+            method_type: self.kind,
+            brand,
+            last4,
+        }
+    }
 }
 
 /// Whether a payment was 3-D Secure authenticated (FEE-050, D-3118), read apart from
@@ -150,12 +224,14 @@ struct NewIntent {
     client_secret: String,
 }
 
-/// A confirm's answer: the [`PaymentIntent`] and, beside it, its client secret.
+/// A confirm's answer: the [`PaymentIntent`] and, beside it, its client secret and method.
 #[derive(serde::Deserialize)]
 struct Confirmed {
     #[serde(flatten)]
     intent: PaymentIntent,
     client_secret: Option<String>,
+    #[serde(default)]
+    payment_method: Option<String>,
 }
 
 #[derive(serde::Deserialize)]
@@ -543,13 +619,43 @@ impl StripePayments {
         intent: &str,
         payment_method: &str,
     ) -> Result<ConfirmedIntent, AdapterError> {
-        if !is_vendor_id(intent, "pi_") || !is_vendor_id(payment_method, "pm_") {
+        let form = [("payment_method", payment_method)];
+        self.confirm_with(idempotency, intent, &form).await
+    }
+
+    /// FEE-048, FEE-014, T541: [`Self::confirm_payment_intent`] with
+    /// `setup_future_usage=off_session`, for a card the business saves on the Confirm page; the
+    /// charge itself stays on-session. The answer's `payment_method` is the card to store.
+    ///
+    /// # Errors
+    /// As [`Self::confirm_payment_intent`].
+    pub async fn confirm_payment_intent_saving(
+        &self,
+        idempotency: &IdempotencyKey,
+        intent: &str,
+        payment_method: &str,
+    ) -> Result<ConfirmedIntent, AdapterError> {
+        let form = [
+            ("payment_method", payment_method),
+            ("setup_future_usage", "off_session"),
+        ];
+        self.confirm_with(idempotency, intent, &form).await
+    }
+
+    /// The confirm of `intent` with `form` (its first field the `payment_method`).
+    async fn confirm_with(
+        &self,
+        idempotency: &IdempotencyKey,
+        intent: &str,
+        form: &[(&str, &str)],
+    ) -> Result<ConfirmedIntent, AdapterError> {
+        let card = form.first().map_or("", |(_, v)| *v);
+        if !is_vendor_id(intent, "pi_") || !is_vendor_id(card, "pm_") {
             return Err(AdapterError::InvalidId);
         }
         let path = ["v1", "payment_intents", intent, "confirm"];
         let request = self.http.request(Method::POST, &path, Some(idempotency));
-        let form = [("payment_method", payment_method)];
-        let answer: Confirmed = self.http.json(request.form(&form)).await?;
+        let answer: Confirmed = self.http.json(request.form(form)).await?;
         let approval = answer.intent.status == "requires_action";
         Ok(ConfirmedIntent {
             client_secret: answer
@@ -557,7 +663,51 @@ impl StripePayments {
                 .filter(|_| approval)
                 .map(SecretString::from),
             intent: answer.intent,
+            payment_method: answer.payment_method,
         })
+    }
+
+    /// FEE-014, D-073, T541: the type, brand and last four Stripe reports for `id`: a charge
+    /// (`ch_…` or `py_…`, its `payment_method_details` from `GET /v1/charges/{id}`) or a payment
+    /// method (`pm_…`, `GET /v1/payment_methods/{id}`). Nothing else of the answer is kept.
+    ///
+    /// # Errors
+    /// [`AdapterError::InvalidId`] for any other ID (nothing sent); the HTTP errors;
+    /// [`AdapterError::Decode`] for an answer without a method type.
+    pub async fn fetch_card_facts(&self, id: &str) -> Result<CardFacts, AdapterError> {
+        if is_vendor_id(id, "pm_") {
+            let request = self
+                .http
+                .request(Method::GET, &["v1", "payment_methods", id], None);
+            let method: RawMethod = self.http.json(request).await?;
+            return Ok(method.facts());
+        }
+        if !is_charge_id(id) {
+            return Err(AdapterError::InvalidId);
+        }
+        let request = self.http.request(Method::GET, &["v1", "charges", id], None);
+        let charge: RawChargeMethod = self.http.json(request).await?;
+        Ok(charge.payment_method_details.facts())
+    }
+
+    /// FEE-048, FEE-036, T541: creates and confirms a $0 Confirm's SetupIntent from `form`
+    /// (`payments::api::SetupIntentRequest::form`: customer, `usage=off_session`, cards only) with
+    /// `payment_method`, by `POST /v1/setup_intents` under `idempotency`; charges nothing.
+    ///
+    /// # Errors
+    /// [`AdapterError::InvalidId`] for a card not `pm_…` (nothing sent); the HTTP errors.
+    pub async fn set_up_card(
+        &self,
+        idempotency: &IdempotencyKey,
+        form: &[(&str, &str)],
+        payment_method: &str,
+    ) -> Result<SetUpIntent, AdapterError> {
+        if !is_vendor_id(payment_method, "pm_") {
+            return Err(AdapterError::InvalidId);
+        }
+        let mut fields = form.to_vec();
+        fields.extend([("payment_method", payment_method), ("confirm", "true")]);
+        self.post("setup_intents", &fields, idempotency).await
     }
 }
 
@@ -647,7 +797,7 @@ mod tests {
 
     use secrecy::{ExposeSecret, SecretString};
 
-    use super::{ChargeList, PaymentIntent, StripePayments, ThreeDs};
+    use super::{Charge, ChargeList, PaymentIntent, PaymentsAdapter, StripePayments, ThreeDs};
     use crate::base::{AdapterError, IdempotencyKey};
 
     /// A client for a vendor that answers one request with `answer` and hands back the request
@@ -948,5 +1098,185 @@ mod tests {
         let without = decode(intent_body("requires_payment_method", None));
         assert_eq!(without.latest_charge, None);
         assert_eq!(without.id, "pi_fake66");
+    }
+
+    /// TD-SEC-70 (FEE-048, FEE-014, T541): the saving confirm posts
+    /// `setup_future_usage=off_session` and hands back the answer's `pm_…`, which `Debug` hides.
+    #[tokio::test]
+    async fn td_sec_70_the_saving_confirm_asks_for_off_session_use() {
+        let answer = r#"{"id":"pi_fake1","status":"succeeded","amount":7500,"currency":"usd","customer":"cus_fake1","metadata":{"pick_id":"pick-fake-1"},"payment_method":"pm_fake_answered","latest_charge":"ch_fake1"}"#;
+        let (stripe, got) = scripted(answer);
+        let paid = stripe
+            .confirm_payment_intent_saving(&key("pick-fake-1-try1"), "pi_fake1", "pm_card_visa")
+            .await
+            .expect("paid");
+        assert_eq!(paid.payment_method.as_deref(), Some("pm_fake_answered"));
+        assert!(!format!("{paid:?}").contains("pm_fake_answered"));
+        let request = got.recv().expect("request");
+        assert!(
+            request.contains("setup_future_usage=off_session"),
+            "{request}"
+        );
+        assert!(request.contains("payment_method=pm_card_visa"), "{request}");
+    }
+
+    /// TD-SEC-70 (FEE-014, T541): a charge's card facts come from its `payment_method_details`.
+    #[tokio::test]
+    async fn td_sec_70_the_charge_read_gives_type_brand_and_last_four() {
+        let answer = r#"{"id":"ch_fake1","object":"charge","payment_method_details":{"type":"card","card":{"brand":"visa","last4":"4242"}}}"#;
+        let (stripe, got) = scripted(answer);
+        let facts = stripe.fetch_card_facts("ch_fake1").await.expect("facts");
+        assert_eq!(
+            (
+                facts.method_type.as_str(),
+                facts.brand.as_str(),
+                facts.last4.as_str()
+            ),
+            ("card", "visa", "4242")
+        );
+        let request = got.recv().expect("request");
+        assert!(
+            request.starts_with("GET /stripe/v1/charges/ch_fake1 "),
+            "{request}"
+        );
+    }
+
+    /// TD-SEC-70 (FEE-014, D-073): a bank debit reads as its own type with no brand or last four.
+    #[tokio::test]
+    async fn td_sec_70_a_non_card_method_has_no_card_facts() {
+        let (stripe, got) = scripted(r#"{"id":"pm_fake2","type":"us_bank_account"}"#);
+        let facts = stripe.fetch_card_facts("pm_fake2").await.expect("facts");
+        assert_eq!(facts.method_type, "us_bank_account");
+        assert_eq!((facts.brand.as_str(), facts.last4.as_str()), ("", ""));
+        let request = got.recv().expect("request");
+        assert!(
+            request.starts_with("GET /stripe/v1/payment_methods/pm_fake2 "),
+            "{request}"
+        );
+        let refused = stripe.fetch_card_facts("pi_fake2").await;
+        assert!(matches!(refused, Err(AdapterError::InvalidId)));
+    }
+
+    /// TD-SEC-70 (FEE-048): the $0 save creates and confirms an off-session SetupIntent.
+    #[tokio::test]
+    async fn td_sec_70_the_zero_save_posts_an_off_session_setup_intent() {
+        let answer = r#"{"id":"seti_fake1","status":"succeeded","payment_method":"pm_fake3"}"#;
+        let (stripe, got) = scripted(answer);
+        let form = [("customer", "cus_fake1"), ("usage", "off_session")];
+        let set = stripe
+            .set_up_card(&key("pick-fake-1-save"), &form, "pm_card_visa")
+            .await
+            .expect("set up");
+        assert_eq!(set.status, "succeeded");
+        assert!(!format!("{set:?}").contains("pm_fake3"));
+        let request = got.recv().expect("request");
+        assert!(
+            request.starts_with("POST /stripe/v1/setup_intents "),
+            "{request}"
+        );
+        for field in [
+            "usage=off_session",
+            "confirm=true",
+            "payment_method=pm_card_visa",
+        ] {
+            assert!(request.contains(field), "{request}");
+        }
+    }
+
+    /// TD-SEC-70 (FEE-014, T541): a bad intent, card or method ID is refused before anything is
+    /// sent; a `py_` charge read is allowed.
+    #[tokio::test]
+    async fn td_sec_70_bad_ids_send_nothing() {
+        let (stripe, got) = scripted(
+            r#"{"id":"py_fake4","payment_method_details":{"type":"card","card":{"brand":"mastercard","last4":"4444"}}}"#,
+        );
+        let k = key("pick-fake-4-try1");
+        for (intent, card) in [("ch_fake4", "pm_card_visa"), ("pi_fake4", "card_fake4")] {
+            let saving = stripe.confirm_payment_intent_saving(&k, intent, card).await;
+            assert!(matches!(saving, Err(AdapterError::InvalidId)));
+        }
+        let form = [("usage", "off_session")];
+        let set = stripe.set_up_card(&k, &form, "card_fake4").await;
+        assert!(matches!(set, Err(AdapterError::InvalidId)));
+        assert!(matches!(
+            stripe.fetch_card_facts("").await,
+            Err(AdapterError::InvalidId)
+        ));
+        let facts = stripe.fetch_card_facts("py_fake4").await.expect("facts");
+        assert_eq!(
+            (facts.brand.as_str(), facts.last4.as_str()),
+            ("mastercard", "4444")
+        );
+        let request = got.recv().expect("only the py_ read was sent");
+        assert!(
+            request.starts_with("GET /stripe/v1/charges/py_fake4 "),
+            "{request}"
+        );
+    }
+
+    /// TD-SEC-70 (FEE-014, T541): a saving confirm the bank must approve keeps the client secret,
+    /// and `Debug` shows neither it nor the `pm_…`.
+    #[tokio::test]
+    async fn td_sec_70_a_saving_confirm_needing_approval_hides_its_secrets() {
+        let answer = r#"{"id":"pi_fake5","status":"requires_action","amount":7500,"currency":"usd","customer":"cus_fake5","metadata":{"pick_id":"pick-fake-5"},"payment_method":"pm_fake_held","client_secret":"pi_fake5_secret_fake","latest_charge":null}"#;
+        let (stripe, _got) = scripted(answer);
+        let held = stripe
+            .confirm_payment_intent_saving(&key("pick-fake-5-try1"), "pi_fake5", "pm_card_visa")
+            .await
+            .expect("held");
+        assert!(held.client_secret.is_some());
+        let shown = format!("{held:?}");
+        assert!(!shown.contains("pm_fake_held"), "{shown}");
+        assert!(!shown.contains("secret_fake"), "{shown}");
+    }
+
+    /// TD-SEC-70 (FEE-048, T541): a payment-method read of a card gives its brand and last four,
+    /// and a SetupIntent the bank must approve reads as `requires_action` with no ID shown.
+    #[tokio::test]
+    async fn td_sec_70_a_card_method_read_and_a_held_set_up() {
+        let (stripe, _got) =
+            scripted(r#"{"id":"pm_fake6","type":"card","card":{"brand":"visa","last4":"1881"}}"#);
+        let facts = stripe.fetch_card_facts("pm_fake6").await.expect("facts");
+        assert_eq!(facts.method_type, "card");
+        assert_eq!(
+            (facts.brand.as_str(), facts.last4.as_str()),
+            ("visa", "1881")
+        );
+        let (stripe, _got) = scripted(r#"{"id":"seti_fake6","status":"requires_action"}"#);
+        let form = [("usage", "off_session")];
+        let set = stripe
+            .set_up_card(&key("pick-fake-6-save"), &form, "pm_card_visa")
+            .await
+            .expect("held");
+        assert_eq!(set.status, "requires_action");
+        assert_eq!(set.payment_method, None);
+        assert!(format!("{set:?}").contains("requires_action"));
+    }
+
+    /// SEC-018, PRIV-016: a create, charge or refund with an ID of the wrong kind is refused
+    /// before anything reaches Stripe.
+    #[tokio::test]
+    async fn wrong_kind_ids_reach_no_vendor() {
+        let (stripe, got) = scripted("{}");
+        let k = key("pick-fake-7-try1");
+        let unconfirmed = stripe.create_unconfirmed_intent(&k, "pm_fake7", 7500, "pick-fake-7");
+        assert!(matches!(unconfirmed.await, Err(AdapterError::InvalidId)));
+        let charge = |customer, payment_method| Charge {
+            customer,
+            payment_method,
+            amount_cents: 7500,
+            pick_id: "pick-fake-7",
+        };
+        for (customer, method) in [("pm_fake7", "pm_fake7"), ("cus_fake7", "cus_fake7")] {
+            let made = stripe
+                .create_payment_intent(&k, charge(customer, method))
+                .await;
+            assert!(matches!(made, Err(AdapterError::InvalidId)));
+        }
+        let refund = stripe.send_refund(&k, "ch_fake7").await;
+        assert!(matches!(refund, Err(AdapterError::InvalidId)));
+        let read = stripe.read_refund("pi_fake7").await;
+        assert!(matches!(read, Err(AdapterError::InvalidId)));
+        assert!(got.try_recv().is_err(), "nothing was sent");
     }
 }
