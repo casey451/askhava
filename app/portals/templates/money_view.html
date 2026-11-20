@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{#- The owner money view (T434; FEE-046, FEE-028; D-410, D-444, D-3744). T210's figures only:
+    the ledger lines beside collected, set aside, expenses and left, the month's expenses, the
+    expense form (kept apart from the ledger) and the monthly CSV link. -#}
+{% block title %}{% if problem.is_some() %}Error: {% endif %}Money, {{ month }}{% endblock %}
+{% block main %}<h1>Money, {{ month }}</h1>
+<form method="get" action="{{ crate::money_view::OWNER_MONEY_ROUTE }}">
+<p><label for="month">Month</label>
+<span id="month-hint">For example, 2026-11</span>
+<input type="month" id="month" name="month" value="{{ month_value }}" aria-describedby="month-hint">
+<button type="submit">Show month</button></p>
+</form>
+<h2>This month</h2>
+<dl id="money-lines">
+<dt>Collected</dt><dd>{{ self.dollars(view.collected) }}</dd>
+<dt>Set aside for sales tax</dt><dd>{{ self.dollars(view.set_aside) }}</dd>
+<dt>Expenses</dt><dd>{{ self.dollars(view.expenses_total) }}</dd>
+<dt>Left after tax and expenses</dt><dd>{{ self.dollars(view.left) }}</dd>
+</dl>
+<p><a href="{{ crate::money_view::OWNER_MONEY_CSV_ROUTE }}?month={{ month_value }}">Download {{ month }} as a spreadsheet (CSV)</a></p>
+<h2>Ledger</h2>
+<dl id="ledger-lines">
+<dt>Charges</dt><dd>{{ self.dollars(view.ledger.charges) }}</dd>
+<dt>Refunds</dt><dd>{{ self.dollars(view.ledger.refunds) }}</dd>
+<dt>Credits</dt><dd>{{ self.dollars(view.ledger.credits) }}</dd>
+<dt>Disputes</dt><dd>{{ self.dollars(view.ledger.disputes) }}</dd>
+<dt>Dispute fees</dt><dd>{{ self.dollars(view.ledger.dispute_fees) }}</dd>
+<dt>Processing fees</dt><dd>{{ self.dollars(view.ledger.processing_fees) }}</dd>
+<dt>Payouts</dt><dd>{{ self.dollars(view.ledger.payouts) }}</dd>
+</dl>
+<h2>Expenses</h2>
+{% if view.expenses.is_empty() %}<p id="expenses-none">No expenses entered for {{ month }}.</p>
+{% else %}<table id="expenses">
+<caption>Expenses, {{ month }}</caption>
+<thead><tr><th scope="col">Date</th><th scope="col">Paid to</th><th scope="col">Category</th><th scope="col">Amount</th><th scope="col">Note</th></tr></thead>
+<tbody>
+{% for e in view.expenses %}<tr><td>{{ e.spent_on }}</td><td>{{ e.vendor }}</td><td>{{ e.category }}</td><td>{{ self.dollars(e.amount_cents) }}</td><td>{{ e.note }}</td></tr>
+{% endfor %}</tbody>
+</table>
+{% endif %}<h2>Add an expense</h2>
+<p>Expenses you add here count in "Left after tax and expenses" above. They never change the ledger.</p>
+<form method="post" action="{{ crate::money_view::OWNER_EXPENSE_ROUTE }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+{% if let Some((field, why)) = problem %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h3>Fix the entry marked below</h3>
+<p><a href="#{{ field }}">{{ why }}</a></p>
+</div>
+{% endif %}<p><label for="spent_on">Date</label>
+<span id="spent_on-hint">For example, 2026-11-04</span>
+<input type="date" id="spent_on" name="spent_on" value="{{ entered.spent_on }}" aria-describedby="spent_on-hint{% if self.error_for("spent_on").is_some() %} spent_on-error{% endif %}"{% if self.error_for("spent_on").is_some() %} aria-invalid="true"{% endif %}>
+{% if let Some(why) = self.error_for("spent_on") %}<span id="spent_on-error" class="error">{{ why }}</span>{% endif %}</p>
+<p><label for="vendor">Paid to</label>
+<input type="text" id="vendor" name="vendor" maxlength="120" value="{{ entered.vendor }}"{% if self.error_for("vendor").is_some() %} aria-invalid="true" aria-describedby="vendor-error"{% endif %}>
+{% if let Some(why) = self.error_for("vendor") %}<span id="vendor-error" class="error">{{ why }}</span>{% endif %}</p>
+<p><label for="amount">Amount in dollars</label>
+<span id="amount-hint">For example, 12.50</span>
+<input type="text" id="amount" name="amount" inputmode="decimal" value="{{ entered.amount }}" aria-describedby="amount-hint{% if self.error_for("amount").is_some() %} amount-error{% endif %}"{% if self.error_for("amount").is_some() %} aria-invalid="true"{% endif %}>
+{% if let Some(why) = self.error_for("amount") %}<span id="amount-error" class="error">{{ why }}</span>{% endif %}</p>
+<p><label for="category">Category</label>
+<span id="category-hint">For example, Software</span>
+<input type="text" id="category" name="category" maxlength="60" value="{{ entered.category }}" aria-describedby="category-hint{% if self.error_for("category").is_some() %} category-error{% endif %}"{% if self.error_for("category").is_some() %} aria-invalid="true"{% endif %}>
+{% if let Some(why) = self.error_for("category") %}<span id="category-error" class="error">{{ why }}</span>{% endif %}</p>
+<p><label for="note">Note, if you want one</label>
+<textarea id="note" name="note" maxlength="500"{% if self.error_for("note").is_some() %} aria-invalid="true" aria-describedby="note-error"{% endif %}>{{ entered.note }}</textarea>
+{% if let Some(why) = self.error_for("note") %}<span id="note-error" class="error">{{ why }}</span>{% endif %}</p>
+<p><button type="submit">Add expense</button></p>
+</form>
+{% endblock %}

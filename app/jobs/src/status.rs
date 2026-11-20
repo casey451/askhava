@@ -234,6 +234,26 @@ impl JobStatus {
         self.targets().is_empty()
     }
 
+    /// JOB-014, D-4349: true only for Payment pending, whose timer moves nothing and hands the
+    /// wait's end to `picks` (`payment_wait`), since `payments` may still hold the pick.
+    #[must_use]
+    pub const fn timer_defers_to_payments(self) -> bool {
+        match self {
+            Self::PaymentPending => true,
+            Self::Intake
+            | Self::Open
+            | Self::NoQuotesYet
+            | Self::QuotesReady
+            | Self::AwaitingConfirm
+            | Self::Connected
+            | Self::Done
+            | Self::Closed
+            | Self::ClosedEarly
+            | Self::NotCovered
+            | Self::Cancelled => false,
+        }
+    }
+
     /// D-250, D-143: the "Your numbers" figure a move out of Connected into this status counts
     /// in, as `rules::connected_move` maps the replies: Done is DONE, Quotes ready is NO, Closed
     /// the third figure; any other status none (BIZ-025, T451).
