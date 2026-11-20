@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T03:35:10Z by runner ef998d36a6d5 (actions).
+Updated 2026-11-20T03:36:03Z by runner 50c8d83e368e (actions).
 
-**Building: T110 in progress since 02:18Z; 517 of 705 done; week 18% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T726 in progress since 03:35Z; 517 of 705 done; week 18% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 517 of 705 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 4: T110 claimed 02:18Z, lease until 05:18Z; lane 7: T434 claimed 03:02Z, lease until 06:02Z
-- **Week:** 18% used, 154.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:34Z, 0 min before this update
+- **Lane:** lane 1: T726 claimed 03:35Z, lease until 06:35Z; lane 4: T110 claimed 02:18Z, lease until 05:18Z; lane 7: T434 claimed 03:02Z, lease until 06:02Z
+- **Week:** 18% used, 155.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 03:34Z, 1 min before this update
 - **Keeper:** last ran 03:27Z, next wake 03:47Z
 
 ## Needs attention
@@ -16,7 +16,7 @@ Updated 2026-11-20T03:35:10Z by runner ef998d36a6d5 (actions).
 - BLOCKED T648: plan gap reported: PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, but scripts/check_include_paths.py (D-1867, run in the smoke by tests/test_check_include_paths.py::test_td_ops_32_the_real_repository_passes) fails: scripts/bootstrap_roles.sql is not matched by the Checks and Coverage rules in .github/workflows/ci.yml (protected, harness-only) nor by RUST_PATHS in scripts/prehandin.sh:77 (locked in kit/plan.lock). T648 owns neither. Fix: a harness task adds scripts/bootstrap_roles\.sql to those three rules and rewrites kit/plan.lock. Reviewer; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T648 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 70 problem(s) on tasks still to run (+369 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 77 problem(s) on tasks still to run (+375 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -123,7 +123,7 @@ Updated 2026-11-20T03:35:10Z by runner ef998d36a6d5 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-20T02:56:40Z (week)): week: 39.1M used, 154.9M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T03:25:27Z.
+- Pacing (session_reading 2026-11-20T03:26:45Z (week)): week: 38.7M used, 155.3M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T03:40:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -138,7 +138,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T726 (lease until 2026-11-20T06:35:46Z)
 - lane 4: T110 (lease until 2026-11-20T05:18:18Z)
 - lane 7: T434 (lease until 2026-11-20T06:02:51Z)
 
