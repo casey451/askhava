@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "phase": "kit",
- "current": "T573",
+ "current": "T768",
  "backup_runner": "on",
  "ruleset_verified": true,
  "lease": null,
@@ -94772,11 +94772,20 @@
    "deps": [
     "T591"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 0,
    "slug": "cache-seed-test-disk",
    "type": "harness",
-   "stage": "5"
+   "stage": "5",
+   "attempt_started_at": "2026-11-20T10:15:59Z",
+   "lane": "6",
+   "decision_ids": [
+    4934,
+    4935,
+    4936,
+    4937,
+    4938
+   ]
   },
   {
    "id": "T769",
@@ -94823,7 +94832,7 @@
    "cache_creation_input_tokens": 248515,
    "output_tokens": 75148
   },
-  "source": "session_reading 2026-11-20T08:49:42Z (week)",
+  "source": "session_reading 2026-11-20T10:14:54Z (week)",
   "by_task": {
    "FIX-MAIN": {
     "estimated_bytes": 3756447,
@@ -101082,6 +101091,10 @@
     "reviewer_tokens": 1046689,
     "reviewer_turns": 20,
     "last_model": "claude-opus-5-5"
+   },
+   "T768": {
+    "estimated_bytes": 103582,
+    "estimated_tokens": 308361
    }
   },
   "windows": {
@@ -101102,7 +101115,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T10:15:25Z",
+ "updated_at": "2026-11-20T10:16:20Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -101203,21 +101216,6 @@
  "runner_sha": "f4c54d07a30dcb82526ae9b5a7c6442ee5d26e08",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "382efbfa9414fda64df615686feff7ebbe5928d3",
-   "ok": true,
-   "at": "2026-11-20T03:58:39Z",
-   "why": "start routine (pre-session)",
-   "seconds": 907
-  },
-  {
-   "sha": "841f62ae3c0e7ed2329efecbc2c335ed5ab75ce8",
-   "ok": true,
-   "at": "2026-11-20T04:11:19Z",
-   "why": "start routine (ancestry reuse of 382efbfa9414, 2026-11-20T03:58:39Z)",
-   "reused": "2026-11-20T03:58:39Z",
-   "base": "382efbfa9414fda64df615686feff7ebbe5928d3"
-  },
   {
    "sha": "bf7fb36b58e57ce97d3cd0d43268ee215e9e73cc",
    "ok": true,
@@ -101359,24 +101357,39 @@
    "why": "start routine (ancestry reuse of adc433df0a11, 2026-11-20T07:58:05Z)",
    "reused": "2026-11-20T07:58:05Z",
    "base": "adc433df0a114c7721244a32e305adbd93e7ddfa"
+  },
+  {
+   "sha": "f4c54d07a30dcb82526ae9b5a7c6442ee5d26e08",
+   "ok": true,
+   "at": "2026-11-20T10:14:43Z",
+   "why": "start routine (pre-session, ancestor of 14f0c6d1fa38)",
+   "seconds": 897
+  },
+  {
+   "sha": "14f0c6d1fa38bb16ab031e8ec36ce597d8637616",
+   "ok": true,
+   "at": "2026-11-20T10:15:59Z",
+   "why": "start routine (ancestry reuse of f4c54d07a30d, 2026-11-20T10:14:43Z)",
+   "reused": "2026-11-20T10:14:43Z",
+   "base": "f4c54d07a30dcb82526ae9b5a7c6442ee5d26e08"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T573 estimated 1.9M tokens (calibrated); week has 139.2M left (no five-hour budget, D-3056) after 4.8M still running in another lane (session_reading 2026-11-20T08:49:42Z (week)); claimed",
-  "at": "2026-11-20T08:54:23Z",
+  "last": "T768 estimated 308k tokens (calibrated); week has 138.0M left (no five-hour budget, D-3056) (session_reading 2026-11-20T10:14:54Z (week)); claimed",
+  "at": "2026-11-20T10:15:59Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "week": {
-    "used": 54772457,
+    "used": 56000000,
     "budget": 194000000,
-    "left": 139227543,
+    "left": 138000000,
     "resets_at": "2026-11-26T17:00:00Z"
    }
   },
-  "remaining_estimate": 420610914,
-  "projected_finish": "2026-12-05T13:08:49Z"
+  "remaining_estimate": 263073310,
+  "projected_finish": "2026-11-29T22:04:57Z"
  },
  "main_red_history": [
   {
@@ -101494,7 +101507,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 4934,
+ "next_decision": 4939,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
