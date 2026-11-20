@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T00:31:42Z by runner c9b37a0e9036 (actions).
+Updated 2026-11-20T00:37:42Z by runner 5861ab059065 (actions).
 
 **Building: T527 in progress since 00:05Z; 511 of 703 done; week 12% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,14 @@ Updated 2026-11-20T00:31:42Z by runner c9b37a0e9036 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T527 claimed 00:05Z, lease until 03:05Z; lane 2: T758 claimed 23:07Z, lease until 03:27Z; lane 3: T726 claimed 00:03Z, lease until 03:03Z; lane 4: T218 claimed 00:31Z, lease until 03:31Z; lane 5: T663 claimed 23:33Z, lease until 02:33Z; lane 6: T109 claimed 00:04Z, lease until 03:04Z; lane 7: T613 claimed 23:22Z, lease until 03:14Z
 - **Week:** 12% used, 161.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:29Z, 2 min before this update
+- **Last run:** 00:32Z, 5 min before this update
 - **Keeper:** last ran 00:07Z, next wake 02:09Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T672 (since 2026-11-19T23:07:12Z, no attempt used; a plan change fixes it): T672: dependency T717 is DONE but its owned file tests/integration/tests/intake_order_two_jobs_rules.rs is not on main
-- Strict plan check red: 77 problem(s) on tasks still to run (+363 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 73 problem(s) on tasks still to run (+363 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -86,7 +86,6 @@ Updated 2026-11-20T00:31:42Z by runner c9b37a0e9036 (actions).
 | T306 | server and portals: the complaints page, the emergency-email | resync | 1 | 77 min | 00:59Z |  |
 | T205 | portals: owner refunds with a review step and the audit log  | done | 2 | 2 h 26 min | 00:48Z | PLAN GAP: `payments` has no public reader that ties a dispute to its pick (or its charge, business or job). Without one, |
 | T708 | intake: a quote-count update due in quiet hours goes at the  | done | 1 | 50 min | 00:40Z |  |
-| T364 | server and portals: the business step-up code page is served | done | 2 | 70 min | 00:32Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
 
 ### Plan and harness merges on main
 - none
