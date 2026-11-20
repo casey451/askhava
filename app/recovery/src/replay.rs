@@ -2,11 +2,11 @@
 //! derived from what each identifies, so nothing replayed sends or charges twice (OPS-015,
 //! OPS-016, OPS-017; D-156, D-2764, D-3155, D-3753, D-3889, D-4292).
 //!
-//! Charges: every succeeded charge Stripe lists from `charges_since` goes to
-//! `payments::api::rebuild_charge`, which books a lost one once under the pick's derived charge
-//! key and never calls Stripe; an unmatched or refunded one is recorded as a [`ReplayItem`] for
-//! Casey. This module moves no money (FEE-032): an unmatched charge's refund is the nightly
-//! reconcile's own refund of a charge `payments` has no record of (D-3889).
+//! Charges: every succeeded charge Stripe lists from [`CHARGE_MARGIN`] before `charges_since`
+//! goes to `payments::api::rebuild_charge`, which books a lost one once under the pick's derived
+//! charge key and never calls Stripe; an unmatched or refunded one is recorded as a
+//! [`ReplayItem`] for Casey. This module moves no money (FEE-032): an unmatched charge's refund
+//! is the nightly reconcile's own refund of a charge `payments` has no record of (D-3889).
 //!
 //! Texts: `messaging::api::replay_window` gives the sending numbers and the span of the
 //! outbox rows not yet sent; each number's sent log is listed from the span's start through the
@@ -26,7 +26,7 @@ use askhava_messaging::api::{
 };
 use askhava_payments::api::{ChargePage, PAGE_SIZE, Rebuilt, StripeCharge, rebuild_charge};
 use askhava_privacy::api::Vault;
-use jiff::Timestamp;
+use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
@@ -56,6 +56,13 @@ impl<T: askhava_payments::api::ReconcileStripe> ChargeSource for T {
     }
 }
 
+/// How long before the restored backup's time the charge list starts (OPS-016): a charge created
+/// just before the backup but booked just after it is still listed, and Stripe's `created` filter
+/// works in whole seconds. Listing more is safe because `rebuild_charge` answers `AlreadyBooked`
+/// for a charge the restored database holds; a charge missed here would be refunded by the nightly
+/// reconcile as one `payments` has no record of.
+pub const CHARGE_MARGIN: SignedDuration = SignedDuration::from_mins(10);
+
 /// How often and how long the replay waits for a vendor it cannot reach (TD-OPS-04).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Retry {
@@ -82,9 +89,9 @@ pub struct ReplaySources<'a, S, C> {
     pub stripe: &'a C,
     /// The contact vault, for `messaging`'s recipient check.
     pub vault: &'a Vault,
-    /// the sending numbers.
+    /// The sending numbers.
     pub lines: &'a Lines,
-    /// Charges created at or after this are listed: the restored backup's time.
+    /// The restored backup's time; charges created from [`CHARGE_MARGIN`] before it are listed.
     pub charges_since: Timestamp,
     /// The wait-and-retry rule for both vendors.
     pub retry: Retry,
@@ -187,26 +194,32 @@ async fn replay_charges<S, C: ChargeSource>(
     at: Timestamp,
     report: &mut ReplayReport,
 ) -> Result<(), RecoveryError> {
+    let since = from.charges_since.saturating_sub(CHARGE_MARGIN);
+    let since = since.unwrap_or(Timestamp::MIN);
     let mut after: Option<String> = None;
     loop {
         let page = retried(from.retry, || {
-            from.stripe
-                .list_page(from.charges_since, after.as_deref(), PAGE_SIZE)
+            from.stripe.list_page(since, after.as_deref(), PAGE_SIZE)
         })
         .await?;
         for charge in page.charges {
             let rebuilt = rebuild_charge(conn, &listed(charge), at).await;
-            match rebuilt.map_err(|_| RecoveryError::Database)? {
-                Rebuilt::Booked => report.charges_booked += 1,
-                Rebuilt::AlreadyBooked => report.charges_already += 1,
-                Rebuilt::Unmatched(id) => item(report, ItemKind::ChargeUnmatched, id),
-                Rebuilt::Refunded(id) => item(report, ItemKind::ChargeRefunded, id),
-            }
+            tally(report, rebuilt.map_err(|_| RecoveryError::Database)?);
         }
         match page.next {
             Some(next) => after = Some(next),
             None => return Ok(()),
         }
+    }
+}
+
+/// OPS-016, D-4292: counts one `rebuild_charge` answer, or lists it for Casey.
+pub(crate) fn tally(report: &mut ReplayReport, rebuilt: Rebuilt) {
+    match rebuilt {
+        Rebuilt::Booked => report.charges_booked += 1,
+        Rebuilt::AlreadyBooked => report.charges_already += 1,
+        Rebuilt::Unmatched(id) => item(report, ItemKind::ChargeUnmatched, id),
+        Rebuilt::Refunded(id) => item(report, ItemKind::ChargeRefunded, id),
     }
 }
 

@@ -6,6 +6,7 @@
 
 use std::io::{BufRead, BufReader};
 use std::process::{Child, Command, Stdio};
+use std::sync::Mutex;
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::time::Duration;
 
@@ -16,15 +17,16 @@ use askhava_core::api::Settings;
 use askhava_messaging::api::{
     LaunchChannel, Line, Lines, NewText, Relation, SendingNumber, enqueue,
 };
-use askhava_payments::api::{ChargePage, StripeCharge};
+use askhava_payments::api::{ChargePage, Rebuilt, StripeCharge};
 use askhava_privacy::api::{NewContact, Vault, store_contact};
 use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
 use sqlx::PgPool;
 use sqlx::types::Uuid;
 
-use crate::api::{ChargeSource, ItemKind, ReplayItem, ReplaySources, Retry, replay};
+use crate::api::{CHARGE_MARGIN, ChargeSource, ItemKind, ReplayItem, ReplaySources, Retry, replay};
 use crate::models::RecoveryError;
+use crate::replay::tally;
 
 const FROM: &str = "+15005550006";
 const HER: &str = "+15005550142";
@@ -139,26 +141,55 @@ async fn queued(pool: &PgPool, (who, body): (Uuid, &str), n: u128) -> Uuid {
     enqueue(&mut db, &secret(), &text).await.expect("queued").0
 }
 
-/// Stripe's list: unreachable for the first `fails` calls, then the given charges.
-struct FakeStripe(AtomicU32, u32, Vec<StripeCharge>);
+/// Stripe's list: unreachable for the first `fails` calls, then `pages` one after another, each
+/// page's cursor its last charge's ID; the `since` asked for is kept.
+struct FakeStripe {
+    calls: AtomicU32,
+    fails: u32,
+    pages: Vec<Vec<StripeCharge>>,
+    since: Mutex<Option<Timestamp>>,
+}
+
+fn fake_stripe(fails: u32, pages: Vec<Vec<StripeCharge>>) -> FakeStripe {
+    FakeStripe {
+        calls: AtomicU32::new(0),
+        fails,
+        pages,
+        since: Mutex::new(None),
+    }
+}
 
 impl ChargeSource for FakeStripe {
     async fn list_page(
         &self,
-        _: Timestamp,
-        _: Option<&str>,
+        since: Timestamp,
+        after: Option<&str>,
         _: usize,
     ) -> Result<ChargePage, AdapterError> {
-        if self.0.fetch_add(1, Ordering::SeqCst) < self.1 {
+        if self.calls.fetch_add(1, Ordering::SeqCst) < self.fails {
             return Err(AdapterError::NotSent);
         }
-        Ok(ChargePage {
-            charges: self.2.clone(),
-            next: None,
-        })
+        *self.since.lock().expect("since") = Some(since);
+        let last = |p: &Vec<StripeCharge>| p.last().map(|c| c.id.clone());
+        let at = match after {
+            None => 0,
+            Some(id) => {
+                1 + self
+                    .pages
+                    .iter()
+                    .position(|p| last(p).as_deref() == Some(id))
+                    .expect("cursor")
+            }
+        };
+        let charges = self.pages.get(at).cloned().unwrap_or_default();
+        let next = (at + 1 < self.pages.len())
+            .then(|| last(&self.pages[at]))
+            .flatten();
+        Ok(ChargePage { charges, next })
     }
 }
 
+/// Stripe's record of a charge for fake pick 9, refunded by `refunded` cents.
 fn charge(id: &str, refunded: i64) -> StripeCharge {
     StripeCharge {
         id: id.to_owned(),
@@ -172,6 +203,11 @@ fn charge(id: &str, refunded: i64) -> StripeCharge {
     }
 }
 
+/// The restored backup's time.
+fn restored() -> Timestamp {
+    Timestamp::now() - SignedDuration::from_hours(1)
+}
+
 async fn run(
     pool: &PgPool,
     (sms, stripe): (&TwilioSms, &FakeStripe),
@@ -182,7 +218,7 @@ async fn run(
         stripe,
         vault: &vault,
         lines: &lines,
-        charges_since: Timestamp::UNIX_EPOCH,
+        charges_since: restored(),
         retry: QUICK,
     };
     let mut db = pool.acquire().await.expect("connection");
@@ -202,7 +238,7 @@ async fn td_ops_04_a_text_sent_before_the_restore_is_found_and_not_resent(pool: 
     let key = IdempotencyKey::derive(&secret(), "sms.send", &["fake-row-1"]);
     let sent = sms.send_text(&key, HER, FROM, "Fake quote one").await;
     sent.expect("sent before the restore");
-    let stripe = FakeStripe(AtomicU32::new(0), 0, Vec::new());
+    let stripe = fake_stripe(0, Vec::new());
     let first = run(&pool, (&sms, &stripe)).await.expect("replay");
     assert_eq!((first.texts_marked, first.texts_unsent), (1, 1));
     assert!(first.items.is_empty());
@@ -227,7 +263,7 @@ async fn td_ops_04_an_ambiguous_match_is_listed_for_casey_and_not_resent(pool: P
     let key = IdempotencyKey::derive(&secret(), "sms.send", &["fake-row-3"]);
     sms.send_text(&key, HER, FROM, body).await.expect("sent");
     let b = queued(&pool, (her, body), 4).await;
-    let stripe = FakeStripe(AtomicU32::new(0), 0, Vec::new());
+    let stripe = fake_stripe(0, Vec::new());
     let report = run(&pool, (&sms, &stripe)).await.expect("replay");
     assert_eq!(report.texts_marked, 0);
     for row in [a, b] {
@@ -249,7 +285,7 @@ async fn td_ops_04_stripe_is_retried_and_unmatched_charges_are_flagged(pool: PgP
         charge("ch_fakeunmatched", 0),
         charge("ch_fakerefunded", 7500),
     ];
-    let stripe = FakeStripe(AtomicU32::new(0), 2, charges);
+    let stripe = fake_stripe(2, vec![charges]);
     let report = run(&pool, (&sms, &stripe)).await.expect("replay");
     assert_eq!((report.charges_booked, report.charges_already), (0, 0));
     let flagged = |kind, subject: &str| ReplayItem {
@@ -277,7 +313,37 @@ async fn td_ops_04_stripe_is_retried_and_unmatched_charges_are_flagged(pool: PgP
         .execute(&mut *db)
         .await;
     assert!(edit.is_err(), "append-only");
-    let down = FakeStripe(AtomicU32::new(0), u32::MAX, Vec::new());
+    let down = fake_stripe(u32::MAX, Vec::new());
     let failed = run(&pool, (&sms, &down)).await;
     assert_eq!(failed.err(), Some(RecoveryError::Vendor));
+}
+
+/// TD-OPS-04 (OPS-016, D-3753): charges on every page of Stripe's list reach
+/// `rebuild_charge`, and the list starts `CHARGE_MARGIN` before the restored backup's time.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_ops_04_every_page_is_replayed_from_before_the_backup(pool: PgPool) {
+    let sms = sms("http://127.0.0.1:1");
+    let pages = vec![
+        vec![charge("ch_FakeT110One", 0)],
+        vec![charge("ch_FakeT110Two", 7500)],
+    ];
+    let stripe = fake_stripe(0, pages);
+    let report = run(&pool, (&sms, &stripe)).await.expect("replay");
+    let subjects: Vec<&str> = report.items.iter().map(|i| i.subject.as_str()).collect();
+    assert_eq!(subjects, ["ch_FakeT110One", "ch_FakeT110Two"]);
+    let asked = stripe.since.lock().expect("since").expect("listed");
+    let margin = restored().duration_since(asked);
+    assert!(margin >= CHARGE_MARGIN && margin < CHARGE_MARGIN + SignedDuration::from_mins(1));
+}
+
+/// TD-OPS-04 (OPS-016, D-4292): a lost charge `rebuild_charge` books counts as booked, and the
+/// same charge on a second run, `AlreadyBooked`, counts as already held, never as booked again.
+#[test]
+fn td_ops_04_booked_then_already_booked_are_counted_apart() {
+    let mut report = crate::api::ReplayReport::default();
+    tally(&mut report, Rebuilt::Booked);
+    assert_eq!((report.charges_booked, report.charges_already), (1, 0));
+    tally(&mut report, Rebuilt::AlreadyBooked);
+    assert_eq!((report.charges_booked, report.charges_already), (1, 1));
+    assert!(report.items.is_empty());
 }

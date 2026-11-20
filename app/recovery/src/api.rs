@@ -5,5 +5,5 @@ pub use crate::backup::{
 };
 pub use crate::models::{ExportSettings, RecoveryError};
 pub use crate::replay::{
-    ChargeSource, ItemKind, ReplayItem, ReplayReport, ReplaySources, Retry, replay,
+    CHARGE_MARGIN, ChargeSource, ItemKind, ReplayItem, ReplayReport, ReplaySources, Retry, replay,
 };
