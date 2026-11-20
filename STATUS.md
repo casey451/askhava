@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T08:08:47Z by runner adc433df0a11 (actions).
+Updated 2026-11-20T08:12:11Z by runner 37a05d29daa8 (actions).
 
 **Building: T116 in progress since 07:58Z; 527 of 708 done; week 24% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 527 of 708 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T116 claimed 07:58Z, lease until 10:58Z; lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z; lane 7: T669 claimed 07:12Z, lease until 10:12Z
-- **Week:** 24% used, 139.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:08Z, 0 min before this update
+- **Lane:** lane 1: T116 claimed 07:58Z, lease until 10:58Z; lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 4: T766 claimed 08:11Z, lease until 11:11Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z; lane 7: T669 claimed 07:12Z, lease until 10:12Z
+- **Week:** 24% used, 141.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 08:09Z, 3 min before this update
 - **Keeper:** last ran 08:08Z, next wake 08:28Z
 
 ## Needs attention
@@ -91,7 +91,6 @@ Updated 2026-11-20T08:08:47Z by runner adc433df0a11 (actions).
 | T476 | portals: the owner health page with every OPS-008 figure and | done | 1 | 2 h 27 min | 08:50Z |  |
 | T161 | wording: the WORD-024 voice rule's pressure-word scan, the r | BLOCKED | 1 | 4 min | 08:41Z |  |
 | T456 | picks and server: "Hold for 2 more hours" is stored, honoure | done | 1 | 97 min | 08:35Z |  |
-| T216 | site: the hero photo and mark (photography assets) | done | 1 | 97 min | 08:10Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -127,7 +126,7 @@ Updated 2026-11-20T08:08:47Z by runner adc433df0a11 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-20T07:52:13Z (week)): week: 54.2M used, 139.8M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T12:57:10Z.
+- Pacing (session_reading 2026-11-20T08:08:19Z (week)): week: 52.8M used, 141.2M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T13:10:38Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -144,6 +143,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T116 (lease until 2026-11-20T10:58:32Z)
 - lane 2: T617 (lease until 2026-11-20T10:06:22Z)
+- lane 4: T766 (lease until 2026-11-20T11:11:59Z)
 - lane 6: T530 (lease until 2026-11-20T10:20:58Z)
 - lane 7: T669 (lease until 2026-11-20T10:12:31Z)
 

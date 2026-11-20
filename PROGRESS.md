@@ -8415,3 +8415,4 @@
 - 2026-11-20T08:07:08Z runner 15d8c53415f5 (actions): {}
 - 2026-11-20T08:08:19Z runner adc433df0a11 (actions): {}
 - 2026-11-20T08:08:47Z runner adc433df0a11 (actions): {}
+- 2026-11-20T08:12:11Z runner 37a05d29daa8 (actions): {"T766": "QUEUED -> IN_PROGRESS"}; T766 estimated 1.3M tokens (calibrated); week has 141.2M left (no five-hour budget, D-3056) after 4.8M still running in another lane (session_reading 2026-11-20T08:08:19Z (week)); claimed
