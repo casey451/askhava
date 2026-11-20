@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T08:32:47Z by runner 736a40941c53 (actions).
+Updated 2026-11-20T08:33:14Z by runner 736a40941c53 (actions).
 
 **Building: T116 in progress since 07:58Z; 528 of 708 done; week 24% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 528 of 708 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T116 claimed 07:58Z, lease until 10:58Z; lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 3: T727 claimed 08:23Z, lease until 11:23Z; lane 4: T766 claimed 08:11Z, lease until 11:11Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z; lane 7: T669 claimed 07:12Z, lease until 10:12Z
+- **Lane:** lane 1: T116 claimed 07:58Z, lease until 10:58Z; lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 3: T727 claimed 08:23Z, lease until 11:23Z; lane 4: T766 claimed 08:11Z, lease until 11:11Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z
 - **Week:** 24% used, 139.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:24Z, 8 min before this update
+- **Last run:** 08:24Z, 9 min before this update
 - **Keeper:** last ran 08:08Z, next wake 08:28Z
 
 ## Needs attention
@@ -19,11 +19,12 @@ Updated 2026-11-20T08:32:47Z by runner 736a40941c53 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T669 | picks: "Can't take it" and a business leaving end a pick in  | MERGE_PENDING | 2 | 80 min | 08:32Z | runner smoke red on c403ea4898ac (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
 | T672 | intake: the dispatcher asks "How soon?", the night count and | QUEUED | 2 | 89 min | 08:05Z | runner smoke red on 3e9315b7399c (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
 | T561 | server and portals: the homeowner's "Download my data" and h | MERGE_PENDING | 1 | 33 min | 07:51Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
 | T762 | runner and workflow (harness): fix-round workers commit with | done | 1 | 68 min | 07:44Z |  |
 | T764 | ci and pre-hand-in gate (harness): scripts/bootstrap_roles.s | done | 1 | 54 min | 07:29Z |  |
-| T669 | picks: "Can't take it" and a business leaving end a pick in  | QUEUED | 1 | 56 min | 07:07Z | runner smoke red on c403ea4898ac (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
+| T669 | picks: "Can't take it" and a business leaving end a pick in  | QUEUED | 1 | 56 min | 07:07Z |  |
 | T573 | messaging and server: queued business texts are addressed to | BLOCKED | 1 | 5 min | 06:27Z | PLAN GAP: app/privacy/src/business_contacts.rs:124 (owned by T412, not T573). Item (2) needs the outbox sender to read a |
 | T561 | server and portals: the homeowner's "Download my data" and h | resync | 1 | 60 min | 06:26Z |  |
 | T765 | recovery (tests): the backup tests' fake binaries can no lon | done | 1 | 65 min | 06:11Z |  |
@@ -146,7 +147,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 3: T727 (lease until 2026-11-20T11:23:33Z)
 - lane 4: T766 (lease until 2026-11-20T11:11:59Z)
 - lane 6: T530 (lease until 2026-11-20T10:20:58Z)
-- lane 7: T669 (lease until 2026-11-20T10:12:31Z)
 
 ## Last usage reading
-- {"task": "T672", "at": "2026-11-20T08:05:51Z", "cache_creation_input_tokens": 385372, "input_tokens": 357, "output_tokens": 121998, "cache_read_input_tokens": 22342511}
+- {"task": "T669", "at": "2026-11-20T08:32:45Z", "input_tokens": 190, "output_tokens": 46369, "cache_read_input_tokens": 5730489, "cache_creation_input_tokens": 225140}
