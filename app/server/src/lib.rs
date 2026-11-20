@@ -1954,7 +1954,7 @@ fn register_notice_senders(
 const OWNER_INBOX_EMAIL: &str = "ASKHAVA_OWNER_INBOX_EMAIL";
 
 /// The business-account handlers (T490, D-3750, D-3882, D-4293): the complaint box's close
-/// (BIZ-029, T083), a removed member's sessions and links ended (SEC-004, SEC-024, T084), the
+/// (BIZ-029, T083), the end of a "Busy for <n> days" pause at the clock (BIZ-028, T463), a removed member's sessions and links ended (SEC-004, SEC-024, T084), the
 /// OPS-041 owner-inbox email of a not-covered request (T215), the welcome and phone-stopped emails
 /// (CON-020, BIZ-017, T268), the business account event emails (`NOTICE_KINDS`, T329) and the
 /// accepted-quote email ([`register_accepted_quote`]). Every mailer is built from
@@ -1990,6 +1990,10 @@ fn register_business_handlers(
         askhava_businesses::api::BOX_CLOSED_KIND,
         askhava_businesses::api::run_box_closed,
     );
+    let at = Arc::clone(clock);
+    registry.register(askhava_businesses::api::BUSY_END_KIND, move |pool, task| {
+        askhava_businesses::api::run_busy_end(pool, task, at.now())
+    });
     registry.register(
         askhava_businesses::api::MEMBER_REMOVED_KIND,
         askhava_portals::api::run_member_removed,
