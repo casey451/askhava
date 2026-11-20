@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T17:43:10Z by runner e4d287328e44 (actions).
+Updated 2026-11-20T17:46:10Z by runner e4d287328e44 (actions).
 
 **Building: T614 in progress since 17:26Z; 545 of 713 done; week 40% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-20T17:43:10Z by runner e4d287328e44 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T614 claimed 17:26Z, lease until 20:26Z; lane 6: T573 claimed 17:20Z, lease until 20:20Z; lane 7: T743 claimed 16:24Z, lease until 19:24Z
 - **Week:** 40% used, 113.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:42Z, 0 min before this update
+- **Last run:** 17:45Z, 0 min before this update
 - **Keeper:** last ran 17:43Z, next wake 19:27Z
 
 ## Needs attention
@@ -92,7 +92,6 @@ Updated 2026-11-20T17:43:10Z by runner e4d287328e44 (actions).
 | T161 | wording: the WORD-024 voice rule's pressure-word scan, the r | done | 2 | 2 h 1 min | 20:00Z | PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/s |
 | T607 | site: site.css brought up to the V6 reference (laftly-v6.css | QUEUED | 1 | 2 h 5 min | 19:21Z |  |
 | T555 | Decisions digest, piece 10: the next entries after the heade | done | 1 | 2 h 7 min | 17:51Z |  |
-| T715 | intake (harness): corrections to T671's walker: alarm answer | done | 3 | 113 min | 17:43Z | PLAN GAP: one TD-INT-52 sentence can't be met by intake as planned: "a two-word first text naming a trade opens its job  |
 
 ### Plan and harness merges on main
 - none
