@@ -98,13 +98,24 @@ def run_bounded(args: list[str], cwd: Path, seconds: float) -> tuple[int, str, s
     return done.returncode, done.stdout.decode("utf-8", "replace"), done.stderr.decode("utf-8", "replace")
 
 
-def git_read(root: Path, *args: str, check: bool = True) -> str:
-    """One git read in `root` in `git_env()` within 60 seconds, stripped; Refused when it fails and `check`
-    ('' then otherwise). `GitHubEnv.wip_check` reads the clone only through this (D-4799)."""
-    code, out, err = run_bounded(["git", *args], root, 60)
+def git_read(root: Path, *args: str, check: bool = True, deadline: float | None = None) -> str:
+    """One git read in `root` in `git_env()` within 60 seconds (or what is left before the `time.monotonic()`
+    `deadline`, Refused once it has passed); Refused when it fails and `check` ('' then otherwise). A `-z` read
+    comes back as git printed it, never stripped: a path may start with a space or end with a newline (D-4801).
+    `GitHubEnv.wip_check` reads the clone only through this (D-4799)."""
+    seconds = 60.0 if deadline is None else min(60.0, deadline - time.monotonic())
+    if seconds <= 0:
+        raise Refused(f"the WIP scan passed its {WIP_SCAN_SECONDS}-second bound (git {' '.join(args[:2])})")
+    code, out, err = run_bounded(["git", *args], root, seconds)
     if code != 0 and check:
         raise Refused(f"git {' '.join(args[:2])} failed (exit {code}): {err.strip()[:160]}")
-    return out.strip() if code == 0 else ""
+    return ("" if code else out) if "-z" in args else (out.strip() if code == 0 else "")
+
+
+def z_paths(output: str) -> list[str]:
+    """The paths of a `-z` name list: split on NUL only, as git quotes nothing under `-z` and a name may hold a
+    newline, a tab or a quote (D-4801)."""
+    return [p for p in output.split("\0") if p]
 
 
 def repo_refusal(root: Path) -> str:
@@ -165,29 +176,32 @@ def _blocked(path: str, protected: tuple[str, ...], locked: tuple[str, ...]) -> 
 
 
 def binary_paths(numstat: str) -> list[str]:
-    """The paths `git diff --numstat` (rows split by newline or NUL) reports as binary (`-`), and any image by
-    its name: a public repository never keeps a photo or a binary on a WIP ref (D-4720)."""
+    """The paths a `git diff --numstat -z --no-renames` reports as binary (`-`), and any image by its name: a
+    public repository never keeps a photo or a binary on a WIP ref (D-4720). Rows split on NUL only: under `-z` a
+    path is unquoted and may hold a newline or a tab, so a newline split would cut a binary's name (D-4801)."""
     found = []
-    for row in re.split(r"[\0\n]", numstat):
+    for row in numstat.split("\0"):
         parts = row.split("\t", 2)
         if len(parts) == 3 and parts[2] and ("-" in parts[:2] or parts[2].lower().endswith(IMAGE_SUFFIXES)):
             found.append(parts[2])
     return found
 
 
-def commit_paths(root: Path, main: str, head: str) -> tuple[list[str], list[str]]:
+def commit_paths(root: Path, main: str, head: str, deadline: float | None = None) -> tuple[list[str], list[str]]:
     """Every path any commit of `<main>..<head>` changes, and those of them it changes as a binary or an image
     (`binary_paths`), with attributes from main's tree. A merge counts only the paths its combined diff (`--cc`)
     shows, the ones it changes against every parent, so main's own changes merged in are not the branch's; a
     non-merge counts its diff against its parent. A file added in one commit and deleted in a later one is
-    still in the WIP ref's history, so the diff `<main>...<head>` alone would miss it (D-4801)."""
+    still in the WIP ref's history, so the diff `<main>...<head>` alone would miss it (D-4801). Every call counts
+    against the `time.monotonic()` `deadline` (default: WIP_SCAN_SECONDS from now); past it, Refused."""
+    end = time.monotonic() + WIP_SCAN_SECONDS if deadline is None else deadline
     flags = (attr_source(main), "diff-tree", "--root", "-r", "--no-commit-id", "--no-renames", "--no-ext-diff",
              "--no-textconv", "-z")
     names: list[str] = []
     binary: list[str] = []
-    for commit in git_read(root, "rev-list", f"{main}..{head}").split():
-        changed = [p for p in git_read(root, *flags, "--cc", "--name-only", commit).split("\0") if p]
-        numstat = git_read(root, *flags, "--numstat", "--diff-merges=first-parent", commit)
+    for commit in git_read(root, "rev-list", f"{main}..{head}", deadline=end).split():
+        changed = z_paths(git_read(root, *flags, "--cc", "--name-only", commit, deadline=end))
+        numstat = git_read(root, *flags, "--numstat", "--diff-merges=first-parent", commit, deadline=end)
         names += changed
         binary += [p for p in binary_paths(numstat) if p in changed]
     return names, binary
@@ -326,7 +340,7 @@ def _pii(bounded: Callable[[list[str], Path], tuple[int, str, str]], root: Path,
     for commit in _git(bounded, root, "rev-list", "--reverse", rng).split():
         names = _git(bounded, root, attr, "diff-tree", "--root", "--cc", "-r", "--no-commit-id", "--name-only", "-z",
                      "--no-renames", "--diff-filter=d", commit)
-        for path in (p for p in names.split("\0") if p and not p.startswith(prefixes) and p not in files):
+        for path in (p for p in z_paths(names) if not p.startswith(prefixes) and p not in files):
             if module.scan_text(path, _git(bounded, root, attr, "show", "--no-textconv", f"{commit}:{path}")):
                 raise Refused(f"PII scan: {path} in {commit[:12]}")
     if module.scan_text("commit message", _git(bounded, root, "log", *NO_COLOR, "--format=%B", rng)):

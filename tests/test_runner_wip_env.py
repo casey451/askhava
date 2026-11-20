@@ -10,6 +10,7 @@ import json
 import re
 import shutil
 import subprocess
+import time
 from pathlib import Path
 from typing import Any
 
@@ -145,17 +146,45 @@ def test_a_protected_path_added_then_deleted_is_refused(world: dict[str, Any]) -
     assert "protected or locked path: runner/extra.py" in world["env"].wip_check(head)
 
 
-def test_a_binary_added_inside_a_merge_then_deleted_is_refused(world: dict[str, Any]) -> None:
-    root = world["root"]
-    commit(root, {"app/demo/branch.txt": "branch\n"})
+def advance_main(w: dict[str, Any], files: dict[str, str | bytes | None]) -> str:
+    root = w["root"]
     git(root, "switch", "-q", "main")
-    world["main"] = commit(root, {"app/demo/main.txt": "newer main\n"})
+    w["main"] = commit(root, files)
     git(root, "push", "-q", "origin", "main")
     git(root, "switch", "-q", "work")
+    return str(w["main"])
+
+
+def test_a_binary_added_by_one_merge_and_removed_by_another_is_refused(world: dict[str, Any]) -> None:
+    """No non-merge commit and no net diff shows the binary: only the first merge's combined diff does (D-4801)."""
+    root = world["root"]
+    commit(root, {"app/demo/branch.txt": "branch\n"})
+    advance_main(world, {"app/demo/main.txt": "newer main\n"})
     git(root, "merge", "-q", "--no-ff", "--no-commit", "main")
-    commit(root, {"app/demo/blob.bin": b"\x00\x01fake"}, "Merge main")
-    head = commit(root, {"app/demo/blob.bin": None})
+    evil = commit(root, {"app/demo/blob.bin": b"\x00\x01fake"}, "Merge main")
+    assert wip.commit_paths(root, world["main"], evil)[1] == ["app/demo/blob.bin"]
+    advance_main(world, {"app/demo/main.txt": "newest main\n"})
+    git(root, "merge", "-q", "--no-ff", "--no-commit", "main")
+    head = commit(root, {"app/demo/blob.bin": None}, "Merge main again")
+    assert git(root, "diff", "--name-only", f"{world['main']}...{head}") == "app/demo/branch.txt"
     assert "binary or an image: app/demo/blob.bin" in world["env"].wip_check(head)
+
+
+@pytest.mark.parametrize("path", ["app/demo/x\nphoto.png", " photo.bin", "app/demo/a\tb\".png"])
+def test_a_binary_with_a_newline_tab_quote_or_leading_space_name_added_then_deleted_is_refused(
+        world: dict[str, Any], path: str) -> None:
+    """Under `-z` git quotes nothing: rows split on NUL only and are never stripped (D-4801)."""
+    commit(world["root"], {path: b"\x89PNG\r\n\x1a\n\x00fake"})
+    head = commit(world["root"], {path: None, "app/demo/notes.txt": "start\nmore\n"})
+    assert f"binary or an image: {path}" in world["env"].wip_check(head)
+    assert scanned(world) == []
+
+
+def test_the_per_commit_paths_count_against_the_scan_bound(world: dict[str, Any]) -> None:
+    head = commit(world["root"], {"app/demo/notes.txt": "start\nok\n"})
+    with pytest.raises(wip.Refused, match="bound"):
+        wip.commit_paths(world["root"], world["main"], head, time.monotonic() - 1)
+    assert wip.commit_paths(world["root"], world["main"], head, time.monotonic() + 60) == (["app/demo/notes.txt"], [])
 
 
 def test_a_binary_or_a_protected_path_merged_in_from_main_is_not_the_branchs(world: dict[str, Any]) -> None:
@@ -390,6 +419,7 @@ def test_the_path_rules_on_their_own() -> None:
     paths = ["runner/a.py", "kit/layers.json", "kit/layers.json.bak", "scripts/x.py", "app/.gitleaks.toml", "app/ok.rs"]
     assert wip.blocked_paths(paths, protected, locked) == ["runner/a.py", "kit/layers.json", "scripts/x.py", "app/.gitleaks.toml"]
     assert wip.binary_paths("1\t0\tapp/a.rs\0-\t-\tapp/b.bin\0" + "2\t0\tapp/C.JPG\0") == ["app/b.bin", "app/C.JPG"]
+    assert wip.binary_paths("-\t-\tapp/x\nphoto.png\0") == ["app/x\nphoto.png"]
     assert wip.wip_ref("T009", 2) == "claude/wip/T009-a2"
     with pytest.raises(ValueError):
         wip.wip_ref("T009/../main", 1)

@@ -2211,15 +2211,17 @@ class GitHubEnv:
         protected = json.loads(git("show", f"{main}:kit/tasks.json"))["protected_paths"]
         locked = wip.locked_patterns(git("show", f"{main}:scripts/check_plan_lock.py"))
         span, flags = f"{main}...{head}", ("--no-renames", "--no-ext-diff", "--no-textconv", "-z")
-        names, binary = wip.commit_paths(self.root, main, head)  # every commit's paths, not just the net diff (D-4801)
-        names += [p for p in git(attr, "diff", "--name-only", *flags, span).split("\0") if p]
+        deadline = time.monotonic() + wip.WIP_SCAN_SECONDS  # one bound over the path checks and the scan (D-4801)
+        names, binary = wip.commit_paths(self.root, main, head, deadline)  # every commit's paths, not the net diff
+        names += wip.z_paths(git(attr, "diff", "--name-only", *flags, span, deadline=deadline))
         blocked = wip.blocked_paths(dict.fromkeys(names), protected, locked)
         if blocked:
             return f"{head[:12]} changes a protected or locked path: {', '.join(blocked[:3])[:200]}"
-        binary = list(dict.fromkeys(wip.binary_paths(git(attr, "diff", "--numstat", *flags, span)) + binary))
+        binary = list(dict.fromkeys(wip.binary_paths(git(attr, "diff", "--numstat", *flags, span, deadline=deadline))
+                                    + binary))
         if binary:
             return f"{head[:12]} adds a binary or an image: {', '.join(binary[:3])[:200]}"
-        return wip.scan(self.root, main, head)
+        return wip.scan(self.root, main, head, seconds=deadline - time.monotonic())
 
     def _wip_url(self) -> str:
         """The repository every WIP call names: GitHub's URL for this Env's repo, never the clone's `origin`,
