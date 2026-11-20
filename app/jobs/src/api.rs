@@ -26,6 +26,7 @@ pub use crate::emergency_mark::mark_emergency;
 pub use crate::feedback_purge::{
     FEEDBACK_PURGE_KIND, FEEDBACK_PURGED, FeedbackStage, feedback_text_stage, purge_feedback,
 };
+pub use crate::final_event::FINAL_STATUS_KIND;
 pub use crate::flag_inputs::{
     CHECK_IN_ANSWER, ConnectedAnswers, connected_answers, record_check_in_answer,
 };

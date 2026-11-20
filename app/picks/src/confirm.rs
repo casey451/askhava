@@ -33,6 +33,7 @@ use jiff::{SignedDuration, Timestamp};
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
+use crate::aftermath::refused_after_confirm;
 use crate::backup_choice::{Backup, backup_choice};
 use crate::confirm_reminders::lapse;
 use crate::models::{self, PicksError};
@@ -222,7 +223,9 @@ pub async fn check_at_confirm(
 /// refused its Confirm for `refusal`, inside the caller's transaction, and moves it at once to
 /// the homeowner's backup when still pickable. An ended window is the lapse
 /// ([`crate::confirm_reminders::lapse`]); an account or license refusal cancels the pick as
-/// `ineligible`. [`Backup::NoBackup`] means the caller sends PICK-046's text; a pick no longer
+/// `ineligible`, and its business gets "This job is no longer active." at once in the same
+/// transaction (`aftermath::refused_after_confirm`, PICK-026, D-043, D-044, D-4361).
+/// [`Backup::NoBackup`] means the caller sends PICK-046's text; a pick no longer
 /// waiting is [`Backup::Done`]. `paused` is the job's homeowner pause (CON-029).
 ///
 /// # Errors
@@ -237,9 +240,13 @@ pub async fn refused_at_confirm(
     if refusal == Refusal::Expired {
         return lapse(tx, pick, paused, by).await;
     }
+    let Some((job, business)) = models::lock_waiting(tx, pick).await? else {
+        return Ok(Backup::Done);
+    };
     if !models::end_pick(tx, pick, "ineligible", by.1).await? {
         return Ok(Backup::Done);
     }
+    refused_after_confirm(tx, job, business).await?;
     backup_choice(tx, pick, paused, by).await
 }
 

@@ -15,15 +15,20 @@
 //! [`refused_after_confirm`] when a quote is refused after Confirm (D-043); both share one dedupe
 //! key per job and business and skip a business whose pick is `paid` or `free`, so each quoter but
 //! the connected one hears it once (D-1576). [`live_pick_reply`] answers PICK-027.
+//!
+//! Callers (D-1575, D-4361): `settle` calls [`lost_notices`] in the transaction that records the
+//! pick `paid` or `free`; `jobs` queues one `jobs.final_status` task with every move into a final
+//! status, whose handler [`run_final_status`] calls [`no_longer_active`]; `refused_at_confirm` and
+//! `end_pending` with `ineligible` call [`refused_after_confirm`] in their transaction.
 
 use askhava_businesses::api::{NoticePurpose, notice_addresses};
-use askhava_core::api::{NewTask, enqueue};
+use askhava_core::api::{Claimed, HandlerError, NewTask, enqueue};
 use askhava_jobs::api::{current, job_number};
 use askhava_quotes::api::{Period, Price, QuotedPrice, card_holders, quoted_prices};
 use jiff::Timestamp;
 use serde_json::{Value, json};
-use sqlx::PgConnection;
 use sqlx::types::Uuid;
+use sqlx::{PgConnection, PgPool};
 
 use crate::models::{PicksError, waiting_pick};
 use crate::money_notices::BUSINESS_NOTICE_KIND;
@@ -350,6 +355,29 @@ pub async fn refused_after_confirm(
     }
     let number = job_number(conn, job).await.map_err(|_| PicksError::Job)?;
     inactive_to(conn, (job, number), business).await
+}
+
+/// The fixed sentences of the [`run_final_status`] handler (D-491).
+const BAD_FINAL: HandlerError = HandlerError("bad jobs final status payload");
+const FINAL_FAILED: HandlerError = HandlerError("no longer active notices failed");
+
+/// The `jobs.final_status` handler (`jobs::api::FINAL_STATUS_KIND`; PICK-026, D-044, D-1575,
+/// D-4361): [`no_longer_active`] on the task's job in one transaction. It re-reads the job's status
+/// and every send has its own key, so it is safe to run twice (JOB-006, R12).
+///
+/// # Errors
+///
+/// A fixed sentence for a payload with no job or a failed step; the queue tries again.
+pub async fn run_final_status(pool: PgPool, task: Claimed) -> Result<(), HandlerError> {
+    let job = task.payload["job"]
+        .as_str()
+        .and_then(|s| Uuid::parse_str(s).ok())
+        .ok_or(BAD_FINAL)?;
+    let mut tx = pool.begin().await.map_err(|_| FINAL_FAILED)?;
+    no_longer_active(&mut tx, job)
+        .await
+        .map_err(|_| FINAL_FAILED)?;
+    tx.commit().await.map_err(|_| FINAL_FAILED)
 }
 
 /// The PICK-027 reply: [`LIVE_PICK_TEMPLATE`] with the job number; `pick` is the Confirm link's
