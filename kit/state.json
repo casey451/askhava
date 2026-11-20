@@ -95228,8 +95228,8 @@
     "T701",
     "T702"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "suppression-rekey",
    "type": "build",
    "stage": "5",
@@ -95242,10 +95242,33 @@
     5015,
     5016
    ],
-   "wip_claim": {
-    "attempt": 1,
-    "remote_sha": ""
-   }
+   "last_failure": "Second review (head 7921ab0285f5916db9a9df89ee828c150908805e) ended FINDINGS: tests/integration/tests/suppression_rekey.rs:105-116 assert_clean checks a digest only as a hex string; a leak logged with Debug as a decimal byte list (tracing::warn!(digest = ?held.1)) would pass test 2. Fix: also match format!(\"{:?}\", digest) and base64 alongside hex. Code otherwise judged sound; the START-lock gap in optout.rs:178-190 is logged as open item D-5014 and accepted.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-fable-5-2",
+     "model_evidence_count": 142,
+     "head_sha": "7921ab0285f5916db9a9df89ee828c150908805e",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-20T16:24:15Z",
+     "ended_at": "2026-11-20T18:17:05Z",
+     "result": "QUEUED",
+     "usage": {
+      "worker": {
+       "tokens": 5104292,
+       "turns": 77
+      },
+      "reviewer": {
+       "tokens": 1216788,
+       "turns": 25
+      }
+     },
+     "wip_skipped": "7921ab0285f5 changes .github"
+    }
+   ]
   },
   {
    "id": "T746",
@@ -97558,12 +97581,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T573",
-   "at": "2026-11-20T18:01:38Z",
-   "cache_read_input_tokens": 1315842,
-   "cache_creation_input_tokens": 97470,
-   "output_tokens": 13364,
-   "input_tokens": 53
+   "task": "T743",
+   "at": "2026-11-20T18:17:05Z",
+   "input_tokens": 201,
+   "output_tokens": 85753,
+   "cache_creation_input_tokens": 301270,
+   "cache_read_input_tokens": 5933856
   },
   "source": "session_reading 2026-11-20T18:02:37Z (week)",
   "by_task": {
@@ -104037,7 +104060,17 @@
    },
    "T743": {
     "estimated_bytes": 424228,
-    "estimated_tokens": 1043755
+    "estimated_tokens": 1043755,
+    "usage_counting": "message_id",
+    "input_tokens": 201,
+    "output_tokens": 85753,
+    "cache_creation_input_tokens": 301270,
+    "cache_read_input_tokens": 5933856,
+    "worker_tokens": 5104292,
+    "worker_turns": 77,
+    "reviewer_tokens": 1216788,
+    "reviewer_turns": 25,
+    "last_model": "claude-fable-5-2"
    },
    "T772": {
     "estimated_bytes": 502497,
@@ -104047,11 +104080,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-20T13:54:23Z",
-    "tokens": 10576357
+    "tokens": 11556966
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 70824418
+    "tokens": 71805027
    }
   },
   "session_reading": {
@@ -104062,7 +104095,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T18:10:26Z",
+ "updated_at": "2026-11-20T18:17:25Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -104160,7 +104193,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "f230bf40dfe5c49ad0c0208f4d2b25855eb91d3d",
+ "runner_sha": "7921ab0285f5916db9a9df89ee828c150908805e",
  "starter": "actions",
  "smoke_runs": [
   {
