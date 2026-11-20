@@ -43,6 +43,13 @@
 //! backup named (seeded as `quoted_job` and the page pick are) and left waiting; the exact path
 //! [`CANT_TAKE_PAGE`] is filled with it, so its end moves no pick onto another row's quote and the
 //! Confirm and [`RELEASED_PAGE`] rows keep their own picks.
+//!
+//! T766 (D-4880; SEC-019, SEC-034, PRIV-028): `/photos` and below is the `PhotoLink` door (the
+//! path's token is the key, no session opens it); a served row is probed by all six actors with
+//! [`UNISSUED`] as its `{token}`, which must be a `no-store` 404 with no fixture detail and no
+//! sign-in link ([`judge_unissued`]); a live token is T674's test. `{job}` is filled like `{j}`
+//! with the side's own job number, and the other side's number and [`UNKNOWN_NUMBER`] must be the
+//! one not-found answer (on `/h/requests/{job}/photos`).
 
 #[path = r"door_matrix/released_pick.rs"]
 mod released_pick;
@@ -101,10 +108,11 @@ const ARCHITECTURE: &str = include_str!("../../../docs/architecture.md");
 /// The shared path-to-door cases, asserted by `auth_matrix.rs` too (D-2440).
 const DOOR_CASES: &str = include_str!("../../../tests/security/door_cases.txt");
 /// The path parameters the probe can fill from its fixtures.
-const FILLS: [&str; 6] = [
+const FILLS: [&str; 7] = [
     "{pick}",
     "{complaint}",
     "{j}",
+    "{job}",
     "{kind}",
     "{object}",
     "{token}",
@@ -171,6 +179,7 @@ enum Door {
     Public,
     ActionLink,
     Owner,
+    PhotoLink,
 }
 
 /// D-3641 (SEC-019, TD-SEC-61): the sign-up step paths open without a session, matched exactly,
@@ -221,6 +230,8 @@ fn door(path: &str, site: bool) -> Option<Door> {
         Door::Homeowner
     } else if under("/b") {
         Door::Business
+    } else if under("/photos") {
+        Door::PhotoLink
     } else if site {
         Door::Public
     } else {
@@ -235,7 +246,7 @@ fn allowed(door: Door, actor: Actor) -> bool {
         Door::Business => matches!(actor, Actor::BusinessX | Actor::BusinessY),
         Door::Owner => actor == Actor::Owner,
         Door::Public | Door::Asset | Door::SignIn => true,
-        Door::Link | Door::Webhook | Door::ActionLink => false,
+        Door::Link | Door::Webhook | Door::ActionLink | Door::PhotoLink => false,
     }
 }
 
@@ -251,7 +262,7 @@ fn sign_in(door: Door) -> &'static str {
 /// One row the probe takes: method, path template and door.
 type Row = (Method, String, Door);
 
-/// The section 13 rows reading `yes` under the five probed doors; a `yes` row no door names fails
+/// The section 13 rows reading `yes` under the six probed doors; a `yes` row no door names fails
 /// naming it (as `auth_matrix.rs` fails the run).
 fn probed_rows() -> Vec<Row> {
     let probed = |door: &Door| {
@@ -352,18 +363,18 @@ impl Fixtures {
     }
 }
 
-/// A row's `{pick}`, `{complaint}` and `{j}` (job number) values.
+/// A row's `{pick}`, `{complaint}` and `{j}` or `{job}` (job number) values.
 type Ids = (Uuid, Uuid, i64);
 
-/// `template` with `{pick}`, `{complaint}` and `{j}` from `ids` and the action-link parameters
-/// from `link`; any other parameter fails naming it (D-2440, D-4349).
+/// `template` with `{pick}`, `{complaint}` and `{j}` or `{job}` from `ids` and the action-link
+/// parameters from `link`; any other parameter fails naming it (D-2440, D-4349, D-4880).
 fn fill(template: &str, (pick, complaint, number): Ids, link: &Minted) -> Result<String, String> {
     let mut path = template.to_owned();
     for seg in template.split('/').filter(|s| s.starts_with('{')) {
         let value = match seg {
             "{pick}" => pick.to_string(),
             "{complaint}" => complaint.to_string(),
-            "{j}" => number.to_string(),
+            "{j}" | "{job}" => number.to_string(),
             "{kind}" => link.kind.slug().to_owned(),
             "{object}" => link.object.to_string(),
             "{token}" => link.token.clone(),
@@ -585,6 +596,27 @@ fn judge_not_found(reply: &Reply, not_found: &Reply) -> Result<(), String> {
             reply.status, reply.text
         ))
     }
+}
+
+/// SEC-019, SEC-034, PRIV-028 (D-4880): the answer to a photo link nobody was given is a
+/// `no-store` 404 that shows no fixture detail and links to no sign-in page.
+fn judge_unissued(reply: &Reply, fx: &Fixtures) -> Result<(), String> {
+    let status = reply.status;
+    if status != 404 || !reply.no_store {
+        return Err(format!(
+            "an unissued photo link is not a no-store 404: {status}"
+        ));
+    }
+    if let Some(s) = shows(&reply.text, &fx.personal()) {
+        return Err(format!("{status} shows fixture data {s:?}"));
+    }
+    if reply.text.contains("sign-in") {
+        return Err(format!(
+            "{status} links to a sign-in page: {:?}",
+            reply.text
+        ));
+    }
+    Ok(())
 }
 
 /// SEC-026: a `GET` leaves the link as it found it (`open` before and after).
@@ -1194,7 +1226,8 @@ async fn world(pool: &PgPool) -> World {
 }
 
 /// A realm, owner or public row by `who` (SEC-019): the door's answer, and on a homeowner or
-/// business route the other side's `{pick}` or `{complaint}` is the one not-found answer.
+/// business route the other side's `{pick}`, `{complaint}`, `{j}` or `{job}` is the one not-found
+/// answer.
 async fn probe_page(
     w: &World,
     (method, template, door): (&Method, &str, Door),
@@ -1207,7 +1240,7 @@ async fn probe_page(
     };
     let reply = get(fill(template, w.fx.ids_on(template, side), link)?).await;
     judge(door, (who.actor, method), &reply, &w.fx)?;
-    let foreign = ["{pick}", "{complaint}", "{j}"]
+    let foreign = ["{pick}", "{complaint}", "{j}", "{job}"]
         .iter()
         .any(|p| template.contains(p));
     let realm = matches!(door, Door::Business | Door::Homeowner);
@@ -1405,6 +1438,23 @@ async fn owner_again(w: &World) -> CookieJar {
     owner_jar(&mut db, &w.owner).await
 }
 
+/// A photo-link row by `who` (SEC-019, SEC-034, D-4880): [`UNISSUED`] as its `{token}` is
+/// [`judge_unissued`]'s answer; a live token is T674's test.
+async fn probe_photo(
+    w: &World,
+    (method, template): (&Method, &str),
+    who: &Who,
+) -> Result<(), String> {
+    let side = who.actor.side();
+    let unissued = Minted {
+        token: UNISSUED.to_owned(),
+        ..w.fx.links[side].clone()
+    };
+    let path = fill(template, w.fx.ids_on(template, side), &unissued)?;
+    let reply = send(&w.app, (method, &path), &who.jar, Site::Own, Uuid::new_v4()).await;
+    judge_unissued(&reply, &w.fx)
+}
+
 /// Every actor on one row (the owner signed in afresh, [`owner_again`]).
 async fn probe_row(
     w: &World,
@@ -1423,6 +1473,10 @@ async fn probe_row(
         let case = |e: String| format!("{method} {template} as {:?}: {e}", who.actor);
         if *door == Door::ActionLink {
             probe_link(w, (method, template), who).await.map_err(case)?;
+        } else if *door == Door::PhotoLink {
+            probe_photo(w, (method, template), who)
+                .await
+                .map_err(case)?;
         } else {
             probe_page(w, (method, template, *door), who)
                 .await
@@ -1535,7 +1589,7 @@ fn td_sec_61_the_shared_door_cases_hold_here() {
         );
         seen.insert(listed);
     }
-    assert_eq!(seen.len(), 9, "every door has a case: {seen:?}");
+    assert_eq!(seen.len(), 10, "every door has a case: {seen:?}");
     assert_eq!(
         door("/elsewhere", false),
         None,
@@ -1543,14 +1597,14 @@ fn td_sec_61_the_shared_door_cases_hold_here() {
     );
 }
 
-/// TD-SEC-61, TD-SEC-79: a row with a parameter the fixtures do not fill fails naming it; the six
-/// fills work.
+/// TD-SEC-61, TD-SEC-79: a row with a parameter the fixtures do not fill fails naming it; the
+/// seven fills work (D-4880).
 #[test]
 fn td_sec_61_an_unknown_parameter_fails_naming_it() {
     let fx = planted_fixtures();
-    let problem = fill("/b/quote/{job}/auto-confirm", fx.ids(0), &fx.links[0]).expect_err("{job}");
+    let problem = fill("/b/made-up/{widget}", fx.ids(0), &fx.links[0]).expect_err("{widget}");
     assert!(
-        problem.contains("{job}") && problem.contains("/b/quote/{job}/auto-confirm"),
+        problem.contains("{widget}") && problem.contains("/b/made-up/{widget}"),
         "{problem}"
     );
     let path = fill("/b/a/{kind}/{object}/{token}", fx.ids(1), &fx.links[1]).expect("filled");
@@ -1562,6 +1616,91 @@ fn td_sec_61_an_unknown_parameter_fails_naming_it() {
     assert_eq!(path, format!("/b/{}/{}", fx.picks[1], fx.complaints[1]));
     let path = fill(JOB_PAGE, fx.ids(1), &fx.links[1]).expect("filled");
     assert_eq!(path, format!("/b/jobs/{}", fx.numbers[1]));
+    let path = fill(PHOTOS_PAGE, fx.ids(1), &fx.links[1]).expect("filled");
+    assert_eq!(path, format!("/h/requests/{}/photos", fx.numbers[1]));
+}
+
+/// T674's homeowner photo page, whose `{job}` is the side's own job number (D-4880).
+const PHOTOS_PAGE: &str = "/h/requests/{job}/photos";
+
+/// A planted `/h/requests/{job}/photos` that shows only A's own request, number 1001, and gives
+/// every other number the one not-found answer.
+async fn planted_photos(Path(number): Path<i64>) -> Response {
+    let kept = [(header::CACHE_CONTROL, "no-store")];
+    match number {
+        1001 => (kept, "Photos for request 1001").into_response(),
+        _ => (StatusCode::NOT_FOUND, kept).into_response(),
+    }
+}
+
+/// TD-SEC-61 (SEC-019, D-4880): on a planted router A's `{job}` fill is admitted, and B's number
+/// and an unknown number are the one not-found answer.
+#[tokio::test]
+async fn td_sec_61_the_job_fill_admits_a_and_hides_b() {
+    let fx = planted_fixtures();
+    let app = Router::new().route(PHOTOS_PAGE, get(planted_photos));
+    let jar = ensure_pre_session(CookieJar::new()).expect("jar");
+    let get = |ids: Ids| {
+        let path = fill(PHOTOS_PAGE, ids, &fx.links[0]).expect("filled");
+        let jar = &jar;
+        let app = &app;
+        async move { send(app, (&Method::GET, &path), jar, Site::Own, Uuid::new_v4()).await }
+    };
+    assert_eq!(door(PHOTOS_PAGE, false), Some(Door::Homeowner));
+    let as_a = (Actor::HomeownerA, &Method::GET);
+    let own = get(fx.ids_on(PHOTOS_PAGE, Actor::HomeownerA.side())).await;
+    assert_eq!(judge(Door::Homeowner, as_a, &own, &fx), Ok(()));
+    let theirs = get(fx.ids_on(PHOTOS_PAGE, Actor::HomeownerB.side())).await;
+    let unknown = get((Uuid::new_v4(), Uuid::new_v4(), UNKNOWN_NUMBER)).await;
+    assert_eq!(judge_not_found(&theirs, &unknown), Ok(()));
+    assert_eq!(theirs.status, 404);
+    let leak = judge_not_found(&own, &unknown);
+    assert!(leak.is_err(), "A's own request read as not found: {leak:?}");
+}
+
+/// The planted photo links: `good` the right answer to an unissued token, the others leaking one
+/// (a fixture phone, a sign-in link, a cacheable 404, a 200).
+async fn planted_photo(Path(token): Path<String>) -> Response {
+    let kept = [(header::CACHE_CONTROL, "no-store")];
+    let missing = StatusCode::NOT_FOUND;
+    match token.as_str() {
+        "phone" => (missing, kept, "Call +19285550190").into_response(),
+        "sign-in" => (missing, kept, "<a href=\"/h/sign-in\">Sign in</a>").into_response(),
+        "cached" => missing.into_response(),
+        "open" => (kept, "A photo").into_response(),
+        _ => (missing, kept).into_response(),
+    }
+}
+
+/// TD-SEC-61 (SEC-019, SEC-034, D-4880): `/photos/{token}` is the `PhotoLink` door, which admits
+/// no session; on a planted router an unissued token is a `no-store` 404 for all six actors, and
+/// each leaking answer fails.
+#[tokio::test]
+async fn td_sec_61_an_unissued_photo_link_is_a_no_store_404() {
+    let fx = planted_fixtures();
+    let template = "/photos/{token}";
+    assert_eq!(door(template, false), Some(Door::PhotoLink));
+    let app = Router::new().route(template, get(planted_photo));
+    let jar = ensure_pre_session(CookieJar::new()).expect("jar");
+    let unissued = Minted {
+        token: UNISSUED.to_owned(),
+        ..fx.links[0].clone()
+    };
+    let path = fill(template, fx.ids(0), &unissued).expect("filled");
+    for actor in ACTORS {
+        assert!(!allowed(Door::PhotoLink, actor), "{actor:?}");
+        let reply = send(&app, (&Method::GET, &path), &jar, Site::Own, Uuid::new_v4()).await;
+        assert_eq!(judge_unissued(&reply, &fx), Ok(()), "{actor:?}");
+    }
+    for leak in [
+        "/photos/phone",
+        "/photos/sign-in",
+        "/photos/cached",
+        "/photos/open",
+    ] {
+        let reply = send(&app, (&Method::GET, leak), &jar, Site::Own, Uuid::new_v4()).await;
+        assert!(judge_unissued(&reply, &fx).is_err(), "{leak}");
+    }
 }
 
 /// A planted `/b/jobs/{j}` that shows only X's own job, number 1001, and gives every other number
