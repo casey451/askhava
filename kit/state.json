@@ -106186,7 +106186,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T23:25:30Z",
+ "updated_at": "2026-11-20T23:40:01Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -106285,7 +106285,7 @@
   ]
  },
  "runner_sha": "692854aa6cfaf8c894424ca538327b0742840aa7",
- "starter": "actions",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "431f3db7d6d49d1e8f3578991cd8a9e78ae4ef5e",
@@ -106579,7 +106579,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 5081,
+ "next_decision": 5082,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
@@ -108120,6 +108120,12 @@
    "at": "2026-11-20T23:20:27Z",
    "reason": "Crate CLAUDE.md headroom: trim-when-alone rule in docs/code-docs.md (lane idle cause, Fable)",
    "session": "manual-50c069c95782"
+  },
+  {
+   "number": 5081,
+   "at": "2026-11-20T23:40:01Z",
+   "reason": "External review findings batch: T775-T785, T542 amendment (Fable)",
+   "session": "manual-e50971910ecc"
   }
  ],
  "lanes_fallback_history": [
