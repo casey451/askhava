@@ -129,6 +129,49 @@ def test_a_binary_or_an_image_is_refused(world: dict[str, Any], path: str, body:
     assert scanned(world) == []
 
 
+@pytest.mark.parametrize("path, body", [("app/demo/house.png", b"\x89PNG\r\n\x1a\n\x00fake"),
+                                        ("app/demo/key.dat", b"\x00" + b"glpat-" + b"FAKE0000000000000000")])
+def test_a_binary_or_an_image_added_then_deleted_is_refused(world: dict[str, Any], path: str, body: bytes) -> None:
+    """The net diff is empty, but the file stays in the WIP ref's history (D-4801)."""
+    commit(world["root"], {path: body})
+    head = commit(world["root"], {path: None, "app/demo/notes.txt": "start\nmore\n"})
+    assert f"binary or an image: {path}" in world["env"].wip_check(head)
+    assert scanned(world) == []
+
+
+def test_a_protected_path_added_then_deleted_is_refused(world: dict[str, Any]) -> None:
+    commit(world["root"], {"runner/extra.py": "fake\n"})
+    head = commit(world["root"], {"runner/extra.py": None, "app/demo/notes.txt": "start\nmore\n"})
+    assert "protected or locked path: runner/extra.py" in world["env"].wip_check(head)
+
+
+def test_a_binary_added_inside_a_merge_then_deleted_is_refused(world: dict[str, Any]) -> None:
+    root = world["root"]
+    commit(root, {"app/demo/branch.txt": "branch\n"})
+    git(root, "switch", "-q", "main")
+    world["main"] = commit(root, {"app/demo/main.txt": "newer main\n"})
+    git(root, "push", "-q", "origin", "main")
+    git(root, "switch", "-q", "work")
+    git(root, "merge", "-q", "--no-ff", "--no-commit", "main")
+    commit(root, {"app/demo/blob.bin": b"\x00\x01fake"}, "Merge main")
+    head = commit(root, {"app/demo/blob.bin": None})
+    assert "binary or an image: app/demo/blob.bin" in world["env"].wip_check(head)
+
+
+def test_a_binary_or_a_protected_path_merged_in_from_main_is_not_the_branchs(world: dict[str, Any]) -> None:
+    """Main's own changes, merged in by `_merge_main`, are not in any branch commit's own paths (D-4801)."""
+    root = world["root"]
+    commit(root, {"app/demo/branch.txt": "branch\n"})
+    git(root, "switch", "-q", "main")
+    commit(root, {"app/demo/logo.png": b"\x89PNG\r\n\x1a\n\x00", "runner/extra.py": "fake\n"})
+    git(root, "push", "-q", "origin", "main")
+    git(root, "switch", "-q", "work")
+    git(root, "merge", "-q", "--no-ff", "-m", "Merge main", "main")
+    head = git(root, "rev-parse", "HEAD")
+    assert wip.commit_paths(root, git(root, "rev-parse", "main"), head) == (["app/demo/branch.txt"], [])
+    assert world["env"].wip_check(head) == ""
+
+
 def test_an_added_gitleaks_allow_is_refused(world: dict[str, Any]) -> None:
     head = commit(world["root"], {"app/demo/notes.txt": "start\nvalue = 1  # gitleaks:" + "allow\n"})
     assert "gitleaks:allow" in world["env"].wip_check(head)

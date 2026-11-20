@@ -2187,8 +2187,9 @@ class GitHubEnv:
 
     def wip_check(self, head: str) -> str:
         """'' when `head` may be pushed to a WIP ref, else why (D-4720): commits ahead of GitHub's main, the same
-        `.github` tree as main's, no blocked or binary path in `<main>...<head>` (`wip.blocked_paths` against main's
-        `protected_paths` and plan-lock list, `wip.binary_paths`), then `wip.scan`. Any failure is a refusal."""
+        `.github` tree as main's, no blocked or binary path in `<main>...<head>` nor in any one commit of `<main>..<head>`
+        (`wip.commit_paths`; `wip.blocked_paths` against main's `protected_paths` and plan-lock list,
+        `wip.binary_paths`), then `wip.scan`. Any failure is a refusal."""
         try:
             return self._wip_refusal(head)
         except Exception as exc:  # noqa: BLE001  # fail closed: an unreadable answer is never a pass (D-4720)
@@ -2210,11 +2211,12 @@ class GitHubEnv:
         protected = json.loads(git("show", f"{main}:kit/tasks.json"))["protected_paths"]
         locked = wip.locked_patterns(git("show", f"{main}:scripts/check_plan_lock.py"))
         span, flags = f"{main}...{head}", ("--no-renames", "--no-ext-diff", "--no-textconv", "-z")
-        names = [p for p in git(attr, "diff", "--name-only", *flags, span).split("\0") if p]
-        blocked = wip.blocked_paths(names, protected, locked)
+        names, binary = wip.commit_paths(self.root, main, head)  # every commit's paths, not just the net diff (D-4801)
+        names += [p for p in git(attr, "diff", "--name-only", *flags, span).split("\0") if p]
+        blocked = wip.blocked_paths(dict.fromkeys(names), protected, locked)
         if blocked:
             return f"{head[:12]} changes a protected or locked path: {', '.join(blocked[:3])[:200]}"
-        binary = wip.binary_paths(git(attr, "diff", "--numstat", *flags, span))
+        binary = list(dict.fromkeys(wip.binary_paths(git(attr, "diff", "--numstat", *flags, span)) + binary))
         if binary:
             return f"{head[:12]} adds a binary or an image: {', '.join(binary[:3])[:200]}"
         return wip.scan(self.root, main, head)

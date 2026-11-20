@@ -175,6 +175,24 @@ def binary_paths(numstat: str) -> list[str]:
     return found
 
 
+def commit_paths(root: Path, main: str, head: str) -> tuple[list[str], list[str]]:
+    """Every path any commit of `<main>..<head>` changes, and those of them it changes as a binary or an image
+    (`binary_paths`), with attributes from main's tree. A merge counts only the paths its combined diff (`--cc`)
+    shows, the ones it changes against every parent, so main's own changes merged in are not the branch's; a
+    non-merge counts its diff against its parent. A file added in one commit and deleted in a later one is
+    still in the WIP ref's history, so the diff `<main>...<head>` alone would miss it (D-4801)."""
+    flags = (attr_source(main), "diff-tree", "--root", "-r", "--no-commit-id", "--no-renames", "--no-ext-diff",
+             "--no-textconv", "-z")
+    names: list[str] = []
+    binary: list[str] = []
+    for commit in git_read(root, "rev-list", f"{main}..{head}").split():
+        changed = [p for p in git_read(root, *flags, "--cc", "--name-only", commit).split("\0") if p]
+        numstat = git_read(root, *flags, "--numstat", "--diff-merges=first-parent", commit)
+        names += changed
+        binary += [p for p in binary_paths(numstat) if p in changed]
+    return names, binary
+
+
 def scan(root: Path, main: str, head: str, run: Bounded = run_bounded, seconds: float = WIP_SCAN_SECONDS,
          clock: Callable[[], float] = time.monotonic) -> str:
     """'' only when `<main>..<head>` passes every check in the module docstring, else the one-line reason.
