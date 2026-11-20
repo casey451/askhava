@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T02:30:40Z by runner 1ef120be8c2a (actions).
+Updated 2026-11-20T02:33:43Z by runner 1ef120be8c2a (actions).
 
 **Building: T747 in progress since 02:14Z; 515 of 704 done; week 15% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 515 of 704 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T747 claimed 02:14Z, lease until 05:14Z; lane 3: T726 claimed 01:05Z, lease until 04:05Z; lane 4: T110 claimed 02:18Z, lease until 05:18Z
-- **Week:** 15% used, 161.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:27Z, 2 min before this update
+- **Lane:** lane 2: T747 claimed 02:14Z, lease until 05:14Z; lane 3: T726 claimed 01:05Z, lease until 04:05Z; lane 4: T110 claimed 02:18Z, lease until 05:18Z; lane 6: T648 claimed 02:33Z, lease until 05:33Z
+- **Week:** 15% used, 160.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 02:31Z, 2 min before this update
 - **Keeper:** last ran 02:27Z, next wake 04:08Z
 
 ## Needs attention
@@ -122,7 +122,7 @@ Updated 2026-11-20T02:30:40Z by runner 1ef120be8c2a (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-20T02:13:08Z (week)): week: 32.8M used, 161.2M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T06:09:25Z.
+- Pacing (session_reading 2026-11-20T02:27:04Z (week)): week: 33.9M used, 160.1M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T03:52:20Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -141,6 +141,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T747 (lease until 2026-11-20T05:14:14Z)
 - lane 3: T726 (lease until 2026-11-20T04:05:47Z)
 - lane 4: T110 (lease until 2026-11-20T05:18:18Z)
+- lane 6: T648 (lease until 2026-11-20T05:33:22Z)
 
 ## Last usage reading
 - {"task": "T763", "at": "2026-11-20T02:17:31Z", "input_tokens": 69, "output_tokens": 10660, "cache_creation_input_tokens": 67544, "cache_read_input_tokens": 1076832}
