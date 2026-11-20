@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE recovery.replay_item SET subject = 'ch_other'",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "96d2af96394be8d6ecd45f0b42f02e83ec1cf3ed38e7f2b9129bcee0708340b4"
+}
