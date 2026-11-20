@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T04:54:49Z by runner d559b7df75e9 (actions).
+Updated 2026-11-20T04:54:59Z by runner d559b7df75e9 (actions).
 
 **Building: T726 in progress since 04:23Z; 518 of 707 done; week 20% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 518 of 707 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T726 claimed 04:23Z, lease until 07:23Z; lane 2: T751 claimed 04:11Z, lease until 07:11Z; lane 3: T543 claimed 03:53Z, lease until 06:53Z; lane 4: T110 claimed 02:18Z, lease until 05:18Z; lane 6: T663 claimed 03:48Z, lease until 06:48Z; lane 7: T434 claimed 03:02Z, lease until 07:54Z
+- **Lane:** lane 1: T726 claimed 04:23Z, lease until 07:23Z; lane 2: T751 claimed 04:11Z, lease until 07:11Z; lane 3: T543 claimed 03:53Z, lease until 06:53Z; lane 4: T110 claimed 02:18Z, lease until 05:18Z; lane 7: T434 claimed 03:02Z, lease until 07:54Z
 - **Week:** 20% used, 148.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:54Z, 0 min before this update
 - **Keeper:** last ran 04:51Z, next wake 05:20Z
@@ -20,6 +20,7 @@ Updated 2026-11-20T04:54:49Z by runner d559b7df75e9 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T663 | picks, jobs and payments (harness): a confirmed pick moves i | MERGE_PENDING | 3 | 65 min | 04:54Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T556 | Decisions digest, piece 11: the next entries after the heade | MERGE_PENDING | 1 | 51 min | 04:50Z |  |
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 2 | 32 min | 04:08Z | merging main into the reviewed head conflicts in kit/plan.lock, kit/runner.json; a resync merges it in on this attempt ( |
 | T747 | intake and jobs: the homeowner's INT-029 emergency choice ma | done | 1 | 71 min | 03:25Z |  |
@@ -29,7 +30,7 @@ Updated 2026-11-20T04:54:49Z by runner d559b7df75e9 (actions).
 | T763 | tests (harness): the web chat spec's fake numbers never coll | done | 1 | 25 min | 02:17Z |  |
 | T672 | intake: the dispatcher asks "How soon?", the night count and | BLOCKED | 1 | 13 min | 02:12Z | PLAN GAP: tests/integration/tests/intake_order_two_jobs.rs:278 (owned by T711 and T717, not T672) also pins the old orde |
 | T218 | Wording and template scans from the brains: sales phrases, n | done | 1 | 74 min | 01:46Z |  |
-| T663 | picks, jobs and payments (harness): a confirmed pick moves i | check_failed | 2 | 2 h 7 min | 01:40Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
+| T663 | picks, jobs and payments (harness): a confirmed pick moves i | check_failed | 2 | 2 h 7 min | 01:40Z |  |
 | T527 | messaging, portals and server: the business-texting switch t | done | 1 | 93 min | 01:39Z |  |
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | QUEUED | 1 | 56 min | 01:00Z |  |
 | T613 | site: the D-4246 polish layer in site.css (tokens, layered s | done | 1 | 85 min | 00:47Z |  |
@@ -138,8 +139,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T751 (lease until 2026-11-20T07:11:19Z)
 - lane 3: T543 (lease until 2026-11-20T06:53:34Z)
 - lane 4: T110 (lease until 2026-11-20T05:18:18Z)
-- lane 6: T663 (lease until 2026-11-20T06:48:51Z)
 - lane 7: T434 (lease until 2026-11-20T07:54:10Z)
 
 ## Last usage reading
-- {"task": "T556", "at": "2026-11-20T04:50:05Z", "cache_read_input_tokens": 6240578, "input_tokens": 189, "cache_creation_input_tokens": 297727, "output_tokens": 60919}
+- {"task": "T663", "at": "2026-11-20T04:54:26Z", "cache_creation_input_tokens": 158154, "cache_read_input_tokens": 3231757, "input_tokens": 109, "output_tokens": 22597}
