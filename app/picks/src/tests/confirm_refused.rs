@@ -7,7 +7,7 @@
 use std::collections::BTreeSet;
 
 use askhava_businesses::api::AccountStatus;
-use askhava_core::api::{Guarded, due_or_running};
+use askhava_core::api::{Guarded, WorkerId, claim, due_or_running};
 use askhava_jobs::api::{JobStatus, TEXT_KIND, current, move_to};
 use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
 use askhava_ops::api::Actor;
@@ -15,7 +15,7 @@ use askhava_quotes::api::{
     CardBusiness, CardJob, Format, OfferTown, Price, QuoteForm, QuoteRules, parse_quote,
     send_cards, submit_quote,
 };
-use jiff::Timestamp;
+use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
@@ -132,8 +132,44 @@ async fn state(db: &mut PgConnection, (job, pick): (Uuid, Uuid)) -> State {
     (ended.join("|"), status, texts)
 }
 
-/// Refuses a fresh pick's Confirm for `refusal` twice and returns the first answer and the
-/// state, which the second call (the pick no longer waits) must answer `Done` and leave as is.
+/// Stores `at(247)` as the pick's Confirm window end, as its sent notice does.
+async fn window(db: &mut PgConnection, pick: Uuid) {
+    sqlx::query!(
+        "UPDATE picks.pick SET confirm_due = $2 WHERE id = $1",
+        pick,
+        at(247).to_sqlx() as _,
+    )
+    .execute(db)
+    .await
+    .expect("window");
+}
+
+/// The job version in the payload of each committed PICK-046 or PICK-047 text event of `job`,
+/// claimed through `core`'s API (TD-SEC-10), so a later call sees only events queued since.
+async fn text_versions(pool: &PgPool, job: Uuid) -> Vec<Option<i64>> {
+    let owner = WorkerId::new(pool).await.expect("worker");
+    let lease = SignedDuration::from_hours(1);
+    let claimed = claim(pool, owner, at(100_000), lease, 100).await;
+    let job = job.to_string();
+    let ours = |template: Option<&str>| {
+        [PICK_LAPSED_TEMPLATE, PICK_MOVED_TEMPLATE]
+            .iter()
+            .any(|t| template == Some(t))
+    };
+    claimed
+        .expect("claim")
+        .iter()
+        .filter(|t| t.kind == TEXT_KIND && t.payload["job"].as_str() == Some(&job))
+        .filter(|t| ours(t.payload["template"].as_str()))
+        .map(|t| t.payload["version"].as_i64())
+        .collect()
+}
+
+/// Refuses a fresh pick's Confirm (its window end stored) for `refusal` twice and returns the
+/// first answer and the state, which the second call (the pick no longer waits) must answer
+/// `Done` and leave as is. The ended pick's stored end is no longer returned, and each queued
+/// text event carries the job's version after the refusal's last move, so the sender, which
+/// skips an event of an older version (`jobs::api::text_due`), still sends it.
 async fn refused(
     pool: &PgPool,
     refusal: Refusal,
@@ -141,13 +177,24 @@ async fn refused(
 ) -> (Backup, State) {
     let mut tx = pool.begin().await.expect("tx");
     let (job, pick) = picked(&mut tx, backup).await;
+    window(&mut tx, pick).await;
+    assert_eq!(confirm_deadline(&mut tx, pick).await, Ok(Some(at(247))));
     let by = (Actor::System, at(10));
     let first = refuse_confirm(&mut tx, (pick, job), refusal, paused, by).await;
     let after = state(&mut tx, (job, pick)).await;
+    let version = current(&mut tx, job).await.expect("job").version;
     let again = refuse_confirm(&mut tx, (pick, job), refusal, paused, by).await;
     assert_eq!(again, Ok(Backup::Done), "a pick no longer waiting");
     assert_eq!(state(&mut tx, (job, pick)).await, after, "changes nothing");
     assert_eq!(confirm_deadline(&mut tx, pick).await, Ok(None));
+    tx.commit().await.expect("commit");
+    let queued = after.2.iter().filter(|queued| **queued).count();
+    let want = vec![Some(i64::from(version)); queued];
+    assert_eq!(
+        text_versions(pool, job).await,
+        want,
+        "queued after the move"
+    );
     (first.expect("refused"), after)
 }
 
@@ -206,14 +253,7 @@ async fn confirm_deadline_returns_the_stored_end_and_none(pool: PgPool) {
         confirm_deadline(&mut db, Uuid::from_u128(9)).await,
         Ok(None)
     );
-    sqlx::query!(
-        "UPDATE picks.pick SET confirm_due = $2 WHERE id = $1",
-        pick,
-        at(247).to_sqlx() as _,
-    )
-    .execute(&mut *db)
-    .await
-    .expect("window");
+    window(&mut db, pick).await;
     assert_eq!(confirm_deadline(&mut db, pick).await, Ok(Some(at(247))));
     let unknown = (Uuid::from_u128(9), Uuid::from_u128(8));
     let by = (Actor::System, at(10));
