@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T22:03:52Z by runner 1b3980e8c2cf (actions).
+Updated 2026-11-20T22:04:19Z by runner 1b3980e8c2cf (actions).
 
 **Building: T682 in progress since 20:56Z; 556 of 713 done; week 49% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 556 of 713 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 5: T682 claimed 20:56Z, lease until 23:56Z; lane 6: T673 claimed 20:17Z, lease until 23:17Z
+- **Lane:** lane 5: T682 claimed 20:56Z, lease until 23:56Z
 - **Week:** 49% used, 97.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:51Z, 12 min before this update
+- **Last run:** 21:51Z, 13 min before this update
 - **Keeper:** last ran 21:50Z, next wake 23:19Z
 
 ## Needs attention
@@ -21,6 +21,7 @@ Updated 2026-11-20T22:03:52Z by runner 1b3980e8c2cf (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T673 | intake (harness): the dispatcher builds and shows the card,  | MERGE_PENDING | 1 | 106 min | 22:03Z |  |
 | T739 | picks: the owner's re-send of a release goes only while the  | MERGE_PENDING | 1 | 52 min | 21:49Z |  |
 | T752 | catalog and twin (harness): the `launch_open` comment says a | MERGE_PENDING | 1 | 39 min | 21:24Z |  |
 | T750 | docs: the privacy policy draft says an opted-out number is k | done | 1 | 38 min | 21:20Z |  |
@@ -151,7 +152,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 5: T682 (lease until 2026-11-20T23:56:14Z)
-- lane 6: T673 (lease until 2026-11-20T23:17:39Z)
 
 ## Last usage reading
-- {"task": "T739", "at": "2026-11-20T21:49:24Z", "cache_read_input_tokens": 1507018, "cache_creation_input_tokens": 81352, "output_tokens": 21334, "input_tokens": 73}
+- {"task": "T673", "at": "2026-11-20T22:03:51Z", "output_tokens": 78229, "cache_read_input_tokens": 7805548, "input_tokens": 205, "cache_creation_input_tokens": 334425}
