@@ -128,7 +128,8 @@ pub async fn run_pick_notice(
 /// `jobs` already returned the job to Quotes ready (its backstop or an emergency's 60 minutes fired
 /// before the send) the lapse runs first at `sent_at` (PICK-046, PICK-047), and in any other lost
 /// status the pick is stored as expired, or as `payment_failed` when its business had pressed
-/// Confirm (OPS-034, D-4349), so no "Accept by" goes for a dead pick (PICK-035, D-1503). [`PicksError::Job`] or [`PicksError::Database`].
+/// Confirm (OPS-034, D-4349), so no "Accept by" goes for a dead pick (PICK-035, D-1503).
+/// [`PicksError::Job`] or [`PicksError::Database`].
 pub async fn notice_sent(
     db: &mut PgConnection,
     pick: Uuid,
