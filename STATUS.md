@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T01:41:18Z by runner e1c97858d6bc (actions).
+Updated 2026-11-20T01:41:28Z by runner e1c97858d6bc (actions).
 
 **Building: T726 in progress since 01:05Z; 512 of 704 done; week 14% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 512 of 704 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T726 claimed 01:05Z, lease until 04:05Z; lane 4: T218 claimed 00:31Z, lease until 03:31Z; lane 5: T663 claimed 23:33Z, lease until 02:33Z
+- **Lane:** lane 3: T726 claimed 01:05Z, lease until 04:05Z; lane 4: T218 claimed 00:31Z, lease until 03:31Z
 - **Week:** 14% used, 162.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:40Z, 0 min before this update
+- **Last run:** 01:41Z, 0 min before this update
 - **Keeper:** last ran 01:40Z, next wake 02:00Z
 
 ## Needs attention
@@ -21,6 +21,7 @@ Updated 2026-11-20T01:41:18Z by runner e1c97858d6bc (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T663 | picks, jobs and payments (harness): a confirmed pick moves i | MERGE_PENDING | 2 | 2 h 7 min | 01:40Z | PLAN GAP: tests/test_coverage_floor.py:125 asserts floors["future"] == [], contradicting T663 goal (5), which requires a |
 | T527 | messaging, portals and server: the business-texting switch t | MERGE_PENDING | 1 | 93 min | 01:39Z |  |
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | QUEUED | 1 | 56 min | 01:00Z | T726 resync merged main cleanly, but fresh-eyes review of the WIP scan (runner/wip.py) found fail-open bypasses in three |
 | T613 | site: the D-4246 polish layer in site.css (tokens, layered s | MERGE_PENDING | 1 | 85 min | 00:47Z |  |
@@ -34,7 +35,7 @@ Updated 2026-11-20T01:41:18Z by runner e1c97858d6bc (actions).
 | T480 | messaging, server and portals: the stored "Spanish conversat | done | 1 | 104 min | 22:23Z |  |
 | T717 | intake (harness): corrections to T711's two jobs: two_jobs a | done | 1 | 2 h 11 min | 22:21Z |  |
 | T607 | site: site.css brought up to the V6 reference (laftly-v6.css | done | 2 | 41 min | 21:57Z | review_missing on 2c1fc315ebe4 (D-3728): not proven reviewed or worker-made / (b) 5cb49e3317bc T607: NOTES entry in the  |
-| T663 | picks, jobs and payments (harness): a confirmed pick moves i | BLOCKED | 1 | 30 min | 21:32Z | PLAN GAP: tests/test_coverage_floor.py:125 asserts floors["future"] == [], contradicting T663 goal (5), which requires a |
+| T663 | picks, jobs and payments (harness): a confirmed pick moves i | BLOCKED | 1 | 30 min | 21:32Z |  |
 | T753 | runner (harness): `fable` is a model the plan can name, a ta | done | 1 | 112 min | 20:59Z |  |
 | T307 | server and portals: the homeowner portal's sign-in, home pag | done | 2 | 2 h 45 min | 20:33Z | PLAN GAP: tests/security/tests/vault_readers.rs:23 lets only `portals` call `read_own_contact` (line 19 lets only `messa |
 | T748 | portals: the help-page form's confirmation promises no reply | done | 1 | 41 min | 20:08Z |  |
@@ -138,7 +139,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 3: T726 (lease until 2026-11-20T04:05:47Z)
 - lane 4: T218 (lease until 2026-11-20T03:31:28Z)
-- lane 5: T663 (lease until 2026-11-20T02:33:30Z)
 
 ## Last usage reading
-- {"task": "T527", "at": "2026-11-20T01:39:06Z", "output_tokens": 48991, "input_tokens": 183, "cache_creation_input_tokens": 180015, "cache_read_input_tokens": 8331605}
+- {"task": "T663", "at": "2026-11-20T01:40:55Z", "input_tokens": 471, "output_tokens": 135006, "cache_creation_input_tokens": 444468, "cache_read_input_tokens": 29990387}
