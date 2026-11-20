@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T07:12:50Z by runner 405a1fbf7832 (actions).
+Updated 2026-11-20T07:15:36Z by runner ec1360b19187 (actions).
 
-**Building: T764 in progress since 06:34Z; 525 of 707 done; week 23% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T764 in progress since 06:34Z; 526 of 707 done; week 23% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 525 of 707 build tasks (owner gates not counted)
+- **Tasks done:** 526 of 707 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T764 claimed 06:34Z, lease until 09:34Z; lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 3: T762 claimed 06:35Z, lease until 09:35Z; lane 4: T672 claimed 06:35Z, lease until 09:35Z; lane 7: T669 claimed 07:12Z, lease until 10:12Z
 - **Week:** 23% used, 143.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:09Z, 3 min before this update
+- **Last run:** 07:13Z, 2 min before this update
 - **Keeper:** last ran 07:08Z, next wake 07:28Z
 
 ## Needs attention
@@ -24,8 +24,8 @@ Updated 2026-11-20T07:12:50Z by runner 405a1fbf7832 (actions).
 |---|---|---|---|---|---|---|
 | T669 | picks: "Can't take it" and a business leaving end a pick in  | QUEUED | 1 | 56 min | 07:07Z | runner smoke red on c403ea4898ac (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
 | T573 | messaging and server: queued business texts are addressed to | BLOCKED | 1 | 5 min | 06:27Z | PLAN GAP: app/privacy/src/business_contacts.rs:124 (owned by T412, not T573). Item (2) needs the outbox sender to read a |
-| T561 | server and portals: the homeowner's "Download my data" and h | MERGE_PENDING | 1 | 60 min | 06:26Z |  |
-| T765 | recovery (tests): the backup tests' fake binaries can no lon | MERGE_PENDING | 1 | 65 min | 06:11Z |  |
+| T561 | server and portals: the homeowner's "Download my data" and h | resync | 1 | 60 min | 06:26Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
+| T765 | recovery (tests): the backup tests' fake binaries can no lon | done | 1 | 65 min | 06:11Z |  |
 | T751 | stand-ins (harness): the Stripe stand-in detaches a payment  | done | 1 | 51 min | 05:02Z |  |
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | done | 2 | 36 min | 05:00Z | merging main into the reviewed head conflicts in kit/plan.lock, kit/runner.json; a resync merges it in on this attempt ( |
 | T543 | picks, businesses, portals and server: "Away until" is store | done | 1 | 64 min | 04:57Z |  |
@@ -99,7 +99,7 @@ Updated 2026-11-20T07:12:50Z by runner 405a1fbf7832 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 325 of 735 (44.2%) · partial 384 · unstarted 26
-**Tasks merged (throughput only):** 525 of 707
+**Tasks merged (throughput only):** 526 of 707
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -135,7 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 168 of 289 done
+- stage 5: 169 of 289 done
 - stage 6: 0 of 65 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
