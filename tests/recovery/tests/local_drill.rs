@@ -21,7 +21,7 @@ use askhava_messaging::api::{
     LaunchChannel, Line, Lines, NewText, Relation, SendingNumber, enqueue,
 };
 use askhava_ops::api::digest_alerts;
-use askhava_payments::api::{ChargePage, StripeCharge};
+use askhava_payments::api::{ChargePage, RECEIPT_KIND, StripeCharge};
 use askhava_privacy::api::{NewContact, Vault, store_contact};
 use askhava_recovery::api::{
     ChargeSource, Drill, EXPORT_KIND, ItemKind, REPLAY_LISTED_ALERT, ReplaySources, Retry,
@@ -35,6 +35,8 @@ const FROM: &str = "+15005550006";
 const HER: &str = "+15005550142";
 const BODY: &str = "Fake quote one";
 const SECRET: &str = "fake-id-secret-for-tests-only-000000";
+const INTENT: &str = "pi_fakeheld206";
+const PICK: u128 = 0x206a;
 const QUICK: Retry = Retry {
     tries: 2,
     wait: Duration::from_millis(5),
@@ -101,7 +103,8 @@ fn vault() -> Vault {
     .expect("vault")
 }
 
-/// Stripe's list: unreachable for the first two calls, then one charge no pick holds.
+/// Stripe's list: unreachable for the first two calls, then one charge no pick holds and the
+/// charge of the pick [`hold`] stored.
 struct Stripe(AtomicU32);
 
 impl ChargeSource for Stripe {
@@ -114,18 +117,19 @@ impl ChargeSource for Stripe {
         if self.0.fetch_add(1, Ordering::SeqCst) < 2 {
             return Err(AdapterError::NotSent);
         }
-        let charge = StripeCharge {
-            id: "ch_fakeunmatched".to_owned(),
-            payment_intent: "pi_fake1".to_owned(),
-            pick: Some(Uuid::from_u128(9)),
+        let charge = |id: &str, intent: &str, pick: u128| StripeCharge {
+            id: id.to_owned(),
+            payment_intent: intent.to_owned(),
+            pick: Some(Uuid::from_u128(pick)),
             amount_cents: 7500,
             refunded_cents: 0,
             dispute: None,
             balance_transaction: String::new(),
             fee_cents: 0,
         };
+        let unmatched = charge("ch_fakeunmatched", "pi_fake1", 9);
         Ok(ChargePage {
-            charges: vec![charge],
+            charges: vec![unmatched, charge("ch_fakeheld", INTENT, PICK)],
             next: None,
         })
     }
@@ -151,6 +155,33 @@ async fn queue_text(pool: &PgPool) {
     };
     let queued = enqueue(&mut db, &SECRET.to_owned().into(), &text).await;
     queued.expect("queued");
+}
+
+/// A pick's PaymentIntent and its first try, sent and not yet answered: what the snapshot holds
+/// of a charge Stripe took after it (OPS-016).
+async fn hold(pool: &PgPool) {
+    let (pick, business) = (Uuid::from_u128(PICK), Uuid::from_u128(0x206b));
+    let sql = format!(
+        "INSERT INTO payments.customer (business_id, stripe_customer_id) \
+         VALUES ('{business}', 'cus_fake206'); \
+         INSERT INTO payments.pick_intent (pick_id, business_id, job_id, amount_cents, \
+         stripe_intent_id, emergency, created_at) \
+         VALUES ('{pick}', '{business}', '{business}', 7500, '{INTENT}', false, now()); \
+         INSERT INTO payments.charge_attempt (pick_id, try_no, press_id, status, started_at) \
+         VALUES ('{pick}', 1, '{business}', 'sent', now())"
+    );
+    exec(pool, sql).await;
+}
+
+/// The restored ledger's charge rows and their cents, the charge evidence rows and the receipt
+/// events (each one receipt email) queued.
+async fn booked(restored: &mut PgConnection) -> (i64, i64, i64, i64) {
+    let sql = "SELECT (SELECT count(*) FROM payments.ledger_entry WHERE kind = 'charge'), \
+         (SELECT coalesce(sum(amount_cents), 0)::bigint FROM payments.ledger_entry), \
+         (SELECT count(*) FROM payments.charge_evidence), \
+         (SELECT count(*) FROM core.task WHERE kind = $1)";
+    let row = sqlx::query_as(sql).bind(RECEIPT_KIND).fetch_one(restored);
+    row.await.expect("counts")
 }
 
 /// The worker's registry with T109's export handler over `store`, encrypting to `recipient`.
@@ -263,8 +294,9 @@ async fn recorded(restored: &mut PgConnection, run: Uuid, object: &str) {
 }
 
 /// TD-OPS-04 (OPS-013, OPS-018, OPS-019): the export restores into a fresh database and the
-/// replay there sends no text twice, charges nothing, waits for Stripe, flags the unmatched
-/// charge with one alert and records the drill; a second replay changes nothing.
+/// replay there sends no text twice, charges nothing, waits for Stripe, books the charge taken
+/// after the snapshot once (one ledger row, one receipt event), flags the unmatched charge with
+/// one alert and records the drill; a second replay changes nothing.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_ops_04_the_export_restores_and_the_replay_sends_and_charges_nothing_twice(
     pool: PgPool,
@@ -272,6 +304,7 @@ async fn td_ops_04_the_export_restores_and_the_replay_sends_and_charges_nothing_
     let server = stand_in();
     let (sms, lines) = texting(&server.1);
     queue_text(&pool).await;
+    hold(&pool).await;
     let fresh = format!("askhava_drill_{}", std::process::id());
     let (host, object, dump) = plain_export(&pool, &fresh).await;
     let key = IdempotencyKey::derive(&SECRET.to_owned().into(), "sms.send", &["fake-row-1"]);
@@ -295,17 +328,21 @@ async fn td_ops_04_the_export_restores_and_the_replay_sends_and_charges_nothing_
         .replay;
     assert_eq!(stripe.0.load(Ordering::SeqCst), 3, "Stripe was waited for");
     assert_eq!((report.texts_marked, report.texts_unsent), (1, 0));
-    assert_eq!((report.charges_booked, report.charges_already), (0, 0));
+    assert_eq!((report.charges_booked, report.charges_already), (1, 0));
     let kinds: Vec<ItemKind> = report.items.iter().map(|i| i.kind).collect();
     assert_eq!(kinds, [ItemKind::ChargeUnmatched]);
     let mut restored = PgConnection::connect(&fresh_url)
         .await
         .expect("fresh connection");
     recorded(&mut restored, report.run, &object).await;
+    let once = (1, 7500, 1, 1);
+    assert_eq!(booked(&mut restored).await, once, "booked once");
     let again = replay(&mut restored, &from, Timestamp::now())
         .await
         .expect("second replay");
     assert_eq!((again.texts_marked, again.charges_booked), (0, 0));
+    assert_eq!(again.charges_already, 1, "the charge is found booked");
+    assert_eq!(booked(&mut restored).await, once, "the ledger still agrees");
     let day = SignedDuration::from_hours(24);
     let window = (Timestamp::now() - day, Timestamp::now() + day);
     let log = sms.list_sent(FROM, window).await.expect("sent log");

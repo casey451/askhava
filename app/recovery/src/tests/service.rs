@@ -188,7 +188,7 @@ async fn td_ops_04_stripe_down_is_waited_for_and_the_listed_charge_alerts_once(p
     let down_thrice = stripe(3, true);
     let report = drilled(&pool, &down_thrice).await.expect("drill");
     assert_eq!(down_thrice.calls.load(Ordering::SeqCst), 4, "two replays");
-    assert_eq!(report.restore_seconds, 3);
+    assert_eq!((report.restore_seconds, report.rounds), (3, 2));
     let kinds: Vec<ItemKind> = report.replay.items.iter().map(|i| i.kind).collect();
     assert_eq!(kinds, [ItemKind::ChargeUnmatched]);
     assert_eq!(
@@ -227,6 +227,7 @@ async fn td_ops_04_stripe_down_every_round_fails_the_drill_and_guesses_nothing(p
 async fn td_ops_04_a_clean_replay_records_the_drill_with_no_alert(pool: PgPool) {
     let report = drilled(&pool, &stripe(0, false)).await.expect("drill");
     assert!(report.replay.items.is_empty());
+    assert_eq!(report.rounds, 1, "one replay when no vendor failed");
     let (row, listed) = recorded(&pool, REPLAY_LISTED_ALERT).await;
     assert_eq!(row, (Some(report.replay.run), Some(3), "ok".to_owned()));
     assert!(listed.is_empty(), "nothing listed, no alert");

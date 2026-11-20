@@ -93,6 +93,9 @@ pub struct DrillReport {
     pub restore_seconds: i32,
     /// The replay that passed.
     pub replay: ReplayReport,
+    /// The replays run (OPS-018). Past 1, a charge an earlier round booked before a vendor
+    /// failed is counted in the passing replay's `charges_already`, not its `charges_booked`.
+    pub rounds: u32,
 }
 
 /// A URL part with its `%XX` escapes decoded; `None` when one is malformed.
@@ -148,7 +151,8 @@ fn restore(drill: &Drill) -> Result<(), RestoreError> {
 /// # Errors
 ///
 /// [`DrillError::Restore`] when the restore failed (nothing restored, nothing recorded);
-/// [`DrillError::Replay`] when the replay failed, recorded as a `failed` drill.
+/// [`DrillError::Replay`] when the restored database could not be reached (nothing recorded) or
+/// the replay failed, recorded as a `failed` drill.
 pub async fn run_drill<S, C>(
     drill: &Drill,
     from: &ReplaySources<'_, S, C>,
@@ -199,6 +203,7 @@ where
         drill: id,
         restore_seconds: seconds,
         replay: replayed.map_err(DrillError::Replay)?,
+        rounds: round,
     })
 }
 

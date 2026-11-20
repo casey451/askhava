@@ -1462,12 +1462,17 @@ pub async fn replay_drill(
     let drill = Drill::new(dump.into(), object, url.clone(), Retry::STANDARD);
     let drill = drill.map_err(io::Error::other)?;
     let done = run_drill(&drill, &from, jiff::Timestamp::now()).await;
-    let replay = done.map_err(io::Error::other)?.replay;
+    let done = done.map_err(io::Error::other)?;
+    let replay = done.replay;
     let out = format!(
-        "Drill recorded: {} texts marked sent, {} left to send, {} charges booked, {} listed for Casey\n",
+        "Drill recorded after {} replay round(s): {} texts marked sent, {} left to send, \
+         {} charges booked, {} already booked (any an earlier round booked are counted here), \
+         {} listed for Casey\n",
+        done.rounds,
         replay.texts_marked,
         replay.texts_unsent,
         replay.charges_booked,
+        replay.charges_already,
         replay.items.len()
     );
     io::Write::write_all(&mut io::stdout(), out.as_bytes())
