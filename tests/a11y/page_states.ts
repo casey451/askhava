@@ -316,19 +316,9 @@ const NOTICES_STATES: readonly PageState[] = [
 
 const CONFIRM_ROUTE = "/b/picks/{pick}/confirm";
 
-/**
- * The Confirm page (T261; FEE-045, PICK-021, D-1871, D-3836, D-3838): a fee-free pick waiting for
- * the owner's Confirm whose stored fee mode is the other of `tiers` and `flat` than the mode in
- * force, so the page shows the fee-terms-changed line in place of the card section, opens no
- * PaymentIntent and loads neither Stripe.js nor the page script; on the keyed binary, whose Stripe
- * settings serve the page. The card-section state is T496's.
- */
-const CONFIRM_STATES: readonly PageState[] = [
-  [
-    "confirm page, fee terms changed",
-    "The fee terms changed after the homeowner picked you",
-    "Card payments can't be taken right now.",
-    businessSql(`,
+/** A fake owner's page pick waiting for Confirm, its fee row's mode, kind and cents as SQL over `t`. */
+function confirmSql(mode: string, kind: string, cents: number): string {
+  return businessSql(`,
     j AS (INSERT INTO jobs.job (id, status, emergency, created_at, status_at, timer_from)
       VALUES (gen_random_uuid(), 'awaiting_confirm', false, now(), now(), now()) RETURNING id),
     n AS (UPDATE jobs.job_number_next SET next = next + 1 RETURNING next - 1 AS n),
@@ -336,9 +326,26 @@ const CONFIRM_STATES: readonly PageState[] = [
     p AS (INSERT INTO picks.pick (id, job_id, business_id, quote_number, channel, status, picked_at)
       SELECT ':pick', j.id, m.business_id, 1, 'page', 'awaiting_confirm', now() FROM j, m RETURNING id, job_id, business_id),
     f AS (INSERT INTO payments.pick_fee (pick_id, business_id, job_id, mode, kind, amount_cents, terms_version, fixed_at)
-      SELECT p.id, p.business_id, p.job_id, CASE t.mode WHEN 'tiers' THEN 'flat' ELSE 'tiers' END, 'fee_free', 0, t.authorization_version, now()
-      FROM p, payments.fee_terms t)`),
+      SELECT p.id, p.business_id, p.job_id, ${mode}, '${kind}', ${String(cents)}, t.authorization_version, now()
+      FROM p, payments.fee_terms t)`);
+}
+
+/**
+ * The Confirm page (T261; FEE-045, PICK-021, D-1871, D-3836, D-3838): a fee-free pick waiting for
+ * the owner's Confirm whose stored fee mode is the other of `tiers` and `flat` than the mode in
+ * force, so the page shows the fee-terms-changed line in place of the card section, opens no
+ * PaymentIntent and loads neither Stripe.js nor the page script; on the keyed binary, whose Stripe
+ * settings serve the page. T496 (A11Y-002, D-3838): an ordinary $25 charged pick under the terms in
+ * force, whose card section shows with the fixture's fake Stripe Element mounted.
+ */
+const CONFIRM_STATES: readonly PageState[] = [
+  [
+    "confirm page, fee terms changed",
+    "The fee terms changed after the homeowner picked you",
+    "Card payments can't be taken right now.",
+    confirmSql("CASE t.mode WHEN 'tiers' THEN 'flat' ELSE 'tiers' END", "fee_free", 0),
   ],
+  ["confirm page, card section", "Confirm and pay", "The fee terms changed after the homeowner picked you", confirmSql("t.mode", "charged", 2500)],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: CONFIRM_ROUTE, name, shows, hides, sql, statusRegions: ["confirm-status"] }));
 
 const CANT_TAKE_ROUTE = "/b/picks/{pick}/cant-take";
