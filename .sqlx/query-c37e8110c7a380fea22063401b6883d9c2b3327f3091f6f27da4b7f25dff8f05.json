@@ -1,0 +1,41 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.business SET busy_until = $2 WHERE id = $1\n           RETURNING status_changed_at, busy_until AS \"busy_until!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "status_changed_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "businesses.business",
+            "name": "status_changed_at"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "busy_until!",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "businesses.business",
+            "name": "busy_until"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      true
+    ]
+  },
+  "hash": "c37e8110c7a380fea22063401b6883d9c2b3327f3091f6f27da4b7f25dff8f05"
+}
