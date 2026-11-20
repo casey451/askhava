@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T07:51:19Z by runner 31cf96f0730b (actions).
+Updated 2026-11-20T07:51:45Z by runner 31cf96f0730b (actions).
 
 **Building: T617 in progress since 07:06Z; 526 of 708 done; week 24% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 526 of 708 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 4: T672 claimed 06:35Z, lease until 09:35Z; lane 5: T561 claimed 07:18Z, lease until 10:18Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z; lane 7: T669 claimed 07:12Z, lease until 10:12Z
+- **Lane:** lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 4: T672 claimed 06:35Z, lease until 09:35Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z; lane 7: T669 claimed 07:12Z, lease until 10:12Z
 - **Week:** 24% used, 140.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 07:45Z, 5 min before this update
 - **Keeper:** last ran 07:45Z, next wake 09:38Z
@@ -20,11 +20,12 @@ Updated 2026-11-20T07:51:19Z by runner 31cf96f0730b (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T561 | server and portals: the homeowner's "Download my data" and h | MERGE_PENDING | 1 | 33 min | 07:51Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
 | T762 | runner and workflow (harness): fix-round workers commit with | MERGE_PENDING | 1 | 68 min | 07:44Z |  |
 | T764 | ci and pre-hand-in gate (harness): scripts/bootstrap_roles.s | MERGE_PENDING | 1 | 54 min | 07:29Z |  |
 | T669 | picks: "Can't take it" and a business leaving end a pick in  | QUEUED | 1 | 56 min | 07:07Z | runner smoke red on c403ea4898ac (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
 | T573 | messaging and server: queued business texts are addressed to | BLOCKED | 1 | 5 min | 06:27Z | PLAN GAP: app/privacy/src/business_contacts.rs:124 (owned by T412, not T573). Item (2) needs the outbox sender to read a |
-| T561 | server and portals: the homeowner's "Download my data" and h | resync | 1 | 60 min | 06:26Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
+| T561 | server and portals: the homeowner's "Download my data" and h | resync | 1 | 60 min | 06:26Z |  |
 | T765 | recovery (tests): the backup tests' fake binaries can no lon | done | 1 | 65 min | 06:11Z |  |
 | T751 | stand-ins (harness): the Stripe stand-in detaches a payment  | done | 1 | 51 min | 05:02Z |  |
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | done | 2 | 36 min | 05:00Z | merging main into the reviewed head conflicts in kit/plan.lock, kit/runner.json; a resync merges it in on this attempt ( |
@@ -144,9 +145,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T617 (lease until 2026-11-20T10:06:22Z)
 - lane 4: T672 (lease until 2026-11-20T09:35:55Z)
-- lane 5: T561 (lease until 2026-11-20T10:18:02Z)
 - lane 6: T530 (lease until 2026-11-20T10:20:58Z)
 - lane 7: T669 (lease until 2026-11-20T10:12:31Z)
 
 ## Last usage reading
-- {"task": "T762", "at": "2026-11-20T07:44:08Z", "cache_read_input_tokens": 2410923, "cache_creation_input_tokens": 147170, "output_tokens": 31171, "input_tokens": 146}
+- {"task": "T561", "at": "2026-11-20T07:51:17Z", "output_tokens": 6718, "cache_read_input_tokens": 556169, "input_tokens": 46, "cache_creation_input_tokens": 38498}
