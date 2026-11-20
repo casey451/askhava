@@ -1,27 +1,27 @@
 # Ask Hava build status
 
-Updated 2026-11-20T19:45:14Z by runner c57e1151be39 (actions).
+Updated 2026-11-20T19:50:59Z by runner 46c0ebfef5b4 (actions).
 
-**Building: T756 in progress since 18:57Z; 549 of 713 done; week 43% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T756 in progress since 18:57Z; 550 of 713 done; week 43% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 549 of 713 build tasks (owner gates not counted)
+- **Tasks done:** 550 of 713 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T756 claimed 18:57Z, lease until 21:57Z; lane 4: T682 claimed 19:03Z, lease until 22:03Z; lane 5: T772 claimed 18:05Z, lease until 21:05Z; lane 7: T743 claimed 18:24Z, lease until 21:24Z
 - **Week:** 43% used, 103.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:45Z, 0 min before this update
+- **Last run:** 19:45Z, 5 min before this update
 - **Keeper:** last ran 19:45Z, next wake 20:05Z
 
 ## Needs attention
 - BLOCKED T614: plan gap reported: PLAN GAP: tests/integration/tests/quote_page.rs:172 (owner T052, protected) bans the word "summary" anywhere in the quote page's HTML, but T614 must put <details class="menu"><summary>Menu</summary> in the header of every page (docs/design/DESIGN_SPEC.md:102); quote_page.html extends base.html. Smallest plan change: a harness task narrows the check at quote_page.rs:170-174 to the page's <main>. Also D-4970's "two rules only" is not enough: a third rule is needed in site.css: .menu > summary { margin: calc((var(--header-h) - 44px) / 2) 0 calc((var(--header-h) - 44px) / 2) -12px; } (else the row; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T614 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 39 problem(s) on tasks still to run (+417 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
+- Strict plan check red: 42 problem(s) on tasks still to run (+420 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T530 | portals: the owner help page and its screened reply box (D-3 | MERGE_PENDING | 3 | 49 min | 19:43Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
-| T661 | privacy: a business notice address with spaces, commas or co | MERGE_PENDING | 1 | 27 min | 19:04Z |  |
+| T661 | privacy: a business notice address with spaces, commas or co | done | 1 | 27 min | 19:04Z |  |
 | T614 | site: the V6 header in base.html (links, the Menu in the pag | BLOCKED | 2 | 80 min | 18:46Z | PLAN GAP: tests/integration/tests/quote_page.rs:172 (owner T052, protected) bans the word "summary" anywhere in the quot |
 | T743 | messaging and privacy: opt-out listings are re-keyed to the  | QUEUED | 1 | 112 min | 18:17Z | Second review (head 7921ab0285f5916db9a9df89ee828c150908805e) ended FINDINGS: tests/integration/tests/suppression_rekey. |
 | T573 | messaging and server: queued business texts are addressed to | done | 4 | 41 min | 18:01Z | model claude-opus-5-5 ran, task names claude-fable-5-2 / re-queued after plan fix D-4969: Coverage time-limit cancel, fi |
@@ -103,7 +103,7 @@ Updated 2026-11-20T19:45:14Z by runner c57e1151be39 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 362 of 735 (49.3%) · partial 354 · unstarted 19
-**Tasks merged (throughput only):** 549 of 713
+**Tasks merged (throughput only):** 550 of 713
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -139,7 +139,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 192 of 295 done
+- stage 5: 193 of 295 done
 - stage 6: 0 of 65 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
