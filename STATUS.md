@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T11:11:10Z by runner 6fef039a5d29 (actions).
+Updated 2026-11-20T11:14:32Z by runner 6fef039a5d29 (actions).
 
 **Building: T648 in progress since 10:37Z; 532 of 710 done; week 29% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 532 of 710 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T648 claimed 10:37Z, lease until 13:37Z; lane 5: T463 claimed 10:18Z, lease until 13:18Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z
-- **Week:** 29% used, 134.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:55Z, 15 min before this update
+- **Lane:** lane 1: T648 claimed 10:37Z, lease until 13:37Z; lane 4: T573 claimed 11:14Z, lease until 14:14Z; lane 5: T463 claimed 10:18Z, lease until 13:18Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z
+- **Week:** 29% used, 132.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 11:11Z, 3 min before this update
 - **Keeper:** last ran 10:54Z, next wake 11:14Z
 
 ## Needs attention
@@ -88,7 +88,6 @@ Updated 2026-11-20T11:11:10Z by runner 6fef039a5d29 (actions).
 | T536 | E2e harness: clock-advancing journeys last, a keyed worker,  | done | 2 | 107 min | 12:33Z | PLAN GAP: tests/e2e/j2.ts:150 (owned by T099, `e2e-j2-business`; T644 also lists it). Smallest plan change: make the `no |
 | T109 | recovery: backup checks and the nightly encrypted export | BLOCKED | 1 | 20 min | 11:47Z |  |
 | T540 | portals and server: the owner's release button re-sends an e | resync | 1 | 54 min | 11:29Z |  |
-| T705 | Integration tests (harness): one shared log capture that a c | done | 1 | 114 min | 11:11Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -124,7 +123,7 @@ Updated 2026-11-20T11:11:10Z by runner 6fef039a5d29 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-20T10:53:41Z (week)): week: 59.9M used, 134.1M left, resets 2026-11-26T17:00:00Z; projected finish 2026-11-29T21:10:01Z.
+- Pacing (session_reading 2026-11-20T10:53:41Z (week)): week: 61.1M used, 132.9M left, resets 2026-11-26T17:00:00Z; projected finish 2026-11-29T19:34:17Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -140,6 +139,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T648 (lease until 2026-11-20T13:37:03Z)
+- lane 4: T573 (lease until 2026-11-20T14:14:12Z)
 - lane 5: T463 (lease until 2026-11-20T13:18:16Z)
 - lane 6: T530 (lease until 2026-11-20T13:55:17Z)
 
