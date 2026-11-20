@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T14:53:06Z by runner a925fdf824b7 (actions).
+Updated 2026-11-20T14:53:33Z by runner a925fdf824b7 (actions).
 
 **Building: T557 in progress since 13:49Z; 538 of 712 done; week 35% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 538 of 712 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T557 claimed 13:49Z, lease until 16:49Z; lane 6: T770 claimed 14:33Z, lease until 17:33Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
+- **Lane:** lane 3: T557 claimed 13:49Z, lease until 16:49Z; lane 6: T770 claimed 14:33Z, lease until 17:33Z
 - **Week:** 35% used, 120.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 14:52Z, 0 min before this update
 - **Keeper:** last ran 14:51Z, next wake 15:41Z
@@ -20,6 +20,7 @@ Updated 2026-11-20T14:53:06Z by runner a925fdf824b7 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T672 | intake: the dispatcher asks "How soon?", the night count and | MERGE_PENDING | 3 | 2 h 13 min | 14:53Z | runner smoke red on 3e9315b7399c (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
 | T206 | recovery: the local restore drill with no double send or cha | MERGE_PENDING | 1 | 89 min | 14:50Z |  |
 | T767 | tests (harness): the Confirm press fixtures get an Active ac | MERGE_PENDING | 1 | 108 min | 14:41Z |  |
 | T670 | picks: the pick notice's send never records a pressed pick a | MERGE_PENDING | 1 | 86 min | 14:26Z |  |
@@ -38,7 +39,7 @@ Updated 2026-11-20T14:53:06Z by runner a925fdf824b7 (actions).
 | T766 | server tests (harness): a photo-link door and a {job} fill i | done | 1 | 53 min | 09:05Z |  |
 | T116 | Stage 0.5 static page set and the DNS records file | done | 1 | 50 min | 08:48Z |  |
 | T669 | picks: "Can't take it" and a business leaving end a pick in  | done | 2 | 80 min | 08:32Z | runner smoke red on c403ea4898ac (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
-| T672 | intake: the dispatcher asks "How soon?", the night count and | QUEUED | 2 | 89 min | 08:05Z | runner smoke red on 3e9315b7399c (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
+| T672 | intake: the dispatcher asks "How soon?", the night count and | QUEUED | 2 | 89 min | 08:05Z |  |
 | T561 | server and portals: the homeowner's "Download my data" and h | done | 1 | 33 min | 07:51Z |  |
 | T762 | runner and workflow (harness): fix-round workers commit with | done | 1 | 68 min | 07:44Z |  |
 | T764 | ci and pre-hand-in gate (harness): scripts/bootstrap_roles.s | done | 1 | 54 min | 07:29Z |  |
@@ -145,7 +146,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 3: T557 (lease until 2026-11-20T16:49:23Z)
 - lane 6: T770 (lease until 2026-11-20T17:33:55Z)
-- lane 7: T672 (lease until 2026-11-20T15:39:52Z)
 
 ## Last usage reading
-- {"task": "T206", "at": "2026-11-20T14:50:33Z", "output_tokens": 96002, "cache_read_input_tokens": 7484869, "input_tokens": 198, "cache_creation_input_tokens": 299349}
+- {"task": "T672", "at": "2026-11-20T14:53:01Z", "input_tokens": 298, "cache_read_input_tokens": 15233607, "output_tokens": 129779, "cache_creation_input_tokens": 446013}
