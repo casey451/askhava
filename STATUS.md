@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T16:24:49Z by runner 6de3b012a771 (actions).
+Updated 2026-11-20T16:35:01Z by runner 67f4f16224e6 (actions).
 
 **Building: T530 in progress since 15:29Z; 543 of 712 done; week 37% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-20T16:24:49Z by runner 6de3b012a771 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T530 claimed 15:29Z, lease until 18:29Z; lane 2: T672 claimed 16:21Z, lease until 19:21Z; lane 3: T771 claimed 15:44Z, lease until 18:44Z; lane 4: T681 claimed 15:47Z, lease until 18:47Z; lane 5: T686 claimed 16:22Z, lease until 19:22Z; lane 7: T743 claimed 16:24Z, lease until 19:24Z
 - **Week:** 37% used, 113.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:23Z, 1 min before this update
+- **Last run:** 16:24Z, 10 min before this update
 - **Keeper:** last ran 16:20Z, next wake 16:40Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ The pick's window deadline (picks.pick.confirm_due) is read only by private code
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T664 (since 2026-11-20T16:15:19Z, no attempt used; a plan change fixes it): outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs
-- Strict plan check red: 38 problem(s) on tasks still to run (+412 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
+- Strict plan check red: 38 problem(s) on tasks still to run (+411 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -94,7 +94,6 @@ The pick's window deadline (picks.pick.confirm_due) is read only by private code
 | T715 | intake (harness): corrections to T671's walker: alarm answer | done | 3 | 113 min | 17:43Z | PLAN GAP: one TD-INT-52 sentence can't be met by intake as planned: "a two-word first text naming a trade opens its job  |
 | T530 | portals: the owner help page and its screened reply box (D-3 | QUEUED | 1 | 117 min | 17:38Z |  |
 | T724 | harness: Ci's Rust-test jobs, the worker job and the nightly | done | 1 | 50 min | 17:09Z |  |
-| T210 | payments: the money view's sales-tax set-aside and manual ex | done | 1 | 53 min | 16:29Z |  |
 
 ### Plan and harness merges on main
 - none
