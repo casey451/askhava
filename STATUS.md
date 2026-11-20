@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T07:29:13Z by runner e861a9308e93 (actions).
+Updated 2026-11-20T07:29:42Z by runner e861a9308e93 (actions).
 
-**Building: T764 in progress since 06:34Z; 526 of 708 done; week 23% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T617 in progress since 07:06Z; 526 of 708 done; week 23% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 526 of 708 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T764 claimed 06:34Z, lease until 09:34Z; lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 3: T762 claimed 06:35Z, lease until 09:35Z; lane 4: T672 claimed 06:35Z, lease until 09:35Z; lane 5: T561 claimed 07:18Z, lease until 10:18Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z; lane 7: T669 claimed 07:12Z, lease until 10:12Z
+- **Lane:** lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 3: T762 claimed 06:35Z, lease until 09:35Z; lane 4: T672 claimed 06:35Z, lease until 09:35Z; lane 5: T561 claimed 07:18Z, lease until 10:18Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z; lane 7: T669 claimed 07:12Z, lease until 10:12Z
 - **Week:** 23% used, 140.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 07:26Z, 3 min before this update
 - **Keeper:** last ran 07:08Z, next wake 07:28Z
@@ -20,6 +20,7 @@ Updated 2026-11-20T07:29:13Z by runner e861a9308e93 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T764 | ci and pre-hand-in gate (harness): scripts/bootstrap_roles.s | MERGE_PENDING | 1 | 54 min | 07:29Z |  |
 | T669 | picks: "Can't take it" and a business leaving end a pick in  | QUEUED | 1 | 56 min | 07:07Z | runner smoke red on c403ea4898ac (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
 | T573 | messaging and server: queued business texts are addressed to | BLOCKED | 1 | 5 min | 06:27Z | PLAN GAP: app/privacy/src/business_contacts.rs:124 (owned by T412, not T573). Item (2) needs the outbox sender to read a |
 | T561 | server and portals: the homeowner's "Download my data" and h | resync | 1 | 60 min | 06:26Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
@@ -139,7 +140,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T764 (lease until 2026-11-20T09:34:30Z)
+- nothing
 - lane 2: T617 (lease until 2026-11-20T10:06:22Z)
 - lane 3: T762 (lease until 2026-11-20T09:35:28Z)
 - lane 4: T672 (lease until 2026-11-20T09:35:55Z)
@@ -148,4 +149,4 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 7: T669 (lease until 2026-11-20T10:12:31Z)
 
 ## Last usage reading
-- {"task": "T669", "at": "2026-11-20T07:07:42Z", "cache_creation_input_tokens": 247083, "cache_read_input_tokens": 6379667, "output_tokens": 55561, "input_tokens": 206}
+- {"task": "T764", "at": "2026-11-20T07:29:09Z", "cache_read_input_tokens": 486510, "input_tokens": 37, "cache_creation_input_tokens": 43536, "output_tokens": 7402}
