@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-20T05:01:21Z by runner bf7fb36b58e5 (actions).
+Updated 2026-11-20T05:01:56Z by runner 0a0541d7d211 (actions).
 
-**Building: T751 in progress since 04:11Z; 518 of 707 done; week 20% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T751 in progress since 04:11Z; 519 of 707 done; week 20% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 518 of 707 build tasks (owner gates not counted)
+- **Tasks done:** 519 of 707 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T751 claimed 04:11Z, lease until 07:11Z
 - **Week:** 20% used, 148.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
@@ -15,7 +15,7 @@ Updated 2026-11-20T05:01:21Z by runner bf7fb36b58e5 (actions).
 - BLOCKED T648: plan gap reported: PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, but scripts/check_include_paths.py (D-1867, run in the smoke by tests/test_check_include_paths.py::test_td_ops_32_the_real_repository_passes) fails: scripts/bootstrap_roles.sql is not matched by the Checks and Coverage rules in .github/workflows/ci.yml (protected, harness-only) nor by RUST_PATHS in scripts/prehandin.sh:77 (locked in kit/plan.lock). T648 owns neither. Fix: a harness task adds scripts/bootstrap_roles\.sql to those three rules and rewrites kit/plan.lock. Reviewer; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T648 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 77 problem(s) on tasks still to run (+379 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 75 problem(s) on tasks still to run (+380 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -25,7 +25,7 @@ Updated 2026-11-20T05:01:21Z by runner bf7fb36b58e5 (actions).
 | T434 | portals: the monthly intake accuracy report page and the mon | MERGE_PENDING | 1 | 112 min | 04:55Z |  |
 | T110 | recovery: replay with derived IDs | MERGE_PENDING | 1 | 2 h 36 min | 04:55Z |  |
 | T663 | picks, jobs and payments (harness): a confirmed pick moves i | MERGE_PENDING | 3 | 65 min | 04:54Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
-| T556 | Decisions digest, piece 11: the next entries after the heade | MERGE_PENDING | 1 | 51 min | 04:50Z |  |
+| T556 | Decisions digest, piece 11: the next entries after the heade | done | 1 | 51 min | 04:50Z |  |
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 2 | 32 min | 04:08Z |  |
 | T747 | intake and jobs: the homeowner's INT-029 emergency choice ma | done | 1 | 71 min | 03:25Z |  |
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 2 | 2 h 16 min | 03:22Z |  |
@@ -96,7 +96,7 @@ Updated 2026-11-20T05:01:21Z by runner bf7fb36b58e5 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 324 of 735 (44.1%) · partial 384 · unstarted 27
-**Tasks merged (throughput only):** 518 of 706
+**Tasks merged (throughput only):** 519 of 707
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -132,7 +132,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 161 of 289 done
+- stage 5: 162 of 289 done
 - stage 6: 0 of 65 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
