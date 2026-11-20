@@ -385,7 +385,76 @@
                 },
                 "api_error_free": {
                   "type": "boolean"
+                },
+                "continued_from": {
+                  "$comment": "Optional: the WIP ref this attempt's branch continued (D-4720).",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "wip_dropped": {
+                  "$comment": "Optional: why a WIP offered to this attempt was not continued; it started as usual (D-4720).",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "wip_skipped": {
+                  "$comment": "Optional: why this attempt's failed head was not kept on a WIP ref (D-4720).",
+                  "type": "string",
+                  "minLength": 1
                 }
+              }
+            }
+          },
+          "wip": {
+            "$comment": "Optional: a failed attempt's head kept on the ref claude/wip/<id>-a<attempt>, recorded before the push; absent means no WIP (D-4720).",
+            "type": "object",
+            "required": [
+              "ref",
+              "sha",
+              "attempt",
+              "kind",
+              "at"
+            ],
+            "properties": {
+              "ref": {
+                "type": "string",
+                "pattern": "^claude/wip/T[0-9]+[A-Za-z]?-a[0-9]+$"
+              },
+              "sha": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{40}$"
+              },
+              "attempt": {
+                "type": "integer"
+              },
+              "kind": {
+                "enum": [
+                  "review",
+                  "plan_gap"
+                ]
+              },
+              "at": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
+              }
+            }
+          },
+          "wip_used": {
+            "$comment": "Optional: a claim offered this task its WIP once; no later attempt pushes or continues one (D-4720).",
+            "type": "boolean"
+          },
+          "wip_claim": {
+            "$comment": "Optional: the claim's branch facts its finish reads (D-4720): the attempt, origin's task branch tip ('' when absent), and continued_from or wip_dropped.",
+            "type": "object",
+            "required": [
+              "attempt",
+              "remote_sha"
+            ],
+            "properties": {
+              "attempt": {
+                "type": "integer"
+              },
+              "remote_sha": {
+                "type": "string"
               }
             }
           },
@@ -474,6 +543,13 @@
                 "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$"
               },
               "problems": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "paths": {
+                "$comment": "Optional: the paths a worker's `PLAN GAP: outside ownership:` report named (D-4720).",
                 "type": "array",
                 "items": {
                   "type": "string"
