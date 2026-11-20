@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T18:01:41Z by runner a8ff991fbade (actions).
+Updated 2026-11-20T18:02:09Z by runner a8ff991fbade (actions).
 
 **Building: T614 in progress since 17:26Z; 545 of 713 done; week 41% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 545 of 713 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T614 claimed 17:26Z, lease until 20:26Z; lane 6: T573 claimed 17:20Z, lease until 20:20Z; lane 7: T743 claimed 16:24Z, lease until 19:24Z
+- **Lane:** lane 3: T614 claimed 17:26Z, lease until 20:26Z; lane 7: T743 claimed 16:24Z, lease until 19:24Z
 - **Week:** 41% used, 113.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 18:01Z, 0 min before this update
 - **Keeper:** last ran 18:01Z, next wake 19:27Z
@@ -19,6 +19,7 @@ Updated 2026-11-20T18:01:41Z by runner a8ff991fbade (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T573 | messaging and server: queued business texts are addressed to | MERGE_PENDING | 4 | 41 min | 18:01Z | model claude-opus-5-5 ran, task names claude-fable-5-2 / re-queued after plan fix D-4969: Coverage time-limit cancel, fi |
 | T686 | businesses and server: a 90-day-old inbox or alert Yes gets  | MERGE_PENDING | 1 | 76 min | 17:39Z |  |
 | T672 | intake: the dispatcher asks "How soon?", the night count and | MERGE_PENDING | 3 | 52 min | 17:14Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T530 | portals: the owner help page and its screened reply box (D-3 | MERGE_PENDING | 3 | 71 min | 16:40Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
@@ -37,7 +38,7 @@ Updated 2026-11-20T18:01:41Z by runner a8ff991fbade (actions).
 | T727 | Runner (harness): a retry after a review failure or a plan-f | done | 2 | 87 min | 13:23Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T496 | a11y (harness): stub Stripe.js in the Ally suite and scan th | done | 1 | 81 min | 13:06Z |  |
 | T648 | recovery: the monthly test restore into a throwaway cluster, | done | 2 | 112 min | 12:29Z | PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, b |
-| T573 | messaging and server: queued business texts are addressed to | check_failed | 3 | 70 min | 12:25Z | model claude-opus-5-5 ran, task names claude-fable-5-2 / re-queued after plan fix D-4969: Coverage time-limit cancel, fi |
+| T573 | messaging and server: queued business texts are addressed to | check_failed | 3 | 70 min | 12:25Z |  |
 | T614 | site: the V6 header in base.html (links, the Menu in the pag | BLOCKED | 1 | 16 min | 11:39Z | PLAN GAP: tests/a11y/reflow_spacing.spec.ts:49-54 (T053, protected) flags every TARGETS control with no box as "is hidde |
 | T463 | businesses and server: "Busy for <n> days" pauses job cards  | done | 1 | 58 min | 11:16Z |  |
 | T768 | runner tests (harness): the seed test fakes free disk, so a  | done | 1 | 22 min | 10:38Z |  |
@@ -143,8 +144,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 3: T614 (lease until 2026-11-20T20:26:36Z)
-- lane 6: T573 (lease until 2026-11-20T20:20:18Z)
 - lane 7: T743 (lease until 2026-11-20T19:24:15Z)
 
 ## Last usage reading
-- {"task": "T686", "at": "2026-11-20T17:39:13Z", "output_tokens": 27157, "input_tokens": 112, "cache_read_input_tokens": 2554774, "cache_creation_input_tokens": 155291}
+- {"task": "T573", "at": "2026-11-20T18:01:38Z", "cache_read_input_tokens": 1315842, "cache_creation_input_tokens": 97470, "output_tokens": 13364, "input_tokens": 53}
