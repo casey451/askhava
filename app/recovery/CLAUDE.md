@@ -11,6 +11,7 @@ The layer-8 crate that keeps Ask Hava recoverable: the nightly `pg_dump -Fc` exp
 - The replay never resends a text Twilio's sent log already holds, never matches by a stored key, and moves no money (D-2764, D-3889): `src/tests/replay_ids.rs::td_ops_04_a_text_sent_before_the_restore_is_found_and_not_resent`, `td_ops_04_stripe_is_retried_and_unmatched_charges_are_flagged`.
 - The test restore reads the app database only through a `pg_dump`, writes only to a database it creates on the throwaway service and always drops, runs the role bootstrap before `pg_restore --single-transaction`, and fails on a foreign owner or an app-role `UPDATE`/`DELETE` grant on an append-only table: `tests/recovery/tests/export_restores.rs::td_ops_26_a_restore_needs_the_roles_first_and_checks_owners_and_grants`.
 - A failed test restore raises one High alert that never starts safe mode: `src/restore.rs::td_ops_22_a_failed_restore_raises_one_high_alert_and_no_safe_mode`.
+- The restore drill never reads storage and never takes an `age` identity (the operator hands it a plain dump, D-4932), and a vendor unreachable through every round fails the drill with no replay run written, never a guess (OPS-018): `src/tests/service.rs::td_ops_04_stripe_down_every_round_fails_the_drill_and_guesses_nothing`.
 - `deny.toml`'s RUSTSEC-2026-0173 ignore holds only while `age` alone reaches `proc-macro-error2`: `tests/test_age_lock_guard.py` (D-4707).
 
 ## Detail

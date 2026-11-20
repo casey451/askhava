@@ -7,12 +7,15 @@
 //! T110 built the replay after a restore (`replay`): texts and charges rebuilt from Twilio's and
 //! Stripe's records with derived IDs, so nothing replayed sends or charges twice (OPS-015 to
 //! OPS-017). T648 built the monthly test restore into a throwaway database (`restore`; OPS-013,
-//! OPS-051). Other crates reach it only through [`api`].
+//! OPS-051). T206 built the restore drill (`service`): an operator's plain dump restored into a
+//! fresh database, then the replay, recorded in `recovery.restore_drill` (OPS-018, OPS-019).
+//! Other crates reach it only through [`api`].
 
 pub mod api;
 mod backup;
 mod models;
 mod replay;
 mod restore;
+mod service;
 #[cfg(test)]
 mod tests;
