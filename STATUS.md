@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T09:47:42Z by runner 4e4208672e58 (actions).
+Updated 2026-11-20T09:48:02Z by runner ec1360b19187 (actions).
 
 **Building: T573 in progress since 08:54Z; 529 of 710 done; week 27% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -14,7 +14,7 @@ Updated 2026-11-20T09:47:42Z by runner 4e4208672e58 (actions).
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 42 problem(s) on tasks still to run (+399 on DONE tasks); first: T530: stored context_pct 12% but it measures 16%; regenerate
+- Strict plan check red: 88 problem(s) on tasks still to run (+393 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -90,15 +90,14 @@ Updated 2026-11-20T09:47:42Z by runner 4e4208672e58 (actions).
 | T470 | messaging and server: the worker task that sends queued emai | QUEUED | 1 | 93 min | 10:35Z |  |
 | T710 | quotes and licensing (harness): a launch-open category takes | done | 1 | 85 min | 10:06Z |  |
 | T553 | Decisions digest, piece 8: the next entries after the header | done | 1 | 76 min | 10:04Z |  |
-| T622 | portals: the scorecard's first-six-weeks email panel and OPS | done | 1 | 2 h 41 min | 09:47Z |  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 324 of 735 (44.1%) · partial 385 · unstarted 26
-**Tasks merged (throughput only):** 529 of 709
+**Requirements verified:** 325 of 735 (44.2%) · partial 384 · unstarted 26
+**Tasks merged (throughput only):** 529 of 707
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -118,7 +117,7 @@ Updated 2026-11-20T09:47:42Z by runner 4e4208672e58 (actions).
 | quiet-hours | 3 | 6 | 0 | 9 |
 | quotes-pick | 25 | 31 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
-| security | 10 | 40 | 5 | 55 |
+| security | 11 | 39 | 5 | 55 |
 | terms | 27 | 8 | 0 | 35 |
 | website | 18 | 10 | 2 | 30 |
 | wording | 23 | 9 | 0 | 32 |
