@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T16:36:50Z by runner 696a43ed61d5 (actions).
+Updated 2026-11-20T16:37:31Z by runner 454c0af261c1 (actions).
 
 **Building: T530 in progress since 15:29Z; 543 of 712 done; week 38% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 543 of 712 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T530 claimed 15:29Z, lease until 18:29Z; lane 2: T672 claimed 16:21Z, lease until 19:21Z; lane 4: T681 claimed 15:47Z, lease until 18:47Z; lane 5: T686 claimed 16:22Z, lease until 19:22Z; lane 7: T743 claimed 16:24Z, lease until 19:24Z
+- **Lane:** lane 1: T530 claimed 15:29Z, lease until 19:37Z; lane 2: T672 claimed 16:21Z, lease until 19:21Z; lane 4: T681 claimed 15:47Z, lease until 18:47Z; lane 5: T686 claimed 16:22Z, lease until 19:22Z; lane 7: T743 claimed 16:24Z, lease until 19:24Z
 - **Week:** 38% used, 113.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:36Z, 0 min before this update
+- **Last run:** 16:37Z, 0 min before this update
 - **Keeper:** last ran 16:36Z, next wake 18:31Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ The pick's window deadline (picks.pick.confirm_due) is read only by private code
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T664 (since 2026-11-20T16:15:19Z, no attempt used; a plan change fixes it): outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs
-- Strict plan check red: 38 problem(s) on tasks still to run (+411 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
+- Strict plan check red: 43 problem(s) on tasks still to run (+412 on DONE tasks); first: T530: stored context_pct 16% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -145,7 +145,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T530 (lease until 2026-11-20T18:29:00Z)
+- T530 (lease until 2026-11-20T19:37:31Z)
 - lane 2: T672 (lease until 2026-11-20T19:21:35Z)
 - lane 4: T681 (lease until 2026-11-20T18:47:45Z)
 - lane 5: T686 (lease until 2026-11-20T19:22:55Z)
