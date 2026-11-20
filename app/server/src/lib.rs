@@ -1133,6 +1133,8 @@ where
     let export = (Arc::clone(&photos), id_secret.clone(), Arc::clone(&clock));
     askhava_recovery::api::register_export(&mut registry, settings, export)
         .map_err(io::Error::other)?;
+    askhava_recovery::api::register_restore(&mut registry, settings, Arc::clone(&clock))
+        .map_err(io::Error::other)?;
     register_whos_calling(&mut registry, settings, (&id_secret, &clock), pairs.clone())?;
     register_twilio_handlers(&mut registry, settings, (id_secret, clock), pairs)?;
     Ok(registry)
@@ -1413,6 +1415,67 @@ fn stripe_client(
     pairs: &[(String, String)],
 ) -> io::Result<Option<askhava_adapters::api::StripePayments>> {
     Ok(stripe_hooks(settings, pairs)?.map(|h| h.stripe.clone()))
+}
+
+/// `server replay <plain-dump-file> <export-object-name> <backup-time>` (T206; OPS-013, OPS-018,
+/// OPS-019; D-3889, D-4932): restores the operator's already-decrypted `pg_dump -Fc` file into the
+/// fresh database behind `ASKHAVA_MIGRATION_DATABASE_URL` and replays there from Twilio's sent log
+/// and Stripe's charge list (`recovery::api::run_drill`), waiting while a vendor is unreachable,
+/// then prints the counts. The object is fetched and `age -d` run by the operator, with the key
+/// off this host (PRIV-024, PRIV-029). `backup-time` is the export's RFC 3339 instant.
+///
+/// # Errors
+///
+/// A wrong argument, a missing Twilio, Stripe, vault or homeowner-number setting (named, never a
+/// value), or the drill's own error.
+pub async fn replay_drill(
+    settings: &Settings,
+    pairs: Vec<(String, String)>,
+    args: &[String],
+) -> io::Result<()> {
+    use askhava_messaging::api::{LaunchChannel, Line, Lines};
+    use askhava_recovery::api::{Drill, ReplaySources, Retry, run_drill};
+    let usage = "usage: server replay <plain-dump-file> <export-object-name> <backup-time>";
+    let [dump, object, since] = args else {
+        return Err(io::Error::other(usage));
+    };
+    let charges_since: jiff::Timestamp = since.parse().map_err(|_| io::Error::other(usage))?;
+    let url = settings
+        .migration_database_url()
+        .map_err(io::Error::other)?;
+    let missing = |what: &str| io::Error::other(format!("server replay needs the {what} settings"));
+    let twilio = twilio_config(settings, pairs.clone())?.ok_or_else(|| missing("Twilio"))?;
+    let (sms, _, _) = twilio_clients(&twilio).map_err(io::Error::other)?;
+    let stripe = stripe_hooks(settings, &pairs)?.ok_or_else(|| missing("Stripe"))?;
+    let number = homeowner_number(settings, &pairs)?;
+    let from = ReplaySources {
+        sms: &sms,
+        stripe: &stripe.stripe,
+        vault: &vault_from(settings, pairs)?.ok_or_else(|| missing("vault"))?,
+        lines: &Lines {
+            homeowner: Line::at_launch(LaunchChannel::Sms, number),
+            business: Line::at_launch(LaunchChannel::Sms, None),
+        },
+        charges_since,
+        retry: Retry::STANDARD,
+    };
+    let drill = Drill::new(dump.into(), object, url.clone(), Retry::STANDARD);
+    let drill = drill.map_err(io::Error::other)?;
+    let done = run_drill(&drill, &from, jiff::Timestamp::now()).await;
+    let done = done.map_err(io::Error::other)?;
+    let replay = done.replay;
+    let out = format!(
+        "Drill recorded after {} replay round(s): {} texts marked sent, {} left to send, \
+         {} charges booked, {} already booked (any an earlier round booked are counted here), \
+         {} listed for Casey\n",
+        done.rounds,
+        replay.texts_marked,
+        replay.texts_unsent,
+        replay.charges_booked,
+        replay.charges_already,
+        replay.items.len()
+    );
+    io::Write::write_all(&mut io::stdout(), out.as_bytes())
 }
 
 /// The worker's Stripe webhook state (`release_sink::stripe_webhook`, read when
@@ -2841,5 +2904,19 @@ mod tests {
             "{with}"
         );
         assert!(client(&[]).contains("status_callback: None"));
+    }
+
+    /// T206 (OPS-013, D-4932): `server replay` takes exactly a plain dump file, an object name and
+    /// an RFC 3339 backup time, and refuses anything else before it reads a setting or a vendor.
+    #[tokio::test]
+    async fn server_replay_refuses_wrong_arguments() {
+        let lists = settings_pairs("ci");
+        let settings = Settings::from_pairs(pairs("ci", &lists)).expect("settings");
+        let arg = |a: &[&str]| a.iter().map(|s| (*s).to_owned()).collect::<Vec<_>>();
+        for args in [arg(&[]), arg(&["fake.dump", "exports/1.age", "yesterday"])] {
+            let refused = super::replay_drill(&settings, Vec::new(), &args).await;
+            let said = refused.expect_err("refused").to_string();
+            assert!(said.starts_with("usage: server replay"), "{said}");
+        }
     }
 }

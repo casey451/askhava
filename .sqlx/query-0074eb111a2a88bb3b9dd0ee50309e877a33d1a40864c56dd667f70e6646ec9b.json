@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT r.job_id, r.business_id, r.contact_id, p.status = ANY($2) AS \"shown!\"\n           FROM picks.release r JOIN picks.pick p ON p.id = r.pick_id WHERE r.pick_id = $1",
+  "query": "SELECT r.job_id, r.business_id, r.contact_id, r.released_at,\n             p.status = ANY($2) AS \"shown!\"\n           FROM picks.release r JOIN picks.pick p ON p.id = r.pick_id WHERE r.pick_id = $1",
   "describe": {
     "columns": [
       {
@@ -38,6 +38,17 @@
       },
       {
         "ordinal": 3,
+        "name": "released_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "picks.release",
+            "name": "released_at"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
         "name": "shown!",
         "type_info": "Bool",
         "origin": "Expression"
@@ -53,8 +64,9 @@
       false,
       false,
       false,
+      false,
       null
     ]
   },
-  "hash": "50a7003e95865b88232778a5ab1da4ca73780b757a33b0c18a91d3b6a2aed16d"
+  "hash": "0074eb111a2a88bb3b9dd0ee50309e877a33d1a40864c56dd667f70e6646ec9b"
 }

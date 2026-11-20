@@ -7,3 +7,9 @@ pub use crate::models::{ExportSettings, RecoveryError};
 pub use crate::replay::{
     CHARGE_MARGIN, ChargeSource, ItemKind, ReplayItem, ReplayReport, ReplaySources, Retry, replay,
 };
+pub use crate::restore::{
+    RESTORE_DEADLINE, RESTORE_FAILED_ACTION, RESTORE_FAILED_ALERT, RESTORE_KIND,
+    RESTORE_PASSED_ACTION, RestoreError, RestoreSettings, load_dump, register_restore,
+    schedule_restore, test_restore,
+};
+pub use crate::service::{Drill, DrillError, DrillReport, REPLAY_LISTED_ALERT, run_drill};
