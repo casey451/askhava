@@ -24,7 +24,9 @@
 //! The move is the Confirm (PICK-042, T388, D-3074): in the same transaction [`settle`] queues one
 //! [`ACCEPTED_QUOTE_KIND`] task (pick, job and business IDs only, deduped per pick), whose
 //! handler (`intake`'s) emails the homeowner a copy of the accepted quote; [`accepted_pick`] is the
-//! read of a job's `paid` or `free` pick that handler and the quote page use.
+//! read of a job's `paid` or `free` pick that handler and the quote page use. In the same
+//! transaction it queues the loss notice to every other quoter (`aftermath::lost_notices`,
+//! PICK-026, PICK-038, D-1575, D-4361).
 //!
 //! The settle also connects the job (D-2930, D-4349): in its transaction the job moves to
 //! Connected before the pick moves (`connect::connect_on_settle`); a job not in Awaiting confirm
@@ -40,6 +42,7 @@ use serde_json::json;
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
+use crate::aftermath::{LossSettings, lost_notices};
 use crate::connect::{PendingEnd, connect_on_settle, end_pending};
 use crate::models::PicksError;
 use crate::status::{release_shown_codes, release_status, settle_action, settle_step};
@@ -90,7 +93,7 @@ pub enum Settled {
 pub async fn settle(tx: &mut PgConnection, cleared: &Releasable) -> Result<Settled, PicksError> {
     let (pick, want) = (cleared.pick(), release_status(cleared.basis()));
     let row = sqlx::query!(
-        r#"SELECT job_id, business_id, status, ended_at IS NOT NULL AS "ended!"
+        r#"SELECT job_id, business_id, status, ended_at IS NOT NULL AS "ended!", tier_index
            FROM picks.pick WHERE id = $1 FOR UPDATE"#,
         pick
     )
@@ -129,8 +132,25 @@ pub async fn settle(tx: &mut PgConnection, cleared: &Releasable) -> Result<Settl
         change: Change::Action,
     };
     audit(tx, &entry).await.map_err(|_| PicksError::Audit)?;
-    queue_accepted_quote(tx, pick, (row.job_id, row.business_id)).await?;
+    let parties = (row.job_id, row.business_id);
+    after_move(tx, pick, parties, row.tier_index).await?;
     Ok(Settled::Moved(row.job_id))
+}
+
+/// PICK-042, PICK-026, PICK-038, D-1575, D-4361: in the settle's transaction, once the pick is
+/// `paid` or `free`, queues the accepted-quote email and the loss notice to every other quoter
+/// (`aftermath::lost_notices`, on the homeowner's `tier` of a tiers quote, default settings).
+async fn after_move(
+    tx: &mut PgConnection,
+    pick: Uuid,
+    (job, business): (Uuid, Uuid),
+    tier: Option<i16>,
+) -> Result<(), PicksError> {
+    queue_accepted_quote(tx, pick, (job, business)).await?;
+    let tier = tier.map(usize::try_from).and_then(Result::ok);
+    lost_notices(tx, pick, tier, LossSettings::default())
+        .await
+        .map(drop)
 }
 
 /// PICK-042, D-3074: queues the accepted-quote email's task for `pick` of `job` and `business` in

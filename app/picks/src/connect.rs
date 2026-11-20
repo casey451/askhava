@@ -29,6 +29,7 @@ use serde_json::json;
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
+use crate::aftermath::refused_after_confirm;
 use crate::backup_choice::Backup;
 use crate::models::{self, PicksError};
 use crate::pick_ended::{after_end, end_unpaid};
@@ -158,8 +159,9 @@ async fn system_move(
 /// nothing at all unless the pick still waits and has not ended; then the pick ends, its
 /// PaymentIntent ends through `payments`' own pick end (a success stored before it refunded
 /// there, one recorded after it by `record`), and a job in Payment pending returns to Quotes
-/// ready with her backup (PICK-047) or PICK-046's text. A job in a final status only has the pick
-/// ended ([`Backup::Done`]).
+/// ready with her backup (PICK-047) or PICK-046's text. An `ineligible` end tells its business "This
+/// job is no longer active." at once (`aftermath::refused_after_confirm`, PICK-026, D-043, D-4361).
+/// A job in a final status only has the pick ended ([`Backup::Done`]).
 ///
 /// # Errors
 /// [`PicksError::Database`], [`PicksError::Job`], [`PicksError::MovedOn`] (roll back) or the
@@ -176,7 +178,10 @@ pub async fn end_pending(
     match reason {
         PendingEnd::PaymentFailed => end_unpaid(tx, pick, at).await?,
         PendingEnd::CantTake => drop(models::end_pick(tx, pick, "cant_take", at).await?),
-        PendingEnd::Ineligible => drop(models::end_pick(tx, pick, "ineligible", at).await?),
+        PendingEnd::Ineligible => {
+            models::end_pick(tx, pick, "ineligible", at).await?;
+            refused_after_confirm(tx, job, business).await?;
+        }
     }
     end_pick_intent(tx, pick, at)
         .await
