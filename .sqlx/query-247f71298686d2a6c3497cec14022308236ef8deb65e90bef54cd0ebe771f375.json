@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT i.contact_id FROM privacy.contact_index i JOIN privacy.contact c ON c.id = i.contact_id WHERE i.purpose = $1 AND i.key_version = $2 AND i.digest = $3 AND c.phone IS NOT NULL ORDER BY i.contact_id LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "contact_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "privacy.contact_index",
+            "name": "contact_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Int4",
+        "Bytea"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "247f71298686d2a6c3497cec14022308236ef8deb65e90bef54cd0ebe771f375"
+}
