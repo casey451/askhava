@@ -8753,3 +8753,4 @@
 - 2026-11-20T20:10:38Z runner 126f90388246 (actions): {}
 - 2026-11-20T20:11:21Z runner 126f90388246 (actions): {}
 - 2026-11-20T20:14:31Z runner 5b08505974c2 (actions): {"T530": "MERGE_PENDING -> DONE"}
+- 2026-11-20T20:17:52Z runner 46c0ebfef5b4 (actions): {"T673": "QUEUED -> IN_PROGRESS"}; T673 estimated 2.2M tokens (calibrated); week has 103.2M left (no five-hour budget, D-3056) after 2.8M still running in another lane (session_reading 2026-11-20T20:10:37Z (week)); claimed
