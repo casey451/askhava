@@ -9,9 +9,9 @@
 //! a Resume and a new plain pause, or a rule's pause, it changes nothing.
 
 use askhava_businesses::api::{
-    AccountStatus, Acting, BUSY_END_KIND, BusinessesError, Checks, Event, PauseReason, Roles,
-    add_member, add_owner, apply, business, create, pause_for_rule, pause_self, remove_member,
-    resume_self, run_busy_end, set_busy,
+    Acting, BUSY_END_KIND, BusinessesError, Checks, Event, PauseReason, Roles, add_member,
+    add_owner, apply, business, create, pause_for_rule, pause_self, remove_member, resume_self,
+    run_busy_end, set_busy,
 };
 use askhava_core::api::Claimed;
 use askhava_ops::api::Actor;
@@ -41,7 +41,7 @@ async fn team(db: &mut PgConnection, at: Timestamp) -> (Uuid, [Acting; 3]) {
     };
     let event = Event::Checked(checks);
     let moved = apply(db, business, event, Actor::System, at).await;
-    assert_eq!(moved.expect("active"), AccountStatus::Active);
+    assert_eq!(moved.expect("moved").code(), "active");
     (business, people)
 }
 
