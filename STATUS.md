@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T19:43:39Z by runner af7731ff7440 (actions).
+Updated 2026-11-20T19:44:08Z by runner af7731ff7440 (actions).
 
 **Building: T756 in progress since 18:57Z; 549 of 713 done; week 42% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 549 of 713 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T756 claimed 18:57Z, lease until 21:57Z; lane 3: T530 claimed 18:54Z, lease until 21:54Z; lane 4: T682 claimed 19:03Z, lease until 22:03Z; lane 5: T772 claimed 18:05Z, lease until 21:05Z; lane 7: T743 claimed 18:24Z, lease until 21:24Z
+- **Lane:** lane 1: T756 claimed 18:57Z, lease until 21:57Z; lane 4: T682 claimed 19:03Z, lease until 22:03Z; lane 5: T772 claimed 18:05Z, lease until 21:05Z; lane 7: T743 claimed 18:24Z, lease until 21:24Z
 - **Week:** 42% used, 103.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:26Z, 16 min before this update
+- **Last run:** 19:26Z, 17 min before this update
 - **Keeper:** last ran 19:11Z, next wake 21:08Z
 
 ## Needs attention
@@ -20,13 +20,14 @@ Updated 2026-11-20T19:43:39Z by runner af7731ff7440 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T530 | portals: the owner help page and its screened reply box (D-3 | MERGE_PENDING | 3 | 49 min | 19:43Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T661 | privacy: a business notice address with spaces, commas or co | MERGE_PENDING | 1 | 27 min | 19:04Z |  |
 | T614 | site: the V6 header in base.html (links, the Menu in the pag | BLOCKED | 2 | 80 min | 18:46Z | PLAN GAP: tests/integration/tests/quote_page.rs:172 (owner T052, protected) bans the word "summary" anywhere in the quot |
 | T743 | messaging and privacy: opt-out listings are re-keyed to the  | QUEUED | 1 | 112 min | 18:17Z | Second review (head 7921ab0285f5916db9a9df89ee828c150908805e) ended FINDINGS: tests/integration/tests/suppression_rekey. |
 | T573 | messaging and server: queued business texts are addressed to | done | 4 | 41 min | 18:01Z | model claude-opus-5-5 ran, task names claude-fable-5-2 / re-queued after plan fix D-4969: Coverage time-limit cancel, fi |
 | T686 | businesses and server: a 90-day-old inbox or alert Yes gets  | done | 1 | 76 min | 17:39Z |  |
 | T672 | intake: the dispatcher asks "How soon?", the night count and | done | 3 | 52 min | 17:14Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
-| T530 | portals: the owner help page and its screened reply box (D-3 | resync | 3 | 71 min | 16:40Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
+| T530 | portals: the owner help page and its screened reply box (D-3 | resync | 3 | 71 min | 16:40Z |  |
 | T681 | picks and jobs: the businesses that lost a pick and every qu | done | 1 | 50 min | 16:38Z |  |
 | T771 | a11y tests (harness): reflow_spacing's hidden-control check  | done | 2 | 50 min | 16:34Z | PLAN GAP: kit/prompts/T771.md:9 (D-4970, docs/decisions.md:2604) contradicts itself: rule (1) checks the hidden Menu sum |
 | T664 | portals: the Confirm press re-checks the license and account | BLOCKED | 1 | 5 min | 16:15Z | PLAN GAP: outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs / The pick's window deadline (picks.pic |
@@ -146,10 +147,9 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T756 (lease until 2026-11-20T21:57:45Z)
-- lane 3: T530 (lease until 2026-11-20T21:54:21Z)
 - lane 4: T682 (lease until 2026-11-20T22:03:22Z)
 - lane 5: T772 (lease until 2026-11-20T21:05:44Z)
 - lane 7: T743 (lease until 2026-11-20T21:24:48Z)
 
 ## Last usage reading
-- {"task": "T661", "at": "2026-11-20T19:04:29Z", "output_tokens": 13158, "input_tokens": 54, "cache_creation_input_tokens": 57338, "cache_read_input_tokens": 833953}
+- {"task": "T530", "at": "2026-11-20T19:43:37Z", "output_tokens": 12578, "cache_read_input_tokens": 1238096, "input_tokens": 73, "cache_creation_input_tokens": 72556}
