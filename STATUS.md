@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T00:40:05Z by runner c9b37a0e9036 (manual).
+Updated 2026-11-20T00:43:35Z by runner c9b37a0e9036 (actions).
 
 **Building: T527 in progress since 00:05Z; 511 of 703 done; week 13% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-20T00:40:05Z by runner c9b37a0e9036 (manual).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T527 claimed 00:05Z, lease until 03:05Z; lane 3: T726 claimed 00:03Z, lease until 03:03Z; lane 4: T218 claimed 00:31Z, lease until 03:31Z; lane 5: T663 claimed 23:33Z, lease until 02:33Z; lane 7: T613 claimed 23:22Z, lease until 03:14Z
 - **Week:** 13% used, 161.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:39Z, 0 min before this update
+- **Last run:** 00:40Z, 3 min before this update
 - **Keeper:** last ran 00:39Z, next wake 02:35Z
 
 ## Needs attention
@@ -87,38 +87,37 @@ Updated 2026-11-20T00:40:05Z by runner c9b37a0e9036 (manual).
 | T488 | portals and server: the business sign-up served in Spanish o | done | 1 | 111 min | 01:20Z |  |
 | T306 | server and portals: the complaints page, the emergency-email | resync | 1 | 77 min | 00:59Z |  |
 | T205 | portals: owner refunds with a review step and the audit log  | done | 2 | 2 h 26 min | 00:48Z | PLAN GAP: `payments` has no public reader that ties a dispute to its pick (or its charge, business or job). Without one, |
-| T708 | intake: a quote-count update due in quiet hours goes at the  | done | 1 | 50 min | 00:40Z |  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 79 of 735 (10.7%) · partial 621 · unstarted 35
+**Requirements verified:** 323 of 735 (43.9%) · partial 377 · unstarted 35
 **Tasks merged (throughput only):** 511 of 703
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 3 | 32 | 0 | 35 |
-| ai | 1 | 25 | 3 | 29 |
-| businesses | 1 | 56 | 1 | 58 |
-| calls | 1 | 24 | 0 | 25 |
-| consent | 3 | 32 | 0 | 35 |
-| fees | 1 | 51 | 0 | 52 |
-| intake | 1 | 42 | 0 | 43 |
-| job-cards | 0 | 24 | 0 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 0 | 44 | 1 | 45 |
-| ops-recovery | 7 | 29 | 18 | 54 |
-| privacy | 0 | 30 | 1 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 0 | 56 | 0 | 56 |
-| recurring | 3 | 8 | 0 | 11 |
-| security | 0 | 50 | 5 | 55 |
-| terms | 25 | 9 | 1 | 35 |
+| accessibility | 18 | 17 | 0 | 35 |
+| ai | 8 | 18 | 3 | 29 |
+| businesses | 21 | 36 | 1 | 58 |
+| calls | 14 | 11 | 0 | 25 |
+| consent | 16 | 19 | 0 | 35 |
+| fees | 21 | 31 | 0 | 52 |
+| intake | 8 | 35 | 0 | 43 |
+| job-cards | 12 | 12 | 0 | 24 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 16 | 12 | 0 | 28 |
+| messaging | 22 | 22 | 1 | 45 |
+| ops-recovery | 9 | 27 | 18 | 54 |
+| privacy | 8 | 22 | 1 | 31 |
+| quiet-hours | 3 | 6 | 0 | 9 |
+| quotes-pick | 25 | 31 | 0 | 56 |
+| recurring | 10 | 1 | 0 | 11 |
+| security | 11 | 39 | 5 | 55 |
+| terms | 27 | 7 | 1 | 35 |
 | website | 18 | 9 | 3 | 30 |
-| wording | 15 | 15 | 2 | 32 |
+| wording | 23 | 7 | 2 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
