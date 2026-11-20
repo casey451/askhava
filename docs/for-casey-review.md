@@ -3589,6 +3589,7 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 ## Monthly test restore: one more database service to add (D-4846, November 20)
 
 - D-4846 (T648): the monthly test restore needs a second, empty PostgreSQL 16 service in each Railway project (test and live), reachable only on the private network, and its admin URL set as `ASKHAVA_RESTORE_ADMIN_URL` on the `worker` service only. Without it the worker will not start in test or live. Nothing is kept there: each run makes a database, checks it and drops it. A failed run shows as one High alert in the digest and never starts safe mode.
+- D-4733 (T530): the owner portal has a new page, `/owner/help`, that lists open help requests and lets you reply to one. For now a reply only goes by text, and only to a homeowner who has texted us; for a business or an email asker the page says the reply must go by email and sends nothing (email replies come with T740). Replies sent at night wait until 8 a.m. Closing or reopening a request there is not yet written to the audit log.
 
 ## Restore drill: what the operator runs (D-4971, November 20)
 
