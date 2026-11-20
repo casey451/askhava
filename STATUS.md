@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T07:58:36Z by runner adc433df0a11 (actions).
+Updated 2026-11-20T07:59:08Z by runner adc433df0a11 (actions).
 
-**Building: T617 in progress since 07:06Z; 526 of 708 done; week 24% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T617 in progress since 07:06Z; 527 of 708 done; week 24% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 526 of 708 build tasks (owner gates not counted)
+- **Tasks done:** 527 of 708 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 4: T672 claimed 06:35Z, lease until 09:35Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z; lane 7: T669 claimed 07:12Z, lease until 10:12Z
 - **Week:** 24% used, 140.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:53Z, 5 min before this update
+- **Last run:** 07:53Z, 6 min before this update
 - **Keeper:** last ran 07:52Z, next wake 09:38Z
 
 ## Needs attention
@@ -22,7 +22,7 @@ Updated 2026-11-20T07:58:36Z by runner adc433df0a11 (actions).
 |---|---|---|---|---|---|---|
 | T561 | server and portals: the homeowner's "Download my data" and h | MERGE_PENDING | 1 | 33 min | 07:51Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
 | T762 | runner and workflow (harness): fix-round workers commit with | MERGE_PENDING | 1 | 68 min | 07:44Z |  |
-| T764 | ci and pre-hand-in gate (harness): scripts/bootstrap_roles.s | MERGE_PENDING | 1 | 54 min | 07:29Z |  |
+| T764 | ci and pre-hand-in gate (harness): scripts/bootstrap_roles.s | done | 1 | 54 min | 07:29Z |  |
 | T669 | picks: "Can't take it" and a business leaving end a pick in  | QUEUED | 1 | 56 min | 07:07Z | runner smoke red on c403ea4898ac (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
 | T573 | messaging and server: queued business texts are addressed to | BLOCKED | 1 | 5 min | 06:27Z | PLAN GAP: app/privacy/src/business_contacts.rs:124 (owned by T412, not T573). Item (2) needs the outbox sender to read a |
 | T561 | server and portals: the homeowner's "Download my data" and h | resync | 1 | 60 min | 06:26Z |  |
@@ -99,7 +99,7 @@ Updated 2026-11-20T07:58:36Z by runner adc433df0a11 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 324 of 735 (44.1%) · partial 385 · unstarted 26
-**Tasks merged (throughput only):** 526 of 708
+**Tasks merged (throughput only):** 527 of 708
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -135,7 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 169 of 290 done
+- stage 5: 170 of 290 done
 - stage 6: 0 of 65 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
