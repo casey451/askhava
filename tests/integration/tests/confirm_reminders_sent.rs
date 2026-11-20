@@ -261,7 +261,8 @@ async fn td_pick_68_the_emergency_reminder_goes_once_by_the_night_routing(pool: 
 
 /// TD-PICK-68: a pick whose business pressed Confirm, a lapsed or ended pick and a pick whose job
 /// was cancelled after an earlier reminder get no reminder and no further run; a non-emergency
-/// run at night sends nothing and waits for 8 a.m.
+/// run at night, or in the last 15 minutes before 8 p.m. (QH-005, D-5035), sends nothing and
+/// waits for 8 a.m., when the reminder goes.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_pick_68_a_pressed_ended_or_cancelled_pick_gets_none(pool: PgPool) {
     let business = team(&pool, 0x6840, false).await;
@@ -290,4 +291,11 @@ async fn td_pick_68_a_pressed_ended_or_cancelled_pick_gets_none(pool: PgPool) {
     assert!(notices.is_empty(), "quiet hours");
     let eight = az(8, 0) + jiff::SignedDuration::from_hours(24);
     assert_eq!(runs, [az(19, 30), eight]);
+    let (_, dusk) = sent(&pool, (business, false), az(18, 45)).await;
+    let (notices, runs) = run(&pool, dusk, az(19, 45)).await;
+    assert!(notices.is_empty(), "too close to 8 p.m. for a send");
+    assert_eq!(runs, [az(19, 45), eight], "waits for 8 a.m.");
+    assert_eq!(run(&pool, dusk, eight).await.0.len(), 1, "sent at 8 a.m.");
+    let (_, in_time) = sent(&pool, (business, false), az(18, 44)).await;
+    assert_eq!(run(&pool, in_time, az(19, 44)).await.0.len(), 1);
 }

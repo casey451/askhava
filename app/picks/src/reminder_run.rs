@@ -10,7 +10,9 @@
 //! `BUSINESS_NOTICE_KIND` task carrying `reminder_lines` as its own `subject` and `first_line`
 //! over the pick notice's words. The run then queues itself at the next reminder, or at the
 //! window's end, where an extended window is read again. A non-emergency reminder never goes
-//! between 8 p.m. and 8 a.m.: the run waits for 8 a.m. An emergency pick's one reminder goes at
+//! between 8 p.m. and 8 a.m., nor in the last [`QUIET_MARGIN`] before 8 p.m. (QH-005, D-5035:
+//! `messaging` never holds such a notice, so it must not be queued where a slow or retried send
+//! would land at night): the run waits for 8 a.m. An emergency pick's one reminder goes at
 //! any hour: by day to every person who gets picks, at night only to the people
 //! `emergency_pick_plan` names, and to nobody when there are none.
 
@@ -22,7 +24,7 @@ use askhava_jobs::api::{
     JobRow, JobStatus, current, entered_payment_pending_since, job_number, rules::timeout,
 };
 use askhava_messaging::api::Language;
-use jiff::Timestamp;
+use jiff::{SignedDuration, Timestamp};
 use serde_json::json;
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
@@ -40,6 +42,23 @@ use crate::status::awaits_confirm;
 
 /// The `core.task` kind of a waiting pick's reminder run (PICK-037).
 pub const CONFIRM_REMINDER_KIND: &str = "picks.confirm_reminder";
+
+/// QH-005, PICK-037, D-5035: a non-emergency reminder is queued only when this much time is left
+/// before 8 p.m., because `messaging` sends it without its own quiet-hours hold; a later one
+/// waits for 8 a.m.
+pub(crate) const QUIET_MARGIN: SignedDuration = SignedDuration::from_mins(15);
+
+/// QH-005, D-5035: when a non-emergency reminder may next be queued, at or after `now`: `None`
+/// when that is `now` itself (8 a.m. to 8 p.m. with [`QUIET_MARGIN`] to spare), else the next
+/// 8 a.m.
+fn quiet_until(now: Timestamp) -> Option<Timestamp> {
+    let day = is_business_hours(now);
+    if day && is_business_hours(now + QUIET_MARGIN) {
+        return None;
+    }
+    let from = if day { now + QUIET_MARGIN } else { now };
+    Some(add_business_minutes(from, 0))
+}
 
 /// The [`CONFIRM_REMINDER_KIND`] handler (PICK-037, PICK-043, PICK-044, JOB-006): [`remind`] for
 /// the task's pick and window start at the worker's `now`, in one transaction; safe to run twice.
@@ -64,8 +83,8 @@ pub async fn run_confirm_reminder_at(
 /// PICK-037, PICK-043, PICK-044, QH-004: one run for pick `pick`, whose window started at `start`,
 /// at `now`, inside the caller's transaction: nothing unless the pick waits on a job still
 /// Awaiting confirm that never entered Payment pending since `start`; otherwise the newest due
-/// reminder goes once, while the window is open and (off an emergency job) it is 8 a.m. to
-/// 8 p.m., and the next run is queued.
+/// reminder goes once, while the window is open and (off an emergency job, QH-005) it is 8 a.m.
+/// to 8 p.m. less [`QUIET_MARGIN`], and the next run is queued.
 ///
 /// # Errors
 /// [`PicksError::Job`] or [`PicksError::Database`].
@@ -89,7 +108,8 @@ pub(crate) async fn remind(
     let Some((due, list)) = window(tx, (&row, &job), start, rules).await? else {
         return Ok(());
     };
-    let awake = job.emergency || is_business_hours(now);
+    let quiet = quiet_until(now).filter(|_| !job.emergency);
+    let awake = quiet.is_none();
     let newest = list.iter().rev().find(|r| r.due(now));
     if let Some(&r) = newest.filter(|_| awake && window_open(now, due))
         && claim_reminder(tx, pick, r, now).await?
@@ -97,10 +117,7 @@ pub(crate) async fn remind(
         send(tx, (pick, &row, job.emergency), (r, due, now)).await?;
     }
     let next = list.iter().map(|r| r.at).find(|at| *at > now);
-    let wake = match awake {
-        true => next.or(Some(due)).filter(|at| *at > now),
-        false => Some(add_business_minutes(now, 0)),
-    };
+    let wake = quiet.or_else(|| next.or(Some(due)).filter(|at| *at > now));
     match wake {
         Some(at) => queue_run(tx, pick, (start, at)).await,
         None => Ok(()),
