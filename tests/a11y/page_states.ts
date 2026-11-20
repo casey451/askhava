@@ -316,8 +316,11 @@ const NOTICES_STATES: readonly PageState[] = [
 
 const CONFIRM_ROUTE = "/b/picks/{pick}/confirm";
 
-/** A fake owner's page pick waiting for Confirm, its fee row's mode, kind and cents as SQL over `t`. */
-function confirmSql(mode: string, kind: string, cents: number): string {
+/**
+ * A fake owner's page pick waiting for Confirm, its fee row's mode, kind and cents as SQL over `t`,
+ * then `extra`, which may use the pick row `p`.
+ */
+function confirmSql(mode: string, kind: string, cents: number, extra = ""): string {
   return businessSql(`,
     j AS (INSERT INTO jobs.job (id, status, emergency, created_at, status_at, timer_from)
       VALUES (gen_random_uuid(), 'awaiting_confirm', false, now(), now(), now()) RETURNING id),
@@ -327,8 +330,19 @@ function confirmSql(mode: string, kind: string, cents: number): string {
       SELECT ':pick', j.id, m.business_id, 1, 'page', 'awaiting_confirm', now() FROM j, m RETURNING id, job_id, business_id),
     f AS (INSERT INTO payments.pick_fee (pick_id, business_id, job_id, mode, kind, amount_cents, terms_version, fixed_at)
       SELECT p.id, p.business_id, p.job_id, ${mode}, '${kind}', ${String(cents)}, t.authorization_version, now()
-      FROM p, payments.fee_terms t)`);
+      FROM p, payments.fee_terms t)${extra}`);
 }
+
+/**
+ * The card section's Stripe customer and the pick's one PaymentIntent, stored with fake IDs made
+ * from the business and pick IDs (D-4950), so the page opens no Stripe object: the stand-in's IDs
+ * restart with each run and collide with rows a reused database kept, which fell to CARD_OFF_LINE.
+ */
+const OPENED_SQL = `,
+    c AS (INSERT INTO payments.customer (business_id, stripe_customer_id)
+      SELECT business_id, 'cus_fake' || replace(business_id::text, '-', '') FROM p),
+    i AS (INSERT INTO payments.pick_intent (pick_id, business_id, job_id, amount_cents, stripe_intent_id, emergency, created_at)
+      SELECT id, business_id, job_id, 2500, 'pi_fake' || replace(id::text, '-', ''), false, now() FROM p)`;
 
 /**
  * The Confirm page (T261; FEE-045, PICK-021, D-1871, D-3836, D-3838): a fee-free pick waiting for
@@ -336,7 +350,8 @@ function confirmSql(mode: string, kind: string, cents: number): string {
  * force, so the page shows the fee-terms-changed line in place of the card section, opens no
  * PaymentIntent and loads neither Stripe.js nor the page script; on the keyed binary, whose Stripe
  * settings serve the page. T496 (A11Y-002, D-3838): an ordinary $25 charged pick under the terms in
- * force, whose card section shows with the fixture's fake Stripe Element mounted.
+ * force, whose card section shows with the fixture's fake Stripe Element mounted; its `hides` is
+ * `CARD_OFF_LINE`, so a page whose card section fell to that line fails (D-4950).
  */
 const CONFIRM_STATES: readonly PageState[] = [
   [
@@ -345,7 +360,7 @@ const CONFIRM_STATES: readonly PageState[] = [
     "Card payments can't be taken right now.",
     confirmSql("CASE t.mode WHEN 'tiers' THEN 'flat' ELSE 'tiers' END", "fee_free", 0),
   ],
-  ["confirm page, card section", "Confirm and pay", "The fee terms changed after the homeowner picked you", confirmSql("t.mode", "charged", 2500)],
+  ["confirm page, card section", "Confirm and pay", "Card payments can't be taken right now.", confirmSql("t.mode", "charged", 2500, OPENED_SQL)],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: CONFIRM_ROUTE, name, shows, hides, sql, statusRegions: ["confirm-status"] }));
 
 const CANT_TAKE_ROUTE = "/b/picks/{pick}/cant-take";
