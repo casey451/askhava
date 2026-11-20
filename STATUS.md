@@ -1,25 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-20T00:38:24Z by runner 5861ab059065 (actions).
+Updated 2026-11-20T00:38:42Z by runner 1fce80f86b8a (actions).
 
 **Building: T527 in progress since 00:05Z; 511 of 703 done; week 12% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 511 of 703 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T527 claimed 00:05Z, lease until 03:05Z; lane 2: T758 claimed 23:07Z, lease until 03:27Z; lane 3: T726 claimed 00:03Z, lease until 03:03Z; lane 4: T218 claimed 00:31Z, lease until 03:31Z; lane 5: T663 claimed 23:33Z, lease until 02:33Z; lane 7: T613 claimed 23:22Z, lease until 03:14Z
+- **Lane:** lane 1: T527 claimed 00:05Z, lease until 03:05Z; lane 3: T726 claimed 00:03Z, lease until 03:03Z; lane 4: T218 claimed 00:31Z, lease until 03:31Z; lane 5: T663 claimed 23:33Z, lease until 02:33Z; lane 7: T613 claimed 23:22Z, lease until 03:14Z
 - **Week:** 12% used, 161.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:32Z, 6 min before this update
+- **Last run:** 00:38Z, 0 min before this update
 - **Keeper:** last ran 00:07Z, next wake 02:09Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T672 (since 2026-11-19T23:07:12Z, no attempt used; a plan change fixes it): T672: dependency T717 is DONE but its owned file tests/integration/tests/intake_order_two_jobs_rules.rs is not on main
-- Strict plan check red: 73 problem(s) on tasks still to run (+363 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 62 problem(s) on tasks still to run (+359 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T758 | intake: Spanish gas and burning reports reach the 911 list,  | MERGE_PENDING | 1 | 90 min | 00:38Z |  |
 | T109 | recovery: backup checks and the nightly encrypted export | MERGE_PENDING | 2 | 32 min | 00:37Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T541 | payments, portals and adapters: a card saved or changed from | done | 3 | 25 min | 00:00Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-19T |
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 1 | 84 min | 23:31Z | merging main into the reviewed head conflicts in kit/plan.lock, kit/runner.json; a resync merges it in on this attempt ( |
@@ -138,11 +139,10 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T527 (lease until 2026-11-20T03:05:43Z)
-- lane 2: T758 (lease until 2026-11-20T03:27:06Z)
 - lane 3: T726 (lease until 2026-11-20T03:03:34Z)
 - lane 4: T218 (lease until 2026-11-20T03:31:28Z)
 - lane 5: T663 (lease until 2026-11-20T02:33:30Z)
 - lane 7: T613 (lease until 2026-11-20T03:14:27Z)
 
 ## Last usage reading
-- {"task": "T109", "at": "2026-11-20T00:37:41Z", "output_tokens": 9904, "cache_read_input_tokens": 865201, "input_tokens": 67, "cache_creation_input_tokens": 59201}
+- {"task": "T758", "at": "2026-11-20T00:38:00Z", "cache_read_input_tokens": 3477679, "input_tokens": 207, "cache_creation_input_tokens": 258517, "output_tokens": 52587}
