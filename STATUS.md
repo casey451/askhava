@@ -1,25 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-20T06:27:29Z by runner bb875eedf856 (actions).
+Updated 2026-11-20T06:27:44Z by runner aa6cdae79ff3 (actions).
 
 **Building: T573 in progress since 06:22Z; 523 of 707 done; week 22% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 523 of 707 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T573 claimed 06:22Z, lease until 09:22Z; lane 6: T561 claimed 05:26Z, lease until 08:26Z; lane 7: T669 claimed 06:11Z, lease until 09:11Z
+- **Lane:** lane 3: T573 claimed 06:22Z, lease until 09:22Z; lane 7: T669 claimed 06:11Z, lease until 09:11Z
 - **Week:** 22% used, 146.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:26Z, 0 min before this update
+- **Last run:** 06:27Z, 0 min before this update
 - **Keeper:** last ran 06:27Z, next wake 06:47Z
 
 ## Needs attention
 - BLOCKED T648: plan gap reported: PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, but scripts/check_include_paths.py (D-1867, run in the smoke by tests/test_check_include_paths.py::test_td_ops_32_the_real_repository_passes) fails: scripts/bootstrap_roles.sql is not matched by the Checks and Coverage rules in .github/workflows/ci.yml (protected, harness-only) nor by RUST_PATHS in scripts/prehandin.sh:77 (locked in kit/plan.lock). T648 owns neither. Fix: a harness task adds scripts/bootstrap_roles\.sql to those three rules and rewrites kit/plan.lock. Reviewer; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T648 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 82 problem(s) on tasks still to run (+388 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 83 problem(s) on tasks still to run (+387 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T561 | server and portals: the homeowner's "Download my data" and h | MERGE_PENDING | 1 | 60 min | 06:26Z |  |
 | T765 | recovery (tests): the backup tests' fake binaries can no lon | MERGE_PENDING | 1 | 65 min | 06:11Z |  |
 | T751 | stand-ins (harness): the Stripe stand-in detaches a payment  | MERGE_PENDING | 1 | 51 min | 05:02Z |  |
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | MERGE_PENDING | 2 | 36 min | 05:00Z | merging main into the reviewed head conflicts in kit/plan.lock, kit/runner.json; a resync merges it in on this attempt ( |
@@ -142,8 +143,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 3: T573 (lease until 2026-11-20T09:22:10Z)
-- lane 6: T561 (lease until 2026-11-20T08:26:24Z)
 - lane 7: T669 (lease until 2026-11-20T09:11:33Z)
 
 ## Last usage reading
-- {"task": "T765", "at": "2026-11-20T06:11:52Z", "input_tokens": 54, "cache_creation_input_tokens": 53391, "output_tokens": 11886, "cache_read_input_tokens": 850121}
+- {"task": "T561", "at": "2026-11-20T06:26:59Z", "input_tokens": 251, "cache_read_input_tokens": 15709749, "cache_creation_input_tokens": 254488, "output_tokens": 73829}

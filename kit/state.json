@@ -79952,7 +79952,7 @@
    "deps": [
     "T307"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 0,
    "slug": "homeowner-data-served",
    "type": "harness",
@@ -79966,6 +79966,31 @@
     4890,
     4891
    ],
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 175,
+     "head_sha": "aa6cdae79ff3216af190043eaf2be802bb972b45",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-20T05:26:24Z",
+     "ended_at": "2026-11-20T06:26:59Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 14703136,
+       "turns": 105
+      },
+      "reviewer": {
+       "tokens": 1335181,
+       "turns": 26
+      }
+     }
+    }
+   ],
    "reviewed_sha": "aa6cdae79ff3216af190043eaf2be802bb972b45",
    "review_lease": {
     "task": "T561",
@@ -79974,7 +79999,11 @@
     "lane": "6"
    },
    "branch": "claude/task/T561-homeowner-data-served",
-   "head_check_since": null
+   "auto_merge": {
+    "enabled": true,
+    "why": "auto-merge on #1185 (gh pr merge)",
+    "head": "aa6cdae79ff3216af190043eaf2be802bb972b45"
+   }
   },
   {
    "id": "T564",
@@ -93601,12 +93630,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T765",
-   "at": "2026-11-20T06:11:52Z",
-   "input_tokens": 54,
-   "cache_creation_input_tokens": 53391,
-   "output_tokens": 11886,
-   "cache_read_input_tokens": 850121
+   "task": "T561",
+   "at": "2026-11-20T06:26:59Z",
+   "input_tokens": 251,
+   "cache_read_input_tokens": 15709749,
+   "cache_creation_input_tokens": 254488,
+   "output_tokens": 73829
   },
   "source": "session_reading 2026-11-20T06:19:59Z (week)",
   "by_task": {
@@ -99758,7 +99787,17 @@
    },
    "T561": {
     "estimated_bytes": 476544,
-    "estimated_tokens": 1409389
+    "estimated_tokens": 1409389,
+    "usage_counting": "message_id",
+    "input_tokens": 251,
+    "cache_read_input_tokens": 15709749,
+    "cache_creation_input_tokens": 254488,
+    "output_tokens": 73829,
+    "worker_tokens": 14703136,
+    "worker_turns": 105,
+    "reviewer_tokens": 1335181,
+    "reviewer_turns": 26,
+    "last_model": "claude-opus-5-5"
    },
    "T669": {
     "estimated_bytes": 562319,
@@ -99772,11 +99811,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-20T03:25:43Z",
-    "tokens": 9119232
+    "tokens": 11018774
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 40982868
+    "tokens": 42882410
    }
   },
   "session_reading": {
@@ -99787,7 +99826,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T06:27:29Z",
+ "updated_at": "2026-11-20T06:27:44Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -99885,7 +99924,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "bb875eedf85637a56f3ef029b4323b45792f2e73",
+ "runner_sha": "aa6cdae79ff3216af190043eaf2be802bb972b45",
  "starter": "actions",
  "smoke_runs": [
   {
