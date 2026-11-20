@@ -91257,11 +91257,12 @@
      "resync": true
     }
    ],
-   "reviewed_sha": "e167ef5edf4ff9a8f75e1b3a13880fa28b47d068",
+   "reviewed_sha": "c6a77de7690669a93714bada1808e52e9c23a3dd",
    "review_lease": {
     "task": "T726",
-    "session": "actions-44623456816",
-    "expires": "2026-11-20T01:06:39Z"
+    "session": "actions-44650327411",
+    "expires": "2026-11-20T04:05:47Z",
+    "lane": "3"
    },
    "branch": "claude/task/T726-runner-wip-refs-a2",
    "auto_merge": {
@@ -91269,7 +91270,6 @@
     "why": "auto-merge on #1156 (gh pr merge)",
     "head": "e167ef5edf4ff9a8f75e1b3a13880fa28b47d068"
    },
-   "merge_turn_since": "2026-11-19T23:58:40Z",
    "runner_closed_prs": [
     1156
    ],
@@ -91286,9 +91286,19 @@
     }
    ],
    "last_failure": "T726 resync merged main cleanly, but fresh-eyes review of the WIP scan (runner/wip.py) found fail-open bypasses in three rounds (git replace, textconv/hooks, then color.ui=always hiding a leak from gitleaks and log.showSignature+gpg.program running worker code). Head ea1a6caeb unapproved. Reviewer advice: replace the config deny-list with an allow-list of local config keys, add --no-color --no-show-signature and -c log.showSignature=false -c color.ui=never to every git log, tests for each.",
+   "lane": "3",
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "9aeee27f5aa8db8fbdebf9686b5eeab07d0b8f7b",
+     "to": "c6a77de7690669a93714bada1808e52e9c23a3dd",
+     "main": "50c8d83e368e7dc11943ae525d42c2d8c87dab64",
+     "how": "hand-in",
+     "at": "2026-11-20T03:22:19Z"
+    }
+   ],
    "update_waiting_since": null,
-   "update_push_failures": null,
-   "lane": "3"
+   "update_push_failures": null
   },
   {
    "id": "T727",
@@ -98423,7 +98433,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T03:08:36Z",
+ "updated_at": "2026-11-20T03:22:19Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -98521,7 +98531,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "ef998d36a6d572638a9868ca6ffffd0ee842f141",
+ "runner_sha": "9aeee27f5aa8db8fbdebf9686b5eeab07d0b8f7b",
  "starter": "actions",
  "smoke_runs": [
   {
