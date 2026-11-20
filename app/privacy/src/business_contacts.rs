@@ -131,18 +131,30 @@ impl BusinessPurpose {
     }
 }
 
-/// `address` as [`email_index`] reads a sender: the part inside `<…>` when present, trimmed and
-/// lower-cased; refused with no `@` or over [`MAX_ADDRESS_LEN`] characters.
-fn bare_address(address: &str) -> Result<String, BusinessContactError> {
-    let bare = address
-        .rsplit_once('<')
-        .map_or(address, |(_, rest)| rest.trim_end_matches('>'))
-        .trim()
-        .to_lowercase();
-    if !bare.contains('@') || bare.chars().count() > MAX_ADDRESS_LEN {
+/// `address` as [`email_index`] reads a sender: the part inside a well-formed `Name <addr>` (one
+/// `<`, one `>` closing the value, a non-empty address between), else the value as typed, trimmed
+/// and lower-cased; refused with no `@`, over [`MAX_ADDRESS_LEN`] characters, or holding a control
+/// character, whitespace, `,`, `;`, `<` or `>`, which could make a provider's `to` read as two
+/// recipients (SEC-025, D-4327, D-4822).
+pub(crate) fn bare_address(address: &str) -> Result<String, BusinessContactError> {
+    let bare = strip_name(address.trim()).trim().to_lowercase();
+    let refused =
+        |c: char| c.is_control() || c.is_whitespace() || matches!(c, ',' | ';' | '<' | '>');
+    if !bare.contains('@') || bare.chars().count() > MAX_ADDRESS_LEN || bare.contains(refused) {
         return Err(BusinessContactError::BadAddress);
     }
     Ok(bare)
+}
+
+/// The address inside a well-formed `Name <addr>` form, or `typed` unchanged (D-4822).
+fn strip_name(typed: &str) -> &str {
+    let Some((_, rest)) = typed.split_once('<') else {
+        return typed;
+    };
+    match rest.strip_suffix('>') {
+        Some(inner) if !inner.contains(['<', '>']) && !inner.trim().is_empty() => inner,
+        _ => typed,
+    }
 }
 
 /// The mailbox IDs whose `email` digest matches one of `digests`, in ID order.
