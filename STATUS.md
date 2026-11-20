@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T09:54:19Z by runner f4c54d07a30d (manual).
+Updated 2026-11-20T10:14:02Z by runner f4c54d07a30d (actions).
 
 **Idle since 09:48Z; 529 of 710 done; week 27% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-20T09:54:19Z by runner f4c54d07a30d (manual).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 09:48Z (no task in progress)
 - **Week:** 27% used, 139.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:49Z, 4 min before this update
+- **Last run:** 09:54Z, 19 min before this update
 - **Keeper:** last ran 09:49Z, next wake 10:09Z
 
 ## Needs attention
@@ -89,39 +89,37 @@ Updated 2026-11-20T09:54:19Z by runner f4c54d07a30d (manual).
 | T540 | portals and server: the owner's release button re-sends an e | resync | 1 | 54 min | 11:29Z |  |
 | T705 | Integration tests (harness): one shared log capture that a c | done | 1 | 114 min | 11:11Z |  |
 | T470 | messaging and server: the worker task that sends queued emai | QUEUED | 1 | 93 min | 10:35Z |  |
-| T710 | quotes and licensing (harness): a launch-open category takes | done | 1 | 85 min | 10:06Z |  |
-| T553 | Decisions digest, piece 8: the next entries after the header | done | 1 | 76 min | 10:04Z |  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 253 of 735 (34.4%) · partial 456 · unstarted 26
+**Requirements verified:** 324 of 735 (44.1%) · partial 385 · unstarted 26
 **Tasks merged (throughput only):** 529 of 710
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 16 | 19 | 0 | 35 |
-| ai | 7 | 19 | 3 | 29 |
-| businesses | 20 | 37 | 1 | 58 |
-| calls | 11 | 14 | 0 | 25 |
-| consent | 11 | 24 | 0 | 35 |
-| fees | 21 | 31 | 0 | 52 |
-| intake | 7 | 36 | 0 | 43 |
+| accessibility | 18 | 17 | 0 | 35 |
+| ai | 8 | 18 | 3 | 29 |
+| businesses | 21 | 36 | 1 | 58 |
+| calls | 14 | 11 | 0 | 25 |
+| consent | 16 | 19 | 0 | 35 |
+| fees | 22 | 30 | 0 | 52 |
+| intake | 8 | 35 | 0 | 43 |
 | job-cards | 12 | 12 | 0 | 24 |
-| licensing | 30 | 18 | 0 | 48 |
-| lifecycle | 12 | 16 | 0 | 28 |
-| messaging | 22 | 23 | 0 | 45 |
-| ops-recovery | 6 | 33 | 15 | 54 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 16 | 12 | 0 | 28 |
+| messaging | 23 | 22 | 0 | 45 |
+| ops-recovery | 9 | 30 | 15 | 54 |
 | privacy | 8 | 23 | 0 | 31 |
 | quiet-hours | 3 | 6 | 0 | 9 |
-| quotes-pick | 22 | 34 | 0 | 56 |
-| recurring | 9 | 2 | 0 | 11 |
+| quotes-pick | 25 | 31 | 0 | 56 |
+| recurring | 10 | 1 | 0 | 11 |
 | security | 10 | 40 | 5 | 55 |
-| terms | 10 | 25 | 0 | 35 |
-| website | 7 | 21 | 2 | 30 |
-| wording | 9 | 23 | 0 | 32 |
+| terms | 27 | 8 | 0 | 35 |
+| website | 18 | 10 | 2 | 30 |
+| wording | 23 | 9 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
