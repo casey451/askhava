@@ -6,7 +6,8 @@
     code (A11Y-032). A failed submit puts "Error: " in the title, a focused summary right after the h1 (before
     any form), the same words by the field with aria-invalid, and keeps the typed number. The code
     screen carries the typed number to /h/sign-in/code; a request's code screen carries its ID to
-    /h/my-data/code. -#}
+    /h/my-data/code with its kind, and a second form texts the code again through /h/my-data/resend
+    (T561, D-3877). -#}
 {% block title %}{% if failed %}Error: {% endif %}{% if screen == "home" %}Your {{ askhava_core::api::brand().display_name() }} page{% else if screen == "request" %}Check it's you{% else %}Sign in{% endif %}{% endblock %}
 {% block main %}
 {% if screen == "signin" %}<h1>Sign in</h1>
@@ -34,6 +35,7 @@
 {% else %}<p>We just texted a 6-digit code to your mobile number. {% if delete %}Type it here and we'll delete your data right away.{% else %}Type it here to download your copy.{% endif %}</p>
 <form method="post" action="/h/my-data/code" novalidate>
 <input type="hidden" name="request" value="{{ request }}">
+<input type="hidden" name="kind" value="{% if delete %}delete{% else %}copy{% endif %}">
 {% endif %}<input type="hidden" name="csrf" value="{{ csrf }}">
 <label for="code">6-digit code</label>
 <p id="code-hint">You can paste it.</p>
@@ -41,7 +43,13 @@
 {% endif %}<input type="text" id="code" name="code" autocomplete="one-time-code" inputmode="numeric" aria-describedby="code-hint{% if failed %} code-error{% endif %}"{% if failed %} aria-invalid="true"{% endif %}>
 <button type="submit">{% if screen == "code" %}Sign in{% else if delete %}Delete my data{% else %}Download my copy{% endif %}</button>
 </form>
-{% else %}{% if let Some(f) = facts %}<h1>Your {{ askhava_core::api::brand().display_name() }} page</h1>
+{% if screen == "request" %}<p>No text after a few minutes?</p>
+<form method="post" action="/h/my-data/resend" novalidate>
+<input type="hidden" name="request" value="{{ request }}">
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<button type="submit">Text me the code again</button>
+</form>
+{% endif %}{% else %}{% if let Some(f) = facts %}<h1>Your {{ askhava_core::api::brand().display_name() }} page</h1>
 <h2>Your details</h2>
 <p>Mobile number ending in {{ f.phone_last4 }}</p>
 {% if let Some(a) = f.address %}<p>Property: {{ a }}</p>
