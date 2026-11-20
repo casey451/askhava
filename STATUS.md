@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T12:29:59Z by runner ca06062e5a99 (actions).
+Updated 2026-11-20T12:30:10Z by runner ca06062e5a99 (actions).
 
-**Building: T648 in progress since 10:37Z; 535 of 710 done; week 31% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T496 in progress since 11:44Z; 535 of 710 done; week 31% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 535 of 710 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T648 claimed 10:37Z, lease until 13:37Z; lane 2: T496 claimed 11:44Z, lease until 14:44Z; lane 3: T727 claimed 11:55Z, lease until 14:55Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z
+- **Lane:** lane 2: T496 claimed 11:44Z, lease until 14:44Z; lane 3: T727 claimed 11:55Z, lease until 14:55Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z
 - **Week:** 31% used, 128.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 12:29Z, 0 min before this update
 - **Keeper:** last ran 12:26Z, next wake 12:46Z
@@ -20,6 +20,7 @@ Updated 2026-11-20T12:29:59Z by runner ca06062e5a99 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T648 | recovery: the monthly test restore into a throwaway cluster, | MERGE_PENDING | 2 | 112 min | 12:29Z | PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, b |
 | T573 | messaging and server: queued business texts are addressed to | MERGE_PENDING | 3 | 70 min | 12:25Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
 | T614 | site: the V6 header in base.html (links, the Menu in the pag | BLOCKED | 1 | 16 min | 11:39Z | PLAN GAP: tests/a11y/reflow_spacing.spec.ts:49-54 (T053, protected) flags every TARGETS control with no box as "is hidde |
 | T463 | businesses and server: "Busy for <n> days" pauses job cards  | done | 1 | 58 min | 11:16Z |  |
@@ -50,7 +51,7 @@ Updated 2026-11-20T12:29:59Z by runner ca06062e5a99 (actions).
 | T747 | intake and jobs: the homeowner's INT-029 emergency choice ma | done | 1 | 71 min | 03:25Z |  |
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 2 | 2 h 16 min | 03:22Z |  |
 | T617 | site: DM Sans from one weight-axis variable file (smaller th | BLOCKED | 1 | 2 min | 03:04Z |  |
-| T648 | recovery: the monthly test restore into a throwaway cluster, | BLOCKED | 1 | 21 min | 02:55Z | PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, b |
+| T648 | recovery: the monthly test restore into a throwaway cluster, | BLOCKED | 1 | 21 min | 02:55Z |  |
 | T763 | tests (harness): the web chat spec's fake numbers never coll | done | 1 | 25 min | 02:17Z |  |
 | T672 | intake: the dispatcher asks "How soon?", the night count and | BLOCKED | 1 | 13 min | 02:12Z |  |
 | T218 | Wording and template scans from the brains: sales phrases, n | done | 1 | 74 min | 01:46Z |  |
@@ -140,10 +141,10 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T648 (lease until 2026-11-20T13:37:03Z)
+- nothing
 - lane 2: T496 (lease until 2026-11-20T14:44:53Z)
 - lane 3: T727 (lease until 2026-11-20T14:55:28Z)
 - lane 6: T530 (lease until 2026-11-20T13:55:17Z)
 
 ## Last usage reading
-- {"task": "T573", "at": "2026-11-20T12:25:04Z", "input_tokens": 166, "cache_creation_input_tokens": 248907, "output_tokens": 74687, "cache_read_input_tokens": 9097182}
+- {"task": "T648", "at": "2026-11-20T12:29:39Z", "cache_read_input_tokens": 9662071, "input_tokens": 207, "cache_creation_input_tokens": 385613, "output_tokens": 116104}
