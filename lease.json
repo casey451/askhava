@@ -11,16 +11,11 @@
    "expires": "2026-11-20T11:54:23Z",
    "lane": "5"
   },
-  "6": {
-   "task": "T530",
-   "session": "actions-44693686218",
-   "expires": "2026-11-20T10:20:58Z",
-   "lane": "6"
-  },
+  "6": null,
   "7": null,
   "fix": null
  },
- "seq": 8413,
- "runner_sha": "f4c54d07a30dcb82526ae9b5a7c6442ee5d26e08",
- "starter": "manual"
+ "seq": 8414,
+ "runner_sha": "033d5331217485c940012488f3f0512e4ce8cd21",
+ "starter": "actions"
 }
