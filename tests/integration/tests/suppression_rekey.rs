@@ -408,3 +408,40 @@ async fn an_opt_out_during_the_run_leaves_one_listing_per_version(pool: PgPool) 
     );
     assert_eq!(retire_index_version(&mut observer, &both, 1).await, Ok(1));
 }
+
+/// PRIV-024, CON-035, D-5012: a number that opted out under v1 and again after v2 was added has
+/// rows of two events; the batch gives both the earliest event and time, so v1 can be retired.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_second_opt_out_after_v2_is_aligned_to_the_first_event(pool: PgPool) {
+    let mut conn = app_conn(&pool).await;
+    store(&mut conn, PHONE).await;
+    assert!(list(&mut conn, &vault(&[1]), PHONE).await);
+    let first = rows(&mut conn).await[0].clone();
+    let both = vault(&[2, 1]);
+    let later = now() + Duration::from_secs(3600);
+    suppress(
+        &mut conn,
+        &both,
+        PHONE,
+        (RevokeChannel::Portal, "portal"),
+        later,
+    )
+    .await
+    .expect("second opt-out");
+    let split = rows(&mut conn).await;
+    assert_eq!(split.len(), 2, "one row per version");
+    assert_eq!(split[0], first, "the v1 row is untouched");
+    assert_ne!(split[1].1, first.1, "the v2 row carries the second event");
+    assert_ne!(split[1].2, first.2, "and the second time");
+    rotate_batch(&mut conn, &both, 10).await.expect("rotate");
+    assert_eq!(rekey_suppression_batch(&mut conn, &both, 10).await, Ok(1));
+    let listed = vec![(1, first.1, first.2.clone()), (2, first.1, first.2.clone())];
+    assert_eq!(
+        rows(&mut conn).await,
+        listed,
+        "both rows share the earliest event and time"
+    );
+    assert_eq!(rekey_suppression_batch(&mut conn, &both, 10).await, Ok(0));
+    assert_eq!(retire_index_version(&mut conn, &both, 1).await, Ok(1));
+    assert_eq!(rows(&mut conn).await, vec![(2, first.1, first.2)]);
+}
