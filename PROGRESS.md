@@ -8633,3 +8633,4 @@
 - 2026-11-20T16:07:13Z runner 3e01fef06c14 (actions): {"T767": "MERGE_PENDING -> DONE"}
 - 2026-11-20T16:10:00Z runner 3e01fef06c14 (actions): {"T664": "QUEUED -> IN_PROGRESS"}; T664 estimated 1.4M tokens (calibrated); week has 119.1M left (no five-hour budget, D-3056) after 2.9M still running in another lane (session_reading 2026-11-20T15:43:07Z (week)); claimed
 - 2026-11-20T16:10:19Z runner 3e01fef06c14 (actions): {}
+- 2026-11-20T16:15:19Z runner 3e01fef06c14 (actions): {"T664": "IN_PROGRESS -> BLOCKED"}

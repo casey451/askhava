@@ -89912,8 +89912,8 @@
     "T541",
     "T767"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "confirm-press-moves",
    "type": "build",
    "stage": "5",
@@ -89926,10 +89926,43 @@
     5005,
     5006
    ],
-   "wip_claim": {
-    "attempt": 1,
-    "remote_sha": ""
-   }
+   "reason": "plan gap reported: PLAN GAP: outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs\nThe pick's window deadline (picks.pick.confirm_due) is read only by private code (handlers.rs store_due :263, hold_row :323); no public reader exists, and portals may not read picks tables. check_at_confirm needs it. Also the refused-at-confirm tail (job back to Quotes ready, PICK-046/047 text: end_waiting, queue_backup_text, waiting_pick) is crate-private in picks. A picks-side task must export a deadline reader and a refused-at-confirm tail first. Reviewer confirmed (GAP CONFIRMED). End/bond dates are also not s; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T664 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs\nThe pick's window deadline (picks.pick.confirm_due) is read only by private code (handlers.rs store_due :263, hold_row :323); no public reader exists, and portals may not read picks tables. check_at_confirm needs it. Also the refused-at-confirm tail (job back to Quotes ready, PICK-046/047 text: end_waiting, queue_backup_text, waiting_pick) is crate-private in picks. A picks-side task must export a deadline reader and a refused-at-confirm tail first. Reviewer confirmed (GAP CONFIRMED). End/bond dates are also not stored anywhere.",
+   "plan_gap": {
+    "at": "2026-11-20T16:15:19Z",
+    "problems": [
+     "outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs"
+    ],
+    "paths": [
+     "app/picks/src/handlers.rs",
+     "app/picks/src/confirm.rs"
+    ]
+   },
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-fable-5-2",
+     "model_evidence_count": 45,
+     "head_sha": "3e01fef06c140069eb56fc9c1cbb0a53b0c082a9",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-20T16:09:43Z",
+     "ended_at": "2026-11-20T16:15:19Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 1837037,
+       "turns": 25
+      },
+      "reviewer": {
+       "tokens": 470738,
+       "turns": 12
+      }
+     }
+    }
+   ]
   },
   {
    "id": "T665",
@@ -96835,12 +96868,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T684",
-   "at": "2026-11-20T15:41:42Z",
-   "cache_read_input_tokens": 3936546,
-   "output_tokens": 17916,
-   "input_tokens": 123,
-   "cache_creation_input_tokens": 139773
+   "task": "T664",
+   "at": "2026-11-20T16:15:19Z",
+   "output_tokens": 23142,
+   "input_tokens": 75,
+   "cache_read_input_tokens": 2145782,
+   "cache_creation_input_tokens": 138776
   },
   "source": "session_reading 2026-11-20T15:43:07Z (week)",
   "by_task": {
@@ -103276,17 +103309,27 @@
    },
    "T664": {
     "estimated_bytes": 681416,
-    "estimated_tokens": 1388584
+    "estimated_tokens": 1388584,
+    "usage_counting": "message_id",
+    "output_tokens": 23142,
+    "input_tokens": 75,
+    "cache_read_input_tokens": 2145782,
+    "cache_creation_input_tokens": 138776,
+    "worker_tokens": 1837037,
+    "worker_turns": 25,
+    "reviewer_tokens": 470738,
+    "reviewer_turns": 12,
+    "last_model": "claude-fable-5-2"
    }
   },
   "windows": {
    "five_hour": {
     "start": "2026-11-20T13:54:23Z",
-    "tokens": 7232633
+    "tokens": 7609204
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 67480694
+    "tokens": 67857265
    }
   },
   "session_reading": {
@@ -103297,7 +103340,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T16:10:19Z",
+ "updated_at": "2026-11-20T16:15:19Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

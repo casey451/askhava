@@ -1,25 +1,29 @@
 # Ask Hava build status
 
-Updated 2026-11-20T16:10:19Z by runner 3e01fef06c14 (actions).
+Updated 2026-11-20T16:15:19Z by runner 3e01fef06c14 (actions).
 
 **Building: T530 in progress since 15:29Z; 542 of 712 done; week 36% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 542 of 712 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T530 claimed 15:29Z, lease until 18:29Z; lane 3: T771 claimed 15:44Z, lease until 18:44Z; lane 4: T681 claimed 15:47Z, lease until 18:47Z; lane 5: T664 claimed 16:09Z, lease until 19:09Z
+- **Lane:** lane 1: T530 claimed 15:29Z, lease until 18:29Z; lane 3: T771 claimed 15:44Z, lease until 18:44Z; lane 4: T681 claimed 15:47Z, lease until 18:47Z
 - **Week:** 36% used, 119.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:07Z, 2 min before this update
+- **Last run:** 16:10Z, 4 min before this update
 - **Keeper:** last ran 15:43Z, next wake 16:03Z
 
 ## Needs attention
+- BLOCKED T664: plan gap reported: PLAN GAP: outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs
+The pick's window deadline (picks.pick.confirm_due) is read only by private code (handlers.rs store_due :263, hold_row :323); no public reader exists, and portals may not read picks tables. check_at_confirm needs it. Also the refused-at-confirm tail (job back to Quotes ready, PICK-046/047 text: end_waiting, queue_backup_text, waiting_pick) is crate-private in picks. A picks-side task must export a deadline reader and a refused-at-confirm tail first. Reviewer confirmed (GAP CONFIRMED). End/bond dates are also not s; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T664 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T684: plan gap reported: PLAN GAP: app/quotes/src/models.rs:265 `card_sent_at` is pub(crate); T684 owns no app/quotes/src file. quotes::api has no per-business card send-time reader (open_card_jobs returns job ids only; spot_check_cards is a random sample); picks may not query quotes.* (R8, docs/brains/rust-production.md:44). Smallest plan change: new app/quotes/src/open_cards.rs with open_cards(db, business, now) plus one mod line in lib.rs and one pub use in api.rs; raise budget to 4 files/~600 lines. Also: portals link trait implemented in server lib.rs; email recipient is member mailbox with subject ids starting w; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T684 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
+- PLAN GAP T664 (since 2026-11-20T16:15:19Z, no attempt used; a plan change fixes it): outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs
 - Strict plan check red: 38 problem(s) on tasks still to run (+411 on DONE tasks); first: T410: stored context_pct 15% but it measures 20%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T664 | portals: the Confirm press re-checks the license and account | BLOCKED | 1 | 5 min | 16:15Z | PLAN GAP: outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs / The pick's window deadline (picks.pic |
 | T684 | picks and server: the open-cards email goes at the times eac | BLOCKED | 1 | 4 min | 15:41Z | PLAN GAP: app/quotes/src/models.rs:265 `card_sent_at` is pub(crate); T684 owns no app/quotes/src file. quotes::api has n |
 | T770 | ci (harness): the Coverage job's time limit goes from 25 to  | MERGE_PENDING | 1 | 61 min | 15:35Z |  |
 | T771 | a11y tests (harness): reflow_spacing's hidden-control check  | BLOCKED | 1 | 3 min | 15:22Z | PLAN GAP: kit/prompts/T771.md:9 (D-4970, docs/decisions.md:2604) contradicts itself: rule (1) checks the hidden Menu sum |
@@ -144,7 +148,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - T530 (lease until 2026-11-20T18:29:00Z)
 - lane 3: T771 (lease until 2026-11-20T18:44:21Z)
 - lane 4: T681 (lease until 2026-11-20T18:47:45Z)
-- lane 5: T664 (lease until 2026-11-20T19:09:43Z)
 
 ## Last usage reading
-- {"task": "T684", "at": "2026-11-20T15:41:42Z", "cache_read_input_tokens": 3936546, "output_tokens": 17916, "input_tokens": 123, "cache_creation_input_tokens": 139773}
+- {"task": "T664", "at": "2026-11-20T16:15:19Z", "output_tokens": 23142, "input_tokens": 75, "cache_read_input_tokens": 2145782, "cache_creation_input_tokens": 138776}
