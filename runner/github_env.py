@@ -43,6 +43,7 @@ usage from the transcripts themselves (D-170: ~/.claude/projects/<proj>/<session
 from __future__ import annotations
 
 import dataclasses
+import functools
 import glob
 import hashlib
 import importlib.util
@@ -62,7 +63,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from runner import model_window, review_proof, state as st, status, verify
+from runner import model_window, review_proof, state as st, status, verify, wip
 from runner.cycle import DROP_MARKER, WorkerResult
 from runner.update_merge import UpdateMerge
 from runner.state import State
@@ -175,6 +176,15 @@ def run_command(args: list[str], stdin: str | None, cwd: Path) -> tuple[int, str
 
     Remote git and gh calls go first with the long-lived token (D-519) and, if that is refused, once
     more exactly as before with the session's own credentials, so the change can never do worse."""
+    kind = _wip_call(args)
+    if kind:
+        # A WIP call runs once in a locked-down env, a push only with the job token, never retried in this
+        # process's own env (D-4720, D-4801).
+        wip_env = _wip_git_env(push=kind == "push")
+        if wip_env is None:
+            return 1, "", "no job token for a claude/wip push (D-4720)"
+        done = _run(args, stdin, cwd, wip_env)
+        return done.returncode, done.stdout, done.stderr
     long_args = _long_token_args(args)
     if long_args is not None:
         done = _run(long_args, stdin, cwd, _long_token_env(long_args))
@@ -577,6 +587,8 @@ def _run(args: list[str], stdin: str | None, cwd: Path, env: dict[str, str] | No
 
 
 REMOTE_GIT = ("fetch", "push", "ls-remote")
+# The prefix of every WIP remote git call; run_command runs such a call only in `_wip_git_env` (D-4801).
+WIP_GIT = ("git", "-c", f"core.hooksPath={os.devnull}")
 
 
 def _long_token_args(args: list[str]) -> list[str] | None:
@@ -648,6 +660,55 @@ def _push_env(args: list[str]) -> dict[str, str] | None:
     if not any(a.startswith("https://github.com/") for a in args):
         return None
     return _git_token_env()
+
+
+def _wip_call(args: list[str]) -> str:
+    """'push' for a WIP push (`_wip_push`, or any push under WIP_GIT), 'read' for any other call under WIP_GIT,
+    else '' (D-4801)."""
+    wip_git = args[:len(WIP_GIT)] == list(WIP_GIT)
+    if _wip_push(args) or (wip_git and args[len(WIP_GIT):len(WIP_GIT) + 1] == ["push"]):
+        return "push"
+    return "read" if wip_git else ""
+
+
+def _wip_push(args: list[str]) -> bool:
+    """A `git push` whose last argument is a refspec to a `claude/wip/` ref (a create or a delete, D-4720)."""
+    return args[:2] == ["git", "push"] and len(args) > 3 and args[-1].partition(":")[2].startswith("refs/heads/claude/wip/")
+
+
+def _wip_git_env(push: bool) -> dict[str, str] | None:
+    """The env of every WIP git call (D-4801): `_job_git_env()` when this is the Actions runner with the job
+    token; else, for a read only, `wip.git_env()` (no system or global config, no hooks), with a credential
+    helper for RUNNER_PUSH_TOKEN when that is set; None for a push without the job token."""
+    job = _job_git_env()
+    if job is not None or push:
+        return job
+    token = os.environ.get("RUNNER_PUSH_TOKEN", "")
+    return _locked_git_env("RUNNER_PUSH_TOKEN", token) if token else wip.git_env()
+
+
+def _locked_git_env(name: str, token: str) -> dict[str, str]:
+    """`wip.git_env()` plus a credential helper that answers only https://github.com with the token in `name`
+    (put back in the env for the helper alone, never in argv or a file; D-4799, D-4801)."""
+    helper = f'!f() {{ echo username=x-access-token; echo "password=${name}"; }}; f'
+    pairs = [*wip.SAFE_GIT_CONFIG, ("http.https://github.com/.extraheader", ""), ("credential.helper", ""),
+             ("credential.https://github.com.helper", helper)]
+    env = {**wip.git_env(), name: token, "GIT_CONFIG_COUNT": str(len(pairs))}
+    for i, (key, value) in enumerate(pairs):
+        env[f"GIT_CONFIG_KEY_{i}"], env[f"GIT_CONFIG_VALUE_{i}"] = key, value
+    return env
+
+
+def _job_git_env() -> dict[str, str] | None:
+    """git config, through the environment only, that answers credentials with the job token RUNNER_CHECKS_TOKEN
+    (the backup job's GITHUB_TOKEN: its pushes start no workflow, and it cannot push a workflow change); None
+    unless this is the Actions runner (GITHUB_ACTIONS true, RUNNER_STARTER actions) with that token set (D-4720).
+    The call's environment is `wip.git_env()` (no token, no `GIT_*`, no system or global config, no hooks, D-4799)
+    plus RUNNER_CHECKS_TOKEN for the helper, which answers only for https://github.com."""
+    if os.environ.get("GITHUB_ACTIONS") != "true" or os.environ.get("RUNNER_STARTER") != "actions":
+        return None
+    token = os.environ.get("RUNNER_CHECKS_TOKEN", "")
+    return _locked_git_env("RUNNER_CHECKS_TOKEN", token) if token else None
 
 
 def _git_token_env() -> dict[str, str]:
@@ -2114,13 +2175,140 @@ class GitHubEnv:
             self.log.append(f"merge train: delete of {name} rejected: {(out.strip() + ' ' + err.strip()).strip()[:200]}")
         return code == 0
 
+    # ---- a failed attempt's kept work (D-4720)
+
+    def wip_continue(self) -> bool:
+        """kit/runner.json "wip_continue" under this Env's root: True only when it is exactly `true`; a missing
+        or unreadable file or key, or any other value, is off (D-4720)."""
+        try:
+            return json.loads((self.root / "kit" / "runner.json").read_text(encoding="utf-8")).get("wip_continue") is True
+        except (OSError, ValueError, AttributeError):
+            return False
+
+    def wip_check(self, head: str) -> str:
+        """'' when `head` may be pushed to a WIP ref, else why (D-4720): commits ahead of GitHub's main, the same
+        `.github` tree as main's, no blocked or binary path in `<main>...<head>` nor in any one commit of `<main>..<head>`
+        (`wip.commit_paths`; `wip.blocked_paths` against main's `protected_paths` and plan-lock list,
+        `wip.binary_paths`), then `wip.scan`. Any failure is a refusal."""
+        try:
+            return self._wip_refusal(head)
+        except Exception as exc:  # noqa: BLE001  # fail closed: an unreadable answer is never a pass (D-4720)
+            return f"WIP check failed: {type(exc).__name__}: {str(exc)[:200]}"
+
+    def _wip_refusal(self, head: str) -> str:
+        why = wip.repo_refusal(self.root)  # first: every git call below trusts the clone's own git state (D-4799)
+        if why:
+            return why
+        main = self._wip_main()
+        if not main or not re.fullmatch(r"[0-9a-f]{40}", head or ""):
+            return "main or the head is unreadable"
+        git = functools.partial(wip.git_read, self.root)
+        attr = wip.attr_source(main)  # attributes from main's tree, never the worker's working tree (D-4800)
+        if int(git("rev-list", "--count", f"{main}..{head}") or "0") <= 0:
+            return f"{head[:12]} has no commits ahead of main"
+        if git("rev-parse", f"{head}:.github", check=False) != git("rev-parse", f"{main}:.github"):
+            return f"{head[:12]} changes .github"
+        protected = json.loads(git("show", f"{main}:kit/tasks.json"))["protected_paths"]
+        locked = wip.locked_patterns(git("show", f"{main}:scripts/check_plan_lock.py"))
+        span, flags = f"{main}...{head}", ("--no-renames", "--no-ext-diff", "--no-textconv", "-z")
+        deadline = time.monotonic() + wip.WIP_SCAN_SECONDS  # one bound over the path checks and the scan (D-4801)
+        names, binary = wip.commit_paths(self.root, main, head, deadline)  # every commit's paths, not the net diff
+        names += wip.z_paths(git(attr, "diff", "--name-only", *flags, span, deadline=deadline))
+        blocked = wip.blocked_paths(dict.fromkeys(names), protected, locked)
+        if blocked:
+            return f"{head[:12]} changes a protected or locked path: {', '.join(blocked[:3])[:200]}"
+        binary = list(dict.fromkeys(wip.binary_paths(git(attr, "diff", "--numstat", *flags, span, deadline=deadline))
+                                    + binary))
+        if binary:
+            return f"{head[:12]} adds a binary or an image: {', '.join(binary[:3])[:200]}"
+        return wip.scan(self.root, main, head, seconds=deadline - time.monotonic())
+
+    def _wip_url(self) -> str:
+        """The repository every WIP call names: GitHub's URL for this Env's repo, never the clone's `origin`,
+        whose URL the worker can point at a repository of its own (D-4800)."""
+        return f"https://github.com/{self.repo}.git"
+
+    def _wip_main(self) -> str:
+        """Main's head as `_wip_url` says (`ls-remote`, no fallback to `origin`), its objects fetched by sha with no
+        ref or FETCH_HEAD written; '' when either fails (D-4800)."""
+        code, out, _ = self._run([*WIP_GIT, "ls-remote", self._wip_url(), "refs/heads/main"], None, self.root)
+        sha = out.split("\t", 1)[0].strip() if code == 0 else ""
+        if not re.fullmatch(r"[0-9a-f]{40}", sha):
+            return ""
+        fetch = [*WIP_GIT, "fetch", "--quiet", "--no-tags", "--no-write-fetch-head", self._wip_url(), sha]
+        if self._run(fetch, None, self.root)[0] != 0:
+            return ""
+        return sha if wip.git_read(self.root, "cat-file", "-t", sha, check=False) == "commit" else ""
+
+    def push_wip(self, ref: str, sha: str) -> bool:
+        """Push `sha` as a create of `refs/heads/<ref>` with the job token only (D-4720): never forced, never a
+        `claude/task/**` name, refused with no git call unless `ref` is exactly WIP_REF and this is the Actions
+        runner with RUNNER_CHECKS_TOKEN set. A ref already on GitHub or a rejected push is False with one log line.
+        The create is atomic: `--force-with-lease=refs/heads/<ref>:` (an empty expected value) makes git refuse the
+        push unless the ref is absent in the same connection, so a ref made after the `ls-remote` check is never
+        fast-forwarded; with nothing to overwrite it never forces anything (no `+`, no `--force`; D-4801)."""
+        if not self._wip_allowed(ref, "push") or not re.fullmatch(r"[0-9a-f]{40}", str(sha)) or not self._wip_clone_ok():
+            return False
+        url = self._wip_url()
+        if self._run([*WIP_GIT, "ls-remote", "--exit-code", url, f"refs/heads/{ref}"], None, self.root)[0] != 2:
+            self.log.append(f"WIP: {ref} not pushed: it exists on GitHub or GitHub cannot be read")
+            return False
+        create = [*WIP_GIT, "push", "--porcelain", "--no-verify", f"--force-with-lease=refs/heads/{ref}:", url, f"{sha}:refs/heads/{ref}"]
+        code, out, err = self._run(create, None, self.root)
+        if code != 0:
+            self.log.append(f"WIP: push of {ref} rejected: {(out.strip() + ' ' + err.strip()).strip()[:200]}")
+        return code == 0
+
+    def _wip_allowed(self, ref: str, what: str) -> bool:
+        """Whether a WIP push or delete may run at all: a WIP_REF name, not a dry run, and the job token in Actions."""
+        ok = isinstance(ref, str) and bool(wip.WIP_REF.fullmatch(ref)) and not self.dry_run and _job_git_env() is not None
+        if not ok:
+            self.log.append(f"WIP: {what} refused for {str(ref)[:80]!r} (a WIP ref name, Actions and the job token are needed)")
+        return ok
+
+    def _wip_clone_ok(self) -> bool:
+        """`wip.repo_refusal` before a push with the job token or a listing: a local `url.*.insteadOf`, credential
+        helper or hook could otherwise send the token elsewhere, run with it or redirect the read (D-4799,
+        D-4801). A refusal logs one line."""
+        why = wip.repo_refusal(self.root)
+        if why:
+            self.log.append(f"WIP: no call to GitHub: {why[:200]}")
+        return not why
+
+    def wip_refs(self) -> dict[str, str] | None:
+        """GitHub's `claude/wip/*` refs (`_wip_url`, never `origin`, D-4800) that match WIP_REF, name -> sha; None
+        when the listing fails or the clone's config could redirect it (`_wip_clone_ok`, D-4720, D-4801)."""
+        if not self._wip_clone_ok():
+            return None
+        code, out, err = self._run([*WIP_GIT, "ls-remote", self._wip_url(), "refs/heads/claude/wip/*"], None, self.root)
+        if code != 0:
+            self.log.append(f"WIP: refs not listed: {err.strip()[:200]}")
+            return None
+        refs = {}
+        for sha, _, ref in (line.partition("\t") for line in out.split("\n") if "\t" in line):  # "\n" only (D-4801)
+            name = ref.removeprefix("refs/heads/")  # never stripped: only an exact WIP_REF name counts
+            if wip.WIP_REF.fullmatch(name) and re.fullmatch(r"[0-9a-f]{40}", sha):
+                refs[name] = sha
+        return refs
+
+    def delete_wip_ref(self, name: str) -> bool:
+        """Delete one WIP ref with the job token (D-4720): exactly `:refs/heads/<name>`, a WIP_REF name only."""
+        if not self._wip_allowed(name, "delete") or not self._wip_clone_ok():
+            return False
+        code, out, err = self._run([*WIP_GIT, "push", "--porcelain", "--no-verify", self._wip_url(), f":refs/heads/{name}"], None, self.root)
+        if code != 0:
+            self.log.append(f"WIP: delete of {name} rejected: {(out.strip() + ' ' + err.strip()).strip()[:200]}")
+        return code == 0
+
     # ---- the branch an attempt works on (D-583)
 
     def prepare_branch(self, task: dict[str, Any], attempt: int, session: str) -> dict[str, Any]:
         """Make the local task branch before the worker starts, so a retry builds on what an earlier
         attempt pushed and its push fast-forwards (the runner never force-pushes, BUILD_BRIEF.md:303).
 
-        - origin has no task branch: the branch starts at main;
+        - origin has no task branch: the branch starts at main; but when the task carries `wip_continue`
+          {"ref", "sha"} and origin's tip of that WIP ref is that sha, at its head with main merged in
+          ({"base": "wip", "continued_from": ref}; else `wip_dropped` says why the usual path ran, D-4720);
         - origin has it and its latest pull request is open, absent, or one the runner closed itself to
           drop auto-merge: the branch starts at origin's tip with main merged in (a normal merge commit;
           none when main is already in it). An open pull request with auto-merge on is closed with a
@@ -2147,13 +2335,35 @@ class GitHubEnv:
             self.prepared = self._prepare(task, branch, attempt, session)
         except BEST_EFFORT_ERRORS as exc:
             self.log.append(f"branch {branch} not prepared: {str(exc)[:200]}")
+        if task.get("wip_continue") and self.prepared and "continued_from" not in self.prepared:
+            self.prepared.setdefault("wip_dropped", "origin has the task branch")
         return self.prepared
+
+    def _continue_wip(self, branch: str, main: str, record: Any) -> dict[str, Any]:
+        """The task branch at a WIP ref's head with main merged in (D-4720) when origin's tip of that ref is the
+        recorded sha; else the usual fresh branch from main with `wip_dropped` saying why."""
+        ref, sha = (record.get("ref"), record.get("sha")) if isinstance(record, dict) else (None, None)
+        try:
+            why, tip = "", self._remote_tip(ref) if isinstance(ref, str) and wip.WIP_REF.fullmatch(ref) else None
+        except BEST_EFFORT_ERRORS as exc:
+            why, tip = f"{ref} could not be fetched: {str(exc)[:160]}", None
+        if tip is None or tip != sha:
+            why = why or (f"{str(ref)[:80]} is not on origin" if tip is None else f"{ref} is at {tip[:12]}, not {str(sha)[:12]}")
+            return self._fresh(branch, main, wip_dropped=why)
+        start = tip if self._is_ancestor(main, tip) else self._merge_main(branch, tip, main)
+        if start is None:
+            return self._fresh(branch, main, wip_dropped=f"merging main into {ref} conflicted")
+        self.git("branch", "-f", branch, start)
+        self.log.append(f"WIP: {branch} continues from {ref} ({tip[:12]})")
+        return {"branch": branch, "branch_ready": True, "base": "wip", "base_sha": start, "continued_from": ref, "wip_sha": tip}
 
     def _prepare(self, task: dict[str, Any], branch: str, attempt: int, session: str) -> dict[str, Any]:
         main = self.main_head()
         if not main:
             raise RuntimeError("main is unreadable")
         remote = self._remote_tip(branch)
+        if remote is None and task.get("wip_continue"):
+            return self._continue_wip(branch, main, task["wip_continue"])
         if remote is None:
             return self._fresh(branch, main)
         pr = self._latest_pr(branch)
