@@ -41,11 +41,31 @@ RUN cargo build --release --locked -p askhava-server --bins \
     && cp target/release/server /usr/local/bin/askhava-server \
     && cp target/release/worker /usr/local/bin/worker
 
+# PostgreSQL 16's client tools (pg_dump, pg_restore, psql) for the nightly export (T109, OPS-013,
+# OPS-051, D-3155, D-4708): Debian trixie ships only 17, so they come from the PostgreSQL apt
+# repository, whose signing key is fetched here and refused unless its fingerprint is the pinned one;
+# curl and gnupg stay in this stage and never reach the runtime image.
+FROM debian:trixie-slim@sha256:f6b08b09a05725f9431502d3b5714f5c4576e82c1a84fa1debe0c24a7e0c3ec4 AS pgdg
+ARG PGDG_FINGERPRINT=B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates curl gnupg \
+    && curl -fsSL -o /tmp/pgdg.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+    && test "$(gpg --show-keys --with-colons /tmp/pgdg.asc | awk -F: '$1 == "fpr" {print $10}')" = "${PGDG_FINGERPRINT}" \
+    && gpg --dearmor -o /pgdg.gpg /tmp/pgdg.asc
+
 FROM debian:trixie-slim@sha256:f6b08b09a05725f9431502d3b5714f5c4576e82c1a84fa1debe0c24a7e0c3ec4 AS runtime
+COPY --from=pgdg /pgdg.gpg /usr/share/keyrings/pgdg.gpg
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates libssl3t64 \
+    && echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] https://apt.postgresql.org/pub/repos/apt trixie-pgdg main" \
+         > /etc/apt/sources.list.d/pgdg.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends postgresql-client-16 \
     && rm -rf /var/lib/apt/lists/* \
     && useradd --uid 10001 --no-create-home --shell /usr/sbin/nologin askhava
+# The export's path helper takes the first PostgreSQL 16 binary on PATH (D-4708); /usr/bin/pg_dump is
+# Debian's pg_wrapper, so PostgreSQL 16's own folder comes first.
+ENV PATH="/usr/lib/postgresql/16/bin:${PATH}"
 COPY --from=builder /usr/local/bin/askhava-server /usr/local/bin/askhava-server
 COPY --from=builder /usr/local/bin/worker /usr/local/bin/worker
 COPY --from=browser /out/static /srv/askhava/static

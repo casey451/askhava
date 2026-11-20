@@ -1,0 +1,64 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT ok, object_name AS \"name!\", object_bytes AS \"bytes!\", object_sha256 AS \"sha!\" FROM recovery.backup_check WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "ok",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "recovery.backup_check",
+            "name": "ok"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "name!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "recovery.backup_check",
+            "name": "object_name"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "bytes!",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "recovery.backup_check",
+            "name": "object_bytes"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "sha!",
+        "type_info": "Bytea",
+        "origin": {
+          "Table": {
+            "table": "recovery.backup_check",
+            "name": "object_sha256"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "c465ec1a805a0c25f267aff1ad98ac9f61d91eb10ef71a4d147afc390fc9197e"
+}

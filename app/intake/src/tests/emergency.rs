@@ -147,6 +147,123 @@ fn td_int_01_no_false_matches() {
     }
 }
 
+/// TD-INT-01 (INT-002, D-4777): Spanish gas reports with a sign word anywhere, in English and
+/// Spanish pairs, match `Gas`; the gas not-list stays clear.
+#[test]
+fn td_int_01_spanish_gas_signs_match() {
+    for (english, spanish) in [
+        ("I smell gas in the kitchen", "huelo gas en la cocina"),
+        (
+            "there is a leak in the gas pipe",
+            "hay una fuga en la tubería de gas",
+        ),
+        ("it smells strongly of gas", "huele mucho a gas"),
+        (
+            "gas is escaping from the meter",
+            "se escapa el gas del medidor",
+        ),
+        ("strong gas odor outside", "olor fuerte de gas afuera"),
+        (
+            "gas water heater leak",
+            "calentador de gas con fuga de agua",
+        ),
+    ] {
+        assert_eq!(
+            check(english, false),
+            Check::Match(Hazard::Gas),
+            "{english}"
+        );
+        assert_eq!(
+            check(spanish, false),
+            Check::Match(Hazard::Gas),
+            "{spanish}"
+        );
+    }
+    for words in [
+        "calentador de gas no funciona",
+        "la estufa de gas no prende",
+        "el gas está caro",
+        "cambiar el tanque de gas",
+    ] {
+        assert_eq!(check(words, false), Check::Clear, "{words}");
+    }
+}
+
+/// TD-INT-01 (INT-002, D-4777): something burning with no electric part named is a smoke or fire
+/// report in English and Spanish, any burning smell erring toward 911; a burned-out bulb, fuse or
+/// motor with no smell stays clear.
+#[test]
+fn td_int_01_burning_smells_match_smoke_fire() {
+    for (english, spanish) in [
+        ("smell of burning", "huele a quemado"),
+        ("something is burning", "se está quemando la casa"),
+        ("burning smell in the house", "olor a quemado en la casa"),
+        ("smells like burning", "huele a quemado en la cocina"),
+        ("there is fire in the kitchen", "hay fuego"),
+        ("there is smoke in the hall", "hay humo"),
+        ("burnt toast smell", "olor a quemado en la sala"),
+        ("something burning in here", "algo se quema en la cocina"),
+    ] {
+        let fire = Check::Match(Hazard::SmokeFire);
+        assert_eq!(check(english, false), fire, "{english}");
+        assert_eq!(check(spanish, false), fire, "{spanish}");
+    }
+    for words in [
+        "huele a algo quemándose",
+        "algo se quemó y hay mucho olor",
+        "se quema la casa",
+        "se quema mi casa",
+        "se quema algo en la cocina",
+        "my house is burning",
+        "the garage is burning",
+        "the house's burning down",
+    ] {
+        assert_eq!(
+            check(words, false),
+            Check::Match(Hazard::SmokeFire),
+            "{words}"
+        );
+    }
+    for words in [
+        "se quema el foco",
+        "se quema el fusible",
+        "se quemó el motor",
+        "el motor está quemado",
+        "the bulb burned out",
+        "se quema la bombilla",
+        "se quema la luz",
+        "se quema mi foco",
+        "I burned my hand on the pan",
+        "the toast burned",
+        "el quemador huele raro",
+    ] {
+        assert_eq!(check(words, false), Check::Clear, "{words}");
+    }
+}
+
+/// TD-INT-01 (INT-002, D-4777, D-4802): a place burning, an English possessive or a Spanish place
+/// before "se" and a burning word, is `SmokeFire`; a bulb or light burning out stays clear.
+#[test]
+fn td_int_01_places_burning_match_smoke_fire() {
+    for words in [
+        "the kitchen's burning",
+        "the garage's burning",
+        "mi casa se quema",
+        "la casa se quema",
+        "la cocina se está quemando",
+        "el techo se quemó",
+    ] {
+        assert_eq!(
+            check(words, false),
+            Check::Match(Hazard::SmokeFire),
+            "{words}"
+        );
+    }
+    for words in ["el foco se quemó", "la luz se quemó", "se quema mi foco"] {
+        assert_eq!(check(words, false), Check::Clear, "{words}");
+    }
+}
+
 /// TD-INT-10 (INT-025, D-982): a negated or questioning reply is never the safe reply.
 #[test]
 fn td_int_10_negated_and_questions_are_not_safe() {
