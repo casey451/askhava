@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-20T14:33:27Z by runner 2de3f26c0335 (actions).
+Updated 2026-11-20T14:34:11Z by runner 2de3f26c0335 (actions).
 
 **Building: T206 in progress since 13:21Z; 538 of 712 done; week 35% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 538 of 712 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T206 claimed 13:21Z, lease until 16:21Z; lane 3: T557 claimed 13:49Z, lease until 16:49Z; lane 5: T767 claimed 12:53Z, lease until 15:53Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
-- **Week:** 35% used, 122.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 2: T206 claimed 13:21Z, lease until 16:21Z; lane 3: T557 claimed 13:49Z, lease until 16:49Z; lane 5: T767 claimed 12:53Z, lease until 15:53Z; lane 6: T770 claimed 14:33Z, lease until 17:33Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
+- **Week:** 35% used, 120.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 14:33Z, 0 min before this update
 - **Keeper:** last ran 14:33Z, next wake 14:53Z
 
@@ -126,7 +126,7 @@ Updated 2026-11-20T14:33:27Z by runner 2de3f26c0335 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-20T13:38:53Z (week)): week: 71.4M used, 122.6M left, resets 2026-11-26T17:00:00Z; projected finish 2026-11-29T19:29:21Z.
+- Pacing (session_reading 2026-11-20T14:32:57Z (week)): week: 73.8M used, 120.2M left, resets 2026-11-26T17:00:00Z; projected finish 2026-11-29T20:37:54Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -145,6 +145,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T206 (lease until 2026-11-20T16:21:32Z)
 - lane 3: T557 (lease until 2026-11-20T16:49:23Z)
 - lane 5: T767 (lease until 2026-11-20T15:53:17Z)
+- lane 6: T770 (lease until 2026-11-20T17:33:55Z)
 - lane 7: T672 (lease until 2026-11-20T15:39:52Z)
 
 ## Last usage reading
