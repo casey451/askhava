@@ -74441,7 +74441,8 @@
     "T498",
     "T640",
     "T724",
-    "T764"
+    "T764",
+    "T770"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -81326,7 +81327,8 @@
     "T480",
     "T470",
     "T447",
-    "T768"
+    "T768",
+    "T770"
    ],
    "status": "QUEUED",
    "attempts": 3,
@@ -85378,7 +85380,8 @@
    "deps": [
     "T607",
     "T593",
-    "T617"
+    "T617",
+    "T771"
    ],
    "status": "QUEUED",
    "attempts": 1,
@@ -96098,6 +96101,28 @@
    "slug": "business-page-texting-line",
    "type": "build",
    "stage": "5"
+  },
+  {
+   "id": "T770",
+   "deps": [
+    "T764"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "coverage-job-time-limit",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T771",
+   "deps": [
+    "T053"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "reflow-hidden-duplicates",
+   "type": "harness",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -102507,7 +102532,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T14:28:34Z",
+ "updated_at": "2026-11-20T14:32:17Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -102605,7 +102630,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "5d4f4b46c856d7e35d5948aecf57475b9469a5f2",
+ "runner_sha": "2de3f26c0335736f78c75ae582a6354de4ab60a0",
  "starter": "actions",
  "smoke_runs": [
   {
