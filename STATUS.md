@@ -1,17 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-20T15:41:29Z by runner 696a43ed61d5 (actions).
+Updated 2026-11-20T15:42:03Z by runner 39d70294d8c2 (actions).
 
 **Building: T530 in progress since 15:29Z; 541 of 712 done; week 36% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 541 of 712 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T530 claimed 15:29Z, lease until 18:29Z; lane 4: T684 claimed 15:37Z, lease until 18:37Z
+- **Lane:** lane 1: T530 claimed 15:29Z, lease until 18:29Z
 - **Week:** 36% used, 120.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:39Z, 1 min before this update
+- **Last run:** 15:39Z, 2 min before this update
 - **Keeper:** last ran 15:38Z, next wake 15:58Z
 
 ## Needs attention
+- BLOCKED T684: plan gap reported: PLAN GAP: app/quotes/src/models.rs:265 `card_sent_at` is pub(crate); T684 owns no app/quotes/src file. quotes::api has no per-business card send-time reader (open_card_jobs returns job ids only; spot_check_cards is a random sample); picks may not query quotes.* (R8, docs/brains/rust-production.md:44). Smallest plan change: new app/quotes/src/open_cards.rs with open_cards(db, business, now) plus one mod line in lib.rs and one pub use in api.rs; raise budget to 4 files/~600 lines. Also: portals link trait implemented in server lib.rs; email recipient is member mailbox with subject ids starting w; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T684 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T524 (since 2026-11-20T12:53:17Z, no attempt used; a plan change fixes it): T524: dependency T648 is DONE but its owned file app/recovery/src/restore.rs is not on main; T524: dependency T648 is DONE but its owned file tests/recovery/tests/export_restores.rs is not on main
@@ -21,6 +22,7 @@ Updated 2026-11-20T15:41:29Z by runner 696a43ed61d5 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T684 | picks and server: the open-cards email goes at the times eac | BLOCKED | 1 | 4 min | 15:41Z | PLAN GAP: app/quotes/src/models.rs:265 `card_sent_at` is pub(crate); T684 owns no app/quotes/src file. quotes::api has n |
 | T770 | ci (harness): the Coverage job's time limit goes from 25 to  | MERGE_PENDING | 1 | 61 min | 15:35Z |  |
 | T771 | a11y tests (harness): reflow_spacing's hidden-control check  | BLOCKED | 1 | 3 min | 15:22Z | PLAN GAP: kit/prompts/T771.md:9 (D-4970, docs/decisions.md:2604) contradicts itself: rule (1) checks the hidden Menu sum |
 | T557 | Decisions digest, piece 12: the next entries after the heade | done | 1 | 65 min | 14:55Z |  |
@@ -143,7 +145,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T530 (lease until 2026-11-20T18:29:00Z)
-- lane 4: T684 (lease until 2026-11-20T18:37:36Z)
 
 ## Last usage reading
-- {"task": "T770", "at": "2026-11-20T15:35:25Z", "cache_creation_input_tokens": 52775, "output_tokens": 7110, "input_tokens": 49, "cache_read_input_tokens": 570147}
+- {"task": "T684", "at": "2026-11-20T15:41:42Z", "cache_read_input_tokens": 3936546, "output_tokens": 17916, "input_tokens": 123, "cache_creation_input_tokens": 139773}

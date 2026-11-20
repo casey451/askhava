@@ -91096,8 +91096,8 @@
    "deps": [
     "T470"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "open-cards-email",
    "type": "build",
    "stage": "5",
@@ -91110,10 +91110,33 @@
     4995,
     4996
    ],
-   "wip_claim": {
-    "attempt": 1,
-    "remote_sha": ""
-   }
+   "reason": "plan gap reported: PLAN GAP: app/quotes/src/models.rs:265 `card_sent_at` is pub(crate); T684 owns no app/quotes/src file. quotes::api has no per-business card send-time reader (open_card_jobs returns job ids only; spot_check_cards is a random sample); picks may not query quotes.* (R8, docs/brains/rust-production.md:44). Smallest plan change: new app/quotes/src/open_cards.rs with open_cards(db, business, now) plus one mod line in lib.rs and one pub use in api.rs; raise budget to 4 files/~600 lines. Also: portals link trait implemented in server lib.rs; email recipient is member mailbox with subject ids starting w; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T684 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: app/quotes/src/models.rs:265 `card_sent_at` is pub(crate); T684 owns no app/quotes/src file. quotes::api has no per-business card send-time reader (open_card_jobs returns job ids only; spot_check_cards is a random sample); picks may not query quotes.* (R8, docs/brains/rust-production.md:44). Smallest plan change: new app/quotes/src/open_cards.rs with open_cards(db, business, now) plus one mod line in lib.rs and one pub use in api.rs; raise budget to 4 files/~600 lines. Also: portals link trait implemented in server lib.rs; email recipient is member mailbox with subject ids starting with business id; no member-language API (Spanish); Notice::OpenCards needs own EN/ES words. Reviewer confirmed (GAP-VERDICT: CONFIRMED).",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 72,
+     "head_sha": "39d70294d8c2aa215d9dd5c08347ff1c16166cfc",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-20T15:37:36Z",
+     "ended_at": "2026-11-20T15:41:42Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 3611058,
+       "turns": 44
+      },
+      "reviewer": {
+       "tokens": 483300,
+       "turns": 15
+      }
+     }
+    }
+   ]
   },
   {
    "id": "T685",
@@ -96715,12 +96738,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T770",
-   "at": "2026-11-20T15:35:25Z",
-   "cache_creation_input_tokens": 52775,
-   "output_tokens": 7110,
-   "input_tokens": 49,
-   "cache_read_input_tokens": 570147
+   "task": "T684",
+   "at": "2026-11-20T15:41:42Z",
+   "cache_read_input_tokens": 3936546,
+   "output_tokens": 17916,
+   "input_tokens": 123,
+   "cache_creation_input_tokens": 139773
   },
   "source": "session_reading 2026-11-20T15:36:44Z (week)",
   "by_task": {
@@ -103138,17 +103161,27 @@
    },
    "T684": {
     "estimated_bytes": 500352,
-    "estimated_tokens": 1490302
+    "estimated_tokens": 1490302,
+    "usage_counting": "message_id",
+    "cache_read_input_tokens": 3936546,
+    "output_tokens": 17916,
+    "input_tokens": 123,
+    "cache_creation_input_tokens": 139773,
+    "worker_tokens": 3611058,
+    "worker_turns": 44,
+    "reviewer_tokens": 483300,
+    "reviewer_turns": 15,
+    "last_model": "claude-opus-5-5"
    }
   },
   "windows": {
    "five_hour": {
     "start": "2026-11-20T13:54:23Z",
-    "tokens": 6681167
+    "tokens": 7232633
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 66929228
+    "tokens": 67480694
    }
   },
   "session_reading": {
@@ -103159,7 +103192,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T15:41:29Z",
+ "updated_at": "2026-11-20T15:42:03Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -103257,7 +103290,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "696a43ed61d5fdbdce19a15cc718b2a190305180",
+ "runner_sha": "39d70294d8c2aa215d9dd5c08347ff1c16166cfc",
  "starter": "actions",
  "smoke_runs": [
   {
