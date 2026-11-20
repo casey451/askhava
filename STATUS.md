@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T04:55:53Z by runner d559b7df75e9 (actions).
+Updated 2026-11-20T04:56:08Z by runner d20ad9f12ad3 (actions).
 
 **Building: T726 in progress since 04:23Z; 518 of 707 done; week 20% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 518 of 707 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T726 claimed 04:23Z, lease until 07:23Z; lane 2: T751 claimed 04:11Z, lease until 07:11Z; lane 3: T543 claimed 03:53Z, lease until 06:53Z; lane 4: T110 claimed 02:18Z, lease until 05:18Z; lane 7: T434 claimed 03:02Z, lease until 07:54Z
+- **Lane:** lane 1: T726 claimed 04:23Z, lease until 07:23Z; lane 2: T751 claimed 04:11Z, lease until 07:11Z; lane 3: T543 claimed 03:53Z, lease until 06:53Z; lane 4: T110 claimed 02:18Z, lease until 05:18Z
 - **Week:** 20% used, 148.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:55Z, 0 min before this update
 - **Keeper:** last ran 04:51Z, next wake 05:20Z
@@ -15,11 +15,12 @@ Updated 2026-11-20T04:55:53Z by runner d559b7df75e9 (actions).
 - BLOCKED T648: plan gap reported: PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, but scripts/check_include_paths.py (D-1867, run in the smoke by tests/test_check_include_paths.py::test_td_ops_32_the_real_repository_passes) fails: scripts/bootstrap_roles.sql is not matched by the Checks and Coverage rules in .github/workflows/ci.yml (protected, harness-only) nor by RUST_PATHS in scripts/prehandin.sh:77 (locked in kit/plan.lock). T648 owns neither. Fix: a harness task adds scripts/bootstrap_roles\.sql to those three rules and rewrites kit/plan.lock. Reviewer; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T648 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 82 problem(s) on tasks still to run (+375 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 78 problem(s) on tasks still to run (+372 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T434 | portals: the monthly intake accuracy report page and the mon | MERGE_PENDING | 1 | 112 min | 04:55Z |  |
 | T663 | picks, jobs and payments (harness): a confirmed pick moves i | MERGE_PENDING | 3 | 65 min | 04:54Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T556 | Decisions digest, piece 11: the next entries after the heade | MERGE_PENDING | 1 | 51 min | 04:50Z |  |
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 2 | 32 min | 04:08Z | merging main into the reviewed head conflicts in kit/plan.lock, kit/runner.json; a resync merges it in on this attempt ( |
@@ -92,7 +93,7 @@ Updated 2026-11-20T04:55:53Z by runner d559b7df75e9 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 324 of 735 (44.1%) · partial 384 · unstarted 27
-**Tasks merged (throughput only):** 518 of 705
+**Tasks merged (throughput only):** 518 of 704
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -139,7 +140,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T751 (lease until 2026-11-20T07:11:19Z)
 - lane 3: T543 (lease until 2026-11-20T06:53:34Z)
 - lane 4: T110 (lease until 2026-11-20T05:18:18Z)
-- lane 7: T434 (lease until 2026-11-20T07:54:10Z)
 
 ## Last usage reading
-- {"task": "T663", "at": "2026-11-20T04:54:26Z", "cache_creation_input_tokens": 158154, "cache_read_input_tokens": 3231757, "input_tokens": 109, "output_tokens": 22597}
+- {"task": "T434", "at": "2026-11-20T04:55:21Z", "cache_creation_input_tokens": 300086, "output_tokens": 71284, "cache_read_input_tokens": 10799308, "input_tokens": 256}
