@@ -11,7 +11,7 @@
    docs/design/reference/ V6 stylesheet under its own class names, one rule a line, written to the
    spec: shadows only as ink or evergreen rgba, every card keeps its 1 px line border for forced
    colours, the open Menu list sits in the page flow, emphasis is upright, the kicker and small
-   labels are 700, a field in error gets a 2 px alert border, and the one transition (the 150 ms
+   labels are 600 (T617), a field in error gets a 2 px alert border, and the one transition (the 150 ms
    button colour fade) runs only under prefers-reduced-motion: no-preference. The element rules
    above the components still style the pages whose markup has no component classes yet.
    T613 (D-4246, D-4252, WEB-029, WEB-030, D-4807): the polish layer. Tokens for the layered
@@ -38,12 +38,14 @@
   src: url("fonts/gelasio-latin-500-normal.woff2") format("woff2");
 }
 
+/* DM Sans from the one weight-axis variable file (T617, D-4252, D-4863): one face per weight the
+   sheet uses, all on the same URL, so the browser fetches it once; never one 100 1000 range face. */
 @font-face {
   font-family: "DM Sans";
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url("fonts/dm-sans-latin-400-normal.woff2") format("woff2");
+  src: url("fonts/dm-sans-latin-wght-normal.woff2") format("woff2");
 }
 
 @font-face {
@@ -51,7 +53,15 @@
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  src: url("fonts/dm-sans-latin-500-normal.woff2") format("woff2");
+  src: url("fonts/dm-sans-latin-wght-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("fonts/dm-sans-latin-wght-normal.woff2") format("woff2");
 }
 
 @font-face {
@@ -59,7 +69,7 @@
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url("fonts/dm-sans-latin-700-normal.woff2") format("woff2");
+  src: url("fonts/dm-sans-latin-wght-normal.woff2") format("woff2");
 }
 
 /* The one italic accent (DESIGN_SPEC section 3, D-4246): Gelasio 500 italic, same OFL family. */
@@ -398,7 +408,7 @@ button:active {
 .kicker {
   margin: 0 0 4px;
   color: var(--evergreen);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .hero-text h1 {
@@ -488,9 +498,9 @@ button:active {
 .button-quiet { background: var(--surface); color: var(--ink); border-color: var(--field-edge); font-weight: 500; box-shadow: none; }
 .button-quiet:hover, .button-quiet:active { background: var(--band); border-color: var(--ink); }
 
-/* Type roles: px sizes only, none under 16 px (WEB-027); the kicker and small labels at 700, since
-   no 600 file is shipped (D-4252). */
-.kicker { font: 700 16px/24px var(--sans); letter-spacing: 0.01em; }
+/* Type roles: px sizes only, none under 16 px (WEB-027); the kicker and small labels at 600, a true
+   600 from the variable DM Sans file (D-4252, T617). */
+.kicker { font: 600 16px/24px var(--sans); letter-spacing: 0.01em; }
 .display { font: 500 30px/34px var(--serif); letter-spacing: -0.02em; text-wrap: balance; }
 .title { font: 500 30px/34px var(--serif); letter-spacing: -0.015em; }
 .section-title { font: 500 28px/34px var(--serif); letter-spacing: -0.015em; text-wrap: balance; }
