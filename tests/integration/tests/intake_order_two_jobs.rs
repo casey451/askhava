@@ -273,7 +273,8 @@ async fn td_int_45_also_before_the_zip_opens_the_second_job_the_early_way(mut db
 /// TD-INT-45 (INT-032, INT-027, INT-009): ALSO while the name-and-address question is open opens
 /// nothing; once it is answered (its `address_contact` marker, as `take_name_address` writes it),
 /// ALSO opens exactly one more job through `open_job`, with property `none` (D-4441 (2): never
-/// through `begin_job`, which refuses the one-word ALSO).
+/// through `begin_job`, which refuses the one-word ALSO). D-4851: steps 6 to 8 are answered first
+/// (in the next few days, then the first option of each trade question), so the question is open.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_int_45_also_after_the_zip_opens_the_second_job_through_open_job(mut db: Db) {
     setup(&mut db).await;
@@ -282,7 +283,16 @@ async fn td_int_45_also_after_the_zip_opens_the_second_job_through_open_job(mut 
     sent(&mut db, 0x0555_0204, TWO_TRADES, 0).await;
     sent(&mut db, 0x0555_0204, HOME_ZIP, 1).await;
     let id = request(&mut db, 0x0555_0204).await;
-    sent(&mut db, 0x0555_0204, "ALSO", 2).await;
+    use askhava_intake::api::rules::NAME_ADDRESS_TEMPLATE;
+    let mut asked = sent(&mut db, 0x0555_0204, "2", 2).await;
+    for minute in 3..12 {
+        if asked == [NAME_ADDRESS_TEMPLATE] {
+            break;
+        }
+        asked = sent(&mut db, 0x0555_0204, "1", minute).await;
+    }
+    assert_eq!(asked, [NAME_ADDRESS_TEMPLATE], "steps 6 to 8");
+    sent(&mut db, 0x0555_0204, "ALSO", 20).await;
     assert_eq!(
         links(&mut db, id).await,
         ["job.handyman.none"],
@@ -293,11 +303,11 @@ async fn td_int_45_also_after_the_zip_opens_the_second_job_through_open_job(mut 
          VALUES ($1, 'address_contact', 'stored', to_timestamp($2))",
     )
     .bind(id)
-    .bind(at(3).as_second())
+    .bind(at(21).as_second())
     .execute(&mut *db)
     .await
     .expect("answered");
-    sent(&mut db, 0x0555_0204, "ALSO", 4).await;
+    sent(&mut db, 0x0555_0204, "ALSO", 22).await;
     let got = links(&mut db, id).await;
     assert_eq!(got.len(), 2, "{got:?}");
     assert!(got[1].starts_with("job.plumbing_repair."), "{got:?}");

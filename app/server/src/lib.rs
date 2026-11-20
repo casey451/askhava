@@ -41,6 +41,7 @@ pub mod business_portal;
 pub mod business_signin;
 pub mod business_signup;
 pub mod business_step_up;
+pub mod business_text_phone;
 pub mod call_status;
 pub mod cant_take_route;
 pub mod catalog_start;
@@ -927,7 +928,8 @@ fn register_held_success(registry: &mut Registry, hooks: Option<release_sink::St
 /// `picks`' notices to the business: the pick notice with the worker's Confirm window and its end
 /// (PICK-019, PICK-037, T063), the window's end and its lapse on the worker clock (PICK-046,
 /// PICK-047, T491, D-3882), the Payment pending wait's end on the worker clock (JOB-014, T663,
-/// D-4349) and the withdrawn-pick notice (PICK-032, CON-029, T330).
+/// D-4349), "This job is no longer active." on a final move (PICK-026, T681, D-4361) and the
+/// withdrawn-pick notice (PICK-032, CON-029, T330).
 fn register_pick_notices(
     registry: &mut Registry,
     confirm: askhava_picks::api::ConfirmSettings,
@@ -947,6 +949,10 @@ fn register_pick_notices(
             let now = clock.now();
             askhava_picks::api::run_payment_returned(pool, task, now)
         },
+    );
+    registry.register(
+        askhava_jobs::api::FINAL_STATUS_KIND,
+        askhava_picks::api::run_final_status,
     );
     registry.register(
         askhava_picks::api::PICK_WITHDRAWN_KIND,
@@ -1143,7 +1149,7 @@ where
     askhava_recovery::api::register_restore(&mut registry, settings, Arc::clone(&clock))
         .map_err(io::Error::other)?;
     register_whos_calling(&mut registry, settings, (&id_secret, &clock), pairs.clone())?;
-    register_twilio_handlers(&mut registry, settings, (id_secret, clock), pairs)?;
+    register_twilio_handlers(&mut registry, settings, (id_secret, clock, confirm), pairs)?;
     Ok(registry)
 }
 
@@ -1154,7 +1160,11 @@ where
 fn register_twilio_handlers(
     registry: &mut Registry,
     settings: &Settings,
-    (id_secret, clock): (SecretString, Arc<dyn Clock>),
+    (id_secret, clock, confirm): (
+        SecretString,
+        Arc<dyn Clock>,
+        askhava_picks::api::ConfirmSettings,
+    ),
     pairs: Vec<(String, String)>,
 ) -> io::Result<()> {
     let Some(twilio) = twilio_config(settings, pairs.clone())? else {
@@ -1175,9 +1185,16 @@ fn register_twilio_handlers(
     register_owner_calls(registry, settings, (&twilio, &id_secret), pairs.clone())?;
     let (sms, _, _) = twilio_clients(&twilio).map_err(io::Error::other)?;
     let sms = with_status_url(settings, sms);
-    if let Some(vault) = vault_from(settings, pairs.clone())? {
+    let vaults = (
+        vault_from(settings, pairs.clone())?,
+        vault_from(settings, pairs.clone())?,
+    );
+    if let (Some(vault), Some(phones)) = vaults {
         let keys = (id_secret.clone(), vault);
         let sender = outbox_sender(settings, keys, sms.clone(), (&pairs, Arc::clone(&clock)))?;
+        let gate = NoticeChecks { confirm };
+        let phones = business_text_phone::BusinessTextPhone::new(phones);
+        let sender = sender.with_business((gate, phones), None);
         askhava_messaging::api::register_send_due(registry, Arc::new(sender));
     }
     let (sms, scan_clock) = (Arc::new(sms), Arc::clone(&clock));
@@ -1872,7 +1889,10 @@ const HOMEOWNER_NUMBER: &str = "ASKHAVA_HOMEOWNER_NUMBER";
 /// no email copy) and the worker's clock. The number is required in test and live, as the Twilio
 /// and postal settings are (D-1688, D-3095): unset there the worker refuses to start naming the
 /// key, since a line with no sender texts nothing and every CON-009 confirmation would expire
-/// unsent (D-3149); unset in dev and CI the line has no sender and rows wait (TXT-022).
+/// unsent (D-3149); unset in dev and CI the line has no sender and rows wait (TXT-022). The caller
+/// adds the business side (`with_business`: [`NoticeChecks`] as the CON-019 gate and
+/// `business_text_phone` as the phone reader, D-4051, D-4913); its number is `None` until T526
+/// passes the configured one, so business rows wait.
 ///
 /// # Errors
 ///

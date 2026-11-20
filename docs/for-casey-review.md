@@ -3584,6 +3584,7 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 ## Business texting: an early read-spike alert is expected (D-4913, November 20)
 
 - D-4913 (Fable, Nov 20): in the first two weeks of business texting, an hour with more than three business texts raises one High read-spike alert (no 14-day baseline yet); expected, the same as notice emails.
+- D-4830 to D-4832 (T672, Nov 20): texts now go on after the coverage line to "How soon?", the emergency-or-regular choice and the trade questions before the name and address. A day answer that is not a weekday ("the 25th") is accepted but only weekdays reach the card for now.
 
 ## Monthly test restore: one more database service to add (D-4846, November 20)
 

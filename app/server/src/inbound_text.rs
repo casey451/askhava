@@ -1066,10 +1066,9 @@ async fn acts_for_business(db: &mut PgConnection, line: Uuid) -> Step<bool> {
 /// BIZ-032, D-1715: the reply to a business phone's text that `auto_reply_due` says needs one,
 /// queued once per inbound text through the outbox. The route expects no business text yet, so
 /// `expected` is false; HELP and opt-outs already ended in [`screen`] (D-2039). The row's
-/// `recipient` is the business ID, not the phone's line ID that `business_notices` stores and
-/// `businesses::api::may_text` takes: `sender_business` answers only the business, so no sender
-/// can check `may_text` for this row or resolve its phone until `messaging` also returns the line
-/// ID (open item, D-2042). The same text, not a command, first opens or joins the business's
+/// `recipient` is the phone's line ID (`sender_line`), as `business_notices` stores it and
+/// `businesses::api::may_text` takes it, so the outbox sender checks CON-019 and reads the number
+/// for this row at send time (BIZ-036, TXT-035; D-2042 closed by D-4051). The same text, not a command, first opens or joins the business's
 /// help request with its scrubbed words (`intake::api::business_help`, OPS-036, D-3881).
 async fn auto_reply(
     h: &Ctx<'_>,
@@ -1085,10 +1084,16 @@ async fn auto_reply(
         .map_err(intake_halt)?;
     let body = render(AUTO_REPLY_TEMPLATE, Language::En, false, &[])
         .map_err(|e| Halt::Failed("auto_reply", variant(&e)))?;
+    let line = sender_line(db, h.vault, msg.phone)
+        .await
+        .map_err(outbox_halt)?;
+    let Some((_, line)) = line else {
+        return Err(Halt::Ends("business"));
+    };
     let text = NewText {
         template_id: AUTO_REPLY_TEMPLATE,
         subject: &[msg.inbox_id],
-        recipient: msg.contact,
+        recipient: line,
         relation: Relation::Business,
         body: &body.body,
     };
