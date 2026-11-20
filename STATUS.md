@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T15:09:56Z by runner 4af5a136714a (actions).
+Updated 2026-11-20T15:19:10Z by runner 696a43ed61d5 (actions).
 
-**Building: T770 in progress since 14:33Z; 540 of 712 done; week 35% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T771 in progress since 15:18Z; 540 of 712 done; week 35% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 540 of 712 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 6: T770 claimed 14:33Z, lease until 17:33Z
-- **Week:** 35% used, 120.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:58Z, 11 min before this update
+- **Lane:** lane 1: T771 claimed 15:18Z, lease until 18:18Z; lane 6: T770 claimed 14:33Z, lease until 17:33Z
+- **Week:** 35% used, 123.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 15:10Z, 8 min before this update
 - **Keeper:** last ran 14:56Z, next wake 17:36Z
 
 ## Needs attention
@@ -91,7 +91,6 @@ Updated 2026-11-20T15:09:56Z by runner 4af5a136714a (actions).
 | T407 | calls, portals and server: the owner-portal safety voice cal | done | 1 | 102 min | 16:01Z |  |
 | T541 | payments, portals and adapters: a card saved or changed from | check_failed | 1 | 2 h 16 min | 15:25Z |  |
 | T470 | messaging and server: the worker task that sends queued emai | done | 3 | 2 h 18 min | 15:24Z | Fix-round review (after the one allowed findings round) still found a problem at head 1830747e4; no reviewer approved a  |
-| T593 | site and server: the home hero in D-3331's wording with the  | done | 2 | 75 min | 15:11Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 
 ### Plan and harness merges on main
 - none
@@ -127,7 +126,7 @@ Updated 2026-11-20T15:09:56Z by runner 4af5a136714a (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-20T14:32:57Z (week)): week: 73.8M used, 120.2M left, resets 2026-11-26T17:00:00Z; projected finish 2026-11-29T20:37:54Z.
+- Pacing (session_reading 2026-11-20T14:56:11Z (week)): week: 70.2M used, 123.8M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-08T02:23:33Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -142,7 +141,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T771 (lease until 2026-11-20T18:18:51Z)
 - lane 6: T770 (lease until 2026-11-20T17:33:55Z)
 
 ## Last usage reading
