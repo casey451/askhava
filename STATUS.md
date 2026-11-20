@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T17:47:47Z by runner e4d287328e44 (manual).
+Updated 2026-11-20T18:00:36Z by runner e4d287328e44 (actions).
 
-**Building: T614 in progress since 17:26Z; 545 of 713 done; week 40% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T614 in progress since 17:26Z; 545 of 713 done; week 41% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 545 of 713 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T614 claimed 17:26Z, lease until 20:26Z; lane 6: T573 claimed 17:20Z, lease until 20:20Z; lane 7: T743 claimed 16:24Z, lease until 19:24Z
-- **Week:** 40% used, 113.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:47Z, 0 min before this update
+- **Week:** 41% used, 113.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 18:00Z, 0 min before this update
 - **Keeper:** last ran 17:46Z, next wake 19:26Z
 
 ## Needs attention
@@ -91,7 +91,6 @@ Updated 2026-11-20T17:47:47Z by runner e4d287328e44 (manual).
 | T748 | portals: the help-page form's confirmation promises no reply | done | 1 | 41 min | 20:08Z |  |
 | T161 | wording: the WORD-024 voice rule's pressure-word scan, the r | done | 2 | 2 h 1 min | 20:00Z | PLAN GAP: `tests/docs/test_site_copy_blocks.py` must check that the home page and footer show the blocks in `docs/copy/s |
 | T607 | site: site.css brought up to the V6 reference (laftly-v6.css | QUEUED | 1 | 2 h 5 min | 19:21Z |  |
-| T555 | Decisions digest, piece 10: the next entries after the heade | done | 1 | 2 h 7 min | 17:51Z |  |
 
 ### Plan and harness merges on main
 - none
