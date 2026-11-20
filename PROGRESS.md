@@ -8721,3 +8721,4 @@
 - 2026-11-20T18:52:15Z runner c57e1151be39 (actions): {"T530": "MERGE_PENDING -> QUEUED"}
 - 2026-11-20T18:52:52Z runner c57e1151be39 (actions): {}
 - 2026-11-20T18:53:27Z runner c57e1151be39 (actions): {}
+- 2026-11-20T18:54:37Z runner c57e1151be39 (actions): {"T530": "QUEUED -> IN_PROGRESS"}; T530 estimated 1.2M tokens (calibrated); week has 106.1M left (no five-hour budget, D-3056) after 3.9M still running in another lane (session_reading 2026-11-20T18:52:51Z (week)); claimed
