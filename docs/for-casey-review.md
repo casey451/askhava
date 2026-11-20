@@ -3559,3 +3559,15 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - **What changed:** some finished work was held because the worker's commit did not show in its log; workers are now told to commit in a way that always shows, and a held hand-in that cannot pass now says so at once (T762, first in line). It also prepares the build sessions to run tasks on Fable, which is switched on in a later change once this lands.
 - Fable's decision; nothing needs you now.
+
+## Scope freeze, and fixes to tasks about to start (D-4822 to D-4824)
+
+- **Scope freeze (your words, Nov 19):** from now, a new task is added only when a task cannot finish without it or for a real money, privacy, consent or safety problem. Everything else goes on the post-launch list below.
+- **Fixes before they start:** four tasks about to be picked up had instructions that could not pass their own checks (the intake step order, a contact-card download, a data-request screen); their instructions are corrected, and a few smaller wording fixes were made (D-4822). A test that failed about once in a hundred runs because two tests used the same fake phone number gets a small fix first in line (T763, D-4823).
+- Our choice; nothing needs you now.
+
+## Post-launch list
+
+Items kept for after launch under the scope freeze (D-4824). Each is a note, not a task.
+
+- **Code digests coverage:** the digest tasks (T556 to T558) cover about 0.9 MB of the about 1.58 MB of code to summarise after D-3357; T514 or T142 weighs whether that matters before the handover.
