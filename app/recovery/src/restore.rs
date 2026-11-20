@@ -10,8 +10,10 @@
 //! checks the newest nightly export's `recovery.backup_check` row (the object itself is
 //! write-only, PRIV-029). Each result is one `recovery.backup_check` row of kind `restore` and one
 //! audit entry; a failure also raises one High [`RESTORE_FAILED_ALERT`], a kind that never starts
-//! safe mode. Every tool is found by [`pg_tool`] and gets only `PATH` and `PGPASSWORD`; no URL,
-//! password or database message reaches an error or a log (SEC-052).
+//! safe mode. Every tool is found by [`pg_tool`] and gets only `PATH`, `PGPASSWORD` and
+//! `PGCONNECT_TIMEOUT`; no URL, password or database message reaches an error or a log (SEC-052).
+//! The whole run shares one [`RESTORE_DEADLINE`], so a throwaway service that hangs is still
+//! recorded and alerted before the worker's handler timeout.
 
 use std::io::Write;
 use std::process::{Child, Command, Stdio};
@@ -40,9 +42,15 @@ pub const RESTORE_FAILED_ALERT: &str = "recovery.test_restore_failed";
 pub const RESTORE_PASSED_ACTION: &str = "recovery.restore_passed";
 /// The audit action of a test restore that failed (OPS-013); subject as above.
 pub const RESTORE_FAILED_ACTION: &str = "recovery.restore_failed";
-/// OPS-013: one restore's deadline, under the worker's 2-minute lease, so a slow run is recorded
-/// (as `timeout`) and its tools are killed.
+/// OPS-013: the one deadline the whole run shares (restore, check, drop and the export record
+/// check), 20 seconds under the worker's 2-minute handler timeout, so even a run against a hung
+/// throwaway service is recorded (as `timeout`) and alerted. Inside it, create, bootstrap, load
+/// and check stop at seven tenths ([`work_share`]) and the drop at nine tenths ([`drop_share`]),
+/// each tool killed at its limit, so the drop always gets its turn and ends before the deadline.
 pub const RESTORE_DEADLINE: Duration = Duration::from_secs(100);
+/// OPS-013: seconds a tool or the check may wait for a connection (libpq's `connect_timeout`),
+/// so an unreachable service fails fast as `throwaway` rather than at the deadline.
+const CONNECT_TIMEOUT_SECS: u64 = 10;
 
 /// OPS-051: `scripts/bootstrap_roles.sql`, embedded because the runtime image holds no `scripts/`.
 const BOOTSTRAP_ROLES: &str = include_str!("../../../scripts/bootstrap_roles.sql");
@@ -91,7 +99,7 @@ pub enum RestoreError {
     /// A database read or write failed.
     #[error("database error")]
     Database,
-    /// The run passed [`RESTORE_DEADLINE`]; its tools were killed.
+    /// The run passed its share of [`RESTORE_DEADLINE`]; its tools were killed.
     #[error("restore timed out")]
     Timeout,
 }
@@ -121,15 +129,28 @@ impl RestoreError {
 pub struct RestoreSettings {
     backup_url: SecretString,
     admin_url: SecretString,
+    deadline: Duration,
+}
+
+/// OPS-013: the part of a run's `deadline` for create, bootstrap, load and check.
+fn work_share(deadline: Duration) -> Duration {
+    deadline * 7 / 10
+}
+
+/// OPS-013: the part of a run's `deadline` by which the throwaway database's drop has ended.
+fn drop_share(deadline: Duration) -> Duration {
+    deadline * 9 / 10
 }
 
 impl RestoreSettings {
-    /// The settings for a dump of `backup_url` restored on the service behind `admin_url`.
+    /// The settings for a dump of `backup_url` restored on the service behind `admin_url`, each
+    /// run within [`RESTORE_DEADLINE`].
     #[must_use]
     pub fn new(backup_url: SecretString, admin_url: SecretString) -> Self {
         Self {
             backup_url,
             admin_url,
+            deadline: RESTORE_DEADLINE,
         }
     }
 
@@ -166,7 +187,8 @@ fn percent_decode(text: &str) -> Option<String> {
 
 /// SEC-052: the PostgreSQL 16 `tool` against `url` (its database replaced by `database` when
 /// given): the password only in `PGPASSWORD`, never on the command line, nothing read from a
-/// prompt, and an environment cleared to `PATH`, so no host key and no role password reaches it.
+/// prompt, and an environment cleared to `PATH` and `PGCONNECT_TIMEOUT` (OPS-013: a service that
+/// does not answer fails the tool fast), so no host key and no role password reaches it.
 fn tool_command(
     tool: &'static str,
     url: &SecretString,
@@ -188,6 +210,7 @@ fn tool_command(
     let mut cmd = Command::new(path);
     cmd.env_clear()
         .env("PATH", std::env::var_os("PATH").unwrap_or_default())
+        .env("PGCONNECT_TIMEOUT", CONNECT_TIMEOUT_SECS.to_string())
         .args(["--no-password", "--dbname", parsed.as_str()])
         .stdin(Stdio::null())
         .stdout(Stdio::null())
@@ -277,19 +300,23 @@ where
 /// [`RestoreError::Restore`] when the dump or the restore fails, or another [`RestoreError`].
 pub async fn load_dump(urls: &RestoreSettings, database: &str) -> Result<(), RestoreError> {
     let (urls, database) = (urls.clone(), database.to_owned());
-    blocking(move || load(&urls, &database, Instant::now() + RESTORE_DEADLINE)).await
+    let until = Instant::now() + work_share(urls.deadline);
+    blocking(move || load(&urls, &database, until)).await
 }
 
 /// OPS-051, D-492: fails when any restored object (a relation, routine, type or schema outside
 /// the system schemas) is owned by a role other than `askhava_migrator`, or when `askhava_app`
-/// holds `UPDATE` or `DELETE` on an [`APPEND_ONLY`] table (a missing one fails too).
+/// holds `UPDATE` or `DELETE` on an [`APPEND_ONLY`] table (a missing one fails too). The
+/// connection has [`CONNECT_TIMEOUT_SECS`]; the caller bounds the whole check (OPS-013).
 async fn check_restored(urls: &RestoreSettings, database: &str) -> Result<(), RestoreError> {
-    let mut conn = PgConnectOptions::from_str(urls.admin_url.expose_secret())
+    let options = PgConnectOptions::from_str(urls.admin_url.expose_secret())
         .map_err(|_| RestoreError::Settings)?
-        .database(database)
-        .connect()
-        .await
-        .map_err(|_| RestoreError::Throwaway)?;
+        .database(database);
+    let wait = Duration::from_secs(CONNECT_TIMEOUT_SECS);
+    let mut conn = match tokio::time::timeout(wait, options.connect()).await {
+        Ok(Ok(conn)) => conn,
+        _ => return Err(RestoreError::Throwaway),
+    };
     let strays = sqlx::query_scalar!(
         r#"SELECT count(*) AS "n!" FROM (
              SELECT c.relowner AS owner, n.nspname FROM pg_class c
@@ -327,13 +354,20 @@ async fn check_restored(urls: &RestoreSettings, database: &str) -> Result<(), Re
 
 /// OPS-013, OPS-051, D-492: one test restore on the throwaway service: a database under a name
 /// made here, the role bootstrap, the restore, the ownership and grant check, and the database
-/// dropped whatever happened. Never touches the app database beyond the read-only dump.
+/// dropped whatever happened. Never touches the app database beyond the read-only dump. The
+/// steps share the run's one deadline: everything before the drop stops at [`work_share`] (tools
+/// killed, the check's connection closed), and the drop then runs and ends by [`drop_share`].
 ///
 /// # Errors
 ///
-/// The first [`RestoreError`] met; a failed drop is [`RestoreError::Throwaway`].
+/// The first [`RestoreError`] met; a failed drop is [`RestoreError::Throwaway`], and a step cut
+/// off at its limit [`RestoreError::Timeout`].
 pub async fn test_restore(urls: &RestoreSettings) -> Result<(), RestoreError> {
-    let until = Instant::now() + RESTORE_DEADLINE;
+    let start = Instant::now();
+    let (until, end) = (
+        start + work_share(urls.deadline),
+        start + drop_share(urls.deadline),
+    );
     let stamp = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .map_or(0, |d| d.as_nanos());
@@ -352,12 +386,14 @@ pub async fn test_restore(urls: &RestoreSettings) -> Result<(), RestoreError> {
     })
     .await;
     let result = match made {
-        Ok(()) => check_restored(urls, &name).await,
+        Ok(()) => tokio::time::timeout_at(until.into(), check_restored(urls, &name))
+            .await
+            .unwrap_or(Err(RestoreError::Timeout)),
         failed => failed,
     };
     let u = urls.clone();
     let dropped = blocking(move || {
-        let run = (Instant::now() + RESTORE_DEADLINE, RestoreError::Throwaway);
+        let run = (end, RestoreError::Throwaway);
         let drop = "DROP DATABASE IF EXISTS :\"db\" WITH (FORCE);\n";
         psql(&u, ("postgres", &name), drop, run)
     })
@@ -471,8 +507,11 @@ fn month_on(at: Timestamp) -> Timestamp {
 }
 
 /// OPS-013, D-232: one monthly run: queue the next a month on, restore, check the export record,
-/// record the result. A failure is recorded and alerted once, so the task itself succeeds and is
-/// not retried into a second alert; only a failed queue or record fails it.
+/// record the result. Restore and export check together are cut off at the run's deadline
+/// ([`RESTORE_DEADLINE`]) as a `timeout` failure, so the record and its alert are written before
+/// the worker's handler timeout whatever the throwaway service does. A failure is recorded and
+/// alerted once, so the task itself succeeds and is not retried into a second alert; only a
+/// failed queue or record fails it.
 async fn run_restore(
     pool: &PgPool,
     urls: &Result<RestoreSettings, RestoreError>,
@@ -484,13 +523,14 @@ async fn run_restore(
         .await
         .map_err(|e| HandlerError(e.code()))?;
     drop(conn);
-    let mut result = match urls {
-        Ok(urls) => test_restore(urls).await,
-        Err(e) => Err(*e),
+    let deadline = urls.as_ref().map_or(RESTORE_DEADLINE, |u| u.deadline);
+    let run = async {
+        test_restore(urls.as_ref().map_err(|e| *e)?).await?;
+        export_recorded(pool, started).await
     };
-    if result.is_ok() {
-        result = export_recorded(pool, started).await;
-    }
+    let result = tokio::time::timeout(deadline, run)
+        .await
+        .unwrap_or(Err(RestoreError::Timeout));
     let finished = clock.now().max(started);
     record(pool, (started, finished), result)
         .await
@@ -536,6 +576,20 @@ mod tests {
     use jiff::SignedDuration;
 
     use super::*;
+
+    const HOUR: SignedDuration = SignedDuration::from_hours(1);
+
+    /// The one failed `restore` row: its id and failure code.
+    async fn failed_row(pool: &PgPool) -> (sqlx::types::Uuid, String) {
+        let row = sqlx::query!(
+            r#"SELECT id, failure AS "failure!" FROM recovery.backup_check
+               WHERE kind = 'restore' AND NOT ok"#
+        )
+        .fetch_one(pool)
+        .await
+        .unwrap();
+        (row.id, row.failure)
+    }
 
     fn at(text: &str) -> Timestamp {
         text.parse().unwrap()
@@ -590,6 +644,34 @@ mod tests {
         assert_eq!(export_recorded(&pool, now).await, failed, "failed");
         export_row(&pool, true, false, at("2026-05-02T10:00:01Z")).await;
         assert_eq!(export_recorded(&pool, now).await, failed, "no size or hash");
+        export_row(&pool, true, true, at("2026-05-02T10:00:02Z")).await;
+        assert_eq!(export_recorded(&pool, now).await, Ok(()));
+        export_row(&pool, false, true, at("2026-05-02T10:00:03Z")).await;
+        assert_eq!(export_recorded(&pool, now).await, failed, "not ok, sized");
+    }
+
+    /// OPS-013, D-232: a throwaway service that accepts a connection and never answers cannot
+    /// hang the run past its deadline: create and drop are each killed at their share, and the
+    /// run is still one `restore` row with the `timeout` failure and one High alert.
+    #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+    async fn a_hung_throwaway_service_is_recorded_as_a_timeout_and_alerted(pool: PgPool) {
+        let silent = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let port = silent.local_addr().unwrap().port();
+        let url = SecretString::from(format!("postgres://postgres@127.0.0.1:{port}/postgres"));
+        let mut urls = RestoreSettings::new(url.clone(), url);
+        urls.deadline = Duration::from_secs(3);
+        let (clock, began) = (ManualClock::new(Timestamp::now()), Instant::now());
+        run_restore(&pool, &Ok(urls), &clock).await.unwrap();
+        assert!(began.elapsed() < Duration::from_secs(8), "bounded");
+        assert!(
+            began.elapsed() >= Duration::from_millis(2_700),
+            "the drop ran"
+        );
+        assert_eq!(failed_row(&pool).await.1, "timeout");
+        let mut conn = pool.acquire().await.unwrap();
+        let (from, to) = (clock.now() - HOUR, Timestamp::now() + HOUR);
+        let alerts = digest_alerts(&mut conn, &[RESTORE_FAILED_ALERT], from, to).await;
+        assert_eq!(alerts.unwrap().len(), 1, "one High alert");
     }
 
     /// TD-OPS-22 (OPS-013, D-232): a failed test restore (here: no settings, as in dev) is one
@@ -602,25 +684,19 @@ mod tests {
         let missing = Err(RestoreError::Settings);
         run_restore(&pool, &missing, &clock).await.unwrap();
         let mut conn = pool.acquire().await.unwrap();
-        let row = sqlx::query!(
-            r#"SELECT id, failure AS "failure!" FROM recovery.backup_check
-               WHERE kind = 'restore' AND NOT ok"#
-        )
-        .fetch_one(&pool)
-        .await
-        .unwrap();
-        assert_eq!(row.failure, "settings");
+        let row = failed_row(&pool).await;
+        assert_eq!(row.1, "settings");
         let audited = latest_audit(&mut conn, RESTORE_FAILED_ACTION)
             .await
             .unwrap();
-        assert_eq!(audited.map(|a| a.subject_id), Some(row.id));
+        assert_eq!(audited.map(|a| a.subject_id), Some(row.0));
         let kinds = [RESTORE_FAILED_ALERT];
         let soon = Timestamp::now() + SignedDuration::from_hours(1);
         let alerts = digest_alerts(&mut conn, &kinds, started, soon)
             .await
             .unwrap();
         assert_eq!(alerts.len(), 1, "one alert");
-        let about = Some(("recovery.backup_check".to_owned(), row.id));
+        let about = Some(("recovery.backup_check".to_owned(), row.0));
         assert_eq!(alerts[0].subject, about);
         let alert = alert_subject(&mut conn, alerts[0].id).await.unwrap();
         assert_eq!(alert.map(|a| a.severity).as_deref(), Some("high"));
