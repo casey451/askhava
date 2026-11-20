@@ -76804,7 +76804,26 @@
     4814,
     4815,
     4816
-   ]
+   ],
+   "reviewed_sha": "5a23f414620ab279ef928c28d84c420f85f37795",
+   "review_lease": {
+    "task": "T527",
+    "session": "actions-44641430293",
+    "expires": "2026-11-20T03:05:43Z"
+   },
+   "branch": "claude/task/T527-business-texting-eligibility-gate",
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "bce7a7de63717efb69349365a109460a8e6d0e50",
+     "to": "5a23f414620ab279ef928c28d84c420f85f37795",
+     "main": "5cb0d236b51a0cd4298ba109672b6910e690622f",
+     "how": "hand-in",
+     "at": "2026-11-20T01:39:08Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T531",
@@ -97605,7 +97624,7 @@
    }
   }
  },
- "updated_at": "2026-11-20T01:27:13Z",
+ "updated_at": "2026-11-20T01:39:08Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -97703,7 +97722,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "5cb0d236b51a0cd4298ba109672b6910e690622f",
+ "runner_sha": "bce7a7de63717efb69349365a109460a8e6d0e50",
  "starter": "actions",
  "smoke_runs": [
   {
