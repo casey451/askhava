@@ -8768,3 +8768,4 @@
 - 2026-11-20T20:43:25Z runner 5b08505974c2 (actions): {}
 - 2026-11-20T20:44:17Z runner 5b08505974c2 (actions): {}
 - 2026-11-20T20:44:53Z runner 5b08505974c2 (actions): {}
+- 2026-11-20T20:45:53Z runner c93b0b6c6e97 (actions): {"T752": "QUEUED -> IN_PROGRESS"}; T752 estimated 101k tokens (calibrated); week has 97.5M left (no five-hour budget, D-3056) after 4.5M still running in another lane (session_reading 2026-11-20T20:44:17Z (week)); claimed
