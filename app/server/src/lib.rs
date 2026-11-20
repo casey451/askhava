@@ -41,6 +41,7 @@ pub mod business_portal;
 pub mod business_signin;
 pub mod business_signup;
 pub mod business_step_up;
+pub mod business_text_phone;
 pub mod call_status;
 pub mod cant_take_route;
 pub mod catalog_start;
@@ -991,11 +992,18 @@ fn register_timer_backstop(registry: &mut Registry, clock: Arc<dyn Clock>) {
 }
 
 /// Registers `businesses`' daily license-map re-apply (`businesses.license_reapply`, T372,
-/// BIZ-050, D-2705) on the worker clock; `worker.rs`'s `schedule_start` seeds it.
+/// BIZ-050, D-2705) and daily deliverability re-test run (`businesses.deliverability_retests`,
+/// T686, BIZ-042, D-4361) on the worker clock; `worker.rs`'s `schedule_start` seeds the first and
+/// its `schedule_checks` the second.
 fn register_license_reapply(registry: &mut Registry, clock: Arc<dyn Clock>) {
+    let retest_clock = Arc::clone(&clock);
     registry.register(askhava_businesses::api::REAPPLY_KIND, move |pool, _task| {
         let now = clock.now();
         async move { askhava_businesses::api::run_reapply(&pool, now).await }
+    });
+    registry.register(askhava_businesses::api::RETEST_KIND, move |pool, _task| {
+        let now = retest_clock.now();
+        async move { askhava_businesses::api::run_retests(&pool, now).await }
     });
 }
 
@@ -1065,8 +1073,8 @@ fn register_daily_lists(
 /// postal setting (required in test and live) `messaging`'s business notices and charge receipts
 /// ([`register_notice_senders`], T313), the hourly
 /// dead-letter check ([`no_handler_alert`], OPS-004), `jobs`' daily timer backstop
-/// ([`register_timer_backstop`], T366), `businesses`' daily license-map re-apply
-/// ([`register_license_reapply`], T372), `licensing`'s daily ROC and city list run
+/// ([`register_timer_backstop`], T366), `businesses`' daily license-map re-apply and
+/// deliverability re-test run ([`register_license_reapply`], T372, T686), `licensing`'s daily ROC and city list run
 /// ([`register_daily_lists`], T371) and, with the Twilio settings in `pairs`
 /// (required in test and live, D-1688), `messaging`'s day-31 body delete (PRIV-027), `picks`'
 /// masked-line retry (CALL-001), the safety voice call ([`register_safety_call`], T330, D-3134)
@@ -1142,7 +1150,7 @@ where
     askhava_recovery::api::register_restore(&mut registry, settings, Arc::clone(&clock))
         .map_err(io::Error::other)?;
     register_whos_calling(&mut registry, settings, (&id_secret, &clock), pairs.clone())?;
-    register_twilio_handlers(&mut registry, settings, (id_secret, clock), pairs)?;
+    register_twilio_handlers(&mut registry, settings, (id_secret, clock, confirm), pairs)?;
     Ok(registry)
 }
 
@@ -1153,7 +1161,11 @@ where
 fn register_twilio_handlers(
     registry: &mut Registry,
     settings: &Settings,
-    (id_secret, clock): (SecretString, Arc<dyn Clock>),
+    (id_secret, clock, confirm): (
+        SecretString,
+        Arc<dyn Clock>,
+        askhava_picks::api::ConfirmSettings,
+    ),
     pairs: Vec<(String, String)>,
 ) -> io::Result<()> {
     let Some(twilio) = twilio_config(settings, pairs.clone())? else {
@@ -1174,9 +1186,16 @@ fn register_twilio_handlers(
     register_owner_calls(registry, settings, (&twilio, &id_secret), pairs.clone())?;
     let (sms, _, _) = twilio_clients(&twilio).map_err(io::Error::other)?;
     let sms = with_status_url(settings, sms);
-    if let Some(vault) = vault_from(settings, pairs.clone())? {
+    let vaults = (
+        vault_from(settings, pairs.clone())?,
+        vault_from(settings, pairs.clone())?,
+    );
+    if let (Some(vault), Some(phones)) = vaults {
         let keys = (id_secret.clone(), vault);
         let sender = outbox_sender(settings, keys, sms.clone(), (&pairs, Arc::clone(&clock)))?;
+        let gate = NoticeChecks { confirm };
+        let phones = business_text_phone::BusinessTextPhone::new(phones);
+        let sender = sender.with_business((gate, phones), None);
         askhava_messaging::api::register_send_due(registry, Arc::new(sender));
     }
     let (sms, scan_clock) = (Arc::new(sms), Arc::clone(&clock));
@@ -1421,6 +1440,67 @@ fn stripe_client(
     pairs: &[(String, String)],
 ) -> io::Result<Option<askhava_adapters::api::StripePayments>> {
     Ok(stripe_hooks(settings, pairs)?.map(|h| h.stripe.clone()))
+}
+
+/// `server replay <plain-dump-file> <export-object-name> <backup-time>` (T206; OPS-013, OPS-018,
+/// OPS-019; D-3889, D-4932): restores the operator's already-decrypted `pg_dump -Fc` file into the
+/// fresh database behind `ASKHAVA_MIGRATION_DATABASE_URL` and replays there from Twilio's sent log
+/// and Stripe's charge list (`recovery::api::run_drill`), waiting while a vendor is unreachable,
+/// then prints the counts. The object is fetched and `age -d` run by the operator, with the key
+/// off this host (PRIV-024, PRIV-029). `backup-time` is the export's RFC 3339 instant.
+///
+/// # Errors
+///
+/// A wrong argument, a missing Twilio, Stripe, vault or homeowner-number setting (named, never a
+/// value), or the drill's own error.
+pub async fn replay_drill(
+    settings: &Settings,
+    pairs: Vec<(String, String)>,
+    args: &[String],
+) -> io::Result<()> {
+    use askhava_messaging::api::{LaunchChannel, Line, Lines};
+    use askhava_recovery::api::{Drill, ReplaySources, Retry, run_drill};
+    let usage = "usage: server replay <plain-dump-file> <export-object-name> <backup-time>";
+    let [dump, object, since] = args else {
+        return Err(io::Error::other(usage));
+    };
+    let charges_since: jiff::Timestamp = since.parse().map_err(|_| io::Error::other(usage))?;
+    let url = settings
+        .migration_database_url()
+        .map_err(io::Error::other)?;
+    let missing = |what: &str| io::Error::other(format!("server replay needs the {what} settings"));
+    let twilio = twilio_config(settings, pairs.clone())?.ok_or_else(|| missing("Twilio"))?;
+    let (sms, _, _) = twilio_clients(&twilio).map_err(io::Error::other)?;
+    let stripe = stripe_hooks(settings, &pairs)?.ok_or_else(|| missing("Stripe"))?;
+    let number = homeowner_number(settings, &pairs)?;
+    let from = ReplaySources {
+        sms: &sms,
+        stripe: &stripe.stripe,
+        vault: &vault_from(settings, pairs)?.ok_or_else(|| missing("vault"))?,
+        lines: &Lines {
+            homeowner: Line::at_launch(LaunchChannel::Sms, number),
+            business: Line::at_launch(LaunchChannel::Sms, None),
+        },
+        charges_since,
+        retry: Retry::STANDARD,
+    };
+    let drill = Drill::new(dump.into(), object, url.clone(), Retry::STANDARD);
+    let drill = drill.map_err(io::Error::other)?;
+    let done = run_drill(&drill, &from, jiff::Timestamp::now()).await;
+    let done = done.map_err(io::Error::other)?;
+    let replay = done.replay;
+    let out = format!(
+        "Drill recorded after {} replay round(s): {} texts marked sent, {} left to send, \
+         {} charges booked, {} already booked (any an earlier round booked are counted here), \
+         {} listed for Casey\n",
+        done.rounds,
+        replay.texts_marked,
+        replay.texts_unsent,
+        replay.charges_booked,
+        replay.charges_already,
+        replay.items.len()
+    );
+    io::Write::write_all(&mut io::stdout(), out.as_bytes())
 }
 
 /// The worker's Stripe webhook state (`release_sink::stripe_webhook`, read when
@@ -1810,7 +1890,10 @@ const HOMEOWNER_NUMBER: &str = "ASKHAVA_HOMEOWNER_NUMBER";
 /// no email copy) and the worker's clock. The number is required in test and live, as the Twilio
 /// and postal settings are (D-1688, D-3095): unset there the worker refuses to start naming the
 /// key, since a line with no sender texts nothing and every CON-009 confirmation would expire
-/// unsent (D-3149); unset in dev and CI the line has no sender and rows wait (TXT-022).
+/// unsent (D-3149); unset in dev and CI the line has no sender and rows wait (TXT-022). The caller
+/// adds the business side (`with_business`: [`NoticeChecks`] as the CON-019 gate and
+/// `business_text_phone` as the phone reader, D-4051, D-4913); its number is `None` until T526
+/// passes the configured one, so business rows wait.
 ///
 /// # Errors
 ///
@@ -2849,5 +2932,19 @@ mod tests {
             "{with}"
         );
         assert!(client(&[]).contains("status_callback: None"));
+    }
+
+    /// T206 (OPS-013, D-4932): `server replay` takes exactly a plain dump file, an object name and
+    /// an RFC 3339 backup time, and refuses anything else before it reads a setting or a vendor.
+    #[tokio::test]
+    async fn server_replay_refuses_wrong_arguments() {
+        let lists = settings_pairs("ci");
+        let settings = Settings::from_pairs(pairs("ci", &lists)).expect("settings");
+        let arg = |a: &[&str]| a.iter().map(|s| (*s).to_owned()).collect::<Vec<_>>();
+        for args in [arg(&[]), arg(&["fake.dump", "exports/1.age", "yesterday"])] {
+            let refused = super::replay_drill(&settings, Vec::new(), &args).await;
+            let said = refused.expect_err("refused").to_string();
+            assert!(said.starts_with("usage: server replay"), "{said}");
+        }
     }
 }

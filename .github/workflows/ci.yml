@@ -518,7 +518,8 @@ jobs:
   coverage:
     name: "Coverage"
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    # 40, not 25: a full instrumented rebuild plus the llvm-cov report ran past 25 and cancelled a passing run (D-4969).
+    timeout-minutes: 40
     services:
       postgres:
         image: postgres:16@sha256:1beaa3084eee2676f20a9cd9928f0bf2c5bf674f8e49f81017912183d377c61c

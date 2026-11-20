@@ -46,13 +46,32 @@ function spacingProblems(targets: string): string[] {
       }
     }
   });
-  for (const control of document.querySelectorAll(targets)) {
-    control.scrollIntoView({ block: "center" });
-    const r = control.getBoundingClientRect();
+  const fails = (c: Element): boolean => {
+    c.scrollIntoView({ block: "center" });
+    const r = c.getBoundingClientRect();
     const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
-    if (r.width < 1 || r.height < 1 || hit === null || !(control.contains(hit) || hit.contains(control))) {
-      problems.push(`<${control.tagName}> "${control.textContent.trim()}" is hidden`);
-    }
+    return r.width < 1 || r.height < 1 || hit === null || !(c.contains(hit) || hit.contains(c));
+  };
+  // D-4970 (1): inside a closed <details>, behind its own summary, when that summary passes.
+  const folded = (c: Element): boolean => {
+    const summary = c.closest("details:not([open])")?.querySelector(":scope > summary") ?? null;
+    return summary !== null && summary !== c && !fails(summary);
+  };
+  // D-4970 (2), D-4991: a boxless link, or links' own summary, whose outermost `display: none`
+  // container holds no other control and only links that have a passing same-href link outside it.
+  const duplicated = (c: Element): boolean => {
+    let box: Element | null = null;
+    for (let e: Element | null = c; e !== null; e = e.parentElement) if (getComputedStyle(e).display === "none") box = e;
+    if (box === null || c.getClientRects().length > 0) return false;
+    const inside = [box, ...box.querySelectorAll("*")];
+    const allowed = (e: Element): boolean => e.matches("a[href]") ||
+      (e !== box && e.matches("details > summary:first-of-type") && e.parentElement?.querySelector("a[href]") != null);
+    const twin = (a: Element): boolean => [...document.querySelectorAll("a[href]")].some((o) =>
+      !inside.includes(o) && o.getAttribute("href") === a.getAttribute("href") && (folded(o) || !fails(o)));
+    return allowed(c) && inside.every((e) => !e.matches(targets) || allowed(e)) && inside.every((e) => !e.matches("a[href]") || twin(e));
+  };
+  for (const control of document.querySelectorAll(targets)) {
+    if (!folded(control) && !duplicated(control) && fails(control)) problems.push(`<${control.tagName}> "${control.textContent.trim()}" is hidden`);
   }
   return problems;
 }
@@ -120,3 +139,29 @@ test("A11Y-008: planted sideways scrolling at 320px is reported", async ({ page,
   });
   expect(await page.evaluate(reflowProblems)).toContain("the page scrolls sideways at 320px");
 });
+
+// Planted pages for the hidden-control loop (D-4970, D-4991), set as page content so they can carry
+// their own styles: [what, markup, width, the controls reported as hidden]. Fake links only.
+const LINKS = '<a href="/how">How</a><a href="/help">Help</a>';
+const HEADER = `<style>.site-nav { display: none } @media (min-width: 1024px) { .site-nav { display: block } .menu { display: none } }</style>
+  <header><a href="/">Home</a><details class="menu"><summary>Menu</summary>${LINKS}</details><nav class="site-nav">${LINKS}</nav></header>`;
+const PLANTED: [string, string, number, string[]][] = [
+  ["a display: none link with no counterpart", '<a href="/a" hidden>Alone</a>', 390, ['<A> "Alone"']],
+  ["a hidden container whose counterpart is itself hidden", '<p hidden><a href="/a">One</a></p><p hidden><a href="/a">Two</a></p>', 390, ['<A> "One"', '<A> "Two"']],
+  ["a closed details whose summary alone is display: none", '<details><summary hidden>Menu</summary><a href="/a">In</a></details>', 390, ['<SUMMARY> "Menu"']],
+  ["a hidden container holding a duplicated link and a button", '<a href="/a">A</a><p hidden><a href="/a">Copy</a><button>Go</button></p>', 390, ['<A> "Copy"', '<BUTTON> "Go"']],
+  ["a hidden details whose links have no counterpart outside it", `<details hidden><summary>Menu</summary>${LINKS}</details>`, 390, ['<SUMMARY> "Menu"', '<A> "How"', '<A> "Help"']],
+  ["a hidden details holding duplicated links and a button", `${LINKS}<details hidden><summary>Menu</summary>${LINKS}<button>Go</button></details>`, 390, ['<SUMMARY> "Menu"', '<A> "How"', '<A> "Help"', '<BUTTON> "Go"']],
+  ["a hidden details holding only its summary", "<details hidden><summary>Menu</summary></details>", 390, ['<SUMMARY> "Menu"']],
+  ["a rendered control covered by another element", '<a href="/a">Under</a><p style="position: fixed; inset: 0"></p>', 390, ['<A> "Under"']],
+  ["the specified header on a phone (docs/design/DESIGN_SPEC.md)", HEADER, 390, []],
+  ["the specified header on a desktop (docs/design/DESIGN_SPEC.md)", HEADER, 1280, []],
+];
+
+for (const [what, markup, width, reported] of PLANTED) {
+  test(`A11Y-009: planted ${what} at ${String(width)}px reports ${String(reported.length)} hidden controls`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.setContent(markup);
+    expect(await page.evaluate(spacingProblems, TARGETS)).toEqual(reported.map((control) => `${control} is hidden`));
+  });
+}

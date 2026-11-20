@@ -3589,3 +3589,12 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 
 - D-4846 (T648): the monthly test restore needs a second, empty PostgreSQL 16 service in each Railway project (test and live), reachable only on the private network, and its admin URL set as `ASKHAVA_RESTORE_ADMIN_URL` on the `worker` service only. Without it the worker will not start in test or live. Nothing is kept there: each run makes a database, checks it and drops it. A failed run shows as one High alert in the digest and never starts safe mode.
 - D-4733 (T530): the owner portal has a new page, `/owner/help`, that lists open help requests and lets you reply to one. For now a reply only goes by text, and only to a homeowner who has texted us; for a business or an email asker the page says the reply must go by email and sends nothing (email replies come with T740). Replies sent at night wait until 8 a.m. Closing or reopening a request there is not yet written to the audit log.
+
+## Restore drill: what the operator runs (D-4971, November 20)
+
+- D-4971 (T206): after a real loss, the restore is three hand steps and one command. Fetch the newest export from storage, decrypt it with the offline key on a machine that is not the app host, run the role set-up on the fresh database, then run `server replay <file> <object name> <backup time>` with the worker stopped. It waits if Twilio or Stripe is down, sends and charges nothing, and raises one alert listing anything it could not match for you to call about. T117's runbook will spell the steps out.
+- D-4972 (T206): the drill's printed summary now shows how many replay rounds ran and both charge counts (booked now, already booked). If a vendor failed partway and the replay ran again, charges the first round booked show as already booked; the ledger is right either way, only the split between the two counts is approximate.
+
+## Open-cards email language (D-5017, November 20)
+
+- With no stored team-member language, the open-cards email goes in English. Say if it should follow the business's language setting instead.
