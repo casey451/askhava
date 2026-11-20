@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T12:59:58Z by runner 7d98387f34ed (actions).
+Updated 2026-11-20T13:05:22Z by runner c91fee70b2df (manual).
 
 **Building: T670 in progress since 12:59Z; 536 of 710 done; week 31% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-20T12:59:58Z by runner 7d98387f34ed (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T670 claimed 12:59Z, lease until 15:59Z; lane 2: T496 claimed 11:44Z, lease until 14:44Z; lane 3: T727 claimed 11:55Z, lease until 14:55Z; lane 4: T667 claimed 12:55Z, lease until 15:55Z; lane 5: T767 claimed 12:53Z, lease until 15:53Z; lane 6: T530 claimed 10:55Z, lease until 13:55Z; lane 7: T672 claimed 12:39Z, lease until 15:39Z
 - **Week:** 31% used, 125.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:56Z, 3 min before this update
+- **Last run:** 13:00Z, 5 min before this update
 - **Keeper:** last ran 12:31Z, next wake 12:51Z
 
 ## Needs attention
@@ -110,38 +110,37 @@ Checks: success, Lint and slow tests: success, Python: success, Coverage: cancel
 | T652 | ops: safe mode starts only on OPS-001's alert kinds, and a d | done | 2 | 112 min | 15:03Z | PLAN GAP: tests/integration/tests/safe_mode.rs:246,281,320,378,407 (owned by T487 and T408; T652's prompt :11 and :47 sa |
 | T158 | portals: the owner's pilot scorecard page with go and stop l | done | 1 | 2 h 57 min | 14:37Z |  |
 | T540 | portals and server: the owner's release button re-sends an e | done | 1 | 53 min | 13:47Z |  |
-| T470 | messaging and server: the worker task that sends queued emai | QUEUED | 2 | 2 h 21 min | 13:03Z |  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 325 of 735 (44.2%) · partial 389 · unstarted 21
+**Requirements verified:** 254 of 735 (34.6%) · partial 460 · unstarted 21
 **Tasks merged (throughput only):** 536 of 710
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 18 | 17 | 0 | 35 |
-| ai | 8 | 18 | 3 | 29 |
-| businesses | 21 | 36 | 1 | 58 |
-| calls | 14 | 11 | 0 | 25 |
-| consent | 16 | 19 | 0 | 35 |
-| fees | 22 | 30 | 0 | 52 |
-| intake | 8 | 35 | 0 | 43 |
+| accessibility | 16 | 19 | 0 | 35 |
+| ai | 7 | 19 | 3 | 29 |
+| businesses | 20 | 37 | 1 | 58 |
+| calls | 11 | 14 | 0 | 25 |
+| consent | 11 | 24 | 0 | 35 |
+| fees | 21 | 31 | 0 | 52 |
+| intake | 7 | 36 | 0 | 43 |
 | job-cards | 12 | 12 | 0 | 24 |
-| licensing | 33 | 15 | 0 | 48 |
-| lifecycle | 17 | 11 | 0 | 28 |
-| messaging | 23 | 22 | 0 | 45 |
-| ops-recovery | 9 | 31 | 14 | 54 |
+| licensing | 30 | 18 | 0 | 48 |
+| lifecycle | 13 | 15 | 0 | 28 |
+| messaging | 22 | 23 | 0 | 45 |
+| ops-recovery | 6 | 34 | 14 | 54 |
 | privacy | 8 | 23 | 0 | 31 |
 | quiet-hours | 3 | 6 | 0 | 9 |
-| quotes-pick | 25 | 31 | 0 | 56 |
-| recurring | 10 | 1 | 0 | 11 |
+| quotes-pick | 22 | 34 | 0 | 56 |
+| recurring | 9 | 2 | 0 | 11 |
 | security | 10 | 42 | 3 | 55 |
-| terms | 27 | 8 | 0 | 35 |
-| website | 18 | 12 | 0 | 30 |
-| wording | 23 | 9 | 0 | 32 |
+| terms | 10 | 25 | 0 | 35 |
+| website | 7 | 23 | 0 | 30 |
+| wording | 9 | 23 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
