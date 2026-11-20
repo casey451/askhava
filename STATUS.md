@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-20T06:12:18Z by runner f8cb77f67b6e (actions).
+Updated 2026-11-20T06:12:44Z by runner f8cb77f67b6e (actions).
 
-**Building: T765 in progress since 05:06Z; 522 of 707 done; week 21% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T561 in progress since 05:26Z; 522 of 707 done; week 21% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 522 of 707 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 5: T765 claimed 05:06Z, lease until 08:06Z; lane 6: T561 claimed 05:26Z, lease until 08:26Z; lane 7: T669 claimed 06:11Z, lease until 09:11Z
+- **Lane:** lane 6: T561 claimed 05:26Z, lease until 08:26Z; lane 7: T669 claimed 06:11Z, lease until 09:11Z
 - **Week:** 21% used, 150.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 06:12Z, 0 min before this update
 - **Keeper:** last ran 05:42Z, next wake 08:08Z
@@ -20,6 +20,7 @@ Updated 2026-11-20T06:12:18Z by runner f8cb77f67b6e (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T765 | recovery (tests): the backup tests' fake binaries can no lon | MERGE_PENDING | 1 | 65 min | 06:11Z |  |
 | T751 | stand-ins (harness): the Stripe stand-in detaches a payment  | MERGE_PENDING | 1 | 51 min | 05:02Z |  |
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | MERGE_PENDING | 2 | 36 min | 05:00Z | merging main into the reviewed head conflicts in kit/plan.lock, kit/runner.json; a resync merges it in on this attempt ( |
 | T543 | picks, businesses, portals and server: "Away until" is store | MERGE_PENDING | 1 | 64 min | 04:57Z |  |
@@ -141,9 +142,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 5: T765 (lease until 2026-11-20T08:06:09Z)
 - lane 6: T561 (lease until 2026-11-20T08:26:24Z)
 - lane 7: T669 (lease until 2026-11-20T09:11:33Z)
 
 ## Last usage reading
-- {"task": "T751", "at": "2026-11-20T05:02:45Z", "input_tokens": 68, "cache_creation_input_tokens": 75100, "cache_read_input_tokens": 1459100, "output_tokens": 16773}
+- {"task": "T765", "at": "2026-11-20T06:11:52Z", "input_tokens": 54, "cache_creation_input_tokens": 53391, "output_tokens": 11886, "cache_read_input_tokens": 850121}
