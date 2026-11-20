@@ -112,11 +112,14 @@ def repo_refusal(root: Path) -> str:
 def _repo(bounded: Callable[[list[str], Path], tuple[int, str, str]], root: Path) -> None:
     """Refused unless the clone's `.git/config`, read without includes, sets only LOCAL_CONFIG_KEYS (so no colour,
     textconv, external diff, hook path, fsmonitor, signature program, include, worktree config or sparse
-    checkout) and its `info/attributes` says nothing (D-4799)."""
+    checkout), it is not shallow (a planted `shallow` file cuts history) and its `info/attributes` says nothing
+    (D-4799)."""
     listed = _git(bounded, root, "config", "--local", "--no-includes", "--name-only", "--list", "-z")
     odd = [k for k in listed.split("\0") if k and not any(fnmatch.fnmatchcase(k.lower(), p) for p in LOCAL_CONFIG_KEYS)]
     if odd:
         raise Refused(f"the clone's git config sets {odd[0][:80]!r}, which a WIP scan does not allow")
+    if _git(bounded, root, "rev-parse", "--is-shallow-repository").strip() != "false":
+        raise Refused("the clone is shallow, which a WIP scan does not allow")
     attributes = Path(root, _git(bounded, root, "rev-parse", "--git-common-dir").strip(), "info", "attributes")
     if attributes.is_file() and attributes.read_text(encoding="utf-8", errors="replace").strip():
         raise Refused("the clone has .git/info/attributes, which a WIP scan does not allow")

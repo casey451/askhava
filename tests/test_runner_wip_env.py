@@ -233,6 +233,12 @@ def test_local_attributes_are_refused(world: dict[str, Any]) -> None:
     assert "info/attributes" in world["env"].wip_check(head)
 
 
+def test_a_planted_shallow_boundary_is_refused(world: dict[str, Any]) -> None:
+    head = middle_leak(world)
+    (world["root"] / ".git/shallow").write_text(git(world["root"], "rev-parse", "HEAD~1") + "\n", encoding="utf-8")
+    assert "shallow" in world["env"].wip_check(head)
+
+
 def test_a_replace_ref_does_not_hide_a_middle_commit(world: dict[str, Any]) -> None:
     head = middle_leak(world)
     middle = git(world["root"], "rev-parse", "HEAD~1")
