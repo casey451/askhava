@@ -1,17 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-20T03:03:09Z by runner ef998d36a6d5 (actions).
+Updated 2026-11-20T03:04:44Z by runner ef998d36a6d5 (actions).
 
 **Building: T747 in progress since 02:14Z; 516 of 704 done; week 17% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 516 of 704 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T747 claimed 02:14Z, lease until 05:14Z; lane 3: T726 claimed 01:05Z, lease until 04:05Z; lane 4: T110 claimed 02:18Z, lease until 05:18Z; lane 6: T617 claimed 03:01Z, lease until 06:01Z; lane 7: T434 claimed 03:02Z, lease until 06:02Z
+- **Lane:** lane 2: T747 claimed 02:14Z, lease until 05:14Z; lane 3: T726 claimed 01:05Z, lease until 04:05Z; lane 4: T110 claimed 02:18Z, lease until 05:18Z; lane 7: T434 claimed 03:02Z, lease until 06:02Z
 - **Week:** 17% used, 154.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:02Z, 0 min before this update
+- **Last run:** 03:03Z, 1 min before this update
 - **Keeper:** last ran 02:57Z, next wake 03:17Z
 
 ## Needs attention
+- BLOCKED T617: plan gap reported: PLAN GAP: tests/a11y/design_tokens.spec.ts:221 and :242 (protected, not owned by T617) contradict the prompt's single DM Sans @font-face with font-weight: 100 1000 (kit/prompts/T617.md:9). loadedFonts() (:170-175) labels faces as family + declared weight; a range face reports "DM Sans 100 1000", so the expected "DM Sans 400"/"DM Sans 700" labels never appear. Worker's Chromium probe with one range block printed 'DM Sans 100 1000 loaded'; three blocks (400, 600, 700) all pointing at the one variable file printed 400/600/700 loaded with 1 font request. Smallest plan change: one @font-face per us; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T617 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T648: plan gap reported: PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, but scripts/check_include_paths.py (D-1867, run in the smoke by tests/test_check_include_paths.py::test_td_ops_32_the_real_repository_passes) fails: scripts/bootstrap_roles.sql is not matched by the Checks and Coverage rules in .github/workflows/ci.yml (protected, harness-only) nor by RUST_PATHS in scripts/prehandin.sh:77 (locked in kit/plan.lock). T648 owns neither. Fix: a harness task adds scripts/bootstrap_roles\.sql to those three rules and rewrites kit/plan.lock. Reviewer; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T648 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T672: plan gap reported: PLAN GAP: tests/integration/tests/intake_order_two_jobs.rs:278 (owned by T711 and T717, not T672) also pins the old order, but D-4822 named only two functions in intake_order_two_jobs_rules.rs. Evidence: test td_int_45_also_after_the_zip_opens_the_second_job_through_open_job sends the ZIP reply then ALSO and expects only job.handyman.none linked ("question open", :284-:288); under D-4822 steps 6 to 8 come after the coverage line so "How soon?" is open, and ALSO opens a second job (left: ["job.handyman.none","job.plumbing_repair.none"]). kit/tasks.json: file owned by T711 and T717. Smallest pla; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T672 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
@@ -21,6 +22,7 @@ Updated 2026-11-20T03:03:09Z by runner ef998d36a6d5 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T617 | site: DM Sans from one weight-axis variable file (smaller th | BLOCKED | 1 | 2 min | 03:04Z | PLAN GAP: tests/a11y/design_tokens.spec.ts:221 and :242 (protected, not owned by T617) contradict the prompt's single DM |
 | T648 | recovery: the monthly test restore into a throwaway cluster, | BLOCKED | 1 | 21 min | 02:55Z | PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, b |
 | T763 | tests (harness): the web chat spec's fake numbers never coll | done | 1 | 25 min | 02:17Z |  |
 | T672 | intake: the dispatcher asks "How soon?", the night count and | BLOCKED | 1 | 13 min | 02:12Z | PLAN GAP: tests/integration/tests/intake_order_two_jobs.rs:278 (owned by T711 and T717, not T672) also pins the old orde |
@@ -143,8 +145,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T747 (lease until 2026-11-20T05:14:14Z)
 - lane 3: T726 (lease until 2026-11-20T04:05:47Z)
 - lane 4: T110 (lease until 2026-11-20T05:18:18Z)
-- lane 6: T617 (lease until 2026-11-20T06:01:48Z)
 - lane 7: T434 (lease until 2026-11-20T06:02:51Z)
 
 ## Last usage reading
-- {"task": "T648", "at": "2026-11-20T02:55:14Z", "cache_creation_input_tokens": 176258, "cache_read_input_tokens": 7437874, "output_tokens": 70446, "input_tokens": 144}
+- {"task": "T617", "at": "2026-11-20T03:04:44Z", "output_tokens": 8646, "cache_creation_input_tokens": 54267, "cache_read_input_tokens": 569493, "input_tokens": 37}
