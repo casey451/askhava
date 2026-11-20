@@ -49,7 +49,8 @@
 //! banner on, `queue_paused_safety` asks for the INT-004 email or Casey's call list, and intake's
 //! safety call is asked for only where the plan keeps it; intake's own step then runs as usual and
 //! nothing here texts. The owner settings' `safety_call_on` is read per message from the stored
-//! switch (`calls::api::safety_switch`, T407, CON-031). Nothing here logs a phone, a body or a URL (PRIV-016). This file is also
+//! switch (`calls::api::safety_switch`, T407, CON-031), and `spanish_conversations_on` from
+//! `messaging::api::spanish_switch` (T480, TXT-039, TXT-043). Nothing here logs a phone, a body or a URL (PRIV-016). This file is also
 //! compiled into `tests/integration/tests/inbound_text_route.rs` with `#[path]`, so it names no
 //! `crate::` item.
 //!
@@ -90,7 +91,7 @@ use askhava_messaging::api::{
     ProviderKeyword, RESUBSCRIBE_WORDS, Relation, SendingNumber, detect_opt_out, emergency_plan,
     enqueue, keyword, listed_by, load_lines, on_inbound_text, queue_optout_followup,
     queue_paused_safety, raise_emergency, receive_inbound, receive_status, render, reply_to_help,
-    sender_line,
+    sender_line, spanish_switch,
 };
 use askhava_ops::api::{
     Actor, AuditEntry, BannerBy, Change, NewAlert, OpsError, Severity, Switch, audit, is_paused,
@@ -612,16 +613,19 @@ async fn handle(
 /// CALL-019, CALL-022, CON-031, TXT-024, D-3134 (T407): `ctx` with `safety_call_on` read from the
 /// stored owner-portal switch (`calls::api::safety_switch`) for each message, so the consent text
 /// carries CALL-022's call sentence and a 911-list message during a suspension asks for the
-/// safety call from the moment the switch is on and never before. A failed read is
-/// `Halt::Database`: the delivery rolls back and Twilio sends it again.
+/// safety call from the moment the switch is on and never before. TXT-039, TXT-043, D-3753
+/// (T480): `spanish_conversations_on` is read the same way from `messaging::api::spanish_switch`,
+/// so a change is honoured from the next text; the retry runs this through [`rerun`] too. A
+/// failed read is `Halt::Database`: the delivery rolls back and Twilio sends it again.
 async fn switched<'a>(ctx: &Ctx<'a>, db: &mut PgConnection) -> Step<Ctx<'a>> {
     let on = safety_switch(db).await.map_err(|_| Halt::Database)?.is_on();
+    let spanish = spanish_switch(db).await.map_err(|_| Halt::Database)?;
     Ok(Ctx {
         id_secret: ctx.id_secret,
         vault: ctx.vault,
         intake: IntakeSettings {
             safety_call_on: on,
-            ..ctx.intake
+            spanish_conversations_on: spanish.is_on(),
         },
     })
 }

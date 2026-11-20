@@ -1,0 +1,76 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT is_on, reviewed_on::text AS reviewed_on, reviewer, reviewed,\n                  note_on::text AS note_on, note_reference\n           FROM messaging.spanish_switch ORDER BY changed_at DESC, id LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "is_on",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "messaging.spanish_switch",
+            "name": "is_on"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "reviewed_on",
+        "type_info": "Text",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "reviewer",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "messaging.spanish_switch",
+            "name": "reviewer"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "reviewed",
+        "type_info": "Jsonb",
+        "origin": {
+          "Table": {
+            "table": "messaging.spanish_switch",
+            "name": "reviewed"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "note_on",
+        "type_info": "Text",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 5,
+        "name": "note_reference",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "messaging.spanish_switch",
+            "name": "note_reference"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      null,
+      true,
+      true,
+      null,
+      true
+    ]
+  },
+  "hash": "ae1c78b4bda4aca9c7fff2b1ed34b10374da6e76684c2754b8560b89fd3162cf"
+}
