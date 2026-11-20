@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T05:01:10Z by runner 01acdc1e1848 (actions).
+Updated 2026-11-20T05:01:21Z by runner bf7fb36b58e5 (actions).
 
 **Building: T751 in progress since 04:11Z; 518 of 707 done; week 20% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,13 +9,13 @@ Updated 2026-11-20T05:01:10Z by runner 01acdc1e1848 (actions).
 - **Lane:** lane 2: T751 claimed 04:11Z, lease until 07:11Z
 - **Week:** 20% used, 148.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 05:01Z, 0 min before this update
-- **Keeper:** last ran 04:59Z, next wake 07:14Z
+- **Keeper:** last ran 05:01Z, next wake 07:14Z
 
 ## Needs attention
 - BLOCKED T648: plan gap reported: PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, but scripts/check_include_paths.py (D-1867, run in the smoke by tests/test_check_include_paths.py::test_td_ops_32_the_real_repository_passes) fails: scripts/bootstrap_roles.sql is not matched by the Checks and Coverage rules in .github/workflows/ci.yml (protected, harness-only) nor by RUST_PATHS in scripts/prehandin.sh:77 (locked in kit/plan.lock). T648 owns neither. Fix: a harness task adds scripts/bootstrap_roles\.sql to those three rules and rewrites kit/plan.lock. Reviewer; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T648 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 80 problem(s) on tasks still to run (+381 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 77 problem(s) on tasks still to run (+379 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
