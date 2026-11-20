@@ -1,30 +1,31 @@
 # Ask Hava build status
 
-Updated 2026-11-20T00:55:45Z by runner c9b37a0e9036 (actions).
+Updated 2026-11-20T01:00:07Z by runner ea1a6caebf37 (actions).
 
 **Building: T527 in progress since 00:05Z; 511 of 703 done; week 14% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 511 of 703 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T527 claimed 00:05Z, lease until 03:05Z; lane 3: T726 claimed 00:03Z, lease until 03:03Z; lane 4: T218 claimed 00:31Z, lease until 03:31Z; lane 5: T663 claimed 23:33Z, lease until 02:33Z
+- **Lane:** lane 1: T527 claimed 00:05Z, lease until 03:05Z; lane 4: T218 claimed 00:31Z, lease until 03:31Z; lane 5: T663 claimed 23:33Z, lease until 02:33Z
 - **Week:** 14% used, 161.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:55Z, 0 min before this update
+- **Last run:** 00:56Z, 4 min before this update
 - **Keeper:** last ran 00:55Z, next wake 02:35Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T672 (since 2026-11-19T23:07:12Z, no attempt used; a plan change fixes it): T672: dependency T717 is DONE but its owned file tests/integration/tests/intake_order_two_jobs_rules.rs is not on main
-- Strict plan check red: 77 problem(s) on tasks still to run (+363 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 72 problem(s) on tasks still to run (+363 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T726 | Runner (harness): a failed attempt's unpushed work can be ke | QUEUED | 1 | 56 min | 01:00Z | T726 resync merged main cleanly, but fresh-eyes review of the WIP scan (runner/wip.py) found fail-open bypasses in three |
 | T613 | site: the D-4246 polish layer in site.css (tokens, layered s | MERGE_PENDING | 1 | 85 min | 00:47Z |  |
 | T758 | intake: Spanish gas and burning reports reach the 911 list,  | MERGE_PENDING | 1 | 90 min | 00:38Z |  |
 | T109 | recovery: backup checks and the nightly encrypted export | MERGE_PENDING | 2 | 32 min | 00:37Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T541 | payments, portals and adapters: a card saved or changed from | done | 3 | 25 min | 00:00Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-19T |
-| T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 1 | 84 min | 23:31Z | merging main into the reviewed head conflicts in kit/plan.lock, kit/runner.json; a resync merges it in on this attempt ( |
+| T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 1 | 84 min | 23:31Z |  |
 | T109 | recovery: backup checks and the nightly encrypted export | resync | 2 | 93 min | 23:26Z |  |
 | T707 | server: an emergency pick's address re-release waits while s | check_failed | 1 | 80 min | 22:59Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T541 | payments, portals and adapters: a card saved or changed from | check_failed | 2 | 91 min | 22:55Z |  |
@@ -86,7 +87,6 @@ Updated 2026-11-20T00:55:45Z by runner c9b37a0e9036 (actions).
 | T563 | intake and privacy: the daily consent sweep removes consent  | check_failed | 2 | 99 min | 01:37Z |  |
 | T505 | Decisions digest, piece 6: the next entries after the header | done | 1 | 99 min | 01:27Z |  |
 | T488 | portals and server: the business sign-up served in Spanish o | done | 1 | 111 min | 01:20Z |  |
-| T306 | server and portals: the complaints page, the emergency-email | resync | 1 | 77 min | 00:59Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -138,9 +138,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T527 (lease until 2026-11-20T03:05:43Z)
-- lane 3: T726 (lease until 2026-11-20T03:03:34Z)
 - lane 4: T218 (lease until 2026-11-20T03:31:28Z)
 - lane 5: T663 (lease until 2026-11-20T02:33:30Z)
 
 ## Last usage reading
-- {"task": "T613", "at": "2026-11-20T00:47:57Z", "input_tokens": 295, "output_tokens": 96775, "cache_read_input_tokens": 7914459, "cache_creation_input_tokens": 402639}
+- {"task": "T726", "at": "2026-11-20T01:00:06Z", "cache_read_input_tokens": 3490626, "input_tokens": 215, "cache_creation_input_tokens": 242082, "output_tokens": 66094}
