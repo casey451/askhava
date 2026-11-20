@@ -97,7 +97,7 @@ def test_td_txt_26_planted_growth_past_the_recorded_count_fails() -> None:
 
 
 def test_td_txt_26_spanish_ucs2_is_reported_not_failed_except_in_the_consent() -> None:
-    encoding, count = measure("Laftly: ¿Cómo está? ’")
+    encoding, count = measure(f"{brand.load(brand.BRAND_FILE)['display_name']}: ¿Cómo está? ’")
     assert encoding == "UCS-2"
     assert not failures("es", [("who_is_this", encoding, count, count)])
     assert failures("es", [("consent", encoding, count, count)])
@@ -109,4 +109,6 @@ def test_td_txt_26_spanish_ucs2_is_reported_not_failed_except_in_the_consent() -
 def test_td_txt_26_the_counter_counts_ucs2_segments() -> None:
     assert measure("’" * 70) == ("UCS-2", 1)
     assert measure("’" * 71) == ("UCS-2", 2)
+    assert measure("’" * 134) == ("UCS-2", 2)
+    assert measure("’" * 135) == ("UCS-2", 3)
     assert measure("a" * 160) == ("GSM-7", 1)

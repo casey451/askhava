@@ -168,71 +168,95 @@ patterns:
     regex: "\\b(the result|the best part|the secret|here's how|the difference|the catch)\\s?:"
     fix: Just say it.
 
-# Invitation phrases no notice may hold (TXT-046, D-490). Notices stay transactional: a text or email about a job, a pick,
-# a fee or an opt-out never recruits, asks for a referral, offers a discount, sends a survey, announces a feature or asks for
-# a social-media follow. tests/docs/test_brain_phrases.py fails any template in app/messaging/templates/ that holds one
-# (case-insensitive, word boundaries). Add a phrase here, never an exemption in the test.
-non_transactional_invitations:
+# Invitation patterns no notice may hold (TXT-046, D-490, D-4258). Notices stay transactional: a text or email about a job, a
+# pick, a fee or an opt-out never recruits, asks for a referral, offers a discount, sends a survey, announces a feature or asks
+# for a social-media follow. Six lists of case-insensitive regular expressions; tests/docs/test_brain_phrases.py fails any
+# notice source (message templates, the email layout, the email text built in app/messaging/src) that matches one, with no
+# negation allowance. Add a pattern here, never an exemption in the test.
+notice_invitations:
   recruiting:
-    - join our team
-    - join our network
-    - we are hiring
-    - we're hiring
-    - become a partner
-    - sign up your friends
-    - invite other businesses
-    - únase a nuestra red
-    - estamos contratando
+    - '\bjoin (?:laftly|us|our)\b'
+    - '\b(?:sign|signs|signing) up (?:your|a) business\b'
+    - '\blist your business\b'
+    - '\bbecome an? (?:partner|pro|member|laftly business)\b'
+    - '\bwe(?:''re| are) hiring\b'
+    - '\bapply to join\b'
+    - '\bknow an? (?:business|contractor|plumber|electrician|pro|tradesperson)\b'
+    - '\b(?:invite|tell) (?:a|your|other) (?:business(?:es)?|contractors?|pros?)\b'
+    - '\b[uú]nase a\b'
+    - '\bregistre su negocio\b'
+    - '\b(?:conoce|conozca) (?:a )?(?:un|alg[uú]n) (?:negocio|contratista)\b'
   referral:
-    - refer a friend
-    - refer a business
-    - refer a neighbor
-    - tell your friends
-    - share with a friend
-    - invite a friend
-    - referral
-    - recomiende a un amigo
-    - invite a sus amigos
+    - '\brefer(?:ral|rals)\b'
+    - '\brefer (?:a|your|other|us)\b'
+    - '\brefer(?:s|red|ring)?\s+(?:a |your |other )?(?:friends?|neighbou?rs?|family|business(?:es)?|contractors?|pros?)\b'
+    - '\brefer(?:s|red|ring)?\s+(?:someone|anyone|them|people)\b'
+    - '\breferred by\b'
+    - '\b(?:tell|invite) (?:a |your )?(?:friends?|neighbou?rs?|family)\b'
+    - '\bshare (?:laftly|us|this (?:link|service|app))\b'
+    - '\bspread the word\b'
+    - '\bpass (?:it|this|us) (?:on|along)\b'
+    - '\brecomi[eé]nd(?:e|enos|elo)\b'
+    - '\b(?:invite|cu[eé]ntele) a (?:sus? )?(?:amigos?|vecinos?|familia)\b'
+    - '\bcomparta (?:laftly|esto|este enlace)\b'
+    - '\bcorra la voz\b'
+    - '\breferid\w*'
   discount:
-    - discount
-    - coupon
-    - promo code
-    - special offer
-    - limited time
-    - "% off"
-    - free trial
-    - descuento
-    - cupón
-    - oferta especial
+    - '\bdiscount\w*'
+    - '\bcoupons?\b'
+    - '\bpromo(?:s|tion|tions|tional| code)?\b'
+    - '\b\d+\s?%\s*off\b'
+    - '\$\d+\s+off\b'
+    - '\bfree (?:month|trial|introduction|first)\b'
+    - '\bspecial (?:offer|deal|price)s?\b'
+    - '\blimited[- ]time\b'
+    - '\bsave \$?\d'
+    - '\bdescuentos?\b'
+    - '\bcup[oó]n(?:es)?\b'
+    - '\bpromoci[oó]n(?:es)?\b'
+    - '\boferta especial\b'
+    - '\bc[oó]digo promocional\b'
   survey:
-    - take our survey
-    - quick survey
-    - rate your experience
-    - rate us
-    - leave a review
-    - how did we do
-    - encuesta
-    - califique su experiencia
-    - déjenos una reseña
+    - '\bsurveys?\b'
+    - '\bquestionnaires?\b'
+    - '\bpoll\b'
+    - '\brate (?:us|your experience|laftly)\b'
+    - '\bhow did we do\b'
+    - '\bhow likely\b'
+    - '\bleave (?:us )?an? (?:review|rating)\b'
+    - '\breview us\b'
+    - '\b(?:review|rate) (?:us|laftly) on\b'
+    - '\bencuestas?\b'
+    - '\bcuestionarios?\b'
+    - '\bcalif[ií]quenos\b'
+    - '\bd[eé]jenos una (?:rese[ñn]a|calificaci[oó]n)\b'
   new_feature:
-    - new feature
-    - introducing
-    - now available
-    - check out our new
-    - what's new
-    - nueva función
-    - presentamos
-  social_media:
-    - follow us
-    - like us on
-    - find us on facebook
-    - on instagram
-    - on facebook
-    - on twitter
-    - on tiktok
-    - síganos
-    - en facebook
-    - en instagram
+    - '\bnew features?\b'
+    - '\bnow available\b'
+    - '\bintroducing\b'
+    - '\bcoming soon\b'
+    - '\bwhat''s new\b'
+    - '\bcheck out (?:our|the new)\b'
+    - '\bwe(?:''ve| have) (?:added|launched)\b'
+    - '\bnuevas? (?:funci[oó]n|funciones|herramientas?)\b'
+    - '\bya disponible\b'
+    - '\bpresentamos\b'
+    - '\bpr[oó]ximamente\b'
+    - '\bnovedades\b'
+  social:
+    - '\bfacebook\b'
+    - '\binstagram\b'
+    - '\btwitter\b'
+    - '\btiktok\b'
+    - '\bnextdoor\b'
+    - '\byoutube\b'
+    - '\blinkedin\b'
+    - '\bx\.com\b'
+    - '\bfollow us\b'
+    - '\blike us\b'
+    - '\bsocial media\b'
+    - '\bs[ií]ganos\b'
+    - '\bredes sociales\b'
 
 # Page habits that read as generated (checked in .html and .css files only).
 design_patterns:
