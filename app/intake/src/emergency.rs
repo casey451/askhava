@@ -145,10 +145,10 @@ const BURN_STEM_ES: &[&str] = &["quem"];
 /// Words with the burning stem that name no fire, a stove burner or a burn on the skin (D-4777).
 const NOT_BURNT_ES: &[&str] = &["quemador", "quemadores", "quemadura", "quemaduras"];
 /// Places that, burning, are a fire however it is said ("my house is burning", D-4777); never a
-/// bulb, a hand or toast, so "the bulb burned out" and "the toast burned" stay clear.
+/// bulb, a hand or toast, so "the bulb burned out" and "the toast burned" stay clear. Each is also
+/// read with an "s" after it, the folded possessive ("the kitchen's burning", D-4802).
 const BURNING_PLACES: &[&str] = &[
     "house",
-    "houses",
     "home",
     "garage",
     "kitchen",
@@ -161,6 +161,25 @@ const BURNING_PLACES: &[&str] = &[
     "building",
     "apartment",
     "room",
+];
+/// Spanish places that, before "se" and a `quem` word, are a fire ("mi casa se quema", D-4802);
+/// never a bulb, a fuse or a motor, so "el foco se quemó" stays clear.
+const BURNING_PLACES_ES: &[&str] = &[
+    "casa",
+    "cocina",
+    "garaje",
+    "cochera",
+    "techo",
+    "cuarto",
+    "recamara",
+    "habitacion",
+    "sala",
+    "pared",
+    "atico",
+    "edificio",
+    "apartamento",
+    "departamento",
+    "traila",
 ];
 /// The linking words allowed between a place and "burning" ("the garage is burning", D-4777).
 const BURNING_LINKS: &[&str] = &["is", "are", "s"];
@@ -296,6 +315,7 @@ pub(crate) const WORD_LISTS: &[&[&str]] = &[
     BURN_STEM_ES,
     NOT_BURNT_ES,
     BURNING_PLACES,
+    BURNING_PLACES_ES,
     BURNING_LINKS,
     SMELL_STEMS,
     ELECTRIC_PARTS,
@@ -362,26 +382,39 @@ fn hazard(text: &Folded) -> Option<Hazard> {
 
 /// Whether the folded message names something burning with no electric part (INT-002, D-4777):
 /// a [`BURNING_PHRASES`] phrase, a place burning ([`place_burning`]), or a burning word
-/// (`BURNING`, any `BURN_STEM_ES` form but the `NOT_BURNT_ES` words) beside a smell word.
+/// (`BURNING`, any [`quem_word`]) beside a smell word.
 fn burning_smell(text: &Folded) -> bool {
-    let quem = text
-        .words()
-        .filter(|w| !NOT_BURNT_ES.contains(w))
-        .any(|w| BURN_STEM_ES.iter().any(|s| w.starts_with(s)));
-    let burnt = text.any_word(BURNING) || quem;
+    let burnt = text.any_word(BURNING) || text.words().any(quem_word);
     let smell = burnt && text.any_stem(SMELL_STEMS);
     text.any_phrase(BURNING_PHRASES) || place_burning(text) || smell
 }
 
-/// Whether "burning" follows one of [`BURNING_PLACES`], directly or after one of
-/// [`BURNING_LINKS`] ("my house is burning", "the garage burning", INT-002, D-4777).
+/// Whether a folded word is a Spanish burning word: any `BURN_STEM_ES` form but the
+/// `NOT_BURNT_ES` words (INT-002, D-4777).
+fn quem_word(word: &str) -> bool {
+    !NOT_BURNT_ES.contains(&word) && BURN_STEM_ES.iter().any(|s| word.starts_with(s))
+}
+
+/// Whether a place burns (INT-002, D-4777, D-4802): "burning" after one of [`BURNING_PLACES`]
+/// (or its folded possessive, "kitchens"), directly or after one of [`BURNING_LINKS`] ("my house
+/// is burning", "the kitchen's burning"), or one of [`BURNING_PLACES_ES`] before "se" and a
+/// [`quem_word`] ("mi casa se quema").
 fn place_burning(text: &Folded) -> bool {
     let words: Vec<&str> = text.words().collect();
-    let place = |i: usize| BURNING_PLACES.contains(&words[i]);
+    let place = |i: usize| {
+        let w = words[i];
+        BURNING_PLACES.contains(&w)
+            || w.strip_suffix('s')
+                .is_some_and(|b| BURNING_PLACES.contains(&b))
+    };
     let link = |i: usize| BURNING_LINKS.contains(&words[i]);
-    words.iter().enumerate().any(|(i, w)| {
+    let english = words.iter().enumerate().any(|(i, w)| {
         *w == "burning" && i > 0 && (place(i - 1) || (i > 1 && link(i - 1) && place(i - 2)))
-    })
+    });
+    english
+        || words
+            .windows(3)
+            .any(|w| BURNING_PLACES_ES.contains(&w[0]) && w[1] == "se" && quem_word(w[2]))
 }
 
 /// Removes street-address patterns (INT-002, D-165, D-982, D-2202, D-3438): a street suffix and

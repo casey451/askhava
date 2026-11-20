@@ -241,6 +241,29 @@ fn td_int_01_burning_smells_match_smoke_fire() {
     }
 }
 
+/// TD-INT-01 (INT-002, D-4777, D-4802): a place burning, an English possessive or a Spanish place
+/// before "se" and a burning word, is `SmokeFire`; a bulb or light burning out stays clear.
+#[test]
+fn td_int_01_places_burning_match_smoke_fire() {
+    for words in [
+        "the kitchen's burning",
+        "the garage's burning",
+        "mi casa se quema",
+        "la casa se quema",
+        "la cocina se está quemando",
+        "el techo se quemó",
+    ] {
+        assert_eq!(
+            check(words, false),
+            Check::Match(Hazard::SmokeFire),
+            "{words}"
+        );
+    }
+    for words in ["el foco se quemó", "la luz se quemó", "se quema mi foco"] {
+        assert_eq!(check(words, false), Check::Clear, "{words}");
+    }
+}
+
 /// TD-INT-10 (INT-025, D-982): a negated or questioning reply is never the safe reply.
 #[test]
 fn td_int_10_negated_and_questions_are_not_safe() {
