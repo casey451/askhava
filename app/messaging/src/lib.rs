@@ -60,6 +60,7 @@ mod service;
 mod signin_mail;
 mod spanish_switch;
 mod status;
+mod suppression_rekey;
 mod suppression_versions;
 mod templates;
 

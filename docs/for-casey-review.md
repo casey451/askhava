@@ -3599,3 +3599,8 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 ## Open-cards email language (D-5017, November 20)
 
 - With no stored team-member language, the open-cards email goes in English. Say if it should follow the business's language setting instead.
+- T743 (D-5013): an old index key version cannot be retired while an opt-out is listed under it for a number no contact still holds; the retirement refuses and names only a count. None should exist (the phone is kept while listed, D-079). Say if such a listing should ever be removable by hand.
+
+## Privacy policy: opted-out numbers (D-5049, November 20)
+
+- The privacy policy draft now says an opted-out number is kept as long as needed to honor the opt-out. The sentence waits for your publish; nothing published has changed.

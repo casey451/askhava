@@ -167,6 +167,9 @@ pub use crate::spanish_switch::{
     turn_spanish_off, turn_spanish_on,
 };
 pub use crate::status::DeliveryStatus;
+pub use crate::suppression_rekey::{
+    INDEX_VERSION_RETIRED_ACTION, RekeyError, rekey_suppression_batch, retire_index_version,
+};
 pub use crate::suppression_versions::{SuppressionVersionsError, check_suppression_versions};
 pub use crate::templates::{
     Audience, Encoding, Language, Registry, Segments, TemplateError, Text, count_segments,

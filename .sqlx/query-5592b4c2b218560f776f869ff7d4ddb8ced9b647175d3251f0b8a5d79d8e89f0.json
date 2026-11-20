@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM messaging.suppression s WHERE s.index_version = $1 AND EXISTS (SELECT 1 FROM messaging.suppression a WHERE a.index_version = $2 AND a.event_id = s.event_id)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int2",
+        "Int2"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "5592b4c2b218560f776f869ff7d4ddb8ced9b647175d3251f0b8a5d79d8e89f0"
+}
