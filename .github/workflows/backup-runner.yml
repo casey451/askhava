@@ -297,7 +297,7 @@ jobs:
         # Restore only (D-3143): "Rust build cache, save" near the end of the job saves it with `target/debug` empty.
         id: rust-cache
         if: hashFiles('Cargo.lock') != ''
-        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
             ~/.cargo/registry/index
@@ -322,7 +322,7 @@ jobs:
         # with the run id, so a job that never ran the smoke cannot take the commit's key first (D-1911).
         id: smoke-cache
         if: hashFiles('Cargo.lock') != ''
-        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: target/smoke
           key: rust-smoke-${{ runner.os }}-ubuntu-24.04-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
