@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T03:23:59Z by runner c9b37a0e9036 (actions).
+Updated 2026-11-20T03:25:45Z by runner 630ba4604aa4 (actions).
 
 **Building: T747 in progress since 02:14Z; 517 of 704 done; week 18% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-20T03:23:59Z by runner c9b37a0e9036 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T747 claimed 02:14Z, lease until 05:14Z; lane 4: T110 claimed 02:18Z, lease until 05:18Z; lane 7: T434 claimed 03:02Z, lease until 06:02Z
 - **Week:** 18% used, 154.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:23Z, 0 min before this update
+- **Last run:** 03:24Z, 1 min before this update
 - **Keeper:** last ran 03:23Z, next wake 03:43Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-20T03:23:59Z by runner c9b37a0e9036 (actions).
 - BLOCKED T672: plan gap reported: PLAN GAP: tests/integration/tests/intake_order_two_jobs.rs:278 (owned by T711 and T717, not T672) also pins the old order, but D-4822 named only two functions in intake_order_two_jobs_rules.rs. Evidence: test td_int_45_also_after_the_zip_opens_the_second_job_through_open_job sends the ZIP reply then ALSO and expects only job.handyman.none linked ("question open", :284-:288); under D-4822 steps 6 to 8 come after the coverage line so "How soon?" is open, and ALSO opens a second job (left: ["job.handyman.none","job.plumbing_repair.none"]). kit/tasks.json: file owned by T711 and T717. Smallest pla; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T672 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 74 problem(s) on tasks still to run (+366 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 76 problem(s) on tasks still to run (+372 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -97,7 +97,7 @@ Updated 2026-11-20T03:23:59Z by runner c9b37a0e9036 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 324 of 735 (44.1%) · partial 384 · unstarted 27
-**Tasks merged (throughput only):** 516 of 703
+**Tasks merged (throughput only):** 517 of 704
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
