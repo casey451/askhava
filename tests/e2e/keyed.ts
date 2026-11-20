@@ -110,14 +110,20 @@ function homeownerSql(job: string): string {
       consent_sent_at, opened_at) SELECT id, '${job}', 'en', gen_random_uuid(), 'consent_first', now(), now() FROM h)`;
 }
 
-/** A new active business with its owner, or the owner of `business`, as CTE `m`. */
+/**
+ * A new active business with its owner, or the owner of `business`, as CTE `m`. The new business
+ * also gets one fresh Active ROC check row of a fake license number, dated today in Arizona, so
+ * its Confirm press passes the re-check (PICK-020, D-4897); a given business is left as it is.
+ */
 function ownerSql(business: string, existing: boolean): string {
   if (existing) return `m AS (SELECT id, business_id FROM businesses.team_member WHERE business_id = '${business}' AND is_owner LIMIT 1)`;
   return `b AS (INSERT INTO businesses.business (id, status, created_at, status_changed_at)
       VALUES ('${business}', 'active', now(), now()) RETURNING id),
     m AS (INSERT INTO businesses.team_member (business_id, mailbox_id, is_owner, cards_and_quotes,
       confirm_and_billing, added_at) SELECT id, gen_random_uuid(), true, true, true, now() FROM b
-      RETURNING id, business_id)`;
+      RETURNING id, business_id),
+    lc AS (INSERT INTO licensing.license_check (business_id, source, license_number, list_date, status, checked_at)
+      SELECT id, 'roc', '399999', (now() AT TIME ZONE 'America/Phoenix')::date, 'active', now() FROM b)`;
 }
 
 /**
