@@ -315,7 +315,8 @@ async fn td_int_46_answer_4_asks_the_day_and_stores_it(mut db: Db) {
 
 /// TD-INT-46 (INT-006, INT-029): urgent. Answer 1 offers the choice; Emergency stores the card
 /// with the emergency mark and queues `intake.emergency_released` once, before the trade
-/// questions (only those marked for an emergency job); Regular releases nothing.
+/// questions (only those marked for an emergency job); Regular releases nothing. With no 911 text
+/// the stored card has no "911 text sent" line (CARD-007, D-4833).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_int_46_urgent_emergency_releases_once_and_regular_never(mut db: Db) {
     setup(&mut db, false).await;
@@ -330,6 +331,8 @@ async fn td_int_46_urgent_emergency_releases_once_and_regular_never(mut db: Db) 
     assert_eq!(released(&mut db).await, 1);
     let card = "SELECT count(*) FROM quotes.shown_card WHERE request_id = $1 AND emergency";
     assert_eq!(count(&mut db, card, id).await, 1);
+    let line = "SELECT count(*) FROM quotes.shown_card WHERE request_id = $1 AND card_text LIKE '%911 text sent%'";
+    assert_eq!(count(&mut db, line, id).await, 0, "no 911 text, no line");
     let last = sent(&mut db, 0x0555_0404, "1", 5).await;
     assert!(
         !last.contains(&Q),
@@ -432,8 +435,6 @@ async fn td_int_46_the_zip_after_an_emergency_choice_releases_the_job(mut db: Db
         "no street number: asked again"
     );
     assert_eq!(released(&mut db).await, 1, "once");
-    let card = "SELECT count(*) FROM quotes.shown_card WHERE request_id = $1 AND card_text LIKE '%911 text sent%'";
-    assert_eq!(count(&mut db, card, id).await, 0, "no 911 text, no line");
 }
 
 /// TD-INT-46 (TXT-041): while Spanish conversations are off, a Spanish first text gets the fixed
