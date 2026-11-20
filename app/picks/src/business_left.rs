@@ -5,7 +5,10 @@
 //! account no longer takes picks; nothing was confirmed, so nothing is charged) and moves it to the
 //! homeowner's backup (`backup_choice`, PICK-047); with no backup and no other pick waiting the job
 //! goes back to Quotes ready. After that move it queues her PICK-047 text event (a moved pick) or,
-//! with the job not paused, her PICK-046 one (no backup), as "Can't take it" does (D-3750).
+//! with the job not paused, her PICK-046 one (no backup), as "Can't take it" does (D-3750). On a
+//! job already in Payment pending it ends the pick through `connect::end_pending` as `ineligible`
+//! (T669, D-4349): the intent ends through `payments`' own pick end, so a later success is
+//! refunded (FEE-021) and nothing is released, and the job returns to Quotes ready.
 
 use askhava_core::api::Guarded;
 use askhava_jobs::api::{JobStatus, current, move_to};
@@ -15,9 +18,10 @@ use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
 use crate::backup_choice::{Backup, backup_choice};
+use crate::connect::{PendingEnd, end_pending};
 use crate::models::{self, PicksError};
 use crate::pick_ended::{pick_business, queue_backup_text};
-use crate::status::{PickStatus, awaits_confirm};
+use crate::status::{PickStatus, awaits_charge, awaits_confirm};
 
 /// BIZ-051: every pick waiting for `business`'s Confirm, as (pick, job), locked, oldest first.
 ///
@@ -45,7 +49,9 @@ pub async fn waiting_picks_of(
 /// after its last job move [`Backup::Moved`] queues her PICK-047 text event and
 /// [`Backup::NoBackup`] her PICK-046 one (not on a paused job). With no pick waiting after it, the
 /// job returns from Awaiting confirm to Quotes ready. `paused` is the job's homeowner pause
-/// (CON-029). A pick no longer waiting is [`Backup::Done`].
+/// (CON-029). A pick no longer waiting is [`Backup::Done`]. FEE-021, D-4349: on a job in Payment
+/// pending the pick ends through `end_pending` as `ineligible` (its intent ended, a later success
+/// refunded, the job back to Quotes ready), so the leaving business is never charged for it.
 ///
 /// # Errors
 ///
@@ -57,6 +63,10 @@ pub async fn end_for_leaving(
     paused: bool,
     (actor, at): (Actor, Timestamp),
 ) -> Result<Backup, PicksError> {
+    let status = current(tx, job).await.map_err(|_| PicksError::Job)?.status;
+    if awaits_charge(status) {
+        return end_pending(tx, (pick, job), PendingEnd::Ineligible, (actor, at)).await;
+    }
     if !models::end_pick(tx, pick, "ineligible", at).await? {
         return Ok(Backup::Done);
     }

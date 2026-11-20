@@ -10,14 +10,20 @@
 //! otherwise ends the pick and returns the job to Quotes ready. The dedupe key names the job, its
 //! version and its timer version, so each live timer queues one task and a restarted wait's next
 //! timer queues its own.
+//!
+//! [`entered_payment_pending_since`] (T669, D-4349) reads `jobs.status_history`: whether a job
+//! entered Payment pending at or after an instant. `picks`' lapse uses it so a pick whose
+//! business pressed Confirm is never recorded `expired` (OPS-034); T670 uses it too.
 
 use askhava_core::api::{NewTask, enqueue};
 use jiff::Timestamp;
+use jiff_sqlx::ToSqlx;
 use serde_json::json;
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
 use crate::models::JobsError;
+use crate::status::JobStatus;
 
 /// The `core.task` kind a Payment pending timer queues; `picks` handles it (JOB-014, D-4349).
 pub const PAYMENT_RETURNED_KIND: &str = "picks.payment_returned";
@@ -41,4 +47,27 @@ pub async fn queue_payment_returned(
         .await
         .map(|id| id.is_some())
         .map_err(|_| JobsError::Database)
+}
+
+/// OPS-034, D-4349: whether job `job` entered Payment pending at or after `since` (a history row
+/// moving it there), on `db`.
+///
+/// # Errors
+///
+/// [`JobsError::Database`].
+pub async fn entered_payment_pending_since(
+    db: &mut PgConnection,
+    job: Uuid,
+    since: Timestamp,
+) -> Result<bool, JobsError> {
+    sqlx::query_scalar!(
+        r#"SELECT EXISTS (SELECT 1 FROM jobs.status_history WHERE job_id = $1 AND to_status = $2
+           AND at >= $3) AS "entered!""#,
+        job,
+        JobStatus::PaymentPending.code(),
+        since.to_sqlx() as _,
+    )
+    .fetch_one(db)
+    .await
+    .map_err(|_| JobsError::Database)
 }

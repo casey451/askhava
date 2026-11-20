@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(*) AS \"n!\" FROM unnest($1::text[]) AS t(name)\n           WHERE to_regclass(t.name) IS NULL\n              OR has_table_privilege('askhava_app', to_regclass(t.name), 'UPDATE')\n              OR has_table_privilege('askhava_app', to_regclass(t.name), 'DELETE')",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "n!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "TextArray"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "f19a900c0d80ef2e36ddb36f30358f1a56032ca057948726b605c389b79f451c"
+}

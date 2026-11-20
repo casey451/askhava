@@ -8,3 +8,12 @@ publish.workspace = true
 
 [lints]
 workspace = true
+
+[dev-dependencies]
+askhava-core = { workspace = true }
+askhava-jobs = { workspace = true }
+askhava-ops = { workspace = true }
+askhava-recovery = { workspace = true }
+jiff = { workspace = true }
+sqlx = { workspace = true }
+tokio = { workspace = true }

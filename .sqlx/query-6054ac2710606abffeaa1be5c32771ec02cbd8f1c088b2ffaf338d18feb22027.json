@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT COALESCE(status = 'paused' AND pause_reason = 'self'\n             AND status_changed_at = $2 AND busy_until = $3, false) AS \"still!\"\n           FROM businesses.business WHERE id = $1 FOR UPDATE",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "still!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "6054ac2710606abffeaa1be5c32771ec02cbd8f1c088b2ffaf338d18feb22027"
+}

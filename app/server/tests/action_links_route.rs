@@ -18,15 +18,18 @@
 //! D-3890): the Away link's `POST` acts once with the link's own person's session, storing the
 //! end the hours give; out-of-range hours show the page again with the A11Y-030 error and leave
 //! the link unused; another person's link or one naming another business is the one not-found
-//! answer, unused.
+//! answer, unused. T463 (BIZ-028, D-309, D-3675, D-3890): the Busy link's `POST` acts once with
+//! the link's own person's session, pausing job cards and storing the end; days outside 1 to 60
+//! show the page again with `BUSY_DAYS_ERROR` and leave the link unused, as does a business that
+//! is not active (409); another person's link or one naming another business is not found.
 
 use std::collections::BTreeSet;
 use std::sync::{Arc, Mutex, PoisonError};
 
 use askhava_businesses::api::{
     AccountStatus, Acting, Capability, CapabilityAnswers, Checks, Event, LargestJob, PauseReason,
-    Roles, add_member, add_owner, apply, away_until, business, create as create_business,
-    remove_member, save_capability,
+    Roles, add_member, add_owner, apply, away_until, business, busy_until,
+    create as create_business, remove_member, save_capability,
 };
 use askhava_catalog::api::load_embedded;
 use askhava_core::api::{Guarded, SystemClock};
@@ -35,8 +38,8 @@ use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
 use askhava_ops::api::Actor as AuditActor;
 use askhava_picks::api::{ConfirmSettings, HoldAsk, PagePick, hold_ask, notice_sent, page_pick};
 use askhava_portals::api::{
-    ActionKind, ActionTarget, CookieJar, PortalsError, SIGNIN_LINK_ROUTE, SignIn, SignInAddress,
-    SignInMail, csrf_token, ensure_pre_session, mint_action_link, open_action_link,
+    ActionKind, ActionTarget, BUSY_DAYS_ERROR, CookieJar, PortalsError, SIGNIN_LINK_ROUTE, SignIn,
+    SignInAddress, SignInMail, csrf_token, ensure_pre_session, mint_action_link, open_action_link,
     send_sign_in_link, signin_post,
 };
 use askhava_quotes::api::{
@@ -490,9 +493,11 @@ async fn td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number(pool: PgP
     );
 }
 
-/// The kinds whose `POST` acts with a business session (T455, T543, D-3675, D-3839, D-3890).
-const SESSION_ACTS: [ActionKind; 5] = [
+/// The kinds whose `POST` acts with a business session (T455, T543, T463, D-3675, D-3839,
+/// D-3890).
+const SESSION_ACTS: [ActionKind; 6] = [
     ActionKind::Away,
+    ActionKind::Busy,
     ActionKind::Pause,
     ActionKind::Resume,
     ActionKind::AskCharge,
@@ -929,4 +934,100 @@ async fn td_sec_44_another_persons_or_businesss_away_link_is_not_found(pool: PgP
     assert_eq!(wrong, answer, "a link naming another business");
     assert!(unused(&w, &elsewhere).await, "and the link stays unused");
     assert_eq!(away_end(&w).await, None, "nothing stored");
+}
+
+/// `w`'s business's stored "Busy until" end while it is ahead.
+async fn busy_end(w: &World) -> Option<Timestamp> {
+    let mut db = w.pool.acquire().await.expect("db");
+    busy_until(&mut db, w.team.business, Timestamp::now())
+        .await
+        .expect("busy read")
+}
+
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_44_the_busy_link_pauses_once_with_the_persons_session(pool: PgPool) {
+    let w = world(&pool).await;
+    let (me, jar) = signed_in(&w).await;
+    let busy = live_for(&w, (ActionKind::Busy, w.team.business), me).await;
+    let page = send_as(&w, (&Method::GET, &busy, ""), Site::Own, &jar).await;
+    assert!(
+        page.text.contains("Number of days (1 to 60)"),
+        "{}",
+        page.text
+    );
+    let out = send(&w, (&Method::POST, &busy, "&days=3"), Site::Own).await;
+    assert_eq!(out.status, 401, "signed out is asked to sign in (SEC-004)");
+    for site in [Site::Cross, Site::WrongToken] {
+        let refused = send_as(&w, (&Method::POST, &busy, "&days=3"), site, &jar).await;
+        assert_eq!(refused.status, 403, "refused (SEC-042)");
+    }
+    for days in ["0", "61", "two", ""] {
+        let field = format!("&days={days}");
+        let bad = send_as(&w, (&Method::POST, &busy, &field), Site::Own, &jar).await;
+        assert_eq!(bad.status, 422, "{days:?}: {}", bad.text);
+        assert!(bad.no_store && bad.text.contains(BUSY_DAYS_ERROR));
+        assert!(
+            bad.text.contains("aria-describedby=\"days-error\""),
+            "A11Y-030"
+        );
+    }
+    let pending = send_as(&w, (&Method::POST, &busy, "&days=3"), Site::Own, &jar).await;
+    assert_eq!(pending.status, 409, "{}", pending.text);
+    assert!(
+        pending.text.contains("Only an active account"),
+        "it says why"
+    );
+    assert!(
+        unused(&w, &busy).await,
+        "a refused submit leaves the link unused"
+    );
+    assert_eq!(
+        (status(&w).await, busy_end(&w).await),
+        (("pending", None), None)
+    );
+    let checks = Checks {
+        code_done: true,
+        match_passed: true,
+        flagged: false,
+    };
+    moved(&w, Event::Checked(checks)).await;
+    let set = send_as(&w, (&Method::POST, &busy, "&days=3"), Site::Own, &jar).await;
+    assert_eq!(set.status, 200, "{}", set.text);
+    assert!(
+        set.no_store && set.text.contains("Busy until "),
+        "BIZ-028's line"
+    );
+    assert_eq!(
+        status(&w).await,
+        ("paused", Some("self")),
+        "job cards paused"
+    );
+    let end = busy_end(&w).await.expect("the end is stored");
+    let ahead = end.duration_since(Timestamp::now());
+    let days = SignedDuration::from_hours(71)..=SignedDuration::from_hours(72);
+    assert!(days.contains(&ahead), "the end is 3 days on");
+    let again = send_as(&w, (&Method::POST, &busy, "&days=3"), Site::Own, &jar).await;
+    assert_eq!(
+        again,
+        not_found(&w, &Method::POST).await,
+        "a used link acts no more"
+    );
+}
+
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_44_another_persons_or_businesss_busy_link_is_not_found(pool: PgPool) {
+    let w = world(&pool).await;
+    let (me, _) = signed_in(&w).await;
+    let (_, other) = signed_in(&w).await;
+    let answer = not_found(&w, &Method::POST).await;
+    let mine = live_for(&w, (ActionKind::Busy, w.team.business), me).await;
+    let theirs = send_as(&w, (&Method::POST, &mine, "&days=3"), Site::Own, &other).await;
+    assert_eq!(theirs, answer, "another person's link (SEC-025)");
+    assert!(unused(&w, &mine).await);
+    let elsewhere = live_for(&w, (ActionKind::Busy, Uuid::new_v4()), me).await;
+    let (_, jar) = signed_in(&w).await;
+    let wrong = send_as(&w, (&Method::POST, &elsewhere, "&days=3"), Site::Own, &jar).await;
+    assert_eq!(wrong, answer, "a link naming another business");
+    assert!(unused(&w, &elsewhere).await, "and the link stays unused");
+    assert_eq!(busy_end(&w).await, None, "nothing stored");
 }
