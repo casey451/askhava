@@ -15,13 +15,23 @@
 //! `unknown` with its body dropped in the same statement, an important text goes to its email copy
 //! and portal line, and one Normal ("Low", digest) [`OUTCOME_UNKNOWN_ALERT`] is raised per row, with
 //! no body or phone. The Twilio sent-log lookup that could settle an `unknown` row (OPS-017) is not
-//! built. Business rows are not sent here: their phone is not resolved in `messaging` (D-2042).
+//! built. The clock is read again for each row, so a long batch never sends past 8 p.m. (D-4764).
+//!
+//! Business rows (D-4051, D-4913; TXT-035, CON-019, BIZ-037) are taken only while the business
+//! line is open, which needs [`OutboxSender::with_business`]: without it they wait. A row's
+//! recipient is the phone's line ID; a line that is not in the sender directory (a business ID
+//! queued before D-2042 closed), a phone `may_text` refuses and a number that can never be read
+//! expire the row. The number is read through [`LinePhones`] only after the line is open, Arizona
+//! quiet hours passed and `may_text` passed; it goes to the area-code window check (QH-001,
+//! QH-003) and the carrier call and nowhere else. [`expire_job_rows`] is the job's side of QH-007.
 
 use std::sync::Arc;
 
 use askhava_adapters::api::SmsAdapter;
 use askhava_core::api::{Claimed, Clock, HandlerError, NewTask, Registry, TaskError, enqueue};
-use askhava_ops::api::{Actor, AuditEntry, Change, NewAlert, Severity, audit, raise_alert};
+use askhava_ops::api::{
+    Actor, AuditEntry, Change, NewAlert, Severity, Switch, audit, is_paused, raise_alert,
+};
 use askhava_privacy::api::{Field, Purpose, Reader, Vault, VaultError, read_contact};
 use jiff::{SignedDuration, Timestamp};
 use secrecy::{ExposeSecret, SecretString};
@@ -29,6 +39,7 @@ use serde_json::json;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection, PgPool};
 
+use crate::business_notices::{SendChecks, held_until};
 use crate::email::{
     EmailClass, NewEmail, Notice, PostalAddress, Recipient, homeowner_email, queue_email,
 };
@@ -61,10 +72,51 @@ const BATCH: i64 = 50;
 const MANAGE_URL: &str = "/h";
 const FAILED: HandlerError = HandlerError("outbox sender database call failed");
 
+/// Why [`LinePhones::phone`] gave no number (D-4913).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PhoneUnread {
+    /// It can never be read (no such line, a sealed value that will not open): the row expires.
+    Never,
+    /// The read may pass later (the database, the audit write): the row is held.
+    Later,
+}
+
+/// Answers a business line's texting number at send time; the composition implements it over the
+/// vault, since `messaging` never names that read (BIZ-037, SEC-047, D-4913).
+pub trait LinePhones: Send + Sync {
+    /// The number of linked phone `line`, read on bare connection `conn`.
+    fn phone(
+        &self,
+        conn: &mut PgConnection,
+        line: Uuid,
+    ) -> impl Future<Output = Result<SecretString, PhoneUnread>> + Send;
+}
+
+/// The gate and phone reader of a sender built without [`OutboxSender::with_business`]: it
+/// refuses every phone and reads none; no business row reaches it, since the line has no number.
+pub struct NoBusiness;
+
+impl SendChecks for NoBusiness {
+    async fn may_text(&self, _: &mut PgConnection, _: Uuid, _: Uuid) -> bool {
+        false
+    }
+
+    async fn accept_by(&self, _: &mut PgConnection, _: Uuid, _: Timestamp) -> Option<Timestamp> {
+        None
+    }
+}
+
+impl LinePhones for NoBusiness {
+    async fn phone(&self, _: &mut PgConnection, _: Uuid) -> Result<SecretString, PhoneUnread> {
+        Err(PhoneUnread::Never)
+    }
+}
+
 /// What the sender needs: the keys, the carrier, the vault, the configured homeowner number (none:
 /// the line has no sender and nothing goes, TXT-022), the footer's postal line for a text's email
-/// copy (none in dev and CI: no copy is queued) and the worker's clock.
-pub struct OutboxSender<C> {
+/// copy (none in dev and CI: no copy is queued) and the worker's clock; for business rows also the
+/// business number, the CON-019 gate and the phone reader ([`OutboxSender::with_business`]).
+pub struct OutboxSender<C, G = NoBusiness, P = NoBusiness> {
     secret: SecretString,
     carrier: C,
     vault: Vault,
@@ -72,6 +124,9 @@ pub struct OutboxSender<C> {
     postal: Option<PostalAddress>,
     clock: Arc<dyn Clock>,
     areas: AreaCodes,
+    business: Option<SendingNumber>,
+    gate: G,
+    phones: P,
 }
 
 impl<C> OutboxSender<C> {
@@ -94,14 +149,40 @@ impl<C> OutboxSender<C> {
             postal,
             clock,
             areas: AreaCodes::embedded()?,
+            business: None,
+            gate: NoBusiness,
+            phones: NoBusiness,
         })
+    }
+
+    /// TXT-035, CON-019, D-4051, D-4913: the sender that also sends business rows, from `number`
+    /// (none: they wait), each checked by `gate.may_text` and addressed by `phones` at send time.
+    pub fn with_business<G: SendChecks, P: LinePhones>(
+        self,
+        (gate, phones): (G, P),
+        number: Option<SendingNumber>,
+    ) -> OutboxSender<C, G, P> {
+        OutboxSender {
+            secret: self.secret,
+            carrier: self.carrier,
+            vault: self.vault,
+            number: self.number,
+            postal: self.postal,
+            clock: self.clock,
+            areas: self.areas,
+            business: number,
+            gate,
+            phones,
+        }
     }
 }
 
 /// Registers [`SEND_DUE_KIND`] with `sender` (D-2628, T327's `worker_registry`).
-pub fn register_send_due<C>(registry: &mut Registry, sender: Arc<OutboxSender<C>>)
+pub fn register_send_due<C, G, P>(registry: &mut Registry, sender: Arc<OutboxSender<C, G, P>>)
 where
     C: SmsAdapter + Send + Sync + 'static,
+    G: SendChecks + 'static,
+    P: LinePhones + 'static,
 {
     registry.register(SEND_DUE_KIND, move |pool, task| {
         run_send_due(pool, Arc::clone(&sender), task)
@@ -128,9 +209,9 @@ pub async fn schedule_send_due(db: &mut PgConnection, run_at: Timestamp) -> Resu
 /// # Errors
 ///
 /// A fixed [`HandlerError`] when the connection, the next run's insert or a batch query fails.
-pub async fn run_send_due<C: SmsAdapter + Sync>(
+pub async fn run_send_due<C: SmsAdapter + Sync, G: SendChecks, P: LinePhones>(
     pool: PgPool,
-    sender: Arc<OutboxSender<C>>,
+    sender: Arc<OutboxSender<C, G, P>>,
     _task: Claimed,
 ) -> Result<(), HandlerError> {
     let now = sender.clock.now();
@@ -149,13 +230,14 @@ pub async fn run_send_due<C: SmsAdapter + Sync>(
             tracing::warn!(outbox_id = %id, "an unknown-outcome row could not be settled");
         }
     }
-    let lines = load_lines(&mut conn, (sender.number.clone(), None))
-        .await
-        .map_err(|_| FAILED)?;
-    for row in models::due(&mut conn, now, BATCH)
+    let numbers = (sender.number.clone(), sender.business.clone());
+    let lines = load_lines(&mut conn, numbers).await.map_err(|_| FAILED)?;
+    let business = lines.line(Audience::Business).sender().is_some();
+    for row in models::due(&mut conn, now, (BATCH, business))
         .await
         .map_err(|_| FAILED)?
     {
+        let now = sender.clock.now();
         if send_one(&mut conn, &sender, (&lines, &row), now)
             .await
             .is_err()
@@ -169,30 +251,95 @@ pub async fn run_send_due<C: SmsAdapter + Sync>(
 
 /// One due row (D-2188, CON-030, QH-001, QH-008, TXT-021): expired, held, or sent on its line.
 /// Her phone is read here for the expiry and window checks; the send reads it once more, in
-/// `send_checked`, which hands it on to the claim (D-3149).
-async fn send_one<C: SmsAdapter + Sync>(
+/// `send_checked`, which hands it on to the claim (D-3149). A closed job's row was expired by
+/// [`expire_job_rows`], so `Relation::OpenRequest` holds for a row that reaches here (D-4764).
+async fn send_one<C: SmsAdapter + Sync, G: SendChecks, P: LinePhones>(
     db: &mut PgConnection,
-    s: &OutboxSender<C>,
+    s: &OutboxSender<C, G, P>,
     (lines, row): (&Lines, &Due),
     now: Timestamp,
 ) -> Result<(), OutboxError> {
     if must_expire(db, row, now).await? {
         return expire(db, row.id).await;
     }
+    if row.business {
+        return send_business(db, s, (lines, row), now).await;
+    }
     let phone = match homeowner_phone(db, &s.vault, row.recipient).await {
         Ok(Some(phone)) => phone,
         Ok(None) => return expire(db, row.id).await,
         Err(()) => return models::hold(db, row.id, now + RETRY_LAST).await,
     };
+    let to = To::Homeowner {
+        vault: &s.vault,
+        relation: Relation::OpenRequest,
+    };
+    in_window(db, s, (lines, row), (to, &phone), now).await
+}
+
+/// One due business row (TXT-035, CON-019, BIZ-037, QH-001, QH-003; D-4051, D-4913), in this
+/// order: it waits while the business line is closed or the owner paused texting; Arizona quiet
+/// hours hold it; a recipient that is no linked phone (a business ID queued before D-2042 closed)
+/// and a phone `may_text` refuses expire it; only then is the number read, once: one that can
+/// never be read expires the row and a read that may pass holds it. The area-code window check
+/// needs the number, so a row it holds is the one case that is read and not sent.
+async fn send_business<C: SmsAdapter + Sync, G: SendChecks, P: LinePhones>(
+    db: &mut PgConnection,
+    s: &OutboxSender<C, G, P>,
+    (lines, row): (&Lines, &Due),
+    now: Timestamp,
+) -> Result<(), OutboxError> {
+    let line = row.recipient;
+    if lines.line(Audience::Business).sender().is_none() || owner_paused(db).await? {
+        return Ok(());
+    }
+    if let (false, Some(until)) = (row.exempt, held_until(now)) {
+        return models::hold(db, row.id, until).await;
+    }
+    let Some(business) = models::line_business(db, line).await? else {
+        return expire(db, row.id).await;
+    };
+    if !s.gate.may_text(db, business, line).await {
+        return expire(db, row.id).await;
+    }
+    let phone = match s.phones.phone(db, line).await {
+        Ok(phone) => phone,
+        Err(PhoneUnread::Never) => return expire(db, row.id).await,
+        Err(PhoneUnread::Later) => return models::hold(db, row.id, now + RETRY_LAST).await,
+    };
+    let to = To::Business(phone.expose_secret());
+    in_window(db, s, (lines, row), (to, &phone), now).await
+}
+
+/// OPS-003: whether the owner's `texting` or `all` pause is on, as `mode::send_on_line` reads it;
+/// asked before a business number is read, so a paused row reads nothing (D-4913).
+async fn owner_paused(db: &mut PgConnection) -> Result<bool, OutboxError> {
+    for switch in [Switch::Texting, Switch::All] {
+        if is_paused(db, switch)
+            .await
+            .map_err(|_| OutboxError::Database)?
+        {
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
+
+/// QH-001, QH-003, QH-008, TXT-021: the last steps of a row whose number `phone` is read: held to
+/// the next window of both zones, expired for an area code outside the table, else sent on its
+/// line with what a failed send leaves ([`after_error`]).
+async fn in_window<C: SmsAdapter + Sync, G, P>(
+    db: &mut PgConnection,
+    s: &OutboxSender<C, G, P>,
+    (lines, row): (&Lines, &Due),
+    (to, phone): (To<'_>, &SecretString),
+    now: Timestamp,
+) -> Result<(), OutboxError> {
     match quiet_hours(&s.areas, phone.expose_secret(), row.exempt, now) {
         Ok(Decision::Send) => {}
         Ok(Decision::Hold { until }) => return models::hold(db, row.id, until).await,
         Err(_) => return expire(db, row.id).await,
     }
-    let to = To::Homeowner {
-        vault: &s.vault,
-        relation: Relation::OpenRequest,
-    };
     let keys = (&s.secret, &s.carrier, &s.vault);
     match send_on_line(db, keys, lines, (row.id, to), now).await {
         Ok(_) | Err(LineSendError::Paused) => Ok(()),
@@ -238,8 +385,8 @@ fn quiet_hours(
     Ok(if exempt { Decision::Send } else { decision })
 }
 
-/// D-2188, CON-009, CON-030: a confirmation older than 5 minutes, or any row but the HELP reply
-/// queued while the homeowner line was paused, is never sent.
+/// D-2188, CON-009, CON-030: a confirmation older than 5 minutes, or any homeowner row but the
+/// HELP reply queued while the homeowner line was paused, is never sent.
 async fn must_expire(
     db: &mut PgConnection,
     row: &Due,
@@ -250,7 +397,7 @@ async fn must_expire(
     {
         return Ok(true);
     }
-    if row.template_id == HELP_TEMPLATE {
+    if row.template_id == HELP_TEMPLATE || row.business {
         return Ok(false);
     }
     models::homeowner_paused_at(db, row.queued_at).await
@@ -260,27 +407,79 @@ async fn must_expire(
 async fn expire(db: &mut PgConnection, id: Uuid) -> Result<(), OutboxError> {
     let mut tx = db.begin().await.map_err(|_| OutboxError::Database)?;
     if models::expire(&mut tx, id).await? {
-        let entry = AuditEntry {
-            actor: Actor::System,
-            action: EXPIRED_ACTION,
-            subject_kind: "messaging.outbox",
-            subject_id: id,
-            change: Change::Action,
-        };
-        audit(&mut tx, &entry)
-            .await
-            .map_err(|_| OutboxError::Database)?;
+        audit_expired(&mut tx, id).await?;
     }
     tx.commit().await.map_err(|_| OutboxError::Database)
+}
+
+/// The one system [`EXPIRED_ACTION`] audit row of expired row `id`.
+async fn audit_expired(db: &mut PgConnection, id: Uuid) -> Result<(), OutboxError> {
+    let entry = AuditEntry {
+        actor: Actor::System,
+        action: EXPIRED_ACTION,
+        subject_kind: "messaging.outbox",
+        subject_id: id,
+        change: Change::Action,
+    };
+    let logged = audit(db, &entry).await;
+    logged.map(|_| ()).map_err(|_| OutboxError::Database)
+}
+
+/// The texts [`expire_job_rows`] keeps, as `LIKE` patterns over the template ID (QH-007, D-4764,
+/// D-4899): the close announcements (JOB-012, INT-019), the opt-out confirmation and every HELP
+/// reply (CON-009, CON-018), and the notices a close itself produces (PICK-026, PICK-038, the
+/// pick's end, the release, the refund decisions and the feedback request).
+pub const CLOSE_TEXTS: [&str; 17] = [
+    "closed_no_pick",
+    "intake_closed_no_reply",
+    "job_closed",
+    "jobs_closed",
+    "closed_no_quotes",
+    "closed_no_quote_left",
+    "line_closed_cancelled",
+    "opt_out_confirmation",
+    "help_reply%",
+    "job_no_longer_active",
+    "pick_lost%",
+    "pick_expired",
+    "pick_withdrawn",
+    "unreachable_%",
+    "release_notice",
+    "release_text",
+    "feedback_request",
+];
+
+/// QH-007, D-4764: `job` reached its final status at `closed_at` (the job's own time, never the
+/// caller's clock), so every queued or held row about it created before then is expired, each
+/// with one [`EXPIRED_ACTION`] audit row, except the [`CLOSE_TEXTS`]; a row created at or after
+/// the close is never touched. Returns how many rows expired. `messaging` cannot read `jobs`, so
+/// the job's side calls this (T744's `jobs.final_status` handler).
+///
+/// # Errors
+///
+/// [`OutboxError::Database`]; nothing is then expired.
+pub async fn expire_job_rows(
+    conn: &mut PgConnection,
+    job: Uuid,
+    closed_at: Timestamp,
+) -> Result<usize, OutboxError> {
+    let exempt = CLOSE_TEXTS.map(str::to_owned);
+    let mut tx = conn.begin().await.map_err(|_| OutboxError::Database)?;
+    let ids = models::expire_job_rows(&mut tx, (job, closed_at), &exempt).await?;
+    for &id in &ids {
+        audit_expired(&mut tx, id).await?;
+    }
+    tx.commit().await.map_err(|_| OutboxError::Database)?;
+    Ok(ids.len())
 }
 
 /// What a failed send leaves: a listed number's row expires (CON-013), and so does a row whose
 /// recipient can never be read or is of the wrong kind (D-3149), so no row stays at the head of the
 /// queue; a vault read that may pass is `Database`, so the batch loop holds it (D-3581); a refusal waits for its TXT-014 retry or is given up; an unknown outcome is settled; a
 /// row gone, blocked (21610) or already claimed needs nothing.
-async fn after_error<C>(
+async fn after_error<C, G, P>(
     db: &mut PgConnection,
-    s: &OutboxSender<C>,
+    s: &OutboxSender<C, G, P>,
     row: &Due,
     error: OutboxError,
     now: Timestamp,
@@ -299,15 +498,17 @@ async fn after_error<C>(
 }
 
 /// TXT-014, TXT-015, QH-008: a refused row waits for its next retry; after the last, with the
-/// footer's postal line, it is given up (email copy and portal line, or Casey's call-back).
-async fn refused<C>(
+/// footer's postal line, it is given up (email copy and portal line, or Casey's call-back). A
+/// business row's last refusal expires it: its notice has its own email (BIZ-037, D-4898).
+async fn refused<C, G, P>(
     db: &mut PgConnection,
-    s: &OutboxSender<C>,
+    s: &OutboxSender<C, G, P>,
     row: &Due,
     now: Timestamp,
 ) -> Result<(), OutboxError> {
     match (retries::record_failure(db, row.id, now).await?, &s.postal) {
         (Step::RetryAt(at), _) => models::hold(db, row.id, at).await,
+        (Step::GiveUp, _) if row.business => expire(db, row.id).await,
         (Step::GiveUp, None) => models::hold(db, row.id, now + RETRY_LAST).await,
         (Step::GiveUp, Some(postal)) => {
             let reach = Reach::Homeowner {
@@ -344,9 +545,9 @@ fn email_to(id: Uuid, language: Option<&str>) -> Recipient<'static> {
 /// before it) to `unknown`, dropping its body; an important text's copy is listed for the portal and
 /// emailed when an address and the postal line are on file, and one Normal alert is raised, all in
 /// one transaction. The email address is read before it (the vault refuses a read inside one).
-async fn settle_unknown<C>(
+async fn settle_unknown<C, G, P>(
     db: &mut PgConnection,
-    s: &OutboxSender<C>,
+    s: &OutboxSender<C, G, P>,
     (id, stale_before): (Uuid, Option<Timestamp>),
     now: Timestamp,
 ) -> Result<(), OutboxError> {

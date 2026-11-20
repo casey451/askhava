@@ -36,6 +36,7 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - An opt-out of a number waits for the consent sweep's `still_unlisted` lock and the sweep's re-check waits for an open opt-out: `tests/integration/tests/optout_number_lock.rs` (TD-CON-37, T701).
 - An index key version's rows are removed only when every one has its active-version row, never the active version's, and no phone or digest reaches a log, error or audit row: `tests/integration/tests/suppression_rekey.rs` (T743, D-4748).
 - A queued email gets one provider call per lease (two workers, overlapping or not), a fresh lease is never retaken, and a marked, refused, given-up, expired or removed recipient's row is dropped unsent: `tests/integration/tests/email_due.rs` (T470, D-4327).
+- A business row is sent only from the business number, after `may_text` passed, with its number read once through `LinePhones` and kept nowhere; a refused, unlinked or unreadable phone expires it and a closed line reads nothing; a closed job's earlier rows expire except `CLOSE_TEXTS`: `tests/integration/tests/outbox_business_rows.rs` (T573).
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/messaging/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/messaging/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).

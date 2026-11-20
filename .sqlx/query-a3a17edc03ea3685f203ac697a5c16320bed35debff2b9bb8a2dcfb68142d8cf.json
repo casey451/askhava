@@ -1,0 +1,52 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT h.choice AS \"soon?\",\n             EXISTS (SELECT 1 FROM intake.intake_answer a WHERE a.conversation_id = $1\n               AND a.question_id = $3) AS \"day!\",\n             EXISTS (SELECT 1 FROM intake.intake_answer a WHERE a.conversation_id = $1\n               AND a.question_id = $4) AS \"chosen!\",\n             EXISTS (SELECT 1 FROM intake.emergency_event e WHERE e.conversation_id = $1\n               AND e.text_queued_at IS NOT NULL AND e.created_at <= h.answered_at) AS \"listed!\"\n           FROM (VALUES (1)) one(n) LEFT JOIN LATERAL (SELECT a.choice, a.answered_at\n             FROM intake.intake_answer a WHERE a.conversation_id = $1 AND a.question_id = $2\n             ORDER BY a.answered_at DESC, a.id DESC LIMIT 1) h ON true",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "soon?",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "intake.intake_answer",
+            "name": "choice"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "day!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "chosen!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
+        "name": "listed!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      true,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "a3a17edc03ea3685f203ac697a5c16320bed35debff2b9bb8a2dcfb68142d8cf"
+}
