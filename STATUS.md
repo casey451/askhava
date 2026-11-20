@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T20:50:58Z by runner c93b0b6c6e97 (manual).
+Updated 2026-11-20T20:53:32Z by runner c93b0b6c6e97 (actions).
 
-**Building: T752 in progress since 20:45Z; 552 of 713 done; week 46% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T752 in progress since 20:45Z; 553 of 713 done; week 46% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 552 of 713 build tasks (owner gates not counted)
+- **Tasks done:** 553 of 713 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T752 claimed 20:45Z, lease until 23:45Z; lane 2: T750 claimed 20:42Z, lease until 23:42Z; lane 3: T558 claimed 20:29Z, lease until 23:29Z; lane 6: T673 claimed 20:17Z, lease until 23:17Z
 - **Week:** 46% used, 97.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:50Z, 0 min before this update
+- **Last run:** 20:51Z, 2 min before this update
 - **Keeper:** last ran 20:50Z, next wake 21:10Z
 
 ## Needs attention
@@ -23,7 +23,7 @@ Updated 2026-11-20T20:50:58Z by runner c93b0b6c6e97 (manual).
 |---|---|---|---|---|---|---|
 | T682 | picks: a pick waiting for Confirm gets its hourly reminders, | QUEUED | 1 | 105 min | 20:49Z | app/picks/src/reminder_run.rs:316 (remind): a waiting pick whose job was cancelled or closed after the notice keeps gett |
 | T743 | messaging and privacy: opt-out listings are re-keyed to the  | MERGE_PENDING | 2 | 2 h 11 min | 20:36Z | Second review (head 7921ab0285f5916db9a9df89ee828c150908805e) ended FINDINGS: tests/integration/tests/suppression_rekey. |
-| T772 | picks: a public reader of a waiting pick's Confirm deadline  | MERGE_PENDING | 1 | 117 min | 20:02Z |  |
+| T772 | picks: a public reader of a waiting pick's Confirm deadline  | done | 1 | 117 min | 20:02Z |  |
 | T756 | privacy: the scrubber catches phones split by connector word | done | 1 | 59 min | 19:57Z |  |
 | T530 | portals: the owner help page and its screened reply box (D-3 | done | 3 | 49 min | 19:43Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T661 | privacy: a business notice address with spaces, commas or co | done | 1 | 27 min | 19:04Z |  |
@@ -104,31 +104,31 @@ Updated 2026-11-20T20:50:58Z by runner c93b0b6c6e97 (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 96 of 735 (13.1%) · partial 620 · unstarted 19
-**Tasks merged (throughput only):** 552 of 713
+**Requirements verified:** 362 of 735 (49.3%) · partial 354 · unstarted 19
+**Tasks merged (throughput only):** 553 of 713
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 3 | 32 | 0 | 35 |
-| ai | 1 | 25 | 3 | 29 |
-| businesses | 1 | 56 | 1 | 58 |
-| calls | 1 | 24 | 0 | 25 |
-| consent | 3 | 32 | 0 | 35 |
-| fees | 1 | 51 | 0 | 52 |
-| intake | 1 | 42 | 0 | 43 |
-| job-cards | 0 | 24 | 0 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 2 | 43 | 0 | 45 |
-| ops-recovery | 12 | 30 | 12 | 54 |
-| privacy | 1 | 30 | 0 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 0 | 56 | 0 | 56 |
-| recurring | 3 | 8 | 0 | 11 |
-| security | 2 | 50 | 3 | 55 |
-| terms | 25 | 10 | 0 | 35 |
+| accessibility | 18 | 17 | 0 | 35 |
+| ai | 8 | 18 | 3 | 29 |
+| businesses | 23 | 34 | 1 | 58 |
+| calls | 15 | 10 | 0 | 25 |
+| consent | 17 | 18 | 0 | 35 |
+| fees | 25 | 27 | 0 | 52 |
+| intake | 12 | 31 | 0 | 43 |
+| job-cards | 12 | 12 | 0 | 24 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 21 | 7 | 0 | 28 |
+| messaging | 26 | 19 | 0 | 45 |
+| ops-recovery | 15 | 27 | 12 | 54 |
+| privacy | 10 | 21 | 0 | 31 |
+| quiet-hours | 3 | 6 | 0 | 9 |
+| quotes-pick | 26 | 30 | 0 | 56 |
+| recurring | 10 | 1 | 0 | 11 |
+| security | 13 | 39 | 3 | 55 |
+| terms | 27 | 8 | 0 | 35 |
 | website | 20 | 10 | 0 | 30 |
-| wording | 20 | 12 | 0 | 32 |
+| wording | 28 | 4 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -141,7 +141,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 195 of 295 done
+- stage 5: 196 of 295 done
 - stage 6: 0 of 65 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
