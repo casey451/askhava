@@ -23,6 +23,7 @@ Exit status 1 names each failure.
 from __future__ import annotations
 
 import argparse
+import posixpath
 import re
 import sys
 import urllib.request
@@ -196,7 +197,20 @@ def site_paths(architecture: str) -> list[str]:
 def assets_in(html: str) -> list[str]:
     """The /static/site/ files a page or stylesheet points at."""
     found = re.findall(r"(?:href|src|url)\s*[=(]\s*[\"']?(/static/site/[^\"'#?)\s>]+)", html, FLAGS)
+    for srcset in re.findall(r"srcset\s*=\s*[\"']([^\"']*)", html, FLAGS):
+        found += re.findall(r"(/static/site/[^\s,]+)", srcset)
     return sorted(set(found))
+
+
+def css_assets(css: str, css_path: str) -> list[str]:
+    """The /static/site/ files a stylesheet's `url(...)` values point at (relative ones resolve against it)."""
+    found = []
+    for ref in re.findall(r"url\(\s*[\"']?([^\"')\s]+)", css, FLAGS):
+        if ref.startswith(("data:", "http:", "https:", "//", "#")):
+            continue
+        ref = ref.split("?")[0].split("#")[0]
+        found.append(ref if ref.startswith("/") else posixpath.normpath(posixpath.join(posixpath.dirname(css_path), ref)))
+    return sorted(a for a in set(found) if a.startswith("/static/site/"))
 
 
 def page_file(out: Path, path: str) -> Path:
@@ -224,7 +238,9 @@ def build(base_url: str, out: Path, architecture: str, domain: str) -> list[str]
         target = page_file(out, path)
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(html, encoding="utf-8")
-    for asset in sorted(assets):
+    queue = sorted(assets)
+    while queue:
+        asset = queue.pop(0)
         if asset.lower().endswith(".js"):
             failures.append(f"{asset} is a script: the Stage 0.5 set ships none")
             continue
@@ -236,6 +252,10 @@ def build(base_url: str, out: Path, architecture: str, domain: str) -> list[str]
         target = out / asset.lstrip("/")
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(data)
+        if asset.lower().endswith(".css"):
+            new = [a for a in css_assets(data.decode("utf-8", "replace"), asset) if a not in assets]
+            assets.update(new)
+            queue += new
     return failures
 
 

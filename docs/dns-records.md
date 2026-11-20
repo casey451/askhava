@@ -40,6 +40,8 @@ Any existing `google-site-verification` TXT record on the domain is kept as it i
 |---|---|---|---|
 | MX, TXT (SPF, DKIM) | `notify.laftly.com` | `<from the email provider's domain page>` | Sending job cards and notices as `jobs@notify.laftly.com` |
 | TXT | `_dmarc.laftly.com` | `<DMARC policy, set with the email provider's records>` | DMARC for the whole domain |
-| MX | `inbound.laftly.com` | `<from the email provider's receiving page>` | Inbound mail the app reads |
+| MX | `laftly.com` | `<from the email provider's receiving page>` | All inbound mail, including `help@laftly.com`, delivered to the app's signed webhook (PRIV-026, SEC-025, OPS-036) |
+| TXT (SPF) | `laftly.com` | `v=spf1 -all` (or the provider's value `<from the email provider's domain page>` if it asks) | The root domain sends nothing; `notify.laftly.com` is the only sender |
+| TXT (DKIM) | `<selector from the email provider>._domainkey.laftly.com` | `<from the email provider's domain page>` | Signs mail if the provider ever sends from the root domain |
 
-The decision D-4914 in `docs/decisions.md` records where inbound mail is received and every service that sends as laftly.com.
+The decision D-4914 in `docs/decisions.md` records that help-address mail is received by the provider and reaches the app by webhook, no human mailbox holds it, and every service that sends as laftly.com.

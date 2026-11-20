@@ -108,9 +108,35 @@ def test_td_web_02_link_is_replaced_by_its_text() -> None:
     assert cleared('<p><a href="sms:+19285550142">Text us</a></p>') == "<p>Text us</p>"
 
 
+# One planted case per List B pattern (D-2506), in the order of the 17 patterns of D-4258 (2); each matches
+# only its own pattern, so deleting a pattern from the script leaves a planted case unmatched.
+SOLO = [
+    ("form element", "<form></form>"),
+    ("form attribute", '<div formaction="/x"></div>'),
+    ("field", '<input type="text">'),
+    ("button not type=button", "<button>Send</button>"),
+    ("button with form", '<button type="button" form="f1">Send</button>'),
+    ("script", "<script></script>"),
+    ("event attribute", '<p onclick="x()">Hi</p>'),
+    ("frame", '<iframe src="/x"></iframe>'),
+    ("network call", "new XMLHttpRequest()"),
+    ("message or call link", '<a href="sms:abc">Text</a>'),
+    ("phone link", '<a href="tel:abc">Call</a>'),
+    ("form service", "see forms.gle/abc"),
+    ("mailto other than help", '<a href="mailto:x@example.com">Mail</a>'),
+    ("javascript link", "javascript:void(0)"),
+    ("texting number", "9285550142"),
+    ("texting number", "555-0142"),
+    ("texting number", "tel:+x"),
+]
+
+
 def test_td_web_02_each_list_b_pattern_has_a_planted_case() -> None:
-    for name, pattern in stage.list_b(DOMAIN):
-        assert any(pattern.search(h) for h in FILTERED + CHECK_ONLY), name
+    patterns = stage.list_b(DOMAIN)
+    assert [name for name, _ in patterns] == [name for name, _ in SOLO]
+    for index, (name, html) in enumerate(SOLO):
+        matching = [i for i, (_, pattern) in enumerate(patterns) if pattern.search(html)]
+        assert matching == [index], f"{name}: {html} matched patterns {matching}"
 
 
 @pytest.mark.parametrize("name", ["TEN_DIGIT", "SEVEN_DIGIT", "TEL_LINK"])
@@ -162,11 +188,28 @@ def test_td_web_02_a_js_asset_fails_the_build(tmp_path: Path, monkeypatch: pytes
 
 
 def test_td_web_02_build_writes_pages_and_assets(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(stage, "fetch", lambda base, path: b'<link href="/static/site/site.css"><p>Hi</p>')
+    page = (
+        b'<link href="/static/site/site.css"><p>Hi</p>'
+        b'<picture><source srcset="/static/site/photos/p.webp 1x, /static/site/photos/q.webp 2x"></picture>'
+    )
+    css = b'@font-face { src: url("fonts/f.woff2") format("woff2"); } a { background: url(data:image/png;base64,AA) }'
+    monkeypatch.setattr(stage, "fetch", lambda base, path: css if path.endswith(".css") else page if path in "/terms" else b"x")
     arch = "## 13. Routes\n| GET | / | site | yes |\n| GET | /terms | site | yes |\n"
     assert stage.build("http://x", tmp_path, arch, DOMAIN) == []
     assert (tmp_path / "index.html").exists() and (tmp_path / "terms" / "index.html").exists()
-    assert (tmp_path / "static" / "site" / "site.css").exists()
+    for asset in ("site.css", "fonts/f.woff2", "photos/p.webp", "photos/q.webp"):
+        assert (tmp_path / "static" / "site" / asset).exists(), asset
+
+
+def test_td_web_02_assets_in_reads_srcset_and_css_urls() -> None:
+    assert stage.assets_in('<source srcset="/static/site/a.webp 1x,/static/site/b.webp 2x">') == [
+        "/static/site/a.webp",
+        "/static/site/b.webp",
+    ]
+    assert stage.css_assets('src: url("fonts/a.woff2"); b: url(/static/site/c.png); d: url(https://x/y)', "/static/site/site.css") == [
+        "/static/site/c.png",
+        "/static/site/fonts/a.woff2",
+    ]
 
 
 def test_td_web_02_dns_file_keeps_search_console_verification() -> None:
@@ -200,8 +243,16 @@ def test_td_sec_29_hsts_stays_off_and_no_preload() -> None:
 def test_td_ops_21_decision_names_inbound_placement_and_every_sender() -> None:
     log = (ROOT / "docs" / "decisions.md").read_text(encoding="utf-8")
     entry = next(l for l in log.splitlines() if l.startswith("- **D-4914**"))
-    assert "OPS-045" in entry and f"inbound.{DOMAIN}" in entry
-    assert "received" in entry and "subdomain" in entry
-    for sender in ("Resend", f"notify.{DOMAIN}", f"help@{DOMAIN}"):
-        assert sender in entry, sender
-    assert f"inbound.{DOMAIN}" in DNS and f"notify.{DOMAIN}" in DNS
+    assert "OPS-045" in entry and "PRIV-026" in entry and "webhook" in entry
+    assert HELP in entry and f"notify.{DOMAIN}" in entry and "Resend" in entry
+    assert "No human mailbox" in entry
+
+
+def test_td_ops_21_root_domain_mail_reaches_the_app_and_has_records() -> None:
+    rows = {(_cells(l)[0], _cells(l)[1]): _cells(l) for l in DNS.splitlines() if l.startswith(("| MX", "| TXT"))}
+    mx = rows[("MX", f"`{DOMAIN}`")]
+    assert "<from the email provider" in mx[2] and HELP in mx[3]
+    assert ("TXT (SPF)", f"`{DOMAIN}`") in rows
+    assert any(k[0] == "TXT (DKIM)" and f"_domainkey.{DOMAIN}" in k[1] for k in rows)
+    assert ("MX, TXT (SPF, DKIM)", f"`notify.{DOMAIN}`") in rows
+    assert f"inbound.{DOMAIN}" not in DNS
