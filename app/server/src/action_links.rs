@@ -37,7 +37,11 @@
 //! business hours once in the same transaction; the page names the new end in Arizona time. A
 //! refused Hold (emergency, held before, Away-delayed, window not running) rolls back, so the link
 //! stays unused, and says why (409), but only after the link's person was proved by a second,
-//! rolled-back `use_action_link`. Every other kind's `POST` gets the one not-found
+//! rolled-back `use_action_link`. Away (object: the business; T543, BIZ-034, D-285, D-3890) shows
+//! one hours field (`away_page`) and acts with the link's own person's business session, like
+//! Pause: the hours, 1 to the setting's limit, are bounded with `picks::api::away_for` and
+//! stored with `set_away`; a refusal rolls back (link unused) and shows the page again with its
+//! reason; the answer is "Away until <time>" in Arizona time. Every other kind's `POST` gets the one not-found
 //! answer before any token read (D-3675). A wrong kind, object, person, an ended, used or
 //! unknown token, a removed member's token and a job with no sent card or no rules all get the
 //! same bare 404. Every response is `no-store`. After a stored quote the job page carries
@@ -49,23 +53,24 @@ use std::sync::Arc;
 
 use askhava_businesses::api::{
     Acting, BusinessesError, Roles, TeamError, approve_phone, capabilities, pause_self,
-    resume_self, waiting_phones,
+    resume_self, set_away, waiting_phones,
 };
 use askhava_core::api::{Clock, SystemClock, arizona_time};
 use askhava_intake::api::Admission;
 use askhava_jobs::api::{job_facts, job_number};
 use askhava_payments::api::{JobCodes, JobFeeFacts, receipt_for, resolve_fee_facts};
 use askhava_picks::api::{
-    HoldAsk, PicksError, TimeRefusal, WindowRules, hold_allowed, hold_ask, hold_pick,
+    HoldAsk, PicksError, TimeRefusal, WindowRules, away_for, hold_allowed, hold_ask, hold_pick,
 };
 use askhava_portals::api::{
-    ACTION_ROUTE, ActionFacts, ActionGrant, ActionKind, ActionLinkError, BUSINESS_STEP_UP_ROUTE,
-    ChargeAsked, CookieJar, CsrfField, CsrfForm, FactsForm, LargestWarning, NotAFitChoice,
-    PriceForm, QuoteFormFacts, SIGNIN_ROUTE, UseBy, WHY_CHARGED_ROUTE, WebSecurity, action_page,
-    admit_quote, ask_about_charge, business_principal, charge_answer, charge_reply_line,
-    csrf_token, ensure_pre_session, fee_lines, job_details_page_choice, largest_job_warning,
-    not_a_fit_action, open_action_link, parse_facts, prefill, quote_form_page_priced,
-    refuse_cross_site, require_step_up, security_event_client, session_may, use_action_link,
+    ACTION_ROUTE, ActionFacts, ActionGrant, ActionKind, ActionLinkError, AwayForm,
+    BUSINESS_STEP_UP_ROUTE, ChargeAsked, CookieJar, CsrfField, CsrfForm, FactsForm, LargestWarning,
+    NotAFitChoice, PriceForm, QuoteFormFacts, SIGNIN_ROUTE, UseBy, WHY_CHARGED_ROUTE, WebSecurity,
+    action_page, admit_quote, ask_about_charge, away_hours, away_page, business_principal,
+    charge_answer, charge_reply_line, csrf_token, ensure_pre_session, fee_lines,
+    job_details_page_choice, largest_job_warning, not_a_fit_action, open_action_link, parse_facts,
+    prefill, quote_form_page_priced, refuse_cross_site, require_step_up, security_event_client,
+    session_may, use_action_link,
 };
 use askhava_portals::api::{JobPageLinks, no_store};
 use askhava_portals::api::{SensitiveChange, StepUpError};
@@ -223,18 +228,37 @@ async fn read_page(
         quote_form(&form, csrf, None, &price_form(form.rules, &fields, ""))
     } else {
         let signed_in = session_check(&mut tx, (kind, object), &token, jar, now).await?;
-        action_page(&ActionFacts {
-            kind,
-            job_number: "",
-            ends_at: None,
-            signed_in,
-            days: None,
-            csrf,
-        })
-        .ok()
+        plain_page(kind, signed_in, csrf)
     };
     tx.rollback().await.map_err(failed)?;
     Ok(html)
+}
+
+/// A non-Quote kind's page at first render: the Away page with its hours field (BIZ-034), any
+/// other kind's [`action_page`].
+fn plain_page(kind: ActionKind, signed_in: bool, csrf: &str) -> Option<String> {
+    let facts = ActionFacts {
+        kind,
+        job_number: "",
+        ends_at: None,
+        signed_in,
+        days: None,
+        csrf,
+    };
+    match kind {
+        ActionKind::Away => away_page(&facts, away_form(None, None)).ok(),
+        _ => action_page(&facts).ok(),
+    }
+}
+
+/// BIZ-034, D-285: the Away form under the setting's limit, in whole hours, with a refused
+/// submit's kept `hours` and `refused` reason.
+fn away_form<'a>(hours: Option<&'a str>, refused: Option<&'a str>) -> AwayForm<'a> {
+    AwayForm {
+        max_hours: WindowRules::default().away_max_minutes / 60,
+        hours,
+        refused,
+    }
 }
 
 /// SEC-004, SEC-025, D-3614: whether a business is signed in; for a session kind opened while one
@@ -406,6 +430,7 @@ struct Posted {
     notes: String,
     over_largest: String,
     certified: String,
+    hours: String,
 }
 
 impl CsrfField for Posted {
@@ -451,8 +476,8 @@ impl Posted {
 
 /// `POST /b/a/{kind}/{object}/{token}`: after the cross-site and CSRF checks, a Quote link acts
 /// by the link alone, Pause, Resume and Ask about a charge with a business session (D-3839),
-/// Approve with the owner's session and a fresh step-up (T399), Hold by the link alone (T456);
-/// every other kind is the one not-found answer before any token read (D-3675).
+/// Approve with the owner's session and a fresh step-up (T399), Hold by the link alone (T456),
+/// Away with a business session (T543); every other kind is the one not-found answer before any token read (D-3675).
 async fn act(
     State(links): State<Links>,
     Extension(Client(ip)): Extension<Client>,
@@ -476,6 +501,10 @@ async fn act(
         }
         ActionKind::Hold => {
             let acted = hold_post(&links, (object, &token)).await;
+            acted.unwrap_or_else(IntoResponse::into_response)
+        }
+        ActionKind::Away => {
+            let acted = away_post(&links, (object, &token), &jar, &posted.hours).await;
             acted.unwrap_or_else(IntoResponse::into_response)
         }
         _ => Stop::NotFound.into_response(),
@@ -641,6 +670,107 @@ fn not_held(refusal: TimeRefusal) -> Response {
     };
     let body = format!("<p id=\"why\">{why}</p>");
     done(StatusCode::CONFLICT, "Window not extended", &body)
+}
+
+/// BIZ-034, BIZ-038, SEC-004, SEC-025, SEC-026, D-285, D-3890: the Away link's `POST` (object:
+/// the business). Signed out is the 401 before any token read; the link is used in the action's
+/// transaction and must be the signed-in person's own, on their own business, for a person
+/// `session_may` allows, else the one not-found answer (link unused). The hours are bounded with
+/// `picks::api::away_for` (1 to the setting's limit) and stored with `set_away`; a refusal rolls
+/// back, so the link stays unused, and shows the page again with its reason.
+async fn away_post(
+    links: &Links,
+    (object, token): (Uuid, &str),
+    jar: &CookieJar,
+    hours: &str,
+) -> Result<Response, Stop> {
+    let now = links.clock.now();
+    let mut tx = links.pool.begin().await.map_err(failed)?;
+    let principal = business_principal(&mut tx, jar, now)
+        .await
+        .map_err(failed)?;
+    let Some(principal) = principal else {
+        return Ok(signed_out());
+    };
+    let grant = use_action_link(&mut tx, (ActionKind::Away, object), token, None, now).await;
+    let grant = grant.map_err(link_stop)?;
+    let business = grant.business();
+    let may = session_may(&principal, ActionKind::Away, business);
+    if !grant.same_person(&principal) || !may || object != business {
+        return Err(Stop::NotFound);
+    }
+    let by = Acting {
+        business,
+        member: principal.member(),
+    };
+    let set = away_set(&mut tx, by, hours, now).await?;
+    let csrf = csrf_token(jar).unwrap_or_default();
+    match set {
+        Ok(until) => {
+            tx.commit().await.map_err(failed)?;
+            Ok(away_done(until))
+        }
+        Err(refused) => {
+            tx.rollback().await.map_err(failed)?;
+            away_again(&csrf, hours, refused)
+        }
+    }
+}
+
+/// BIZ-034, D-285: bounds `hours` (a whole number from 1 to the setting's limit, read as the AWAY
+/// text reads it, `away_for`) and stores the end with `set_away` in `tx`; the inner error is the
+/// refusal's reason (`None`: the hours themselves, which the page's field error names). Hours in
+/// range always pass `away_for` for a person `session_may` allowed, so its refusal is a failure.
+async fn away_set(
+    tx: &mut PgConnection,
+    by: Acting,
+    hours: &str,
+    now: Timestamp,
+) -> Result<Result<Timestamp, Option<&'static str>>, Stop> {
+    let rules = WindowRules::default();
+    let Some(hours) = away_hours(hours, away_form(None, None).max_hours) else {
+        return Ok(Err(None));
+    };
+    let until = away_for(Roles::BOTH, now, hours, rules).map_err(failed)?;
+    match set_away(tx, by, until, now).await {
+        Ok(()) => Ok(Ok(until)),
+        Err(BusinessesError::Refused) => Ok(Err(Some(AWAY_REFUSED))),
+        Err(_) => Err(Stop::Failed),
+    }
+}
+
+/// BIZ-034, BIZ-023: why a valid away time was not stored.
+const AWAY_REFUSED: &str = "Only the owner or a \"Confirm and billing\" member can set an away time. Nothing changed. Ask one of them to set it.";
+
+/// BIZ-034, D-285: the stored away time's answer, "Away until <time>" in Arizona time.
+fn away_done(until: Timestamp) -> Response {
+    let end = arizona_time(until)
+        .strftime("%-I:%M %p on %A, %B %-d")
+        .to_string();
+    let body = format!(
+        "<p id=\"away-until\">Away until {end}, Arizona time.</p>\
+         <p>A new pick's time to confirm starts when you're back. Emergency picks still start right away.</p>"
+    );
+    done(StatusCode::OK, "Away time set", &body)
+}
+
+/// A11Y-030: the Away page again with the posted `hours` kept and the refusal's reason by the
+/// field (422 for the hours, 409 for a refused person); nothing changed and the link stays unused.
+fn away_again(csrf: &str, hours: &str, refused: Option<&str>) -> Result<Response, Stop> {
+    let facts = ActionFacts {
+        kind: ActionKind::Away,
+        job_number: "",
+        ends_at: None,
+        signed_in: true,
+        days: None,
+        csrf,
+    };
+    let html = away_page(&facts, away_form(Some(hours), refused)).map_err(failed)?;
+    let status = match refused {
+        Some(_) => StatusCode::CONFLICT,
+        None => StatusCode::UNPROCESSABLE_ENTITY,
+    };
+    Ok((status, Html(html)).into_response())
 }
 
 /// BIZ-028, BIZ-010: a self pause: done, or refused because the business is not active.

@@ -40,6 +40,9 @@
 //! T479: every job page shows the WORD-002 business statement under the job card (CARD-020), and
 //! [`job_details_page_choice`] adds "Not a fit for us" with its four one-tap reasons (PICK-057,
 //! `not_a_fit`); the route that serves it is T306's.
+//! T543: [`away_page`] is the Away link's page (BIZ-034, D-285): one labelled field for the hours
+//! back, 1 to the setting's limit ([`AwayForm`], [`away_hours`]), with its A11Y-030 error; the
+//! Busy days field and it share one number-field view.
 
 use askama::Template;
 use askhava_businesses::api::{
@@ -298,10 +301,50 @@ struct ActionView<'a> {
     title: String,
     does: &'static str,
     ends_at: Option<&'a str>,
-    busy: bool,
-    max_days: u32,
-    days: &'a str,
-    days_error: Option<&'static str>,
+    field: Option<NumberField<'a>>,
+}
+
+impl ActionView<'_> {
+    /// The page's one field's error, when it has one (A11Y-030: the "Error: " title).
+    fn field_error(&self) -> Option<&str> {
+        self.field.as_ref().and_then(|f| f.error.as_deref())
+    }
+}
+
+/// An action page's one labelled whole-number field (Busy's days, Away's hours) with its kept
+/// value and its A11Y-030 error.
+struct NumberField<'a> {
+    name: &'static str,
+    label: String,
+    value: &'a str,
+    error: Option<String>,
+}
+
+/// What the Away page shows beside its [`ActionFacts`] (BIZ-034, D-285): the most hours ahead
+/// the setting allows, a refused submit's kept hours value and the refusal's reason, if any.
+#[derive(Debug, Clone, Copy)]
+pub struct AwayForm<'a> {
+    /// The most whole hours "Away until" may be set ahead (the setting's limit; 4 by default).
+    pub max_hours: u32,
+    /// The "hours" value of a refused submit, kept and shown with its error; `None` at first.
+    pub hours: Option<&'a str>,
+    /// Why a submit with valid hours was refused (shown as the field's error), if it was.
+    pub refused: Option<&'a str>,
+}
+
+/// BIZ-034: the hours of an Away form, 1 to `max_hours`; anything else is `None`.
+#[must_use]
+pub fn away_hours(raw: &str, max_hours: u32) -> Option<u32> {
+    raw.trim()
+        .parse::<u32>()
+        .ok()
+        .filter(|n| (1..=max_hours).contains(n))
+}
+
+/// BIZ-034, A11Y-030: what to do when the Away hours are not a whole number from 1 to `max_hours`.
+#[must_use]
+pub fn away_hours_error(max_hours: u32) -> String {
+    format!("Enter a number of hours from 1 to {max_hours}.")
 }
 
 /// BIZ-038, SEC-026, A11Y-023: the page an action link opens, with one button that acts.
@@ -309,18 +352,50 @@ struct ActionView<'a> {
 /// # Errors
 /// The template's render error.
 pub fn action_page(facts: &ActionFacts<'_>) -> Result<String, askama::Error> {
-    let busy = facts.kind == ActionKind::Busy;
-    let days = facts.days.filter(|_| busy);
+    let days = facts.days.unwrap_or_default();
+    let field = (facts.kind == ActionKind::Busy).then(|| NumberField {
+        name: "days",
+        label: format!("Number of days (1 to {BUSY_DAYS_MAX})"),
+        value: days,
+        error: facts
+            .days
+            .filter(|d| busy_days(d).is_none())
+            .map(|_| BUSY_DAYS_ERROR.to_owned()),
+    });
+    render_action(facts, field)
+}
+
+/// BIZ-034, BIZ-038, D-285, SEC-026, A11Y-023, A11Y-030: the Away link's page: what it does,
+/// one labelled field for the hours back (1 to `form.max_hours`) and one button; a refused
+/// submit shows it again with the kept value, the reason by the field and in a focused summary.
+///
+/// # Errors
+/// The template's render error.
+pub fn away_page(facts: &ActionFacts<'_>, form: AwayForm<'_>) -> Result<String, askama::Error> {
+    let hours = form.hours.unwrap_or_default();
+    let bad = form
+        .hours
+        .filter(|h| away_hours(h, form.max_hours).is_none())
+        .map(|_| away_hours_error(form.max_hours));
+    let field = NumberField {
+        name: "hours",
+        label: format!("Hours until you're back (1 to {})", form.max_hours),
+        value: hours,
+        error: bad.or_else(|| form.refused.map(str::to_owned)),
+    };
+    render_action(facts, Some(field))
+}
+
+/// An action page for `facts` with its one field, if any.
+fn render_action(
+    facts: &ActionFacts<'_>,
+    field: Option<NumberField<'_>>,
+) -> Result<String, askama::Error> {
     let action = ActionView {
         title: facts.kind.link_text(facts.job_number),
         does: does_line(facts.kind, facts.signed_in),
         ends_at: facts.ends_at,
-        busy,
-        max_days: BUSY_DAYS_MAX,
-        days: days.unwrap_or_default(),
-        days_error: days
-            .filter(|d| busy_days(d).is_none())
-            .map(|_| BUSY_DAYS_ERROR),
+        field,
     };
     ActionsView {
         action: Some(action),
@@ -349,10 +424,7 @@ pub fn cant_take_page(job_number: &str, csrf: &str) -> Result<String, askama::Er
         title: format!("Can't take it: job {job_number}"),
         does: CANT_TAKE_LINE,
         ends_at: None,
-        busy: false,
-        max_days: BUSY_DAYS_MAX,
-        days: "",
-        days_error: None,
+        field: None,
     };
     ActionsView {
         action: Some(action),

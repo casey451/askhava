@@ -696,5 +696,11 @@
     "draft": true,
     "segments": 7,
     "text": "{brand_short}: Si no le llegan nuestros correos, busque en la carpeta de spam o correo no deseado. Marque nuestro correo como no spam para que los próximos lleguen a su bandeja.\n{brand_short}: Recibido. El dueño de {brand} tiene su mensaje y suele responder en 2 días, o en 24 horas cuando hay una selección o un trabajo de emergencia esperando."
+  },
+  "hold_end_notice": {
+    "audience": "business",
+    "draft": true,
+    "segments": 3,
+    "text": "{brand_short}: El trabajo {job} queda en espera. Ahora tiene hasta {time} para confirmar. No le avisamos de esto al propietario."
   }
 }
