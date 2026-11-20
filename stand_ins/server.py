@@ -25,7 +25,8 @@ Twilio would post as the call ends, only to the URLs the create gave (D-2762).
 `/_stand_in/faults` holds sticky vendor faults until changed (D-3844, D-3940): POST sets
 `twilio` `fail` (every message send answers Twilio's 500) or `suspended` (error 21606, HTTP 400),
 `stripe` `unavailable` (every `/stripe/v1/` request answers a 503) or `drop` (the connection
-closes with no answer), `ai` `529` (a `/anthropic/v1/messages` request without its own
+closes with no answer), `stripe_detach` `fail` (every card detach answers Stripe's 500
+`api_error`, D-4749), `ai` `529` (a `/anthropic/v1/messages` request without its own
 `x-stand-in-fault` header answers as if it carried `529`), and `null` clears one; DELETE clears
 all, GET shows them. A faulted request stores nothing; control routes, Verify, Resend and Lob
 never fail. It binds to 127.0.0.1 only and holds fake data only.
@@ -55,7 +56,12 @@ from stand_ins.common import fake_id
 Out = tuple[int, Any, dict[str, str]]
 AC = r"/twilio/2010-04-01/Accounts/(?P<ac>AC\w{32})"
 RESEND_KEY_PREFIX = "re_stand_in_"
-FAULT_VALUES: dict[str, tuple[str, ...]] = {"twilio": ("fail", "suspended"), "stripe": ("unavailable", "drop"), "ai": ("529",)}
+FAULT_VALUES: dict[str, tuple[str, ...]] = {
+    "twilio": ("fail", "suspended"),
+    "stripe": ("unavailable", "drop"),
+    "stripe_detach": ("fail",),
+    "ai": ("529",),
+}
 DROP = -1
 
 
@@ -368,6 +374,14 @@ def stripe_fetch(s: StandIns, req: Request, m: re.Match[str]) -> Out:
     return 200, found, {}
 
 
+def stripe_detach(s: StandIns, req: Request, m: re.Match[str]) -> Out:
+    """BIZ-051 (D-4749): a card detach, or Stripe's 500 while the `stripe_detach` fault is set."""
+    if s.faults.get("stripe_detach") == "fail":
+        return (*stripe.error("api_error", "api_error", "An unexpected error occurred on Stripe's end.", 500), {})
+    params = stripe_params(req.form())
+    return (*s.stripe.detach_payment_method(m.group("id"), params, req.headers.get("idempotency-key")), {})
+
+
 def stripe_events(s: StandIns, req: Request, m: re.Match[str]) -> Out:
     return (*s.stripe.list_events(req.query.get("type")), {})
 
@@ -442,6 +456,7 @@ ROUTES: list[tuple[str, re.Pattern[str], Handler]] = [
         ("POST", r"/stripe/v1/(?P<kind>customers|setup_intents|payment_intents|refunds)", stripe_create),
         ("POST", PI + r"/(?P<step>confirm|stand_in_authenticate)", stripe_intent_step),
         ("GET", r"/stripe/v1/(payment_intents|setup_intents|customers|refunds)/(?P<id>\w+)", stripe_fetch),
+        ("POST", r"/stripe/v1/payment_methods/(?P<id>pm_\w+)/detach", stripe_detach),
         ("GET", r"/stripe/v1/events", stripe_events),
         ("GET", r"/stripe/v1/charges", stripe_charges),
         ("GET", r"/stripe/v1/charges/(?P<id>(ch|py)_\w+)", stripe_charge),
