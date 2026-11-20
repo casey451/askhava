@@ -8169,3 +8169,4 @@
 - 2026-11-20T00:01:26Z runner b1ce87256c56 (actions): {}
 - 2026-11-20T00:01:57Z runner dbbf2ecc1e6e (actions): {}
 - 2026-11-20T00:03:39Z runner dbbf2ecc1e6e (actions): {}
+- 2026-11-20T00:04:13Z runner dbbf2ecc1e6e (actions): {"T726": "QUEUED -> IN_PROGRESS"}; T726 estimated 1.1M tokens (calibrated); week has 165.5M left (no five-hour budget, D-3056) after 4.5M still running in another lane (session_reading 2026-11-20T00:01:25Z (week)); claimed
