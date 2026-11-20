@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T09:16:06Z by runner 522d0ef3267e (actions).
+Updated 2026-11-20T09:22:33Z by runner fb2a658305cb (actions).
 
 **Building: T617 in progress since 07:06Z; 529 of 709 done; week 26% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-20T09:16:06Z by runner 522d0ef3267e (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T617 claimed 07:06Z, lease until 10:06Z; lane 3: T727 claimed 08:23Z, lease until 11:23Z; lane 5: T573 claimed 08:54Z, lease until 11:54Z; lane 6: T530 claimed 07:20Z, lease until 10:20Z
 - **Week:** 26% used, 139.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:15Z, 0 min before this update
+- **Last run:** 09:16Z, 6 min before this update
 - **Keeper:** last ran 09:16Z, next wake 10:09Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 85 problem(s) on tasks still to run (+399 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 89 problem(s) on tasks still to run (+393 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -88,15 +88,14 @@ Updated 2026-11-20T09:16:06Z by runner 522d0ef3267e (actions).
 | T710 | quotes and licensing (harness): a launch-open category takes | done | 1 | 85 min | 10:06Z |  |
 | T553 | Decisions digest, piece 8: the next entries after the header | done | 1 | 76 min | 10:04Z |  |
 | T622 | portals: the scorecard's first-six-weeks email panel and OPS | done | 1 | 2 h 41 min | 09:47Z |  |
-| T375 | portals and server: the business's Job types page lets the o | done | 1 | 74 min | 09:18Z |  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 324 of 735 (44.1%) · partial 385 · unstarted 26
-**Tasks merged (throughput only):** 529 of 709
+**Requirements verified:** 325 of 735 (44.2%) · partial 384 · unstarted 26
+**Tasks merged (throughput only):** 529 of 707
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -116,7 +115,7 @@ Updated 2026-11-20T09:16:06Z by runner 522d0ef3267e (actions).
 | quiet-hours | 3 | 6 | 0 | 9 |
 | quotes-pick | 25 | 31 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
-| security | 10 | 40 | 5 | 55 |
+| security | 11 | 39 | 5 | 55 |
 | terms | 27 | 8 | 0 | 35 |
 | website | 18 | 10 | 2 | 30 |
 | wording | 23 | 9 | 0 | 32 |
