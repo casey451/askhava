@@ -1,0 +1,21 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(*) AS \"n!\" FROM (\n             SELECT c.relowner AS owner, n.nspname FROM pg_class c\n               JOIN pg_namespace n ON n.oid = c.relnamespace\n             UNION ALL SELECT p.proowner, n.nspname FROM pg_proc p\n               JOIN pg_namespace n ON n.oid = p.pronamespace\n             UNION ALL SELECT t.typowner, n.nspname FROM pg_type t\n               JOIN pg_namespace n ON n.oid = t.typnamespace\n             UNION ALL SELECT nspowner, nspname FROM pg_namespace WHERE nspname <> 'public') o\n           WHERE o.nspname !~ '^(pg_|information_schema$)'\n             AND o.owner <> 'askhava_migrator'::regrole",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "n!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "d34fb70c452ba1b6341345ead87e429d94395725675b040f4e07f7180d343dba"
+}

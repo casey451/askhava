@@ -46,6 +46,7 @@ const DB_VOLUME_BYTES: &str = "ASKHAVA_DB_VOLUME_BYTES";
 const OWNER_PHONE: &str = "ASKHAVA_OWNER_PHONE";
 const EXPORT_RECIPIENT: &str = "ASKHAVA_EXPORT_RECIPIENT";
 const BACKUP_DATABASE_URL: &str = "ASKHAVA_BACKUP_DATABASE_URL";
+const RESTORE_ADMIN_URL: &str = "ASKHAVA_RESTORE_ADMIN_URL";
 
 /// Every key the parser accepts; any other `ASKHAVA_*` key stops startup (D-493).
 const KEYS: &[&str] = &[
@@ -210,6 +211,9 @@ const KEYS: &[&str] = &[
     // only by the worker's export (T109, OPS-013, PRIV-024, D-4293); never a private key.
     EXPORT_RECIPIENT,
     BACKUP_DATABASE_URL,
+    // The throwaway PostgreSQL service's admin URL, read only by the worker's monthly test
+    // restore (T648, OPS-013, OPS-051, SEC-052, D-4293).
+    RESTORE_ADMIN_URL,
 ];
 
 /// Key prefixes that only a live vendor account issues (SEC-002).
@@ -417,6 +421,7 @@ pub struct Settings {
     environment: Environment,
     database_url: SecretString,
     migration_database_url: Option<SecretString>,
+    restore_admin_url: Option<SecretString>,
     db_pool_max: u32,
     log_level: tracing::Level,
     sentry_dsn: Option<SecretString>,
@@ -473,6 +478,7 @@ impl Settings {
             environment,
             database_url: required(&mut raw, DATABASE_URL)?.into(),
             migration_database_url: raw.remove(MIGRATION_DATABASE_URL).map(SecretString::from),
+            restore_admin_url: raw.remove(RESTORE_ADMIN_URL).map(SecretString::from),
             db_pool_max: pool_max(raw.remove(DB_POOL_MAX))?,
             log_level: log_level(raw.remove(LOG_LEVEL))?,
             sentry_dsn: raw.remove(SENTRY_DSN).map(SecretString::from),
@@ -653,6 +659,19 @@ impl Settings {
             .1
             .as_ref()
             .ok_or(SettingsError::Missing(BACKUP_DATABASE_URL))
+    }
+
+    /// The throwaway PostgreSQL service's admin URL (`ASKHAVA_RESTORE_ADMIN_URL`), a secret set on
+    /// the `worker` service only and read only by the monthly test restore; never the live
+    /// database (OPS-013, OPS-051, SEC-052, D-4293).
+    ///
+    /// # Errors
+    ///
+    /// [`SettingsError::Missing`] when the key is absent.
+    pub fn restore_admin_url(&self) -> Result<&SecretString, SettingsError> {
+        self.restore_admin_url
+            .as_ref()
+            .ok_or(SettingsError::Missing(RESTORE_ADMIN_URL))
     }
 
     /// Stripe's publishable key (`ASKHAVA_STRIPE_PUBLISHABLE_KEY`, trimmed, `pk_test_` or

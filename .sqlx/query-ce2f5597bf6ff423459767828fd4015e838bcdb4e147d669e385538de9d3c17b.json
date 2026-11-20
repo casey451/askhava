@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT COALESCE((SELECT ok AND object_bytes IS NOT NULL AND object_sha256 IS NOT NULL\n             AND finished_at >= $1 FROM recovery.backup_check WHERE kind = 'export'\n             ORDER BY finished_at DESC LIMIT 1), false) AS \"fresh!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "fresh!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "ce2f5597bf6ff423459767828fd4015e838bcdb4e147d669e385538de9d3c17b"
+}

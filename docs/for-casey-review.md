@@ -3584,3 +3584,7 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 ## Business texting: an early read-spike alert is expected (D-4913, November 20)
 
 - D-4913 (Fable, Nov 20): in the first two weeks of business texting, an hour with more than three business texts raises one High read-spike alert (no 14-day baseline yet); expected, the same as notice emails.
+
+## Monthly test restore: one more database service to add (D-4846, November 20)
+
+- D-4846 (T648): the monthly test restore needs a second, empty PostgreSQL 16 service in each Railway project (test and live), reachable only on the private network, and its admin URL set as `ASKHAVA_RESTORE_ADMIN_URL` on the `worker` service only. Without it the worker will not start in test or live. Nothing is kept there: each run makes a database, checks it and drops it. A failed run shows as one High alert in the digest and never starts safe mode.
