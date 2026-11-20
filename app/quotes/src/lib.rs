@@ -54,6 +54,7 @@ mod handlers;
 mod health_figures;
 mod home_numbers;
 mod intake;
+mod intake_report;
 mod job_page;
 mod job_text;
 mod models;

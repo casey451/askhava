@@ -193,18 +193,53 @@ impl TwilioHttp {
                 .header("Idempotency-Key", key.as_str())
                 .header("X-Askhava-Message-Key", key.as_str());
         }
-        let (status, bytes) = exchange(request).await?;
-        if !status.is_success() {
-            let code = serde_json::from_slice::<TwilioErrorBody>(&bytes)
-                .ok()
-                .and_then(|body| body.code);
-            return Err(AdapterError::Vendor {
-                status: status.as_u16(),
-                code,
-            });
-        }
-        serde_json::from_slice(&bytes).map_err(|_| AdapterError::Decode)
+        twilio_answer(exchange(request).await?)
     }
+
+    /// GETs `url` with `query` added, under Basic auth: a read, so no key (D-596, D-3155). The
+    /// answer is parsed into `T` and never logged (SEC-032).
+    pub(crate) async fn get_json<T: DeserializeOwned>(
+        &self,
+        url: &str,
+        query: &[(&str, &str)],
+    ) -> Result<T, AdapterError> {
+        let mut url = reqwest::Url::parse(url).map_err(|_| AdapterError::BadConfig)?;
+        if !query.is_empty() {
+            url.query_pairs_mut().extend_pairs(query);
+        }
+        let request = self
+            .client
+            .get(url)
+            .basic_auth(&*self.account_sid, Some(self.auth_token.expose_secret()));
+        twilio_answer(exchange(request).await?)
+    }
+
+    /// A list's `next_page_uri` as a URL on the same host: it must be a path under this
+    /// account's root with no `..`, `\`, `#`, `@` or whitespace, else `Decode` (SEC-032).
+    pub(crate) fn page_url(&self, uri: &str) -> Result<String, AdapterError> {
+        let root = format!("/2010-04-01/Accounts/{}/", self.account_sid);
+        let unsafe_char = |c: char| c.is_whitespace() || matches!(c, '\\' | '#' | '@');
+        if !uri.starts_with(&root) || uri.contains("..") || uri.contains(unsafe_char) {
+            return Err(AdapterError::Decode);
+        }
+        Ok(format!("{}{uri}", self.api_base))
+    }
+}
+
+/// A Twilio answer: the parsed body on success, else `Vendor` with Twilio's error code.
+fn twilio_answer<T: DeserializeOwned>(
+    (status, bytes): (reqwest::StatusCode, Vec<u8>),
+) -> Result<T, AdapterError> {
+    if !status.is_success() {
+        let code = serde_json::from_slice::<TwilioErrorBody>(&bytes)
+            .ok()
+            .and_then(|body| body.code);
+        return Err(AdapterError::Vendor {
+            status: status.as_u16(),
+            code,
+        });
+    }
+    serde_json::from_slice(&bytes).map_err(|_| AdapterError::Decode)
 }
 
 /// The vendor HTTP client: a 15-second timeout, no redirects and no proxy

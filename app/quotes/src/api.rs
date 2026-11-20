@@ -100,6 +100,7 @@ pub use crate::intake::{
     confirm_quote, confirm_quote_at, mark_unavailable, parse_quote, shown_quotes, submit_quote,
     window_open,
 };
+pub use crate::intake_report::{IntakeReportIds, MoreInfoQuote, intake_report_ids};
 pub use crate::job_page::{JobPage, PageParts, job_page, job_trade};
 pub use crate::job_text::{
     CardFacts, JobDescription, KeptCard, StoredCard, card_digest, description, forget_requests,

@@ -41,10 +41,12 @@ pub use crate::job_facts::{
 pub use crate::job_lookup::job_by_number;
 pub use crate::line_close::{LINE_CLOSE_KIND, LineCloseReason, queue_line_close};
 pub use crate::models::{JobRow, JobsError};
+pub use crate::payment_wait::{PAYMENT_RETURNED_KIND, queue_payment_returned};
 pub use crate::purge_events::{
     PURGE_DUE_KIND, PURGE_STAGES, SWEEP_KIND, SWEEP_PAGE, enqueue_purge, final_jobs_page,
     run_sweep, run_sweep_at, schedule_sweep, sweep_closed, unqueued_finals,
 };
+pub use crate::report_facts::{ReportFacts, report_facts};
 pub use crate::request_counts::{
     REQUEST_COUNTS_KIND, report_request_counts, run_request_counts, schedule_request_counts,
 };
