@@ -256,3 +256,34 @@ def test_td_ops_21_root_domain_mail_reaches_the_app_and_has_records() -> None:
     assert any(k[0] == "TXT (DKIM)" and f"_domainkey.{DOMAIN}" in k[1] for k in rows)
     assert ("MX, TXT (SPF, DKIM)", f"`notify.{DOMAIN}`") in rows
     assert f"inbound.{DOMAIN}" not in DNS
+
+
+def test_td_web_02_assets_read_import_string_image_set_and_bare_srcset() -> None:
+    css = '@import "extra.css"; a { background-image: image-set("a.webp" 1x, "b.webp" 2x) }'
+    assert stage.css_assets(css, "/static/site/site.css") == [
+        "/static/site/a.webp",
+        "/static/site/b.webp",
+        "/static/site/extra.css",
+    ]
+    assert stage.assets_in("<img srcset=/static/site/a.webp>") == ["/static/site/a.webp"]
+
+
+def test_td_web_02_escaping_asset_path_raises() -> None:
+    with pytest.raises(ValueError, match="leaves"):
+        stage.assets_in('<img src="/static/site/../../../escaped.png">')
+    with pytest.raises(ValueError, match="leaves"):
+        stage.css_assets("a { background: url(../../x.png) }", "/static/site/site.css")
+
+
+def test_td_web_02_escaping_asset_path_fails_the_build_and_writes_nothing(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    out = tmp_path / "a" / "out"
+    monkeypatch.setattr(stage, "fetch", lambda base, path: b'<img src="/static/site/../../../escaped.png">')
+    failures = stage.build("http://x", out, "## 13. Routes\n| GET | / | site | yes |\n", DOMAIN)
+    assert any("leaves" in f for f in failures)
+    assert not list(tmp_path.rglob("escaped.png"))
+
+
+def test_td_web_02_write_inside_refuses_a_destination_outside_out(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="outside"):
+        stage.write_inside(tmp_path / "out", "/../escaped.png", b"x")
+    assert not (tmp_path / "escaped.png").exists()

@@ -194,23 +194,54 @@ def site_paths(architecture: str) -> list[str]:
     return paths
 
 
+SITE_ROOT = "/static/site/"
+
+
+def site_assets(refs: list[str]) -> list[str]:
+    """Normalise each `..` path; keep those under /static/site/ and raise ValueError for one that climbs out of it."""
+    kept = set()
+    for ref in refs:
+        clean = posixpath.normpath(ref)
+        if clean.startswith(SITE_ROOT):
+            kept.add(clean)
+        elif ref.startswith(SITE_ROOT) or ".." in ref.split("/"):
+            raise ValueError(f"asset path {ref} leaves {SITE_ROOT}")
+    return sorted(kept)
+
+
 def assets_in(html: str) -> list[str]:
-    """The /static/site/ files a page or stylesheet points at."""
+    """The /static/site/ files a page points at (href, src, url(), quoted or bare srcset); ValueError on an escaping path."""
     found = re.findall(r"(?:href|src|url)\s*[=(]\s*[\"']?(/static/site/[^\"'#?)\s>]+)", html, FLAGS)
-    for srcset in re.findall(r"srcset\s*=\s*[\"']([^\"']*)", html, FLAGS):
-        found += re.findall(r"(/static/site/[^\s,]+)", srcset)
-    return sorted(set(found))
+    for match in re.finditer(r"srcset\s*=\s*(?:\"([^\"]*)\"|'([^']*)'|([^\s>]+))", html, FLAGS):
+        found += re.findall(r"(/static/site/[^\s,]+)", "".join(g or "" for g in match.groups()))
+    return site_assets(found)
 
 
 def css_assets(css: str, css_path: str) -> list[str]:
-    """The /static/site/ files a stylesheet's `url(...)` values point at (relative ones resolve against it)."""
+    """The /static/site/ files a stylesheet names by `url(...)`, `@import "..."` or `image-set("...")`.
+
+    Relative paths resolve against the stylesheet; ValueError on a path that climbs out of /static/site/.
+    """
+    refs = re.findall(r"url\(\s*[\"']?([^\"')\s]+)", css, FLAGS)
+    refs += re.findall(r"@import\s+[\"']([^\"']+)", css, FLAGS)
+    for group in re.findall(r"image-set\(([^)]*)\)", css, FLAGS):
+        refs += re.findall(r"[\"']([^\"']+)[\"']", group)
     found = []
-    for ref in re.findall(r"url\(\s*[\"']?([^\"')\s]+)", css, FLAGS):
+    for ref in refs:
         if ref.startswith(("data:", "http:", "https:", "//", "#")):
             continue
         ref = ref.split("?")[0].split("#")[0]
-        found.append(ref if ref.startswith("/") else posixpath.normpath(posixpath.join(posixpath.dirname(css_path), ref)))
-    return sorted(a for a in set(found) if a.startswith("/static/site/"))
+        found.append(ref if ref.startswith("/") else posixpath.join(posixpath.dirname(css_path), ref))
+    return site_assets(found)
+
+
+def write_inside(out: Path, asset: str, data: bytes) -> None:
+    """Write one asset under `out`; ValueError when its destination would land outside."""
+    target = out / asset.lstrip("/")
+    if not target.resolve().is_relative_to(out.resolve()):
+        raise ValueError(f"{asset} would be written outside {out}")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(data)
 
 
 def page_file(out: Path, path: str) -> Path:
@@ -234,7 +265,11 @@ def build(base_url: str, out: Path, architecture: str, domain: str) -> list[str]
         except (ValueError, OSError) as error:
             failures.append(str(error) if isinstance(error, ValueError) else f"{path}: {error}")
             continue
-        assets.update(assets_in(html))
+        try:
+            assets.update(assets_in(html))
+        except ValueError as error:
+            failures.append(f"{path}: {error}")
+            continue
         target = page_file(out, path)
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(html, encoding="utf-8")
@@ -249,11 +284,14 @@ def build(base_url: str, out: Path, architecture: str, domain: str) -> list[str]
         except OSError as error:
             failures.append(f"{asset}: {error}")
             continue
-        target = out / asset.lstrip("/")
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_bytes(data)
-        if asset.lower().endswith(".css"):
-            new = [a for a in css_assets(data.decode("utf-8", "replace"), asset) if a not in assets]
+        try:
+            write_inside(out, asset, data)
+            found = css_assets(data.decode("utf-8", "replace"), asset) if asset.lower().endswith(".css") else []
+        except ValueError as error:
+            failures.append(f"{asset}: {error}")
+            continue
+        if found:
+            new = [a for a in found if a not in assets]
             assets.update(new)
             queue += new
     return failures
