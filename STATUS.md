@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T15:37:08Z by runner 696a43ed61d5 (actions).
+Updated 2026-11-20T15:37:30Z by runner 2de3f26c0335 (actions).
 
 **Building: T530 in progress since 15:29Z; 541 of 712 done; week 36% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-20T15:37:08Z by runner 696a43ed61d5 (actions).
 - **Lane:** lane 1: T530 claimed 15:29Z, lease until 18:29Z
 - **Week:** 36% used, 123.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:37Z, 0 min before this update
-- **Keeper:** last ran 15:36Z, next wake 15:56Z
+- **Keeper:** last ran 15:37Z, next wake 15:57Z
 
 ## Needs attention
 - BLOCKED T771: plan gap reported: PLAN GAP: kit/prompts/T771.md:9 (D-4970, docs/decisions.md:2604) contradicts itself: rule (1) checks the hidden Menu summary as before and rule (2) refuses links whose hidden container holds a non-a[href] control, so the DESIGN_SPEC.md:102 header at 1280 px (site.css:783 .menu display:none hides the whole details) still reports the Menu summary and its four links. Reviewer confirmed. Smallest fix: let rule (2) also cover the hidden Menu's own summary (boxless summary of a details inside or being the hidden container, when every other TARGETS control there is an a[href] with a passing same-href; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T771 --plan-fix D-### --reason "..."` (D-2859)
