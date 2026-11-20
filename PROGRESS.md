@@ -8432,3 +8432,4 @@
 - 2026-11-20T08:49:43Z runner 5914cb41d39a (actions): {}
 - 2026-11-20T08:50:12Z runner adc433df0a11 (actions): {}
 - 2026-11-20T08:52:06Z runner 201d17f9ff6e (actions): {"T561": "MERGE_PENDING -> DONE"}
+- 2026-11-20T08:55:00Z runner 201d17f9ff6e (actions): {"T573": "QUEUED -> IN_PROGRESS"}; T573 estimated 1.9M tokens (calibrated); week has 139.2M left (no five-hour budget, D-3056) after 4.8M still running in another lane (session_reading 2026-11-20T08:49:42Z (week)); claimed
