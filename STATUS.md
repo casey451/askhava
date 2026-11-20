@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-20T23:17:28Z by runner 99495f82d61a (actions).
+Updated 2026-11-20T23:18:11Z by runner 99495f82d61a (actions).
 
 **Building: T664 in progress since 23:09Z; 559 of 714 done; week 50% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 559 of 714 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T664 claimed 23:09Z, lease until 02:09Z; lane 2: T773 claimed 22:44Z, lease until 01:44Z; lane 4: T677 claimed 23:11Z, lease until 02:11Z; lane 6: T526 claimed 23:08Z, lease until 02:08Z
+- **Lane:** lane 1: T664 claimed 23:09Z, lease until 02:09Z; lane 4: T677 claimed 23:11Z, lease until 02:11Z; lane 6: T526 claimed 23:08Z, lease until 02:08Z
 - **Week:** 50% used, 89.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:13Z, 4 min before this update
+- **Last run:** 23:13Z, 5 min before this update
 - **Keeper:** last ran 23:12Z, next wake 01:46Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Updated 2026-11-20T23:17:28Z by runner 99495f82d61a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T773 | Runner (harness): the merge train can carry a third car, bui | MERGE_PENDING | 1 | 33 min | 23:17Z |  |
 | T682 | picks: a pick waiting for Confirm gets its hourly reminders, | MERGE_PENDING | 2 | 91 min | 22:27Z | app/picks/src/reminder_run.rs:316 (remind): a waiting pick whose job was cancelled or closed after the notice keeps gett |
 | T673 | intake (harness): the dispatcher builds and shows the card,  | done | 1 | 106 min | 22:03Z |  |
 | T739 | picks: the owner's re-send of a release goes only while the  | done | 1 | 52 min | 21:49Z |  |
@@ -147,9 +148,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T664 (lease until 2026-11-21T02:09:28Z)
-- lane 2: T773 (lease until 2026-11-21T01:44:12Z)
 - lane 4: T677 (lease until 2026-11-21T02:11:01Z)
 - lane 6: T526 (lease until 2026-11-21T02:08:11Z)
 
 ## Last usage reading
-- {"task": "T682", "at": "2026-11-20T22:27:27Z", "input_tokens": 207, "cache_creation_input_tokens": 338636, "cache_read_input_tokens": 6886412, "output_tokens": 87116}
+- {"task": "T773", "at": "2026-11-20T23:17:27Z", "input_tokens": 61, "output_tokens": 43103, "cache_read_input_tokens": 1623239, "cache_creation_input_tokens": 121253}
