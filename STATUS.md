@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-20T21:32:21Z by runner 3a6cfa07339f (actions).
+Updated 2026-11-20T21:33:41Z by runner 3a6cfa07339f (actions).
 
 **Building: T739 in progress since 20:57Z; 555 of 713 done; week 48% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-20T21:32:21Z by runner 3a6cfa07339f (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 4: T739 claimed 20:57Z, lease until 23:57Z; lane 5: T682 claimed 20:56Z, lease until 23:56Z; lane 6: T673 claimed 20:17Z, lease until 23:17Z
 - **Week:** 48% used, 97.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:32Z, 0 min before this update
+- **Last run:** 21:33Z, 0 min before this update
 - **Keeper:** last ran 21:32Z, next wake 23:20Z
 
 ## Needs attention
@@ -99,7 +99,6 @@ Updated 2026-11-20T21:32:21Z by runner 3a6cfa07339f (actions).
 | T480 | messaging, server and portals: the stored "Spanish conversat | done | 1 | 104 min | 22:23Z |  |
 | T717 | intake (harness): corrections to T711's two jobs: two_jobs a | done | 1 | 2 h 11 min | 22:21Z |  |
 | T607 | site: site.css brought up to the V6 reference (laftly-v6.css | done | 2 | 41 min | 21:57Z | review_missing on 2c1fc315ebe4 (D-3728): not proven reviewed or worker-made / (b) 5cb49e3317bc T607: NOTES entry in the  |
-| T663 | picks, jobs and payments (harness): a confirmed pick moves i | BLOCKED | 1 | 30 min | 21:32Z |  |
 
 ### Plan and harness merges on main
 - none
