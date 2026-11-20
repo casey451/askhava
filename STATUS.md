@@ -1,21 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-20T00:07:45Z by runner dbbf2ecc1e6e (actions).
+Updated 2026-11-20T00:14:27Z by runner 2587b184e363 (actions).
 
 **Building: T527 in progress since 00:05Z; 510 of 703 done; week 12% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 510 of 703 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T527 claimed 00:05Z, lease until 03:05Z; lane 2: T758 claimed 23:07Z, lease until 02:07Z; lane 3: T726 claimed 00:03Z, lease until 03:03Z; lane 5: T663 claimed 23:33Z, lease until 02:33Z; lane 6: T109 claimed 00:04Z, lease until 03:04Z; lane 7: T613 claimed 23:22Z, lease until 02:22Z
+- **Lane:** lane 1: T527 claimed 00:05Z, lease until 03:05Z; lane 2: T758 claimed 23:07Z, lease until 02:07Z; lane 3: T726 claimed 00:03Z, lease until 03:03Z; lane 5: T663 claimed 23:33Z, lease until 02:33Z; lane 6: T109 claimed 00:04Z, lease until 03:04Z; lane 7: T613 claimed 23:22Z, lease until 03:14Z
 - **Week:** 12% used, 162.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:07Z, 0 min before this update
+- **Last run:** 00:08Z, 6 min before this update
 - **Keeper:** last ran 00:07Z, next wake 02:09Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T672 (since 2026-11-19T23:07:12Z, no attempt used; a plan change fixes it): T672: dependency T717 is DONE but its owned file tests/integration/tests/intake_order_two_jobs_rules.rs is not on main
-- Strict plan check red: 72 problem(s) on tasks still to run (+361 on DONE tasks); first: T402: stored context_pct 25% but it measures 29%; regenerate
+- Strict plan check red: 63 problem(s) on tasks still to run (+357 on DONE tasks); first: T403: stored context_pct 13% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -142,7 +142,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 3: T726 (lease until 2026-11-20T03:03:34Z)
 - lane 5: T663 (lease until 2026-11-20T02:33:30Z)
 - lane 6: T109 (lease until 2026-11-20T03:04:53Z)
-- lane 7: T613 (lease until 2026-11-20T02:22:00Z)
+- lane 7: T613 (lease until 2026-11-20T03:14:27Z)
 
 ## Last usage reading
 - {"task": "T541", "at": "2026-11-20T00:00:19Z", "input_tokens": 77, "output_tokens": 15218, "cache_read_input_tokens": 1758710, "cache_creation_input_tokens": 103835}
