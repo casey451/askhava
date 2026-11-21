@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T16:13:42Z by runner b5e6128da683 (actions).
+Updated 2026-11-21T16:19:36Z by runner 4d7223083f34 (actions).
 
-**Building: T608 in progress since 15:59Z; 581 of 730 done; week 30% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T608 in progress since 15:59Z; 582 of 730 done; week 30% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 581 of 730 build tasks (owner gates not counted)
+- **Tasks done:** 582 of 730 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T608 claimed 15:59Z, lease until 18:59Z; lane 3: T786 claimed 15:59Z, lease until 18:59Z; lane 5: T787 claimed 15:36Z, lease until 18:36Z
 - **Week:** 30% used, 132.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:13Z, 0 min before this update
+- **Last run:** 16:14Z, 5 min before this update
 - **Keeper:** last ran 16:13Z, next wake 18:38Z
 
 ## Needs attention
@@ -41,7 +41,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T655 | businesses: an unknown ROC license status warns at 24 hours, | MERGE_PENDING | 2 | 2 h 34 min | 16:05Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
-| T789 | Tests (harness): TD-INT-47's no-contact check ignores the ra | MERGE_PENDING | 1 | 27 min | 15:38Z |  |
+| T789 | Tests (harness): TD-INT-47's no-contact check ignores the ra | done | 1 | 27 min | 15:38Z |  |
 | T304 | server and portals: the owner refund review, the audit log v | done | 2 | 2 h 44 min | 15:18Z | PLAN GAP: app/portals/templates/owner_audit_log.html (owned by T205) and app/portals/templates/health.html (owned by T47 |
 | T776 | intake: a move out of Arizona and a property-management requ | done | 3 | 99 min | 14:37Z | PLAN GAP: outside ownership: app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml) / Worker: D-5160's three tr |
 | T655 | businesses: an unknown ROC license status warns at 24 hours, | QUEUED | 1 | 2 h 36 min | 13:24Z |  |
@@ -100,7 +100,6 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 | T530 | portals: the owner help page and its screened reply box (D-3 | resync | 3 | 71 min | 16:40Z |  |
 | T681 | picks and jobs: the businesses that lost a pick and every qu | done | 1 | 50 min | 16:38Z |  |
 | T771 | a11y tests (harness): reflow_spacing's hidden-control check  | done | 2 | 50 min | 16:34Z | PLAN GAP: kit/prompts/T771.md:9 (D-4970, docs/decisions.md:2604) contradicts itself: rule (1) checks the hidden Menu sum |
-| T664 | portals: the Confirm press re-checks the license and account | BLOCKED | 1 | 5 min | 16:15Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -108,7 +107,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Progress (requirements verified)
 
 **Requirements verified:** 363 of 735 (49.4%) · partial 353 · unstarted 19
-**Tasks merged (throughput only):** 581 of 730
+**Tasks merged (throughput only):** 582 of 730
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -144,7 +143,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 224 of 310 done
+- stage 5: 225 of 310 done
 - stage 6: 0 of 67 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
