@@ -95,7 +95,7 @@ use askhava_licensing::api::{
     Agency, CityRecord, ClassMap, DailyCheck, ImportError, PestAttestation, check_license,
     record_agency_license, record_pest_attestation,
 };
-use askhava_messaging::api::MailboxCodeSender;
+use askhava_messaging::api::{MailboxCodeSender, SendingNumber};
 use askhava_ops::api::Actor;
 use askhava_picks::api::{ConfirmSettings, WindowRules};
 use askhava_portals::api::{
@@ -133,11 +133,11 @@ use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
 use super::business_contacts::ContactDirectory;
+use super::business_portal::business_texting_on;
 use super::business_signin::{NoVerify, SignInMailer};
 
-/// TXT-035: business texting is off, so the form offers email notices alone and the E-SIGN box
-/// names email only (BIZ-036, CON-019).
-const TEXTING_ON: bool = false;
+/// TXT-035, D-3881: the business line's own sending number, read from the pairs (the last wins).
+const BUSINESS_NUMBER: &str = "ASKHAVA_BUSINESS_NUMBER";
 
 /// SEC-019, D-3641: the cookie binding a browser to its sign-up: `<sign-up ID>.<salt>.<MAC>`.
 pub const SIGNUP_COOKIE: &str = "__Host-askhava-signup";
@@ -245,6 +245,7 @@ struct Form {
     secret: IdSecret,
     confirm: ConfirmSettings,
     start: StartAdapters,
+    business_number: Option<SendingNumber>,
 }
 
 /// The served sign-up routes (T302: the form page; T459: the form `POST`; T460: the identity
@@ -254,12 +255,13 @@ pub struct ServedSignUp(Router);
 impl ServedSignUp {
     /// The form page and its `POST` over `pool`, sealing and binding with `secret` (CON-019,
     /// SEC-019, D-3602), showing the fee box with `confirm`'s window (BIZ-030) and storing the
-    /// sign-up through `start`.
+    /// sign-up through `start`; `business_number` is the configured business sending number
+    /// each page reads the texting switch with (TXT-035, D-3881).
     #[must_use]
     pub fn new(
         pool: PgPool,
         secret: IdSecret,
-        confirm: ConfirmSettings,
+        (confirm, business_number): (ConfirmSettings, Option<SendingNumber>),
         start: StartAdapters,
     ) -> Self {
         let inbox_pool = pool.clone();
@@ -268,6 +270,7 @@ impl ServedSignUp {
             secret,
             confirm,
             start,
+            business_number,
         });
         let routes = Router::new()
             .route(SIGNUP_ROUTE, get(form_page))
@@ -346,8 +349,10 @@ impl ServedSignUp {
             Some(mail) => mail,
             None => provider_mail(&pool, &pairs)?,
         };
+        let number = pairs.iter().rev().find(|(k, _)| k == BUSINESS_NUMBER);
+        let number = super::business_number(number.map(|(_, v)| v.as_str()))?;
         let start = start_adapters(raw, &pairs, (verify, mail))?;
-        Ok(Self::new(pool, secret, confirm, start))
+        Ok(Self::new(pool, secret, (confirm, number), start))
     }
 
     /// The routes, state applied, ready to merge.
@@ -509,6 +514,7 @@ async fn form_page(State(form): State<Arc<Form>>, uri: Uri, jar: CookieJar) -> R
         return failure("category list");
     };
     let asked = Asked::from_query(&csrf, uri.query());
+    let asked = form.switched_now(asked).await;
     match form.page(Screen::Form(&categories), asked) {
         Some(html) => (jar, no_store(), Html(html)).into_response(),
         None => failure("sign-up template"),
@@ -539,7 +545,8 @@ async fn start_post(State(form): State<Arc<Form>>, request: Request) -> Response
     match same_site(&form.pool, request, SIGNUP_FORM_ROUTE, now).await {
         Ok((fields, _)) => {
             let posted = Posted(&fields);
-            form.submit(&posted, posted.asked(), now).await
+            let asked = form.switched_now(posted.asked()).await;
+            form.submit(&posted, asked, now).await
         }
         Err(refused) => *refused,
     }
@@ -632,13 +639,31 @@ impl<'a> Posted<'a> {
 }
 
 impl Form {
+    /// TXT-035, BIZ-036, D-3881: `asked` with the business-texting switch as stored now, failing
+    /// closed: on only while the stored switch is on and the business number is configured.
+    async fn switched<'a>(&self, db: &mut PgConnection, asked: Asked<'a>) -> Asked<'a> {
+        let texting_on = business_texting_on(db, self.business_number.as_ref()).await;
+        Asked {
+            texting_on,
+            ..asked
+        }
+    }
+
+    /// As [`Form::switched`] on a connection of its own; none to be had counts as off.
+    async fn switched_now<'a>(&self, asked: Asked<'a>) -> Asked<'a> {
+        match self.pool.acquire().await {
+            Ok(mut db) => self.switched(&mut db, asked).await,
+            Err(_) => asked,
+        }
+    }
+
     /// CON-019, D-2943, D-3262, BIZ-001: the consent from the verified seal (else the form again
     /// with `CONSENT_AGAIN`), the names screened (else the form again with the reason), the box
     /// ticked (else `CONSENT_MISSING`, nothing minted), the text phone, categories and source
     /// code checked (`checked_form`, nothing minted), the mailbox minted from the typed address,
     /// then `submit_signup`.
     async fn submit(&self, posted: &Posted<'_>, csrf: Asked<'_>, now: Timestamp) -> Response {
-        let channels = ChannelPost::parse(posted.0, TEXTING_ON, (&self.secret, csrf.csrf));
+        let channels = ChannelPost::parse(posted.0, csrf.texting_on, (&self.secret, csrf.csrf));
         let mut entered = channels.entered();
         posted.fill(&mut entered);
         let chosen = channels.consent_channels();
@@ -731,7 +756,7 @@ impl Form {
     /// The screen's page for `csrf`, its shown channels sealed (CON-019).
     fn page(&self, screen: Screen<'_>, csrf: Asked<'_>) -> Option<String> {
         let parts = Parts {
-            texting_on: TEXTING_ON,
+            texting_on: csrf.texting_on,
             language: csrf.language,
             csrf: csrf.csrf,
             fees: fee_numbers(self.confirm, WindowRules::default()),
@@ -869,7 +894,8 @@ async fn step_post(form: Arc<Form>, request: Request, ask: Ask) -> Response {
         return failure("database");
     };
     let posted = Posted(&fields);
-    let typed = (posted.get("code"), posted.asked());
+    let asked = form.switched(&mut db, posted.asked()).await;
+    let typed = (posted.get("code"), asked);
     form.step(&mut db, (business, ask), typed, now).await
 }
 
@@ -1080,7 +1106,7 @@ impl Form {
         let Ok(area) = service_area(db, business).await else {
             return failure("service area");
         };
-        let csrf = posted.asked();
+        let csrf = self.switched(db, posted.asked()).await;
         match (later, area.is_some()) {
             (Later::Area, false) => self.area(db, business, posted, (ip, now)).await,
             (Later::Area, true) => shown(self.page(Screen::EmailCode(None), csrf)),
@@ -1102,8 +1128,8 @@ impl Form {
         posted: &Posted<'_>,
         (ip, now): (IpAddr, Timestamp),
     ) -> Response {
-        let (base_zip, radius, csrf) =
-            (posted.get("base_zip"), posted.get("radius"), posted.asked());
+        let csrf = self.switched(db, posted.asked()).await;
+        let (base_zip, radius) = (posted.get("base_zip"), posted.get("radius"));
         let area = match ServiceArea::parse(base_zip, radius) {
             Ok(area) => area,
             Err(problems) => {
@@ -1770,11 +1796,13 @@ fn failure(what: &'static str) -> Response {
 /// WEB-019, D-3144, D-3881, D-4561: what every sign-up page is served for: the session's CSRF
 /// token (SEC-042) and the page language, Spanish only when the request carries `lang=es` (the
 /// query of `GET` [`SIGNUP_ROUTE`], the hidden `lang` field each Spanish form posts); `Form::page`
-/// sets `Parts.language` from it. No new route.
+/// sets `Parts.language` from it. No new route. `texting_on` is the business-texting switch
+/// `Form::switched` read for this request (TXT-035, BIZ-036), off until then.
 #[derive(Debug, Clone, Copy)]
 struct Asked<'a> {
     csrf: &'a str,
     language: PageLanguage,
+    texting_on: bool,
 }
 
 impl<'a> Asked<'a> {
@@ -1791,7 +1819,11 @@ impl<'a> Asked<'a> {
         } else {
             PageLanguage::En
         };
-        Self { csrf, language }
+        Self {
+            csrf,
+            language,
+            texting_on: false,
+        }
     }
 }
 

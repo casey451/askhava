@@ -67,7 +67,7 @@ use askhava_catalog::api::{Catalog, parse as parse_catalog};
 use askhava_core::api::{Clock, Settings, SystemClock, arizona_time};
 use askhava_jobs::api::{finished_counts, job_facts, job_number};
 use askhava_licensing::api::{CityRecord, ClassMap};
-use askhava_messaging::api::still_away;
+use askhava_messaging::api::{SendingNumber, load_lines, still_away};
 use askhava_ops::api::{Actor, away_until};
 use askhava_payments::api::{
     Fee, FeeMode, FeeQuote, JobCodes, JobFeeFacts, Period as FeePeriod, Statement, StoredPickFee,
@@ -113,8 +113,18 @@ use crate::inbound_voice::VoiceHooks;
 /// and its number, since the door probe fills `{pick}` and no `{job}`).
 pub const NOTICE_LOG_ROUTE: &str = "/b/picks/{pick}/notices";
 
-/// TXT-035: business texting is off, so the notice channel is email alone (BIZ-036).
-const TEXTING_ON: bool = false;
+/// TXT-035, BIZ-036, D-3881: whether business texting is on, read now and failing closed: the
+/// stored switch (`messaging::api::load_lines`) is on and `number`, the configured business
+/// sending number, is set. The switch off, no number or a failed read is `false`, so the notice
+/// channel is email alone.
+pub(crate) async fn business_texting_on(
+    db: &mut PgConnection,
+    number: Option<&SendingNumber>,
+) -> bool {
+    load_lines(db, (None, number.cloned()))
+        .await
+        .is_ok_and(|lines| lines.business.texting_on && lines.business.number.is_some())
+}
 
 /// Where the vault the released job's page and the notice page read comes from: `main`'s own
 /// (`RouterParts::with_vault`) or the Twilio webhooks' (the same keys), else none.
@@ -146,6 +156,7 @@ struct Portal {
     security: WebSecurity,
     vault: PortalVault,
     numbers: Arc<[PoolNumber]>,
+    business_number: Option<SendingNumber>,
 }
 
 impl FromRef<Portal> for WebSecurity {
@@ -166,7 +177,11 @@ struct Site {
 /// The portal's routes over `pool`, reading the vault from `vault` and listing the masked
 /// `numbers` on the home page's calls card (BIZ-046), behind the cross-site refusal and, outside
 /// it, `no-store`, so a refusal's 403 is `no-store` too (SEC-034, SEC-042, TD-SEC-49).
-pub fn routes(pool: PgPool, vault: PortalVault, numbers: &[PoolNumber]) -> Router {
+pub fn routes(
+    pool: PgPool,
+    (vault, business_number): (PortalVault, Option<SendingNumber>),
+    numbers: &[PoolNumber],
+) -> Router {
     let clock: Arc<dyn Clock> = Arc::new(SystemClock);
     let security = WebSecurity::new(pool.clone(), Arc::clone(&clock));
     let state = Portal {
@@ -175,6 +190,7 @@ pub fn routes(pool: PgPool, vault: PortalVault, numbers: &[PoolNumber]) -> Route
         security: security.clone(),
         vault,
         numbers: numbers.into(),
+        business_number,
     };
     Router::new()
         .route(BUSINESS_HOME_ROUTE, get(home))
@@ -198,10 +214,11 @@ pub fn routes(pool: PgPool, vault: PortalVault, numbers: &[PoolNumber]) -> Route
 }
 
 /// The routes `build_router` merges: `main`'s own `vault`, else the Twilio webhooks' vault, and
-/// the voice hooks' masked pool numbers, else none (BIZ-046).
+/// the voice hooks' masked pool numbers, else none (BIZ-046); `business_number` is the configured
+/// business sending number the notice settings read the texting switch with (TXT-035, D-3881).
 pub fn served(
     pool: PgPool,
-    vault: Option<Arc<Vault>>,
+    (vault, business_number): (Option<Arc<Vault>>, Option<SendingNumber>),
     (webhooks, voice): (Option<&Arc<Webhooks>>, Option<&Arc<VoiceHooks>>),
 ) -> Router {
     let vault = match (vault, webhooks) {
@@ -210,7 +227,7 @@ pub fn served(
         (None, None) => PortalVault::None,
     };
     let numbers = voice.map(|v| v.pool.numbers().to_vec()).unwrap_or_default();
-    routes(pool, vault, &numbers)
+    routes(pool, (vault, business_number), &numbers)
 }
 
 /// The vault `main` passes to `RouterParts::with_vault`, from `VAULT_KEY` and `VAULT_INDEX_KEY`
@@ -704,7 +721,7 @@ async fn notices(
     };
     let facts = ChannelFacts {
         channel,
-        texting_on: TEXTING_ON,
+        texting_on: business_texting_on(&mut db, portal.business_number.as_ref()).await,
     };
     match notice_settings_page(&who, &addresses, facts, &csrf) {
         Ok(html) => Html(html).into_response(),
@@ -758,12 +775,12 @@ async fn save_channel(
         Some(ChannelChoice::Both) => NoticeChannel::Both,
         None => return StatusCode::UNPROCESSABLE_ENTITY.into_response(),
     };
-    let facts = ChannelFacts {
-        channel,
-        texting_on: TEXTING_ON,
-    };
     let Ok(mut db) = portal.pool.acquire().await else {
         return failed("connection");
+    };
+    let facts = ChannelFacts {
+        channel,
+        texting_on: business_texting_on(&mut db, portal.business_number.as_ref()).await,
     };
     match change_channel(&mut db, &who, facts, portal.clock.now()).await {
         Ok(()) | Err(ChannelChangeError::TextingOff) => see_other(NOTICE_SETTINGS_ROUTE),
