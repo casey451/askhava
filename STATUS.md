@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T03:14:30Z by runner 1e0fea3f6d2c (actions).
+Updated 2026-11-21T03:33:35Z by runner 681a0b807fba (actions).
 
 **Building: T780 in progress since 02:59Z; 567 of 726 done; week 61% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-21T03:14:30Z by runner 1e0fea3f6d2c (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T780 claimed 02:59Z, lease until 05:59Z; lane 3: T781 claimed 02:17Z, lease until 05:17Z; lane 5: T304 claimed 02:48Z, lease until 05:48Z; lane 6: T684 claimed 02:16Z, lease until 05:16Z
 - **Week:** 61% used, 66.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:12Z, 2 min before this update
+- **Last run:** 03:14Z, 18 min before this update
 - **Keeper:** last ran 03:11Z, next wake 05:18Z
 
 ## Needs attention
@@ -103,8 +103,6 @@ T777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_
 | T663 | picks, jobs and payments (harness): a confirmed pick moves i | done | 3 | 65 min | 04:54Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T556 | Decisions digest, piece 11: the next entries after the heade | done | 1 | 51 min | 04:50Z |  |
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 2 | 32 min | 04:08Z |  |
-| T747 | intake and jobs: the homeowner's INT-029 emergency choice ma | done | 1 | 71 min | 03:25Z |  |
-| T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 2 | 2 h 16 min | 03:22Z |  |
 
 ### Plan and harness merges on main
 - none
