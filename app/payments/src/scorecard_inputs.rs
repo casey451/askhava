@@ -4,7 +4,10 @@
 //! No `payments` table stores a trade, so every reader takes the job IDs of one trade (or of all)
 //! from `quotes::api::jobs_by_trade` and a window, at or after `from` and before `to`, on the
 //! row's own money time (`ledger_entry.recorded_at`, `refund.requested_at`). Counts, sums in cents
-//! and shares only; a window with no matching row gives `None`.
+//! and shares only; a window with no matching row gives `None`. The one exception is
+//! [`charge_outcomes`], the refund and dispute rates as a cohort (D-5081): of the charges recorded
+//! in the window, those whose job and business have a refund or dispute entry recorded by now, so
+//! no rate passes 100% and a recent window's rate can still rise.
 
 use jiff::Timestamp;
 use jiff_sqlx::ToSqlx;
@@ -91,6 +94,53 @@ pub async fn ledger_totals(
         refunded_cents: r.refunded,
         disputes: r.disputes,
     }))
+}
+
+/// OPS-039, D-5081: what has become of one window's charges by now.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ChargeOutcomes {
+    /// `charge` entries recorded in the window.
+    pub charges: i64,
+    /// Of those, the ones whose job and business have a `refund` entry recorded at any time.
+    pub refunded: i64,
+    /// Of those, the ones whose job and business have a `dispute` entry recorded at any time.
+    pub disputed: i64,
+}
+
+/// OPS-039, D-5081: [`ChargeOutcomes`] of `jobs`' charges recorded in the window; a refund or
+/// dispute counts against its charge's window, never its own, so neither passes `charges`.
+///
+/// # Errors
+///
+/// [`MoneyEventError::Database`].
+pub async fn charge_outcomes(
+    db: &mut PgConnection,
+    jobs: &[Uuid],
+    from: Timestamp,
+    to: Timestamp,
+) -> Result<ChargeOutcomes, MoneyEventError> {
+    let r = sqlx::query!(
+        "SELECT count(*) AS \"charges!\", \
+           count(*) FILTER (WHERE EXISTS (SELECT 1 FROM payments.ledger_entry r \
+             WHERE r.kind = 'refund' AND r.job_id = e.job_id \
+             AND r.business_id = e.business_id)) AS \"refunded!\", \
+           count(*) FILTER (WHERE EXISTS (SELECT 1 FROM payments.ledger_entry d \
+             WHERE d.kind = 'dispute' AND d.job_id = e.job_id \
+             AND d.business_id = e.business_id)) AS \"disputed!\" \
+         FROM payments.ledger_entry e WHERE e.kind = 'charge' AND e.job_id = ANY($1) \
+           AND e.recorded_at >= $2 AND e.recorded_at < $3",
+        jobs,
+        from.to_sqlx(),
+        to.to_sqlx()
+    )
+    .fetch_one(db)
+    .await
+    .map_err(|_| DB)?;
+    Ok(ChargeOutcomes {
+        charges: r.charges,
+        refunded: r.refunded,
+        disputed: r.disputed,
+    })
 }
 
 /// A part of a whole, both counts.
