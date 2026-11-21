@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T15:20:04Z by runner 2ce468444a2e (actions).
+Updated 2026-11-21T15:25:45Z by runner 3653ff5e6df0 (actions).
 
 **Building: T655 in progress since 13:31Z; 579 of 730 done; week 29% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-21T15:20:04Z by runner 2ce468444a2e (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T655 claimed 13:31Z, lease until 16:31Z; lane 4: T789 claimed 15:10Z, lease until 18:10Z
 - **Week:** 29% used, 132.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:19Z, 0 min before this update
+- **Last run:** 15:25Z, 0 min before this update
 - **Keeper:** last ran 15:20Z, next wake 15:40Z
 
 ## Needs attention
@@ -35,7 +35,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ##[error]Process completed with exit code 1.
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 56 problem(s) on tasks still to run (+457 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 56 problem(s) on tasks still to run (+460 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -101,7 +101,6 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 | T664 | portals: the Confirm press re-checks the license and account | BLOCKED | 1 | 5 min | 16:15Z |  |
 | T684 | picks and server: the open-cards email goes at the times eac | BLOCKED | 1 | 4 min | 15:41Z |  |
 | T770 | ci (harness): the Coverage job's time limit goes from 25 to  | done | 1 | 61 min | 15:35Z |  |
-| T771 | a11y tests (harness): reflow_spacing's hidden-control check  | BLOCKED | 1 | 3 min | 15:22Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -109,7 +108,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Progress (requirements verified)
 
 **Requirements verified:** 363 of 735 (49.4%) · partial 353 · unstarted 19
-**Tasks merged (throughput only):** 579 of 726
+**Tasks merged (throughput only):** 579 of 730
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
