@@ -33693,7 +33693,8 @@
     "T781",
     "T782",
     "T783",
-    "T790"
+    "T790",
+    "T791"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -35167,7 +35168,8 @@
     "T786",
     "T787",
     "T788",
-    "T790"
+    "T790",
+    "T791"
    ],
    "model": null,
    "effort": null,
@@ -38049,7 +38051,8 @@
     "T759",
     "T760",
     "T784",
-    "T785"
+    "T785",
+    "T791"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -51495,6 +51498,64 @@
    "branch": "claude/task/T790-termite-report-pest-control",
    "prompt": "kit/prompts/T790.md",
    "acceptance": "`python3 scripts/check_catalog.py`, `python3 -m pytest tests/test_check_catalog.py tests/test_intake_golden.py tests/test_catalog_license_scope.py tests/twin` and `python3 twin/oracle/gen_license_scope.py --check` pass; `cargo test -p askhava-licensing`, `-p askhava-payments --lib fee_tiers`, `-p askhava-quotes --lib card_lines` `-p askhava-integration --test capability_offer` and `-p askhava-integration --test catalog_settings` pass with each changed check at least as strict; the planted pest sale-word case fails `check_catalog.py`; `Twin` is green."
+  },
+  {
+   "id": "T791",
+   "slug": "spanish-stay-on-wording",
+   "title": "Tests and templates (harness): three Spanish stay-on texts reworded after back-translation (911 text, under 18, Canadian roaming)",
+   "goal": "Plan change D-5222 (Casey: \"Make whatever changes you want\", after the first AI back-translation of the 8 Spanish stay-on texts, TXT-039; INT-004, INT-038, CON-018, TXT-044). Three Spanish texts in the shared `app/messaging/templates/es.json` change, word for word as below, and nothing else in them: (1) `emergency_911`: \"suena una alarma de CO\" becomes \"suena una alarma de monóxido de carbono (CO)\"; (2) `under_18`, both entries (`:79` and `:217`): \"Pídale a un padre o adulto que nos escriba.\" becomes \"Pídale a su madre, a su padre o a otro adulto que nos escriba.\" (INT-038 already says so); (3) `help_reply_ca` and `help_reply_away_ca`: \"Los números de Canadá pueden pagar cargos de roaming.\" becomes \"Si su número es de Canadá, pueden aplicar cargos de roaming.\". The DONE tests that pin the old Spanish change only in those strings: `INT_004_ES` in `app/intake/src/tests/safety_text.rs:22` and the under-18 Spanish text in `app/intake/src/tests/conversation.rs:448`; no test pins the roaming sentence in Spanish (the HELP tests check the English). Each text's `segments` value stays as recorded unless the template registry test (TXT-044) counts more, in which case it is raised to the count (Spanish may be UCS-2); the plan's count on the template text finds none rising (emergency_911 4, under_18 2, help_reply_ca 7 of 8 recorded, help_reply_away_ca 6 of 7). The English texts, \"el dueño\" and \"PARAR para salir\" (CON-018, CON-031) do not change. Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T420",
+    "T152",
+    "T040",
+    "T255",
+    "T057",
+    "T075",
+    "T517",
+    "T100"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "low",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "compliance"
+   ],
+   "owns": [
+    "app/intake/src/tests/safety_text.rs",
+    "app/intake/src/tests/conversation.rs"
+   ],
+   "reads": [
+    "docs/spec/intake.md",
+    "docs/spec/messaging.md"
+   ],
+   "requirements": [
+    "INT-004",
+    "INT-038",
+    "TXT-044"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-5222"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 20,
+    "context_pct": 7
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T791-spanish-stay-on-wording",
+   "prompt": "kit/prompts/T791.md",
+   "acceptance": "`cargo test -p askhava-intake --lib safety_text conversation` and `cargo test -p askhava-messaging` pass; the template registry test reports no segment count above its recorded value; the three texts in `es.json` read exactly as the goal says and nothing else in `es.json` changes."
   }
  ]
 }
