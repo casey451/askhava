@@ -3591,6 +3591,7 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 - **Termite report: old placement in the trade notes (D-5216):** the home-inspection trade notes (`docs/catalog/trade_kb/trades/home_inspection.yaml`, its `wdiir` job type, and `docs/catalog/trade_kb/test_set.csv:145`) and the comment at `app/licensing/src/tests/prop_rules.rs:198` still describe the termite report under home inspection; nothing runs them, so they are left for after launch.
 - **A.R.S. 3-3633 not checked (D-5216):** the termite report moves to pest control on the trade notes' reading of A.R.S. 3-3633 (wood-destroying insect reports are a pest licensee's work); that statute was not independently verified.
 - **Spanish style notes for the paid review (D-5222):** from the first AI back-translation: "el dueño" reads as male; "PARAR para salir" is stiff; "Se canceló su suscripción" can sound like a paid plan; "Por ahora seguimos en inglés" is vague. These wait for the professional review (CON-018 and CON-031 pin the first two).
+- **Duplicate `under_18` in es.json (D-5222):** `app/messaging/templates/es.json` holds the `under_18` key twice (`:75` and `:213`), so the second copy wins when the file is read; T791 changes both, and a later cleanup removes the first.
 
 ## The monthly backup test checks the backup's record (D-4835)
 
