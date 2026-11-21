@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T22:17:04Z by runner d257b6bdcb85 (actions).
+Updated 2026-11-21T22:17:16Z by runner d257b6bdcb85 (actions).
 
 **Building: T608 in progress since 21:16Z; 592 of 739 done; week 37% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 592 of 739 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T608 claimed 21:16Z, lease until 00:16Z; lane 3: T794 claimed 21:27Z, lease until 00:27Z; lane 4: T798 claimed 21:15Z, lease until 00:15Z; lane 6: T118 claimed 22:08Z, lease until 01:08Z
+- **Lane:** lane 2: T608 claimed 21:16Z, lease until 00:16Z; lane 4: T798 claimed 21:15Z, lease until 00:15Z; lane 6: T118 claimed 22:08Z, lease until 01:08Z
 - **Week:** 37% used, 116.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:09Z, 7 min before this update
+- **Last run:** 22:09Z, 8 min before this update
 - **Keeper:** last ran 21:41Z, next wake 22:01Z
 
 ## Needs attention
@@ -19,6 +19,7 @@ Updated 2026-11-21T22:17:04Z by runner d257b6bdcb85 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T794 | adapters and server: the Twilio media delete and the product | MERGE_PENDING | 1 | 49 min | 22:17Z |  |
 | T788 | Tooling (harness): check_pr_change.py fails a task branch th | done | 1 | 64 min | 21:30Z |  |
 | T600 | intake, businesses, privacy and server: four worker handlers | MERGE_PENDING | 1 | 57 min | 21:10Z |  |
 | T565 | portals and server: the business team role change, removal a | MERGE_PENDING | 1 | 97 min | 20:57Z |  |
@@ -125,9 +126,8 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T608 (lease until 2026-11-22T00:16:35Z)
-- lane 3: T794 (lease until 2026-11-22T00:27:32Z)
 - lane 4: T798 (lease until 2026-11-22T00:15:56Z)
 - lane 6: T118 (lease until 2026-11-22T01:08:53Z)
 
 ## Last usage reading
-- {"task": "T788", "at": "2026-11-21T21:30:08Z", "cache_creation_input_tokens": 131627, "cache_read_input_tokens": 1723646, "input_tokens": 105, "output_tokens": 31970}
+- {"task": "T794", "at": "2026-11-21T22:17:03Z", "cache_creation_input_tokens": 103865, "cache_read_input_tokens": 2273199, "output_tokens": 26605, "input_tokens": 84}
