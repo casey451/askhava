@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T10:37:28Z by runner 5effdc8ef3e2 (actions).
+Updated 2026-11-21T10:45:06Z by runner d7e50c517793 (actions).
 
-**Building: T754 in progress since 09:47Z; 576 of 726 done; week 74% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T754 in progress since 09:47Z; 577 of 726 done; week 74% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 576 of 726 build tasks (owner gates not counted)
+- **Tasks done:** 577 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T754 claimed 09:47Z, lease until 12:47Z; lane 3: T615 claimed 09:42Z, lease until 12:42Z
 - **Week:** 74% used, 44.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:37Z, 0 min before this update
+- **Last run:** 10:37Z, 7 min before this update
 - **Keeper:** last ran 10:37Z, next wake 12:45Z
 
 ## Needs attention
@@ -17,13 +17,13 @@ Worker: D-5160's three trade-only rules (job_type: None) give candidate <trade>_
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T776 (since 2026-11-21T08:54:41Z, no attempt used; a plan change fixes it): outside ownership: app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml)
-- Strict plan check red: 54 problem(s) on tasks still to run (+450 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 55 problem(s) on tasks still to run (+450 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T458 | businesses, calls and server: the email's "Link this phone"  | MERGE_PENDING | 1 | 112 min | 10:35Z |  |
-| T654 | licensing and quotes: every ROC list import runs each active | MERGE_PENDING | 2 | 74 min | 10:15Z | PLAN GAP: outside ownership: app/quotes/src/service.rs, app/quotes/src/late_cards.rs, app/intake/src/cards_out.rs, app/i |
+| T654 | licensing and quotes: every ROC list import runs each active | done | 2 | 74 min | 10:15Z | PLAN GAP: outside ownership: app/quotes/src/service.rs, app/quotes/src/late_cards.rs, app/intake/src/cards_out.rs, app/i |
 | T615 | site and server: a styled 404 page for unknown paths, the fa | check_failed | 2 | 92 min | 09:28Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T776 | intake: a move out of Arizona and a property-management requ | BLOCKED | 2 | 11 min | 08:54Z | PLAN GAP: outside ownership: app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml) / Worker: D-5160's three tr |
 | T674 | server: the homeowner's photo upload page and the short-live | done | 2 | 40 min | 08:06Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
@@ -89,7 +89,6 @@ Worker: D-5160's three trade-only rules (job_type: None) give candidate <trade>_
 | T573 | messaging and server: queued business texts are addressed to | check_failed | 3 | 70 min | 12:25Z |  |
 | T614 | site: the V6 header in base.html (links, the Menu in the pag | BLOCKED | 1 | 16 min | 11:39Z |  |
 | T463 | businesses and server: "Busy for <n> days" pauses job cards  | done | 1 | 58 min | 11:16Z |  |
-| T768 | runner tests (harness): the seed test fakes free disk, so a  | done | 1 | 22 min | 10:38Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -97,7 +96,7 @@ Worker: D-5160's three trade-only rules (job_type: None) give candidate <trade>_
 ## Progress (requirements verified)
 
 **Requirements verified:** 361 of 735 (49.1%) · partial 355 · unstarted 19
-**Tasks merged (throughput only):** 576 of 726
+**Tasks merged (throughput only):** 577 of 726
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -133,7 +132,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 219 of 306 done
+- stage 5: 220 of 306 done
 - stage 6: 0 of 67 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done

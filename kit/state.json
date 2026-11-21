@@ -68272,7 +68272,7 @@
      }
     }
    ],
-   "reviewed_sha": "5c41fb78a073aff4bb413b06a41abff1eb0413ba",
+   "reviewed_sha": "27c8f7a91d0e961239c3e4ce3158530a3cf2cb21",
    "review_lease": {
     "task": "T458",
     "session": "actions-44885827625",
@@ -68292,10 +68292,22 @@
      "main": "9b2e4670e6b6410a8253ceeb60cfa0fe17002837",
      "how": "hand-in",
      "at": "2026-11-21T10:35:58Z"
+    },
+    {
+     "from": "5c41fb78a073aff4bb413b06a41abff1eb0413ba",
+     "to": "27c8f7a91d0e961239c3e4ce3158530a3cf2cb21",
+     "main": "d7e50c517793971ed838d1dd863ff5f40a3d4258",
+     "how": "runner",
+     "checks": {
+      "Twin": "success",
+      "Ally": "success"
+     },
+     "at": "2026-11-21T10:44:59Z"
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merge_turn_since": "2026-11-21T10:44:59Z"
   },
   {
    "id": "T459",
@@ -90516,7 +90528,7 @@
     "T747",
     "T677"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 1,
    "slug": "card-pool-roc-check",
    "type": "build",
@@ -90560,13 +90572,70 @@
      "model": "claude-fable-5-2",
      "model_evidence_count": 107,
      "head_sha": "8c691ecb491369f88514a332727a3cf040e79aa5",
-     "pr": null,
-     "checks": null,
+     "pr": 1273,
+     "checks": [
+      {
+       "name": "backup lane 2",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-21T09:01:19Z",
      "ended_at": "2026-11-21T10:15:43Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "usage": {
       "worker": {
        "tokens": 6124054,
@@ -90619,7 +90688,26 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-21T10:22:03Z"
+   "merge_turn_since": "2026-11-21T10:22:03Z",
+   "merged_sha": "d7e50c517793971ed838d1dd863ff5f40a3d4258",
+   "merged_at": "2026-11-21T10:42:59Z",
+   "files": [
+    ".sqlx/query-0f504c44b1b83ff43774f5ee6d865e02327576b3b9c20696391dc49666574d47.json",
+    ".sqlx/query-e94488db85e154203814744685765441a0ed93081b9cccd45428e89ae8b02c43.json",
+    "app/intake/src/cards_out.rs",
+    "app/licensing/NOTES.md",
+    "app/licensing/src/api.rs",
+    "app/licensing/src/daily_lists.rs",
+    "app/licensing/src/service.rs",
+    "app/quotes/NOTES.md",
+    "app/quotes/src/api.rs",
+    "app/quotes/src/card_pool.rs",
+    "app/quotes/src/late_cards.rs",
+    "docs/decisions.md",
+    "docs/for-casey-review.md",
+    "kit/prompts/T654.md",
+    "tests/integration/tests/card_pool_license_check.rs"
+   ]
   },
   {
    "id": "T655",
@@ -109532,7 +109620,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T10:37:28Z",
+ "updated_at": "2026-11-21T10:45:06Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -109630,7 +109718,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "5effdc8ef3e2ebaac5ccd445ea2153c24bcefe91",
+ "runner_sha": "d7e50c517793971ed838d1dd863ff5f40a3d4258",
  "starter": "actions",
  "smoke_runs": [
   {
