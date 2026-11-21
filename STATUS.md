@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T17:29:15Z by runner 04d214018f8f (actions).
+Updated 2026-11-21T17:39:24Z by runner 04d214018f8f (actions).
 
 **Building: T608 in progress since 15:59Z; 583 of 731 done; week 31% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-21T17:29:15Z by runner 04d214018f8f (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T608 claimed 15:59Z, lease until 18:59Z; lane 2: T690 claimed 16:56Z, lease until 19:56Z; lane 4: T615 claimed 17:10Z, lease until 20:10Z
 - **Week:** 31% used, 128.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:21Z, 7 min before this update
+- **Last run:** 17:36Z, 2 min before this update
 - **Keeper:** last ran 16:58Z, next wake 19:02Z
 
 ## Needs attention
@@ -77,7 +77,6 @@ Updated 2026-11-21T17:29:15Z by runner 04d214018f8f (actions).
 | T614 | site: the V6 header in base.html (links, the Menu in the pag | BLOCKED | 2 | 80 min | 18:46Z |  |
 | T743 | messaging and privacy: opt-out listings are re-keyed to the  | QUEUED | 1 | 112 min | 18:17Z |  |
 | T573 | messaging and server: queued business texts are addressed to | done | 4 | 41 min | 18:01Z | model claude-opus-5-5 ran, task names claude-fable-5-2 / re-queued after plan fix D-4969: Coverage time-limit cancel, fi |
-| T686 | businesses and server: a 90-day-old inbox or alert Yes gets  | done | 1 | 76 min | 17:39Z |  |
 
 ### Plan and harness merges on main
 - none

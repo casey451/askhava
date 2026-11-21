@@ -110934,7 +110934,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T17:29:15Z",
+ "updated_at": "2026-11-21T17:39:24Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -111035,14 +111035,6 @@
  "runner_sha": "04d214018f8f03c0c4de779b576f77ae39209a4b",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "a4aa767722f6ef6fec7342c4abd52c442d05485b",
-   "ok": true,
-   "at": "2026-11-21T06:37:55Z",
-   "why": "start routine (ancestry reuse of f05104e101d6, 2026-11-21T05:54:10Z)",
-   "reused": "2026-11-21T05:54:10Z",
-   "base": "f05104e101d6bf6c7c4d3378c229ba9c9fb1c747"
-  },
   {
    "sha": "fabfe83d97077949ffb6f255d69df6ce4ec73cb6",
    "ok": true,
@@ -111191,6 +111183,14 @@
    "why": "start routine (ancestry reuse of 3653ff5e6df0, 2026-11-21T15:10:14Z)",
    "reused": "2026-11-21T15:10:14Z",
    "base": "3653ff5e6df06ad9f1c7c39a432906673295c493"
+  },
+  {
+   "sha": "04d214018f8f03c0c4de779b576f77ae39209a4b",
+   "ok": false,
+   "at": "2026-11-21T17:39:22Z",
+   "why": "start routine (background, ancestor of 5b5195da7475)",
+   "seconds": 1500,
+   "timed_out": true
   }
  ],
  "main_red": null,
