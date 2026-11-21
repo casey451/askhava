@@ -9446,3 +9446,4 @@
 - 2026-11-21T21:11:10Z runner a0ed82b15a9f (actions): {}
 - 2026-11-21T21:11:18Z runner c9349629907b (actions): {}
 - 2026-11-21T21:14:20Z runner 970fd9ee6f72 (actions): {"T690": "MERGE_PENDING -> DONE"}
+- 2026-11-21T21:16:17Z runner 970fd9ee6f72 (actions): {"T798": "QUEUED -> IN_PROGRESS"}; T798 estimated 81k tokens (calibrated); week has 119.9M left (no five-hour budget, D-3056) after 82k still running in another lane (session_reading 2026-11-21T21:10:57Z (week)); claimed
