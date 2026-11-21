@@ -22,14 +22,21 @@
 //! the link's own person's session, pausing job cards and storing the end; days outside 1 to 60
 //! show the page again with `BUSY_DAYS_ERROR` and leave the link unused, as does a business that
 //! is not active (409); another person's link or one naming another business is not found.
+//! T457 (SEC-004, SEC-027, D-3675, D-3889): the Confirm link's `POST` with no session texts a
+//! code through the fake Verify of `with_confirm_link_codes` and uses nothing; a wrong code uses
+//! nothing; the right code uses the link, signs that device in and answers 303 to the Confirm
+//! page; the link's own person's live session goes straight there unless their inbox is shared;
+//! with no codes or no texting phone nothing is sent or used.
 
 use std::collections::BTreeSet;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex, PoisonError};
 
+use askhava_adapters::api::{AdapterError, CodeChannel, IdempotencyKey, VerifyAdapter};
 use askhava_businesses::api::{
     AccountStatus, Acting, Capability, CapabilityAnswers, Checks, Event, LargestJob, PauseReason,
     Roles, add_member, add_owner, apply, away_until, business, busy_until,
-    create as create_business, remove_member, save_capability,
+    create as create_business, record_step_up, remove_member, save_capability,
 };
 use askhava_catalog::api::load_embedded;
 use askhava_core::api::{Guarded, SystemClock};
@@ -42,10 +49,14 @@ use askhava_portals::api::{
     SignInAddress, SignInMail, csrf_token, ensure_pre_session, mint_action_link, open_action_link,
     send_sign_in_link, signin_post,
 };
+use askhava_portals::api::{
+    CodeAddress, CodeFuture, CodeSent, CodeTo, ConfirmCodes, business_principal, set_inbox_shared,
+};
 use askhava_quotes::api::{
     CardBusiness, CardFacts, CardJob, CardParts, DEFAULT_MIN_WORDS, OfferTown, Place, build_card,
     card_digest, keep_card, mark_card_sent, send_cards, stored_facts,
 };
+use askhava_server::business_signup::IdentityCodes;
 use axum::Router;
 use axum::body::{Body, to_bytes};
 use axum::http::{HeaderMap, Method, Request, header};
@@ -511,6 +522,7 @@ async fn td_sec_44_every_other_kind_post_is_not_found_and_uses_nothing(pool: PgP
     for kind in ActionKind::ALL
         .into_iter()
         .filter(|k| *k != ActionKind::Quote && !SESSION_ACTS.contains(k))
+        .filter(|k| *k != ActionKind::Confirm)
     {
         let path = path_of(&live(&w, kind, object_for(&w, kind)).await);
         let reply = send(&w, (&Method::POST, &path, "&days=3"), Site::Own).await;
@@ -1030,4 +1042,186 @@ async fn td_sec_44_another_persons_or_businesss_busy_link_is_not_found(pool: PgP
     assert_eq!(wrong, answer, "a link naming another business");
     assert!(unused(&w, &elsewhere).await, "and the link stays unused");
     assert_eq!(busy_end(&w).await, None, "nothing stored");
+}
+
+/// The code the fake Verify accepts.
+const RIGHT_CODE: &str = "424242";
+
+/// A fake Verify: counts its sends and accepts only [`RIGHT_CODE`].
+struct FakeVerify(Arc<AtomicUsize>);
+
+impl VerifyAdapter for FakeVerify {
+    async fn send_code(
+        &self,
+        _: &IdempotencyKey,
+        _: &str,
+        _: CodeChannel,
+    ) -> Result<String, AdapterError> {
+        self.0.fetch_add(1, Ordering::SeqCst);
+        Ok("sent".to_owned())
+    }
+
+    async fn check_code(&self, _: &str, code: &str) -> Result<bool, AdapterError> {
+        Ok(code == RIGHT_CODE)
+    }
+}
+
+/// Everyone's code address: a fake 555 phone, or an email-only person.
+struct FakeAddress(bool);
+
+impl CodeAddress for FakeAddress {
+    fn code_to<'a>(
+        &'a self,
+        _: &'a mut PgConnection,
+        _: Uuid,
+    ) -> CodeFuture<'a, Result<CodeTo, PortalsError>> {
+        let fake = SecretString::from("+19285550142");
+        let to = if self.0 {
+            CodeTo::Phone(fake)
+        } else {
+            CodeTo::Email(fake)
+        };
+        Box::pin(async move { Ok(to) })
+    }
+}
+
+/// [`world`] whose router has the Confirm link's codes over the fake Verify (D-3889), and the
+/// fake's send count; `phone` says whether people have a phone that gets texts.
+async fn coded(pool: &PgPool, phone: bool) -> (World, Arc<AtomicUsize>) {
+    let mut w = world(pool).await;
+    let sends = Arc::new(AtomicUsize::new(0));
+    let verify = IdentityCodes::new(FakeVerify(Arc::clone(&sends)));
+    let key = SecretString::from("a-fake-key-of-thirty-two-bytes-00");
+    let codes = ConfirmCodes::new(verify, FakeAddress(phone), key);
+    let parts = askhava_server::RouterParts::from((None, None, None, None));
+    let parts = parts.with_confirm_link_codes(codes);
+    w.app = askhava_server::build_router(pool.clone(), Router::new(), parts);
+    (w, sends)
+}
+
+/// A `POST` of `path` with `extra` fields and `jar`: its status, its `Location` and the cookies
+/// it set.
+async fn landed(w: &World, path: &str, extra: &str, jar: &CookieJar) -> (u16, String, CookieJar) {
+    let asked = request((&Method::POST, path, extra), Site::Own, jar);
+    let response = w.app.clone().oneshot(asked).await.expect("response");
+    let header_text = |v: &header::HeaderValue| v.to_str().ok().map(str::to_owned);
+    let to = response.headers().get(header::LOCATION);
+    let to = to.and_then(header_text).unwrap_or_default();
+    let cookies: Vec<String> = response
+        .headers()
+        .get_all(header::SET_COOKIE)
+        .iter()
+        .filter_map(|v| Some(v.to_str().ok()?.split(';').next()?.to_owned()))
+        .filter(|pair| !pair.ends_with('='))
+        .collect();
+    let mut headers = HeaderMap::new();
+    headers.insert(header::COOKIE, cookies.join("; ").parse().expect("cookies"));
+    let status = response.status().as_u16();
+    (status, to, CookieJar::from_headers(&headers))
+}
+
+/// TD-SEC-44, SEC-004, BIZ-038, PICK-021, D-3675: signed out, the Confirm link's first press
+/// texts one code and uses nothing; a wrong code uses nothing; the right code uses the link,
+/// signs that device in as the link's person and answers 303 to the Confirm page, once.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_44_the_confirm_link_asks_for_a_code_then_signs_that_device_in(pool: PgPool) {
+    let (w, sends) = coded(&pool, true).await;
+    let pick = Uuid::new_v4();
+    let path = path_of(&live(&w, ActionKind::Confirm, pick).await);
+    let first = send(&w, (&Method::POST, &path, ""), Site::Own).await;
+    assert_eq!(first.status, 200, "{}", first.text);
+    assert!(first.no_store && first.text.contains("We texted a code to your phone."));
+    assert!(first.text.contains("name=\"code\"") && first.text.contains("for=\"code\""));
+    assert_eq!(sends.load(Ordering::SeqCst), 1, "one code sent");
+    let wrong = send(&w, (&Method::POST, &path, "&code=000000"), Site::Own).await;
+    assert_eq!(wrong.status, 422);
+    assert!(wrong.text.contains("<title>Error: ") && wrong.text.contains("href=\"#code\""));
+    assert!(wrong.text.contains("Check the text and type it again."));
+    assert!(
+        unused(&w, &path).await,
+        "a sent or wrong code used the link"
+    );
+    let cross = send(&w, (&Method::POST, &path, "&code=424242"), Site::Cross).await;
+    assert_eq!(cross.status, 403, "a cross-site code is refused (SEC-048)");
+    assert!(unused(&w, &path).await, "a cross-site code used the link");
+    let pre = ensure_pre_session(CookieJar::new()).expect("pre-session");
+    let right = format!("&code={RIGHT_CODE}");
+    let (status, to, jar) = landed(&w, &path, &right, &pre).await;
+    assert_eq!((status, to), (303, format!("/b/picks/{pick}/confirm")));
+    assert!(!unused(&w, &path).await, "the right code uses the link");
+    let mut db = w.pool.acquire().await.expect("db");
+    let who = business_principal(&mut db, &jar, Timestamp::now()).await;
+    let who = who
+        .expect("read")
+        .expect("that device is signed in (SEC-004)");
+    assert_eq!(
+        (who.member(), who.business()),
+        (w.team.member, w.team.business)
+    );
+    let again = send(&w, (&Method::POST, &path, &right), Site::Own).await;
+    assert_eq!(again, not_found(&w, &Method::POST).await, "a used link");
+    assert_eq!(sends.load(Ordering::SeqCst), 1);
+}
+
+/// TD-SEC-44, SEC-004, SEC-027, BIZ-038: the link's own person's live session needs no code
+/// (303, link used, nothing sent); another person's link in that session, and their own once
+/// "This inbox is shared" is on, get the code step and use nothing.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_44_a_live_session_skips_the_code_unless_the_inbox_is_shared(pool: PgPool) {
+    let (w, sends) = coded(&pool, true).await;
+    let (member, jar) = signed_in(&w).await;
+    let pick = Uuid::new_v4();
+    let own = live_for(&w, (ActionKind::Confirm, pick), member).await;
+    let (status, to, _) = landed(&w, &own, "", &jar).await;
+    assert_eq!((status, to), (303, format!("/b/picks/{pick}/confirm")));
+    assert!(!unused(&w, &own).await, "the press used the link");
+    assert_eq!(sends.load(Ordering::SeqCst), 0, "no code inside a session");
+    let owners = path_of(&live(&w, ActionKind::Confirm, pick).await);
+    let other = act(&w, &owners, Site::Own, &jar).await;
+    assert_eq!(
+        other.status, 200,
+        "another person's link asks for their code"
+    );
+    assert!(unused(&w, &owners).await && sends.load(Ordering::SeqCst) == 1);
+    let (mut db, now) = (w.pool.acquire().await.expect("db"), Timestamp::now());
+    let by = Acting {
+        business: w.team.business,
+        member,
+    };
+    record_step_up(&mut db, by, now).await.expect("step-up");
+    let who = business_principal(&mut db, &jar, now).await;
+    let who = who.expect("read").expect("signed in");
+    let phone = CodeTo::Phone(SecretString::from("+19285550142"));
+    let shared = set_inbox_shared(&mut db, &who, (true, &phone), now).await;
+    shared.expect("shared");
+    drop(db);
+    let next = live_for(&w, (ActionKind::Confirm, Uuid::new_v4()), member).await;
+    let asked = act(&w, &next, Site::Own, &jar).await;
+    assert_eq!(
+        asked.status, 200,
+        "a shared inbox needs a fresh code (SEC-027)"
+    );
+    assert!(asked.text.contains(&CodeSent::Sent.line()[..30]));
+    assert!(unused(&w, &next).await && sends.load(Ordering::SeqCst) == 2);
+}
+
+/// TD-SEC-44, SEC-004, D-3889: with no codes configured the Confirm link sends, checks and uses
+/// nothing and says the code could not be sent; a person with no phone that gets texts is told
+/// to link one, with nothing sent or used.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_44_without_codes_or_a_texting_phone_the_confirm_link_uses_nothing(pool: PgPool) {
+    let bare = world(&pool).await;
+    let path = path_of(&live(&bare, ActionKind::Confirm, Uuid::new_v4()).await);
+    for extra in ["", "&code=424242"] {
+        let reply = send(&bare, (&Method::POST, &path, extra), Site::Own).await;
+        assert_eq!(reply.status, 200, "{extra}");
+        assert!(reply.text.contains("send the code. Press"), "{extra}");
+        assert!(unused(&bare, &path).await, "{extra}: used with no codes");
+    }
+    let (w, sends) = coded(&pool, false).await;
+    let path = path_of(&live(&w, ActionKind::Confirm, Uuid::new_v4()).await);
+    let reply = send(&w, (&Method::POST, &path, ""), Site::Own).await;
+    assert_eq!(reply.status, 200);
+    assert!(reply.text.contains("link a phone that gets texts"));
+    assert!(unused(&w, &path).await && sends.load(Ordering::SeqCst) == 0);
 }

@@ -478,14 +478,24 @@ button:active {
 .header-row { display: flex; align-items: flex-start; gap: 4px; min-height: var(--header-h); padding-block: calc((var(--header-h) - 44px) / 2); box-sizing: border-box; }
 .brand { display: inline-flex; align-items: center; gap: 9px; color: var(--ink); text-decoration: none; font: 700 24px/32px var(--sans); letter-spacing: -0.035em; margin-right: auto; min-height: 44px; white-space: nowrap; }
 .brand img, .brand .mark { width: 30px; height: 27px; }
-.site-nav { display: none; }
+.site-nav { display: none; margin-left: auto; }
 .header-link { display: inline-flex; align-items: center; min-height: 44px; padding: 0 10px; font-size: 16px; line-height: 24px; font-weight: 500; color: var(--ink); text-decoration: none; }
 .header-link:hover { text-decoration: underline; }
-.menu { display: flex; flex-direction: column; align-items: flex-end; }
+/* The header's Menu (T614, D-5059): the disclosure and its content slot have no box, so the pill
+   and the open list are the header's own flex items; the pill's margins make it the header's
+   height, and the list is a row of its own in the page flow under the header row (WCAG 2.4.11). */
+.menu { display: contents; }
+.menu::details-content { display: contents; }
+.menu > summary { margin: calc((var(--header-h) - 44px) / 2) 0 calc((var(--header-h) - 44px) / 2) -12px; }
+.menu:not([open]) .menu-list { display: none; }
+/* Below 1024 px "Español" and the pill sit together at the right. On a business page, where the
+   "Get help" link follows the nav, the row wraps on a phone, so the pill keeps to the gutter. */
+@media (max-width: 1023px) { .site-nav ~ p { margin-left: auto; } }
+.site-nav + a ~ .menu > summary { margin-left: 0; }
 .menu summary { list-style: none; display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 1px solid var(--field-edge); border-radius: 22px; background: var(--surface); font-size: 16px; line-height: 24px; font-weight: 500; cursor: pointer; box-sizing: border-box; }
 .menu summary:hover { border-color: var(--ink); }
 .menu summary::-webkit-details-marker { display: none; }
-.menu-list { position: static; width: min(280px, calc(100vw - 2 * var(--gutter))); margin: 8px 0 0; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 8px 0; list-style: none; box-shadow: 0 12px 28px rgba(30, 41, 38, 0.12); box-sizing: border-box; }
+.menu-list { position: static; flex: 0 0 100%; margin: 0 0 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 8px 0; list-style: none; box-shadow: 0 12px 28px rgba(30, 41, 38, 0.12); box-sizing: border-box; }
 .menu-list li { max-width: none; }
 .menu-list a { display: block; padding: 10px 20px; color: var(--ink); font-size: 18px; text-decoration: none; }
 .menu-list a:hover { text-decoration: underline; }

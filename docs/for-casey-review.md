@@ -3201,7 +3201,7 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - When a business changes a phone's number, the texting agreement given for the old number no longer counts. Job cards and notices for a business that chose text only go by email until someone ticks the texting box for the new number.
 - A box shown for the old number and sent after the change is turned down, so a tick never counts for a number the person did not see.
-- One leftover for a later task: the list of phones that may get a sign-in code still counts the old agreement after a member's own extra phone changes number. It sends nothing extra today beyond the sign-in code that member asked for, but it should follow the same rule.
+- The leftover is closed (T777, D-5102): the list of phones that may get a sign-in code now follows the same rule. After a member's own extra phone changes number, the sign-in code goes to that member's email until the texting box is ticked for the new number.
 - Nothing needs you now.
 ## Pre-claim checks of the audit fix tasks (D-4064, November 17)
 - Before any of the new audit fix tasks start, Opus checkers read each one against the code. Their fixes are now in the tasks.
@@ -3571,6 +3571,12 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 Items kept for after launch under the scope freeze (D-4824). Each is a note, not a task.
 
 - **Code digests coverage:** the digest tasks (T556 to T558) cover about 0.9 MB of the about 1.58 MB of code to summarise after D-3357; T514 or T142 weighs whether that matters before the handover.
+- **Open PaymentIntents at Stripe (D-5158):** Ended picks leave their unconfirmed PaymentIntent open at Stripe (all `end_intent_unless_charging` callers and `end_pick`). No funds are held. A late success after a declined attempt is auto-refunded (FEE-021); one on an intent that was never attempted is not released and raises one High alert, and you refund it in Stripe. They show as Incomplete in the Stripe dashboard. If a late success lands on the ended intent while a $0 release is held in safe mode, `held_release` takes the paid path and answers `PickEnded`: the charge is refunded but the business is not released; accepted as rare. Consider a best-effort `cancel_payment_intent` in T132 or after launch.
+- **Scrollable tables on finished pages (D-5159):** the tables in `scorecard.html` (two), `money_view.html` and `intake_report.html` are not yet wrapped in a focusable scroll region as the business page's fee table is; their tasks are done, so the one-line wrapper waits for after launch.
+- **Keyword reading with AI off (D-5160):** all other open categories remain unreachable by keyword with AI off; bare "moving", "turnover", "snowbird" and "vacation rental" were left out to avoid false two-job reads; the narrowed Spanish phrases also leave "ayuda con la mudanza" and golden row local_moving-10 ("busco mudanza") unread with AI off, accepted.
+- **"Never mind" with no job (D-5161):** a homeowner who texts "never mind" in a request that has no job yet still gets no reply; a reply needs a new English and Spanish template pair. Also still open: a lone open job number or ALL sent later, with no worded reply in between, still closes a job after "Close which?".
+- **Call log on the released job's page (D-5162):** the page shows the real job number but still says "No calls yet." even when calls exist (BIZ-035). Stripe dispute handling (FEE-022) does not depend on the page.
+- **Returned mailboxes and card notices (D-5165):** some card notices (`app/picks/src/aftermath.rs:213`) still go to a mailbox marked returned; fixing that needs the notice email sender (`notice_emails.rs`) changed too.
 
 ## The monthly backup test checks the backup's record (D-4835)
 
@@ -3614,6 +3620,7 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 ## Header Menu: the open list spans the header's width (D-5059, November 20)
 
 - On phones and tablets, the open Menu's links take a full-width row under the header instead of the reference's 280 px panel on the right. The links, order and wording are unchanged. Say if you want the narrow right-hand panel instead.
+- On a phone, a business portal page's header takes two rows: the wordmark, "Get help" and "Español" on the first, the Menu button on the second. The four items do not fit one row under 372 px, and "Get help" has to show at every width (T614, D-4944).
 
 ## Outside code review, 40 findings (D-5081, November 20)
 
@@ -3628,6 +3635,11 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
   - The nightly export's 100-second limit stays. T781 makes a failed or timed-out export raise an alert once a day; a longer limit is a separate choice when it starts to fire.
 - The sentence in this file that said bounced emails "are now acted on" was wrong: T659 has not run yet. It is corrected above.
 
+## Confirm link in the email: code by text only (D-5112, November 21)
+
+- The Confirm link in a pick email now works in a browser that isn't signed in. It texts a code to that person's own phone, and the right code signs them in and opens the Confirm page.
+- Still open: a person with no phone that gets texts can't use the link yet. The page tells them to link a phone in the portal. The email code the spec allows for them (SEC-004) is not built.
+- Still open: a person who marked "This inbox is shared" is asked for a code by the link, and then the Confirm page asks for its own code before the press. That second code step is not wired yet (the known gap from T261).
 ## Sign-in codes and phone approval (D-5117, November 21)
 
 - T777 now fixes one thing: after a team member changes their phone number, the sign-in code is not texted to the new number until its text box is ticked. Until then the code goes to their email.
@@ -3641,3 +3653,6 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 - There is no cap yet on how many photos one request can hold (the spec asks for up to 3 kinds of photo but sets no upload limit). Say so if you want one.
 - When one request covers two kinds of work, a photo she sends for one never shows on the other's card, and pressing "Send this photo" twice counts once (D-5084).
 - Nothing needs you now.
+## Disputes with no evidence date (D-5164, November 21)
+
+- A Stripe dispute that arrives without an evidence due date is now recorded and blocks refunds on that pick, with an alert naming the pick. Nothing is auto-submitted for it: you must counter or accept it in Stripe yourself. Its PRIV-007 retention hold counts from the day it was opened.
