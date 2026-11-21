@@ -10,7 +10,8 @@
 //! `sample_pick` go to the payload's `to` mailboxes;
 //! `notice_address_changed` to the `old` address (SEC-024); `notice_address_returned` to the
 //! owner's main and backup addresses that may still get notices, never the returned one (BIZ-040,
-//! D-3682); `phone_linked`, `after_hours_off` and `license_change` to the owner's account address
+//! D-3682); `phone_linked`, `after_hours_off`, `license_change` and `license_unknown` (LIC-008,
+//! T655, stored under `license_change`'s template, D-5184) to the owner's account address
 //! while it may get notices, else the owner's other addresses that may (`phone_linked` only while
 //! its member is on the team and the phone still waits, JOB-006); `emergency_test` to a member's
 //! main address only while it may get notices, with no fallback (BIZ-040, BIZ-055, D-4052 B30).
@@ -51,12 +52,13 @@ use crate::email_verification::{
 use crate::emergency_switch::{
     AFTER_HOURS_OFF_KIND, EMERGENCY_TEST_KIND, OFF_REMOVED, OFF_SUSPENDED, emergency_test_words,
 };
+use crate::license_standing::LICENSE_UNKNOWN_KIND;
 use crate::phone_approval::phone_standing;
 use crate::rules::JobTypeChoice;
 use crate::team::{NoticePurpose, TeamMember, members};
 
 /// Every `core.task` kind [`run_notice_email`] handles; the composition registers each one.
-pub const NOTICE_KINDS: [&str; 9] = [
+pub const NOTICE_KINDS: [&str; 10] = [
     BACKUP_CHANGED_KIND,
     PHONE_LINKED_KIND,
     SAMPLE_CARD_KIND,
@@ -66,6 +68,7 @@ pub const NOTICE_KINDS: [&str; 9] = [
     EMERGENCY_TEST_KIND,
     AFTER_HOURS_OFF_KIND,
     LICENSE_CHANGE_KIND,
+    LICENSE_UNKNOWN_KIND,
 ];
 const FAILED: HandlerError = HandlerError("business event email failed");
 const MALFORMED: HandlerError = HandlerError("business event email payload is malformed");
@@ -327,6 +330,7 @@ async fn ready<E, P: NoticeParts>(
     match task.kind.as_str() {
         AFTER_HOURS_OFF_KIND => after_hours(task, &mailer.directory, false).map(|_| ())?,
         LICENSE_CHANGE_KIND => license(task, false).map(|_| ())?,
+        LICENSE_UNKNOWN_KIND => unknown(task, false).map(|_| ())?,
         PHONE_LINKED_KIND => return Ok(named(db, mailer, (task, team, owner)).await?.map(Some)),
         BACKUP_CHANGED_KIND | SAMPLE_CARD_KIND | SAMPLE_PICK_KIND | CHANGED_KIND => {
             id(task, "member")?;
@@ -413,6 +417,7 @@ async fn plan<E, P: NoticeParts>(
             ("business_phone_linked", words)
         }
         LICENSE_CHANGE_KIND => ("business_license_change", license(task, spanish)?),
+        LICENSE_UNKNOWN_KIND => ("business_license_change", unknown(task, spanish)?),
         _ => listed(task, spanish)?,
     };
     if to.is_empty() {
@@ -441,7 +446,9 @@ async fn recipients(
             mine.map(|m| m.mailbox).collect()
         }
         RETURNED_KIND => return returned(db, task, owner).await,
-        AFTER_HOURS_OFF_KIND | PHONE_LINKED_KIND | LICENSE_CHANGE_KIND => vec![owner.mailbox],
+        AFTER_HOURS_OFF_KIND | PHONE_LINKED_KIND | LICENSE_CHANGE_KIND | LICENSE_UNKNOWN_KIND => {
+            vec![owner.mailbox]
+        }
         BACKUP_CHANGED_KIND | SAMPLE_CARD_KIND | SAMPLE_PICK_KIND => ids(task, "to")?,
         CHANGED_KIND => vec![id(task, "old")?],
         _ => return Err(HandlerError("not a business event email kind")),
@@ -538,7 +545,7 @@ async fn reachable(
             }
             Ok(kept)
         }
-        AFTER_HOURS_OFF_KIND | PHONE_LINKED_KIND | LICENSE_CHANGE_KIND => {
+        AFTER_HOURS_OFF_KIND | PHONE_LINKED_KIND | LICENSE_CHANGE_KIND | LICENSE_UNKNOWN_KIND => {
             let all = owner_reachable(db, owner).await?;
             Ok(if all.contains(&owner.mailbox) {
                 vec![owner.mailbox]
@@ -678,6 +685,89 @@ fn license(task: &Claimed, spanish: bool) -> Result<[String; 2], HandlerError> {
         paused: task.payload["paused"].as_bool().ok_or(MALFORMED)?,
     };
     Ok(license_change_words(spanish, &change, &dropped))
+}
+
+/// LIC-008, D-4310: the license-unknown words from the payload's `since` and `pause_at` (Unix
+/// seconds) and `paused`.
+fn unknown(task: &Claimed, spanish: bool) -> Result<[String; 2], HandlerError> {
+    let at = |field: &str| -> Result<Timestamp, HandlerError> {
+        let second = task.payload[field].as_i64().ok_or(MALFORMED)?;
+        Timestamp::from_second(second).map_err(|_| MALFORMED)
+    };
+    let paused = task.payload["paused"].as_bool().ok_or(MALFORMED)?;
+    Ok(license_unknown_words(
+        spanish,
+        (at("since")?, at("pause_at")?),
+        paused,
+    ))
+}
+
+/// The Spanish month names, for a date in the license-unknown email.
+const MESES: [&str; 12] = [
+    "enero",
+    "febrero",
+    "marzo",
+    "abril",
+    "mayo",
+    "junio",
+    "julio",
+    "agosto",
+    "septiembre",
+    "octubre",
+    "noviembre",
+    "diciembre",
+];
+
+/// LIC-008, BIZ-018, D-4310: the owner's email for [`LICENSE_UNKNOWN_KIND`] as `[subject, body]`,
+/// in Spanish when `spanish`: the ROC license could not be checked on the state list since the
+/// Arizona day of `since` because the list did not load, which says nothing about the license;
+/// job cards pause at `pause_at` (Arizona time) until it can be, or are paused already when
+/// `paused`; nothing is needed if the license is Active. No license number, contact value or
+/// link (cold read and copy panel, WORD-028, WORD-029).
+#[must_use]
+pub fn license_unknown_words(
+    spanish: bool,
+    (since, pause_at): (Timestamp, Timestamp),
+    paused: bool,
+) -> [String; 2] {
+    let (since, at) = (arizona_time(since), arizona_time(pause_at));
+    let hour = at.strftime("%-I:%M").to_string();
+    if spanish {
+        let b = brand().es().short_name().to_owned();
+        let day = |z: &jiff::Zoned| {
+            let month = MESES[usize::from(z.month().unsigned_abs()).saturating_sub(1) % 12];
+            format!("{} de {month}", z.day())
+        };
+        let half = if at.hour() < 12 { "a. m." } else { "p. m." };
+        let when = format!("{}, a las {hour} {half}, hora de Arizona", day(&at));
+        let then = if paused {
+            format!(
+                "El {when}, todavía no habíamos podido revisarla. Por eso sus tarjetas de trabajo están en pausa hasta que podamos."
+            )
+        } else {
+            format!(
+                "Puede que el {when}, todavía no podamos revisarla. En ese caso, sus tarjetas de trabajo quedarán en pausa hasta que podamos."
+            )
+        };
+        let body = format!(
+            "No hemos podido revisar su licencia del ROC en la lista del estado desde el {}.\n\nLa lista del estado no nos cargó. Eso no dice nada sobre su licencia.\n\n{then}\n\nSi su licencia está activa, no tiene que hacer nada.",
+            day(&since)
+        );
+        return [format!("{b}: No pudimos revisar su licencia del ROC"), body];
+    }
+    let b = brand().short_name().to_owned();
+    let half = if at.hour() < 12 { "a.m." } else { "p.m." };
+    let when = format!("{hour} {half} on {}, Arizona time", at.strftime("%b %-d"));
+    let then = if paused {
+        format!("We still couldn't check it by {when}. So your job cards are paused until we can.")
+    } else {
+        format!("If we can't by {when}, we'll pause your job cards until we can.")
+    };
+    let body = format!(
+        "We haven't been able to check your ROC license on the state's list since {}.\n\nThe state's list didn't load for us. That says nothing about your license.\n\n{then}\n\nIf your license is Active, you don't need to do anything.",
+        since.strftime("%b %-d")
+    );
+    [format!("{b}: We couldn't check your ROC license"), body]
 }
 
 /// Stores `words` to `mailbox` (SEC-018: one row and one provider key per template, mailbox,
