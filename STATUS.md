@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T20:18:42Z by runner bdc2be532869 (actions).
+Updated 2026-11-21T20:18:58Z by runner bdc2be532869 (actions).
 
 **Building: T565 in progress since 19:19Z; 587 of 734 done; week 35% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 587 of 734 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T565 claimed 19:19Z, lease until 22:19Z; lane 4: T691 claimed 20:16Z, lease until 23:16Z; lane 5: T600 claimed 20:12Z, lease until 23:12Z; lane 7: T754 claimed 18:25Z, lease until 21:25Z
+- **Lane:** lane 1: T565 claimed 19:19Z, lease until 22:19Z; lane 4: T691 claimed 20:16Z, lease until 23:16Z; lane 5: T600 claimed 20:12Z, lease until 23:12Z
 - **Week:** 35% used, 118.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:16Z, 1 min before this update
+- **Last run:** 20:16Z, 2 min before this update
 - **Keeper:** last ran 20:15Z, next wake 20:35Z
 
 ## Needs attention
@@ -21,6 +21,7 @@ Updated 2026-11-21T20:18:42Z by runner bdc2be532869 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T754 | portals and payments: a $0 Confirm after a PaymentIntent was | MERGE_PENDING | 4 | 113 min | 20:18Z | PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and |
 | T707 | server: an emergency pick's address re-release waits while s | MERGE_PENDING | 3 | 97 min | 20:13Z | Reviewer after the findings round still ends REVIEW-VERDICT: FINDINGS (head 2f9bf610c3700bb46a4670ade27d67afda63591a). / |
 | T690 | businesses and server: a sign-up waiting on "That number is  | MERGE_PENDING | 1 | 2 h 30 min | 19:27Z |  |
 | T791 | Tests and templates (harness): three Spanish stay-on texts r | done | 1 | 36 min | 19:21Z |  |
@@ -38,7 +39,7 @@ Updated 2026-11-21T20:18:42Z by runner bdc2be532869 (actions).
 | T707 | server: an emergency pick's address re-release waits while s | QUEUED | 2 | 77 min | 12:31Z |  |
 | T581 | messaging, intake and server: a failed text's call-back is d | done | 1 | 76 min | 12:03Z |  |
 | T615 | site and server: a styled 404 page for unknown paths, the fa | BLOCKED | 3 | 2 h 11 min | 11:53Z |  |
-| T754 | portals and payments: a $0 Confirm after a PaymentIntent was | check_failed | 3 | 70 min | 10:58Z | PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and |
+| T754 | portals and payments: a $0 Confirm after a PaymentIntent was | check_failed | 3 | 70 min | 10:58Z |  |
 | T458 | businesses, calls and server: the email's "Link this phone"  | done | 1 | 112 min | 10:35Z |  |
 | T654 | licensing and quotes: every ROC list import runs each active | done | 2 | 74 min | 10:15Z | PLAN GAP: outside ownership: app/quotes/src/service.rs, app/quotes/src/late_cards.rs, app/intake/src/cards_out.rs, app/i |
 | T615 | site and server: a styled 404 page for unknown paths, the fa | check_failed | 2 | 92 min | 09:28Z |  |
@@ -131,7 +132,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - T565 (lease until 2026-11-21T22:19:14Z)
 - lane 4: T691 (lease until 2026-11-21T23:16:22Z)
 - lane 5: T600 (lease until 2026-11-21T23:12:21Z)
-- lane 7: T754 (lease until 2026-11-21T21:25:20Z)
 
 ## Last usage reading
-- {"task": "T707", "at": "2026-11-21T20:13:31Z", "cache_creation_input_tokens": 155704, "input_tokens": 125, "cache_read_input_tokens": 4231023, "output_tokens": 35810}
+- {"task": "T754", "at": "2026-11-21T20:18:40Z", "output_tokens": 19674, "cache_creation_input_tokens": 111328, "cache_read_input_tokens": 2349093, "input_tokens": 100}
