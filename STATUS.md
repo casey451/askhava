@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T02:58:07Z by runner 5b6d2a6f4043 (actions).
+Updated 2026-11-21T02:58:39Z by runner 5b6d2a6f4043 (actions).
 
 **Building: T781 in progress since 02:17Z; 566 of 726 done; week 61% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-21T02:58:07Z by runner 5b6d2a6f4043 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T781 claimed 02:17Z, lease until 05:17Z; lane 5: T304 claimed 02:48Z, lease until 05:48Z; lane 6: T684 claimed 02:16Z, lease until 05:16Z; lane 7: T775 claimed 01:29Z, lease until 04:29Z
 - **Week:** 61% used, 70.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:57Z, 0 min before this update
-- **Keeper:** last ran 02:53Z, next wake 03:13Z
+- **Last run:** 02:58Z, 0 min before this update
+- **Keeper:** last ran 02:58Z, next wake 03:18Z
 
 ## Needs attention
 - BLOCKED T654: plan gap reported: PLAN GAP: outside ownership: app/quotes/src/service.rs, app/quotes/src/late_cards.rs, app/intake/src/cards_out.rs, app/intake/src/order_dispatch.rs, tests/integration/tests/card_pool_queries.rs, tests/integration/tests/radius_matching.rs
