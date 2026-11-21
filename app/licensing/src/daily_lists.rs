@@ -22,6 +22,11 @@
 //! carries the cursor and the list day it belongs to. Every slot lies on one grid anchored at the run hour and
 //! its dedupe key names the list and the instant, so a retried run lands on its own slot
 //! (JOB-006, R11, D-3412).
+//!
+//! T655 (D-4310, LIC-008): [`roc_standing`] gives `businesses` one business's latest check and,
+//! when that check is not after it, the ROC list's failure start; [`recheck_paused`] is the
+//! database-only daily check of a business the list run skips because it is paused; [`next_slot`]
+//! is the grid `businesses.license_standing` runs on.
 
 use std::future::Future;
 use std::ops::RangeInclusive;
@@ -39,6 +44,7 @@ use crate::handlers::{
     FailureLimits, ListFailureAlert, alert_list_failure, arizona_day, lookup_while_list_fails,
 };
 use crate::imports::ImportError;
+use crate::own_record::bound_roc_number;
 use crate::service::{ImportSummary, check_once, import_city_list, import_roc_list};
 
 /// The `core.task` kind of one list's daily run (LIC-007, LIC-039).
@@ -235,8 +241,10 @@ fn list_day(now: Timestamp, run_hour: i8) -> Date {
     arizona_day(now.saturating_sub(back).unwrap_or(now))
 }
 
-/// The first instant after `now` on the grid of `every` anchored at today's run hour (Arizona).
-fn next_slot(now: Timestamp, run_hour: i8, every: SignedDuration) -> Option<Timestamp> {
+/// The first instant after `now` on the grid of `every` anchored at today's run hour (Arizona):
+/// the slots of the daily list run and its LIC-039 retries.
+#[must_use]
+pub fn next_slot(now: Timestamp, run_hour: i8, every: SignedDuration) -> Option<Timestamp> {
     let anchor = run_time(arizona_day(now), run_hour)?;
     let step = every.as_secs().max(1);
     let k = now.duration_since(anchor).as_secs().div_euclid(step) + 1;
@@ -338,6 +346,70 @@ async fn recorded_failure_start(
     let day: Date = day.parse().map_err(|_| FAILED)?;
     let next = day.tomorrow().map_err(|_| FAILED)?;
     run_time(next, run_hour).map(Some).ok_or(FAILED)
+}
+
+/// One business's latest ROC check, as LIC-008's clocks need it (T655, D-4310).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct RocStanding {
+    /// Whether that check showed the license Active.
+    pub active: bool,
+    /// When that check was made.
+    pub checked_at: Timestamp,
+    /// The ROC list's failure start (the run hour on the day after its latest recorded list) when
+    /// the check is not after it; the list is failing once the caller's clock reaches it.
+    pub failing_since: Option<Timestamp>,
+}
+
+/// LIC-008, CARD-015, D-4310: `business`'s latest ROC check of whatever number (the row
+/// `latest_check_allows_card` reads) with the list's failure start; `None` for a business with no
+/// check row (no ROC number).
+///
+/// # Errors
+///
+/// [`ImportError::Database`].
+pub async fn roc_standing(
+    conn: &mut PgConnection,
+    business: Uuid,
+    run_hour: i8,
+) -> Result<Option<RocStanding>, ImportError> {
+    let latest = sqlx::query!(
+        r#"SELECT status, checked_at AS "checked_at: jiff_sqlx::Timestamp"
+           FROM licensing.license_check WHERE business_id = $1
+           ORDER BY checked_at DESC, id DESC LIMIT 1"#,
+        business,
+    )
+    .fetch_optional(&mut *conn)
+    .await
+    .map_err(|_| ImportError::Database)?;
+    let Some(check) = latest else {
+        return Ok(None);
+    };
+    let checked_at = check.checked_at.to_jiff();
+    let start = recorded_failure_start(conn, DailyList::Roc, run_hour).await;
+    let start = start.map_err(|_| ImportError::Database)?;
+    Ok(Some(RocStanding {
+        active: check.status == "active",
+        checked_at,
+        failing_since: start.filter(|s| checked_at <= *s),
+    }))
+}
+
+/// LIC-008, CARD-015, D-4310: the daily check of a business the list run skips because it is
+/// paused: `check_once` of its bound ROC number against the latest recorded ROC list, a database
+/// read only, never a lookup. True when it recorded a check; false with no number, no list yet or
+/// a check already dated that list's day.
+///
+/// # Errors
+///
+/// [`ImportError::Database`].
+pub async fn recheck_paused(conn: &mut PgConnection, business: Uuid) -> Result<bool, ImportError> {
+    let Some(number) = bound_roc_number(conn, business).await? else {
+        return Ok(false);
+    };
+    match check_once(conn, business, &number).await {
+        Err(ImportError::NoList) => Ok(false),
+        other => other,
+    }
 }
 
 /// The most lookups one run makes: `batch`, and no more than fit in `sweep_budget` at the
