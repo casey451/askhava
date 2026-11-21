@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T17:07:27Z by runner 04d214018f8f (manual).
+Updated 2026-11-21T17:07:46Z by runner 04d214018f8f (manual).
 
 **Building: T608 in progress since 15:59Z; 583 of 730 done; week 31% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,10 @@ Updated 2026-11-21T17:07:27Z by runner 04d214018f8f (manual).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T608 claimed 15:59Z, lease until 18:59Z; lane 2: T690 claimed 16:56Z, lease until 19:56Z
 - **Week:** 31% used, 130.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:59Z, 8 min before this update
+- **Last run:** 17:07Z, 0 min before this update
 - **Keeper:** last ran 16:58Z, next wake 19:02Z
 
 ## Needs attention
-- BLOCKED T615: model claude-opus-5-5 ran, task names claude-fable-5-2
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - Strict plan check red: 38 problem(s) on tasks still to run (+461 on DONE tasks); first: T624: stored context_pct 12% but it measures 17%; regenerate
