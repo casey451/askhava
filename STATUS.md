@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T11:29:03Z by runner 4d8cf0ae2015 (actions).
+Updated 2026-11-21T11:29:32Z by runner 4d8cf0ae2015 (actions).
 
 **Building: T655 in progress since 10:47Z; 578 of 726 done; week 75% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-21T11:29:03Z by runner 4d8cf0ae2015 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T655 claimed 10:47Z, lease until 13:47Z; lane 3: T615 claimed 09:42Z, lease until 12:42Z; lane 4: T581 claimed 10:47Z, lease until 13:47Z; lane 5: T707 claimed 11:14Z, lease until 14:14Z
 - **Week:** 75% used, 39.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:28Z, 0 min before this update
-- **Keeper:** last ran 11:15Z, next wake 12:45Z
+- **Last run:** 11:29Z, 0 min before this update
+- **Keeper:** last ran 11:29Z, next wake 12:45Z
 
 ## Needs attention
 - BLOCKED T776: plan gap reported: PLAN GAP: outside ownership: app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml)
