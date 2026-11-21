@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-21T14:37:07Z by runner bf0f59f657b5 (actions).
+Updated 2026-11-21T14:37:40Z by runner bf0f59f657b5 (actions).
 
 **Building: T304 in progress since 12:33Z; 579 of 726 done; week 28% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 579 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T304 claimed 12:33Z, lease until 15:33Z; lane 2: T655 claimed 13:31Z, lease until 16:31Z; lane 3: T776 claimed 12:57Z, lease until 15:57Z
+- **Lane:** lane 1: T304 claimed 12:33Z, lease until 15:33Z; lane 2: T655 claimed 13:31Z, lease until 16:31Z
 - **Week:** 28% used, 135.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:31Z, 65 min before this update
 - **Keeper:** last ran 13:26Z, next wake 13:46Z
@@ -40,6 +40,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T776 | intake: a move out of Arizona and a property-management requ | MERGE_PENDING | 3 | 99 min | 14:37Z | PLAN GAP: outside ownership: app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml) / Worker: D-5160's three tr |
 | T655 | businesses: an unknown ROC license status warns at 24 hours, | QUEUED | 1 | 2 h 36 min | 13:24Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
 | T707 | server: an emergency pick's address re-release waits while s | QUEUED | 2 | 77 min | 12:31Z | Reviewer after the findings round still ends REVIEW-VERDICT: FINDINGS (head 2f9bf610c3700bb46a4670ade27d67afda63591a). / |
 | T581 | messaging, intake and server: a failed text's call-back is d | done | 1 | 76 min | 12:03Z |  |
@@ -48,7 +49,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 | T458 | businesses, calls and server: the email's "Link this phone"  | done | 1 | 112 min | 10:35Z |  |
 | T654 | licensing and quotes: every ROC list import runs each active | done | 2 | 74 min | 10:15Z | PLAN GAP: outside ownership: app/quotes/src/service.rs, app/quotes/src/late_cards.rs, app/intake/src/cards_out.rs, app/i |
 | T615 | site and server: a styled 404 page for unknown paths, the fa | check_failed | 2 | 92 min | 09:28Z |  |
-| T776 | intake: a move out of Arizona and a property-management requ | BLOCKED | 2 | 11 min | 08:54Z | PLAN GAP: outside ownership: app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml) / Worker: D-5160's three tr |
+| T776 | intake: a move out of Arizona and a property-management requ | BLOCKED | 2 | 11 min | 08:54Z |  |
 | T674 | server: the homeowner's photo upload page and the short-live | done | 2 | 40 min | 08:06Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
 | T615 | site and server: a styled 404 page for unknown paths, the fa | check_failed | 1 | 55 min | 07:33Z |  |
 | T674 | server: the homeowner's photo upload page and the short-live | resync | 2 | 2 h 38 min | 07:19Z |  |
@@ -156,7 +157,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T304 (lease until 2026-11-21T15:33:37Z)
 - lane 2: T655 (lease until 2026-11-21T16:31:07Z)
-- lane 3: T776 (lease until 2026-11-21T15:57:35Z)
 
 ## Last usage reading
-- {"task": "T655", "at": "2026-11-21T13:24:55Z", "input_tokens": 233, "cache_creation_input_tokens": 252472, "cache_read_input_tokens": 6803689, "output_tokens": 60572}
+- {"task": "T776", "at": "2026-11-21T14:37:06Z", "cache_read_input_tokens": 4302801, "output_tokens": 63418, "cache_creation_input_tokens": 259701, "input_tokens": 152}
