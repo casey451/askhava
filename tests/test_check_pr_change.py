@@ -312,3 +312,82 @@ def test_two_digit_decision_entry_and_trailer_are_not_recognised(tmp_path: Path,
     commit(root, "D-99")
     assert run(root) == 1
     assert "needs a 'Plan-Change: D-###' trailer" in capsys.readouterr().err
+
+
+# Rule 6 (D-5080): an over-limit crate guide is trimmed by the task alone in its crate.
+RULE6_SCRIPT = "def crate_guide_trim_check(): pass\n"
+GUIDE = "app/foo/CLAUDE.md"
+TRIM_TASKS = {**TASKS, "tasks": [*TASKS["tasks"], {"id": "T050", "type": "build", "module": "foo", "owns": ["app/foo/src/a.rs"], "deps": []}], "shared_paths": [*TASKS["shared_paths"], "app/foo/CLAUDE.md", "scripts/check_pr_change.py"]}
+BRANCH = "claude/task/T050-x"
+
+
+def trim_repo(tmp_path: Path, size: int, script: str = RULE6_SCRIPT) -> Path:
+    root = tmp_path
+    (root / "app/foo").mkdir(parents=True)
+    (root / "scripts").mkdir()
+    (root / GUIDE).write_text("x" * size, encoding="utf-8")
+    (root / "scripts/check_pr_change.py").write_text(script, encoding="utf-8")
+    (root / "kit").mkdir()
+    (root / "kit/tasks.json").write_text(json.dumps(TRIM_TASKS), encoding="utf-8")
+    pl.write_lock(root)
+    git(root, "init", "-q", "-b", "main")
+    git(root, "config", "user.email", "t@example.com")
+    git(root, "config", "user.name", "t")
+    git(root, "add", "-A")
+    git(root, "commit", "-qm", "base")
+    git(root, "checkout", "-qb", "work")
+    return root
+
+
+def trim_run(root: Path, branch: str = BRANCH) -> int:
+    return cc.main(["--root", str(root), "--base", "main", "--branch", branch])
+
+
+def set_guide(root: Path, size: int) -> None:
+    (root / GUIDE).write_text("x" * size, encoding="utf-8")
+    commit(root)
+
+
+def test_trim_over_limit_untrimmed_fails(tmp_path: Path, capsys) -> None:
+    root = trim_repo(tmp_path, 8000)
+    set_guide(root, 8100)
+    assert trim_run(root) == 1
+    err = capsys.readouterr().err
+    assert "crate guide not trimmed" in err and "8000" in err and "8100" in err and "split_crate_doc.py --verify" in err
+
+
+def test_trim_to_5500_passes(tmp_path: Path) -> None:
+    root = trim_repo(tmp_path, 8000)
+    set_guide(root, 5500)
+    assert trim_run(root) == 0
+
+
+def test_trim_under_limit_at_claim_base_passes_even_if_it_grows(tmp_path: Path) -> None:
+    root = trim_repo(tmp_path, 7000)
+    set_guide(root, 8000)
+    assert trim_run(root) == 0
+
+
+def test_trim_skipped_when_claim_base_lacks_rule(tmp_path: Path) -> None:
+    root = trim_repo(tmp_path, 8000, script="old\n")
+    set_guide(root, 8100)
+    assert trim_run(root) == 0
+
+
+def test_trim_skipped_on_non_task_branch(tmp_path: Path) -> None:
+    root = trim_repo(tmp_path, 8000)
+    set_guide(root, 8100)
+    assert trim_run(root, "claude/plan") == 0
+
+
+def test_trim_not_tripped_by_merge_of_main(tmp_path: Path) -> None:
+    root = trim_repo(tmp_path, 7000)
+    (root / "app/foo/src").mkdir()
+    (root / "app/foo/src/a.rs").write_text("a\n", encoding="utf-8")
+    commit(root)
+    git(root, "checkout", "-q", "main")
+    (root / GUIDE).write_text("x" * 8000, encoding="utf-8")
+    git(root, "commit", "-qam", "main grows the guide")
+    git(root, "checkout", "-q", "work")
+    git(root, "merge", "-q", "--no-edit", "main")
+    assert trim_run(root) == 0
