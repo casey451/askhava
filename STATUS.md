@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T22:36:06Z by runner 05b3bbbd22f3 (actions).
+Updated 2026-11-21T22:50:23Z by runner 62c2b1c9e153 (actions).
 
-**Building: T600 in progress since 22:29Z; 593 of 739 done; week 38% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T600 in progress since 22:29Z; 594 of 739 done; week 38% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 593 of 739 build tasks (owner gates not counted)
+- **Tasks done:** 594 of 739 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T600 claimed 22:29Z, lease until 01:29Z; lane 2: T608 claimed 21:16Z, lease until 00:16Z; lane 4: T798 claimed 21:15Z, lease until 00:15Z; lane 5: T397 claimed 22:35Z, lease until 01:35Z; lane 6: T118 claimed 22:08Z, lease until 01:08Z; lane 7: T117 claimed 22:21Z, lease until 01:21Z
 - **Week:** 38% used, 113.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:30Z, 5 min before this update
+- **Last run:** 22:36Z, 14 min before this update
 - **Keeper:** last ran 22:22Z, next wake 00:18Z
 
 ## Needs attention
@@ -20,7 +20,7 @@ Updated 2026-11-21T22:36:06Z by runner 05b3bbbd22f3 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T794 | adapters and server: the Twilio media delete and the product | MERGE_PENDING | 1 | 49 min | 22:17Z |  |
+| T794 | adapters and server: the Twilio media delete and the product | done | 1 | 49 min | 22:17Z |  |
 | T788 | Tooling (harness): check_pr_change.py fails a task branch th | done | 1 | 64 min | 21:30Z |  |
 | T600 | intake, businesses, privacy and server: four worker handlers | resync | 1 | 57 min | 21:10Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T565 | portals and server: the business team role change, removal a | done | 1 | 97 min | 20:57Z |  |
@@ -81,7 +81,7 @@ Updated 2026-11-21T22:36:06Z by runner 05b3bbbd22f3 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 593 of 739
+**Tasks merged (throughput only):** 594 of 739
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -117,7 +117,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 236 of 314 done
+- stage 5: 237 of 314 done
 - stage 6: 0 of 72 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
