@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T01:34:58Z by runner c3bff35f9d54 (actions).
+Updated 2026-11-21T01:37:59Z by runner 1846c812a704 (actions).
 
-**Building: T664 in progress since 23:09Z; 562 of 726 done; week 56% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T664 in progress since 23:09Z; 563 of 726 done; week 56% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 562 of 726 build tasks (owner gates not counted)
+- **Tasks done:** 563 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T664 claimed 23:09Z, lease until 02:09Z; lane 2: T774 claimed 01:32Z, lease until 04:32Z; lane 3: T777 claimed 01:31Z, lease until 04:31Z; lane 5: T769 claimed 01:14Z, lease until 04:14Z; lane 6: T580 claimed 01:10Z, lease until 04:10Z; lane 7: T775 claimed 01:29Z, lease until 04:29Z
 - **Week:** 56% used, 75.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:34Z, 0 min before this update
+- **Last run:** 01:35Z, 2 min before this update
 - **Keeper:** last ran 01:34Z, next wake 02:11Z
 
 ## Needs attention
@@ -16,13 +16,13 @@ Updated 2026-11-21T01:34:58Z by runner c3bff35f9d54 (actions).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T674 (since 2026-11-21T01:25:56Z, no attempt used; a plan change fixes it): outside ownership: tests/a11y/fixtures.ts — GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PAGE_STATES entry cannot cover a JPEG or 404). The file is owner-only since T267 moved the registry (page_states.ts:7-8); T674's Scope shares it only until then, and only for PAGE_STATES rows. Reviewer confirmed: no task grants that line (T766 does not). plan_pages.py gives a false negative for T674 because its goal mentions page_states.ts. Smallest plan change: grant T674 the one NOT_PAGES line in fixtures.ts. Worker's uncommitted work was not committed.
-- Strict plan check red: 47 problem(s) on tasks still to run (+432 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 56 problem(s) on tasks still to run (+442 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T674 | server: the homeowner's photo upload page and the short-live | BLOCKED | 1 | 17 min | 01:25Z | PLAN GAP: outside ownership: tests/a11y/fixtures.ts — GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PA |
-| T677 | quotes, businesses and server: a business that becomes eligi | MERGE_PENDING | 1 | 111 min | 01:02Z |  |
+| T677 | quotes, businesses and server: a business that becomes eligi | done | 1 | 111 min | 01:02Z |  |
 | T526 | server, intake, businesses and site: business texting follow | done | 1 | 71 min | 00:19Z |  |
 | T773 | Runner (harness): the merge train can carry a third car, bui | done | 1 | 33 min | 23:17Z |  |
 | T682 | picks: a pick waiting for Confirm gets its hourly reminders, | done | 2 | 91 min | 22:27Z | app/picks/src/reminder_run.rs:316 (remind): a waiting pick whose job was cancelled or closed after the notice keeps gett |
@@ -100,26 +100,26 @@ Updated 2026-11-21T01:34:58Z by runner c3bff35f9d54 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 362 of 735 (49.3%) · partial 354 · unstarted 19
-**Tasks merged (throughput only):** 562 of 714
+**Requirements verified:** 356 of 735 (48.4%) · partial 360 · unstarted 19
+**Tasks merged (throughput only):** 563 of 726
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 18 | 17 | 0 | 35 |
 | ai | 8 | 18 | 3 | 29 |
-| businesses | 23 | 34 | 1 | 58 |
+| businesses | 22 | 35 | 1 | 58 |
 | calls | 15 | 10 | 0 | 25 |
 | consent | 17 | 18 | 0 | 35 |
 | fees | 25 | 27 | 0 | 52 |
 | intake | 12 | 31 | 0 | 43 |
 | job-cards | 12 | 12 | 0 | 24 |
-| licensing | 33 | 15 | 0 | 48 |
+| licensing | 31 | 17 | 0 | 48 |
 | lifecycle | 21 | 7 | 0 | 28 |
 | messaging | 26 | 19 | 0 | 45 |
-| ops-recovery | 15 | 27 | 12 | 54 |
+| ops-recovery | 13 | 29 | 12 | 54 |
 | privacy | 10 | 21 | 0 | 31 |
 | quiet-hours | 3 | 6 | 0 | 9 |
-| quotes-pick | 26 | 30 | 0 | 56 |
+| quotes-pick | 25 | 31 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
 | security | 13 | 39 | 3 | 55 |
 | terms | 27 | 8 | 0 | 35 |
@@ -137,7 +137,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 205 of 306 done
+- stage 5: 206 of 306 done
 - stage 6: 0 of 67 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
