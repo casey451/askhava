@@ -98246,8 +98246,8 @@
     "T706",
     "T333"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "zero-fee-after-intent",
    "type": "build",
    "stage": "5",
@@ -98259,10 +98259,44 @@
     5136,
     5137
    ],
-   "wip_claim": {
-    "attempt": 1,
-    "remote_sha": ""
-   }
+   "reason": "plan gap reported: PLAN GAP: outside ownership: app/adapters/src/payments.rs, stand_ins/stripe.py, stand_ins/server.py\nT754 requires cancelling the PaymentIntent at Stripe after a $0 press, but PaymentsAdapter/IntentStripe (app/adapters/src/payments.rs:343-397, app/payments/src/charge.rs:67) have no cancel method and stand_ins/stripe.py and stand_ins/server.py (route at server.py:457) have no cancel route. None is owned by T754 (owns confirm_pay.rs, release_proof.rs, routes.rs, zero_fee_after_intent.rs); stand_ins/ is protected. Existing callers of end_intent_unless_charging (confirm_moves.rs:137, cant_take.rs, ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T754 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: outside ownership: app/adapters/src/payments.rs, stand_ins/stripe.py, stand_ins/server.py\nT754 requires cancelling the PaymentIntent at Stripe after a $0 press, but PaymentsAdapter/IntentStripe (app/adapters/src/payments.rs:343-397, app/payments/src/charge.rs:67) have no cancel method and stand_ins/stripe.py and stand_ins/server.py (route at server.py:457) have no cancel route. None is owned by T754 (owns confirm_pay.rs, release_proof.rs, routes.rs, zero_fee_after_intent.rs); stand_ins/ is protected. Existing callers of end_intent_unless_charging (confirm_moves.rs:137, cant_take.rs, confirm_pay.rs:1033) only write ended_at in the database, so no retry precedent exists. Reviewer confirmed. Smallest fix: drop the Stripe cancel from T754 (DB end only), or add a harness task first adding cancel_payment_intent and the stand-in route.",
+   "plan_gap": {
+    "at": "2026-11-21T02:52:28Z",
+    "problems": [
+     "outside ownership: app/adapters/src/payments.rs, stand_ins/stripe.py, stand_ins/server.py"
+    ],
+    "paths": [
+     "app/adapters/src/payments.rs",
+     "stand_ins/stripe.py",
+     "stand_ins/server.py"
+    ]
+   },
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-fable-5-2",
+     "model_evidence_count": 27,
+     "head_sha": "5b6d2a6f40436fdc35ea0ceecb31185ac9e70dd2",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-21T02:49:20Z",
+     "ended_at": "2026-11-21T02:52:28Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 713160,
+       "turns": 15
+      },
+      "reviewer": {
+       "tokens": 243088,
+       "turns": 9
+      }
+     }
+    }
+   ]
   },
   {
    "id": "T755",
@@ -100720,12 +100754,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T457",
-   "at": "2026-11-21T02:50:55Z",
-   "cache_creation_input_tokens": 255897,
-   "input_tokens": 172,
-   "cache_read_input_tokens": 10212677,
-   "output_tokens": 68582
+   "task": "T754",
+   "at": "2026-11-21T02:52:28Z",
+   "output_tokens": 10478,
+   "input_tokens": 49,
+   "cache_creation_input_tokens": 79071,
+   "cache_read_input_tokens": 866650
   },
   "source": "session_reading 2026-11-21T02:45:59Z (week)",
   "by_task": {
@@ -107491,17 +107525,27 @@
    },
    "T754": {
     "estimated_bytes": 589417,
-    "estimated_tokens": 1699250
+    "estimated_tokens": 1699250,
+    "usage_counting": "message_id",
+    "output_tokens": 10478,
+    "input_tokens": 49,
+    "cache_creation_input_tokens": 79071,
+    "cache_read_input_tokens": 866650,
+    "worker_tokens": 713160,
+    "worker_turns": 15,
+    "reviewer_tokens": 243088,
+    "reviewer_turns": 9,
+    "last_model": "claude-fable-5-2"
    }
   },
   "windows": {
    "five_hour": {
     "start": "2026-11-21T00:19:55Z",
-    "tokens": 9361242
+    "tokens": 9537505
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 89622907
+    "tokens": 89799170
    }
   },
   "session_reading": {
@@ -107512,7 +107556,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T02:51:57Z",
+ "updated_at": "2026-11-21T02:52:48Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -107610,7 +107654,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "ac0991eaa273b3a3fdf7d1d78f729d412fdf26c4",
+ "runner_sha": "5b6d2a6f40436fdc35ea0ceecb31185ac9e70dd2",
  "starter": "actions",
  "smoke_runs": [
   {

@@ -1,32 +1,36 @@
 # Ask Hava build status
 
-Updated 2026-11-21T02:51:57Z by runner ac0991eaa273 (actions).
+Updated 2026-11-21T02:52:48Z by runner 5b6d2a6f4043 (actions).
 
-**Building: T754 in progress since 02:49Z; 566 of 726 done; week 60% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T781 in progress since 02:17Z; 566 of 726 done; week 60% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 566 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T754 claimed 02:49Z, lease until 05:49Z; lane 3: T781 claimed 02:17Z, lease until 05:17Z; lane 5: T304 claimed 02:48Z, lease until 05:48Z; lane 6: T684 claimed 02:16Z, lease until 05:16Z; lane 7: T775 claimed 01:29Z, lease until 04:29Z
+- **Lane:** lane 3: T781 claimed 02:17Z, lease until 05:17Z; lane 5: T304 claimed 02:48Z, lease until 05:48Z; lane 6: T684 claimed 02:16Z, lease until 05:16Z; lane 7: T775 claimed 01:29Z, lease until 04:29Z
 - **Week:** 60% used, 70.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:51Z, 0 min before this update
+- **Last run:** 02:52Z, 0 min before this update
 - **Keeper:** last ran 02:46Z, next wake 03:06Z
 
 ## Needs attention
 - BLOCKED T654: plan gap reported: PLAN GAP: outside ownership: app/quotes/src/service.rs, app/quotes/src/late_cards.rs, app/intake/src/cards_out.rs, app/intake/src/order_dispatch.rs, tests/integration/tests/card_pool_queries.rs, tests/integration/tests/radius_matching.rs
 Evidence: part (3) needs `now` (the caller's worker clock) in card_pool/one_business (app/quotes/src/card_pool.rs:74,227), which take no clock. Adding one changes every card_pool caller (order_dispatch.rs:831,1007; cards_out.rs:358; late_cards.rs:160; quotes/service.rs:204; card_pool_queries.rs:109; radius_matching.rs:198,210), none owned by T654, while T654.m; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T654 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T674: plan gap reported: PLAN GAP: outside ownership: tests/a11y/fixtures.ts — GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PAGE_STATES entry cannot cover a JPEG or 404). The file is owner-only since T267 moved the registry (page_states.ts:7-8); T674's Scope shares it only until then, and only for PAGE_STATES rows. Reviewer confirmed: no task grants that line (T766 does not). plan_pages.py gives a false negative for T674 because its goal mentions page_states.ts. Smallest plan change: grant T674 the one NOT_PAGES line in fixtures.ts. Worker's uncommitted work was not committed.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T674 --plan-fix D-### --reason "..."` (D-2859)
+- BLOCKED T754: plan gap reported: PLAN GAP: outside ownership: app/adapters/src/payments.rs, stand_ins/stripe.py, stand_ins/server.py
+T754 requires cancelling the PaymentIntent at Stripe after a $0 press, but PaymentsAdapter/IntentStripe (app/adapters/src/payments.rs:343-397, app/payments/src/charge.rs:67) have no cancel method and stand_ins/stripe.py and stand_ins/server.py (route at server.py:457) have no cancel route. None is owned by T754 (owns confirm_pay.rs, release_proof.rs, routes.rs, zero_fee_after_intent.rs); stand_ins/ is protected. Existing callers of end_intent_unless_charging (confirm_moves.rs:137, cant_take.rs, ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T754 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T777: plan gap reported: PLAN GAP: outside ownership: app/server/tests/business_signin_route.rs
 T777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_code_goes_to_the_members_own_line_else_own_address (business_signin_route.rs:447), which links a non-owner line (helper `line()` lines 181-192, never approve_phone) and expects SMS. T777 owns only sign_in_lines.rs and sign_in_number_change.rs and requires existing sign-in tests unchanged. Smallest plan change: add that file to T777's owned paths so the helper can have the owner approve the line. Reviewer confirmed (PLAN-GAP: CONFIRMED).; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T777 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T654 (since 2026-11-21T02:42:55Z, no attempt used; a plan change fixes it): outside ownership: app/quotes/src/service.rs, app/quotes/src/late_cards.rs, app/intake/src/cards_out.rs, app/intake/src/order_dispatch.rs, tests/integration/tests/card_pool_queries.rs, tests/integration/tests/radius_matching.rs
 - PLAN GAP T674 (since 2026-11-21T01:25:56Z, no attempt used; a plan change fixes it): outside ownership: tests/a11y/fixtures.ts — GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PAGE_STATES entry cannot cover a JPEG or 404). The file is owner-only since T267 moved the registry (page_states.ts:7-8); T674's Scope shares it only until then, and only for PAGE_STATES rows. Reviewer confirmed: no task grants that line (T766 does not). plan_pages.py gives a false negative for T674 because its goal mentions page_states.ts. Smallest plan change: grant T674 the one NOT_PAGES line in fixtures.ts. Worker's uncommitted work was not committed.
+- PLAN GAP T754 (since 2026-11-21T02:52:28Z, no attempt used; a plan change fixes it): outside ownership: app/adapters/src/payments.rs, stand_ins/stripe.py, stand_ins/server.py
 - PLAN GAP T777 (since 2026-11-21T02:09:30Z, no attempt used; a plan change fixes it): outside ownership: app/server/tests/business_signin_route.rs
-- Strict plan check red: 55 problem(s) on tasks still to run (+443 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 55 problem(s) on tasks still to run (+444 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T754 | portals and payments: a $0 Confirm after a PaymentIntent was | BLOCKED | 1 | 3 min | 02:52Z | PLAN GAP: outside ownership: app/adapters/src/payments.rs, stand_ins/stripe.py, stand_ins/server.py / T754 requires canc |
 | T457 | portals and server: the Confirm email link asks for a code w | MERGE_PENDING | 1 | 70 min | 02:50Z |  |
 | T654 | licensing and quotes: every ROC list import runs each active | BLOCKED | 1 | 2 min | 02:42Z | PLAN GAP: outside ownership: app/quotes/src/service.rs, app/quotes/src/late_cards.rs, app/intake/src/cards_out.rs, app/i |
 | T774 | tests (harness): the quote page's no-AI-summary check leaves | MERGE_PENDING | 1 | 65 min | 02:38Z |  |
@@ -152,11 +156,11 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T754 (lease until 2026-11-21T05:49:20Z)
+- nothing
 - lane 3: T781 (lease until 2026-11-21T05:17:31Z)
 - lane 5: T304 (lease until 2026-11-21T05:48:33Z)
 - lane 6: T684 (lease until 2026-11-21T05:16:31Z)
 - lane 7: T775 (lease until 2026-11-21T04:29:12Z)
 
 ## Last usage reading
-- {"task": "T457", "at": "2026-11-21T02:50:55Z", "cache_creation_input_tokens": 255897, "input_tokens": 172, "cache_read_input_tokens": 10212677, "output_tokens": 68582}
+- {"task": "T754", "at": "2026-11-21T02:52:28Z", "output_tokens": 10478, "input_tokens": 49, "cache_creation_input_tokens": 79071, "cache_read_input_tokens": 866650}
