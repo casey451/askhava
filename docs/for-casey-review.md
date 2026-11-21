@@ -3620,6 +3620,7 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 ## Header Menu: the open list spans the header's width (D-5059, November 20)
 
 - On phones and tablets, the open Menu's links take a full-width row under the header instead of the reference's 280 px panel on the right. The links, order and wording are unchanged. Say if you want the narrow right-hand panel instead.
+- On a phone, a business portal page's header takes two rows: the wordmark, "Get help" and "Español" on the first, the Menu button on the second. The four items do not fit one row under 372 px, and "Get help" has to show at every width (T614, D-4944).
 
 ## Outside code review, 40 findings (D-5081, November 20)
 
