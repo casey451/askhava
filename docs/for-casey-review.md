@@ -3605,3 +3605,8 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 ## Privacy policy: opted-out numbers (D-5049, November 20)
 
 - The privacy policy draft now says an opted-out number is kept as long as needed to honor the opt-out. The sentence waits for your publish; nothing published has changed.
+
+## Confirm press: license re-check and the move to Payment pending (T664, D-5002, November 20)
+
+- A business whose stored license check is stale or not Active, or whose account is not Active, can no longer confirm: the press charges nothing, the pick ends, and the homeowner gets her backup or the "choose another quote" text. The business sees the existing "This pick can't be confirmed anymore. Nothing was charged." line; no new wording was written.
+- A job now moves to Payment pending only when a charge is really attempted (or at once on a $0 Confirm), so a press with no card, or during a charging pause, keeps the business's full Confirm window.
