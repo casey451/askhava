@@ -27,18 +27,20 @@
 //! business page shows one fake sample card per switched-on trade from `catalog::api::category_list`,
 //! the city-license guide ([`CityGuide`]) on no-license cards, and each switched-off trade's
 //! waitlist count from `businesses::api::trade_count` with the nil business ID (D-4044). Its
-//! WEB-024 line follows `texting_on`, passed as `false` as the served sign-up does until T526 wires
-//! the stored switch (D-3880, D-3881).
+//! WEB-024 line follows `businesses::api::business_texting_on` with the business number set by
+//! [`SitePages::with_business_number`]; no number or a failed read shows the switch-off line (T769,
+//! D-4931).
 //!
 //! [`page_routes`] also serves the accessibility statement at `/accessibility` (T115, A11Y-020,
 //! D-3155): `docs/legal/accessibility-statement.md`, rendered once by
 //! `legal_pages::accessibility_statement` when the router is built, never a third copy.
 
+use std::any::Any;
 use std::sync::{Arc, Mutex, PoisonError};
 use std::time::{Duration, Instant};
 
 use askama::Template;
-use askhava_businesses::api::trade_count;
+use askhava_businesses::api::{business_texting_on, trade_count};
 use askhava_catalog::api::{CategoryListing, category_list};
 use askhava_core::api::{Environment, Settings, arizona_time, brand};
 use askhava_payments::api::Tier;
@@ -143,12 +145,38 @@ impl CityGuide {
     }
 }
 
-/// The site pages' settings: WEB-028's threshold and the "Who runs" facts.
+/// TXT-035, WEB-024, D-4931: the configured business sending number, held type-erased because
+/// `site` may not name `messaging`'s `SendingNumber` (`kit/layers.json`); the business page hands
+/// it back to `businesses::api::business_texting_on`, which fixes its type. Equal only to itself.
+#[derive(Clone, Default)]
+struct BusinessNumber(Option<Arc<dyn Any + Send + Sync>>);
+
+impl std::fmt::Debug for BusinessNumber {
+    /// Whether a number is set, never the number.
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(if self.0.is_some() { "set" } else { "unset" })
+    }
+}
+
+impl PartialEq for BusinessNumber {
+    /// Both unset, or the same held number.
+    fn eq(&self, other: &Self) -> bool {
+        match (&self.0, &other.0) {
+            (Some(a), Some(b)) => Arc::ptr_eq(a, b),
+            (a, b) => a.is_none() && b.is_none(),
+        }
+    }
+}
+
+impl Eq for BusinessNumber {}
+
+/// The site pages' settings: WEB-028's threshold, the "Who runs" facts and the business number.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SitePages {
     min_jobs: u32,
     who: WhoRuns,
     guide: CityGuide,
+    business: BusinessNumber,
 }
 
 impl Default for SitePages {
@@ -158,6 +186,7 @@ impl Default for SitePages {
             min_jobs: 50,
             who: WhoRuns::default(),
             guide: CityGuide::default(),
+            business: BusinessNumber::default(),
         }
     }
 }
@@ -170,7 +199,19 @@ impl SitePages {
             min_jobs: settings.home_numbers_min_jobs(),
             who: WhoRuns::from_settings(settings),
             guide: CityGuide::from_settings(settings),
+            business: BusinessNumber::default(),
         }
+    }
+
+    /// TXT-035, WEB-024, D-4931: these pages with the configured business sending number
+    /// (`ASKHAVA_BUSINESS_NUMBER` as `server::business_number` parses it, a
+    /// `messaging::api::SendingNumber`). `None`, or a value of any other type, counts as no number,
+    /// so the business page shows the switch-off line.
+    #[must_use]
+    pub fn with_business_number<N: Any + Send + Sync>(mut self, number: Option<N>) -> Self {
+        let held = number.map(|n| Arc::new(n) as Arc<dyn Any + Send + Sync>);
+        self.business = BusinessNumber(held);
+        self
     }
 }
 
@@ -582,15 +623,14 @@ fn business_routes(state: &Arc<(PgPool, SitePages)>) -> Router {
         .route(BUSINESS_HELP_PATH, get(help))
 }
 
-/// WEB-018 to WEB-021, WEB-024: the business page, in Spanish when `spanish` (WEB-019). Business
-/// texting shows as off, as the served sign-up does, until T526 wires the stored switch (D-3880,
-/// D-3881). A failed read is a bare 500 with one warning and no values (R5), never an empty list.
+/// WEB-018 to WEB-021, WEB-024: the business page, in Spanish when `spanish` (WEB-019). Its
+/// WEB-024 line follows [`texting_on`] (TXT-035, D-4931). A failed facts read is a bare 500 with one warning and no values (R5), never an empty list.
 async fn business_page(pool: &PgPool, pages: &SitePages, spanish: bool) -> Response {
     let Some(facts) = business_facts(pool, pages).await else {
         tracing::warn!("business page reads failed; the page is not shown");
         return StatusCode::INTERNAL_SERVER_ERROR.into_response();
     };
-    let (banner_shown, texting_on) = (banner_shown(pool).await, false);
+    let (banner_shown, texting_on) = (banner_shown(pool).await, texting_on(pool, pages).await);
     respond(if spanish {
         EsBusinessPage {
             banner_shown,
@@ -606,6 +646,21 @@ async fn business_page(pool: &PgPool, pages: &SitePages, spanish: bool) -> Respo
         }
         .render()
     })
+}
+
+/// TXT-035, BIZ-036, WEB-024, D-4931: whether the business page shows the switch-on line: the
+/// stored business-texting switch is on and a business number is set. It fails closed: no number,
+/// the switch off, no pooled connection or a failed read is `false`.
+async fn texting_on(pool: &PgPool, pages: &SitePages) -> bool {
+    let number = pages
+        .business
+        .0
+        .as_deref()
+        .and_then(|n| n.downcast_ref().cloned());
+    match pool.acquire().await {
+        Ok(mut db) => business_texting_on(&mut db, number).await,
+        Err(_) => false,
+    }
 }
 
 /// WEB-020, D-4044: a sample card per switched-on trade (the guide on no-license ones) and, per
