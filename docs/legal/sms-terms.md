@@ -1,5 +1,5 @@
 Draft prepared with AI research; not reviewed by a lawyer.
-Version 0.5 (draft, consent by texting in) · November 17, 2026 · Not yet in effect
+Version 0.6 (draft, one opt-in path; help after opting out) · November 21, 2026 · Not yet in effect
 
 # Laftly SMS Terms
 
@@ -11,7 +11,7 @@ Laftly is a quote-request service; the business the homeowner chooses pays Laftl
 
 ## 2. How you agree
 
-Texting Laftly, or giving us your mobile number in the chat on laftly.com and typing the code we send to it, is your OK to get automated texts about your own request. You don't need to reply to agree. Our first reply says:
+Texting Laftly is your OK to get automated texts about your own request. The chat on laftly.com does not sign you up for texts. You don't need to reply to agree. Our first reply says:
 
 > Laftly: Got it. Next, a few quick questions. Laftly is not a contractor; you hire the business you pick directly. Automated texts about your request. Msg frequency varies. Msg & data rates may apply. Reply STOP to opt out, HELP for help. Terms: laftly.com/terms Privacy: laftly.com/privacy
 
@@ -33,13 +33,15 @@ Message frequency varies by request. Most requests get a handful of texts over a
 
 ## 4. Costs
 
-Message and data rates may apply. Laftly charges you nothing. Canadian numbers work, and roaming charges may apply.
+Message and data rates may apply. Laftly charges you nothing. Texts work with US mobile numbers; Canadian numbers are not confirmed yet.
 
 ## 5. Help
 
-Text HELP (or INFO, or AYUDA in Spanish) at any time, even after opting out. The reply:
+Text HELP (or INFO, or AYUDA in Spanish) at any time while you get our texts. The reply:
 
-> Laftly (Laftly LLC), Lake Havasu City: Tell us what's wrong in one text. The Laftly owner gets HELP messages right away and usually replies within 2 days, or within 24 hours if your job is urgent. This number is text-only. If anyone is in danger, call 911. Help: laftly.com/help or help@laftly.com. Can't open links? Reply LIST to get your quotes by text. Canadian numbers may pay roaming charges. Reply STOP to opt out. Msg & data rates may apply.
+> Laftly: Tell us what's wrong in one text. The Laftly owner gets HELP messages right away and usually replies within 2 days, or within 24 hours if your job is urgent. This number is text-only. If anyone is in danger, call 911. Can't open links? Reply LIST to get your quotes by text. Help: help@laftly.com or laftly.com/help Reply STOP to opt out.
+
+After you opt out we can't text you, not even a HELP reply. Get help at laftly.com/help or by emailing help@laftly.com.
 
 ## 6. Stopping texts
 
