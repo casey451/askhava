@@ -99101,7 +99101,7 @@
     "T706",
     "T333"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 2,
    "slug": "zero-fee-after-intent",
    "type": "build",
@@ -99114,8 +99114,8 @@
     5136,
     5137
    ],
-   "reason": "plan gap reported: PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and_handled, owned by T785 after T259/T331/T352) expects a verified payment_intent.succeeded naming pi_FakeNone for a pick stored with pi_Fake9 (refused WrongIntent, release_proof.rs:220-221) to change nothing, including ops.alert rows; kit/prompts/T754.md:9 (m3) requires one High alert for every WrongIntent refusal. T754 does not own that test file (T754.md:37-40, :53, :104). Reviewer confirmed (GAP-VERDICT: CONFIRMED). Smallest fix: (1) give T754 a one-time edit of stripe_webh; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T754 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and_handled, owned by T785 after T259/T331/T352) expects a verified payment_intent.succeeded naming pi_FakeNone for a pick stored with pi_Fake9 (refused WrongIntent, release_proof.rs:220-221) to change nothing, including ops.alert rows; kit/prompts/T754.md:9 (m3) requires one High alert for every WrongIntent refusal. T754 does not own that test file (T754.md:37-40, :53, :104). Reviewer confirmed (GAP-VERDICT: CONFIRMED). Smallest fix: (1) give T754 a one-time edit of stripe_webhook_dispatch.rs:430 to expect one alert payments.success_refused_wrong_intent, logged as a spec change; or (2) narrow m3 so WrongIntent alerts only when the event's intent is the pick's stored intent (store_success / missing pick_intent / refunded_or_disputed paths), no test edit.",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and_handled, owned by T785 after T259/T331/T352) expects a verified payment_intent.succeeded naming pi_FakeNone for a pick stored with pi_Fake9 (refused WrongIntent, release_proof.rs:220-221) to change nothing, including ops.alert rows; kit/prompts/T754.md:9 (m3) requires one High alert for every WrongIntent refusal. T754 does not own that test file (T754.md:37-40, :53, :104). Reviewer confirmed (GAP-VERDICT: CONFIRMED). Smallest fix: (1) give T754 a one-time edit of stripe_webhook_dispatch.rs:430 to expect one alert payments.success_refused_wrong_intent, logged as a spec change; or (2) narrow m3 so WrongIntent alerts only when the event's intent is the pick's stored intent (store_success / missing pick_intent / refunded_or_disputed paths), no test edit.\nre-queued after plan fix D-5171: D-5171: m3 alerts only on the pick's own stored intent; Database stays Database; live attempt defined; cites refreshed (Fable diagnosis: plan gap from D-5158 wording)",
    "history": [
     {
      "attempt": 1,
@@ -99177,6 +99177,19 @@
      "plan_head": "f48c110d7929ad0ab08d663dec9ce2de08c53076",
      "plan_then": "4f928d41d2c8fc210e959d8df54d46f3e1b5e7aab795b6668c08e77b8e806f80",
      "plan_now": "b5f79bbc07a1a3abbf924e048d47a83425e3885fd2fa5be05303e15b392a6004"
+    },
+    {
+     "at": "2026-11-21T09:14:29Z",
+     "reason": "D-5171: m3 alerts only on the pick's own stored intent; Database stays Database; live attempt defined; cites refreshed (Fable diagnosis: plan gap from D-5158 wording)",
+     "by": "manual-a0e4978024b8",
+     "was": "plan gap reported: PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and_handled, owned by T785 after T259/T331/T352) expects a verified payment_intent.succeeded naming pi_FakeNone for a pick stored with pi_Fake9 (refused WrongIntent, release_proof.rs:220-221) to change nothing, including ops.alert rows; kit/prompts/T754.md:9 (m3) requires one High alert for every WrongIntent refusal. T754 does not own that test file (T754.md:37-40, :53, :104). Reviewer confirmed (GAP-VERDICT: CONFIRMED). Smallest fix: (1) give T754 a one-time edit of stripe_webh; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T754 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 2,
+     "plan_fix": "D-5171",
+     "plan_since": "2026-11-21T05:54:47Z",
+     "plan_base": "f48c110d7929ad0ab08d663dec9ce2de08c53076",
+     "plan_head": "a251f571cd3c972f459bdf53501090a5717f01f6",
+     "plan_then": "b5f79bbc07a1a3abbf924e048d47a83425e3885fd2fa5be05303e15b392a6004",
+     "plan_now": "89b3bf52b60db677b0a27c7daa55959b0f310ecb79ec16a2b61a927914195b34"
     }
    ],
    "lane": "5"
@@ -109349,7 +109362,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T09:01:55Z",
+ "updated_at": "2026-11-21T09:14:29Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -109447,8 +109460,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "5effdc8ef3e2ebaac5ccd445ea2153c24bcefe91",
- "starter": "actions",
+ "runner_sha": "a251f571cd3c972f459bdf53501090a5717f01f6",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "c47a971b3d7e1494abb7bd551bf823c06e16f546",

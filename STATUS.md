@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T09:01:55Z by runner 5effdc8ef3e2 (actions).
+Updated 2026-11-21T09:14:29Z by runner a251f571cd3c (manual).
 
 **Building: T615 in progress since 07:56Z; 576 of 726 done; week 71% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,10 @@ Updated 2026-11-21T09:01:55Z by runner 5effdc8ef3e2 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T615 claimed 07:56Z, lease until 10:56Z; lane 2: T654 claimed 09:01Z, lease until 12:01Z; lane 7: T458 claimed 08:43Z, lease until 11:43Z
 - **Week:** 71% used, 49.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:56Z, 5 min before this update
+- **Last run:** 09:01Z, 12 min before this update
 - **Keeper:** last ran 08:55Z, next wake 09:15Z
 
 ## Needs attention
-- BLOCKED T754: plan gap reported: PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and_handled, owned by T785 after T259/T331/T352) expects a verified payment_intent.succeeded naming pi_FakeNone for a pick stored with pi_Fake9 (refused WrongIntent, release_proof.rs:220-221) to change nothing, including ops.alert rows; kit/prompts/T754.md:9 (m3) requires one High alert for every WrongIntent refusal. T754 does not own that test file (T754.md:37-40, :53, :104). Reviewer confirmed (GAP-VERDICT: CONFIRMED). Smallest fix: (1) give T754 a one-time edit of stripe_webh; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T754 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T776: plan gap reported: PLAN GAP: outside ownership: app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml)
 Worker: D-5160's three trade-only rules (job_type: None) give candidate <trade>_other; card_pool.rs:150-163 marks it listed only if in the category's stored job types; categories.yaml lists no <trade>_other for local_moving, home_watch, turnover_cleaning (all license none); licensing/rules.rs:80-82 no_license returns RefusedJobType, so in-Arizona moving/turnover texts get not_covered and no card, contradicting T776's tests (Need movers to Phoenix, California king, Turnover cleaning after renters check ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T776 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
@@ -92,38 +91,37 @@ Worker: D-5160's three trade-only rules (job_type: None) give candidate <trade>_
 | T530 | portals: the owner help page and its screened reply box (D-3 | QUEUED | 2 | 2 h 25 min | 09:46Z |  |
 | T727 | Runner (harness): a retry after a review failure or a plan-f | check_failed | 1 | 75 min | 09:38Z |  |
 | T617 | site: DM Sans from one weight-axis variable file (smaller th | done | 2 | 2 h 16 min | 09:22Z | PLAN GAP: tests/a11y/design_tokens.spec.ts:221 and :242 (protected, not owned by T617) contradict the prompt's single DM |
-| T766 | server tests (harness): a photo-link door and a {job} fill i | done | 1 | 53 min | 09:05Z |  |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 361 of 735 (49.1%) · partial 355 · unstarted 19
+**Requirements verified:** 6 of 735 (0.8%) · partial 710 · unstarted 19
 **Tasks merged (throughput only):** 576 of 726
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 18 | 17 | 0 | 35 |
-| ai | 8 | 18 | 3 | 29 |
-| businesses | 23 | 34 | 1 | 58 |
-| calls | 15 | 10 | 0 | 25 |
-| consent | 17 | 18 | 0 | 35 |
-| fees | 25 | 27 | 0 | 52 |
-| intake | 12 | 31 | 0 | 43 |
-| job-cards | 12 | 12 | 0 | 24 |
-| licensing | 31 | 17 | 0 | 48 |
-| lifecycle | 21 | 7 | 0 | 28 |
-| messaging | 26 | 19 | 0 | 45 |
-| ops-recovery | 13 | 29 | 12 | 54 |
-| privacy | 10 | 21 | 0 | 31 |
-| quiet-hours | 3 | 6 | 0 | 9 |
-| quotes-pick | 26 | 30 | 0 | 56 |
-| recurring | 10 | 1 | 0 | 11 |
-| security | 13 | 39 | 3 | 55 |
-| terms | 29 | 6 | 0 | 35 |
-| website | 20 | 10 | 0 | 30 |
-| wording | 29 | 3 | 0 | 32 |
+| accessibility | 0 | 35 | 0 | 35 |
+| ai | 0 | 26 | 3 | 29 |
+| businesses | 0 | 57 | 1 | 58 |
+| calls | 0 | 25 | 0 | 25 |
+| consent | 0 | 35 | 0 | 35 |
+| fees | 0 | 52 | 0 | 52 |
+| intake | 0 | 43 | 0 | 43 |
+| job-cards | 0 | 24 | 0 | 24 |
+| licensing | 0 | 48 | 0 | 48 |
+| lifecycle | 0 | 28 | 0 | 28 |
+| messaging | 0 | 45 | 0 | 45 |
+| ops-recovery | 2 | 40 | 12 | 54 |
+| privacy | 0 | 31 | 0 | 31 |
+| quiet-hours | 0 | 9 | 0 | 9 |
+| quotes-pick | 0 | 56 | 0 | 56 |
+| recurring | 0 | 11 | 0 | 11 |
+| security | 2 | 50 | 3 | 55 |
+| terms | 0 | 35 | 0 | 35 |
+| website | 2 | 28 | 0 | 30 |
+| wording | 0 | 32 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
