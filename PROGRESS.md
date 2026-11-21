@@ -9094,3 +9094,4 @@
 - 2026-11-21T05:44:43Z runner f48c110d7929 (manual): {"T776": "BLOCKED -> QUEUED"}
 - 2026-11-21T05:54:50Z runner f05104e101d6 (actions): {}
 - 2026-11-21T05:55:23Z runner f05104e101d6 (actions): {}
+- 2026-11-21T05:55:38Z runner f05104e101d6 (actions): {"T754": "QUEUED -> IN_PROGRESS"}; T754 estimated 1.4M tokens (calibrated); week has 58.5M left (no five-hour budget, D-3056) after 1.5M still running in another lane (session_reading 2026-11-21T05:28:30Z (week)); claimed
