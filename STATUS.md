@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T08:45:57Z by runner 5effdc8ef3e2 (actions).
+Updated 2026-11-21T08:50:37Z by runner 5effdc8ef3e2 (actions).
 
 **Building: T615 in progress since 07:56Z; 576 of 726 done; week 71% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-21T08:45:57Z by runner 5effdc8ef3e2 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T615 claimed 07:56Z, lease until 10:56Z; lane 2: T776 claimed 08:42Z, lease until 11:42Z; lane 7: T458 claimed 08:43Z, lease until 11:43Z
 - **Week:** 71% used, 51.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:45Z, 0 min before this update
+- **Last run:** 08:50Z, 0 min before this update
 - **Keeper:** last ran 08:45Z, next wake 10:58Z
 
 ## Needs attention
@@ -89,7 +89,6 @@ Updated 2026-11-21T08:45:57Z by runner 5effdc8ef3e2 (actions).
 | T727 | Runner (harness): a retry after a review failure or a plan-f | check_failed | 1 | 75 min | 09:38Z |  |
 | T617 | site: DM Sans from one weight-axis variable file (smaller th | done | 2 | 2 h 16 min | 09:22Z | PLAN GAP: tests/a11y/design_tokens.spec.ts:221 and :242 (protected, not owned by T617) contradict the prompt's single DM |
 | T766 | server tests (harness): a photo-link door and a {job} fill i | done | 1 | 53 min | 09:05Z |  |
-| T116 | Stage 0.5 static page set and the DNS records file | done | 1 | 50 min | 08:48Z |  |
 
 ### Plan and harness merges on main
 - none
