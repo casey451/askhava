@@ -102149,7 +102149,7 @@
     "T673",
     "T672"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 2,
    "slug": "intake-refusals-wired",
    "type": "build",
@@ -102163,8 +102163,8 @@
     5146,
     5147
    ],
-   "reason": "plan gap reported: PLAN GAP: outside ownership: app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml)\nWorker: D-5160's three trade-only rules (job_type: None) give candidate <trade>_other; card_pool.rs:150-163 marks it listed only if in the category's stored job types; categories.yaml lists no <trade>_other for local_moving, home_watch, turnover_cleaning (all license none); licensing/rules.rs:80-82 no_license returns RefusedJobType, so in-Arizona moving/turnover texts get not_covered and no card, contradicting T776's tests (Need movers to Phoenix, California king, Turnover cleaning after renters check ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T776 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: outside ownership: app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml)\nWorker: D-5160's three trade-only rules (job_type: None) give candidate <trade>_other; card_pool.rs:150-163 marks it listed only if in the category's stored job types; categories.yaml lists no <trade>_other for local_moving, home_watch, turnover_cleaning (all license none); licensing/rules.rs:80-82 no_license returns RefusedJobType, so in-Arizona moving/turnover texts get not_covered and no card, contradicting T776's tests (Need movers to Phoenix, California king, Turnover cleaning after renters check out, EDIT cases). intake_refusals_wired: 1 passed, 3 failed.\nReviewer (Opus) confirmed. Smallest fix: amend D-5160 so the three rules name a listed job type (in-town move, weekly house check, turnover clean) in matching.rs, or add <trade>_other to the catalog for these trades.\nOther points: \"same text twice adds nothing\" is not assertable as written (a repeat after close opens a new request); only first text and EDIT words are kept; routing::tell_coverage->not_covered always writes a recruiting-demand row (D-1008).",
+   "reason": null,
+   "last_failure": "PLAN GAP: outside ownership: app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml)\nWorker: D-5160's three trade-only rules (job_type: None) give candidate <trade>_other; card_pool.rs:150-163 marks it listed only if in the category's stored job types; categories.yaml lists no <trade>_other for local_moving, home_watch, turnover_cleaning (all license none); licensing/rules.rs:80-82 no_license returns RefusedJobType, so in-Arizona moving/turnover texts get not_covered and no card, contradicting T776's tests (Need movers to Phoenix, California king, Turnover cleaning after renters check out, EDIT cases). intake_refusals_wired: 1 passed, 3 failed.\nReviewer (Opus) confirmed. Smallest fix: amend D-5160 so the three rules name a listed job type (in-town move, weekly house check, turnover clean) in matching.rs, or add <trade>_other to the catalog for these trades.\nOther points: \"same text twice adds nothing\" is not assertable as written (a repeat after close opens a new request); only first text and EDIT words are kept; routing::tell_coverage->not_covered always writes a recruiting-demand row (D-1008).\nre-queued after plan fix D-5178: D-5178: keyword rules name listed job types so in-state texts are carded; card-step refusal via routing::apply",
    "history": [
     {
      "attempt": 1,
@@ -102226,17 +102226,21 @@
      "plan_head": "f48c110d7929ad0ab08d663dec9ce2de08c53076",
      "plan_then": "24b25054422c4f415c44d6ead2ac5ed124be239cd360562d368e7c753a084c93",
      "plan_now": "5e338ee89200945b023e3dcc27ae35c011c56a482d807a8c16b44781940dbf03"
+    },
+    {
+     "at": "2026-11-21T12:30:06Z",
+     "reason": "D-5178: keyword rules name listed job types so in-state texts are carded; card-step refusal via routing::apply",
+     "by": "manual-f4138e2aad5b",
+     "was": "plan gap reported: PLAN GAP: outside ownership: app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml)\nWorker: D-5160's three trade-only rules (job_type: None) give candidate <trade>_other; card_pool.rs:150-163 marks it listed only if in the category's stored job types; categories.yaml lists no <trade>_other for local_moving, home_watch, turnover_cleaning (all license none); licensing/rules.rs:80-82 no_license returns RefusedJobType, so in-Arizona moving/turnover texts get not_covered and no card, contradicting T776's tests (Need movers to Phoenix, California king, Turnover cleaning after renters check ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T776 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 2,
+     "plan_fix": "D-5178",
+     "plan_since": "2026-11-21T08:42:46Z",
+     "plan_base": "5effdc8ef3e2ebaac5ccd445ea2153c24bcefe91",
+     "plan_head": "2ce468444a2e537ce825d86faa21e444d0a1d5fc",
+     "plan_then": "5e338ee89200945b023e3dcc27ae35c011c56a482d807a8c16b44781940dbf03",
+     "plan_now": "f061b7e61ff41163cb22a93347232222d48c843d8849d1edca0facb50673dbec"
     }
-   ],
-   "plan_gap": {
-    "at": "2026-11-21T08:54:41Z",
-    "problems": [
-     "outside ownership: app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml)"
-    ],
-    "paths": [
-     "app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml)"
-    ]
-   }
+   ]
   },
   {
    "id": "T775",
@@ -109915,7 +109919,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T12:24:22Z",
+ "updated_at": "2026-11-21T12:30:06Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -110013,7 +110017,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "4d8cf0ae2015a82d3dabc62e4d2b5ce64e51cd85",
+ "runner_sha": "2ce468444a2e537ce825d86faa21e444d0a1d5fc",
  "starter": "manual",
  "smoke_runs": [
   {

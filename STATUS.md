@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T12:24:22Z by runner 4d8cf0ae2015 (manual).
+Updated 2026-11-21T12:30:06Z by runner 2ce468444a2e (manual).
 
 **Building: T655 in progress since 10:47Z; 578 of 726 done; week 76% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-21T12:24:22Z by runner 4d8cf0ae2015 (manual).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T655 claimed 10:47Z, lease until 13:47Z; lane 5: T707 claimed 11:14Z, lease until 14:14Z
 - **Week:** 76% used, 39.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:24Z, 0 min before this update
+- **Last run:** 12:24Z, 5 min before this update
 - **Keeper:** last ran 12:10Z, next wake 13:50Z
 
 ## Needs attention
@@ -33,11 +33,8 @@ error: test failed, to rerun pass `-p askhava-security --test status_enums`
 Ci failed at step: All five jobs passed
 Checks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success
 ##[error]Process completed with exit code 1.
-- BLOCKED T776: plan gap reported: PLAN GAP: outside ownership: app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml)
-Worker: D-5160's three trade-only rules (job_type: None) give candidate <trade>_other; card_pool.rs:150-163 marks it listed only if in the category's stored job types; categories.yaml lists no <trade>_other for local_moving, home_watch, turnover_cleaning (all license none); licensing/rules.rs:80-82 no_license returns RefusedJobType, so in-Arizona moving/turnover texts get not_covered and no card, contradicting T776's tests (Need movers to Phoenix, California king, Turnover cleaning after renters check ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T776 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- PLAN GAP T776 (since 2026-11-21T08:54:41Z, no attempt used; a plan change fixes it): outside ownership: app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml)
 - Strict plan check red: 57 problem(s) on tasks still to run (+456 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
@@ -109,8 +106,6 @@ Worker: D-5160's three trade-only rules (job_type: None) give candidate <trade>_
 | T667 | picks and calls: a reconnected job's failed masked line is r | done | 1 | 58 min | 13:54Z |  |
 | T727 | Runner (harness): a retry after a review failure or a plan-f | done | 2 | 87 min | 13:23Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
 | T496 | a11y (harness): stub Stripe.js in the Ally suite and scan th | done | 1 | 81 min | 13:06Z |  |
-| T648 | recovery: the monthly test restore into a throwaway cluster, | done | 2 | 112 min | 12:29Z | PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, b |
-| T573 | messaging and server: queued business texts are addressed to | check_failed | 3 | 70 min | 12:25Z |  |
 
 ### Plan and harness merges on main
 - none
