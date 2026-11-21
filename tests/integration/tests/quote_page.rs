@@ -171,12 +171,52 @@ async fn td_pick_38_page_lines_and_empty_status(pool: PgPool) {
     for word in [
         "★", "stars", "rating:", "rated", "hires", "hired", "reviews)", "summary",
     ] {
-        assert!(!lower.contains(word), "{word}");
+        let found = if word == "summary" {
+            summary_outside_shared_header(&lower).expect("TD-PICK-38 needs the shared header")
+        } else {
+            lower.contains(word)
+        };
+        assert!(!found, "{word}");
     }
     let status = position(&body, "role=\"status\"");
     let close = status + body[status..].find('>').expect("tag end");
     assert!(body[close..].starts_with("></p>"), "status region empty");
     assert!(!body.contains("still open"));
+}
+
+/// TD-PICK-38 (PICK-003, D-373, D-5059): whether a lower-cased page holds the word `summary`
+/// outside the shared header, which carries the Menu's HTML `<summary>` tag on every page. Only
+/// the span from the first `<header` to the first `</header>` after it is left out, once; a later
+/// `<header>` is scanned. A page with no such span is an error, so nothing is cut to the end.
+fn summary_outside_shared_header(lower: &str) -> Result<bool, &'static str> {
+    let start = lower.find("<header").ok_or("the page has no <header")?;
+    let span = lower[start..]
+        .find("</header>")
+        .ok_or("the page has no </header> after its first <header")?;
+    let rest = &lower[start + span + "</header>".len()..];
+    Ok(lower[..start].contains("summary") || rest.contains("summary"))
+}
+
+/// TD-PICK-38 (PICK-003, D-5059): `summary` passes only inside the shared header; it is found in
+/// `main`, in the footer, before the header and in a second `<header>`; a page with no header, or
+/// with a first `<header` that never closes, is an error.
+#[test]
+fn td_pick_38_summary_scan_skips_only_the_shared_header() {
+    let header = "<header><details><summary>menu</summary></details></header>";
+    let page = |before: &str, main: &str, footer: &str| {
+        format!("<body>{before}{header}<main>{main}</main><footer>{footer}</footer></body>")
+    };
+    let scan = |body: String| summary_outside_shared_header(&body);
+    assert_eq!(scan(page("", "<p>quote</p>", "<p>help</p>")), Ok(false));
+    assert_eq!(scan(page("", "<p>summary</p>", "")), Ok(true), "main");
+    assert_eq!(scan(page("", "", "<p>summary</p>")), Ok(true), "footer");
+    assert_eq!(scan(page("<p>summary</p>", "", "")), Ok(true), "before");
+    let second = "<header><p>summary</p></header>";
+    assert_eq!(scan(page("", second, "")), Ok(true), "second header");
+    let open = "<body><header><summary>menu</summary><main></main></body>";
+    assert!(scan(open.to_owned()).is_err(), "header never closes");
+    let none = "<body><main><p>summary</p></main></body>";
+    assert!(scan(none.to_owned()).is_err(), "no header");
 }
 
 /// TD-PICK-38 (CON-028, D-372): after a sole-word CANCEL paused the live job, the page shows "Your
