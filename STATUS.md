@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T01:53:12Z by runner 06ec8d423f58 (actions).
+Updated 2026-11-21T01:53:40Z by runner 06ec8d423f58 (actions).
 
 **Building: T774 in progress since 01:32Z; 563 of 726 done; week 56% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 563 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T774 claimed 01:32Z, lease until 04:32Z; lane 3: T777 claimed 01:31Z, lease until 04:31Z; lane 4: T457 claimed 01:40Z, lease until 04:40Z; lane 5: T769 claimed 01:14Z, lease until 04:14Z; lane 6: T580 claimed 01:10Z, lease until 04:10Z; lane 7: T775 claimed 01:29Z, lease until 04:29Z
+- **Lane:** lane 2: T774 claimed 01:32Z, lease until 04:32Z; lane 3: T777 claimed 01:31Z, lease until 04:31Z; lane 4: T457 claimed 01:40Z, lease until 04:40Z; lane 5: T769 claimed 01:14Z, lease until 04:14Z; lane 7: T775 claimed 01:29Z, lease until 04:29Z
 - **Week:** 56% used, 74.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:49Z, 3 min before this update
+- **Last run:** 01:49Z, 4 min before this update
 - **Keeper:** last ran 01:49Z, next wake 04:13Z
 
 ## Needs attention
@@ -21,6 +21,7 @@ Updated 2026-11-21T01:53:12Z by runner 06ec8d423f58 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T580 | messaging: a failed, blocked or expired text reads as failed | MERGE_PENDING | 1 | 43 min | 01:53Z |  |
 | T664 | portals: the Confirm press re-checks the license and account | MERGE_PENDING | 2 | 2 h 38 min | 01:47Z | PLAN GAP: outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs / The pick's window deadline (picks.pic |
 | T674 | server: the homeowner's photo upload page and the short-live | BLOCKED | 1 | 17 min | 01:25Z | PLAN GAP: outside ownership: tests/a11y/fixtures.ts — GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PA |
 | T677 | quotes, businesses and server: a business that becomes eligi | done | 1 | 111 min | 01:02Z |  |
@@ -147,8 +148,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 3: T777 (lease until 2026-11-21T04:31:36Z)
 - lane 4: T457 (lease until 2026-11-21T04:40:44Z)
 - lane 5: T769 (lease until 2026-11-21T04:14:17Z)
-- lane 6: T580 (lease until 2026-11-21T04:10:04Z)
 - lane 7: T775 (lease until 2026-11-21T04:29:12Z)
 
 ## Last usage reading
-- {"task": "T664", "at": "2026-11-21T01:47:31Z", "input_tokens": 299, "cache_creation_input_tokens": 437921, "cache_read_input_tokens": 20432675, "output_tokens": 140340}
+- {"task": "T580", "at": "2026-11-21T01:53:10Z", "output_tokens": 46176, "cache_creation_input_tokens": 139457, "input_tokens": 144, "cache_read_input_tokens": 4691090}
