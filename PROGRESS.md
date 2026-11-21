@@ -9323,3 +9323,4 @@
 - 2026-11-21T17:55:29Z runner b801a6d3df9f (actions): {"T786": "MERGE_PENDING -> DONE"}
 - 2026-11-21T18:10:11Z runner 5b5195da7475 (actions): {"T791": "None -> QUEUED"}
 - 2026-11-21T18:10:19Z runner 5b5195da7475 (actions): {}
+- 2026-11-21T18:10:35Z runner 5b5195da7475 (actions): {"T790": "QUEUED -> IN_PROGRESS"}; T790 estimated 1.1M tokens (calibrated); week has 127.1M left (no five-hour budget, D-3056) after 4.9M still running in another lane (session_reading 2026-11-21T17:39:44Z (week)); claimed
