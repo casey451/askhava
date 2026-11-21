@@ -131,7 +131,7 @@ pub use crate::phone_approval::{
     WaitingPhone, approve_phone, phone_standing, reject_phone, waiting_phones,
 };
 pub use crate::public_name::{PUBLIC_NAME_ALERT, public_names};
-pub use crate::reply_link::{is_main_phone, link_by_reply};
+pub use crate::reply_link::{PendingPhone, is_main_phone, link_by_reply, link_pending_phone};
 pub use crate::retest_run::{RETEST_HOUR, RETEST_KIND, run_retests, schedule_retests};
 pub use crate::review_queue::{ReviewWaiting, needs_review_signups};
 pub use crate::rules::JobTypeChoice;

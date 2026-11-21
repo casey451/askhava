@@ -3580,6 +3580,7 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 - **"Never mind" with no job (D-5161):** a homeowner who texts "never mind" in a request that has no job yet still gets no reply; a reply needs a new English and Spanish template pair. Also still open: a lone open job number or ALL sent later, with no worded reply in between, still closes a job after "Close which?".
 - **Call log on the released job's page (D-5162):** the page shows the real job number but still says "No calls yet." even when calls exist (BIZ-035). Stripe dispute handling (FEE-022) does not depend on the page.
 - **Returned mailboxes and card notices (D-5165):** some card notices (`app/picks/src/aftermath.rs:213`) still go to a mailbox marked returned; fixing that needs the notice email sender (`notice_emails.rs`) changed too.
+- **Card-step texts ignore a Spanish switch-off mid-request (night overseer, November 21):** the card preview, cards-out and T776's card-step refusal read with `spanish_on: true` (`app/intake/src/summary_step.rs:105-109`, `app/intake/src/cards_out.rs:542`), so a request stored as Spanish still gets the Spanish text if the switch goes off after it opened (TXT-039). The `tell` path honours the switch (`order_dispatch.rs:802`). Fable judged it low; a fix reads `askhava_messaging::api::spanish_switch` at those steps.
 
 ## The monthly backup test checks the backup's record (D-4835)
 
@@ -3659,3 +3660,10 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 ## Disputes with no evidence date (D-5164, November 21)
 
 - A Stripe dispute that arrives without an evidence due date is now recorded and blocks refunds on that pick, with an alert naming the pick. Nothing is auto-submitted for it: you must counter or accept it in Stripe yourself. Its PRIV-007 retention hold counts from the day it was opened.
+
+## "Link this phone" from the email now links the phone (T458, D-5173, D-5174, November 21)
+
+- **What changed.** When a staff phone is blocked on a call, the email's "Link this phone" link can now link that phone for a signed-in owner or "Confirm and billing" team member. The owner's link works at once. A team member's link works only after the owner approves it, and the page says so.
+- **Worth knowing.** The email that asks the owner to approve a phone a team member linked this way cannot be sent yet: it names the phone's last 4 digits, and for a phone linked from a blocked call we keep no digits. Until that is solved the owner approves the phone on the phones page of the business account. Also, no email carries the "Link this phone" link yet (recorded in D-3675).
+- **Nothing needs you now.**
+- A licensed-trade (ROC) business now gets a job card only while its latest license check reads Active and is under 72 hours old; every day the ROC list loads, each active business gets that day's check, so the "checked on" date on a quote card is current (D-5123, D-5124). If the ROC list and the live lookups both fail for 72 hours, ROC cards stop until one works again, as LIC-008 intends.
