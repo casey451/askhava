@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T03:03:37Z by runner e556a808702e (actions).
+Updated 2026-11-21T03:04:10Z by runner e556a808702e (actions).
 
 **Building: T780 in progress since 02:59Z; 566 of 726 done; week 61% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 566 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T780 claimed 02:59Z, lease until 05:59Z; lane 3: T781 claimed 02:17Z, lease until 05:17Z; lane 5: T304 claimed 02:48Z, lease until 05:48Z; lane 6: T684 claimed 02:16Z, lease until 05:16Z; lane 7: T775 claimed 01:29Z, lease until 04:29Z
+- **Lane:** lane 1: T780 claimed 02:59Z, lease until 05:59Z; lane 3: T781 claimed 02:17Z, lease until 05:17Z; lane 5: T304 claimed 02:48Z, lease until 05:48Z; lane 6: T684 claimed 02:16Z, lease until 05:16Z
 - **Week:** 61% used, 66.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:00Z, 3 min before this update
+- **Last run:** 03:00Z, 4 min before this update
 - **Keeper:** last ran 02:58Z, next wake 03:18Z
 
 ## Needs attention
@@ -30,6 +30,7 @@ T777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T775 | intake: a check-in reply that names a 911 danger gets the 91 | MERGE_PENDING | 1 | 94 min | 03:03Z |  |
 | T754 | portals and payments: a $0 Confirm after a PaymentIntent was | BLOCKED | 1 | 3 min | 02:52Z | PLAN GAP: outside ownership: app/adapters/src/payments.rs, stand_ins/stripe.py, stand_ins/server.py / T754 requires canc |
 | T457 | portals and server: the Confirm email link asks for a code w | MERGE_PENDING | 1 | 70 min | 02:50Z |  |
 | T654 | licensing and quotes: every ROC list import runs each active | BLOCKED | 1 | 2 min | 02:42Z | PLAN GAP: outside ownership: app/quotes/src/service.rs, app/quotes/src/late_cards.rs, app/intake/src/cards_out.rs, app/i |
@@ -159,7 +160,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 3: T781 (lease until 2026-11-21T05:17:31Z)
 - lane 5: T304 (lease until 2026-11-21T05:48:33Z)
 - lane 6: T684 (lease until 2026-11-21T05:16:31Z)
-- lane 7: T775 (lease until 2026-11-21T04:29:12Z)
 
 ## Last usage reading
-- {"task": "T754", "at": "2026-11-21T02:52:28Z", "output_tokens": 10478, "input_tokens": 49, "cache_creation_input_tokens": 79071, "cache_read_input_tokens": 866650}
+- {"task": "T775", "at": "2026-11-21T03:03:34Z", "output_tokens": 43515, "cache_creation_input_tokens": 169987, "input_tokens": 131, "cache_read_input_tokens": 2895495}
