@@ -1,26 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-21T08:08:15Z by runner fabfe83d9707 (actions).
+Updated 2026-11-21T08:40:49Z by runner 5effdc8ef3e2 (actions).
 
-**Building: T615 in progress since 07:56Z; 575 of 726 done; week 70% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T615 in progress since 07:56Z; 576 of 726 done; week 70% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 575 of 726 build tasks (owner gates not counted)
+- **Tasks done:** 576 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T615 claimed 07:56Z, lease until 10:56Z
 - **Week:** 70% used, 52.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:08Z, 0 min before this update
+- **Last run:** 08:08Z, 32 min before this update
 - **Keeper:** last ran 08:08Z, next wake 10:58Z
 
 ## Needs attention
 - BLOCKED T754: plan gap reported: PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and_handled, owned by T785 after T259/T331/T352) expects a verified payment_intent.succeeded naming pi_FakeNone for a pick stored with pi_Fake9 (refused WrongIntent, release_proof.rs:220-221) to change nothing, including ops.alert rows; kit/prompts/T754.md:9 (m3) requires one High alert for every WrongIntent refusal. T754 does not own that test file (T754.md:37-40, :53, :104). Reviewer confirmed (GAP-VERDICT: CONFIRMED). Smallest fix: (1) give T754 a one-time edit of stripe_webh; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T754 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 54 problem(s) on tasks still to run (+449 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 54 problem(s) on tasks still to run (+450 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T674 | server: the homeowner's photo upload page and the short-live | MERGE_PENDING | 2 | 40 min | 08:06Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
+| T674 | server: the homeowner's photo upload page and the short-live | done | 2 | 40 min | 08:06Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
 | T615 | site and server: a styled 404 page for unknown paths, the fa | check_failed | 1 | 55 min | 07:33Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T674 | server: the homeowner's photo upload page and the short-live | resync | 2 | 2 h 38 min | 07:19Z |  |
 | T754 | portals and payments: a $0 Confirm after a PaymentIntent was | BLOCKED | 2 | 46 min | 06:41Z | PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and |
@@ -90,7 +90,6 @@ Updated 2026-11-21T08:08:15Z by runner fabfe83d9707 (actions).
 | T617 | site: DM Sans from one weight-axis variable file (smaller th | done | 2 | 2 h 16 min | 09:22Z | PLAN GAP: tests/a11y/design_tokens.spec.ts:221 and :242 (protected, not owned by T617) contradict the prompt's single DM |
 | T766 | server tests (harness): a photo-link door and a {job} fill i | done | 1 | 53 min | 09:05Z |  |
 | T116 | Stage 0.5 static page set and the DNS records file | done | 1 | 50 min | 08:48Z |  |
-| T669 | picks: "Can't take it" and a business leaving end a pick in  | done | 2 | 80 min | 08:32Z | runner smoke red on c403ea4898ac (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
 
 ### Plan and harness merges on main
 - none
@@ -98,7 +97,7 @@ Updated 2026-11-21T08:08:15Z by runner fabfe83d9707 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 361 of 735 (49.1%) · partial 355 · unstarted 19
-**Tasks merged (throughput only):** 575 of 726
+**Tasks merged (throughput only):** 576 of 726
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -134,7 +133,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 218 of 306 done
+- stage 5: 219 of 306 done
 - stage 6: 0 of 67 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
