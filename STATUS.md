@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-21T21:11:18Z by runner c9349629907b (actions).
+Updated 2026-11-21T21:14:20Z by runner 970fd9ee6f72 (actions).
 
-**Building: T788 in progress since 20:25Z; 588 of 739 done; week 37% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T788 in progress since 20:25Z; 589 of 739 done; week 37% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 588 of 739 build tasks (owner gates not counted)
+- **Tasks done:** 589 of 739 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 6: T788 claimed 20:25Z, lease until 23:25Z
 - **Week:** 37% used, 118.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:11Z, 0 min before this update
+- **Last run:** 21:11Z, 2 min before this update
 - **Keeper:** last ran 21:11Z, next wake 21:31Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 40 problem(s) on tasks still to run (+465 on DONE tasks); first: T624: stored context_pct 12% but it measures 17%; regenerate
+- Strict plan check red: 41 problem(s) on tasks still to run (+469 on DONE tasks); first: T624: stored context_pct 12% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -23,7 +23,7 @@ Updated 2026-11-21T21:11:18Z by runner c9349629907b (actions).
 | T565 | portals and server: the business team role change, removal a | MERGE_PENDING | 1 | 97 min | 20:57Z |  |
 | T754 | portals and payments: a $0 Confirm after a PaymentIntent was | MERGE_PENDING | 4 | 113 min | 20:18Z | PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and |
 | T707 | server: an emergency pick's address re-release waits while s | MERGE_PENDING | 3 | 97 min | 20:13Z | Reviewer after the findings round still ends REVIEW-VERDICT: FINDINGS (head 2f9bf610c3700bb46a4670ade27d67afda63591a). / |
-| T690 | businesses and server: a sign-up waiting on "That number is  | MERGE_PENDING | 1 | 2 h 30 min | 19:27Z |  |
+| T690 | businesses and server: a sign-up waiting on "That number is  | done | 1 | 2 h 30 min | 19:27Z |  |
 | T791 | Tests and templates (harness): three Spanish stay-on texts r | done | 1 | 36 min | 19:21Z |  |
 | T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 1 | 4 min | 19:13Z | PLAN GAP: no production PictureTextMedia / Twilio media DELETE exists (only the test fake at tests/integration/tests/int |
 | T790 | catalog, licensing and tests (harness): the termite report f | done | 1 | 57 min | 19:07Z |  |
@@ -83,7 +83,7 @@ Updated 2026-11-21T21:11:18Z by runner c9349629907b (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 588 of 739
+**Tasks merged (throughput only):** 589 of 739
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -119,7 +119,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 231 of 314 done
+- stage 5: 232 of 314 done
 - stage 6: 0 of 72 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
