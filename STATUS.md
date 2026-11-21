@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T13:26:19Z by runner d7e50c517793 (actions).
+Updated 2026-11-21T13:31:28Z by runner 19556a6dd00e (actions).
 
 **Building: T304 in progress since 12:33Z; 579 of 726 done; week 28% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 579 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T304 claimed 12:33Z, lease until 15:33Z; lane 3: T776 claimed 12:57Z, lease until 15:57Z
-- **Week:** 28% used, 138.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:26Z, 0 min before this update
+- **Lane:** lane 1: T304 claimed 12:33Z, lease until 15:33Z; lane 2: T655 claimed 13:31Z, lease until 16:31Z; lane 3: T776 claimed 12:57Z, lease until 15:57Z
+- **Week:** 28% used, 135.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 13:26Z, 4 min before this update
 - **Keeper:** last ran 13:26Z, next wake 13:46Z
 
 ## Needs attention
@@ -35,7 +35,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ##[error]Process completed with exit code 1.
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 54 problem(s) on tasks still to run (+451 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 57 problem(s) on tasks still to run (+460 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -141,7 +141,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-21T12:38:11Z (week)): week: 55.1M used, 138.9M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T11:38:24Z.
+- Pacing (session_reading 2026-11-21T13:25:46Z (week)): week: 58.9M used, 135.1M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T12:11:56Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -157,6 +157,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T304 (lease until 2026-11-21T15:33:37Z)
+- lane 2: T655 (lease until 2026-11-21T16:31:07Z)
 - lane 3: T776 (lease until 2026-11-21T15:57:35Z)
 
 ## Last usage reading
