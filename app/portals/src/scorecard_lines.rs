@@ -219,6 +219,9 @@ pub enum LinesError {
     /// A key no line or rung reads.
     #[error("scorecard setting {0} is unknown")]
     Unknown(String),
+    /// A line's go value (the key named) is worse than its stop value for the line's direction.
+    #[error("scorecard setting {0} is worse than its stop line")]
+    Swapped(String),
 }
 
 /// Every go and stop line and ladder rung, filled from the settings (OPS-039, D-458, D-4448).
@@ -234,7 +237,10 @@ impl ScorecardLines {
     /// # Errors
     ///
     /// [`LinesError::Missing`] when a line or rung key is absent, [`LinesError::Unknown`] for a
-    /// key no line reads, so the two crates' key lists cannot drift apart unnoticed.
+    /// key no line reads, so the two crates' key lists cannot drift apart unnoticed, and
+    /// [`LinesError::Swapped`] naming the `_GO` key when a go value is worse than its stop value
+    /// for that line's direction (equal values pass; D-5081), so a swapped pair never turns an
+    /// amber or red figure green.
     pub fn from_pairs<'a, I>(pairs: I) -> Result<Self, LinesError>
     where
         I: IntoIterator<Item = (&'a str, u32)>,
@@ -246,8 +252,12 @@ impl ScorecardLines {
         };
         let mut lines = [(0, 0); LINES.len()];
         for (pair, line) in lines.iter_mut().zip(&LINES) {
-            let go = take(&format!("{}_GO", line.stem))?;
+            let go_key = format!("{}_GO", line.stem);
+            let go = take(&go_key)?;
             *pair = (go, take(&format!("{}_STOP", line.stem))?);
+            if !in_order(line.better, *pair) {
+                return Err(LinesError::Swapped(format!("{PREFIX}{go_key}")));
+            }
         }
         let ladder = [
             take(LADDER_KEYS[0])?,
@@ -267,6 +277,14 @@ impl ScorecardLines {
     #[must_use]
     pub fn ladder(&self) -> [u32; 3] {
         self.ladder
+    }
+}
+
+/// OPS-039, D-5081: whether a (go, stop) pair runs the line's way: go at or past stop.
+fn in_order(better: Better, (go, stop): (u32, u32)) -> bool {
+    match better {
+        Better::More => go >= stop,
+        Better::Less => go <= stop,
     }
 }
 
@@ -471,6 +489,35 @@ mod tests {
             unknown,
             LinesError::Unknown("ASKHAVA_SCORECARD_X".to_owned())
         );
+    }
+
+    /// D-5081: the pairs `settings` gives, with `key` set to `value`.
+    fn with(key: &str, value: u32) -> Vec<(&'static str, u32)> {
+        let settings = settings(&[]);
+        let mut pairs: Vec<_> = settings.scorecard_lines().collect();
+        pairs
+            .iter_mut()
+            .filter(|(k, _)| *k == key)
+            .for_each(|p| p.1 = value);
+        pairs
+    }
+
+    #[test]
+    fn a_swapped_line_is_refused_each_way_and_an_equal_pair_or_the_defaults_pass() {
+        assert!(ScorecardLines::from_pairs(settings(&[]).scorecard_lines()).is_ok());
+        let more = with("ASKHAVA_SCORECARD_QUOTED_24H_GO", 49);
+        assert_eq!(
+            ScorecardLines::from_pairs(more).unwrap_err(),
+            LinesError::Swapped(format!("{PREFIX}QUOTED_24H_GO"))
+        );
+        let less = with("ASKHAVA_SCORECARD_REFUNDS_GO", 21);
+        let refused = ScorecardLines::from_pairs(less).unwrap_err();
+        assert_eq!(refused, LinesError::Swapped(format!("{PREFIX}REFUNDS_GO")));
+        assert!(refused.to_string().contains("ASKHAVA_SCORECARD_REFUNDS_GO"));
+        for (key, stop) in [("QUOTED_24H_GO", 50), ("REFUNDS_GO", 20)] {
+            let equal = with(&format!("{PREFIX}{key}"), stop);
+            assert!(ScorecardLines::from_pairs(equal).is_ok(), "{key}");
+        }
     }
 
     fn rank(color: Color) -> u8 {

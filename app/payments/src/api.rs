@@ -193,7 +193,8 @@ pub use crate::rules::{
     period_fee_for,
 };
 pub use crate::scorecard_inputs::{
-    LedgerTotals, Share, free_share, ledger_totals, paying_again, refund_reasons,
+    ChargeOutcomes, LedgerTotals, Share, charge_outcomes, free_share, ledger_totals, paying_again,
+    refund_reasons,
 };
 pub use crate::service::{
     Authorized, CONFIRM_FEE_ACTION, CUSTOMER_ACTION, ConfirmError, Confirmed, FEE_MODE_ACTION,
