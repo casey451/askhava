@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T19:43:46Z by runner 8a91c382645c (actions).
+Updated 2026-11-21T20:12:36Z by runner a0ed82b15a9f (actions).
 
-**Building: T565 in progress since 19:19Z; 586 of 734 done; week 34% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T565 in progress since 19:19Z; 587 of 734 done; week 34% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 586 of 734 build tasks (owner gates not counted)
+- **Tasks done:** 587 of 734 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T565 claimed 19:19Z, lease until 22:19Z; lane 3: T707 claimed 18:35Z, lease until 21:35Z; lane 7: T754 claimed 18:25Z, lease until 21:25Z
 - **Week:** 34% used, 123.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:43Z, 0 min before this update
+- **Last run:** 19:43Z, 28 min before this update
 - **Keeper:** last ran 19:43Z, next wake 20:03Z
 
 ## Needs attention
@@ -25,7 +25,7 @@ Updated 2026-11-21T19:43:46Z by runner 8a91c382645c (actions).
 | T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 1 | 4 min | 19:13Z | PLAN GAP: no production PictureTextMedia / Twilio media DELETE exists (only the test fake at tests/integration/tests/int |
 | T790 | catalog, licensing and tests (harness): the termite report f | MERGE_PENDING | 1 | 57 min | 19:07Z |  |
 | T608 | site and portals: the home page and the quote page in full V | check_failed | 1 | 2 h 46 min | 18:46Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-21T |
-| T615 | site and server: a styled 404 page for unknown paths, the fa | MERGE_PENDING | 4 | 68 min | 18:19Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
+| T615 | site and server: a styled 404 page for unknown paths, the fa | done | 4 | 68 min | 18:19Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T787 | intake: crate guide trimmed to 5,500 bytes, the detail moved | done | 1 | 68 min | 16:45Z |  |
 | T786 | server: crate guide trimmed to 5,500 bytes, the detail moved | done | 1 | 34 min | 16:33Z |  |
 | T655 | businesses: an unknown ROC license status warns at 24 hours, | done | 2 | 2 h 34 min | 16:05Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
@@ -76,8 +76,6 @@ Updated 2026-11-21T19:43:46Z by runner 8a91c382645c (actions).
 | T558 | Decisions digest, piece 13: the next entries after the heade | done | 1 | 28 min | 20:57Z |  |
 | T682 | picks: a pick waiting for Confirm gets its hourly reminders, | QUEUED | 1 | 105 min | 20:49Z |  |
 | T743 | messaging and privacy: opt-out listings are re-keyed to the  | done | 2 | 2 h 11 min | 20:36Z | Second review (head 7921ab0285f5916db9a9df89ee828c150908805e) ended FINDINGS: tests/integration/tests/suppression_rekey. |
-| T772 | picks: a public reader of a waiting pick's Confirm deadline  | done | 1 | 117 min | 20:02Z |  |
-| T756 | privacy: the scrubber catches phones split by connector word | done | 1 | 59 min | 19:57Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -85,7 +83,7 @@ Updated 2026-11-21T19:43:46Z by runner 8a91c382645c (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 586 of 734
+**Tasks merged (throughput only):** 587 of 734
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -121,7 +119,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 229 of 312 done
+- stage 5: 230 of 312 done
 - stage 6: 0 of 69 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
