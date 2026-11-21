@@ -1,26 +1,30 @@
 # Ask Hava build status
 
-Updated 2026-11-21T02:03:10Z by runner 1846c812a704 (actions).
+Updated 2026-11-21T02:09:31Z by runner e6f56fd39ecb (actions).
 
 **Building: T774 in progress since 01:32Z; 563 of 726 done; week 57% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 563 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T774 claimed 01:32Z, lease until 04:32Z; lane 3: T777 claimed 01:31Z, lease until 04:31Z; lane 4: T457 claimed 01:40Z, lease until 04:40Z; lane 7: T775 claimed 01:29Z, lease until 04:29Z
+- **Lane:** lane 2: T774 claimed 01:32Z, lease until 04:32Z; lane 4: T457 claimed 01:40Z, lease until 04:40Z; lane 7: T775 claimed 01:29Z, lease until 04:29Z
 - **Week:** 57% used, 74.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:02Z, 0 min before this update
+- **Last run:** 02:03Z, 6 min before this update
 - **Keeper:** last ran 02:03Z, next wake 04:32Z
 
 ## Needs attention
 - BLOCKED T674: plan gap reported: PLAN GAP: outside ownership: tests/a11y/fixtures.ts — GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PAGE_STATES entry cannot cover a JPEG or 404). The file is owner-only since T267 moved the registry (page_states.ts:7-8); T674's Scope shares it only until then, and only for PAGE_STATES rows. Reviewer confirmed: no task grants that line (T766 does not). plan_pages.py gives a false negative for T674 because its goal mentions page_states.ts. Smallest plan change: grant T674 the one NOT_PAGES line in fixtures.ts. Worker's uncommitted work was not committed.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T674 --plan-fix D-### --reason "..."` (D-2859)
+- BLOCKED T777: plan gap reported: PLAN GAP: outside ownership: app/server/tests/business_signin_route.rs
+T777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_code_goes_to_the_members_own_line_else_own_address (business_signin_route.rs:447), which links a non-owner line (helper `line()` lines 181-192, never approve_phone) and expects SMS. T777 owns only sign_in_lines.rs and sign_in_number_change.rs and requires existing sign-in tests unchanged. Smallest plan change: add that file to T777's owned paths so the helper can have the owner approve the line. Reviewer confirmed (PLAN-GAP: CONFIRMED).; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T777 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T674 (since 2026-11-21T01:25:56Z, no attempt used; a plan change fixes it): outside ownership: tests/a11y/fixtures.ts — GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PAGE_STATES entry cannot cover a JPEG or 404). The file is owner-only since T267 moved the registry (page_states.ts:7-8); T674's Scope shares it only until then, and only for PAGE_STATES rows. Reviewer confirmed: no task grants that line (T766 does not). plan_pages.py gives a false negative for T674 because its goal mentions page_states.ts. Smallest plan change: grant T674 the one NOT_PAGES line in fixtures.ts. Worker's uncommitted work was not committed.
-- Strict plan check red: 56 problem(s) on tasks still to run (+442 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- PLAN GAP T777 (since 2026-11-21T02:09:30Z, no attempt used; a plan change fixes it): outside ownership: app/server/tests/business_signin_route.rs
+- Strict plan check red: 48 problem(s) on tasks still to run (+439 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T777 | businesses: a sign-in code is texted only to a line whose cu | BLOCKED | 1 | 37 min | 02:09Z | PLAN GAP: outside ownership: app/server/tests/business_signin_route.rs / T777's approved_at filter in sign_in_lines fail |
 | T769 | site: the business page's WEB-024 line follows the stored bu | MERGE_PENDING | 1 | 41 min | 01:56Z |  |
 | T580 | messaging: a failed, blocked or expired text reads as failed | MERGE_PENDING | 1 | 43 min | 01:53Z |  |
 | T664 | portals: the Confirm press re-checks the license and account | MERGE_PENDING | 2 | 2 h 38 min | 01:47Z | PLAN GAP: outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs / The pick's window deadline (picks.pic |
@@ -146,9 +150,8 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T774 (lease until 2026-11-21T04:32:37Z)
-- lane 3: T777 (lease until 2026-11-21T04:31:36Z)
 - lane 4: T457 (lease until 2026-11-21T04:40:44Z)
 - lane 7: T775 (lease until 2026-11-21T04:29:12Z)
 
 ## Last usage reading
-- {"task": "T769", "at": "2026-11-21T01:56:02Z", "input_tokens": 86, "output_tokens": 26413, "cache_creation_input_tokens": 94102, "cache_read_input_tokens": 2039786}
+- {"task": "T777", "at": "2026-11-21T02:09:30Z", "input_tokens": 56, "cache_creation_input_tokens": 80832, "cache_read_input_tokens": 1270683, "output_tokens": 19493}
