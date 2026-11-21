@@ -92663,7 +92663,7 @@
     "T561",
     "T766"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "photo-upload-served",
    "type": "build",
@@ -92677,18 +92677,8 @@
     5085,
     5086
    ],
-   "reason": "plan gap reported: PLAN GAP: outside ownership: tests/a11y/fixtures.ts \u2014 GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PAGE_STATES entry cannot cover a JPEG or 404). The file is owner-only since T267 moved the registry (page_states.ts:7-8); T674's Scope shares it only until then, and only for PAGE_STATES rows. Reviewer confirmed: no task grants that line (T766 does not). plan_pages.py gives a false negative for T674 because its goal mentions page_states.ts. Smallest plan change: grant T674 the one NOT_PAGES line in fixtures.ts. Worker's uncommitted work was not committed.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T674 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: outside ownership: tests/a11y/fixtures.ts \u2014 GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PAGE_STATES entry cannot cover a JPEG or 404). The file is owner-only since T267 moved the registry (page_states.ts:7-8); T674's Scope shares it only until then, and only for PAGE_STATES rows. Reviewer confirmed: no task grants that line (T766 does not). plan_pages.py gives a false negative for T674 because its goal mentions page_states.ts. Smallest plan change: grant T674 the one NOT_PAGES line in fixtures.ts. Worker's uncommitted work was not committed.",
-   "plan_gap": {
-    "at": "2026-11-21T01:25:56Z",
-    "problems": [
-     "outside ownership: tests/a11y/fixtures.ts \u2014 GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PAGE_STATES entry cannot cover a JPEG or 404). The file is owner-only since T267 moved the registry (page_states.ts:7-8); T674's Scope shares it only until then, and only for PAGE_STATES rows. Reviewer confirmed: no task grants that line (T766 does not). plan_pages.py gives a false negative for T674 because its goal mentions page_states.ts. Smallest plan change: grant T674 the one NOT_PAGES line in fixtures.ts. Worker's uncommitted work was not committed."
-    ],
-    "paths": [
-     "tests/a11y/fixtures.ts \u2014 GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PAGE_STATES entry cannot cover a JPEG or 404). The file is owner-only since T267 moved the registry (page_states.ts:7-8); T674's Scope shares it only until then",
-     "and only for PAGE_STATES rows. Reviewer confirmed: no task grants that line (T766 does not). plan_pages.py gives a false negative for T674 because its goal mentions page_states.ts. Smallest plan change: grant T674 the one NOT_PAGES line in fixtures.ts. Worker's uncommitted work was not committed."
-    ]
-   },
+   "reason": null,
+   "last_failure": "PLAN GAP: outside ownership: tests/a11y/fixtures.ts \u2014 GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PAGE_STATES entry cannot cover a JPEG or 404). The file is owner-only since T267 moved the registry (page_states.ts:7-8); T674's Scope shares it only until then, and only for PAGE_STATES rows. Reviewer confirmed: no task grants that line (T766 does not). plan_pages.py gives a false negative for T674 because its goal mentions page_states.ts. Smallest plan change: grant T674 the one NOT_PAGES line in fixtures.ts. Worker's uncommitted work was not committed.\nre-queued after plan fix D-5117: NOT_PAGES line grant (D-5117)",
    "history": [
     {
      "attempt": 1,
@@ -92712,6 +92702,21 @@
        "turns": 6
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-21T04:22:14Z",
+     "reason": "NOT_PAGES line grant (D-5117)",
+     "by": "manual-e73244412799",
+     "was": "plan gap reported: PLAN GAP: outside ownership: tests/a11y/fixtures.ts \u2014 GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PAGE_STATES entry cannot cover a JPEG or 404). The file is owner-only since T267 moved the registry (page_states.ts:7-8); T674's Scope shares it only until then, and only for PAGE_STATES rows. Reviewer confirmed: no task grants that line (T766 does not). plan_pages.py gives a false negative for T674 because its goal mentions page_states.ts. Smallest plan change: grant T674 the one NOT_PAGES line in fixtures.ts. Worker's uncommitted work was not committed.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T674 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-5117",
+     "plan_since": "2026-11-21T01:08:34Z",
+     "plan_base": "c3bff35f9d54535704de3c0547b3caa76e5bc18b",
+     "plan_head": "d772bd88b2c9e911de0008f81fa040b53ee52344",
+     "plan_then": "9b42b25033290c63f3bea57832b501dd4b4f56ed13da29103c1bc4120d5a832d",
+     "plan_now": "f9be076f93a26ca5587aef5f2f44e2bf178189167098504cd7f2b89ef355b560"
     }
    ]
   },
@@ -108251,7 +108256,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T04:22:04Z",
+ "updated_at": "2026-11-21T04:22:14Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
