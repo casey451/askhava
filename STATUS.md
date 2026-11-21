@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-21T05:06:08Z by runner 99e463c87af8 (actions).
+Updated 2026-11-21T05:06:19Z by runner 99e463c87af8 (actions).
 
-**Building: T777 in progress since 04:26Z; 571 of 726 done; week 65% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T755 in progress since 04:14Z; 571 of 726 done; week 65% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 571 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 5: T777 claimed 04:26Z, lease until 07:26Z; lane 6: T755 claimed 04:14Z, lease until 07:14Z; lane 7: T674 claimed 04:40Z, lease until 07:40Z
+- **Lane:** lane 6: T755 claimed 04:14Z, lease until 07:14Z; lane 7: T674 claimed 04:40Z, lease until 07:40Z
 - **Week:** 65% used, 63.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 05:05Z, 0 min before this update
 - **Keeper:** last ran 05:01Z, next wake 07:17Z
@@ -26,6 +26,7 @@ Worker: matching.rs:52 keyword RULES cover only plumbing, HVAC, electrical, hand
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T777 | businesses: a sign-in code is texted only to a line whose cu | MERGE_PENDING | 2 | 39 min | 05:05Z | PLAN GAP: outside ownership: app/server/tests/business_signin_route.rs / T777's approved_at filter in sign_in_lines fail |
 | T614 | site: the V6 header in base.html (links, the Menu in the pag | MERGE_PENDING | 3 | 53 min | 04:37Z | PLAN GAP: tests/integration/tests/quote_page.rs:172 (owner T052, protected) bans the word "summary" anywhere in the quot |
 | T691 | intake (harness): START into an open request resends the con | QUEUED | 1 | 27 min | 04:35Z | session ended without handing in |
 | T304 | server and portals: the owner refund review, the audit log v | BLOCKED | 1 | 91 min | 04:20Z | PLAN GAP: app/portals/templates/owner_audit_log.html (owned by T205) and app/portals/templates/health.html (owned by T47 |
@@ -39,7 +40,7 @@ Worker: matching.rs:52 keyword RULES cover only plumbing, HVAC, electrical, hand
 | T457 | portals and server: the Confirm email link asks for a code w | resync | 1 | 70 min | 02:50Z |  |
 | T654 | licensing and quotes: every ROC list import runs each active | BLOCKED | 1 | 2 min | 02:42Z | PLAN GAP: outside ownership: app/quotes/src/service.rs, app/quotes/src/late_cards.rs, app/intake/src/cards_out.rs, app/i |
 | T774 | tests (harness): the quote page's no-AI-summary check leaves | done | 1 | 65 min | 02:38Z |  |
-| T777 | businesses: a sign-in code is texted only to a line whose cu | BLOCKED | 1 | 37 min | 02:09Z | PLAN GAP: outside ownership: app/server/tests/business_signin_route.rs / T777's approved_at filter in sign_in_lines fail |
+| T777 | businesses: a sign-in code is texted only to a line whose cu | BLOCKED | 1 | 37 min | 02:09Z |  |
 | T769 | site: the business page's WEB-024 line follows the stored bu | done | 1 | 41 min | 01:56Z |  |
 | T580 | messaging: a failed, blocked or expired text reads as failed | done | 1 | 43 min | 01:53Z |  |
 | T664 | portals: the Confirm press re-checks the license and account | done | 2 | 2 h 38 min | 01:47Z | PLAN GAP: outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs / The pick's window deadline (picks.pic |
@@ -150,9 +151,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 5: T777 (lease until 2026-11-21T07:26:16Z)
 - lane 6: T755 (lease until 2026-11-21T07:14:59Z)
 - lane 7: T674 (lease until 2026-11-21T07:40:32Z)
 
 ## Last usage reading
-- {"task": "T614", "at": "2026-11-21T04:37:13Z", "cache_read_input_tokens": 4568972, "cache_creation_input_tokens": 159305, "output_tokens": 52898, "input_tokens": 133}
+- {"task": "T777", "at": "2026-11-21T05:05:30Z", "cache_creation_input_tokens": 82770, "cache_read_input_tokens": 1389315, "output_tokens": 20754, "input_tokens": 67}
