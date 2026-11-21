@@ -8978,3 +8978,4 @@
 - 2026-11-21T02:58:07Z runner 5b6d2a6f4043 (actions): {}
 - 2026-11-21T02:58:39Z runner 5b6d2a6f4043 (actions): {}
 - 2026-11-21T03:00:00Z runner 5b6d2a6f4043 (actions): {"T780": "QUEUED -> IN_PROGRESS"}; T780 estimated 1.2M tokens (calibrated); week has 66.7M left (no five-hour budget, D-3056) after 5.3M still running in another lane (session_reading 2026-11-21T02:58:07Z (week)); claimed
+- 2026-11-21T03:00:05Z runner 5b6d2a6f4043 (actions): {}
