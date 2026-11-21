@@ -46,8 +46,8 @@
 //! (`busy_days`), go to `set_busy`, which pauses job cards and queues their resume at the end;
 //! a value outside that range shows the page again with `BUSY_DAYS_ERROR` by the field (422,
 //! A11Y-030), a business that is not active is refused with the reason (409), both rolled back
-//! so the link stays unused; the answer is `busy_until_line`. Every other kind's `POST` gets the
-//! one not-found answer before any token read (D-3675). A wrong kind, object, person, an ended, used or
+//! so the link stays unused; the answer is `busy_until_line`. Every kind's `POST` now has its
+//! own handler (D-3675). A wrong kind, object, person, an ended, used or
 //! unknown token, a removed member's token and a job with no sent card or no rules all get the
 //! same bare 404. Every response is `no-store`. After a stored quote the job page carries
 //! "Not a fit for us" (`job_details_page_choice`, PICK-057), posting to `NOT_A_FIT_ROUTE`, which
@@ -60,7 +60,14 @@
 //! right code uses the link, signs that device in (`confirm_link_session`, same transaction) and
 //! answers the 303. The codes are [`routes_with`]'s `ConfirmCodes`, built by
 //! [`confirm_link_codes`] over [`LinkCodeAddress`]; without them nothing is sent or used and the
-//! step shows `CodeSent::Failed`'s line.
+//! step shows `CodeSent::Failed`'s line. Link this phone (object: the blocked call's pending
+//! link, `calls.link_request`; T458, CALL-011, CALL-012, D-3675) acts once with the link's own
+//! person's business session ([`link_phone_post`]): `use_action_link` and
+//! `calls::api::link_by_action` in one transaction; the owner's link works at once, a "Confirm
+//! and billing" member's page says the owner must approve the phone first (BIZ-033), and a
+//! refusal (expired, used, another business's) rolls back, so the link stays unused, and says
+//! the phone could not be linked (409). A note the quote form returns is recorded with
+//! `quotes::api::record_note_returned` after the rollback, never its text (PICK-052, D-3877).
 
 use std::io;
 use std::net::IpAddr;
@@ -72,6 +79,7 @@ use askhava_businesses::api::{
     Acting, BusinessesError, Roles, TeamError, approve_phone, capabilities, pause_self,
     resume_self, set_away, set_busy, sign_in_lines, waiting_phones,
 };
+use askhava_calls::api::{LinkAction, link_by_action};
 use askhava_core::api::{Clock, Environment, Settings, SystemClock, arizona_time};
 use askhava_intake::api::Admission;
 use askhava_jobs::api::{job_facts, job_number};
@@ -99,8 +107,8 @@ use askhava_portals::api::{SensitiveChange, StepUpError};
 use askhava_privacy::api::{BusinessPurpose, Vault, read_staff_phone};
 use askhava_quotes::api::{
     Bounce, NoteProblem, PageParts, Price, PriceFields, PriceProblem, QuoteForm, QuoteRules,
-    Submitted, check_note, job_page, last_facts, parse_price, parse_quote, quote_rules, sent_card,
-    submit_quote_with_facts,
+    Submitted, check_note, job_page, last_facts, parse_price, parse_quote, quote_rules,
+    record_note_returned, sent_card, submit_quote_with_facts,
 };
 use axum::extract::{FromRef, Path, Request, State};
 use axum::http::StatusCode;
@@ -552,12 +560,15 @@ async fn act(
             let acted = busy_post(&links, (object, &token), &jar, &posted.days).await;
             acted.unwrap_or_else(IntoResponse::into_response)
         }
+        ActionKind::LinkPhone => {
+            let acted = link_phone_post(&links, (object, &token), &jar).await;
+            acted.unwrap_or_else(IntoResponse::into_response)
+        }
         ActionKind::Confirm => {
             let code = posted.code.as_deref();
             let acted = confirm_post(&links, (object, &token), ip, jar, code).await;
             acted.unwrap_or_else(IntoResponse::into_response)
         }
-        _ => Stop::NotFound.into_response(),
     }
 }
 
@@ -1233,6 +1244,53 @@ const COULD_NOT: &str = "We could not approve this phone. Nothing changed.";
 const NEWER_EMAIL: &str = "This phone's number changed after this email was sent, so nothing \
 was approved. A newer email about the new number is on its way.";
 
+/// CALL-011, CALL-012, BIZ-033, BIZ-038, SEC-004, SEC-025, SEC-026, D-3675: the Link this phone
+/// link's `POST` (object: the blocked call's pending link). Signed out is the 401 before any
+/// token read; the link is used in the action's transaction and must be the signed-in person's
+/// own, for a person `session_may` allows, else the one not-found answer; then
+/// `calls::api::link_by_action` links the pending phone as that person. A refusal rolls back,
+/// so the link stays unused and nothing changes; no number is read or shown.
+async fn link_phone_post(
+    links: &Links,
+    (object, token): (Uuid, &str),
+    jar: &CookieJar,
+) -> Result<Response, Stop> {
+    let now = links.clock.now();
+    let mut tx = links.pool.begin().await.map_err(failed)?;
+    let principal = business_principal(&mut tx, jar, now).await;
+    let Some(principal) = principal.map_err(failed)? else {
+        return Ok(signed_out());
+    };
+    let kind = ActionKind::LinkPhone;
+    let grant = use_action_link(&mut tx, (kind, object), token, None, now).await;
+    let grant = grant.map_err(link_stop)?;
+    let business = grant.business();
+    if !grant.same_person(&principal) || !session_may(&principal, kind, business) {
+        return Err(Stop::NotFound);
+    }
+    let member = principal.member();
+    let linked = link_by_action(&mut tx, Acting { business, member }, object, now).await;
+    let body = match linked.map_err(failed)? {
+        LinkAction::Refused => {
+            tx.rollback().await.map_err(failed)?;
+            let why = format!("<p id=\"why\">{NOT_LINKED}</p>");
+            return Ok(done(StatusCode::CONFLICT, "Phone not linked", &why));
+        }
+        LinkAction::Linked => LINKED,
+        LinkAction::Waiting => LINKED_WAITING,
+    };
+    tx.commit().await.map_err(failed)?;
+    let body = format!("<p id=\"linked\">{body}</p>");
+    Ok(done(StatusCode::OK, "Phone linked", &body))
+}
+
+/// CALL-011: the owner linked the blocked phone.
+const LINKED: &str = "This phone is now linked to your business account.";
+/// CALL-012, BIZ-033: a member linked the blocked phone; it waits for the owner.
+const LINKED_WAITING: &str = "The owner must approve this phone before it works.";
+/// The Link this phone link's refusal: nothing changed and the link is unused.
+const NOT_LINKED: &str = "We could not link this phone. Nothing changed.";
+
 /// SEC-038: the Approve `POST` with no step-up in the last 5 minutes: 401 and a link to the
 /// step-up page; the link is not used.
 fn step_up_first() -> Response {
@@ -1286,7 +1344,11 @@ async fn send_quote(
     let link = JobLink { job, business };
     let form = read_form(&mut tx, link, posted.certified == "yes").await?;
     match checked(&mut tx, link, &form, posted).await? {
-        Checked::Again(problems) => Ok(Sent::Page(again(&form, csrf, posted, &problems))),
+        Checked::Again(problems) => {
+            tx.rollback().await.map_err(failed)?;
+            note_returned(links, link, &problems).await?;
+            Ok(Sent::Page(again(&form, csrf, posted, &problems)))
+        }
         Checked::Ready(quote, facts) => {
             let stored = submit_quote_with_facts(&mut tx, (job, business), &quote, &facts, now);
             if stored.await.map_err(failed)? != Submitted::Saved {
@@ -1302,6 +1364,19 @@ async fn send_quote(
             Ok(Sent::Page(shown))
         }
     }
+}
+
+/// PICK-052, OPS-039, PRIV-028, D-3877: when the form goes back with a note problem
+/// (`check_note`'s refusal or `parse_quote`'s note bounce), records it with
+/// `record_note_returned` on its own connection, after the quote's transaction rolled back, so
+/// the row is kept; the note's text is never stored. A price-only bounce writes nothing.
+async fn note_returned(links: &Links, link: JobLink, problems: &Problems) -> Result<(), Stop> {
+    let Some(problem) = problems.note else {
+        return Ok(());
+    };
+    let mut db = links.pool.acquire().await.map_err(failed)?;
+    let recorded = record_note_returned(&mut db, (link.job, link.business), problem).await;
+    recorded.map_err(failed)
 }
 
 /// What the form shows again: the problems found and any largest-job warning.
