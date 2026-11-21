@@ -99,8 +99,9 @@ pub use crate::order::{
 };
 pub use crate::photos::{
     LEAVE_OUT_LINE, MAX_PHOTO_ASKS, NO_PHOTO_LINE, PHOTO_ASK_TEMPLATE, PHOTO_CHECK_TEMPLATE,
-    PHOTO_HEIC_TEMPLATE, PHOTO_REASK_TEMPLATE, PhotoStep, PhotoText, after_photo, left_off_note,
-    photo_answer, photo_body, photo_text,
+    PHOTO_HEIC_TEMPLATE, PHOTO_OK, PHOTO_REASK_TEMPLATE, PhotoPress, PhotoStep, PhotoText,
+    after_photo, card_went_out, confirmed_photos, left_off_note, photo_answer, photo_body,
+    photo_job_is_hers, photo_text, press_photo,
 };
 pub use crate::purge::{
     REQUEST_PURGE_KIND, purge_answers, run_purge, run_purge_at, run_request_purge,

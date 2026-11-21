@@ -110,6 +110,7 @@ fn business_parts(
     let confirm = askhava_server::confirm_settings(settings, std::env::vars())?;
     let chat = askhava_server::chat_codes::chat_keys(settings, std::env::vars())?;
     let homeowner = askhava_server::homeowner_portal::homeowner_verify(settings, std::env::vars())?;
+    let photos = askhava_server::homeowner_portal::photo_parts(settings, std::env::vars())?;
     let link_codes = askhava_server::action_links::confirm_link_codes(settings, std::env::vars())?;
     let number = askhava_server::business_number(settings.business_number())?;
     let pages = askhava_site::api::SitePages::from_settings(settings);
@@ -118,6 +119,7 @@ fn business_parts(
         .with_sign_up(signup)
         .with_step_up(step_up)
         .with_homeowner_verify(homeowner)
+        .with_photos(photos)
         .with_vault(vault)
         .with_business_number(number.clone())
         .with_confirm_part(confirm)
