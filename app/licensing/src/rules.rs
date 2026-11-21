@@ -152,9 +152,10 @@ fn roc_and_agency(job: &Job, holder: &Holder) -> Eligibility {
 }
 
 /// LIC-015, FEE-045: a home-inspection job is fee-free when intake's sale question was answered yes
-/// or the request names a fee-free job type (buyer, pre-listing or refinance inspection, a termite
-/// report for a sale or loan: the catalog's `fee_free_job_types`); a general condition inspection,
-/// and any job outside the `home_inspection` category, keeps the normal introduction fee by job size.
+/// or the request names a fee-free job type (buyer, pre-listing or refinance inspection: the
+/// catalog's `fee_free_job_types`); a general condition inspection, and any job outside the
+/// `home_inspection` category, keeps the normal introduction fee by job size here (pest control's
+/// fee-free termite report for a sale or loan is read from the catalog, D-5216).
 #[must_use]
 pub fn inspection_fee(job: &Job, answer: SaleAnswer, job_type_fee_free: bool) -> InspectionFee {
     if job.category != HOME_INSPECTION {
