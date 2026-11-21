@@ -21,7 +21,7 @@ RUN npm run build \
        done \
     && test -n "$(ls -A /out/static)"
 
-FROM rust:1.99.0-slim-trixie@sha256:2752b332db73fdbb7dc576f06c82ed1f312005784ef913d7e04a28f5f55dc581 AS chef
+FROM rust:1.100.0-slim-trixie@sha256:6f14b2b4b278ec0d50aa1d69541c304ce0f95e0f6268487aa9924af1c2e9aebe AS chef
 # rustup would otherwise fetch clippy and rustfmt for rust-toolchain.toml.
 ENV RUSTUP_TOOLCHAIN=1.99.0
 RUN cargo install cargo-chef --locked --version 0.1.78
