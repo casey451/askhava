@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T00:19:57Z by runner 3140e5a2dfe9 (actions).
+Updated 2026-11-21T00:20:27Z by runner 3140e5a2dfe9 (actions).
 
 **Building: T664 in progress since 23:09Z; 561 of 714 done; week 54% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 561 of 714 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T664 claimed 23:09Z, lease until 02:09Z; lane 4: T677 claimed 23:11Z, lease until 02:11Z; lane 6: T526 claimed 23:08Z, lease until 02:08Z
+- **Lane:** lane 1: T664 claimed 23:09Z, lease until 02:09Z; lane 4: T677 claimed 23:11Z, lease until 02:11Z
 - **Week:** 54% used, 89.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:51Z, 28 min before this update
+- **Last run:** 23:51Z, 29 min before this update
 - **Keeper:** last ran 23:50Z, next wake 02:10Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Updated 2026-11-21T00:19:57Z by runner 3140e5a2dfe9 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T526 | server, intake, businesses and site: business texting follow | MERGE_PENDING | 1 | 71 min | 00:19Z |  |
 | T773 | Runner (harness): the merge train can carry a third car, bui | done | 1 | 33 min | 23:17Z |  |
 | T682 | picks: a pick waiting for Confirm gets its hourly reminders, | done | 2 | 91 min | 22:27Z | app/picks/src/reminder_run.rs:316 (remind): a waiting pick whose job was cancelled or closed after the notice keeps gett |
 | T673 | intake (harness): the dispatcher builds and shows the card,  | done | 1 | 106 min | 22:03Z |  |
@@ -146,7 +147,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T664 (lease until 2026-11-21T02:09:28Z)
 - lane 4: T677 (lease until 2026-11-21T02:11:01Z)
-- lane 6: T526 (lease until 2026-11-21T02:08:11Z)
 
 ## Last usage reading
-- {"task": "T773", "at": "2026-11-20T23:17:27Z", "input_tokens": 61, "output_tokens": 43103, "cache_read_input_tokens": 1623239, "cache_creation_input_tokens": 121253}
+- {"task": "T526", "at": "2026-11-21T00:19:55Z", "cache_read_input_tokens": 8051327, "output_tokens": 56731, "cache_creation_input_tokens": 219204, "input_tokens": 150}
