@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-21T16:45:05Z by runner 400b0ef5b43d (actions).
+Updated 2026-11-21T16:45:33Z by runner 400b0ef5b43d (actions).
 
 **Building: T608 in progress since 15:59Z; 582 of 730 done; week 30% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 582 of 730 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T608 claimed 15:59Z, lease until 18:59Z; lane 5: T787 claimed 15:36Z, lease until 18:36Z
+- **Lane:** lane 1: T608 claimed 15:59Z, lease until 18:59Z
 - **Week:** 30% used, 132.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:42Z, 2 min before this update
 - **Keeper:** last ran 16:40Z, next wake 18:39Z
@@ -40,6 +40,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T787 | intake: crate guide trimmed to 5,500 bytes, the detail moved | MERGE_PENDING | 1 | 68 min | 16:45Z |  |
 | T786 | server: crate guide trimmed to 5,500 bytes, the detail moved | MERGE_PENDING | 1 | 34 min | 16:33Z |  |
 | T655 | businesses: an unknown ROC license status warns at 24 hours, | MERGE_PENDING | 2 | 2 h 34 min | 16:05Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
 | T789 | Tests (harness): TD-INT-47's no-contact check ignores the ra | done | 1 | 27 min | 15:38Z |  |
@@ -149,7 +150,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T608 (lease until 2026-11-21T18:59:45Z)
-- lane 5: T787 (lease until 2026-11-21T18:36:33Z)
 
 ## Last usage reading
-- {"task": "T786", "at": "2026-11-21T16:33:27Z", "cache_creation_input_tokens": 62894, "cache_read_input_tokens": 641340, "input_tokens": 41, "output_tokens": 15274}
+- {"task": "T787", "at": "2026-11-21T16:45:03Z", "cache_creation_input_tokens": 124365, "input_tokens": 98, "cache_read_input_tokens": 1595918, "output_tokens": 31069}
