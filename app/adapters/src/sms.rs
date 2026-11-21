@@ -10,7 +10,8 @@
 //! the day-31 purge (PRIV-027, TXT-020, D-1841). [`SmsBodyRead`] reads an
 //! inbound text's body back from Twilio's copy for the bounded retry of a text
 //! a module error stopped, which never stores it (TXT-012, TXT-020, D-801,
-//! D-2307).
+//! D-2307). [`SmsMediaDelete`] deletes a picture text's media at Twilio once its photo is stored
+//! (INT-044, D-5251).
 
 use std::future::Future;
 use std::time::Duration;
@@ -125,6 +126,88 @@ impl SmsBodyDelete for TwilioSms {
         } else {
             Err(AdapterError::Decode)
         }
+    }
+}
+
+/// Deleting a picture text's media at Twilio once its photo is stored (INT-044, PRIV-014,
+/// SEC-018, SEC-032, D-5251). A separate trait so no existing [`SmsAdapter`] fake changes. The
+/// DELETE always goes to the configured account root, never to the host a media URL names, so
+/// the credentials reach only Twilio (or its stand-in); 204 and 404 (already gone) are `Ok`.
+pub trait SmsMediaDelete {
+    /// Deletes media `media_sid` (`ME…`) of message `message_sid` (`MM…` or `SM…`); a SID of
+    /// another form is `InvalidId` and nothing is sent.
+    fn delete_message_media(
+        &self,
+        idempotency: &IdempotencyKey,
+        message_sid: &str,
+        media_sid: &str,
+    ) -> impl Future<Output = Result<(), AdapterError>> + Send;
+
+    /// Deletes the media at `url`, a Twilio media URL ending in
+    /// `/2010-04-01/Accounts/{AC}/Messages/{MM}/Media/{ME}` under this client's account; any
+    /// other shape is `InvalidId` and nothing is sent.
+    fn delete_media_at(
+        &self,
+        idempotency: &IdempotencyKey,
+        url: &str,
+    ) -> impl Future<Output = Result<(), AdapterError>> + Send;
+}
+
+impl SmsMediaDelete for TwilioSms {
+    /// DELETE `Messages/{message_sid}/Media/{media_sid}.json` (INT-044; SEC-032: both SIDs are
+    /// checked before they reach the path; SEC-018: the key rides in `Idempotency-Key`).
+    async fn delete_message_media(
+        &self,
+        idempotency: &IdempotencyKey,
+        message_sid: &str,
+        media_sid: &str,
+    ) -> Result<(), AdapterError> {
+        let message_ok = is_sid(message_sid, "MM") || is_sid(message_sid, "SM");
+        if !message_ok || !is_sid(media_sid, "ME") {
+            return Err(AdapterError::InvalidId);
+        }
+        let account = self.http.account_url();
+        let url = format!("{account}/Messages/{message_sid}/Media/{media_sid}.json");
+        self.http.delete(&url, idempotency).await
+    }
+
+    /// Parses the two SIDs out of `url` against this client's account SID (SEC-032), then
+    /// [`SmsMediaDelete::delete_message_media`] (INT-044).
+    async fn delete_media_at(
+        &self,
+        idempotency: &IdempotencyKey,
+        url: &str,
+    ) -> Result<(), AdapterError> {
+        let (message_sid, media_sid) =
+            media_sids(url, &self.http.account_sid).ok_or(AdapterError::InvalidId)?;
+        self.delete_message_media(idempotency, &message_sid, &media_sid)
+            .await
+    }
+}
+
+/// The message and media SIDs of an `http(s)` media URL whose path ends in
+/// `/2010-04-01/Accounts/{account_sid}/Messages/{message}/Media/{media}` with no query or
+/// fragment; `None` for any other shape or account (SEC-032, D-5251). A path prefix before it
+/// (the stand-in's `/twilio`) is allowed: the URL's host and prefix are never contacted.
+fn media_sids(url: &str, account_sid: &str) -> Option<(String, String)> {
+    let url = reqwest::Url::parse(url).ok()?;
+    let web = matches!(url.scheme(), "https" | "http");
+    if !web || url.query().is_some() || url.fragment().is_some() {
+        return None;
+    }
+    let segments: Vec<&str> = url.path_segments()?.collect();
+    let tail = &segments[segments.len().checked_sub(7)?..];
+    match tail {
+        [
+            "2010-04-01",
+            "Accounts",
+            account,
+            "Messages",
+            message,
+            "Media",
+            media,
+        ] if *account == account_sid => Some(((*message).to_owned(), (*media).to_owned())),
+        _ => None,
     }
 }
 

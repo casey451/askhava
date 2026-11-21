@@ -2243,7 +2243,7 @@ A second outside review of the whole repository found eight issues and listed so
 - Business notices now go by email unless texting is set up.
 - Texts start only after you turn on business texting. Even then, a text goes only to phones with the text box ticked. Everyone else gets the email.
 - Notices due overnight wait until 8 a.m. Arizona time. The email and the text then go out together, and a job card's 24 hours to quote start at 8 a.m.
-- The "job is confirmed" and "card didn't go through" emails carry a sign-in link made for that one person, good for 7 days. No homeowner details are in any email or text to a business.
+- The "job is confirmed" and "card didn't go through" emails (the text now says "Your payment didn't go through", D-5266) carry a sign-in link made for that one person, good for 7 days. No homeowner details are in any email or text to a business.
 - Job card emails have no photos, just a link to the job page in the business portal.
 - The "Sent to N businesses" count leaves out any business whose card email bounced.
 - Not built yet: the worker doesn't run these notices yet, the unsubscribe link in card emails, and Spanish business emails.
@@ -3717,3 +3717,12 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 - **Fixed by tasks:** a START racing an opt-out re-key now takes the number lock (T738); Confirm reminders follow the night hold and every business notice waits for each recipient's own time zone (T792); business notice emails no longer go out at night from the email queue (T793).
 - **Sign-in link exception (D-5231):** the business-notice sign-in link keeps its code in the web address. It opens no session; it only offers a button that emails the same person a one-time 15-minute link, and the page tells browsers not to pass the address on. The privacy and security rules now name this as their one exception.
 - **Spanish check (D-5232):** ChatGPT's blind back-translation of the 8 final Spanish texts matched all 8; the second AI's check (Grok) is still to do.
+
+## Texting registration plan (Fable's decisions for you, D-5278 to D-5281, November 21)
+
+- **Ask Twilio first.** The question to send is in `docs/handoff/Twilio_question.md` (now under Laftly, with the fee stated). Send it at the account checkpoint, after T800 to T805 land. For the registration, the page that shows our number is shown by a screenshot of how it will look at launch, since the number isn't public before Gate C. Register only after the written answer. If Twilio says this is third-party lead generation (error 30951), we don't register and we don't try toll-free: the service stays on web and email and it comes back to you.
+- **One way to agree to texts.** A homeowner agrees by texting our number first. Once texting is live (after Gate C), the website chat just shows our number and the texting terms and asks her to text us; it no longer runs a request. If we ever run on web and email only, the chat works as it does today, but it never signs anyone up for texts.
+- **No HELP reply after STOP.** Twilio blocks it. The SMS terms now send opted-out people to laftly.com/help and help@laftly.com.
+- **Canada.** We now say texts work with US numbers; Canadian numbers aren't confirmed yet.
+- **Not changed:** the STOP reply keeps its exact wording; a help link there would break its rule (only confirm).
+- **Spanish check without Grok (D-5292):** each Spanish text that stays on is translated back to English twice by two fresh AI sessions that see only the Spanish (ChatGPT, plus a second model you have, or a second fresh ChatGPT chat). Done: both rounds (ChatGPT, then a fresh ChatGPT chat) matched all 8 texts. The style notes go to the paid review.

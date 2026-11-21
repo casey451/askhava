@@ -196,6 +196,26 @@ impl TwilioHttp {
         twilio_answer(exchange(request).await?)
     }
 
+    /// DELETEs `url` with Basic auth and `idempotency` in `Idempotency-Key` (SEC-018, SEC-032):
+    /// `Ok` on 204 and on 404, the resource already gone, so a retried delete is safe; any other
+    /// answer is `Vendor` with Twilio's error code (INT-044, D-5251).
+    pub(crate) async fn delete(
+        &self,
+        url: &str,
+        idempotency: &IdempotencyKey,
+    ) -> Result<(), AdapterError> {
+        let request = self
+            .client
+            .delete(url)
+            .basic_auth(&*self.account_sid, Some(self.auth_token.expose_secret()))
+            .header("Idempotency-Key", idempotency.as_str());
+        let (status, bytes) = exchange(request).await?;
+        if status == reqwest::StatusCode::NO_CONTENT || status == reqwest::StatusCode::NOT_FOUND {
+            return Ok(());
+        }
+        Err(vendor_error(status, &bytes))
+    }
+
     /// GETs `url` with `query` added, under Basic auth: a read, so no key (D-596, D-3155). The
     /// answer is parsed into `T` and never logged (SEC-032).
     pub(crate) async fn get_json<T: DeserializeOwned>(
@@ -231,15 +251,20 @@ fn twilio_answer<T: DeserializeOwned>(
     (status, bytes): (reqwest::StatusCode, Vec<u8>),
 ) -> Result<T, AdapterError> {
     if !status.is_success() {
-        let code = serde_json::from_slice::<TwilioErrorBody>(&bytes)
-            .ok()
-            .and_then(|body| body.code);
-        return Err(AdapterError::Vendor {
-            status: status.as_u16(),
-            code,
-        });
+        return Err(vendor_error(status, &bytes));
     }
     serde_json::from_slice(&bytes).map_err(|_| AdapterError::Decode)
+}
+
+/// A Twilio refusal as `Vendor`: the status and, when the body has one, Twilio's error code only.
+fn vendor_error(status: reqwest::StatusCode, bytes: &[u8]) -> AdapterError {
+    let code = serde_json::from_slice::<TwilioErrorBody>(bytes)
+        .ok()
+        .and_then(|body| body.code);
+    AdapterError::Vendor {
+        status: status.as_u16(),
+        code,
+    }
 }
 
 /// The vendor HTTP client: a 15-second timeout, no redirects and no proxy
