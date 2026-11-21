@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-21T21:10:34Z by runner 591c8bfc043e (actions).
+Updated 2026-11-21T21:10:41Z by runner c9349629907b (actions).
 
-**Building: T691 in progress since 20:16Z; 588 of 739 done; week 36% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T788 in progress since 20:25Z; 588 of 739 done; week 36% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 588 of 739 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 4: T691 claimed 20:16Z, lease until 23:16Z; lane 6: T788 claimed 20:25Z, lease until 23:25Z
+- **Lane:** lane 6: T788 claimed 20:25Z, lease until 23:25Z
 - **Week:** 36% used, 118.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:02Z, 7 min before this update
+- **Last run:** 21:10Z, 0 min before this update
 - **Keeper:** last ran 21:02Z, next wake 23:14Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 40 problem(s) on tasks still to run (+466 on DONE tasks); first: T624: stored context_pct 12% but it measures 17%; regenerate
+- Strict plan check red: 40 problem(s) on tasks still to run (+465 on DONE tasks); first: T624: stored context_pct 12% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -83,7 +83,7 @@ Updated 2026-11-21T21:10:34Z by runner 591c8bfc043e (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 588 of 734
+**Tasks merged (throughput only):** 588 of 739
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -127,7 +127,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 4: T691 (lease until 2026-11-21T23:16:22Z)
 - lane 6: T788 (lease until 2026-11-21T23:25:35Z)
 
 ## Last usage reading
