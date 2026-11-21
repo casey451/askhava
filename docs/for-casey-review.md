@@ -3712,3 +3712,12 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 - **Fixed by tasks:** a START racing an opt-out re-key now takes the number lock (T738); Confirm reminders follow the night hold and every business notice waits for each recipient's own time zone (T792); business notice emails no longer go out at night from the email queue (T793).
 - **Sign-in link exception (D-5231):** the business-notice sign-in link keeps its code in the web address. It opens no session; it only offers a button that emails the same person a one-time 15-minute link, and the page tells browsers not to pass the address on. The privacy and security rules now name this as their one exception.
 - **Spanish check (D-5232):** ChatGPT's blind back-translation of the 8 final Spanish texts matched all 8; the second AI's check (Grok) is still to do.
+
+## Texting registration plan (Fable's decisions for you, D-5278 to D-5281, November 21)
+
+- **Ask Twilio first.** The question to send is in `docs/handoff/Twilio_question.md` (now under Laftly, with the fee stated). Register only after the written answer. If Twilio says this is third-party lead generation (error 30951), we don't register and we don't try toll-free: the service stays on web and email and it comes back to you.
+- **One way to agree to texts.** A homeowner agrees by texting our number first. The chat's code now only checks that the phone is hers; texts start only when she texts in.
+- **No HELP reply after STOP.** Twilio blocks it. The SMS terms now send opted-out people to laftly.com/help and help@laftly.com.
+- **Canada.** We now say texts work with US numbers; Canadian numbers aren't confirmed yet.
+- **Not changed:** the STOP reply keeps its exact wording; a help link there would break its rule (only confirm).
+
