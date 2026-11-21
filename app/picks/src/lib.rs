@@ -55,6 +55,7 @@ mod handlers;
 mod models;
 mod money_notices;
 mod open_cards_email;
+mod open_cards_run;
 mod pick_ended;
 mod pick_withdrawn;
 mod release;

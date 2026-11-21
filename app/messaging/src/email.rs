@@ -164,6 +164,15 @@ pub enum Notice<'a> {
         /// Her quote page, only when another pickable quote remains.
         quotes_link: Option<&'a str>,
     },
+    /// CARD-022, D-1993: the open-cards email as `picks` composed it in the person's language,
+    /// one paragraph per line, picks first; BIZ-038's "open it in your phone's browser" line is
+    /// added here. Queued as [`EmailClass::Bulk`] (OPS-038).
+    OpenCards {
+        /// The subject `picks::api::open_cards_email` built.
+        subject: &'a str,
+        /// Its lines: each waiting pick, then each open card (trade, town, end, Quote link).
+        lines: &'a [String],
+    },
 }
 
 /// Who an email goes to: the opaque ID (a vault contact or a business address), the audience the
@@ -204,13 +213,17 @@ pub struct Rendered {
     pub plain: String,
 }
 
-/// `templates/email_layout.html`: every email template extends it (SEC-028, D-491).
+/// `templates/email_layout.html`, which every email extends (SEC-028, D-491), with one paragraph
+/// per line of the message: one for every notice but the open-cards list (CARD-022).
 #[derive(Template)]
-#[template(path = "email_layout.html")]
+#[template(
+    source = "{% extends \"email_layout.html\" %}{% block content %}\n{% for line in lines %}<p>{{ line }}</p>\n{% endfor %}{% endblock %}",
+    ext = "html"
+)]
 struct Layout<'a> {
     lang: &'a str,
     subject: &'a str,
-    message: &'a str,
+    lines: Vec<&'a str>,
     why: &'a str,
     manage_url: &'a str,
     manage_label: &'a str,
@@ -277,7 +290,23 @@ fn notice_lines(notice: Notice<'_>, to: &Recipient<'_>) -> Result<(String, Strin
             business,
             quotes_link,
         } => pick_lapsed_lines(business, quotes_link, to.language),
+        Notice::OpenCards { subject, lines } => (
+            subject.to_owned(),
+            format!("{}\n{}", lines.join("\n"), browser_line(to.language)),
+        ),
     })
+}
+
+/// BIZ-038: the line every email with action links carries, in the person's language.
+fn browser_line(language: Language) -> &'static str {
+    match language {
+        Language::En => {
+            "If a link asks you to sign in, open it in your phone's browser (tap ⋯, then Open in browser)."
+        }
+        Language::Es => {
+            "Si un enlace le pide iniciar sesión, ábralo en el navegador de su teléfono (toque ⋯ y luego Abrir en el navegador)."
+        }
+    }
 }
 
 /// PICK-046, D-3880: the subject and message of the lapsed-pick email, PICK-046's text with
@@ -357,10 +386,14 @@ pub fn render(
         Language::En => "en",
         Language::Es => "es",
     };
+    let lines = match notice {
+        Notice::OpenCards { .. } => message.lines().collect(),
+        _ => vec![message.as_str()],
+    };
     let layout = Layout {
         lang,
         subject: &subject,
-        message: &message,
+        lines,
         why: &why,
         manage_url: to.manage_url,
         manage_label,
