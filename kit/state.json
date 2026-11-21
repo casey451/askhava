@@ -103915,7 +103915,14 @@
    "attempts": 0,
    "slug": "termite-report-pest-control",
    "type": "harness",
-   "stage": "5"
+   "stage": "5",
+   "plan_gap": {
+    "at": "2026-11-21T17:21:47Z",
+    "problems": [
+     "T790: prompt kit/prompts/T790.md is missing; run scripts/gen_prompts.py",
+     "T790: branch claude/task/T790-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet"
+    ]
+   }
   }
  ],
  "owner_waits": [],
@@ -110927,7 +110934,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T17:22:08Z",
+ "updated_at": "2026-11-21T17:29:15Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
