@@ -1,19 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-21T01:10:30Z by runner c3bff35f9d54 (actions).
+Updated 2026-11-21T01:10:43Z by runner c3bff35f9d54 (actions).
 
 **Building: T664 in progress since 23:09Z; 562 of 726 done; week 55% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 562 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T664 claimed 23:09Z, lease until 02:09Z; lane 2: T674 claimed 01:08Z, lease until 04:08Z
-- **Week:** 55% used, 82.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:09Z, 0 min before this update
+- **Lane:** lane 1: T664 claimed 23:09Z, lease until 02:09Z; lane 2: T674 claimed 01:08Z, lease until 04:08Z; lane 6: T580 claimed 01:10Z, lease until 04:10Z
+- **Week:** 55% used, 80.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 01:09Z, 1 min before this update
 - **Keeper:** last ran 01:04Z, next wake 01:24Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
+- PLAN GAP T774 (since 2026-11-21T01:10:04Z, no attempt used; a plan change fixes it): T774: prompt kit/prompts/T774.md is missing; run scripts/gen_prompts.py; T774: branch claude/task/T774-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
+- PLAN GAP T777 (since 2026-11-21T01:10:04Z, no attempt used; a plan change fixes it): T777: prompt kit/prompts/T777.md is missing; run scripts/gen_prompts.py; T777: branch claude/task/T777-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
+- PLAN GAP T780 (since 2026-11-21T01:10:04Z, no attempt used; a plan change fixes it): T780: prompt kit/prompts/T780.md is missing; run scripts/gen_prompts.py; T780: branch claude/task/T780-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
+- PLAN GAP T781 (since 2026-11-21T01:10:04Z, no attempt used; a plan change fixes it): T781: prompt kit/prompts/T781.md is missing; run scripts/gen_prompts.py; T781: branch claude/task/T781-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
 - Strict plan check red: 47 problem(s) on tasks still to run (+432 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
@@ -126,7 +130,7 @@ Updated 2026-11-21T01:10:30Z by runner c3bff35f9d54 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-21T01:03:44Z (week)): week: 112.0M used, 82.0M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-04T06:04:33Z.
+- Pacing (session_reading 2026-11-21T01:03:44Z (week)): week: 113.5M used, 80.5M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-04T17:05:25Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -143,6 +147,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T664 (lease until 2026-11-21T02:09:28Z)
 - lane 2: T674 (lease until 2026-11-21T04:08:34Z)
+- lane 6: T580 (lease until 2026-11-21T04:10:04Z)
 
 ## Last usage reading
 - {"task": "T677", "at": "2026-11-21T01:02:43Z", "output_tokens": 86307, "input_tokens": 303, "cache_creation_input_tokens": 337808, "cache_read_input_tokens": 13044286}
