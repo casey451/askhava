@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-21T09:28:27Z by runner 75f700f12437 (actions).
+Updated 2026-11-21T09:28:57Z by runner 75f700f12437 (actions).
 
-**Building: T615 in progress since 07:56Z; 576 of 726 done; week 71% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T654 in progress since 09:01Z; 576 of 726 done; week 71% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 576 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T615 claimed 07:56Z, lease until 10:56Z; lane 2: T654 claimed 09:01Z, lease until 12:01Z; lane 7: T458 claimed 08:43Z, lease until 11:43Z
+- **Lane:** lane 2: T654 claimed 09:01Z, lease until 12:01Z; lane 7: T458 claimed 08:43Z, lease until 11:43Z
 - **Week:** 71% used, 49.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:21Z, 7 min before this update
 - **Keeper:** last ran 08:55Z, next wake 09:15Z
@@ -22,9 +22,10 @@ Worker: D-5160's three trade-only rules (job_type: None) give candidate <trade>_
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T615 | site and server: a styled 404 page for unknown paths, the fa | MERGE_PENDING | 2 | 92 min | 09:28Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T776 | intake: a move out of Arizona and a property-management requ | BLOCKED | 2 | 11 min | 08:54Z | PLAN GAP: outside ownership: app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml) / Worker: D-5160's three tr |
 | T674 | server: the homeowner's photo upload page and the short-live | done | 2 | 40 min | 08:06Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
-| T615 | site and server: a styled 404 page for unknown paths, the fa | check_failed | 1 | 55 min | 07:33Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
+| T615 | site and server: a styled 404 page for unknown paths, the fa | check_failed | 1 | 55 min | 07:33Z |  |
 | T674 | server: the homeowner's photo upload page and the short-live | resync | 2 | 2 h 38 min | 07:19Z |  |
 | T754 | portals and payments: a $0 Confirm after a PaymentIntent was | BLOCKED | 2 | 46 min | 06:41Z | PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and |
 | T755 | messaging: a sole opt-out word counts with any spacing ("STO | done | 1 | 66 min | 05:21Z |  |
@@ -140,9 +141,9 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T615 (lease until 2026-11-21T10:56:09Z)
+- nothing
 - lane 2: T654 (lease until 2026-11-21T12:01:19Z)
 - lane 7: T458 (lease until 2026-11-21T11:43:47Z)
 
 ## Last usage reading
-- {"task": "T776", "at": "2026-11-21T08:54:41Z", "cache_read_input_tokens": 3753162, "output_tokens": 43492, "input_tokens": 105, "cache_creation_input_tokens": 147258}
+- {"task": "T615", "at": "2026-11-21T09:28:25Z", "cache_creation_input_tokens": 103933, "cache_read_input_tokens": 1421262, "output_tokens": 14830, "input_tokens": 75}
