@@ -445,7 +445,7 @@ fn td_int_20_the_spanish_reply_stays_on() {
     assert_eq!(
         es,
         branded(
-            "{brand_short}: Lo sentimos, debe tener 18 años o más para usar {brand}. Pídale a un padre o adulto que nos escriba.",
+            "{brand_short}: Lo sentimos, debe tener 18 años o más para usar {brand}. Pídale a su madre, a su padre o a otro adulto que nos escriba.",
             true
         )
     );

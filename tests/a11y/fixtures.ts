@@ -104,6 +104,9 @@ export { PAGE_STATES, type PageState };
 /** The `(route, state)` pairs to run: every state of every route in the route table. */
 export const STATES_TO_CHECK = PAGE_STATES.filter((state) => ROUTES.includes(state.route));
 
+/** The status a seeded state answers with, by the URL that opens it, when not 200 (T615). */
+const SEED_STATUS = new Map<string, number>();
+
 /** The cookies a seed returned, by the URL it returned with them; `open` sets them (D-3674). */
 const SEED_COOKIES = new Map<string, Exclude<Seeded, string>>();
 
@@ -139,7 +142,9 @@ function seed(state: PageState): string {
   if (entry === undefined || entries.length > 1) {
     throw new Error(`${String(entries.length)} page_states.ts entries for ${state.route}; want exactly one`);
   }
-  return seededUrl(entry.seed(state));
+  const url = seededUrl(entry.seed(state));
+  if (state.status !== undefined) SEED_STATUS.set(url, state.status);
+  return url;
 }
 
 /** Fixtures: `pageUrl(state)` seeds a state once per worker and returns its path. */
@@ -163,9 +168,10 @@ export { expect };
  * Opens `state` at `width` wide and `height` tall and waits for it to load, after setting the
  * cookies its seed returned as a `__Host-` cookie needs them: host-only on the URL's host, path `/`,
  * `Secure`, `HttpOnly`, `SameSite=Lax` (D-3674), with Stripe.js answered by `FAKE_STRIPE` (D-3838).
- * A path resolves against the suite's web binary.
+ * A path resolves against the suite's web binary. The answer must be 200, or `status` when given,
+ * else the status of the state whose seed returned `url` (`PageState.status`, T615: the 404 page).
  */
-export async function open(page: Page, url: string, width: number, height = 900): Promise<void> {
+export async function open(page: Page, url: string, width: number, height = 900, status?: number): Promise<void> {
   await page.setViewportSize({ width, height });
   const domain = new URL(url, `http://127.0.0.1:${String(webPort())}`).hostname;
   const cookies = (SEED_COOKIES.get(url)?.cookies ?? []).map(({ name, value }) => ({
@@ -180,7 +186,7 @@ export async function open(page: Page, url: string, width: number, height = 900)
   if (cookies.length > 0) await page.context().addCookies(cookies);
   await page.route("https://js.stripe.com/**", (route) => route.fulfill({ contentType: "text/javascript", body: FAKE_STRIPE }));
   const reply = await page.goto(url);
-  expect(reply?.status(), url.replace(/[0-9a-f]{64}/, "{token}")).toBe(200);
+  expect(reply?.status(), url.replace(/[0-9a-f]{64}/, "{token}")).toBe(status ?? SEED_STATUS.get(url) ?? 200);
 }
 
 /** axe-core with A11Y-001's tags: violations and incomplete (needs review) results, as "rule: targets". */
