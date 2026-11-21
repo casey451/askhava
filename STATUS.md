@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T16:39:42Z by runner 4d7223083f34 (actions).
+Updated 2026-11-21T16:40:17Z by runner 4d7223083f34 (actions).
 
 **Building: T608 in progress since 15:59Z; 582 of 730 done; week 30% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-21T16:39:42Z by runner 4d7223083f34 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T608 claimed 15:59Z, lease until 18:59Z; lane 5: T787 claimed 15:36Z, lease until 18:36Z
 - **Week:** 30% used, 132.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:39Z, 0 min before this update
-- **Keeper:** last ran 16:34Z, next wake 18:38Z
+- **Last run:** 16:40Z, 0 min before this update
+- **Keeper:** last ran 16:40Z, next wake 18:39Z
 
 ## Needs attention
 - BLOCKED T615: model claude-opus-5-5 ran, task names claude-fable-5-2
@@ -98,7 +98,6 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 | T573 | messaging and server: queued business texts are addressed to | done | 4 | 41 min | 18:01Z | model claude-opus-5-5 ran, task names claude-fable-5-2 / re-queued after plan fix D-4969: Coverage time-limit cancel, fi |
 | T686 | businesses and server: a 90-day-old inbox or alert Yes gets  | done | 1 | 76 min | 17:39Z |  |
 | T672 | intake: the dispatcher asks "How soon?", the night count and | done | 3 | 52 min | 17:14Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
-| T530 | portals: the owner help page and its screened reply box (D-3 | resync | 3 | 71 min | 16:40Z |  |
 
 ### Plan and harness merges on main
 - none
