@@ -1470,8 +1470,18 @@ async fn fee_terms_changed(
     Ok(said("ended", FEE_TERMS_ENDED, None))
 }
 
-/// FEE-010 to FEE-013, FEE-045, PICK-022, D-3813, D-4349: the $0 decision in the press's
-/// transaction, then the job's move to Payment pending before it commits
+/// FEE-010, FEE-013, FEE-016, PICK-022, D-4763, D-5158: a $0 decision ends the PaymentIntent the
+/// page read opened, in the press's transaction and with no Stripe call (the intent is
+/// unconfirmed and holds no funds), so `no_fee_release` clears the pick. `false` when a charge of
+/// it may still succeed: the caller rolls the $0 row back, so no pick is both charged and waived.
+async fn intent_ended(tx: &mut PgConnection, pick: Uuid, now: Timestamp) -> Result<bool, ()> {
+    let ended = end_intent_unless_charging(tx, pick, now).await;
+    ended.map_err(|_| ())
+}
+
+/// FEE-010 to FEE-013, FEE-016, FEE-045, PICK-022, D-3813, D-4349, D-4763: the $0 decision in the
+/// press's transaction and the end of any PaymentIntent the page read opened ([`intent_ended`];
+/// a charge in flight rolls the decision back and answers the attempt's state), then the job's move to Payment pending before it commits
 /// (`confirm_moves::press_move`: always on a $0 Confirm, on a paid one only when a charge will be
 /// attempted, JOB-014, OPS-024); after the commit, a $0 pick's one release through the
 /// production sink, else the charge.
@@ -1498,6 +1508,11 @@ where
         }
         Err(_) => return Err(()),
     };
+    if paid.is_none() && !intent_ended(&mut tx, mine.pick, attempt.now).await? {
+        let reply = attempt_state(&mut tx, mine.pick, (None, attempt.now)).await?;
+        tx.rollback().await.map_err(|_| ())?;
+        return Ok(reply);
+    }
     let pressed = pressed_of(mine, mine.fee.job, attempt.now);
     if let Some(stop) = press_move(tx, &route.hooks.pool, pressed, paid).await? {
         return Ok(stopped(stop));
