@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T10:58:23Z by runner 06321dd84314 (actions).
+Updated 2026-11-21T10:58:52Z by runner 06321dd84314 (actions).
 
-**Building: T754 in progress since 09:47Z; 577 of 726 done; week 74% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T655 in progress since 10:47Z; 577 of 726 done; week 74% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 577 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T754 claimed 09:47Z, lease until 12:47Z; lane 2: T655 claimed 10:47Z, lease until 13:47Z; lane 3: T615 claimed 09:42Z, lease until 12:42Z; lane 4: T581 claimed 10:47Z, lease until 13:47Z
+- **Lane:** lane 2: T655 claimed 10:47Z, lease until 13:47Z; lane 3: T615 claimed 09:42Z, lease until 12:42Z; lane 4: T581 claimed 10:47Z, lease until 13:47Z
 - **Week:** 74% used, 41.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:48Z, 9 min before this update
+- **Last run:** 10:48Z, 10 min before this update
 - **Keeper:** last ran 10:37Z, next wake 12:45Z
 
 ## Needs attention
@@ -22,6 +22,7 @@ Worker: D-5160's three trade-only rules (job_type: None) give candidate <trade>_
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T754 | portals and payments: a $0 Confirm after a PaymentIntent was | MERGE_PENDING | 3 | 70 min | 10:58Z | PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and |
 | T458 | businesses, calls and server: the email's "Link this phone"  | MERGE_PENDING | 1 | 112 min | 10:35Z |  |
 | T654 | licensing and quotes: every ROC list import runs each active | done | 2 | 74 min | 10:15Z | PLAN GAP: outside ownership: app/quotes/src/service.rs, app/quotes/src/late_cards.rs, app/intake/src/cards_out.rs, app/i |
 | T615 | site and server: a styled 404 page for unknown paths, the fa | check_failed | 2 | 92 min | 09:28Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
@@ -29,7 +30,7 @@ Worker: D-5160's three trade-only rules (job_type: None) give candidate <trade>_
 | T674 | server: the homeowner's photo upload page and the short-live | done | 2 | 40 min | 08:06Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
 | T615 | site and server: a styled 404 page for unknown paths, the fa | check_failed | 1 | 55 min | 07:33Z |  |
 | T674 | server: the homeowner's photo upload page and the short-live | resync | 2 | 2 h 38 min | 07:19Z |  |
-| T754 | portals and payments: a $0 Confirm after a PaymentIntent was | BLOCKED | 2 | 46 min | 06:41Z | PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and |
+| T754 | portals and payments: a $0 Confirm after a PaymentIntent was | BLOCKED | 2 | 46 min | 06:41Z |  |
 | T755 | messaging: a sole opt-out word counts with any spacing ("STO | done | 1 | 66 min | 05:21Z |  |
 | T777 | businesses: a sign-in code is texted only to a line whose cu | done | 2 | 39 min | 05:05Z | PLAN GAP: outside ownership: app/server/tests/business_signin_route.rs / T777's approved_at filter in sign_in_lines fail |
 | T614 | site: the V6 header in base.html (links, the Menu in the pag | done | 3 | 53 min | 04:37Z | PLAN GAP: tests/integration/tests/quote_page.rs:172 (owner T052, protected) bans the word "summary" anywhere in the quot |
@@ -139,10 +140,10 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T754 (lease until 2026-11-21T12:47:34Z)
+- nothing
 - lane 2: T655 (lease until 2026-11-21T13:47:58Z)
 - lane 3: T615 (lease until 2026-11-21T12:42:33Z)
 - lane 4: T581 (lease until 2026-11-21T13:47:07Z)
 
 ## Last usage reading
-- {"task": "T458", "at": "2026-11-21T10:35:56Z", "cache_read_input_tokens": 10504298, "cache_creation_input_tokens": 244318, "input_tokens": 173, "output_tokens": 75277}
+- {"task": "T754", "at": "2026-11-21T10:58:21Z", "cache_creation_input_tokens": 215463, "input_tokens": 139, "output_tokens": 73772, "cache_read_input_tokens": 6850179}
