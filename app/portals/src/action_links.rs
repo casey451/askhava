@@ -16,10 +16,15 @@
 //! session, or "This inbox is shared" on); Quote and Hold never do.
 //! T399 (D-3744): [`ActionGrant::issued_at`] gives the minting time back (`created_at` plus
 //! [`LINK_LIFE`]), so the Approve route can refuse a link older than the phone's number.
+//! T457 (SEC-004, SEC-027, D-3675, D-3889): [`confirm_link_code_page`] is the Confirm link's code
+//! step (`confirm_link_code.html`), and [`confirm_link_session`] signs the link's own person in on
+//! that device once their code was right, in the transaction that uses the link.
 
+use askama::Template;
 use askhava_businesses::api::{Roles, members};
 use askhava_core::api::brand;
 use askhava_picks::api::{HoldAsk, hold_allowed};
+use axum_extra::extract::cookie::CookieJar;
 use jiff::Timestamp;
 use jiff_sqlx::ToSqlx;
 use secrecy::SecretString;
@@ -27,9 +32,10 @@ use sha2::{Digest, Sha256};
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
-use crate::business_auth::{BusinessPrincipal, LINK_LIFE};
+use crate::business_auth::{BUSINESS_SESSION_LIFE, BusinessPrincipal, LINK_LIFE};
+use crate::confirm_pay::CodeStep;
 use crate::models;
-use crate::session::PortalsError;
+use crate::session::{PortalsError, Realm, current_session, start_session};
 
 /// The route every action link opens; `GET` shows the page, `POST` acts (not served yet, D-1955).
 pub const ACTION_ROUTE: &str = "/b/a/{kind}/{object}/{token}";
@@ -384,6 +390,48 @@ pub async fn use_action_link(
 #[must_use]
 pub const fn fresh_code_needed(kind: ActionKind, signed_in: bool, inbox_shared: bool) -> bool {
     matches!(kind, ActionKind::Confirm) && (!signed_in || inbox_shared)
+}
+
+/// SEC-004, BIZ-038, D-3675: signs the person a used Confirm link was emailed to in on this
+/// device, as `business_auth::start` does: a fresh business session of
+/// [`BUSINESS_SESSION_LIFE`] in `jar`, then its `portals.business_session` row. Call it only
+/// after that person's Verify code was right, in the transaction that used the link, so a
+/// failure leaves the link unused and nobody signed in.
+///
+/// # Errors
+///
+/// [`PortalsError::NoRandom`] or [`PortalsError::Database`].
+pub async fn confirm_link_session(
+    tx: &mut PgConnection,
+    jar: CookieJar,
+    grant: &ActionGrant,
+    now: Timestamp,
+) -> Result<CookieJar, PortalsError> {
+    let login = (Realm::Business, grant.member);
+    let jar = start_session(tx, jar, login, BUSINESS_SESSION_LIFE, now).await?;
+    let session = current_session(tx, &jar, now).await?;
+    let session = session.ok_or(PortalsError::Database)?;
+    models::insert_business_session(tx, session.id(), grant.business).await?;
+    Ok(jar)
+}
+
+#[derive(Template)]
+#[template(path = "confirm_link_code.html")]
+struct ConfirmLinkCode<'a> {
+    csrf: &'a str,
+    step: CodeStep,
+}
+
+/// SEC-004, SEC-027, A11Y-011, A11Y-012, A11Y-030: the Confirm link's code step: `step`'s line
+/// about the last send, the one code field with its label, hint and error (also in a focused
+/// summary and the title), and "Text me a code" as its own form. Both forms post to the link's
+/// own path with `csrf`.
+///
+/// # Errors
+///
+/// The template's render error.
+pub fn confirm_link_code_page(csrf: &str, step: CodeStep) -> Result<String, askama::Error> {
+    ConfirmLinkCode { csrf, step }.render()
 }
 
 /// BIZ-038, SEC-004: whether a signed-in `principal` may take `kind` for `business` in the

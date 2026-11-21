@@ -51,16 +51,28 @@
 //! unknown token, a removed member's token and a job with no sent card or no rules all get the
 //! same bare 404. Every response is `no-store`. After a stored quote the job page carries
 //! "Not a fit for us" (`job_details_page_choice`, PICK-057), posting to `NOT_A_FIT_ROUTE`, which
-//! `business_portal` serves behind the business session (T306, D-4551).
+//! `business_portal` serves behind the business session (T306, D-4551). Confirm (object: the
+//! pick; T457, SEC-004, SEC-027, D-3675, D-3889) leads to the served Confirm page: [`confirm_post`]
+//! names the link's person in a rolled-back transaction; with that person's own live session and
+//! no shared inbox it uses the link and answers 303 to `/b/picks/{pick}/confirm`. Otherwise a
+//! `POST` with no `code` field texts a code (`send_confirm_code`, the link unused) and shows
+//! `confirm_link_code_page`; one with a `code` field checks it (`check_confirm_code`), and only a
+//! right code uses the link, signs that device in (`confirm_link_session`, same transaction) and
+//! answers the 303. The codes are [`routes_with`]'s `ConfirmCodes`, built by
+//! [`confirm_link_codes`] over [`LinkCodeAddress`]; without them nothing is sent or used and the
+//! step shows `CodeSent::Failed`'s line.
 
+use std::io;
 use std::net::IpAddr;
 use std::sync::Arc;
 
+use askhava_adapters::api::{TwilioConfig, twilio_clients};
+
 use askhava_businesses::api::{
     Acting, BusinessesError, Roles, TeamError, approve_phone, capabilities, pause_self,
-    resume_self, set_away, set_busy, waiting_phones,
+    resume_self, set_away, set_busy, sign_in_lines, waiting_phones,
 };
-use askhava_core::api::{Clock, SystemClock, arizona_time};
+use askhava_core::api::{Clock, Environment, Settings, SystemClock, arizona_time};
 use askhava_intake::api::Admission;
 use askhava_jobs::api::{job_facts, job_number};
 use askhava_payments::api::{JobCodes, JobFeeFacts, receipt_for, resolve_fee_facts};
@@ -77,8 +89,14 @@ use askhava_portals::api::{
     parse_facts, prefill, quote_form_page_priced, refuse_cross_site, require_step_up,
     security_event_client, session_may, use_action_link,
 };
+use askhava_portals::api::{
+    CodeAddress, CodeCheck, CodeFuture, CodeSent, CodeStep, CodeTo, ConfirmCodes, PortalsError,
+    VERIFY_DAILY_THRESHOLD, check_confirm_code, confirm_code_needed, confirm_link_code_page,
+    confirm_link_session, send_confirm_code,
+};
 use askhava_portals::api::{JobPageLinks, no_store};
 use askhava_portals::api::{SensitiveChange, StepUpError};
+use askhava_privacy::api::{BusinessPurpose, Vault, read_staff_phone};
 use askhava_quotes::api::{
     Bounce, NoteProblem, PageParts, Price, PriceFields, PriceProblem, QuoteForm, QuoteRules,
     Submitted, check_note, job_page, last_facts, parse_price, parse_quote, quote_rules, sent_card,
@@ -87,19 +105,27 @@ use askhava_quotes::api::{
 use axum::extract::{FromRef, Path, Request, State};
 use axum::http::StatusCode;
 use axum::middleware::{Next, from_fn, from_fn_with_state};
-use axum::response::{Html, IntoResponse, Response};
+use axum::response::{Html, IntoResponse, Redirect, Response};
 use axum::routing::get;
 use axum::{Extension, Router};
 use jiff::Timestamp;
+use secrecy::SecretString;
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
-/// The served action routes' state: the pool and the clock.
+use crate::business_signin::NoVerify;
+use crate::business_signup::IdentityCodes;
+
+/// The Confirm link's Verify codes (SEC-004, D-3889).
+pub type LinkCodes = ConfirmCodes<IdentityCodes>;
+
+/// The served action routes' state: the pool, the clock and the Confirm link's codes.
 #[derive(Clone)]
 struct Links {
     pool: PgPool,
     clock: Arc<dyn Clock>,
     security: WebSecurity,
+    codes: Option<Arc<LinkCodes>>,
 }
 
 impl FromRef<Links> for WebSecurity {
@@ -155,6 +181,12 @@ pub fn routes(pool: PgPool) -> Router {
 /// [`routes`] timed by `clock`: every `POST` past `refuse_cross_site`, every response `no-store`,
 /// a refusal's 403 included (SEC-034).
 pub fn routes_at(pool: PgPool, clock: Arc<dyn Clock>) -> Router {
+    routes_with(pool, clock, None)
+}
+
+/// SEC-004, SEC-027, D-3889: [`routes_at`] with the Confirm link's `codes`; `None` sends and
+/// checks no code, so a Confirm link then acts only for its own person's live session.
+pub fn routes_with(pool: PgPool, clock: Arc<dyn Clock>, codes: Option<LinkCodes>) -> Router {
     let security = WebSecurity::new(pool.clone(), Arc::clone(&clock));
     Router::new()
         .route(ACTION_ROUTE, get(show).post(act))
@@ -162,6 +194,7 @@ pub fn routes_at(pool: PgPool, clock: Arc<dyn Clock>) -> Router {
             pool,
             clock,
             security: security.clone(),
+            codes: codes.map(Arc::new),
         })
         .layer(from_fn(note_client))
         .layer(from_fn_with_state(security, refuse_cross_site))
@@ -437,6 +470,8 @@ struct Posted {
     certified: String,
     hours: String,
     days: String,
+    /// The Confirm link's code field; absent on the first press and on "Text me a code".
+    code: Option<String>,
 }
 
 impl CsrfField for Posted {
@@ -483,7 +518,7 @@ impl Posted {
 /// `POST /b/a/{kind}/{object}/{token}`: after the cross-site and CSRF checks, a Quote link acts
 /// by the link alone, Pause, Resume and Ask about a charge with a business session (D-3839),
 /// Approve with the owner's session and a fresh step-up (T399), Hold by the link alone (T456),
-/// Away and Busy with a business session (T543, T463); every other kind is the one not-found answer before any token read (D-3675).
+/// Away and Busy with a business session (T543, T463), Confirm by [`confirm_post`] (T457); every other kind is the one not-found answer before any token read (D-3675).
 async fn act(
     State(links): State<Links>,
     Extension(Client(ip)): Extension<Client>,
@@ -515,6 +550,11 @@ async fn act(
         }
         ActionKind::Busy => {
             let acted = busy_post(&links, (object, &token), &jar, &posted.days).await;
+            acted.unwrap_or_else(IntoResponse::into_response)
+        }
+        ActionKind::Confirm => {
+            let code = posted.code.as_deref();
+            let acted = confirm_post(&links, (object, &token), ip, jar, code).await;
             acted.unwrap_or_else(IntoResponse::into_response)
         }
         _ => Stop::NotFound.into_response(),
@@ -632,6 +672,176 @@ async fn hold_post(links: &Links, (pick, token): (Uuid, &str)) -> Result<Respons
             Ok(not_held(refusal))
         }
     }
+}
+
+/// SEC-004, SEC-025, SEC-026, SEC-027, BIZ-038, PICK-021, D-3675, D-3889: the Confirm link's
+/// `POST`. The link's person is named by `use_action_link` in a transaction that is committed
+/// only when `confirm_code_needed` says no code is needed (that person's own live session, inbox
+/// not shared): then 303 to the Confirm page. Otherwise it is rolled back, so the link stays
+/// unused: with no `code` field a code is texted, with one it is checked, and only a right code
+/// goes on to [`code_passed`]; every other answer is the code step again. With no codes
+/// configured nothing is sent or checked and the step shows `CodeSent::Failed`'s line.
+async fn confirm_post(
+    links: &Links,
+    (pick, token): (Uuid, &str),
+    ip: IpAddr,
+    jar: CookieJar,
+    code: Option<&str>,
+) -> Result<Response, Stop> {
+    let now = links.clock.now();
+    let kind_pick = (ActionKind::Confirm, pick);
+    let mut tx = links.pool.begin().await.map_err(failed)?;
+    let grant = use_action_link(&mut tx, kind_pick, token, None, now).await;
+    let grant = grant.map_err(link_stop)?;
+    let principal = business_principal(&mut tx, &jar, now).await;
+    let signed_in = principal
+        .map_err(failed)?
+        .is_some_and(|p| grant.same_person(&p));
+    let needed = confirm_code_needed(&mut tx, grant.member(), signed_in).await;
+    if !needed.map_err(failed)? {
+        tx.commit().await.map_err(failed)?;
+        return Ok(Redirect::to(&confirm_path(pick)).into_response());
+    }
+    tx.rollback().await.map_err(failed)?;
+    let who = (ip, grant.member(), grant.business());
+    let step = match (links.codes.as_deref(), code) {
+        (None, _) => CodeStep {
+            line: Some(CodeSent::Failed.line()),
+            error: None,
+        },
+        (Some(codes), None) => code_sent(links, codes, (ip, grant.member(), pick), now).await?,
+        (Some(codes), Some(code)) => {
+            let checked = check_confirm_code(codes, &links.pool, who, code, now).await;
+            match checked.map_err(failed)? {
+                CodeCheck::Right => return code_passed(links, (pick, token), jar, now).await,
+                wrong => CodeStep {
+                    line: None,
+                    error: wrong.error(),
+                },
+            }
+        }
+    };
+    let csrf = csrf_token(&jar).unwrap_or_default();
+    let html = confirm_link_code_page(&csrf, step).map_err(failed)?;
+    let status = match step.error {
+        Some(_) => StatusCode::UNPROCESSABLE_ENTITY,
+        None => StatusCode::OK,
+    };
+    Ok((status, Html(html)).into_response())
+}
+
+/// PICK-021: the served Confirm page of `pick` (`portals::api::CONFIRM_ROUTE`).
+fn confirm_path(pick: Uuid) -> String {
+    format!("/b/picks/{pick}/confirm")
+}
+
+/// SEC-004, SEC-014, SEC-027, D-3889: texts the link's person a code for the pick through
+/// `codes` and gives the step's line; a person with no texting phone gets `CodeSent::NoPhone`'s.
+async fn code_sent(
+    links: &Links,
+    codes: &LinkCodes,
+    to: (IpAddr, Uuid, Uuid),
+    now: Timestamp,
+) -> Result<CodeStep, Stop> {
+    let threshold = i32::try_from(VERIFY_DAILY_THRESHOLD).unwrap_or(i32::MAX);
+    let sent = send_confirm_code(codes, &links.pool, to, (now, threshold)).await;
+    Ok(CodeStep {
+        line: Some(sent.map_err(failed)?.line()),
+        error: None,
+    })
+}
+
+/// SEC-004, SEC-026, D-3675: after a right code, one transaction uses the link and starts its
+/// person's business session on this device, then 303 to the Confirm page; a link used or ended
+/// meanwhile is the one not-found answer and signs nobody in.
+async fn code_passed(
+    links: &Links,
+    (pick, token): (Uuid, &str),
+    jar: CookieJar,
+    now: Timestamp,
+) -> Result<Response, Stop> {
+    let mut tx = links.pool.begin().await.map_err(failed)?;
+    let grant = use_action_link(&mut tx, (ActionKind::Confirm, pick), token, None, now).await;
+    let grant = grant.map_err(link_stop)?;
+    let jar = confirm_link_session(&mut tx, jar, &grant, now).await;
+    let jar = jar.map_err(failed)?;
+    tx.commit().await.map_err(failed)?;
+    Ok((jar, Redirect::to(&confirm_path(pick))).into_response())
+}
+
+/// SEC-004, SEC-027, D-3562: where the Confirm link's code goes: the member's own first texting
+/// line, opened under `SignInCode`. A member with none is an email address the code is never sent
+/// to (`CodeSent::NoPhone`); no vault or a removed member: no code.
+pub struct LinkCodeAddress {
+    vault: Option<Arc<Vault>>,
+}
+
+impl LinkCodeAddress {
+    /// Opens numbers in `vault`; none: no code goes.
+    #[must_use]
+    pub const fn new(vault: Option<Arc<Vault>>) -> Self {
+        Self { vault }
+    }
+
+    /// SEC-004: `member`'s own texting phone, else the empty address that gets nothing.
+    async fn find(&self, db: &mut PgConnection, member: Uuid) -> Result<CodeTo, PortalsError> {
+        let lines = sign_in_lines(db, member).await;
+        let lines = lines.map_err(|_| PortalsError::Database)?;
+        let lines = lines.ok_or(PortalsError::Database)?;
+        let Some(line) = lines.texting_lines.first() else {
+            return Ok(CodeTo::Email(SecretString::default()));
+        };
+        let vault = self.vault.as_deref().ok_or(PortalsError::Database)?;
+        let phone = read_staff_phone(db, vault, BusinessPurpose::SignInCode, *line).await;
+        phone.map(CodeTo::Phone).map_err(|_| PortalsError::Database)
+    }
+}
+
+impl CodeAddress for LinkCodeAddress {
+    fn code_to<'a>(
+        &'a self,
+        db: &'a mut PgConnection,
+        member: Uuid,
+    ) -> CodeFuture<'a, Result<CodeTo, PortalsError>> {
+        Box::pin(self.find(db, member))
+    }
+}
+
+/// SEC-004, D-3889: the Confirm link's codes `main` passes to
+/// `RouterParts::with_confirm_link_codes`: the Twilio Verify client, the vault and
+/// `ASKHAVA_ID_SECRET` from `pairs`, with `NoVerify` (every send and check fails) in dev and CI
+/// without Twilio settings.
+///
+/// # Errors
+///
+/// A missing `ASKHAVA_ID_SECRET`, missing or bad Twilio settings in the test or live project, or
+/// a bad vault key pair. Never a value.
+pub fn confirm_link_codes<I>(settings: &Settings, pairs: I) -> io::Result<LinkCodes>
+where
+    I: IntoIterator<Item = (String, String)>,
+{
+    let pairs: Vec<(String, String)> = pairs.into_iter().collect();
+    let secret = pairs
+        .iter()
+        .find(|(k, v)| k == "ASKHAVA_ID_SECRET" && !v.trim().is_empty())
+        .map(|(_, v)| SecretString::from(v.trim().to_owned()))
+        .ok_or_else(|| io::Error::other("missing ASKHAVA_ID_SECRET"))?;
+    let vault = crate::vault_from(settings, pairs.clone())?.map(Arc::new);
+    let verify = match TwilioConfig::from_settings(settings, pairs) {
+        Ok(config) => {
+            let (_, _, verify) = twilio_clients(&config).map_err(io::Error::other)?;
+            IdentityCodes::new(verify)
+        }
+        Err(error) => match settings.environment() {
+            Environment::Dev | Environment::Ci => IdentityCodes::new(NoVerify),
+            Environment::Test | Environment::Live => return Err(io::Error::other(error)),
+        },
+    };
+    Ok(ConfirmCodes::new(
+        verify,
+        LinkCodeAddress::new(vault),
+        secret,
+    ))
 }
 
 /// SEC-025, D-1956: whether the Hold link `token` for `pick` would grant (its member still
