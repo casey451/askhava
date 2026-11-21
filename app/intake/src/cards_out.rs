@@ -22,7 +22,7 @@
 //! Intake moves to Open (JOB-008, `move_to`), Open and No quotes yet go on (a rerun), and any other
 //! status (a job cancelled by CLOSE, closed, not covered) sends nothing ([`CardsSent::Stopped`]).
 //!
-//! One transaction marks the card sent, builds the pool (`quotes::api::card_pool`, the job's own
+//! One transaction marks the card sent, builds the pool (`quotes::api::card_pool_at`, the job's own
 //! town from `intake.property`, the band floor from the `band.<job>` answer T162 stores), records
 //! one card per selected business (`send_job_cards`, `ON CONFLICT DO NOTHING`, so a repeat records
 //! nothing), writes the job's first facts row (`jobs::api::record_job_facts`: exactly the stored
@@ -33,7 +33,7 @@
 //! row waits in the outbox, whose sender holds it to the window) and one outbox row per job.
 //!
 //! T249 (CARD-024, D-1519, D-1521): the pool also gets the ZIP of the same `intake.property` row,
-//! so `card_pool` fills the job's location and each business's reach, and the cards go through
+//! so `card_pool_at` fills the job's location and each business's reach, and the cards go through
 //! `send_job_cards_in_reach`; a property with no stored ZIP matches by towns only.
 
 use std::sync::Arc;
@@ -45,7 +45,7 @@ use askhava_ops::api::Actor;
 use askhava_privacy::api::Vault;
 use askhava_quotes::api::{
     CardLines, CardNotice, CardPool, CardsOut, Pool, Reader, Recipient, SLOW_AT_MOST, StoredCard,
-    band_floor_cents, card_holders, card_pool, cards_out_text, description, mark_card_sent,
+    band_floor_cents, card_holders, card_pool_at, cards_out_text, description, mark_card_sent,
     queue_card_notice, queue_emergency_card, send_job_cards_in_reach, sent_card, stored_card,
     unsent_cards,
 };
@@ -355,14 +355,9 @@ async fn send_stored(
     }
     let floor = band.as_deref().and_then(band_floor_cents);
     let quotes = |_| IntakeError::Quotes;
-    let pool = card_pool(
-        &mut tx,
-        ((&town, zip.as_deref()), &stored.facts),
-        text,
-        floor,
-    )
-    .await
-    .map_err(quotes)?;
+    let place = ((town.as_str(), zip.as_deref()), &stored.facts);
+    let pool = card_pool_at(&mut tx, place, text, floor, now).await;
+    let pool = pool.map_err(quotes)?;
     mark_card_sent(&mut tx, stored.job, &stored.digest, now)
         .await
         .map_err(quotes)?;
