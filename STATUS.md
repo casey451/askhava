@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-21T03:50:28Z by runner 29e16fba68f9 (actions).
+Updated 2026-11-21T03:50:54Z by runner 29e16fba68f9 (actions).
 
 **Building: T457 in progress since 03:41Z; 568 of 726 done; week 62% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 568 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T457 claimed 03:41Z, lease until 06:41Z; lane 3: T781 claimed 02:17Z, lease until 05:17Z; lane 4: T614 claimed 03:43Z, lease until 06:43Z; lane 5: T304 claimed 02:48Z, lease until 05:48Z; lane 6: T684 claimed 02:16Z, lease until 05:16Z; lane 7: T776 claimed 03:49Z, lease until 06:49Z
+- **Lane:** lane 2: T457 claimed 03:41Z, lease until 06:41Z; lane 3: T781 claimed 02:17Z, lease until 05:17Z; lane 4: T614 claimed 03:43Z, lease until 06:43Z; lane 5: T304 claimed 02:48Z, lease until 05:48Z; lane 7: T776 claimed 03:49Z, lease until 06:49Z
 - **Week:** 62% used, 63.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 03:50Z, 0 min before this update
 - **Keeper:** last ran 03:35Z, next wake 03:55Z
@@ -30,6 +30,7 @@ T777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T684 | picks and server: the open-cards email goes at the times eac | MERGE_PENDING | 2 | 93 min | 03:50Z | PLAN GAP: app/quotes/src/models.rs:265 `card_sent_at` is pub(crate); T684 owns no app/quotes/src file. quotes::api has n |
 | T780 | payments and portals: the scorecard's refund and dispute rat | MERGE_PENDING | 1 | 33 min | 03:33Z |  |
 | T775 | intake: a check-in reply that names a 911 danger gets the 91 | done | 1 | 94 min | 03:03Z |  |
 | T754 | portals and payments: a $0 Confirm after a PaymentIntent was | BLOCKED | 1 | 3 min | 02:52Z | PLAN GAP: outside ownership: app/adapters/src/payments.rs, stand_ins/stripe.py, stand_ins/server.py / T754 requires canc |
@@ -65,7 +66,7 @@ T777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_
 | T681 | picks and jobs: the businesses that lost a pick and every qu | done | 1 | 50 min | 16:38Z |  |
 | T771 | a11y tests (harness): reflow_spacing's hidden-control check  | done | 2 | 50 min | 16:34Z | PLAN GAP: kit/prompts/T771.md:9 (D-4970, docs/decisions.md:2604) contradicts itself: rule (1) checks the hidden Menu sum |
 | T664 | portals: the Confirm press re-checks the license and account | BLOCKED | 1 | 5 min | 16:15Z |  |
-| T684 | picks and server: the open-cards email goes at the times eac | BLOCKED | 1 | 4 min | 15:41Z | PLAN GAP: app/quotes/src/models.rs:265 `card_sent_at` is pub(crate); T684 owns no app/quotes/src file. quotes::api has n |
+| T684 | picks and server: the open-cards email goes at the times eac | BLOCKED | 1 | 4 min | 15:41Z |  |
 | T770 | ci (harness): the Coverage job's time limit goes from 25 to  | done | 1 | 61 min | 15:35Z |  |
 | T771 | a11y tests (harness): reflow_spacing's hidden-control check  | BLOCKED | 1 | 3 min | 15:22Z |  |
 | T557 | Decisions digest, piece 12: the next entries after the heade | done | 1 | 65 min | 14:55Z |  |
@@ -159,8 +160,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 3: T781 (lease until 2026-11-21T05:17:31Z)
 - lane 4: T614 (lease until 2026-11-21T06:43:38Z)
 - lane 5: T304 (lease until 2026-11-21T05:48:33Z)
-- lane 6: T684 (lease until 2026-11-21T05:16:31Z)
 - lane 7: T776 (lease until 2026-11-21T06:49:27Z)
 
 ## Last usage reading
-- {"task": "T780", "at": "2026-11-21T03:33:34Z", "input_tokens": 130, "output_tokens": 34781, "cache_read_input_tokens": 4117609, "cache_creation_input_tokens": 130034}
+- {"task": "T684", "at": "2026-11-21T03:50:25Z", "input_tokens": 274, "output_tokens": 91105, "cache_creation_input_tokens": 358958, "cache_read_input_tokens": 11143625}
