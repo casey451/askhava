@@ -149,6 +149,7 @@ pub use crate::summary_step::{
     CardTimer, MAX_CARD_SEGMENTS, Preview, RECHECK_AFTER, Shown, answer_card, approved_card,
     card_digest, card_reply, card_timer_step, preview_text, run_card_timer, show_card,
 };
+pub use crate::text_failed_urgency::contact_urgent;
 pub use crate::web_chat::{
     ChatAnswer, ChatError, ChatIn, ChatSettings, ChatStep, Checked, CodeStep, MAX_CODE_TRIES,
     chat_message, check_code, request_source, send_code, start_chat, web_chat_consent_text,
