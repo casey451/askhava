@@ -30151,14 +30151,17 @@
    "id": "T654",
    "slug": "card-pool-roc-check",
    "title": "licensing and quotes: every ROC list import runs each active business's daily check, and the card pool gives ROC classes only after a fresh Active latest check",
-   "goal": "Plan change D-4310 (Fable's decision on the licensing spot review of `main` 4fee847d, finding 2's first half; closes D-3181's CARD-015 gap; review R1 M1 and N1). `card_pool::one_business` (`app/quotes/src/card_pool.rs:227`) takes `parts.classes` (`:256`) from `holder_for`: the classes the latest ROC list shows Active for the latest check's number, never that check's status or age, so a business whose latest lookup read Inactive (the pick lookup or LIC-039's lookup while the list fails) or whose list stopped loading keeps getting ROC cards, and the homeowner spends a pick on a business Confirm refuses (PICK-020). And no list load writes a `license_check` row: only sign-up's `check_license`, the pick lookup and LIC-039's lookups do, although `migrations/0050_licensing_imports.sql` says the table is \"one row per business per daily check\" and CARD-015 says every license is checked daily; so the quote card's ROC line (`card_facts`, D-3646) dates its \"when we checked on\" from the sign-up check for ever. (1) Daily check, `app/licensing/src/daily_lists.rs`: after `run_daily_list` records an ROC list, the same run records `check_license` (`app/licensing/src/service.rs:288`) for every active ROC business, paged through the `ActiveLicenses` it already receives (`server`'s `ActiveRoc`, `app/server/src/lib.rs:852`), in batches the run's sweep budget allows, continuing in the next queued run until done; a business already checked against that list's date is skipped, so a retry or re-run writes no second row. This task owns the hook because `daily_lists.rs` has no other queued owner but T126 and is where the list is recorded; `check_license` is unchanged. The card's ROC line then dates from that day's check and stays true. (2) `app/licensing/src/service.rs`: a new `latest_check_allows_card(conn, business, fresh: Freshness) -> Result<bool, ImportError>`, exported through `licensing::api` beside `roc_check_allows_card` and with its rule: the business's latest `license_check` row overall (`ORDER BY checked_at DESC, id DESC LIMIT 1`, the row `holder_for` reads) is `active`, its `checked_at >= fresh.checked_since` and its `list_date >= fresh.listed_since`; no row (no ROC number) is false. (3) `one_business` keeps `parts.classes` only when it is true for `checked_since = now - pause_after`, LIC-008's 72-hour setting (`licensing::api::FailureLimits`), and `listed_since` that instant's Arizona day, as `picks::confirm::fresh_active` builds its `Freshness`; otherwise `classes` is empty, so ROC categories give no card while agency, pest, handyman and no-license standing are unchanged. The moment cards stop is the latest Active check's `checked_at + pause_after`; T655 pauses at the same instant. `now` is the pool's caller's clock (the worker clock, never the wall clock) and the setting is read the way the caller reads settings; if `card_pool` has no path to the setting, use `FailureLimits::default()` and log it in `docs/decisions.md`. A list outage past 72 hours with failing lookups stops every ROC card: LIC-008 intends that and LIC-039 alerts. Update the `one_business` doc and D-3181's sentence. Tests, fake data only, on PostgreSQL: TD-LIC-33 in `tests/integration/tests/card_pool_license_check.rs`. Ordering: after T601, which changes the same file. Update `app/quotes/NOTES.md`, `app/licensing/NOTES.md` and `docs/decisions.md`. D-4349: the Confirm press's PICK-020 re-check this goal relies on (\"a business Confirm refuses\") had no caller; T664 builds it, so this task runs after T664.",
+   "goal": "Plan change D-4310 (Fable's decision on the licensing spot review of `main` 4fee847d, finding 2's first half; closes D-3181's CARD-015 gap; review R1 M1 and N1). `card_pool::one_business` (`app/quotes/src/card_pool.rs:227`) takes `parts.classes` (`:256`) from `holder_for`: the classes the latest ROC list shows Active for the latest check's number, never that check's status or age, so a business whose latest lookup read Inactive (the pick lookup or LIC-039's lookup while the list fails) or whose list stopped loading keeps getting ROC cards, and the homeowner spends a pick on a business Confirm refuses (PICK-020). And no list load writes a `license_check` row: only sign-up's `check_license`, the pick lookup and LIC-039's lookups do, although `migrations/0050_licensing_imports.sql` says the table is \"one row per business per daily check\" and CARD-015 says every license is checked daily; so the quote card's ROC line (`card_facts`, D-3646) dates its \"when we checked on\" from the sign-up check for ever. (1) Daily check, `app/licensing/src/daily_lists.rs`: after `run_daily_list` records an ROC list, the same run records `check_license` (`app/licensing/src/service.rs:288`) for every active ROC business, paged through the `ActiveLicenses` it already receives (`server`'s `ActiveRoc`, `app/server/src/lib.rs:852`), in batches the run's sweep budget allows, continuing in the next queued run until done; a business already checked against that list's date is skipped, so a retry or re-run writes no second row. This task owns the hook because `daily_lists.rs` has no other queued owner but T126 and is where the list is recorded; `check_license` is unchanged. The card's ROC line then dates from that day's check and stays true. (2) `app/licensing/src/service.rs`: a new `latest_check_allows_card(conn, business, fresh: Freshness) -> Result<bool, ImportError>`, exported through `licensing::api` beside `roc_check_allows_card` and with its rule: the business's latest `license_check` row overall (`ORDER BY checked_at DESC, id DESC LIMIT 1`, the row `holder_for` reads) is `active`, its `checked_at >= fresh.checked_since` and its `list_date >= fresh.listed_since`; no row (no ROC number) is false. (3) `one_business` keeps `parts.classes` only when it is true for `checked_since = now - pause_after`, LIC-008's 72-hour setting (`licensing::api::FailureLimits`), and `listed_since` that instant's Arizona day, as `picks::confirm::fresh_active` builds its `Freshness`; otherwise `classes` is empty, so ROC categories give no card while agency, pest, handyman and no-license standing are unchanged. The moment cards stop is the latest Active check's `checked_at + pause_after`; T655 pauses at the same instant. `now` is the pool's caller's clock (the worker clock, never the wall clock) and the setting is read the way the caller reads settings; if `card_pool` has no path to the setting, use `FailureLimits::default()` and log it in `docs/decisions.md`. A list outage past 72 hours with failing lookups stops every ROC card: LIC-008 intends that and LIC-039 alerts. Update the `one_business` doc and D-3181's sentence. Tests, fake data only, on PostgreSQL: TD-LIC-33 in `tests/integration/tests/card_pool_license_check.rs`. Ordering: after T601, which changes the same file. Update `app/quotes/NOTES.md`, `app/licensing/NOTES.md` and `docs/decisions.md`. D-4349: the Confirm press's PICK-020 re-check this goal relies on (\"a business Confirm refuses\") had no caller; T664 builds it, so this task runs after T664. Plan change D-5117 (attempt 1's reviewer-confirmed plan gap): `card_pool` takes no clock, and adding one would change three done tests (`card_pool_queries.rs`, `radius_matching.rs`, `request_coverage_minimum.rs`) and `order_dispatch.rs`, none of them this task's. So `card_pool` keeps its signature, and a new `card_pool_at` beside it (exported by one line in the shared `api.rs`) takes the caller's `now`; both share one body. With `now`, (3) applies in full: `one_business` keeps `parts.classes` only when `latest_check_allows_card` is true for that instant's `Freshness`. Without it (plain `card_pool`), only the half that needs no clock applies: the classes are dropped when the latest check is not `active` or there is none, and its age is not tested; no wall clock and no database `now()` is read anywhere. This task also owns the two callers that give a business a card and switches each to `card_pool_at` with the `now` it already holds, changing nothing else in them: the card send in `app/intake/src/cards_out.rs` and the late cards in `app/quotes/src/late_cards.rs`. `quotes::api::request_coverage` and the two calls in `app/intake/src/order_dispatch.rs` stay on plain `card_pool` (they count coverage and read display names; no card leaves from them), and those files are not edited; say in `docs/decisions.md` that a coverage count does not apply the 72-hour age and that T655's pause removes such a business at the same instant. TD-LIC-33's cases run through `card_pool_at` with a set clock, and gain two that keep the split honest: plain `card_pool` drops the ROC classes of a business whose latest check read Inactive, and keeps those of one whose latest Active check is over 72 hours old. T600, the queued owner of `cards_out.rs`, now runs after this task.",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": "quotes",
    "deps": [
     "T601",
-    "T664"
+    "T664",
+    "T526",
+    "T747",
+    "T677"
    ],
    "model": "claude-fable-5-2",
    "effort": "high",
@@ -30171,7 +30174,9 @@
     "app/quotes/src/card_pool.rs",
     "app/licensing/src/service.rs",
     "app/licensing/src/daily_lists.rs",
-    "tests/integration/tests/card_pool_license_check.rs"
+    "tests/integration/tests/card_pool_license_check.rs",
+    "app/intake/src/cards_out.rs",
+    "app/quotes/src/late_cards.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -30200,7 +30205,8 @@
     "D-2743",
     "D-2744",
     "D-941",
-    "D-4349"
+    "D-4349",
+    "D-5117"
    ],
    "cites": [
     "app/quotes/src/card_pool.rs:227",
@@ -30208,9 +30214,9 @@
     "app/licensing/src/service.rs:288"
    ],
    "budget": {
-    "files": 4,
-    "lines": 400,
-    "context_pct": 26
+    "files": 6,
+    "lines": 450,
+    "context_pct": 31
    },
    "checks": [
     "Ci",
@@ -42771,7 +42777,8 @@
     "T257",
     "T274",
     "T083",
-    "T581"
+    "T581",
+    "T654"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -42825,7 +42832,7 @@
    "budget": {
     "files": 9,
     "lines": 400,
-    "context_pct": 31
+    "context_pct": 37
    },
    "checks": [
     "Ci",
