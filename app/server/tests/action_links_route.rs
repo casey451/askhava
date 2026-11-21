@@ -26,23 +26,36 @@
 //! code through the fake Verify of `with_confirm_link_codes` and uses nothing; a wrong code uses
 //! nothing; the right code uses the link, signs that device in and answers 303 to the Confirm
 //! page; the link's own person's live session goes straight there unless their inbox is shared;
-//! with no codes or no texting phone nothing is sent or used.
+//! with no codes or no texting phone nothing is sent or used. T458 (CALL-011, CALL-012,
+//! BIZ-033, D-3675): the Link this phone link's `POST` acts once with the link's own person's
+//! session on the blocked call's pending link: the owner's phone is linked and approved, a
+//! "Confirm and billing" member's waits for the owner and the page says so; signed out is the
+//! sign-in answer; an expired or another business's pending link says the phone could not be
+//! linked (409) and leaves the link unused. D-3877 (PICK-052): a note the served quote form
+//! returns writes one `quotes.note_returned` audit row with the reason's code name, never the
+//! note. The pending links come from `calls`' own `api` (a line, its start, `link_after_dial`).
 
 use std::collections::BTreeSet;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex, PoisonError};
 
-use askhava_adapters::api::{AdapterError, CodeChannel, IdempotencyKey, VerifyAdapter};
+use askhava_adapters::api::{
+    AdapterError, CodeChannel, IdempotencyKey, MaskedPool, TwilioConfig, VerifyAdapter,
+};
 use askhava_businesses::api::{
     AccountStatus, Acting, Capability, CapabilityAnswers, Checks, Event, LargestJob, PauseReason,
     Roles, add_member, add_owner, apply, away_until, business, busy_until,
-    create as create_business, record_step_up, remove_member, save_capability,
+    create as create_business, record_step_up, remove_member, save_capability, waiting_phones,
+};
+use askhava_calls::api::{
+    Connected, assign_number, call_start_confirmed, link_after_dial, pending_link,
 };
 use askhava_catalog::api::load_embedded;
-use askhava_core::api::{Guarded, SystemClock};
+use askhava_core::api::{Guarded, Settings, SystemClock};
 use askhava_jobs::api::{JobStatus, create, move_to, record_job_facts};
 use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
-use askhava_ops::api::Actor as AuditActor;
+use askhava_messaging::api::sender_line;
+use askhava_ops::api::{Actor as AuditActor, export_audit};
 use askhava_picks::api::{ConfirmSettings, HoldAsk, PagePick, hold_ask, notice_sent, page_pick};
 use askhava_portals::api::{
     ActionKind, ActionTarget, BUSY_DAYS_ERROR, CookieJar, PortalsError, SIGNIN_LINK_ROUTE, SignIn,
@@ -52,6 +65,7 @@ use askhava_portals::api::{
 use askhava_portals::api::{
     CodeAddress, CodeFuture, CodeSent, CodeTo, ConfirmCodes, business_principal, set_inbox_shared,
 };
+use askhava_privacy::api::Vault;
 use askhava_quotes::api::{
     CardBusiness, CardFacts, CardJob, CardParts, DEFAULT_MIN_WORDS, OfferTown, Place, build_card,
     card_digest, keep_card, mark_card_sent, send_cards, stored_facts,
@@ -61,6 +75,8 @@ use axum::Router;
 use axum::body::{Body, to_bytes};
 use axum::http::{HeaderMap, Method, Request, header};
 use axum::routing::post;
+use base64::Engine as _;
+use base64::engine::general_purpose::STANDARD;
 use jiff::tz::TimeZone;
 use jiff::{SignedDuration, Timestamp};
 use secrecy::{ExposeSecret, SecretString};
@@ -122,6 +138,8 @@ struct World {
     pool: PgPool,
     team: Team,
     job: Uuid,
+    /// The owner's sign-in mailbox.
+    mailbox: Uuid,
 }
 
 /// The assembled router with no optional part (D-481).
@@ -268,7 +286,8 @@ async fn world(pool: &PgPool) -> World {
     let business = create_business(&mut db, false, now)
         .await
         .expect("business");
-    let member = add_owner(&mut db, business, Uuid::new_v4(), now)
+    let mailbox = Uuid::new_v4();
+    let member = add_owner(&mut db, business, mailbox, now)
         .await
         .expect("owner");
     let team = Team { business, member };
@@ -278,6 +297,7 @@ async fn world(pool: &PgPool) -> World {
         pool: pool.clone(),
         team,
         job,
+        mailbox,
     }
 }
 
@@ -504,9 +524,10 @@ async fn td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number(pool: PgP
     );
 }
 
-/// The kinds whose `POST` acts with a business session (T455, T543, T463, D-3675, D-3839,
+/// The kinds whose `POST` acts with a business session (T455, T543, T463, T458, D-3675, D-3839,
 /// D-3890).
-const SESSION_ACTS: [ActionKind; 6] = [
+const SESSION_ACTS: [ActionKind; 7] = [
+    ActionKind::LinkPhone,
     ActionKind::Away,
     ActionKind::Busy,
     ActionKind::Pause,
@@ -661,6 +682,15 @@ async fn signed_in(w: &World) -> (Uuid, CookieJar) {
     let member = add_member(&mut db, by, mailbox, roles, now)
         .await
         .expect("member");
+    drop(db);
+    (member, session_of(w, mailbox).await)
+}
+
+/// The cookies of the member of `w`'s business whose sign-in mailbox is `mailbox`, signed in
+/// through its emailed sign-in link on the router (D-1724).
+async fn session_of(w: &World, mailbox: Uuid) -> CookieJar {
+    let now = Timestamp::now();
+    let mut db = w.pool.acquire().await.expect("db");
     let to = SignInAddress {
         business: w.team.business,
         mailbox,
@@ -692,7 +722,7 @@ async fn signed_in(w: &World) -> (Uuid, CookieJar) {
         .collect();
     let mut headers = HeaderMap::new();
     headers.insert(header::COOKIE, cookies.join("; ").parse().expect("cookies"));
-    (member, CookieJar::from_headers(&headers))
+    CookieJar::from_headers(&headers)
 }
 
 /// `w`'s business moved by `event` (a fake earlier state), as the owner or sign-up would.
@@ -1224,4 +1254,192 @@ async fn td_sec_44_without_codes_or_a_texting_phone_the_confirm_link_uses_nothin
     assert_eq!(reply.status, 200);
     assert!(reply.text.contains("link a phone that gets texts"));
     assert!(unused(&w, &path).await && sends.load(Ordering::SeqCst) == 0);
+}
+
+/// Two fake unlinked phones that were blocked on a call (555-01xx, never dialled).
+const BLOCKED: [&str; 2] = ["+19285550187", "+19285550164"];
+
+/// A one-number masked pool of fake settings.
+fn masked_pool() -> MaskedPool {
+    let pairs: Vec<(String, String)> = [
+        ("ASKHAVA_APP_ENV", "dev"),
+        ("ASKHAVA_DATABASE_URL", "postgres://fake@localhost/fake"),
+        (
+            "ASKHAVA_TWILIO_ACCOUNT_SID",
+            "AC00000000000000000000000000000000",
+        ),
+        ("ASKHAVA_TWILIO_AUTH_TOKEN", "fake_twilio_auth_token"),
+        (
+            "ASKHAVA_TWILIO_VERIFY_SERVICE_SID",
+            "VA00000000000000000000000000000001",
+        ),
+        ("ASKHAVA_MASKED_POOL_SIZE", "1"),
+        ("ASKHAVA_MASKED_NUMBERS", "+15005550100"),
+    ]
+    .into_iter()
+    .map(|(k, v)| (k.to_owned(), v.to_owned()))
+    .collect();
+    let settings = Settings::from_pairs(pairs.clone()).expect("settings");
+    let config = TwilioConfig::from_settings(&settings, pairs).expect("pool");
+    config.pool().clone()
+}
+
+/// A vault of fake keys: it only keys the blocked phones' digests here.
+fn vault() -> Vault {
+    let key = |b: u8| SecretString::from(format!("1:{}", STANDARD.encode([b; 32])));
+    let url = SecretString::from("postgres://askhava_app@db.invalid/askhava".to_owned());
+    Vault::new(&key(0x73), &key(0x74), &url).expect("vault")
+}
+
+/// CALL-011: the pending link a blocked call from `caller` at `at` leaves on a new line of
+/// `business`, through `calls`' own `api` (the line, its start, `link_after_dial`): its ID.
+async fn pending(w: &World, business: Uuid, caller: &str, at: Timestamp) -> Uuid {
+    let mut db = w.pool.acquire().await.expect("db");
+    let job = Connected {
+        job: Uuid::new_v4(),
+        homeowner: Uuid::new_v4(),
+        business,
+    };
+    let line = assign_number(&mut db, &masked_pool(), job, at).await;
+    let line = line.expect("line").id();
+    let sid = || format!("CA{}", Uuid::new_v4().simple());
+    let parent = sid();
+    call_start_confirmed(&mut db, line, &parent, &sid(), at)
+        .await
+        .expect("start");
+    let caller = SecretString::from(caller.to_owned());
+    let stored = link_after_dial(&mut db, &vault(), &parent, &caller, at).await;
+    assert_eq!(stored, Ok(true), "the blocked call stored a pending link");
+    let link = pending_link(&mut db, line, at).await.expect("read");
+    link.expect("a pending link")
+}
+
+/// Whether the sender directory finds `caller` as a phone of `w`'s business, and how many of
+/// the business's phones wait for the owner.
+async fn phones(w: &World, caller: &str) -> (bool, usize) {
+    let mut db = w.pool.acquire().await.expect("db");
+    let found = sender_line(&mut db, &vault(), caller).await.expect("read");
+    let waiting = waiting_phones(&mut db, w.team.business).await;
+    (
+        found.is_some_and(|(business, _)| business == w.team.business),
+        waiting.expect("waiting").len(),
+    )
+}
+
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_44_the_link_phone_link_links_once_with_the_persons_session(pool: PgPool) {
+    let w = world(&pool).await;
+    let (me, jar) = signed_in(&w).await;
+    let now = Timestamp::now();
+    let request = pending(&w, w.team.business, BLOCKED[0], now).await;
+    let path = live_for(&w, (ActionKind::LinkPhone, request), me).await;
+    let out = send(&w, (&Method::POST, &path, ""), Site::Own).await;
+    assert_eq!(out.status, 401, "signed out: sign in first (SEC-004)");
+    let cross = act(&w, &path, Site::Cross, &jar).await;
+    assert_eq!(cross.status, 403, "a cross-site POST is refused (SEC-042)");
+    assert!(unused(&w, &path).await, "neither used the link");
+    assert_eq!(phones(&w, BLOCKED[0]).await, (false, 0), "nor linked it");
+    let linked = act(&w, &path, Site::Own, &jar).await;
+    assert_eq!(linked.status, 200, "{}", linked.text);
+    assert!(linked.no_store);
+    assert!(
+        linked
+            .text
+            .contains("The owner must approve this phone before it works."),
+        "a member's link waits for the owner (CALL-012, BIZ-033): {}",
+        linked.text
+    );
+    assert_eq!(
+        phones(&w, BLOCKED[0]).await,
+        (false, 1),
+        "linked, waiting, not in the sender directory"
+    );
+    assert!(!unused(&w, &path).await, "the link is used");
+    let again = act(&w, &path, Site::Own, &jar).await;
+    assert_eq!(again, not_found(&w, &Method::POST).await, "it acts once");
+    let request = pending(&w, w.team.business, BLOCKED[1], now).await;
+    let owners = live_for(&w, (ActionKind::LinkPhone, request), w.team.member).await;
+    let theirs = act(&w, &owners, Site::Own, &jar).await;
+    assert_eq!(
+        theirs,
+        not_found(&w, &Method::POST).await,
+        "another person's link (SEC-025)"
+    );
+    assert!(unused(&w, &owners).await);
+    let owner = session_of(&w, w.mailbox).await;
+    let linked = act(&w, &owners, Site::Own, &owner).await;
+    assert_eq!(linked.status, 200, "{}", linked.text);
+    assert!(
+        linked.text.contains("This phone is now linked"),
+        "{}",
+        linked.text
+    );
+    assert_eq!(
+        phones(&w, BLOCKED[1]).await,
+        (true, 1),
+        "the owner's link works at once"
+    );
+}
+
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_44_a_refused_link_phone_link_says_so_and_uses_nothing(pool: PgPool) {
+    let w = world(&pool).await;
+    let (me, jar) = signed_in(&w).await;
+    let now = Timestamp::now();
+    let day_ago = now - SignedDuration::from_hours(25);
+    let expired = pending(&w, w.team.business, BLOCKED[0], day_ago).await;
+    let mut db = pool.acquire().await.expect("db");
+    let rival = create_business(&mut db, false, now).await;
+    drop(db);
+    let other = pending(&w, rival.expect("business"), BLOCKED[1], now).await;
+    for (request, why) in [
+        (expired, "expired"),
+        (other, "another business's"),
+        (Uuid::new_v4(), "unknown"),
+    ] {
+        let path = live_for(&w, (ActionKind::LinkPhone, request), me).await;
+        let refused = act(&w, &path, Site::Own, &jar).await;
+        assert_eq!(refused.status, 409, "{why}: {}", refused.text);
+        assert!(refused.no_store);
+        assert!(
+            refused
+                .text
+                .contains("We could not link this phone. Nothing changed."),
+            "{why}: {}",
+            refused.text
+        );
+        assert!(unused(&w, &path).await, "{why}: the link stays unused");
+        for caller in BLOCKED {
+            assert_eq!(phones(&w, caller).await, (false, 0), "{why}: no phone");
+        }
+    }
+}
+
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_44_a_returned_note_is_audited_without_its_text(pool: PgPool) {
+    let w = world(&pool).await;
+    let path = path_of(&live(&w, ActionKind::Quote, w.job).await);
+    let mut db = pool.acquire().await.expect("db");
+    let before = export_audit(&mut db, 0, 1000).await.expect("audit");
+    let last = before.last().map_or(0, |row| row.id);
+    let priceless = send(&w, (&Method::POST, &path, "&notes=Hi"), Site::Own).await;
+    assert_eq!(priceless.status, 200);
+    let none = export_audit(&mut db, last, 1000).await.expect("audit");
+    assert!(none.is_empty(), "a bounce with a good note writes no row");
+    let bounced = send(&w, (&Method::POST, &path, &phoned()), Site::Own).await;
+    assert_eq!(bounced.status, 200);
+    let rows = export_audit(&mut db, last, 1000).await.expect("audit");
+    assert_eq!(rows.len(), 1, "one row for the returned note (PICK-052)");
+    let row = &rows[0];
+    assert_eq!(row.action, "quotes.note_returned");
+    assert_eq!(
+        (row.actor_id, row.subject_id),
+        (Some(w.team.business), w.job)
+    );
+    assert_eq!(
+        row.field.as_deref(),
+        Some("contact"),
+        "the reason's code name only, never the note (PRIV-028)"
+    );
+    assert!(unused(&w, &path).await, "the bounce leaves the link unused");
 }

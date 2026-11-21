@@ -16,9 +16,21 @@
 //! transaction lock on the replying phone's digest serialises its LINK replies (D-3567).
 //! Anything else is [`LinkReply::Refused`] with no change but one more refusal counted. Pending
 //! links no longer live and used ones of the business are deleted when met. Nothing here logs or stores a number or a PIN (PRIV-002, PRIV-016).
+//!
+//! [`link_by_action`] (T458, D-3675) links the same pending link for the signed-in person who
+//! pressed the email's "Link this phone" link, with no PIN: a live, unused pending link of the
+//! person's own business is locked, then, in a savepoint, `businesses::api::link_pending_phone`
+//! adds the phone (the owner's approved; a "Confirm and billing" member's waiting for the
+//! owner, CALL-012, BIZ-033), the digests are filed, a member's line is held out of the sender
+//! directory (`messaging::api::sender_hold`) until the owner's `approve_phone` releases it, and
+//! the pending link is marked used with its digests deleted. Anything else is
+//! [`LinkAction::Refused`] with no change at all (no refusal is counted: the session, not a PIN,
+//! proves the person).
 
-use askhava_businesses::api::{BusinessesError, is_main_phone, link_by_reply};
-use askhava_messaging::api::{OutboxError, sender_line, sender_put_pending};
+use askhava_businesses::api::{
+    Acting, BusinessesError, is_main_phone, link_by_reply, link_pending_phone,
+};
+use askhava_messaging::api::{OutboxError, sender_hold, sender_line, sender_put_pending};
 use askhava_privacy::api::{IndexPurpose, Vault, normalize_phone};
 use jiff::Timestamp;
 use jiff_sqlx::ToSqlx;
@@ -219,10 +231,32 @@ async fn link_request(
     let mut tx = conn.begin().await.map_err(|_| CallsError::Database)?;
     let line = link_by_reply(&mut tx, business, now)
         .await
-        .map_err(|e| match e {
-            BusinessesError::Audit => CallsError::Ops,
-            _ => CallsError::Database,
-        })?;
+        .map_err(businesses_error)?;
+    if !file_and_use(&mut tx, (business, line), (request, false), now).await? {
+        return Ok(false);
+    }
+    tx.commit().await.map_err(|_| CallsError::Database)?;
+    Ok(true)
+}
+
+/// A `businesses` failure as this crate's: its audit row is `Ops`, anything else `Database`.
+fn businesses_error(error: BusinessesError) -> CallsError {
+    match error {
+        BusinessesError::Audit => CallsError::Ops,
+        _ => CallsError::Database,
+    }
+}
+
+/// On the caller's savepoint: files pending link `request`'s digests as phone `line` of
+/// `business` (deleting them from the pending link), holds the line out of the sender directory
+/// when `hold` (a member's link, BIZ-033), and marks the pending link used (CALL-011). False,
+/// for the caller to roll back, when another phone holds a digest.
+async fn file_and_use(
+    tx: &mut PgConnection,
+    (business, line): (Uuid, Uuid),
+    (request, hold): (Uuid, bool),
+    now: Timestamp,
+) -> Result<bool, CallsError> {
     let rows = sqlx::query!(
         "DELETE FROM calls.link_request_digest WHERE request_id = $1 \
          RETURNING index_version, digest",
@@ -240,7 +274,11 @@ async fn link_request(
             ))
         })
         .collect();
-    match sender_put_pending(&mut tx, (business, line), &digests).await {
+    let mut filed = sender_put_pending(&mut *tx, (business, line), &digests).await;
+    if hold && filed.is_ok() {
+        filed = sender_hold(&mut *tx, line).await;
+    }
+    match filed {
         Ok(()) => {}
         Err(OutboxError::SenderTaken) => return Ok(false),
         Err(_) => return Err(CallsError::Messaging),
@@ -253,8 +291,90 @@ async fn link_request(
     .execute(&mut *tx)
     .await
     .map_err(|_| CallsError::Database)?;
-    tx.commit().await.map_err(|_| CallsError::Database)?;
     Ok(true)
+}
+
+/// CALL-011, BIZ-038, D-3675: the ID of line `line`'s pending link while it is live at `now`
+/// (never used, `now` before its `expires_at`): the object an email's "Link this phone" link
+/// names. `None` when the line has none.
+///
+/// # Errors
+///
+/// [`CallsError::Database`].
+pub async fn pending_link(
+    conn: &mut PgConnection,
+    line: Uuid,
+    now: Timestamp,
+) -> Result<Option<Uuid>, CallsError> {
+    sqlx::query_scalar!(
+        "SELECT id FROM calls.link_request \
+         WHERE line_id = $1 AND used_at IS NULL AND expires_at > $2",
+        line,
+        now.to_sqlx() as _
+    )
+    .fetch_optional(conn)
+    .await
+    .map_err(|_| CallsError::Database)
+}
+
+/// How a "Link this phone" action ended (CALL-011, CALL-012, D-3675).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LinkAction {
+    /// The owner linked the blocked phone: it works at once.
+    Linked,
+    /// A "Confirm and billing" member linked it: it works only after the owner approves it
+    /// (BIZ-033).
+    Waiting,
+    /// Nothing changed: the pending link is expired, used, unknown or another business's, the
+    /// person may not link a phone, or another phone already holds the number's digest.
+    Refused,
+}
+
+/// CALL-011, CALL-012, BIZ-033, D-3675: links pending link `request`'s blocked phone for the
+/// signed-in person `by`, on the caller's transaction. Only a live pending link (`now` before
+/// its `expires_at`, never used) of `by.business` links, in a savepoint: the staff phone
+/// (`businesses::api::link_pending_phone`), its digests in the sender directory, held out of it
+/// for a member's link until the owner approves, the pending link marked used and its digests
+/// deleted. Every refusal changes nothing. No number or PIN is read, stored or logged
+/// (PRIV-002, PRIV-016).
+///
+/// # Errors
+///
+/// [`CallsError::Database`], `Ops` (an audit row) or `Messaging`.
+pub async fn link_by_action(
+    conn: &mut PgConnection,
+    by: Acting,
+    request: Uuid,
+    now: Timestamp,
+) -> Result<LinkAction, CallsError> {
+    let mut tx = conn.begin().await.map_err(|_| CallsError::Database)?;
+    let live = sqlx::query_scalar!(
+        "SELECT id FROM calls.link_request WHERE id = $1 AND business_id = $2 \
+         AND used_at IS NULL AND expires_at > $3 FOR UPDATE",
+        request,
+        by.business,
+        now.to_sqlx() as _
+    )
+    .fetch_optional(&mut *tx)
+    .await
+    .map_err(|_| CallsError::Database)?;
+    if live.is_none() {
+        return Ok(LinkAction::Refused);
+    }
+    let phone = link_pending_phone(&mut tx, by, now).await;
+    let Some(phone) = phone.map_err(businesses_error)? else {
+        return Ok(LinkAction::Refused);
+    };
+    let target = (by.business, phone.line);
+    if !file_and_use(&mut tx, target, (request, !phone.approved), now).await? {
+        return Ok(LinkAction::Refused);
+    }
+    tx.commit().await.map_err(|_| CallsError::Database)?;
+    Ok(if phone.approved {
+        LinkAction::Linked
+    } else {
+        LinkAction::Waiting
+    })
 }
 
 /// The keys as the two arrays the queries unnest.
