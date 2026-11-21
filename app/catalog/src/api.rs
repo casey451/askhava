@@ -20,6 +20,7 @@ pub use crate::markets::{
     parse_centroids, parse_markets,
 };
 pub use crate::models::{Catalog, CatalogError, Category, JobType};
+pub use crate::photo_asks::photo_asks;
 pub use crate::question_bank::{AskIf, Question, QuestionBank, QuestionSet};
 pub use crate::restricted_words::{RESTRICTED_WORDS, restricted_match};
 pub use crate::service::trades_opened;

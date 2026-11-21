@@ -2,4 +2,5 @@
 
 mod loader;
 mod markets;
+mod photo_asks;
 mod question_bank_load;

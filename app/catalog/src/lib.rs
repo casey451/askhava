@@ -9,6 +9,7 @@ mod category_list;
 mod loader;
 mod markets;
 mod models;
+mod photo_asks;
 mod question_bank;
 mod restricted_words;
 mod service;
