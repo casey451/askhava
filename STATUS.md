@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-21T15:10:42Z by runner 3653ff5e6df0 (actions).
+Updated 2026-11-21T15:10:48Z by runner 3653ff5e6df0 (actions).
 
 **Building: T304 in progress since 12:33Z; 579 of 730 done; week 29% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 579 of 730 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T304 claimed 12:33Z, lease until 15:33Z; lane 2: T655 claimed 13:31Z, lease until 16:31Z
-- **Week:** 29% used, 135.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T304 claimed 12:33Z, lease until 15:33Z; lane 2: T655 claimed 13:31Z, lease until 16:31Z; lane 4: T789 claimed 15:10Z, lease until 18:10Z
+- **Week:** 29% used, 132.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 14:39Z, 31 min before this update
 - **Keeper:** last ran 14:38Z, next wake 15:35Z
 
@@ -136,7 +136,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-21T13:25:46Z (week)): week: 58.9M used, 135.1M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T12:11:56Z.
+- Pacing (session_reading 2026-11-21T14:38:18Z (week)): week: 61.2M used, 132.8M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T14:23:45Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -153,6 +153,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T304 (lease until 2026-11-21T15:33:37Z)
 - lane 2: T655 (lease until 2026-11-21T16:31:07Z)
+- lane 4: T789 (lease until 2026-11-21T18:10:14Z)
 
 ## Last usage reading
 - {"task": "T776", "at": "2026-11-21T14:37:06Z", "cache_read_input_tokens": 4302801, "output_tokens": 63418, "cache_creation_input_tokens": 259701, "input_tokens": 152}
