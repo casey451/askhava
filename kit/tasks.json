@@ -14487,7 +14487,7 @@
    "id": "T410",
    "slug": "business-get-help-link",
    "title": "portals: every signed-in business page shows the Get help link, and no other page does",
-   "goal": "Plan change D-3155 (BIZ-047; owner call put to a Fable agent under Casey's Nov 11 standing rule): BIZ-047 puts \"Get help\" on every business portal page, but the shared `app/site/templates/base.html` is extended by homeowner, owner and public pages too, so T200 gives it an empty `get_help` block and adds `app/portals/templates/business_layout.html`, which fills it. (1) The other signed-in business pages (`business_complaints.html`, `business_actions.html`, `job_release.html`, `confirm_pay.html`, `notice_log.html`, `notice_settings.html`, `why_charged.html`, `emergency_test_email.html`, `business_leave.html`) change only their `extends` line to `business_layout.html` (T364's `business_step_up.html`, T375's `job_types.html` and T397's `phone_approval.html` already extend it: each runs after T200 and before this task); nothing else in them changes and no page struct gains a field. The sign-in and sign-up pages (`business_signin.html`, `business_signup.html`, `capability_setup.html`, `email_check.html`) keep `base.html`: the form is behind the business session (T309). (2) `app/portals/src/tests/get_help_link.rs` (registered in the shared `app/portals/src/tests/mod.rs`) reads every template under `app/portals/templates/` and `app/site/templates/`: exactly the listed business pages, `business_step_up.html`, `job_types.html`, `phone_approval.html`, `business_home.html`, `business_billing.html` and `get_help.html` extend `business_layout.html`; `base.html`'s `get_help` block is empty; no other template fills it or links the Get help form, except `app/site/templates/business_help.html`, which links it once in its body (BIZ-047's \"the business help page\", T200, D-4293) and must; and one rendered business page holds the link while a rendered quote page, the owner sign-in page and a site page other than `business_help.html` do not (TD-BIZ-23). The `portals` `CLAUDE.md` gains the rule that every new page served behind the business session extends `business_layout.html` and joins this list. Update the `portals` `CLAUDE.md` and `docs/decisions.md`. Plan change D-3744: T397 is a dependency and its `phone_approval.html` is in the list. Plan change D-3890 (Fable's pre-claim checks of the remaining stage-5 tasks, Nov 16, 2026): (1) `portals` may not call `site` (`kit/layers.json`) and `app/portals/Cargo.toml` has no `askhava-site`, so \"and a site page do not\" means a test-local `#[derive(Template)]` page over a site template (found through `app/portals/askama.toml`'s second folder). (2) T543 (which adds the Away field to `business_actions.html`), T541 (which changes `confirm_pay.html`), T542's address-change page and T544's team page come first: T542's and T544's templates extend `business_layout.html` and join the list. (3) T479's `not_a_fit.html` (T479 runs before this task through T158) is expected to be a fragment the job page includes, which extends nothing and is not listed; if it is a page of its own extending `base.html`, the check fails on it and that is reported as a plan gap (this task is at the 10-file limit).",
+   "goal": "Plan change D-3155 (BIZ-047; owner call put to a Fable agent under Casey's Nov 11 standing rule): BIZ-047 puts \"Get help\" on every business portal page, but the shared `app/site/templates/base.html` is extended by homeowner, owner and public pages too, so T200 gives it an empty `get_help` block and adds `app/portals/templates/business_layout.html`, which fills it. (1) The other signed-in business pages (`business_complaints.html`, `business_actions.html`, `job_release.html`, `confirm_pay.html`, `notice_log.html`, `notice_settings.html`, `why_charged.html`, `emergency_test_email.html`, `business_leave.html`) change only their `extends` line to `business_layout.html` (T364's `business_step_up.html`, T375's `job_types.html` and T397's `phone_approval.html` already extend it: each runs after T200 and before this task); nothing else in them changes and no page struct gains a field. The sign-in and sign-up pages (`business_signin.html`, `business_signup.html`, `capability_setup.html`, `email_check.html`) keep `base.html`: the form is behind the business session (T309). (2) `app/portals/src/tests/get_help_link.rs` (registered in the shared `app/portals/src/tests/mod.rs`) reads every template under `app/portals/templates/` and `app/site/templates/`: exactly the listed business pages, `business_step_up.html`, `job_types.html`, `phone_approval.html`, `business_home.html`, `business_billing.html` and `get_help.html` extend `business_layout.html`; `base.html`'s `get_help` block is empty; no other template fills it or links the Get help form, except `app/site/templates/business_help.html`, which links it once in its body (BIZ-047's \"the business help page\", T200, D-4293) and must; and one rendered business page holds the link while a rendered quote page, the owner sign-in page and a site page other than `business_help.html` do not (TD-BIZ-23). The `portals` `CLAUDE.md` gains the rule that every new page served behind the business session extends `business_layout.html` and joins this list. Update the `portals` `CLAUDE.md` and `docs/decisions.md`. Plan change D-3744: T397 is a dependency and its `phone_approval.html` is in the list. Plan change D-3890 (Fable's pre-claim checks of the remaining stage-5 tasks, Nov 16, 2026): (1) `portals` may not call `site` (`kit/layers.json`) and `app/portals/Cargo.toml` has no `askhava-site`, so \"and a site page do not\" means a test-local `#[derive(Template)]` page over a site template (found through `app/portals/askama.toml`'s second folder). (2) T543 (which adds the Away field to `business_actions.html`), T541 (which changes `confirm_pay.html`), T542's address-change page and T544's team page come first: T542's and T544's templates extend `business_layout.html` and join the list. (3) T479's `not_a_fit.html` (T479 runs before this task through T158) is expected to be a fragment the job page includes, which extends nothing and is not listed; if it is a page of its own extending `base.html`, the check fails on it and that is reported as a plan gap (this task is at the 10-file limit). Plan change D-5159 (one line, accessibility): wrap the `<table>` in `app/portals/templates/job_release.html` (`app/portals/templates/job_release.html:15`) in `<div role=\"region\" tabindex=\"0\" aria-label=\"…\">` as `app/site/templates/business.html:43` does, the label matching its caption (the table has none: name what it lists); change no other line of the table; the scroll rule is T304's in `site.css`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -14539,13 +14539,14 @@
     "D-3144",
     "D-3744",
     "D-3890",
-    "D-4293"
+    "D-4293",
+    "D-5159"
    ],
    "cites": [],
    "budget": {
     "files": 10,
     "lines": 150,
-    "context_pct": 15
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -24051,7 +24052,7 @@
    "budget": {
     "files": 6,
     "lines": 620,
-    "context_pct": 32
+    "context_pct": 38
    },
    "checks": [
     "Ci",
@@ -25684,7 +25685,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 28
+    "context_pct": 34
    },
    "checks": [
     "Ci",
@@ -37073,7 +37074,7 @@
    "id": "T304",
    "slug": "owner-tools-served",
    "title": "server and portals: the owner refund review, the audit log viewer and the health page are served",
-   "goal": "T205 builds the owner refund review step and the audit log viewer and T476 and T109 the health page (T475's figure readers, D-3753), as portals pages no route serves (D-2128); J3 (T118) refunds a charge and reads the audit log. (1) `app/server/src/owner_tools.rs` builds those pages and the refund `POST` behind T303's owner session (T304 uses T303's owner-session check): the refund needs a fresh second factor (SEC-043), issues one Stripe refund and one ledger row, and is blocked on a disputed charge (FEE-026, SEC-006); no other realm reaches them (a 4xx with a link to `/owner/sign-in`); every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_tools_route.rs` (TD-SEC-47) and `tests/e2e/owner_tools_served.spec.ts`, which takes the browser half of J3's refund and audit-log steps that T205's spec cannot reach while the pages are unserved, signing in as T303's spec does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. It also serves T205's \"I submitted the evidence myself\" `POST` (fresh second factor, CSRF, `no_store`), whose handler passes the pick (`{pick}` or the form's pick field) and the `dp_` ID to T205's page function, which calls `payments::api::record_pick_owner_submission` (T722, D-4506) once (fourth external audit F44, D-2204); `server` never calls `record_owner_submission` or `list_disputes`. It adds one row per method and path it serves to section 13 (module `server`, Wired `yes`), every owner page under `/owner/` (the Owner door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3155: (a) the door probe's owner signs in through `owner_sign_in` from T409 (through T303), so the owner rows are reached; (b) the health page shows each required secret as present, parsed and environment-matched (T476, OPS-008); it also passes T106's uptime value (web start time and worker state) and the daily and monthly email limits from `Settings` to the page (D-3753), which needs `Settings`, and `build_router` gets none (`app/server/src/lib.rs:130`): `main` (shared) computes a `SecretReport` from `Settings` (booleans per secret name, never a value, length or hash) and passes it through a new `From<(Hooks, RequestTimeout, StaticRoot, SecretReport)> for RouterParts` in the shared `app/server/src/lib.rs` (`main` already passes `(hooks, limit, statics)`, `app/server/src/main.rs:65`; D-3744); the three existing `From` impls (`lib.rs:124`, `:136`, `:149`) stay and give a report that says \"not checked\", so no done caller (`app/server/tests/route_wiring.rs`, `door_matrix.rs`) changes. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744). Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): (a) T476 defines the health page's own secret input (a name and present, parsed and environment-matched flags per secret), since `portals` cannot see `server` types; this task converts its `SecretReport` into that list. (b) The refund needs a Stripe client: it uses the one the Stripe hooks already hold (`StripeHooks`, `app/server/src/release_sink.rs:77`; `StripeWebhook`'s public `stripe` field, `app/payments/src/routes.rs:128`) and builds none of its own. Only the keyed end-to-end binary has Stripe settings (`tests/e2e/webserver.ts:115` to `:137`), so `owner_tools_served.spec.ts`'s refund steps run on `keyedUrl()` with the owner signed in there through T303's `owner_session.ts`, which takes the base URL (D-3844); no step relies on a session made on the other binary's port. Plan change D-3890 (Fable's pre-claim checks of the remaining stage-5 tasks, Nov 16, 2026): (1) `request_refund`'s `secret` (`app/payments/src/refunds.rs:107`, its keys at `:398`) is `ASKHAVA_ID_SECRET`, the same value `payment_jobs::register` gets (`app/server/src/payment_jobs.rs:43` to `:48`), taken from the parts' Confirm settings (`RouterParts::with_confirm_settings`, `app/server/src/lib.rs:146`) or a new part `main` passes; never `StripeWebhook`'s signing secret, so the press and the worker's retry derive the same idempotency keys (FEE-026). With no Stripe hooks or no ID secret the owner routes are still merged, and the refund `POST` answers a non-5xx page and changes nothing. (2) The health page's report also carries `Settings::account(Vendor)` for the four vendors (`app/core/src/settings.rs:379`), which are not secrets (D-3882's SEC-036 identifiers); the daily and monthly email limits are T469's `ASKHAVA_EMAIL_DAILY_LIMIT` and `ASKHAVA_EMAIL_MONTHLY_LIMIT`, so T469 is a dependency. (3) Build notes go at the end of `app/server/NOTES.md` and `app/portals/NOTES.md`; `app/server/CLAUDE.md` is at its 8,192-byte cap and is not edited, whatever earlier sentences say. (4) The report reaches the router through a `RouterParts` builder (`with_secret_report`, beside the `with_*` builders at `lib.rs:121` to `:170`) rather than a fourth `From` impl; a caller that passes none gets \"not checked\". The cites `lib.rs:130`, `:124`, `:136`, `:149`, `main.rs:65` and `webserver.ts:115` to `:137` above are now `lib.rs:292`, `:172`, `:183`, `:195`, `main.rs:56` and `webserver.ts:124` to `:146`. Plan change D-4835 (prompt hint): the `app/server/src/lib.rs` and `app/core/src/settings.rs` line numbers above are stale; grep the named function or impl (`build_router`, the `From` impls for `RouterParts`, `with_confirm_settings`, `Settings::account`) instead of trusting a line.",
+   "goal": "T205 builds the owner refund review step and the audit log viewer and T476 and T109 the health page (T475's figure readers, D-3753), as portals pages no route serves (D-2128); J3 (T118) refunds a charge and reads the audit log. (1) `app/server/src/owner_tools.rs` builds those pages and the refund `POST` behind T303's owner session (T304 uses T303's owner-session check): the refund needs a fresh second factor (SEC-043), issues one Stripe refund and one ledger row, and is blocked on a disputed charge (FEE-026, SEC-006); no other realm reaches them (a 4xx with a link to `/owner/sign-in`); every response `no_store`; every `POST` passes `refuse_cross_site` and the CSRF check, a refusal a security event; merged in the shared `app/server/src/lib.rs`. (2) Tests: `app/server/tests/owner_tools_route.rs` (TD-SEC-47) and `tests/e2e/owner_tools_served.spec.ts`, which takes the browser half of J3's refund and audit-log steps that T205's spec cannot reach while the pages are unserved, signing in as T303's spec does. Every page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its rows in `docs/architecture.md` section 13 are marked `yes` once T284 has added the table. Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. It also serves T205's \"I submitted the evidence myself\" `POST` (fresh second factor, CSRF, `no_store`), whose handler passes the pick (`{pick}` or the form's pick field) and the `dp_` ID to T205's page function, which calls `payments::api::record_pick_owner_submission` (T722, D-4506) once (fourth external audit F44, D-2204); `server` never calls `record_owner_submission` or `list_disputes`. It adds one row per method and path it serves to section 13 (module `server`, Wired `yes`), every owner page under `/owner/` (the Owner door, D-2440). Its routes pass T348's doors unchanged: `tests/security/tests/auth_matrix.rs` classifies each and `app/server/tests/door_matrix.rs` probes each `yes` row of `docs/architecture.md` section 13 over HTTP (D-2440); this task edits neither, and a route whose path parameter the probe cannot fill is reported, not worked around. Plan change D-3155: (a) the door probe's owner signs in through `owner_sign_in` from T409 (through T303), so the owner rows are reached; (b) the health page shows each required secret as present, parsed and environment-matched (T476, OPS-008); it also passes T106's uptime value (web start time and worker state) and the daily and monthly email limits from `Settings` to the page (D-3753), which needs `Settings`, and `build_router` gets none (`app/server/src/lib.rs:130`): `main` (shared) computes a `SecretReport` from `Settings` (booleans per secret name, never a value, length or hash) and passes it through a new `From<(Hooks, RequestTimeout, StaticRoot, SecretReport)> for RouterParts` in the shared `app/server/src/lib.rs` (`main` already passes `(hooks, limit, statics)`, `app/server/src/main.rs:65`; D-3744); the three existing `From` impls (`lib.rs:124`, `:136`, `:149`) stay and give a report that says \"not checked\", so no done caller (`app/server/tests/route_wiring.rs`, `door_matrix.rs`) changes. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744). Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): (a) T476 defines the health page's own secret input (a name and present, parsed and environment-matched flags per secret), since `portals` cannot see `server` types; this task converts its `SecretReport` into that list. (b) The refund needs a Stripe client: it uses the one the Stripe hooks already hold (`StripeHooks`, `app/server/src/release_sink.rs:77`; `StripeWebhook`'s public `stripe` field, `app/payments/src/routes.rs:128`) and builds none of its own. Only the keyed end-to-end binary has Stripe settings (`tests/e2e/webserver.ts:115` to `:137`), so `owner_tools_served.spec.ts`'s refund steps run on `keyedUrl()` with the owner signed in there through T303's `owner_session.ts`, which takes the base URL (D-3844); no step relies on a session made on the other binary's port. Plan change D-3890 (Fable's pre-claim checks of the remaining stage-5 tasks, Nov 16, 2026): (1) `request_refund`'s `secret` (`app/payments/src/refunds.rs:107`, its keys at `:398`) is `ASKHAVA_ID_SECRET`, the same value `payment_jobs::register` gets (`app/server/src/payment_jobs.rs:43` to `:48`), taken from the parts' Confirm settings (`RouterParts::with_confirm_settings`, `app/server/src/lib.rs:146`) or a new part `main` passes; never `StripeWebhook`'s signing secret, so the press and the worker's retry derive the same idempotency keys (FEE-026). With no Stripe hooks or no ID secret the owner routes are still merged, and the refund `POST` answers a non-5xx page and changes nothing. (2) The health page's report also carries `Settings::account(Vendor)` for the four vendors (`app/core/src/settings.rs:379`), which are not secrets (D-3882's SEC-036 identifiers); the daily and monthly email limits are T469's `ASKHAVA_EMAIL_DAILY_LIMIT` and `ASKHAVA_EMAIL_MONTHLY_LIMIT`, so T469 is a dependency. (3) Build notes go at the end of `app/server/NOTES.md` and `app/portals/NOTES.md`; `app/server/CLAUDE.md` is at its 8,192-byte cap and is not edited, whatever earlier sentences say. (4) The report reaches the router through a `RouterParts` builder (`with_secret_report`, beside the `with_*` builders at `lib.rs:121` to `:170`) rather than a fourth `From` impl; a caller that passes none gets \"not checked\". The cites `lib.rs:130`, `:124`, `:136`, `:149`, `main.rs:65` and `webserver.ts:115` to `:137` above are now `lib.rs:292`, `:172`, `:183`, `:195`, `main.rs:56` and `webserver.ts:124` to `:146`. Plan change D-5159: wrap each `<table>` in `owner_audit_log.html` and `health.html` in `<div role=\"region\" tabindex=\"0\" aria-label=\"…\">` as `app/site/templates/business.html:43` does, each label distinct and matching its caption (Audit log rows; Job cards to check; Required secrets). Change no other line of either template: no column, field, expression or wording. Add one rule to `site.css`, `[role=\"region\"][tabindex=\"0\"] { overflow-x: auto; }`, with no colour and no outline rule. The audit log `PAGE_STATES` entry must seed rows, and the health entry spot-check cards, so the tables render. If an axe incomplete remains, report it; never add to `REVIEWED_INCOMPLETE`. T304 runs after T614 and before T608, the next owners of `site.css`. Plan change D-4835 (prompt hint): the `app/server/src/lib.rs` and `app/core/src/settings.rs` line numbers above are stale; grep the named function or impl (`build_router`, the `From` impls for `RouterParts`, `with_confirm_settings`, `Settings::account`) instead of trusting a line.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -37088,19 +37089,24 @@
     "T475",
     "T476",
     "T469",
-    "T651"
+    "T651",
+    "T614"
    ],
    "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "security",
-    "privacy"
+    "privacy",
+    "accessibility"
    ],
    "owns": [
     "app/server/src/owner_tools.rs",
     "app/server/tests/owner_tools_route.rs",
-    "tests/e2e/owner_tools_served.spec.ts"
+    "tests/e2e/owner_tools_served.spec.ts",
+    "app/portals/templates/owner_audit_log.html",
+    "app/portals/templates/health.html",
+    "app/site/static/site.css"
    ],
    "reads": [
     "docs/architecture.md",
@@ -37137,13 +37143,14 @@
     "D-3890",
     "D-4294",
     "D-4506",
-    "D-4835"
+    "D-4835",
+    "D-5159"
    ],
    "cites": [],
    "budget": {
-    "files": 3,
+    "files": 6,
     "lines": 600,
-    "context_pct": 17
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -41057,7 +41064,7 @@
    "id": "T544",
    "slug": "business-team-page",
    "title": "portals and server: the business team page with its role-change, removal and monthly-limit forms",
-   "goal": "Plan change D-3890 (Fable's pre-claim checks of the remaining stage-5 tasks, Nov 16, 2026): Split from T364, which serves the role change, the removal and the monthly limit `POST`s but no page with their forms (`business_billing.html`, `business_home.html` and `notice_settings.html` have none). (1) `app/portals/src/team_page.rs` and `templates/business_team.html` (extends `business_layout.html`): the business's members with their roles (BIZ-023), a role-change form and a removal button per member, the member's ID in the form body, and the monthly-limit form, each posting to T364's routes, which send the member to the step-up page and back; owner or \"Confirm and billing\" only, others get the one not-found answer. (2) The `GET` is served in T364's `app/server/src/business_step_up.rs` (owned here after T364) behind the business session, `no_store`, one section 13 row (Wired `yes`) and its `PAGE_STATES` entry in the shared `tests/a11y/page_states.ts`; `/b/billing` links to it (`app/portals/templates/business_billing.html`, owned here after T195 and T200, gains only that link). No TD row: BIZ-023's role change and removal are covered by this task's e2e walk and T364's TD-SEC-64. (3) `tests/e2e/business_team.spec.ts` walks a role change through the form and the step-up with no axe-core violation. Build notes go at the end of `app/server/NOTES.md` and `app/portals/NOTES.md`; `app/server/CLAUDE.md` is at its 8,192-byte cap and is not edited, whatever earlier sentences say. Update `docs/decisions.md`. Plan change D-3892 (Opus pre-claim check, Nov 16, 2026): the page is served at `/b/team` (a `TEAM_ROUTE` constant in `team_page.rs`), so the section 13 row, the `PAGE_STATES` entry and the billing link agree; the e2e walk passes the step-up the way `tests/e2e/business_step_up_served.spec.ts` (T364) does. Plan change D-4045 (Casey, Nov 16, 2026: \"Let's split up the tasks if it makes things run smoother\"; T364 split at the Opus pre-claim scout's seam, D-3967's pattern; nothing weakened or dropped): the role-change, removal and monthly-limit `POST` routes this page's forms post to, `guarded_changes.rs`, TD-SEC-64 and `tests/e2e/business_step_up_served.spec.ts` are now T565's (its routes in `app/server/src/business_guarded_changes.rs`), so this task depends on T565 and through it on T364; \"T364's routes\" and \"T364's TD-SEC-64\" above mean T565's. The `GET` is still served in T364's `app/server/src/business_step_up.rs`, owned here after T364 (T565 does not touch it).",
+   "goal": "Plan change D-3890 (Fable's pre-claim checks of the remaining stage-5 tasks, Nov 16, 2026): Split from T364, which serves the role change, the removal and the monthly limit `POST`s but no page with their forms (`business_billing.html`, `business_home.html` and `notice_settings.html` have none). (1) `app/portals/src/team_page.rs` and `templates/business_team.html` (extends `business_layout.html`): the business's members with their roles (BIZ-023), a role-change form and a removal button per member, the member's ID in the form body, and the monthly-limit form, each posting to T364's routes, which send the member to the step-up page and back; owner or \"Confirm and billing\" only, others get the one not-found answer. (2) The `GET` is served in T364's `app/server/src/business_step_up.rs` (owned here after T364) behind the business session, `no_store`, one section 13 row (Wired `yes`) and its `PAGE_STATES` entry in the shared `tests/a11y/page_states.ts`; `/b/billing` links to it (`app/portals/templates/business_billing.html`, owned here after T195 and T200, gains only that link). No TD row: BIZ-023's role change and removal are covered by this task's e2e walk and T364's TD-SEC-64. (3) `tests/e2e/business_team.spec.ts` walks a role change through the form and the step-up with no axe-core violation. Build notes go at the end of `app/server/NOTES.md` and `app/portals/NOTES.md`; `app/server/CLAUDE.md` is at its 8,192-byte cap and is not edited, whatever earlier sentences say. Update `docs/decisions.md`. Plan change D-3892 (Opus pre-claim check, Nov 16, 2026): the page is served at `/b/team` (a `TEAM_ROUTE` constant in `team_page.rs`), so the section 13 row, the `PAGE_STATES` entry and the billing link agree; the e2e walk passes the step-up the way `tests/e2e/business_step_up_served.spec.ts` (T364) does. Plan change D-4045 (Casey, Nov 16, 2026: \"Let's split up the tasks if it makes things run smoother\"; T364 split at the Opus pre-claim scout's seam, D-3967's pattern; nothing weakened or dropped): the role-change, removal and monthly-limit `POST` routes this page's forms post to, `guarded_changes.rs`, TD-SEC-64 and `tests/e2e/business_step_up_served.spec.ts` are now T565's (its routes in `app/server/src/business_guarded_changes.rs`), so this task depends on T565 and through it on T364; \"T364's routes\" and \"T364's TD-SEC-64\" above mean T565's. The `GET` is still served in T364's `app/server/src/business_step_up.rs`, owned here after T364 (T565 does not touch it). Plan change D-5159 (one line, accessibility): wrap the `<table>` in `app/portals/templates/business_billing.html` (`app/portals/templates/business_billing.html:16`) in `<div role=\"region\" tabindex=\"0\" aria-label=\"Charges, refunds and credits\">` (its heading) as `app/site/templates/business.html:43` does; change no other line of the table; the scroll rule is T304's in `site.css`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -41069,7 +41076,8 @@
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
-    "security"
+    "security",
+    "accessibility"
    ],
    "owns": [
     "app/portals/src/team_page.rs",
@@ -41095,7 +41103,8 @@
     "D-2636",
     "D-3890",
     "D-3892",
-    "D-4045"
+    "D-4045",
+    "D-5159"
    ],
    "cites": [],
    "budget": {
@@ -43160,7 +43169,8 @@
     "T614",
     "T593",
     "T441",
-    "T203"
+    "T203",
+    "T304"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -43226,7 +43236,7 @@
    "budget": {
     "files": 6,
     "lines": 580,
-    "context_pct": 27
+    "context_pct": 40
    },
    "checks": [
     "Ci",
@@ -46118,7 +46128,7 @@
    "id": "T776",
    "slug": "intake-refusals-wired",
    "title": "intake: a move out of Arizona and a property-management request are refused, at the trade step and again before any card",
-   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F20; LIC-017, LIC-018, INT-016, INT-017; D-1008, D-1011; compliance). `routing::route` holds both refusals, but its only production caller, `tell` in `app/intake/src/order_dispatch.rs`, builds its `Request` with `words: \"\"`, `move_states: None` and `job_types: &[]`, so neither can fire: a move to another state and a \"collect the rent\" home-watch request get cards (D-1008 left the inputs as \"the caller's wiring\"; T671 wired `route` with them empty). (1) A new `app/intake/src/refusal_inputs.rs` (declared by one line in the shared `lib.rs`) holds the pure reading of her kept words: whether a moving request names a move that does not stay in Arizona, from a folded phrase list as `PROPERTY_MANAGEMENT` in `routing.rs` is (D-1011), in English and Spanish: \"out of state\", \"another state\", \"different state\", \"out of Arizona\", \"leaving Arizona\", \"cross country\", \"across the country\", \"interstate\", \"fuera del estado\", \"otro estado\", \"fuera de Arizona\"; the full name of every other US state and \"Mexico\" when it is not part of \"New Mexico\"; a state name directly followed by `king` (\"California king\") is not a match; and the out-of-state places people near Lake Havasu name: Needles, Laughlin, Las Vegas, Henderson, Blythe, Palm Springs, Los Angeles, San Diego, Reno, Salt Lake City, Albuquerque, Denver. An Arizona town (Phoenix, Bullhead City, Kingman, Parker, Yuma, Tucson, Flagstaff) never matches. A match is passed as `move_states` with one side not Arizona, so `routing::move_refused` decides; `routing.rs` is not edited. (2) `tell` passes her kept words as `Request.words`, the reading of (1) as `move_states`, and the job's candidate job types as `job_types`. (3) The same check runs again on all her kept words before a card is shown and before it is sent (the card step and its SEND), because LIC-018 says \"description or answers\" and her later answers and EDIT words arrive after `tell`: a refusal there gives the INT-017 reply through `routing::apply` for the first job, and marks a second job Not covered for that job alone as `tell` does, with no card stored or sent and no recruiting-demand row (D-1008); `apply` runs once however often the text repeats. Nothing else in `order_dispatch.rs` changes. Tests in the new `tests/integration/tests/intake_refusals_wired.rs`, PostgreSQL through `intake::api::receive_raw_reply`, fake data only: \"Need movers, Lake Havasu City to Las Vegas\" and a Spanish \"fuera del estado\" move get the not-covered reply, the job Not covered, no `quotes.job_card` row and no recruiting-demand row; a home-watch \"check the house weekly and collect the rent\" and a Spanish \"cobrar la renta\" the same; a property-management phrase or an out-of-state place that first appears in an EDIT or a later answer gets no card and the reply; \"moving to Phoenix\", \"moving a California king bed across town\" and a turnover \"clean after the renters check out\" still get the coverage line and their card; the same text twice adds nothing. Unit tests for `refusal_inputs.rs` in-crate (each phrase group, each Arizona town, \"New Mexico\" against \"Mexico\", \"California king\"). `app/intake/src/tests/routing_outcomes.rs` and every existing intake test pass unchanged. T675, the next queued owner of `order_dispatch.rs`, now depends on this task. Build notes go to the end of `app/intake/NOTES.md`; update `docs/decisions.md` and log the phrase list in `docs/for-casey-review.md`.",
+   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F20; LIC-017, LIC-018, INT-016, INT-017; D-1008, D-1011; compliance). `routing::route` holds both refusals, but its only production caller, `tell` in `app/intake/src/order_dispatch.rs`, builds its `Request` with `words: \"\"`, `move_states: None` and `job_types: &[]`, so neither can fire: a move to another state and a \"collect the rent\" home-watch request get cards (D-1008 left the inputs as \"the caller's wiring\"; T671 wired `route` with them empty). (1) A new `app/intake/src/refusal_inputs.rs` (declared by one line in the shared `lib.rs`) holds the pure reading of her kept words: whether a moving request names a move that does not stay in Arizona, from a folded phrase list as `PROPERTY_MANAGEMENT` in `routing.rs` is (D-1011), in English and Spanish: \"out of state\", \"another state\", \"different state\", \"out of Arizona\", \"leaving Arizona\", \"cross country\", \"across the country\", \"interstate\", \"fuera del estado\", \"otro estado\", \"fuera de Arizona\"; the full name of every other US state and \"Mexico\" when it is not part of \"New Mexico\"; a state name directly followed by `king` (\"California king\") is not a match; and the out-of-state places people near Lake Havasu name: Needles, Laughlin, Las Vegas, Henderson, Blythe, Palm Springs, Los Angeles, San Diego, Reno, Salt Lake City, Albuquerque, Denver. An Arizona town (Phoenix, Bullhead City, Kingman, Parker, Yuma, Tucson, Flagstaff) never matches. A match is passed as `move_states` with one side not Arizona, so `routing::move_refused` decides; `routing.rs` is not edited. (2) `tell` passes her kept words as `Request.words`, the reading of (1) as `move_states`, and the job's candidate job types as `job_types`. (3) The same check runs again on all her kept words before a card is shown and before it is sent (the card step and its SEND), because LIC-018 says \"description or answers\" and her later answers and EDIT words arrive after `tell`: a refusal there gives the INT-017 reply through `routing::apply` for the first job, and marks a second job Not covered for that job alone as `tell` does, with no card stored or sent and no recruiting-demand row (D-1008); `apply` runs once however often the text repeats. Nothing else in `order_dispatch.rs` changes. (4) Plan change D-5160: with AI off no keyword rule reads moving, home watch or turnover cleaning, so these texts never reach `tell` with that trade; `app/intake/src/matching.rs` gains three trade-only rules in `RULES`, each `job_type: None` and `boundary: false`, and nothing else in that file changes: `local_moving`: \"movers\", \"moving help\", \"mudanza fuera\", \"necesito mudanza\", \"hacer una mudanza\", \"ayuda con mudanza\" (never bare \"mudanza\", which \"limpieza de mudanza\", house cleaning's move-out phrase, contains); `home_watch`: \"home watch\", \"house check\", \"house checks\", \"cuidar la casa\"; `turnover_cleaning`: \"turnover clean\", \"turnover cleaning\", \"turnover cleaner\", \"airbnb cleaning\", \"vrbo cleaning\". Bare \"moving\", \"turnover\", \"snowbird\" and \"vacation rental\" are deliberately left out (they would add a second trade to existing texts such as \"moving an outlet\" or golden row house_cleaning-03). Tests in the new `tests/integration/tests/intake_refusals_wired.rs`, PostgreSQL through `intake::api::receive_raw_reply`, fake data only: \"Need movers, Lake Havasu City to Las Vegas\", \"Necesito mudanza fuera del estado\", \"Home watch: check the house weekly and collect the rent\" and \"Busco quien pueda cuidar la casa y cobrar la renta\" get the not-covered reply, the job Not covered, no `quotes.job_card` row and no recruiting-demand row; a property-management phrase or an out-of-state place that first appears in an EDIT or a later answer (after a keyworded first text that opens a job, such as \"Need movers next week\" or \"Home watch while we are away\"; `opens_job` needs more than two words, `app/intake/src/rules.rs:331`) gets no card and the reply; \"Need movers to Phoenix\", \"Need movers for a California king bed across town\" and \"Turnover cleaning after the renters check out\" still get the coverage line and their card; the same text twice adds nothing. New keyword assertions in `intake_refusals_wired.rs` (each new phrase reads its trade; \"moving an outlet\" reads electrical only; \"limpieza de mudanza\" does not read `local_moving`). Unit tests for `refusal_inputs.rs` in-crate (each phrase group, each Arizona town, \"New Mexico\" against \"Mexico\", \"California king\"). `app/intake/src/tests/routing_outcomes.rs` and every existing intake test pass unchanged, among them `app/intake/src/tests/trade_question.rs`, `prop_keyword_boundary.rs`, `twin_warnings_regression.rs` (`:130`), `question_bank.rs`, `tests/integration/tests/routing_confidence.rs` and `prop_prompt_injection.rs`; `tests/mutation/mutants.toml` is not edited and its `matching.rs` anchor (`:87`, `for (t, j) in read.chain(named_jobs) {`) still occurs once in `matching.rs`. T675, the next queued owner of `order_dispatch.rs`, now depends on this task. Build notes go to the end of `app/intake/NOTES.md`; update `docs/decisions.md` and log the phrase list in `docs/for-casey-review.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -46137,7 +46147,8 @@
    "owns": [
     "app/intake/src/order_dispatch.rs",
     "app/intake/src/refusal_inputs.rs",
-    "tests/integration/tests/intake_refusals_wired.rs"
+    "tests/integration/tests/intake_refusals_wired.rs",
+    "app/intake/src/matching.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -46157,12 +46168,13 @@
     "D-1008",
     "D-1011",
     "D-4360",
-    "D-5081"
+    "D-5081",
+    "D-5160"
    ],
    "cites": [],
    "budget": {
-    "files": 3,
-    "lines": 450,
+    "files": 4,
+    "lines": 500,
     "context_pct": 25
    },
    "checks": [
@@ -46172,7 +46184,7 @@
    ],
    "branch": "claude/task/T776-intake-refusals-wired",
    "prompt": "kit/prompts/T776.md",
-   "acceptance": "`tests/integration/tests/intake_refusals_wired.rs` passes against PostgreSQL with every listed case, the refusal cases failing on `main` before the change (cards go out there); the in-crate tests of `refusal_inputs.rs` pass; `routing_outcomes.rs` and every existing intake test pass unchanged; `routing.rs` is not in the diff."
+   "acceptance": "`tests/integration/tests/intake_refusals_wired.rs` passes against PostgreSQL with every listed case, the refusal cases failing on `main` before the change (cards go out there); the in-crate tests of `refusal_inputs.rs` pass; `routing_outcomes.rs` and every existing intake test pass unchanged; `routing.rs` is not in the diff; `matching.rs` changes only by the three D-5160 rules."
   },
   {
    "id": "T675",
@@ -50043,7 +50055,7 @@
    "id": "T754",
    "slug": "zero-fee-after-intent",
    "title": "portals and payments: a $0 Confirm after a PaymentIntent was opened ends the intent and releases, and a refused paid event raises a High alert",
-   "goal": "Plan change D-4763 (Fable's money audit of `main` 79e9b499, finding M1 major and m3 minor; FEE-010, FEE-013, FEE-016, PICK-022, SEC-049; D-3717, D-3719, D-3813, D-3824, D-2713). M1: the Confirm page opens a PaymentIntent when the waiver decided on the page read is none (`app/portals/src/confirm_pay.rs:1110` to `:1120`), but the press can then decide $0 (a free first win or a repeat customer that the page read did not see, `confirm_pay.rs:1142`, `:1325`; `app/payments/src/free_wins.rs:171`, `:220`); `no_fee_release` (`app/payments/src/release_proof.rs:285`) refuses any pick with a `payments.pick_intent` row (`:300`, `NOT EXISTS`), so a $0 Confirm after an intent was opened never releases her details and the business is stuck. This task: (1) in the press transaction that records a $0 decision, `confirm_pay.rs` calls `payments::api::end_intent_unless_charging` (`app/payments/src/pick_fee.rs:222`) for the pick's open intent and cancels it at Stripe after the commit (a cancel that fails is retried as that function's callers retry it; a charge already in flight is never cancelled: when `end_intent_unless_charging` answers false the whole press transaction, which has already written the $0 row (`confirm_pay.rs:1325` to `:1327`), is rolled back and the press answers with its existing line, so a pick is never both charged and waived); (2) `no_fee_release` accepts a pick whose intents are all ended with no live or succeeded attempt (still refusing one with a live or succeeded attempt, so a pick is never both charged and free, FEE-016). m3: a verified `payment_intent.succeeded` that `paid_release` refuses as `WrongAmount`, `WrongPick` or `NotPaid` is only info-logged (`app/payments/src/routes.rs:384` to `:388`); it now raises one High alert through `ops::api::raise_alert_once` (IDs and the reason only, never an amount tied to a person or a card detail; deduplicated per pick and reason), still answering Stripe 200 and resending nothing; `Stripe` and `Database` refusals are retried as today. Tests in the new `tests/integration/tests/zero_fee_after_intent.rs`, PostgreSQL and the Stripe stand-in, fake data only: a page read that opens an intent, then a press that decides $0 (a free first win recorded between the read and the press), ends and cancels the intent once and releases her details; a press with a charge in flight does not take the $0 path and leaves no $0 ledger row; `no_fee_release` still refuses a pick with a succeeded attempt; each refused `payment_intent.succeeded` raises one High alert and a replay raises none. Every Confirm route, waiver and release test passes unchanged; `app/payments/` keeps its 95% floor. Money: Opus worker, Opus money and security review, two review rounds. Update the `portals` and `payments` notes, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4763 (Fable's money audit of `main` 79e9b499, finding M1 major and m3 minor; FEE-010, FEE-013, FEE-016, PICK-022, SEC-049; D-3717, D-3719, D-3813, D-3824, D-2713). M1: the Confirm page opens a PaymentIntent when the waiver decided on the page read is none (`app/portals/src/confirm_pay.rs:1110` to `:1120`), but the press can then decide $0 (a free first win or a repeat customer that the page read did not see, `confirm_pay.rs:1142`, `:1325`; `app/payments/src/free_wins.rs:171`, `:220`); `no_fee_release` (`app/payments/src/release_proof.rs:285`) refuses any pick with a `payments.pick_intent` row (`:300`, `NOT EXISTS`), so a $0 Confirm after an intent was opened never releases her details and the business is stuck. This task: (1) in the press transaction that records a $0 decision, `confirm_pay.rs` calls `payments::api::end_intent_unless_charging` (`app/payments/src/pick_fee.rs:222`) for the pick's open intent and makes no Stripe call for the ended intent, as that function's other callers make none (the intent is unconfirmed and holds no funds; a later success on it after a declined attempt is refunded under FEE-021, and one with no attempt at all raises m3's High alert below). When `end_intent_unless_charging` answers false, the whole press transaction, which has already written the $0 row (`confirm_pay.rs:1325` to `:1327`), is rolled back and the press answers with its existing line, so a pick is never both charged and waived; (2) `no_fee_release` accepts a pick whose intents are all ended with no live or succeeded attempt (still refusing one with a live or succeeded attempt, so a pick is never both charged and free, FEE-016); (3) `held_release` (`release_proof.rs:247` to `:256`), which sends any pick with a `pick_intent` row down the paid path, falls to `held_no_fee` for a pick whose intents are all ended with no live or succeeded attempt, so a $0-after-intent release held in safe mode is released, not answered `NotPaid` and dropped by `run_held_release` (`app/server/src/release_hold.rs:86`); (4) `from_stored_success` (`release_proof.rs:331`), for a pick whose intents are all ended with no live or succeeded attempt, no refund and no dispute, answers `no_fee_release`'s result for the pick's own `pick_fee` pair when that clears, else `PickEnded` as today, so `reclear_release` (`app/payments/src/reclear.rs:30` to `:43`), which falls to `no_fee_release` only on `WrongIntent`, releases a $0-after-intent pick on an emergency job whose release waited for the address instead of answering `PickEnded` (which `release_sink.rs:254` to `:258` reads as `MovedOn`); `reclear.rs` is not edited, and its done test `td_int_39_the_first_failing_check_wins` (`reclear.rs:236` to `:242`: an ended intent, a declined attempt and no $0 row answer `PickEnded`) stays green. m3: a verified `payment_intent.succeeded` that `paid_release` refuses as `WrongAmount`, `WrongPick`, `NotPaid` or `WrongIntent` is only info-logged (`app/payments/src/routes.rs:384` to `:388`); it now raises one High alert through `ops::api::raise_alert_once` (IDs and the reason only, never an amount tied to a person or a card detail; deduplicated per pick and reason), still answering Stripe 200 and resending nothing; `Stripe` and `Database` refusals are retried as today. Tests in the new `tests/integration/tests/zero_fee_after_intent.rs`, PostgreSQL and the Stripe stand-in, fake data only: a page read that opens an intent, then a press that decides $0 (a free first win recorded between the read and the press), ends the intent once (`ended_at` set, no further Stripe request for that intent) and releases her details exactly once; a press with a charge in flight does not take the $0 path and leaves no $0 ledger row; `no_fee_release` still refuses a pick with a succeeded attempt; each refused `payment_intent.succeeded` raises one High alert and a replay raises none; a $0-after-intent release held in safe mode is released by `held_release` through `held_no_fee`; a $0-after-intent release that waited for an address: this case is an in-crate test in `release_proof.rs`'s `mod tests` (owned) that calls `Releasable::from_stored_success` directly: an ended intent with no live or succeeded attempt and the pick's $0 ledger row clears with the no-fee basis; the same rows with a refund or a dispute answer `PickEnded`. Neither `reclear_release` nor `from_stored_success` is named in code in `zero_fee_after_intent.rs` or outside `app/payments/src/` (`reclear.rs:334` to `:359`). Plan change D-5158 (Fable, option (a)): D-4763's Stripe cancel is dropped. The same file must also show, for a `payment_intent.succeeded` on the ended intent after a $0 release: (a) after a declined press attempt, then the $0 press, the success queues one late-success refund task and raises one High alert (FEE-021, `late_success`, `app/payments/src/late.rs:70` to `:108`) and makes no second release; (b) with no attempt at all (`store_success`, `release_proof.rs:473` to `:482`, answers `WrongIntent` before `late_success` runs), it raises m3's High alert and makes no release. If cheap, it also shows that the press reply carries no `client_secret` once the press answers $0 (`press_reply`, `app/portals/src/confirm_pay.rs:343`). Every Confirm route, waiver and release test passes unchanged; `app/payments/` keeps its 95% floor. Money: Opus worker, Opus money and security review, two review rounds. Update the `portals` and `payments` notes, `docs/architecture.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -50075,14 +50087,16 @@
     "docs/spec/quotes-pick.md",
     "docs/spec/security.md",
     "app/payments/src/pick_fee.rs",
-    "app/payments/src/free_wins.rs"
+    "app/payments/src/free_wins.rs",
+    "app/payments/src/late.rs"
    ],
    "requirements": [
     "FEE-010",
     "FEE-013",
     "FEE-016",
     "PICK-022",
-    "SEC-049"
+    "SEC-049",
+    "FEE-021"
    ],
    "tests": [],
    "decisions": [
@@ -50090,7 +50104,8 @@
     "D-3717",
     "D-3719",
     "D-3824",
-    "D-4763"
+    "D-4763",
+    "D-5158"
    ],
    "cites": [],
    "budget": {
@@ -50105,7 +50120,7 @@
    ],
    "branch": "claude/task/T754-zero-fee-after-intent",
    "prompt": "kit/prompts/T754.md",
-   "acceptance": "`tests/integration/tests/zero_fee_after_intent.rs` passes against PostgreSQL and the Stripe stand-in, failing on `main`; every Confirm route, waiver and release test passes unchanged; `app/payments/` stays at or above 95%; no pick is both charged and released as free."
+   "acceptance": "`tests/integration/tests/zero_fee_after_intent.rs` passes against PostgreSQL and the Stripe stand-in, failing on `main`; every Confirm route, waiver and release test passes unchanged; `app/payments/` stays at or above 95%; no pick is both charged and released as free; a success on an ended intent after a $0 release never releases twice."
   },
   {
    "id": "T755",
@@ -50337,8 +50352,8 @@
   {
    "id": "T759",
    "slug": "close-which-expiry",
-   "title": "intake: \"Close which?\" expires on any other reply, and \"never mind\" in a request with no job gets a reply",
-   "goal": "Plan change D-4777 (Fable's intake audit, finding I3, MED, and the low finding; JOB-019, JOB-021, INT-038; D-1203). (1) \"Close which?\" never expires: `closing.rs` (`app/intake/src/closing.rs:79` to `:95`) writes `close_which` = `asked` and only a close answer clears it, so a lone number or ALL sent days later for another reason (`close_target`, `app/intake/src/rules.rs:663` to `:676`) still closes a job. While the latest `close_which` is `asked` (the mark match at `closing.rs:86` to `:90`), any reply in the request that is not a close answer writes `close_which` = `dropped` in the same transaction, so a later lone number or ALL is no longer read as the answer; with no waiting question nothing is written. (2) \"never mind\" (or another cancel phrase, `rules.rs:307`) in an open request with no job gets no reply today (`decide` returns `Closing::Nothing` with no open job number, `closing.rs:113` to `:115`): it now gets the close reply for a request, in `closing.rs` with no new `Closing` variant (`replies.rs:282` to `:283` already sends the text `answer_close` returns with `Closing::Nothing`, so `replies.rs`, T673's and T728's, is not edited) (the request is closed as `close_request` closes it, with its existing confirmation wording, or, if none fits, a new draft line for the copy panel). Tests in the new `tests/integration/tests/close_which_expiry.rs`, PostgreSQL, fake data only: \"Close which?\", then an unrelated reply, then \"2\" closes nothing; \"Close which?\" then \"2\" still closes job 2; \"never mind\" in a request with no job closes it and replies once. Every close test passes unchanged. Opus worker (Fable once the runner's `models` map names it, D-4761), Opus security review. Update the `intake` notes and `docs/decisions.md`.",
+   "title": "intake: \"Close which?\" expires on a worded reply that is not a close answer",
+   "goal": "Plan change D-4777 (Fable's intake audit, finding I3, MED, and the low finding; JOB-019, JOB-021, INT-038; D-1203). (1) \"Close which?\" never expires: `closing.rs` (`app/intake/src/closing.rs:79` to `:95`) writes `close_which` = `asked` and only a close answer clears it, so a lone number or ALL sent days later for another reason (`close_target`, `app/intake/src/rules.rs:663` to `:676`) still closes a job. While the latest `close_which` is `asked` (the mark match at `closing.rs:86` to `:90`), a reply that reaches `answer_close` writes `close_which` = `dropped` in the same transaction when the result is `Closing::Nothing` or `Closing::Explained` and the text is not a lone number (the `[t]` arm of `close_target`: `close_reading(words, &[n])` is `Close(Number(n))` for its own number), so a later lone number or ALL is no longer read as the answer; a lone number that is not open leaves the question waiting, as TD-JOB-05 (`tests/integration/tests/close_which.rs:228`) requires; a 911-list reply never reaches `answer_close`, and an opt-out or HELP enters it but returns before any write (`in_scope`, `closing.rs:69`), so none of them writes anything; with no waiting question nothing is written. Plan change D-5161: the low finding (\"never mind\" with no job) is not built here: it needs a new template pair (`say` in `closing.rs:193` to `:196` would render `jobs_closed` with an empty `{job}`). `decide` still returns `Closing::Nothing` with no open job. Tests in the new `tests/integration/tests/close_which_expiry.rs`, PostgreSQL, fake data only: \"Close which?\", then \"the sink still drips\", then an open number closes nothing; \"Close which?\", then a ZIP, then an open number still closes that job; \"cancel\" alone still closes nothing. Every close test passes unchanged. Opus worker (Fable once the runner's `models` map names it, D-4761), Opus security review. Update the `intake` notes and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -50373,7 +50388,8 @@
    "tests": [],
    "decisions": [
     "D-1203",
-    "D-4777"
+    "D-4777",
+    "D-5161"
    ],
    "cites": [],
    "budget": {
@@ -50711,7 +50727,7 @@
    "id": "T778",
    "slug": "stuck-tasks-found",
    "title": "jobs, core and server: a dead Payment pending timer is revived, a task that died on its last try is reaped on a busy queue, and a slow queue read is not reported as the database being down",
-   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding s F32, F35 and F36; JOB-006, JOB-014, PRIV-007, OPS-004, OPS-007; D-2640, D-3144, D-4349). Three ways a stuck task is never found or is misreported. (1) F32: the daily backstop's `check_timer` (`app/jobs/src/timer_backstop.rs`) revives only a dead `jobs.timeout` task; a Payment pending job's wait is a `picks.payment_returned` task (`PAYMENT_RETURNED_KIND`, its key built in `payment_wait.rs`), and when that one is dead the job stays in Payment pending for good, never reaches a final status, and its PRIV-007 purge is never queued. `check_timer` now also runs `revive_dead` on that key when the job is in Payment pending and its own timer is alive, under the same `MOST_REVIVALS` cap, audit row and alert. (2) F35: `reap_expired` (`app/core/src/tasks.rs`) runs only on a poll that claimed nothing, so on a busy queue a task whose worker died on its last attempt is never dead-lettered, is invisible to the dead-letter alert, and `queue_health`'s oldest-waiting read (`app/core/src/queue_health.rs`), which has no `attempts < max_attempts` filter, counts it until `/healthz` answers 503. The reaper now runs on every poll that claimed fewer tasks than it asked for and at least once a minute whatever was claimed, and the oldest-waiting read leaves out a row no claim can take; `reap_expired`'s and `claim`'s signatures stay. (3) F36: `check` in `app/server/src/healthz.rs` reports a queue-read error or timeout as the database being down although its round trip has just passed; it now reports database up and worker not known to be running, the answer's shape and status codes otherwise unchanged. This task adds no migration: the two indexes for `queue_health`'s `max()` reads wait for a later plan change (see D-5081), and no row of `core.task` is deleted (a done row's dedupe key means once ever). Tests, fake data only: the new `tests/integration/tests/payment_returned_backstop.rs` (a dead `payment_returned` task on a Payment pending job is revived once and the job leaves Payment pending; after the cap, one High alert; one on a job that moved on is left alone) and `tests/integration/tests/stuck_task_health.rs` (a task at its last attempt with an expired lease, beside a steady supply of due tasks, is dead-lettered within a minute and counted by the dead-letter alert, and the probe never reports the worker down for it; a failed queue read answers database up). Every existing `timer_backstop`, task-queue and `healthz` test passes unchanged; if one pins the reaper to an empty poll, report it, do not change it. Build notes go to the end of each crate's `NOTES.md`; update `docs/decisions.md`.",
+   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding s F32, F35 and F36; JOB-006, JOB-014, PRIV-007, OPS-004, OPS-007; D-2640, D-3144, D-4349). Three ways a stuck task is never found or is misreported. (1) F32: the daily backstop's `check_timer` (`app/jobs/src/timer_backstop.rs`) revives only a dead `jobs.timeout` task; a Payment pending job's wait is a `picks.payment_returned` task (`PAYMENT_RETURNED_KIND`, its key built in `payment_wait.rs`), and when that one is dead the job stays in Payment pending for good, never reaches a final status, and its PRIV-007 purge is never queued. `check_timer` now also runs `revive_dead` on that key when the job is in Payment pending and its own timer is alive, under the same `MOST_REVIVALS` cap, audit row and alert; `Revival::Missing` and `Revival::Alive` on that key do nothing (no task is queued: missing is the normal state before the timer fires); the key repeats `payment_wait.rs`'s format. (2) F35: `reap_expired` (`app/core/src/tasks.rs`) runs only on a poll that claimed nothing, so on a busy queue a task whose worker died on its last attempt is never dead-lettered, is invisible to the dead-letter alert, and `queue_health`'s oldest-waiting read (`app/core/src/queue_health.rs`), which has no `attempts < max_attempts` filter, counts it until `/healthz` answers 503. The reaper now runs on every poll that claimed fewer tasks than it asked for and at least once a minute whatever was claimed, and the oldest-waiting read leaves out a row no claim can take; `reap_expired`'s and `claim`'s signatures stay; `Worker` gains no field (it is built as a struct literal in `tests/integration/tests/task_queue.rs` and `app/server/src/bin/worker.rs`): the last-reap time is a local in `claim_loop` passed to `spawn_due`, and the minute is read from `self.clock`, so a test advances a `ManualClock`. (3) F36: `check` in `app/server/src/healthz.rs` reports a queue-read error or timeout as the database being down although its round trip has just passed; it now answers 503 as today, with `status` \"down\", `database` \"up\" and `worker` \"unknown\" (a new `HealthState` field, built only in `healthz.rs`; `healthy()` is false for it), the answer's keys unchanged. This task adds no migration: the two indexes for `queue_health`'s `max()` reads wait for a later plan change (see D-5081), and no row of `core.task` is deleted (a done row's dedupe key means once ever). Tests, fake data only: the new `tests/integration/tests/payment_returned_backstop.rs` (a dead `payment_returned` task on a Payment pending job is revived once and the job leaves Payment pending; after the cap, one High alert; one on a job that moved on is left alone) and `tests/integration/tests/stuck_task_health.rs` (a task at its last attempt with an expired lease, beside a steady supply of due tasks, is dead-lettered within a minute and counted by the dead-letter alert, and the probe never reports the worker down for it; a failed queue read answers 503 with database up and worker unknown). Every existing `timer_backstop`, task-queue and `healthz` test passes unchanged; if one pins the reaper to an empty poll, report it, do not change it. Plan change D-5163: `app/server/CLAUDE.md` is near the D-5080 threshold, so this task's notes go to `NOTES.md` only. Build notes go to the end of each crate's `NOTES.md`; update `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -50758,7 +50774,8 @@
     "D-2640",
     "D-3144",
     "D-4349",
-    "D-5081"
+    "D-5081",
+    "D-5163"
    ],
    "cites": [],
    "budget": {
@@ -50950,49 +50967,51 @@
   {
    "id": "T782",
    "slug": "released-job-number-and-calls",
-   "title": "server and calls: the released job's page shows its job number and its call log",
-   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F21; PICK-024, BIZ-013; D-3664's logged gap). `job_page` in `app/server/src/business_portal.rs` builds the released job's page with `job_number: 0` and no calls, so a business reads \"Job 0\" and never sees the call log BIZ-013 and its no-show disputes rest on. After the page's existing ownership check (another business's pick, a member without \"Confirm and billing\" and a bad ID stay the one not-found answer, with nothing read first), the handler reads the pick's job through `own_pick_job` and its number through `jobs::api::job_number`, and the pick's calls through a new `calls::api::pick_call_log(db, pick)` in the new `app/calls/src/pick_call_log.rs` (exported by one line in the shared `api.rs`), which finds the pick's line as `pick_has_line` does and returns `call_log`'s rows, empty when the pick has no line. A failed read shows the page's existing failure answer, never job 0. The call rows hold what `call_log` already returns and no homeowner number. Tests in the new `app/server/tests/released_job_page.rs`, PostgreSQL through the assembled router, fake data only: a released pick's page shows its real job number and one planted call; a pick with no line shows the number and no call; another business's pick is still the one not-found answer. Every existing released-pick and door test passes unchanged. Close D-3664's gap line in `app/server/NOTES.md` and `docs/for-casey-review.md`; update `docs/decisions.md`.",
-   "type": "build",
+   "title": "server: the released job's page shows its real job number",
+   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F21; PICK-024, BIZ-013; D-3664's logged gap). `job_page` in `app/server/src/business_portal.rs` builds the released job's page with `job_number: 0` and no calls, so a business reads \"Job 0\"; the call log (BIZ-035) stays empty and goes to the post-launch list (D-5162). After the page's existing ownership check (another business's pick, a member without \"Confirm and billing\" and a bad ID stay the one not-found answer, with nothing read first), the handler reads the pick's job through `own_pick_job` and its number through `jobs::api::job_number`. A failed read shows the page's existing failure answer, never job 0. Tests in the new `app/server/tests/released_job_page.rs`, PostgreSQL through the assembled router, fake data only: a released pick's page shows its real job number; a pick whose job has no number row gets the failure answer, never job 0; another business's pick is still the one not-found answer. Every existing released-pick and door test passes unchanged. Plan change D-5162: the task owns `tests/e2e/business_portal_served.spec.ts` and adds to `seedReleasedPick` the `payments.pick_fee` and `jobs.job_number` rows (as `tests/e2e/keyed.ts:140` to `:150` does); in the shared `tests/a11y/page_states.ts` it adds to the `RELEASE_STATES` seed only a `jobs.job` row the pick references, its `jobs.job_number` row and a `payments.pick_fee` row (model: line 331), changing no `shows`, `hides` or check (D-1772). Before relying on it, check that `quoted_job` in `business_portal_route.rs` issues a job number. Edit D-3664's gap line in `app/server/NOTES.md` in place (number real, calls post-launch); add the call log to the Post-launch list in `docs/for-casey-review.md`; update `docs/decisions.md`.",
+   "type": "harness",
    "phase": 1,
    "stage": "5",
    "module": "server",
    "deps": [
-    "T526"
+    "T526",
+    "T644"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "privacy",
-    "security"
+    "security",
+    "harness"
    ],
    "owns": [
     "app/server/src/business_portal.rs",
-    "app/calls/src/pick_call_log.rs",
-    "app/server/tests/released_job_page.rs"
+    "app/server/tests/released_job_page.rs",
+    "tests/e2e/business_portal_served.spec.ts"
    ],
    "reads": [
     "docs/architecture.md",
     "docs/code-docs.md",
     "docs/spec/quotes-pick.md",
-    "docs/spec/businesses.md",
-    "app/calls/src/pick_line.rs"
+    "tests/a11y/page_states.ts",
+    "tests/e2e/keyed.ts"
    ],
    "requirements": [
-    "PICK-024",
-    "BIZ-013"
+    "PICK-024"
    ],
    "tests": [],
    "decisions": [
     "D-3664",
     "D-1739",
-    "D-5081"
+    "D-5081",
+    "D-5162"
    ],
    "cites": [],
    "budget": {
     "files": 3,
-    "lines": 280,
-    "context_pct": 23
+    "lines": 200,
+    "context_pct": 32
    },
    "checks": [
     "Ci",
@@ -51001,7 +51020,7 @@
    ],
    "branch": "claude/task/T782-released-job-number-and-calls",
    "prompt": "kit/prompts/T782.md",
-   "acceptance": "`app/server/tests/released_job_page.rs` passes against PostgreSQL with every listed case, the job-number case failing on `main` before the change; every existing released-pick and door-matrix test passes unchanged."
+   "acceptance": "`app/server/tests/released_job_page.rs` passes against PostgreSQL with every listed case, the job-number case failing on `main` before the change; every existing released-pick and door-matrix test passes unchanged; TD-BIZ-42's e2e and the `Ally` released-job state pass with the added seed rows."
   },
   {
    "id": "T783",
@@ -51059,8 +51078,8 @@
   {
    "id": "T784",
    "slug": "returned-mailbox-no-notice",
-   "title": "businesses: a returned mailbox gets no job card, pick or money notice",
-   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F40; BIZ-040, BIZ-055, SEC-025; D-1846, D-4327). `may_get_notices` exists but only the businesses' own account emails ask it: `channel_preference::notice_recipients` and `team::notice_addresses` never look at `businesses.mailbox_check`, so once T659 marks an address returned (a hard bounce or a spam complaint) it keeps getting job cards, pick and Confirm notices and money notices, which costs the shared sender its standing (SEC-025). Both readers now leave out a mailbox whose check row has `returned_at` set: in `notice_recipients` that person's `email` is false while their approved phones still get texts (BIZ-040's \"texts continue\"), and in `notice_addresses` the returned sign-in address is dropped while a verified backup address is still used where `backup_address::notice_addresses` applies. A mailbox with no check row, or one not yet verified, is still sent to: D-1846 does not hold a business with no row, so the filter is returned-only; say so in the decision entry. No caller changes. Tests in the new `tests/integration/tests/returned_mailbox_notices.rs`, PostgreSQL, fake data only, marking the address through T659's `mark_returned`: a returned owner mailbox gets no card email while the owner's approved phone still gets the card text; an EMERGENCY card leaves it out of both the immediate and the 8 a.m. task; a returned member with a verified backup gets the pick notice at the backup; with every mailbox returned and no phone nothing is queued and `queue_card_notice` answers false; a mailbox with no check row still gets its card. `tests/integration/tests/business_event_emails.rs` and every existing card and notice test pass unchanged. Remove the \"Not wired yet\" line in `app/businesses/NOTES.md`; update `docs/decisions.md`.",
+   "title": "businesses: a returned mailbox gets no job card email, pick or money notice",
+   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F40; BIZ-040, BIZ-055, SEC-025; D-1846, D-4327). `may_get_notices` exists but only the businesses' own account emails ask it: `channel_preference::notice_recipients` and `backup_address::notice_addresses` never look at `businesses.mailbox_check`, so once T659 marks an address returned (a hard bounce or a spam complaint) it keeps getting job cards, pick and Confirm notices and money notices, which costs the shared sender its standing (SEC-025). Both readers now leave out a mailbox whose check row has `returned_at` set: in `notice_recipients` that person's `email` is false while their approved phones still get texts (BIZ-040's \"texts continue\"), and `backup_address::notice_addresses` drops every returned mailbox, main or backup, for `PicksAndRelease` and `Money` only, keeping a verified backup that is not returned; such a list can now be empty, and a caller with an empty `to` must not fail (`app/messaging/src/business_notices.rs:525` tolerates it; the worker verifies `store_texts`' fallback); `Cards` and `Account` lists stay as they are, because `owner_addresses` and `send_to_owner` find the owner by position; `team.rs` is unchanged. A mailbox with no check row, or one not yet verified, is still sent to: D-1846 does not hold a business with no row, so the filter is returned-only; say so in the decision entry. No caller changes; the worker confirms no served test pins the order of `notice_list` (`app/server/src/business_portal.rs:669` to `:679`), where a returned main mailbox now moves to the end. Tests in the new `tests/integration/tests/returned_mailbox_notices.rs`, PostgreSQL, fake data only, marking the address through `businesses::api::mark_returned`: a returned owner mailbox gets no card email while the owner's approved phone still gets the card text; an EMERGENCY card leaves it out of both the immediate and the 8 a.m. task; a returned member with a verified backup gets the pick notice at the backup; with every mailbox returned and no phone nothing is queued and `queue_card_notice` answers false; a mailbox with no check row still gets its card; a returned member's Money notice goes only to their verified backup; a returned owner with no backup: the pick notice task finishes and no email is stored. `tests/integration/tests/business_event_emails.rs`, `tests/integration/tests/business_account_email_fixes.rs` and every existing card and notice test pass unchanged. Plan change D-5165: remove no `app/businesses/NOTES.md` line (line 222 lists other unwired parts); append one `change` line; update `docs/decisions.md`.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -51078,7 +51097,7 @@
    ],
    "owns": [
     "app/businesses/src/channel_preference.rs",
-    "app/businesses/src/team.rs",
+    "app/businesses/src/backup_address.rs",
     "tests/integration/tests/returned_mailbox_notices.rs"
    ],
    "reads": [
@@ -51097,7 +51116,8 @@
    "decisions": [
     "D-1846",
     "D-4327",
-    "D-5081"
+    "D-5081",
+    "D-5165"
    ],
    "cites": [],
    "budget": {
@@ -51118,27 +51138,33 @@
    "id": "T785",
    "slug": "dispute-without-due-date",
    "title": "payments: a dispute with no usable evidence date is still recorded and still blocks refunds",
-   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F26; FEE-026, FEE-027; D-2073 (1)). A `charge.dispute.created` whose `evidence_details.due_by` is null is read as unreadable (`app/payments/src/routes.rs`): one High alert with no subject, no `payments.dispute` row and no ledger entry, so FEE-026's refund block never applies and an automatic refund can go out on a disputed charge; D-2073 (1) said Casey records such a dispute by hand, but no screen or caller exists for that. A `due_by` of 0 or below is stored as 1970 and its tasks fire at once. The new `migrations/0219_payments_dispute_due_optional.sql` drops `NOT NULL` from `payments.dispute.due_at`. The webhook route now treats a null, zero, negative or already-past `due_by` as no date and still records the dispute: the dispute row, the ledger entry and the dispute alert are written exactly as for a dated one, so refunds on that pick are blocked and flagged, and only the submit task and the due reminders, which need a date, are skipped; the alert says the evidence date is missing and names the pick, so Casey can act in Stripe. `record_dispute`'s existing signature stays for dated disputes; the undated case is a new entry beside it in `app/payments/src/disputes.rs`, so no done test changes. Every reader of `payments.dispute.due_at` handles a missing date: the ones in these two files, and `place_dispute_holds` in `app/payments/src/purge.rs`, which this task also owns for that read alone: an undated dispute's PRIV-007 hold counts from `opened_at` in place of the missing date, and the decision entry and `docs/for-casey-review.md` say so. Tests in the new `tests/integration/tests/dispute_no_due_date.rs`, PostgreSQL with the Stripe stand-in's signing, fake data only, the event bodies built in the test: `due_by` null makes one dispute row with no date and one ledger entry, and a later refund on that pick is blocked and flagged; `due_by` 0 and a past date do the same and queue no task due in the past; an undated dispute still places its retention hold; a dated dispute behaves as today. Every existing dispute and refund test passes unchanged. It is money code under the `payments` 95% branch floor. Build notes go to the end of `app/payments/NOTES.md`; update `docs/architecture.md` and `docs/decisions.md`.",
-   "type": "build",
+   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F26; FEE-026, FEE-027; D-2073 (1)). A `charge.dispute.created` whose `evidence_details.due_by` is null is read as unreadable (`app/payments/src/routes.rs`): one High alert with no subject, no `payments.dispute` row and no ledger entry, so FEE-026's refund block never applies and an automatic refund can go out on a disputed charge; D-2073 (1) said Casey records such a dispute by hand, but no screen or caller exists for that. A `due_by` of 0 or below is stored as 1970 and its tasks fire at once. The new `migrations/0219_payments_dispute_due_optional.sql` drops `NOT NULL` from `payments.dispute.due_at`. The webhook route now treats a null, zero, negative or already-past `due_by` as no date and still records the dispute: the dispute row, the ledger entry and the dispute alert are written exactly as for a dated one, so refunds on that pick are blocked and flagged, and only the submit task and the due reminders, which need a date, are skipped; the alert says the evidence date is missing and names the pick, so Casey can act in Stripe. `record_dispute`'s existing signature stays for dated disputes; the undated case is a new entry beside it in `app/payments/src/disputes.rs`, so no done test changes except TD-FEE-43's `td_fee_43_an_unreadable_event_alerts_casey_once`, by logged spec change (D-5164): its unreadable dispute becomes one with no `payment_intent`; the odd refund status, the alert count 2, the no-dispute-row and High assertions stay. Every reader of `payments.dispute.due_at` handles a missing date: the ones in these two files (in `disputes.rs`, `mark_auto_submit` (`:213` to `:224`) neither sets `auto_submit` nor queues a submit task for an undated dispute and answers as for one it did not mark, and `list_disputes` (`:414`) reads `(due_at IS NULL OR due_at >= $1)` so an undated open dispute stays in the digest), `DisputeView.due_at` (now `Option<Timestamp>`, `models.rs`), `dispute_row` in `app/portals/src/owner_portal.rs` (an undated dispute shows `date not given by Stripe` as `due` and, unless submitted, the standing 'You need to counter or accept this one in Stripe.', never the 2-days line; no template change), and `place_dispute_holds` in `app/payments/src/purge.rs`, which this task also owns for that read alone: an undated dispute's PRIV-007 hold counts from `opened_at` in place of the missing date, and the decision entry and `docs/for-casey-review.md` say so. Tests in the new `tests/integration/tests/dispute_no_due_date.rs`, PostgreSQL with the Stripe stand-in's signing, fake data only, the event bodies built in the test: `due_by` null makes one dispute row with no date and one ledger entry, and a later refund on that pick is blocked and flagged; `due_by` 0 and a past date do the same and queue no task due in the past; an undated dispute still places its retention hold; a dated dispute behaves as today; an undated open dispute is listed by `list_disputes` and gets no submit task from `mark_auto_submit`; a negative `due_by` is undated; a null `due_by` raises no `UNREADABLE_EVENT_ALERT`; `disputes_of` returns `None` for the date; the owner refund page line for an undated dispute; and the null, zero, negative and past `due_by` paths and the undated `purge.rs:41` read each get a case (95% branch floor). Every existing dispute and refund test passes unchanged except that one TD-FEE-43 case. It is money code under the `payments` 95% branch floor. The worker updates `td_fee_43_an_unreadable_event_alerts_casey_once`'s doc comment (\"a dispute with no evidence due date\") to match its new body. This task does not touch `kit/plan.lock`. Build notes go to the end of `app/payments/NOTES.md`; update `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "harness",
    "phase": 2,
    "stage": "6",
    "module": "payments",
    "deps": [
-    "T381"
+    "T381",
+    "T738",
+    "T779"
    ],
    "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "money",
-    "security"
+    "security",
+    "harness"
    ],
    "owns": [
     "app/payments/src/disputes.rs",
     "app/payments/src/routes.rs",
     "app/payments/src/purge.rs",
     "migrations/0219_payments_dispute_due_optional.sql",
-    "tests/integration/tests/dispute_no_due_date.rs"
+    "tests/integration/tests/dispute_no_due_date.rs",
+    "app/payments/src/models.rs",
+    "app/portals/src/owner_portal.rs",
+    "tests/integration/tests/stripe_webhook_dispatch.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -51153,13 +51179,14 @@
    "tests": [],
    "decisions": [
     "D-2073",
-    "D-5081"
+    "D-5081",
+    "D-5164"
    ],
    "cites": [],
    "budget": {
-    "files": 5,
-    "lines": 350,
-    "context_pct": 22
+    "files": 8,
+    "lines": 550,
+    "context_pct": 39
    },
    "checks": [
     "Ci",
@@ -51168,7 +51195,7 @@
    ],
    "branch": "claude/task/T785-dispute-without-due-date",
    "prompt": "kit/prompts/T785.md",
-   "acceptance": "`tests/integration/tests/dispute_no_due_date.rs` passes against PostgreSQL with every listed case, the null case failing on `main` before the change (no dispute row there); every existing dispute and refund test passes unchanged; the migration only drops the `NOT NULL`; `app/payments/` stays at or above its branch floor."
+   "acceptance": "`tests/integration/tests/dispute_no_due_date.rs` passes against PostgreSQL with every listed case, the null case failing on `main` before the change (no dispute row there); every existing dispute and refund test passes unchanged except that one TD-FEE-43 case; the migration only drops the `NOT NULL`; `app/payments/` stays at or above its branch floor."
   }
  ]
 }
