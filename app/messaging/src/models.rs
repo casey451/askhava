@@ -30,6 +30,11 @@ pub enum OutboxError {
     /// The carrier refused the send outright; the row is `queued` again for a retry (TXT-014).
     #[error("the carrier did not confirm the send")]
     Carrier,
+    /// The carrier refused the send for its rate limit (HTTP 429, or Twilio code 20429 on any
+    /// status): nothing was sent, the row is `queued` again and the sender holds it without a
+    /// counted TXT-014 failure (TXT-011, D-4052).
+    #[error("the carrier's rate limit refused the send")]
+    RateLimited,
     /// The carrier may have taken the send (a timeout or a lost answer); the row stays `sending`
     /// and is never resent blind: the sender moves it to `unknown` (TXT-011, D-558, D-2628).
     #[error("the carrier's answer to the send is unknown")]
