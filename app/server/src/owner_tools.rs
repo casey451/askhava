@@ -86,8 +86,10 @@ impl Default for SecretReport {
 impl SecretReport {
     /// OPS-008: the report of `settings` and the process's `pairs`. `settings` parsed and passed
     /// its environment checks at start (`Settings::from_pairs`, SEC-002), so a secret that is set
-    /// is also parsed and environment-matched; one not set shows "No" three times. Only whether
-    /// a value is empty is read here.
+    /// is also shown parsed and environment-matched; one not set shows "No" three times. Only
+    /// whether a value is empty is read here. Limit (D-5128, D-5132): outside the Stripe secret
+    /// key, the start check is the SEC-002 marker scan alone, so "environment-matched" does not
+    /// prove a token belongs to this environment's account.
     #[must_use]
     pub fn from_settings<I>(settings: &Settings, pairs: I) -> Self
     where
@@ -388,4 +390,90 @@ async fn health(
         owner_health_page(&mut db, &inputs, now).await,
         StatusCode::OK,
     )
+}
+
+#[cfg(test)]
+mod tests {
+    //! OPS-008: `SecretReport::from_settings` over fake pairs (T304 fix round, D-5132).
+
+    use super::*;
+
+    const SET: [&str; 4] = [
+        "ASKHAVA_DATABASE_URL",
+        "ASKHAVA_ID_SECRET",
+        "ASKHAVA_STRIPE_WEBHOOK_SECRET",
+        "ASKHAVA_TWILIO_AUTH_TOKEN",
+    ];
+
+    /// Fake dev pairs: four secrets set, the Resend key blank, the Stripe key missing, three of
+    /// the four account identifiers, and `extra`.
+    fn pairs(extra: &[(&str, &str)]) -> Vec<(String, String)> {
+        let fixed = [
+            ("ASKHAVA_APP_ENV", "dev"),
+            ("ASKHAVA_RESEND_API_KEY", "   "),
+            ("ASKHAVA_TWILIO_ACCOUNT_SID", "fake-twilio-account"),
+            ("ASKHAVA_STRIPE_ACCOUNT_ID", "fake-stripe-account"),
+            ("ASKHAVA_RESEND_DOMAIN", "mail.example.test"),
+        ];
+        let set = SET.iter().map(|name| (*name, "fake-value-for-tests"));
+        let all = fixed.into_iter().chain(set).chain(extra.iter().copied());
+        all.map(|(k, v)| (k.to_owned(), v.to_owned())).collect()
+    }
+
+    fn report(extra: &[(&str, &str)]) -> SecretReport {
+        let pairs = pairs(extra);
+        let settings = Settings::from_pairs(pairs.clone()).expect("fake settings");
+        SecretReport::from_settings(&settings, pairs)
+    }
+
+    /// OPS-008: a missing secret and a blank one show "No" three times, a set one "Yes" three
+    /// times (D-5128), in the required-secrets order, and no line holds a value.
+    #[test]
+    fn a_missing_or_blank_secret_is_never_reported_set() {
+        let report = report(&[]);
+        let names: Vec<&str> = report.secrets.iter().map(|l| l.name.as_str()).collect();
+        assert_eq!(names, REQUIRED_SECRETS);
+        for line in &report.secrets {
+            let set = SET.contains(&line.name.as_str());
+            assert_eq!(line.present, set, "{} present", line.name);
+            assert_eq!(line.parsed, set, "{} parsed", line.name);
+            assert_eq!(line.env_matched, set, "{} environment", line.name);
+        }
+        let not_set = report.secrets.iter().filter(|l| !l.present).count();
+        assert_eq!(
+            not_set, 2,
+            "the missing Stripe key and the blank Resend key"
+        );
+        assert!(!format!("{report:?}").contains("fake-value-for-tests"));
+    }
+
+    /// OPS-008, SEC-036: the account identifiers come from the settings; one not set is `None`.
+    #[test]
+    fn the_account_identifiers_are_the_settings_own() {
+        let accounts = report(&[]).accounts;
+        assert_eq!(
+            accounts.twilio_account_sid.as_deref(),
+            Some("fake-twilio-account")
+        );
+        assert_eq!(
+            accounts.stripe_account_id.as_deref(),
+            Some("fake-stripe-account")
+        );
+        assert_eq!(accounts.resend_domain.as_deref(), Some("mail.example.test"));
+        assert_eq!(accounts.storage_bucket, None);
+    }
+
+    /// OPS-008, D-5128: the email limits are the `ASKHAVA_EMAIL_*_LIMIT` values; one missing or
+    /// not a number is the default (100 a day, 3,000 a month).
+    #[test]
+    fn the_email_limits_are_read_from_the_pairs() {
+        let set = report(&[(EMAIL_DAILY.0, "250"), (EMAIL_MONTHLY.0, " 9000 ")]);
+        assert_eq!(set.email_limits, (250, 9_000));
+        let odd = report(&[(EMAIL_MONTHLY.0, "many")]);
+        assert_eq!(odd.email_limits, (EMAIL_DAILY.1, EMAIL_MONTHLY.1));
+        assert_eq!(
+            odd.spot_days,
+            askhava_core::api::DEFAULT_SPOT_CHECK_EVERY_DAYS
+        );
+    }
 }
