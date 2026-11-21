@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T01:56:59Z by runner ab3ebfc0ef30 (actions).
+Updated 2026-11-21T01:57:27Z by runner c3bff35f9d54 (actions).
 
 **Building: T774 in progress since 01:32Z; 563 of 726 done; week 57% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,15 +8,15 @@ Updated 2026-11-21T01:56:59Z by runner ab3ebfc0ef30 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T774 claimed 01:32Z, lease until 04:32Z; lane 3: T777 claimed 01:31Z, lease until 04:31Z; lane 4: T457 claimed 01:40Z, lease until 04:40Z; lane 7: T775 claimed 01:29Z, lease until 04:29Z
 - **Week:** 57% used, 74.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:56Z, 0 min before this update
-- **Keeper:** last ran 01:55Z, next wake 04:17Z
+- **Last run:** 01:57Z, 0 min before this update
+- **Keeper:** last ran 01:57Z, next wake 04:31Z
 
 ## Needs attention
 - BLOCKED T674: plan gap reported: PLAN GAP: outside ownership: tests/a11y/fixtures.ts — GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PAGE_STATES entry cannot cover a JPEG or 404). The file is owner-only since T267 moved the registry (page_states.ts:7-8); T674's Scope shares it only until then, and only for PAGE_STATES rows. Reviewer confirmed: no task grants that line (T766 does not). plan_pages.py gives a false negative for T674 because its goal mentions page_states.ts. Smallest plan change: grant T674 the one NOT_PAGES line in fixtures.ts. Worker's uncommitted work was not committed.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T674 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T674 (since 2026-11-21T01:25:56Z, no attempt used; a plan change fixes it): outside ownership: tests/a11y/fixtures.ts — GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PAGE_STATES entry cannot cover a JPEG or 404). The file is owner-only since T267 moved the registry (page_states.ts:7-8); T674's Scope shares it only until then, and only for PAGE_STATES rows. Reviewer confirmed: no task grants that line (T766 does not). plan_pages.py gives a false negative for T674 because its goal mentions page_states.ts. Smallest plan change: grant T674 the one NOT_PAGES line in fixtures.ts. Worker's uncommitted work was not committed.
-- Strict plan check red: 48 problem(s) on tasks still to run (+439 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 46 problem(s) on tasks still to run (+433 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -100,26 +100,26 @@ Updated 2026-11-21T01:56:59Z by runner ab3ebfc0ef30 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 356 of 735 (48.4%) · partial 360 · unstarted 19
-**Tasks merged (throughput only):** 563 of 726
+**Requirements verified:** 362 of 735 (49.3%) · partial 354 · unstarted 19
+**Tasks merged (throughput only):** 563 of 714
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 18 | 17 | 0 | 35 |
 | ai | 8 | 18 | 3 | 29 |
-| businesses | 22 | 35 | 1 | 58 |
+| businesses | 23 | 34 | 1 | 58 |
 | calls | 15 | 10 | 0 | 25 |
 | consent | 17 | 18 | 0 | 35 |
 | fees | 25 | 27 | 0 | 52 |
 | intake | 12 | 31 | 0 | 43 |
 | job-cards | 12 | 12 | 0 | 24 |
-| licensing | 31 | 17 | 0 | 48 |
+| licensing | 33 | 15 | 0 | 48 |
 | lifecycle | 21 | 7 | 0 | 28 |
 | messaging | 26 | 19 | 0 | 45 |
-| ops-recovery | 13 | 29 | 12 | 54 |
+| ops-recovery | 15 | 27 | 12 | 54 |
 | privacy | 10 | 21 | 0 | 31 |
 | quiet-hours | 3 | 6 | 0 | 9 |
-| quotes-pick | 25 | 31 | 0 | 56 |
+| quotes-pick | 26 | 30 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
 | security | 13 | 39 | 3 | 55 |
 | terms | 27 | 8 | 0 | 35 |
