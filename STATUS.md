@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-21T23:38:01Z by runner 82a1b55dfae4 (actions).
+Updated 2026-11-21T23:38:16Z by runner 82a1b55dfae4 (actions).
 
-**Building: T608 in progress since 21:16Z; 594 of 746 done; week 41% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T542 in progress since 22:52Z; 594 of 746 done; week 41% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 594 of 746 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T608 claimed 21:16Z, lease until 00:16Z; lane 3: T542 claimed 22:52Z, lease until 01:52Z; lane 5: T397 claimed 22:35Z, lease until 01:35Z; lane 6: T118 claimed 22:08Z, lease until 01:08Z; lane 7: T117 claimed 23:02Z, lease until 02:02Z
+- **Lane:** lane 3: T542 claimed 22:52Z, lease until 01:52Z; lane 5: T397 claimed 22:35Z, lease until 01:35Z; lane 6: T118 claimed 22:08Z, lease until 01:08Z; lane 7: T117 claimed 23:02Z, lease until 02:02Z
 - **Week:** 41% used, 106.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:26Z, 11 min before this update
 - **Keeper:** last ran 23:26Z, next wake 00:19Z
@@ -20,6 +20,7 @@ Updated 2026-11-21T23:38:01Z by runner 82a1b55dfae4 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T608 | site and portals: the home page and the quote page in full V | MERGE_PENDING | 2 | 2 h 21 min | 23:38Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-21T |
 | T600 | intake, businesses, privacy and server: four worker handlers | MERGE_PENDING | 1 | 45 min | 23:15Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T798 | catalog: the photo asks' English wording loaded from the tra | MERGE_PENDING | 1 | 107 min | 23:03Z |  |
 | T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | QUEUED | 1 | 34 min | 22:56Z | Reviewer after findings round still FINDINGS at df75c487ed3673fc4e0234c1563449e081d4939b: / 1. docs/runbook.md:51,58,60  |
@@ -33,7 +34,7 @@ Updated 2026-11-21T23:38:01Z by runner 82a1b55dfae4 (actions).
 | T791 | Tests and templates (harness): three Spanish stay-on texts r | done | 1 | 36 min | 19:21Z |  |
 | T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 1 | 4 min | 19:13Z | PLAN GAP: no production PictureTextMedia / Twilio media DELETE exists (only the test fake at tests/integration/tests/int |
 | T790 | catalog, licensing and tests (harness): the termite report f | done | 1 | 57 min | 19:07Z |  |
-| T608 | site and portals: the home page and the quote page in full V | check_failed | 1 | 2 h 46 min | 18:46Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-21T |
+| T608 | site and portals: the home page and the quote page in full V | check_failed | 1 | 2 h 46 min | 18:46Z |  |
 | T615 | site and server: a styled 404 page for unknown paths, the fa | done | 4 | 68 min | 18:19Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T787 | intake: crate guide trimmed to 5,500 bytes, the detail moved | done | 1 | 68 min | 16:45Z |  |
 | T786 | server: crate guide trimmed to 5,500 bytes, the detail moved | done | 1 | 34 min | 16:33Z |  |
@@ -127,11 +128,10 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T608 (lease until 2026-11-22T00:16:35Z)
 - lane 3: T542 (lease until 2026-11-22T01:52:12Z)
 - lane 5: T397 (lease until 2026-11-22T01:35:47Z)
 - lane 6: T118 (lease until 2026-11-22T01:08:53Z)
 - lane 7: T117 (lease until 2026-11-22T02:02:15Z)
 
 ## Last usage reading
-- {"task": "T600", "at": "2026-11-21T23:15:04Z", "cache_creation_input_tokens": 89042, "cache_read_input_tokens": 1128739, "input_tokens": 63, "output_tokens": 11327}
+- {"task": "T608", "at": "2026-11-21T23:38:00Z", "cache_read_input_tokens": 5781848, "output_tokens": 47030, "cache_creation_input_tokens": 221832, "input_tokens": 247}
