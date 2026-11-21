@@ -446,19 +446,23 @@ def check_pest(pest: dict[str, Any]) -> list[str]:
     return errors
 
 
+def charges_sale_job(cat: dict[str, Any]) -> bool:
+    """FEE-045 (D-403, D-5216): a job type naming a sale is listed but not fee-free."""
+    free = {str(j).lower() for j in cat.get("fee_free_job_types", [])}
+    # A job type's own words, without any "(no sale or refinance)" note.
+    charged = [str(j).lower() for j in cat.get("job_types", []) if str(j).lower() not in free]
+    return any(word in job.split("(")[0] for job in charged for word in SALE_WORDS)
+
+
 def check_legal_holds(cats: dict[str, dict[str, Any]]) -> list[str]:
-    """D-376, D-402, D-403: pest licensed-only, sale inspections fee-free, no warranties."""
+    """D-376, D-402, D-403, D-5216: pest licensed-only, sale jobs fee-free, no warranties."""
     errors = check_pest(cats.get("pest_control", {}))
+    if charges_sale_job(cats.get("pest_control", {})):
+        errors.append("category pest_control: charges a sale-related report (LIC-015, FEE-045)")
     inspection = cats.get("home_inspection")
     if inspection is not None:
         free = {str(j).lower() for j in inspection.get("fee_free_job_types", [])}
-        # A job type's own words, without any "(no sale or refinance)" note.
-        charged = [
-            str(j).lower()
-            for j in inspection.get("job_types", [])
-            if str(j).lower() not in free
-        ]
-        if any(word in job.split("(")[0] for job in charged for word in SALE_WORDS):
+        if charges_sale_job(inspection):
             errors.append(
                 "category home_inspection: charges a sale-related inspection (LIC-015, FEE-045)"
             )

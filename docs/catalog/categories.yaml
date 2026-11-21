@@ -265,12 +265,13 @@ categories:
     recurring: true
     trip_fee_tier: 25
     after_hours_emergency: false
-    job_types: [general pest service, scorpions, termites, pre-emergent weed control]
-    one_time_job_types: [termites]
+    job_types: [general pest service, scorpions, termites, pre-emergent weed control, termite report for a sale or loan]
+    one_time_job_types: [termites, termite report for a sale or loan]
+    fee_free_job_types: [termite report for a sale or loan]
     refused: []
     quote_format: monthly
     keywords: [pest, bugs, scorpion, termite, pre-emergent, weed control]
-    review: "On for businesses that attest to a Department pest-management license (LIC-012, LIC-047, D-417); never advertised on its own (changes file 7.1 item 3, WEB-010); self-reported license number and a not-independently-verified line on every quote card; termite and pre-emergent job types need the attested matching category (LIC-043). No letter to the Department."
+    review: "On for businesses that attest to a Department pest-management license (LIC-012, LIC-047, D-417); never advertised on its own (changes file 7.1 item 3, WEB-010); self-reported license number and a not-independently-verified line on every quote card; termite and pre-emergent job types need the attested matching category (LIC-043). The termite report for a sale or loan is a one-time job type for the wood-destroying organism category, taken with no introduction fee (LIC-015, FEE-045, D-5216). No letter to the Department."
 
   - id: dog_waste_pickup
     name: Dog waste pickup
@@ -697,12 +698,12 @@ categories:
     recurring: false
     trip_fee_tier: 25
     after_hours_emergency: false
-    job_types: [home condition inspection (no sale or refinance), buyer inspection, pre-listing inspection, refinance inspection, termite report for a sale or loan]
-    fee_free_job_types: [buyer inspection, pre-listing inspection, refinance inspection, termite report for a sale or loan]
+    job_types: [home condition inspection (no sale or refinance), buyer inspection, pre-listing inspection, refinance inspection]
+    fee_free_job_types: [buyer inspection, pre-listing inspection, refinance inspection]
     refused: []
     quote_format: firm
     keywords: [home inspection, inspector]
-    review: "Changes file :204 (LIC-015). Sale, purchase and refinance inspections and termite reports for a sale or loan are taken with no introduction fee, so no RESPA section 8 fee is accepted (FEE-045, D-403, confirmed by Casey, D-418). Confirmed K2b."
+    review: "Changes file :204 (LIC-015). Sale, purchase and refinance inspections are taken with no introduction fee, so no RESPA section 8 fee is accepted (FEE-045, D-403, confirmed by Casey, D-418). The termite report for a sale or loan moved to pest_control (D-5216). Confirmed K2b."
 
   - id: home_watch
     name: Home watch

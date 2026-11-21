@@ -446,7 +446,8 @@ fn business_pages(
 /// settings (T102), and the legal, data, services, coverage and help pages (T221, T201) with the AI
 /// switch read in `environment`, each over `pool`; and the request page and web chat (T489) with
 /// the chat's code-step keys and the intake settings the SMS path uses (`webhooks`'), behind
-/// [`chat_codes::guard`]'s request checks (D-3882).
+/// [`chat_codes::guard`]'s request checks (D-3882). Its fallback, `site::api::not_found`, answers
+/// every path no route serves with the styled 404 page (T615, D-4252).
 fn link_and_site_pages(
     pool: &PgPool,
     statics: &StaticRoot,
@@ -461,6 +462,7 @@ fn link_and_site_pages(
         link_codes,
     } = site;
     let clock: Arc<dyn Clock> = Arc::new(SystemClock);
+    let not_found = askhava_site::api::not_found(pool.clone());
     let chat = askhava_site::api::chat_routes(
         pool.clone(),
         (environment, intake),
@@ -478,6 +480,7 @@ fn link_and_site_pages(
         .merge(askhava_site::api::legal_routes(pool.clone(), environment))
         .merge(askhava_site::api::help_routes(pool.clone(), environment))
         .merge(chat_codes::guard(chat, pool.clone()))
+        .fallback(not_found)
 }
 
 /// The app's router: every module's routes, merged once here (D-481), under
@@ -507,7 +510,10 @@ fn link_and_site_pages(
 /// and ROC complaint pages are `site::api::help_routes`, with the AI switch read in the parts'
 /// environment (T201); the request page and web chat at `/request` are `site::api::chat_routes`
 /// behind [`chat_codes::guard`], with the parts' chat keys ([`RouterParts::with_chat_codes`],
-/// T489) and the webhooks' intake settings (default without them).
+/// T489) and the webhooks' intake settings (default without them). A path no route serves gets
+/// `site::api::not_found`, the router's one fallback (set on the site pages' router, kept by every
+/// merge): the styled 404 page with `no-store` under every layer below, its banner read at most
+/// once a minute (WEB-027, WEB-007, T615, D-4252).
 /// `webhooks` ([`webhooks`]) adds Twilio's signature-checked inbound-text and status routes
 /// (`inbound_text`, SEC-016, SEC-039, T241) and the placed calls' status and safety-key routes
 /// (`voice_status`, CALL-022, OPS-028, T378); `None` adds none. `voice` ([`voice_hooks`]) adds the

@@ -233,35 +233,43 @@ fn td_card_07_sent_to_line() {
     }
 }
 
-/// TD-CARD-07: a buyer, pre-listing or refinance inspection or a termite report for a sale or
-/// loan (the catalog's `fee_free_job_types`) says "No introduction fee for this job."; the other
-/// inspection does not (FEE-045, D-403).
+/// TD-CARD-07: a buyer, pre-listing or refinance inspection or pest control's termite report for
+/// a sale or loan (the catalog's `fee_free_job_types`) says "No introduction fee for this job.";
+/// every other job type of each category with fee-free job types does not (FEE-045, D-403,
+/// D-5216).
 #[test]
 fn td_card_07_fee_free_job_types_say_no_fee() {
     let catalog = parse(CATALOG).expect("catalog");
-    let def = catalog
-        .categories
-        .iter()
-        .find(|c| !c.fee_free_job_types.is_empty())
-        .expect("a category with fee-free job types");
-    let card = build_card(
-        &parts(
-            &def.name,
-            "The house needs an inspection before the sale closes.",
-        ),
-        DEFAULT_MIN_WORDS,
-    );
     let named = [
         "buyer inspection",
         "pre-listing inspection",
         "refinance inspection",
         "termite report for a sale or loan",
     ];
-    for job_type in &def.job_types {
-        let fee_free = def.fee_free_job_types.contains(job_type);
-        assert_eq!(fee_free, named.contains(&job_type.as_str()), "{job_type}");
-        let text = card.text_for(&lines(4, false, fee_free), false);
-        let says = text.contains("\nNo introduction fee for this job.\nSent to 4 businesses.");
-        assert_eq!(says, fee_free, "{job_type}");
+    let mut checked = Vec::new();
+    for def in catalog
+        .categories
+        .iter()
+        .filter(|c| !c.fee_free_job_types.is_empty())
+    {
+        let card = build_card(
+            &parts(
+                &def.name,
+                "The house needs a report before the sale closes.",
+            ),
+            DEFAULT_MIN_WORDS,
+        );
+        for job_type in &def.job_types {
+            let fee_free = def.fee_free_job_types.contains(job_type);
+            assert_eq!(fee_free, named.contains(&job_type.as_str()), "{job_type}");
+            let text = card.text_for(&lines(4, false, fee_free), false);
+            let says = text.contains("\nNo introduction fee for this job.\nSent to 4 businesses.");
+            assert_eq!(says, fee_free, "{job_type}");
+        }
+        checked.extend(def.fee_free_job_types.iter().map(String::as_str));
     }
+    checked.sort_unstable();
+    let mut expected = named.to_vec();
+    expected.sort_unstable();
+    assert_eq!(checked, expected);
 }

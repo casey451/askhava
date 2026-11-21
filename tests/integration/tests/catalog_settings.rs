@@ -109,13 +109,20 @@ async fn a_category_loads_with_its_fields(pool: PgPool) {
         pest.agency.as_deref(),
         Some("AZ Department of Agriculture (pest management)")
     );
+    let pest_free: Vec<&str> = pest
+        .job_types
+        .iter()
+        .filter(|j| j.fee_free)
+        .map(|j| j.name.as_str())
+        .collect();
+    assert_eq!(pest_free, ["termite report for a sale or loan"]);
     let inspection = category(&mut conn, "home_inspection")
         .await
         .expect("read")
         .expect("stored");
     assert_eq!(
         inspection.job_types.iter().filter(|j| j.fee_free).count(),
-        4
+        3
     );
     assert!(
         category(&mut conn, "window_tint")
