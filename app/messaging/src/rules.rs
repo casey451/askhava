@@ -497,16 +497,13 @@ pub enum Classified {
 
 /// The app's opt-out detector, the same for texts, help emails, email replies and form messages
 /// (CON-035): a message that is only an opt-out word in any case, spacing and punctuation
-/// (CON-008), or contains a listed revocation phrase (CON-010); a word used in another sense ("can
-/// stop by at 3") is not one (CON-011).
+/// (CON-008; "STOP ALL" is stopall), or contains a listed revocation phrase (CON-010); a word used
+/// in another sense ("can stop by at 3") is not one (CON-011), and neither is a word with more
+/// around it ("stop please", D-4764).
 #[must_use]
 pub fn detect_opt_out(text: &str) -> Option<Detected> {
     let folded = fold(text);
-    if let Some(word) = PROVIDER_OPT_OUT_WORDS
-        .iter()
-        .chain(&APP_OPT_OUT_WORDS)
-        .find(|w| **w == folded)
-    {
+    if let Some(word) = sole_word(&folded) {
         return Some(Detected::Word(word));
     }
     let padded = format!(" {folded} ");
@@ -569,8 +566,23 @@ pub fn may_send_to(
             && now.duration_since(since) <= CONFIRM_WITHIN)
 }
 
-/// Lower-cases, folds Spanish accents, drops apostrophes, turns every other non-letter, non-digit
-/// into a space and collapses spaces, so "Don't TEXT me!!" reads "dont text me" (CON-010).
+/// The listed sole opt-out word that folded text `folded` is, however it is spaced (CON-008,
+/// CON-035, D-4764): the word as listed first, so "opt out" stays the app's own word, then any
+/// listed word that equals the text once both have every space removed, so "stop all" and
+/// "Stop  all" are stopall. Text with any other letter in it is no sole word.
+fn sole_word(folded: &str) -> Option<&'static str> {
+    let words = || PROVIDER_OPT_OUT_WORDS.iter().chain(&APP_OPT_OUT_WORDS);
+    let squeezed = folded.replace(' ', "");
+    words()
+        .find(|w| **w == folded)
+        .or_else(|| words().find(|w| w.replace(' ', "") == squeezed))
+        .copied()
+}
+
+/// Lower-cases, folds Spanish accents (precomposed, or a letter followed by combining marks
+/// U+0300 to U+036F, as some phones send them), drops apostrophes, turns every other non-letter,
+/// non-digit into a space and collapses spaces, so "Don't TEXT me!!" reads "dont text me"
+/// (CON-008, CON-010, D-4764).
 fn fold(text: &str) -> String {
     let mut out = String::with_capacity(text.len());
     for c in text.chars().flat_map(char::to_lowercase) {
@@ -581,7 +593,7 @@ fn fold(text: &str) -> String {
             'ó' | 'ò' | 'ö' | 'ô' => 'o',
             'ú' | 'ù' | 'ü' | 'û' => 'u',
             'ñ' => 'n',
-            '\'' | '\u{2018}' | '\u{2019}' => continue,
+            '\'' | '\u{2018}' | '\u{2019}' | '\u{0300}'..='\u{036F}' => continue,
             c if c.is_alphanumeric() => c,
             _ => ' ',
         };
