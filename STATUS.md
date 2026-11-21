@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T02:54:08Z by runner 5b6d2a6f4043 (actions).
+Updated 2026-11-21T02:58:07Z by runner 5b6d2a6f4043 (actions).
 
-**Building: T781 in progress since 02:17Z; 566 of 726 done; week 60% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T781 in progress since 02:17Z; 566 of 726 done; week 61% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 566 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T781 claimed 02:17Z, lease until 05:17Z; lane 5: T304 claimed 02:48Z, lease until 05:48Z; lane 6: T684 claimed 02:16Z, lease until 05:16Z; lane 7: T775 claimed 01:29Z, lease until 04:29Z
-- **Week:** 60% used, 70.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:54Z, 0 min before this update
+- **Week:** 61% used, 70.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 02:57Z, 0 min before this update
 - **Keeper:** last ran 02:53Z, next wake 03:13Z
 
 ## Needs attention
@@ -105,7 +105,6 @@ T777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_
 | T747 | intake and jobs: the homeowner's INT-029 emergency choice ma | done | 1 | 71 min | 03:25Z |  |
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 2 | 2 h 16 min | 03:22Z |  |
 | T617 | site: DM Sans from one weight-axis variable file (smaller th | BLOCKED | 1 | 2 min | 03:04Z |  |
-| T648 | recovery: the monthly test restore into a throwaway cluster, | BLOCKED | 1 | 21 min | 02:55Z |  |
 
 ### Plan and harness merges on main
 - none
