@@ -84,12 +84,33 @@ const STATES: [&str; 50] = [
     "mexico",
 ];
 
+/// The Spanish names of other states that differ from the English ones once folded ("Hawái"
+/// folds to "hawai"), folded (LIC-017). "Nuevo México" and "Virginia Occidental" already match
+/// through [`STATES`]; "Tejas" is left out, since "tejas" are also roof tiles.
+const STATES_ES: [&str; 14] = [
+    "nueva york",
+    "nueva jersey",
+    "nuevo hampshire",
+    "nueva hampshire",
+    "carolina del norte",
+    "carolina del sur",
+    "dakota del norte",
+    "dakota del sur",
+    "pensilvania",
+    "hawai",
+    "luisiana",
+    "misisipi",
+    "misuri",
+    "minesota",
+];
+
 /// The out-of-state places people near Lake Havasu name, folded (LIC-017). No Arizona town is
 /// here, so Phoenix, Bullhead City, Kingman, Parker, Yuma, Tucson and Flagstaff never match.
+/// "vegas" alone is what most people say, and it covers "Las Vegas" too.
 const PLACES: [&str; 12] = [
     "needles",
     "laughlin",
-    "las vegas",
+    "vegas",
     "henderson",
     "blythe",
     "palm springs",
@@ -102,12 +123,13 @@ const PLACES: [&str; 12] = [
 ];
 
 /// LIC-017: true when `words` name a move that does not stay in Arizona: a [`LEAVING`] phrase, a
-/// [`PLACES`] town or a [`STATES`] name that is not a bed size ("California king"), whole words
-/// only.
+/// [`PLACES`] town, a [`STATES_ES`] name or a [`STATES`] name that is not a bed size ("California
+/// king"), whole words only.
 pub(crate) fn names_move_out(words: &str) -> bool {
     let folded = format!(" {} ", fold(words));
     let has = |p: &&str| folded.contains(&format!(" {p} "));
-    LEAVING.iter().chain(&PLACES).any(has) || STATES.iter().any(|s| names_state(&folded, s))
+    let listed = LEAVING.iter().chain(&PLACES).chain(&STATES_ES);
+    listed.into_iter().any(has) || STATES.iter().any(|s| names_state(&folded, s))
 }
 
 /// True when `state` stands in `folded` (space-padded) as a whole name not followed by "king".
@@ -126,18 +148,40 @@ pub(crate) fn move_states(words: &str) -> Option<(&'static str, &'static str)> {
 
 #[cfg(test)]
 mod tests {
-    use super::{LEAVING, PLACES, STATES, move_states, names_move_out};
+    use super::{LEAVING, PLACES, STATES, STATES_ES, move_states, names_move_out};
     use crate::routing::move_refused;
 
     #[test]
     fn lic_017_every_leaving_phrase_place_and_state_matches() {
-        for phrase in LEAVING.iter().chain(&PLACES).chain(&STATES) {
+        let listed = LEAVING.iter().chain(&PLACES).chain(&STATES);
+        for phrase in listed.chain(&STATES_ES) {
             let words = format!("Need movers, {phrase} next week");
             assert!(names_move_out(&words), "{words}");
             assert!(names_move_out(&words.to_uppercase()), "{words} in capitals");
         }
         assert!(names_move_out("Mudanza a otro estado"));
         assert!(names_move_out("Moving to Las Vegas."));
+    }
+
+    #[test]
+    fn lic_017_bare_vegas_and_spanish_state_names_match() {
+        let texts = [
+            "Need movers to Vegas",
+            "Moving to Las Vegas.",
+            "Necesito mudanza a Nueva York",
+            "mudanza a Carolina del Norte",
+            "mudanza a Dakota del Sur",
+            "Nos mudamos a Hawái",
+            "mudanza a Pensilvania",
+            "mudanza a Misisipí",
+            "mudanza a Virginia Occidental",
+            "mudanza a Nuevo México",
+        ];
+        for words in texts {
+            assert!(names_move_out(words), "{words}");
+        }
+        assert!(!names_move_out("mudanza a una casa nueva"));
+        assert!(!names_move_out("movers for the tejas on the patio"));
     }
 
     #[test]

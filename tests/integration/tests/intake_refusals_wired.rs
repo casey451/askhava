@@ -3,7 +3,8 @@
 //! data and 555 numbers only. A move leaving Arizona and a home watch request asking for rent
 //! collection get the INT-017 not-covered reply at the trade step (INT-016), the job Not covered,
 //! no card and no recruiting-demand row (D-1008); the same words arriving after EDIT are refused
-//! before a new card is shown or sent; in-Arizona moving and turnover cleaning texts still get
+//! before a new card is shown or sent, and words that reach a request any other way are refused
+//! before a reply to a shown card is read and at the emergency-or-regular choice; in-Arizona moving and turnover cleaning texts still get
 //! their coverage line and card. The keyword rules of D-5160 read the three trades.
 
 use std::collections::BTreeSet;
@@ -15,9 +16,9 @@ use askhava_businesses::api::{
 use askhava_catalog::api::load_embedded;
 use askhava_intake::api::rules::{Inbound, Settings};
 use askhava_intake::api::{
-    CARD_EDIT_TEMPLATE, CARD_SHOWN_TEMPLATE, CARDS_APPROVED_KIND, COUNT_ONE_TEMPLATE, Handled,
-    NOT_COVERED_KIND, NOT_COVERED_TEMPLATE, Queued, RawReply, Reply, TextIn, keyword_reading,
-    receive_raw_reply,
+    CARD_EDIT_TEMPLATE, CARD_SHOWN_TEMPLATE, CARDS_APPROVED_KIND, CHOICE_TEMPLATE,
+    COUNT_ONE_TEMPLATE, Handled, NOT_COVERED_KIND, NOT_COVERED_TEMPLATE, Queued, RawReply, Reply,
+    TextIn, keyword_reading, receive_raw_reply,
 };
 use askhava_integration::set_app_role;
 use askhava_licensing::api::import_city_list;
@@ -299,6 +300,72 @@ async fn lic_017_lic_018_words_after_edit_are_refused_before_a_new_card(mut db: 
         let told = walk(&mut db, her, &[edit], 21).await;
         assert_eq!(told, [NOT_COVERED_TEMPLATE], "{edit}");
         assert_eq!(left(&mut db, her).await, Left::refused(1), "{edit}");
+    }
+}
+
+/// Stores fake `words` as kept words of `her` one job without EDIT, as an earlier build's row or
+/// another writer would leave them.
+async fn add_words(db: &mut PgConnection, her: Uuid, words: &str) {
+    let added = sqlx::query(
+        "INSERT INTO quotes.job_description (request_id, job_id, message_id, words, recorded_at) \
+         SELECT c.id, c.job_id, $2, $3, now() FROM intake.conversation c \
+         JOIN intake.homeowner h ON h.id = c.homeowner_id WHERE h.contact_id = $1",
+    )
+    .bind(her)
+    .bind(Uuid::new_v4())
+    .bind(words)
+    .execute(db)
+    .await
+    .expect("kept words");
+    assert_eq!(added.rows_affected(), 1);
+}
+
+/// LIC-017, LIC-018 (D-5081, D-5143 point 4): a shown card whose request picked up refused words
+/// without EDIT is not approved by SEND, OK, YES or ENVIAR: the not-covered reply, the job Not
+/// covered, no `cards_approved` task and no card sent.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn lic_017_lic_018_a_reply_to_a_shown_card_is_refused_before_it_is_read(mut db: Db) {
+    setup(&mut db).await;
+    let cases = [
+        ("Need movers next week", "the truck goes to Vegas", "SEND"),
+        (
+            "Need movers next week",
+            "nos mudamos a Nueva York",
+            "ENVIAR",
+        ),
+        ("Home watch while we are away", "and collect the rent", "OK"),
+        (
+            "Home watch while we are away",
+            "find a tenant for it",
+            "YES",
+        ),
+    ];
+    for (n, (first, extra, reply)) in (341..).zip(cases) {
+        let her = homeowner(&mut db, n).await;
+        let walked = to_card(&mut db, her, first, 4).await;
+        assert_eq!(walked.last(), Some(&CARD_SHOWN_TEMPLATE), "{first}");
+        add_words(&mut db, her, extra).await;
+        let told = walk(&mut db, her, &[reply], 20).await;
+        assert_eq!(told, [NOT_COVERED_TEMPLATE], "{extra}: {reply}");
+        assert_eq!(left(&mut db, her).await, Left::refused(1), "{extra}");
+    }
+}
+
+/// LIC-017 (D-5081): on the emergency path, a request whose kept words name a move out of Arizona
+/// by the time the emergency-or-regular choice is answered is refused there: no card is stored,
+/// shown or sent.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn lic_017_the_emergency_or_regular_choice_is_refused(mut db: Db) {
+    setup(&mut db).await;
+    for (n, choice) in (351..).zip(["Emergency", "Regular"]) {
+        let her = homeowner(&mut db, n).await;
+        let walked = walk(&mut db, her, &["Need movers today", "86403", "1"], 0).await;
+        assert_eq!(walked.last(), Some(&CHOICE_TEMPLATE), "{walked:?}");
+        assert!(!walked.contains(&NOT_COVERED_TEMPLATE), "{walked:?}");
+        add_words(&mut db, her, "the truck goes to Needles").await;
+        let told = walk(&mut db, her, &[choice], 5).await;
+        assert_eq!(told, [NOT_COVERED_TEMPLATE], "{choice}");
+        assert_eq!(left(&mut db, her).await, Left::refused(0), "{choice}");
     }
 }
 
