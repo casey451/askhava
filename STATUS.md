@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T06:42:28Z by runner f05104e101d6 (actions).
+Updated 2026-11-21T06:47:11Z by runner a4aa767722f6 (actions).
 
 **Building: T615 in progress since 06:37Z; 574 of 726 done; week 68% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,14 @@ Updated 2026-11-21T06:42:28Z by runner f05104e101d6 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 4: T615 claimed 06:37Z, lease until 09:37Z; lane 7: T674 claimed 04:40Z, lease until 07:40Z
 - **Week:** 68% used, 55.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:42Z, 0 min before this update
+- **Last run:** 06:47Z, 0 min before this update
 - **Keeper:** last ran 06:42Z, next wake 07:02Z
 
 ## Needs attention
 - BLOCKED T754: plan gap reported: PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and_handled, owned by T785 after T259/T331/T352) expects a verified payment_intent.succeeded naming pi_FakeNone for a pick stored with pi_Fake9 (refused WrongIntent, release_proof.rs:220-221) to change nothing, including ops.alert rows; kit/prompts/T754.md:9 (m3) requires one High alert for every WrongIntent refusal. T754 does not own that test file (T754.md:37-40, :53, :104). Reviewer confirmed (GAP-VERDICT: CONFIRMED). Smallest fix: (1) give T754 a one-time edit of stripe_webh; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T754 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 56 problem(s) on tasks still to run (+451 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 54 problem(s) on tasks still to run (+449 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -99,14 +99,14 @@ Updated 2026-11-21T06:42:28Z by runner f05104e101d6 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 360 of 735 (49.0%) · partial 356 · unstarted 19
+**Requirements verified:** 361 of 735 (49.1%) · partial 355 · unstarted 19
 **Tasks merged (throughput only):** 574 of 726
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 18 | 17 | 0 | 35 |
 | ai | 8 | 18 | 3 | 29 |
-| businesses | 22 | 35 | 1 | 58 |
+| businesses | 23 | 34 | 1 | 58 |
 | calls | 15 | 10 | 0 | 25 |
 | consent | 17 | 18 | 0 | 35 |
 | fees | 25 | 27 | 0 | 52 |
