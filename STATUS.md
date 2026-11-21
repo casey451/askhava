@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-21T21:30:12Z by runner 59e1aa1a968c (actions).
+Updated 2026-11-21T21:30:25Z by runner 59e1aa1a968c (actions).
 
 **Building: T608 in progress since 21:16Z; 590 of 739 done; week 37% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 590 of 739 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T608 claimed 21:16Z, lease until 00:16Z; lane 3: T794 claimed 21:27Z, lease until 00:27Z; lane 4: T798 claimed 21:15Z, lease until 00:15Z; lane 6: T788 claimed 20:25Z, lease until 23:25Z
+- **Lane:** lane 2: T608 claimed 21:16Z, lease until 00:16Z; lane 3: T794 claimed 21:27Z, lease until 00:27Z; lane 4: T798 claimed 21:15Z, lease until 00:15Z
 - **Week:** 37% used, 118.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:27Z, 2 min before this update
 - **Keeper:** last ran 21:18Z, next wake 23:28Z
@@ -19,6 +19,7 @@ Updated 2026-11-21T21:30:12Z by runner 59e1aa1a968c (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T788 | Tooling (harness): check_pr_change.py fails a task branch th | MERGE_PENDING | 1 | 64 min | 21:30Z |  |
 | T600 | intake, businesses, privacy and server: four worker handlers | MERGE_PENDING | 1 | 57 min | 21:10Z |  |
 | T565 | portals and server: the business team role change, removal a | MERGE_PENDING | 1 | 97 min | 20:57Z |  |
 | T754 | portals and payments: a $0 Confirm after a PaymentIntent was | MERGE_PENDING | 4 | 113 min | 20:18Z | PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and |
@@ -128,7 +129,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T608 (lease until 2026-11-22T00:16:35Z)
 - lane 3: T794 (lease until 2026-11-22T00:27:32Z)
 - lane 4: T798 (lease until 2026-11-22T00:15:56Z)
-- lane 6: T788 (lease until 2026-11-21T23:25:35Z)
 
 ## Last usage reading
-- {"task": "T600", "at": "2026-11-21T21:10:19Z", "cache_creation_input_tokens": 184164, "input_tokens": 147, "output_tokens": 46105, "cache_read_input_tokens": 6370700}
+- {"task": "T788", "at": "2026-11-21T21:30:08Z", "cache_creation_input_tokens": 131627, "cache_read_input_tokens": 1723646, "input_tokens": 105, "output_tokens": 31970}
