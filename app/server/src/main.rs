@@ -109,6 +109,7 @@ fn business_parts(
     let confirm = askhava_server::confirm_settings(settings, std::env::vars())?;
     let chat = askhava_server::chat_codes::chat_keys(settings, std::env::vars())?;
     let homeowner = askhava_server::homeowner_portal::homeowner_verify(settings, std::env::vars())?;
+    let link_codes = askhava_server::action_links::confirm_link_codes(settings, std::env::vars())?;
     Ok(parts
         .with_sign_in(signin)
         .with_sign_up(signup)
@@ -117,6 +118,7 @@ fn business_parts(
         .with_vault(vault)
         .with_business_number(askhava_server::business_number(settings.business_number())?)
         .with_confirm_part(confirm)
+        .with_confirm_link_codes(link_codes)
         .with_chat_codes(chat)
         .with_site_pages(askhava_site::api::SitePages::from_settings(settings))
         .with_environment(settings.environment()))

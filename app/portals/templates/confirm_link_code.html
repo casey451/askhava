@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{#- The Confirm email link's code step (T457; SEC-004, SEC-027, A11Y-011, A11Y-012, A11Y-030,
+    D-3675, D-3889). Shown after the Confirm link's button when this browser has no session of the
+    link's own person (or their inbox is shared): the line about the last send, then one
+    paste-friendly one-time-code field with its label, hint and error before the input, and "Text
+    me a code" as its own form. A failed code puts "Error: " in the title, a focused summary that
+    links to the field and the same message by the field. Both forms post to the link's own path;
+    no timer, no JavaScript. -#}
+{% block title %}{% if step.error.is_some() %}Error: {% endif %}Type your code to see the job{% endblock %}
+{% block main %}
+<link rel="stylesheet" href="/static/portals/forms.css">
+<h1>Type your code to see the job</h1>
+{% if let Some(message) = step.error %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>Check your code</h2>
+<p><a href="#code">{{ message }}</a></p>
+</div>
+{% endif %}<p id="code-why">Anyone can open an email, so we text a code to your phone to make sure it's you. Then you'll see the job and the introduction fee by job size before you confirm.</p>
+{% if let Some(line) = step.line %}<p id="code-sent" role="status">{{ line }}</p>
+{% endif %}<form method="post" id="code-form" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<p><label for="code">6-digit code</label></p>
+<p id="code-hint">Type the code from our text. Your phone may fill it in for you. It's good for 10 minutes.</p>
+{% if let Some(message) = step.error %}<p id="code-error" class="field-error">Error: {{ message }}</p>
+{% endif %}<p><input type="text" id="code" name="code" value="" inputmode="numeric" autocomplete="one-time-code" aria-describedby="code-hint{% if step.error.is_some() %} code-error{% endif %}"{% if step.error.is_some() %} aria-invalid="true"{% endif %}></p>
+<button type="submit" id="check-code">Continue</button>
+</form>
+<h2>No text yet?</h2>
+<form method="post" id="send-form" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<button type="submit" id="send-code">Text me a code</button>
+</form>
+{% endblock %}

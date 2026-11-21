@@ -3622,3 +3622,9 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
   - Left for after launch, all low: sign-up double submit (F22), a refused email retried with a misleading error (F30), card text kept inside finished task rows (F27), one clock read in settle (F23), two slow reads (F3, F17), the band-floor check (F18), and two indexes for the health check (F36).
   - The nightly export's 100-second limit stays. T781 makes a failed or timed-out export raise an alert once a day; a longer limit is a separate choice when it starts to fire.
 - The sentence in this file that said bounced emails "are now acted on" was wrong: T659 has not run yet. It is corrected above.
+
+## Confirm link in the email: code by text only (D-5112, November 21)
+
+- The Confirm link in a pick email now works in a browser that isn't signed in. It texts a code to that person's own phone, and the right code signs them in and opens the Confirm page.
+- Still open: a person with no phone that gets texts can't use the link yet. The page tells them to link a phone in the portal. The email code the spec allows for them (SEC-004) is not built.
+- Still open: a person who marked "This inbox is shared" is asked for a code by the link, and then the Confirm page asks for its own code before the press. That second code step is not wired yet (the known gap from T261).

@@ -129,6 +129,7 @@ struct SiteParts {
     pages: askhava_site::api::SitePages,
     environment: Environment,
     chat: Option<chat_codes::ChatParts>,
+    link_codes: Option<action_links::LinkCodes>,
 }
 
 impl Default for SiteParts {
@@ -137,6 +138,7 @@ impl Default for SiteParts {
             pages: askhava_site::api::SitePages::default(),
             environment: Environment::Dev,
             chat: None,
+            link_codes: None,
         }
     }
 }
@@ -249,6 +251,14 @@ impl RouterParts {
     #[must_use]
     pub fn with_environment(mut self, environment: askhava_core::api::Environment) -> Self {
         self.site.environment = environment;
+        self
+    }
+
+    /// Adds the Confirm email link's Verify codes (T457, SEC-004, D-3889,
+    /// [`action_links::confirm_link_codes`]); without them that link sends and checks no code.
+    #[must_use]
+    pub fn with_confirm_link_codes(mut self, codes: action_links::LinkCodes) -> Self {
+        self.site.link_codes = Some(codes);
         self
     }
 
@@ -422,7 +432,9 @@ fn link_and_site_pages(
         pages: site,
         environment,
         chat,
+        link_codes,
     } = site;
+    let clock: Arc<dyn Clock> = Arc::new(SystemClock);
     let chat = askhava_site::api::chat_routes(
         pool.clone(),
         (environment, intake),
@@ -430,7 +442,7 @@ fn link_and_site_pages(
     );
     feedback_routes(pool.clone(), Arc::new(SystemClock))
         .merge(checkin::routes(pool.clone()))
-        .merge(action_links::routes(pool.clone()))
+        .merge(action_links::routes_with(pool.clone(), clock, link_codes))
         .merge(static_files::router(statics))
         .merge(askhava_site::api::site_routes())
         .merge(chat_codes::home_guard(askhava_site::api::page_routes(

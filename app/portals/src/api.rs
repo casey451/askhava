@@ -29,6 +29,8 @@
 /// The cookie jar the session functions take and give back (axum-extra's).
 pub use axum_extra::extract::cookie::CookieJar;
 
+pub use crate::action_links::confirm_link_code_page;
+pub use crate::action_links::confirm_link_session;
 pub use crate::action_links::{
     ACTION_ROUTE, ActionGrant, ActionKind, ActionLinkError, ActionTarget, EmailReply,
     OPEN_IN_BROWSER_LINE, UseBy, email_reply, fresh_code_needed, mint_action_link,
