@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM recovery.backup_check WHERE kind = 'export' AND NOT ok\n           AND id <> $1 AND started_at >= $2 AND started_at < $3) AS \"earlier!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "earlier!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "60db463ae3cdf8ff1e00b8eaa0d2b18f47dadead9f952e8f06d3b401a3861a03"
+}
