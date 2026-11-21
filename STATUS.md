@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T20:28:40Z by runner a0ed82b15a9f (actions).
+Updated 2026-11-21T20:28:58Z by runner a0ed82b15a9f (actions).
 
 **Building: T565 in progress since 19:19Z; 588 of 734 done; week 36% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-21T20:28:40Z by runner a0ed82b15a9f (actions).
 - **Lane:** lane 1: T565 claimed 19:19Z, lease until 22:19Z; lane 4: T691 claimed 20:16Z, lease until 23:16Z; lane 5: T600 claimed 20:12Z, lease until 23:12Z; lane 6: T788 claimed 20:25Z, lease until 23:25Z
 - **Week:** 36% used, 118.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 20:28Z, 0 min before this update
-- **Keeper:** last ran 20:25Z, next wake 20:45Z
+- **Keeper:** last ran 20:28Z, next wake 22:21Z
 
 ## Needs attention
 - BLOCKED T675: plan gap reported: PLAN GAP: no production PictureTextMedia / Twilio media DELETE exists (only the test fake at tests/integration/tests/intake_photos.rs:109); adding it needs app/adapters/src/sms.rs (owned by T016/T129/T336/T377), and layers.json plus pub(crate) TwilioHttp block every path T675 owns or shares. Secondary: budget files 7 / lines 550 is too small (est. 1000+ lines). Worker found also: photo_pending marker must be written before receive_raw_reply when a request is already open; photos_to_request wording has no Rust loader; no Concept images setting in rules::Settings. Reviewer confirmed the first cl; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T675 --plan-fix D-### --reason "..."` (D-2859)
