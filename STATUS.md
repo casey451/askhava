@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T05:12:48Z by runner d8acafd04a11 (actions).
+Updated 2026-11-21T05:21:42Z by runner 5c12812e34af (actions).
 
 **Building: T755 in progress since 04:14Z; 571 of 726 done; week 66% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-21T05:12:48Z by runner d8acafd04a11 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 6: T755 claimed 04:14Z, lease until 07:14Z; lane 7: T674 claimed 04:40Z, lease until 07:40Z
 - **Week:** 66% used, 63.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:12Z, 0 min before this update
+- **Last run:** 05:13Z, 8 min before this update
 - **Keeper:** last ran 05:12Z, next wake 07:17Z
 
 ## Needs attention
@@ -21,7 +21,7 @@ Worker: matching.rs:52 keyword RULES cover only plumbing, HVAC, electrical, hand
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T754 (since 2026-11-21T02:52:28Z, no attempt used; a plan change fixes it): outside ownership: app/adapters/src/payments.rs, stand_ins/stripe.py, stand_ins/server.py
 - PLAN GAP T776 (since 2026-11-21T04:00:50Z, no attempt used; a plan change fixes it): outside ownership: app/intake/src/matching.rs
-- Strict plan check red: 57 problem(s) on tasks still to run (+450 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 59 problem(s) on tasks still to run (+450 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
