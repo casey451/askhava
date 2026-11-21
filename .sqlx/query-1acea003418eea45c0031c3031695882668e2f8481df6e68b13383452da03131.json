@@ -1,0 +1,39 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT count(*) AS \"charges!\", count(*) FILTER (WHERE EXISTS (SELECT 1 FROM payments.ledger_entry r WHERE r.kind = 'refund' AND r.job_id = e.job_id AND r.business_id = e.business_id)) AS \"refunded!\", count(*) FILTER (WHERE EXISTS (SELECT 1 FROM payments.ledger_entry d WHERE d.kind = 'dispute' AND d.job_id = e.job_id AND d.business_id = e.business_id)) AS \"disputed!\" FROM payments.ledger_entry e WHERE e.kind = 'charge' AND e.job_id = ANY($1) AND e.recorded_at >= $2 AND e.recorded_at < $3",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "charges!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "refunded!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "disputed!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "UuidArray",
+        "Timestamptz",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "1acea003418eea45c0031c3031695882668e2f8481df6e68b13383452da03131"
+}
