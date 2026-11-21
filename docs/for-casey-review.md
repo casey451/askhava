@@ -3587,6 +3587,11 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 - **Call log on the released job's page (D-5162):** the page shows the real job number but still says "No calls yet." even when calls exist (BIZ-035). Stripe dispute handling (FEE-022) does not depend on the page.
 - **Returned mailboxes and card notices (D-5165):** some card notices (`app/picks/src/aftermath.rs:213`) still go to a mailbox marked returned; fixing that needs the notice email sender (`notice_emails.rs`) changed too.
 - **Card-step texts ignore a Spanish switch-off mid-request (night overseer, November 21):** the card preview, cards-out and T776's card-step refusal read with `spanish_on: true` (`app/intake/src/summary_step.rs:105-109`, `app/intake/src/cards_out.rs:542`), so a request stored as Spanish still gets the Spanish text if the switch goes off after it opened (TXT-039). The `tell` path honours the switch (`order_dispatch.rs:802`). Fable judged it low; a fix reads `askhava_messaging::api::spanish_switch` at those steps.
+- **Keyword-only mode limits (D-5214, D-5215):** Laftly launches with the AI on; keyword-only mode is the fallback for an outage. Its known limits stay for after launch: token-set and synonym matching; narrowing the broad words door, leaking, clogged, ac and panel; with AI off, GoOn without a question; the silent wait after two missed trade questions; and the rest of the 388 outside-research phrases (42 vetted ones go in with T716).
+- **Termite report: old placement in the trade notes (D-5216):** the home-inspection trade notes (`docs/catalog/trade_kb/trades/home_inspection.yaml`, its `wdiir` job type, and `docs/catalog/trade_kb/test_set.csv:145`) and the comment at `app/licensing/src/tests/prop_rules.rs:198` still describe the termite report under home inspection; nothing runs them, so they are left for after launch.
+- **A.R.S. 3-3633 not checked (D-5216):** the termite report moves to pest control on the trade notes' reading of A.R.S. 3-3633 (wood-destroying insect reports are a pest licensee's work); that statute was not independently verified.
+- **Spanish style notes for the paid review (D-5222):** from the first AI back-translation: "el dueño" reads as male; "PARAR para salir" is stiff; "Se canceló su suscripción" can sound like a paid plan; "Por ahora seguimos en inglés" is vague. These wait for the professional review (CON-018 and CON-031 pin the first two).
+- **Duplicate `under_18` in es.json (D-5222):** `app/messaging/templates/es.json` holds the `under_18` key twice (`:75` and `:213`), so the second copy wins when the file is read; T791 changes both, and a later cleanup removes the first.
 
 ## The monthly backup test checks the backup's record (D-4835)
 
@@ -3673,6 +3678,7 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 - **Worth knowing.** The email that asks the owner to approve a phone a team member linked this way cannot be sent yet: it names the phone's last 4 digits, and for a phone linked from a blocked call we keep no digits. Until that is solved the owner approves the phone on the phones page of the business account. Also, no email carries the "Link this phone" link yet (recorded in D-3675).
 - **Nothing needs you now.**
 - A licensed-trade (ROC) business now gets a job card only while its latest license check reads Active and is under 72 hours old; every day the ROC list loads, each active business gets that day's check, so the "checked on" date on a quote card is current (D-5123, D-5124). If the ROC list and the live lookups both fail for 72 hours, ROC cards stop until one works again, as LIC-008 intends.
+- If the state's ROC list can't be loaded, each licensed business whose last good check is going stale now gets one email after 24 hours saying so and naming when its job cards will pause; at 72 hours after its last good check the account is paused, and it resumes by itself, with no review, on the first list that shows the license Active. The pauses and resumes are counted in your weekly digest (T655, D-5184 to D-5186). Nothing needs you.
 
 ## Moves out of Arizona and rent-collection requests are now refused by text (T776, D-5081, D-5143, November 21)
 
@@ -3691,3 +3697,9 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 
 - **What.** The polish plan (D-4246) allows one arrow inside the home page's "Get quotes" button. A check in the site's own tests compares that button's code letter for letter, so adding the arrow would break it; the button stays as it was, without the arrow.
 - **Your call.** If you want the arrow, a small task changes that one test line and adds it. Nothing else on the page depends on it.
+## No AI-off launch; termite report moves to pest control (D-5214 to D-5216, November 21)
+
+- **Your words:** "No AI-off launch" and "Move to pest control".
+- **AI:** before you say 'go live' at Gate C you turn "AI on scrubbed text" on in the owner portal and run the phone rehearsal with it on. Gate C no longer accepts a written note launching without the AI writing calls; that work (T394) must be done.
+- **Termite report:** "termite report for a sale or loan" becomes a pest-control job, only for a pest business that says it holds the wood-destroying category, and it stays free of the introduction fee. T790 makes the catalog and test change.
+- **Keywords:** T716 adds 42 checked keyword phrases for when the AI is off.

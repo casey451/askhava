@@ -5,8 +5,7 @@
  "models": {
   "haiku": "claude-haiku-5-5",
   "sonnet": "claude-sonnet-5-5",
-  "opus": "claude-opus-5-5",
-  "fable": "claude-fable-5-2"
+  "opus": "claude-opus-5-5"
  },
  "protected_paths": [
   ".github/",
@@ -10429,7 +10428,7 @@
     "T412",
     "T536"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -10658,7 +10657,7 @@
     "T747",
     "T759"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -10703,7 +10702,7 @@
    "budget": {
     "files": 7,
     "lines": 320,
-    "context_pct": 34
+    "context_pct": 38
    },
    "checks": [
     "Ci",
@@ -10754,7 +10753,7 @@
     "T704",
     "T741"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -10821,7 +10820,7 @@
     "T402",
     "T590"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -14929,7 +14928,7 @@
     "T477",
     "T624"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -29944,7 +29943,7 @@
     "T645",
     "T585"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -30095,7 +30094,7 @@
     "T745",
     "T573"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -30137,7 +30136,7 @@
    "budget": {
     "files": 5,
     "lines": 480,
-    "context_pct": 16
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -30164,7 +30163,7 @@
     "T747",
     "T677"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -30244,7 +30243,7 @@
     "T584",
     "T490"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -30461,7 +30460,7 @@
     "T648",
     "T765"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -30501,7 +30500,7 @@
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 13
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -31399,7 +31398,7 @@
     "T664",
     "T675"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -31443,7 +31442,7 @@
    "budget": {
     "files": 2,
     "lines": 600,
-    "context_pct": 11
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -31481,7 +31480,7 @@
     "T540",
     "T666"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -31547,7 +31546,7 @@
     "T488",
     "T586"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -32716,7 +32715,7 @@
     "T648",
     "T708"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -32746,7 +32745,7 @@
    "budget": {
     "files": 1,
     "lines": 300,
-    "context_pct": 10
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -32909,7 +32908,7 @@
     "T648",
     "T708"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -32962,7 +32961,7 @@
     "T550",
     "T769"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -33018,7 +33017,7 @@
     "T410",
     "T527"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -33096,7 +33095,7 @@
     "T593",
     "T747"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -33693,7 +33692,9 @@
     "T780",
     "T781",
     "T782",
-    "T783"
+    "T783",
+    "T790",
+    "T791"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -35166,7 +35167,9 @@
     "T773",
     "T786",
     "T787",
-    "T788"
+    "T788",
+    "T790",
+    "T791"
    ],
    "model": null,
    "effort": null,
@@ -35257,7 +35260,7 @@
     "T336",
     "T377"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -35305,7 +35308,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 15
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -35373,7 +35376,7 @@
     "T751",
     "T129"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -35460,7 +35463,7 @@
     "T751",
     "T754"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -35547,7 +35550,7 @@
     "T751",
     "T542"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -35641,7 +35644,7 @@
     "T385",
     "T751"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -35720,7 +35723,7 @@
     "T109",
     "T648"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -35847,7 +35850,7 @@
     "T376",
     "T127"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -35913,7 +35916,7 @@
     "T298",
     "T135"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -35984,7 +35987,7 @@
    "deps": [
     "T135"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -36037,7 +36040,7 @@
     "T138",
     "T137"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -36103,7 +36106,7 @@
     "T298",
     "T136"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -36147,7 +36150,7 @@
    "budget": {
     "files": 2,
     "lines": 800,
-    "context_pct": 21
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -36223,7 +36226,7 @@
     "T416",
     "T600"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -36292,7 +36295,7 @@
     "T234",
     "T416"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -36350,7 +36353,7 @@
     "T234",
     "T680"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -36525,7 +36528,7 @@
     "T741",
     "T760"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -36581,7 +36584,7 @@
    "budget": {
     "files": 7,
     "lines": 600,
-    "context_pct": 33
+    "context_pct": 40
    },
    "checks": [
     "Ci",
@@ -37096,7 +37099,7 @@
     "T651",
     "T614"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -37182,7 +37185,7 @@
     "T348",
     "T530"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -37718,7 +37721,7 @@
     "T348",
     "T410"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -38048,9 +38051,10 @@
     "T759",
     "T760",
     "T784",
-    "T785"
+    "T785",
+    "T791"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -38152,7 +38156,7 @@
     "T759",
     "T760"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -38249,7 +38253,7 @@
     "T759",
     "T760"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -38328,7 +38332,7 @@
     "T239",
     "T392"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -38684,7 +38688,7 @@
    "id": "T145",
    "slug": "gate-c",
    "title": "Gate C: live keys and 'go live', real-phone rehearsal",
-   "goal": "Gate C (BUILD_BRIEF.md:203, BUILD_BRIEF.md:551): after the business accounts, Casey enters the live keys, presses Deploy for the signed release (OPS-022, OPS-043), runs the real-phone rehearsal on his own phone and says 'go live'; the first live charge is its own go (T146). This stop stays Casey's: nothing does any of it for him and Claude never holds or enters a live key. D-3080 adds preconditions, checked by `scripts/gate_c_ready.py` (T395): the runner opens this ask only when `--ask` passes on `main`, else it writes a `blocked` note listing what is missing; and it accepts 'go live' only when `--go-live` passes, else it keeps the reply and says what is missing; a kept reply never clears the gate, so Casey says 'go live' again once `--go-live` passes. Casey sends each evidence fact (`OA-<n>`, `GC-ALERT`, his release sign-off) in his owner-issue reply and a plan-change session records it (as T141's release records); no task or runner records it, and recording it never goes live for him. `--ask`: every owner action P0 item 1 to 14 (`docs/compliance/owner-actions.md`) has its `operating` row `OA-<n>` in `docs/compliance/evidence-register.md`; `docs/integration-closure.md` has no open or tracked row in money, privacy or security, and IC-53 (the AI writing calls) is closed or Casey's dated written acceptance of launching without them is recorded; the vendor-side leak check (T392) reads \"Verdict: clean\"; the restore drill (T139) met Casey's recovery targets or he accepted the miss in writing; the newest release record (`docs/releases/`, template `docs/release-record.md`, T141) is complete and signed by Casey; `docs/build-readiness.md` is re-issued for Gate C (`docs/governance.md` section 10). `--go-live` also needs the `GC-ALERT` row: in the rehearsal a real alert reached a real person (Casey's phone, OPS-029, OPS-035). Casey's checklist is `docs/account-checklist.md` Part 2 (OPS-042).",
+   "goal": "Gate C (BUILD_BRIEF.md:203, BUILD_BRIEF.md:551): after the business accounts, Casey enters the live keys, presses Deploy for the signed release (OPS-022, OPS-043), turns \"AI on scrubbed text\" on in the owner portal (AI-008's records first, T737), runs the real-phone rehearsal on his own phone with it on and says 'go live' (D-5214: Laftly does not launch with the AI off); the first live charge is its own go (T146). This stop stays Casey's: nothing does any of it for him and Claude never holds or enters a live key. D-3080 adds preconditions, checked by `scripts/gate_c_ready.py` (T395): the runner opens this ask only when `--ask` passes on `main`, else it writes a `blocked` note listing what is missing; and it accepts 'go live' only when `--go-live` passes, else it keeps the reply and says what is missing; a kept reply never clears the gate, so Casey says 'go live' again once `--go-live` passes. Casey sends each evidence fact (`OA-<n>`, `GC-ALERT`, his release sign-off) in his owner-issue reply and a plan-change session records it (as T141's release records); no task or runner records it, and recording it never goes live for him. `--ask`: every owner action P0 item 1 to 14 (`docs/compliance/owner-actions.md`) has its `operating` row `OA-<n>` in `docs/compliance/evidence-register.md`; `docs/integration-closure.md` has no open or tracked row in money, privacy or security, and IC-53 (the AI writing calls) is closed (D-5214: no AI-off launch; a written acceptance of launching without them no longer passes); the vendor-side leak check (T392) reads \"Verdict: clean\"; the restore drill (T139) met Casey's recovery targets or he accepted the miss in writing; the newest release record (`docs/releases/`, template `docs/release-record.md`, T141) is complete and signed by Casey; `docs/build-readiness.md` is re-issued for Gate C (`docs/governance.md` section 10). `--go-live` also needs the `GC-ALERT` row: in the rehearsal a real alert reached a real person (Casey's phone, OPS-029, OPS-035). Casey's checklist is `docs/account-checklist.md` Part 2 (OPS-042).",
    "type": "gate",
    "phase": 2,
    "stage": "7",
@@ -38707,7 +38711,8 @@
    "requirements": [],
    "tests": [],
    "decisions": [
-    "D-3080"
+    "D-3080",
+    "D-5214"
    ],
    "cites": [
     "BUILD_BRIEF.md:203",
@@ -39918,7 +39923,7 @@
     "T333",
     "T134"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -40265,7 +40270,7 @@
     "T722",
     "T754"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -40303,7 +40308,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 25
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -40680,7 +40685,7 @@
     "T464",
     "T564"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -40877,7 +40882,7 @@
    "deps": [
     "T364"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -41012,7 +41017,7 @@
     "T412",
     "T490"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -41076,7 +41081,7 @@
    "deps": [
     "T565"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -41276,7 +41281,7 @@
     "T136",
     "T137"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -41340,7 +41345,7 @@
     "T236",
     "T420"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -41421,7 +41426,7 @@
     "T700",
     "T727"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -41463,7 +41468,7 @@
    "id": "T395",
    "slug": "gate-c-preconditions",
    "title": "Gate C preconditions (harness): the runner opens Gate C and accepts 'go live' only when scripts/gate_c_ready.py passes",
-   "goal": "D-3080 (the external 80-point audit's items 11, 70, 71 and 80; owner actions P0; reconciliation N-02, A-01, A-02): Gate C (T145) had a one-line goal and nothing checked what must be true before real customer data, live texts and live charges. (1) `scripts/gate_c_ready.py` (standard library only, no network, reading only files on `main` and `kit/state.json`, never a secret, an account ID or a vendor API) checks T145's preconditions and prints one line per unmet one, exiting 1 when any is unmet: with `--ask`, (a) each owner action P0 item 1 to 14 in `docs/compliance/owner-actions.md` has an `operating` row in `docs/compliance/evidence-register.md` naming it `OA-<n>` with a date, who recorded it and a pointer; (b) `docs/integration-closure.md` has no row whose area is `money`, `privacy` or `security` with status `open` or `tracked`, and row IC-53 is closed or its Evidence cell names a `docs/decisions.md` entry recording Casey's dated written acceptance of going live without AI-written text; (c) `docs/phase2/sentinel-trace.md` (T392) ends \"Verdict: clean\"; (d) `docs/phase2/restore-drill.md` (T139) records the measured restore time and data-loss window, each met against Casey's targets or accepted by him in writing; (e) the newest record in `docs/releases/` follows `docs/release-record.md` (T141, A-02) with every field filled, a source SHA on `main` and Casey's dated sign-off (OPS-043); (f) `docs/build-readiness.md` records a verdict re-issued for Gate C, dated after the stage 6 exit proof in `kit/state.json` and not before that release record (`docs/governance.md` section 10). With `--go-live`, also (g) an `operating` row `GC-ALERT` records that in the real-phone rehearsal a real alert reached a real person: one High test alert raised on the live project pushed to Casey's alert address and was seen on his phone (OPS-029, OPS-035), by date and alert ID only. (2) In `runner/cycle.py` the runner opens the `gate-c` ask only when `--ask` passes on its `main` checkout; otherwise it opens nothing and writes one `blocked` outbox note listing the unmet lines, rewritten only when the list changes; and it applies a 'go live' answer only when `--go-live` passes, otherwise it keeps the reply in the gate's answers, leaves the gate waiting and writes one `info` note naming what is missing; a kept reply never clears the gate: Casey must say 'go live' again after `--go-live` passes. No task owns `docs/compliance/evidence-register.md` or `docs/releases/`, and Casey's answers come only through owner issues: Casey sends each `OA-<n>` fact, the `GC-ALERT` date and alert ID and his release sign-off in his owner-issue reply, and a plan-change session records the row or the release record from that answer (as T141's release records), never a task and never the runner; recording a row never says 'go live' for him. Casey's own stop is unchanged: he enters the keys, runs the rehearsal and says 'go live'; this adds preconditions and never clears the gate for him. No other gate changes. Tests in `tests/test_gate_c_ready.py` and `tests/test_runner_gate_c.py` (TD-OPS-39); every existing runner test passes unchanged. Update `docs/decisions.md`.",
+   "goal": "D-3080 (the external 80-point audit's items 11, 70, 71 and 80; owner actions P0; reconciliation N-02, A-01, A-02): Gate C (T145) had a one-line goal and nothing checked what must be true before real customer data, live texts and live charges. (1) `scripts/gate_c_ready.py` (standard library only, no network, reading only files on `main` and `kit/state.json`, never a secret, an account ID or a vendor API) checks T145's preconditions and prints one line per unmet one, exiting 1 when any is unmet: with `--ask`, (a) each owner action P0 item 1 to 14 in `docs/compliance/owner-actions.md` has an `operating` row in `docs/compliance/evidence-register.md` naming it `OA-<n>` with a date, who recorded it and a pointer; (b) `docs/integration-closure.md` has no row whose area is `money`, `privacy` or `security` with status `open` or `tracked`, and row IC-53 is closed (D-5214: Laftly does not launch with the AI off, so no written acceptance of going live without AI-written text passes, superseding that alternative of D-3080); (c) `docs/phase2/sentinel-trace.md` (T392) ends \"Verdict: clean\"; (d) `docs/phase2/restore-drill.md` (T139) records the measured restore time and data-loss window, each met against Casey's targets or accepted by him in writing; (e) the newest record in `docs/releases/` follows `docs/release-record.md` (T141, A-02) with every field filled, a source SHA on `main` and Casey's dated sign-off (OPS-043); (f) `docs/build-readiness.md` records a verdict re-issued for Gate C, dated after the stage 6 exit proof in `kit/state.json` and not before that release record (`docs/governance.md` section 10). With `--go-live`, also (g) an `operating` row `GC-ALERT` records that in the real-phone rehearsal a real alert reached a real person: one High test alert raised on the live project pushed to Casey's alert address and was seen on his phone (OPS-029, OPS-035), by date and alert ID only. (2) In `runner/cycle.py` the runner opens the `gate-c` ask only when `--ask` passes on its `main` checkout; otherwise it opens nothing and writes one `blocked` outbox note listing the unmet lines, rewritten only when the list changes; and it applies a 'go live' answer only when `--go-live` passes, otherwise it keeps the reply in the gate's answers, leaves the gate waiting and writes one `info` note naming what is missing; a kept reply never clears the gate: Casey must say 'go live' again after `--go-live` passes. No task owns `docs/compliance/evidence-register.md` or `docs/releases/`, and Casey's answers come only through owner issues: Casey sends each `OA-<n>` fact, the `GC-ALERT` date and alert ID and his release sign-off in his owner-issue reply, and a plan-change session records the row or the release record from that answer (as T141's release records), never a task and never the runner; recording a row never says 'go live' for him. Casey's own stop is unchanged: he enters the keys, runs the rehearsal and says 'go live'; this adds preconditions and never clears the gate for him. No other gate changes. Tests in `tests/test_gate_c_ready.py` and `tests/test_runner_gate_c.py` (TD-OPS-39); every existing runner test passes unchanged. Update `docs/decisions.md`.",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -41480,7 +41485,7 @@
     "T753",
     "T773"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -41512,7 +41517,8 @@
     "D-2740",
     "D-1760",
     "D-3080",
-    "D-4392"
+    "D-4392",
+    "D-5214"
    ],
    "cites": [],
    "budget": {
@@ -41786,7 +41792,7 @@
     "T494",
     "T495"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -41826,7 +41832,7 @@
    "budget": {
     "files": 5,
     "lines": 600,
-    "context_pct": 14
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -41850,7 +41856,7 @@
     "T457",
     "T396"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -41887,7 +41893,7 @@
    "budget": {
     "files": 5,
     "lines": 600,
-    "context_pct": 17
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -43630,7 +43636,7 @@
    "deps": [
     "T053"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -43685,7 +43691,7 @@
     "T052",
     "T424"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "low",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -44391,7 +44397,7 @@
     "T593",
     "T645"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -44454,7 +44460,7 @@
     "T645",
     "T646"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -44711,7 +44717,7 @@
     "T469",
     "T652"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -45119,7 +45125,7 @@
     "T644",
     "T766"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -45174,7 +45180,7 @@
     "T663",
     "T669"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -45241,7 +45247,7 @@
     "T767",
     "T772"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -45379,7 +45385,7 @@
     "T665",
     "T540"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -45451,7 +45457,7 @@
    "deps": [
     "T663"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -45650,7 +45656,7 @@
     "T669",
     "T543"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -45932,7 +45938,7 @@
    "deps": [
     "T672"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -45983,7 +45989,7 @@
    "budget": {
     "files": 5,
     "lines": 600,
-    "context_pct": 34
+    "context_pct": 42
    },
    "checks": [
     "Ci",
@@ -46066,7 +46072,7 @@
     "T561",
     "T766"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -46119,7 +46125,7 @@
    "budget": {
     "files": 5,
     "lines": 450,
-    "context_pct": 27
+    "context_pct": 37
    },
    "checks": [
     "Ci",
@@ -46143,7 +46149,7 @@
     "T673",
     "T672"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -46209,7 +46215,7 @@
     "T573",
     "T776"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -46264,7 +46270,7 @@
    "budget": {
     "files": 7,
     "lines": 550,
-    "context_pct": 34
+    "context_pct": 42
    },
    "checks": [
     "Ci",
@@ -46421,7 +46427,7 @@
     "T588",
     "T746"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -46497,7 +46503,7 @@
     "T745",
     "T704"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -46711,7 +46717,7 @@
     "T675",
     "T714"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -46759,7 +46765,7 @@
    "budget": {
     "files": 4,
     "lines": 460,
-    "context_pct": 26
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -46975,7 +46981,7 @@
     "T678",
     "T746"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -47095,7 +47101,7 @@
     "T132",
     "T380"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -47298,7 +47304,7 @@
     "T672",
     "T573"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -47612,7 +47618,7 @@
     "T470",
     "T661"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -47653,7 +47659,7 @@
    "budget": {
     "files": 6,
     "lines": 560,
-    "context_pct": 26
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -47677,7 +47683,7 @@
     "T458",
     "T588"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -47714,7 +47720,7 @@
    "budget": {
     "files": 2,
     "lines": 260,
-    "context_pct": 21
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -48002,7 +48008,7 @@
    "id": "T716",
    "slug": "intake-order-trade-questions",
    "title": "intake: the dispatcher's trade questions at step 5: \"Which fits best?\" and, when her words name no trade, one question asking what she needs done",
-   "goal": "Plan change D-4441 (review finding (b) on T671's attempt 1: the trade question was never asked and a first text naming no trade got nothing after the ZIP; INT-014, INT-015, INT-012, INT-016; D-102, D-103, D-105, D-1270). After T671, T715 and T717 step 5 reads the stored keyword reading: a trade goes straight to the coverage line with every candidate job type, and a request whose first text named no trade gets nothing after the ZIP. Extend `app/intake/src/order_dispatch.rs`, calling only existing functions (`routing.rs`, `conversation.rs` and `service.rs` are not edited, D-4360): (1) \"Which fits best?\" (INT-014): at step 5, before the coverage line, when `matching::candidates` rebuilt from the stored codes gives `which_fits` (`app/intake/src/matching.rs:414`), ask it with its numbered options; the reply goes to `Candidates::fit_step` (`:454`): `Chosen` stores the chosen job type as the request's candidates (step-marker rows, codes only, stored and read back as (5) says), `KeepAll` keeps every candidate (the card is marked through `routing_confidence::after_fit`, INT-040), `AskAgain` asks once more with the same options in the same order (INT-015, D-103); then T671's coverage line with the stored candidates. (2) No trade read (AI off; T299 adds the AI reading later): step 5 asks one question in place of the coverage line (new template `trade_ask`, draft copy for the copy panel, WORD-028, starting from \"What do you need done? A few words is enough.\"); its reply is read with `keyword_reading`: a trade stores the reply's `trade_reading` and candidate rows (codes only; the reply's words are never kept, D-4360), opens the first job by T715's own open (the job is opened by the order, not by the reply's words, D-4441), then (1) when it applies and the coverage line; no trade or \"Not sure\" asks once more (INT-015), after which the request waits with nothing sent and each later reply is read the same way, as INT-049's ZIP wait does; the wait of a request with no job is T719's. This replaces D-1270's \"`NoTrade` for the INT-016 path\" on the text path: a request is not called uncovered before she is asked (D-4441); INT-016's reply still follows a trade whose category is not open. A reply naming two trades takes the first (T711 adds INT-032 for a first message only). (3) `order_dispatch::ask_open_again` (T715) gains both questions, so START (T691) resends them. (4) `which_fits` and `trade_ask` go into the shared `app/messaging/templates/en.json` and `es.json` (Spanish drafts marked for native-speaker review, TXT-003), passing `scripts/check_copy.py` and `scripts/check_ai_smell.py` (WORD-028, WORD-029), and into `NOT_UPDATE_TEXTS` (`app/quotes/src/update_texts.rs:116`: intake questions before her request goes out, D-1293); `td_txt_25_every_homeowner_template_is_scanned_or_left_out` (`app/quotes/src/tests/update_texts.rs:145`, TD-TXT-25) is the guard that makes a new homeowner text be listed and is not edited. INT-013's numbered trade question (two readings that disagree) needs the AI reading: with AI off `routing_confidence::decide` never offers two trades, so it is not built here. Tests (TD-INT-53) in the new `tests/integration/tests/intake_order_trade_questions.rs`, PostgreSQL, fake data and 555 numbers only, through `intake::api::receive_raw_reply`, each asserting texts only up to the coverage line or the wait. Before hand-in, run every test that posts to `/webhooks/twilio/sms` or calls `receive_reply`/`receive_raw_reply`; a failing one not owned here is a plan gap to report, not to edit. (6) Plan change D-4777 (Fable's intake audit, finding I2, HIGH, licensing; CARD-001, INT-017, LIC-043; D-105, D-4488): the coverage count drops cross-trade licence-boundary job types: `order_dispatch::facts` (`app/intake/src/order_dispatch.rs:559` to `:574`, the filter at `:570`) keeps only candidates whose trade is the job's (`.filter(|(t, _)| t == trade)`), and `quotes::card_pool` gives every candidate the stored category (`app/quotes/src/card_pool.rs:141` to `:152`, the change D-4488 named), so \"handyman needed, breaker panel keeps tripping\" counts handymen without the electrical licence (D-105); and `trade_check` (`order_dispatch.rs:379`, its `String::new()` at `:402`) opens the job with `String::new()` as its words, so \"water heater\" counts `plumbing_other`. This task also: the count carries the stored (trade, job type) pairs end to end (`facts` keeps every pair; `card_pool` matches each pair against businesses holding that trade's licence class for that job type, a business counting only when it may take every candidate); `trade_check` reads her stored first words for the job, so \"water heater\" keeps \"water heater replacement\". These cases go in the new `tests/integration/tests/intake_boundary_count.rs`: a boundary job type named under another trade (handyman, breaker panel) never counts a business without the licence and counts one with it; a \"water heater\" first text keeps \"water heater replacement\" and its count; every card-pool test passes unchanged. Licensing: two review rounds. Update `app/intake/CLAUDE.md` and `docs/decisions.md`. T671 (claimed on D-4439's plan, which named `fit_step` for the trade question) may already ask \"Which fits best?\": where it does, this task checks and completes that ask rather than adding a second. Plan change D-4602 (T715's plan gap, Nov 19, 2026): (5) `first_text` also stores, codes only, every (trade, job type) pair of the first text's `keyword_reading` `job_types`, `boundary` and `licensed_only` (`app/intake/src/matching.rs:160` to `:171`), each stored as a step-marker row with question `job_type.<trade>` and choice the label folded to lower case with every run of other characters as `_` (the `intake.intake_answer.choice` check, `migrations/0053_intake_tables.sql:68`, allows only `^[a-z0-9][a-z0-9_.]{0,63}$`; the longest keyword label, 33 characters, and the longest catalog job type, 48, fit), read back only by matching the labels `matching::stored_job_types_of(trade)` gives, folded the same way (plan change D-4618: `RULES` and `LICENSED_ONLY` are private, `app/intake/src/matching.rs:52`, `:134`, so this task adds to `matching.rs` one public reader, `pub fn stored_job_types_of(trade: &str) -> Vec<&'static str>`, returning `job_types_of(trade)` then the trade's `LICENSED_ONLY` labels, with a `///` comment citing D-105, D-1003 and D-4618, and changes nothing else there; so plumbing's \"water heater replacement\" and pool repair's \"gas pool heater\", which are neither keyword nor catalog job types, survive read-back); a choice that matches none is dropped; each set is written in one turn at that turn's `received_at` (every row of the set with the same `answered_at`); step 5 and the card read only the rows with the newest `answered_at` for `job_type.<trade>`, so a later set replaces an earlier one; never her words (INT-007, INT-049), so the license-boundary job types of other trades that `candidates` adds (`matching.rs:403` to `:405`) are kept; step 5 rebuilds the candidates from the stored trade and these rows, so a two-word first text naming a job type (\"sticky door\") gets the coverage line with no question. Planted in this task's own tests, which also assert that a first text naming a licensed-only job type (\"water heater leak\": `keyword_reading` puts plumbing's \"water heater replacement\" in `licensed_only`, `matching.rs:227` to `:231`) keeps that pair after read-back, shown by the count, not only by the row: with two businesses serving the town and ticking plumbing's leak repair, one holding R-37 and one signed up as a handyman, matched on the city list, without R-37, the coverage line after the ZIP counts 1, not 2 (every candidate must be a card, `app/quotes/src/rules.rs:296`; \"water heater replacement\" is permit-type and not a listed job type, so the handyman gets no card for it, `app/licensing/src/handyman.rs:138` to `:142`, `app/licensing/src/rules.rs:98` to `:100`; R-37 covers it, `docs/catalog/license_map.yaml:57`; the words \"water heater leak\" name no permit phrase, `handyman.rs:48` to `:55`, so a dropped pair would count 2) (D-4618). What \"Not sure\" or two unusable replies lead to on a trade with no job type named (INT-040, the `job_unsure` text, the OPS-041 email) is T723's, which follows this task; `KeepAll` here stays as (1) says, and when the kept candidates include `<trade>_other` this task's tests assert nothing after that reply (no INT-017 close is asserted there; TD-INT-57's).",
+   "goal": "Plan change D-4441 (review finding (b) on T671's attempt 1: the trade question was never asked and a first text naming no trade got nothing after the ZIP; INT-014, INT-015, INT-012, INT-016; D-102, D-103, D-105, D-1270). After T671, T715 and T717 step 5 reads the stored keyword reading: a trade goes straight to the coverage line with every candidate job type, and a request whose first text named no trade gets nothing after the ZIP. Extend `app/intake/src/order_dispatch.rs`, calling only existing functions (`routing.rs`, `conversation.rs` and `service.rs` are not edited, D-4360): (1) \"Which fits best?\" (INT-014): at step 5, before the coverage line, when `matching::candidates` rebuilt from the stored codes gives `which_fits` (`app/intake/src/matching.rs:414`), ask it with its numbered options; the reply goes to `Candidates::fit_step` (`:454`): `Chosen` stores the chosen job type as the request's candidates (step-marker rows, codes only, stored and read back as (5) says), `KeepAll` keeps every candidate (the card is marked through `routing_confidence::after_fit`, INT-040), `AskAgain` asks once more with the same options in the same order (INT-015, D-103); then T671's coverage line with the stored candidates. (2) No trade read (AI off; T299 adds the AI reading later): step 5 asks one question in place of the coverage line (new template `trade_ask`, draft copy for the copy panel, WORD-028, starting from \"What do you need done? A few words is enough.\"); its reply is read with `keyword_reading`: a trade stores the reply's `trade_reading` and candidate rows (codes only; the reply's words are never kept, D-4360), opens the first job by T715's own open (the job is opened by the order, not by the reply's words, D-4441), then (1) when it applies and the coverage line; no trade or \"Not sure\" asks once more (INT-015), after which the request waits with nothing sent and each later reply is read the same way, as INT-049's ZIP wait does; the wait of a request with no job is T719's. This replaces D-1270's \"`NoTrade` for the INT-016 path\" on the text path: a request is not called uncovered before she is asked (D-4441); INT-016's reply still follows a trade whose category is not open. A reply naming two trades takes the first (T711 adds INT-032 for a first message only). (3) `order_dispatch::ask_open_again` (T715) gains both questions, so START (T691) resends them. (4) `which_fits` and `trade_ask` go into the shared `app/messaging/templates/en.json` and `es.json` (Spanish drafts marked for native-speaker review, TXT-003), passing `scripts/check_copy.py` and `scripts/check_ai_smell.py` (WORD-028, WORD-029), and into `NOT_UPDATE_TEXTS` (`app/quotes/src/update_texts.rs:116`: intake questions before her request goes out, D-1293); `td_txt_25_every_homeowner_template_is_scanned_or_left_out` (`app/quotes/src/tests/update_texts.rs:145`, TD-TXT-25) is the guard that makes a new homeowner text be listed and is not edited. INT-013's numbered trade question (two readings that disagree) needs the AI reading: with AI off `routing_confidence::decide` never offers two trades, so it is not built here. Tests (TD-INT-53) in the new `tests/integration/tests/intake_order_trade_questions.rs`, PostgreSQL, fake data and 555 numbers only, through `intake::api::receive_raw_reply`, each asserting texts only up to the coverage line or the wait. Before hand-in, run every test that posts to `/webhooks/twilio/sms` or calls `receive_reply`/`receive_raw_reply`; a failing one not owned here is a plan gap to report, not to edit. (6) Plan change D-4777 (Fable's intake audit, finding I2, HIGH, licensing; CARD-001, INT-017, LIC-043; D-105, D-4488): the coverage count drops cross-trade licence-boundary job types: `order_dispatch::facts` (`app/intake/src/order_dispatch.rs:559` to `:574`, the filter at `:570`) keeps only candidates whose trade is the job's (`.filter(|(t, _)| t == trade)`), and `quotes::card_pool` gives every candidate the stored category (`app/quotes/src/card_pool.rs:141` to `:152`, the change D-4488 named), so \"handyman needed, breaker panel keeps tripping\" counts handymen without the electrical licence (D-105); and `trade_check` (`order_dispatch.rs:379`, its `String::new()` at `:402`) opens the job with `String::new()` as its words, so \"water heater\" counts `plumbing_other`. This task also: the count carries the stored (trade, job type) pairs end to end (`facts` keeps every pair; `card_pool` matches each pair against businesses holding that trade's licence class for that job type, a business counting only when it may take every candidate); `trade_check` reads her stored first words for the job, so \"water heater\" keeps \"water heater replacement\". These cases go in the new `tests/integration/tests/intake_boundary_count.rs`: a boundary job type named under another trade (handyman, breaker panel) never counts a business without the licence and counts one with it; a \"water heater\" first text keeps \"water heater replacement\" and its count; every card-pool test passes unchanged. Licensing: two review rounds. Update `app/intake/CLAUDE.md` and `docs/decisions.md`. T671 (claimed on D-4439's plan, which named `fit_step` for the trade question) may already ask \"Which fits best?\": where it does, this task checks and completes that ask rather than adding a second. Plan change D-4602 (T715's plan gap, Nov 19, 2026): (5) `first_text` also stores, codes only, every (trade, job type) pair of the first text's `keyword_reading` `job_types`, `boundary` and `licensed_only` (`app/intake/src/matching.rs:160` to `:171`), each stored as a step-marker row with question `job_type.<trade>` and choice the label folded to lower case with every run of other characters as `_` (the `intake.intake_answer.choice` check, `migrations/0053_intake_tables.sql:68`, allows only `^[a-z0-9][a-z0-9_.]{0,63}$`; the longest keyword label, 33 characters, and the longest catalog job type, 48, fit), read back only by matching the labels `matching::stored_job_types_of(trade)` gives, folded the same way (plan change D-4618: `RULES` and `LICENSED_ONLY` are private, `app/intake/src/matching.rs:52`, `:134`, so this task adds to `matching.rs` one public reader, `pub fn stored_job_types_of(trade: &str) -> Vec<&'static str>`, returning `job_types_of(trade)` then the trade's `LICENSED_ONLY` labels, with a `///` comment citing D-105, D-1003 and D-4618, and changes nothing else there except D-5215's keyword phrases below; so plumbing's \"water heater replacement\" and pool repair's \"gas pool heater\", which are neither keyword nor catalog job types, survive read-back); a choice that matches none is dropped; each set is written in one turn at that turn's `received_at` (every row of the set with the same `answered_at`); step 5 and the card read only the rows with the newest `answered_at` for `job_type.<trade>`, so a later set replaces an earlier one; never her words (INT-007, INT-049), so the license-boundary job types of other trades that `candidates` adds (`matching.rs:403` to `:405`) are kept; step 5 rebuilds the candidates from the stored trade and these rows, so a two-word first text naming a job type (\"sticky door\") gets the coverage line with no question. Planted in this task's own tests, which also assert that a first text naming a licensed-only job type (\"water heater leak\": `keyword_reading` puts plumbing's \"water heater replacement\" in `licensed_only`, `matching.rs:227` to `:231`) keeps that pair after read-back, shown by the count, not only by the row: with two businesses serving the town and ticking plumbing's leak repair, one holding R-37 and one signed up as a handyman, matched on the city list, without R-37, the coverage line after the ZIP counts 1, not 2 (every candidate must be a card, `app/quotes/src/rules.rs:296`; \"water heater replacement\" is permit-type and not a listed job type, so the handyman gets no card for it, `app/licensing/src/handyman.rs:138` to `:142`, `app/licensing/src/rules.rs:98` to `:100`; R-37 covers it, `docs/catalog/license_map.yaml:57`; the words \"water heater leak\" name no permit phrase, `handyman.rs:48` to `:55`, so a dropped pair would count 2) (D-4618). What \"Not sure\" or two unusable replies lead to on a trade with no job type named (INT-040, the `job_unsure` text, the OPS-041 email) is T723's, which follows this task; `KeepAll` here stays as (1) says, and when the kept candidates include `<trade>_other` this task's tests assert nothing after that reply (no INT-017 close is asserted there; TD-INT-57's). Plan change D-5215 (keyword subset, Sonnet-vetted, D-5214 keeps AI-off as the fallback): `RULES` in `app/intake/src/matching.rs` also gains exactly these 42 copy-only phrases (folded, written as listed, no other word changes): 10 join the `words` of the existing rule they name — `PLUMBING` \"leak repair\": \"pipe burst\", \"tuberia rota\"; `PLUMBING` \"toilet repair\": \"toilet keeps running\"; `PLUMBING` \"drain clearing\": \"drenaje tapado\"; `HVAC` \"AC not cooling\": \"aire acondicionado no enfria\"; `HVAC` trade-only: \"ductos del aire rotos\"; `HVAC` \"furnace repair\": \"calefaccion no prende\"; `ELECTRICAL` trade-only: \"detector de humo cableado\"; `HANDYMAN` \"door repair\": \"door wont latch\"; `HANDYMAN` \"shelves\": \"instalar repisas\"; and 32 go into 11 new trade-only rules appended after the last rule — `rule(\"pool_repair\", None, &[\"filtro de alberca roto\", \"fuga en la alberca\"], false)`; `rule(\"pool_cleaning\", None, &[\"pool guy every week\", \"weekly pool cleaning\", \"limpieza semanal de alberca\", \"mantenimiento de piscina semanal\", \"alberca verde\"], false)`; `rule(\"landscape_maintenance\", None, &[\"podar los arbustos\", \"limpieza general del jardin\"], false)`; `rule(\"house_cleaning\", None, &[\"maid service for home\", \"weekly house cleaning\", \"limpieza semanal de casa\", \"limpieza profunda de casa\"], false)`; `rule(\"pest_control\", None, &[\"exterminator for bugs\", \"plaga de cucarachas\", \"scorpions in the house\", \"alacranes en la casa\"], true)`; `rule(\"dog_waste_pickup\", None, &[\"dog poop in yard\", \"pooper scooper service\", \"weekly dog poop pickup\"], false)`; `rule(\"trash_can_cleaning\", None, &[\"dirty garbage bins\", \"trash bin sanitizing\"], false)`; `rule(\"car_detailing\", None, &[\"limpieza interior del carro\", \"exterior car detailing\", \"detallado exterior de auto\", \"full car detailing\", \"detallado completo de carro\", \"detallado de casa rodante\"], false)`; `rule(\"home_inspection\", None, &[\"inspeccion para refinanciar casa\", \"home inspection for refinancing\"], true)`; `rule(\"insulation\", None, &[\"blown in attic insulation\"], true)`; `rule(\"local_moving\", None, &[\"mudanza dentro de arizona\"], false)`. Boundary is `false` for a trade whose catalog licence kind is none and `true` for an ROC or state-agency trade (insulation and pool repair are ROC, pest control and home inspection state agency), except pool repair, which is `false`: a trade-only boundary rule puts its trade's `LICENSED_ONLY` pair into `licensed_only` (`keyword_reading`), and pool repair's is \"gas pool heater\", which a filter or leak is not; for insulation, pest control and home inspection `true` has no effect today because they have no `LICENSED_ONLY` pair. The subset was vetted against the catalog: 2 to 4 words, existing (trade, job type) pairs or trade-only, no phrase inside another trade's phrase, no change to any matching fixture and no new two-trade read; this task checks that every existing `keyword_reading`, `matching` and intake test passes unchanged and reports any that does not as a plan gap, never editing the phrase list to pass.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -48011,7 +48017,7 @@
     "T675",
     "T654"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48066,13 +48072,14 @@
     "D-4439",
     "D-4602",
     "D-4618",
-    "D-4777"
+    "D-4777",
+    "D-5215"
    ],
    "cites": [],
    "budget": {
     "files": 6,
     "lines": 600,
-    "context_pct": 27
+    "context_pct": 32
    },
    "checks": [
     "Ci",
@@ -48081,7 +48088,7 @@
    ],
    "branch": "claude/task/T716-intake-order-trade-questions",
    "prompt": "kit/prompts/T716.md",
-   "acceptance": "TD-INT-53 passes against PostgreSQL; \"Which fits best?\" is asked only when the candidates call for it and at most twice; a request whose words name no trade is asked once, asked once more, then waits, and is never called uncovered for want of a trade; no reply to either question is kept as words; `which_fits` and `trade_ask` pass `check_copy.py` and `check_ai_smell.py` and are in `NOT_UPDATE_TEXTS`; a licensed-only job type of the first text survives read-back; `matching.rs` gains only `stored_job_types_of`; `routing.rs`, `conversation.rs` and `service.rs` are unchanged; the earlier intake order tests pass unchanged. `tests/integration/tests/intake_boundary_count.rs` passes: a business without the boundary licence is never counted.",
+   "acceptance": "TD-INT-53 passes against PostgreSQL; \"Which fits best?\" is asked only when the candidates call for it and at most twice; a request whose words name no trade is asked once, asked once more, then waits, and is never called uncovered for want of a trade; no reply to either question is kept as words; `which_fits` and `trade_ask` pass `check_copy.py` and `check_ai_smell.py` and are in `NOT_UPDATE_TEXTS`; a licensed-only job type of the first text survives read-back; `matching.rs` gains only `stored_job_types_of` and D-5215's keyword phrases and trade-only rules, exactly as listed; `routing.rs`, `conversation.rs` and `service.rs` are unchanged; the earlier intake order tests pass unchanged. `tests/integration/tests/intake_boundary_count.rs` passes: a business without the boundary licence is never counted.",
    "copy": true
   },
   {
@@ -48097,7 +48104,7 @@
     "T716",
     "T717"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48152,7 +48159,7 @@
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 35
+    "context_pct": 41
    },
    "checks": [
     "Ci",
@@ -48180,7 +48187,7 @@
     "T615",
     "T769"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48245,7 +48252,7 @@
    "deps": [
     "T723"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48290,7 +48297,7 @@
    "budget": {
     "files": 3,
     "lines": 450,
-    "context_pct": 39
+    "context_pct": 45
    },
    "checks": [
     "Ci",
@@ -48313,7 +48320,7 @@
    "deps": [
     "T718"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48358,7 +48365,7 @@
    "budget": {
     "files": 5,
     "lines": 450,
-    "context_pct": 40
+    "context_pct": 45
    },
    "checks": [
     "Ci",
@@ -48498,7 +48505,7 @@
     "T673",
     "T482"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48553,7 +48560,7 @@
     "T673",
     "T775"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48619,7 +48626,7 @@
     "T608",
     "T600"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48696,7 +48703,7 @@
     "T684",
     "T580"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48764,7 +48771,7 @@
     "T746",
     "T766"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48807,7 +48814,7 @@
    "budget": {
     "files": 3,
     "lines": 450,
-    "context_pct": 35
+    "context_pct": 42
    },
    "checks": [
     "Ci",
@@ -48960,7 +48967,7 @@
     "T541",
     "T751"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -49101,7 +49108,7 @@
    "deps": [
     "T719"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -49136,7 +49143,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 25
+    "context_pct": 29
    },
    "checks": [
     "Ci",
@@ -49159,7 +49166,7 @@
    "deps": [
     "T712"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -49300,7 +49307,7 @@
    "deps": [
     "T540"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -49337,7 +49344,7 @@
    "budget": {
     "files": 2,
     "lines": 200,
-    "context_pct": 15
+    "context_pct": 19
    },
    "checks": [
     "Ci",
@@ -49361,7 +49368,7 @@
     "T675",
     "T728"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -49432,7 +49439,7 @@
     "T309",
     "T609"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -49474,7 +49481,7 @@
    "budget": {
     "files": 9,
     "lines": 700,
-    "context_pct": 18
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -49501,7 +49508,7 @@
     "T600",
     "T151"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -49539,7 +49546,7 @@
    "budget": {
     "files": 5,
     "lines": 600,
-    "context_pct": 20
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -49563,7 +49570,7 @@
     "T701",
     "T702"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -49600,7 +49607,7 @@
    "budget": {
     "files": 3,
     "lines": 500,
-    "context_pct": 25
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -49636,7 +49643,7 @@
     "T410",
     "T754"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -49673,7 +49680,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 31
+    "context_pct": 35
    },
    "checks": [
     "Ci",
@@ -50074,7 +50081,7 @@
     "T706",
     "T333"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -50147,7 +50154,7 @@
     "T100",
     "T517"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -50203,7 +50210,7 @@
     "T658",
     "T351"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -50234,7 +50241,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 20
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -50260,7 +50267,7 @@
     "T600",
     "T729"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -50429,7 +50436,7 @@
     "T717",
     "T736"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -50458,7 +50465,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 17
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -50688,7 +50695,7 @@
     "T373",
     "T280"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -50748,7 +50755,7 @@
     "T106",
     "T013"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -51044,7 +51051,7 @@
    "deps": [
     "T675"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -51098,7 +51105,7 @@
     "T659",
     "T677"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -51158,7 +51165,7 @@
     "T738",
     "T779"
    ],
-   "model": "claude-fable-5-2",
+   "model": "claude-opus-5-5",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -51396,6 +51403,159 @@
    "branch": "claude/task/T788-crate-guide-trim-check",
    "prompt": "kit/prompts/T788.md",
    "acceptance": "`python3 -m pytest tests/test_check_pr_change.py` passes with every existing case unchanged and each new case listed in the goal; `python3 scripts/check_pr_change.py --base origin/main` passes on this branch; `python3 scripts/check_plan_lock.py` matches."
+  },
+  {
+   "id": "T790",
+   "slug": "termite-report-pest-control",
+   "title": "catalog, licensing and tests (harness): the termite report for a sale or loan moves to pest control, wood-destroying category required, still fee-free",
+   "goal": "Plan change D-5216 (Casey, Nov 21, 2026: \"Move to pest control\"; LIC-015, FEE-045, LIC-012, LIC-043, LIC-047; reverses D-418's confirmed placement of the termite report under home inspection; D-403, D-417). The job type \"termite report for a sale or loan\" moves from `home_inspection` to `pest_control`, needs the Department pest licence with the wood-destroying organism record category, and stays fee-free. This harness task makes the move in one change: (1) `docs/catalog/categories.yaml`: remove it from `home_inspection`'s `job_types` and `fee_free_job_types` (`:700`, `:701`) and update that row's `review` text; add it to `pest_control`'s `job_types`, a new `fee_free_job_types: [termite report for a sale or loan]` and `one_time_job_types` (pest control is recurring, and a report is one visit), and name it in that row's `review`. (2) `docs/catalog/license_map.yaml`: the pest row's `record_category_needed` (`:312` to `:314`) gains `termite report for a sale or loan: \"the wood-destroying organism category on the Department record\"`; the pest `only` list and the inspector row (`home_inspection: {all: true}`) are unchanged. (3) `app/licensing/src/models.rs` `PestRecordCategory::needed_for` (`:137` to `:143`) maps it to `WoodDestroying` beside \"termites\", so `pest_row_and_record_categories_match_the_files` (`app/licensing/src/tests/scope_examples.rs`) passes unchanged; the `inspection_fee` comment in `app/licensing/src/rules.rs` (`:154` to `:157`) drops the termite report from its home-inspection list (no code change there: fee-free comes from the catalog's `fee_free_job_types` for any category, `app/catalog/src/service.rs:170`, `app/payments/src/fee_facts.rs:109`, `app/quotes/src/card_pool.rs:182`). (4) `docs/catalog/question_bank.yaml`: `home_inspection`'s `kind` question drops the \"Termite (wood-destroying insect) report\" / \"Reporte de termitas\" option, and `pest_control`'s `pest` question gains \"Termite report for a home sale or loan\" / \"Reporte de termitas para venta o préstamo\" (Spanish draft for native-speaker review), each set's `version` and any check the bank's own rules require updated; if the bank's option limit stops the new option, report it as a plan gap. (5) `docs/catalog/intake_golden.yaml`: rows `home_inspection-05` and `home_inspection-10` become pest rows for the termite report (trade `pest_control`, question `pest`), and two `pest_control` rows that name plain termites are rewritten as home-inspection rows (buyer, pre-listing or refinance), so every trade keeps 10 rows and its Spanish count (`tests/test_intake_golden.py`); fake words only. (6) `scripts/check_catalog.py` `check_legal_holds` (`:449`) also fails when `pest_control` lists a job type with a sale word (`SALE_WORDS`) that is not in its `fee_free_job_types` (FEE-045: a sale-related report is never charged), with a planted failing case in `tests/test_check_catalog.py`; that file's planted case at `:321` (`\"    one_time_job_types: [termites]\\n\"`) is updated to the new pest `one_time_job_types` line, its check unchanged. (7) Done tests whose fixtures name the old placement change only there, keeping each check's strength: `app/payments/src/tests/fee_tiers.rs` `td_fee_28_fee_free_job_types_pay_nothing` (`:147`; home inspection now has 3 fee-free job types, and the same loop also runs over pest control's, where only the report is free); `app/quotes/src/tests/card_lines.rs` `td_card_07_fee_free_job_types_say_no_fee` (`:240`; it now checks every category with fee-free job types, not only the first, so the inspections stay covered); `tests/integration/tests/capability_offer.rs` (`:173` to `:183` drop the report from the inspector's set; TD-BIZ-46's pest case adds it to the wood-destroying attester's set only); `tests/test_catalog_license_scope.py`'s planted line (`:62`, `job_types: [general pest service, scorpions, termites, pre-emergent weed control]`) becomes the new pest `job_types` line, with the same check; `tests/integration/tests/catalog_settings.rs` (`:116` to `:119`) counts 3 fee-free home-inspection job types, not 4, and asserts that pest control has exactly 1 (the report). (8) Regenerate `twin/oracle/license_scope.json` with `python3 twin/oracle/gen_license_scope.py` (the pest grant gains the report; `--check` passes). The catalog files, the question bank and the golden file are locked: run `python3 scripts/check_plan_lock.py --write`. A.R.S. 3-3633 (wood-destroying insect inspection reports by a pest licensee) was not independently verified (`docs/for-casey-review.md`). Update `app/licensing/NOTES.md` (a shared path, D-3474, so not in the owned list, whose limit is 14 files) and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T752",
+    "T154",
+    "T368",
+    "T427",
+    "T291",
+    "T347",
+    "T185",
+    "T058",
+    "T034",
+    "T035",
+    "T007",
+    "T002",
+    "T003",
+    "T008",
+    "T057",
+    "T075",
+    "T100",
+    "T517",
+    "T225",
+    "T044",
+    "T169",
+    "T056",
+    "T073",
+    "T264",
+    "T324",
+    "T172",
+    "T074",
+    "T021"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "licensing",
+    "money",
+    "harness"
+   ],
+   "owns": [
+    "docs/catalog/categories.yaml",
+    "docs/catalog/license_map.yaml",
+    "docs/catalog/question_bank.yaml",
+    "docs/catalog/intake_golden.yaml",
+    "twin/oracle/license_scope.json",
+    "app/licensing/src/models.rs",
+    "app/licensing/src/rules.rs",
+    "scripts/check_catalog.py",
+    "tests/test_check_catalog.py",
+    "app/payments/src/tests/fee_tiers.rs",
+    "app/quotes/src/tests/card_lines.rs",
+    "tests/integration/tests/capability_offer.rs",
+    "tests/test_catalog_license_scope.py",
+    "tests/integration/tests/catalog_settings.rs"
+   ],
+   "reads": [
+    "docs/spec/licensing.md",
+    "docs/spec/fees.md"
+   ],
+   "requirements": [
+    "LIC-015",
+    "FEE-045",
+    "LIC-012",
+    "LIC-043",
+    "LIC-047"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-5216",
+    "D-403",
+    "D-417"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 14,
+    "lines": 200,
+    "context_pct": 41
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T790-termite-report-pest-control",
+   "prompt": "kit/prompts/T790.md",
+   "acceptance": "`python3 scripts/check_catalog.py`, `python3 -m pytest tests/test_check_catalog.py tests/test_intake_golden.py tests/test_catalog_license_scope.py tests/twin` and `python3 twin/oracle/gen_license_scope.py --check` pass; `cargo test -p askhava-licensing`, `-p askhava-payments --lib fee_tiers`, `-p askhava-quotes --lib card_lines` `-p askhava-integration --test capability_offer` and `-p askhava-integration --test catalog_settings` pass with each changed check at least as strict; the planted pest sale-word case fails `check_catalog.py`; `Twin` is green."
+  },
+  {
+   "id": "T791",
+   "slug": "spanish-stay-on-wording",
+   "title": "Tests and templates (harness): three Spanish stay-on texts reworded after back-translation (911 text, under 18, Canadian roaming)",
+   "goal": "Plan change D-5222 (Casey: \"Make whatever changes you want\", after the first AI back-translation of the 8 Spanish stay-on texts, TXT-039; INT-004, INT-038, CON-018, TXT-044). Three Spanish texts in the shared `app/messaging/templates/es.json` (an exception to D-491's add-only rule, D-5222) change, word for word as below, and nothing else in them: (1) `emergency_911`: \"suena una alarma de CO\" becomes \"suena una alarma de monóxido de carbono (CO)\"; (2) `under_18`, both entries (`:79` and `:217`): \"Pídale a un padre o adulto que nos escriba.\" becomes \"Pídale a su madre, a su padre o a otro adulto que nos escriba.\" (INT-038 already says so); (3) `help_reply_ca` and `help_reply_away_ca`: \"Los números de Canadá pueden pagar cargos de roaming.\" becomes \"Si su número es de Canadá, pueden aplicar cargos de roaming.\". The DONE tests that pin the old Spanish change only in those strings: `INT_004_ES` in `app/intake/src/tests/safety_text.rs:22` and the under-18 Spanish text in `app/intake/src/tests/conversation.rs:448`; no test pins the roaming sentence in Spanish (the HELP tests check the English). Each text's `segments` value stays as recorded unless the template registry test (TXT-044) counts more, in which case it is raised to the count (Spanish may be UCS-2); the plan's count on the template text finds none rising (emergency_911 4, under_18 2, help_reply_ca 7 of 8 recorded, help_reply_away_ca 6 of 7). The English texts, \"el dueño\" and \"PARAR para salir\" (CON-018, CON-031) do not change. Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T420",
+    "T152",
+    "T040",
+    "T255",
+    "T057",
+    "T075",
+    "T517",
+    "T100"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "low",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "compliance"
+   ],
+   "owns": [
+    "app/intake/src/tests/safety_text.rs",
+    "app/intake/src/tests/conversation.rs"
+   ],
+   "reads": [
+    "docs/spec/intake.md",
+    "docs/spec/messaging.md"
+   ],
+   "requirements": [
+    "INT-004",
+    "INT-038",
+    "TXT-044"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-5222"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 20,
+    "context_pct": 7
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T791-spanish-stay-on-wording",
+   "prompt": "kit/prompts/T791.md",
+   "acceptance": "`cargo test -p askhava-intake --lib -- safety_text conversation` and `cargo test -p askhava-messaging` pass; the template registry test reports no segment count above its recorded value; the three texts in `es.json` read exactly as the goal says and nothing else in `es.json` changes."
   }
  ]
 }

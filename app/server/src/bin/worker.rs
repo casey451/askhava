@@ -145,6 +145,24 @@ async fn schedule_checks(
         .map_err(io::Error::other)
 }
 
+/// The first runs of the license chains: the license-map re-apply (T372), the unknown-license run
+/// (T655, LIC-008) and each daily license list (T371), on the list run's settings.
+async fn schedule_licenses(
+    conn: &mut sqlx::PgConnection,
+    now: jiff::Timestamp,
+    lists: askhava_licensing::api::DailyListSettings,
+) -> io::Result<()> {
+    askhava_businesses::api::schedule_reapply(conn, now)
+        .await
+        .map_err(io::Error::other)?;
+    askhava_businesses::api::schedule_standing(conn, now, lists)
+        .await
+        .map_err(io::Error::other)?;
+    askhava_licensing::api::schedule_daily_lists(conn, now, lists)
+        .await
+        .map_err(io::Error::other)
+}
+
 /// Queues the daily tasks at start (the chain check, the masked-line expiry sweep (T662), the retention sweep, the body cut, the
 /// photo orphan sweep, the day-31 body scan, this hour's dead-letter check, the job timer
 /// backstop, the hourly request count (T105), the safe-mode check (T487), the session sweep and rate-limit prune (T436), the license-map re-apply, each daily license list (T371), the outbox sender's
@@ -190,12 +208,7 @@ async fn schedule_start(
     askhava_core::api::schedule_rate_limit_prune(&mut conn, now)
         .await
         .map_err(io::Error::other)?;
-    askhava_businesses::api::schedule_reapply(&mut conn, now)
-        .await
-        .map_err(io::Error::other)?;
-    askhava_licensing::api::schedule_daily_lists(&mut conn, now, lists)
-        .await
-        .map_err(io::Error::other)?;
+    schedule_licenses(&mut conn, now, lists).await?;
     schedule_checks(&mut conn, now, email).await?;
     askhava_intake::api::run_golden(&mut conn, now)
         .await
