@@ -24052,7 +24052,7 @@
    "budget": {
     "files": 6,
     "lines": 620,
-    "context_pct": 32
+    "context_pct": 38
    },
    "checks": [
     "Ci",
@@ -25685,7 +25685,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 28
+    "context_pct": 34
    },
    "checks": [
     "Ci",
@@ -50352,8 +50352,8 @@
   {
    "id": "T759",
    "slug": "close-which-expiry",
-   "title": "intake: \"Close which?\" expires on any other reply, and \"never mind\" in a request with no job gets a reply",
-   "goal": "Plan change D-4777 (Fable's intake audit, finding I3, MED, and the low finding; JOB-019, JOB-021, INT-038; D-1203). (1) \"Close which?\" never expires: `closing.rs` (`app/intake/src/closing.rs:79` to `:95`) writes `close_which` = `asked` and only a close answer clears it, so a lone number or ALL sent days later for another reason (`close_target`, `app/intake/src/rules.rs:663` to `:676`) still closes a job. While the latest `close_which` is `asked` (the mark match at `closing.rs:86` to `:90`), any reply in the request that is not a close answer writes `close_which` = `dropped` in the same transaction, so a later lone number or ALL is no longer read as the answer; with no waiting question nothing is written. (2) \"never mind\" (or another cancel phrase, `rules.rs:307`) in an open request with no job gets no reply today (`decide` returns `Closing::Nothing` with no open job number, `closing.rs:113` to `:115`): it now gets the close reply for a request, in `closing.rs` with no new `Closing` variant (`replies.rs:282` to `:283` already sends the text `answer_close` returns with `Closing::Nothing`, so `replies.rs`, T673's and T728's, is not edited) (the request is closed as `close_request` closes it, with its existing confirmation wording, or, if none fits, a new draft line for the copy panel). Tests in the new `tests/integration/tests/close_which_expiry.rs`, PostgreSQL, fake data only: \"Close which?\", then an unrelated reply, then \"2\" closes nothing; \"Close which?\" then \"2\" still closes job 2; \"never mind\" in a request with no job closes it and replies once. Every close test passes unchanged. Opus worker (Fable once the runner's `models` map names it, D-4761), Opus security review. Update the `intake` notes and `docs/decisions.md`.",
+   "title": "intake: \"Close which?\" expires on any other reply",
+   "goal": "Plan change D-4777 (Fable's intake audit, finding I3, MED, and the low finding; JOB-019, JOB-021, INT-038; D-1203). (1) \"Close which?\" never expires: `closing.rs` (`app/intake/src/closing.rs:79` to `:95`) writes `close_which` = `asked` and only a close answer clears it, so a lone number or ALL sent days later for another reason (`close_target`, `app/intake/src/rules.rs:663` to `:676`) still closes a job. While the latest `close_which` is `asked` (the mark match at `closing.rs:86` to `:90`), any reply that reaches `answer_close` and is neither a close answer nor a lone number (the `[t]` arm of `close_target`: `close_reading(words, &[n])` is `Close(Number(n))` for its own number) writes `close_which` = `dropped` in the same transaction; a lone number that is not open leaves the question waiting, as TD-JOB-05 (`tests/integration/tests/close_which.rs:228`) requires; a 911-list reply, opt-out or HELP never reaches `answer_close` and writes nothing, so a later lone number or ALL is no longer read as the answer; with no waiting question nothing is written. Plan change D-5161: the low finding (\"never mind\" with no job) is not built here: it needs a new template pair (`say` in `closing.rs:193` to `:196` would render `jobs_closed` with an empty `{job}`). `decide` still returns `Closing::Nothing` with no open job. Tests in the new `tests/integration/tests/close_which_expiry.rs`, PostgreSQL, fake data only: \"Close which?\", then \"the sink still drips\", then an open number closes nothing; \"Close which?\", then a ZIP, then an open number still closes that job; \"cancel\" alone still closes nothing. Every close test passes unchanged. Opus worker (Fable once the runner's `models` map names it, D-4761), Opus security review. Update the `intake` notes and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -50388,7 +50388,8 @@
    "tests": [],
    "decisions": [
     "D-1203",
-    "D-4777"
+    "D-4777",
+    "D-5161"
    ],
    "cites": [],
    "budget": {
@@ -50726,7 +50727,7 @@
    "id": "T778",
    "slug": "stuck-tasks-found",
    "title": "jobs, core and server: a dead Payment pending timer is revived, a task that died on its last try is reaped on a busy queue, and a slow queue read is not reported as the database being down",
-   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding s F32, F35 and F36; JOB-006, JOB-014, PRIV-007, OPS-004, OPS-007; D-2640, D-3144, D-4349). Three ways a stuck task is never found or is misreported. (1) F32: the daily backstop's `check_timer` (`app/jobs/src/timer_backstop.rs`) revives only a dead `jobs.timeout` task; a Payment pending job's wait is a `picks.payment_returned` task (`PAYMENT_RETURNED_KIND`, its key built in `payment_wait.rs`), and when that one is dead the job stays in Payment pending for good, never reaches a final status, and its PRIV-007 purge is never queued. `check_timer` now also runs `revive_dead` on that key when the job is in Payment pending and its own timer is alive, under the same `MOST_REVIVALS` cap, audit row and alert. (2) F35: `reap_expired` (`app/core/src/tasks.rs`) runs only on a poll that claimed nothing, so on a busy queue a task whose worker died on its last attempt is never dead-lettered, is invisible to the dead-letter alert, and `queue_health`'s oldest-waiting read (`app/core/src/queue_health.rs`), which has no `attempts < max_attempts` filter, counts it until `/healthz` answers 503. The reaper now runs on every poll that claimed fewer tasks than it asked for and at least once a minute whatever was claimed, and the oldest-waiting read leaves out a row no claim can take; `reap_expired`'s and `claim`'s signatures stay. (3) F36: `check` in `app/server/src/healthz.rs` reports a queue-read error or timeout as the database being down although its round trip has just passed; it now reports database up and worker not known to be running, the answer's shape and status codes otherwise unchanged. This task adds no migration: the two indexes for `queue_health`'s `max()` reads wait for a later plan change (see D-5081), and no row of `core.task` is deleted (a done row's dedupe key means once ever). Tests, fake data only: the new `tests/integration/tests/payment_returned_backstop.rs` (a dead `payment_returned` task on a Payment pending job is revived once and the job leaves Payment pending; after the cap, one High alert; one on a job that moved on is left alone) and `tests/integration/tests/stuck_task_health.rs` (a task at its last attempt with an expired lease, beside a steady supply of due tasks, is dead-lettered within a minute and counted by the dead-letter alert, and the probe never reports the worker down for it; a failed queue read answers database up). Every existing `timer_backstop`, task-queue and `healthz` test passes unchanged; if one pins the reaper to an empty poll, report it, do not change it. Build notes go to the end of each crate's `NOTES.md`; update `docs/decisions.md`.",
+   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding s F32, F35 and F36; JOB-006, JOB-014, PRIV-007, OPS-004, OPS-007; D-2640, D-3144, D-4349). Three ways a stuck task is never found or is misreported. (1) F32: the daily backstop's `check_timer` (`app/jobs/src/timer_backstop.rs`) revives only a dead `jobs.timeout` task; a Payment pending job's wait is a `picks.payment_returned` task (`PAYMENT_RETURNED_KIND`, its key built in `payment_wait.rs`), and when that one is dead the job stays in Payment pending for good, never reaches a final status, and its PRIV-007 purge is never queued. `check_timer` now also runs `revive_dead` on that key when the job is in Payment pending and its own timer is alive, under the same `MOST_REVIVALS` cap, audit row and alert; `Revival::Missing` and `Revival::Alive` on that key do nothing (no task is queued: missing is the normal state before the timer fires); the key repeats `payment_wait.rs`'s format. (2) F35: `reap_expired` (`app/core/src/tasks.rs`) runs only on a poll that claimed nothing, so on a busy queue a task whose worker died on its last attempt is never dead-lettered, is invisible to the dead-letter alert, and `queue_health`'s oldest-waiting read (`app/core/src/queue_health.rs`), which has no `attempts < max_attempts` filter, counts it until `/healthz` answers 503. The reaper now runs on every poll that claimed fewer tasks than it asked for and at least once a minute whatever was claimed, and the oldest-waiting read leaves out a row no claim can take; `reap_expired`'s and `claim`'s signatures stay; `Worker` gains no field (it is built as a struct literal in `tests/integration/tests/task_queue.rs` and `app/server/src/bin/worker.rs`): the last-reap time is a local in `claim_loop` passed to `spawn_due`, and the minute is read from `self.clock`, so a test advances a `ManualClock`. (3) F36: `check` in `app/server/src/healthz.rs` reports a queue-read error or timeout as the database being down although its round trip has just passed; it now answers 503 as today, with `status` \"down\", `database` \"up\" and `worker` \"unknown\" (a new `HealthState` field, built only in `healthz.rs`; `healthy()` is false for it), the answer's keys unchanged. This task adds no migration: the two indexes for `queue_health`'s `max()` reads wait for a later plan change (see D-5081), and no row of `core.task` is deleted (a done row's dedupe key means once ever). Tests, fake data only: the new `tests/integration/tests/payment_returned_backstop.rs` (a dead `payment_returned` task on a Payment pending job is revived once and the job leaves Payment pending; after the cap, one High alert; one on a job that moved on is left alone) and `tests/integration/tests/stuck_task_health.rs` (a task at its last attempt with an expired lease, beside a steady supply of due tasks, is dead-lettered within a minute and counted by the dead-letter alert, and the probe never reports the worker down for it; a failed queue read answers 503 with database up and worker unknown). Every existing `timer_backstop`, task-queue and `healthz` test passes unchanged; if one pins the reaper to an empty poll, report it, do not change it. Plan change D-5163: `app/server/CLAUDE.md` is near the D-5080 threshold, so this task's notes go to `NOTES.md` only. Build notes go to the end of each crate's `NOTES.md`; update `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -50773,7 +50774,8 @@
     "D-2640",
     "D-3144",
     "D-4349",
-    "D-5081"
+    "D-5081",
+    "D-5163"
    ],
    "cites": [],
    "budget": {
@@ -50965,49 +50967,51 @@
   {
    "id": "T782",
    "slug": "released-job-number-and-calls",
-   "title": "server and calls: the released job's page shows its job number and its call log",
-   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F21; PICK-024, BIZ-013; D-3664's logged gap). `job_page` in `app/server/src/business_portal.rs` builds the released job's page with `job_number: 0` and no calls, so a business reads \"Job 0\" and never sees the call log BIZ-013 and its no-show disputes rest on. After the page's existing ownership check (another business's pick, a member without \"Confirm and billing\" and a bad ID stay the one not-found answer, with nothing read first), the handler reads the pick's job through `own_pick_job` and its number through `jobs::api::job_number`, and the pick's calls through a new `calls::api::pick_call_log(db, pick)` in the new `app/calls/src/pick_call_log.rs` (exported by one line in the shared `api.rs`), which finds the pick's line as `pick_has_line` does and returns `call_log`'s rows, empty when the pick has no line. A failed read shows the page's existing failure answer, never job 0. The call rows hold what `call_log` already returns and no homeowner number. Tests in the new `app/server/tests/released_job_page.rs`, PostgreSQL through the assembled router, fake data only: a released pick's page shows its real job number and one planted call; a pick with no line shows the number and no call; another business's pick is still the one not-found answer. Every existing released-pick and door test passes unchanged. Close D-3664's gap line in `app/server/NOTES.md` and `docs/for-casey-review.md`; update `docs/decisions.md`.",
-   "type": "build",
+   "title": "server: the released job's page shows its real job number",
+   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F21; PICK-024, BIZ-013; D-3664's logged gap). `job_page` in `app/server/src/business_portal.rs` builds the released job's page with `job_number: 0` and no calls, so a business reads \"Job 0\"; the call log (BIZ-035) stays empty and goes to the post-launch list (D-5162). After the page's existing ownership check (another business's pick, a member without \"Confirm and billing\" and a bad ID stay the one not-found answer, with nothing read first), the handler reads the pick's job through `own_pick_job` and its number through `jobs::api::job_number`. A failed read shows the page's existing failure answer, never job 0. Tests in the new `app/server/tests/released_job_page.rs`, PostgreSQL through the assembled router, fake data only: a released pick's page shows its real job number; a pick whose job has no number row gets the failure answer, never job 0; another business's pick is still the one not-found answer. Every existing released-pick and door test passes unchanged. Plan change D-5162: the task owns `tests/e2e/business_portal_served.spec.ts` and adds to `seedReleasedPick` the `payments.pick_fee` and `jobs.job_number` rows (as `tests/e2e/keyed.ts:140` to `:150` does); in the shared `tests/a11y/page_states.ts` it adds to the `RELEASE_STATES` seed only a `jobs.job` row the pick references, its `jobs.job_number` row and a `payments.pick_fee` row (model: line 331), changing no `shows`, `hides` or check (D-1772). Before relying on it, check that `quoted_job` in `business_portal_route.rs` issues a job number. Edit D-3664's gap line in `app/server/NOTES.md` in place (number real, calls post-launch); add the call log to the Post-launch list in `docs/for-casey-review.md`; update `docs/decisions.md`.",
+   "type": "harness",
    "phase": 1,
    "stage": "5",
    "module": "server",
    "deps": [
-    "T526"
+    "T526",
+    "T644"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "privacy",
-    "security"
+    "security",
+    "harness"
    ],
    "owns": [
     "app/server/src/business_portal.rs",
-    "app/calls/src/pick_call_log.rs",
-    "app/server/tests/released_job_page.rs"
+    "app/server/tests/released_job_page.rs",
+    "tests/e2e/business_portal_served.spec.ts"
    ],
    "reads": [
     "docs/architecture.md",
     "docs/code-docs.md",
     "docs/spec/quotes-pick.md",
-    "docs/spec/businesses.md",
-    "app/calls/src/pick_line.rs"
+    "tests/a11y/page_states.ts",
+    "tests/e2e/keyed.ts"
    ],
    "requirements": [
-    "PICK-024",
-    "BIZ-013"
+    "PICK-024"
    ],
    "tests": [],
    "decisions": [
     "D-3664",
     "D-1739",
-    "D-5081"
+    "D-5081",
+    "D-5162"
    ],
    "cites": [],
    "budget": {
     "files": 3,
-    "lines": 280,
-    "context_pct": 23
+    "lines": 200,
+    "context_pct": 32
    },
    "checks": [
     "Ci",
@@ -51016,7 +51020,7 @@
    ],
    "branch": "claude/task/T782-released-job-number-and-calls",
    "prompt": "kit/prompts/T782.md",
-   "acceptance": "`app/server/tests/released_job_page.rs` passes against PostgreSQL with every listed case, the job-number case failing on `main` before the change; every existing released-pick and door-matrix test passes unchanged."
+   "acceptance": "`app/server/tests/released_job_page.rs` passes against PostgreSQL with every listed case, the job-number case failing on `main` before the change; every existing released-pick and door-matrix test passes unchanged; TD-BIZ-42's e2e and the `Ally` released-job state pass with the added seed rows."
   },
   {
    "id": "T783",
@@ -51074,8 +51078,8 @@
   {
    "id": "T784",
    "slug": "returned-mailbox-no-notice",
-   "title": "businesses: a returned mailbox gets no job card, pick or money notice",
-   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F40; BIZ-040, BIZ-055, SEC-025; D-1846, D-4327). `may_get_notices` exists but only the businesses' own account emails ask it: `channel_preference::notice_recipients` and `team::notice_addresses` never look at `businesses.mailbox_check`, so once T659 marks an address returned (a hard bounce or a spam complaint) it keeps getting job cards, pick and Confirm notices and money notices, which costs the shared sender its standing (SEC-025). Both readers now leave out a mailbox whose check row has `returned_at` set: in `notice_recipients` that person's `email` is false while their approved phones still get texts (BIZ-040's \"texts continue\"), and in `notice_addresses` the returned sign-in address is dropped while a verified backup address is still used where `backup_address::notice_addresses` applies. A mailbox with no check row, or one not yet verified, is still sent to: D-1846 does not hold a business with no row, so the filter is returned-only; say so in the decision entry. No caller changes. Tests in the new `tests/integration/tests/returned_mailbox_notices.rs`, PostgreSQL, fake data only, marking the address through T659's `mark_returned`: a returned owner mailbox gets no card email while the owner's approved phone still gets the card text; an EMERGENCY card leaves it out of both the immediate and the 8 a.m. task; a returned member with a verified backup gets the pick notice at the backup; with every mailbox returned and no phone nothing is queued and `queue_card_notice` answers false; a mailbox with no check row still gets its card. `tests/integration/tests/business_event_emails.rs` and every existing card and notice test pass unchanged. Remove the \"Not wired yet\" line in `app/businesses/NOTES.md`; update `docs/decisions.md`.",
+   "title": "businesses: a returned mailbox gets no job card email, pick or money notice",
+   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F40; BIZ-040, BIZ-055, SEC-025; D-1846, D-4327). `may_get_notices` exists but only the businesses' own account emails ask it: `channel_preference::notice_recipients` and `backup_address::notice_addresses` never look at `businesses.mailbox_check`, so once T659 marks an address returned (a hard bounce or a spam complaint) it keeps getting job cards, pick and Confirm notices and money notices, which costs the shared sender its standing (SEC-025). Both readers now leave out a mailbox whose check row has `returned_at` set: in `notice_recipients` that person's `email` is false while their approved phones still get texts (BIZ-040's \"texts continue\"), and `backup_address::notice_addresses` drops a returned main address for `PicksAndRelease` and `Money` only, keeping that person's verified backup; `Cards` and `Account` lists stay as they are, because `owner_addresses` and `send_to_owner` find the owner by position; `team.rs` is unchanged. A mailbox with no check row, or one not yet verified, is still sent to: D-1846 does not hold a business with no row, so the filter is returned-only; say so in the decision entry. No caller changes. Tests in the new `tests/integration/tests/returned_mailbox_notices.rs`, PostgreSQL, fake data only, marking the address through `businesses::api::mark_returned`: a returned owner mailbox gets no card email while the owner's approved phone still gets the card text; an EMERGENCY card leaves it out of both the immediate and the 8 a.m. task; a returned member with a verified backup gets the pick notice at the backup; with every mailbox returned and no phone nothing is queued and `queue_card_notice` answers false; a mailbox with no check row still gets its card; a returned member's Money notice goes only to their verified backup. `tests/integration/tests/business_event_emails.rs`, `tests/integration/tests/business_account_email_fixes.rs` and every existing card and notice test pass unchanged. Plan change D-5165: remove no `app/businesses/NOTES.md` line (line 222 lists other unwired parts); append one `change` line; update `docs/decisions.md`.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -51093,7 +51097,7 @@
    ],
    "owns": [
     "app/businesses/src/channel_preference.rs",
-    "app/businesses/src/team.rs",
+    "app/businesses/src/backup_address.rs",
     "tests/integration/tests/returned_mailbox_notices.rs"
    ],
    "reads": [
@@ -51112,7 +51116,8 @@
    "decisions": [
     "D-1846",
     "D-4327",
-    "D-5081"
+    "D-5081",
+    "D-5165"
    ],
    "cites": [],
    "budget": {
@@ -51133,27 +51138,33 @@
    "id": "T785",
    "slug": "dispute-without-due-date",
    "title": "payments: a dispute with no usable evidence date is still recorded and still blocks refunds",
-   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F26; FEE-026, FEE-027; D-2073 (1)). A `charge.dispute.created` whose `evidence_details.due_by` is null is read as unreadable (`app/payments/src/routes.rs`): one High alert with no subject, no `payments.dispute` row and no ledger entry, so FEE-026's refund block never applies and an automatic refund can go out on a disputed charge; D-2073 (1) said Casey records such a dispute by hand, but no screen or caller exists for that. A `due_by` of 0 or below is stored as 1970 and its tasks fire at once. The new `migrations/0219_payments_dispute_due_optional.sql` drops `NOT NULL` from `payments.dispute.due_at`. The webhook route now treats a null, zero, negative or already-past `due_by` as no date and still records the dispute: the dispute row, the ledger entry and the dispute alert are written exactly as for a dated one, so refunds on that pick are blocked and flagged, and only the submit task and the due reminders, which need a date, are skipped; the alert says the evidence date is missing and names the pick, so Casey can act in Stripe. `record_dispute`'s existing signature stays for dated disputes; the undated case is a new entry beside it in `app/payments/src/disputes.rs`, so no done test changes. Every reader of `payments.dispute.due_at` handles a missing date: the ones in these two files, and `place_dispute_holds` in `app/payments/src/purge.rs`, which this task also owns for that read alone: an undated dispute's PRIV-007 hold counts from `opened_at` in place of the missing date, and the decision entry and `docs/for-casey-review.md` say so. Tests in the new `tests/integration/tests/dispute_no_due_date.rs`, PostgreSQL with the Stripe stand-in's signing, fake data only, the event bodies built in the test: `due_by` null makes one dispute row with no date and one ledger entry, and a later refund on that pick is blocked and flagged; `due_by` 0 and a past date do the same and queue no task due in the past; an undated dispute still places its retention hold; a dated dispute behaves as today. Every existing dispute and refund test passes unchanged. It is money code under the `payments` 95% branch floor. Build notes go to the end of `app/payments/NOTES.md`; update `docs/architecture.md` and `docs/decisions.md`.",
-   "type": "build",
+   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F26; FEE-026, FEE-027; D-2073 (1)). A `charge.dispute.created` whose `evidence_details.due_by` is null is read as unreadable (`app/payments/src/routes.rs`): one High alert with no subject, no `payments.dispute` row and no ledger entry, so FEE-026's refund block never applies and an automatic refund can go out on a disputed charge; D-2073 (1) said Casey records such a dispute by hand, but no screen or caller exists for that. A `due_by` of 0 or below is stored as 1970 and its tasks fire at once. The new `migrations/0219_payments_dispute_due_optional.sql` drops `NOT NULL` from `payments.dispute.due_at`. The webhook route now treats a null, zero, negative or already-past `due_by` as no date and still records the dispute: the dispute row, the ledger entry and the dispute alert are written exactly as for a dated one, so refunds on that pick are blocked and flagged, and only the submit task and the due reminders, which need a date, are skipped; the alert says the evidence date is missing and names the pick, so Casey can act in Stripe. `record_dispute`'s existing signature stays for dated disputes; the undated case is a new entry beside it in `app/payments/src/disputes.rs`, so no done test changes except TD-FEE-43's `td_fee_43_an_unreadable_event_alerts_casey_once`, by logged spec change (D-5164): its unreadable dispute becomes one with no `payment_intent`; the odd refund status, the alert count 2, the no-dispute-row and High assertions stay. Every reader of `payments.dispute.due_at` handles a missing date: the ones in these two files, `DisputeView.due_at` (now `Option<Timestamp>`, `models.rs`), `dispute_row` in `app/portals/src/owner_portal.rs` (an undated dispute shows `date not given by Stripe` as `due` and, unless submitted, the standing 'You need to counter or accept this one in Stripe.', never the 2-days line; no template change), and `place_dispute_holds` in `app/payments/src/purge.rs`, which this task also owns for that read alone: an undated dispute's PRIV-007 hold counts from `opened_at` in place of the missing date, and the decision entry and `docs/for-casey-review.md` say so. Tests in the new `tests/integration/tests/dispute_no_due_date.rs`, PostgreSQL with the Stripe stand-in's signing, fake data only, the event bodies built in the test: `due_by` null makes one dispute row with no date and one ledger entry, and a later refund on that pick is blocked and flagged; `due_by` 0 and a past date do the same and queue no task due in the past; an undated dispute still places its retention hold; a dated dispute behaves as today; a negative `due_by` is undated; a null `due_by` raises no `UNREADABLE_EVENT_ALERT`; `disputes_of` returns `None` for the date; the owner refund page line for an undated dispute; and the null, zero, negative and past `due_by` paths and the undated `purge.rs:41` read each get a case (95% branch floor). Every existing dispute and refund test passes unchanged except that one TD-FEE-43 case. It is money code under the `payments` 95% branch floor. Build notes go to the end of `app/payments/NOTES.md`; update `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "harness",
    "phase": 2,
    "stage": "6",
    "module": "payments",
    "deps": [
-    "T381"
+    "T381",
+    "T738",
+    "T779"
    ],
    "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
     "money",
-    "security"
+    "security",
+    "harness"
    ],
    "owns": [
     "app/payments/src/disputes.rs",
     "app/payments/src/routes.rs",
     "app/payments/src/purge.rs",
     "migrations/0219_payments_dispute_due_optional.sql",
-    "tests/integration/tests/dispute_no_due_date.rs"
+    "tests/integration/tests/dispute_no_due_date.rs",
+    "app/payments/src/models.rs",
+    "app/portals/src/owner_portal.rs",
+    "tests/integration/tests/stripe_webhook_dispatch.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -51168,13 +51179,14 @@
    "tests": [],
    "decisions": [
     "D-2073",
-    "D-5081"
+    "D-5081",
+    "D-5164"
    ],
    "cites": [],
    "budget": {
-    "files": 5,
-    "lines": 350,
-    "context_pct": 22
+    "files": 8,
+    "lines": 550,
+    "context_pct": 39
    },
    "checks": [
     "Ci",
@@ -51183,7 +51195,7 @@
    ],
    "branch": "claude/task/T785-dispute-without-due-date",
    "prompt": "kit/prompts/T785.md",
-   "acceptance": "`tests/integration/tests/dispute_no_due_date.rs` passes against PostgreSQL with every listed case, the null case failing on `main` before the change (no dispute row there); every existing dispute and refund test passes unchanged; the migration only drops the `NOT NULL`; `app/payments/` stays at or above its branch floor."
+   "acceptance": "`tests/integration/tests/dispute_no_due_date.rs` passes against PostgreSQL with every listed case, the null case failing on `main` before the change (no dispute row there); every existing dispute and refund test passes unchanged except that one TD-FEE-43 case; the migration only drops the `NOT NULL`; `app/payments/` stays at or above its branch floor."
   }
  ]
 }

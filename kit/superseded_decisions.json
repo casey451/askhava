@@ -121,6 +121,10 @@
   "D-4763": {
    "by": "D-5158",
    "cut": " and cancels it at Stripe"
+  },
+  "D-2073": {
+   "by": "D-5164",
+   "cut": "Casey records such a dispute by hand, because `record_dispute` (`disputes.rs`, not T259's file) needs a due date for its submit task (FEE-027)"
   }
  }
 }
