@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-21T16:33:28Z by runner d3419f118886 (actions).
+Updated 2026-11-21T16:33:53Z by runner d3419f118886 (actions).
 
 **Building: T608 in progress since 15:59Z; 582 of 730 done; week 30% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 582 of 730 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T608 claimed 15:59Z, lease until 18:59Z; lane 3: T786 claimed 15:59Z, lease until 18:59Z; lane 5: T787 claimed 15:36Z, lease until 18:36Z
+- **Lane:** lane 1: T608 claimed 15:59Z, lease until 18:59Z; lane 5: T787 claimed 15:36Z, lease until 18:36Z
 - **Week:** 30% used, 132.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:23Z, 10 min before this update
 - **Keeper:** last ran 16:23Z, next wake 18:39Z
@@ -40,6 +40,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T786 | server: crate guide trimmed to 5,500 bytes, the detail moved | MERGE_PENDING | 1 | 34 min | 16:33Z |  |
 | T655 | businesses: an unknown ROC license status warns at 24 hours, | MERGE_PENDING | 2 | 2 h 34 min | 16:05Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
 | T789 | Tests (harness): TD-INT-47's no-contact check ignores the ra | done | 1 | 27 min | 15:38Z |  |
 | T304 | server and portals: the owner refund review, the audit log v | done | 2 | 2 h 44 min | 15:18Z | PLAN GAP: app/portals/templates/owner_audit_log.html (owned by T205) and app/portals/templates/health.html (owned by T47 |
@@ -151,8 +152,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T608 (lease until 2026-11-21T18:59:45Z)
-- lane 3: T786 (lease until 2026-11-21T18:59:05Z)
 - lane 5: T787 (lease until 2026-11-21T18:36:33Z)
 
 ## Last usage reading
-- {"task": "T655", "at": "2026-11-21T16:05:24Z", "output_tokens": 134635, "cache_creation_input_tokens": 384412, "cache_read_input_tokens": 16078105, "input_tokens": 271}
+- {"task": "T786", "at": "2026-11-21T16:33:27Z", "cache_creation_input_tokens": 62894, "cache_read_input_tokens": 641340, "input_tokens": 41, "output_tokens": 15274}
