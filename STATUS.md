@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-21T15:38:34Z by runner 410e55ef6fb2 (actions).
+Updated 2026-11-21T15:38:45Z by runner 410e55ef6fb2 (actions).
 
 **Building: T655 in progress since 13:31Z; 580 of 730 done; week 30% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 580 of 730 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T655 claimed 13:31Z, lease until 16:31Z; lane 4: T789 claimed 15:10Z, lease until 18:10Z; lane 5: T787 claimed 15:36Z, lease until 18:36Z
+- **Lane:** lane 2: T655 claimed 13:31Z, lease until 16:31Z; lane 5: T787 claimed 15:36Z, lease until 18:36Z
 - **Week:** 30% used, 133.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:38Z, 0 min before this update
 - **Keeper:** last ran 15:38Z, next wake 16:34Z
@@ -40,6 +40,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T789 | Tests (harness): TD-INT-47's no-contact check ignores the ra | MERGE_PENDING | 1 | 27 min | 15:38Z |  |
 | T304 | server and portals: the owner refund review, the audit log v | MERGE_PENDING | 2 | 2 h 44 min | 15:18Z | PLAN GAP: app/portals/templates/owner_audit_log.html (owned by T205) and app/portals/templates/health.html (owned by T47 |
 | T776 | intake: a move out of Arizona and a property-management requ | done | 3 | 99 min | 14:37Z | PLAN GAP: outside ownership: app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml) / Worker: D-5160's three tr |
 | T655 | businesses: an unknown ROC license status warns at 24 hours, | QUEUED | 1 | 2 h 36 min | 13:24Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
@@ -152,8 +153,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T655 (lease until 2026-11-21T16:31:07Z)
-- lane 4: T789 (lease until 2026-11-21T18:10:14Z)
 - lane 5: T787 (lease until 2026-11-21T18:36:33Z)
 
 ## Last usage reading
-- {"task": "T304", "at": "2026-11-21T15:18:26Z", "cache_read_input_tokens": 28000006, "output_tokens": 131783, "cache_creation_input_tokens": 494437, "input_tokens": 327}
+- {"task": "T789", "at": "2026-11-21T15:38:10Z", "output_tokens": 8517, "cache_read_input_tokens": 495399, "input_tokens": 37, "cache_creation_input_tokens": 59614}
