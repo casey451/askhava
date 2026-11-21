@@ -58,9 +58,9 @@ The one order INT-043 names (D-446). Exact texts are in the rows cited; `<…>` 
 
 | Step | Regular | Urgent ("Today, it's urgent") | 911 list | Night (8 p.m. to 8 a.m.) | Web chat |
 |---|---|---|---|---|---|
-| 1 | First text in (CON-005) | Same | Same | Same | Chat started (CON-025) |
+| 1 | First text in (CON-005) | Same | Same | Same | Web-and-email mode only: chat started (CON-025); with texting on, the chat shows the number and asks her to text it |
 | 2 | 911 check runs first (INT-002); no match | Same | Match: INT-004 text, then the first reply | Same as regular or 911 | Same, shown on the page |
-| 3 | First reply (CON-031) | Same | Same | Same | Shown above the chat box |
+| 3 | First reply (CON-031) | Same | Same | Same | Web-and-email mode: shown above the chat box |
 | 4 | ZIP and area check (INT-022), before the trade check so the coverage line counts businesses in her town (D-460) | Same | After SAFE (INT-025) | Same | Same |
 | 5 | Trade check and coverage line (INT-016, INT-017) | Same | Then the trade check | Same | Same |
 | 6 | "How soon?" (INT-030) | Answer 1 | Same | Same | Same |

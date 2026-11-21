@@ -33698,7 +33698,8 @@
     "T803",
     "T802",
     "T801",
-    "T804"
+    "T804",
+    "T805"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -35178,7 +35179,8 @@
     "T801",
     "T802",
     "T803",
-    "T804"
+    "T804",
+    "T805"
    ],
    "model": null,
    "effort": null,
@@ -36537,7 +36539,8 @@
     "T719",
     "T736",
     "T741",
-    "T760"
+    "T760",
+    "T801"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -49458,7 +49461,8 @@
     "T742",
     "T748",
     "T309",
-    "T609"
+    "T609",
+    "T804"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -51997,7 +52001,7 @@
    "id": "T800",
    "slug": "twilio-campaign-package",
    "title": "Legal docs and tests (harness): the Twilio campaign submission package, one opt-in path, five samples, and the privacy policy's vendor lines",
-   "goal": "Plan change D-5278 (Fable's decisions for Casey under D-305; TERMS-011, TERMS-013, TERMS-014, TERMS-029, TERMS-030, CON-005, CON-033, TXT-043; findings checked against Twilio and CTIA: 30951 third-party lead generation with no resubmission (toll-free 30468 the same), 30931/30925 optional unchecked consent, Advanced Opt-Out, a `help_message` of 20 to 320 characters, 2 to 5 samples with [brackets], an approved campaign cannot be edited, and the rejection codes from December 9, 2026: 30977, 30984 unfilled placeholders, 30988 a chat widget named but absent, 30965, 30987, 30966, 30978). Rewrite `docs/legal/twilio-campaign.md` (new version line) as the submission package: (1) section 1: register only after Twilio's written answer to `docs/handoff/Twilio_question.md`; the stale business-texting question goes (D-424 settled it); (2) section 2: brand type Low-Volume Standard and use case Low Volume Mixed, named separately, unless Twilio's answer says otherwise; no \"Don't ask for pre-clearance\" (D-305, TERMS-014); (3) section 3: a full, honest description (a quote-request service; the homeowner texts first after a public page that shows the number and the SMS disclosures; only Laftly texts her, only about her request; the business she picks pays Laftly a fixed introduction fee of $25, $75 or $199 by job size, some jobs fee-free, and only then sees her first name and the job address; her phone and SMS consent never go to a business; calls go through a masked number; no marketing; a person asking to join as a business gets one reply with the sign-up link; texts in English and, to people who write in Spanish, in Spanish, Spanish conversations being switched on later); it never names the web chat (30988); (4) sections 5 and 6: message_flow names one opt-in path, the homeowner's own first inbound text after the public call-to-action page, and the chat's Verify code is not opt-in (CON-005, CON-025); five samples, each a real template word for word: `consent`, `first_quote`, `text_pick_done`, `whos_calling` and the Spanish `consent`; the STOP sample goes (the opt-out field covers it) and `business_signup_reply` is described in the description, staying in the product; the Console copy uses [brackets] for filled values and no unfilled placeholder (30984), while this file keeps the templates as written for the docs test; (5) a HELP field text of 320 characters or fewer: \"Laftly: quote requests for home jobs in Lake Havasu City, AZ. Help: laftly.com/help or help@laftly.com. Msg frequency varies. Msg & data rates may apply. Reply STOP to opt out.\"; and the opt-out field's text; (6) section 7: the first registration declares English and Spanish with the Spanish consent sample (the in-place edit plan goes); (7) section 8: a 30951 or other lead-generation refusal means no registration and no toll-free fallback: the service stays in web-and-email mode and the choice goes back to Casey (CON-033); (8) a pre-submit check, also named in T127's step: the description and samples against the December 9 codes above, the public call-to-action page live at its URL, and no unfilled placeholder. `tests/docs/test_campaign.py` (DONE) pins the six samples and the old description (`SAMPLES`, `DESCRIPTION`); by logged spec change (D-5278, `BUILD_BRIEF.md:69`) it pins the five new samples, the Spanish sample as a sample, and the new description, every other check kept. Also in `docs/legal/privacy-policy.md` (new version line): codes go by Twilio Verify text message (the vendor line), and \"never shared with any business or third party\" becomes \"never shared with any business or marketer; our messaging vendor processes it to deliver texts\", with `tests/docs/test_privacy_policy.py` (DONE) changed only for that sentence. `python3 scripts/check_legal_docs.py` passes. Update `docs/decisions.md`.",
+   "goal": "Plan change D-5278 (Fable's decisions for Casey under D-305; TERMS-011, TERMS-013, TERMS-014, TERMS-029, TERMS-030, CON-005, CON-033, TXT-043; findings checked against Twilio and CTIA: 30951 third-party lead generation with no resubmission (toll-free 30468 the same), 30931/30925 optional unchecked consent, Advanced Opt-Out, a `help_message` of 20 to 320 characters, 2 to 5 samples with [brackets], an approved campaign cannot be edited, and the rejection codes from December 9, 2026: 30977, 30984 unfilled placeholders, 30988 a chat widget named but absent, 30965, 30987, 30966, 30978). Rewrite `docs/legal/twilio-campaign.md` (new version line) as the submission package: (1) section 1: register only after Twilio's written answer to `docs/handoff/Twilio_question.md`; the stale business-texting question goes (D-424 settled it); (2) section 2: brand type Low-Volume Standard and use case Low Volume Mixed, named separately, unless Twilio's answer says otherwise; no \"Don't ask for pre-clearance\" (D-305, TERMS-014); (3) section 3: a full, honest description (a quote-request service; the homeowner texts first after a public page that shows the number and the SMS disclosures; only Laftly texts her, only about her request; the business she picks pays Laftly a fixed introduction fee of $25, $75 or $199 by job size, some jobs fee-free, and only then sees her first name and the job address; her phone and SMS consent never go to a business; calls go through a masked number; no marketing; a person asking to join as a business gets one reply with the sign-up link; texts in English and, to people who write in Spanish, in Spanish, Spanish conversations being switched on later); it never names the web chat (30988); (4) sections 5 and 6: message_flow names one opt-in path, the homeowner's own first inbound text after the public call-to-action page, and the chat's Verify code is not opt-in (CON-005, CON-025); five samples, each a real template word for word: `consent`, `first_quote`, `text_pick_done`, `whos_calling` and the Spanish `consent`; the STOP sample goes (the opt-out field covers it) and `business_signup_reply` is described in the description, staying in the product; the Console copy uses [brackets] for filled values and no unfilled placeholder (30984), while this file keeps the templates as written for the docs test; (5) a HELP field text of 320 characters or fewer: \"Laftly: quote requests for home jobs in Lake Havasu City, AZ. Help: laftly.com/help or help@laftly.com. Msg frequency varies. Msg & data rates may apply. Reply STOP to opt out.\"; and the opt-out field's text; (6) section 7: the first registration declares English and Spanish with the Spanish consent sample (the in-place edit plan goes); (7) section 8: a 30951 or other lead-generation refusal means no registration and no toll-free fallback: the service stays in web-and-email mode and the choice goes back to Casey (CON-033); (8) a pre-submit check, also named in T127's step: the description and samples against the December 9 codes above, the public call-to-action page live at its URL, and no unfilled placeholder. `tests/docs/test_campaign.py` (DONE) pins the six samples and the old description (`SAMPLES`, `DESCRIPTION`); by logged spec change (D-5278, `BUILD_BRIEF.md:69`) it pins the five new samples, the Spanish sample as a sample, and the new description, every other check kept. (9) the HELP field registers exactly the one HELP text a person actually gets: with the provider's Advanced Opt-Out on, Twilio's own HELP reply is the one a subscribed person gets only if Laftly's is off, so the console keeps the provider's HELP auto-reply off and the field is Laftly's `help_reply` (CON-018) as sent, within 320 characters as the field takes it, or, if the field requires the short text above, the provider's HELP reply is set to that same text and Laftly's `help_reply` stays the only reply sent (state which in the file); (10) the opt-out field is pinned to the exact CON-009 English and Spanish confirmations, the same texts `stand_ins/provider_optout.json` holds, and a docs check compares them. Also in `docs/legal/privacy-policy.md` (new version line): the chat-code opt-in sentence at `:56` goes (\"your first text … is your OK to get automated texts about your own request\" only, D-5279), codes go by Twilio Verify text message (the vendor line), and \"never shared with any business or third party\" becomes \"never shared with any business or marketer; our messaging vendor processes it to deliver texts\", with `tests/docs/test_privacy_policy.py` (DONE) changed only for those sentences; and in `docs/legal/homeowner-terms.md` (new version line) section 7 (`:55`) drops the chat-code opt-in clause the same way. `python3 scripts/check_legal_docs.py` passes. Update `docs/decisions.md`.",
    "type": "harness",
    "model": "claude-sonnet-5-5",
    "review_areas": [
@@ -52009,7 +52013,8 @@
     "docs/legal/twilio-campaign.md",
     "tests/docs/test_campaign.py",
     "docs/legal/privacy-policy.md",
-    "tests/docs/test_privacy_policy.py"
+    "tests/docs/test_privacy_policy.py",
+    "docs/legal/homeowner-terms.md"
    ],
    "reads": [
     "docs/spec/consent.md",
@@ -52030,9 +52035,9 @@
     "D-5281"
    ],
    "budget": {
-    "files": 4,
+    "files": 5,
     "lines": 300,
-    "context_pct": 12
+    "context_pct": 13
    },
    "acceptance": "`python3 -m pytest tests/docs -q` and `python3 scripts/check_legal_docs.py` pass; the five samples equal their templates; the HELP field text is 320 characters or fewer; the description names the fee and the release and never the chat; no unfilled placeholder is in the Console copy.",
    "branch": "claude/task/T800-twilio-campaign-package",
@@ -52060,7 +52065,10 @@
     "T593",
     "T343",
     "T644",
-    "T763"
+    "T763",
+    "T745",
+    "T676",
+    "T671"
    ],
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
@@ -52073,8 +52081,8 @@
    ],
    "id": "T801",
    "slug": "chat-code-not-optin",
-   "title": "intake and site (harness): the chat's Verify code verifies the number only; texts start only when she texts in",
-   "goal": "Plan change D-5279 (Fable's decision for Casey under D-305; CON-005 and CON-025 as reworded; TXT-021, TXT-038, INT-047, SEC-014). The campaign declares one opt-in path, the homeowner's own first inbound text; today the right chat code queues the consent text as her first text and records `web_chat` consent (`app/intake/src/web_chat.rs` `check_code`, its module doc at `:12` to `:16`). This task: (1) the right code verifies the number for the chat and opens her request as today, but queues no consent text and records no SMS consent; (2) while her number has no texting consent record, nothing is texted to it: her chat turns show their replies in the chat only, and her updates go by her quote page and email, as in web-and-email mode (TXT-021); the chat says once, after the code: \"To get texts about this request, text {number} from this phone.\" (draft copy for the copy panel, WORD-028), and her first inbound text to the number then gets the full consent text and records consent as any first text does (CON-005, CON-027 for an open request); (3) the request page (`app/site/templates/request.html`, `app/site/src/chat.rs`) drops the chat's SMS opt-in wording and shows the Laftly number with the SMS disclosures as the call to action for texting. Done tests that pin the code as opt-in change by logged spec change (D-5279, `BUILD_BRIEF.md:69`) only in those assertions: `tests/integration/tests/web_chat.rs`, `app/server/tests/web_chat_route.rs`, `tests/e2e/web_chat.spec.ts` and `tests/integration/tests/consent_records.rs` (the `web_chat` consent record and the queued consent text after the code); find every other such assertion with `grep -rn 'web_chat' tests app/server/tests` and report any in a file this task does not own as a plan gap. Consent: Opus worker, Opus consent and privacy review, two review rounds. Update `app/intake/CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "title": "intake and site (harness): with texting on, the web chat only shows the number and the SMS disclosures and asks her to text it; a chat consent record never permits a text",
+   "goal": "Plan change D-5279 (Fable's decision for Casey under D-305; CON-005, CON-007, CON-025 and TXT-034 as reworded; TXT-021, TXT-038). Review round 1 chose the narrow path, because the text path stops at every step without a consent record (`order_dispatch.rs:327`, `:431`, `service.rs:878`, `quote_updates.rs:115`). This task: (1) while homeowner texting is on (`messaging::api` mode, TXT-021), the web chat (`app/intake/src/web_chat.rs`, `app/site/src/chat.rs`, `app/site/templates/request.html`) has no phone or code step and opens no request: its start screen shows the Laftly number with the SMS disclosures (message frequency, rates, HELP, STOP, the terms and privacy links) and the 18-or-older line, and says \"Text {number} from your phone to continue.\" (draft copy for the copy panel, WORD-028); a message typed there gets the same answer, except that a 911-list match still shows the INT-004 text and a business-intent message still shows `business_signup_reply` (shown, never texted); her first inbound text then opens the request and gets the full consent text as any first text does; (2) in web-and-email mode the chat keeps today's behaviour (the consent text above the chat box, the Verify code, a `web_chat` consent record and the chat-run request); (3) a `web_chat` consent record never permits a text: `models::contact_consented` (`app/intake/src/models.rs`, read by `service::may_text`, `service.rs:890`) counts only consent records of the text channel, while `card_allowed` keeps counting any record, so a web-and-email request keeps its steps and its number is texted only after it texts in once texting is on. Done tests that run the chat with texting on change by logged spec change (D-5279, `BUILD_BRIEF.md:69`) only to expect the new start screen or to set web-and-email mode where they test the chat-run request: `tests/integration/tests/web_chat.rs`, `app/server/tests/web_chat_route.rs`, `tests/e2e/web_chat.spec.ts`, `tests/integration/tests/consent_records.rs`, `app/server/tests/home_request_box.rs` and `tests/e2e/j1_homeowner.spec.ts`; the shared `tests/a11y/page_states.ts` `/request` entries are updated add-only for the new screen. Run every test that drives the chat (`grep -rln 'web_chat\\|/request' tests app/server/tests`) and report one this task does not own that fails as a plan gap. Consent: Opus worker, Opus consent and privacy review, two review rounds. Update `app/intake/CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
    "type": "harness",
    "model": "claude-opus-5-5",
    "review_areas": [
@@ -52084,12 +52092,15 @@
    ],
    "owns": [
     "app/intake/src/web_chat.rs",
+    "app/intake/src/models.rs",
     "app/site/src/chat.rs",
     "app/site/templates/request.html",
     "tests/integration/tests/web_chat.rs",
     "app/server/tests/web_chat_route.rs",
     "tests/e2e/web_chat.spec.ts",
-    "tests/integration/tests/consent_records.rs"
+    "tests/integration/tests/consent_records.rs",
+    "app/server/tests/home_request_box.rs",
+    "tests/e2e/j1_homeowner.spec.ts"
    ],
    "reads": [
     "docs/architecture.md",
@@ -52100,8 +52111,10 @@
    ],
    "requirements": [
     "CON-005",
+    "CON-007",
     "CON-025",
     "TXT-021",
+    "TXT-034",
     "TXT-038"
    ],
    "decisions": [
@@ -52109,11 +52122,11 @@
     "D-470"
    ],
    "budget": {
-    "files": 7,
-    "lines": 600,
-    "context_pct": 30
+    "files": 10,
+    "lines": 700,
+    "context_pct": 39
    },
-   "acceptance": "Every test in the owned files passes with only the code-as-opt-in assertions changed; after the right code nothing is queued as a text and no SMS consent is recorded; her first inbound text then gets the consent text; the request page shows the number with the SMS disclosures and no chat opt-in wording; Ally passes.",
+   "acceptance": "Every test in the owned files passes with only the chat-with-texting-on assertions changed; with texting on the chat opens no request and shows the number with the SMS disclosures; her first inbound text gets the consent text; in web-and-email mode the chat behaves as before; a `web_chat` consent record never lets `may_text` answer yes; Ally passes.",
    "branch": "claude/task/T801-chat-code-not-optin",
    "prompt": "kit/prompts/T801.md"
   },
@@ -52148,7 +52161,7 @@
    "id": "T802",
    "slug": "coverage-us-numbers",
    "title": "site (harness): the coverage page says texts work with US numbers and Canada is not confirmed",
-   "goal": "Plan change D-5281 (Fable's decision for Casey under D-305; WEB-023 as reworded). Canadian numbers are not confirmed for the campaign, so the coverage page (`app/site/templates/coverage.html:30` to `:31`) says \"Texts work with US mobile numbers. Canadian numbers are not confirmed yet.\" under a heading that fits, in place of \"Texting from Canada\" and \"Canadian numbers work. Your phone company may charge roaming fees.\"; the DONE pins change only for that line by logged spec change (D-5281): `app/site/src/pages.rs:1092`, `tests/e2e/site_help_pages.spec.ts` and the shared `tests/a11y/page_states.ts:436` entry's expected words. The HELP reply's Canadian roaming variants (`help_reply_ca`, `help_reply_away_ca`, CON-018, D-889) stay: they reach only a Canadian number that texts in. Update `docs/decisions.md`.",
+   "goal": "Plan change D-5281 (Fable's decision for Casey under D-305; WEB-023 as reworded). Canadian numbers are not confirmed for the campaign, so the coverage page (`app/site/templates/coverage.html:30` to `:31`) says \"Texts work with US mobile numbers. Canadian numbers are not confirmed yet.\" under a heading that fits, in place of \"Texting from Canada\" and \"Canadian numbers work. Your phone company may charge roaming fees.\"; the DONE pins change only for that line by logged spec change (D-5281): `app/site/src/pages.rs:1092`, `tests/e2e/site_help_pages.spec.ts` and `tests/a11y/page_states.ts:436`'s expected words (owned here for that entry). The HELP reply's Canadian roaming variants (`help_reply_ca`, `help_reply_away_ca`, CON-018, D-889) stay: they reach only a Canadian number that texts in. Update `docs/decisions.md`.",
    "type": "harness",
    "model": "claude-sonnet-5-5",
    "review_areas": [
@@ -52157,7 +52170,8 @@
    "owns": [
     "app/site/templates/coverage.html",
     "app/site/src/pages.rs",
-    "tests/e2e/site_help_pages.spec.ts"
+    "tests/e2e/site_help_pages.spec.ts",
+    "tests/a11y/page_states.ts"
    ],
    "reads": [
     "docs/spec/website.md"
@@ -52169,9 +52183,9 @@
     "D-5281"
    ],
    "budget": {
-    "files": 3,
+    "files": 4,
     "lines": 40,
-    "context_pct": 11
+    "context_pct": 17
    },
    "acceptance": "`cargo test -p askhava-site`, the e2e `site_help_pages` spec and Ally pass; the page shows the new line and no other text changes.",
    "branch": "claude/task/T802-coverage-us-numbers",
@@ -52207,7 +52221,7 @@
    "id": "T803",
    "slug": "no-help-after-stop",
    "title": "messaging (harness): an opted-out number gets no HELP reply; help goes by the web and email",
-   "goal": "Plan change D-5280 (Fable's decision for Casey under D-305; CON-013 and CON-018 as reworded; D-131 narrowed). With Twilio's Advanced Opt-Out an opted-out number gets no HELP reply and a send to it fails with 21610, so `rules::may_send_to` (`app/messaging/src/rules.rs:553` to `:567`) no longer lets `HELP_TEMPLATE` through to a listed number: only the opt-out confirmation within 5 minutes passes; a HELP text from a listed number queues nothing that could be sent (the sender expires it). The DONE tests that pin the HELP reply to an opted-out number change by logged spec change (D-5280) only in those assertions: `app/messaging/src/tests/optout_words.rs` (`may_send_to` cases near `:326` to `:331`), `app/messaging/src/tests/prop_optout_props.rs`, `tests/integration/tests/outbox_sender.rs:291` to `:314` (TD-QH-05: a suppressed number now gets nothing but the confirmation), `tests/integration/tests/optout_flow.rs:264` and `tests/integration/tests/help_start.rs:173` to `:209` (TD-CON-07). Consent: Opus worker and review. Update `app/messaging/NOTES.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-5280 (Fable's decision for Casey under D-305; CON-013 and CON-018 as reworded; D-131 narrowed). With Twilio's Advanced Opt-Out an opted-out number gets no HELP reply and a send to it fails with 21610, so `rules::may_send_to` (`app/messaging/src/rules.rs:553` to `:567`) no longer lets `HELP_TEMPLATE` through to a listed number: only the opt-out confirmation within 5 minutes passes; a HELP text from a listed number queues nothing that could be sent (the sender expires it). The DONE tests that pin the HELP reply to an opted-out number change by logged spec change (D-5280) only in those assertions: `app/messaging/src/tests/optout_words.rs` (`may_send_to` cases near `:326` to `:331`), `app/messaging/src/tests/prop_optout_props.rs`, `tests/integration/tests/outbox_sender.rs:291` to `:314` (TD-QH-05: a suppressed number now gets nothing but the confirmation), `tests/integration/tests/optout_flow.rs:264` and `tests/integration/tests/help_start.rs:173` to `:209` (TD-CON-07). `docs/architecture.md:199` (`reply_to_help` queues the CON-018 reply \"from any number including an opted-out one\") is corrected to say the reply is never sent to an opted-out number. Consent: Opus worker and review. Update `app/messaging/NOTES.md` and `docs/decisions.md`.",
    "type": "harness",
    "model": "claude-opus-5-5",
    "review_areas": [
@@ -52260,7 +52274,9 @@
    ],
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
-   "tests": [],
+   "tests": [
+    "TD-PRIV-32"
+   ],
    "cites": [],
    "checks": [
     "Ci",
@@ -52270,7 +52286,7 @@
    "id": "T804",
    "slug": "data-request-opted-out",
    "title": "server and portals: a delete or copy request for an opted-out number is confirmed by an email link",
-   "goal": "Plan change D-5281 (Fable's decision for Casey under D-305; PRIV-031 as reworded; SEC-014, SEC-034). A delete or copy request for a number on the suppression list cannot rely on a text: on the portal data-request route (`data_request`, `app/server/src/homeowner_portal.rs:729`) and the help form's delete or copy answer (`app/portals/src/help.rs:19` to `:21`), when her number is listed, the confirmation is a single-use link (15 minutes, SEC-037's token rules) sent to the update email on file (TXT-018), and following it acts on the request as a typed code does; with no email on file the answer tells her to email help@ from her own address, which opens a help request for Casey (OPS-036). Tests in the new `tests/integration/tests/data_request_opted_out.rs`, PostgreSQL, fake data only: a listed number gets the email link and no Verify send; the link works once; no email on file gets the help-email answer; an unlisted number is unchanged. Privacy: Opus worker, Opus privacy and security review. Update `docs/decisions.md`.",
+   "goal": "Plan change D-5281 (Fable's decision for Casey under D-305; PRIV-031 as reworded; SEC-014, SEC-034). A delete or copy request for a number on the suppression list cannot rely on a text: on the portal data-request route (`data_request`, `app/server/src/homeowner_portal.rs:729`) and the help form's delete or copy answer (`app/portals/src/help.rs:19` to `:21`), when her number is listed, the confirmation is a single-use link (15 minutes) sent to the update email on file (TXT-018), reusing SEC-037's action-link tokens (`core::api::link_token` with `LinkKind::Action` over the data request's own record and a salt stored with it) and no new migration; if the data request's record holds no place for the salt, the task reports it as a plan gap with the migration it would need (the next free number at claim time) rather than adding one unplanned, and following it acts on the request as a typed code does; with no email on file the answer tells her to email help@ from her own address, which opens a help request for Casey (OPS-036). Tests in the new `tests/integration/tests/data_request_opted_out.rs`, PostgreSQL, fake data only: a listed number gets the email link and no Verify send; the link works once; no email on file gets the help-email answer; an unlisted number is unchanged. Privacy: Opus worker, Opus privacy and security review. Update `docs/decisions.md`.",
    "type": "build",
    "model": "claude-opus-5-5",
    "review_areas": [
@@ -52304,6 +52320,65 @@
    "acceptance": "`tests/integration/tests/data_request_opted_out.rs` passes against PostgreSQL; every homeowner portal and help test passes unchanged; no number or address is logged.",
    "branch": "claude/task/T804-data-request-opted-out",
    "prompt": "kit/prompts/T804.md"
+  },
+  {
+   "id": "T805",
+   "slug": "no-tollfree-after-30951",
+   "title": "messaging (harness): the toll-free fallback is refused after a 30951 lead-generation refusal",
+   "goal": "Plan change D-5278 (review round 1; CON-033 as reworded; TD-CON-16). `TollFree::configure` (`app/messaging/src/mode.rs:426` to `:431`) accepts any recorded refusal, so a 30951 refusal (third-party lead generation, which toll-free bans too, 30468) still lets the toll-free fallback be configured. This task: `configure` answers a new `ModeError::LeadGenRefusal` when the recorded refusal's reference is 30951 (trimmed), before the go check; and the DONE test `tests/integration/tests/web_email_mode.rs:443` to `:479` (TD-CON-16), which configures toll-free with a 30951 refusal, changes by logged spec change (D-5278, `BUILD_BRIEF.md:69`) to use another refusal code for the configured cases and to expect `LeadGenRefusal` for 30951. Opus worker and review. Update `app/messaging/NOTES.md` and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "messaging",
+   "deps": [
+    "T075",
+    "T100",
+    "T057",
+    "T517",
+    "T425",
+    "T096"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "compliance"
+   ],
+   "owns": [
+    "app/messaging/src/mode.rs",
+    "tests/integration/tests/web_email_mode.rs"
+   ],
+   "reads": [
+    "docs/spec/consent.md",
+    "docs/spec/messaging.md",
+    "docs/code-docs.md"
+   ],
+   "requirements": [
+    "CON-033",
+    "TXT-021"
+   ],
+   "tests": [
+    "TD-CON-16"
+   ],
+   "decisions": [
+    "D-5278",
+    "D-315"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 80,
+    "context_pct": 9
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T805-no-tollfree-after-30951",
+   "prompt": "kit/prompts/T805.md",
+   "acceptance": "`cargo test -p askhava-messaging` and `--test web_email_mode` pass; a 30951 refusal answers `LeadGenRefusal`; every other configure case is unchanged."
   }
  ]
 }

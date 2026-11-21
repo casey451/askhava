@@ -11,7 +11,7 @@ Laftly is a quote-request service; the business the homeowner chooses pays Laftl
 
 ## 2. How you agree
 
-Texting Laftly is your OK to get automated texts about your own request. Typing the code we send to your number in the chat on laftly.com only checks that the number is yours; it is not an OK to get texts. You don't need to reply to agree. Our first reply says:
+Texting Laftly is your OK to get automated texts about your own request. The chat on laftly.com does not sign you up for texts. You don't need to reply to agree. Our first reply says:
 
 > Laftly: Got it. Next, a few quick questions. Laftly is not a contractor; you hire the business you pick directly. Automated texts about your request. Msg frequency varies. Msg & data rates may apply. Reply STOP to opt out, HELP for help. Terms: laftly.com/terms Privacy: laftly.com/privacy
 

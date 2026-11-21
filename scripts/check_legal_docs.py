@@ -242,9 +242,8 @@ REQUIRED: dict[str, tuple[tuple[str, str], ...]] = {
         HONEST,
         (
             "CON-005",
-            "Texting {brand} is your OK to get automated texts about your own request. Typing the "
-            "code we send to your number in the chat on {domain} only checks that the number is "
-            "yours; it is not an OK to get texts.",
+            "Texting {brand} is your OK to get automated texts about your own request. The chat on "
+            "{domain} does not sign you up for texts.",
         ),
         ("PICK-016", "By picking, you agree to the Terms"),
         ("CON-003", "Free for you; the business you choose pays {brand} a set fee of $25 to $199, by quote size."),

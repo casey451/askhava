@@ -3716,7 +3716,7 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 ## Texting registration plan (Fable's decisions for you, D-5278 to D-5281, November 21)
 
 - **Ask Twilio first.** The question to send is in `docs/handoff/Twilio_question.md` (now under Laftly, with the fee stated). Register only after the written answer. If Twilio says this is third-party lead generation (error 30951), we don't register and we don't try toll-free: the service stays on web and email and it comes back to you.
-- **One way to agree to texts.** A homeowner agrees by texting our number first. The chat's code now only checks that the phone is hers; texts start only when she texts in.
+- **One way to agree to texts.** A homeowner agrees by texting our number first. While texting is on, the website chat just shows our number and the texting terms and asks her to text us; it no longer runs a request. If we ever run on web and email only, the chat works as it does today, but it never signs anyone up for texts.
 - **No HELP reply after STOP.** Twilio blocks it. The SMS terms now send opted-out people to laftly.com/help and help@laftly.com.
 - **Canada.** We now say texts work with US numbers; Canadian numbers aren't confirmed yet.
 - **Not changed:** the STOP reply keeps its exact wording; a help link there would break its rule (only confirm).
