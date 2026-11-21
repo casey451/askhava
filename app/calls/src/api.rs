@@ -40,7 +40,10 @@ pub use crate::lifecycle::{
     PhoneStanding, close_expired, close_line, expired, gate, greeting_en, greeting_es,
     greeting_twiml, last4, phone_works, request_link,
 };
-pub use crate::link_reply::{LINK_REFUSALS_PER_DAY, LinkReply, link_pin, link_reply};
+pub use crate::link_reply::{
+    LINK_REFUSALS_PER_DAY, LinkAction, LinkReply, link_by_action, link_pin, link_reply,
+    pending_link,
+};
 pub use crate::link_request::{LINK_REQUEST_LIFE, link_after_dial};
 pub use crate::models::CallsError;
 pub use crate::owner_calls::{
