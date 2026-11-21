@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Protocol, cast
 
-from runner import api_death, lanes, model_window, outbox, proof, state as st, verify
+from runner import api_death, lanes, model_window, outbox, proof, state as st, verify, wip
 from runner.state import State
 
 MAX_ATTEMPTS = 3  # BUILD_BRIEF.md:540; one more only through a plan-fix re-queue (D-677); FIX-MAIN re-arms (D-1099)
@@ -45,9 +45,10 @@ MERGE_LINE_TURN_LIMIT = timedelta(minutes=45)
 MERGE_LINE_TURN_CAP = timedelta(minutes=90)
 # The merge train (D-4281): while the turn holder's head runs its checks, the next "line" task's reviewed head
 # merged with that head is tested ahead on a throwaway ref `claude/train/<task>-<head first 12 hex>` that T640's
-# `Ci` counts as proof for the task's real update merge. Depth 2 at most until a later decision; a ref over
-# TRAIN_MAX_AGE old (by its commit's committer time) is deleted on the next merge-line pass.
-TRAIN_DEPTH_MAX = 2
+# `Ci` counts as proof for the task's real update merge. At depth 3 (D-5018) the "line" task after that one is
+# tested the same way on the second car's tip, `claude/train/<task>-<that tip's first 12 hex>`. Depth 3 at most;
+# a ref over TRAIN_MAX_AGE old (by its commit's committer time) is deleted on the next merge-line pass.
+TRAIN_DEPTH_MAX = 3
 TRAIN_MAX_AGE = timedelta(hours=6)
 RULESET_ONLY_CHECKS = ("Governance",)  # required by the repository ruleset, not by verify.REQUIRED_CHECKS (D-483, D-494)
 UPDATE_STUCK = "the branch could not be brought up to date with main for {wait}: {why} (D-620)"
@@ -100,12 +101,23 @@ PLAN_GAP_HEDGES = re.compile(
     r"\b(?:not|no|never|but|thought|thinks?|if|whether|maybe|might|goal|says|said)\b|n't\b|[\"`\u201c\u201d]", re.IGNORECASE)
 PLAN_GAP_SENTENCE_END = re.compile(r"\.(?:\s|$)|\n")
 PLAN_GAP_REPORTED = "plan gap reported"
+# The worker's ownership-first report (D-4720): `PLAN GAP: outside ownership: <path>, <path>`; the paths land in
+# the task's `plan_gap` record as `paths`.
+OUTSIDE_OWNERSHIP = re.compile(r"PLAN GAP:\s*outside ownership:\s*([^\n]+)", re.IGNORECASE)
+# A session whose reviewer still ends with `REVIEW-VERDICT: FINDINGS` after step 4's findings round (D-4720): it counts
+# exactly as `tests_failed` (record_failure); only its head may be kept on a WIP ref (_keep_wip).
+REVIEW_FAILED = "review_failed"
+# A failure log naming test weakening or protected-path tampering: such a head is never kept on a WIP ref (D-4720).
+WIP_TAMPER = re.compile(r"weaken|assertions? removed|tests? removed|removed (?:an? |the )?(?:assertion|test)|protected[ -]path"
+                        r"|tamper", re.IGNORECASE)
+WIP_KINDS = {REVIEW_FAILED: "review", PLAN_GAP: "plan_gap"}  # the outcomes whose head may be kept, and the record's kind
 PLAN_GAP_KEPT = 600  # characters of the worker's report kept in the BLOCKED reason (the whole text goes to last_failure)
 
 
 @dataclass
 class WorkerResult:
-    """What a worker session reports. 'outcome' is one of: submitted, tests_failed, plan_gap (only a
+    """What a worker session reports. 'outcome' is one of: submitted, tests_failed, review_failed (counted
+    as tests_failed; the reviewer still found problems after the findings round, D-4720), plan_gap (only a
     plan change can unblock the task, D-2859), usage_limit, permission_blocked, vendor_outage, api_error
     (the session died of an Anthropic API error before handing in, with nothing pushed, D-3443), or
     handed_off (the starting session does the work itself and calls `python3 -m runner --after`; the
@@ -507,6 +519,23 @@ def record_plan_gap(state: State, task_id: str, report: str) -> State:
     return st.with_task(state, task_id, status=st.BLOCKED, attempts=attempts, reason=reason, last_failure=text)
 
 
+def _gap_paths(state: State, tid: str, report: str, now: datetime) -> State:
+    """The task's `plan_gap` record with `paths` when the worker's report is `PLAN GAP: outside ownership: <path>,
+    <path>` (its ownership check before any edit, D-4720); the state unchanged for any other report. A
+    requeue drops the record again (`_without_reported_gap`), so the plan-health hold it resembles never sticks."""
+    found = OUTSIDE_OWNERSHIP.match(report.strip())
+    paths = [p.strip().strip("`") for p in found.group(1).split(",") if p.strip().strip("`")] if found else []
+    if not paths:
+        return state
+    gap = {"at": st.iso(now), "problems": [f"outside ownership: {', '.join(paths)}"], "paths": paths}
+    return st.with_task(state, tid, plan_gap=gap)
+
+
+def _without_reported_gap(state: State, tid: str) -> State:
+    """The state without a `plan_gap` record a worker's report set (`_gap_paths`: it has `paths`), at a requeue."""
+    return _without(state, tid, "plan_gap") if (st.entry(state, tid).get("plan_gap") or {}).get("paths") else state
+
+
 def _plan_gap_outbox(cfg: Config, tid: str, report: str) -> None:
     """The outbox item `T###-plan-gap` for a task BLOCKED by record_plan_gap, so the overseer hears of it in
     the same cycle, as an owned gap is told (D-1869, D-2859)."""
@@ -588,7 +617,7 @@ def _after_worker(
         return st.with_task(state, tid, status=st.BLOCKED, reason=f"permission blocked: {res.log}")
     if res.outcome == PLAN_GAP and tid != st.FIX_MAIN:
         _plan_gap_outbox(cfg, tid, res.log)
-        return record_plan_gap(state, tid, res.log)
+        return _gap_paths(record_plan_gap(state, tid, res.log), tid, res.log, now)
     if res.outcome != "submitted":
         return record_failure(state, tid, res.log or res.outcome)
     problems = verify.check_paths(res.changed_paths, task, cfg.protected, cfg.shared)
@@ -657,7 +686,7 @@ def _resolve_merges(state: State, env: Env, cfg: Config, now: datetime,
     for tid, pr in late:
         state, result = _resolve_line_task(state, env, cfg, now, (tid, pr, turn_free), outcomes)
         turn_free = turn_free and result != "branch_updated"
-    _train_pass(state, env, now, _train_pair(state, holder, seen, outcomes))
+    _train_pass(state, env, now, _train_cars(state, holder, seen, outcomes))
     return state, [outcomes[t["id"]] for t in state["tasks"] if t["id"] in outcomes]
 
 
@@ -672,38 +701,39 @@ def train_depth(env: Env) -> int:
     return min(raw, TRAIN_DEPTH_MAX)
 
 
-def _train_pair(state: State, holder: tuple[str, dict[str, Any] | None] | None, seen: list[tuple[str, dict[str, Any] | None, str]],
-                outcomes: dict[str, tuple[str, str, str]]) -> tuple[str, ...] | None:
-    """(B, B's branch, B's reviewed head, A, A's branch, A') for the merge train (D-4281), None when there is
-    none. A is the turn holder and A' its reviewed head: its update merge just pushed, or its open pull
-    request's head (an adopted update merge or a head already current with main; the Env checks main is in
-    it) with Ci, Twin or Ally still pending. B is the first task after A in merge-line order whose place was
-    "line", still MERGE_PENDING with its pull request on its reviewed head. None while main is red and for
-    FIX-MAIN (D-620), and whenever A's head is not its reviewed head or its checks finished."""
+def _train_cars(state: State, holder: tuple[str, dict[str, Any] | None] | None, seen: list[tuple[str, dict[str, Any] | None, str]],
+                outcomes: dict[str, tuple[str, str, str]]) -> list[tuple[str, str, str]]:
+    """The merge train's cars as (task, its branch, its reviewed head): [A, B] or [A, B, C], [] when there is
+    no train (D-4281, D-5018). A is the turn holder and A' its reviewed head: its update merge just pushed,
+    or its open pull request's head (an adopted update merge or a head already current with main; the Env
+    checks main is in it) with Ci, Twin or Ally still pending. B, then C, are the next tasks after A in
+    merge-line order whose place was "line", each still MERGE_PENDING with its pull request on its reviewed
+    head; the first that is not ends the train there. [] while main is red and for FIX-MAIN (D-620), and
+    whenever A's head is not its reviewed head or its checks finished."""
     if holder is None or holder[1] is None or state.get("main_red"):
-        return None
+        return []
     a, a_pr = holder
     task_a = st.entry(state, a)
     a_head = str(task_a.get("reviewed_sha") or "")
     pushed = outcomes[a][2] == "branch_updated"
     if a == st.FIX_MAIN or not a_head or not (pushed or (a_pr.get("head_sha") == a_head and verify.checks_state(a_pr) == "pending")):
-        return None
+        return []
+    cars = [(a, str(task_a.get("branch") or ""), a_head)]
     after = [(tid, pr) for tid, pr, place in seen[[t for t, _, _ in seen].index(a) + 1:] if place == "line"]
-    if not after or after[0][1] is None:
-        return None
-    b, b_pr = after[0]
-    task_b = st.entry(state, b)
-    b_head = str(task_b.get("reviewed_sha") or "")
-    if b == st.FIX_MAIN or task_b.get("status") != st.MERGE_PENDING or not b_head or b_pr.get("head_sha") != b_head:
-        return None
-    return b, str(task_b.get("branch") or ""), b_head, a, str(task_a.get("branch") or ""), a_head
+    for tid, pr in after[:TRAIN_DEPTH_MAX - 1]:
+        task = st.entry(state, tid)
+        tip = str(task.get("reviewed_sha") or "")
+        if pr is None or tid == st.FIX_MAIN or task.get("status") != st.MERGE_PENDING or not tip or pr.get("head_sha") != tip:
+            break
+        cars.append((tid, str(task.get("branch") or ""), tip))
+    return cars if len(cars) > 1 else []
 
 
-def _train_pass(state: State, env: Env, now: datetime, pair: tuple[str, ...] | None) -> None:
+def _train_pass(state: State, env: Env, now: datetime, cars: list[tuple[str, str, str]]) -> None:
     """The merge train's ref work on every merge-line pass (D-4281), whatever the depth: list the
     `claude/train/*` refs (`env.train_refs`; an Env without it, `train_merge` or `delete_train_ref` does
-    nothing), build and push B's train ref
-    when the depth is 2 and `pair` is set, then delete each stale ref (`_train_stale`) through
+    nothing), build and push the train refs of `cars` as far as the depth allows (`_build_cars`: B's at
+    depth 2 or more, C's only at depth 3, D-5018), then delete each stale ref (`_train_stale`) through
     `env.delete_train_ref`. A failed delete is logged and tried again on the next pass. Nothing is recorded
     in the state: the refs are the record."""
     lister = getattr(env, "train_refs", None)
@@ -712,11 +742,11 @@ def _train_pass(state: State, env: Env, now: datetime, pair: tuple[str, ...] | N
     refs = lister() if callable(lister) else None
     if not isinstance(refs, list):
         return
-    made = _build_train(env, refs, pair, now) if pair and train_depth(env) >= TRAIN_DEPTH_MAX else ""
-    heads = {str(t.get("reviewed_sha") or "")[:12] for t in state["tasks"] if t.get("status") in (st.MERGE_PENDING, st.DONE)}
-    pending = {t["id"] for t in state["tasks"] if t.get("status") == st.MERGE_PENDING}
-    for ref in [r for r in refs if isinstance(r, dict)]:
-        why = _train_stale(ref, (pending, heads), now, made)
+    listed = [r for r in refs if isinstance(r, dict)]
+    made = _build_cars(env, listed, cars[:train_depth(env)], now)
+    live = _train_live(state, listed, now, made)
+    for ref in listed:
+        why = _train_stale(ref, live, now, [name for name, _ in made])
         if not why:
             continue
         name = str(ref.get("name") or "")
@@ -726,17 +756,39 @@ def _train_pass(state: State, env: Env, now: datetime, pair: tuple[str, ...] | N
             print(f"runner: merge train: delete of {name} failed ({why}); tried again next pass (D-4281)")
 
 
-def _build_train(env: Env, refs: list[Any], pair: tuple[str, ...], now: datetime) -> str:
-    """Build and push B's train ref on A' (`env.train_merge`, D-4281); the ref's name when pushed, else ''.
-    A ref already listed for the same pair is left as it is; a create rejected because the ref exists is
-    benign; a conflict, a failed tree check or any other failure makes no ref, is logged, and leaves B as
-    it was (its own update merge comes on its turn, exactly as without the train). No ref is built when
-    A' is over TRAIN_MAX_AGE old by its committer time (`env.commit_at`): the update merge carries A''s
-    committer time, so `_train_stale` would delete it on the next pass and a later pass build it again,
-    a new Ci run each time (D-4383)."""
+def _build_cars(env: Env, refs: list[dict[str, Any]], cars: list[tuple[str, str, str]], now: datetime) -> list[tuple[str, str]]:
+    """Build the train refs of `cars` = [A, B] or [A, B, C], already cut to the depth; the (name, sha) of
+    each ref pushed in this pass (D-4281, D-5018). The second car is B's reviewed head on A'. The third is
+    C's reviewed head on the second car's tip X1, named `claude/train/<C>-<X1 first 12 hex>` and built by
+    the same `env.train_merge` (a create, never forced, with its own tree check), only when X1 was pushed
+    in this pass or is listed live and not over TRAIN_MAX_AGE old; with no second car there is no third."""
+    made: list[tuple[str, str]] = []
+    base = cars[0] if cars else ("", "", "")
+    for car in cars[1:]:
+        name = f"claude/train/{car[0]}-{base[2][:12]}"
+        sha = _build_train(env, refs, (*car, *base), now)
+        if sha:
+            made.append((name, sha))
+        else:
+            sha = next((str(r.get("sha") or "") for r in refs if r.get("name") == name and not _train_spent(r, now, [])), "")
+        if not sha:
+            break
+        base = (name, name, sha)
+    return made
+
+
+def _build_train(env: Env, refs: list[dict[str, Any]], pair: tuple[str, ...], now: datetime) -> str:
+    """Build and push B's train ref on A' (`env.train_merge`, D-4281); the pushed commit's sha, else ''.
+    `pair` = (B, B's branch, B's reviewed head, A, A's branch, A'); for a third car (D-5018) B is C and A
+    is the second car's ref with its tip. A ref already listed for the same pair is left as it is; a
+    create rejected because the ref exists is benign; a conflict, a failed tree check or any other failure
+    makes no ref, is logged, and leaves B as it was (its own update merge comes on its turn, exactly as
+    without the train). No ref is built when A' is over TRAIN_MAX_AGE old by its committer time
+    (`env.commit_at`): the update merge carries A''s committer time, so `_train_stale` would delete it on
+    the next pass and a later pass build it again, a new Ci run each time (D-4383)."""
     b, b_branch, b_head, a, a_branch, a_head = pair
     name = f"claude/train/{b}-{a_head[:12]}"
-    if any(isinstance(r, dict) and r.get("name") == name for r in refs):
+    if any(r.get("name") == name for r in refs):
         return ""
     reader = getattr(env, "commit_at", None)
     at = reader(a_head, a_branch) if callable(reader) else None
@@ -749,7 +801,7 @@ def _build_train(env: Env, refs: list[Any], pair: tuple[str, ...], now: datetime
     if status == "pushed":
         print(f"runner: merge train: {b}'s reviewed head {b_head[:12]} merged with {a}'s head {a_head[:12]} "
               f"as {str(done.get('sha'))[:12]}, pushed to {name} (D-4281)")
-        return name
+        return str(done.get("sha") or "")
     if status == "exists":
         print(f"runner: merge train: {name} already exists, left as it is (D-4281)")
     else:
@@ -757,25 +809,57 @@ def _build_train(env: Env, refs: list[Any], pair: tuple[str, ...], now: datetime
     return ""
 
 
-def _train_stale(ref: dict[str, Any], live: tuple[set[str], set[str]], now: datetime, made: str) -> str:
+def _train_live(state: State, refs: list[dict[str, Any]], now: datetime, made: list[tuple[str, str]]) -> tuple[set[str], set[str], set[str]]:
+    """What `_train_stale` judges by (D-4281, D-5018): (MERGE_PENDING task ids; live bases; held names).
+    A live base is the first 12 hex of a MERGE_PENDING or DONE task's head, or of the tip of a second car
+    (a ref on such a head, listed or pushed in this pass) that itself stays, so a third car's base is
+    live exactly while its second car stays. Held are the second cars of DONE tasks that a listed third
+    car still needs: sound but for their task (on a live head, not over TRAIN_MAX_AGE old), and named as
+    base by a listed ref of a MERGE_PENDING task that is itself neither too old nor replaced. Without
+    that, C's proof would lose its base the moment B merges."""
+    pending = {t["id"] for t in state["tasks"] if t.get("status") == st.MERGE_PENDING}
+    done = {t["id"] for t in state["tasks"] if t.get("status") == st.DONE}
+    heads = {str(t.get("reviewed_sha") or "")[:12] for t in state["tasks"] if t.get("status") in (st.MERGE_PENDING, st.DONE)}
+    names = [name for name, _ in made]
+    wanted = {str(r.get("base") or "") for r in refs if str(r.get("task") or "") in pending and not _train_spent(r, now, names)}
+    tips = {sha[:12] for name, sha in made if name.rsplit("-", 1)[-1] in heads}
+    held: set[str] = set()
+    for ref in refs:
+        task, tip = str(ref.get("task") or ""), str(ref.get("sha") or "")[:12]
+        if not tip or str(ref.get("base") or "") not in heads or _train_spent(ref, now, names):
+            continue
+        if task in done and tip in wanted:
+            held.add(str(ref.get("name") or ""))
+        if task in pending or (task in done and tip in wanted):
+            tips.add(tip)
+    return pending, heads | tips, held
+
+
+def _train_stale(ref: dict[str, Any], live: tuple[set[str], set[str], set[str]], now: datetime, made: list[str]) -> str:
     """Why a listed train ref is deleted, '' when it stays (D-4281): its task is not MERGE_PENDING (merged,
-    failed, resyncing); its base A' is no longer the head of a MERGE_PENDING or DONE task (A got a newer
-    head or failed); it is over TRAIN_MAX_AGE old by its commit's committer time; or this pass made a newer
-    ref for the same task. `live` = (MERGE_PENDING task ids, their and DONE tasks' heads' first 12 hex)."""
+    failed, resyncing); its base is no longer live: neither the head of a MERGE_PENDING or DONE task (A
+    got a newer head or failed) nor, for a third car, the tip of a second car that stays (D-5018); it is
+    over TRAIN_MAX_AGE old by its commit's committer time; or this pass made a newer ref for the same
+    task. A DONE task's second car that a third car still needs is held. `live` is `_train_live`'s."""
     name, task = str(ref.get("name") or ""), str(ref.get("task") or "")
-    pending, heads = live
-    if name == made:
+    pending, bases, held = live
+    if name in made or name in held:
         return ""
     if task not in pending:
         return f"{task or '?'} is not MERGE_PENDING"
-    if str(ref.get("base") or "") not in heads:
+    if str(ref.get("base") or "") not in bases:
         return "its base is no longer the head of a MERGE_PENDING or DONE task"
+    return _train_spent(ref, now, made)
+
+
+def _train_spent(ref: dict[str, Any], now: datetime, made: list[str]) -> str:
+    """Why a train ref is spent whatever its task and base, '' when it is not (D-4281): over TRAIN_MAX_AGE
+    old by its commit's committer time, or a ref of the same task was made in this pass (`made`)."""
     at = str(ref.get("at") or "")
     if at and now - st.parse(at) > TRAIN_MAX_AGE:
         return f"over {TRAIN_MAX_AGE} old"
-    if made and made.startswith(f"claude/train/{task}-"):
-        return f"{made} replaced it"
-    return ""
+    newer = [m for m in made if m != ref.get("name") and m.startswith(f"claude/train/{ref.get('task') or ''}-")]
+    return f"{newer[0]} replaced it" if newer else ""
 
 
 def _resolve_line_task(state: State, env: Env, cfg: Config, now: datetime, item: tuple[str, dict[str, Any] | None, bool],
@@ -1950,7 +2034,7 @@ def run_cycle(cfg: Config, env: Env, now: datetime) -> str:
     state = st.release_dead(state, dead_sessions(state, env, cfg.session, now))  # pushed against `base` below (D-3417)
     state = release_proven(record_proofs(cfg, state, now))
     state = _adopt_orphan_pr(base, state, env)
-    state = recheck_owned_gaps(state, env)
+    state = drop_closed_wips(recheck_owned_gaps(state, env))
     if state != base:
         if not env.push_state(state, base):
             return "lost_race"  # inbox files stay put and are read again next cycle
@@ -1963,6 +2047,7 @@ def run_cycle(cfg: Config, env: Env, now: datetime) -> str:
             _drop_fallback_note(cfg)
             return "lost_race"
         base = state
+    wip_sweep(env)  # beside the merge pass's stale-train sweep; reads the state fresh, writes none (D-4720)
     lane = lanes.claim_lane(cfg.lanes, state, now, cfg.lane_hint) or lanes.fix_lane(state, now)
     if lane is None and state.get("main_red"):
         # No lane can claim, yet a red main must still be cleared once FIX-MAIN is DONE, or a task the
@@ -2504,25 +2589,38 @@ def _prepare_branch(cfg: Config, env: Env, current: dict[str, Any], task: dict[s
     name (the old pull request was closed or merged, or main did not merge cleanly) is recorded as the
     task's `branch`, and a pull request the runner closed to drop auto-merge is added to the task's
     `runner_closed_prs` (so the next attempt still continues the branch), while this session holds the
-    lease, so `--after` and auto-merge use them; None when that write finds the lease gone."""
+    lease, so `--after` and auto-merge use them; None when that write finds the lease gone. A kept WIP
+    (`_wip_offer`) is offered as the task's `wip_continue` first, and the same write records `wip_claim`
+    and drops `wip` (`_wip_claim`, D-4720)."""
     tid = task["id"]
-    prep = env.prepare_branch(task, int(st.entry(current["state"], tid).get("attempts", 0)) + 1, cfg.session)
-    if prep.get("renamed_from") or prep.get("dropped_pr"):
-        recorded = env.update_state(_branch_record(tid, lane, cfg, prep))
+    entry = st.entry(current["state"], tid)
+    offer = _wip_offer(env, entry)
+    task = dict(task, wip_continue=offer) if offer else task
+    prep = env.prepare_branch(task, int(entry.get("attempts", 0)) + 1, cfg.session)
+    claim = _wip_claim(env, entry, task, prep)
+    if prep.get("renamed_from") or prep.get("dropped_pr") or claim:
+        recorded = env.update_state(_branch_record(tid, lane, cfg, prep, claim))
         if recorded is None:
             return None
         current["state"] = recorded
     return dict(task, branch=prep["branch"], branch_prep=prep) if prep else task
 
 
-def _branch_record(tid: str, lane: str, cfg: Config, prep: dict[str, Any]) -> Callable[[State], State | None]:
+def _branch_record(tid: str, lane: str, cfg: Config, prep: dict[str, Any],
+                   claim: dict[str, Any] | None = None) -> Callable[[State], State | None]:
     """The transform that records the prepared branch and a pull request closed to drop auto-merge,
-    only while this session holds the lane's live lease."""
+    and the claim's `wip_claim` with `wip` dropped (plus `wip_used` when a WIP was offered, D-4720), only
+    while this session holds the lane's live lease."""
 
     def apply(fresh: State) -> State | None:
         held = st.live_lease(fresh, cfg.clock(), lane) or {}
         if held.get("task") != tid or held.get("session") != cfg.session:
             return None
+        if claim:
+            used = {"wip_used": True} if claim.get("continued_from") or claim.get("wip_dropped") else {}
+            fresh = st.with_task(_without(fresh, tid, "wip"), tid, wip_claim=claim, **used)
+        if not (prep.get("renamed_from") or prep.get("dropped_pr")):
+            return fresh
         closed = list(st.entry(fresh, tid).get("runner_closed_prs") or [])
         if prep.get("dropped_pr") and prep["dropped_pr"] not in closed:
             closed.append(prep["dropped_pr"])
@@ -2530,6 +2628,158 @@ def _branch_record(tid: str, lane: str, cfg: Config, prep: dict[str, Any]) -> Ca
         return st.with_task(fresh, tid, branch=str(prep["branch"]), **extra)
 
     return apply
+
+
+# ---- a failed attempt's kept work: the policy over runner/wip.py's mechanics (D-4720)
+
+
+def _wip_on(env: Env) -> bool:
+    """kit/runner.json `wip_continue` through the Env; False for an Env without the method (D-4720)."""
+    flag = getattr(env, "wip_continue", None)
+    return callable(flag) and flag() is True
+
+
+def _wip_offer(env: Env, entry: dict[str, Any]) -> dict[str, str] | None:
+    """The `wip_continue` {ref, sha} a claim gives the task (D-4720): only when its entry has a `wip` record,
+    no `wip_used` and the flag is on; a `plan_gap` WIP only once a requeue after `--plan-fix` (the latest
+    `requeues` item has `plan_fix`) came after the record (D-677), never after a plain `--requeue`."""
+    rec = entry.get("wip")
+    if not isinstance(rec, dict) or entry.get("wip_used") or rec.get("kind") not in WIP_KINDS.values():
+        return None
+    if not rec.get("ref") or not rec.get("sha") or not _wip_on(env):
+        return None
+    if rec["kind"] == "plan_gap" and not _plan_fixed_after(entry, str(rec.get("at") or "")):
+        return None
+    return {"ref": str(rec["ref"]), "sha": str(rec["sha"])}
+
+
+def _plan_fixed_after(entry: dict[str, Any], at: str) -> bool:
+    """Whether the entry's latest requeue was a `--plan-fix` one, later than `at` (D-677, D-4720)."""
+    last = (entry.get("requeues") or [{}])[-1]
+    try:
+        return bool(last.get("plan_fix")) and st.parse(str(last.get("at"))) > st.parse(at)
+    except ValueError:
+        return False
+
+
+def _wip_claim(env: Env, entry: dict[str, Any], task: dict[str, Any], prep: dict[str, Any]) -> dict[str, Any] | None:
+    """What the claim records as `wip_claim` for finish (D-4720), None when nothing: the attempt, origin's task
+    branch tip at the claim (`remote_sha`, '' when origin had none) and `continued_from` or `wip_dropped` from
+    `prepared`. Written whenever the branch was prepared and the flag is on, a WIP was offered or the entry
+    still has one (the write drops it: a prepared attempt never leaves an earlier WIP behind)."""
+    if not prep or not (_wip_on(env) or "wip" in entry or task.get("wip_continue")):
+        return None
+    claim = {"attempt": int(entry.get("attempts", 0)) + 1, "remote_sha": str(prep.get("remote_sha") or "")}
+    return {**claim, **{k: str(prep[k]) for k in ("continued_from", "wip_dropped") if prep.get(k)}}
+
+
+def _wip_row(record: dict[str, Any], before: dict[str, Any]) -> dict[str, Any]:
+    """The history row with the claim's `continued_from` or `wip_dropped` for this attempt (D-4720)."""
+    claim = before.get("wip_claim") or {}
+    if claim.get("attempt") != record.get("attempt"):
+        return record
+    return {**record, **{k: claim[k] for k in ("continued_from", "wip_dropped") if claim.get(k)}}
+
+
+def _wip_kind(env: Env, entry: dict[str, Any], res: WorkerResult, attempt: int) -> str:
+    """The record's kind when this failed attempt's head may be kept (D-4720), else '': a `review_failed` with
+    reviewer evidence or a `plan_gap`, commits ahead of main, origin had no task branch at this attempt's claim,
+    the attempt continued no WIP and the task never had one continued (`wip_used`), the flag on, an Env with the
+    methods."""
+    claim = entry.get("wip_claim") or {}
+    kind = WIP_KINDS.get(res.outcome, "") if res.reviewer_evidence or res.outcome == PLAN_GAP else ""
+    if not kind or claim.get("attempt") != attempt or claim.get("remote_sha") or claim.get("continued_from"):
+        return ""
+    if entry.get("wip_used") or not res.head_sha or not (res.commits_ahead or 0) > 0:
+        return ""
+    methods = all(callable(getattr(env, name, None)) for name in ("wip_check", "push_wip"))
+    return kind if methods and _wip_on(env) else ""
+
+
+def _wip_refusal(env: Env, res: WorkerResult) -> str:
+    """Why the head may not be kept: the log names test weakening or protected-path tampering, or
+    `env.wip_check` refused it (protected or locked path, binary, a scanner hit or error; any exception
+    is a refusal too); '' when it may (D-4720)."""
+    if WIP_TAMPER.search(res.log):
+        return "the failure log names test weakening or protected-path tampering"
+    try:
+        why = cast(Any, env).wip_check(res.head_sha)
+    except Exception as exc:  # noqa: BLE001  # reason: a broken check refuses, it never crashes finish (D-4720)
+        return f"the WIP check failed: {str(exc)[:200]}"
+    return why[:300] if isinstance(why, str) else "the WIP check gave no answer"
+
+
+def _last_row(state: State, tid: str, **marks: Any) -> State:
+    """The state with `marks` added to the task's last history row (this attempt's)."""
+    history = [dict(h) for h in st.entry(state, tid).get("history") or []]
+    return st.with_task(state, tid, history=[*history[:-1], {**history[-1], **marks}]) if history else state
+
+
+def _keep_wip(cfg: Config, env: Env, pair: tuple[State, State], task: dict[str, Any], res: WorkerResult) -> tuple[State, State]:
+    """finish's WIP step (D-4720) on (base, final): `wip_claim` goes; for a failed attempt `_wip_kind` accepts and
+    `_wip_refusal` passes, `wip` {ref, sha, attempt, kind, at} is written through update_state FIRST, under this
+    session's live lease, and only then is the head pushed to `claude/wip/<id>-a<attempt>` (record before push,
+    as D-515 orders the review record before the branch push). A refusal, a lost record write or a failed push
+    adds `wip_skipped` to the attempt's history row and changes nothing else (a failed push drops the record, so
+    the sweep removes any ref it left). Returns the new (base, final) for the lease release."""
+    state, final = pair
+    tid = task["id"]
+    final = _without(final, tid, "wip_claim") if "wip_claim" in st.entry(final, tid) else final
+    attempt = int(st.entry(state, tid).get("attempts", 0)) + 1
+    kind, ref = _wip_kind(env, st.entry(state, tid), res, attempt), f"claude/wip/{tid}-a{attempt}"
+    if not kind or not wip.WIP_REF.fullmatch(ref) or st.status(final, tid) not in (st.QUEUED, st.BLOCKED):
+        return state, final  # FIX-MAIN and any id a WIP ref cannot name keep nothing
+    why = _wip_refusal(env, res)
+    if why:
+        return state, _last_row(final, tid, wip_skipped=why)
+    rec = {"ref": ref, "sha": res.head_sha, "attempt": attempt, "kind": kind, "at": st.iso(cfg.clock())}
+    recorded = env.update_state(_wip_record(tid, st.lane_of(state, tid) or st.LANE_ONE, cfg, rec))
+    if recorded is None:
+        return state, _last_row(final, tid, wip_skipped="the WIP record could not be written")
+    final = st.with_task(_ours_onto(state, final, recorded), tid, wip=rec)
+    if cast(Any, env).push_wip(rec["ref"], rec["sha"]):
+        return recorded, final
+    return recorded, _last_row(_without(final, tid, "wip"), tid, wip_skipped="the WIP push failed")
+
+
+def _wip_record(tid: str, lane: str, cfg: Config, rec: dict[str, Any]) -> Callable[[State], State | None]:
+    """The transform that records `wip` only while this session holds the task's live lane lease and the task
+    is IN_PROGRESS (D-4720, as _review_record, D-515)."""
+
+    def apply(fresh: State) -> State | None:
+        held = st.live_lease(fresh, cfg.clock(), lane) or {}
+        if held.get("task") != tid or held.get("session") != cfg.session or st.status(fresh, tid) != st.IN_PROGRESS:
+            return None
+        return st.with_task(fresh, tid, wip=rec)
+
+    return apply
+
+
+def drop_closed_wips(state: State) -> State:
+    """The state without `wip` on DONE and SKIPPED tasks, so the sweep then removes their refs (D-4720)."""
+    for task in state["tasks"]:
+        if "wip" in task and task.get("status") in st.SATISFIED:
+            state = _without(state, task["id"], "wip")
+    return state
+
+
+def wip_sweep(env: Env) -> list[str]:
+    """Delete every `claude/wip/*` ref that is not exactly some task's recorded `wip` (ref and sha), flag on or off
+    (D-4720); the names deleted. The refs are listed FIRST, then the state is read fresh (an update_state whose
+    transform writes nothing, so the cycle's own state heads are left as they were): a lane records `wip` before
+    it pushes, so a ref pushed after the listing is not in it and one pushed before is already recorded. DONE,
+    SKIPPED, fresh-started, removed tasks and stray names are cleared; a failed delete is retried next pass. An
+    Env without `wip_refs` and `delete_wip_ref`, or a failed listing or read, deletes nothing."""
+    listing, delete = getattr(env, "wip_refs", None), getattr(env, "delete_wip_ref", None)
+    refs = listing() if callable(listing) and callable(delete) else None
+    if not refs:
+        return []
+    seen: list[State] = []
+    env.update_state(lambda fresh: seen.append(fresh))  # appends, returns None: a read with nothing written
+    if not seen:
+        return []
+    kept = {(str(w.get("ref")), str(w.get("sha"))) for t in seen[0].get("tasks", []) if isinstance(w := t.get("wip"), dict)}
+    return [name for name, sha in sorted(refs.items()) if (name, sha) not in kept and cast(Any, delete)(name)]
 
 
 def _history_entry(state: State, task: dict[str, Any], res: WorkerResult, model: str, cfg: Config) -> dict[str, Any]:
@@ -2558,6 +2808,7 @@ def _free_marks(record: dict[str, Any], res: WorkerResult, before: dict[str, Any
         record = {**record, "api_error": api_death.label(res.log) or api_death.API_ERROR}
         if int(after.get(api_death.RUN, 0)) > int(before.get(api_death.RUN, 0)):
             record["api_error_free"] = True
+    record = _wip_row(record, before)
     return record
 
 
@@ -2600,6 +2851,7 @@ def finish(
     record = _free_marks(record, res, st.entry(state, tid), st.entry(final, tid))
     history = [*st.entry(state, tid).get("history", []), dict(record, result=st.status(final, tid))]
     final = _record_usage(st.with_task(final, tid, history=history), tid, model, res, now, cfg)
+    state, final = _keep_wip(cfg, env, (state, final), task, res)  # D-4720: the record before the push
     if st.status(final, tid) == st.MERGE_PENDING and res.commits_ahead == 0:
         # An empty cleanup hand-in: nothing to push or merge (GitHub opens no pull request), so no
         # branch push and no auto-merge; it is resolved now, or by _without_pr in a later cycle (D-551).
@@ -2914,7 +3166,7 @@ def requeue(state: State, tid: str, reason: str, now: datetime, by: str, cfg: Co
     earlier = str(entry.get("last_failure") or "")
     last = f"{earlier}\nre-queued: {reason}" if earlier else f"re-queued: {reason}"
     fresh = {"attempts": 0, "blocked_at": None, "escalated_at": None, "retry_after": None} if tid == st.FIX_MAIN else {}
-    return st.with_task(state, tid, status=st.QUEUED, reason=None, last_failure=last,
+    return st.with_task(_without_reported_gap(state, tid), tid, status=st.QUEUED, reason=None, last_failure=last,
                         requeues=[*entry.get("requeues", []), note], **fresh)
 
 
@@ -3020,7 +3272,7 @@ def requeue_plan_fix(
             "plan_then": evidence["plan_then"], "plan_now": evidence["plan_now"]}
     earlier = str(entry.get("last_failure") or "")
     line = f"re-queued after plan fix {decision}: {reason}"
-    return st.with_task(state, tid, status=st.QUEUED, reason=None, last_failure=f"{earlier}\n{line}" if earlier else line,
+    return st.with_task(_without_reported_gap(state, tid), tid, status=st.QUEUED, reason=None, last_failure=f"{earlier}\n{line}" if earlier else line,
                         requeues=[*entry.get("requeues", []), note])
 
 

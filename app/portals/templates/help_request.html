@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{#- The owner help page (T530; OPS-036, SEC-005, SEC-042, A11Y-030, A11Y-031; D-3883, D-3890,
+    D-4726). The open requests with their reply-by times; with one request chosen, its kept
+    messages, the reply box (300 characters, typed by the owner) and the close or reopen button.
+    A refusal puts "Error: " in the title and a focused summary first, linked to the box, and
+    keeps the typed text. Forms post with novalidate and never disable their buttons. -#}
+{% block title %}{% if failed %}Error: {% endif %}Help requests{% endblock %}
+{% block main %}<h1>Help requests</h1>
+{% if failed %}{% if let Some(line) = line %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>Nothing was sent</h2>
+<p><a href="#text">{{ line }}</a></p>
+</div>
+{% endif %}{% endif %}<div id="help-status" role="status" aria-live="polite">{% if !failed %}{% if let Some(line) = line %}<p>{{ line }}</p>{% endif %}{% endif %}</div>
+<h2>Open requests</h2>
+{% if open.is_empty() %}<p>No open requests.</p>
+{% else %}<ul>
+{% for (id, due) in open %}<li><a href="{{ routes[0] }}?request={{ id }}">Reply by {{ due }}</a> (reference {{ id }})</li>
+{% endfor %}</ul>
+{% endif %}{% if let Some(one) = one %}<h2>This request</h2>
+<p>Reference {{ one.id }}. From: {{ one.asker }}. {% if one.closed %}Closed.{% else %}Reply by {{ one.due }}.{% endif %}</p>
+<ol>
+{% for m in one.messages %}<li>{% if m.from_owner %}You{% else %}They{% endif %} wrote, {{ m.at }}: {% if let Some(words) = m.words %}{{ words }}{% else %}(message deleted after 30 days){% endif %}</li>
+{% endfor %}</ol>
+<form method="post" action="{{ routes[1] }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="request" value="{{ one.id }}">
+<input type="hidden" name="press" value="{{ press }}">
+<p><label for="text">Your reply</label></p>
+<p id="text-hint">Up to {{ max }} characters. No phone numbers, emails or addresses. It goes out by text. After 8 p.m. it waits until 8 a.m.</p>
+{% if failed %}{% if let Some(line) = line %}<p id="text-error">Error: {{ line }}</p>
+{% endif %}{% endif %}<p><textarea id="text" name="text" rows="4" aria-describedby="text-hint{% if failed %} text-error{% endif %}"{% if failed %} aria-invalid="true"{% endif %}>{{ typed }}</textarea></p>
+<p><button type="submit" id="reply-button">Send reply</button></p>
+</form>
+<form method="post" action="{{ routes[2] }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="request" value="{{ one.id }}">
+{% if one.closed %}<input type="hidden" name="reopen" value="1">
+<p><button type="submit" id="close-button">Reopen this request</button></p>
+{% else %}<p><button type="submit" id="close-button">Close this request</button></p>
+{% endif %}</form>
+{% endif %}{% endblock %}

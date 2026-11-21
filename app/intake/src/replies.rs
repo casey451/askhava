@@ -63,7 +63,7 @@ use crate::conversation::{
 use crate::emergency::{Check, check};
 use crate::handlers::{answer_list, help_answered, help_follow_up, list_ask, queue_body};
 use crate::models::{self, IntakeError};
-use crate::order_dispatch::{first_text, reply_step};
+use crate::order_dispatch::{first_text, reply_step, show_card_step};
 use crate::rules::{
     AgeStop, CloseReading, Settings, age_stop, close_reading, language_from_code,
     split_name_address,
@@ -156,7 +156,9 @@ pub async fn receive_raw_reply(
 /// states an age under 18 (INT-038, D-4142) ends the reply with the INT-038 text and no last
 /// question: a clear one in an open request as [`Reply::UnderAge`], before the close and
 /// name-and-address steps; any other (a 911-list match, or a first text) after `receive_text` or
-/// `answer_name_address` screened it, its texts first (INT-002).
+/// `answer_name_address` screened it, its texts first (INT-002). The check-in step comes first
+/// and is skipped for a 911-list match, read as `receive_text` reads it (INT-002, INT-004,
+/// D-4293 (5), D-5081): "PROBLEM gas smell again" gets the INT-004 text, the check-in stays due.
 async fn reply_in(
     db: &mut PgConnection,
     secret: &SecretString,
@@ -165,7 +167,10 @@ async fn reply_in(
 ) -> Result<Reply, IntakeError> {
     let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
     let answered_elsewhere = msg.inbound.opt_out || msg.inbound.help;
-    if !answered_elsewhere && let Some(job) = check_in_reply(&mut tx, msg).await? {
+    // INT-002, INT-004, D-5081: a 911-list match is no check-in answer; it goes on to the screen.
+    let on_911_list = matches!(check(msg.inbound.words, false), Check::Match(_));
+    let check_in = !answered_elsewhere && !on_911_list;
+    if check_in && let Some(job) = check_in_reply(&mut tx, msg).await? {
         tx.commit().await.map_err(|_| IntakeError::Database)?;
         return Ok(Reply::CheckedIn(job));
     }
@@ -330,7 +335,9 @@ fn clear(words: &str) -> bool {
 /// D-3703, D-3705): screened with `Asked::NameAndAddress` when [`reads_as_address`] holds, else
 /// as any reply, so a hazard keeps its 911 text and ends here. Only a clear reply is her answer:
 /// its raw text goes to `take_name_address` (which queues T255's `address_arrived` itself) and
-/// [`Taken::Again`] asks once more; [`Taken::Stored`] and [`Taken::Ended`] send nothing. A SAFE
+/// [`Taken::Again`] asks once more; [`Taken::Ended`] sends nothing; [`Taken::Stored`] hands off to
+/// step 12, `order_dispatch::show_card_step`, whose card text joins the texts (INT-041, D-4880;
+/// nothing when that step is skipped, an error when it fails). A SAFE
 /// after a 911 text is never her answer: the question is asked once more.
 async fn answer_name_address(
     tx: &mut PgConnection,
@@ -362,6 +369,10 @@ async fn answer_name_address(
     if taken == Taken::Again {
         let again = ask_name_address(tx, secret, msg, conversation, spanish_on).await?;
         handled.texts.extend(again);
+    }
+    if matches!(taken, Taken::Stored(_)) {
+        let shown = show_card_step(tx, secret, (msg, conversation)).await?;
+        handled.texts.extend(shown);
     }
     Ok(Reply::NameAddress(taken, handled))
 }
@@ -534,7 +545,7 @@ async fn newest_job(
 }
 
 /// Her quote page `https://<domain>/q/<token>` with a token issued now (PICK-010, SEC-037).
-async fn quote_link(
+pub(crate) async fn quote_link(
     tx: &mut PgConnection,
     secret: &SecretString,
     job: Uuid,

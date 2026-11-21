@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM businesses.team_member WHERE id = $2\n           AND business_id = $1 AND removed_at IS NULL\n           AND (is_owner OR confirm_and_billing)) AS \"may!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "may!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "95e2c41ef1648fb79aee8e87bb75011cdee5d61211a4c766c18a0ff26a1ae6a3"
+}

@@ -1,0 +1,37 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO businesses.staff_phone (business_id, linked_by, is_main, linked_at, approved_at, number_set_at, number_set_by) SELECT business_id, id, false, $3, CASE WHEN is_owner THEN $3::timestamptz END, $3, id FROM businesses.team_member WHERE id = $1 AND business_id = $2 AND removed_at IS NULL AND (is_owner OR confirm_and_billing) RETURNING id, approved_at IS NOT NULL AS \"approved!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.staff_phone",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "approved!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      null
+    ]
+  },
+  "hash": "7abbf1f17dbdc9d93bc9add9e104c717fe24de40e0a40662603ad3238e5e1bdb"
+}

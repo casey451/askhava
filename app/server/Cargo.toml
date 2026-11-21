@@ -26,6 +26,7 @@ askhava-picks = { workspace = true }
 askhava-portals = { workspace = true }
 askhava-privacy = { workspace = true }
 askhava-quotes = { workspace = true }
+askhava-recovery = { workspace = true }
 askhava-site = { workspace = true }
 axum = { workspace = true }
 rustls = { workspace = true }

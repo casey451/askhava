@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT failure FROM recovery.backup_check WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "failure",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "recovery.backup_check",
+            "name": "failure"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "a749832443deca03125886047ebbff353d0f5aabb0e8694d676de5b166d53daf"
+}

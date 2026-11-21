@@ -9,7 +9,15 @@
     /static/site/brand/mark.svg, hidden from assistive tech (T216, D-3890, D-4629). The `get_help`
     block, right after it, stays empty here; only the business portal's business_layout.html fills it
     with the "Get help" link (BIZ-047, D-3155). The header is
-    not sticky, so nothing covers a focused element (A11Y-026). No script is needed, and no script,
+    not sticky, so nothing covers a focused element (A11Y-026). The V6 header (T614, WEB-027,
+    DESIGN_SPEC section 6, D-4252, D-5059): the four links sit twice, as plain text in
+    `nav.site-nav` (shown from 1024 px) and in the `<details class="menu">` disclosure (shown below
+    it, its open list in the page flow), with "Español" between them; `get_help` sits right after
+    `</nav>`, outside `.site-nav`, so it shows at every width. The spec has no Spanish header
+    wording, so the skip link's wrapper, the nav and the Menu carry `lang="en"` and "Español" its
+    own `lang="es"` (A11Y-004). Each nav link sits in a `<p>` so a page loaded with no stylesheet
+    still separates them. `head` declares the light colour scheme and preloads the two first-screen
+    fonts at the addresses the stylesheet's `url()`s resolve to (WEB-030). No script is needed, and no script,
     style or font comes from another host (SEC-013); every value is escaped (SEC-011). Forms post
     with novalidate and never disable their submit button (A11Y-030, A11Y-031). The stylesheet is
     linked first in `body`, not in `head`, so it never holds back a page's `autofocus` (an error
@@ -19,14 +27,32 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}{% endblock %} | {{ askhava_core::api::brand().display_name() }}</title>
+<meta name="color-scheme" content="light">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/static/site/fonts/gelasio-latin-500-normal.woff2">
+<link rel="preload" as="font" type="font/woff2" crossorigin href="/static/site/fonts/dm-sans-latin-wght-normal.woff2">
 </head>
 <body>
 <link rel="stylesheet" href="/static/site/site.css">
-<a class="skip-link" href="#main">Skip to main content</a>
+<div lang="en"><a class="skip-link" href="#main">Skip to main content</a></div>
 {% block banner %}{% endblock %}
 <header>
-<p class="wordmark"><svg class="mark" width="30" height="27" viewBox="0 0 446 399" aria-hidden="true" focusable="false"><use href="/static/site/brand/mark.svg#mark"/></svg><a href="/">{{ askhava_core::api::brand().display_name() }}</a></p>
-<nav aria-label="Site"><a href="/help">Help</a>{% block get_help %}{% endblock %}</nav>
+<p class="wordmark" lang="en"><svg class="mark" width="30" height="27" viewBox="0 0 446 399" aria-hidden="true" focusable="false"><use href="/static/site/brand/mark.svg#mark"/></svg><a href="/">{{ askhava_core::api::brand().display_name() }}</a></p>
+<nav class="site-nav" aria-label="Site" lang="en">
+<p><a href="/how-it-works">How it works</a></p>
+<p><a href="/coverage">What we cover</a></p>
+<p><a href="/business">For businesses</a></p>
+<p><a href="/help">Help</a></p>
+</nav>{% block get_help %}{% endblock %}
+<p><a href="/es" lang="es" hreflang="es">Español</a></p>
+<details class="menu" lang="en">
+<summary>Menu</summary>
+<ul class="menu-list">
+<li><a href="/how-it-works">How it works</a></li>
+<li><a href="/coverage">What we cover</a></li>
+<li><a href="/business">For businesses</a></li>
+<li><a href="/help">Help</a></li>
+</ul>
+</details>
 </header>
 <main id="main" tabindex="-1">
 {% block main %}{% endblock %}

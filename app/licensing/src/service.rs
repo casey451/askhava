@@ -8,6 +8,9 @@
 //! list, then `businesses` calls [`check_license`] for every ROC-licensed business. The read-back
 //! here is the ROC's only; other agencies' read-back comes with T180's lookup (LIC-027 is partial).
 //! `record_lookup` stores a read live lookup from `handlers` as a check (LIC-007, LIC-008).
+//! T654 (D-4310): `check_once` is the daily list run's check of one business, skipped when a check
+//! against the latest list's date exists, and [`latest_check_allows_card`] is the card pool's
+//! reading of a business's latest check overall.
 
 use jiff::Timestamp;
 use jiff::civil::Date;
@@ -317,6 +320,27 @@ pub async fn check_license(
     Ok(check)
 }
 
+/// CARD-015, LIC-007, D-4310: the daily list run's [`check_license`] of one business, unless the
+/// business already has a check dated the latest ROC list's day (a retry, a re-run or a check made
+/// since the list loaded), so no second row is written; true when it recorded one.
+pub(crate) async fn check_once(
+    conn: &mut PgConnection,
+    business_id: Uuid,
+    license_number: &str,
+) -> Result<bool, ImportError> {
+    let checked = db(sqlx::query_scalar!(
+        "SELECT EXISTS (SELECT 1 FROM licensing.license_check WHERE business_id = $1 AND list_date = \
+         (SELECT max(list_date) FROM licensing.list_import WHERE source = 'roc')) AS \"checked!\"",
+        business_id,
+    )
+    .fetch_one(&mut *conn)
+    .await)?;
+    if !checked {
+        check_license(conn, business_id, license_number).await?;
+    }
+    Ok(!checked)
+}
+
 /// Records a read live lookup of the normalised `number` as a check dated `day` (LIC-007, T180).
 pub(crate) async fn record_lookup(
     conn: &mut PgConnection,
@@ -358,6 +382,31 @@ pub async fn roc_check_allows_card(
          ORDER BY checked_at DESC, id DESC LIMIT 1",
         business_id,
         imports::normalise_license_number(license_number),
+        fresh.checked_since.to_sqlx() as _,
+        fresh.listed_since.to_sqlx() as _,
+    )
+    .fetch_optional(&mut *conn)
+    .await)?;
+    Ok(latest.is_some_and(|r| r.status == "active" && r.fresh))
+}
+
+/// Whether the business's latest ROC check overall, of whatever number (the row `holder_for`
+/// reads), lets it receive ROC cards: only if that check was Active and is within `fresh`; a
+/// business with no check gets none (CARD-015, LIC-008, LIC-007, PICK-020, D-4310).
+///
+/// # Errors
+///
+/// [`ImportError::Database`] on a database failure.
+pub async fn latest_check_allows_card(
+    conn: &mut PgConnection,
+    business_id: Uuid,
+    fresh: Freshness,
+) -> Result<bool, ImportError> {
+    let latest = db(sqlx::query!(
+        "SELECT status, checked_at >= $2 AND list_date >= $3 AS \"fresh!\" \
+         FROM licensing.license_check WHERE business_id = $1 \
+         ORDER BY checked_at DESC, id DESC LIMIT 1",
+        business_id,
         fresh.checked_since.to_sqlx() as _,
         fresh.listed_since.to_sqlx() as _,
     )

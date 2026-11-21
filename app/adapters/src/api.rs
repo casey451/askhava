@@ -4,7 +4,7 @@
 //! idempotency key (SEC-018), and the texting, voice and Verify traits with
 //! their one HTTP client each (SEC-032); the payments, AI (stand-in only,
 //! AI-009), email (with suppression removal, BIZ-056), letters, license-source
-//! and storage adapters (with `StorageDelete` and `SmsBodyDelete`, D-1841); the guarded fetch of untrusted URLs (SEC-041); and the inbound webhook
+//! and storage adapters (with `StorageDelete` and `SmsBodyDelete`, D-1841), the sent-log listing for the replay (`SmsSentLog`, D-3155); the guarded fetch of untrusted URLs (SEC-041); and the inbound webhook
 //! signature and Stripe source-address checks (SEC-016, SEC-039, SEC-049).
 
 pub use crate::ai::{AiAdapter, StandInAi};
@@ -17,8 +17,9 @@ pub use crate::email::{Email, EmailAdapter, ResendEmail};
 pub use crate::letters::{LettersAdapter, LobLetters, SentLetter};
 pub use crate::license_sources::{LicenseLists, LicenseRecords, LicenseSource};
 pub use crate::payments::{
-    CHARGE_PAGE_MAX, Charge, ChargeList, ConfirmedIntent, IntentMetadata, ListedCharge,
-    PaymentIntent, PaymentsAdapter, StripePayments, StripeRefund, ThreeDs, UnconfirmedIntent,
+    CHARGE_PAGE_MAX, CardFacts, Charge, ChargeList, ConfirmedIntent, IntentMetadata, ListedCharge,
+    PaymentIntent, PaymentsAdapter, SetUpIntent, StripePayments, StripeRefund, ThreeDs,
+    UnconfirmedIntent,
 };
 pub use crate::resend_config::ResendConfig;
 pub use crate::signatures::{
@@ -29,6 +30,7 @@ pub use crate::sms::{
     MessageBody, ReadMessage, SentText, SmsAdapter, SmsBodyDelete, SmsBodyRead,
     TwilioMessageReader, TwilioSms,
 };
+pub use crate::sms_list::{SENT_LOG_MAX_PAGES, SENT_LOG_PAGE_SIZE, SentMessage, SmsSentLog};
 pub use crate::storage::{LocalStorage, StorageAdapter, StorageDelete};
 pub use crate::verify::{CodeChannel, TwilioVerify, VerifyAdapter};
 pub use crate::voice::{CALL_EVENTS, CallPlan, CallState, MAX_TWIML, TwilioVoice, VoiceAdapter};

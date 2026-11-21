@@ -22,9 +22,11 @@ use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
 pub use crate::business_numbers::{Figure, Finished, Move, finished_counts, move_out, tally};
+pub use crate::emergency_mark::mark_emergency;
 pub use crate::feedback_purge::{
     FEEDBACK_PURGE_KIND, FEEDBACK_PURGED, FeedbackStage, feedback_text_stage, purge_feedback,
 };
+pub use crate::final_event::FINAL_STATUS_KIND;
 pub use crate::flag_inputs::{
     CHECK_IN_ANSWER, ConnectedAnswers, connected_answers, record_check_in_answer,
 };
@@ -40,10 +42,14 @@ pub use crate::job_facts::{
 pub use crate::job_lookup::job_by_number;
 pub use crate::line_close::{LINE_CLOSE_KIND, LineCloseReason, queue_line_close};
 pub use crate::models::{JobRow, JobsError};
+pub use crate::payment_wait::{
+    PAYMENT_RETURNED_KIND, entered_payment_pending_since, queue_payment_returned,
+};
 pub use crate::purge_events::{
     PURGE_DUE_KIND, PURGE_STAGES, SWEEP_KIND, SWEEP_PAGE, enqueue_purge, final_jobs_page,
     run_sweep, run_sweep_at, schedule_sweep, sweep_closed, unqueued_finals,
 };
+pub use crate::report_facts::{ReportFacts, report_facts};
 pub use crate::request_counts::{
     REQUEST_COUNTS_KIND, report_request_counts, run_request_counts, schedule_request_counts,
 };

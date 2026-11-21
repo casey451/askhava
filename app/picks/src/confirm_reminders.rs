@@ -12,9 +12,12 @@
 //! PICK-046 text after a lapse, and [`owner_told`] whether the owner gets the BIZ-033 email.
 //! The wording is built here from the brand file, never a literal (D-1971). T157: [`lapse`] ends
 //! a lapsed pick and moves it at once to the homeowner's backup (PICK-047, D-491); with none,
-//! PICK-046's [`lapse_text`] applies.
+//! PICK-046's [`lapse_text`] applies. T669 (OPS-034, D-4349): a pick whose job entered Payment
+//! pending after the pick was made (its business pressed Confirm) is never recorded `expired`:
+//! [`lapse`] ends it through `connect::end_pending` as `payment_failed` instead.
 
 use askhava_core::api::{add_business_minutes, arizona_time, brand, is_business_hours};
+use askhava_jobs::api::entered_payment_pending_since;
 use askhava_messaging::api::{Language, short_name};
 use askhava_ops::api::Actor;
 use jiff::Timestamp;
@@ -24,7 +27,9 @@ use sqlx::types::Uuid;
 
 use crate::backup_choice::{Backup, backup_choice};
 use crate::confirm::{EmergencyPlan, WindowRules, dollars};
+use crate::connect::{PendingEnd, end_pending};
 use crate::models::{self, PicksError};
+use crate::status::PickStatus;
 
 /// The most reminders one window lists, a bound on a misconfigured setting.
 const MOST_REMINDERS: u32 = 64;
@@ -292,19 +297,43 @@ pub fn lapse_plan(
 /// caller's transaction: a pick still waiting expires, then it moves at once to the backup the
 /// homeowner named if that quote is still pickable ([`Backup::Moved`]: its own pick notice and
 /// window); [`Backup::NoBackup`] means the caller sends PICK-046's [`lapse_text`]. `paused` is
-/// the job's homeowner pause (CON-029). Safe to run twice.
+/// the job's homeowner pause (CON-029). Safe to run twice. OPS-034, FEE-021, D-4349: a pick
+/// whose job entered Payment pending since it was made is never `expired`: it ends through
+/// `end_pending` as `payment_failed` (its business pressed Confirm, so it is no lapse).
 ///
 /// # Errors
 ///
-/// [`PicksError::Database`], [`PicksError::MovedOn`] (roll back) or the page pick's errors.
+/// [`PicksError::Database`], [`PicksError::Job`], [`PicksError::MovedOn`] (roll back) or the
+/// page pick's errors.
 pub async fn lapse(
     tx: &mut PgConnection,
     pick: Uuid,
     paused: bool,
     (actor, at): (Actor, Timestamp),
 ) -> Result<Backup, PicksError> {
+    if let Some(job) = pressed_job(tx, pick).await? {
+        return end_pending(tx, (pick, job), PendingEnd::PaymentFailed, (actor, at)).await;
+    }
     models::expire_pick(tx, pick, at).await?;
     backup_choice(tx, pick, paused, (actor, at)).await
+}
+
+/// OPS-034, D-4349: the job of waiting pick `pick`, under the pick's row lock, when that job
+/// entered Payment pending at or after the pick was made; `None` otherwise.
+async fn pressed_job(tx: &mut PgConnection, pick: Uuid) -> Result<Option<Uuid>, PicksError> {
+    let row = sqlx::query!(
+        "SELECT job_id, picked_at FROM picks.pick WHERE id = $1 AND status = $2 FOR UPDATE",
+        pick,
+        PickStatus::AwaitingConfirm.code(),
+    )
+    .fetch_optional(&mut *tx)
+    .await
+    .map_err(|_| PicksError::Database)?;
+    let Some(row) = row else {
+        return Ok(None);
+    };
+    let entered = entered_payment_pending_since(tx, row.job_id, row.picked_at.to_jiff()).await;
+    Ok(entered.map_err(|_| PicksError::Job)?.then_some(row.job_id))
 }
 
 /// PICK-046, PICK-016, D-420: the lapse text naming `name`, with `lines` the TXT-031 lines of the

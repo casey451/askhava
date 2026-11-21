@@ -11,9 +11,17 @@
    docs/design/reference/ V6 stylesheet under its own class names, one rule a line, written to the
    spec: shadows only as ink or evergreen rgba, every card keeps its 1 px line border for forced
    colours, the open Menu list sits in the page flow, emphasis is upright, the kicker and small
-   labels are 700, a field in error gets a 2 px alert border, and the one transition (the 150 ms
+   labels are 600 (T617), a field in error gets a 2 px alert border, and the one transition (the 150 ms
    button colour fade) runs only under prefers-reduced-motion: no-preference. The element rules
-   above the components still style the pages whose markup has no component classes yet. */
+   above the components still style the pages whose markup has no component classes yet.
+   T613 (D-4246, D-4252, WEB-029, WEB-030, D-4807): the polish layer. Tokens for the layered
+   shadows, radii, press scale, durations and the --spring easing; tabular figures, pretty
+   wrapping and section 3's heading tracking; the classes the template tasks apply (.accent, the
+   one Gelasio 500 italic phrase; .caps, small labels; .out, the CSS-drawn external-link mark;
+   .arrow, the primary button's aria-hidden arrow; .cur, the price's raised dollar sign;
+   .words-panel; .rise, the quote page's first-render cards); metric-matched local() fallbacks;
+   and all motion in one prefers-reduced-motion: no-preference block. Limits checked by
+   tests/e2e/site_polish.spec.ts: 60 KB, 25 KB gzipped, transform-only keyframes, no gradient. */
 @font-face {
   font-family: "Gelasio";
   font-style: normal;
@@ -30,12 +38,14 @@
   src: url("fonts/gelasio-latin-500-normal.woff2") format("woff2");
 }
 
+/* DM Sans from the one weight-axis variable file (T617, D-4252, D-4863): one face per weight the
+   sheet uses, all on the same URL, so the browser fetches it once; never one 100 1000 range face. */
 @font-face {
   font-family: "DM Sans";
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url("fonts/dm-sans-latin-400-normal.woff2") format("woff2");
+  src: url("fonts/dm-sans-latin-wght-normal.woff2") format("woff2");
 }
 
 @font-face {
@@ -43,7 +53,15 @@
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  src: url("fonts/dm-sans-latin-500-normal.woff2") format("woff2");
+  src: url("fonts/dm-sans-latin-wght-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "DM Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("fonts/dm-sans-latin-wght-normal.woff2") format("woff2");
 }
 
 @font-face {
@@ -51,7 +69,36 @@
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url("fonts/dm-sans-latin-700-normal.woff2") format("woff2");
+  src: url("fonts/dm-sans-latin-wght-normal.woff2") format("woff2");
+}
+
+/* The one italic accent (DESIGN_SPEC section 3, D-4246): Gelasio 500 italic, same OFL family. */
+@font-face {
+  font-family: "Gelasio";
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url("fonts/gelasio-latin-500-italic.woff2") format("woff2");
+}
+
+/* Metric-matched fallbacks (D-4252, figures in D-4807): installed faces scaled to Gelasio 500
+   and DM Sans 400, so lines break the same before and after the web fonts arrive. */
+@font-face {
+  font-family: "Gelasio fallback";
+  src: local("Georgia"), local("Noto Serif");
+  size-adjust: 103.07%;
+  ascent-override: 90.01%;
+  descent-override: 33.16%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "DM Sans fallback";
+  src: local("Arial"), local("Roboto");
+  size-adjust: 105.07%;
+  ascent-override: 94.41%;
+  descent-override: 29.5%;
+  line-gap-override: 0%;
 }
 
 :root {
@@ -69,8 +116,8 @@
   --night: #1F4A3E;
   --on-night: #FFFFFF;
   --focus-on-night: #F2B27A;
-  --serif: "Gelasio", Georgia, serif;
-  --sans: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --serif: "Gelasio", "Gelasio fallback", Georgia, serif;
+  --sans: "DM Sans", "DM Sans fallback", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
 /* The light-only scheme (DESIGN_SPEC section 2, D-4252), the three night and alert tokens the
@@ -83,6 +130,25 @@
   --paper-shadow: 0 0 0 1px rgba(30, 41, 38, 0.06), 0 1px 2px rgba(30, 41, 38, 0.06), 0 12px 32px -16px rgba(30, 41, 38, 0.22);
   --gutter: 20px;
   --header-h: 60px;
+}
+
+/* The polish tokens (DESIGN_SPEC sections 4 and 7, D-4246): the hover lift, the primary button's
+   highlight, edge and tinted shadow, the request box's focus glow, the radii, the press scale,
+   the durations and the spring easing from Casey's brief. */
+:root {
+  --paper-lift: 0 0 0 1px rgba(30, 41, 38, 0.07), 0 2px 4px rgba(30, 41, 38, 0.07), 0 20px 40px -18px rgba(30, 41, 38, 0.30);
+  --button-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  --button-edge: 0 1px 0 var(--evergreen-deep);
+  --button-shadow: 0 6px 14px -8px rgba(36, 88, 73, 0.45);
+  --focus-glow: 0 0 0 8px rgba(36, 88, 73, 0.12);
+  --radius-card: 20px;
+  --radius-inner: 12px;
+  --radius-note: 14px;
+  --press: 0.975;
+  --fade: 150ms;
+  --quick: 220ms;
+  --entrance: 450ms;
+  --spring: linear(0, .0697 4.6%, .2533 9.6%, .5164 15.4%, .7547 21.4%, .9081 27.2%, .9927 33.2%, 1.0279 39.8%, 1.0297 46.6%, 1.0136 56.6%, 1.0012 70.4%, .9989 86%, 1);
 }
 
 html {
@@ -115,7 +181,17 @@ em {
 a {
   color: var(--evergreen);
   text-decoration: underline;
-  text-underline-offset: 0.15em;
+  text-underline-offset: 0.18em;
+  text-decoration-thickness: from-font;
+}
+
+/* A tap shows the press scale, not the browser's grey highlight; no double-tap zoom delay (D-4252). */
+a, button, summary, .button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button, summary, .button {
+  touch-action: manipulation;
 }
 
 a:hover {
@@ -236,17 +312,20 @@ h1 {
 h2 {
   font-size: 26px;
   line-height: 32px;
+  letter-spacing: -0.015em;
   margin: 32px 0 12px;
 }
 
 h3 {
   font-size: 22px;
   line-height: 28px;
+  letter-spacing: -0.015em;
   margin: 24px 0 8px;
 }
 
 p, li {
   max-width: 70ch;
+  text-wrap: pretty;
 }
 
 small {
@@ -304,6 +383,9 @@ button:active {
   background: var(--evergreen-deep);
 }
 
+/* A wide table scrolls inside its own keyboard-focusable region, never the page (A11Y-008, D-5159). */
+[role="region"][tabindex="0"] { overflow-x: auto; overflow-wrap: anywhere; }
+
 /* The home hero (T216; DESIGN_SPEC sections 4, 5 and 9; D-4252). Phones: the photo runs edge to
    edge under the header, a strip as tall as the first screen allows, so the photo and the
    "Get quotes" link both fit at 390 by 844 and 320 by 740. The photo never carries text: it is a
@@ -329,7 +411,7 @@ button:active {
 .kicker {
   margin: 0 0 4px;
   color: var(--evergreen);
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .hero-text h1 {
@@ -364,7 +446,7 @@ button:active {
 
 .request-box textarea:focus-visible {
   border-color: var(--evergreen);
-  box-shadow: 0 0 0 8px rgba(36, 88, 73, 0.12);
+  box-shadow: var(--focus-glow);
 }
 
 .request-box button {
@@ -399,32 +481,42 @@ button:active {
 .header-row { display: flex; align-items: flex-start; gap: 4px; min-height: var(--header-h); padding-block: calc((var(--header-h) - 44px) / 2); box-sizing: border-box; }
 .brand { display: inline-flex; align-items: center; gap: 9px; color: var(--ink); text-decoration: none; font: 700 24px/32px var(--sans); letter-spacing: -0.035em; margin-right: auto; min-height: 44px; white-space: nowrap; }
 .brand img, .brand .mark { width: 30px; height: 27px; }
-.site-nav { display: none; }
+.site-nav { display: none; margin-left: auto; }
 .header-link { display: inline-flex; align-items: center; min-height: 44px; padding: 0 10px; font-size: 16px; line-height: 24px; font-weight: 500; color: var(--ink); text-decoration: none; }
 .header-link:hover { text-decoration: underline; }
-.menu { display: flex; flex-direction: column; align-items: flex-end; }
+/* The header's Menu (T614, D-5059): the disclosure and its content slot have no box, so the pill
+   and the open list are the header's own flex items; the pill's margins make it the header's
+   height, and the list is a row of its own in the page flow under the header row (WCAG 2.4.11). */
+.menu { display: contents; }
+.menu::details-content { display: contents; }
+.menu > summary { margin: calc((var(--header-h) - 44px) / 2) 0 calc((var(--header-h) - 44px) / 2) -12px; }
+.menu:not([open]) .menu-list { display: none; }
+/* Below 1024 px "Español" and the pill sit together at the right. On a business page, where the
+   "Get help" link follows the nav, the row wraps on a phone, so the pill keeps to the gutter. */
+@media (max-width: 1023px) { .site-nav ~ p { margin-left: auto; } }
+.site-nav + a ~ .menu > summary { margin-left: 0; }
 .menu summary { list-style: none; display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border: 1px solid var(--field-edge); border-radius: 22px; background: var(--surface); font-size: 16px; line-height: 24px; font-weight: 500; cursor: pointer; box-sizing: border-box; }
 .menu summary:hover { border-color: var(--ink); }
 .menu summary::-webkit-details-marker { display: none; }
-.menu-list { position: static; width: min(280px, calc(100vw - 2 * var(--gutter))); margin: 8px 0 0; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 8px 0; list-style: none; box-shadow: 0 12px 28px rgba(30, 41, 38, 0.12); box-sizing: border-box; }
+.menu-list { position: static; flex: 0 0 100%; margin: 0 0 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 8px 0; list-style: none; box-shadow: 0 12px 28px rgba(30, 41, 38, 0.12); box-sizing: border-box; }
 .menu-list li { max-width: none; }
 .menu-list a { display: block; padding: 10px 20px; color: var(--ink); font-size: 18px; text-decoration: none; }
 .menu-list a:hover { text-decoration: underline; }
 
 /* Buttons: the primary one keeps its real 1 px evergreen-deep border, which forced colours keeps
    when it drops the fill (D-4252); its edge is section 4's highlight, drop and evergreen shadow. */
-.button { display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; min-height: 56px; padding: 14px 28px; border: 1px solid var(--evergreen-deep); border-radius: 12px; background: var(--evergreen); color: var(--on-evergreen); font: 700 18px/24px var(--sans); letter-spacing: 0.005em; text-decoration: none; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 1px 0 var(--evergreen-deep), 0 6px 14px -8px rgba(36, 88, 73, 0.45); }
+.button { display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; min-height: 56px; padding: 14px 28px; border: 1px solid var(--evergreen-deep); border-radius: 12px; background: var(--evergreen); color: var(--on-evergreen); font: 700 18px/24px var(--sans); letter-spacing: 0.005em; text-decoration: none; cursor: pointer; box-shadow: var(--button-highlight), var(--button-edge), var(--button-shadow); }
 .button:hover, .button:active { background: var(--evergreen-deep); text-decoration: none; }
 .button-wide { width: 100%; }
 .button-quiet { background: var(--surface); color: var(--ink); border-color: var(--field-edge); font-weight: 500; box-shadow: none; }
 .button-quiet:hover, .button-quiet:active { background: var(--band); border-color: var(--ink); }
 
-/* Type roles: px sizes only, none under 16 px (WEB-027); the kicker and small labels at 700, since
-   no 600 file is shipped (D-4252). */
-.kicker { font: 700 16px/24px var(--sans); letter-spacing: 0.01em; }
+/* Type roles: px sizes only, none under 16 px (WEB-027); the kicker and small labels at 600, a true
+   600 from the variable DM Sans file (D-4252, T617). */
+.kicker { font: 600 16px/24px var(--sans); letter-spacing: 0.01em; }
 .display { font: 500 30px/34px var(--serif); letter-spacing: -0.02em; text-wrap: balance; }
 .title { font: 500 30px/34px var(--serif); letter-spacing: -0.015em; }
-.section-title { font: 500 28px/34px var(--serif); letter-spacing: -0.012em; text-wrap: balance; }
+.section-title { font: 500 28px/34px var(--serif); letter-spacing: -0.015em; text-wrap: balance; }
 .lede { color: var(--ink-soft); }
 .small { font-size: 16px; line-height: 24px; }
 .soft { color: var(--ink-soft); }
@@ -433,7 +525,20 @@ button:active {
 
 /* Paper: a real 1 px line border on every card beside paper-shadow's ring, since forced colours
    removes every shadow and only the border is left (DESIGN_SPEC section 2, D-4252). */
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 20px; box-shadow: var(--paper-shadow); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 20px; box-shadow: var(--paper-shadow); }
+a.card { display: block; color: var(--ink); text-decoration: none; }
+
+/* The polish classes the template tasks apply (DESIGN_SPEC sections 3 and 6, D-4246, D-4252):
+   .accent, at most one a page, on words a headline already has; .caps, only on the kicker, a
+   quote card's number-and-time row or a fact row's label, never on text a test reads back. */
+.accent { font-family: var(--serif); font-style: italic; font-weight: 500; }
+.caps { font-size: 16px; line-height: 24px; text-transform: uppercase; letter-spacing: 0.05em; }
+.button .arrow { display: inline-block; margin-left: 8px; }
+.words-panel { background: var(--band); border-radius: var(--radius-inner); padding: 14px 16px; }
+.out a::after { content: ""; display: inline-block; box-sizing: border-box; width: 0.6em; height: 0.6em; margin-left: 0.3em; border-top: 0.1em solid currentColor; border-right: 0.1em solid currentColor; background: currentColor; clip-path: polygon(0 0, 100% 0, 100% 100%, 84% 100%, 84% 32%, 26% 90%, 10% 74%, 68% 16%, 0 16%); }
+.quote-top, .summary dd, .facts dd { font-variant-numeric: tabular-nums; }
+.quote-price .cur { font-size: 24px; line-height: 24px; vertical-align: 0.8em; margin-right: 2px; }
+.quote-name, .words, textarea, input { overflow-wrap: anywhere; }
 
 /* Form fields: no transition on the border (A11Y-009 allows only the button fade). */
 .field label { display: block; font: 700 16px/24px var(--sans); }
@@ -472,7 +577,7 @@ button:active {
 .steps:has(.num) p { color: var(--ink-soft); margin: 0; }
 
 /* Example quotes */
-.example-label { display: flex; justify-content: space-between; gap: 4px 16px; flex-wrap: wrap; font: 700 16px/24px var(--sans); color: var(--evergreen); margin: 0 0 12px; max-width: none; }
+.example-label { display: flex; justify-content: space-between; gap: 4px 16px; flex-wrap: wrap; font: 600 16px/24px var(--sans); color: var(--evergreen); margin: 0 0 12px; max-width: none; }
 .example-grid { display: grid; gap: 16px; }
 
 /* Quote card: identical every time, in arrival order; the #N row above a line hairline */
@@ -480,10 +585,10 @@ button:active {
 .quote p, .quote h3, .quote dl, .quote dd, .quote blockquote { margin: 0; }
 .quote-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: 16px; line-height: 24px; color: var(--ink-soft); padding-bottom: 14px; border-bottom: 1px solid var(--line); max-width: none; }
 .quote-top .no { font-weight: 700; color: var(--ink); }
-.quote-name { font: 500 26px/32px var(--serif); letter-spacing: -0.01em; }
+.quote-name { font: 500 26px/32px var(--serif); letter-spacing: -0.015em; }
 .quote-ind { font-size: 16px; line-height: 24px; color: var(--ink-soft); margin-top: 4px; }
 .quote-price { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 12px; }
-.quote-price .amount { font: 500 48px/52px var(--serif); letter-spacing: -0.02em; font-variant-numeric: lining-nums; }
+.quote-price .amount { font: 500 48px/52px var(--serif); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
 .quote-price .format { font-size: 16px; line-height: 24px; color: var(--ink-soft); }
 .facts { font-size: 16px; line-height: 24px; margin: 0; }
 .facts div { display: flex; justify-content: space-between; gap: 20px; padding-block: 11px; border-top: 1px solid var(--line); }
@@ -515,7 +620,7 @@ button:active {
 .fee-card h3 { font: 700 16px/24px var(--sans); margin: 0; padding: 16px 20px; border-bottom: 1px solid var(--line); }
 .fee-card dl { margin: 0; }
 .fee-card dl div { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 14px 20px; border-bottom: 1px solid var(--line); }
-.fee-card dd { margin: 0; font: 500 28px/32px var(--serif); font-variant-numeric: lining-nums; }
+.fee-card dd { margin: 0; font: 500 28px/32px var(--serif); font-variant-numeric: tabular-nums; }
 .fee-card .small { margin: 0; padding: 14px 20px 0; }
 .fee-card .small:last-child { padding-bottom: 16px; }
 
@@ -525,7 +630,7 @@ button:active {
 .who-facts div { padding-block: 8px; border-top: 1px solid var(--line); }
 .who-facts dt { font-weight: 700; }
 .who-facts dd { margin: 0; color: var(--ink-soft); }
-.note-911 { background: var(--surface); border: 2px solid var(--alert); border-radius: 14px; padding: 20px; }
+.note-911 { background: var(--surface); border: 2px solid var(--alert); border-radius: var(--radius-note); padding: 20px; }
 .note-911 h2 { font: 700 18px/28px var(--sans); color: var(--alert); margin: 0 0 4px; }
 .end { border-top: 1px solid var(--line); padding-block: 48px 56px; display: grid; gap: 20px; }
 
@@ -722,10 +827,38 @@ button:active {
   }
 }
 
-/* The one transition: the 150 ms button colour fade, only for those who have not asked for less
-   motion; under reduce nothing animates, fades or scrolls smoothly (A11Y-009, D-4246). */
+/* A card whose whole area is one link takes paper-lift on hover; a reading card never does (D-4246). */
+@media (hover: hover) {
+  a.card:hover { box-shadow: var(--paper-lift); }
+}
+
+/* All motion (WEB-029, DESIGN_SPEC section 7, D-4246, D-4252), only for those who have not asked
+   for less: the 150 ms button colour fade, the 0.975 press, the arrow's 3 px nudge and a link
+   card's 2 px lift under 350 ms, and the quote page's first-render cards rising 12 px on the
+   spring, about 90 ms apart, the sixth and later sharing the fifth delay, so the last ends by
+   810 ms. Transform only; nothing fades. Outside this block nothing moves (A11Y-009). */
 @media (prefers-reduced-motion: no-preference) {
-  button, .button { transition: background-color 150ms ease; }
+  button, .button { transition: background-color var(--fade) ease, transform var(--quick) var(--spring); }
+  button:active, .button:active { transform: scale(var(--press)); }
+  .button .arrow { transition: transform var(--quick) var(--spring); }
+  a.card { transition: transform var(--quick) var(--spring), box-shadow var(--quick) ease; }
+  @media (hover: hover) {
+    .button:hover .arrow { transform: translateX(3px); }
+    a.card:hover { transform: translateY(-2px); }
+  }
+  @keyframes rise { from { transform: translateY(12px); } }
+  .rise { animation: rise var(--entrance) var(--spring) 0ms 1 both; }
+  .rise:nth-child(2) { animation-delay: 90ms; }
+  .rise:nth-child(3) { animation-delay: 180ms; }
+  .rise:nth-child(4) { animation-delay: 270ms; }
+  .rise:nth-child(5), .rise:nth-child(n+6) { animation-delay: 360ms; }
+}
+
+/* More contrast asked for (DESIGN_SPEC section 2, D-4252): card, row and section edges take
+   field-edge, ink-soft text takes ink, and every shadow drops. */
+@media (prefers-contrast: more) {
+  :root { --line: var(--field-edge); --ink-soft: var(--ink); }
+  *, *::before, *::after { box-shadow: none !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {

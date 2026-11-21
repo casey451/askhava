@@ -15,7 +15,9 @@
 //! release step of the `migrate` service (D-092, SEC-052). `server bootstrap-owner` creates the
 //! one owner once, as the migration role, from the token in `ASKHAVA_OWNER_BOOTSTRAP_TOKEN` and
 //! a password read from standard input, and prints the first authenticator's secret and the
-//! recovery codes once to the operator's own terminal (SEC-044, SEC-007, D-1918).
+//! recovery codes once to the operator's own terminal (SEC-044, SEC-007, D-1918). `server replay`
+//! restores an operator's decrypted export into the fresh database and replays from the vendors'
+//! records (`askhava_server::replay_drill`; OPS-013, OPS-018, OPS-019, T206).
 
 use std::future::IntoFuture;
 use std::io;
@@ -33,6 +35,10 @@ async fn main() -> io::Result<()> {
     }
     if std::env::args().nth(1).as_deref() == Some("bootstrap-owner") {
         return bootstrap_owner(&settings).await;
+    }
+    if std::env::args().nth(1).as_deref() == Some("replay") {
+        let args: Vec<String> = std::env::args().skip(2).collect();
+        return askhava_server::replay_drill(&settings, std::env::vars().collect(), &args).await;
     }
     // The security-event cap and the SEC-040 client address, once per process (T319, D-3134).
     let client_ip = askhava_core::api::ClientIpPolicy::from_pairs(std::env::vars())
@@ -83,7 +89,8 @@ fn liveness_limit() -> io::Result<askhava_server::liveness::LivenessLimit> {
 /// `parts` with the served business sign-in, sign-up, portal `vault` (built and checked at start,
 /// D-4418) and Confirm settings from `settings` and the process environment (T280, T302, T300,
 /// T261), the step-up page's Verify part (T364), the homeowner sign-in's Verify part (T307), the web chat's code-step keys (T489) and the
-/// site pages' settings (T102); each errors as its own builder does, naming a key, never a value.
+/// site pages' settings (T102) with the business number for the business page's WEB-024 line
+/// (T769, D-4931); each errors as its own builder does, naming a key, never a value.
 fn business_parts(
     settings: &askhava_core::api::Settings,
     pool: &sqlx::PgPool,
@@ -103,16 +110,27 @@ fn business_parts(
     let confirm = askhava_server::confirm_settings(settings, std::env::vars())?;
     let chat = askhava_server::chat_codes::chat_keys(settings, std::env::vars())?;
     let homeowner = askhava_server::homeowner_portal::homeowner_verify(settings, std::env::vars())?;
+    let photos = askhava_server::homeowner_portal::photo_parts(settings, std::env::vars())?;
+    let link_codes = askhava_server::action_links::confirm_link_codes(settings, std::env::vars())?;
+    let number = askhava_server::business_number(settings.business_number())?;
+    let pages = askhava_site::api::SitePages::from_settings(settings);
     Ok(parts
         .with_sign_in(signin)
         .with_sign_up(signup)
         .with_step_up(step_up)
         .with_homeowner_verify(homeowner)
+        .with_photos(photos)
         .with_vault(vault)
+        .with_business_number(number.clone())
         .with_confirm_part(confirm)
+        .with_confirm_link_codes(link_codes)
         .with_chat_codes(chat)
-        .with_site_pages(askhava_site::api::SitePages::from_settings(settings))
-        .with_environment(settings.environment()))
+        .with_site_pages(pages.with_business_number(number))
+        .with_environment(settings.environment())
+        .with_secret_report(askhava_server::owner_tools::SecretReport::from_settings(
+            settings,
+            std::env::vars(),
+        )))
 }
 
 /// Applies every pending migration over `ASKHAVA_MIGRATION_DATABASE_URL`, never the app

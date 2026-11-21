@@ -8,7 +8,7 @@ use std::collections::BTreeSet;
 use std::sync::Arc;
 
 use askhava_businesses::api::AccountStatus;
-use askhava_core::api::{Claimed, IdSecret, LinkToken, MIGRATOR, ManualClock, brand};
+use askhava_core::api::{Claimed, Guarded, IdSecret, LinkToken, MIGRATOR, ManualClock, brand};
 use askhava_intake::api::rules::{Inbound, Settings as IntakeSettings};
 use askhava_intake::api::{Answer, TextIn, receive_text, record_answer, run_accepted_quote};
 use askhava_jobs::api::quote_token::issue;
@@ -387,10 +387,11 @@ async fn td_pick_42_the_page_shows_the_accepted_quote_until_the_token_expires(po
     }
     assert!(!after.contains("Dana") && !after.contains("5550188"));
     let closed = now() + SignedDuration::from_hours(1);
-    let close = (JobStatus::AwaitingConfirm, JobStatus::Cancelled);
-    let _ = move_to(&mut db, ids.0, close, closed, Actor::System)
+    let close = (JobStatus::Connected, JobStatus::Cancelled);
+    let moved = move_to(&mut db, ids.0, close, closed, Actor::System)
         .await
         .expect("closed");
+    assert_eq!(moved, Guarded::Applied(()), "the Connected job closes");
     let thirty = SignedDuration::from_hours(30 * 24);
     clock.set(closed + thirty - SignedDuration::from_mins(1));
     let (status, late) = page(&pool, &clock, &token).await;

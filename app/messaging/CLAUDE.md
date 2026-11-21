@@ -4,12 +4,12 @@
 The layer-3 crate that sends and receives messages (`docs/architecture.md` section 3). T026 built the template registry (every text is a fixed English or Spanish template chosen by ID and language); T027 built quiet hours; T028 the outbox and the sender directory; T178 inbox dedupe and delivery statuses; T029 opt-outs and the one suppression list. T030 the HELP, INFO and AYUDA reply.
 
 ## Never break
-- Every text begins "Ask Hava:" (`<short_name>:`) in both languages: `tests::template_registry::every_kind_has_both_languages_and_begins_ask_hava`. Under the embedded brand every text, subject, footer and sender is today's byte for byte, and a missing prefix or a segment over the recorded count under a longer brand is refused: `tests/security/tests/notice_addresses.rs` (`td_word_35_*`). More: `(never 1)` in NOTES.md.
+- Every text begins `<short_name>:` from the brand file (today `Laftly:`) in both languages: `tests::template_registry::every_kind_has_both_languages_and_begins_ask_hava`. More: `(never 1)` in NOTES.md.
 - Spanish never reaches a person while the setting is off, except the `spanish_stays_on` texts: `tests::template_registry::spanish_only_while_the_setting_is_on_except_the_stay_on_texts`.
 - Both consent texts stay GSM-7 and 2 segments: `tests::template_registry::recorded_segments_hold_and_the_consent_texts_are_gsm7`.
 - No emoji, shortener, off-domain link, promotion wording or "reply CANCEL": `tests/docs/test_template_scan.py`.
 - A new any-hour message kind is added only to `rules::night_exception` after QH-004 lists it; tests `tests::quiet_hours::td_qh_02_night_exceptions_sent` and `td_qh_02_cards_and_confirms_at_night`.
-- An area code outside the table is refused: `tests::quiet_hours::td_qh_01_unknown_area_code_never_texted`; every table code has a zone: `td_qh_01_every_table_code_has_a_zone`.
+- An area code outside the table is refused: `tests::quiet_hours::td_qh_01_unknown_area_code_never_texted`; More: `(never 6)` in NOTES.md.
 - Window edges and daylight saving: `tests::quiet_hours::td_qh_01_*`, `tests::prop_quiet_hours_props`.
 - A killed worker's row is never resent blind: one carrier call, `unknown` after 5 minutes, the email copy: `tests/integration/tests/outbox.rs::td_txt_04_a_killed_worker_never_resends_blind_and_the_row_is_unknown_after_five_minutes`. More: `(never 8)` in NOTES.md.
 - No text to a past customer who has not written first: `td_txt_03_no_text_to_a_past_customer_who_has_not_written_first`.
@@ -23,8 +23,8 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - Nothing but the confirmation within 5 minutes and HELP reaches a listed number: `tests::prop_optout_props::nothing_but_confirmation_and_help_until_start`, `tests/integration/tests/optout_flow.rs`.
 - A 21610 refusal is never retried: `optout_flow.rs::td_con_05_a_21610_refusal_is_never_retried`.
 - Two opt-outs at once queue one confirmation, and an earlier listing's confirmation never goes: `optout_flow.rs::td_con_05_two_opt_outs_at_once_queue_one_confirmation`, `td_con_05_only_the_current_listings_confirmation_goes`.
-- No outbound text from any number but the audience's configured one; one audience never changes the other: `web_email_mode.rs::td_txt_08_every_outbound_text_uses_the_configured_number`, `td_txt_17_*`. No second emergency call and no repeated alert for one message: `web_email_mode.rs::td_txt_09_suspended_smell_gas_alerts_and_calls_once`. More: `(never 20)` in NOTES.md.
-- No number in the message log, no body left at 30 days, log rows kept, opt-out evidence kept: `tests/integration/tests/message_log_retention.rs` (`td_txt_07_*`, `td_con_25_*`). A body is redacted at Twilio once, on or after day 31, never before: `retention_deletes.rs::td_priv_20_bodies_are_deleted_at_the_provider_once_on_day_31`. More: `(never 21)` in NOTES.md.
+- No outbound text from any number but the audience's configured one; one audience never changes the other: `web_email_mode.rs::td_txt_08_every_outbound_text_uses_the_configured_number`, `td_txt_17_*`. More: `(never 20)` in NOTES.md.
+- No number in the message log, no body left at 30 days, log rows kept, opt-out evidence kept: `tests/integration/tests/message_log_retention.rs` (`td_txt_07_*`, `td_con_25_*`). More: `(never 21)` in NOTES.md.
 - The HELP reply holds the help email, askhava.com/help, the LIST line and the settings' times, and only the roaming line differs for Canada: `tests/integration/tests/help_start.rs`.
 - A mailbox code email's stored row holds `CODE_MARK`, never the code, and a repeat of one send is one email: `tests/integration/tests/signup_mail_paths.rs` (T468).
 - `check_webhook_silence` run again while webhooks stay silent raises no second alert: `tests/integration/tests/alert_dedupe.rs::td_ops_34_webhook_silence_alerts_once_while_silent` (T320).
@@ -34,7 +34,9 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - CON-022: no opt-out event a suppression row references and never a number's newest is purged, nothing goes before 1,827 days after the number's last message, and a temporary table cannot shadow the guard: `tests/integration/tests/consent_purge.rs` (`td_con_30_*`, T321).
 - No index key version is retired while a suppression row is held under it: `check_suppression_versions` refuses the start, naming versions only: `tests/integration/tests/suppression_key_versions.rs` (TD-PRIV-31, D-4418).
 - An opt-out of a number waits for the consent sweep's `still_unlisted` lock and the sweep's re-check waits for an open opt-out: `tests/integration/tests/optout_number_lock.rs` (TD-CON-37, T701).
+- An index key version's rows are removed only when every one has its active-version row, never the active version's, and no phone or digest reaches a log, error or audit row: `tests/integration/tests/suppression_rekey.rs` (T743, D-4748).
 - A queued email gets one provider call per lease (two workers, overlapping or not), a fresh lease is never retaken, and a marked, refused, given-up, expired or removed recipient's row is dropped unsent: `tests/integration/tests/email_due.rs` (T470, D-4327).
+- A business row is sent only from the business number, after `may_text` passed, with its number read once through `LinePhones` and kept nowhere; a refused, unlinked or unreadable phone expires it and a closed line reads nothing; a closed job's earlier rows expire except `CLOSE_TEXTS`: `tests/integration/tests/outbox_business_rows.rs` (T573).
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/messaging/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/messaging/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).

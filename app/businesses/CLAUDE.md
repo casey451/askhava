@@ -16,6 +16,7 @@ The layer-4 crate that holds each business account (`docs/architecture.md` secti
 - The owner always holds both roles and is never removed: `src/tests/team.rs::td_biz_34_the_owner_always_holds_both_roles`. Removing a member unlinks its phones and queues one end-sessions event: `src/tests/team.rs::td_biz_34_removal_unlinks_both_phones`, `tests/integration/tests/team_members.rs`. More: `(never 10)` in NOTES.md.
 - A phone a member other than the owner links or changes is in no sender-directory lookup until the owner approves the number they were shown, and never once declined (BIZ-033, D-3081): `tests/integration/tests/phone_approval.rs` (TD-BIZ-52).
 - Known gaps (D-963): a member who loses "Confirm and billing" keeps the phones it linked; audit rows name the business, not the acting member; no task sends BIZ-023's owner email yet.
+- A Busy end task resumes only a business still self-paused from that same pause (`status_changed_at` in its payload), never after a Resume, a new pause or a rule's pause (BIZ-028, D-3890): `tests/integration/tests/busy_for.rs`.
 - A team member row is never deleted by the app: `src/tests/team.rs::the_app_role_cannot_delete_a_team_member`.
 - No contact value in any table, audit row or error (PRIV-001, PRIV-028); contacts live in `privacy`. No customer-visible line here writes the brand (T293, D-1932, D-2392, D-2393): the consent, welcome, STOP, recruiting, waitlist, fee-box, complaint, phone-link, About us and returned-address lines read `core::api::brand()` (a text opens `<short_name>:`, Spanish names from `es`; Guarded by `tests/docs/test_brand_literals.py`. More: `(never 13)` in NOTES.md.
 - A changed number gets no text until a box is ticked for it, and a box shown for an earlier number is refused (CON-019, D-4039): `tests/integration/tests/phone_change_consent.rs` (TD-CON-35).
@@ -27,6 +28,7 @@ The layer-4 crate that holds each business account (`docs/architecture.md` secti
 - `signup_mailbox` answers the mailbox `sign_up` stored and refuses an unknown sign-up: `tests/integration/tests/signup_mail_paths.rs` (T468).
 - `signup_progress` writes nothing, takes no lock or code try, and its `SignupProgress` carries only step, `code_done` and `email_verified` (PRIV-016): `tests/integration/tests/signup_progress.rs` (T485).
 - `join_facts` joins a business on its sign-up submit time and its sign-up trades only, never activation or a later checklist tick (FEE-010, D-152, D-3779): `tests/integration/tests/join_dates.rs`.
+- `link_pending_phone` approves only the owner's phone; a "Confirm and billing" member's waits with the owner's email queued, and anyone else links nothing (CALL-012, BIZ-033, D-3675): `tests/integration/tests/link_by_action.rs`.
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/businesses/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/businesses/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).

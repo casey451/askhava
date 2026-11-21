@@ -95,16 +95,19 @@ pub enum BusinessPurpose {
     PhoneApproval,
     /// The business notice and card emails (T470, D-3750): the address only.
     Notice,
+    /// A queued business text's send (T573, D-4913; BIZ-037): the linked phone only.
+    BusinessText,
 }
 
 impl BusinessPurpose {
     /// Every purpose.
-    pub const ALL: [Self; 5] = [
+    pub const ALL: [Self; 6] = [
         Self::SignInLink,
         Self::SignInCode,
         Self::AccountEmail,
         Self::PhoneApproval,
         Self::Notice,
+        Self::BusinessText,
     ];
 
     /// The audit action and read-count label, `vault_read.server.<purpose>` (SEC-047).
@@ -116,28 +119,42 @@ impl BusinessPurpose {
             Self::AccountEmail => "vault_read.server.account_email",
             Self::PhoneApproval => "vault_read.server.phone_approval",
             Self::Notice => "vault_read.server.notice",
+            Self::BusinessText => "vault_read.server.business_text",
         }
     }
 
-    /// Whether this purpose may open a texting phone: only the person's own code (SEC-004).
+    /// Whether this purpose may open a texting phone: only the person's own code (SEC-004) and a
+    /// queued business text's send (BIZ-037, D-4913).
     #[must_use]
     pub const fn opens_phone(self) -> bool {
-        matches!(self, Self::SignInCode)
+        matches!(self, Self::SignInCode | Self::BusinessText)
     }
 }
 
-/// `address` as [`email_index`] reads a sender: the part inside `<…>` when present, trimmed and
-/// lower-cased; refused with no `@` or over [`MAX_ADDRESS_LEN`] characters.
-fn bare_address(address: &str) -> Result<String, BusinessContactError> {
-    let bare = address
-        .rsplit_once('<')
-        .map_or(address, |(_, rest)| rest.trim_end_matches('>'))
-        .trim()
-        .to_lowercase();
-    if !bare.contains('@') || bare.chars().count() > MAX_ADDRESS_LEN {
+/// `address` as [`email_index`] reads a sender: the part inside a well-formed `Name <addr>` (one
+/// `<`, one `>` closing the value, a non-empty address between), else the value as typed, trimmed
+/// and lower-cased; refused with no `@`, over [`MAX_ADDRESS_LEN`] characters, or holding a control
+/// character, whitespace, `,`, `;`, `<` or `>`, which could make a provider's `to` read as two
+/// recipients (SEC-025, D-4327, D-4822).
+pub(crate) fn bare_address(address: &str) -> Result<String, BusinessContactError> {
+    let bare = strip_name(address.trim()).trim().to_lowercase();
+    let refused =
+        |c: char| c.is_control() || c.is_whitespace() || matches!(c, ',' | ';' | '<' | '>');
+    if !bare.contains('@') || bare.chars().count() > MAX_ADDRESS_LEN || bare.contains(refused) {
         return Err(BusinessContactError::BadAddress);
     }
     Ok(bare)
+}
+
+/// The address inside a well-formed `Name <addr>` form, or `typed` unchanged (D-4822).
+fn strip_name(typed: &str) -> &str {
+    let Some((_, rest)) = typed.split_once('<') else {
+        return typed;
+    };
+    match rest.strip_suffix('>') {
+        Some(inner) if !inner.contains(['<', '>']) && !inner.trim().is_empty() => inner,
+        _ => typed,
+    }
 }
 
 /// The mailbox IDs whose `email` digest matches one of `digests`, in ID order.
@@ -382,8 +399,8 @@ pub async fn read_business_mailbox(
 }
 
 /// Opens the texting phone of `line` for `purpose`, as [`read_business_mailbox`]; only
-/// [`BusinessPurpose::SignInCode`] may: any other purpose reads nothing and raises one High
-/// `privacy.vault_read_unregistered` alert naming the purpose and the line (SEC-004, SEC-047).
+/// [`BusinessPurpose::SignInCode`] and [`BusinessPurpose::BusinessText`] may: any other purpose
+/// reads nothing and raises one High `privacy.vault_read_unregistered` alert naming the purpose and the line (SEC-004, SEC-047).
 ///
 /// # Errors
 ///
@@ -621,7 +638,8 @@ mod tests {
         assert_eq!(bare_address("no-at-sign"), Err(E::BadAddress));
         let long = format!("{}@example.com", "a".repeat(250));
         assert_eq!(bare_address(&long), Err(E::BadAddress));
-        let only_sign_code = BusinessPurpose::ALL.iter().filter(|p| p.opens_phone());
-        assert_eq!(only_sign_code.count(), 1);
+        let phones = BusinessPurpose::ALL.into_iter().filter(|p| p.opens_phone());
+        let named = [BusinessPurpose::SignInCode, BusinessPurpose::BusinessText];
+        assert_eq!(phones.collect::<Vec<_>>(), named);
     }
 }

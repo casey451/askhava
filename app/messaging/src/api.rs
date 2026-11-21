@@ -34,6 +34,10 @@ pub use crate::alert_emails::{
     daytime_lines, push_alerts, push_daytime, register_alert_emails, schedule_alert_push,
     schedule_hourly_checks,
 };
+pub use crate::business_eligibility::{
+    BUSINESS_ELIGIBILITY_ACTION, BusinessEligibility, business_eligibility,
+    file_business_eligibility,
+};
 pub use crate::business_notices::{
     BUSINESS_NOTICE_KIND, JOB_CARD_TEMPLATE, LINK_LIFE, NoticeOutcome, NoticeSender, NoticeWorker,
     SIGN_IN_URL, SendChecks, business_notice, card_notice_accepted, held_until,
@@ -76,7 +80,7 @@ pub use crate::health_figures::{
     EmailFigures, NoticeTiming, PerAudience, TextFigures, email_figures, emails_sent,
     notice_timing, text_figures,
 };
-pub use crate::held_messages::texts_on;
+pub use crate::held_messages::{held_words, texts_on};
 pub use crate::help_answers::{
     ANSWER_TEMPLATES, ANSWER_WINDOW, AUTO_ANSWERED_ACTION, CLOSE_ANSWER, COST_ANSWER, HelpAsked,
     HelpQuestion, JobStanding, MAX_WORDS, PERSON_ANSWER, QUOTES_ANSWER, answered_within,
@@ -113,9 +117,12 @@ pub use crate::optout_email::{
     OPTOUT_CONFIRMATION_EMAIL, OPTOUT_WROTE_AGAIN_EMAIL, OptOutEmailSender, WROTE_AGAIN_ACTION,
     WroteAgain, queue_optout_confirmation_email, queue_optout_wrote_again, render_wrote_again,
 };
+pub use crate::outbox_sender::UrgencyRead;
+pub use crate::outbox_sender::UrgencySource;
 pub use crate::outbox_sender::{
-    EXPIRED_ACTION, OUTCOME_UNKNOWN_ALERT as SEND_OUTCOME_UNKNOWN_ALERT, OutboxSender,
-    SEND_DUE_KIND, SEND_EVERY, STALE_AFTER, register_send_due, run_send_due, schedule_send_due,
+    CLOSE_TEXTS, EXPIRED_ACTION, LinePhones, NoBusiness,
+    OUTCOME_UNKNOWN_ALERT as SEND_OUTCOME_UNKNOWN_ALERT, OutboxSender, PhoneUnread, SEND_DUE_KIND,
+    SEND_EVERY, STALE_AFTER, expire_job_rows, register_send_due, run_send_due, schedule_send_due,
 };
 pub use crate::purge::{
     BODY_DELETE_AFTER, DELETE_FAILED_ALERT as BODY_DELETE_FAILED_ALERT,
@@ -162,6 +169,9 @@ pub use crate::spanish_switch::{
     turn_spanish_off, turn_spanish_on,
 };
 pub use crate::status::DeliveryStatus;
+pub use crate::suppression_rekey::{
+    INDEX_VERSION_RETIRED_ACTION, RekeyError, rekey_suppression_batch, retire_index_version,
+};
 pub use crate::suppression_versions::{SuppressionVersionsError, check_suppression_versions};
 pub use crate::templates::{
     Audience, Encoding, Language, Registry, Segments, TemplateError, Text, count_segments,

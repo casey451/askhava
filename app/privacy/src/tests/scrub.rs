@@ -1,12 +1,13 @@
 //! The scrubber's fixed cases and the adversarial corpus (TD-AI-01, TD-AI-05, TD-AI-09, TD-AI-31; AI-002, PRIV-005, AI-003, AI-004, AI-009, AI-020).
 //!
-//! The corpus is 74 English and Spanish contact snippets (fullwidth and Arabic-Indic digits,
+//! The corpus is 96 English and Spanish contact snippets (fullwidth and Arabic-Indic digits,
 //! zero-width characters inside numbers, spelled-out, compound ("twenty-eight", "double five")
 //! and mixed numbers, "O"/"l" for 0/1, "at"/"dot" emails, @handles, bare domains, cross streets,
 //! house numbers without a suffix, gate codes, sign-offs, "mi nombre es"; T351's spaced gate
 //! codes, lower-case streets, spoken dashes, "it is"/"its"/"<name> here" names, "Best," sign-offs
 //! and `(at)`/`(dot)` and spaced `@` emails, D-2622; T658's lower-case Spanish and all-caps
-//! addresses, D-4327), each placed in four message frames. Recall on the listed contact tokens must be at least 99%, or this test, and so `Ci`,
+//! addresses, D-4327; T756's connector-joined phones, lone-"." and percent-encoded addresses and
+//! keycap digits, D-4765), each placed in four message frames. Recall on the listed contact tokens must be at least 99%, or this test, and so `Ci`,
 //! fails (AI-020). All names, numbers and addresses are fake.
 
 use secrecy::SecretString;
@@ -140,6 +141,50 @@ const CONTACTS: &[(&str, &[&str])] = &[
     (
         "AC OUT AT THE HOUSE 4410 SAGUARO PLEASE CALL",
         &["4410", "saguaro"],
+    ),
+    // T756 (D-4765): phones split by connector words, in digits and in words.
+    (
+        "nine two eight and five five five and zero one two three",
+        &["nine two eight", "five five five", "zero one two three"],
+    ),
+    (
+        "nueve dos ocho y cinco cinco cinco y cero uno siete dos",
+        &["nueve dos ocho", "cinco cinco cinco", "cero uno siete dos"],
+    ),
+    ("928 and 555 and 0171", &["928", "555", "0171"]),
+    ("mi cel es 928 y 555 y 0172", &["928", "555", "0172"]),
+    ("call 928 then 555 then 0173", &["928", "555", "0173"]),
+    ("928 luego 555 luego 0174", &["928", "555", "0174"]),
+    ("555 and 0175", &["555", "0175"]),
+    ("1 and 928 and 555 and 0176", &["928", "555", "0176"]),
+    ("928 - and then - 555 0177", &["928", "555", "0177"]),
+    (
+        "nine two eight 555 y luego cero uno siete ocho",
+        &["nine", "555", "cero"],
+    ),
+    // A lone "." before the top-level domain, after an at or `@`.
+    ("steve at gmail . com", &["steve", "gmail"]),
+    ("correo: maria arroba example . com", &["maria", "example"]),
+    ("steve @ gmail . com", &["steve", "gmail"]),
+    ("pat . test at example . org", &["pat", "test", "example"]),
+    // Percent-encoded addresses and links.
+    ("steve%40example.com", &["steve", "example"]),
+    ("escríbeme a maria%40example.com", &["maria", "example"]),
+    ("STEVE%40EXAMPLE%2ECOM", &["steve", "example"]),
+    ("https%3A%2F%2Fexample.org%2Fjob", &["example"]),
+    ("steve%40example.com%ff", &["steve", "example"]),
+    // Keycap digits, spaced and grouped.
+    (
+        "call 9\u{fe0f}\u{20e3} 2\u{fe0f}\u{20e3} 8\u{fe0f}\u{20e3} 5\u{fe0f}\u{20e3} 5\u{fe0f}\u{20e3} 5\u{fe0f}\u{20e3} 0\u{fe0f}\u{20e3} 1\u{fe0f}\u{20e3} 7\u{fe0f}\u{20e3} 9\u{fe0f}\u{20e3}",
+        &["5\u{fe0f}\u{20e3} 5\u{fe0f}\u{20e3} 5\u{fe0f}\u{20e3}"],
+    ),
+    (
+        "mi cel es 9\u{fe0f}\u{20e3} 2\u{fe0f}\u{20e3} 8\u{fe0f}\u{20e3} 5\u{fe0f}\u{20e3} 5\u{fe0f}\u{20e3} 5\u{fe0f}\u{20e3} 0\u{fe0f}\u{20e3} 1\u{fe0f}\u{20e3} 8\u{fe0f}\u{20e3} 0\u{fe0f}\u{20e3}",
+        &["5\u{fe0f}\u{20e3} 5\u{fe0f}\u{20e3} 5\u{fe0f}\u{20e3}"],
+    ),
+    (
+        "9\u{fe0f}\u{20e3}2\u{fe0f}\u{20e3}8\u{fe0f}\u{20e3} 5\u{fe0f}\u{20e3}5\u{fe0f}\u{20e3}5\u{fe0f}\u{20e3} 0\u{fe0f}\u{20e3}1\u{fe0f}\u{20e3}8\u{fe0f}\u{20e3}1\u{fe0f}\u{20e3}",
+        &["5\u{fe0f}\u{20e3}5\u{fe0f}\u{20e3}5\u{fe0f}\u{20e3}"],
     ),
 ];
 
@@ -381,4 +426,40 @@ fn sizes_replies_and_acronyms_keep_every_word() {
     ] {
         assert_eq!(run(text).as_str(), text);
     }
+}
+
+/// AI-020, AI-002 (D-4765): a connector word joins digit runs only at a phone length, a lone "."
+/// is a dot only after an at or `@`, and percent-decoding is one pass, so ordinary text stays.
+#[test]
+fn connector_words_lone_dots_and_percent_signs_keep_ordinary_text() {
+    for text in [
+        "2 and 3 bedrooms",
+        "between 9 and 5",
+        "de 2 y 3 recámaras",
+        "the 1200 and 1300 block",
+        "built between 2015 and 2018",
+        "1500 and 2000 square feet",
+        "$25 and $75",
+        "entre 2015 y 2018, luego 3 goteras",
+        "the AC died . me and my husband",
+        "se rompió . me urge",
+        "steve%2540example.com",
+        "50% off and 100%done",
+    ] {
+        assert_eq!(run(text).as_str(), text);
+    }
+}
+
+/// D-4765's recorded residual: a pair that happens to join to a phone length is cut, the safer
+/// error, and a bad percent sequence beside an address does not hide it (PRIV-005, AI-003).
+#[test]
+fn a_pair_joining_to_a_phone_length_is_cut() {
+    assert_eq!(
+        run("150 and 2000 square feet").as_str(),
+        "[removed] square feet"
+    );
+    assert_eq!(
+        run("write steve%40example.com%zz now").as_str(),
+        "write [removed] now"
+    );
 }

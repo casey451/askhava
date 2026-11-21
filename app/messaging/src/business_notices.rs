@@ -51,7 +51,7 @@ use crate::email::{
     EMAIL_ACTION, MailboxKind, OnDomain, PostalAddress, Rendered, audience_kind, footer_lines,
     legal_name, short_name,
 };
-use crate::mode::Lines;
+use crate::mode::{Lines, SendingNumber};
 use crate::mode_state::load_lines;
 use crate::models::{self, EmailError};
 use crate::service::{NewText, Relation, enqueue};
@@ -101,6 +101,7 @@ pub struct NoticeSender {
     secret: SecretString,
     links: IdSecret,
     postal: String,
+    business: Option<SendingNumber>,
 }
 
 impl NoticeSender {
@@ -119,7 +120,16 @@ impl NoticeSender {
             secret,
             links,
             postal,
+            business: None,
         })
+    }
+
+    /// TXT-035, D-3882: the sender with the configured business sending `number`, the only
+    /// number a business text goes from; with none (the default) every notice goes by email.
+    #[must_use]
+    pub fn with_business_number(mut self, number: Option<SendingNumber>) -> Self {
+        self.business = number;
+        self
     }
 }
 
@@ -535,7 +545,7 @@ pub struct NoticeWorker<C> {
 }
 
 /// BIZ-019, CARD-020, CARD-021, QH-005, TXT-035 (T313, D-2203): the [`BUSINESS_NOTICE_KIND`]
-/// handler: the stored [`Lines`] (`load_lines`, with no configured number, D-492) and
+/// handler: the stored [`Lines`] (`load_lines`, with the sender's business number, D-3882) and
 /// [`business_notice`] at the clock's now, in one transaction; a retry stores nothing twice.
 ///
 /// # Errors
@@ -548,7 +558,7 @@ pub async fn run_business_notice<C: SendChecks>(
     const FAILED: HandlerError = HandlerError("business notice could not be stored");
     let now = worker.clock.now();
     let mut tx = pool.begin().await.map_err(|_| FAILED)?;
-    let lines = load_lines(&mut tx, (None, None))
+    let lines = load_lines(&mut tx, (None, worker.sender.business.clone()))
         .await
         .map_err(|_| FAILED)?;
     let parts = (&worker.sender, &worker.checks, &lines);

@@ -85,7 +85,7 @@ pub use crate::aftermath::{
     LOST_OTHER_TYPE_TEMPLATE, LOST_SAME_TEMPLATE, LOST_SEVERAL_HIGHER_TEMPLATE,
     LOST_SEVERAL_LOWER_TEMPLATE, LOST_SEVERAL_SAME_TEMPLATE, LOST_TEMPLATE, LiveReply,
     LossSettings, compare, live_pick_reply, loss_template, lost_notices, no_longer_active,
-    refused_after_confirm,
+    refused_after_confirm, run_final_status,
 };
 pub use crate::auto_confirm::{
     AUTO_CONFIRM_VOID_KIND, AutoConfirmed, AutoFacts, AutoPlan, PickProof, Skip, Void,
@@ -110,10 +110,15 @@ pub use crate::confirm::{
     EmergencyPlan, HoldAsk, NightLine, TimeRefusal, TimeWord, WindowRules, away_for, away_until,
     emergency_fix_by, emergency_plan, hold, hold_allowed, read_time_word, window_start,
 };
+pub use crate::confirm_refused::{confirm_deadline, refuse_confirm};
 pub use crate::confirm_reminders::{
     Extension, LapsePlan, Reminder, claim_reminder, emergency_reminders, extend_once, lapse,
     lapse_plan, lapse_text, member_confirmed_line, owner_told, reminder_lines, reminders,
     window_open,
+};
+pub use crate::connect::{
+    ConfirmMove, HELD_LONG, HELD_LONG_ALERT, HELD_SUCCESS_KIND, PendingEnd, confirm_move,
+    end_pending, payment_returned, run_payment_returned,
 };
 pub use crate::contact_choice::{ContactChoice, contact_choice, record_contact_choice};
 pub use crate::digest_counts::{NoShow, no_shows};
@@ -127,7 +132,7 @@ pub use crate::flag_inputs::{lapsed_businesses, picked_jobs, wins};
 pub use crate::handlers::{
     CONFIRM_ENDS_KIND, notice_sent, run_confirm_ends, run_confirm_ends_at, run_pick_notice,
 };
-pub use crate::handlers::{hold_ask, hold_pick};
+pub use crate::handlers::{HOLD_END_TEMPLATE, hold_ask, hold_pick};
 pub use crate::models::PicksError;
 pub use crate::money_notices::{
     BUSINESS_NOTICE_KIND, CARD_APPROVAL_TEMPLATE, CARD_FIX_TEMPLATE, RECEIPT_NO_RECIPIENT_ALERT,
@@ -135,6 +140,10 @@ pub use crate::money_notices::{
 };
 pub use crate::open_cards_email::{
     ComposedEmail, OpenCard, WaitingPick, chosen_minutes, missed_cards_line, open_cards_email,
+};
+pub use crate::open_cards_run::{
+    DigestLink, OPEN_CARDS_EMAIL_KIND, OPEN_CARDS_TEMPLATE, OpenCardsLinks, OpenCardsParts,
+    run_open_cards_email, schedule_open_cards,
 };
 pub use crate::pick_ended::PICK_LAPSED_TEMPLATE;
 pub use crate::pick_ended::PICK_MOVED_TEMPLATE;
@@ -154,6 +163,7 @@ pub use crate::release_resend::{
     RELEASE_RESEND_ACTION, ResendPress, Resent, resend_key, resend_release,
 };
 pub use crate::released_view::{Seat, ViewAnswer, ViewFacts, may_view, released_view};
+pub use crate::reminder_run::{CONFIRM_REMINDER_KIND, run_confirm_reminder_at};
 pub use crate::scorecard_inputs::{confirmed_share, diagnostic_share, picked_requests};
 pub use crate::service::FEE_FACTS_ALERT;
 pub use crate::service::PACKAGE_TEMPLATE;

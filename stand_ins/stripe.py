@@ -20,6 +20,10 @@ the intent's metadata and a balance_transaction ID whose stored object holds the
 (2.9% + 30 cents); list_charges pages these same objects newest first (created[gte], limit,
 starting_after, has_more), list_disputes filters disputes by charge, and update_dispute takes
 evidence[...] and submit=true once per idempotency key, after which the dispute is under_review.
+A card is attached to its customer once a SetupIntent or PaymentIntent with it succeeds;
+detach_payment_method (BIZ-051, D-4749) answers that payment method with customer null, an
+unknown one Stripe's 404 resource_missing and a card not attached Stripe's 400
+payment_method_unexpected_state, once per idempotency key like every other call.
 Webhook header: Stripe-Signature: t=<unix>,v1=<hex HMAC-SHA256(secret, "<t>.<payload>")>.
 """
 
@@ -85,6 +89,7 @@ class FakeStripe:
         self.events: list[dict[str, Any]] = []
         self._idem = IdempotencyStore()
         self._n = 0
+        self.attached: dict[str, str | None] = {}
 
     def _new(self, prefix: str, **fields: Any) -> dict[str, Any]:
         self._n += 1
@@ -140,6 +145,8 @@ class FakeStripe:
                     "payment_method",
                 )
             status = "succeeded" if method else "requires_payment_method"
+            if method:
+                self.attached[method] = cust
             return 200, dict(
                 self._new(
                     "seti_",
@@ -247,6 +254,7 @@ class FakeStripe:
             last_payment_error=None,
             latest_charge=charge_id,
         )
+        self.attached[pi["payment_method"]] = pi["customer"]
         self._event("payment_intent.succeeded", pi)
         return dict(pi)
 
@@ -303,6 +311,28 @@ class FakeStripe:
         payload, signature = self.webhook(self.events[-1], timestamp)
         settled = body if status == 200 else body["error"]["payment_intent"]
         return 200, {"payment_intent": settled, "payload": payload, "headers": {"stripe-signature": signature}}
+
+    def detach_payment_method(
+        self, method: str, params: dict[str, Any], idempotency_key: str | None = None
+    ) -> Reply:
+        """BIZ-051 (D-4749): `POST /v1/payment_methods/{pm}/detach`; a repeat of the key replays."""
+        scoped = {"detach": method, **params}
+        return self._once(idempotency_key, scoped, lambda: self._detach(method))
+
+    def _detach(self, method: str) -> Reply:
+        if method not in self.attached and method not in KNOWN_METHODS:
+            return error(
+                "invalid_request_error", "resource_missing", f"No such PaymentMethod: '{method}'", 404, "payment_method"
+            )
+        if self.attached.get(method) is None:
+            return error(
+                "invalid_request_error",
+                "payment_method_unexpected_state",
+                "The payment method you provided is not attached to a customer so detachment is impossible.",
+            )
+        self.attached[method] = None
+        card = {"brand": "visa", "last4": "4242"}
+        return 200, {"id": method, "object": "payment_method", "type": "card", "card": card, "customer": None}
 
     def create_refund(self, params: dict[str, Any], idempotency_key: str | None = None) -> Reply:
         return self._once(idempotency_key, params, lambda: self._refund(params))

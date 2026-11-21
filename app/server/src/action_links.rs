@@ -37,59 +37,103 @@
 //! business hours once in the same transaction; the page names the new end in Arizona time. A
 //! refused Hold (emergency, held before, Away-delayed, window not running) rolls back, so the link
 //! stays unused, and says why (409), but only after the link's person was proved by a second,
-//! rolled-back `use_action_link`. Every other kind's `POST` gets the one not-found
-//! answer before any token read (D-3675). A wrong kind, object, person, an ended, used or
+//! rolled-back `use_action_link`. Away (object: the business; T543, BIZ-034, D-285, D-3890) shows
+//! one hours field (`away_page`) and acts with the link's own person's business session, like
+//! Pause: the hours, 1 to the setting's limit, are bounded with `picks::api::away_for` and
+//! stored with `set_away`; a refusal rolls back (link unused) and shows the page again with its
+//! reason; the answer is "Away until <time>" in Arizona time. Busy (object: the business; T463,
+//! BIZ-028, D-309, D-3890) acts the same way with a business session: the days, 1 to 60
+//! (`busy_days`), go to `set_busy`, which pauses job cards and queues their resume at the end;
+//! a value outside that range shows the page again with `BUSY_DAYS_ERROR` by the field (422,
+//! A11Y-030), a business that is not active is refused with the reason (409), both rolled back
+//! so the link stays unused; the answer is `busy_until_line`. Every kind's `POST` now has its
+//! own handler (D-3675). A wrong kind, object, person, an ended, used or
 //! unknown token, a removed member's token and a job with no sent card or no rules all get the
 //! same bare 404. Every response is `no-store`. After a stored quote the job page carries
 //! "Not a fit for us" (`job_details_page_choice`, PICK-057), posting to `NOT_A_FIT_ROUTE`, which
-//! `business_portal` serves behind the business session (T306, D-4551).
+//! `business_portal` serves behind the business session (T306, D-4551). Confirm (object: the
+//! pick; T457, SEC-004, SEC-027, D-3675, D-3889) leads to the served Confirm page: [`confirm_post`]
+//! names the link's person in a rolled-back transaction; with that person's own live session and
+//! no shared inbox it uses the link and answers 303 to `/b/picks/{pick}/confirm`. Otherwise a
+//! `POST` with no `code` field texts a code (`send_confirm_code`, the link unused) and shows
+//! `confirm_link_code_page`; one with a `code` field checks it (`check_confirm_code`), and only a
+//! right code uses the link, signs that device in (`confirm_link_session`, same transaction) and
+//! answers the 303. The codes are [`routes_with`]'s `ConfirmCodes`, built by
+//! [`confirm_link_codes`] over [`LinkCodeAddress`]; without them nothing is sent or used and the
+//! step shows `CodeSent::Failed`'s line. Link this phone (object: the blocked call's pending
+//! link, `calls.link_request`; T458, CALL-011, CALL-012, D-3675) acts once with the link's own
+//! person's business session ([`link_phone_post`]): `use_action_link` and
+//! `calls::api::link_by_action` in one transaction; the owner's link works at once, a "Confirm
+//! and billing" member's page says the owner must approve the phone first (BIZ-033), and a
+//! refusal (expired, used, another business's) rolls back, so the link stays unused, and says
+//! the phone could not be linked (409). A note the quote form returns is recorded with
+//! `quotes::api::record_note_returned` after the rollback, never its text (PICK-052, D-3877).
 
+use std::io;
 use std::net::IpAddr;
 use std::sync::Arc;
 
+use askhava_adapters::api::{TwilioConfig, twilio_clients};
+
 use askhava_businesses::api::{
     Acting, BusinessesError, Roles, TeamError, approve_phone, capabilities, pause_self,
-    resume_self, waiting_phones,
+    resume_self, set_away, set_busy, sign_in_lines, waiting_phones,
 };
-use askhava_core::api::{Clock, SystemClock, arizona_time};
+use askhava_calls::api::{LinkAction, link_by_action};
+use askhava_core::api::{Clock, Environment, Settings, SystemClock, arizona_time};
 use askhava_intake::api::Admission;
 use askhava_jobs::api::{job_facts, job_number};
 use askhava_payments::api::{JobCodes, JobFeeFacts, receipt_for, resolve_fee_facts};
 use askhava_picks::api::{
-    HoldAsk, PicksError, TimeRefusal, WindowRules, hold_allowed, hold_ask, hold_pick,
+    HoldAsk, PicksError, TimeRefusal, WindowRules, away_for, hold_allowed, hold_ask, hold_pick,
 };
 use askhava_portals::api::{
-    ACTION_ROUTE, ActionFacts, ActionGrant, ActionKind, ActionLinkError, BUSINESS_STEP_UP_ROUTE,
-    ChargeAsked, CookieJar, CsrfField, CsrfForm, FactsForm, LargestWarning, NotAFitChoice,
-    PriceForm, QuoteFormFacts, SIGNIN_ROUTE, UseBy, WHY_CHARGED_ROUTE, WebSecurity, action_page,
-    admit_quote, ask_about_charge, business_principal, charge_answer, charge_reply_line,
-    csrf_token, ensure_pre_session, fee_lines, job_details_page_choice, largest_job_warning,
-    not_a_fit_action, open_action_link, parse_facts, prefill, quote_form_page_priced,
-    refuse_cross_site, require_step_up, security_event_client, session_may, use_action_link,
+    ACTION_ROUTE, ActionFacts, ActionGrant, ActionKind, ActionLinkError, AwayForm,
+    BUSINESS_STEP_UP_ROUTE, ChargeAsked, CookieJar, CsrfField, CsrfForm, FactsForm, LargestWarning,
+    NotAFitChoice, PriceForm, QuoteFormFacts, SIGNIN_ROUTE, UseBy, WHY_CHARGED_ROUTE, WebSecurity,
+    action_page, admit_quote, ask_about_charge, away_hours, away_page, business_principal,
+    busy_days, busy_until_line, charge_answer, charge_reply_line, csrf_token, ensure_pre_session,
+    fee_lines, job_details_page_choice, largest_job_warning, not_a_fit_action, open_action_link,
+    parse_facts, prefill, quote_form_page_priced, refuse_cross_site, require_step_up,
+    security_event_client, session_may, use_action_link,
+};
+use askhava_portals::api::{
+    CodeAddress, CodeCheck, CodeFuture, CodeSent, CodeStep, CodeTo, ConfirmCodes, PortalsError,
+    VERIFY_DAILY_THRESHOLD, check_confirm_code, confirm_code_needed, confirm_link_code_page,
+    confirm_link_session, send_confirm_code,
 };
 use askhava_portals::api::{JobPageLinks, no_store};
 use askhava_portals::api::{SensitiveChange, StepUpError};
+use askhava_privacy::api::{BusinessPurpose, Vault, read_staff_phone};
 use askhava_quotes::api::{
     Bounce, NoteProblem, PageParts, Price, PriceFields, PriceProblem, QuoteForm, QuoteRules,
-    Submitted, check_note, job_page, last_facts, parse_price, parse_quote, quote_rules, sent_card,
-    submit_quote_with_facts,
+    Submitted, check_note, job_page, last_facts, parse_price, parse_quote, quote_rules,
+    record_note_returned, sent_card, submit_quote_with_facts,
 };
 use axum::extract::{FromRef, Path, Request, State};
 use axum::http::StatusCode;
 use axum::middleware::{Next, from_fn, from_fn_with_state};
-use axum::response::{Html, IntoResponse, Response};
+use axum::response::{Html, IntoResponse, Redirect, Response};
 use axum::routing::get;
 use axum::{Extension, Router};
 use jiff::Timestamp;
+use secrecy::SecretString;
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
-/// The served action routes' state: the pool and the clock.
+use crate::business_signin::NoVerify;
+use crate::business_signup::IdentityCodes;
+
+/// The Confirm link's Verify codes (SEC-004, D-3889).
+pub type LinkCodes = ConfirmCodes<IdentityCodes>;
+
+/// The served action routes' state: the pool, the clock and the Confirm link's codes.
 #[derive(Clone)]
 struct Links {
     pool: PgPool,
     clock: Arc<dyn Clock>,
     security: WebSecurity,
+    codes: Option<Arc<LinkCodes>>,
 }
 
 impl FromRef<Links> for WebSecurity {
@@ -145,6 +189,12 @@ pub fn routes(pool: PgPool) -> Router {
 /// [`routes`] timed by `clock`: every `POST` past `refuse_cross_site`, every response `no-store`,
 /// a refusal's 403 included (SEC-034).
 pub fn routes_at(pool: PgPool, clock: Arc<dyn Clock>) -> Router {
+    routes_with(pool, clock, None)
+}
+
+/// SEC-004, SEC-027, D-3889: [`routes_at`] with the Confirm link's `codes`; `None` sends and
+/// checks no code, so a Confirm link then acts only for its own person's live session.
+pub fn routes_with(pool: PgPool, clock: Arc<dyn Clock>, codes: Option<LinkCodes>) -> Router {
     let security = WebSecurity::new(pool.clone(), Arc::clone(&clock));
     Router::new()
         .route(ACTION_ROUTE, get(show).post(act))
@@ -152,6 +202,7 @@ pub fn routes_at(pool: PgPool, clock: Arc<dyn Clock>) -> Router {
             pool,
             clock,
             security: security.clone(),
+            codes: codes.map(Arc::new),
         })
         .layer(from_fn(note_client))
         .layer(from_fn_with_state(security, refuse_cross_site))
@@ -223,18 +274,37 @@ async fn read_page(
         quote_form(&form, csrf, None, &price_form(form.rules, &fields, ""))
     } else {
         let signed_in = session_check(&mut tx, (kind, object), &token, jar, now).await?;
-        action_page(&ActionFacts {
-            kind,
-            job_number: "",
-            ends_at: None,
-            signed_in,
-            days: None,
-            csrf,
-        })
-        .ok()
+        plain_page(kind, signed_in, csrf)
     };
     tx.rollback().await.map_err(failed)?;
     Ok(html)
+}
+
+/// A non-Quote kind's page at first render: the Away page with its hours field (BIZ-034), any
+/// other kind's [`action_page`].
+fn plain_page(kind: ActionKind, signed_in: bool, csrf: &str) -> Option<String> {
+    let facts = ActionFacts {
+        kind,
+        job_number: "",
+        ends_at: None,
+        signed_in,
+        days: None,
+        csrf,
+    };
+    match kind {
+        ActionKind::Away => away_page(&facts, away_form(None, None)).ok(),
+        _ => action_page(&facts).ok(),
+    }
+}
+
+/// BIZ-034, D-285: the Away form under the setting's limit, in whole hours, with a refused
+/// submit's kept `hours` and `refused` reason.
+fn away_form<'a>(hours: Option<&'a str>, refused: Option<&'a str>) -> AwayForm<'a> {
+    AwayForm {
+        max_hours: WindowRules::default().away_max_minutes / 60,
+        hours,
+        refused,
+    }
 }
 
 /// SEC-004, SEC-025, D-3614: whether a business is signed in; for a session kind opened while one
@@ -406,6 +476,10 @@ struct Posted {
     notes: String,
     over_largest: String,
     certified: String,
+    hours: String,
+    days: String,
+    /// The Confirm link's code field; absent on the first press and on "Text me a code".
+    code: Option<String>,
 }
 
 impl CsrfField for Posted {
@@ -451,8 +525,8 @@ impl Posted {
 
 /// `POST /b/a/{kind}/{object}/{token}`: after the cross-site and CSRF checks, a Quote link acts
 /// by the link alone, Pause, Resume and Ask about a charge with a business session (D-3839),
-/// Approve with the owner's session and a fresh step-up (T399), Hold by the link alone (T456);
-/// every other kind is the one not-found answer before any token read (D-3675).
+/// Approve with the owner's session and a fresh step-up (T399), Hold by the link alone (T456),
+/// Away and Busy with a business session (T543, T463), Confirm by [`confirm_post`] (T457); every other kind is the one not-found answer before any token read (D-3675).
 async fn act(
     State(links): State<Links>,
     Extension(Client(ip)): Extension<Client>,
@@ -478,7 +552,23 @@ async fn act(
             let acted = hold_post(&links, (object, &token)).await;
             acted.unwrap_or_else(IntoResponse::into_response)
         }
-        _ => Stop::NotFound.into_response(),
+        ActionKind::Away => {
+            let acted = away_post(&links, (object, &token), &jar, &posted.hours).await;
+            acted.unwrap_or_else(IntoResponse::into_response)
+        }
+        ActionKind::Busy => {
+            let acted = busy_post(&links, (object, &token), &jar, &posted.days).await;
+            acted.unwrap_or_else(IntoResponse::into_response)
+        }
+        ActionKind::LinkPhone => {
+            let acted = link_phone_post(&links, (object, &token), &jar).await;
+            acted.unwrap_or_else(IntoResponse::into_response)
+        }
+        ActionKind::Confirm => {
+            let code = posted.code.as_deref();
+            let acted = confirm_post(&links, (object, &token), ip, jar, code).await;
+            acted.unwrap_or_else(IntoResponse::into_response)
+        }
     }
 }
 
@@ -595,6 +685,176 @@ async fn hold_post(links: &Links, (pick, token): (Uuid, &str)) -> Result<Respons
     }
 }
 
+/// SEC-004, SEC-025, SEC-026, SEC-027, BIZ-038, PICK-021, D-3675, D-3889: the Confirm link's
+/// `POST`. The link's person is named by `use_action_link` in a transaction that is committed
+/// only when `confirm_code_needed` says no code is needed (that person's own live session, inbox
+/// not shared): then 303 to the Confirm page. Otherwise it is rolled back, so the link stays
+/// unused: with no `code` field a code is texted, with one it is checked, and only a right code
+/// goes on to [`code_passed`]; every other answer is the code step again. With no codes
+/// configured nothing is sent or checked and the step shows `CodeSent::Failed`'s line.
+async fn confirm_post(
+    links: &Links,
+    (pick, token): (Uuid, &str),
+    ip: IpAddr,
+    jar: CookieJar,
+    code: Option<&str>,
+) -> Result<Response, Stop> {
+    let now = links.clock.now();
+    let kind_pick = (ActionKind::Confirm, pick);
+    let mut tx = links.pool.begin().await.map_err(failed)?;
+    let grant = use_action_link(&mut tx, kind_pick, token, None, now).await;
+    let grant = grant.map_err(link_stop)?;
+    let principal = business_principal(&mut tx, &jar, now).await;
+    let signed_in = principal
+        .map_err(failed)?
+        .is_some_and(|p| grant.same_person(&p));
+    let needed = confirm_code_needed(&mut tx, grant.member(), signed_in).await;
+    if !needed.map_err(failed)? {
+        tx.commit().await.map_err(failed)?;
+        return Ok(Redirect::to(&confirm_path(pick)).into_response());
+    }
+    tx.rollback().await.map_err(failed)?;
+    let who = (ip, grant.member(), grant.business());
+    let step = match (links.codes.as_deref(), code) {
+        (None, _) => CodeStep {
+            line: Some(CodeSent::Failed.line()),
+            error: None,
+        },
+        (Some(codes), None) => code_sent(links, codes, (ip, grant.member(), pick), now).await?,
+        (Some(codes), Some(code)) => {
+            let checked = check_confirm_code(codes, &links.pool, who, code, now).await;
+            match checked.map_err(failed)? {
+                CodeCheck::Right => return code_passed(links, (pick, token), jar, now).await,
+                wrong => CodeStep {
+                    line: None,
+                    error: wrong.error(),
+                },
+            }
+        }
+    };
+    let csrf = csrf_token(&jar).unwrap_or_default();
+    let html = confirm_link_code_page(&csrf, step).map_err(failed)?;
+    let status = match step.error {
+        Some(_) => StatusCode::UNPROCESSABLE_ENTITY,
+        None => StatusCode::OK,
+    };
+    Ok((status, Html(html)).into_response())
+}
+
+/// PICK-021: the served Confirm page of `pick` (`portals::api::CONFIRM_ROUTE`).
+fn confirm_path(pick: Uuid) -> String {
+    format!("/b/picks/{pick}/confirm")
+}
+
+/// SEC-004, SEC-014, SEC-027, D-3889: texts the link's person a code for the pick through
+/// `codes` and gives the step's line; a person with no texting phone gets `CodeSent::NoPhone`'s.
+async fn code_sent(
+    links: &Links,
+    codes: &LinkCodes,
+    to: (IpAddr, Uuid, Uuid),
+    now: Timestamp,
+) -> Result<CodeStep, Stop> {
+    let threshold = i32::try_from(VERIFY_DAILY_THRESHOLD).unwrap_or(i32::MAX);
+    let sent = send_confirm_code(codes, &links.pool, to, (now, threshold)).await;
+    Ok(CodeStep {
+        line: Some(sent.map_err(failed)?.line()),
+        error: None,
+    })
+}
+
+/// SEC-004, SEC-026, D-3675: after a right code, one transaction uses the link and starts its
+/// person's business session on this device, then 303 to the Confirm page; a link used or ended
+/// meanwhile is the one not-found answer and signs nobody in.
+async fn code_passed(
+    links: &Links,
+    (pick, token): (Uuid, &str),
+    jar: CookieJar,
+    now: Timestamp,
+) -> Result<Response, Stop> {
+    let mut tx = links.pool.begin().await.map_err(failed)?;
+    let grant = use_action_link(&mut tx, (ActionKind::Confirm, pick), token, None, now).await;
+    let grant = grant.map_err(link_stop)?;
+    let jar = confirm_link_session(&mut tx, jar, &grant, now).await;
+    let jar = jar.map_err(failed)?;
+    tx.commit().await.map_err(failed)?;
+    Ok((jar, Redirect::to(&confirm_path(pick))).into_response())
+}
+
+/// SEC-004, SEC-027, D-3562: where the Confirm link's code goes: the member's own first texting
+/// line, opened under `SignInCode`. A member with none is an email address the code is never sent
+/// to (`CodeSent::NoPhone`); no vault or a removed member: no code.
+pub struct LinkCodeAddress {
+    vault: Option<Arc<Vault>>,
+}
+
+impl LinkCodeAddress {
+    /// Opens numbers in `vault`; none: no code goes.
+    #[must_use]
+    pub const fn new(vault: Option<Arc<Vault>>) -> Self {
+        Self { vault }
+    }
+
+    /// SEC-004: `member`'s own texting phone, else the empty address that gets nothing.
+    async fn find(&self, db: &mut PgConnection, member: Uuid) -> Result<CodeTo, PortalsError> {
+        let lines = sign_in_lines(db, member).await;
+        let lines = lines.map_err(|_| PortalsError::Database)?;
+        let lines = lines.ok_or(PortalsError::Database)?;
+        let Some(line) = lines.texting_lines.first() else {
+            return Ok(CodeTo::Email(SecretString::default()));
+        };
+        let vault = self.vault.as_deref().ok_or(PortalsError::Database)?;
+        let phone = read_staff_phone(db, vault, BusinessPurpose::SignInCode, *line).await;
+        phone.map(CodeTo::Phone).map_err(|_| PortalsError::Database)
+    }
+}
+
+impl CodeAddress for LinkCodeAddress {
+    fn code_to<'a>(
+        &'a self,
+        db: &'a mut PgConnection,
+        member: Uuid,
+    ) -> CodeFuture<'a, Result<CodeTo, PortalsError>> {
+        Box::pin(self.find(db, member))
+    }
+}
+
+/// SEC-004, D-3889: the Confirm link's codes `main` passes to
+/// `RouterParts::with_confirm_link_codes`: the Twilio Verify client, the vault and
+/// `ASKHAVA_ID_SECRET` from `pairs`, with `NoVerify` (every send and check fails) in dev and CI
+/// without Twilio settings.
+///
+/// # Errors
+///
+/// A missing `ASKHAVA_ID_SECRET`, missing or bad Twilio settings in the test or live project, or
+/// a bad vault key pair. Never a value.
+pub fn confirm_link_codes<I>(settings: &Settings, pairs: I) -> io::Result<LinkCodes>
+where
+    I: IntoIterator<Item = (String, String)>,
+{
+    let pairs: Vec<(String, String)> = pairs.into_iter().collect();
+    let secret = pairs
+        .iter()
+        .find(|(k, v)| k == "ASKHAVA_ID_SECRET" && !v.trim().is_empty())
+        .map(|(_, v)| SecretString::from(v.trim().to_owned()))
+        .ok_or_else(|| io::Error::other("missing ASKHAVA_ID_SECRET"))?;
+    let vault = crate::vault_from(settings, pairs.clone())?.map(Arc::new);
+    let verify = match TwilioConfig::from_settings(settings, pairs) {
+        Ok(config) => {
+            let (_, _, verify) = twilio_clients(&config).map_err(io::Error::other)?;
+            IdentityCodes::new(verify)
+        }
+        Err(error) => match settings.environment() {
+            Environment::Dev | Environment::Ci => IdentityCodes::new(NoVerify),
+            Environment::Test | Environment::Live => return Err(io::Error::other(error)),
+        },
+    };
+    Ok(ConfirmCodes::new(
+        verify,
+        LinkCodeAddress::new(vault),
+        secret,
+    ))
+}
+
 /// SEC-025, D-1956: whether the Hold link `token` for `pick` would grant (its member still
 /// current with the Hold role), asked with facts that pass `hold_allowed` so the token and role
 /// alone decide; else the one not-found answer. The caller rolls back, so nothing is used.
@@ -641,6 +901,173 @@ fn not_held(refusal: TimeRefusal) -> Response {
     };
     let body = format!("<p id=\"why\">{why}</p>");
     done(StatusCode::CONFLICT, "Window not extended", &body)
+}
+
+/// BIZ-034, BIZ-038, SEC-004, SEC-025, SEC-026, D-285, D-3890: the Away link's `POST` (object:
+/// the business). Signed out is the 401 before any token read; the link is used in the action's
+/// transaction and must be the signed-in person's own, on their own business, for a person
+/// `session_may` allows, else the one not-found answer (link unused). The hours are bounded with
+/// `picks::api::away_for` (1 to the setting's limit) and stored with `set_away`; a refusal rolls
+/// back, so the link stays unused, and shows the page again with its reason.
+async fn away_post(
+    links: &Links,
+    (object, token): (Uuid, &str),
+    jar: &CookieJar,
+    hours: &str,
+) -> Result<Response, Stop> {
+    let now = links.clock.now();
+    let mut tx = links.pool.begin().await.map_err(failed)?;
+    let target = (ActionKind::Away, object, token);
+    let Some(by) = acting_by_link(&mut tx, target, jar, now).await? else {
+        return Ok(signed_out());
+    };
+    let set = away_set(&mut tx, by, hours, now).await?;
+    let csrf = csrf_token(jar).unwrap_or_default();
+    match set {
+        Ok(until) => {
+            tx.commit().await.map_err(failed)?;
+            Ok(away_done(until))
+        }
+        Err(refused) => {
+            tx.rollback().await.map_err(failed)?;
+            away_again(&csrf, hours, refused)
+        }
+    }
+}
+
+/// SEC-004, SEC-025, SEC-026: the signed-in person acting on their own business through the
+/// session link `kind` on `object`, used in `tx`: `None` when signed out (before any token read);
+/// another person's link, one naming another business or a kind `session_may` refuses is the
+/// one not-found answer.
+async fn acting_by_link(
+    tx: &mut PgConnection,
+    (kind, object, token): (ActionKind, Uuid, &str),
+    jar: &CookieJar,
+    now: Timestamp,
+) -> Result<Option<Acting>, Stop> {
+    let principal = business_principal(tx, jar, now).await.map_err(failed)?;
+    let Some(principal) = principal else {
+        return Ok(None);
+    };
+    let grant = use_action_link(tx, (kind, object), token, None, now).await;
+    let grant = grant.map_err(link_stop)?;
+    let business = grant.business();
+    let may = session_may(&principal, kind, business);
+    if !grant.same_person(&principal) || !may || object != business {
+        return Err(Stop::NotFound);
+    }
+    Ok(Some(Acting {
+        business,
+        member: principal.member(),
+    }))
+}
+
+/// BIZ-028, BIZ-038, BIZ-010, SEC-004, SEC-025, SEC-026, D-309, D-3675, D-3890: the Busy link's
+/// `POST` (object: the business), by the link's own person's session as [`away_post`]. Days that
+/// are not 1 to 60 show the page again with `BUSY_DAYS_ERROR` (422, A11Y-030); a refused
+/// `set_busy` (the business is not active) says why (409); both roll back, so the link stays
+/// unused. Done, it answers with `busy_until_line` from today's Arizona date.
+async fn busy_post(
+    links: &Links,
+    (object, token): (Uuid, &str),
+    jar: &CookieJar,
+    days: &str,
+) -> Result<Response, Stop> {
+    let now = links.clock.now();
+    let mut tx = links.pool.begin().await.map_err(failed)?;
+    let target = (ActionKind::Busy, object, token);
+    let Some(by) = acting_by_link(&mut tx, target, jar, now).await? else {
+        return Ok(signed_out());
+    };
+    let Some(n) = busy_days(days) else {
+        tx.rollback().await.map_err(failed)?;
+        return busy_again(&csrf_token(jar).unwrap_or_default(), days);
+    };
+    match set_busy(&mut tx, by, n, now).await {
+        Ok(_) => {
+            tx.commit().await.map_err(failed)?;
+            let line = busy_until_line(arizona_time(now).date(), n);
+            let body = format!("<p id=\"busy-until\">{}</p>", escaped(&line));
+            Ok(done(StatusCode::OK, "Busy set", &body))
+        }
+        Err(BusinessesError::Refused | BusinessesError::MovedOn) => {
+            tx.rollback().await.map_err(failed)?;
+            let why = "<p id=\"why\">Only an active account can set Busy. Nothing changed.</p>";
+            Ok(done(StatusCode::CONFLICT, "Busy not set", why))
+        }
+        Err(_) => Err(Stop::Failed),
+    }
+}
+
+/// A11Y-030: the Busy page again with the posted `days` kept and `BUSY_DAYS_ERROR` by the field
+/// (422); nothing changed and the link stays unused.
+fn busy_again(csrf: &str, days: &str) -> Result<Response, Stop> {
+    let facts = ActionFacts {
+        kind: ActionKind::Busy,
+        job_number: "",
+        ends_at: None,
+        signed_in: true,
+        days: Some(days),
+        csrf,
+    };
+    let html = action_page(&facts).map_err(failed)?;
+    Ok((StatusCode::UNPROCESSABLE_ENTITY, Html(html)).into_response())
+}
+
+/// BIZ-034, D-285: bounds `hours` (a whole number from 1 to the setting's limit, read as the AWAY
+/// text reads it, `away_for`) and stores the end with `set_away` in `tx`; the inner error is the
+/// refusal's reason (`None`: the hours themselves, which the page's field error names). Hours in
+/// range always pass `away_for` for a person `session_may` allowed, so its refusal is a failure.
+async fn away_set(
+    tx: &mut PgConnection,
+    by: Acting,
+    hours: &str,
+    now: Timestamp,
+) -> Result<Result<Timestamp, Option<&'static str>>, Stop> {
+    let rules = WindowRules::default();
+    let Some(hours) = away_hours(hours, away_form(None, None).max_hours) else {
+        return Ok(Err(None));
+    };
+    let until = away_for(Roles::BOTH, now, hours, rules).map_err(failed)?;
+    match set_away(tx, by, until, now).await {
+        Ok(()) => Ok(Ok(until)),
+        Err(BusinessesError::Refused) => Ok(Err(Some(AWAY_REFUSED))),
+        Err(_) => Err(Stop::Failed),
+    }
+}
+
+/// BIZ-034, BIZ-023: why a valid away time was not stored.
+const AWAY_REFUSED: &str = "Only the owner or a \"Confirm and billing\" member can set an away time. Nothing changed. Ask one of them to set it.";
+
+/// BIZ-034, D-285: the stored away time's answer, "Away until <time>" in Arizona time.
+fn away_done(until: Timestamp) -> Response {
+    let end = arizona_time(until)
+        .strftime("%-I:%M %p on %A, %B %-d")
+        .to_string();
+    let body = format!(
+        "<p id=\"away-until\">Away until {end}, Arizona time.</p>\
+         <p>A new pick's time to confirm starts when you're back. Emergency picks still start right away.</p>"
+    );
+    done(StatusCode::OK, "Away time set", &body)
+}
+
+/// A11Y-030: the Away page again with the posted `hours` kept and the refusal's reason by the
+/// field (422 for the hours, 409 for a refused person); nothing changed and the link stays unused.
+fn away_again(csrf: &str, hours: &str, refused: Option<&str>) -> Result<Response, Stop> {
+    let facts = ActionFacts {
+        kind: ActionKind::Away,
+        job_number: "",
+        ends_at: None,
+        signed_in: true,
+        days: None,
+        csrf,
+    };
+    let html = away_page(&facts, away_form(Some(hours), refused)).map_err(failed)?;
+    let status = match refused {
+        Some(_) => StatusCode::CONFLICT,
+        None => StatusCode::UNPROCESSABLE_ENTITY,
+    };
+    Ok((status, Html(html)).into_response())
 }
 
 /// BIZ-028, BIZ-010: a self pause: done, or refused because the business is not active.
@@ -817,6 +1244,53 @@ const COULD_NOT: &str = "We could not approve this phone. Nothing changed.";
 const NEWER_EMAIL: &str = "This phone's number changed after this email was sent, so nothing \
 was approved. A newer email about the new number is on its way.";
 
+/// CALL-011, CALL-012, BIZ-033, BIZ-038, SEC-004, SEC-025, SEC-026, D-3675: the Link this phone
+/// link's `POST` (object: the blocked call's pending link). Signed out is the 401 before any
+/// token read; the link is used in the action's transaction and must be the signed-in person's
+/// own, for a person `session_may` allows, else the one not-found answer; then
+/// `calls::api::link_by_action` links the pending phone as that person. A refusal rolls back,
+/// so the link stays unused and nothing changes; no number is read or shown.
+async fn link_phone_post(
+    links: &Links,
+    (object, token): (Uuid, &str),
+    jar: &CookieJar,
+) -> Result<Response, Stop> {
+    let now = links.clock.now();
+    let mut tx = links.pool.begin().await.map_err(failed)?;
+    let principal = business_principal(&mut tx, jar, now).await;
+    let Some(principal) = principal.map_err(failed)? else {
+        return Ok(signed_out());
+    };
+    let kind = ActionKind::LinkPhone;
+    let grant = use_action_link(&mut tx, (kind, object), token, None, now).await;
+    let grant = grant.map_err(link_stop)?;
+    let business = grant.business();
+    if !grant.same_person(&principal) || !session_may(&principal, kind, business) {
+        return Err(Stop::NotFound);
+    }
+    let member = principal.member();
+    let linked = link_by_action(&mut tx, Acting { business, member }, object, now).await;
+    let body = match linked.map_err(failed)? {
+        LinkAction::Refused => {
+            tx.rollback().await.map_err(failed)?;
+            let why = format!("<p id=\"why\">{NOT_LINKED}</p>");
+            return Ok(done(StatusCode::CONFLICT, "Phone not linked", &why));
+        }
+        LinkAction::Linked => LINKED,
+        LinkAction::Waiting => LINKED_WAITING,
+    };
+    tx.commit().await.map_err(failed)?;
+    let body = format!("<p id=\"linked\">{body}</p>");
+    Ok(done(StatusCode::OK, "Phone linked", &body))
+}
+
+/// CALL-011: the owner linked the blocked phone.
+const LINKED: &str = "This phone is now linked to your business account.";
+/// CALL-012, BIZ-033: a member linked the blocked phone; it waits for the owner.
+const LINKED_WAITING: &str = "The owner must approve this phone before it works.";
+/// The Link this phone link's refusal: nothing changed and the link is unused.
+const NOT_LINKED: &str = "We could not link this phone. Nothing changed.";
+
 /// SEC-038: the Approve `POST` with no step-up in the last 5 minutes: 401 and a link to the
 /// step-up page; the link is not used.
 fn step_up_first() -> Response {
@@ -870,7 +1344,11 @@ async fn send_quote(
     let link = JobLink { job, business };
     let form = read_form(&mut tx, link, posted.certified == "yes").await?;
     match checked(&mut tx, link, &form, posted).await? {
-        Checked::Again(problems) => Ok(Sent::Page(again(&form, csrf, posted, &problems))),
+        Checked::Again(problems) => {
+            tx.rollback().await.map_err(failed)?;
+            note_returned(links, link, &problems).await?;
+            Ok(Sent::Page(again(&form, csrf, posted, &problems)))
+        }
         Checked::Ready(quote, facts) => {
             let stored = submit_quote_with_facts(&mut tx, (job, business), &quote, &facts, now);
             if stored.await.map_err(failed)? != Submitted::Saved {
@@ -886,6 +1364,19 @@ async fn send_quote(
             Ok(Sent::Page(shown))
         }
     }
+}
+
+/// PICK-052, OPS-039, PRIV-028, D-3877: when the form goes back with a note problem
+/// (`check_note`'s refusal or `parse_quote`'s note bounce), records it with
+/// `record_note_returned` on its own connection, after the quote's transaction rolled back, so
+/// the row is kept; the note's text is never stored. A price-only bounce writes nothing.
+async fn note_returned(links: &Links, link: JobLink, problems: &Problems) -> Result<(), Stop> {
+    let Some(problem) = problems.note else {
+        return Ok(());
+    };
+    let mut db = links.pool.acquire().await.map_err(failed)?;
+    let recorded = record_note_returned(&mut db, (link.job, link.business), problem).await;
+    recorded.map_err(failed)
 }
 
 /// What the form shows again: the problems found and any largest-job warning.

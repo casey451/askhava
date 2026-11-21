@@ -79,7 +79,7 @@ pub use crate::capability_match::{
 pub use crate::card_notices::{
     CardNotice, QUOTE_HOURS, card_payload, job_page_prefix, queue_card_notice, sent_count,
 };
-pub use crate::card_pool::{CardPool, card_pool};
+pub use crate::card_pool::{CardPool, card_pool, card_pool_at};
 pub use crate::cards::{CardParts, DEFAULT_MIN_WORDS, Danger, JobCard, Place, Timing, build_card};
 pub use crate::count_update::COUNT_UPDATE_KIND;
 pub use crate::edit_withdraw::{Saved, Withdrawal, save_quote, withdraw_quote};
@@ -100,12 +100,14 @@ pub use crate::intake::{
     confirm_quote, confirm_quote_at, mark_unavailable, parse_quote, shown_quotes, submit_quote,
     window_open,
 };
+pub use crate::intake_report::{IntakeReportIds, MoreInfoQuote, intake_report_ids};
 pub use crate::job_page::{JobPage, PageParts, job_page, job_trade};
 pub use crate::job_text::{
     CardFacts, JobDescription, KeptCard, StoredCard, card_digest, description, forget_requests,
     keep_card, keep_description, mark_card_sent, purge_job_text, run_text_purge, sent_card,
     stored_card, unsent_cards,
 };
+pub use crate::late_cards::{late_cards, run_became_eligible};
 pub use crate::models::shown_numbers;
 pub use crate::models::{
     BusinessReach, CardBusiness, CardDecision, CardJob, CardLines, Coverage, OfferTown,
@@ -120,6 +122,7 @@ pub use crate::notify::{
     arizona_time, cards_out_text, first_quote_text, list_texts, list_texts_from, notice,
     notice_for, update_text, updated_line, which_job_text,
 };
+pub use crate::open_cards::{OpenCardFacts, card_businesses, open_cards};
 pub use crate::photos::{
     CardPhoto, CardPhotoOutcome, HomeownerAnswer, LeftOff, PhotoAiGate, PhotoScreener, ScreenCheck,
     ScreenFailed, ScreenVerdict, card_photo,

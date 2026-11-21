@@ -70,7 +70,8 @@
   "D-1040": "D-1272",
   "D-1041": "D-1273",
   "D-524": "D-3056",
-  "D-451": "D-3331"
+  "D-451": "D-3331",
+  "D-3386": "D-3444"
  },
  "partial": {
   "D-181": {
@@ -108,6 +109,34 @@
   "D-3642": {
    "by": "D-4310",
    "cut": ", since the row is the record read at sign-up"
+  },
+  "D-4434": {
+   "by": "D-5081",
+   "cut": "`ops.volume_low` is shown wherever open Normal alerts are (the owner portal's alert list)"
+  },
+  "D-5081": {
+   "by": "D-5117",
+   "cut": "and the line's approval"
+  },
+  "D-4763": {
+   "by": "D-5158",
+   "cut": " and cancels it at Stripe"
+  },
+  "D-2073": {
+   "by": "D-5164",
+   "cut": "a dispute whose `evidence_details.due_by` is null, "
+  },
+  "D-5158": {
+   "by": "D-5171",
+   "cut": "so T754 adds `WrongIntent` to m3's alerted refusals"
+  },
+  "D-5160": {
+   "by": "D-5178",
+   "cut": "each `job_type: None`, "
+  },
+  "D-3080": {
+   "by": "D-5214",
+   "cut": "or Casey's dated written acceptance is recorded"
   }
  }
 }

@@ -1,0 +1,52 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT DISTINCT ON (job_id) job_id, category, job_types FROM jobs.job_facts WHERE job_id = ANY($1) ORDER BY job_id, seq DESC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "job_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "jobs.job_facts",
+            "name": "job_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "category",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "jobs.job_facts",
+            "name": "category"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "job_types",
+        "type_info": "TextArray",
+        "origin": {
+          "Table": {
+            "table": "jobs.job_facts",
+            "name": "job_types"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "UuidArray"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "b346bc0297a13287ba89f66c6d2b12ae6513a3027b16842abdc2e3b06faa49f1"
+}

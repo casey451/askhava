@@ -29,6 +29,8 @@
 /// The cookie jar the session functions take and give back (axum-extra's).
 pub use axum_extra::extract::cookie::CookieJar;
 
+pub use crate::action_links::confirm_link_code_page;
+pub use crate::action_links::confirm_link_session;
 pub use crate::action_links::{
     ACTION_ROUTE, ActionGrant, ActionKind, ActionLinkError, ActionTarget, EmailReply,
     OPEN_IN_BROWSER_LINE, UseBy, email_reply, fresh_code_needed, mint_action_link,
@@ -40,11 +42,12 @@ pub use crate::business_actions::{
     job_details_page, quote_form_page_full, set_auto_confirm,
 };
 pub use crate::business_actions::{
-    ActionFacts, BUSY_DAYS_ERROR, BUSY_DAYS_MAX, ChargeAsked, FactProblem, FactsForm,
+    ActionFacts, AwayForm, BUSY_DAYS_ERROR, BUSY_DAYS_MAX, ChargeAsked, FactProblem, FactsForm,
     HELP_REQUEST_KIND, LargestWarning, QUOTE_MINUTES_MAX, QuoteFormFacts, action_email_text,
-    action_page, ask_about_charge, busy_days, busy_until_line, charge_answer, charge_reply_line,
-    does_line, fee_lines, largest_job_warning, open_quote_form, parse_facts, prefill,
-    quote_form_page, quote_form_page_warned, quote_minutes, quote_top_cents, sample_pick_on_open,
+    action_page, ask_about_charge, away_hours, away_hours_error, away_page, busy_days,
+    busy_until_line, charge_answer, charge_reply_line, does_line, fee_lines, largest_job_warning,
+    open_quote_form, parse_facts, prefill, quote_form_page, quote_form_page_warned, quote_minutes,
+    quote_top_cents, sample_pick_on_open,
 };
 pub use crate::business_actions::{
     AreaChangeError, AreaSettings, SERVICE_AREA_SETTINGS_ROUTE, change_service_area,
@@ -96,6 +99,7 @@ pub use crate::business_signup::{
 };
 pub use crate::checkin::{CHECK_IN_ROUTE, checkin_routes};
 pub use crate::confirm_pay::confirm_page_with_tier;
+pub use crate::confirm_pay::{Answer, SAVE_CODE_LABEL};
 pub use crate::confirm_pay::{
     ApprovalSecret, CARD_OFF_LINE, CONFIRM_ROUTE, ConfirmRoute, ConfirmSettings, FEE_TERMS_LINE,
     SecretAnswer, confirm_routes,
@@ -140,6 +144,7 @@ pub use crate::homeowner_portal::{
     HomeFacts, HomeownerError, OnFile, PortalScreen, TEXTS_OFF_LINE, TEXTS_OFF_ROUTE,
     finish_sign_in, homeowner_page, send_sign_in_code, turn_texts_off,
 };
+pub use crate::intake_report::{OWNER_INTAKE_REPORT_ROUTE, intake_report_page};
 pub use crate::job_release::{
     CallAttempt, EMAIL_CHOSEN_LINE, JOB_RELEASE_ROUTE, JobFacts, JobReleaseError, MissedText,
     TIP_LINE, job_release_page,
@@ -156,6 +161,11 @@ pub use crate::limits::{
     admit_code_try, admit_owner_account, admit_owner_ip, admit_owner_passkey_challenge,
     admit_owner_password, admit_owner_step_up, admit_quote, admit_sign_in_link, admit_sign_up,
     verify_all,
+};
+pub use crate::money_view::{
+    ExpenseAnswer, ExpenseForm, MonthQuery, OWNER_EXPENSE_ROUTE, OWNER_MONEY_CSV_ROUTE,
+    OWNER_MONEY_ROUTE, money_view_csv_file, money_view_page, month_start, parse_expense,
+    post_expense,
 };
 pub use crate::not_a_fit::{
     NOT_A_FIT_ERROR, NOT_A_FIT_FIELD, NOT_A_FIT_LINE, NOT_A_FIT_ROUTE, NotAFitChoice, NotAFitError,
@@ -177,6 +187,11 @@ pub use crate::owner_auth::{
     owner_signin_page, owner_step_up, passkey_registered, passkey_registration_options,
     passkey_sign_in_options, password_problem, require_owner_step_up, sign_out_everywhere,
 };
+pub use crate::owner_help::{
+    OWNER_HELP_CLOSE_ROUTE, OWNER_HELP_REPLY_ROUTE, OWNER_HELP_ROUTE, OWNER_REPLY_MAX,
+    OWNER_REPLY_TEMPLATE, ReplyRefusal, owner_help_routes, reply_body, screen_reply,
+    send_owner_reply,
+};
 pub use crate::owner_portal::{
     AUDIT_PAGE_ROWS, BridgeForm, ChangeForm, EvidenceForm, OPT_OUT_WEEKS, OWNER_ALERT_ACK_ROUTE,
     OWNER_AUDIT_LOG_ROUTE, OWNER_BANNER_ROUTE, OWNER_BRIDGE_ACTION, OWNER_BRIDGE_ROUTE,
@@ -189,6 +204,9 @@ pub use crate::owner_portal::{
     owner_dispute_evidence, owner_file_stripe_answer, owner_home_page, owner_record_opt_out,
     owner_refund, owner_refund_page, owner_safety_call, owner_settings_page,
     owner_settings_page_with, owner_spanish, parse_change,
+};
+pub use crate::owner_portal::{
+    BusinessTextingForm, OWNER_BUSINESS_TEXTING_ROUTE, owner_business_texting,
 };
 pub use crate::owner_release::{
     OWNER_RELEASE_ROUTE, ReleaseForm, ReleaseScreen, owner_release_page, owner_release_resend,

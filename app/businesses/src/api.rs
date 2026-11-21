@@ -39,6 +39,9 @@ pub use crate::account_emails::{
     run_phone_stopped, run_welcome,
 };
 pub use crate::active_count::active_in_category;
+pub use crate::away_busy::{
+    BUSY_END_KIND, away_until, busy_until, run_busy_end, set_away, set_busy,
+};
 pub use crate::backup_address::{
     BACKUP_CHANGED_KIND, backup_changed_words, confirm_backup, notice_addresses, remove_backup,
     request_backup,
@@ -109,6 +112,10 @@ pub use crate::license_reapply::{
     BATCH as REAPPLY_BATCH, LIST_APPLIED, REAPPLY_KIND, RUN_HOUR, apply_lists, run_reapply,
     schedule_reapply,
 };
+pub use crate::license_standing::{
+    LAG as STANDING_LAG, LICENSE_UNKNOWN_KIND, STANDING_KIND, WARNED_ACTION, apply_standing,
+    run_standing, schedule_standing, standing_at,
+};
 pub use crate::links::{
     BusinessNames, CITY_LICENSE_MAX, GOOGLE_HOSTS, GOOGLE_SHAPES, GuardedOpener, LINK_MAX,
     LinkOpener, LinkRefusal, LinksError, NAME_MAX, NameRefusal, ReviewLinks, ReviewSite,
@@ -117,8 +124,8 @@ pub use crate::links::{
 };
 pub use crate::models::{Business, BusinessesError, Insurance};
 pub use crate::notice_emails::{
-    NOTICE_KINDS, NoticeParts, address_changed_words, after_hours_off_words, phone_linked_words,
-    returned_words, run_notice_email,
+    NOTICE_KINDS, NoticeParts, address_changed_words, after_hours_off_words, license_unknown_words,
+    phone_linked_words, returned_words, run_notice_email,
 };
 pub use crate::open_cards_times::{
     OpenCardsTime, OpenCardsTimes, open_cards_times, set_open_cards_times,
@@ -128,7 +135,8 @@ pub use crate::phone_approval::{
     WaitingPhone, approve_phone, phone_standing, reject_phone, waiting_phones,
 };
 pub use crate::public_name::{PUBLIC_NAME_ALERT, public_names};
-pub use crate::reply_link::{is_main_phone, link_by_reply};
+pub use crate::reply_link::{PendingPhone, is_main_phone, link_by_reply, link_pending_phone};
+pub use crate::retest_run::{RETEST_HOUR, RETEST_KIND, run_retests, schedule_retests};
 pub use crate::review_queue::{ReviewWaiting, needs_review_signups};
 pub use crate::rules::JobTypeChoice;
 pub use crate::rules::{Checks, Event, OwnHours, Widens};
@@ -136,8 +144,8 @@ pub use crate::scorecard_inputs::{
     SignupRoutes, SignupSource, complaints_for_jobs, signup_routes, signups_by_source,
 };
 pub use crate::service::{
-    Ticks, apply, create, night_count, own_hours, pause_for_rule, pause_self, resume_self,
-    set_job_types, set_own_hours, set_ticks, set_towns,
+    BECAME_ELIGIBLE_KIND, Ticks, apply, create, night_count, own_hours, pause_for_rule, pause_self,
+    queue_eligible, resume_self, set_job_types, set_own_hours, set_ticks, set_towns,
 };
 pub use crate::service_area::{
     MAX_RADIUS_MILES, MIN_RADIUS_MILES, ServiceArea, ServiceAreaProblem, StoredServiceArea,
@@ -160,6 +168,7 @@ pub use crate::team::{
     Acting, MEMBER_REMOVED_KIND, NoticePurpose, Roles, SenderLink, TeamError, TeamMember,
     add_member, add_owner, members, remove_member, set_roles, unlink_phone,
 };
+pub use crate::texting_switch::business_texting_on;
 
 /// SEC-038, D-480: whether `by`, a current member of `by.business`, passed a Verify code (to their
 /// verified phone, or email without a texting phone) no more than [`STEP_UP_LIFE`] before `now`;

@@ -31,11 +31,13 @@ const STATIC_DIR: &str = "ASKHAVA_STATIC_DIR";
 const LICENSE_BASE_URL: &str = "ASKHAVA_LICENSE_BASE_URL";
 const SECURITY_EVENTS_PER_MINUTE: &str = "ASKHAVA_SECURITY_EVENTS_PER_MINUTE";
 const MAIN_NUMBER: &str = "ASKHAVA_MAIN_NUMBER";
+const BUSINESS_NUMBER: &str = "ASKHAVA_BUSINESS_NUMBER";
 const STRIPE_PUBLISHABLE_KEY: &str = "ASKHAVA_STRIPE_PUBLISHABLE_KEY";
 const LAUNCH_DATE: &str = "ASKHAVA_LAUNCH_DATE";
 const SET_ASIDE: &str = "ASKHAVA_SALES_TAX_SET_ASIDE_BASIS_POINTS";
 const HOME_NUMBERS_MIN_JOBS: &str = "ASKHAVA_HOME_NUMBERS_MIN_JOBS";
 const SPOT_CHECK_EVERY_DAYS: &str = "ASKHAVA_SPOT_CHECK_EVERY_DAYS";
+const GOLDEN_TARGET: &str = "ASKHAVA_GOLDEN_TARGET_PERCENT";
 const LLC_RECORD_URL: &str = "ASKHAVA_LLC_RECORD_URL";
 const CITY_LICENSE: &str = "ASKHAVA_CITY_BUSINESS_LICENSE_NUMBER";
 const CITY_LICENSE_COST: &str = "ASKHAVA_CITY_LICENSE_COST";
@@ -43,6 +45,9 @@ const CITY_LICENSE_TIME: &str = "ASKHAVA_CITY_LICENSE_TIME";
 const CITY_LICENSE_URL: &str = "ASKHAVA_CITY_LICENSE_URL";
 const DB_VOLUME_BYTES: &str = "ASKHAVA_DB_VOLUME_BYTES";
 const OWNER_PHONE: &str = "ASKHAVA_OWNER_PHONE";
+const EXPORT_RECIPIENT: &str = "ASKHAVA_EXPORT_RECIPIENT";
+const BACKUP_DATABASE_URL: &str = "ASKHAVA_BACKUP_DATABASE_URL";
+const RESTORE_ADMIN_URL: &str = "ASKHAVA_RESTORE_ADMIN_URL";
 
 /// Every key the parser accepts; any other `ASKHAVA_*` key stops startup (D-493).
 const KEYS: &[&str] = &[
@@ -74,6 +79,9 @@ const KEYS: &[&str] = &[
     SECURITY_EVENTS_PER_MINUTE,
     // The Laftly main number, read as the safety call's callback (T330, CALL-022, D-3134).
     MAIN_NUMBER,
+    // The business line's own sending number, parsed by `askhava_server`; unset means business
+    // texting counts as off (T526, TXT-035, D-3881, D-3882).
+    BUSINESS_NUMBER,
     // The home page's numbers threshold and the "Who runs" block's record link and city license
     // number, each optional (T102, WEB-021, WEB-028, D-3878, D-3890).
     HOME_NUMBERS_MIN_JOBS,
@@ -119,6 +127,9 @@ const KEYS: &[&str] = &[
     // OPS-009's spot-check cadence in days (default 30), read by the serving route (T304) for
     // T476's owner health page (D-4280, D-4625).
     SPOT_CHECK_EVERY_DAYS,
+    // OPS-040's golden-set target in whole percent (1 to 100, default 90), read by the serving
+    // route for T434's intake accuracy report (D-395, D-3890).
+    GOLDEN_TARGET,
     // OPS-035's alert address, read as a `SecretString` by `askhava_server`'s alert email sender
     // and never logged (T204, D-3882, D-4044).
     "ASKHAVA_ALERT_EMAIL",
@@ -200,6 +211,13 @@ const KEYS: &[&str] = &[
     "ASKHAVA_SCORECARD_LADDER_PILOT",
     "ASKHAVA_SCORECARD_LADDER_20K",
     "ASKHAVA_SCORECARD_LADDER_50K",
+    // The nightly export's offline recipient public key and the `askhava_backup` role's URL, read
+    // only by the worker's export (T109, OPS-013, PRIV-024, D-4293); never a private key.
+    EXPORT_RECIPIENT,
+    BACKUP_DATABASE_URL,
+    // The throwaway PostgreSQL service's admin URL, read only by the worker's monthly test
+    // restore (T648, OPS-013, OPS-051, SEC-052, D-4293).
+    RESTORE_ADMIN_URL,
 ];
 
 /// Key prefixes that only a live vendor account issues (SEC-002).
@@ -215,6 +233,8 @@ const DEFAULT_REQUEST_TIMEOUT_SECS: u64 = 60;
 const DEFAULT_HOME_NUMBERS_MIN_JOBS: u32 = 50;
 /// OPS-009's default spot-check cadence in days (`ASKHAVA_SPOT_CHECK_EVERY_DAYS`, D-4280, D-4625).
 pub const DEFAULT_SPOT_CHECK_EVERY_DAYS: u32 = 30;
+/// OPS-040's default golden-set target: 90% of rows reach the right job type with no human (D-395).
+pub const DEFAULT_GOLDEN_TARGET_PERCENT: u32 = 90;
 /// OPS-039's go and stop lines and D-458's ladder with their `docs/PREBUILD.md` section 7 defaults,
 /// in whole percent, hours, dollars, minutes or counts as each key names; a missing key takes its
 /// default (T621, D-4280, D-4448). `portals::api::ScorecardLines::from_pairs` reads them by key.
@@ -405,6 +425,7 @@ pub struct Settings {
     environment: Environment,
     database_url: SecretString,
     migration_database_url: Option<SecretString>,
+    restore_admin_url: Option<SecretString>,
     db_pool_max: u32,
     log_level: tracing::Level,
     sentry_dsn: Option<SecretString>,
@@ -417,17 +438,21 @@ pub struct Settings {
     license_base_url: Option<String>,
     security_events_per_minute: Option<u32>,
     main_number: Option<String>,
+    business_number: Option<String>,
     stripe_publishable_key: Option<String>,
     launch_date: Option<jiff::Timestamp>,
     set_aside_basis_points: u16,
     home_numbers_min_jobs: u32,
-    spot_check_every_days: u32,
+    /// OPS-009's spot-check cadence in days and OPS-040's golden-set target in percent.
+    owner_reports: (u32, u32),
     llc_record_url: Option<String>,
     city_license: Option<String>,
     city_guide: [Option<String>; 3],
     scorecard: [u32; SCORECARD_DEFAULTS.len()],
     db_volume_bytes: Option<u64>,
     owner_phone: Option<SecretString>,
+    /// The export recipient and the backup role's URL (T109).
+    export: (Option<String>, Option<SecretString>),
 }
 
 impl Settings {
@@ -458,6 +483,7 @@ impl Settings {
             environment,
             database_url: required(&mut raw, DATABASE_URL)?.into(),
             migration_database_url: raw.remove(MIGRATION_DATABASE_URL).map(SecretString::from),
+            restore_admin_url: raw.remove(RESTORE_ADMIN_URL).map(SecretString::from),
             db_pool_max: pool_max(raw.remove(DB_POOL_MAX))?,
             log_level: log_level(raw.remove(LOG_LEVEL))?,
             sentry_dsn: raw.remove(SENTRY_DSN).map(SecretString::from),
@@ -470,6 +496,7 @@ impl Settings {
             license_base_url: license_base_url(environment, raw.remove(LICENSE_BASE_URL))?,
             security_events_per_minute: per_minute(raw.remove(SECURITY_EVENTS_PER_MINUTE))?,
             main_number: main_number(raw.remove(MAIN_NUMBER))?,
+            business_number: e164(raw.remove(BUSINESS_NUMBER), BUSINESS_NUMBER)?,
             stripe_publishable_key: publishable_key(raw.remove(STRIPE_PUBLISHABLE_KEY))?,
             launch_date: launch_date(raw.remove(LAUNCH_DATE))?,
             set_aside_basis_points: set_aside(raw.remove(SET_ASIDE))?,
@@ -478,11 +505,7 @@ impl Settings {
                 HOME_NUMBERS_MIN_JOBS,
                 DEFAULT_HOME_NUMBERS_MIN_JOBS,
             )?,
-            spot_check_every_days: above_zero(
-                &mut raw,
-                SPOT_CHECK_EVERY_DAYS,
-                DEFAULT_SPOT_CHECK_EVERY_DAYS,
-            )?,
+            owner_reports: owner_reports(&mut raw)?,
             llc_record_url: raw.remove(LLC_RECORD_URL).map(|u| u.trim().to_owned()),
             city_license: raw.remove(CITY_LICENSE).map(|n| n.trim().to_owned()),
             city_guide: [CITY_LICENSE_COST, CITY_LICENSE_TIME, CITY_LICENSE_URL]
@@ -490,6 +513,7 @@ impl Settings {
             scorecard: scorecard(&mut raw)?,
             db_volume_bytes: volume_bytes(raw.remove(DB_VOLUME_BYTES))?,
             owner_phone: e164(raw.remove(OWNER_PHONE), OWNER_PHONE)?.map(SecretString::from),
+            export: export_keys(&mut raw)?,
         })
     }
 
@@ -610,11 +634,58 @@ impl Settings {
         self.main_number.as_deref()
     }
 
+    /// The business line's own sending number (`ASKHAVA_BUSINESS_NUMBER`, E.164, trimmed), the
+    /// only number business texts go from (TXT-035, D-3881); `None` while unset, and then business
+    /// texting counts as off whatever the stored switch says.
+    #[must_use]
+    pub fn business_number(&self) -> Option<&str> {
+        self.business_number.as_deref()
+    }
+
     /// Casey's own phone (`ASKHAVA_OWNER_PHONE`, E.164, trimmed, a secret never logged), which the
     /// owner calls dial (OPS-028, OPS-035, D-3890); `None` while unset.
     #[must_use]
     pub fn owner_phone(&self) -> Option<&SecretString> {
         self.owner_phone.as_ref()
+    }
+
+    /// The nightly export's recipient public key (`ASKHAVA_EXPORT_RECIPIENT`, an X25519 `age1...`
+    /// recipient, trimmed); its private half never sits on the host (PRIV-024, D-4707).
+    ///
+    /// # Errors
+    ///
+    /// [`SettingsError::Missing`] when the key is absent.
+    pub fn export_recipient(&self) -> Result<&str, SettingsError> {
+        self.export
+            .0
+            .as_deref()
+            .ok_or(SettingsError::Missing(EXPORT_RECIPIENT))
+    }
+
+    /// The `askhava_backup` role's database URL (`ASKHAVA_BACKUP_DATABASE_URL`), a secret set on
+    /// the `worker` service only and read only by the nightly export (OPS-051, SEC-052, D-4293).
+    ///
+    /// # Errors
+    ///
+    /// [`SettingsError::Missing`] when the key is absent.
+    pub fn backup_database_url(&self) -> Result<&SecretString, SettingsError> {
+        self.export
+            .1
+            .as_ref()
+            .ok_or(SettingsError::Missing(BACKUP_DATABASE_URL))
+    }
+
+    /// The throwaway PostgreSQL service's admin URL (`ASKHAVA_RESTORE_ADMIN_URL`), a secret set on
+    /// the `worker` service only and read only by the monthly test restore; never the live
+    /// database (OPS-013, OPS-051, SEC-052, D-4293).
+    ///
+    /// # Errors
+    ///
+    /// [`SettingsError::Missing`] when the key is absent.
+    pub fn restore_admin_url(&self) -> Result<&SecretString, SettingsError> {
+        self.restore_admin_url
+            .as_ref()
+            .ok_or(SettingsError::Missing(RESTORE_ADMIN_URL))
     }
 
     /// Stripe's publishable key (`ASKHAVA_STRIPE_PUBLISHABLE_KEY`, trimmed, `pk_test_` or
@@ -654,7 +725,14 @@ impl Settings {
     /// 0, default [`DEFAULT_SPOT_CHECK_EVERY_DAYS`]) for the owner health page (T476, D-4625).
     #[must_use]
     pub fn spot_check_every_days(&self) -> u32 {
-        self.spot_check_every_days
+        self.owner_reports.0
+    }
+
+    /// OPS-040's golden-set target (`ASKHAVA_GOLDEN_TARGET_PERCENT`, a whole percent from 1 to 100,
+    /// default [`DEFAULT_GOLDEN_TARGET_PERCENT`]) for the intake accuracy report (T434, D-3890).
+    #[must_use]
+    pub fn golden_target_percent(&self) -> u32 {
+        self.owner_reports.1
     }
 
     /// OPS-039's go and stop lines and D-458's ladder as `(key, value)` pairs, every
@@ -788,6 +866,26 @@ fn public_base_url(
     }
     check_base_url(environment, PUBLIC_BASE_URL, &url)?;
     Ok(Some(url))
+}
+
+/// PRIV-024, D-4707: the export recipient and the backup role's URL; the recipient is refused at
+/// load unless it is an X25519 `age1` key, so an `ssh-` recipient or a passphrase never reaches
+/// the export.
+fn export_keys(
+    raw: &mut HashMap<&'static str, String>,
+) -> Result<(Option<String>, Option<SecretString>), SettingsError> {
+    let url = raw.remove(BACKUP_DATABASE_URL).map(SecretString::from);
+    let Some(key) = raw.remove(EXPORT_RECIPIENT).map(|k| k.trim().to_owned()) else {
+        return Ok((None, url));
+    };
+    let valid = key.len() == 62
+        && key.starts_with("age1")
+        && key
+            .bytes()
+            .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit());
+    valid
+        .then_some((Some(key), url))
+        .ok_or(SettingsError::Invalid(EXPORT_RECIPIENT))
 }
 
 fn collect<I>(pairs: I) -> Result<HashMap<&'static str, String>, SettingsError>
@@ -1002,6 +1100,16 @@ fn set_aside(raw: Option<String>) -> Result<u16, SettingsError> {
     match raw.trim().parse::<u16>() {
         Ok(points @ 0..=10_000) => Ok(points),
         _ => Err(SettingsError::Invalid(SET_ASIDE)),
+    }
+}
+
+/// OPS-009's spot-check cadence (days above 0) and OPS-040's golden-set target (a whole percent
+/// from 1 to 100), each its default when unset (D-4280, D-3890).
+fn owner_reports(raw: &mut HashMap<&'static str, String>) -> Result<(u32, u32), SettingsError> {
+    let days = above_zero(raw, SPOT_CHECK_EVERY_DAYS, DEFAULT_SPOT_CHECK_EVERY_DAYS)?;
+    match above_zero(raw, GOLDEN_TARGET, DEFAULT_GOLDEN_TARGET_PERCENT)? {
+        n @ 1..=100 => Ok((days, n)),
+        _ => Err(SettingsError::Invalid(GOLDEN_TARGET)),
     }
 }
 

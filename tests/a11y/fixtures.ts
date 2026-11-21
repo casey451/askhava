@@ -11,6 +11,8 @@
 // shared data file can never narrow what is checked. `pageUrl` seeds a state once per worker with
 // its own route's seed function; a seed may return a URL with cookies (T452, D-3674), which `open`
 // sets for that URL's origin before it loads the page, so a page behind a session is checked too.
+// `open` also answers every `https://js.stripe.com/**` request with `FAKE_STRIPE` (T496, D-3838),
+// so no Ally run reaches the internet and the Confirm page's card section is scanned with a field.
 // The check functions run in the page and return a
 // list of problems, empty when the page passes; the specs assert it is empty, and their planted
 // cases assert a planted fault is reported. Fake data only.
@@ -41,6 +43,8 @@ const NOT_PAGES: readonly (readonly [string, string])[] = [
   ["nest_service(\"/static/site\")", "the site's compiled-in stylesheet at /static/site/<name>, a file not a page, checked through every page that links it (T101)"],
   ["nest_service(&mount)", "server's built browser scripts at /static/<crate>/, files not pages, run by the pages that load them (T362)"],
   ["/healthz", "T106's JSON health check, not a page"],
+  ["/photos/{token}", "T674's short-lived photo link: a JPEG for a live token, a bare 404 otherwise, never a page; the page that shows it is /h/requests/{job}/photos (D-5117)"],
+  ["/h/my-data", "T561's \"Download my data\" JSON file, a download not a page; its request screen is axe-checked in tests/e2e/homeowner_portal_served.spec.ts"],
 ];
 const notAPage = (entry: string): boolean => NOT_PAGES.some(([listed]) => listed === entry);
 
@@ -103,6 +107,21 @@ export const STATES_TO_CHECK = PAGE_STATES.filter((state) => ROUTES.includes(sta
 /** The cookies a seed returned, by the URL it returned with them; `open` sets them (D-3674). */
 const SEED_COOKIES = new Map<string, Exclude<Seeded, string>>();
 
+/**
+ * Stripe.js's fake for the Ally suite, shaped as tests/e2e/confirm_pay.spec.ts's private
+ * `FAKE_STRIPE` (D-3882): `elements().create("card").mount(at)` draws a plain labelled card field
+ * inside `at`, as the real Element's frame would; nothing reaches the network (A11Y-002, D-3838).
+ */
+const FAKE_STRIPE = `window.Stripe = () => ({
+  elements: () => ({ create: () => ({ mount: (at) => {
+    const label = Object.assign(document.createElement("label"), { htmlFor: "fake-card-number", textContent: "Card number" });
+    const field = Object.assign(document.createElement("input"), { id: "fake-card-number", type: "text", inputMode: "numeric", autocomplete: "cc-number" });
+    document.querySelector(at).append(label, " ", field);
+  } }) }),
+  createPaymentMethod: async () => ({ paymentMethod: { id: "pm_card_visa" } }),
+  handleNextAction: async () => ({}),
+});`;
+
 /** Records a seed's cookies for `open` and returns the URL or path that opens its state (D-3674). */
 export function seededUrl(seeded: Seeded): string {
   if (typeof seeded === "string") return seeded;
@@ -143,7 +162,8 @@ export { expect };
 /**
  * Opens `state` at `width` wide and `height` tall and waits for it to load, after setting the
  * cookies its seed returned as a `__Host-` cookie needs them: host-only on the URL's host, path `/`,
- * `Secure`, `HttpOnly`, `SameSite=Lax` (D-3674). A path resolves against the suite's web binary.
+ * `Secure`, `HttpOnly`, `SameSite=Lax` (D-3674), with Stripe.js answered by `FAKE_STRIPE` (D-3838).
+ * A path resolves against the suite's web binary.
  */
 export async function open(page: Page, url: string, width: number, height = 900): Promise<void> {
   await page.setViewportSize({ width, height });
@@ -158,6 +178,7 @@ export async function open(page: Page, url: string, width: number, height = 900)
     sameSite: "Lax" as const,
   }));
   if (cookies.length > 0) await page.context().addCookies(cookies);
+  await page.route("https://js.stripe.com/**", (route) => route.fulfill({ contentType: "text/javascript", body: FAKE_STRIPE }));
   const reply = await page.goto(url);
   expect(reply?.status(), url.replace(/[0-9a-f]{64}/, "{token}")).toBe(200);
 }

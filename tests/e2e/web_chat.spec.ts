@@ -33,9 +33,11 @@ const JOB = "The kitchen faucet drips all night and the cabinet under it is damp
 /**
  * A fresh fake 928-555-01xx number in the E.164 form the vault and Verify use. The chat hands Verify
  * the number as typed, so a dashed one gets no code (D-4162, a known failure of the served chat).
+ * It draws only 0101 to 0141, which no other spec fixes: j1_homeowner opts 0146 out with STOP, and an
+ * opted-out number keeps the chat asking for a number, so the code label never shows (INT-001, D-4823).
  */
 function fakeNumber(): string {
-  return `+1928555${String(100 + Math.floor(Math.random() * 100)).padStart(4, "0")}`;
+  return `+1928555${String(101 + Math.floor(Math.random() * 41)).padStart(4, "0")}`;
 }
 
 /** The database's clock now, so later reads see only this case's rows. */

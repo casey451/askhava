@@ -31,7 +31,7 @@ pub use crate::address_wait::{ADDRESS_IN_KIND, AskedAgain, ask_again, run_addres
 pub use crate::ai_on::ai_on;
 pub use crate::cards_out::{
     CARDS_OUT_TEMPLATE, CardsOutKeys, CardsSent, HOLD_RECHECK, run_cards_approved,
-    run_emergency_released, send_approved, send_emergency,
+    run_emergency_released, send_approved, send_emergency, send_emergency_job,
 };
 pub use crate::closing::{
     CLOSE_MENTION_TEMPLATE, CLOSE_WHICH_TEMPLATE, Closing, JOB_CLOSED_TEMPLATE,
@@ -91,6 +91,7 @@ pub use crate::models::{
 };
 pub use crate::not_covered_counts::{NotCoveredCount, not_covered_by_trade};
 pub use crate::opted_out_live::{STILL_OPEN_EMAIL, StillOpenSender, run_opted_out_live};
+pub use crate::order::TRADE_QUESTION_TEMPLATE;
 pub use crate::order::ask_last_question;
 pub use crate::order::{
     CardIn, Path, SPANISH_NOT_YET_TEMPLATE, Step, answer_narrowing, choose_with_card, keep_words,
@@ -98,8 +99,9 @@ pub use crate::order::{
 };
 pub use crate::photos::{
     LEAVE_OUT_LINE, MAX_PHOTO_ASKS, NO_PHOTO_LINE, PHOTO_ASK_TEMPLATE, PHOTO_CHECK_TEMPLATE,
-    PHOTO_HEIC_TEMPLATE, PHOTO_REASK_TEMPLATE, PhotoStep, PhotoText, after_photo, left_off_note,
-    photo_answer, photo_body, photo_text,
+    PHOTO_HEIC_TEMPLATE, PHOTO_OK, PHOTO_REASK_TEMPLATE, PhotoPress, PhotoStep, PhotoText,
+    after_photo, card_went_out, confirmed_photos, left_off_note, photo_answer, photo_body,
+    photo_job_is_hers, photo_text, press_photo,
 };
 pub use crate::purge::{
     REQUEST_PURGE_KIND, purge_answers, run_purge, run_purge_at, run_request_purge,
@@ -147,6 +149,7 @@ pub use crate::summary_step::{
     CardTimer, MAX_CARD_SEGMENTS, Preview, RECHECK_AFTER, Shown, answer_card, approved_card,
     card_digest, card_reply, card_timer_step, preview_text, run_card_timer, show_card,
 };
+pub use crate::text_failed_urgency::contact_urgent;
 pub use crate::web_chat::{
     ChatAnswer, ChatError, ChatIn, ChatSettings, ChatStep, Checked, CodeStep, MAX_CODE_TRIES,
     chat_message, check_code, request_source, send_code, start_chat, web_chat_consent_text,

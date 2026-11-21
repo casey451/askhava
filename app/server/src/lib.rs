@@ -21,8 +21,8 @@ use askhava_intake::api::JobTextKeys;
 use askhava_intake::api::rules::Settings as IntakeSettings;
 use askhava_payments::api::{Minter, stripe_webhook_routes};
 use askhava_portals::api::{
-    ApprovalSecret, ConfirmRoute, ConfirmSettings, PickCodeKeys, SecretAnswer, confirm_routes,
-    feedback_routes, pick_flow_routes, quote_page_routes, security_headers,
+    Answer, ApprovalSecret, ConfirmRoute, ConfirmSettings, PickCodeKeys, SecretAnswer,
+    confirm_routes, feedback_routes, pick_flow_routes, quote_page_routes, security_headers,
 };
 use askhava_privacy::api::{SessionMint, Vault};
 use axum::Router;
@@ -41,6 +41,7 @@ pub mod business_portal;
 pub mod business_signin;
 pub mod business_signup;
 pub mod business_step_up;
+pub mod business_text_phone;
 pub mod call_status;
 pub mod cant_take_route;
 pub mod catalog_start;
@@ -58,6 +59,7 @@ pub mod no_handler_alert;
 pub mod offdb_stream;
 pub mod owner_portal;
 pub mod owner_signin;
+pub mod owner_tools;
 pub mod payment_jobs;
 pub mod release_hold;
 pub mod release_sink;
@@ -128,6 +130,7 @@ struct SiteParts {
     pages: askhava_site::api::SitePages,
     environment: Environment,
     chat: Option<chat_codes::ChatParts>,
+    link_codes: Option<action_links::LinkCodes>,
 }
 
 impl Default for SiteParts {
@@ -136,6 +139,7 @@ impl Default for SiteParts {
             pages: askhava_site::api::SitePages::default(),
             environment: Environment::Dev,
             chat: None,
+            link_codes: None,
         }
     }
 }
@@ -151,6 +155,9 @@ struct BusinessParts {
     vault: Option<Arc<Vault>>,
     confirm: Option<ConfirmSettings>,
     homeowner: Option<homeowner_portal::HomeownerVerify>,
+    photos: Option<homeowner_portal::PhotoParts>,
+    business_number: Option<askhava_messaging::api::SendingNumber>,
+    report: owner_tools::SecretReport,
 }
 
 impl RouterParts {
@@ -185,6 +192,34 @@ impl RouterParts {
         verify: Option<homeowner_portal::HomeownerVerify>,
     ) -> Self {
         self.business.homeowner = verify;
+        self
+    }
+
+    /// Adds the homeowner photo routes' keys (T674; `homeowner_portal::photo_parts`); without
+    /// them an upload fails and every `/photos/{token}` is the 404.
+    #[must_use]
+    pub fn with_photos(mut self, photos: Option<homeowner_portal::PhotoParts>) -> Self {
+        self.business.photos = photos;
+        self
+    }
+
+    /// Adds the configured business sending number ([`business_number`]) the portal's notice
+    /// settings read the texting switch with (T526, TXT-035, D-3881); without it business texting
+    /// counts as off there.
+    #[must_use]
+    pub fn with_business_number(
+        mut self,
+        number: Option<askhava_messaging::api::SendingNumber>,
+    ) -> Self {
+        self.business.business_number = number;
+        self
+    }
+
+    /// Adds what the owner health page shows of the settings (T304, OPS-008, D-3890;
+    /// [`owner_tools::SecretReport::from_settings`]); without it the page says nothing was checked.
+    #[must_use]
+    pub fn with_secret_report(mut self, report: owner_tools::SecretReport) -> Self {
+        self.business.report = report;
         self
     }
 
@@ -235,6 +270,14 @@ impl RouterParts {
     #[must_use]
     pub fn with_environment(mut self, environment: askhava_core::api::Environment) -> Self {
         self.site.environment = environment;
+        self
+    }
+
+    /// Adds the Confirm email link's Verify codes (T457, SEC-004, D-3889,
+    /// [`action_links::confirm_link_codes`]); without them that link sends and checks no code.
+    #[must_use]
+    pub fn with_confirm_link_codes(mut self, codes: action_links::LinkCodes) -> Self {
+        self.site.link_codes = Some(codes);
         self
     }
 
@@ -303,6 +346,34 @@ impl ApprovalSecret for StripeApproval {
             Ok((answer.intent, answer.client_secret))
         })
     }
+
+    /// FEE-048, T541: the confirm with `setup_future_usage=off_session`.
+    fn confirm_saving<'a>(
+        &'a self,
+        key: &'a askhava_adapters::api::IdempotencyKey,
+        intent: &'a str,
+        payment_method: &'a str,
+    ) -> Answer<'a, askhava_adapters::api::ConfirmedIntent> {
+        Box::pin(
+            self.0
+                .confirm_payment_intent_saving(key, intent, payment_method),
+        )
+    }
+
+    /// FEE-014, T541: Stripe's type, brand and last four for a charge or a `pm_…`.
+    fn read_card<'a>(&'a self, id: &'a str) -> Answer<'a, askhava_adapters::api::CardFacts> {
+        Box::pin(self.0.fetch_card_facts(id))
+    }
+
+    /// FEE-048, T541: a $0 Confirm's off-session SetupIntent, created and confirmed.
+    fn set_up_card<'a>(
+        &'a self,
+        key: &'a askhava_adapters::api::IdempotencyKey,
+        form: &'a [(&'a str, &'a str)],
+        payment_method: &'a str,
+    ) -> Answer<'a, askhava_adapters::api::SetUpIntent> {
+        Box::pin(self.0.set_up_card(key, form, payment_method))
+    }
 }
 
 /// The served business sign-in (T280) and sign-up (T302) routes, each only when its part is given,
@@ -311,8 +382,11 @@ impl ApprovalSecret for StripeApproval {
 /// take it" page and button ([`cant_take_route`], T472), always; the business step-up page
 /// ([`business_step_up`], T364), always, sending codes only with its part; and the
 /// owner's sign-in, step-up and sign-out routes ([`owner_signin`], T303) and home, settings and
-/// switches ([`owner_portal`], T310, the opt-out with the portal's vault), always; and the
-/// homeowner portal's sign-in, home and texts-off routes ([`homeowner_portal`], T307), always,
+/// switches ([`owner_portal`], T310, the opt-out with the portal's vault) and refund review, audit
+/// log and health page ([`owner_tools`], T304, refunding only with the Stripe hooks and the
+/// Confirm settings' ID secret), always; and the
+/// homeowner portal's sign-in, home, texts-off and data routes ([`homeowner_portal`], T307,
+/// T561), always,
 /// with the webhooks' vault and ID secret and the parts' Verify client.
 fn business_pages(
     parts: BusinessParts,
@@ -336,10 +410,18 @@ fn business_pages(
         parts.vault.clone(),
         webhooks,
     ));
+    let owner = owner.merge(askhava_portals::api::owner_help_routes(
+        pool.clone(),
+        Arc::new(SystemClock),
+        Some(session_minter()),
+        webhooks.map(|hooks| hooks.id_secret.clone()),
+    ));
+    let tools = owner_tools::routes(pool.clone(), stripe, &parts.confirm, parts.report);
     let cant_take = cant_take_route::routes(pool.clone());
-    let homeowner = homeowner_portal::routes(pool.clone(), webhooks, parts.homeowner);
+    let homeowner = homeowner_portal::routes(pool.clone(), webhooks, parts.homeowner, parts.photos);
     let step_up = business_step_up::routes(pool.clone(), parts.step_up);
-    let portal = business_portal::served(pool, parts.vault, (webhooks, voice))
+    let portal_parts = (parts.vault, parts.business_number);
+    let portal = business_portal::served(pool, portal_parts, (webhooks, voice))
         .merge(confirm)
         .merge(cant_take)
         .merge(step_up);
@@ -352,6 +434,7 @@ fn business_pages(
         )
         .merge(portal)
         .merge(owner)
+        .merge(tools)
         .merge(homeowner)
 }
 
@@ -372,7 +455,9 @@ fn link_and_site_pages(
         pages: site,
         environment,
         chat,
+        link_codes,
     } = site;
+    let clock: Arc<dyn Clock> = Arc::new(SystemClock);
     let chat = askhava_site::api::chat_routes(
         pool.clone(),
         (environment, intake),
@@ -380,7 +465,7 @@ fn link_and_site_pages(
     );
     feedback_routes(pool.clone(), Arc::new(SystemClock))
         .merge(checkin::routes(pool.clone()))
-        .merge(action_links::routes(pool.clone()))
+        .merge(action_links::routes_with(pool.clone(), clock, link_codes))
         .merge(static_files::router(statics))
         .merge(askhava_site::api::site_routes())
         .merge(chat_codes::home_guard(askhava_site::api::page_routes(
@@ -834,6 +919,7 @@ where
     );
     register_request_counts(&mut registry, Arc::clone(&clock));
     register_safe_mode(&mut registry, Arc::clone(&clock));
+    register_late_cards(&mut registry, Arc::clone(&clock));
     registry.register(
         askhava_quotes::api::WINDOWS_KIND,
         askhava_quotes::api::run_windows_end,
@@ -864,6 +950,18 @@ where
     registry
 }
 
+/// `quotes`' late cards on `businesses.became_eligible` (CARD-018, CARD-020, T677, D-4360) on
+/// the worker's clock.
+fn register_late_cards(registry: &mut Registry, clock: Arc<dyn Clock>) {
+    registry.register(
+        askhava_businesses::api::BECAME_ELIGIBLE_KIND,
+        move |pool, task| {
+            let now = clock.now();
+            askhava_quotes::api::run_became_eligible(pool, task, now)
+        },
+    );
+}
+
 /// `intake`'s homeowner job texts (`jobs.homeowner_text`, D-1030 (A)) and quote-count update
 /// texts (`quotes.count_update`, TXT-017, T583) on the worker's clock.
 fn register_job_texts(registry: &mut Registry, keys: &Arc<JobTextKeys>, clock: &Arc<dyn Clock>) {
@@ -879,9 +977,28 @@ fn register_job_texts(registry: &mut Registry, keys: &Arc<JobTextKeys>, clock: &
     });
 }
 
+/// Registers `picks.held_success` (`picks::api::HELD_SUCCESS_KIND`, T408's held-release payload)
+/// to T408's `run_held_release`, so a held success the Payment pending wait found is re-fetched,
+/// checked and released once (PICK-022, OPS-024, T663, D-4349); with no Stripe settings a run is a
+/// handler error, as the held release's is.
+fn register_held_success(registry: &mut Registry, hooks: Option<release_sink::StripeHooks>) {
+    registry.register(askhava_picks::api::HELD_SUCCESS_KIND, move |pool, task| {
+        let hooks = hooks.clone();
+        async move {
+            let hooks = hooks.ok_or(askhava_core::api::HandlerError(
+                "no Stripe settings for a held success",
+            ))?;
+            release_hold::run_held_release(&pool, &hooks, &task.payload).await
+        }
+    });
+}
+
 /// `picks`' notices to the business: the pick notice with the worker's Confirm window and its end
 /// (PICK-019, PICK-037, T063), the window's end and its lapse on the worker clock (PICK-046,
-/// PICK-047, T491, D-3882) and the withdrawn-pick notice (PICK-032, CON-029, T330).
+/// PICK-047, T491, D-3882), the Confirm reminders' run (PICK-037, PICK-044, T682, D-4361), the
+/// Payment pending wait's end on the worker clock (JOB-014, T663,
+/// D-4349), "This job is no longer active." on a final move (PICK-026, T681, D-4361) and the
+/// withdrawn-pick notice (PICK-032, CON-029, T330).
 fn register_pick_notices(
     registry: &mut Registry,
     confirm: askhava_picks::api::ConfirmSettings,
@@ -890,10 +1007,31 @@ fn register_pick_notices(
     registry.register(askhava_picks::api::PICK_MADE_KIND, move |pool, task| {
         askhava_picks::api::run_pick_notice(pool, confirm, task)
     });
+    let ends_clock = Arc::clone(&clock);
     registry.register(askhava_picks::api::CONFIRM_ENDS_KIND, move |pool, task| {
-        let now = clock.now();
+        let now = ends_clock.now();
         askhava_picks::api::run_confirm_ends_at(pool, task, now)
     });
+    let remind_clock = Arc::clone(&clock);
+    let kind = askhava_picks::api::CONFIRM_REMINDER_KIND;
+    registry.register(kind, move |pool, task| {
+        let (rules, now) = (
+            askhava_picks::api::WindowRules::default(),
+            remind_clock.now(),
+        );
+        askhava_picks::api::run_confirm_reminder_at(pool, rules, task, now)
+    });
+    registry.register(
+        askhava_jobs::api::PAYMENT_RETURNED_KIND,
+        move |pool, task| {
+            let now = clock.now();
+            askhava_picks::api::run_payment_returned(pool, task, now)
+        },
+    );
+    registry.register(
+        askhava_jobs::api::FINAL_STATUS_KIND,
+        askhava_picks::api::run_final_status,
+    );
     registry.register(
         askhava_picks::api::PICK_WITHDRAWN_KIND,
         askhava_picks::api::run_pick_withdrawn,
@@ -931,11 +1069,18 @@ fn register_timer_backstop(registry: &mut Registry, clock: Arc<dyn Clock>) {
 }
 
 /// Registers `businesses`' daily license-map re-apply (`businesses.license_reapply`, T372,
-/// BIZ-050, D-2705) on the worker clock; `worker.rs`'s `schedule_start` seeds it.
+/// BIZ-050, D-2705) and daily deliverability re-test run (`businesses.deliverability_retests`,
+/// T686, BIZ-042, D-4361) on the worker clock; `worker.rs`'s `schedule_start` seeds the first and
+/// its `schedule_checks` the second.
 fn register_license_reapply(registry: &mut Registry, clock: Arc<dyn Clock>) {
+    let retest_clock = Arc::clone(&clock);
     registry.register(askhava_businesses::api::REAPPLY_KIND, move |pool, _task| {
         let now = clock.now();
         async move { askhava_businesses::api::run_reapply(&pool, now).await }
+    });
+    registry.register(askhava_businesses::api::RETEST_KIND, move |pool, _task| {
+        let now = retest_clock.now();
+        async move { askhava_businesses::api::run_retests(&pool, now).await }
     });
 }
 
@@ -960,7 +1105,9 @@ impl askhava_licensing::api::ActiveLicenses for ActiveRoc {
 /// LIC-007, LIC-039) on the worker clock over `ASKHAVA_LICENSE_BASE_URL` with the
 /// `DailyListSettings` in `pairs`; `worker.rs`'s `schedule_start` seeds it. Without the base URL
 /// a run does nothing and queues no next run in dev and CI; in test and live it is a start error
-/// (D-2954).
+/// (D-2954). With the same settings and clock it registers `businesses`' unknown-license run
+/// (`businesses.license_standing`, T655, LIC-008, D-4310), which reads the database only and so
+/// runs with or without the base URL; `schedule_start` seeds it too.
 fn register_daily_lists(
     registry: &mut Registry,
     settings: &Settings,
@@ -980,6 +1127,14 @@ fn register_daily_lists(
             }
         },
     };
+    let standing_clock = Arc::clone(&clock);
+    registry.register(
+        askhava_businesses::api::STANDING_KIND,
+        move |pool, _task| {
+            let now = standing_clock.now();
+            async move { askhava_businesses::api::run_standing(&pool, now, lists).await }
+        },
+    );
     let source = Arc::new(source);
     registry.register(
         askhava_licensing::api::DAILY_LISTS_KIND,
@@ -1005,8 +1160,8 @@ fn register_daily_lists(
 /// postal setting (required in test and live) `messaging`'s business notices and charge receipts
 /// ([`register_notice_senders`], T313), the hourly
 /// dead-letter check ([`no_handler_alert`], OPS-004), `jobs`' daily timer backstop
-/// ([`register_timer_backstop`], T366), `businesses`' daily license-map re-apply
-/// ([`register_license_reapply`], T372), `licensing`'s daily ROC and city list run
+/// ([`register_timer_backstop`], T366), `businesses`' daily license-map re-apply and
+/// deliverability re-test run ([`register_license_reapply`], T372, T686), `licensing`'s daily ROC and city list run
 /// ([`register_daily_lists`], T371) and, with the Twilio settings in `pairs`
 /// (required in test and live, D-1688), `messaging`'s day-31 body delete (PRIV-027), `picks`'
 /// masked-line retry (CALL-001), the safety voice call ([`register_safety_call`], T330, D-3134)
@@ -1046,7 +1201,7 @@ where
     let photo_clock = Arc::clone(&clock);
     askhava_privacy::api::register_photo_deletes(
         &mut registry,
-        photos,
+        Arc::clone(&photos),
         id_secret.clone(),
         photo_clock,
     );
@@ -1065,6 +1220,7 @@ where
     register_optout_followup(&mut registry, settings, &id_secret, pairs.clone())?;
     let hooks = stripe_hooks(settings, &pairs)?;
     let stripe = hooks.as_ref().map(|h| h.stripe.clone());
+    register_held_success(&mut registry, hooks.clone());
     release_hold::register_held_release(&mut registry, hooks);
     let parts = (&id_secret, &clock);
     register_unreachable(
@@ -1075,8 +1231,13 @@ where
         pairs.clone(),
     )?;
     payment_jobs::register(&mut registry, stripe, id_secret.clone(), Arc::clone(&clock));
+    let export = (Arc::clone(&photos), id_secret.clone(), Arc::clone(&clock));
+    askhava_recovery::api::register_export(&mut registry, settings, export)
+        .map_err(io::Error::other)?;
+    askhava_recovery::api::register_restore(&mut registry, settings, Arc::clone(&clock))
+        .map_err(io::Error::other)?;
     register_whos_calling(&mut registry, settings, (&id_secret, &clock), pairs.clone())?;
-    register_twilio_handlers(&mut registry, settings, (id_secret, clock), pairs)?;
+    register_twilio_handlers(&mut registry, settings, (id_secret, clock, confirm), pairs)?;
     Ok(registry)
 }
 
@@ -1087,7 +1248,11 @@ where
 fn register_twilio_handlers(
     registry: &mut Registry,
     settings: &Settings,
-    (id_secret, clock): (SecretString, Arc<dyn Clock>),
+    (id_secret, clock, confirm): (
+        SecretString,
+        Arc<dyn Clock>,
+        askhava_picks::api::ConfirmSettings,
+    ),
     pairs: Vec<(String, String)>,
 ) -> io::Result<()> {
     let Some(twilio) = twilio_config(settings, pairs.clone())? else {
@@ -1108,9 +1273,17 @@ fn register_twilio_handlers(
     register_owner_calls(registry, settings, (&twilio, &id_secret), pairs.clone())?;
     let (sms, _, _) = twilio_clients(&twilio).map_err(io::Error::other)?;
     let sms = with_status_url(settings, sms);
-    if let Some(vault) = vault_from(settings, pairs.clone())? {
+    let vaults = (
+        vault_from(settings, pairs.clone())?,
+        vault_from(settings, pairs.clone())?,
+    );
+    if let (Some(vault), Some(phones)) = vaults {
         let keys = (id_secret.clone(), vault);
         let sender = outbox_sender(settings, keys, sms.clone(), (&pairs, Arc::clone(&clock)))?;
+        let gate = NoticeChecks { confirm };
+        let phones = business_text_phone::BusinessTextPhone::new(phones);
+        let number = business_number(settings.business_number())?;
+        let sender = sender.with_business((gate, phones), number);
         askhava_messaging::api::register_send_due(registry, Arc::new(sender));
     }
     let (sms, scan_clock) = (Arc::new(sms), Arc::clone(&clock));
@@ -1315,6 +1488,7 @@ fn register_unreachable(
             .or_else(|_| PostalAddress::new(line, MailboxKind::PrivateMailbox))
             .ok()
     });
+    register_open_cards(registry, (id_secret, clock), postal.clone());
     let parts = Arc::new(StepParts {
         stripe,
         secret: id_secret.clone(),
@@ -1345,6 +1519,57 @@ fn register_unreachable(
     Ok(())
 }
 
+/// T684 (CARD-022, BIZ-038, OPS-038, D-4361, D-5017): `picks.open_cards_email`, the hourly
+/// open-cards email run at the worker clock's now, always registered; without the footer postal
+/// line (dev and CI) a run queues only the next one.
+fn register_open_cards(
+    registry: &mut Registry,
+    (id_secret, clock): (&SecretString, &Arc<dyn Clock>),
+    postal: Option<askhava_messaging::api::PostalAddress>,
+) {
+    use askhava_picks::api::{OPEN_CARDS_EMAIL_KIND, OpenCardsParts, run_open_cards_email};
+    let parts = Arc::new(OpenCardsParts {
+        secret: id_secret.clone(),
+        postal,
+        links: PortalDigestLinks,
+    });
+    let clock = Arc::clone(clock);
+    registry.register(OPEN_CARDS_EMAIL_KIND, move |pool, task| {
+        run_open_cards_email(pool, Arc::clone(&parts), task, clock.now())
+    });
+}
+
+/// The open-cards email's signed Quote and Confirm links (BIZ-038, SEC-025, T684, D-5017):
+/// `portals::api::mint_action_link`'s, each for one person and one job or pick, working only
+/// until that card's quote window or that pick's Confirm window ends.
+struct PortalDigestLinks;
+
+impl askhava_picks::api::OpenCardsLinks for PortalDigestLinks {
+    async fn link(
+        &self,
+        db: &mut sqlx::PgConnection,
+        (business, member): (Uuid, Uuid),
+        to: askhava_picks::api::DigestLink,
+        now_ends: (jiff::Timestamp, jiff::Timestamp),
+    ) -> Result<SecretString, askhava_core::api::HandlerError> {
+        use askhava_picks::api::DigestLink;
+        use askhava_portals::api::{ActionKind, ActionTarget, mint_action_link};
+        let (kind, object) = match to {
+            DigestLink::Quote(job) => (ActionKind::Quote, job),
+            DigestLink::Confirm(pick) => (ActionKind::Confirm, pick),
+        };
+        let target = ActionTarget {
+            kind,
+            object,
+            member,
+            business,
+        };
+        mint_action_link(db, target, None, now_ends)
+            .await
+            .map_err(|_| askhava_core::api::HandlerError("the email link could not be made"))
+    }
+}
+
 /// The worker's one Stripe client, the Stripe webhook's ([`stripe_hooks`]); `None` in dev and CI
 /// without the webhook secret.
 ///
@@ -1355,6 +1580,67 @@ fn stripe_client(
     pairs: &[(String, String)],
 ) -> io::Result<Option<askhava_adapters::api::StripePayments>> {
     Ok(stripe_hooks(settings, pairs)?.map(|h| h.stripe.clone()))
+}
+
+/// `server replay <plain-dump-file> <export-object-name> <backup-time>` (T206; OPS-013, OPS-018,
+/// OPS-019; D-3889, D-4932): restores the operator's already-decrypted `pg_dump -Fc` file into the
+/// fresh database behind `ASKHAVA_MIGRATION_DATABASE_URL` and replays there from Twilio's sent log
+/// and Stripe's charge list (`recovery::api::run_drill`), waiting while a vendor is unreachable,
+/// then prints the counts. The object is fetched and `age -d` run by the operator, with the key
+/// off this host (PRIV-024, PRIV-029). `backup-time` is the export's RFC 3339 instant.
+///
+/// # Errors
+///
+/// A wrong argument, a missing Twilio, Stripe, vault or homeowner-number setting (named, never a
+/// value), or the drill's own error.
+pub async fn replay_drill(
+    settings: &Settings,
+    pairs: Vec<(String, String)>,
+    args: &[String],
+) -> io::Result<()> {
+    use askhava_messaging::api::{LaunchChannel, Line, Lines};
+    use askhava_recovery::api::{Drill, ReplaySources, Retry, run_drill};
+    let usage = "usage: server replay <plain-dump-file> <export-object-name> <backup-time>";
+    let [dump, object, since] = args else {
+        return Err(io::Error::other(usage));
+    };
+    let charges_since: jiff::Timestamp = since.parse().map_err(|_| io::Error::other(usage))?;
+    let url = settings
+        .migration_database_url()
+        .map_err(io::Error::other)?;
+    let missing = |what: &str| io::Error::other(format!("server replay needs the {what} settings"));
+    let twilio = twilio_config(settings, pairs.clone())?.ok_or_else(|| missing("Twilio"))?;
+    let (sms, _, _) = twilio_clients(&twilio).map_err(io::Error::other)?;
+    let stripe = stripe_hooks(settings, &pairs)?.ok_or_else(|| missing("Stripe"))?;
+    let number = homeowner_number(settings, &pairs)?;
+    let from = ReplaySources {
+        sms: &sms,
+        stripe: &stripe.stripe,
+        vault: &vault_from(settings, pairs)?.ok_or_else(|| missing("vault"))?,
+        lines: &Lines {
+            homeowner: Line::at_launch(LaunchChannel::Sms, number),
+            business: Line::at_launch(LaunchChannel::Sms, None),
+        },
+        charges_since,
+        retry: Retry::STANDARD,
+    };
+    let drill = Drill::new(dump.into(), object, url.clone(), Retry::STANDARD);
+    let drill = drill.map_err(io::Error::other)?;
+    let done = run_drill(&drill, &from, jiff::Timestamp::now()).await;
+    let done = done.map_err(io::Error::other)?;
+    let replay = done.replay;
+    let out = format!(
+        "Drill recorded after {} replay round(s): {} texts marked sent, {} left to send, \
+         {} charges booked, {} already booked (any an earlier round booked are counted here), \
+         {} listed for Casey\n",
+        done.rounds,
+        replay.texts_marked,
+        replay.texts_unsent,
+        replay.charges_booked,
+        replay.charges_already,
+        replay.items.len()
+    );
+    io::Write::write_all(&mut io::stdout(), out.as_bytes())
 }
 
 /// The worker's Stripe webhook state (`release_sink::stripe_webhook`, read when
@@ -1675,10 +1961,9 @@ fn register_card_sender(
     let Some(vault) = vault_from(settings, pairs)? else {
         return Ok(());
     };
-    let keys = Arc::new(askhava_intake::api::CardsOutKeys::new(
-        id_secret.clone(),
-        vault,
-    ));
+    let number = business_number(settings.business_number())?;
+    let keys = askhava_intake::api::CardsOutKeys::new(id_secret.clone(), vault);
+    let keys = Arc::new(keys.with_business_number(number));
     let approved = Arc::clone(&keys);
     registry.register(
         askhava_intake::api::CARDS_APPROVED_KIND,
@@ -1744,7 +2029,11 @@ const HOMEOWNER_NUMBER: &str = "ASKHAVA_HOMEOWNER_NUMBER";
 /// no email copy) and the worker's clock. The number is required in test and live, as the Twilio
 /// and postal settings are (D-1688, D-3095): unset there the worker refuses to start naming the
 /// key, since a line with no sender texts nothing and every CON-009 confirmation would expire
-/// unsent (D-3149); unset in dev and CI the line has no sender and rows wait (TXT-022).
+/// unsent (D-3149); unset in dev and CI the line has no sender and rows wait (TXT-022). The caller
+/// adds the business side (`with_business`: [`NoticeChecks`] as the CON-019 gate and
+/// `business_text_phone` as the phone reader, D-4051, D-4913); its number is `None` until T526
+/// passes the configured one, so business rows wait. A given-up homeowner text's call-back takes
+/// its urgency from `intake` ([`IntakeUrgency`], INT-023, TXT-015, D-4052).
 ///
 /// # Errors
 ///
@@ -1763,7 +2052,47 @@ fn outbox_sender(
             .or_else(|_| PostalAddress::new(line, MailboxKind::PrivateMailbox))
             .ok()
     });
-    OutboxSender::new(keys, sms, (number, postal), clock).map_err(io::Error::other)
+    OutboxSender::new(keys, sms, (number, postal), clock)
+        .map(|sender| sender.with_urgency(Arc::new(IntakeUrgency)))
+        .map_err(io::Error::other)
+}
+
+/// The outbox sender's call-back urgency source (INT-023, TXT-015, D-4052):
+/// `intake::api::contact_urgent`, `Urgent` when her open or latest request counts as urgent; a
+/// read error is an error, so the sender holds the row for its retry.
+struct IntakeUrgency;
+
+impl askhava_messaging::api::UrgencySource for IntakeUrgency {
+    fn urgency<'a>(
+        &'a self,
+        conn: &'a mut sqlx::PgConnection,
+        contact: Uuid,
+        now: jiff::Timestamp,
+    ) -> askhava_messaging::api::UrgencyRead<'a> {
+        use askhava_messaging::api::{OutboxError, Urgency};
+        Box::pin(async move {
+            match askhava_intake::api::contact_urgent(conn, contact, now).await {
+                Ok(true) => Ok(Urgency::Urgent),
+                Ok(false) => Ok(Urgency::NoRush),
+                Err(_) => Err(OutboxError::Database),
+            }
+        })
+    }
+}
+
+/// TXT-035, D-3881, D-3882 (T526): the business line's own sending number from the trimmed
+/// `ASKHAVA_BUSINESS_NUMBER` value `raw` (`Settings::business_number`, or the sign-up's pairs);
+/// `None` when unset in every environment, and business texting then counts as off.
+///
+/// # Errors
+///
+/// A value that is not `+1` and ten digits, naming the key, never the value.
+pub fn business_number(
+    raw: Option<&str>,
+) -> io::Result<Option<askhava_messaging::api::SendingNumber>> {
+    raw.map(|raw| askhava_messaging::api::SendingNumber::parse(raw.trim()))
+        .transpose()
+        .map_err(|_| io::Error::other("setting ASKHAVA_BUSINESS_NUMBER has an invalid value"))
 }
 
 /// `ASKHAVA_HOMEOWNER_NUMBER` from `pairs` (the last one wins): `None` when unset in dev and CI,
@@ -1859,6 +2188,7 @@ fn notice_senders(
     let invalid = |_| io::Error::other("setting ASKHAVA_POSTAL_ADDRESS has an invalid value");
     let links = IdSecret::new(1, id_secret.clone()).map_err(io::Error::other)?;
     let notice = NoticeSender::new((id_secret.clone(), links), postal, kind).map_err(invalid)?;
+    let notice = notice.with_business_number(business_number(settings.business_number())?);
     let receipt = ReceiptSender::new(id_secret.clone(), postal, kind).map_err(invalid)?;
     Ok(Some((notice, receipt)))
 }
@@ -1896,7 +2226,7 @@ fn register_notice_senders(
 const OWNER_INBOX_EMAIL: &str = "ASKHAVA_OWNER_INBOX_EMAIL";
 
 /// The business-account handlers (T490, D-3750, D-3882, D-4293): the complaint box's close
-/// (BIZ-029, T083), a removed member's sessions and links ended (SEC-004, SEC-024, T084), the
+/// (BIZ-029, T083), the end of a "Busy for <n> days" pause at the clock (BIZ-028, T463), a removed member's sessions and links ended (SEC-004, SEC-024, T084), the
 /// OPS-041 owner-inbox email of a not-covered request (T215), the welcome and phone-stopped emails
 /// (CON-020, BIZ-017, T268), the business account event emails (`NOTICE_KINDS`, T329) and the
 /// accepted-quote email ([`register_accepted_quote`]). Every mailer is built from
@@ -1932,6 +2262,10 @@ fn register_business_handlers(
         askhava_businesses::api::BOX_CLOSED_KIND,
         askhava_businesses::api::run_box_closed,
     );
+    let at = Arc::clone(clock);
+    registry.register(askhava_businesses::api::BUSY_END_KIND, move |pool, task| {
+        askhava_businesses::api::run_busy_end(pool, task, at.now())
+    });
     registry.register(
         askhava_businesses::api::MEMBER_REMOVED_KIND,
         askhava_portals::api::run_member_removed,
@@ -2779,5 +3113,19 @@ mod tests {
             "{with}"
         );
         assert!(client(&[]).contains("status_callback: None"));
+    }
+
+    /// T206 (OPS-013, D-4932): `server replay` takes exactly a plain dump file, an object name and
+    /// an RFC 3339 backup time, and refuses anything else before it reads a setting or a vendor.
+    #[tokio::test]
+    async fn server_replay_refuses_wrong_arguments() {
+        let lists = settings_pairs("ci");
+        let settings = Settings::from_pairs(pairs("ci", &lists)).expect("settings");
+        let arg = |a: &[&str]| a.iter().map(|s| (*s).to_owned()).collect::<Vec<_>>();
+        for args in [arg(&[]), arg(&["fake.dump", "exports/1.age", "yesterday"])] {
+            let refused = super::replay_drill(&settings, Vec::new(), &args).await;
+            let said = refused.expect_err("refused").to_string();
+            assert!(said.starts_with("usage: server replay"), "{said}");
+        }
     }
 }

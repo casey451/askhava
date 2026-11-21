@@ -26,8 +26,10 @@ use serde_json::json;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection, PgPool};
 
+use crate::final_event::queue_final_status;
 use crate::handlers;
 use crate::models::{self, JobsError};
+use crate::payment_wait::queue_payment_returned;
 use crate::rules::{check_move, timeout};
 use crate::status::JobStatus;
 
@@ -129,7 +131,8 @@ pub async fn raise_number_floor(
 /// Moves job `id` from `from` to `to` at `at` (JOB-002, JOB-004, JOB-005, JOB-006). A move with no
 /// arrow is refused and logged as a bug before anything is read or written. If the job is no
 /// longer in `from`, nothing changes and the result is [`Guarded::MovedOn`]. Otherwise the status,
-/// the history row, the audit row and the new status's timer commit together.
+/// the history row, the audit row and the new status's timer commit together, with one
+/// `jobs.final_status` task when `to` is final (`final_event`, PICK-026, D-4361).
 ///
 /// # Errors
 ///
@@ -172,6 +175,7 @@ pub(crate) async fn apply(
         .await
         .map_err(|_| JobsError::Database)?;
     queue_timer(&mut tx, id, to, fenced, at).await?;
+    queue_final_status(&mut tx, id, to, at).await?;
     if let Some(template) = text {
         let number = job_number(&mut tx, id).await?;
         let values = json!({ "job": number });
@@ -234,7 +238,9 @@ pub(crate) async fn queue_timer(
 /// version first and does nothing if it moved on or its wait was restarted (D-807); otherwise
 /// moves it to its timeout's target at the timer's due time, as the system, with the status's
 /// timeout text (`JobStatus::timeout_text`: JOB-010 at 6 p.m., JOB-011, JOB-012; D-030, D-461).
-/// Safe to run twice: the second run finds the version moved on.
+/// A live Payment pending timer moves nothing: it queues one `picks.payment_returned` task
+/// (`payment_wait`, JOB-014, D-4349), since `payments` may still hold the pick.
+/// Safe to run twice: the second run finds the version moved on (or the task's key used).
 ///
 /// # Errors
 ///
@@ -260,6 +266,12 @@ pub async fn run_timer(pool: PgPool, task: Claimed) -> Result<(), HandlerError> 
     let (true, Some(due)) = (live, due) else {
         return Ok(());
     };
+    if status.timer_defers_to_payments() {
+        return queue_payment_returned(&mut db, id, (version, timer), due.at)
+            .await
+            .map(drop)
+            .map_err(|_| HandlerError(DB));
+    }
     let step = (status, Some((version, timer)), due.then);
     let text = status.timeout_text();
     match apply(&mut db, id, step, (due.at, Actor::System), text).await {

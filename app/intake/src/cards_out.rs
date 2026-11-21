@@ -8,9 +8,11 @@
 //! approved digest, sent only while `approved_card` holds (a changed card is
 //! [`CardsSent::Refused`]); on `intake.emergency_released` ([`send_emergency`]) it is the first
 //! of `quotes::api::unsent_cards` carrying the emergency mark, never a regular job's card waiting
-//! in its approval window (one release per request: D-3189's known issue); once that card is sent,
-//! a rerun takes the request's sent emergency card again, so a retry after the commit still sends
-//! TXT-032 once (D-3182). No stored card (or no town) is [`IntakeError::NoStoredCard`]: nothing is
+//! in its approval window; once that card is sent, a rerun takes the request's sent emergency card
+//! again, so a retry after the commit still sends TXT-032 once (D-3182). Since T747 (D-4748, closing
+//! D-3189's one-release gap) the event names its job ([`send_emergency_job`]): each emergency job
+//! of a request is released and sent once, a SPLIT's two included; an event queued before T747
+//! carries no `job` and keeps the request-wide behaviour. No stored card (or no town) is [`IntakeError::NoStoredCard`]: nothing is
 //! sent and the task fails, so it retries.
 //!
 //! Gates first, on both paths and every retry (D-3182): no consent record (`card_allowed`) sends
@@ -20,7 +22,7 @@
 //! Intake moves to Open (JOB-008, `move_to`), Open and No quotes yet go on (a rerun), and any other
 //! status (a job cancelled by CLOSE, closed, not covered) sends nothing ([`CardsSent::Stopped`]).
 //!
-//! One transaction marks the card sent, builds the pool (`quotes::api::card_pool`, the job's own
+//! One transaction marks the card sent, builds the pool (`quotes::api::card_pool_at`, the job's own
 //! town from `intake.property`, the band floor from the `band.<job>` answer T162 stores), records
 //! one card per selected business (`send_job_cards`, `ON CONFLICT DO NOTHING`, so a repeat records
 //! nothing), writes the job's first facts row (`jobs::api::record_job_facts`: exactly the stored
@@ -31,19 +33,19 @@
 //! row waits in the outbox, whose sender holds it to the window) and one outbox row per job.
 //!
 //! T249 (CARD-024, D-1519, D-1521): the pool also gets the ZIP of the same `intake.property` row,
-//! so `card_pool` fills the job's location and each business's reach, and the cards go through
+//! so `card_pool_at` fills the job's location and each business's reach, and the cards go through
 //! `send_job_cards_in_reach`; a property with no stored ZIP matches by towns only.
 
 use std::sync::Arc;
 
 use askhava_core::api::{Claimed, Guarded, HandlerError, NewTask, enqueue};
 use askhava_jobs::api::{JobStatus, job_number, lock_for_quote_change, move_to, record_job_facts};
-use askhava_messaging::api::{SendWindow, held_until, send_window};
+use askhava_messaging::api::{SendWindow, SendingNumber, held_until, load_lines, send_window};
 use askhava_ops::api::Actor;
 use askhava_privacy::api::Vault;
 use askhava_quotes::api::{
     CardLines, CardNotice, CardPool, CardsOut, Pool, Reader, Recipient, SLOW_AT_MOST, StoredCard,
-    band_floor_cents, card_holders, card_pool, cards_out_text, description, mark_card_sent,
+    band_floor_cents, card_holders, card_pool_at, cards_out_text, description, mark_card_sent,
     queue_card_notice, queue_emergency_card, send_job_cards_in_reach, sent_card, stored_card,
     unsent_cards,
 };
@@ -64,8 +66,6 @@ use crate::summary_step::{CARDS_APPROVED_KIND, approved_card};
 pub const CARDS_OUT_TEMPLATE: &str = "request_out";
 /// The "How soon?" code of "Today, it's urgent" (INT-030), for TXT-032's extra lines.
 const TODAY: &str = "today";
-/// Business texting is off until a business number exists (D-492), so notices go by email.
-const BUSINESS_TEXTING_ON: bool = false;
 const BAD_PAYLOAD: &str = "bad intake card sender payload";
 const FAILED: &str = "the intake card sender failed";
 /// INT-005, D-3182: how long a card event held by a 911 text waiting for SAFE waits before it runs
@@ -77,13 +77,26 @@ pub const HOLD_RECHECK: SignedDuration = SignedDuration::from_mins(5);
 pub struct CardsOutKeys {
     outbox: SecretString,
     vault: Vault,
+    business: Option<SendingNumber>,
 }
 
 impl CardsOutKeys {
     /// The `ID_SECRET` as outbox key and the vault.
     #[must_use]
     pub fn new(outbox: SecretString, vault: Vault) -> Self {
-        Self { outbox, vault }
+        Self {
+            outbox,
+            vault,
+            business: None,
+        }
+    }
+
+    /// TXT-035, D-3882: the keys with the configured business sending `number`; with none (the
+    /// default) business texting counts as off and every card notice goes by email (BIZ-036).
+    #[must_use]
+    pub fn with_business_number(mut self, number: Option<SendingNumber>) -> Self {
+        self.business = number;
+        self
     }
 }
 
@@ -133,7 +146,9 @@ pub async fn run_cards_approved(
     settle(&mut db, (CARDS_APPROVED_KIND, &task), sent, now).await
 }
 
-/// The `intake.emergency_released` handler `server` registers: [`send_emergency`] at `now()`.
+/// The `intake.emergency_released` handler `server` registers (INT-029, D-4748): with a `job` in
+/// the payload [`send_emergency_job`], without one (an event queued before T747)
+/// [`send_emergency`], at `now()`.
 ///
 /// # Errors
 ///
@@ -143,13 +158,22 @@ pub async fn run_emergency_released(
     keys: Arc<CardsOutKeys>,
     task: Claimed,
 ) -> Result<(), HandlerError> {
-    let conversation = task.payload["conversation"]
-        .as_str()
-        .and_then(|v| v.parse::<Uuid>().ok())
-        .ok_or(HandlerError(BAD_PAYLOAD))?;
+    let id = |key: &str| {
+        task.payload[key]
+            .as_str()
+            .and_then(|v| v.parse::<Uuid>().ok())
+    };
+    let conversation = id("conversation").ok_or(HandlerError(BAD_PAYLOAD))?;
+    let job = match task.payload.get("job") {
+        None => None,
+        Some(_) => Some(id("job").ok_or(HandlerError(BAD_PAYLOAD))?),
+    };
     let mut db = pool.acquire().await.map_err(|_| HandlerError(FAILED))?;
     let now = Timestamp::now();
-    let sent = send_emergency(&mut db, &keys, conversation, now).await;
+    let sent = match job {
+        Some(job) => send_emergency_job(&mut db, &keys, (conversation, job), now).await,
+        None => send_emergency(&mut db, &keys, conversation, now).await,
+    };
     settle(&mut db, (EMERGENCY_RELEASED_KIND, &task), sent, now).await
 }
 
@@ -230,21 +254,74 @@ pub async fn send_emergency(
     if let Some(stop) = gate(db, conversation).await? {
         return Ok(stop);
     }
-    let stored = emergency_card(db, conversation).await?;
+    let stored = emergency_card(db, conversation, None).await?;
     send_stored(db, keys, (conversation, &stored), now).await
 }
 
-/// The first unsent emergency card of `conversation`, else its first sent one (D-3182).
+/// INT-029, CARD-021, D-4748: as [`send_emergency`], for job `job` of request `conversation`
+/// only: its unsent stored card carrying the emergency mark, else its sent one (a rerun records
+/// nothing new, D-3182). A SPLIT's second emergency job gets its own event and so its own card.
+///
+/// # Errors
+///
+/// [`IntakeError::NoStoredCard`] when the job has no emergency card; otherwise as [`send_stored`].
+pub async fn send_emergency_job(
+    db: &mut PgConnection,
+    keys: &CardsOutKeys,
+    (conversation, job): (Uuid, Uuid),
+    now: Timestamp,
+) -> Result<CardsSent, IntakeError> {
+    if let Some(stop) = gate(db, conversation).await? {
+        return Ok(stop);
+    }
+    let stored = emergency_card(db, conversation, Some(job)).await?;
+    send_stored(db, keys, (conversation, &stored), now).await
+}
+
+/// INT-029, D-4748: the jobs of request `conversation` with a stored emergency card, sent or not,
+/// in ID order; each gets its own `intake.emergency_released` event.
+///
+/// # Errors
+///
+/// [`IntakeError::Quotes`] or [`IntakeError::Database`].
+pub(crate) async fn emergency_jobs(
+    db: &mut PgConnection,
+    conversation: Uuid,
+) -> Result<Vec<Uuid>, IntakeError> {
+    let quotes = |_| IntakeError::Quotes;
+    let unsent = unsent_cards(db, conversation).await.map_err(quotes)?;
+    let mut jobs: std::collections::BTreeSet<Uuid> = unsent
+        .into_iter()
+        .filter(|c| c.facts.emergency)
+        .map(|c| c.job)
+        .collect();
+    for job in models::request_jobs(db, conversation).await? {
+        let sent = sent_card(db, job).await.map_err(quotes)?;
+        if sent.is_some_and(|c| c.facts.emergency && c.request == conversation) {
+            jobs.insert(job);
+        }
+    }
+    Ok(jobs.into_iter().collect())
+}
+
+/// The first unsent emergency card of `conversation` (of job `only` when given), else its first
+/// sent one (D-3182, D-4748).
 async fn emergency_card(
     db: &mut PgConnection,
     conversation: Uuid,
+    only: Option<Uuid>,
 ) -> Result<StoredCard, IntakeError> {
     let quotes = |_| IntakeError::Quotes;
+    let wanted = |job: Uuid| only.is_none_or(|o| o == job);
     let unsent = unsent_cards(db, conversation).await.map_err(quotes)?;
-    if let Some(card) = unsent.into_iter().find(|c| c.facts.emergency) {
+    if let Some(card) = unsent
+        .into_iter()
+        .find(|c| c.facts.emergency && wanted(c.job))
+    {
         return Ok(card);
     }
-    for job in models::request_jobs(db, conversation).await? {
+    let jobs = models::request_jobs(db, conversation).await?;
+    for job in jobs.into_iter().filter(|j| wanted(*j)) {
         let sent = sent_card(db, job).await.map_err(quotes)?;
         if let Some(card) = sent.filter(|c| c.facts.emergency && c.request == conversation) {
             return Ok(card);
@@ -278,14 +355,9 @@ async fn send_stored(
     }
     let floor = band.as_deref().and_then(band_floor_cents);
     let quotes = |_| IntakeError::Quotes;
-    let pool = card_pool(
-        &mut tx,
-        ((&town, zip.as_deref()), &stored.facts),
-        text,
-        floor,
-    )
-    .await
-    .map_err(quotes)?;
+    let place = ((town.as_str(), zip.as_deref()), &stored.facts);
+    let pool = card_pool_at(&mut tx, place, text, floor, now).await;
+    let pool = pool.map_err(quotes)?;
     mark_card_sent(&mut tx, stored.job, &stored.digest, now)
         .await
         .map_err(quotes)?;
@@ -305,7 +377,8 @@ async fn send_stored(
     )
     .await
     .map_err(|_| IntakeError::Job)?;
-    let count = notices(&mut tx, (conversation, stored), &pool, &new, now).await?;
+    let parts = (&pool, keys.business.clone());
+    let count = notices(&mut tx, (conversation, stored), parts, &new, now).await?;
     tx.commit().await.map_err(|_| IntakeError::Database)?;
     let text = cards_out(db, keys, (conversation, stored), (&pool, count), now).await?;
     Ok(CardsSent::Sent {
@@ -376,15 +449,20 @@ fn band_question(job: Uuid) -> String {
 }
 
 /// CARD-019, CARD-020, CARD-021: queues each new recipient's notice with the card text sent to
-/// it; returns N, the job's card holders.
+/// it; returns N, the job's card holders. TXT-035, BIZ-036, D-3881, D-3882: business texting is
+/// on only while the stored switch is on and `business` (the configured number) is set; a failed
+/// switch read is [`IntakeError::Database`], so the task is retried, never counted as off.
 async fn notices(
     tx: &mut PgConnection,
     (conversation, stored): (Uuid, &StoredCard),
-    pool: &CardPool,
+    (pool, business): (&CardPool, Option<SendingNumber>),
     new: &[Recipient],
     now: Timestamp,
 ) -> Result<u32, IntakeError> {
     let quotes = |_| IntakeError::Quotes;
+    let line = load_lines(tx, (None, business)).await;
+    let line = line.map_err(|_| IntakeError::Database)?.business;
+    let texting_on = line.texting_on && line.number.is_some();
     let holders = card_holders(tx, stored.job).await.map_err(quotes)?;
     let count = u32::try_from(holders.len()).map_err(|_| IntakeError::Quotes)?;
     let number = job_number(tx, stored.job)
@@ -414,7 +492,7 @@ async fn notices(
         if stored.facts.emergency {
             queue_emergency_card(tx, pair, &notice, now).await
         } else {
-            queue_card_notice(tx, pair, &notice, (BUSINESS_TEXTING_ON, now)).await
+            queue_card_notice(tx, pair, &notice, (texting_on, now)).await
         }
         .map_err(quotes)?;
     }

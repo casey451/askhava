@@ -12,8 +12,11 @@
 //!
 //! [`retry_line`] is the [`LINE_RETRY_KIND`] handler `release` queues when a shown release's
 //! masked line fails to open (D-1688). It opens the line from the release row's bound contact
-//! (T253) only when the job never had one (`calls::api::job_had_line`), so a line closed after
-//! 30 days is never reopened and a job whose line is open is left alone, only while the pick
+//! (T253) only when this pick has none of its own (`calls::api::pick_has_line`: a line of the
+//! release's job, business and contact given at or after the release; T667, D-4349), so a line
+//! closed after 30 days is never reopened, a job connected again after a return gets its second
+//! line, and an earlier connection's closed line is left closed; while that earlier line is still
+//! open the retry opens nothing and fails, so it stays queued; only while the pick
 //! is still `paid` or `free` (`status::release_shown_codes`, D-2017), and never for a job in a
 //! final status (`jobs::api::current`, D-4338: a cancel's close may have run first); a failure is the task's
 //! error, so the worker's retries and dead letter apply, and the release's High alert stays.
@@ -21,10 +24,16 @@
 //! The move is the Confirm (PICK-042, T388, D-3074): in the same transaction [`settle`] queues one
 //! [`ACCEPTED_QUOTE_KIND`] task (pick, job and business IDs only, deduped per pick), whose
 //! handler (`intake`'s) emails the homeowner a copy of the accepted quote; [`accepted_pick`] is the
-//! read of a job's `paid` or `free` pick that handler and the quote page use.
+//! read of a job's `paid` or `free` pick that handler and the quote page use. In the same
+//! transaction it queues the loss notice to every other quoter (`aftermath::lost_notices`,
+//! PICK-026, PICK-038, D-1575, D-4361).
+//!
+//! The settle also connects the job (D-2930, D-4349): in its transaction the job moves to
+//! Connected before the pick moves (`connect::connect_on_settle`); a job not in Awaiting confirm
+//! or Payment pending ends the pick through `connect::end_pending` and answers [`Settled::Left`].
 
 use askhava_adapters::api::MaskedPool;
-use askhava_calls::api::{Connected, assign_number, job_had_line};
+use askhava_calls::api::{Connected, assign_number, job_line, pick_has_line};
 use askhava_core::api::{Claimed, HandlerError, NewTask, enqueue};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
 use askhava_payments::api::Releasable;
@@ -33,6 +42,8 @@ use serde_json::json;
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
+use crate::aftermath::{LossSettings, lost_notices};
+use crate::connect::{PendingEnd, connect_on_settle, end_pending};
 use crate::models::PicksError;
 use crate::status::{release_shown_codes, release_status, settle_action, settle_step};
 
@@ -70,13 +81,19 @@ pub enum Settled {
 
 /// Moves the pick `cleared` names from `awaiting_confirm` to `paid` (a paid charge) or `free` (a
 /// $0 decision), in the caller's transaction (PICK-022, PRIV-005, BIZ-014, D-1564, D-1739).
+/// Before it, in the same transaction, its job moves to Connected (`connect::connect_on_settle`:
+/// from Payment pending, or both moves from Awaiting confirm, PICK-048), so the release's claim
+/// sees Connected (D-2930, D-4349); a job in any other status is not settled: the pick ends as
+/// `payment_failed` through `connect::end_pending` and the answer is [`Settled::Left`] (the sink
+/// queues the FEE-021 refund and releases nothing, PRIV-005).
 ///
 /// # Errors
-/// [`PicksError::Database`] or [`PicksError::Audit`]; nothing is moved then.
+/// [`PicksError::Database`], [`PicksError::Audit`], [`PicksError::Job`] or
+/// [`PicksError::MovedOn`]; nothing is moved then.
 pub async fn settle(tx: &mut PgConnection, cleared: &Releasable) -> Result<Settled, PicksError> {
     let (pick, want) = (cleared.pick(), release_status(cleared.basis()));
     let row = sqlx::query!(
-        r#"SELECT job_id, business_id, status, ended_at IS NOT NULL AS "ended!"
+        r#"SELECT job_id, business_id, status, ended_at IS NOT NULL AS "ended!", tier_index
            FROM picks.pick WHERE id = $1 FOR UPDATE"#,
         pick
     )
@@ -94,6 +111,11 @@ pub async fn settle(tx: &mut PgConnection, cleared: &Releasable) -> Result<Settl
         SettleStep::Was => return Ok(Settled::Was(row.job_id)),
         SettleStep::Leave => return Ok(Settled::Left),
     }
+    if !connect_on_settle(tx, row.job_id, Timestamp::now()).await? {
+        let by = (Actor::System, Timestamp::now());
+        end_pending(tx, (pick, row.job_id), PendingEnd::PaymentFailed, by).await?;
+        return Ok(Settled::Left);
+    }
     sqlx::query!(
         "UPDATE picks.pick SET status = $2 WHERE id = $1",
         pick,
@@ -110,8 +132,25 @@ pub async fn settle(tx: &mut PgConnection, cleared: &Releasable) -> Result<Settl
         change: Change::Action,
     };
     audit(tx, &entry).await.map_err(|_| PicksError::Audit)?;
-    queue_accepted_quote(tx, pick, (row.job_id, row.business_id)).await?;
+    let parties = (row.job_id, row.business_id);
+    after_move(tx, pick, parties, row.tier_index).await?;
     Ok(Settled::Moved(row.job_id))
+}
+
+/// PICK-042, PICK-026, PICK-038, D-1575, D-4361: in the settle's transaction, once the pick is
+/// `paid` or `free`, queues the accepted-quote email and the loss notice to every other quoter
+/// (`aftermath::lost_notices`, on the homeowner's `tier` of a tiers quote, default settings).
+async fn after_move(
+    tx: &mut PgConnection,
+    pick: Uuid,
+    (job, business): (Uuid, Uuid),
+    tier: Option<i16>,
+) -> Result<(), PicksError> {
+    queue_accepted_quote(tx, pick, (job, business)).await?;
+    let tier = tier.map(usize::try_from).and_then(Result::ok);
+    lost_notices(tx, pick, tier, LossSettings::default())
+        .await
+        .map(drop)
 }
 
 /// PICK-042, D-3074: queues the accepted-quote email's task for `pick` of `job` and `business` in
@@ -166,10 +205,11 @@ pub async fn accepted_pick(
 }
 
 /// The [`LINE_RETRY_KIND`] handler: opens the released job's masked line from `masked` for the
-/// release row's bound contact, only when the job never had one and the pick is still `paid` or
+/// release row's bound contact, only when this pick has no line of its own (one given at or after
+/// its release, so a reconnected job gets its second line; D-4349) and the pick is still `paid` or
 /// `free` (`status::shows_release`; a no-show or fraud-refunded pick gets nothing) and the job is
 /// not final (a cancel, PROBLEM or NO that ran first leaves no line to open; D-4338) (CALL-001,
-/// CALL-009, CALL-010, D-1688, D-2017). Safe to run twice: once a line exists it does nothing.
+/// CALL-009, CALL-010, D-1688, D-2017). Safe to run twice: once its line exists it does nothing.
 ///
 /// # Errors
 /// A [`HandlerError`] when the payload has no pick or the line still fails to open; the worker
@@ -186,7 +226,8 @@ pub async fn retry_line(
         .ok_or(HandlerError("line retry is missing a pick"))?;
     let mut conn = pool.acquire().await.map_err(|_| RETRY_FAILED)?;
     let bound = sqlx::query!(
-        r#"SELECT r.job_id, r.business_id, r.contact_id, p.status = ANY($2) AS "shown!"
+        r#"SELECT r.job_id, r.business_id, r.contact_id, r.released_at,
+             p.status = ANY($2) AS "shown!"
            FROM picks.release r JOIN picks.pick p ON p.id = r.pick_id WHERE r.pick_id = $1"#,
         pick,
         &release_shown_codes()
@@ -197,27 +238,48 @@ pub async fn retry_line(
     let Some(bound) = bound.filter(|b| b.shown) else {
         return Ok(());
     };
+    let own = (bound.job_id, bound.business_id, bound.contact_id);
     if job_ended(&mut conn, bound.job_id).await?
-        || job_had_line(&mut conn, bound.job_id)
+        || pick_has_line(&mut conn, own, bound.released_at.to_jiff())
             .await
             .map_err(|_| RETRY_FAILED)?
     {
         return Ok(());
     }
-    let job = Connected {
-        job: bound.job_id,
-        homeowner: bound.contact_id,
-        business: bound.business_id,
-    };
-    assign_number(&mut conn, &masked, job, at)
+    open_own_line(&mut conn, &masked, own, at).await
+}
+
+/// CALL-001, CALL-009, D-4349: opens the line of a pick that has none of its own, for the
+/// release's `(job, business, contact)`. `assign_number` answers a job's open line again, so
+/// when it answers the newest earlier line of the same three (`calls::api::job_line`), that
+/// earlier connection's line is still open and nothing was opened: the retry fails and stays
+/// queued until the line is closed. Another business's open line fails in `assign_number`.
+async fn open_own_line(
+    conn: &mut PgConnection,
+    masked: &MaskedPool,
+    (job, business, homeowner): (Uuid, Uuid, Uuid),
+    at: Timestamp,
+) -> Result<(), HandlerError> {
+    let earlier = job_line(conn, (job, business, homeowner))
         .await
-        .map(|_| ())
-        .map_err(|_| RETRY_FAILED)
+        .map_err(|_| RETRY_FAILED)?
+        .map(|(id, _)| id);
+    let connected = Connected {
+        job,
+        homeowner,
+        business,
+    };
+    let line = assign_number(conn, masked, connected, at)
+        .await
+        .map_err(|_| RETRY_FAILED)?;
+    if earlier == Some(line.id()) {
+        return Err(RETRY_FAILED);
+    }
+    Ok(())
 }
 
 /// CALL-009, CALL-010, D-4338: whether job `job` reached a final status (cancelled, closed, done,
-/// closed early or not covered), so a late line retry opens nothing after the close ran. Connected
-/// is not required: released jobs sit in Awaiting confirm today (D-2015).
+/// closed early or not covered), so a late line retry opens nothing after the close ran.
 async fn job_ended(conn: &mut PgConnection, job: Uuid) -> Result<bool, HandlerError> {
     askhava_jobs::api::current(conn, job)
         .await

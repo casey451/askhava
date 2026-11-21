@@ -65,7 +65,8 @@ pub use crate::class_map::{
 };
 pub use crate::daily_lists::{
     ActiveLicenses, DAILY_LISTS_KIND, DailyList, DailyListSettings, LIST_HOUR_KEY, LIST_RETRY_KEY,
-    LOOKUP_BATCH_KEY, ListRun, run_daily_list, schedule_daily_lists,
+    LOOKUP_BATCH_KEY, ListRun, RocStanding, next_slot, recheck_paused, roc_standing,
+    run_daily_list, schedule_daily_lists,
 };
 pub use crate::handlers::{
     FailureLimits, LIST_FAILING_ALERT, LIST_STILL_FAILING_ALERT, ListFailureAlert, LookupOutcome,
@@ -103,5 +104,5 @@ pub use crate::pest_report::{
 pub use crate::rules::{city_list_standing, eligibility, eligibility_for_request, inspection_fee};
 pub use crate::service::{
     DailyCheck, Freshness, ImportSummary, ReadBack, check_license, city_standing, import_city_list,
-    import_roc_list, read_back, roc_check_allows_card,
+    import_roc_list, latest_check_allows_card, read_back, roc_check_allows_card,
 };

@@ -172,6 +172,7 @@ const ACTION_ROUTE = "/b/a/{kind}/{object}/{token}";
 /** The action kind each action-link state opens, by state name (T301). */
 const ACTION_KINDS: Readonly<Record<string, string>> = {
   "action page: pause job cards": "pause",
+  "action page: away": "away",
   "quote form from a card's Quote link": "quote",
 };
 
@@ -222,9 +223,10 @@ const QUOTE_LINK = `WITH b AS (INSERT INTO businesses.business (status, created_
     INSERT INTO portals.login_link (token_sha256, member_id, business_id, created_at, expires_at)
       SELECT decode(':hash', 'hex'), m.id, m.business_id, now() - interval '1 day', now() + interval '2 hours' FROM m`;
 
-/** The email action links' pages (T301, BIZ-038): an action page and the priced quote form. */
+/** The email action links' pages (T301, BIZ-038): action pages (Away's hours field: T543, D-3892) and the priced quote form. */
 const ACTION_STATES: readonly PageState[] = [
   ["action page: pause job cards", "Pause job cards", "Send quote for job", PAUSE_LINK],
+  ["action page: away", "Hours until you're back", "Fix this to continue", PAUSE_LINK],
   ["quote form from a card's Quote link", "Send quote for job", "Fix these", QUOTE_LINK],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: ACTION_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
@@ -315,18 +317,11 @@ const NOTICES_STATES: readonly PageState[] = [
 const CONFIRM_ROUTE = "/b/picks/{pick}/confirm";
 
 /**
- * The Confirm page (T261; FEE-045, PICK-021, D-1871, D-3836, D-3838): a fee-free pick waiting for
- * the owner's Confirm whose stored fee mode is the other of `tiers` and `flat` than the mode in
- * force, so the page shows the fee-terms-changed line in place of the card section, opens no
- * PaymentIntent and loads neither Stripe.js nor the page script; on the keyed binary, whose Stripe
- * settings serve the page. The card-section state is T496's.
+ * A fake owner's page pick waiting for Confirm, its fee row's mode, kind and cents as SQL over `t`,
+ * then `extra`, which may use the pick row `p`.
  */
-const CONFIRM_STATES: readonly PageState[] = [
-  [
-    "confirm page, fee terms changed",
-    "The fee terms changed after the homeowner picked you",
-    "Card payments can't be taken right now.",
-    businessSql(`,
+function confirmSql(mode: string, kind: string, cents: number, extra = ""): string {
+  return businessSql(`,
     j AS (INSERT INTO jobs.job (id, status, emergency, created_at, status_at, timer_from)
       VALUES (gen_random_uuid(), 'awaiting_confirm', false, now(), now(), now()) RETURNING id),
     n AS (UPDATE jobs.job_number_next SET next = next + 1 RETURNING next - 1 AS n),
@@ -334,9 +329,38 @@ const CONFIRM_STATES: readonly PageState[] = [
     p AS (INSERT INTO picks.pick (id, job_id, business_id, quote_number, channel, status, picked_at)
       SELECT ':pick', j.id, m.business_id, 1, 'page', 'awaiting_confirm', now() FROM j, m RETURNING id, job_id, business_id),
     f AS (INSERT INTO payments.pick_fee (pick_id, business_id, job_id, mode, kind, amount_cents, terms_version, fixed_at)
-      SELECT p.id, p.business_id, p.job_id, CASE t.mode WHEN 'tiers' THEN 'flat' ELSE 'tiers' END, 'fee_free', 0, t.authorization_version, now()
-      FROM p, payments.fee_terms t)`),
+      SELECT p.id, p.business_id, p.job_id, ${mode}, '${kind}', ${String(cents)}, t.authorization_version, now()
+      FROM p, payments.fee_terms t)${extra}`);
+}
+
+/**
+ * The card section's Stripe customer and the pick's one PaymentIntent, stored with fake IDs made
+ * from the business and pick IDs (D-4950), so the page opens no Stripe object: the stand-in's IDs
+ * restart with each run and collide with rows a reused database kept, which fell to CARD_OFF_LINE.
+ */
+const OPENED_SQL = `,
+    c AS (INSERT INTO payments.customer (business_id, stripe_customer_id)
+      SELECT business_id, 'cus_fake' || replace(business_id::text, '-', '') FROM p),
+    i AS (INSERT INTO payments.pick_intent (pick_id, business_id, job_id, amount_cents, stripe_intent_id, emergency, created_at)
+      SELECT id, business_id, job_id, 2500, 'pi_fake' || replace(id::text, '-', ''), false, now() FROM p)`;
+
+/**
+ * The Confirm page (T261; FEE-045, PICK-021, D-1871, D-3836, D-3838): a fee-free pick waiting for
+ * the owner's Confirm whose stored fee mode is the other of `tiers` and `flat` than the mode in
+ * force, so the page shows the fee-terms-changed line in place of the card section, opens no
+ * PaymentIntent and loads neither Stripe.js nor the page script; on the keyed binary, whose Stripe
+ * settings serve the page. T496 (A11Y-002, D-3838): an ordinary $25 charged pick under the terms in
+ * force, whose card section shows with the fixture's fake Stripe Element mounted; its `hides` is
+ * `CARD_OFF_LINE`, so a page whose card section fell to that line fails (D-4950).
+ */
+const CONFIRM_STATES: readonly PageState[] = [
+  [
+    "confirm page, fee terms changed",
+    "The fee terms changed after the homeowner picked you",
+    "Card payments can't be taken right now.",
+    confirmSql("CASE t.mode WHEN 'tiers' THEN 'flat' ELSE 'tiers' END", "fee_free", 0),
   ],
+  ["confirm page, card section", "Confirm and pay", "Card payments can't be taken right now.", confirmSql("t.mode", "charged", 2500, OPENED_SQL)],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: CONFIRM_ROUTE, name, shows, hides, sql, statusRegions: ["confirm-status"] }));
 
 const CANT_TAKE_ROUTE = "/b/picks/{pick}/cant-take";
@@ -466,6 +490,41 @@ const OWNER_RELEASE_STATES: readonly PageState[] = [
   ["owner release button", "Re-send the release notice", "Nothing was sent", OWNER_SESSION_SQL],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: OWNER_RELEASE_ROUTE, name, shows, hides, sql, statusRegions: ["release-status"] }));
 
+const OWNER_HELP_ROUTE = "/owner/help";
+
+/** The owner help page (T530; OPS-036): no open request, no refusal. */
+const OWNER_HELP_STATES: readonly PageState[] = [
+  ["owner help requests", "No open requests", "Nothing was sent", OWNER_SESSION_SQL],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: OWNER_HELP_ROUTE, name, shows, hides, sql, statusRegions: ["help-status"] }));
+
+const OWNER_REFUND_ROUTE = "/owner/refunds/{pick}";
+const OWNER_AUDIT_LOG_ROUTE = "/owner/audit-log";
+const OWNER_HEALTH_ROUTE = "/owner/health";
+
+/**
+ * The owner tools (T304; FEE-026, OPS-010, OPS-008, D-5159): a fake pick's refund review step, the
+ * audit log with a seeded row and the health page with a seeded job card, so each table renders.
+ */
+const OWNER_TOOLS_STATES: readonly PageState[] = [
+  [OWNER_REFUND_ROUTE, "owner refund review", "Disputes on this charge", "Error:", ""],
+  [
+    OWNER_AUDIT_LOG_ROUTE,
+    "owner audit log, rows",
+    "Audit log rows",
+    "Nothing more to show.",
+    `; INSERT INTO ops.audit_log (actor_kind, action, subject_kind, subject_id, field)
+      VALUES ('system', 'ops.fake_check', 'ops.fake_record', gen_random_uuid(), 'fake_field')`,
+  ],
+  [
+    OWNER_HEALTH_ROUTE,
+    "owner health page, a card to check",
+    "Job cards to check",
+    "so there are none to check",
+    `; INSERT INTO quotes.job_card (job_id, business_id, handyman, sent_at)
+      VALUES (gen_random_uuid(), gen_random_uuid(), false, now())`,
+  ],
+].map(([route = "", name = "", shows = "", hides = "", extra = ""]) => ({ route, name, shows, hides, sql: OWNER_SESSION_SQL + extra, statusRegions: [] }));
+
 const COMPLAINTS_ROUTE = "/b/complaints";
 const EMERGENCY_ROUTE = "/b/emergency-emails";
 const NOTICE_LOG_ROUTE = "/b/picks/{pick}/notices";
@@ -590,6 +649,44 @@ function homeownerSeed(state: PageState): Seeded {
   return { url: `${keyedUrl()}${state.route}`, cookies: [{ name: "__Host-askhava-session", value: token }] };
 }
 
+/**
+ * The homeowner's photo upload page (T674; INT-044, PRIV-015, A11Y-027): a fake contact with a
+ * homeowner session, her request and its job; the seed fills `{job}` with the job's number.
+ */
+const PHOTO_UPLOAD_ROUTE = "/h/requests/{job}/photos";
+const PHOTO_UPLOAD_STATES: readonly PageState[] = [
+  [
+    "homeowner photo upload form",
+    "No photo is fine too.",
+    "Fix this to add your photo",
+    `WITH c AS (INSERT INTO privacy.contact (id, phone) VALUES (':contact', decode(':phone', 'hex')) RETURNING id),
+    s AS (INSERT INTO portals.session (token_sha256, realm, actor_id, created_at, expires_at)
+      SELECT decode(':hash', 'hex'), 'homeowner', id, now(), now() + interval '30 days' FROM c),
+    j AS (INSERT INTO jobs.job (id, status, emergency, created_at, status_at, timer_from)
+      VALUES (gen_random_uuid(), 'intake', false, now(), now(), now()) RETURNING id),
+    n AS (UPDATE jobs.job_number_next SET next = next + 1 RETURNING next - 1 AS n),
+    num AS (INSERT INTO jobs.job_number (number, job_id, issued_at) SELECT n.n, j.id, now() FROM n, j),
+    h AS (INSERT INTO intake.homeowner (contact_id, created_at) SELECT id, now() FROM c RETURNING id),
+    v AS (INSERT INTO intake.conversation (homeowner_id, job_id, language, first_inbox_id, consent_template,
+      consent_sent_at, opened_at) SELECT h.id, j.id, 'en', gen_random_uuid(), 'consent', now(), now() FROM h, j)
+    SELECT n FROM n`,
+  ],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: PHOTO_UPLOAD_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
+/** Seeds a photo upload state on the keyed binary and opens her request's page with her session cookie. */
+function photoUploadSeed(state: PageState): Seeded {
+  const token = randomBytes(32).toString("hex");
+  const contact = randomUUID();
+  const sql = state.sql
+    .replaceAll(":hash", createHash("sha256").update(token).digest("hex"))
+    .replaceAll(":contact", contact)
+    .replaceAll(":phone", seal("privacy.contact", "phone", contact, "+19285550165").toString("hex"));
+  const done = spawnSync("psql", [process.env.DATABASE_URL ?? "", "-v", "ON_ERROR_STOP=1", "-qtA", "-c", sql], { encoding: "utf8" });
+  if (done.status !== 0) throw new Error(`seeding "${state.name}" failed: ${done.stderr}`);
+  const url = `${keyedUrl()}${state.route.replace("{job}", done.stdout.trim())}`;
+  return { url, cookies: [{ name: "__Host-askhava-session", value: token }] };
+}
+
 /** Every page's entry: its route, its states and its seed function. Append a new page's entry. */
 export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: QUOTE_ROUTE, seed: tokenSeed, states: QUOTE_STATES },
@@ -639,9 +736,14 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: OWNER_HOME_ROUTE, seed: portalSeed(false), states: OWNER_HOME_STATES },
   { route: OWNER_SETTINGS_ROUTE, seed: portalSeed(false), states: OWNER_SETTINGS_STATES },
   { route: OWNER_RELEASE_ROUTE, seed: portalSeed(false), states: OWNER_RELEASE_STATES },
+  { route: OWNER_HELP_ROUTE, seed: portalSeed(false), states: OWNER_HELP_STATES },
+  { route: OWNER_REFUND_ROUTE, seed: portalSeed(false), states: OWNER_TOOLS_STATES.filter((s) => s.route === OWNER_REFUND_ROUTE) },
+  { route: OWNER_AUDIT_LOG_ROUTE, seed: portalSeed(false), states: OWNER_TOOLS_STATES.filter((s) => s.route === OWNER_AUDIT_LOG_ROUTE) },
+  { route: OWNER_HEALTH_ROUTE, seed: portalSeed(false), states: OWNER_TOOLS_STATES.filter((s) => s.route === OWNER_HEALTH_ROUTE) },
   { route: JOB_TYPES_ROUTE, seed: portalSeed(false), states: JOB_TYPES_STATES },
   { route: HOMEOWNER_SIGNIN_ROUTE, seed: (state) => state.route, states: HOMEOWNER_SIGNIN_STATES },
   { route: HOMEOWNER_HOME_ROUTE, seed: homeownerSeed, states: HOMEOWNER_HOME_STATES },
+  { route: PHOTO_UPLOAD_ROUTE, seed: photoUploadSeed, states: PHOTO_UPLOAD_STATES },
 ];
 
 /** Every state of every page, in entry order. */

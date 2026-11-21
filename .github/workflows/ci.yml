@@ -12,9 +12,10 @@ on:
   # (runner/verify.py needs every run of a required check on the head green) and, finishing after the
   # merge, made governance.yml post a false failure. A check run attaches to its commit, so these push
   # runs satisfy a pull request with that head (the ruleset matches checks by name and app on the head
-  # SHA). Every pull request here comes from claude/** or dependabot/**.
+  # SHA). Every pull request here comes from claude/** or dependabot/**. A claude/wip/** ref is a failed
+  # attempt's kept work, never a pull request head, so it starts no run (D-4720).
   push:
-    branches: ["claude/**", "dependabot/**", "!claude/kit-state"]
+    branches: ["claude/**", "dependabot/**", "!claude/kit-state", "!claude/wip/**"]
   workflow_call:
 permissions:
   contents: read
@@ -185,7 +186,7 @@ jobs:
           base="$(git merge-base origin/main HEAD)"
           files="$(git diff --no-renames --name-only "$base" HEAD)"
           rust=false; npm=false
-          echo "$files" | grep -Eq '^(app/|tests/(integration|security|recovery|fixtures|mutation)/|scripts/run_named_mutants\.py|migrations/|docs/legal/|docs/catalog/|docs/architecture\.md|docs/copy/mail-app-steps\.md|schemas/|scripts/pii_scan\.py|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
+          echo "$files" | grep -Eq '^(app/|tests/(integration|security|recovery|fixtures|mutation)/|scripts/run_named_mutants\.py|migrations/|docs/legal/|docs/catalog/|docs/architecture\.md|docs/copy/mail-app-steps\.md|schemas/|scripts/pii_scan\.py|scripts/bootstrap_roles\.sql|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
           echo "$files" | grep -Eq '^(package(-lock)?\.json|tsconfig|eslint\.config|tests/(e2e|a11y)/|app/[^/]+/static/.*\.ts$)' && npm=true
           # Proven-parent pass (D-4281): a flag set true may go back to false only on an exact proven= line.
           proven() {
@@ -394,7 +395,7 @@ jobs:
           base="$(git merge-base origin/main HEAD)"
           rust=false
           git diff --no-renames --name-only "$base" HEAD \
-            | grep -Eq '^(app/|tests/(integration|security|recovery|fixtures|mutation)/|scripts/run_named_mutants\.py|migrations/|docs/legal/|docs/catalog/|docs/architecture\.md|docs/copy/mail-app-steps\.md|schemas/|scripts/pii_scan\.py|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
+            | grep -Eq '^(app/|tests/(integration|security|recovery|fixtures|mutation)/|scripts/run_named_mutants\.py|migrations/|docs/legal/|docs/catalog/|docs/architecture\.md|docs/copy/mail-app-steps\.md|schemas/|scripts/pii_scan\.py|scripts/bootstrap_roles\.sql|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
           # Proven-parent pass (D-4281): a flag set true may go back to false only on an exact proven= line.
           proven() {
             line="$(python3 scripts/ci_proven.py --job "$1" --flag "$2" --step-script "$0" || true)"
@@ -517,7 +518,8 @@ jobs:
   coverage:
     name: "Coverage"
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    # 40, not 25: a full instrumented rebuild plus the llvm-cov report ran past 25 and cancelled a passing run (D-4969).
+    timeout-minutes: 40
     services:
       postgres:
         image: postgres:16@sha256:1beaa3084eee2676f20a9cd9928f0bf2c5bf674f8e49f81017912183d377c61c
@@ -565,7 +567,7 @@ jobs:
           base="$(git merge-base origin/main HEAD)"
           rust=false
           git diff --no-renames --name-only "$base" HEAD \
-            | grep -Eq '^(app/|tests/(integration|security|recovery|fixtures|coverage_floor\.json)|scripts/coverage_floor\.py|migrations/|docs/legal/|docs/catalog/|docs/architecture\.md|docs/copy/mail-app-steps\.md|schemas/|scripts/pii_scan\.py|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
+            | grep -Eq '^(app/|tests/(integration|security|recovery|fixtures|coverage_floor\.json)|scripts/coverage_floor\.py|migrations/|docs/legal/|docs/catalog/|docs/architecture\.md|docs/copy/mail-app-steps\.md|schemas/|scripts/pii_scan\.py|scripts/bootstrap_roles\.sql|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
           # Proven-parent pass (D-4281): a flag set true may go back to false only on an exact proven= line.
           proven() {
             line="$(python3 scripts/ci_proven.py --job "$1" --flag "$2" --step-script "$0" || true)"

@@ -16,6 +16,7 @@
 {% else if spot_all %}<p>Every {{ spot_days }} days, open each job card below. They are all the cards sent in the last {{ spot_days }} days. Check that each shows the right job and trade.</p>
 {% else %}<p>Every {{ spot_days }} days, open these {{ spot.len() }} job cards, picked at random from the last {{ spot_days }} days. Check that each shows the right job and trade.</p>
 {% endif %}{% if !spot.is_empty() %}
+<div role="region" tabindex="0" aria-label="Job cards to check">
 <table id="spot-check">
 <caption>Job cards to check</caption>
 <thead><tr><th scope="col">Card</th><th scope="col">Job</th><th scope="col">Trade</th><th scope="col">Sent</th></tr></thead>
@@ -23,8 +24,10 @@
 {% for c in spot %}<tr><td>{{ c.card }}</td><td>{{ c.job }}</td><td>{{ c.trade }}</td><td>{{ c.sent }}</td></tr>
 {% endfor %}</tbody>
 </table>
+</div>
 {% endif %}<h2>Secrets</h2>
 <p>Each secret shows if it's set, if it reads correctly and if it's the right one for this environment. This page never shows a secret's value.</p>
+<div role="region" tabindex="0" aria-label="Required secrets">
 <table id="secrets">
 <caption>Required secrets</caption>
 <thead><tr><th scope="col">Name</th><th scope="col">Set</th><th scope="col">Reads correctly</th><th scope="col">Right environment</th></tr></thead>
@@ -32,6 +35,7 @@
 {% for x in secrets %}<tr><th scope="row">{{ x.name }}</th><td>{% if x.present %}Yes{% else %}No{% endif %}</td><td>{% if x.parsed %}Yes{% else %}No{% endif %}</td><td>{% if x.env_matched %}Yes{% else %}No{% endif %}</td></tr>
 {% endfor %}</tbody>
 </table>
+</div>
 <h2>Accounts</h2>
 <dl id="accounts">
 {% for f in accounts %}<dt>{{ f.label }}</dt><dd>{{ f.value }}</dd>

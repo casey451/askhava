@@ -150,6 +150,7 @@ pub use crate::money_view::{
 pub use crate::off_session::{
     OffSessionCharge, OffSessionOutcome, OffSessionStripe, charge_off_session, saved_card_of,
 };
+pub use crate::payment_hold::{PaymentHold, end_pick_intent, payment_held, press_may_charge};
 pub use crate::pick_fee::end_intent_unless_charging;
 pub use crate::pick_fee::{
     PickFeeError, StoredPickFee, fee_terms_in_force, fix_fee_at_pick, pick_fee,
@@ -192,7 +193,8 @@ pub use crate::rules::{
     period_fee_for,
 };
 pub use crate::scorecard_inputs::{
-    LedgerTotals, Share, free_share, ledger_totals, paying_again, refund_reasons,
+    ChargeOutcomes, LedgerTotals, Share, charge_outcomes, free_share, ledger_totals, paying_again,
+    refund_reasons,
 };
 pub use crate::service::{
     Authorized, CONFIRM_FEE_ACTION, CUSTOMER_ACTION, ConfirmError, Confirmed, FEE_MODE_ACTION,

@@ -21,6 +21,7 @@ mod accepted_quote_email;
 mod alert_contact;
 mod alert_emails;
 pub mod api;
+mod business_eligibility;
 mod business_notices;
 mod checkin_email;
 mod consent_alerts;
@@ -59,6 +60,7 @@ mod service;
 mod signin_mail;
 mod spanish_switch;
 mod status;
+mod suppression_rekey;
 mod suppression_versions;
 mod templates;
 

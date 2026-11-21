@@ -2,6 +2,12 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Owner health page: what "Right environment: Yes" does and does not prove (D-5128, D-5132, November 21)
+
+- **What happened.** The owner health page (`/owner/health`, T304) lists each secret the site needs with three answers: Set, Reads correctly, Right environment. The site checks its settings once, when it starts, and refuses to start on a bad one.
+- **What it means.** "Set" is exact: a missing or empty secret shows No. For the Stripe secret key the other two answers are checked at start too. For the Twilio token, the Resend key, the Stripe webhook secret, the ID secret and the database address, the start check only makes sure the value is not a Stripe key from the other environment. So a Yes there does not prove the secret belongs to the right account: a token copied from another Twilio or Resend account would still show Yes, and the first text or email would fail instead. The account names shown under the table are checked against your allowed list, so compare those when in doubt.
+- **Nothing needs you now.** If you want a real per-vendor check behind each Yes, say so and it becomes its own task.
+
 ## Help replies: the first version texts homeowners only; email replies come in a later step (D-4726, November 19, open)
 
 - **What happened.** The owner help page (T530) lets you answer a help request. The rule says a reply goes by text to a homeowner who can be texted, and otherwise by email, always by email to a business on email. Texts to businesses are not sent yet, and nothing stores the address of someone who wrote to the help email.
@@ -3201,7 +3207,7 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - When a business changes a phone's number, the texting agreement given for the old number no longer counts. Job cards and notices for a business that chose text only go by email until someone ticks the texting box for the new number.
 - A box shown for the old number and sent after the change is turned down, so a tick never counts for a number the person did not see.
-- One leftover for a later task: the list of phones that may get a sign-in code still counts the old agreement after a member's own extra phone changes number. It sends nothing extra today beyond the sign-in code that member asked for, but it should follow the same rule.
+- The leftover is closed (T777, D-5102): the list of phones that may get a sign-in code now follows the same rule. After a member's own extra phone changes number, the sign-in code goes to that member's email until the texting box is ticked for the new number.
 - Nothing needs you now.
 ## Pre-claim checks of the audit fix tasks (D-4064, November 17)
 - Before any of the new audit fix tasks start, Opus checkers read each one against the code. Their fixes are now in the tasks.
@@ -3338,7 +3344,7 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **Forms now tell people clearly what went wrong and keep what they typed.** On the "Get quotes" chat, a mistake (an empty message, a bad number, a wrong code, or "we can't send codes right now") now shows the error at the top of the page, puts the screen reader there, marks the field and keeps her words and number, as the accessibility rules require (T656). On the business quote form, a missing package price now points at that package instead of always package 1, and a few fields that showed an error were not marked as wrong for screen readers (T657). Your owner sign-in still says only "That didn't work" so nobody learns which of your two factors was wrong.
 - **The fee table on the business pages scrolls on a phone now** instead of being a stop for the Tab key that does nothing (T609, T610).
 - **Addresses in Spanish or in ALL CAPS now get removed before job words are stored or sent to the AI.** "vivo en 3301 palo verde" and "WATER HEATER LEAKING 2150 MESQUITE" used to slip through; normal job words like "WATER HEATER 2 YEARS OLD" or "instalado en 2015" stay (T658).
-- **Bounced and spam-complained business emails are now acted on.** Nothing listened to the email provider's bounce reports, so a business with a dead address would keep missing job emails with no banner, and an "email reports silent" alert would have stayed open forever. A new signed route records them, marks the address returned and shows the banner (T659). When the test environment is set up and again for Gate C, the Resend webhook secret must be set (the server will not start in Test or Live without it, as with Stripe) and the route registered in the Resend dashboard; nothing is created before then.
+- **Bounced and spam-complained business emails are not acted on yet (planned: T659, queued behind T133).** Nothing listens to the email provider's bounce reports, so a business with a dead address keeps missing job emails with no banner, and the "email reports silent" alert stays open. T659 will add a signed route that records them, marks the address returned and shows the banner; T784 then stops job cards and notices going to a returned address (D-5081). When the test environment is set up and again for Gate C, the Resend webhook secret must be set (the server will not start in Test or Live without it, as with Stripe) and the route registered in the Resend dashboard; nothing is created before then.
 - **Emails that keep failing are handled safely** (T470): an email the provider refuses as invalid is dropped with an alert; a provider outage is waited out with growing gaps, and only an email still unsure after 23 hours is dropped (with an alert), so nothing is ever sent twice; a bad API key or unverified domain gives you one alert and the emails wait, but at most 72 hours, after which they are dropped with one alert (they may hold sign-in links, and a days-old job card is stale). Sign-up email addresses with spaces or commas are refused, so one address can never become two recipients (T661). The "Manage email notices" link in the failed-text email now works from an inbox (T580).
 - **The future AI check on business quote notes can only ever see scrubbed text** (T660). Open item for you, no action needed now: the AI half of the quote-note check (flagging a note that runs down another business) has no task yet; today notes get the code checks only. Not added: an on-screen announcement after each successful chat turn, which the accessibility rules don't require and would need page script.
 
@@ -3547,6 +3553,7 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - **Licences:** a request such as "handyman needed, breaker panel keeps tripping" no longer counts handymen without an electrical licence, and "water heater" keeps its job type in the count (T716).
 - **Smaller fixes:** a "Close which?" question no longer stays open forever, "never mind" with no job now gets a reply (T759), and a second job opened with "ALSO" before the ZIP now gets its coverage answer (T760).
 - Fable's findings; nothing needs you now.
+- **Nightly backup (T109):** the app now makes a nightly encrypted copy of the database at 3 a.m. Arizona time, locked so only your offline key can open it, and the owner health page shows when the last one was stored. Before the test project runs it, two settings are needed on the worker only: the export's public key and the backup role's database address. Nothing needs you now.
 
 ## A planning snag in the payment-flow task, fixed without loosening any check (D-4788)
 
@@ -3558,3 +3565,137 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - **What changed:** some finished work was held because the worker's commit did not show in its log; workers are now told to commit in a way that always shows, and a held hand-in that cannot pass now says so at once (T762, first in line). It also prepares the build sessions to run tasks on Fable, which is switched on in a later change once this lands.
 - Fable's decision; nothing needs you now.
+
+## Scope freeze, and fixes to tasks about to start (D-4822 to D-4824)
+
+- **Scope freeze (your words, Nov 19):** from now, a new task is added only when a task cannot finish without it or for a real money, privacy, consent or safety problem. Everything else goes on the post-launch list below.
+- **Fixes before they start:** four tasks about to be picked up had instructions that could not pass their own checks (the intake step order, a contact-card download, a data-request screen); their instructions are corrected, and a few smaller wording fixes were made (D-4822). A test that failed about once in a hundred runs because two tests used the same fake phone number gets a small fix first in line (T763, D-4823).
+- Our choice; nothing needs you now.
+
+## Post-launch list
+
+Items kept for after launch under the scope freeze (D-4824). Each is a note, not a task.
+
+- **Moving keyword reads an in-state move as in-town (D-5178):** with AI off, "movers" reads "in-town move" even for a move to another Arizona town; and a two-word first text ("interstate movers") keeps no words. Both accepted.
+- **Out-of-state moves the refusal cannot see (D-5178):** with AI off, a first text that names no trade is never kept, so "relocating to Las Vegas" followed by the trade answer "movers" is carded; and "Need movers" (two words) gets the not-covered reply and a demand row even though a mover is active.
+- **Trade-only texts with AI off (D-5178):** With AI off, any trade-only text (e.g. 'I need a plumber') reads `<trade>_other`, which no category lists, so it is never carded in any trade (found by Fable in the T776 diagnosis, D-5178); needs a decision before launch with AI off.
+- **Code digests coverage:** the digest tasks (T556 to T558) cover about 0.9 MB of the about 1.58 MB of code to summarise after D-3357; T514 or T142 weighs whether that matters before the handover.
+- **Open PaymentIntents at Stripe (D-5158):** Ended picks leave their unconfirmed PaymentIntent open at Stripe (all `end_intent_unless_charging` callers and `end_pick`). No funds are held. A late success after a declined attempt is auto-refunded (FEE-021); one on an intent that was never attempted is not released and raises one High alert, and you refund it in Stripe. They show as Incomplete in the Stripe dashboard. If a late success lands on the ended intent while a $0 release is held in safe mode, `held_release` takes the paid path and answers `PickEnded`: the charge is refunded but the business is not released; accepted as rare. Consider a best-effort `cancel_payment_intent` in T132 or after launch.
+- **Scrollable tables on finished pages (D-5159):** the tables in `scorecard.html` (two), `money_view.html` and `intake_report.html` are not yet wrapped in a focusable scroll region as the business page's fee table is; their tasks are done, so the one-line wrapper waits for after launch.
+- **Keyword reading with AI off (D-5160):** all other open categories remain unreachable by keyword with AI off; bare "moving", "turnover", "snowbird" and "vacation rental" were left out to avoid false two-job reads; the narrowed Spanish phrases also leave "ayuda con la mudanza" and golden row local_moving-10 ("busco mudanza") unread with AI off, accepted.
+- **"Never mind" with no job (D-5161):** a homeowner who texts "never mind" in a request that has no job yet still gets no reply; a reply needs a new English and Spanish template pair. Also still open: a lone open job number or ALL sent later, with no worded reply in between, still closes a job after "Close which?".
+- **Call log on the released job's page (D-5162):** the page shows the real job number but still says "No calls yet." even when calls exist (BIZ-035). Stripe dispute handling (FEE-022) does not depend on the page.
+- **Returned mailboxes and card notices (D-5165):** some card notices (`app/picks/src/aftermath.rs:213`) still go to a mailbox marked returned; fixing that needs the notice email sender (`notice_emails.rs`) changed too.
+- **Card-step texts ignore a Spanish switch-off mid-request (night overseer, November 21):** the card preview, cards-out and T776's card-step refusal read with `spanish_on: true` (`app/intake/src/summary_step.rs:105-109`, `app/intake/src/cards_out.rs:542`), so a request stored as Spanish still gets the Spanish text if the switch goes off after it opened (TXT-039). The `tell` path honours the switch (`order_dispatch.rs:802`). Fable judged it low; a fix reads `askhava_messaging::api::spanish_switch` at those steps.
+- **Keyword-only mode limits (D-5214, D-5215):** Laftly launches with the AI on; keyword-only mode is the fallback for an outage. Its known limits stay for after launch: token-set and synonym matching; narrowing the broad words door, leaking, clogged, ac and panel; with AI off, GoOn without a question; the silent wait after two missed trade questions; and the rest of the 388 outside-research phrases (42 vetted ones go in with T716).
+- **Termite report: old placement in the trade notes (D-5216):** the home-inspection trade notes (`docs/catalog/trade_kb/trades/home_inspection.yaml`, its `wdiir` job type, and `docs/catalog/trade_kb/test_set.csv:145`) and the comment at `app/licensing/src/tests/prop_rules.rs:198` still describe the termite report under home inspection; nothing runs them, so they are left for after launch.
+- **A.R.S. 3-3633 not checked (D-5216):** the termite report moves to pest control on the trade notes' reading of A.R.S. 3-3633 (wood-destroying insect reports are a pest licensee's work); that statute was not independently verified.
+- **Spanish style notes for the paid review (D-5222):** from the first AI back-translation: "el dueño" reads as male; "PARAR para salir" is stiff; "Se canceló su suscripción" can sound like a paid plan; "Por ahora seguimos en inglés" is vague. These wait for the professional review (CON-018 and CON-031 pin the first two).
+- **Duplicate `under_18` in es.json (D-5222):** `app/messaging/templates/es.json` holds the `under_18` key twice (`:75` and `:213`), so the second copy wins when the file is read; T791 changes both, and a later cleanup removes the first.
+
+## The monthly backup test checks the backup's record (D-4835)
+
+- **What changed:** the monthly test restore (T648) cannot read the stored backup file back (by design, the storage key can only write it), so it now checks the backup's own record instead: the last nightly backup succeeded, is recent, and has its size and fingerprint recorded. Its first run waits until after the first nightly backup, so a new setup does not raise a false alarm.
+- Our choice (Fable's review); nothing needs you now.
+
+## The Confirm press and a business with no stored ROC check (D-4897, November 20, open)
+
+- D-4897 (Fable, Nov 20): at the Confirm press, a business with no stored ROC check is refused only when the job's category needs an ROC licence; city-list and other-agency trades (no ROC number) still pass on account, end and bond dates. Say if you want every press to need a stored check.
+
+## Business texting: an early read-spike alert is expected (D-4913, November 20)
+
+- D-4913 (Fable, Nov 20): in the first two weeks of business texting, an hour with more than three business texts raises one High read-spike alert (no 14-day baseline yet); expected, the same as notice emails.
+- D-4830 to D-4832 (T672, Nov 20): texts now go on after the coverage line to "How soon?", the emergency-or-regular choice and the trade questions before the name and address. A day answer that is not a weekday ("the 25th") is accepted but only weekdays reach the card for now.
+
+## Monthly test restore: one more database service to add (D-4846, November 20)
+
+- D-4846 (T648): the monthly test restore needs a second, empty PostgreSQL 16 service in each Railway project (test and live), reachable only on the private network, and its admin URL set as `ASKHAVA_RESTORE_ADMIN_URL` on the `worker` service only. Without it the worker will not start in test or live. Nothing is kept there: each run makes a database, checks it and drops it. A failed run shows as one High alert in the digest and never starts safe mode.
+- D-4733 (T530): the owner portal has a new page, `/owner/help`, that lists open help requests and lets you reply to one. For now a reply only goes by text, and only to a homeowner who has texted us; for a business or an email asker the page says the reply must go by email and sends nothing (email replies come with T740). Replies sent at night wait until 8 a.m. Closing or reopening a request there is not yet written to the audit log.
+
+## Restore drill: what the operator runs (D-4971, November 20)
+
+- D-4971 (T206): after a real loss, the restore is three hand steps and one command. Fetch the newest export from storage, decrypt it with the offline key on a machine that is not the app host, run the role set-up on the fresh database, then run `server replay <file> <object name> <backup time>` with the worker stopped. It waits if Twilio or Stripe is down, sends and charges nothing, and raises one alert listing anything it could not match for you to call about. T117's runbook will spell the steps out.
+- D-4972 (T206): the drill's printed summary now shows how many replay rounds ran and both charge counts (booked now, already booked). If a vendor failed partway and the replay ran again, charges the first round booked show as already booked; the ledger is right either way, only the split between the two counts is approximate.
+
+## Open-cards email language (D-5017, November 20)
+
+- With no stored team-member language, the open-cards email goes in English. Say if it should follow the business's language setting instead.
+- Confirm reminder emails reuse the pick notice's words under a "Reminder: accept job" subject, and an emergency pick's one reminder is never worded "Last reminder" (D-5034). Say if reminders should get their own wording.
+- The card a homeowner reviews before it goes out (T673, D-5040) holds her own words, the trade, town and timing, but not yet her answers to the trade questions, photos or "Needed by <day>"; a long card's link goes to her quote page. Say if either should change before launch.
+- T743 (D-5013): an old index key version cannot be retired while an opt-out is listed under it for a number no contact still holds; the retirement refuses and names only a count. None should exist (the phone is kept while listed, D-079). Say if such a listing should ever be removable by hand.
+
+## Privacy policy: opted-out numbers (D-5049, November 20)
+
+- The privacy policy draft now says an opted-out number is kept as long as needed to honor the opt-out. The sentence waits for your publish; nothing published has changed.
+
+## Confirm press: license re-check and the move to Payment pending (T664, D-5002, November 20)
+
+- A business whose stored license check is stale or not Active, or whose account is not Active, can no longer confirm: the press charges nothing, the pick ends, and the homeowner gets her backup or the "choose another quote" text. The business sees the existing "This pick can't be confirmed anymore. Nothing was charged." line; no new wording was written.
+- A job now moves to Payment pending only when a charge is really attempted (or at once on a $0 Confirm), so a press with no card, or during a charging pause, keeps the business's full Confirm window.
+## Header Menu: the open list spans the header's width (D-5059, November 20)
+
+- On phones and tablets, the open Menu's links take a full-width row under the header instead of the reference's 280 px panel on the right. The links, order and wording are unchanged. Say if you want the narrow right-hand panel instead.
+- On a phone, a business portal page's header takes two rows: the wordmark, "Get help" and "Español" on the first, the Menu button on the second. The four items do not fit one row under 372 px, and "Get help" has to show at every width (T614, D-4944).
+
+## Outside code review, 40 findings (D-5081, November 20)
+
+- An outside reviewer read the code and listed 40 findings. Twelve were not defects or were already decided. Four were already planned (T135, T236, T646, T659).
+- Eleven new tasks and one change to a planned task fix the rest that matter before launch. The first three run ahead of everything else:
+  - T775: a homeowner who answers a check-in with "PROBLEM gas smell" now gets the "call 911" text first. Before, she got only the check-in reply.
+  - T776: a move out of Arizona and a "collect the rent" home-watch request are refused, as LIC-017 and LIC-018 say. Before, they got cards. The move check reads her words for another state or a nearby out-of-state town (Needles, Laughlin, Las Vegas and others). The list is in the task; say if a place is missing.
+  - T777: a sign-in code is texted only to a number that has its consent tick (D-5117 took the owner's approval out of this task; see the note below).
+- Still open after this, for you to weigh:
+  - The moving questions have no "to or from another state" answer. Adding one is planned once the trade-question step is built (after T723). Until then the move check rests on her own words.
+  - Left for after launch, all low: sign-up double submit (F22), a refused email retried with a misleading error (F30), card text kept inside finished task rows (F27), one clock read in settle (F23), two slow reads (F3, F17), the band-floor check (F18), and two indexes for the health check (F36).
+  - The nightly export's 100-second limit stays. T781 makes a failed or timed-out export raise an alert once a day; a longer limit is a separate choice when it starts to fire.
+- The sentence in this file that said bounced emails "are now acted on" was wrong: T659 has not run yet. It is corrected above.
+
+## Confirm link in the email: code by text only (D-5112, November 21)
+
+- The Confirm link in a pick email now works in a browser that isn't signed in. It texts a code to that person's own phone, and the right code signs them in and opens the Confirm page.
+- Still open: a person with no phone that gets texts can't use the link yet. The page tells them to link a phone in the portal. The email code the spec allows for them (SEC-004) is not built.
+- Still open: a person who marked "This inbox is shared" is asked for a code by the link, and then the Confirm page asks for its own code before the press. That second code step is not wired yet (the known gap from T261).
+## Sign-in codes and phone approval (D-5117, November 21)
+
+- T777 now fixes one thing: after a team member changes their phone number, the sign-in code is not texted to the new number until its text box is ticked. Until then the code goes to their email.
+- It no longer also waits for your approval of the phone. Your approval decides whether a phone counts as the business's for texts and calls. A sign-in code goes to the member's own phone as their own second step, and an earlier decision's test expects that.
+- If you want a member's phone to get no sign-in code until you approve it, say so. It is a small change, and members would get their codes by email until the approval page (T397) is live.
+
+## Homeowner photo upload page is served (T674, D-5082, November 21)
+
+- A signed-in homeowner can now add photos to her own request, see each one as businesses will, and send it or take it off. A photo she has not sent never goes on the card.
+- Once her request summary has been shown to her, the photos can't change; the page says "Your request is past the photo step, so its photos can't change now." That line is new and short; change it if you want other words.
+- There is no cap yet on how many photos one request can hold (the spec asks for up to 3 kinds of photo but sets no upload limit). Say so if you want one.
+- When one request covers two kinds of work, a photo she sends for one never shows on the other's card, and pressing "Send this photo" twice counts once (D-5084).
+- Nothing needs you now.
+## Disputes with no evidence date (D-5164, November 21)
+
+- A Stripe dispute that arrives without an evidence due date is now recorded and blocks refunds on that pick, with an alert naming the pick. Nothing is auto-submitted for it: you must counter or accept it in Stripe yourself. Its PRIV-007 retention hold counts from the day it was opened.
+
+## "Link this phone" from the email now links the phone (T458, D-5173, D-5174, November 21)
+
+- **What changed.** When a staff phone is blocked on a call, the email's "Link this phone" link can now link that phone for a signed-in owner or "Confirm and billing" team member. The owner's link works at once. A team member's link works only after the owner approves it, and the page says so.
+- **Worth knowing.** The email that asks the owner to approve a phone a team member linked this way cannot be sent yet: it names the phone's last 4 digits, and for a phone linked from a blocked call we keep no digits. Until that is solved the owner approves the phone on the phones page of the business account. Also, no email carries the "Link this phone" link yet (recorded in D-3675).
+- **Nothing needs you now.**
+- A licensed-trade (ROC) business now gets a job card only while its latest license check reads Active and is under 72 hours old; every day the ROC list loads, each active business gets that day's check, so the "checked on" date on a quote card is current (D-5123, D-5124). If the ROC list and the live lookups both fail for 72 hours, ROC cards stop until one works again, as LIC-008 intends.
+- If the state's ROC list can't be loaded, each licensed business whose last good check is going stale now gets one email after 24 hours saying so and naming when its job cards will pause; at 72 hours after its last good check the account is paused, and it resumes by itself, with no review, on the first list that shows the license Active. The pauses and resumes are counted in your weekly digest (T655, D-5184 to D-5186). Nothing needs you.
+
+## Moves out of Arizona and rent-collection requests are now refused by text (T776, D-5081, D-5143, November 21)
+
+- **What changed.** A text asking for movers to another state, or for home watch that includes collecting rent, finding tenants or leasing, now gets the "we don't cover" reply and no card goes to a business. This is checked when the trade is known and again before her card is shown or sent, so words added with EDIT are checked too. Moves inside Arizona and turnover cleaning "after the renters check out" go on as before.
+- **The words that mean "this move leaves Arizona".** Phrases: out of state, another state, different state, out of Arizona, leaving Arizona, cross country, across the country, interstate, fuera del estado, otro estado, fuera de Arizona. Places: the full name of every other US state, Mexico, the Spanish state names Nueva York, Nueva Jersey, Nuevo or Nueva Hampshire, Carolina del Norte, Carolina del Sur, Dakota del Norte, Dakota del Sur, Pensilvania, Hawái, Luisiana, Misisipi, Misuri, Minesota (added after review; "Tejas" is left out because it also means roof tiles), and Needles, Laughlin, Vegas (so "Las Vegas" too), Henderson, Blythe, Palm Springs, Los Angeles, San Diego, Reno, Salt Lake City, Albuquerque, Denver. "California king" (a bed) does not count. Arizona towns never count.
+- **New keywords with AI off.** Moving: movers, moving help, mudanza fuera, necesito mudanza, hacer una mudanza, ayuda con mudanza. Home watch: home watch, house check, house checks, cuidar la casa. Turnover cleaning: turnover clean, turnover cleaning, turnover cleaner, airbnb cleaning, vrbo cleaning.
+- **Worth knowing.** A moving text that uses a state name another way ("by the Colorado River", "Washington Street") is refused too; she can text again without it. Tell us if a nearby town is missing from the list.
+- **Nothing needs you now.**
+## Fable's usage-limit fallback has a runner bug (D-5190, November 21)
+
+- **What happened.** When Fable hit its usage limit, the runner was meant to re-run the task on Opus without counting an attempt. It did not record that switch, because its "was this a refusal?" check does not recognise a usage-limit (429) message (`runner/model_window.py` `REFUSAL`, used at `runner/cycle.py:3330` and `runner/__main__.py:493`). T615 lost a good attempt to it.
+- **Now.** Once D-5189 (the switch off Fable, PR #1277) merges, no task runs on Fable and the bug cannot bite. T615 gets one more attempt after its flaky test is fixed (T789) and that switch has merged.
+- **Before Fable is switched back on**, a harness task must make that check accept usage-limit and rate-limit text.
+
+## No AI-off launch; termite report moves to pest control (D-5214 to D-5216, November 21)
+
+- **Your words:** "No AI-off launch" and "Move to pest control".
+- **AI:** before you say 'go live' at Gate C you turn "AI on scrubbed text" on in the owner portal and run the phone rehearsal with it on. Gate C no longer accepts a written note launching without the AI writing calls; that work (T394) must be done.
+- **Termite report:** "termite report for a sale or loan" becomes a pest-control job, only for a pest business that says it holds the wood-destroying category, and it stays free of the introduction fee. T790 makes the catalog and test change.
+- **Keywords:** T716 adds 42 checked keyword phrases for when the AI is off.

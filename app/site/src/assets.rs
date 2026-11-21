@@ -8,6 +8,15 @@
 //! The fonts (T166, WEB-027, D-3331) are Gelasio 400 and 500 and DM Sans 400, 500 and 700, copied
 //! from `docs/design/fonts/` (SIL Open Font License; the license texts sit beside the originals
 //! there) and served at `/static/site/fonts/<name>` as `font/woff2`, so no page loads a font host.
+//! T613 (D-4246, D-4807) adds Gelasio 500 italic for the one italic accent a page, the latin
+//! subset of `@fontsource/gelasio@5.3.0` copied unchanged (the same OFL family and license text);
+//! a test pins its served bytes to `docs/design/fonts/gelasio-latin-500-italic.woff2`.
+//! T617 (D-4252, D-4863) adds DM Sans from one weight-axis variable file,
+//! `fonts/dm-sans-latin-wght-normal.woff2` from `@fontsource-variable/dm-sans@5.3.0` copied
+//! unchanged (36,932 bytes against 42,728 for the three static files; license text
+//! `docs/design/fonts/OFL-DM-Sans-variable.txt`); the stylesheet's DM Sans faces all name it, and
+//! the three static DM Sans files stay listed and served, unused by the stylesheet, because the
+//! design-token suite requests each one. A test pins its served bytes to the `docs/design/fonts/` copy.
 //!
 //! The photos and the mark (T216, WEB-027, D-3331, D-4252) are the home hero, served through
 //! `<picture>` as the phone strip `photos/hero-kitchen-phone.webp` and the tablet and desktop
@@ -44,6 +53,11 @@ const ASSETS: &[Asset] = &[
         bytes: include_bytes!("../static/fonts/gelasio-latin-500-normal.woff2"),
     },
     Asset {
+        name: "fonts/gelasio-latin-500-italic.woff2",
+        mime: "font/woff2",
+        bytes: include_bytes!("../static/fonts/gelasio-latin-500-italic.woff2"),
+    },
+    Asset {
         name: "fonts/dm-sans-latin-400-normal.woff2",
         mime: "font/woff2",
         bytes: include_bytes!("../static/fonts/dm-sans-latin-400-normal.woff2"),
@@ -57,6 +71,11 @@ const ASSETS: &[Asset] = &[
         name: "fonts/dm-sans-latin-700-normal.woff2",
         mime: "font/woff2",
         bytes: include_bytes!("../static/fonts/dm-sans-latin-700-normal.woff2"),
+    },
+    Asset {
+        name: "fonts/dm-sans-latin-wght-normal.woff2",
+        mime: "font/woff2",
+        bytes: include_bytes!("../static/fonts/dm-sans-latin-wght-normal.woff2"),
     },
     Asset {
         name: "photos/hero-kitchen.webp",
@@ -84,27 +103,66 @@ pub(crate) fn find(name: &str) -> Option<&'static Asset> {
 mod tests {
     use super::find;
 
-    /// The five font files `site.css` names in its `@font-face` rules.
-    const FONTS: [&str; 5] = [
+    /// The four font files `site.css` names in its `@font-face` rules: Gelasio and the one
+    /// variable DM Sans file (T617, D-4863).
+    const FONTS: [&str; 4] = [
         "gelasio-latin-400-normal.woff2",
         "gelasio-latin-500-normal.woff2",
+        "gelasio-latin-500-italic.woff2",
+        "dm-sans-latin-wght-normal.woff2",
+    ];
+
+    /// The three static DM Sans files, listed and served but unused by the stylesheet (D-4863).
+    const STATIC_DM_SANS: [&str; 3] = [
         "dm-sans-latin-400-normal.woff2",
         "dm-sans-latin-500-normal.woff2",
         "dm-sans-latin-700-normal.woff2",
     ];
 
-    /// WEB-027: each font is listed as WOFF2 under `fonts/`, holds WOFF2 bytes and is named by
-    /// the stylesheet with a relative URL, so it loads from the site, never a font host.
+    /// WEB-027: each font is listed as WOFF2 under `fonts/` and holds WOFF2 bytes; the stylesheet
+    /// names the Gelasio files and the variable DM Sans file with a relative URL, so they load
+    /// from the site, never a font host, and names no static DM Sans file (D-4252, D-4863).
     #[test]
     fn every_font_is_listed_as_woff2_and_named_by_the_stylesheet() {
         let css = std::str::from_utf8(find("site.css").expect("listed").bytes).expect("utf-8");
-        for file in FONTS {
+        for file in FONTS.iter().chain(&STATIC_DM_SANS) {
             let font = find(&format!("fonts/{file}")).expect(file);
             assert_eq!(font.mime, "font/woff2", "{file}");
             assert!(font.bytes.starts_with(b"wOF2"), "{file}");
-            assert!(css.contains(&format!("url(\"fonts/{file}\")")), "{file}");
+            let named = css.contains(&format!("url(\"fonts/{file}\")"));
+            assert_eq!(named, FONTS.contains(file), "{file}");
         }
         assert!(!css.contains("http"), "the stylesheet names no other host");
+    }
+
+    /// WEB-027, WEB-030, D-4252: the served variable DM Sans font is the reviewed file in
+    /// `docs/design/fonts/`, byte for byte, exactly the 36,932 bytes D-4853 records, and no
+    /// larger than the three static files together.
+    #[test]
+    fn the_variable_dm_sans_font_is_the_reviewed_file() {
+        let served = find("fonts/dm-sans-latin-wght-normal.woff2").expect("listed");
+        let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+        let reviewed =
+            std::fs::read(root.join("docs/design/fonts/dm-sans-latin-wght-normal.woff2"))
+                .expect("the reviewed font is in docs/design/fonts/");
+        assert_eq!(served.bytes, reviewed.as_slice());
+        assert_eq!(served.bytes.len(), 36_932, "the size D-4853 records");
+        let statics: usize = STATIC_DM_SANS
+            .iter()
+            .map(|file| find(&format!("fonts/{file}")).expect(file).bytes.len())
+            .sum();
+        assert!(served.bytes.len() <= statics);
+    }
+
+    /// WEB-027, D-4246: the served italic accent font is the reviewed file in `docs/design/fonts/`,
+    /// byte for byte.
+    #[test]
+    fn the_italic_font_is_the_reviewed_file() {
+        let served = find("fonts/gelasio-latin-500-italic.woff2").expect("listed");
+        let root = std::path::Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../.."));
+        let reviewed = std::fs::read(root.join("docs/design/fonts/gelasio-latin-500-italic.woff2"))
+            .expect("the reviewed font is in docs/design/fonts/");
+        assert_eq!(served.bytes, reviewed.as_slice());
     }
 
     /// WEB-001: the stylesheet is listed as CSS and holds the evergreen link colour.

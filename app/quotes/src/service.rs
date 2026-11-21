@@ -8,6 +8,9 @@
 //! [`send_late_cards`] gives a business that became eligible its card while the job is Open or No
 //! quotes yet (CARD-018, D-042) and [`coverage`] counts it for intake (INT-017, INT-032).
 //!
+//! T677 (CARD-018, D-4360): `late_cards` runs [`send_late_cards_in_reach`] for each job a
+//! business that became eligible may now get (the `businesses.became_eligible` task).
+//!
 //! T249 (CARD-024, D-1519): [`send_job_cards_in_reach`], [`send_late_cards_in_reach`] and
 //! [`coverage_in_reach`] carry a [`Reach`], so a business whose radius reaches the job's ZIP
 //! centroid is matched too; the functions without the suffix pass the empty `Reach` (towns only).
