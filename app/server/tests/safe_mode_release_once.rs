@@ -500,3 +500,35 @@ async fn td_ops_49_a_pick_released_before_safe_mode_is_untouched(pool: PgPool) {
         "no held task, one notice"
     );
 }
+
+/// TD-OPS-49 (PICK-022, FEE-017, FEE-021, D-4792): a pick released before its job was cancelled
+/// (`Settled::Was` with its release row) gets no late-success refund and no second release when
+/// another verified event arrives, as a retry after a failed release would.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_ops_49_a_released_pick_of_a_cancelled_job_is_not_refunded(pool: PgPool) {
+    let (job, pick) = paid(&pool).await;
+    let hooks = hooks(&pool, pick).await;
+    let first = deliver(hooks.clone(), pick, "evt_fake707g").await;
+    assert_eq!(first, StatusCode::OK);
+    assert!(released(&pool, pick).await);
+    let mut db = pool.acquire().await.expect("db");
+    let status = current(&mut db, job).await.expect("job").status;
+    let moved = move_to(
+        &mut db,
+        job,
+        (status, JobStatus::Cancelled),
+        now(),
+        Actor::System,
+    )
+    .await;
+    assert!(moved.expect("cancel").applied().is_some(), "cancelled");
+    drop(db);
+    let again = deliver(hooks.clone(), pick, "evt_fake707h").await;
+    assert_eq!(again, StatusCode::OK);
+    let (_, held, notices, late) = drained(&pool, pick).await;
+    assert_eq!(
+        (held.len(), notices, late),
+        (0, 1, 0),
+        "no refund, one notice"
+    );
+}

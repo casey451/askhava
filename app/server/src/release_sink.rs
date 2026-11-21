@@ -52,13 +52,15 @@ use askhava_payments::api::{
     MoneyEventError, PickNow, Releasable, ReleaseError, ReleaseSink, StripeAccount, StripeWebhook,
     late_success, reclear_release,
 };
-use askhava_picks::api::{Released, Settled, awaiting_address, contact_choice, release, settle};
+use askhava_picks::api::{
+    Released, Settled, awaiting_address, contact_choice, is_released, release, settle,
+};
 use askhava_privacy::api::{ReleaseBasis, Vault};
 use jiff::Timestamp;
 use secrecy::SecretString;
 use serde_json::{Value, json};
 use sqlx::types::Uuid;
-use sqlx::{PgConnection, PgPool};
+use sqlx::{PgConnection, PgPool, Postgres, Transaction};
 
 use crate::release_hold::HOLD_EVERY;
 use crate::{release_hold, release_minter};
@@ -162,17 +164,11 @@ impl PickReleaser {
             .begin()
             .await
             .map_err(|_| ReleaseError::Database)?;
-        let mut settled = settle(&mut tx, &cleared)
+        let settled = settle(&mut tx, &cleared)
             .await
             .map_err(|_| ReleaseError::Database)?;
-        if job_went_final(&mut tx, settled).await? {
-            tx.rollback().await.map_err(|_| ReleaseError::Database)?;
-            tx = self
-                .pool
-                .begin()
-                .await
-                .map_err(|_| ReleaseError::Database)?;
-            settled = Settled::Left;
+        if job_went_final(&mut tx, settled, cleared.pick()).await? {
+            return leave_final(&self.pool, tx, &cleared, at).await;
         }
         if settled == Settled::Left && matches!(cleared.basis(), ReleaseBasis::PaidCharge) {
             moved_on_success(&mut tx, cleared.pick(), at).await?;
@@ -183,16 +179,49 @@ impl PickReleaser {
     }
 }
 
-/// FEE-017, OPS-024 (T707): whether the settle just moved the pick (`Settled::Moved`) for a job
-/// already in a final status, such as one cancelled while its release was held.
-async fn job_went_final(conn: &mut PgConnection, settled: Settled) -> Result<bool, ReleaseError> {
-    let Settled::Moved(job) = settled else {
-        return Ok(false);
+/// FEE-017, OPS-024, PICK-022 (T707, D-4792): whether the settled pick's job is already in a
+/// final status (cancelled, such as while its release was held or its address deferred) with
+/// the pick not yet released: a pick the settle just moved (`Settled::Moved`), or one already
+/// paid or free (`Settled::Was`) with no `picks.release` row; a `Was` pick already released is
+/// left to [`release_settled`], which answers `Already`, so nothing is refunded.
+async fn job_went_final(
+    conn: &mut PgConnection,
+    settled: Settled,
+    pick: Uuid,
+) -> Result<bool, ReleaseError> {
+    let job = match settled {
+        Settled::Left => return Ok(false),
+        Settled::Moved(job) => job,
+        Settled::Was(job) => {
+            let claimed = is_released(&mut *conn, pick).await;
+            if claimed.map_err(|_| ReleaseError::Database)? {
+                return Ok(false);
+            }
+            job
+        }
     };
     let found = current(conn, job)
         .await
         .map_err(|_| ReleaseError::Database)?;
     Ok(found.status.is_final())
+}
+
+/// FEE-017, FEE-021, PICK-022 (T707, D-4791, D-4792): leaves a pick whose job went final: the
+/// settle's transaction `tx` is rolled back (no move, no re-clear), a paid pick gets its one
+/// late-success refund ([`moved_on_success`]) in a new one, and nothing is released (`MovedOn`).
+async fn leave_final(
+    pool: &PgPool,
+    tx: Transaction<'_, Postgres>,
+    cleared: &Releasable,
+    at: Timestamp,
+) -> Result<Released, ReleaseError> {
+    tx.rollback().await.map_err(|_| ReleaseError::Database)?;
+    if matches!(cleared.basis(), ReleaseBasis::PaidCharge) {
+        let mut tx = pool.begin().await.map_err(|_| ReleaseError::Database)?;
+        moved_on_success(&mut tx, cleared.pick(), at).await?;
+        tx.commit().await.map_err(|_| ReleaseError::Database)?;
+    }
+    Ok(Released::MovedOn)
 }
 
 /// FEE-021, D-1547 (T433): a verified paid success for a pick `picks` left (`Settled::Left`) is a
@@ -275,7 +304,9 @@ async fn contact_of(pool: &PgPool, pick: Uuid, job: Uuid) -> Result<Option<Uuid>
 /// the settle, so no refund starts between the check and the settle. Then the same mint and
 /// release as a first clearing: the address goes at most once (the release row), only through
 /// that proof, and the masked line opens. A pick that left paid or free, ended, was refunded or
-/// disputed is `MovedOn`; a second address finds the release row, `Already`.
+/// disputed is `MovedOn`; so is one whose job went final while it waited (FEE-017, FEE-021,
+/// D-4792: nothing re-cleared, a paid pick's one late-success refund); a second address finds
+/// the release row, `Already`.
 ///
 /// # Errors
 /// [`ReleaseError::Database`] when the safe-mode read (fails closed: nothing released or
@@ -363,6 +394,9 @@ async fn rerelease(
     let settled = settle(&mut tx, &cleared)
         .await
         .map_err(|_| ReleaseError::Database)?;
+    if job_went_final(&mut tx, settled, pick).await? {
+        return leave_final(pool, tx, &cleared, at).await;
+    }
     tx.commit().await.map_err(|_| ReleaseError::Database)?;
     release_settled(pool, keys, (cleared, settled), at).await
 }

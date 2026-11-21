@@ -315,3 +315,4 @@
 - [SEC-008 SEC-034 SEC-042 SEC-046 CON-035] (never 25) no homeowner session gets the 401 linking to `/h/sign-in`;
 - [SEC-008 SEC-034 SEC-042 SEC-046 CON-035] (never 25) any sign-in number gets the same code page at once, never awaiting the send (D-4013);
 - [SEC-008 SEC-034 SEC-042 SEC-046 CON-035] (never 25) a send or check past its limit calls no Verify;
+- [OPS-024 FEE-017 FEE-021 PICK-022] (task 707) D-4792: the final-job check also covers `Settled::Was` with no release row (a released one answers `Already`, no refund) and the address re-release (`rerelease`); `leave_final` rolls back and refunds a paid pick once. Cases in `tests/safe_mode_address_in.rs` and `tests/safe_mode_release_once.rs`.
