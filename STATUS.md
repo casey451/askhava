@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T06:47:44Z by runner a4aa767722f6 (actions).
+Updated 2026-11-21T06:59:24Z by runner fabfe83d9707 (actions).
 
-**Building: T615 in progress since 06:37Z; 574 of 726 done; week 68% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T615 in progress since 06:37Z; 575 of 726 done; week 68% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 574 of 726 build tasks (owner gates not counted)
+- **Tasks done:** 575 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 4: T615 claimed 06:37Z, lease until 09:37Z; lane 7: T674 claimed 04:40Z, lease until 07:40Z
 - **Week:** 68% used, 55.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:47Z, 0 min before this update
+- **Last run:** 06:48Z, 11 min before this update
 - **Keeper:** last ran 06:47Z, next wake 07:42Z
 
 ## Needs attention
@@ -21,7 +21,7 @@ Updated 2026-11-21T06:47:44Z by runner a4aa767722f6 (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T754 | portals and payments: a $0 Confirm after a PaymentIntent was | BLOCKED | 2 | 46 min | 06:41Z | PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and |
-| T755 | messaging: a sole opt-out word counts with any spacing ("STO | MERGE_PENDING | 1 | 66 min | 05:21Z |  |
+| T755 | messaging: a sole opt-out word counts with any spacing ("STO | done | 1 | 66 min | 05:21Z |  |
 | T777 | businesses: a sign-in code is texted only to a line whose cu | done | 2 | 39 min | 05:05Z | PLAN GAP: outside ownership: app/server/tests/business_signin_route.rs / T777's approved_at filter in sign_in_lines fail |
 | T614 | site: the V6 header in base.html (links, the Menu in the pag | done | 3 | 53 min | 04:37Z | PLAN GAP: tests/integration/tests/quote_page.rs:172 (owner T052, protected) bans the word "summary" anywhere in the quot |
 | T691 | intake (harness): START into an open request resends the con | QUEUED | 1 | 27 min | 04:35Z | session ended without handing in |
@@ -100,7 +100,7 @@ Updated 2026-11-21T06:47:44Z by runner a4aa767722f6 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 361 of 735 (49.1%) · partial 355 · unstarted 19
-**Tasks merged (throughput only):** 574 of 726
+**Tasks merged (throughput only):** 575 of 726
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -136,7 +136,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 217 of 306 done
+- stage 5: 218 of 306 done
 - stage 6: 0 of 67 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
