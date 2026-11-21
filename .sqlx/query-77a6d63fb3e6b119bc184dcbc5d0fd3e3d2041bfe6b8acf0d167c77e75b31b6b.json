@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO payments.refund (pick_id, trigger, status, tries, requested_at) VALUES ($1, 'unreachable', 'pending', 1, now())",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "77a6d63fb3e6b119bc184dcbc5d0fd3e3d2041bfe6b8acf0d167c77e75b31b6b"
+}
