@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-21T18:46:31Z by runner 20cae0e25457 (actions).
+Updated 2026-11-21T18:46:44Z by runner 20cae0e25457 (actions).
 
-**Building: T608 in progress since 15:59Z; 585 of 732 done; week 32% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T690 in progress since 16:56Z; 585 of 732 done; week 32% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 585 of 732 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T608 claimed 15:59Z, lease until 18:59Z; lane 2: T690 claimed 16:56Z, lease until 19:56Z; lane 3: T707 claimed 18:35Z, lease until 21:35Z; lane 5: T791 claimed 18:44Z, lease until 21:44Z; lane 6: T790 claimed 18:10Z, lease until 21:10Z; lane 7: T754 claimed 18:25Z, lease until 21:25Z
+- **Lane:** lane 2: T690 claimed 16:56Z, lease until 19:56Z; lane 3: T707 claimed 18:35Z, lease until 21:35Z; lane 5: T791 claimed 18:44Z, lease until 21:44Z; lane 6: T790 claimed 18:10Z, lease until 21:10Z; lane 7: T754 claimed 18:25Z, lease until 21:25Z
 - **Week:** 32% used, 122.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 18:44Z, 1 min before this update
 - **Keeper:** last ran 18:25Z, next wake 18:45Z
@@ -19,6 +19,7 @@ Updated 2026-11-21T18:46:31Z by runner 20cae0e25457 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T608 | site and portals: the home page and the quote page in full V | MERGE_PENDING | 1 | 2 h 46 min | 18:46Z |  |
 | T615 | site and server: a styled 404 page for unknown paths, the fa | MERGE_PENDING | 4 | 68 min | 18:19Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T787 | intake: crate guide trimmed to 5,500 bytes, the detail moved | done | 1 | 68 min | 16:45Z |  |
 | T786 | server: crate guide trimmed to 5,500 bytes, the detail moved | done | 1 | 34 min | 16:33Z |  |
@@ -74,7 +75,6 @@ Updated 2026-11-21T18:46:31Z by runner 20cae0e25457 (actions).
 | T756 | privacy: the scrubber catches phones split by connector word | done | 1 | 59 min | 19:57Z |  |
 | T530 | portals: the owner help page and its screened reply box (D-3 | done | 3 | 49 min | 19:43Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 | T661 | privacy: a business notice address with spaces, commas or co | done | 1 | 27 min | 19:04Z |  |
-| T614 | site: the V6 header in base.html (links, the Menu in the pag | BLOCKED | 2 | 80 min | 18:46Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -125,7 +125,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T608 (lease until 2026-11-21T18:59:45Z)
+- nothing
 - lane 2: T690 (lease until 2026-11-21T19:56:59Z)
 - lane 3: T707 (lease until 2026-11-21T21:35:59Z)
 - lane 5: T791 (lease until 2026-11-21T21:44:30Z)
@@ -133,4 +133,4 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 7: T754 (lease until 2026-11-21T21:25:20Z)
 
 ## Last usage reading
-- {"task": "T615", "at": "2026-11-21T18:19:05Z", "input_tokens": 84, "cache_creation_input_tokens": 97780, "output_tokens": 13203, "cache_read_input_tokens": 1834238}
+- {"task": "T608", "at": "2026-11-21T18:46:28Z", "output_tokens": 76770, "cache_read_input_tokens": 15540822, "input_tokens": 307, "cache_creation_input_tokens": 324018}
