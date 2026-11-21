@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T05:12:18Z by runner d8acafd04a11 (actions).
+Updated 2026-11-21T05:12:48Z by runner d8acafd04a11 (actions).
 
 **Building: T755 in progress since 04:14Z; 571 of 726 done; week 66% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-21T05:12:18Z by runner d8acafd04a11 (actions).
 - **Lane:** lane 6: T755 claimed 04:14Z, lease until 07:14Z; lane 7: T674 claimed 04:40Z, lease until 07:40Z
 - **Week:** 66% used, 63.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 05:12Z, 0 min before this update
-- **Keeper:** last ran 05:09Z, next wake 07:17Z
+- **Keeper:** last ran 05:12Z, next wake 07:17Z
 
 ## Needs attention
 - BLOCKED T304: plan gap reported: PLAN GAP: app/portals/templates/owner_audit_log.html (owned by T205) and app/portals/templates/health.html (owned by T476) fail Ally once served: bare <table> at owner_audit_log.html:8, health.html:19 and :28 with no role=region tabindex=0 aria-label wrapper (as app/site/templates/business.html:43); reflow_spacing.spec.ts A11Y-008/009 fail at 320px, plus color-contrast incomplete on audit log td:nth-child(5). T304 Scope (kit/prompts/T304.md:35-51) does not allow editing them. Reviewer confirmed ownership via kit/tasks.json and the missing wrappers.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T304 --plan-fix D-### --reason "..."` (D-2859)
