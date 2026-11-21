@@ -3673,6 +3673,7 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 - **Worth knowing.** The email that asks the owner to approve a phone a team member linked this way cannot be sent yet: it names the phone's last 4 digits, and for a phone linked from a blocked call we keep no digits. Until that is solved the owner approves the phone on the phones page of the business account. Also, no email carries the "Link this phone" link yet (recorded in D-3675).
 - **Nothing needs you now.**
 - A licensed-trade (ROC) business now gets a job card only while its latest license check reads Active and is under 72 hours old; every day the ROC list loads, each active business gets that day's check, so the "checked on" date on a quote card is current (D-5123, D-5124). If the ROC list and the live lookups both fail for 72 hours, ROC cards stop until one works again, as LIC-008 intends.
+- If the state's ROC list can't be loaded, each licensed business whose last good check is going stale now gets one email after 24 hours saying so and naming when its job cards will pause; at 72 hours after its last good check the account is paused, and it resumes by itself, with no review, on the first list that shows the license Active. The pauses and resumes are counted in your weekly digest (T655, D-5184 to D-5186). Nothing needs you.
 
 ## Moves out of Arizona and rent-collection requests are now refused by text (T776, D-5081, D-5143, November 21)
 
