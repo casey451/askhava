@@ -99947,7 +99947,7 @@
     "T706",
     "T333"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 3,
    "slug": "zero-fee-after-intent",
    "type": "build",
@@ -99960,8 +99960,8 @@
     5136,
     5137
    ],
-   "reason": "Ci: failure; Checks: failure\nChecks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)\n     Running tests/status_enums.rs (target/debug/deps/status_enums-3039d66fa660459e)\nrunning 3 tests\ntest td_sec_12_status_modules_deny_wildcards_and_statuses_are_enums ... FAILED\ntest td_sec_12_the_scan_fails_on_each_planted_shape ... ok\ntest td_sec_12_the_repository_has_no_status_shortcut ... ok\nfailures:\n---- td_sec_12_status_modules_deny_wildcards_and_statuses_are_enums stdout ----\nthread 'td_sec_12_status_modules_deny_wildcards_and_statuses_are_enums' (39320) panicked at tests/security/tests/status_enums.rs:151:17:\n/home/runner/work/askhava/askhava/tests/security/../../app/payments/src/release_proof.rs holds a status as text\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_sec_12_status_modules_deny_wildcards_and_statuses_are_enums\ntest result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 30.39s\nerror: test failed, to rerun pass `-p askhava-security --test status_enums`\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
-   "last_failure": "PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and_handled, owned by T785 after T259/T331/T352) expects a verified payment_intent.succeeded naming pi_FakeNone for a pick stored with pi_Fake9 (refused WrongIntent, release_proof.rs:220-221) to change nothing, including ops.alert rows; kit/prompts/T754.md:9 (m3) requires one High alert for every WrongIntent refusal. T754 does not own that test file (T754.md:37-40, :53, :104). Reviewer confirmed (GAP-VERDICT: CONFIRMED). Smallest fix: (1) give T754 a one-time edit of stripe_webhook_dispatch.rs:430 to expect one alert payments.success_refused_wrong_intent, logged as a spec change; or (2) narrow m3 so WrongIntent alerts only when the event's intent is the pick's stored intent (store_success / missing pick_intent / refunded_or_disputed paths), no test edit.\nre-queued after plan fix D-5171: D-5171: m3 alerts only on the pick's own stored intent; Database stays Database; live attempt defined; cites refreshed (Fable diagnosis: plan gap from D-5158 wording)",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and_handled, owned by T785 after T259/T331/T352) expects a verified payment_intent.succeeded naming pi_FakeNone for a pick stored with pi_Fake9 (refused WrongIntent, release_proof.rs:220-221) to change nothing, including ops.alert rows; kit/prompts/T754.md:9 (m3) requires one High alert for every WrongIntent refusal. T754 does not own that test file (T754.md:37-40, :53, :104). Reviewer confirmed (GAP-VERDICT: CONFIRMED). Smallest fix: (1) give T754 a one-time edit of stripe_webhook_dispatch.rs:430 to expect one alert payments.success_refused_wrong_intent, logged as a spec change; or (2) narrow m3 so WrongIntent alerts only when the event's intent is the pick's stored intent (store_success / missing pick_intent / refunded_or_disputed paths), no test edit.\nre-queued after plan fix D-5171: D-5171: m3 alerts only on the pick's own stored intent; Database stays Database; live attempt defined; cites refreshed (Fable diagnosis: plan gap from D-5158 wording)\nre-queued after plan fix D-5192: D-5192 and D-5189: last attempt on Opus; rename the status: &str helper parameter (status_enums scan); attempts 1-2 were plan gaps",
    "history": [
     {
      "attempt": 1,
@@ -100104,6 +100104,19 @@
      "plan_head": "a251f571cd3c972f459bdf53501090a5717f01f6",
      "plan_then": "b5f79bbc07a1a3abbf924e048d47a83425e3885fd2fa5be05303e15b392a6004",
      "plan_now": "89b3bf52b60db677b0a27c7daa55959b0f310ecb79ec16a2b61a927914195b34"
+    },
+    {
+     "at": "2026-11-21T17:07:27Z",
+     "reason": "D-5192 and D-5189: last attempt on Opus; rename the status: &str helper parameter (status_enums scan); attempts 1-2 were plan gaps",
+     "by": "manual-b343c803de72",
+     "was": "Ci: failure; Checks: failure\nChecks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)\n     Running tests/status_enums.rs (target/debug/deps/status_enums-3039d66fa660459e)\nrunning 3 tests\ntest td_sec_12_status_modules_deny_wildcards_and_statuses_are_enums ... FAILED\ntest td_sec_12_the_scan_fails_on_each_planted_shape ... ok\ntest td_sec_12_the_repository_has_no_status_shortcut ... ok\nfailures:\n---- td_sec_12_status_modules_deny_wildcards_and_statuses_are_enums stdout ----\nthread 'td_sec_12_status_modules_deny_wildcards_and_statuses_are_enums' (39320) panicked at tests/security/tests/status_enums.rs:151:17:\n/home/runner/work/askhava/askhava/tests/security/../../app/payments/src/release_proof.rs holds a status as text\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_sec_12_status_modules_deny_wildcards_and_statuses_are_enums\ntest result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 30.39s\nerror: test failed, to rerun pass `-p askhava-security --test status_enums`\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
+     "attempts": 3,
+     "plan_fix": "D-5192",
+     "plan_since": "2026-11-21T09:47:34Z",
+     "plan_base": "a251f571cd3c972f459bdf53501090a5717f01f6",
+     "plan_head": "04d214018f8f03c0c4de779b576f77ae39209a4b",
+     "plan_then": "89b3bf52b60db677b0a27c7daa55959b0f310ecb79ec16a2b61a927914195b34",
+     "plan_now": "d4a2e64d887c1182c13d35d08d1d2b474af06963e6e524c0738d4a77ce3f917b"
     }
    ],
    "lane": "1",
@@ -110833,7 +110846,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T16:58:42Z",
+ "updated_at": "2026-11-21T17:07:27Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -110931,8 +110944,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "d04b0752db500f6245ec09032f8bae7524dbadb4",
- "starter": "actions",
+ "runner_sha": "04d214018f8f03c0c4de779b576f77ae39209a4b",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "f48c110d7929ad0ab08d663dec9ce2de08c53076",

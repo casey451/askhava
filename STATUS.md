@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T16:58:42Z by runner d04b0752db50 (actions).
+Updated 2026-11-21T17:07:27Z by runner 04d214018f8f (manual).
 
 **Building: T608 in progress since 15:59Z; 583 of 730 done; week 31% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,34 +8,14 @@ Updated 2026-11-21T16:58:42Z by runner d04b0752db50 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T608 claimed 15:59Z, lease until 18:59Z; lane 2: T690 claimed 16:56Z, lease until 19:56Z
 - **Week:** 31% used, 130.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:58Z, 0 min before this update
+- **Last run:** 16:59Z, 8 min before this update
 - **Keeper:** last ran 16:58Z, next wake 19:02Z
 
 ## Needs attention
 - BLOCKED T615: model claude-opus-5-5 ran, task names claude-fable-5-2
-- BLOCKED T754: Ci: failure; Checks: failure
-Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)
-     Running tests/status_enums.rs (target/debug/deps/status_enums-3039d66fa660459e)
-running 3 tests
-test td_sec_12_status_modules_deny_wildcards_and_statuses_are_enums ... FAILED
-test td_sec_12_the_scan_fails_on_each_planted_shape ... ok
-test td_sec_12_the_repository_has_no_status_shortcut ... ok
-failures:
----- td_sec_12_status_modules_deny_wildcards_and_statuses_are_enums stdout ----
-thread 'td_sec_12_status_modules_deny_wildcards_and_statuses_are_enums' (39320) panicked at tests/security/tests/status_enums.rs:151:17:
-/home/runner/work/askhava/askhava/tests/security/../../app/payments/src/release_proof.rs holds a status as text
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-failures:
-    td_sec_12_status_modules_deny_wildcards_and_statuses_are_enums
-test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 30.39s
-error: test failed, to rerun pass `-p askhava-security --test status_enums`
-##[error]Process completed with exit code 101.
-Ci failed at step: All five jobs passed
-Checks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success
-##[error]Process completed with exit code 1.
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 59 problem(s) on tasks still to run (+469 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 38 problem(s) on tasks still to run (+461 on DONE tasks); first: T624: stored context_pct 12% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -105,31 +85,31 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 364 of 735 (49.5%) · partial 352 · unstarted 19
+**Requirements verified:** 6 of 735 (0.8%) · partial 710 · unstarted 19
 **Tasks merged (throughput only):** 583 of 730
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 18 | 17 | 0 | 35 |
-| ai | 8 | 18 | 3 | 29 |
-| businesses | 23 | 34 | 1 | 58 |
-| calls | 15 | 10 | 0 | 25 |
-| consent | 17 | 18 | 0 | 35 |
-| fees | 25 | 27 | 0 | 52 |
-| intake | 12 | 31 | 0 | 43 |
-| job-cards | 12 | 12 | 0 | 24 |
-| licensing | 32 | 16 | 0 | 48 |
-| lifecycle | 21 | 7 | 0 | 28 |
-| messaging | 26 | 19 | 0 | 45 |
-| ops-recovery | 13 | 29 | 12 | 54 |
-| privacy | 10 | 21 | 0 | 31 |
-| quiet-hours | 3 | 6 | 0 | 9 |
-| quotes-pick | 28 | 28 | 0 | 56 |
-| recurring | 10 | 1 | 0 | 11 |
-| security | 13 | 39 | 3 | 55 |
-| terms | 29 | 6 | 0 | 35 |
-| website | 20 | 10 | 0 | 30 |
-| wording | 29 | 3 | 0 | 32 |
+| accessibility | 0 | 35 | 0 | 35 |
+| ai | 0 | 26 | 3 | 29 |
+| businesses | 0 | 57 | 1 | 58 |
+| calls | 0 | 25 | 0 | 25 |
+| consent | 0 | 35 | 0 | 35 |
+| fees | 0 | 52 | 0 | 52 |
+| intake | 0 | 43 | 0 | 43 |
+| job-cards | 0 | 24 | 0 | 24 |
+| licensing | 0 | 48 | 0 | 48 |
+| lifecycle | 0 | 28 | 0 | 28 |
+| messaging | 0 | 45 | 0 | 45 |
+| ops-recovery | 2 | 40 | 12 | 54 |
+| privacy | 0 | 31 | 0 | 31 |
+| quiet-hours | 0 | 9 | 0 | 9 |
+| quotes-pick | 0 | 56 | 0 | 56 |
+| recurring | 0 | 11 | 0 | 11 |
+| security | 2 | 50 | 3 | 55 |
+| terms | 0 | 35 | 0 | 35 |
+| website | 2 | 28 | 0 | 30 |
+| wording | 0 | 32 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
