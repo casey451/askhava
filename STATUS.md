@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-21T20:25:16Z by runner 2ba3a52a5d62 (actions).
+Updated 2026-11-21T20:25:48Z by runner e0ccb1b0c40c (actions).
 
 **Building: T565 in progress since 19:19Z; 588 of 734 done; week 35% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 588 of 734 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T565 claimed 19:19Z, lease until 22:19Z; lane 4: T691 claimed 20:16Z, lease until 23:16Z; lane 5: T600 claimed 20:12Z, lease until 23:12Z
-- **Week:** 35% used, 118.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T565 claimed 19:19Z, lease until 22:19Z; lane 4: T691 claimed 20:16Z, lease until 23:16Z; lane 5: T600 claimed 20:12Z, lease until 23:12Z; lane 6: T788 claimed 20:25Z, lease until 23:25Z
+- **Week:** 35% used, 118.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 20:25Z, 0 min before this update
 - **Keeper:** last ran 20:25Z, next wake 20:45Z
 
@@ -15,7 +15,6 @@ Updated 2026-11-21T20:25:16Z by runner 2ba3a52a5d62 (actions).
 - BLOCKED T675: plan gap reported: PLAN GAP: no production PictureTextMedia / Twilio media DELETE exists (only the test fake at tests/integration/tests/intake_photos.rs:109); adding it needs app/adapters/src/sms.rs (owned by T016/T129/T336/T377), and layers.json plus pub(crate) TwilioHttp block every path T675 owns or shares. Secondary: budget files 7 / lines 550 is too small (est. 1000+ lines). Worker found also: photo_pending marker must be written before receive_raw_reply when a request is already open; photos_to_request wording has no Rust loader; no Concept images setting in rules::Settings. Reviewer confirmed the first cl; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T675 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- PLAN GAP T616 (since 2026-11-21T20:12:21Z, no attempt used; a plan change fixes it): T616: dependency T615 is DONE but its owned file app/site/src/not_found.rs is not on main; T616: dependency T615 is DONE but its owned file app/site/templates/not_found.html is not on main; T616: dependency T615 is DONE but its owned file app/site/static/brand/touch-icon.png is not on main; T616: dependency T615 is DONE but its owned file app/site/static/brand/share.png is not on main; T616: dependency T615 is DONE but its owned file tests/e2e/not_found.spec.ts is not on main
 - Strict plan check red: 40 problem(s) on tasks still to run (+465 on DONE tasks); first: T624: stored context_pct 12% but it measures 17%; regenerate
 
 ## Last 24 hours
@@ -114,7 +113,7 @@ Updated 2026-11-21T20:25:16Z by runner 2ba3a52a5d62 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-21T20:15:32Z (week)): week: 75.2M used, 118.8M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T21:58:57Z.
+- Pacing (session_reading 2026-11-21T20:25:01Z (week)): week: 75.1M used, 118.9M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T21:17:01Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -132,6 +131,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T565 (lease until 2026-11-21T22:19:14Z)
 - lane 4: T691 (lease until 2026-11-21T23:16:22Z)
 - lane 5: T600 (lease until 2026-11-21T23:12:21Z)
+- lane 6: T788 (lease until 2026-11-21T23:25:35Z)
 
 ## Last usage reading
 - {"task": "T754", "at": "2026-11-21T20:18:40Z", "output_tokens": 19674, "cache_creation_input_tokens": 111328, "cache_read_input_tokens": 2349093, "input_tokens": 100}
