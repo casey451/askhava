@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T06:25:12Z by runner 8de808693ac9 (actions).
+Updated 2026-11-21T06:27:36Z by runner 8de808693ac9 (actions).
 
 **Building: T754 in progress since 05:54Z; 573 of 726 done; week 68% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-21T06:25:12Z by runner 8de808693ac9 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 5: T754 claimed 05:54Z, lease until 08:54Z; lane 7: T674 claimed 04:40Z, lease until 07:40Z
 - **Week:** 68% used, 58.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:12Z, 12 min before this update
+- **Last run:** 06:25Z, 2 min before this update
 - **Keeper:** last ran 06:12Z, next wake 07:43Z
 
 ## Needs attention
@@ -91,8 +91,6 @@ Updated 2026-11-21T06:25:12Z by runner 8de808693ac9 (actions).
 | T762 | runner and workflow (harness): fix-round workers commit with | done | 1 | 68 min | 07:44Z |  |
 | T764 | ci and pre-hand-in gate (harness): scripts/bootstrap_roles.s | done | 1 | 54 min | 07:29Z |  |
 | T669 | picks: "Can't take it" and a business leaving end a pick in  | QUEUED | 1 | 56 min | 07:07Z |  |
-| T573 | messaging and server: queued business texts are addressed to | BLOCKED | 1 | 5 min | 06:27Z |  |
-| T561 | server and portals: the homeowner's "Download my data" and h | resync | 1 | 60 min | 06:26Z |  |
 
 ### Plan and harness merges on main
 - none
