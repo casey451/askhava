@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-21T22:18:01Z by runner 1c5b8c44ddbd (actions).
+Updated 2026-11-21T22:21:58Z by runner 6fd54b99121c (actions).
 
 **Building: T608 in progress since 21:16Z; 592 of 739 done; week 38% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 592 of 739 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T608 claimed 21:16Z, lease until 00:16Z; lane 4: T798 claimed 21:15Z, lease until 00:15Z; lane 6: T118 claimed 22:08Z, lease until 01:08Z
-- **Week:** 38% used, 116.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:17Z, 0 min before this update
+- **Lane:** lane 2: T608 claimed 21:16Z, lease until 00:16Z; lane 4: T798 claimed 21:15Z, lease until 00:15Z; lane 6: T118 claimed 22:08Z, lease until 01:08Z; lane 7: T117 claimed 22:21Z, lease until 01:21Z
+- **Week:** 38% used, 115.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 22:18Z, 3 min before this update
 - **Keeper:** last ran 22:18Z, next wake 22:38Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 40 problem(s) on tasks still to run (+472 on DONE tasks); first: T624: stored context_pct 12% but it measures 17%; regenerate
+- Strict plan check red: 42 problem(s) on tasks still to run (+475 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -109,7 +109,7 @@ Updated 2026-11-21T22:18:01Z by runner 1c5b8c44ddbd (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-21T21:41:20Z (week)): week: 77.2M used, 116.8M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-06T03:15:53Z.
+- Pacing (session_reading 2026-11-21T22:17:39Z (week)): week: 78.3M used, 115.7M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-06T04:13:07Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -128,6 +128,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T608 (lease until 2026-11-22T00:16:35Z)
 - lane 4: T798 (lease until 2026-11-22T00:15:56Z)
 - lane 6: T118 (lease until 2026-11-22T01:08:53Z)
+- lane 7: T117 (lease until 2026-11-22T01:21:46Z)
 
 ## Last usage reading
 - {"task": "T794", "at": "2026-11-21T22:17:03Z", "cache_creation_input_tokens": 103865, "cache_read_input_tokens": 2273199, "output_tokens": 26605, "input_tokens": 84}
