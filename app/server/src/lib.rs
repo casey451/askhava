@@ -152,6 +152,7 @@ struct BusinessParts {
     vault: Option<Arc<Vault>>,
     confirm: Option<ConfirmSettings>,
     homeowner: Option<homeowner_portal::HomeownerVerify>,
+    business_number: Option<askhava_messaging::api::SendingNumber>,
 }
 
 impl RouterParts {
@@ -186,6 +187,18 @@ impl RouterParts {
         verify: Option<homeowner_portal::HomeownerVerify>,
     ) -> Self {
         self.business.homeowner = verify;
+        self
+    }
+
+    /// Adds the configured business sending number ([`business_number`]) the portal's notice
+    /// settings read the texting switch with (T526, TXT-035, D-3881); without it business texting
+    /// counts as off there.
+    #[must_use]
+    pub fn with_business_number(
+        mut self,
+        number: Option<askhava_messaging::api::SendingNumber>,
+    ) -> Self {
+        self.business.business_number = number;
         self
     }
 
@@ -375,7 +388,8 @@ fn business_pages(
     let cant_take = cant_take_route::routes(pool.clone());
     let homeowner = homeowner_portal::routes(pool.clone(), webhooks, parts.homeowner);
     let step_up = business_step_up::routes(pool.clone(), parts.step_up);
-    let portal = business_portal::served(pool, parts.vault, (webhooks, voice))
+    let portal_parts = (parts.vault, parts.business_number);
+    let portal = business_portal::served(pool, portal_parts, (webhooks, voice))
         .merge(confirm)
         .merge(cant_take)
         .merge(step_up);
@@ -1200,7 +1214,8 @@ fn register_twilio_handlers(
         let sender = outbox_sender(settings, keys, sms.clone(), (&pairs, Arc::clone(&clock)))?;
         let gate = NoticeChecks { confirm };
         let phones = business_text_phone::BusinessTextPhone::new(phones);
-        let sender = sender.with_business((gate, phones), None);
+        let number = business_number(settings.business_number())?;
+        let sender = sender.with_business((gate, phones), number);
         askhava_messaging::api::register_send_due(registry, Arc::new(sender));
     }
     let (sms, scan_clock) = (Arc::new(sms), Arc::clone(&clock));
@@ -1826,10 +1841,9 @@ fn register_card_sender(
     let Some(vault) = vault_from(settings, pairs)? else {
         return Ok(());
     };
-    let keys = Arc::new(askhava_intake::api::CardsOutKeys::new(
-        id_secret.clone(),
-        vault,
-    ));
+    let number = business_number(settings.business_number())?;
+    let keys = askhava_intake::api::CardsOutKeys::new(id_secret.clone(), vault);
+    let keys = Arc::new(keys.with_business_number(number));
     let approved = Arc::clone(&keys);
     registry.register(
         askhava_intake::api::CARDS_APPROVED_KIND,
@@ -1918,6 +1932,21 @@ fn outbox_sender(
             .ok()
     });
     OutboxSender::new(keys, sms, (number, postal), clock).map_err(io::Error::other)
+}
+
+/// TXT-035, D-3881, D-3882 (T526): the business line's own sending number from the trimmed
+/// `ASKHAVA_BUSINESS_NUMBER` value `raw` (`Settings::business_number`, or the sign-up's pairs);
+/// `None` when unset in every environment, and business texting then counts as off.
+///
+/// # Errors
+///
+/// A value that is not `+1` and ten digits, naming the key, never the value.
+pub fn business_number(
+    raw: Option<&str>,
+) -> io::Result<Option<askhava_messaging::api::SendingNumber>> {
+    raw.map(|raw| askhava_messaging::api::SendingNumber::parse(raw.trim()))
+        .transpose()
+        .map_err(|_| io::Error::other("setting ASKHAVA_BUSINESS_NUMBER has an invalid value"))
 }
 
 /// `ASKHAVA_HOMEOWNER_NUMBER` from `pairs` (the last one wins): `None` when unset in dev and CI,
@@ -2013,6 +2042,7 @@ fn notice_senders(
     let invalid = |_| io::Error::other("setting ASKHAVA_POSTAL_ADDRESS has an invalid value");
     let links = IdSecret::new(1, id_secret.clone()).map_err(io::Error::other)?;
     let notice = NoticeSender::new((id_secret.clone(), links), postal, kind).map_err(invalid)?;
+    let notice = notice.with_business_number(business_number(settings.business_number())?);
     let receipt = ReceiptSender::new(id_secret.clone(), postal, kind).map_err(invalid)?;
     Ok(Some((notice, receipt)))
 }

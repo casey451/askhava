@@ -115,6 +115,7 @@ fn business_parts(
         .with_step_up(step_up)
         .with_homeowner_verify(homeowner)
         .with_vault(vault)
+        .with_business_number(askhava_server::business_number(settings.business_number())?)
         .with_confirm_part(confirm)
         .with_chat_codes(chat)
         .with_site_pages(askhava_site::api::SitePages::from_settings(settings))
