@@ -14500,7 +14500,8 @@
     "T543",
     "T541",
     "T542",
-    "T544"
+    "T544",
+    "T810"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -14539,7 +14540,8 @@
     "D-3744",
     "D-3890",
     "D-4293",
-    "D-5159"
+    "D-5159",
+    "D-5313"
    ],
    "cites": [],
    "budget": {
@@ -30018,7 +30020,7 @@
    "id": "T745",
    "slug": "intake-answers-reader",
    "title": "intake: a reader for a job's intake answers through `intake::api`, and every job a request opened kept after the request closes",
-   "goal": "Plan change D-4748 (Fable's decision (5a); CARD-023, FEE-013, FEE-036, PRIV-011; D-3189, D-3719, D-1939). CARD-023 (`docs/spec/job-cards.md:27`) puts every intake answer on the business job page, but nothing outside `intake` can read them: `intake.intake_answer` is keyed by request (`migrations/0053_intake_tables.sql:64`) and `models::latest_answer` is crate-private (`app/intake/src/models.rs:530`), so the Quote link's page passes none (`app/server/src/action_links.rs:296`). And a job opened by an ALSO reply (INT-032, `begin_job`, `app/intake/src/conversation.rs:131`) lives only in a `job.%` link row that `close_request` drops (`models.rs:718`), so `intake::api::jobs_of_contact` (`app/intake/src/api.rs:182`, which reads only `intake.conversation.job_id`) misses it: a repeat customer picked on such a job is charged the full fee instead of $0 at Confirm (FEE-013, FEE-036; D-3719's known limit) and her portal delete misses its photos (PRIV-011). This task: (1) `migrations/0213_intake_request_job.sql` (after T653's 0212 and before T729's 0215 in the runner's serial order, which is why this task waits for T653; re-check the next free number at claim time) adds `intake.request_job (conversation_id, job_id, opened_at)`, one row per job a request opened, never dropped by a close, backfilled from `conversation.job_id` and the live `job.%` links; `begin_job` and `set_first_job` (`models.rs:800`) write it in their transaction; the retention purge must remove it with its request (check `app/privacy/src/purge.rs`'s intake tables; a row that would outlive its request is a plan gap to report). (2) `jobs_of_contact` reads it (still one homeowner's, `DISTINCT`), so FEE-013's same-customer check and PRIV-011's delete see ALSO-reply jobs and closed requests. (3) The new `app/intake/src/job_answers.rs`, re-exported through the shared `intake::api`: `job_answers(conn, job) -> Result<Vec<JobAnswer>, IntakeError>`, the latest answer to each question of the request that opened `job` (through `request_job`), as question ID and stored code or scrubbed value in question-bank order (`docs/catalog/question_bank.yaml`); the contact questions (her name, street address and any on-site contact, INT-041) are never returned (PRIV-001, PICK-022); a job with no request reads none. Tests in the new `tests/integration/tests/job_answers_reader.rs`, PostgreSQL, fake data only: the first job and an ALSO-reply job each read their own request's answers before and after the request closes; no contact answer appears; `jobs_of_contact` returns both jobs after the close; a repeat customer's ALSO-reply job is found by the Confirm route's same-customer check (`same_customer_jobs`, D-3719). Every existing intake, conversation and close test passes unchanged. Opus worker, Opus money and privacy review, two review rounds. Update the `intake` notes, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4748 (Fable's decision (5a); CARD-023, FEE-013, FEE-036, PRIV-011; D-3189, D-3719, D-1939). CARD-023 (`docs/spec/job-cards.md:27`) puts every intake answer on the business job page, but nothing outside `intake` can read them: `intake.intake_answer` is keyed by request (`migrations/0053_intake_tables.sql:64`) and `models::latest_answer` is crate-private (`app/intake/src/models.rs:530`), so the Quote link's page passes none (`app/server/src/action_links.rs:296`). And a job opened by an ALSO reply (INT-032, `begin_job`, `app/intake/src/conversation.rs:131`) lives only in a `job.%` link row that `close_request` drops (`models.rs:718`), so `intake::api::jobs_of_contact` (`app/intake/src/api.rs:182`, which reads only `intake.conversation.job_id`) misses it: a repeat customer picked on such a job is charged the full fee instead of $0 at Confirm (FEE-013, FEE-036; D-3719's known limit) and her portal delete misses its photos (PRIV-011). This task: (1) `migrations/0213_intake_request_job.sql` (after T653's 0212 and before T729's 0215 in the runner's serial order, which is why this task waits for T653; re-check the next free number at claim time) adds `intake.request_job (conversation_id, job_id, opened_at)`, one row per job a request opened, never dropped by a close, backfilled from `conversation.job_id` and the live `job.%` links; `begin_job` and `set_first_job` (`models.rs:800`) write it in their transaction; the retention purge must remove it with its request (check `app/privacy/src/purge.rs`'s intake tables; a row that would outlive its request is a plan gap to report). (2) `jobs_of_contact` reads it (still one homeowner's, `DISTINCT`), so FEE-013's same-customer check and PRIV-011's delete see ALSO-reply jobs and closed requests. (3) The new `app/intake/src/job_answers.rs`, re-exported through the shared `intake::api`: `job_answers(conn, job) -> Result<Vec<JobAnswer>, IntakeError>`, the latest answer to each question of the request that opened `job` (through `request_job`), as question ID and stored code or scrubbed value in question-bank order (`docs/catalog/question_bank.yaml`); the contact questions (her name, street address and any on-site contact, INT-041) are never returned (PRIV-001, PICK-022); a job with no request reads none. Tests in the new `tests/integration/tests/job_answers_reader.rs`, PostgreSQL, fake data only: the first job and an ALSO-reply job each read their own request's answers before and after the request closes; no contact answer appears; `jobs_of_contact` returns both jobs after the close; (D-5317, the risky order) the earlier paid pick is on an ALSO-reply job of a request that is now closed, and a later pick of the same business on a new request of the same homeowner is found by the Confirm route's same-customer check (`same_customer_jobs`, D-3719), waived as Repeat, and uses no free first win. Every existing intake, conversation and close test passes unchanged. Opus worker, Opus money and privacy review, two review rounds. Update the `intake` notes, `docs/architecture.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -30063,7 +30065,8 @@
     "D-1939",
     "D-3189",
     "D-3719",
-    "D-4748"
+    "D-4748",
+    "D-5317"
    ],
    "cites": [],
    "budget": {
@@ -32324,8 +32327,8 @@
   {
    "id": "T588",
    "slug": "business-forms-keep-entries",
-   "title": "portals and server: a refused business sign-up keeps every field she entered, and a double-tapped quote shows its job page, not a 404",
-   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): (B13, A11Y-012, WCAG 2.2 3.3.7) A refused sign-up re-renders through `Entered` (`app/portals/src/business_signup.rs:383` to `:405`, filled at `app/server/src/business_signup.rs:602` and `:700`), which keeps the names, license numbers and review links but not the email, the phone, the ticked categories or the attestation, so she types them again. `Entered` gains them and the sealed re-render shows them; the attestation and the text-consent box are shown ticked again only when she ticked them in that same post (they stay her own act, CON-019; never pre-ticked by the app), and a field the server refused is shown with its reason as today. No value is logged or kept beyond the re-render (`no-store` stays). (B39, SEC-026) A second `POST` of a used Quote link (a double tap on \"Send quote\") waits on the first one's row lock, finds the link used and answers the bare 404 (`app/server/src/action_links.rs:20` to `:21`, D-3673). D-3673's smallest fix: a `portals::api` read in `app/portals/src/action_links.rs` (beside the crate-private `action_link_business`, `:307`) that names the business and job of a Quote link used within its window, so `server::action_links` shows that job's page again (`job_details_page`) with the quote as stored; any other used or unknown link stays the 404. Tests in the new `app/server/tests/business_forms_keep_entries.rs`, fake data only: a sign-up refused for a bad license number comes back with the email, phone, categories and both boxes as posted; a refusal for an unticked attestation keeps the rest; a second Quote `POST` with the same used link answers 200 with the job page and stores one quote; a used link of another kind is still 404. `business_signup_route.rs`, `es_business_signup_route.rs`, `action_links_route.rs` and `tests/e2e/business_signup_served.spec.ts` pass unchanged; no axe-core violation on the re-rendered form. Plan change D-4338 (night spot review of the business side and quotes on `main` d662af7e5, confirmed in a second pass and re-verified on `main` 9aeca6f95): (quotes 1, money; REC-010, PICK-053, D-2333) the served Quote form drops the parsed visit schedule: `checked` binds `(price, _schedule)` (`app/server/src/action_links.rs:687`) and the quote is stored with `submit_quote_with_facts` (`:650`, `app/quotes/src/quote_facts.rs:33`), which never writes `quotes.quote.visit_schedule`; `store_schedule` (`app/quotes/src/formats.rs:269`) is reached only from `save_quote`, which has no production caller (D-3877). So a per-visit price (\"$40 per visit, every 2 weeks\") is stored with no schedule, and every pick of it is refused (`fee_period(Period::Visit, None)` is `None`, `app/picks/src/service.rs:779`, giving `PicksError::Quotes`; `:580` to `:582`). This task now owns `app/quotes/src/quote_facts.rs`: a new `submit_quote_with_schedule(db, (job, business), quote, facts, schedule: Option<VisitSchedule>, now)` (exported through the shared `quotes::api`) does what `submit_quote_with_facts` does and, when the quote is `Saved` and `schedule` is some, always calls `store_schedule` with it in the same transaction (none clears an old schedule, `app/quotes/src/formats.rs:268`, so an edit away from a per-visit price leaves none behind); `submit_quote_with_facts` becomes that call with `None`, so its callers and T406's tests (`tests/integration/tests/quote_facts_store.rs`, `quote_page_cards.rs`) are unchanged; the served POST passes the schedule `parse_price` returned. Tests in the new `app/server/tests/per_visit_quote_route.rs` (TD-PICK-66), fake data only, through the assembled router, on a job of the recurring category `pool_cleaning` (`recurring: true`, `docs/catalog/categories.yaml:194`, `:203`) whose recorded job type is \"weekly pool service\" (not its one-time \"green pool cleanup\", `:207`, so the job is a recurring job type and the $75 recurring cap applies): a business sends \"$40 per visit, every 2 weeks\" through its Quote link, the stored quote has `visit_schedule` `every_two_weeks`, and the homeowner's pick of it is stored with the $25 fee (the tier of 4 months of the monthly price, `payments::rules::period_fee_for`, `app/payments/src/rules.rs:349` to `:373`; refused with `PicksError::Quotes` on `main` before the change); \"$150 per visit, every 2 weeks\" picks with the $75 fee; a weekly price and \"Other: monthly amount\" store no schedule and still pick; an edit from a per-visit price to a monthly one clears the schedule; a refused form stores nothing; every new branch is covered (money path). Ordered, as already, after every other queued owner of `app/server/src/action_links.rs` (T399, T306, T456, T543, T463, T457, T458, through T121).",
+   "title": "portals and server: a refused business sign-up keeps every field she entered, and a per-visit quote keeps its schedule",
+   "goal": "Plan change D-4052 (Casey's outside code audit, batch B, Nov 17, 2026; each item re-checked on `main` 67f601a before planning): (B13, A11Y-012, WCAG 2.2 3.3.7) A refused sign-up re-renders through `Entered` (`app/portals/src/business_signup.rs:383` to `:405`, filled at `app/server/src/business_signup.rs:602` and `:700`), which keeps the names, license numbers and review links but not the email, the phone, the ticked categories or the attestation, so she types them again. `Entered` gains them and the sealed re-render shows them; the attestation and the text-consent box are shown ticked again only when she ticked them in that same post (they stay her own act, CON-019; never pre-ticked by the app), and a field the server refused is shown with its reason as today. No value is logged or kept beyond the re-render (`no-store` stays). Tests in the new `app/server/tests/business_forms_keep_entries.rs`, fake data only: a sign-up refused for a bad license number comes back with the email, phone, categories and both boxes as posted; a refusal for an unticked attestation keeps the rest; `business_signup_route.rs`, `es_business_signup_route.rs`, `action_links_route.rs` and `tests/e2e/business_signup_served.spec.ts` pass unchanged; no axe-core violation on the re-rendered form. Plan change D-4338 (night spot review of the business side and quotes on `main` d662af7e5, confirmed in a second pass and re-verified on `main` 9aeca6f95): (quotes 1, money; REC-010, PICK-053, D-2333) the served Quote form drops the parsed visit schedule: `checked` binds `(price, _schedule)` (`app/server/src/action_links.rs:687`) and the quote is stored with `submit_quote_with_facts` (`:650`, `app/quotes/src/quote_facts.rs:33`), which never writes `quotes.quote.visit_schedule`; `store_schedule` (`app/quotes/src/formats.rs:269`) is reached only from `save_quote`, which has no production caller (D-3877). So a per-visit price (\"$40 per visit, every 2 weeks\") is stored with no schedule, and every pick of it is refused (`fee_period(Period::Visit, None)` is `None`, `app/picks/src/service.rs:779`, giving `PicksError::Quotes`; `:580` to `:582`). This task now owns `app/quotes/src/quote_facts.rs`: a new `submit_quote_with_schedule(db, (job, business), quote, facts, schedule: Option<VisitSchedule>, now)` (exported through the shared `quotes::api`) does what `submit_quote_with_facts` does and, when the quote is `Saved` and `schedule` is some, always calls `store_schedule` with it in the same transaction (none clears an old schedule, `app/quotes/src/formats.rs:268`, so an edit away from a per-visit price leaves none behind); `submit_quote_with_facts` becomes that call with `None`, so its callers and T406's tests (`tests/integration/tests/quote_facts_store.rs`, `quote_page_cards.rs`) are unchanged; the served POST passes the schedule `parse_price` returned. Tests in the new `app/server/tests/per_visit_quote_route.rs` (TD-PICK-66), fake data only, through the assembled router, on a job of the recurring category `pool_cleaning` (`recurring: true`, `docs/catalog/categories.yaml:194`, `:203`) whose recorded job type is \"weekly pool service\" (not its one-time \"green pool cleanup\", `:207`, so the job is a recurring job type and the $75 recurring cap applies): a business sends \"$40 per visit, every 2 weeks\" through its Quote link, the stored quote has `visit_schedule` `every_two_weeks`, and the homeowner's pick of it is stored with the $25 fee (the tier of 4 months of the monthly price, `payments::rules::period_fee_for`, `app/payments/src/rules.rs:349` to `:373`; refused with `PicksError::Quotes` on `main` before the change); \"$150 per visit, every 2 weeks\" picks with the $75 fee; a weekly price and \"Other: monthly amount\" store no schedule and still pick; an edit from a per-visit price to a monthly one clears the schedule; a refused form stores nothing; every new branch is covered (money path). Ordered, as already, after every other queued owner of `app/server/src/action_links.rs` (T399, T306, T456, T543, T463, T457, T458, through T121). Plan change D-5316 (outside review job 8, SEC-026): B39, the used Quote link's repeat `POST`, moved to T814 with the done page for every other kind, because the change needs `app/server/tests/action_links_route.rs` and this task is at its context limit; this task no longer owns `app/portals/src/action_links.rs` and leaves a used link's repeat `POST` as it is.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -32344,7 +32347,6 @@
    "owns": [
     "app/portals/src/business_signup.rs",
     "app/server/src/business_signup.rs",
-    "app/portals/src/action_links.rs",
     "app/server/src/action_links.rs",
     "app/server/tests/business_forms_keep_entries.rs",
     "app/quotes/src/quote_facts.rs",
@@ -32361,7 +32363,6 @@
    ],
    "requirements": [
     "A11Y-012",
-    "SEC-026",
     "BIZ-022",
     "REC-010",
     "PICK-053"
@@ -32370,15 +32371,15 @@
     "TD-PICK-66"
    ],
    "decisions": [
-    "D-3673",
     "D-2943",
     "D-2954",
     "D-4052",
-    "D-4338"
+    "D-4338",
+    "D-5316"
    ],
    "cites": [],
    "budget": {
-    "files": 7,
+    "files": 6,
     "lines": 560,
     "context_pct": 45
    },
@@ -35562,7 +35563,8 @@
     "T293",
     "T584",
     "T751",
-    "T542"
+    "T542",
+    "T812"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -35624,7 +35626,8 @@
     "D-2765",
     "D-2770",
     "D-3155",
-    "D-4052"
+    "D-4052",
+    "D-5314"
    ],
    "cites": [
     "BUILD_BRIEF.md:191"
@@ -36426,7 +36429,7 @@
    "id": "T236",
    "slug": "ai-call-budgets",
    "title": "AI-call budgets per conversation and per job, and no AI call before the area check",
-   "goal": "Credit-drain defense for the war games (D-1154): AI-021's global daily cap stays, and below it AI-028's per-step budgets apply: no AI call before the consent text and the area check; 2 readings per inbound message, 1 reword per bank question (at most 8), 1 follow-up, card and project file 1 each plus 1 per EDIT (at most 3), 4 concept prompts, 2 screening calls a photo for at most 3 photos; backstops of 40 calls per conversation per Arizona day and 60 per job, with the card call always reserved so no budget lands on it; a verified web-chat session shares its phone's budget and an unverified one makes no call; quote reads 3 per business per job, outside the job's budget; only the first 1,600 characters of a scrubbed message are sent, while the AI-off card keeps her full scrubbed words. Past a budget the step runs on the AI-off path (INT-021) with nothing said and an `ai.call_stat` row with outcome `budget`; `models::calls_today` (`app/ai/src/models.rs`) excludes `budget` rows as it excludes `daily_cap` rows, so refused calls never use up the AI-021 cap. `IntakeCall` carries the conversation, job, step and (for quote reads) business it is for; the caller in `intake` passes them; the budgets are settings in `AiConfig`; the migration adds the `budget` outcome and the conversation, job, step and business columns to `ai.call_stat`. The global daily cap (AI-021, D-811) becomes an atomic admission: before the provider call, one statement reserves a slot for this Arizona day (a counter row per day updated with `... WHERE used < cap RETURNING`, or an equivalent single-statement reservation) on its own short transaction, so concurrent calls past the cap never reach the transport; a retry of one logical call uses its reservation, an abandoned or timed-out reservation still counts for that day, and the `ai.daily_cap` alert is raised once a day under the same race (D-1757). No database connection or open transaction is held across an AI provider await (AI-029, D-2038): the entry the app calls takes the pool, reads the AI-008 switch and makes the admission and the budget reservations each on its own short connection and releases it, awaits the provider (up to AI-023's timeout, retries and backoff included) with no connection held, then takes a connection again to record the call. With no connection held, every AI-028 budget check is a single-statement reservation like the AI-021 admission (only while the budget has room), so concurrent readings of one message (a duplicate or replayed webhook) cannot pass its 2-reading limit, the 1-reword limit or the per-day and per-job backstops together; a refused reservation makes no call and records outcome `budget`. Intake has no caller that applies a reading yet (`app/intake/src/question_bank.rs` calls only `accept_question`), so this task builds the first one in `app/intake/src/service.rs`: it reads one inbound message through the gated `read_intake` and applies the reading only if the step is still current on the new connection, which means the conversation has no inbound message and no `intake.intake_answer` row newer than the message the call was made for; otherwise the reading is recorded and discarded. Calling that function from the text and web-chat paths is T299's (IC-23, D-2065); the AI writing calls are IC-53's (no owner yet). `app/ai/src/switch.rs` (the gated `read_intake`) is this task's for that change. Other tasks' tests call `read_intake` with a `&mut PgConnection` (`app/ai/src/tests/adapter_calls.rs`, `tests/integration/tests/ai_zero_retention.rs`, `tests/integration/tests/prop_prompt_injection.rs`) and are not this task's to change: keep that form compiling for them as a thin wrapper that no app code calls. AI-029's other half, the inbound-text webhook committing before any AI call, is T299's, which wires the AI reading into the text path (IC-23, D-2065); that path makes no AI call yet. Ordering only: runs after T370, which changes one call in `app/intake/src/service.rs` (D-2703); its migration is `0210_ai_call_budget.sql` (V9, D-2707). Plan change D-3675: the migration is numbered 0209 (it was 0202; D-3881 moved it up one more, so T527's 0208 fits before it; D-3675 made it 0204, D-3722 moved it up one more, D-3750 one more, after T470's `0207_messaging_email_lease.sql`, D-3753 one more, after T480's `0208_messaging_spanish_switch.sql`, and D-3779 one more, because T486 took `0190_catalog_switched_on.sql` and every queued migration from 0190 up moved up one) because T456's `0205_picks_hold_away.sql` and `0206_businesses_away_busy.sql` run before this task in the serial order (`scripts/validate_tasks.py` V9). Plan change D-3883: this task's migration moved up one, to `0210_ai_call_budget.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history. Plan change D-4292: this task's migration moves to `migrations/0212_ai_call_budget.sql` for T645's `0210_messaging_web_chat_optout.sql` and `0211_intake_web_chat_language.sql`, which run earlier (V9); earlier numbers in this goal are history. Plan change D-4310: this task's migration moves to `migrations/0213_ai_call_budget.sql` for T653's `0212_licensing_btr_typed_unchecked.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-4727: this task's migration moves to `migrations/0216_ai_call_budget.sql` for T729's `0215_update_email_choice.sql`, which runs earlier (V9); earlier numbers in this goal are history.",
+   "goal": "Credit-drain defense for the war games (D-1154): AI-021's global daily cap stays, and below it AI-028's per-step budgets apply: no AI call before the consent text and the area check; 2 readings per inbound message, 1 reword per bank question (at most 8), 1 follow-up, card and project file 1 each plus 1 per EDIT (at most 3), 4 concept prompts, 2 screening calls a photo for at most 3 photos; backstops of 40 calls per conversation per Arizona day and 60 per job, with the card call always reserved so no budget lands on it; a verified web-chat session shares its phone's budget and an unverified one makes no call; quote reads 3 per business per job, outside the job's budget; only the first 1,600 characters of a scrubbed message are sent, while the AI-off card keeps her full scrubbed words. Past a budget the step runs on the AI-off path (INT-021) with nothing said and an `ai.call_stat` row with outcome `budget`; `models::calls_today` (`app/ai/src/models.rs`) excludes `budget` rows as it excludes `daily_cap` rows, so refused calls never use up the AI-021 cap. `IntakeCall` carries the conversation, job, step and (for quote reads) business it is for; the caller in `intake` passes them; the budgets are settings in `AiConfig`; the migration adds the `budget` outcome and the conversation, job, step and business columns to `ai.call_stat`. The global daily cap (AI-021, D-811) becomes an atomic admission: before the provider call, one statement reserves a slot for this Arizona day (a counter row per day updated with `... WHERE used < cap RETURNING`, or an equivalent single-statement reservation) on its own short transaction, so concurrent calls past the cap never reach the transport; a retry of one logical call uses its reservation, an abandoned or timed-out reservation still counts for that day, and the `ai.daily_cap` alert is raised once a day under the same race (D-1757). No database connection or open transaction is held across an AI provider await (AI-029, D-2038): the entry the app calls takes the pool, reads the AI-008 switch and makes the admission and the budget reservations each on its own short connection and releases it, awaits the provider (up to AI-023's timeout, retries and backoff included) with no connection held, then takes a connection again to record the call. With no connection held, every AI-028 budget check is a single-statement reservation like the AI-021 admission (only while the budget has room), so concurrent readings of one message (a duplicate or replayed webhook) cannot pass its 2-reading limit, the 1-reword limit or the per-day and per-job backstops together; a refused reservation makes no call and records outcome `budget`. Intake has no caller that applies a reading yet (`app/intake/src/question_bank.rs` calls only `accept_question`), so this task builds the first one in `app/intake/src/service.rs`: it reads one inbound message through the gated `read_intake` and applies the reading only if the step is still current on the new connection, which means the conversation has no inbound message and no `intake.intake_answer` row newer than the message the call was made for; otherwise the reading is recorded and discarded. Calling that function from the text and web-chat paths is T299's (IC-23, D-2065); the AI writing calls are IC-53's (no owner yet). `app/ai/src/switch.rs` (the gated `read_intake`) is this task's for that change. Other tasks' tests call `read_intake` with a `&mut PgConnection` (`app/ai/src/tests/adapter_calls.rs`, `tests/integration/tests/ai_zero_retention.rs`, `tests/integration/tests/prop_prompt_injection.rs`) and are not this task's to change: keep that form compiling for them as a thin wrapper that no app code calls. AI-029's other half, the inbound-text webhook committing before any AI call, is T299's, which wires the AI reading into the text path (IC-23, D-2065); that path makes no AI call yet. Ordering only: runs after T370, which changes one call in `app/intake/src/service.rs` (D-2703); its migration is `0210_ai_call_budget.sql` (V9, D-2707). Plan change D-3675: the migration is numbered 0209 (it was 0202; D-3881 moved it up one more, so T527's 0208 fits before it; D-3675 made it 0204, D-3722 moved it up one more, D-3750 one more, after T470's `0207_messaging_email_lease.sql`, D-3753 one more, after T480's `0208_messaging_spanish_switch.sql`, and D-3779 one more, because T486 took `0190_catalog_switched_on.sql` and every queued migration from 0190 up moved up one) because T456's `0205_picks_hold_away.sql` and `0206_businesses_away_busy.sql` run before this task in the serial order (`scripts/validate_tasks.py` V9). Plan change D-3883: this task's migration moved up one, to `0210_ai_call_budget.sql`, for T529's `0197_payments_refund_owner.sql` (V9); earlier numbers in this goal are history. Plan change D-4292: this task's migration moves to `migrations/0212_ai_call_budget.sql` for T645's `0210_messaging_web_chat_optout.sql` and `0211_intake_web_chat_language.sql`, which run earlier (V9); earlier numbers in this goal are history. Plan change D-4310: this task's migration moves to `migrations/0213_ai_call_budget.sql` for T653's `0212_licensing_btr_typed_unchecked.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-4727: this task's migration moves to `migrations/0216_ai_call_budget.sql` for T729's `0215_update_email_choice.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5314: this task's migration moves to `migrations/0217_ai_call_budget.sql` for T812's `0216_businesses_step_up_session.sql`, which runs earlier (V9); earlier numbers in this goal are history.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -36449,7 +36452,7 @@
     "app/ai/src/service.rs",
     "app/ai/src/models.rs",
     "app/ai/src/switch.rs",
-    "migrations/0216_ai_call_budget.sql",
+    "migrations/0217_ai_call_budget.sql",
     "tests/integration/tests/ai_budget.rs",
     "app/intake/src/service.rs"
    ],
@@ -36491,7 +36494,8 @@
     "D-3883",
     "D-4292",
     "D-4310",
-    "D-4771"
+    "D-4771",
+    "D-5314"
    ],
    "cites": [
     "BUILD_BRIEF.md:196",
@@ -36500,7 +36504,7 @@
    "budget": {
     "files": 8,
     "lines": 600,
-    "context_pct": 28
+    "context_pct": 32
    },
    "checks": [
     "Ci",
@@ -40703,7 +40707,8 @@
     "T269",
     "T272",
     "T464",
-    "T564"
+    "T564",
+    "T812"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -40747,13 +40752,14 @@
     "D-2771",
     "D-3676",
     "D-3999",
-    "D-4338"
+    "D-4338",
+    "D-5314"
    ],
    "cites": [],
    "budget": {
     "files": 7,
     "lines": 450,
-    "context_pct": 31
+    "context_pct": 35
    },
    "checks": [
     "Ci",
@@ -41099,7 +41105,8 @@
    "stage": "5",
    "module": "server",
    "deps": [
-    "T565"
+    "T565",
+    "T813"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -41133,7 +41140,8 @@
     "D-3890",
     "D-3892",
     "D-4045",
-    "D-5159"
+    "D-5159",
+    "D-5314"
    ],
    "cites": [],
    "budget": {
@@ -46871,7 +46879,7 @@
    "id": "T685",
    "slug": "missed-cards-email",
    "title": "businesses, quotes and picks: the monthly missed-cards email goes, and the owner can switch it off",
-   "goal": "Plan change D-4361 (unwired sweep orphan 7 and its second pass, `main` 77a49d7cc; BIZ-044, BIZ-025; D-331, D-1994). `missed_email_due` (`app/messaging/src/missed_cards.rs:52`) and `missed_cards_line` (`app/picks/src/open_cards_email.rs:212`) have no caller, and D-1994 left two gaps: no column stores the owner's off switch, and no `quotes` reader gives last month's counts. (1) `migrations/0214_businesses_missed_cards_switch.sql` (headed `businesses`; after T236's `0213`, the dependency on T236 being for that order only, V9): the business's on/off switch for this email, default on; the read and the owner's write in the new `app/businesses/src/missed_cards_switch.rs` (the portal toggle is left to the settings page's owner, T306, noted in its decision). (2) The new `app/quotes/src/month_cards.rs`: last month's cards per business (got, quoted, ended without its quote), Arizona months. (3) The new `app/picks/src/missed_cards_run.rs`: a daily `picks.missed_cards_email` run (registered in the shared `app/server/src/lib.rs`, scheduled in the shared `app/server/src/bin/worker.rs`) that acts only when `first_of_month` holds and sends `missed_cards_line` once per business and month (dedupe key) when `missed_email_due` says so, as an account notice to the owner under the business's consent (CON-019), never marketing. `queue_email` renders only the closed `messaging::Notice` enum (`app/messaging/src/email.rs:151`), so this task adds a `Notice::MissedCards` variant there with its English and Spanish words (after T470 and T684, the queued owners of `email.rs`). Each email is stored with `messaging::api::queue_email` as `EmailClass::Bulk` (`app/messaging/src/email.rs:140` to `:146`, `:390`), never through the business-notice path, which stores every email as non-bulk (`app/messaging/src/business_notices.rs:409`), so above 90% of the day's email limit it waits for the reset (OPS-038). Tests in the new `tests/integration/tests/missed_cards_email.rs` (TD-BIZ-57), PostgreSQL, fake data only. Update `app/picks/NOTES.md`, `app/quotes/NOTES.md`, `app/businesses/NOTES.md` and `docs/decisions.md`. Plan change D-4727: this task's migration moves to `migrations/0217_businesses_missed_cards_switch.sql`, after T236's `0216` and T729's `0215` (V9), and it now follows T730, the owner of `app/messaging/src/email.rs` before it; earlier numbers in this goal are history.",
+   "goal": "Plan change D-4361 (unwired sweep orphan 7 and its second pass, `main` 77a49d7cc; BIZ-044, BIZ-025; D-331, D-1994). `missed_email_due` (`app/messaging/src/missed_cards.rs:52`) and `missed_cards_line` (`app/picks/src/open_cards_email.rs:212`) have no caller, and D-1994 left two gaps: no column stores the owner's off switch, and no `quotes` reader gives last month's counts. (1) `migrations/0214_businesses_missed_cards_switch.sql` (headed `businesses`; after T236's `0213`, the dependency on T236 being for that order only, V9): the business's on/off switch for this email, default on; the read and the owner's write in the new `app/businesses/src/missed_cards_switch.rs` (the portal toggle is left to the settings page's owner, T306, noted in its decision). (2) The new `app/quotes/src/month_cards.rs`: last month's cards per business (got, quoted, ended without its quote), Arizona months. (3) The new `app/picks/src/missed_cards_run.rs`: a daily `picks.missed_cards_email` run (registered in the shared `app/server/src/lib.rs`, scheduled in the shared `app/server/src/bin/worker.rs`) that acts only when `first_of_month` holds and sends `missed_cards_line` once per business and month (dedupe key) when `missed_email_due` says so, as an account notice to the owner under the business's consent (CON-019), never marketing. `queue_email` renders only the closed `messaging::Notice` enum (`app/messaging/src/email.rs:151`), so this task adds a `Notice::MissedCards` variant there with its English and Spanish words (after T470 and T684, the queued owners of `email.rs`). Each email is stored with `messaging::api::queue_email` as `EmailClass::Bulk` (`app/messaging/src/email.rs:140` to `:146`, `:390`), never through the business-notice path, which stores every email as non-bulk (`app/messaging/src/business_notices.rs:409`), so above 90% of the day's email limit it waits for the reset (OPS-038). Tests in the new `tests/integration/tests/missed_cards_email.rs` (TD-BIZ-57), PostgreSQL, fake data only. Update `app/picks/NOTES.md`, `app/quotes/NOTES.md`, `app/businesses/NOTES.md` and `docs/decisions.md`. Plan change D-4727: this task's migration moves to `migrations/0217_businesses_missed_cards_switch.sql`, after T236's `0216` and T729's `0215` (V9), and it now follows T730, the owner of `app/messaging/src/email.rs` before it; earlier numbers in this goal are history. Plan change D-5314: this task's migration moves to `migrations/0218_businesses_missed_cards_switch.sql` for T812's `0216_businesses_step_up_session.sql`, which runs earlier (V9); earlier numbers in this goal are history.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -46890,7 +46898,7 @@
    ],
    "owns": [
     "app/messaging/src/email.rs",
-    "migrations/0217_businesses_missed_cards_switch.sql",
+    "migrations/0218_businesses_missed_cards_switch.sql",
     "app/businesses/src/missed_cards_switch.rs",
     "app/quotes/src/month_cards.rs",
     "app/picks/src/missed_cards_run.rs",
@@ -46917,13 +46925,14 @@
    "decisions": [
     "D-331",
     "D-1994",
-    "D-4361"
+    "D-4361",
+    "D-5314"
    ],
    "cites": [],
    "budget": {
     "files": 6,
     "lines": 510,
-    "context_pct": 18
+    "context_pct": 22
    },
    "checks": [
     "Ci",
@@ -48792,7 +48801,8 @@
     "T689",
     "T687",
     "T746",
-    "T766"
+    "T766",
+    "T813"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -48831,7 +48841,8 @@
     "D-2786",
     "D-4361",
     "D-4727",
-    "D-4880"
+    "D-4880",
+    "D-5314"
    ],
    "cites": [],
    "budget": {
@@ -48919,7 +48930,8 @@
    "deps": [
     "T665",
     "T200",
-    "T483"
+    "T483",
+    "T810"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -48958,7 +48970,8 @@
     "D-334",
     "D-1515",
     "D-4727",
-    "D-4822"
+    "D-4822",
+    "D-5313"
    ],
    "cites": [],
    "budget": {
@@ -48988,7 +49001,8 @@
     "T733",
     "T669",
     "T541",
-    "T751"
+    "T751",
+    "T813"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -49033,7 +49047,8 @@
     "D-463",
     "D-3045",
     "D-4727",
-    "D-4749"
+    "D-4749",
+    "D-5314"
    ],
    "cites": [],
    "budget": {
@@ -49524,7 +49539,7 @@
    "id": "T742",
    "slug": "help-email-asker-address",
    "title": "intake, ops and privacy: a help email's sender address is sealed in the vault and tied to its help request, and purged with its words (D-4726)",
-   "goal": "Plan change D-4726 (Opus review round 2). OPS-036 (`docs/spec/ops-recovery.md:40`) answers a help email's asker by email, but nothing keeps the address: `privacy::api::read_inbound_email` returns no sender address by design (`InboundEmail`, `app/privacy/src/reader.rs:171` to `:184`; PRIV-026, only the blind index `sender`), `intake::api::receive_help_email` (`app/intake/src/handlers.rs:820`) opens the request as `Asker::Email` with no ID (`app/ops/src/help_requests.rs:45` to `:54`), and `ops.help_request` forces `asker_id` empty for `email` (`migrations/0194_help_requests.sql:13`). This task, before T740: (1) `app/privacy/src/reader.rs`: a new `privacy::api::help_sender(delivery, ctx) -> Result<SecretString, InboundError>` that verifies the delivery as `read_inbound_email` does (sharing its private parse, no second copy) and returns the `from` address as a `SecretString`, never logged or put in an error. (2) `app/intake/src/handlers.rs`: a new `intake::api::receive_help_email_from(db, vault, (email, sender), at)` for an authenticated help email only (an `OptOutOnly` sender opens nothing and stores nothing, PRIV-026): it stores the address as a new vault contact with `privacy::api::store_contact` (`app/privacy/src/vault.rs:383`; `NewContact { email: Some(sender), ..NewContact::default() }`, sealed like every contact field, PRIV-001; on a bare connection, before the help transaction) and opens the request as a new `ops::api::Asker::EmailFrom(contact)` (code `email`, ID the contact; it never joins another request, as `Email`); `receive_help_email` keeps its signature and behaviour for the help-page form (`app/portals/src/help.rs:384`, which collects no address, so its asker gets no email reply) until T740 moves the form to (6). (3) `migrations/0218_ops_help_email_sender.sql` replaces `ops.help_request`'s `asker_id` check with one that requires an ID for `homeowner` and `business` and allows one or none for `email` (check the next free migration number at claim time; `0215` to `0217` are taken on another plan branch). (4) Retention: the address is kept only as long as the request's words, the TXT-020 cut (`WORDS_KEPT_FOR`, 30 days, `app/privacy/src/message_body.rs:29`): a new daily task in `handlers.rs` (`intake.help_sender_purge`, registered in the shared `app/server/src/lib.rs`, deduplicated per Arizona day) clears, through `privacy::api::purge_contact` (`app/privacy/src/purge.rs:376`), the contact of every `email` request whose newest message is older than that window, and an audit row records each purge; in its transaction it calls `privacy::api::lock_retention_for_purge` first, as the retention purge does (`app/privacy/src/purge.rs:63` to `:69`, D-1839, lock (1) of the retention lock order); after it, T740's page has no address and refuses the email reply. (5) The signed inbound-email route T133 builds hands help emails to `receive_help_email` (D-3155); this task switches that one call to `receive_help_email_from` with `help_sender`'s address; if the call sits in a file this task does not own and that is not a shared path, it is a plan gap to report. Tests in the new `tests/integration/tests/help_email_sender.rs`, PostgreSQL, fake addresses at `example.com` only: an authenticated help email stores one sealed contact whose email reads back under an allowed purpose and opens one `email` request with that ID; an `OptOutOnly` one stores nothing; the help form still opens a request with no ID; no log line, audit row, notification or `privacy.message_body` row holds the address; the purge clears the address after 30 days and not before. The task checks whether `store_contact` writes a per-purpose email blind index for the new contact (on `main` it indexes only the phone, `app/privacy/src/vault.rs:418`); either way it stores the address with no email index, and a test shows that the email opt-out and business-reply lookups by `SenderIndex` never match a help-sender contact (R3, D-4726). `tests/integration/tests/help_requests.rs` passes unchanged. (6) Plan change D-4748 (Fable's decision (7)): the help-page form will collect a required email address (T740 adds the field), so this task also adds `intake::api::receive_help_form_from(db, vault, (email, address), at)`: an address that is not a valid email opens nothing and stores nothing; a valid one is stored exactly as (2) stores a help email's sender (a sealed vault contact with no email blind index, PRIV-001) and purged by (4), and the request opens as `Asker::EmailFrom(contact)`; its cases join `tests/integration/tests/help_email_sender.rs`. Update `app/intake/CLAUDE.md`, `app/privacy/CLAUDE.md`, `app/ops/CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4726 (Opus review round 2). OPS-036 (`docs/spec/ops-recovery.md:40`) answers a help email's asker by email, but nothing keeps the address: `privacy::api::read_inbound_email` returns no sender address by design (`InboundEmail`, `app/privacy/src/reader.rs:171` to `:184`; PRIV-026, only the blind index `sender`), `intake::api::receive_help_email` (`app/intake/src/handlers.rs:820`) opens the request as `Asker::Email` with no ID (`app/ops/src/help_requests.rs:45` to `:54`), and `ops.help_request` forces `asker_id` empty for `email` (`migrations/0194_help_requests.sql:13`). This task, before T740: (1) `app/privacy/src/reader.rs`: a new `privacy::api::help_sender(delivery, ctx) -> Result<SecretString, InboundError>` that verifies the delivery as `read_inbound_email` does (sharing its private parse, no second copy) and returns the `from` address as a `SecretString`, never logged or put in an error. (2) `app/intake/src/handlers.rs`: a new `intake::api::receive_help_email_from(db, vault, (email, sender), at)` for an authenticated help email only (an `OptOutOnly` sender opens nothing and stores nothing, PRIV-026): it stores the address as a new vault contact with `privacy::api::store_contact` (`app/privacy/src/vault.rs:383`; `NewContact { email: Some(sender), ..NewContact::default() }`, sealed like every contact field, PRIV-001; on a bare connection, before the help transaction) and opens the request as a new `ops::api::Asker::EmailFrom(contact)` (code `email`, ID the contact; it never joins another request, as `Email`); `receive_help_email` keeps its signature and behaviour for the help-page form (`app/portals/src/help.rs:384`, which collects no address, so its asker gets no email reply) until T740 moves the form to (6). (3) `migrations/0218_ops_help_email_sender.sql` replaces `ops.help_request`'s `asker_id` check with one that requires an ID for `homeowner` and `business` and allows one or none for `email` (check the next free migration number at claim time; `0215` to `0217` are taken on another plan branch). (4) Retention: the address is kept only as long as the request's words, the TXT-020 cut (`WORDS_KEPT_FOR`, 30 days, `app/privacy/src/message_body.rs:29`): a new daily task in `handlers.rs` (`intake.help_sender_purge`, registered in the shared `app/server/src/lib.rs`, deduplicated per Arizona day) clears, through `privacy::api::purge_contact` (`app/privacy/src/purge.rs:376`), the contact of every `email` request whose newest message is older than that window, and an audit row records each purge; in its transaction it calls `privacy::api::lock_retention_for_purge` first, as the retention purge does (`app/privacy/src/purge.rs:63` to `:69`, D-1839, lock (1) of the retention lock order); after it, T740's page has no address and refuses the email reply. (5) The signed inbound-email route T133 builds hands help emails to `receive_help_email` (D-3155); this task switches that one call to `receive_help_email_from` with `help_sender`'s address; if the call sits in a file this task does not own and that is not a shared path, it is a plan gap to report. Tests in the new `tests/integration/tests/help_email_sender.rs`, PostgreSQL, fake addresses at `example.com` only: an authenticated help email stores one sealed contact whose email reads back under an allowed purpose and opens one `email` request with that ID; an `OptOutOnly` one stores nothing; the help form still opens a request with no ID; no log line, audit row, notification or `privacy.message_body` row holds the address; the purge clears the address after 30 days and not before. The task checks whether `store_contact` writes a per-purpose email blind index for the new contact (on `main` it indexes only the phone, `app/privacy/src/vault.rs:418`); either way it stores the address with no email index, and a test shows that the email opt-out and business-reply lookups by `SenderIndex` never match a help-sender contact (R3, D-4726). `tests/integration/tests/help_requests.rs` passes unchanged. (6) Plan change D-4748 (Fable's decision (7)): the help-page form will collect a required email address (T740 adds the field), so this task also adds `intake::api::receive_help_form_from(db, vault, (email, address), at)`: an address that is not a valid email opens nothing and stores nothing; a valid one is stored exactly as (2) stores a help email's sender (a sealed vault contact with no email blind index, PRIV-001) and purged by (4), and the request opens as `Asker::EmailFrom(contact)`; its cases join `tests/integration/tests/help_email_sender.rs`. Update `app/intake/CLAUDE.md`, `app/privacy/CLAUDE.md`, `app/ops/CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`. Plan change D-5314: this task's migration moves to `migrations/0219_ops_help_email_sender.sql` for T812's `0216_businesses_step_up_session.sql`, which runs earlier (V9); earlier numbers in this goal are history.",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -49547,7 +49562,7 @@
     "app/intake/src/handlers.rs",
     "app/ops/src/help_requests.rs",
     "app/privacy/src/reader.rs",
-    "migrations/0218_ops_help_email_sender.sql",
+    "migrations/0219_ops_help_email_sender.sql",
     "tests/integration/tests/help_email_sender.rs"
    ],
    "reads": [
@@ -49568,7 +49583,8 @@
     "D-3155",
     "D-3883",
     "D-4726",
-    "D-4748"
+    "D-4748",
+    "D-5314"
    ],
    "cites": [],
    "budget": {
@@ -49669,7 +49685,8 @@
     "T541",
     "T664",
     "T410",
-    "T754"
+    "T754",
+    "T811"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -49702,7 +49719,8 @@
    "decisions": [
     "D-3189",
     "D-4349",
-    "D-4748"
+    "D-4748",
+    "D-5315"
    ],
    "cites": [],
    "budget": {
@@ -51183,7 +51201,7 @@
    "id": "T785",
    "slug": "dispute-without-due-date",
    "title": "payments: a dispute with no usable evidence date is still recorded and still blocks refunds",
-   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F26; FEE-026, FEE-027; D-2073 (1)). A `charge.dispute.created` whose `evidence_details.due_by` is null is read as unreadable (`app/payments/src/routes.rs`): one High alert with no subject, no `payments.dispute` row and no ledger entry, so FEE-026's refund block never applies and an automatic refund can go out on a disputed charge; D-2073 (1) said Casey records such a dispute by hand, but no screen or caller exists for that. A `due_by` of 0 or below is stored as 1970 and its tasks fire at once. The new `migrations/0219_payments_dispute_due_optional.sql` drops `NOT NULL` from `payments.dispute.due_at`. The webhook route now treats a null, zero, negative or already-past `due_by` as no date and still records the dispute: the dispute row, the ledger entry and the dispute alert are written exactly as for a dated one, so refunds on that pick are blocked and flagged, and only the submit task and the due reminders, which need a date, are skipped; the alert says the evidence date is missing and names the pick, so Casey can act in Stripe. `record_dispute`'s existing signature stays for dated disputes; the undated case is a new entry beside it in `app/payments/src/disputes.rs`, so no done test changes except TD-FEE-43's `td_fee_43_an_unreadable_event_alerts_casey_once`, by logged spec change (D-5164): its unreadable dispute becomes one with no `payment_intent`; the odd refund status, the alert count 2, the no-dispute-row and High assertions stay. Every reader of `payments.dispute.due_at` handles a missing date: the ones in these two files (in `disputes.rs`, `mark_auto_submit` (`:213` to `:224`) neither sets `auto_submit` nor queues a submit task for an undated dispute and answers as for one it did not mark, and `list_disputes` (`:414`) reads `(due_at IS NULL OR due_at >= $1)` so an undated open dispute stays in the digest), `DisputeView.due_at` (now `Option<Timestamp>`, `models.rs`), `dispute_row` in `app/portals/src/owner_portal.rs` (an undated dispute shows `date not given by Stripe` as `due` and, unless submitted, the standing 'You need to counter or accept this one in Stripe.', never the 2-days line; no template change), and `place_dispute_holds` in `app/payments/src/purge.rs`, which this task also owns for that read alone: an undated dispute's PRIV-007 hold counts from `opened_at` in place of the missing date, and the decision entry and `docs/for-casey-review.md` say so. Tests in the new `tests/integration/tests/dispute_no_due_date.rs`, PostgreSQL with the Stripe stand-in's signing, fake data only, the event bodies built in the test: `due_by` null makes one dispute row with no date and one ledger entry, and a later refund on that pick is blocked and flagged; `due_by` 0 and a past date do the same and queue no task due in the past; an undated dispute still places its retention hold; a dated dispute behaves as today; an undated open dispute is listed by `list_disputes` and gets no submit task from `mark_auto_submit`; a negative `due_by` is undated; a null `due_by` raises no `UNREADABLE_EVENT_ALERT`; `disputes_of` returns `None` for the date; the owner refund page line for an undated dispute; and the null, zero, negative and past `due_by` paths and the undated `purge.rs:41` read each get a case (95% branch floor). Every existing dispute and refund test passes unchanged except that one TD-FEE-43 case. It is money code under the `payments` 95% branch floor. The worker updates `td_fee_43_an_unreadable_event_alerts_casey_once`'s doc comment (\"a dispute with no evidence due date\") to match its new body. This task does not touch `kit/plan.lock`. Build notes go to the end of `app/payments/NOTES.md`; update `docs/architecture.md` and `docs/decisions.md`. Plan change D-5252 (job-5 money review findings 2 and 9, verified on `main`; FEE-026, FEE-027; D-2289): (2) a `charge.dispute.created` whose PaymentIntent a `payments.pick_intent` row holds but which has no `payments.charge_evidence` row is not an unknown charge: `record_dispute` (`app/payments/src/disputes.rs:97` to `:106`) answers a new `MoneyEventError::NoEvidence(pick)` there (`models.rs`), and the `Dispatch::Dispute` arm (`app/payments/src/routes.rs:329` to `:337`; `money` at `:431` is synchronous) raises one `raise_alert_once` per pick of a new High alert kind `payments.dispute_no_evidence` (subject the pick; not `FRAUD_WARNING_ALERT` and not `no_evidence_alert`) and answers `Acted::Retry` (500, Stripe resends), the same retry shape as the fraud-warning `NoEvidence` path (`routes.rs:473` to `:477`); a dispute no pick holds keeps today's answer (200, nothing written; TD-FEE-43, D-1754; `td_fee_43_an_unknown_object_changes_nothing`, `tests/integration/tests/stripe_webhook_dispatch.rs:451` to `:505`, passes unchanged), the nightly reconcile's `UNKNOWN_CHARGE_ALERT` already covering it. (9) in `run_dispute_submit` (`disputes.rs:361` to `:398`), after the existing `auto_submit AND submitted_at IS NULL` read finds the row, when its `due_at` is set and `now >= due_at` it makes no Stripe call, raises one High alert of a new kind `payments.dispute_deadline_missed` through `raise_alert_once` (subject the pick) and returns `Ok`. Their cases join `tests/integration/tests/dispute_no_due_date.rs` (a dispute with evidence missing is resent and alerted once; a submit task run after the deadline calls no Stripe and alerts once).",
+   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F26; FEE-026, FEE-027; D-2073 (1)). A `charge.dispute.created` whose `evidence_details.due_by` is null is read as unreadable (`app/payments/src/routes.rs`): one High alert with no subject, no `payments.dispute` row and no ledger entry, so FEE-026's refund block never applies and an automatic refund can go out on a disputed charge; D-2073 (1) said Casey records such a dispute by hand, but no screen or caller exists for that. A `due_by` of 0 or below is stored as 1970 and its tasks fire at once. The new `migrations/0219_payments_dispute_due_optional.sql` drops `NOT NULL` from `payments.dispute.due_at`. The webhook route now treats a null, zero, negative or already-past `due_by` as no date and still records the dispute: the dispute row, the ledger entry and the dispute alert are written exactly as for a dated one, so refunds on that pick are blocked and flagged, and only the submit task and the due reminders, which need a date, are skipped; the alert says the evidence date is missing and names the pick, so Casey can act in Stripe. `record_dispute`'s existing signature stays for dated disputes; the undated case is a new entry beside it in `app/payments/src/disputes.rs`, so no done test changes except TD-FEE-43's `td_fee_43_an_unreadable_event_alerts_casey_once`, by logged spec change (D-5164): its unreadable dispute becomes one with no `payment_intent`; the odd refund status, the alert count 2, the no-dispute-row and High assertions stay. Every reader of `payments.dispute.due_at` handles a missing date: the ones in these two files (in `disputes.rs`, `mark_auto_submit` (`:213` to `:224`) neither sets `auto_submit` nor queues a submit task for an undated dispute and answers as for one it did not mark, and `list_disputes` (`:414`) reads `(due_at IS NULL OR due_at >= $1)` so an undated open dispute stays in the digest), `DisputeView.due_at` (now `Option<Timestamp>`, `models.rs`), `dispute_row` in `app/portals/src/owner_portal.rs` (an undated dispute shows `date not given by Stripe` as `due` and, unless submitted, the standing 'You need to counter or accept this one in Stripe.', never the 2-days line; no template change), and `place_dispute_holds` in `app/payments/src/purge.rs`, which this task also owns for that read alone: an undated dispute's PRIV-007 hold counts from `opened_at` in place of the missing date, and the decision entry and `docs/for-casey-review.md` say so. Tests in the new `tests/integration/tests/dispute_no_due_date.rs`, PostgreSQL with the Stripe stand-in's signing, fake data only, the event bodies built in the test: `due_by` null makes one dispute row with no date and one ledger entry, and a later refund on that pick is blocked and flagged; `due_by` 0 and a past date do the same and queue no task due in the past; an undated dispute still places its retention hold; a dated dispute behaves as today; an undated open dispute is listed by `list_disputes` and gets no submit task from `mark_auto_submit`; a negative `due_by` is undated; a null `due_by` raises no `UNREADABLE_EVENT_ALERT`; `disputes_of` returns `None` for the date; the owner refund page line for an undated dispute; and the null, zero, negative and past `due_by` paths and the undated `purge.rs:41` read each get a case (95% branch floor). Every existing dispute and refund test passes unchanged except that one TD-FEE-43 case. It is money code under the `payments` 95% branch floor. The worker updates `td_fee_43_an_unreadable_event_alerts_casey_once`'s doc comment (\"a dispute with no evidence due date\") to match its new body. This task does not touch `kit/plan.lock`. Build notes go to the end of `app/payments/NOTES.md`; update `docs/architecture.md` and `docs/decisions.md`. Plan change D-5252 (job-5 money review findings 2 and 9, verified on `main`; FEE-026, FEE-027; D-2289): (2) a `charge.dispute.created` whose PaymentIntent a `payments.pick_intent` row holds but which has no `payments.charge_evidence` row is not an unknown charge: `record_dispute` (`app/payments/src/disputes.rs:97` to `:106`) answers a new `MoneyEventError::NoEvidence(pick)` there (`models.rs`), and the `Dispatch::Dispute` arm (`app/payments/src/routes.rs:329` to `:337`; `money` at `:431` is synchronous) raises one `raise_alert_once` per pick of a new High alert kind `payments.dispute_no_evidence` (subject the pick; not `FRAUD_WARNING_ALERT` and not `no_evidence_alert`) and answers `Acted::Retry` (500, Stripe resends), the same retry shape as the fraud-warning `NoEvidence` path (`routes.rs:473` to `:477`); a dispute no pick holds keeps today's answer (200, nothing written; TD-FEE-43, D-1754; `td_fee_43_an_unknown_object_changes_nothing`, `tests/integration/tests/stripe_webhook_dispatch.rs:451` to `:505`, passes unchanged), the nightly reconcile's `UNKNOWN_CHARGE_ALERT` already covering it. (9) in `run_dispute_submit` (`disputes.rs:361` to `:398`), after the existing `auto_submit AND submitted_at IS NULL` read finds the row, when its `due_at` is set and `now >= due_at` it makes no Stripe call, raises one High alert of a new kind `payments.dispute_deadline_missed` through `raise_alert_once` (subject the pick) and returns `Ok`. Their cases join `tests/integration/tests/dispute_no_due_date.rs` (a dispute with evidence missing is resent and alerted once; a submit task run after the deadline calls no Stripe and alerts once). Plan change D-5314: this task's migration moves to `migrations/0220_payments_dispute_due_optional.sql` for T812's `0216_businesses_step_up_session.sql`, which runs earlier (V9); earlier numbers in this goal are history.",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -51205,7 +51223,7 @@
     "app/payments/src/disputes.rs",
     "app/payments/src/routes.rs",
     "app/payments/src/purge.rs",
-    "migrations/0219_payments_dispute_due_optional.sql",
+    "migrations/0220_payments_dispute_due_optional.sql",
     "tests/integration/tests/dispute_no_due_date.rs",
     "app/payments/src/models.rs",
     "app/portals/src/owner_portal.rs",
@@ -51226,7 +51244,8 @@
     "D-2073",
     "D-5081",
     "D-5164",
-    "D-5252"
+    "D-5252",
+    "D-5314"
    ],
    "cites": [],
    "budget": {
@@ -51667,7 +51686,7 @@
    "id": "T793",
    "slug": "email-quiet-drain",
    "title": "messaging: a non-emergency business notice email carries a quiet flag and the email drain holds it at night",
-   "goal": "Plan change D-5230 (outside code review 3, finding 3, verified by Opus; Fable decided; QH-005, TXT-014). A business notice email held by the night rule can still be sent at night by the email drain, which has no hour check (`drain_one`, `app/messaging/src/email_due.rs:238`). (1) `migrations/0220_messaging_email_quiet.sql` adds a stored per-row quiet flag to the email outbox row (default false; re-check the next free number at claim time against the migration-order rule). (2) A new function in `app/messaging/src/models.rs` sets it; the business-notice path (`app/messaging/src/business_notices.rs`) calls it for each non-emergency business notice email it queues, so `app/messaging/src/email.rs` is not changed and every other email (sign-in links, receipts and anything a person just asked for) is never flagged and never held. (3) `drain_one` holds a flagged row leased outside the 8 a.m. to 8 p.m. Arizona window until the next Arizona opening, without counting a failure (the drain knows no recipient zone, so a flagged row follows the Arizona rule T792 gives an email-only recipient). Emails a person asked for are never held, on QH-004's direct-reply exception. Tests in the new `tests/integration/tests/email_quiet_drain.rs`, PostgreSQL, fake addresses only: a flagged business notice email leased at 9 p.m. is held to the morning and then sent once; an unflagged sign-in email at 9 p.m. goes at once; an emergency notice email is never flagged. Every email drain test passes unchanged. Update `app/messaging/NOTES.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-5230 (outside code review 3, finding 3, verified by Opus; Fable decided; QH-005, TXT-014). A business notice email held by the night rule can still be sent at night by the email drain, which has no hour check (`drain_one`, `app/messaging/src/email_due.rs:238`). (1) `migrations/0220_messaging_email_quiet.sql` adds a stored per-row quiet flag to the email outbox row (default false; re-check the next free number at claim time against the migration-order rule). (2) A new function in `app/messaging/src/models.rs` sets it; the business-notice path (`app/messaging/src/business_notices.rs`) calls it for each non-emergency business notice email it queues, so `app/messaging/src/email.rs` is not changed and every other email (sign-in links, receipts and anything a person just asked for) is never flagged and never held. (3) `drain_one` holds a flagged row leased outside the 8 a.m. to 8 p.m. Arizona window until the next Arizona opening, without counting a failure (the drain knows no recipient zone, so a flagged row follows the Arizona rule T792 gives an email-only recipient). Emails a person asked for are never held, on QH-004's direct-reply exception. Tests in the new `tests/integration/tests/email_quiet_drain.rs`, PostgreSQL, fake addresses only: a flagged business notice email leased at 9 p.m. is held to the morning and then sent once; an unflagged sign-in email at 9 p.m. goes at once; an emergency notice email is never flagged. Every email drain test passes unchanged. Update `app/messaging/NOTES.md` and `docs/decisions.md`. Plan change D-5314: this task's migration moves to `migrations/0221_messaging_email_quiet.sql` for T812's `0216_businesses_step_up_session.sql`, which runs earlier (V9); earlier numbers in this goal are history.",
    "deps": [
     "T792"
    ],
@@ -51675,7 +51694,7 @@
     "app/messaging/src/email_due.rs",
     "app/messaging/src/models.rs",
     "app/messaging/src/business_notices.rs",
-    "migrations/0220_messaging_email_quiet.sql",
+    "migrations/0221_messaging_email_quiet.sql",
     "tests/integration/tests/email_quiet_drain.rs"
    ],
    "reads": [
@@ -51692,7 +51711,8 @@
    "tests": [],
    "decisions": [
     "D-5230",
-    "D-5229"
+    "D-5229",
+    "D-5314"
    ],
    "budget": {
     "files": 5,
@@ -52448,6 +52468,316 @@
    "prompt": "kit/prompts/T799.md",
    "copy": true,
    "acceptance": "`cargo test -p askhava-messaging` (the template registry and its segment check), `cargo test -p askhava-integration --test unreachable_refund --test business_notices --test brand_setting` and `python3 -m pytest tests/docs` pass; the seven texts read exactly as the goal says in both languages and nothing else in the template files changes except the `segments` values named in the goal; `scripts/check_copy.py` and `scripts/check_ai_smell.py` pass."
+  },
+  {
+   "id": "T810",
+   "slug": "shared-inbox-press-code",
+   "title": "portals and server: a shared-inbox Confirm press asks for its own fresh code",
+   "goal": "Plan change D-5313 (outside review job 8, SEC-027 shared inbox, checked on `main` 62c2b1c; Fable's decision (a) for Casey). While a person's inbox is marked shared every Confirm press is refused: `pressed` returns `CODE_LINE` (`app/portals/src/confirm_pay.rs:1399` to `:1403`; `fresh_code_needed`, `app/portals/src/action_links.rs:391` to `:392`), `PressForm._code` (`:1306` to `:1307`) is never read, the `GET` renders no code step (`:1193`), the template's \"Text me a code\" form posts to `/b/picks/{pick}/confirm/code` (`app/portals/templates/confirm_pay.html:39`), which no route serves, and `send_confirm_code` and `check_confirm_code` (`:481`, `:553`) have no caller (D-3717 (7), D-5112 (5)). Each press asks for its own fresh code, even when the Confirm link already checked one. (1) The `GET` renders the code step (`code` some, its line none) whenever `confirm_code_needed` says a code is owed. (2) A new `POST /b/picks/{pick}/confirm/code` (constant `CONFIRM_CODE_ROUTE`) passes the same business session, pick ownership (`mine`), `refuse_cross_site`, CSRF and `no-store` as the press, calls `send_confirm_code` with the request's IP and the global send threshold the sign-in code uses, and shows the page again with the code step and `CodeSent::line()`; it changes nothing of the pick and opens no PaymentIntent. (3) The press reads the posted `code` (rename `_code`) and, when a code is owed, runs `check_confirm_code` before the press's transaction opens, holding no connection across Verify (PT-04); only `CodeCheck::Right` lets the press go on; any other answer replies with that answer's `error()` line and charges nothing, opens no PaymentIntent and stores no terms row. (4) The codes reach the route without changing `ConfirmRoute`'s fields, which four DONE tests build as struct literals (`app/server/tests/confirm_route.rs:233`, `confirm_press_moves.rs:251`, `tests/integration/tests/saved_card.rs:279`, `zero_fee_after_intent.rs:209`): a new `confirm_routes_with(route, codes)` takes optional shared codes and `confirm_routes(route)` stays as that call with none; with none no code is sent and a press that owes one is refused as today (`CODE_LINE`). The shared `app/server/src/lib.rs` passes them through a new `RouterParts::with_confirm_codes`, which the shared `main.rs` sets from a second `action_links::confirm_link_codes(settings, std::env::vars())` beside the link's; `app/server/src/action_links.rs` (owned by queued tasks) is not edited. Quote and Hold links keep working by the link alone, and a press while the inbox is not shared needs no code. Tests (TD-SEC-82) in the new `app/server/tests/confirm_press_code.rs` through `confirm_routes_with` and a counting fake Verify that ends a code once it answered it right (as Twilio Verify does), fake data only; copy the world helpers from `confirm_route.rs`, which this task reads and does not change; TD-SEC-32's test there (`:1025`) stays true unchanged. The code step's page state gets its `PAGE_STATES` entry in the shared `tests/a11y/page_states.ts` when the Confirm page's existing entry can reach it; otherwise say so in the report. Update `app/portals/NOTES.md`, `docs/architecture.md` section 13 (the new route's row, Wired `yes`) and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "portals",
+   "deps": [
+    "T261",
+    "T664",
+    "T754",
+    "T541"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "money",
+    "accessibility"
+   ],
+   "owns": [
+    "app/portals/src/confirm_pay.rs",
+    "app/portals/templates/confirm_pay.html",
+    "app/server/tests/confirm_press_code.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/spec/security.md",
+    "docs/spec/accessibility.md",
+    "app/server/tests/confirm_route.rs",
+    "app/server/src/action_links.rs"
+   ],
+   "requirements": [
+    "SEC-027",
+    "SEC-014",
+    "SEC-020"
+   ],
+   "tests": [
+    "TD-SEC-82",
+    "TD-SEC-32"
+   ],
+   "decisions": [
+    "D-5313",
+    "D-3717",
+    "D-5112",
+    "D-3069",
+    "D-3813"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 450,
+    "context_pct": 40
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T810-shared-inbox-press-code",
+   "prompt": "kit/prompts/T810.md",
+   "acceptance": "`app/server/tests/confirm_press_code.rs` passes every TD-SEC-82 case, each failing on `main` before the change; `confirm_route.rs`, `confirm_press_moves.rs`, `saved_card.rs` and `zero_fee_after_intent.rs` pass unchanged; no axe-core violation on the code step."
+  },
+  {
+   "id": "T811",
+   "slug": "confirm-code-by-email",
+   "title": "server and portals: a person with no texting phone gets the Confirm link code by email",
+   "goal": "Plan change D-5315 (outside review job 8, SEC-004 email fallback, checked on `main` 62c2b1c; Fable's decision for Casey). SEC-004 and TD-BIZ-25 send the Confirm code by email to the sign-in address of a person with no phone that gets texts, but `LinkCodeAddress::find` returns `CodeTo::Email(SecretString::default())` (`app/server/src/action_links.rs:803` to `:805`) and `send_confirm_code` answers `NoPhone` for any email (`app/portals/src/confirm_pay.rs:487` to `:489`); D-3889 (7) left it out. Build it now against the stand-in Verify's email channel (`CodeChannel::Email`, D-2769); the live email account is a Gate C item, not a blocker. (1) `LinkCodeAddress::find` returns the member's real sign-in address when they have no texting line, read from the vault with `privacy::api::read_business_mailbox` under `BusinessPurpose::SignInCode` on the member's `mailbox` (as `MemberCodeAddress::find` does, `app/server/src/business_signin.rs:328` to `:335`; that type is not reused, its client is task-local to sign-in, D-5112 (2)). (2) `send_confirm_code` and `check_confirm_code` send and check by email to that address; `CodeSent` gains an emailed variant whose line says the code went to their email (the link page's words go through the cold read); never by email while the person's inbox is marked shared (SEC-027: that answer stays `NoPhone`'s link-a-phone line, nothing sent), never by a call (BIZ-046); the SEC-014 send and SEC-020 try limits apply as for a text; the address is never logged or shown and is dropped after the send. (3) Tests: this task owns `app/server/tests/action_links_route.rs` after T399, T455, T301, T456, T543, T463, T457, T458, T714, T813 and T814 (line numbers below are on `main` 62c2b1c; find them by their test names). The third block of `td_sec_44_without_codes_or_a_texting_phone_the_confirm_link_uses_nothing` (`:1251` to `:1256`, codes set, no texting phone) changes by logged spec change (D-5315; SEC-004, `docs/spec/security.md:8`; `BUILD_BRIEF.md:69`) to assert one email code sent to the member's fake sign-in address, no text and no call, and the link still unused; the no-codes block (`:1243` to `:1250`) stays. New cases for TD-BIZ-25's Confirm email case: the right emailed code signs that browser in, opens the Confirm page and uses the link once; a wrong code uses nothing; a person with no texting phone whose inbox is marked shared (set in the database, since the switch refuses it) gets no email and nothing used. Fake data only. Update `app/server/NOTES.md`, `app/portals/NOTES.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T810",
+    "T814"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy"
+   ],
+   "owns": [
+    "app/server/src/action_links.rs",
+    "app/portals/src/confirm_pay.rs",
+    "app/server/tests/action_links_route.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/spec/security.md",
+    "docs/spec/businesses.md",
+    "docs/spec/messaging.md"
+   ],
+   "requirements": [
+    "SEC-004",
+    "SEC-027",
+    "BIZ-046",
+    "TXT-038"
+   ],
+   "tests": [
+    "TD-BIZ-25",
+    "TD-SEC-44"
+   ],
+   "decisions": [
+    "D-5315",
+    "D-3889",
+    "D-5112",
+    "D-2769",
+    "D-3562"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 400,
+    "context_pct": 44
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T811-confirm-code-by-email",
+   "prompt": "kit/prompts/T811.md",
+   "acceptance": "`cargo test -p askhava-server --test action_links_route` passes with the changed block and the new cases; every other test passes unchanged."
+  },
+  {
+   "id": "T812",
+   "slug": "step-up-session-record",
+   "title": "businesses and portals: a passed step-up records the session it was passed in",
+   "goal": "Plan change D-5314 (outside review job 8, SEC-038 step-up, checked on `main` 62c2b1c; Fable's decision for Casey; first of two tasks, T813 second). SEC-038's fresh code is kept per member (`businesses.team_member.step_up_at`, migration 0142; `record_step_up`, `app/businesses/src/email_verification.rs:212` to `:224`), so a stolen session cookie rides the real member's 5-minute window. This task records the session; T813 makes the check require it. (1) Migration `migrations/0216_businesses_step_up_session.sql` (after T729's `0215` in the runner's serial order; T236, T685, T742, T785 and T793 move to `0217` to `0221`) adds a nullable `step_up_session uuid` to `businesses.team_member` beside `step_up_at` (if a merged migration already uses `0216` at claim time, report a plan gap). (2) A new `record_session_step_up(conn, by, session, at)` beside `record_step_up` in `email_verification.rs`, re-exported through the shared `businesses::api`, writes both columns in one statement; `record_step_up(conn, by, at)` keeps its signature and now sets `step_up_session` to null, a step-up bound to no session (the businesses-level checks in `backup_address::allowed` and `email_verification::may_change` read only the time and stay as they are, D-5314; after T813 `require_step_up` never accepts it). (3) `BusinessPrincipal` (`app/portals/src/business_auth.rs:244` to `:251`) gains a `pub(crate)` session field, set in `business_principal` from `current_session`'s `Session::id()` (the `portals.session` row ID, never the cookie or its hash), with a read-only `session()` accessor like `member()`. Check in `app/portals/src/session.rs` that a business session's row ID never changes while it lives; if it does, report a plan gap. (4) The served step-up page's `confirm` (`app/portals/src/step_up_page.rs:420` to `:437`) records with `record_session_step_up` and the principal's session, in the same transaction as today. Nothing reads the session yet, so every DONE test passes unchanged. Unit tests in the owned files, fake data only: both columns written; `record_step_up` clears the session; the principal's session is the cookie's row; the step-up page's right code stores its session. Update `app/businesses/NOTES.md`, `app/portals/NOTES.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "businesses",
+   "deps": [
+    "T121",
+    "T397",
+    "T542"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security"
+   ],
+   "owns": [
+    "migrations/0216_businesses_step_up_session.sql",
+    "app/businesses/src/email_verification.rs",
+    "app/portals/src/business_auth.rs",
+    "app/portals/src/step_up_page.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/spec/security.md",
+    "app/portals/src/session.rs"
+   ],
+   "requirements": [
+    "SEC-038"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-5314",
+    "D-1847",
+    "D-480",
+    "D-3744"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 300,
+    "context_pct": 30
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T812-step-up-session-record",
+   "prompt": "kit/prompts/T812.md",
+   "acceptance": "The migration applies; `cargo test -p askhava-businesses` and `-p askhava-portals` pass with the new unit tests; every other test passes unchanged."
+  },
+  {
+   "id": "T813",
+   "slug": "step-up-same-session",
+   "title": "businesses and portals (harness): a step-up counts only in the session that passed it",
+   "goal": "Plan change D-5314 (outside review job 8, SEC-038 read as \"a code passed in the same signed-in session\", checked on `main` 62c2b1c; Fable's decision for Casey; second of two tasks, after T812). (1) `businesses::api::has_fresh_step_up(conn, by, session, now)` (`app/businesses/src/api.rs:185` to `:203`) is fresh only when `step_up_session` equals `session` and `step_up_at` is at most 5 minutes old and not after `now`. (2) `require_step_up` (`app/portals/src/business_portal.rs:118` to `:143`) passes the principal's session; its signature, its callers and its refusal (one `authz_denied` event, `StepUpError::NeedsCode`) stay unchanged. The businesses-level checks in `backup_address::allowed` and `email_verification::may_change` stay per member (D-5314). (3) DONE tests that seed a step-up with `record_step_up` and then pass `require_step_up` change only their seeding, by logged spec change (D-5314; SEC-038, `docs/spec/security.md:42`; `BUILD_BRIEF.md:69`): each calls `record_session_step_up` with the session of the principal or jar it then uses (`BusinessPrincipal::session()`, or `portals::api::current_session(...)`'s `id()` where only a jar exists; a helper that seeds before signing in, as `approve_link_route.rs:197` to `:202` does, seeds after the sign-in instead); no assertion, time or expected value changes. The sites, on `main` 62c2b1c: `tests/security/tests/step_up.rs:65`, `:88`; `tests/security/tests/link_scanners.rs:342`; `tests/integration/tests/saved_card.rs:703`, `:721`; `tests/integration/tests/auto_confirm.rs:639`; `tests/integration/tests/business_leaving.rs:270`, `:442`; `app/server/tests/business_step_up_route.rs:180` (the `stepped_up` helper); `approve_link_route.rs:201`; `confirm_route.rs:1033`; `action_links_route.rs:1221`; and the unit test at `app/portals/src/business_portal.rs:1135`. `tests/security/tests/backup_address.rs`, `backup_address_confirm.rs`, `notice_addresses.rs` and `app/server/tests/business_contacts.rs` call the businesses functions with no session and pass unchanged. Before editing, grep `record_step_up` and `step_up_at` across `app/`, `tests/` and `twin/`: a site not listed here that `require_step_up` reads is a plan gap to report, never a test to loosen. (4) TD-SEC-17 as amended, in `tests/security/tests/step_up.rs`: a second session of the same member (its own cookie, signed in separately) is refused and logged for every `SensitiveChange` while the first session's 4-minute-old code passes, and a code then passed in the second session does not count for the first. Fake data only. Update `app/businesses/NOTES.md`, `app/portals/NOTES.md` and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "portals",
+   "deps": [
+    "T812",
+    "T714",
+    "T565",
+    "T541",
+    "T767"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "harness"
+   ],
+   "owns": [
+    "app/businesses/src/api.rs",
+    "app/portals/src/business_portal.rs",
+    "tests/security/tests/step_up.rs",
+    "tests/security/tests/link_scanners.rs",
+    "tests/integration/tests/saved_card.rs",
+    "tests/integration/tests/auto_confirm.rs",
+    "tests/integration/tests/business_leaving.rs",
+    "app/server/tests/business_step_up_route.rs",
+    "app/server/tests/approve_link_route.rs",
+    "app/server/tests/confirm_route.rs",
+    "app/server/tests/action_links_route.rs"
+   ],
+   "reads": [
+    "docs/spec/security.md"
+   ],
+   "requirements": [
+    "SEC-038"
+   ],
+   "tests": [
+    "TD-SEC-17"
+   ],
+   "decisions": [
+    "D-5314",
+    "D-1847",
+    "D-480",
+    "D-1850"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 11,
+    "lines": 400,
+    "context_pct": 39
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T813-step-up-same-session",
+   "prompt": "kit/prompts/T813.md",
+   "acceptance": "`cargo test --workspace` passes; the new TD-SEC-17 case fails on `main` before the change; every changed DONE test differs only in its step-up seeding."
+  },
+  {
+   "id": "T814",
+   "slug": "used-link-done-page",
+   "title": "portals and server: a used action link pressed again shows its result, not a 404",
+   "goal": "Plan change D-5316 (outside review job 8, SEC-026 double submit, checked on `main` 62c2b1c; Fable's decision (c) for Casey; carries T588's former B39, D-4052). A second `POST` of a used action link (a double tap) answers the bare 404 for every kind (`app/server/src/action_links.rs:174` to `:181`; module doc `:20` to `:21`, D-3673), so a double tap on \"Send quote\" looks like a failure though the quote was stored; SEC-026 says a repeated POST acts once and shows the same result. (1) A new `portals::api` read in `app/portals/src/action_links.rs` (beside the crate-private `action_link_business`, `:307`): for a token whose hash matches a link of the posted kind and object that was used and is still within its original window, whose member is still on the team, it names the member, the business and the object; it changes nothing and runs on a bare connection after the refused use's transaction is gone. (2) When `use_action_link` refuses a `POST` with `Ended`, `server::action_links` asks that read: a Quote link shows its job's page again (`job_details_page`, 200) with the quote as stored; every other kind (Confirm, Hold, Away, Pause, Resume, Busy, LinkPhone, Approve, AskCharge) shows one generic page, \"This was already done.\", 200, `no-store`, with the portal link and nothing of the job, the amount or the person; nothing is stored, sent or logged beyond an answered page. (3) An unknown, expired, wrong-kind, wrong-object or removed-member token, and every `GET`, stay as today (the one not-found answer for a refused token). The page is a new template `app/portals/templates/action_done.html` extending the layout the action pages use, with its `PAGE_STATES` entry in the shared `tests/a11y/page_states.ts`, axe-clean; its words go through the cold read. (4) Tests: this task owns `app/server/tests/action_links_route.rs` (after T714 and T813) and `app/server/tests/approve_link_route.rs` (after T813). The used-link assertions change by logged spec change (D-5316; SEC-026, `docs/spec/security.md:30`; `BUILD_BRIEF.md:69`) from the not-found answer to the 200 page, each still asserting the action happened exactly once; on `main` 62c2b1c (find them by their messages): `action_links_route.rs:519` to `:523` (Quote: the job page, still exactly one stored quote), `:793` to `:797`, `:877`, `:955` to `:959`, `:1051` to `:1055`, `:1192` (still one code sent), `:1359`, and `approve_link_route.rs:289` (approved once). New cases: a used Quote link re-posted with another price stores nothing new and shows the stored quote; a used link of a removed member and one past its window are the not-found answer. Before editing, grep every second-`POST` not-found or 404 assertion in `app/server/tests/`, `tests/` and `tests/e2e/`: one not listed here on an action link is a plan gap to report. Update the module doc, `app/server/NOTES.md`, `app/portals/NOTES.md`, `docs/architecture.md` section 13 if a row's words change, and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T813"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "accessibility"
+   ],
+   "owns": [
+    "app/portals/src/action_links.rs",
+    "app/server/src/action_links.rs",
+    "app/portals/templates/action_done.html",
+    "app/server/tests/action_links_route.rs",
+    "app/server/tests/approve_link_route.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/spec/security.md",
+    "docs/spec/businesses.md",
+    "docs/spec/accessibility.md"
+   ],
+   "requirements": [
+    "SEC-026",
+    "BIZ-038"
+   ],
+   "tests": [
+    "TD-SEC-44"
+   ],
+   "decisions": [
+    "D-5316",
+    "D-3673",
+    "D-4052"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 450,
+    "context_pct": 37
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T814-used-link-done-page",
+   "prompt": "kit/prompts/T814.md",
+   "acceptance": "`cargo test -p askhava-server --test action_links_route --test approve_link_route` passes; every changed assertion still proves the action happened once; no axe-core violation on the done page."
   }
  ]
 }
