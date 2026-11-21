@@ -8910,3 +8910,4 @@
 - 2026-11-21T01:26:18Z runner e6f56fd39ecb (actions): {"T674": "IN_PROGRESS -> BLOCKED"}
 - 2026-11-21T01:26:55Z runner e6f56fd39ecb (actions): {}
 - 2026-11-21T01:27:09Z runner c3bff35f9d54 (actions): {}
+- 2026-11-21T01:29:23Z runner e6f56fd39ecb (actions): {"T775": "QUEUED -> IN_PROGRESS"}; T775 estimated 1.1M tokens (calibrated); week has 77.3M left (no five-hour budget, D-3056) after 4.7M still running in another lane (session_reading 2026-11-21T01:26:35Z (week)); claimed
