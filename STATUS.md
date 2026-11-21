@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-21T16:05:26Z by runner 49ecf50c5758 (actions).
+Updated 2026-11-21T16:06:00Z by runner 49ecf50c5758 (actions).
 
 **Building: T608 in progress since 15:59Z; 581 of 730 done; week 30% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 581 of 730 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T608 claimed 15:59Z, lease until 18:59Z; lane 2: T655 claimed 13:31Z, lease until 16:31Z; lane 3: T786 claimed 15:59Z, lease until 18:59Z; lane 5: T787 claimed 15:36Z, lease until 18:36Z
+- **Lane:** lane 1: T608 claimed 15:59Z, lease until 18:59Z; lane 3: T786 claimed 15:59Z, lease until 18:59Z; lane 5: T787 claimed 15:36Z, lease until 18:36Z
 - **Week:** 30% used, 132.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:00Z, 5 min before this update
 - **Keeper:** last ran 15:45Z, next wake 16:33Z
@@ -40,10 +40,11 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T655 | businesses: an unknown ROC license status warns at 24 hours, | MERGE_PENDING | 2 | 2 h 34 min | 16:05Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
 | T789 | Tests (harness): TD-INT-47's no-contact check ignores the ra | MERGE_PENDING | 1 | 27 min | 15:38Z |  |
 | T304 | server and portals: the owner refund review, the audit log v | done | 2 | 2 h 44 min | 15:18Z | PLAN GAP: app/portals/templates/owner_audit_log.html (owned by T205) and app/portals/templates/health.html (owned by T47 |
 | T776 | intake: a move out of Arizona and a property-management requ | done | 3 | 99 min | 14:37Z | PLAN GAP: outside ownership: app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml) / Worker: D-5160's three tr |
-| T655 | businesses: an unknown ROC license status warns at 24 hours, | QUEUED | 1 | 2 h 36 min | 13:24Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
+| T655 | businesses: an unknown ROC license status warns at 24 hours, | QUEUED | 1 | 2 h 36 min | 13:24Z |  |
 | T707 | server: an emergency pick's address re-release waits while s | QUEUED | 2 | 77 min | 12:31Z | Reviewer after the findings round still ends REVIEW-VERDICT: FINDINGS (head 2f9bf610c3700bb46a4670ade27d67afda63591a). / |
 | T581 | messaging, intake and server: a failed text's call-back is d | done | 1 | 76 min | 12:03Z |  |
 | T615 | site and server: a styled 404 page for unknown paths, the fa | BLOCKED | 3 | 2 h 11 min | 11:53Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
@@ -151,9 +152,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T608 (lease until 2026-11-21T18:59:45Z)
-- lane 2: T655 (lease until 2026-11-21T16:31:07Z)
 - lane 3: T786 (lease until 2026-11-21T18:59:05Z)
 - lane 5: T787 (lease until 2026-11-21T18:36:33Z)
 
 ## Last usage reading
-- {"task": "T789", "at": "2026-11-21T15:38:10Z", "output_tokens": 8517, "cache_read_input_tokens": 495399, "input_tokens": 37, "cache_creation_input_tokens": 59614}
+- {"task": "T655", "at": "2026-11-21T16:05:24Z", "output_tokens": 134635, "cache_creation_input_tokens": 384412, "cache_read_input_tokens": 16078105, "input_tokens": 271}
