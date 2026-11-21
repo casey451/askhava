@@ -45,9 +45,10 @@ MERGE_LINE_TURN_LIMIT = timedelta(minutes=45)
 MERGE_LINE_TURN_CAP = timedelta(minutes=90)
 # The merge train (D-4281): while the turn holder's head runs its checks, the next "line" task's reviewed head
 # merged with that head is tested ahead on a throwaway ref `claude/train/<task>-<head first 12 hex>` that T640's
-# `Ci` counts as proof for the task's real update merge. Depth 2 at most until a later decision; a ref over
-# TRAIN_MAX_AGE old (by its commit's committer time) is deleted on the next merge-line pass.
-TRAIN_DEPTH_MAX = 2
+# `Ci` counts as proof for the task's real update merge. At depth 3 (D-5018) the "line" task after that one is
+# tested the same way on the second car's tip, `claude/train/<task>-<that tip's first 12 hex>`. Depth 3 at most;
+# a ref over TRAIN_MAX_AGE old (by its commit's committer time) is deleted on the next merge-line pass.
+TRAIN_DEPTH_MAX = 3
 TRAIN_MAX_AGE = timedelta(hours=6)
 RULESET_ONLY_CHECKS = ("Governance",)  # required by the repository ruleset, not by verify.REQUIRED_CHECKS (D-483, D-494)
 UPDATE_STUCK = "the branch could not be brought up to date with main for {wait}: {why} (D-620)"
@@ -685,7 +686,7 @@ def _resolve_merges(state: State, env: Env, cfg: Config, now: datetime,
     for tid, pr in late:
         state, result = _resolve_line_task(state, env, cfg, now, (tid, pr, turn_free), outcomes)
         turn_free = turn_free and result != "branch_updated"
-    _train_pass(state, env, now, _train_pair(state, holder, seen, outcomes))
+    _train_pass(state, env, now, _train_cars(state, holder, seen, outcomes))
     return state, [outcomes[t["id"]] for t in state["tasks"] if t["id"] in outcomes]
 
 
@@ -700,38 +701,39 @@ def train_depth(env: Env) -> int:
     return min(raw, TRAIN_DEPTH_MAX)
 
 
-def _train_pair(state: State, holder: tuple[str, dict[str, Any] | None] | None, seen: list[tuple[str, dict[str, Any] | None, str]],
-                outcomes: dict[str, tuple[str, str, str]]) -> tuple[str, ...] | None:
-    """(B, B's branch, B's reviewed head, A, A's branch, A') for the merge train (D-4281), None when there is
-    none. A is the turn holder and A' its reviewed head: its update merge just pushed, or its open pull
-    request's head (an adopted update merge or a head already current with main; the Env checks main is in
-    it) with Ci, Twin or Ally still pending. B is the first task after A in merge-line order whose place was
-    "line", still MERGE_PENDING with its pull request on its reviewed head. None while main is red and for
-    FIX-MAIN (D-620), and whenever A's head is not its reviewed head or its checks finished."""
+def _train_cars(state: State, holder: tuple[str, dict[str, Any] | None] | None, seen: list[tuple[str, dict[str, Any] | None, str]],
+                outcomes: dict[str, tuple[str, str, str]]) -> list[tuple[str, str, str]]:
+    """The merge train's cars as (task, its branch, its reviewed head): [A, B] or [A, B, C], [] when there is
+    no train (D-4281, D-5018). A is the turn holder and A' its reviewed head: its update merge just pushed,
+    or its open pull request's head (an adopted update merge or a head already current with main; the Env
+    checks main is in it) with Ci, Twin or Ally still pending. B, then C, are the next tasks after A in
+    merge-line order whose place was "line", each still MERGE_PENDING with its pull request on its reviewed
+    head; the first that is not ends the train there. [] while main is red and for FIX-MAIN (D-620), and
+    whenever A's head is not its reviewed head or its checks finished."""
     if holder is None or holder[1] is None or state.get("main_red"):
-        return None
+        return []
     a, a_pr = holder
     task_a = st.entry(state, a)
     a_head = str(task_a.get("reviewed_sha") or "")
     pushed = outcomes[a][2] == "branch_updated"
     if a == st.FIX_MAIN or not a_head or not (pushed or (a_pr.get("head_sha") == a_head and verify.checks_state(a_pr) == "pending")):
-        return None
+        return []
+    cars = [(a, str(task_a.get("branch") or ""), a_head)]
     after = [(tid, pr) for tid, pr, place in seen[[t for t, _, _ in seen].index(a) + 1:] if place == "line"]
-    if not after or after[0][1] is None:
-        return None
-    b, b_pr = after[0]
-    task_b = st.entry(state, b)
-    b_head = str(task_b.get("reviewed_sha") or "")
-    if b == st.FIX_MAIN or task_b.get("status") != st.MERGE_PENDING or not b_head or b_pr.get("head_sha") != b_head:
-        return None
-    return b, str(task_b.get("branch") or ""), b_head, a, str(task_a.get("branch") or ""), a_head
+    for tid, pr in after[:TRAIN_DEPTH_MAX - 1]:
+        task = st.entry(state, tid)
+        tip = str(task.get("reviewed_sha") or "")
+        if pr is None or tid == st.FIX_MAIN or task.get("status") != st.MERGE_PENDING or not tip or pr.get("head_sha") != tip:
+            break
+        cars.append((tid, str(task.get("branch") or ""), tip))
+    return cars if len(cars) > 1 else []
 
 
-def _train_pass(state: State, env: Env, now: datetime, pair: tuple[str, ...] | None) -> None:
+def _train_pass(state: State, env: Env, now: datetime, cars: list[tuple[str, str, str]]) -> None:
     """The merge train's ref work on every merge-line pass (D-4281), whatever the depth: list the
     `claude/train/*` refs (`env.train_refs`; an Env without it, `train_merge` or `delete_train_ref` does
-    nothing), build and push B's train ref
-    when the depth is 2 and `pair` is set, then delete each stale ref (`_train_stale`) through
+    nothing), build and push the train refs of `cars` as far as the depth allows (`_build_cars`: B's at
+    depth 2 or more, C's only at depth 3, D-5018), then delete each stale ref (`_train_stale`) through
     `env.delete_train_ref`. A failed delete is logged and tried again on the next pass. Nothing is recorded
     in the state: the refs are the record."""
     lister = getattr(env, "train_refs", None)
@@ -740,11 +742,11 @@ def _train_pass(state: State, env: Env, now: datetime, pair: tuple[str, ...] | N
     refs = lister() if callable(lister) else None
     if not isinstance(refs, list):
         return
-    made = _build_train(env, refs, pair, now) if pair and train_depth(env) >= TRAIN_DEPTH_MAX else ""
-    heads = {str(t.get("reviewed_sha") or "")[:12] for t in state["tasks"] if t.get("status") in (st.MERGE_PENDING, st.DONE)}
-    pending = {t["id"] for t in state["tasks"] if t.get("status") == st.MERGE_PENDING}
-    for ref in [r for r in refs if isinstance(r, dict)]:
-        why = _train_stale(ref, (pending, heads), now, made)
+    listed = [r for r in refs if isinstance(r, dict)]
+    made = _build_cars(env, listed, cars[:train_depth(env)], now)
+    live = _train_live(state, listed, now, made)
+    for ref in listed:
+        why = _train_stale(ref, live, now, [name for name, _ in made])
         if not why:
             continue
         name = str(ref.get("name") or "")
@@ -754,17 +756,39 @@ def _train_pass(state: State, env: Env, now: datetime, pair: tuple[str, ...] | N
             print(f"runner: merge train: delete of {name} failed ({why}); tried again next pass (D-4281)")
 
 
-def _build_train(env: Env, refs: list[Any], pair: tuple[str, ...], now: datetime) -> str:
-    """Build and push B's train ref on A' (`env.train_merge`, D-4281); the ref's name when pushed, else ''.
-    A ref already listed for the same pair is left as it is; a create rejected because the ref exists is
-    benign; a conflict, a failed tree check or any other failure makes no ref, is logged, and leaves B as
-    it was (its own update merge comes on its turn, exactly as without the train). No ref is built when
-    A' is over TRAIN_MAX_AGE old by its committer time (`env.commit_at`): the update merge carries A''s
-    committer time, so `_train_stale` would delete it on the next pass and a later pass build it again,
-    a new Ci run each time (D-4383)."""
+def _build_cars(env: Env, refs: list[dict[str, Any]], cars: list[tuple[str, str, str]], now: datetime) -> list[tuple[str, str]]:
+    """Build the train refs of `cars` = [A, B] or [A, B, C], already cut to the depth; the (name, sha) of
+    each ref pushed in this pass (D-4281, D-5018). The second car is B's reviewed head on A'. The third is
+    C's reviewed head on the second car's tip X1, named `claude/train/<C>-<X1 first 12 hex>` and built by
+    the same `env.train_merge` (a create, never forced, with its own tree check), only when X1 was pushed
+    in this pass or is listed live and not over TRAIN_MAX_AGE old; with no second car there is no third."""
+    made: list[tuple[str, str]] = []
+    base = cars[0] if cars else ("", "", "")
+    for car in cars[1:]:
+        name = f"claude/train/{car[0]}-{base[2][:12]}"
+        sha = _build_train(env, refs, (*car, *base), now)
+        if sha:
+            made.append((name, sha))
+        else:
+            sha = next((str(r.get("sha") or "") for r in refs if r.get("name") == name and not _train_spent(r, now, [])), "")
+        if not sha:
+            break
+        base = (name, name, sha)
+    return made
+
+
+def _build_train(env: Env, refs: list[dict[str, Any]], pair: tuple[str, ...], now: datetime) -> str:
+    """Build and push B's train ref on A' (`env.train_merge`, D-4281); the pushed commit's sha, else ''.
+    `pair` = (B, B's branch, B's reviewed head, A, A's branch, A'); for a third car (D-5018) B is C and A
+    is the second car's ref with its tip. A ref already listed for the same pair is left as it is; a
+    create rejected because the ref exists is benign; a conflict, a failed tree check or any other failure
+    makes no ref, is logged, and leaves B as it was (its own update merge comes on its turn, exactly as
+    without the train). No ref is built when A' is over TRAIN_MAX_AGE old by its committer time
+    (`env.commit_at`): the update merge carries A''s committer time, so `_train_stale` would delete it on
+    the next pass and a later pass build it again, a new Ci run each time (D-4383)."""
     b, b_branch, b_head, a, a_branch, a_head = pair
     name = f"claude/train/{b}-{a_head[:12]}"
-    if any(isinstance(r, dict) and r.get("name") == name for r in refs):
+    if any(r.get("name") == name for r in refs):
         return ""
     reader = getattr(env, "commit_at", None)
     at = reader(a_head, a_branch) if callable(reader) else None
@@ -777,7 +801,7 @@ def _build_train(env: Env, refs: list[Any], pair: tuple[str, ...], now: datetime
     if status == "pushed":
         print(f"runner: merge train: {b}'s reviewed head {b_head[:12]} merged with {a}'s head {a_head[:12]} "
               f"as {str(done.get('sha'))[:12]}, pushed to {name} (D-4281)")
-        return name
+        return str(done.get("sha") or "")
     if status == "exists":
         print(f"runner: merge train: {name} already exists, left as it is (D-4281)")
     else:
@@ -785,25 +809,57 @@ def _build_train(env: Env, refs: list[Any], pair: tuple[str, ...], now: datetime
     return ""
 
 
-def _train_stale(ref: dict[str, Any], live: tuple[set[str], set[str]], now: datetime, made: str) -> str:
+def _train_live(state: State, refs: list[dict[str, Any]], now: datetime, made: list[tuple[str, str]]) -> tuple[set[str], set[str], set[str]]:
+    """What `_train_stale` judges by (D-4281, D-5018): (MERGE_PENDING task ids; live bases; held names).
+    A live base is the first 12 hex of a MERGE_PENDING or DONE task's head, or of the tip of a second car
+    (a ref on such a head, listed or pushed in this pass) that itself stays, so a third car's base is
+    live exactly while its second car stays. Held are the second cars of DONE tasks that a listed third
+    car still needs: sound but for their task (on a live head, not over TRAIN_MAX_AGE old), and named as
+    base by a listed ref of a MERGE_PENDING task that is itself neither too old nor replaced. Without
+    that, C's proof would lose its base the moment B merges."""
+    pending = {t["id"] for t in state["tasks"] if t.get("status") == st.MERGE_PENDING}
+    done = {t["id"] for t in state["tasks"] if t.get("status") == st.DONE}
+    heads = {str(t.get("reviewed_sha") or "")[:12] for t in state["tasks"] if t.get("status") in (st.MERGE_PENDING, st.DONE)}
+    names = [name for name, _ in made]
+    wanted = {str(r.get("base") or "") for r in refs if str(r.get("task") or "") in pending and not _train_spent(r, now, names)}
+    tips = {sha[:12] for name, sha in made if name.rsplit("-", 1)[-1] in heads}
+    held: set[str] = set()
+    for ref in refs:
+        task, tip = str(ref.get("task") or ""), str(ref.get("sha") or "")[:12]
+        if not tip or str(ref.get("base") or "") not in heads or _train_spent(ref, now, names):
+            continue
+        if task in done and tip in wanted:
+            held.add(str(ref.get("name") or ""))
+        if task in pending or (task in done and tip in wanted):
+            tips.add(tip)
+    return pending, heads | tips, held
+
+
+def _train_stale(ref: dict[str, Any], live: tuple[set[str], set[str], set[str]], now: datetime, made: list[str]) -> str:
     """Why a listed train ref is deleted, '' when it stays (D-4281): its task is not MERGE_PENDING (merged,
-    failed, resyncing); its base A' is no longer the head of a MERGE_PENDING or DONE task (A got a newer
-    head or failed); it is over TRAIN_MAX_AGE old by its commit's committer time; or this pass made a newer
-    ref for the same task. `live` = (MERGE_PENDING task ids, their and DONE tasks' heads' first 12 hex)."""
+    failed, resyncing); its base is no longer live: neither the head of a MERGE_PENDING or DONE task (A
+    got a newer head or failed) nor, for a third car, the tip of a second car that stays (D-5018); it is
+    over TRAIN_MAX_AGE old by its commit's committer time; or this pass made a newer ref for the same
+    task. A DONE task's second car that a third car still needs is held. `live` is `_train_live`'s."""
     name, task = str(ref.get("name") or ""), str(ref.get("task") or "")
-    pending, heads = live
-    if name == made:
+    pending, bases, held = live
+    if name in made or name in held:
         return ""
     if task not in pending:
         return f"{task or '?'} is not MERGE_PENDING"
-    if str(ref.get("base") or "") not in heads:
+    if str(ref.get("base") or "") not in bases:
         return "its base is no longer the head of a MERGE_PENDING or DONE task"
+    return _train_spent(ref, now, made)
+
+
+def _train_spent(ref: dict[str, Any], now: datetime, made: list[str]) -> str:
+    """Why a train ref is spent whatever its task and base, '' when it is not (D-4281): over TRAIN_MAX_AGE
+    old by its commit's committer time, or a ref of the same task was made in this pass (`made`)."""
     at = str(ref.get("at") or "")
     if at and now - st.parse(at) > TRAIN_MAX_AGE:
         return f"over {TRAIN_MAX_AGE} old"
-    if made and made.startswith(f"claude/train/{task}-"):
-        return f"{made} replaced it"
-    return ""
+    newer = [m for m in made if m != ref.get("name") and m.startswith(f"claude/train/{ref.get('task') or ''}-")]
+    return f"{newer[0]} replaced it" if newer else ""
 
 
 def _resolve_line_task(state: State, env: Env, cfg: Config, now: datetime, item: tuple[str, dict[str, Any] | None, bool],
