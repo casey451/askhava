@@ -35258,7 +35258,8 @@
     "T127",
     "T275",
     "T336",
-    "T377"
+    "T377",
+    "T794"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -38053,7 +38054,9 @@
     "T784",
     "T785",
     "T791",
-    "T793"
+    "T793",
+    "T795",
+    "T797"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -46205,7 +46208,7 @@
    "id": "T675",
    "slug": "intake-order-photos",
    "title": "intake and server (harness): the dispatcher asks for photos and, in design categories, look pictures, and picture texts are taken off the texting provider by a queued task",
-   "goal": "Plan change D-4360 (orphan 1, steps 9 and 10; round-1 review findings 4 and 5; INT-044, INT-045, INT-046, PRIV-014, PRIV-025, SEC-041). Nothing asks for photos: `photos::photo_text` (`app/intake/src/photos.rs:205`) has no caller, `privacy::api::take_picture_text` (`app/privacy/src/media_fetch.rs:168`) has none, and the inbound text route (`app/server/src/inbound_text.rs`) reads no `NumMedia` or `MediaUrl<n>` field; `RawReply` and `TextIn` carry no media. A Twilio fetch and provider delete inside the webhook's transaction would break on a rollback or retry (a photo deleted at Twilio and not kept) and can pass Twilio's webhook timeout, so: (1) `app/server/src/inbound_text.rs` (after T573, the last queued owner before T299 and T402) commits the text as today and, in that same transaction, queues one `intake.picture_text` `core.task` per homeowner text with media, its payload the inbox row's ID, the Twilio message SID and up to 3 media SIDs only (no URL kept beyond what the SIDs rebuild, no phone, no words, no image); a business phone's media is ignored as today. After `receive_raw_reply` returns, in the same transaction (the request is then known, including one the text itself opened), the route records one `photo_pending` step-marker row for that request (choice: the inbox ID's hex) through a new `intake::api` function in `photos.rs`; at step 9 the dispatcher never moves on for a text that has such a row (its body is often empty or \"here\"), so the order waits and the task's photo step drives step 9. A picture text whose request has no job yet (the first text named no trade) is held: the task keeps nothing and deletes nothing at the provider, and re-queues itself every 15 minutes (a plain timed re-queue, each under its own dedupe key with its due time, so a restart loses nothing) until the request's job opens, then stores it; it waits at most 72 hours from the picture text (INT-019's no-reply close), and if the request closes first or 72 hours pass, it keeps nothing and deletes the media at the provider. A photo stored before step 9 (a picture text sent at the ZIP step or later) is never shown for confirmation then: it waits, and step 9 shows it for her YES or REMOVE in the order. The task's photo step drives step 9 on every outcome (stored, re-ask, HEIC, refused off Twilio's hosts, or failed after its retries, each with its text), so step 9 never waits on a task that has ended. (2) A new `app/intake/src/picture_text.rs` handles that task (registered in the shared `app/server/src/lib.rs`): outside any held transaction it fetches each media through `take_picture_text` with `fetch_twilio_media` (SEC-041: Twilio's hosts only, size cap, timeout), stores it, deletes it at the provider only after the store committed, and then, under the homeowner lock, calls the dispatcher's photo step for that request; a rerun takes nothing twice (dedupe key per media SID). (3) `app/intake/src/order_dispatch.rs` asks step 9 after the trade questions (`photo_text` with the job type's asks, at most `MAX_PHOTO_ASKS`, the upload link `issue_link` gives for T674's page, PRIV-015's line); never while a 911 text waits for SAFE; each stored photo is shown as it will appear on the card and needs her YES, which records the same `photo_ok` row T674's \"Send this photo\" writes, REMOVE (or QUITAR) deleting it through T674's `privacy::api::delete_photo`; a photo with no `photo_ok` row is left off the card with a note (INT-044); one re-ask only for a file that would not decode or is under the size setting; \"no\" or any other text moves on; and step 10 in a `design: true` category (`design::is_design_category`, `app/intake/src/design.rs:47`): the look-pictures question, handled as photos, and, while the AI may not read photos, the describe-the-look question; the concept image only while the owner's \"Concept images\" switch is on (off at launch), through `design::concept_step`. Step 11 then follows. (4) T672's `tests/integration/tests/intake_order_timing.rs` and T673's `intake_order_flow.rs` script replies from the trade questions to name and address; with the photo step between them they are extended here, add-only: a \"no photo\" reply (and in the flow test one confirmed picture text) is inserted where the order now asks, and the photo ask is added to the expected texts; no assertion is removed or loosened. Tests (TD-INT-49) in the new `tests/integration/tests/intake_order_photos.rs`, PostgreSQL, the Twilio media stand-in and fake images only: a picture text queues one task whose payload holds only IDs, and its body (\"here\") does not move step 9 on, so the photo's confirmation comes before the name-and-address question; a picture text on the first text (no trade) is held until the job opens and stored then; one sent at the ZIP step is confirmed only at step 9; a fetch that fails after its retries still moves step 9 on with its text; the task stores, confirms by YES and puts it on the card, then deletes at the provider; a rerun fetches nothing twice; a store failure deletes nothing at the provider; REMOVE takes it off; an undecodable file re-asked once; a HEIC gets the PRIV-025 reply; no photo asked while SAFE is awaited; a design category asks the look question; a media URL off Twilio's hosts is refused and nothing fetched. The route's done tests pass unchanged. D-4441: every first text in this task's tests names one trade and one job type of it (as \"AC blowing warm air\" does), so T716's \"Which fits best?\" never comes before the coverage line in them, and a request in them holds one job (T711 and T718 add a second). Plan change D-4931: `app/server/src/lib.rs` is not read whole; find the registration block by `grep -n 'fn register_' app/server/src/lib.rs` and open only those lines.",
+   "goal": "Plan change D-4360 (orphan 1, steps 9 and 10; round-1 review findings 4 and 5; INT-044, INT-045, INT-046, PRIV-014, PRIV-025, SEC-041). Nothing asks for photos: `photos::photo_text` (`app/intake/src/photos.rs:205`) has no caller, `privacy::api::take_picture_text` (`app/privacy/src/media_fetch.rs:168`) has none, and the inbound text route (`app/server/src/inbound_text.rs`) reads no `NumMedia` or `MediaUrl<n>` field; `RawReply` and `TextIn` carry no media. A Twilio fetch and provider delete inside the webhook's transaction would break on a rollback or retry (a photo deleted at Twilio and not kept) and can pass Twilio's webhook timeout, so: (1) `app/server/src/inbound_text.rs` (after T573, the last queued owner before T299 and T402) commits the text as today and, in that same transaction, queues one `intake.picture_text` `core.task` per homeowner text with media, its payload the inbox row's ID, the Twilio message SID and up to 3 media SIDs only (no URL kept beyond what the SIDs rebuild, no phone, no words, no image); a business phone's media is ignored as today. After `receive_raw_reply` returns, in the same transaction (the request is then known, including one the text itself opened), the route records one `photo_pending` step-marker row for that request (choice: the inbox ID's hex) through a new `intake::api` function in `photos.rs`; at step 9 the dispatcher never moves on for a text that has such a row (its body is often empty or \"here\"), so the order waits and the task's photo step drives step 9. A picture text whose request has no job yet (the first text named no trade) is held: the task keeps nothing and deletes nothing at the provider, and re-queues itself every 15 minutes (a plain timed re-queue, each under its own dedupe key with its due time, so a restart loses nothing) until the request's job opens, then stores it; it waits at most 72 hours from the picture text (INT-019's no-reply close), and if the request closes first or 72 hours pass, it keeps nothing and deletes the media at the provider. A photo stored before step 9 (a picture text sent at the ZIP step or later) is never shown for confirmation then: it waits, and step 9 shows it for her YES or REMOVE in the order. The task's photo step drives step 9 on every outcome (stored, re-ask, HEIC, refused off Twilio's hosts, or failed after its retries, each with its text), so step 9 never waits on a task that has ended. (2) A new `app/intake/src/picture_text.rs` handles that task (registered in the shared `app/server/src/lib.rs`): outside any held transaction it fetches each media through `take_picture_text` with `fetch_twilio_media` (SEC-041: Twilio's hosts only, size cap, timeout), stores it, deletes it at the provider only after the store committed, and then, under the homeowner lock, calls the dispatcher's photo step for that request; a rerun takes nothing twice (dedupe key per media SID). (3) `app/intake/src/order_dispatch.rs` asks step 9 after the trade questions (`photo_text` with the job type's asks, at most `MAX_PHOTO_ASKS`, the upload link `issue_link` gives for T674's page, PRIV-015's line); never while a 911 text waits for SAFE; each stored photo is shown as it will appear on the card and needs her YES, which records the same `photo_ok` row T674's \"Send this photo\" writes, REMOVE (or QUITAR) deleting it through T674's `privacy::api::delete_photo`; a photo with no `photo_ok` row is left off the card with a note (INT-044); one re-ask only for a file that would not decode or is under the size setting; \"no\" or any other text moves on; and step 10 in a `design: true` category (`design::is_design_category`, `app/intake/src/design.rs:47`): the look-pictures question, handled as photos, and, while the AI may not read photos, the describe-the-look question; the concept image only while the owner's \"Concept images\" switch is on (off at launch), through `design::concept_step`. Step 11 then follows. (4) T672's `tests/integration/tests/intake_order_timing.rs` and T673's `intake_order_flow.rs` script replies from the trade questions to name and address; with the photo step between them they are extended here, add-only: a \"no photo\" reply (and in the flow test one confirmed picture text) is inserted where the order now asks, and the photo ask is added to the expected texts; no assertion is removed or loosened. Tests (TD-INT-49) in the new `tests/integration/tests/intake_order_photos.rs`, PostgreSQL, the Twilio media stand-in and fake images only: a picture text queues one task whose payload holds only IDs, and its body (\"here\") does not move step 9 on, so the photo's confirmation comes before the name-and-address question; a picture text on the first text (no trade) is held until the job opens and stored then; one sent at the ZIP step is confirmed only at step 9; a fetch that fails after its retries still moves step 9 on with its text; the task stores, confirms by YES and puts it on the card, then deletes at the provider; a rerun fetches nothing twice; a store failure deletes nothing at the provider; REMOVE takes it off; an undecodable file re-asked once; a HEIC gets the PRIV-025 reply; no photo asked while SAFE is awaited; a design category asks the look question; a media URL off Twilio's hosts is refused and nothing fetched. The route's done tests pass unchanged. D-4441: every first text in this task's tests names one trade and one job type of it (as \"AC blowing warm air\" does), so T716's \"Which fits best?\" never comes before the coverage line in them, and a request in them holds one job (T711 and T718 add a second). Plan change D-4931: `app/server/src/lib.rs` is not read whole; find the registration block by `grep -n 'fn register_' app/server/src/lib.rs` and open only those lines. Plan change D-5251 (attempt 1's plan gap, reviewer-confirmed): (a) the production media delete is T794's (`TwilioPictureMedia` in `app/server/src/picture_media.rs`, `SmsMediaDelete` in `app/adapters/src/sms.rs`); this task passes it to `picture_text.rs`'s handler where it registers the task in the shared `app/server/src/lib.rs`, and edits no adapters file. (b) The `photo_pending` marker: when the sender already has an open request, the route writes it before `receive_raw_reply` in the same transaction, so a picture text's body (often empty or \"here\") never moves step 9 on; when the text itself opens the request it is written after, as (1) says (that request cannot be at step 9). (c) The photo asks' wording: the question bank lists photo IDs (`photos`, `docs/catalog/question_bank.yaml:10` to `:12`) whose English wording is each trade file's `photos_to_request` (`docs/catalog/trade_kb/trades/*.yaml`), and no Rust code loads it; this task adds the new `app/catalog/src/photo_asks.rs` (re-exported through the catalog crate's shared `api.rs`, one `mod` line in its `lib.rs`): `photo_asks(set_id) -> Vec<String>`, the English `ask` of each listed ID from the set's `kb_trade` file, embedded with `include_str!` and parsed once, an unknown ID a test failure; with Spanish conversations on, the photo ask names no per-photo items (no Spanish drafts exist yet, TXT-039) and keeps the upload link. (d) Concept images: `rules::Settings` has no \"Concept images\" switch and INT-046 keeps it off until an image provider's terms are recorded, so this task builds no concept-image path: in a design category step 10 asks the look-pictures and describe-the-look questions only, and `design::concept_step` stays uncalled (post-launch). The budget is now 8 files and 800 lines, the most a task may take (the adapter work moved to T794); if the photo step still needs more, report it as a plan gap with the line count rather than cutting a case.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -46214,7 +46217,8 @@
     "T673",
     "T674",
     "T573",
-    "T776"
+    "T776",
+    "T794"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -46232,7 +46236,8 @@
     "app/server/src/inbound_text.rs",
     "tests/integration/tests/intake_order_photos.rs",
     "tests/integration/tests/intake_order_flow.rs",
-    "tests/integration/tests/intake_order_timing.rs"
+    "tests/integration/tests/intake_order_timing.rs",
+    "app/catalog/src/photo_asks.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -46265,13 +46270,14 @@
     "D-2874",
     "D-4360",
     "D-4441",
-    "D-4931"
+    "D-4931",
+    "D-5251"
    ],
    "cites": [],
    "budget": {
-    "files": 7,
-    "lines": 550,
-    "context_pct": 42
+    "files": 8,
+    "lines": 800,
+    "context_pct": 43
    },
    "checks": [
     "Ci",
@@ -51160,7 +51166,7 @@
    "id": "T785",
    "slug": "dispute-without-due-date",
    "title": "payments: a dispute with no usable evidence date is still recorded and still blocks refunds",
-   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F26; FEE-026, FEE-027; D-2073 (1)). A `charge.dispute.created` whose `evidence_details.due_by` is null is read as unreadable (`app/payments/src/routes.rs`): one High alert with no subject, no `payments.dispute` row and no ledger entry, so FEE-026's refund block never applies and an automatic refund can go out on a disputed charge; D-2073 (1) said Casey records such a dispute by hand, but no screen or caller exists for that. A `due_by` of 0 or below is stored as 1970 and its tasks fire at once. The new `migrations/0219_payments_dispute_due_optional.sql` drops `NOT NULL` from `payments.dispute.due_at`. The webhook route now treats a null, zero, negative or already-past `due_by` as no date and still records the dispute: the dispute row, the ledger entry and the dispute alert are written exactly as for a dated one, so refunds on that pick are blocked and flagged, and only the submit task and the due reminders, which need a date, are skipped; the alert says the evidence date is missing and names the pick, so Casey can act in Stripe. `record_dispute`'s existing signature stays for dated disputes; the undated case is a new entry beside it in `app/payments/src/disputes.rs`, so no done test changes except TD-FEE-43's `td_fee_43_an_unreadable_event_alerts_casey_once`, by logged spec change (D-5164): its unreadable dispute becomes one with no `payment_intent`; the odd refund status, the alert count 2, the no-dispute-row and High assertions stay. Every reader of `payments.dispute.due_at` handles a missing date: the ones in these two files (in `disputes.rs`, `mark_auto_submit` (`:213` to `:224`) neither sets `auto_submit` nor queues a submit task for an undated dispute and answers as for one it did not mark, and `list_disputes` (`:414`) reads `(due_at IS NULL OR due_at >= $1)` so an undated open dispute stays in the digest), `DisputeView.due_at` (now `Option<Timestamp>`, `models.rs`), `dispute_row` in `app/portals/src/owner_portal.rs` (an undated dispute shows `date not given by Stripe` as `due` and, unless submitted, the standing 'You need to counter or accept this one in Stripe.', never the 2-days line; no template change), and `place_dispute_holds` in `app/payments/src/purge.rs`, which this task also owns for that read alone: an undated dispute's PRIV-007 hold counts from `opened_at` in place of the missing date, and the decision entry and `docs/for-casey-review.md` say so. Tests in the new `tests/integration/tests/dispute_no_due_date.rs`, PostgreSQL with the Stripe stand-in's signing, fake data only, the event bodies built in the test: `due_by` null makes one dispute row with no date and one ledger entry, and a later refund on that pick is blocked and flagged; `due_by` 0 and a past date do the same and queue no task due in the past; an undated dispute still places its retention hold; a dated dispute behaves as today; an undated open dispute is listed by `list_disputes` and gets no submit task from `mark_auto_submit`; a negative `due_by` is undated; a null `due_by` raises no `UNREADABLE_EVENT_ALERT`; `disputes_of` returns `None` for the date; the owner refund page line for an undated dispute; and the null, zero, negative and past `due_by` paths and the undated `purge.rs:41` read each get a case (95% branch floor). Every existing dispute and refund test passes unchanged except that one TD-FEE-43 case. It is money code under the `payments` 95% branch floor. The worker updates `td_fee_43_an_unreadable_event_alerts_casey_once`'s doc comment (\"a dispute with no evidence due date\") to match its new body. This task does not touch `kit/plan.lock`. Build notes go to the end of `app/payments/NOTES.md`; update `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F26; FEE-026, FEE-027; D-2073 (1)). A `charge.dispute.created` whose `evidence_details.due_by` is null is read as unreadable (`app/payments/src/routes.rs`): one High alert with no subject, no `payments.dispute` row and no ledger entry, so FEE-026's refund block never applies and an automatic refund can go out on a disputed charge; D-2073 (1) said Casey records such a dispute by hand, but no screen or caller exists for that. A `due_by` of 0 or below is stored as 1970 and its tasks fire at once. The new `migrations/0219_payments_dispute_due_optional.sql` drops `NOT NULL` from `payments.dispute.due_at`. The webhook route now treats a null, zero, negative or already-past `due_by` as no date and still records the dispute: the dispute row, the ledger entry and the dispute alert are written exactly as for a dated one, so refunds on that pick are blocked and flagged, and only the submit task and the due reminders, which need a date, are skipped; the alert says the evidence date is missing and names the pick, so Casey can act in Stripe. `record_dispute`'s existing signature stays for dated disputes; the undated case is a new entry beside it in `app/payments/src/disputes.rs`, so no done test changes except TD-FEE-43's `td_fee_43_an_unreadable_event_alerts_casey_once`, by logged spec change (D-5164): its unreadable dispute becomes one with no `payment_intent`; the odd refund status, the alert count 2, the no-dispute-row and High assertions stay. Every reader of `payments.dispute.due_at` handles a missing date: the ones in these two files (in `disputes.rs`, `mark_auto_submit` (`:213` to `:224`) neither sets `auto_submit` nor queues a submit task for an undated dispute and answers as for one it did not mark, and `list_disputes` (`:414`) reads `(due_at IS NULL OR due_at >= $1)` so an undated open dispute stays in the digest), `DisputeView.due_at` (now `Option<Timestamp>`, `models.rs`), `dispute_row` in `app/portals/src/owner_portal.rs` (an undated dispute shows `date not given by Stripe` as `due` and, unless submitted, the standing 'You need to counter or accept this one in Stripe.', never the 2-days line; no template change), and `place_dispute_holds` in `app/payments/src/purge.rs`, which this task also owns for that read alone: an undated dispute's PRIV-007 hold counts from `opened_at` in place of the missing date, and the decision entry and `docs/for-casey-review.md` say so. Tests in the new `tests/integration/tests/dispute_no_due_date.rs`, PostgreSQL with the Stripe stand-in's signing, fake data only, the event bodies built in the test: `due_by` null makes one dispute row with no date and one ledger entry, and a later refund on that pick is blocked and flagged; `due_by` 0 and a past date do the same and queue no task due in the past; an undated dispute still places its retention hold; a dated dispute behaves as today; an undated open dispute is listed by `list_disputes` and gets no submit task from `mark_auto_submit`; a negative `due_by` is undated; a null `due_by` raises no `UNREADABLE_EVENT_ALERT`; `disputes_of` returns `None` for the date; the owner refund page line for an undated dispute; and the null, zero, negative and past `due_by` paths and the undated `purge.rs:41` read each get a case (95% branch floor). Every existing dispute and refund test passes unchanged except that one TD-FEE-43 case. It is money code under the `payments` 95% branch floor. The worker updates `td_fee_43_an_unreadable_event_alerts_casey_once`'s doc comment (\"a dispute with no evidence due date\") to match its new body. This task does not touch `kit/plan.lock`. Build notes go to the end of `app/payments/NOTES.md`; update `docs/architecture.md` and `docs/decisions.md`. Plan change D-5252 (job-5 money review findings 2 and 9, verified on `main`; FEE-026, FEE-027; D-2289): (2) a `charge.dispute.created` whose PaymentIntent a `payments.pick_intent` row holds but which has no `payments.charge_evidence` row is not an unknown charge: `record_dispute` (`app/payments/src/disputes.rs:97` to `:106`) answers a new `MoneyEventError::NoEvidence(pick)` there (`models.rs`), and the route's `money` (`app/payments/src/routes.rs:430` to `:436`) answers it `Acted::Retry` (500, Stripe resends) after one `raise_alert_once` per pick, as the fraud-warning `NoEvidence` path does (`routes.rs:473` to `:477`, `no_evidence_alert`); when no pick holds the PaymentIntent the event row commits with one High alert, as `unmatched_warning` does (`:662`), and answers 200. (9) `run_dispute_submit` (`disputes.rs:361` to `:398`) first reads the dispute's `due_at`: when it is set and `now >= due_at` it makes no Stripe call, raises one High \"dispute deadline missed\" alert through `raise_alert_once` (subject the pick) and returns `Ok`. Their cases join `tests/integration/tests/dispute_no_due_date.rs` (a dispute with evidence missing is resent and alerted once; one with no pick commits and alerts; a submit task run after the deadline calls no Stripe and alerts once).",
    "type": "harness",
    "phase": 2,
    "stage": "6",
@@ -51202,13 +51208,14 @@
    "decisions": [
     "D-2073",
     "D-5081",
-    "D-5164"
+    "D-5164",
+    "D-5252"
    ],
    "cites": [],
    "budget": {
     "files": 8,
-    "lines": 550,
-    "context_pct": 39
+    "lines": 700,
+    "context_pct": 40
    },
    "checks": [
     "Ci",
@@ -51678,6 +51685,241 @@
    "branch": "claude/task/T793-email-quiet-drain",
    "prompt": "kit/prompts/T793.md",
    "acceptance": "`tests/integration/tests/email_quiet_drain.rs` passes against PostgreSQL, the 9 p.m. case failing on `main` before the change; every email drain, business-notice and email test passes unchanged; the migration only adds the column; clippy and fmt clean."
+  },
+  {
+   "id": "T794",
+   "slug": "twilio-media-delete",
+   "title": "adapters and server: the Twilio media delete and the production picture-text media for T675",
+   "goal": "Plan change D-5251 (T675's plan gap; INT-044, SEC-018, SEC-032, SEC-041, PRIV-014; D-491). No production `privacy::api::PictureTextMedia` exists: only the test fake in `tests/integration/tests/intake_photos.rs:109` deletes media, and `TwilioHttp` (`app/adapters/src/base.rs:151`) is `pub(crate)` with no DELETE call. This task: (1) `base.rs`: `TwilioHttp` gains `pub(crate) async fn delete(&self, url, idempotency)` beside `post_form` (`:180`), answering `Ok(())` on 204 and 404 (already gone) and an `AdapterError` otherwise, the auth and timeout as for the other calls; (2) `app/adapters/src/sms.rs`: a new public trait `SmsMediaDelete` with `delete_message_media(&self, idempotency, message_sid, media_sid)`, implemented for `TwilioSms`: both SIDs checked with `is_sid` (`MM` or `SM`, and `ME`) before they reach the path (SEC-032), then DELETE `{account_url}/Messages/{message_sid}/Media/{media_sid}.json`; re-exported through the adapters crate's shared `api.rs`; (3) the new `app/server/src/picture_media.rs`: `TwilioPictureMedia`, the production `PictureTextMedia`: `fetch_media` is `privacy::api::fetch_twilio_media` (SEC-041, Twilio's hosts only), and `delete_media` parses the two SIDs out of a Twilio media URL's path (`/2010-04-01/Accounts/{AC}/Messages/{MM}/Media/{ME}`, the account SID equal to the configured one, any other shape `AdapterError::InvalidId`) and calls `delete_message_media`; T675 registers it. The Twilio stand-in already serves DELETE on media (`stand_ins/twilio.py:285`). Tests: unit tests in the new `app/adapters/src/tests/media_delete.rs` (a malformed SID or URL sends nothing; 204 and 404 are `Ok`) and the contract test `tests/contract/test_twilio_media_delete.py` against the stand-in (the media answers 404 after the delete). Fake SIDs only. Update `app/adapters/NOTES.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "adapters",
+   "deps": [
+    "T377",
+    "T336",
+    "T212",
+    "T100",
+    "T110",
+    "T517"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/adapters/src/base.rs",
+    "app/adapters/src/sms.rs",
+    "app/server/src/picture_media.rs",
+    "app/adapters/src/tests/media_delete.rs",
+    "tests/contract/test_twilio_media_delete.py"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/intake.md",
+    "docs/spec/security.md",
+    "app/privacy/src/media_fetch.rs",
+    "stand_ins/twilio.py"
+   ],
+   "requirements": [
+    "INT-044",
+    "SEC-018",
+    "SEC-032",
+    "SEC-041"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-5251",
+    "D-491"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 300,
+    "context_pct": 24
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T794-twilio-media-delete",
+   "prompt": "kit/prompts/T794.md",
+   "acceptance": "`cargo test -p askhava-adapters` and `python3 -m pytest tests/contract/test_twilio_media_delete.py` pass; a malformed SID or a URL of another shape sends no request; every existing adapters, sms and contract test passes unchanged; clippy and fmt clean."
+  },
+  {
+   "type": "build",
+   "phase": 2,
+   "stage": "6",
+   "module": "payments",
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "cites": [],
+   "id": "T795",
+   "slug": "release-after-refund",
+   "title": "payments: a delayed success never releases a refunded or disputed pick, and a $0 release needs the pick's own waiver",
+   "goal": "Plan change D-5253 (job-5 money review finding 1 and the watch item for finding 3, verified on `main`; PICK-022, FEE-021, FEE-026; D-4419). (1) `paid_release` (`app/payments/src/release_proof.rs:208` to `:233`) checks only the pick's `ended_at`, not `refunded_or_disputed` (`:442`) as `held_release` does (`:268` to `:270`), so an owner refund or a dispute recorded before a delayed success webhook still releases her details: after the `ended_late` check it adds `if refunded_or_disputed(pool, pick).await? { return Err(ReleaseError::PickEnded); }`. (2) T754 relaxes `no_fee_release`'s `NOT EXISTS payments.pick_intent` test (`:298`) for a pick whose intents all ended; this task makes that path accept a $0 release only when the pick's own decision says so: the decision `free_wins::decided` (`app/payments/src/free_wins.rs:166` to `:189`) returns for the pick's business and job is a waiver (free first win or repeat customer), or the job type is fee-free, read in the same transaction; any other answer is `NoFeeDecision`. Tests in the new `tests/integration/tests/release_after_refund.rs`, PostgreSQL with the Stripe stand-in's signing, fake data only: a success webhook for a pick with a `payments.refund` row, and one with a `payments.dispute` row, releases nothing and answers `PickEnded`; a $0 release with an ended intent and a waiver releases; one whose ledger answer is a charge does not. Every release and refund test passes unchanged. Money: Opus worker, Opus money and privacy review, two review rounds. Update `app/payments/NOTES.md` and `docs/decisions.md`.",
+   "deps": [
+    "T754",
+    "T785"
+   ],
+   "review_areas": [
+    "money",
+    "privacy"
+   ],
+   "owns": [
+    "app/payments/src/release_proof.rs",
+    "tests/integration/tests/release_after_refund.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/spec/quotes-pick.md",
+    "app/payments/src/free_wins.rs",
+    "docs/brains/payments-stripe.md"
+   ],
+   "requirements": [
+    "PICK-022",
+    "FEE-021",
+    "FEE-026"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-5253",
+    "D-4419"
+   ],
+   "budget": {
+    "files": 2,
+    "lines": 300,
+    "context_pct": 21
+   },
+   "branch": "claude/task/T795-release-after-refund",
+   "prompt": "kit/prompts/T795.md",
+   "acceptance": "`tests/integration/tests/release_after_refund.rs` passes against PostgreSQL, the refund and dispute cases failing on `main` before the change; every release, refund and dispute test passes unchanged; `app/payments/` keeps its 95% branch floor."
+  },
+  {
+   "type": "harness",
+   "phase": 2,
+   "stage": "6",
+   "module": "payments",
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "cites": [],
+   "id": "T796",
+   "slug": "reconcile-partial-refunds",
+   "title": "payments: the nightly reconcile refunds what a partial dashboard refund left and catches a stored refund Stripe shows failed",
+   "goal": "Plan change D-5254 (job-5 money review findings 4 and 6, verified on `main`; FEE-025, FEE-029, FEE-030; D-5158). (4) `plan_charge` (`app/payments/src/models.rs:754`) treats a charge as untouched only when `refunded_cents == 0`, so a partial refund Casey makes in the Stripe dashboard (D-5158 sanctions it) leaves the rest of an ended pick's charge unrefunded: it decides on `refunded_cents < amount_cents` with no dispute, refunding the remainder, and books `refunded_cents` minus the ledger's net refund for the pick in place of the yes/no `has_refund` (`:770`), so a second partial refund is booked once. (6) When the ledger's net refund is more than Stripe's `refunded_cents` and the pick's refund is stored `succeeded`, the nightly reconcile (`app/payments/src/reconcile.rs`) reads the refund with `fetch_refund` (`app/payments/src/refund_stripe.rs:132`) and calls the existing `refund_failed` or `refund_canceled` (`app/payments/src/refunds.rs:713`, `:725`) for what it answers. Tests in the new `tests/integration/tests/reconcile_partial_refund.rs`, PostgreSQL and the Stripe stand-in, fake data only: a partial dashboard refund on an ended pick refunds the remainder once and books it once; a stored-succeeded refund Stripe shows failed is moved through `refund_failed`. `plan_charge`'s third argument becomes the ledger's charge flag and net refund in cents (its only production caller is `reconcile.rs:457`); two DONE tests pin the old shape and the old rule, so by logged spec change (D-5254, `BUILD_BRIEF.md:69`) they change only there: TD-FEE-16's property (`app/payments/src/tests/prop_ledger_matches_stripe.rs:68`, `:74`, `:93` to `:100`: its expected refund now reads `refunded_cents < amount_cents` with no dispute, and its ledger model books only the part not yet booked) and `app/payments/src/tests/coverage_margin.rs:46` to `:59` (the call shape only, every assertion kept). Every other reconcile and refund test passes unchanged. Money: Opus worker, Opus money review, two review rounds. Update `app/payments/NOTES.md` and `docs/decisions.md`.",
+   "deps": [
+    "T785",
+    "T067",
+    "T387"
+   ],
+   "review_areas": [
+    "money",
+    "harness"
+   ],
+   "owns": [
+    "app/payments/src/models.rs",
+    "app/payments/src/reconcile.rs",
+    "tests/integration/tests/reconcile_partial_refund.rs",
+    "app/payments/src/tests/prop_ledger_matches_stripe.rs",
+    "app/payments/src/tests/coverage_margin.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "app/payments/src/refunds.rs",
+    "docs/brains/payments-stripe.md"
+   ],
+   "requirements": [
+    "FEE-025",
+    "FEE-029",
+    "FEE-030"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-5254",
+    "D-5158"
+   ],
+   "budget": {
+    "files": 5,
+    "lines": 500,
+    "context_pct": 31
+   },
+   "branch": "claude/task/T796-reconcile-partial-refunds",
+   "prompt": "kit/prompts/T796.md",
+   "acceptance": "`tests/integration/tests/reconcile_partial_refund.rs` passes against PostgreSQL, the partial-refund case failing on `main` before the change; TD-FEE-16 and `coverage_margin.rs` change only as the goal says; every other reconcile and refund test passes unchanged; `app/payments/` keeps its 95% branch floor."
+  },
+  {
+   "type": "build",
+   "phase": 2,
+   "stage": "6",
+   "module": "payments",
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "cites": [],
+   "id": "T797",
+   "slug": "refund-status-guards",
+   "title": "payments: a stale refund answer never overwrites a newer state, and the reconcile report is matched only with no failed charge",
+   "goal": "Plan change D-5255 (job-5 money review findings 7 and 8, verified on `main`; FEE-021, FEE-026, FEE-030). (7) `ReconcileReport::matched` (`app/payments/src/reconcile.rs:245` to `:247`) also requires `self.failed == 0`, and its doc says the match covers the charges of known picks only. (8) `refunds.rs`'s succeeded update (`app/payments/src/refunds.rs:430` to `:433`) and pending update (`:471` to `:473`) are guarded as the failed update is (`:582`): `status = 'sending' AND tries = $n` from `record_answer`, or `status = 'pending'` from `refund_succeeded`, so a stale answer never overwrites a newer state. Tests in the new `tests/integration/tests/refund_status_guard.rs`, PostgreSQL, fake data only: a stale succeeded or pending answer changes nothing; a report with a failed charge is not matched. Every refund and reconcile test passes unchanged. Money: Opus (money application code, `BUILD_BRIEF.md:498`), Opus money review. Update `docs/decisions.md`.",
+   "deps": [
+    "T796",
+    "T380"
+   ],
+   "review_areas": [
+    "money"
+   ],
+   "owns": [
+    "app/payments/src/refunds.rs",
+    "app/payments/src/reconcile.rs",
+    "tests/integration/tests/refund_status_guard.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md"
+   ],
+   "requirements": [
+    "FEE-021",
+    "FEE-026",
+    "FEE-030"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-5255"
+   ],
+   "budget": {
+    "files": 3,
+    "lines": 200,
+    "context_pct": 25
+   },
+   "branch": "claude/task/T797-refund-status-guards",
+   "prompt": "kit/prompts/T797.md",
+   "acceptance": "`tests/integration/tests/refund_status_guard.rs` passes against PostgreSQL, the stale-answer cases failing on `main` before the change; every refund and reconcile test passes unchanged; `app/payments/` keeps its 95% branch floor."
   }
  ]
 }
