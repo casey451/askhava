@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-21T04:16:53Z by runner dae15322d0e5 (actions).
+Updated 2026-11-21T04:17:22Z by runner dae15322d0e5 (actions).
 
-**Building: T457 in progress since 03:41Z; 569 of 726 done; week 63% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T614 in progress since 03:43Z; 569 of 726 done; week 63% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 569 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T457 claimed 03:41Z, lease until 06:41Z; lane 4: T614 claimed 03:43Z, lease until 06:43Z; lane 5: T304 claimed 02:48Z, lease until 05:48Z; lane 6: T755 claimed 04:14Z, lease until 07:14Z; lane 7: T691 claimed 04:07Z, lease until 07:07Z
+- **Lane:** lane 4: T614 claimed 03:43Z, lease until 06:43Z; lane 5: T304 claimed 02:48Z, lease until 05:48Z; lane 6: T755 claimed 04:14Z, lease until 07:14Z; lane 7: T691 claimed 04:07Z, lease until 07:07Z
 - **Week:** 63% used, 63.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:16Z, 0 min before this update
 - **Keeper:** last ran 04:16Z, next wake 05:51Z
@@ -33,13 +33,14 @@ T777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T457 | portals and server: the Confirm email link asks for a code w | MERGE_PENDING | 1 | 35 min | 04:16Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
 | T781 | recovery: a failed or timed-out nightly export raises one al | MERGE_PENDING | 1 | 116 min | 04:14Z |  |
 | T776 | intake: a move out of Arizona and a property-management requ | BLOCKED | 1 | 11 min | 04:00Z | PLAN GAP: outside ownership: app/intake/src/matching.rs / Worker: matching.rs:52 keyword RULES cover only plumbing, HVAC |
 | T684 | picks and server: the open-cards email goes at the times eac | done | 2 | 93 min | 03:50Z | PLAN GAP: app/quotes/src/models.rs:265 `card_sent_at` is pub(crate); T684 owns no app/quotes/src file. quotes::api has n |
 | T780 | payments and portals: the scorecard's refund and dispute rat | MERGE_PENDING | 1 | 33 min | 03:33Z |  |
 | T775 | intake: a check-in reply that names a 911 danger gets the 91 | done | 1 | 94 min | 03:03Z |  |
 | T754 | portals and payments: a $0 Confirm after a PaymentIntent was | BLOCKED | 1 | 3 min | 02:52Z | PLAN GAP: outside ownership: app/adapters/src/payments.rs, stand_ins/stripe.py, stand_ins/server.py / T754 requires canc |
-| T457 | portals and server: the Confirm email link asks for a code w | resync | 1 | 70 min | 02:50Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
+| T457 | portals and server: the Confirm email link asks for a code w | resync | 1 | 70 min | 02:50Z |  |
 | T654 | licensing and quotes: every ROC list import runs each active | BLOCKED | 1 | 2 min | 02:42Z | PLAN GAP: outside ownership: app/quotes/src/service.rs, app/quotes/src/late_cards.rs, app/intake/src/cards_out.rs, app/i |
 | T774 | tests (harness): the quote page's no-AI-summary check leaves | done | 1 | 65 min | 02:38Z |  |
 | T777 | businesses: a sign-in code is texted only to a line whose cu | BLOCKED | 1 | 37 min | 02:09Z | PLAN GAP: outside ownership: app/server/tests/business_signin_route.rs / T777's approved_at filter in sign_in_lines fail |
@@ -160,11 +161,10 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T457 (lease until 2026-11-21T06:41:23Z)
 - lane 4: T614 (lease until 2026-11-21T06:43:38Z)
 - lane 5: T304 (lease until 2026-11-21T05:48:33Z)
 - lane 6: T755 (lease until 2026-11-21T07:14:59Z)
 - lane 7: T691 (lease until 2026-11-21T07:07:30Z)
 
 ## Last usage reading
-- {"task": "T781", "at": "2026-11-21T04:14:00Z", "input_tokens": 160, "cache_read_input_tokens": 5638663, "cache_creation_input_tokens": 135570, "output_tokens": 43660}
+- {"task": "T457", "at": "2026-11-21T04:16:50Z", "output_tokens": 9395, "input_tokens": 62, "cache_creation_input_tokens": 67409, "cache_read_input_tokens": 900230}
