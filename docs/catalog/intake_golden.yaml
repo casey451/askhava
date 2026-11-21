@@ -111,10 +111,10 @@ rows:
   - {id: pest_control-04, trade: pest_control, job_type: "pre-emergent weed control", question: pest, lang: en, text: "Want pre-emergent sprayed on the rock yard to stop weeds"}
   - {id: pest_control-05, trade: pest_control, job_type: "general pest service", question: pest, lang: en, text: "Need quarterly bug spraying inside and out"}
   - {id: pest_control-06, trade: pest_control, job_type: "scorpions", question: pest, lang: en, text: "Scorpions keep coming in under the back door"}
-  - {id: pest_control-07, trade: pest_control, job_type: "termites", question: pest, lang: en, text: "Wings piling up by the window sill, could be termites"}
+  - {id: pest_control-07, trade: pest_control, job_type: "termite report for a sale or loan", question: pest, lang: en, text: "Need a termite report for the home sale"}
   - {id: pest_control-08, trade: pest_control, job_type: "scorpions", question: pest, lang: es, text: "Hay alacranes en la casa, necesito fumigar"}
   - {id: pest_control-09, trade: pest_control, job_type: "general pest service", question: pest, lang: es, text: "Quiero servicio de control de plagas cada mes"}
-  - {id: pest_control-10, trade: pest_control, job_type: "termites", question: pest, lang: es, text: "Creo que hay termitas en la madera del garaje"}
+  - {id: pest_control-10, trade: pest_control, job_type: "termite report for a sale or loan", question: pest, lang: es, text: "Necesito un reporte de termitas para la venta"}
   - {id: dog_waste_pickup-01, trade: dog_waste_pickup, job_type: "weekly yard pickup", question: dogs, lang: en, text: "Need weekly dog poop pickup in the backyard"}
   - {id: dog_waste_pickup-02, trade: dog_waste_pickup, job_type: "weekly yard pickup", question: dogs, lang: en, text: "Two dogs, looking for someone to scoop the yard every week"}
   - {id: dog_waste_pickup-03, trade: dog_waste_pickup, job_type: "weekly yard pickup", question: dogs, lang: en, text: "Want pet waste removal service twice a week"}
@@ -319,12 +319,12 @@ rows:
   - {id: home_inspection-02, trade: home_inspection, job_type: "buyer inspection", question: sale, lang: en, text: "Buying a house and need an inspection before closing"}
   - {id: home_inspection-03, trade: home_inspection, job_type: "pre-listing inspection", question: sale, lang: en, text: "Selling soon and want an inspection before listing"}
   - {id: home_inspection-04, trade: home_inspection, job_type: "refinance inspection", question: sale, lang: en, text: "Lender wants an inspection for our refinance"}
-  - {id: home_inspection-05, trade: home_inspection, job_type: "termite report for a sale or loan", question: sale, lang: en, text: "Need a termite report for the home sale"}
+  - {id: home_inspection-05, trade: home_inspection, job_type: "refinance inspection", question: sale, lang: en, text: "Refinancing and the bank asked for a home inspection"}
   - {id: home_inspection-06, trade: home_inspection, job_type: "buyer inspection", question: sale, lang: en, text: "Under contract on a house, need an inspector this week"}
   - {id: home_inspection-07, trade: home_inspection, job_type: "home condition inspection (no sale or refinance)", question: sale, lang: en, text: "House is 30 years old, want a full checkup"}
   - {id: home_inspection-08, trade: home_inspection, job_type: "buyer inspection", question: sale, lang: es, text: "Voy a comprar una casa y necesito inspección"}
   - {id: home_inspection-09, trade: home_inspection, job_type: "pre-listing inspection", question: sale, lang: es, text: "Quiero inspeccionar la casa antes de venderla"}
-  - {id: home_inspection-10, trade: home_inspection, job_type: "termite report for a sale or loan", question: sale, lang: es, text: "Necesito un reporte de termitas para la venta"}
+  - {id: home_inspection-10, trade: home_inspection, job_type: "pre-listing inspection", question: sale, lang: es, text: "Voy a poner la casa en venta y quiero una inspección antes"}
   - {id: home_watch-01, trade: home_watch, job_type: "weekly house check", question: schedule, lang: en, text: "We leave for the summer and want someone to check the house weekly"}
   - {id: home_watch-02, trade: home_watch, job_type: "storm check", question: schedule, lang: en, text: "Need someone to check the house after storms while we're away"}
   - {id: home_watch-03, trade: home_watch, job_type: "weekly house check", question: schedule, lang: en, text: "Snowbird home needs weekly checks, run the water and look around"}

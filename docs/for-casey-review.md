@@ -3702,6 +3702,11 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 - **Termite report:** "termite report for a sale or loan" becomes a pest-control job, only for a pest business that says it holds the wood-destroying category, and it stays free of the introduction fee. T790 makes the catalog and test change.
 - **Keywords:** T716 adds 42 checked keyword phrases for when the AI is off.
 
+## The termite report is now a pest-control job (T790, D-5223, November 21)
+
+- "Termite report for a sale or loan" is now a pest-control job, sent only to a pest business that says it holds the wood-destroying category, and still free of the introduction fee. Home inspection keeps buyer, pre-listing and refinance inspections fee-free.
+- New Spanish draft for a native speaker to check: the pest question's answer "Reporte de termitas para venta o préstamo" ("Termite report for a home sale or loan").
+- A.R.S. 3-3633 (wood-destroying insect reports by a pest licensee) is still not independently verified.
 ## Outside code review 3 (D-5228 to D-5232, November 21)
 
 - **Fixed by tasks:** a START racing an opt-out re-key now takes the number lock (T738); Confirm reminders follow the night hold and every business notice waits for each recipient's own time zone (T792); business notice emails no longer go out at night from the email queue (T793).
