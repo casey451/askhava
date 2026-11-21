@@ -25,7 +25,7 @@
 //! quiet hours passed and `may_text` passed; it goes to the area-code window check (QH-001,
 //! QH-003) and the carrier call and nowhere else. [`expire_job_rows`] is the job's side of QH-007.
 
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
 
 use askhava_adapters::api::SmsAdapter;
 use askhava_core::api::{Claimed, Clock, HandlerError, NewTask, Registry, TaskError, enqueue};
@@ -41,7 +41,7 @@ use sqlx::{Connection, PgConnection, PgPool};
 
 use crate::business_notices::{SendChecks, held_until};
 use crate::email::{
-    EmailClass, NewEmail, Notice, PostalAddress, Recipient, homeowner_email, queue_email,
+    EmailClass, NewEmail, Notice, OnDomain, PostalAddress, Recipient, homeowner_email, queue_email,
 };
 use crate::mode::{LineSendError, Lines, SendingNumber, send_on_line};
 use crate::mode_state::load_lines;
@@ -68,8 +68,13 @@ pub const STALE_AFTER: SignedDuration = SignedDuration::from_mins(5);
 pub const SEND_EVERY: SignedDuration = SignedDuration::from_mins(1);
 /// The most rows one run sweeps or sends.
 const BATCH: i64 = 50;
-/// The homeowner portal, the "Manage email notices" link of a text's email copy.
-const MANAGE_URL: &str = "/h";
+/// The homeowner portal, the absolute "Manage email notices" link of a text's email copy, as every
+/// other sender renders it (SEC-025, SEC-028, D-4327).
+static MANAGE_URL: LazyLock<String> = LazyLock::new(|| OnDomain("/h").to_string());
+/// The first hold of a row the carrier's rate limit refused (TXT-014, D-4052).
+const RATE_HOLD: SignedDuration = SignedDuration::from_mins(1);
+/// The longest hold of a rate-limited row (D-4052).
+const RATE_HOLD_MAX: SignedDuration = SignedDuration::from_mins(15);
 const FAILED: HandlerError = HandlerError("outbox sender database call failed");
 
 /// Why [`LinePhones::phone`] gave no number (D-4913).
@@ -475,7 +480,7 @@ pub async fn expire_job_rows(
 
 /// What a failed send leaves: a listed number's row expires (CON-013), and so does a row whose
 /// recipient can never be read or is of the wrong kind (D-3149), so no row stays at the head of the
-/// queue; a vault read that may pass is `Database`, so the batch loop holds it (D-3581); a refusal waits for its TXT-014 retry or is given up; an unknown outcome is settled; a
+/// queue; a vault read that may pass is `Database`, so the batch loop holds it (D-3581); a refusal waits for its TXT-014 retry or is given up; a rate limit is held uncounted (D-4052); an unknown outcome is settled; a
 /// row gone, blocked (21610) or already claimed needs nothing.
 async fn after_error<C, G, P>(
     db: &mut PgConnection,
@@ -491,6 +496,7 @@ async fn after_error<C, G, P>(
         | OutboxError::BadPhone
         | OutboxError::PastCustomer => expire(db, row.id).await,
         OutboxError::Carrier => refused(db, s, row, now).await,
+        OutboxError::RateLimited => rate_limited(db, row, now).await,
         OutboxError::OutcomeUnknown => settle_unknown(db, s, (row.id, None), now).await,
         OutboxError::Database => Err(OutboxError::Database),
         _ => Ok(()),
@@ -524,6 +530,31 @@ async fn refused<C, G, P>(
     }
 }
 
+/// TXT-011, TXT-014, D-4052: a row the carrier's rate limit refused (nothing was sent) is held with
+/// no counted failure, so rate limits never give a text up. The hold comes from the row's current
+/// one: [`RATE_HOLD`] past the time from its queueing to that hold's end, at most
+/// [`RATE_HOLD_MAX`]; a row tried as soon as it is due thus waits 1, 2, 4, 8, then 15 minutes.
+async fn rate_limited(db: &mut PgConnection, row: &Due, now: Timestamp) -> Result<(), OutboxError> {
+    let held = sqlx::query_scalar!(
+        "SELECT not_before FROM messaging.outbox WHERE id = $1",
+        row.id
+    )
+    .fetch_optional(&mut *db)
+    .await
+    .map_err(|_| OutboxError::Database)?
+    .flatten()
+    .map(|t| t.to_jiff());
+    models::hold(db, row.id, now + rate_hold(row.queued_at, held)).await
+}
+
+/// The next rate-limit hold of a row queued at `queued_at` whose current hold ends at `held`.
+fn rate_hold(queued_at: Timestamp, held: Option<Timestamp>) -> SignedDuration {
+    let waited = held.map_or(SignedDuration::ZERO, |until| {
+        until.duration_since(queued_at)
+    });
+    (waited.max(SignedDuration::ZERO) + RATE_HOLD).min(RATE_HOLD_MAX)
+}
+
 /// How long a refused row with no postal line to give it up waits before it is tried again.
 const RETRY_LAST: SignedDuration = SignedDuration::from_mins(30);
 
@@ -537,7 +568,7 @@ fn email_to(id: Uuid, language: Option<&str>) -> Recipient<'static> {
         } else {
             Language::En
         },
-        manage_url: MANAGE_URL,
+        manage_url: MANAGE_URL.as_str(),
     }
 }
 
