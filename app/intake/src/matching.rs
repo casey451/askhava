@@ -98,6 +98,42 @@ const RULES: &[Rule] = &[
     rule(HANDYMAN, Some("drywall patch"), &["drywall"], false),
     rule(HANDYMAN, Some("shelves"), &["shelf", "shelves"], false),
     rule(HANDYMAN, Some("fence repair"), &["fence"], false),
+    rule(
+        "local_moving",
+        Some("in-town move"),
+        &[
+            "movers",
+            "moving help",
+            "mudanza fuera",
+            "necesito mudanza",
+            "hacer una mudanza",
+            "ayuda con mudanza",
+        ],
+        false,
+    ),
+    rule(
+        "home_watch",
+        Some("weekly house check"),
+        &[
+            "home watch",
+            "house check",
+            "house checks",
+            "cuidar la casa",
+        ],
+        false,
+    ),
+    rule(
+        "turnover_cleaning",
+        Some("turnover clean"),
+        &[
+            "turnover clean",
+            "turnover cleaning",
+            "turnover cleaner",
+            "airbnb cleaning",
+            "vrbo cleaning",
+        ],
+        false,
+    ),
 ];
 
 /// Label words too generic to name one option ("just a small repair" must not pick appliance

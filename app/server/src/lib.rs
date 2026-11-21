@@ -59,6 +59,7 @@ pub mod no_handler_alert;
 pub mod offdb_stream;
 pub mod owner_portal;
 pub mod owner_signin;
+pub mod owner_tools;
 pub mod payment_jobs;
 pub mod release_hold;
 pub mod release_sink;
@@ -156,6 +157,7 @@ struct BusinessParts {
     homeowner: Option<homeowner_portal::HomeownerVerify>,
     photos: Option<homeowner_portal::PhotoParts>,
     business_number: Option<askhava_messaging::api::SendingNumber>,
+    report: owner_tools::SecretReport,
 }
 
 impl RouterParts {
@@ -210,6 +212,14 @@ impl RouterParts {
         number: Option<askhava_messaging::api::SendingNumber>,
     ) -> Self {
         self.business.business_number = number;
+        self
+    }
+
+    /// Adds what the owner health page shows of the settings (T304, OPS-008, D-3890;
+    /// [`owner_tools::SecretReport::from_settings`]); without it the page says nothing was checked.
+    #[must_use]
+    pub fn with_secret_report(mut self, report: owner_tools::SecretReport) -> Self {
+        self.business.report = report;
         self
     }
 
@@ -372,7 +382,9 @@ impl ApprovalSecret for StripeApproval {
 /// take it" page and button ([`cant_take_route`], T472), always; the business step-up page
 /// ([`business_step_up`], T364), always, sending codes only with its part; and the
 /// owner's sign-in, step-up and sign-out routes ([`owner_signin`], T303) and home, settings and
-/// switches ([`owner_portal`], T310, the opt-out with the portal's vault), always; and the
+/// switches ([`owner_portal`], T310, the opt-out with the portal's vault) and refund review, audit
+/// log and health page ([`owner_tools`], T304, refunding only with the Stripe hooks and the
+/// Confirm settings' ID secret), always; and the
 /// homeowner portal's sign-in, home, texts-off and data routes ([`homeowner_portal`], T307,
 /// T561), always,
 /// with the webhooks' vault and ID secret and the parts' Verify client.
@@ -404,6 +416,7 @@ fn business_pages(
         Some(session_minter()),
         webhooks.map(|hooks| hooks.id_secret.clone()),
     ));
+    let tools = owner_tools::routes(pool.clone(), stripe, &parts.confirm, parts.report);
     let cant_take = cant_take_route::routes(pool.clone());
     let homeowner = homeowner_portal::routes(pool.clone(), webhooks, parts.homeowner, parts.photos);
     let step_up = business_step_up::routes(pool.clone(), parts.step_up);
@@ -421,6 +434,7 @@ fn business_pages(
         )
         .merge(portal)
         .merge(owner)
+        .merge(tools)
         .merge(homeowner)
 }
 
@@ -1091,7 +1105,9 @@ impl askhava_licensing::api::ActiveLicenses for ActiveRoc {
 /// LIC-007, LIC-039) on the worker clock over `ASKHAVA_LICENSE_BASE_URL` with the
 /// `DailyListSettings` in `pairs`; `worker.rs`'s `schedule_start` seeds it. Without the base URL
 /// a run does nothing and queues no next run in dev and CI; in test and live it is a start error
-/// (D-2954).
+/// (D-2954). With the same settings and clock it registers `businesses`' unknown-license run
+/// (`businesses.license_standing`, T655, LIC-008, D-4310), which reads the database only and so
+/// runs with or without the base URL; `schedule_start` seeds it too.
 fn register_daily_lists(
     registry: &mut Registry,
     settings: &Settings,
@@ -1111,6 +1127,14 @@ fn register_daily_lists(
             }
         },
     };
+    let standing_clock = Arc::clone(&clock);
+    registry.register(
+        askhava_businesses::api::STANDING_KIND,
+        move |pool, _task| {
+            let now = standing_clock.now();
+            async move { askhava_businesses::api::run_standing(&pool, now, lists).await }
+        },
+    );
     let source = Arc::new(source);
     registry.register(
         askhava_licensing::api::DAILY_LISTS_KIND,
