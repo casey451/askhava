@@ -3571,7 +3571,7 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 Items kept for after launch under the scope freeze (D-4824). Each is a note, not a task.
 
 - **Code digests coverage:** the digest tasks (T556 to T558) cover about 0.9 MB of the about 1.58 MB of code to summarise after D-3357; T514 or T142 weighs whether that matters before the handover.
-- **Open PaymentIntents at Stripe (D-5158):** Ended picks leave their unconfirmed PaymentIntent open at Stripe (all `end_intent_unless_charging` callers and `end_pick`). No funds are held and a late success is auto-refunded (FEE-021), but they show as Incomplete in the Stripe dashboard. Consider a best-effort `cancel_payment_intent` in T132 or after launch.
+- **Open PaymentIntents at Stripe (D-5158):** Ended picks leave their unconfirmed PaymentIntent open at Stripe (all `end_intent_unless_charging` callers and `end_pick`). No funds are held. A late success after a declined attempt is auto-refunded (FEE-021); one on an intent that was never attempted is not released and raises one High alert, and you refund it in Stripe. They show as Incomplete in the Stripe dashboard. Consider a best-effort `cancel_payment_intent` in T132 or after launch.
 - **Scrollable tables on finished pages (D-5159):** the tables in `scorecard.html` (two), `money_view.html` and `intake_report.html` are not yet wrapped in a focusable scroll region as the business page's fee table is; their tasks are done, so the one-line wrapper waits for after launch.
 - **Keyword reading with AI off (D-5160):** all other open categories remain unreachable by keyword with AI off; bare "moving", "turnover", "snowbird" and "vacation rental" were left out to avoid false two-job reads.
 - **"Never mind" with no job (D-5161):** a homeowner who texts "never mind" in a request that has no job yet still gets no reply; a reply needs a new English and Spanish template pair. Also still open: a lone open job number or ALL sent later, with no worded reply in between, still closes a job after "Close which?".
@@ -3639,3 +3639,7 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 - T777 now fixes one thing: after a team member changes their phone number, the sign-in code is not texted to the new number until its text box is ticked. Until then the code goes to their email.
 - It no longer also waits for your approval of the phone. Your approval decides whether a phone counts as the business's for texts and calls. A sign-in code goes to the member's own phone as their own second step, and an earlier decision's test expects that.
 - If you want a member's phone to get no sign-in code until you approve it, say so. It is a small change, and members would get their codes by email until the approval page (T397) is live.
+
+## Disputes with no evidence date (D-5164, November 21)
+
+- A Stripe dispute that arrives without an evidence due date is now recorded and blocks refunds on that pick, with an alert naming the pick. Nothing is auto-submitted for it: you must counter or accept it in Stripe yourself. Its PRIV-007 retention hold counts from the day it was opened.
