@@ -4,7 +4,7 @@
 The layer-3 crate that sends and receives messages (`docs/architecture.md` section 3). T026 built the template registry (every text is a fixed English or Spanish template chosen by ID and language); T027 built quiet hours; T028 the outbox and the sender directory; T178 inbox dedupe and delivery statuses; T029 opt-outs and the one suppression list. T030 the HELP, INFO and AYUDA reply.
 
 ## Never break
-- Every text begins "Ask Hava:" (`<short_name>:`) in both languages: `tests::template_registry::every_kind_has_both_languages_and_begins_ask_hava`. Under the embedded brand every text, subject, footer and sender is today's byte for byte, and a missing prefix or a segment over the recorded count under a longer brand is refused: `tests/security/tests/notice_addresses.rs` (`td_word_35_*`). More: `(never 1)` in NOTES.md.
+- Every text begins `<short_name>:` from the brand file (today `Laftly:`) in both languages: `tests::template_registry::every_kind_has_both_languages_and_begins_ask_hava`. Under the embedded brand every text, subject, footer and sender is today's byte for byte, and a missing prefix or a segment over the recorded count under a longer brand is refused: `tests/security/tests/notice_addresses.rs` (`td_word_35_*`). More: `(never 1)` in NOTES.md.
 - Spanish never reaches a person while the setting is off, except the `spanish_stays_on` texts: `tests::template_registry::spanish_only_while_the_setting_is_on_except_the_stay_on_texts`.
 - Both consent texts stay GSM-7 and 2 segments: `tests::template_registry::recorded_segments_hold_and_the_consent_texts_are_gsm7`.
 - No emoji, shortener, off-domain link, promotion wording or "reply CANCEL": `tests/docs/test_template_scan.py`.

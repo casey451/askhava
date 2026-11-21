@@ -250,7 +250,8 @@ fn text_key(
 /// [`OutboxError::PastCustomer`] and [`OutboxError::RecipientKind`] (the row is left as it was,
 /// normally `queued`), [`OutboxError::NotFound`], [`OutboxError::Recipient`] and
 /// [`OutboxError::Carrier`] (a definite refusal: the row is `queued` again for the TXT-014
-/// retries), [`OutboxError::OutcomeUnknown`] (the carrier may have taken it: the row stays
+/// retries), [`OutboxError::RateLimited`] (a carrier rate limit: `queued` again, with no counted
+/// retry), [`OutboxError::OutcomeUnknown`] (the carrier may have taken it: the row stays
 /// `sending` and is never resent blind) or [`OutboxError::Database`].
 pub async fn send(
     db: &mut PgConnection,
@@ -304,27 +305,50 @@ pub(crate) async fn send_at(
         }
         Err(e) if refused(&e) => {
             models::release(db, id).await?;
-            Err(OutboxError::Carrier)
+            Err(if rate_limited(&e) {
+                OutboxError::RateLimited
+            } else {
+                OutboxError::Carrier
+            })
         }
         Err(_) => Err(OutboxError::OutcomeUnknown),
     }
 }
 
-/// TXT-011, D-558: whether the carrier's error proves nothing was sent: the request never left, or
-/// the vendor answered with a 4xx refusal. A timeout, a lost or unreadable answer and a 5xx may
-/// hide an accepted send, so they are an unknown outcome.
+/// Twilio's "too many requests" error code, a rate limit whatever the HTTP status (D-4052).
+const TWILIO_RATE_LIMIT: i64 = 20429;
+
+/// TXT-011, D-558: whether the carrier's error proves nothing was sent: the request never left, the
+/// vendor answered with a 4xx refusal, or with Twilio's rate-limit code. A timeout, a lost or
+/// unreadable answer and any other 5xx may hide an accepted send, so they are an unknown outcome.
 fn refused(error: &AdapterError) -> bool {
     match error {
         AdapterError::NotSent | AdapterError::InvalidId | AdapterError::BadConfig => true,
-        AdapterError::Vendor { status, .. } => (400..500).contains(status),
+        AdapterError::Vendor { status, code } => {
+            (400..500).contains(status) || *code == Some(TWILIO_RATE_LIMIT)
+        }
         _ => false,
     }
 }
 
-/// The delivery status of outbox row `id` (TXT-013): `Queued` or `Sending` while the row is, and
-/// once sent the furthest status Twilio reported for its SID (`Sent` if none yet). A callback
-/// that arrives late with an earlier status never moves it back; between two final ones the later
-/// wins.
+/// TXT-014, D-4052: whether a refusal is the carrier's rate limit (HTTP 429 or Twilio 20429), which
+/// the sender holds without counting a failure; the adapter surfaces no `Retry-After`.
+fn rate_limited(error: &AdapterError) -> bool {
+    matches!(
+        error,
+        AdapterError::Vendor { status: 429, .. }
+            | AdapterError::Vendor {
+                code: Some(TWILIO_RATE_LIMIT),
+                ..
+            }
+    )
+}
+
+/// The delivery status of outbox row `id` (TXT-013, INT-041): `Queued` or `Sending` while the row
+/// is; `Failed` once it ended `blocked`, `failed` or `expired`; `Sent` for an `unknown` row (the
+/// carrier may hold it, and it is never resent); and once sent the furthest status Twilio reported
+/// for its SID (`Sent` if none yet). A callback that arrives late with an earlier status never
+/// moves it back; between two final ones the later wins (D-4052).
 ///
 /// # Errors
 ///
@@ -338,6 +362,8 @@ pub async fn delivery_status(
         .ok_or(OutboxError::NotFound)?;
     let sid = match (status.as_str(), sid) {
         ("queued", _) => return Ok(DeliveryStatus::Queued),
+        ("blocked" | "failed" | "expired", _) => return Ok(DeliveryStatus::Failed),
+        ("unknown", _) => return Ok(DeliveryStatus::Sent),
         ("sent", Some(sid)) => sid,
         _ => return Ok(DeliveryStatus::Sending),
     };
