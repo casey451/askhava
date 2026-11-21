@@ -568,7 +568,7 @@ a.card { display: block; color: var(--ink); text-decoration: none; }
 .cover-grid { display: grid; gap: 10px; }
 .cover-grid p { color: var(--ink-soft); }
 
-/* How it works: scoped to a list with numerals, so a plain numbered list keeps its markers. */
+/* How it works: a .steps list numbers itself with a CSS counter (no markers, no numerals in the HTML). */
 .steps { list-style: none; padding: 0; margin: 0; display: grid; }
 .steps li { display: grid; grid-template-columns: 44px minmax(0, 1fr); column-gap: 12px; padding-block: 22px; border-top: 1px solid var(--line); max-width: none; }
 .steps li:last-child { border-bottom: 1px solid var(--line); }

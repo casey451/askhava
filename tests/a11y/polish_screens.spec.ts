@@ -143,6 +143,13 @@ test("WEB-029 D-4252: the just-closed render has no animation", async ({ page })
   expect(await page.evaluate(animationCount)).toBe(0);
 });
 
+test("WEB-029: a first-render quote card carries rise", async ({ page }) => {
+  const { path } = openJob("open", false);
+  await open(page, path, 390, 844);
+  await expect(page.locator("#quotes > li")).toHaveCount(1);
+  await expect(page.locator("#quotes > li").first()).toHaveClass(/\brise\b/);
+});
+
 test("WEB-029 PICK-009: a quote added after load appears with no animation", async ({ page }) => {
   await page.clock.install();
   const { path, hash } = openJob("open", false);
