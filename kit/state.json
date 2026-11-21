@@ -87056,7 +87056,14 @@
    "update_waiting_since": null,
    "update_push_failures": null,
    "last_failure": "Ci: failure; E2e: failure\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n{\"timestamp\":\"2026-11-21T18:51:43.176909Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1264,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-21T18:51:43.180090Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1267,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-21T18:51:43.180724Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1268,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-21T18:51:43.180840Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1270,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-21T18:51:43.181067Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1269,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-21T18:51:43.183600Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1271,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n  \u2718  112 [main] \u203a tests/e2e/who_runs_links.spec.ts:40:3 \u203a TD-WEB-10 WEB-021 WEB-022: / leaves out the record link and license while unset (100ms)\n##[error]  1) [main] \u203a tests/e2e/who_runs_links.spec.ts:40:3 \u203a TD-WEB-10 WEB-021 WEB-022: / leaves out the record link and license while unset \nCi failed at step: All five jobs passed\n##[error]Process completed with exit code 1.",
-   "lane": "2"
+   "lane": "2",
+   "wip_claim": {
+    "attempt": 2,
+    "remote_sha": "9bbb4b2fbc02ba9fdb33a5f4a40e4d3121d7ece8"
+   },
+   "runner_closed_prs": [
+    1288
+   ]
   },
   {
    "id": "T609",
@@ -112191,7 +112198,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T21:16:50Z",
+ "updated_at": "2026-11-21T21:16:57Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
