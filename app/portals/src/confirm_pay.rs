@@ -85,6 +85,7 @@ use crate::business_auth::{
 use crate::business_portal::{
     SensitiveChange, StepUpError, change_saved_card, inbox_shared, require_step_up,
 };
+use crate::confirm_moves::{Pressed, Stop, press_move, recheck};
 use crate::confirm_waiver::{
     ConfirmFee, ConfirmWaiverError, ConfirmedPick, decide_at_confirm, release_no_fee,
 };
@@ -1316,6 +1317,8 @@ struct Attempt<'a> {
     card: &'a str,
     save: bool,
     now: Timestamp,
+    /// The business has a Stripe customer (asked before the press's transaction, D-4349).
+    customer: bool,
 }
 
 impl CsrfField for PressForm {
@@ -1349,11 +1352,19 @@ where
     let Some(settings) = &route.settings else {
         return Json(said("try_later", CARD_OFF_REPLY, None)).into_response();
     };
+    let (hooks, card) = (&route.hooks, form.payment_method.as_str());
+    let made = ensure_customer(
+        &hooks.pool,
+        &hooks.stripe,
+        &settings.secret,
+        mine.fee.business,
+    );
     let attempt = Attempt {
         id,
-        card: form.payment_method.as_str(),
+        card,
         save: form.save_card == "yes",
         now,
+        customer: card.starts_with("pm_") && made.await.is_ok(),
     };
     match pressed(route, settings, &mine, attempt).await {
         Ok(reply) => Json(reply).into_response(),
@@ -1364,7 +1375,9 @@ where
 /// The press after the route's checks, all in one transaction until the charge: the pick still
 /// waits and is not paused (CON-029, else the attempt's state), no shared-inbox code is owed
 /// (SEC-027), `payments::api::may_confirm` passes (FEE-007; a fee-mode switch ends the pick,
-/// D-3722), the terms row is stored (TERMS-033), then the $0 decision or the charge.
+/// D-3722), the license and account re-check passes (PICK-020, `confirm_moves::recheck`, which
+/// ends the pick on a refusal), the terms row is stored (TERMS-033), then the $0 decision or the
+/// charge.
 async fn pressed<S, R>(
     route: &ConfirmRoute<S, R>,
     settings: &ConfirmSettings,
@@ -1397,6 +1410,10 @@ where
         }
         Err(_) => return Err(()),
     }
+    let mut tx = match recheck(tx, pressed_of(mine, job, now)).await? {
+        Ok(tx) => tx,
+        Err(outcome) => return Ok(press_reply(&outcome, Uuid::new_v4(), None)),
+    };
     let version = mine.fee.terms_version;
     let line = confirm_assent_line(version);
     let terms = ConfirmTerms {
@@ -1408,6 +1425,29 @@ where
     let stored = record_confirm_terms(&mut tx, people, mine.pick, terms, now).await;
     stored.map_err(|_| ())?;
     decide_and_pay(route, settings, mine, tx, attempt).await
+}
+
+/// The press of `mine`'s pick on `job` at `now`, for `confirm_moves`.
+const fn pressed_of(mine: &Mine, job: Uuid, now: Timestamp) -> Pressed {
+    Pressed {
+        pick: mine.pick,
+        job,
+        business: mine.fee.business.0,
+        now,
+    }
+}
+
+/// D-4349: the answer to a press `confirm_moves::press_move` stopped, each as before the move
+/// existed: the no-card line, "try later" for a pause (OPS-024) or no Stripe customer, and
+/// "ended" for a job that moved on.
+fn stopped(stop: Stop) -> PressReply {
+    let outcome = match stop {
+        Stop::NoCard => return said("declined", NO_CARD_LINE, None),
+        Stop::Paused => ChargeOutcome::Paused,
+        Stop::NoCustomer => ChargeOutcome::StripeDown,
+        Stop::Ended => ChargeOutcome::MovedOn,
+    };
+    press_reply(&outcome, Uuid::new_v4(), None)
 }
 
 /// D-1871, D-3722, PICK-050: the fee mode changed after the pick: nothing is charged and the pick
@@ -1430,8 +1470,11 @@ async fn fee_terms_changed(
     Ok(said("ended", FEE_TERMS_ENDED, None))
 }
 
-/// FEE-010 to FEE-013, FEE-045, PICK-022, D-3813: the $0 decision in the press's transaction;
-/// after it commits, a $0 pick's one release through the production sink, else the charge.
+/// FEE-010 to FEE-013, FEE-045, PICK-022, D-3813, D-4349: the $0 decision in the press's
+/// transaction, then the job's move to Payment pending before it commits
+/// (`confirm_moves::press_move`: always on a $0 Confirm, on a paid one only when a charge will be
+/// attempted, JOB-014, OPS-024); after the commit, a $0 pick's one release through the
+/// production sink, else the charge.
 async fn decide_and_pay<S, R>(
     route: &ConfirmRoute<S, R>,
     settings: &ConfirmSettings,
@@ -1447,34 +1490,35 @@ where
     let jobs = her_jobs(&mut tx, mine.fee.job).await?;
     let pick = confirmed(mine, &picked, &jobs);
     let decided = decide_at_confirm(&mut tx, &settings.secret, pick, Some(settings.launch)).await;
-    match decided {
-        Ok(ConfirmFee::NoFee(_)) => {
-            tx.commit().await.map_err(|_| ())?;
-            let mut db = route.hooks.pool.acquire().await.map_err(|_| ())?;
-            let released = release_no_fee(&mut db, &route.hooks.sink, pick).await;
-            released.map_err(|_| ())?;
-            drop(db);
-            let (plan, saved) = plan_and_save_unpaid(route, settings, mine, attempt).await;
-            let reply = said("confirmed", CONFIRMED_LINE, Some(PORTAL_LINK));
-            Ok(with_save(reply, plan, saved))
+    let paid = match decided {
+        Ok(ConfirmFee::NoFee(_)) => None,
+        Ok(ConfirmFee::Charge) => Some((attempt.card, attempt.customer)),
+        Err(ConfirmWaiverError::FreeWin(FreeWinError::Race)) => {
+            return Ok(stopped(Stop::NoCustomer));
         }
-        Ok(ConfirmFee::Charge) => {
-            tx.commit().await.map_err(|_| ())?;
-            charge(route, settings, mine, attempt).await
-        }
-        Err(ConfirmWaiverError::FreeWin(FreeWinError::Race)) => Ok(press_reply(
-            &ChargeOutcome::StripeDown,
-            Uuid::new_v4(),
-            None,
-        )),
-        Err(_) => Err(()),
+        Err(_) => return Err(()),
+    };
+    let pressed = pressed_of(mine, mine.fee.job, attempt.now);
+    if let Some(stop) = press_move(tx, &route.hooks.pool, pressed, paid).await? {
+        return Ok(stopped(stop));
     }
+    if paid.is_some() {
+        return charge(route, settings, mine, attempt).await;
+    }
+    let mut db = route.hooks.pool.acquire().await.map_err(|_| ())?;
+    let released = release_no_fee(&mut db, &route.hooks.sink, pick).await;
+    released.map_err(|_| ())?;
+    drop(db);
+    let (plan, saved) = plan_and_save_unpaid(route, settings, mine, attempt).await;
+    let reply = said("confirmed", CONFIRMED_LINE, Some(PORTAL_LINK));
+    Ok(with_save(reply, plan, saved))
 }
 
 /// FEE-014, FEE-016, FEE-041, FEE-047: one charge attempt of the stored fee through
-/// `confirm_and_pay`; a bank approval carries the client secret of that confirm's own answer
-/// (D-3719), nothing else does. A ticked save box whose card will be stored (T541, SEC-038,
-/// FEE-048) confirms with `setup_future_usage=off_session` and, once paid, stores the card.
+/// `confirm_and_pay`, for a press with a card and a Stripe customer (`press_move` answered the
+/// others); a bank approval carries the client secret of that confirm's own answer (D-3719),
+/// nothing else does. A ticked save box whose card will be stored (T541, SEC-038, FEE-048)
+/// confirms with `setup_future_usage=off_session` and, once paid, stores the card.
 async fn charge<S, R>(
     route: &ConfirmRoute<S, R>,
     settings: &ConfirmSettings,
@@ -1485,17 +1529,7 @@ where
     S: IntentStripe + Send + Sync,
     R: ReleaseSink,
 {
-    if !attempt.card.starts_with("pm_") {
-        return Ok(said("declined", NO_CARD_LINE, None));
-    }
-    let (pool, stripe, secret) = (&route.hooks.pool, &route.hooks.stripe, &settings.secret);
-    let fresh = Uuid::new_v4();
-    if ensure_customer(pool, stripe, secret, mine.fee.business)
-        .await
-        .is_err()
-    {
-        return Ok(press_reply(&ChargeOutcome::StripeDown, fresh, None));
-    }
+    let pool = &route.hooks.pool;
     let plan = save_plan(pool, mine, attempt).await?;
     let (outcome, client, kept) = confirm_once(route, settings, mine, (plan, attempt)).await?;
     let saved = match (&outcome, kept) {
@@ -1504,6 +1538,7 @@ where
         }
         _ => false,
     };
+    let fresh = Uuid::new_v4();
     Ok(with_save(press_reply(&outcome, fresh, client), plan, saved))
 }
 
