@@ -3715,9 +3715,9 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 
 ## Texting registration plan (Fable's decisions for you, D-5278 to D-5281, November 21)
 
-- **Ask Twilio first.** The question to send is in `docs/handoff/Twilio_question.md` (now under Laftly, with the fee stated). Register only after the written answer. If Twilio says this is third-party lead generation (error 30951), we don't register and we don't try toll-free: the service stays on web and email and it comes back to you.
-- **One way to agree to texts.** A homeowner agrees by texting our number first. While texting is on, the website chat just shows our number and the texting terms and asks her to text us; it no longer runs a request. If we ever run on web and email only, the chat works as it does today, but it never signs anyone up for texts.
+- **Ask Twilio first.** The question to send is in `docs/handoff/Twilio_question.md` (now under Laftly, with the fee stated). Send it at the account checkpoint, after T800 to T805 land. For the registration, the page that shows our number is shown by a screenshot of how it will look at launch, since the number isn't public before Gate C. Register only after the written answer. If Twilio says this is third-party lead generation (error 30951), we don't register and we don't try toll-free: the service stays on web and email and it comes back to you.
+- **One way to agree to texts.** A homeowner agrees by texting our number first. Once texting is live (after Gate C), the website chat just shows our number and the texting terms and asks her to text us; it no longer runs a request. If we ever run on web and email only, the chat works as it does today, but it never signs anyone up for texts.
 - **No HELP reply after STOP.** Twilio blocks it. The SMS terms now send opted-out people to laftly.com/help and help@laftly.com.
 - **Canada.** We now say texts work with US numbers; Canadian numbers aren't confirmed yet.
 - **Not changed:** the STOP reply keeps its exact wording; a help link there would break its rule (only confirm).
-
+- **Spanish check without Grok (D-5292):** each Spanish text that stays on is translated back to English twice by two fresh AI sessions that see only the Spanish (ChatGPT, plus a second model you have, or a second fresh ChatGPT chat). The ChatGPT round you ran counts as the first; the second is still to do.

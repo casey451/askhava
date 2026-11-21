@@ -61,7 +61,7 @@ Three layers, from the one that bites first:
 
 - **What it is.** The Campaign Registry (TCR) is the hub where a Campaign Service Provider (Twilio) registers a **brand** (the business, verified by EIN; the EIN must match the legal name) and its **campaigns** (one per use case); carriers compare the description to real traffic [S17].
 - **Brand.** Ask Hava LLC with its EIN. A business with an EIN can't register as a sole proprietor [S18]. A Low Volume Standard brand skips secondary vetting, gets trust score 0 and 12 messages per second in total; T-Mobile caps a non-Russell-3000 Low Volume Standard brand at 2,000 segments a day [S19][S20]. That is far above pilot volume [inferred]. Use the corporate email domain, not Gmail [S13].
-- **Use case.** Standard use cases include CUSTOMER_CARE, ACCOUNT_NOTIFICATION and MIXED; LOW_VOLUME is a separate low-volume use case [S13]. TERMS-011 picks "Customer Care, Low-Volume Standard". [inferred] that pairing (Low Volume Standard brand, Customer Care campaign) is allowed; confirm in the Twilio Console at registration.
+- **Use case.** Standard use cases include CUSTOMER_CARE, ACCOUNT_NOTIFICATION and MIXED; LOW_VOLUME is a separate low-volume use case [S13]. TERMS-011 picks brand type Low-Volume Standard and use case Low Volume Mixed, named separately (D-5278).
 - **Description.** Say who sends, who receives and why; match samples and brand; no PII; the real business as sender [S13][S18]. Good shape: "Laftly LLC sends automated texts only to homeowners who text Laftly to ask for quotes on a job at their own home. Texts are about that request only: intake questions, confirmations, quote updates with a link to their private quote page, their pick and who will call them. No marketing. Businesses get no texts on this number; they are notified by email." (built from TERMS-011, TERMS-012, D-424).
 - **Message flow (opt-in).** One opt-in method: the inbound text (keyword-free; say where the number is shown, the public call-to-action page with the SMS disclosures); never name the web chat, which collects no SMS consent (30988, D-5279). Include service name, "Message and data rates may apply", frequency, support contact and opt-out. Gated or unpublished opt-in screens need public screenshots [S13][S18].
 - **Samples.** 2 to 5 real messages, brand name in each, variables in brackets, STOP language in at least one [S13]. Tick "embedded links" (`has_embedded_links`) and, if any text carries a phone number, "embedded phone numbers" (`has_embedded_phone`) [S13].
@@ -70,11 +70,11 @@ Three layers, from the one that bites first:
 
 **Samples to submit** (real templates, TERMS-013, plus proposal 2 in section 10; variables in brackets as Twilio asks [S13]):
 
-1. Consent text, CON-031: "Ask Hava: Got it. Next, a few quick questions. Ask Hava is not a contractor; you hire the business you pick directly. Automated texts about your request. Msg frequency varies. Msg & data rates may apply. Reply STOP to opt out, HELP for help. Terms: askhava.com/terms Privacy: askhava.com/privacy"
-2. First quote, TXT-016: "Ask Hava: Your first quote for request [n] is in, and more may come. Free for you. The business you pick pays Ask Hava a set introduction fee. Can't open links? Reply LIST to get your quotes by text. See them here: [link] Terms (18+): askhava.com/terms"
-3. Pick confirmation, PICK-045: "Ask Hava: Done. [Business] has your pick. We'll text you when they accept. You can still pick another quote on your page."
-4. Who's calling, TXT-027 (proposed addition; it carries the masked number).
-5. STOP reply, CON-009.
+1. Consent text, CON-031 (template `consent`), the real template with [brackets] for filled values.
+2. First quote, TXT-016 (template `first_quote`).
+3. Pick confirmation (template `text_pick_done`).
+4. Who's calling, TXT-027 (template `whos_calling`; it carries the masked number).
+5. Spanish consent text, CON-031 (Spanish template `consent`). The STOP reply is not a sample; the opt-out field carries CON-009, and the business sign-up reply is named in the description (TERMS-013, TERMS-029, D-5278).
 
 **If a campaign is refused.** Read the error code first. 30951 can't be resubmitted [S12], and toll-free has the same ban (30468): after a 30951 there is no toll-free fallback; the service stays in web-and-email mode (TXT-021) and the choice goes back to Casey (CON-033, D-5278). For any other refusal, only with Casey's go, the homeowner stream may move to toll-free verification with the same content, and until then the service runs in web-and-email mode. A 30871 toll-free refusal can be corrected and resubmitted [S21]. Never register a second 10DLC campaign with softer wording for the same traffic, and never use a second number to get around a suspension (TXT-022) [inferred from S12].
 
@@ -150,7 +150,7 @@ These are proposals. A task may not add them on its own; they need a spec change
 5. Campaign: brand type Low-Volume Standard, use case Low Volume Mixed; description as in section 5; one message flow (the inbound text after the public call-to-action page) with a public screenshot of that page [S13] (D-5278).
 6. Samples: real templates from TERMS-013 plus the who's-calling text; tick embedded links and phone numbers.
 7. Advanced Opt-Out configured as CON-030, with Spanish keyword and reply pairs; test that "opt out" (two words) gets exactly one confirmation from the app [S16].
-8. Opt-in confirmation, HELP and STOP replies in Twilio match CON-031, CON-018, CON-009 word for word.
+8. In Twilio, the opt-out and re-subscribe replies match CON-009 and the START reply word for word; the provider's HELP auto-reply is off, the app sends CON-018, and the HELP field holds a verbatim excerpt of that reply (CON-030, D-5280).
 9. Screenshot everything submitted; keep the TCR campaign ID with the consent-text version.
 
 ## 12. Review checklist for any task that touches texting
