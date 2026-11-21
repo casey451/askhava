@@ -2,6 +2,12 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Owner health page: what "Right environment: Yes" does and does not prove (D-5128, D-5132, November 21)
+
+- **What happened.** The owner health page (`/owner/health`, T304) lists each secret the site needs with three answers: Set, Reads correctly, Right environment. The site checks its settings once, when it starts, and refuses to start on a bad one.
+- **What it means.** "Set" is exact: a missing or empty secret shows No. For the Stripe secret key the other two answers are checked at start too. For the Twilio token, the Resend key, the Stripe webhook secret, the ID secret and the database address, the start check only makes sure the value is not a Stripe key from the other environment. So a Yes there does not prove the secret belongs to the right account: a token copied from another Twilio or Resend account would still show Yes, and the first text or email would fail instead. The account names shown under the table are checked against your allowed list, so compare those when in doubt.
+- **Nothing needs you now.** If you want a real per-vendor check behind each Yes, say so and it becomes its own task.
+
 ## Help replies: the first version texts homeowners only; email replies come in a later step (D-4726, November 19, open)
 
 - **What happened.** The owner help page (T530) lets you answer a help request. The rule says a reply goes by text to a homeowner who can be texted, and otherwise by email, always by email to a business on email. Texts to businesses are not sent yet, and nothing stores the address of someone who wrote to the help email.
