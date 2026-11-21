@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-21T12:03:21Z by runner 726868f8d295 (actions).
+Updated 2026-11-21T12:03:45Z by runner 726868f8d295 (actions).
 
 **Building: T655 in progress since 10:47Z; 578 of 726 done; week 76% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 578 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T655 claimed 10:47Z, lease until 13:47Z; lane 4: T581 claimed 10:47Z, lease until 13:47Z; lane 5: T707 claimed 11:14Z, lease until 14:14Z
+- **Lane:** lane 2: T655 claimed 10:47Z, lease until 13:47Z; lane 5: T707 claimed 11:14Z, lease until 14:14Z
 - **Week:** 76% used, 39.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 12:00Z, 2 min before this update
 - **Keeper:** last ran 12:00Z, next wake 13:49Z
@@ -43,6 +43,7 @@ Worker: D-5160's three trade-only rules (job_type: None) give candidate <trade>_
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T581 | messaging, intake and server: a failed text's call-back is d | MERGE_PENDING | 1 | 76 min | 12:03Z |  |
 | T615 | site and server: a styled 404 page for unknown paths, the fa | BLOCKED | 3 | 2 h 11 min | 11:53Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T754 | portals and payments: a $0 Confirm after a PaymentIntent was | check_failed | 3 | 70 min | 10:58Z | PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and |
 | T458 | businesses, calls and server: the email's "Link this phone"  | done | 1 | 112 min | 10:35Z |  |
@@ -162,8 +163,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T655 (lease until 2026-11-21T13:47:58Z)
-- lane 4: T581 (lease until 2026-11-21T13:47:07Z)
 - lane 5: T707 (lease until 2026-11-21T14:14:11Z)
 
 ## Last usage reading
-- {"task": "T615", "at": "2026-11-21T11:53:37Z", "input_tokens": 273, "cache_read_input_tokens": 5522284, "output_tokens": 54825, "cache_creation_input_tokens": 248198}
+- {"task": "T581", "at": "2026-11-21T12:03:18Z", "output_tokens": 38758, "input_tokens": 144, "cache_read_input_tokens": 4441715, "cache_creation_input_tokens": 149680}
