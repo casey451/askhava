@@ -14,7 +14,7 @@
   "2": {
    "task": "T690",
    "session": "actions-44926935438",
-   "expires": "2026-11-21T19:56:59Z",
+   "expires": "2026-11-21T22:25:35Z",
    "lane": "2"
   },
   "3": {
@@ -34,7 +34,7 @@
   },
   "fix": null
  },
- "seq": 9328,
- "runner_sha": "8a91c382645c00990bc4fe34cdec0fa5c65d35b4",
- "starter": "manual"
+ "seq": 9329,
+ "runner_sha": "534ebc1a7284fd4a0a9bd620dd382d597a7907f9",
+ "starter": "actions"
 }
