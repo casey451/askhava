@@ -75,7 +75,8 @@ use crate::models::{DisputeOpened, MoneyEventError};
 use crate::refund_stripe::{RefundState, RefundStripe};
 use crate::refunds::{FRAUD_WARNING_ALERT, refund_canceled, refund_failed, refund_succeeded};
 use crate::release_proof::{
-    Releasable, ReleaseError, SUCCEEDED_EVENT, StripeAccount, VerifiedStripeEvent, paid_release,
+    Releasable, ReleaseError, SUCCEEDED_EVENT, StripeAccount, VerifiedStripeEvent,
+    names_own_intent, paid_release,
 };
 
 /// The Stripe webhook's path (SEC-039).
@@ -360,8 +361,44 @@ fn status(event: &Event, acted: Acted) -> StatusCode {
     StatusCode::OK
 }
 
+/// The High alert kind of a success [`paid_release`] refused for a reason Casey must see: money
+/// may have moved with no release (SEC-049, D-4763 m3). One kind per reason, so
+/// `raise_alert_once` keeps one open alert per pick and reason.
+fn refused_alert(refused: &ReleaseError) -> Option<&'static str> {
+    match refused {
+        ReleaseError::WrongAmount => Some("payments.success_refused_wrong_amount"),
+        ReleaseError::WrongPick => Some("payments.success_refused_wrong_pick"),
+        ReleaseError::NotPaid => Some("payments.success_refused_not_paid"),
+        ReleaseError::WrongIntent => Some("payments.success_refused_wrong_intent"),
+        _ => None,
+    }
+}
+
+/// PICK-022, SEC-049, D-4763 m3, D-5171: hands back `refused`, first raising its one High alert
+/// (the pick's ID and the reason only) when the event names the pick's own stored PaymentIntent;
+/// a success naming another intent, or a pick with none, raises nothing. A failed read or alert
+/// write is `Database`, so Stripe resends.
+async fn alerted(
+    pool: &PgPool,
+    event: &VerifiedStripeEvent,
+    pick: Uuid,
+    refused: ReleaseError,
+) -> Result<(), ReleaseError> {
+    let Some(kind) = refused_alert(&refused) else {
+        return Err(refused);
+    };
+    if names_own_intent(pool, event, pick).await? {
+        let mut conn = pool.acquire().await.map_err(|_| ReleaseError::Database)?;
+        raise_alert_once(&mut conn, kind, Severity::High, (PICK_SUBJECT, pick))
+            .await
+            .map_err(|_| ReleaseError::Database)?;
+    }
+    Err(refused)
+}
+
 /// A success through [`paid_release`] to the [`ReleaseSink`] as T224 built it: only `Stripe` and
-/// `Database` failures are resent, every other refusal is final (PICK-022, SEC-049).
+/// `Database` failures are resent, every other refusal is final (PICK-022, SEC-049). A refusal
+/// by `paid_release` goes through [`alerted`]; a refusal by the sink raises no alert.
 async fn release<S, R>(
     h: &StripeWebhook<S, R>,
     hook: &VerifiedWebhook,
@@ -377,7 +414,7 @@ where
     };
     let done = match paid_release(&h.pool, &h.stripe, &h.account, &event, pick, now).await {
         Ok(cleared) => h.sink.release(cleared).await,
-        Err(error) => Err(error),
+        Err(refused) => alerted(&h.pool, &event, pick, refused).await,
     };
     match done {
         Ok(()) => Acted::Done,

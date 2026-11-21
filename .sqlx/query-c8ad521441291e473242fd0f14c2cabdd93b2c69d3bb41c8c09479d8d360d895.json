@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO payments.charge_attempt (pick_id, try_no, press_id, status, started_at) VALUES ($1, 1, $1, $2, now())",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "c8ad521441291e473242fd0f14c2cabdd93b2c69d3bb41c8c09479d8d360d895"
+}

@@ -240,6 +240,9 @@ pub async fn paid_release(
 /// own `payments.pick_fee` pair. A pick ended in `payments` has its success stored and its one
 /// late-success refund queued (FEE-021, D-2290); a pick refunded or disputed while held clears
 /// nothing and queues no refund (FEE-026). Never mints a proof nor calls `from_stored_success`.
+/// A pick whose intent has ended is first tried through `held_no_fee`, so a $0 Confirm after an
+/// intent was opened is released and not dropped as unpaid; when that finds no $0 decision (or a
+/// live or succeeded attempt) the paid path runs as before (FEE-016, D-4763).
 ///
 /// # Errors
 /// The [`ReleaseError`] of the first check that fails; [`ReleaseError::PickEnded`] for an ended,
@@ -251,10 +254,16 @@ pub async fn held_release(
     pick: Uuid,
     at: Timestamp,
 ) -> Result<Releasable, ReleaseError> {
-    let (stored, cents) = match pick_intent(pool, pick).await {
+    let (stored, cents, ended) = match pick_intent(pool, pick).await {
         Err(ReleaseError::WrongIntent) => return held_no_fee(pool, pick).await,
-        found => found.map(|(stored, cents, _)| (stored, cents))?,
+        found => found?,
     };
+    if ended {
+        match held_no_fee(pool, pick).await {
+            Err(ReleaseError::NoFeeDecision) => {}
+            waived => return waived,
+        }
+    }
     let fetched = stripe
         .fetch_payment_intent(&stored)
         .await
@@ -277,8 +286,11 @@ pub async fn held_release(
 /// FEE-012, FEE-013, FEE-036, FEE-045, PICK-022). The pick's own pair is its `payments.pick_fee`
 /// row, fixed at the pick (D-1871): a pick with no row, or a caller pair other than the row's, is
 /// refused before the ledger is read, so a waiver for one job of a business never clears a pick
-/// of another job (D-2302, D-2713). A pick with a PaymentIntent has a fee to pay and is never
-/// cleared here (D-1478).
+/// of another job (D-2302, D-2713). A pick with a PaymentIntent not yet ended has a fee to pay
+/// and is never cleared here (D-1478); one whose intents have all ended with no live or succeeded
+/// attempt (`sent`, `processing`, `succeeded`, `needs_action` or `unreachable`, the set
+/// `end_intent_unless_charging` reads) is cleared, because the press that decided $0 ended the
+/// intent the page read had opened, so no pick is both charged and free (FEE-016, D-4763, D-5158).
 ///
 /// # Errors
 /// [`ReleaseError::NoFeeDecision`]; [`ReleaseError::Database`].
@@ -295,7 +307,10 @@ pub async fn no_fee_release(
         return Err(ReleaseError::NoFeeDecision);
     }
     let decided = sqlx::query_scalar!(
-        r#"SELECT NOT EXISTS (SELECT 1 FROM payments.pick_intent WHERE pick_id = $3)
+        r#"SELECT NOT EXISTS (SELECT 1 FROM payments.pick_intent i WHERE i.pick_id = $3
+             AND (i.ended_at IS NULL OR EXISTS (SELECT 1 FROM payments.charge_attempt a
+               WHERE a.pick_id = i.pick_id AND a.status IN
+                 ('sent', 'processing', 'succeeded', 'needs_action', 'unreachable'))))
              AND EXISTS (SELECT 1 FROM payments.ledger_entry WHERE business_id = $1
              AND job_id = $2 AND amount_cents = 0
              AND kind IN ('free-first-win', 'repeat-customer', 'fee-free-job-type')) AS "found!""#,
@@ -321,13 +336,16 @@ impl Releasable {
     /// own rows: the intent with `ended_at` null, no `payments.refund` row of any status and no
     /// `payments.dispute` row, a latest `payments.charge_attempt` that `succeeded`, and its
     /// `payments.charge_evidence` row naming the intent's own `pi_…` and amount. It takes nothing
-    /// but the pick, so no redirect, message, event or caller value can clear a pick.
+    /// but the pick, so no redirect, message, event or caller value can clear a pick. A pick
+    /// whose intent has ended with no refund and no dispute answers `no_fee_release`'s result for
+    /// its own `payments.pick_fee` pair when that clears (a $0 Confirm after an intent was opened,
+    /// FEE-010, FEE-013, D-4763), else `PickEnded`.
     ///
     /// # Errors
-    /// The first failing check in this order: no intent row [`ReleaseError::WrongIntent`]; ended,
-    /// refunded or disputed [`ReleaseError::PickEnded`]; no attempt, a latest attempt not
-    /// succeeded or no matching evidence row [`ReleaseError::NotPaid`]; a failed statement
-    /// [`ReleaseError::Database`].
+    /// The first failing check in this order: no intent row [`ReleaseError::WrongIntent`]; ended
+    /// (with no $0 decision that clears), refunded or disputed [`ReleaseError::PickEnded`]; no
+    /// attempt, a latest attempt not succeeded or no matching evidence row
+    /// [`ReleaseError::NotPaid`]; a failed statement [`ReleaseError::Database`].
     pub(crate) async fn from_stored_success(
         conn: &mut PgConnection,
         pick: Uuid,
@@ -337,6 +355,10 @@ impl Releasable {
                  OR EXISTS (SELECT 1 FROM payments.refund r WHERE r.pick_id = i.pick_id)
                  OR EXISTS (SELECT 1 FROM payments.dispute d WHERE d.pick_id = i.pick_id))
                  AS "ended!",
+               (i.ended_at IS NOT NULL
+                 AND NOT EXISTS (SELECT 1 FROM payments.refund r WHERE r.pick_id = i.pick_id)
+                 AND NOT EXISTS (SELECT 1 FROM payments.dispute d WHERE d.pick_id = i.pick_id))
+                 AS "waivable!",
                COALESCE((SELECT a.status = 'succeeded' FROM payments.charge_attempt a
                  WHERE a.pick_id = i.pick_id ORDER BY a.try_no DESC LIMIT 1), false)
                AND EXISTS (SELECT 1 FROM payments.charge_evidence e WHERE e.pick_id = i.pick_id
@@ -345,10 +367,16 @@ impl Releasable {
                FROM payments.pick_intent i WHERE i.pick_id = $1 FOR SHARE OF i"#,
             pick
         )
-        .fetch_optional(conn)
+        .fetch_optional(&mut *conn)
         .await
         .map_err(|_| ReleaseError::Database)?
         .ok_or(ReleaseError::WrongIntent)?;
+        if row.waivable {
+            return match own_no_fee(conn, pick).await {
+                Err(ReleaseError::NoFeeDecision) => Err(ReleaseError::PickEnded),
+                waived => waived,
+            };
+        }
         if row.ended {
             return Err(ReleaseError::PickEnded);
         }
@@ -425,15 +453,43 @@ async fn pick_intent(pool: &PgPool, pick: Uuid) -> Result<(String, i64, bool), R
     Ok((row.stripe_intent_id, row.amount_cents, row.ended))
 }
 
-/// A held pick with no PaymentIntent: its own `payments.pick_fee` pair through `no_fee_release`;
-/// no fee row is [`ReleaseError::NoFeeDecision`] (FEE-036, OPS-024, D-4419).
+/// Whether `event` names pick `pick`'s own stored PaymentIntent, for the webhook route's High
+/// alert on a refused success (SEC-049, D-5171): a success naming another intent, or a pick with
+/// no intent row, is `false`.
+///
+/// # Errors
+/// [`ReleaseError::Database`].
+pub(crate) async fn names_own_intent(
+    pool: &PgPool,
+    event: &VerifiedStripeEvent,
+    pick: Uuid,
+) -> Result<bool, ReleaseError> {
+    sqlx::query_scalar!(
+        r#"SELECT EXISTS (SELECT 1 FROM payments.pick_intent WHERE pick_id = $1
+             AND stripe_intent_id = $2) AS "own!""#,
+        pick,
+        event.intent
+    )
+    .fetch_one(pool)
+    .await
+    .map_err(|_| ReleaseError::Database)
+}
+
+/// A held pick with no PaymentIntent, or an ended one: [`own_no_fee`] on a pool connection
+/// (FEE-036, OPS-024, D-4419).
 async fn held_no_fee(pool: &PgPool, pick: Uuid) -> Result<Releasable, ReleaseError> {
     let mut conn = pool.acquire().await.map_err(|_| ReleaseError::Database)?;
-    let stored = pick_fee(&mut conn, pick)
+    own_no_fee(&mut conn, pick).await
+}
+
+/// `no_fee_release` for the pick's own `payments.pick_fee` pair; no fee row is
+/// [`ReleaseError::NoFeeDecision`] (FEE-036, PICK-022, D-2713).
+async fn own_no_fee(conn: &mut PgConnection, pick: Uuid) -> Result<Releasable, ReleaseError> {
+    let stored = pick_fee(conn, pick)
         .await
         .map_err(|_| ReleaseError::Database)?
         .ok_or(ReleaseError::NoFeeDecision)?;
-    no_fee_release(&mut conn, pick, (stored.business.0, stored.job)).await
+    no_fee_release(conn, pick, (stored.business.0, stored.job)).await
 }
 
 /// Whether the pick has a `payments.refund` or `payments.dispute` row, read under `FOR SHARE OF`
@@ -497,8 +553,108 @@ async fn store_success(
 mod tests {
     use askhava_privacy::api::{ReleaseBasis, release_mint};
     use sqlx::types::Uuid;
+    use sqlx::{PgConnection, PgPool};
 
-    use super::{Minter, Releasable};
+    use super::{Minter, Releasable, ReleaseError};
+
+    /// FEE-010, FEE-013, FEE-016, PICK-022, D-4763: a $0 Confirm after an intent was opened, on a
+    /// release that waited for an address: the ended intent with no live or succeeded attempt and
+    /// the pick's $0 ledger row clear with the no-fee basis; a live attempt, a refund or a dispute
+    /// answers `PickEnded` (fake data only).
+    #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+    async fn a_zero_fee_pick_with_an_ended_intent_clears_unless_refunded_or_disputed(pool: PgPool) {
+        let mut db = pool.acquire().await.expect("connection");
+        let picks = [0x754, 0x755, 0x756, 0x757].map(Uuid::from_u128);
+        seed(&mut db, picks[0], "declined").await;
+        let cleared = Releasable::from_stored_success(&mut db, picks[0]).await;
+        let cleared = cleared.expect("the $0 decision clears");
+        assert_eq!(cleared.pick(), picks[0]);
+        assert_eq!(cleared.basis(), ReleaseBasis::NoFeeDue);
+        seed(&mut db, picks[1], "sent").await;
+        evidence(&mut db, picks[2]).await;
+        sqlx::query!(
+            "INSERT INTO payments.refund (pick_id, trigger, status, tries, requested_at) \
+             VALUES ($1, 'unreachable', 'pending', 1, now())",
+            picks[2]
+        )
+        .execute(&mut *db)
+        .await
+        .expect("refund");
+        evidence(&mut db, picks[3]).await;
+        sqlx::query!(
+            "INSERT INTO payments.dispute (stripe_dispute_id, pick_id, amount_cents, due_at, \
+             opened_at) VALUES ('dp_fake754', $1, 2500, now(), now())",
+            picks[3]
+        )
+        .execute(&mut *db)
+        .await
+        .expect("dispute");
+        for pick in &picks[1..] {
+            let cleared = Releasable::from_stored_success(&mut db, *pick).await;
+            assert_eq!(cleared.err(), Some(ReleaseError::PickEnded), "{pick}");
+        }
+    }
+
+    /// Pick `pick` (its own business and job, fake data): an ended $25 intent, its fee row, a $0
+    /// free-first-win entry and one attempt with `status`.
+    async fn seed(db: &mut PgConnection, pick: Uuid, status: &str) {
+        let tag = pick.simple().to_string();
+        sqlx::query!(
+            "INSERT INTO payments.pick_intent (pick_id, business_id, job_id, amount_cents, \
+             stripe_intent_id, emergency, created_at, ended_at) \
+             VALUES ($1, $1, $1, 2500, 'pi_fake' || $2::text, true, now(), now())",
+            pick,
+            tag
+        )
+        .execute(&mut *db)
+        .await
+        .expect("intent");
+        sqlx::query!(
+            "INSERT INTO payments.pick_fee (pick_id, business_id, job_id, mode, kind, \
+             amount_cents, terms_version, fixed_at) \
+             VALUES ($1, $1, $1, 'tiers', 'charged', 2500, 1, now())",
+            pick
+        )
+        .execute(&mut *db)
+        .await
+        .expect("pick fee");
+        sqlx::query!(
+            "INSERT INTO payments.ledger_entry (kind, business_id, job_id, amount_cents, \
+             idempotency_key) VALUES ('free-first-win', $1, $1, 0, 'fake.t754.' || $2::text)",
+            pick,
+            tag
+        )
+        .execute(&mut *db)
+        .await
+        .expect("ledger");
+        sqlx::query!(
+            "INSERT INTO payments.charge_attempt (pick_id, try_no, press_id, status, started_at) \
+             VALUES ($1, 1, $1, $2, now())",
+            pick,
+            status
+        )
+        .execute(&mut *db)
+        .await
+        .expect("attempt");
+    }
+
+    /// [`seed`] with a declined attempt and the evidence row a refund or dispute row refers to.
+    async fn evidence(db: &mut PgConnection, pick: Uuid) {
+        seed(db, pick, "declined").await;
+        sqlx::query!(
+            "INSERT INTO payments.charge_evidence (pick_id, business_id, job_id, press_id, \
+             try_no, idempotency_label, stripe_customer_id, stripe_intent_id, \
+             authorization_version, amount_cents, pressed_at, charged_at) \
+             VALUES ($1, $1, $1, $1, 1, $3, 'cus_fake754', \
+             'pi_fake' || $2::text, 1, 2500, now(), now())",
+            pick,
+            pick.simple().to_string(),
+            format!("pick-{pick}-try1")
+        )
+        .execute(&mut *db)
+        .await
+        .expect("evidence");
+    }
 
     /// SEC-030, D-488: this test binary's one mint; a cleared pick becomes a proof naming that
     /// pick, the contact `picks` gave and the basis of the clearing (TD-SEC-11 no-fee case).
