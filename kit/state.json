@@ -87309,11 +87309,12 @@
      }
     }
    ],
-   "reviewed_sha": "9bbb4b2fbc02ba9fdb33a5f4a40e4d3121d7ece8",
+   "reviewed_sha": "60f74965fd1e40b67789f5d46f9c6c83381cc0fe",
    "review_lease": {
     "task": "T608",
-    "session": "actions-44921650424",
-    "expires": "2026-11-21T18:59:45Z"
+    "session": "actions-44950005726",
+    "expires": "2026-11-22T00:16:35Z",
+    "lane": "2"
    },
    "branch": "claude/task/T608-home-quote-polish",
    "auto_merge": {
@@ -87321,17 +87322,6 @@
     "why": "auto-merge on #1288 (gh pr merge)",
     "head": "9bbb4b2fbc02ba9fdb33a5f4a40e4d3121d7ece8"
    },
-   "update_merges": [
-    {
-     "from": "20cae0e25457409f38e542e0a0e67621003ecebb",
-     "to": "9bbb4b2fbc02ba9fdb33a5f4a40e4d3121d7ece8",
-     "main": "7143385c91807e0ec3207360584132ddbe976971",
-     "how": "hand-in",
-     "at": "2026-11-21T18:46:31Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
    "last_failure": "Ci: failure; E2e: failure\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n{\"timestamp\":\"2026-11-21T18:51:43.176909Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1264,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-21T18:51:43.180090Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1267,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-21T18:51:43.180724Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1268,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-21T18:51:43.180840Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1270,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-21T18:51:43.181067Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1269,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-21T18:51:43.183600Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1271,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n  \u2718  112 [main] \u203a tests/e2e/who_runs_links.spec.ts:40:3 \u203a TD-WEB-10 WEB-021 WEB-022: / leaves out the record link and license while unset (100ms)\n##[error]  1) [main] \u203a tests/e2e/who_runs_links.spec.ts:40:3 \u203a TD-WEB-10 WEB-021 WEB-022: / leaves out the record link and license while unset \nCi failed at step: All five jobs passed\n##[error]Process completed with exit code 1.",
    "lane": "2",
    "wip_claim": {
@@ -87340,7 +87330,19 @@
    },
    "runner_closed_prs": [
     1288
-   ]
+   ],
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "82a1b55dfae4555065aa2799e3979320a9ba6df8",
+     "to": "60f74965fd1e40b67789f5d46f9c6c83381cc0fe",
+     "main": "6730558382d8175b0d99537d6a94795aca0ed36a",
+     "how": "hand-in",
+     "at": "2026-11-21T23:38:01Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T609",
@@ -113155,7 +113157,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T23:26:22Z",
+ "updated_at": "2026-11-21T23:38:01Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -113253,7 +113255,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "6730558382d8175b0d99537d6a94795aca0ed36a",
+ "runner_sha": "82a1b55dfae4555065aa2799e3979320a9ba6df8",
  "starter": "actions",
  "smoke_runs": [
   {
