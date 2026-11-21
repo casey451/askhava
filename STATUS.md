@@ -1,17 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-21T22:30:07Z by runner 05b3bbbd22f3 (actions).
+Updated 2026-11-21T22:30:19Z by runner 05b3bbbd22f3 (actions).
 
-**Building: T608 in progress since 21:16Z; 593 of 739 done; week 38% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T600 in progress since 22:29Z; 593 of 739 done; week 38% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 593 of 739 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T608 claimed 21:16Z, lease until 00:16Z; lane 4: T798 claimed 21:15Z, lease until 00:15Z; lane 6: T118 claimed 22:08Z, lease until 01:08Z; lane 7: T117 claimed 22:21Z, lease until 01:21Z
-- **Week:** 38% used, 115.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T600 claimed 22:29Z, lease until 01:29Z; lane 2: T608 claimed 21:16Z, lease until 00:16Z; lane 4: T798 claimed 21:15Z, lease until 00:15Z; lane 6: T118 claimed 22:08Z, lease until 01:08Z; lane 7: T117 claimed 22:21Z, lease until 01:21Z
+- **Week:** 38% used, 115.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 22:27Z, 2 min before this update
 - **Keeper:** last ran 22:22Z, next wake 00:18Z
 
 ## Needs attention
+- PLAN GAP T121 (since 2026-11-21T22:29:56Z, no attempt used; a plan change fixes it): T121: measures 46% of the context window, over its 45% limit
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - Strict plan check red: 42 problem(s) on tasks still to run (+476 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
@@ -108,7 +109,7 @@ Updated 2026-11-21T22:30:07Z by runner 05b3bbbd22f3 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-21T22:17:39Z (week)): week: 78.3M used, 115.7M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-06T04:13:07Z.
+- Pacing (session_reading 2026-11-21T22:22:26Z (week)): week: 78.6M used, 115.4M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-06T04:05:27Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -123,7 +124,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T600 (lease until 2026-11-22T01:29:56Z)
 - lane 2: T608 (lease until 2026-11-22T00:16:35Z)
 - lane 4: T798 (lease until 2026-11-22T00:15:56Z)
 - lane 6: T118 (lease until 2026-11-22T01:08:53Z)
