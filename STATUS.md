@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T02:46:30Z by runner 285a8c04ecb0 (actions).
+Updated 2026-11-21T02:48:48Z by runner 5b6d2a6f4043 (actions).
 
 **Building: T781 in progress since 02:17Z; 566 of 726 done; week 59% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 566 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T781 claimed 02:17Z, lease until 05:17Z; lane 4: T457 claimed 01:40Z, lease until 04:40Z; lane 6: T684 claimed 02:16Z, lease until 05:16Z; lane 7: T775 claimed 01:29Z, lease until 04:29Z
+- **Lane:** lane 3: T781 claimed 02:17Z, lease until 05:17Z; lane 4: T457 claimed 01:40Z, lease until 04:40Z; lane 5: T304 claimed 02:48Z, lease until 05:48Z; lane 6: T684 claimed 02:16Z, lease until 05:16Z; lane 7: T775 claimed 01:29Z, lease until 04:29Z
 - **Week:** 59% used, 71.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:46Z, 0 min before this update
+- **Last run:** 02:46Z, 1 min before this update
 - **Keeper:** last ran 02:46Z, next wake 03:06Z
 
 ## Needs attention
@@ -136,7 +136,7 @@ T777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-21T02:39:29Z (week)): week: 122.6M used, 71.4M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T11:46:05Z.
+- Pacing (session_reading 2026-11-21T02:45:59Z (week)): week: 122.6M used, 71.4M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T10:46:27Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -154,6 +154,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 3: T781 (lease until 2026-11-21T05:17:31Z)
 - lane 4: T457 (lease until 2026-11-21T04:40:44Z)
+- lane 5: T304 (lease until 2026-11-21T05:48:33Z)
 - lane 6: T684 (lease until 2026-11-21T05:16:31Z)
 - lane 7: T775 (lease until 2026-11-21T04:29:12Z)
 
