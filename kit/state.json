@@ -104234,7 +104234,27 @@
    "wip_claim": {
     "attempt": 1,
     "remote_sha": ""
-   }
+   },
+   "reviewed_sha": "bcb7baedc86b8f24516bb6035b16e9bcb7471df7",
+   "review_lease": {
+    "task": "T790",
+    "session": "actions-44931283797",
+    "expires": "2026-11-21T21:10:08Z",
+    "lane": "6"
+   },
+   "branch": "claude/task/T790-termite-report-pest-control",
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "5c3d8b10405dbc8bb73d29859df48d3ef0be4e02",
+     "to": "bcb7baedc86b8f24516bb6035b16e9bcb7471df7",
+     "main": "a51179a0d6d9cf8b86485a4248a38e6bcfa4c408",
+     "how": "hand-in",
+     "at": "2026-11-21T19:07:48Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T791",
@@ -111317,7 +111337,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T19:06:09Z",
+ "updated_at": "2026-11-21T19:07:48Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -111415,7 +111435,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "a51179a0d6d9cf8b86485a4248a38e6bcfa4c408",
+ "runner_sha": "5c3d8b10405dbc8bb73d29859df48d3ef0be4e02",
  "starter": "actions",
  "smoke_runs": [
   {
