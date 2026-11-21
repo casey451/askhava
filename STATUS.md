@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T04:49:01Z by runner d772bd88b2c9 (actions).
+Updated 2026-11-21T04:50:57Z by runner d772bd88b2c9 (actions).
 
-**Building: T777 in progress since 04:26Z; 569 of 726 done; week 64% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T777 in progress since 04:26Z; 569 of 726 done; week 65% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 569 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 5: T777 claimed 04:26Z, lease until 07:26Z; lane 6: T755 claimed 04:14Z, lease until 07:14Z; lane 7: T674 claimed 04:40Z, lease until 07:40Z
-- **Week:** 64% used, 63.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:48Z, 0 min before this update
+- **Week:** 65% used, 63.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 04:50Z, 0 min before this update
 - **Keeper:** last ran 04:49Z, next wake 07:18Z
 
 ## Needs attention
@@ -105,7 +105,6 @@ Worker: matching.rs:52 keyword RULES cover only plumbing, HVAC, electrical, hand
 | T434 | portals: the monthly intake accuracy report page and the mon | done | 1 | 112 min | 04:55Z |  |
 | T110 | recovery: replay with derived IDs | done | 1 | 2 h 36 min | 04:55Z |  |
 | T663 | picks, jobs and payments (harness): a confirmed pick moves i | done | 3 | 65 min | 04:54Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
-| T556 | Decisions digest, piece 11: the next entries after the heade | done | 1 | 51 min | 04:50Z |  |
 
 ### Plan and harness merges on main
 - none
