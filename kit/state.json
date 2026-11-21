@@ -41554,7 +41554,7 @@
     "T469",
     "T651"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "owner-tools-served",
    "type": "build",
@@ -41568,8 +41568,8 @@
     5131,
     5132
    ],
-   "reason": "plan gap reported: PLAN GAP: app/portals/templates/owner_audit_log.html (owned by T205) and app/portals/templates/health.html (owned by T476) fail Ally once served: bare <table> at owner_audit_log.html:8, health.html:19 and :28 with no role=region tabindex=0 aria-label wrapper (as app/site/templates/business.html:43); reflow_spacing.spec.ts A11Y-008/009 fail at 320px, plus color-contrast incomplete on audit log td:nth-child(5). T304 Scope (kit/prompts/T304.md:35-51) does not allow editing them. Reviewer confirmed ownership via kit/tasks.json and the missing wrappers.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T304 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: app/portals/templates/owner_audit_log.html (owned by T205) and app/portals/templates/health.html (owned by T476) fail Ally once served: bare <table> at owner_audit_log.html:8, health.html:19 and :28 with no role=region tabindex=0 aria-label wrapper (as app/site/templates/business.html:43); reflow_spacing.spec.ts A11Y-008/009 fail at 320px, plus color-contrast incomplete on audit log td:nth-child(5). T304 Scope (kit/prompts/T304.md:35-51) does not allow editing them. Reviewer confirmed ownership via kit/tasks.json and the missing wrappers.",
+   "reason": null,
+   "last_failure": "PLAN GAP: app/portals/templates/owner_audit_log.html (owned by T205) and app/portals/templates/health.html (owned by T476) fail Ally once served: bare <table> at owner_audit_log.html:8, health.html:19 and :28 with no role=region tabindex=0 aria-label wrapper (as app/site/templates/business.html:43); reflow_spacing.spec.ts A11Y-008/009 fail at 320px, plus color-contrast incomplete on audit log td:nth-child(5). T304 Scope (kit/prompts/T304.md:35-51) does not allow editing them. Reviewer confirmed ownership via kit/tasks.json and the missing wrappers.\nre-queued after plan fix D-5159: portal tables get region wrappers and site.css overflow rule; ordered after T614",
    "history": [
     {
      "attempt": 1,
@@ -41594,6 +41594,21 @@
       }
      },
      "wip_skipped": "PII scan: a commit message in 1ef2032c2365590cf210a40397a24de330ae4057"
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-21T05:44:25Z",
+     "reason": "portal tables get region wrappers and site.css overflow rule; ordered after T614",
+     "by": "manual-d3c1bc90a327",
+     "was": "plan gap reported: PLAN GAP: app/portals/templates/owner_audit_log.html (owned by T205) and app/portals/templates/health.html (owned by T476) fail Ally once served: bare <table> at owner_audit_log.html:8, health.html:19 and :28 with no role=region tabindex=0 aria-label wrapper (as app/site/templates/business.html:43); reflow_spacing.spec.ts A11Y-008/009 fail at 320px, plus color-contrast incomplete on audit log td:nth-child(5). T304 Scope (kit/prompts/T304.md:35-51) does not allow editing them. Reviewer confirmed ownership via kit/tasks.json and the missing wrappers.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T304 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-5159",
+     "plan_since": "2026-11-21T02:48:33Z",
+     "plan_base": "5b6d2a6f40436fdc35ea0ceecb31185ac9e70dd2",
+     "plan_head": "f48c110d7929ad0ab08d663dec9ce2de08c53076",
+     "plan_then": "db0dc6179aa96dc05ece594adbaaf82ffb4fed501d864b9a28166acd5d412657",
+     "plan_now": "f8be468c4c44ebb5a7ea56848ea2ea4cd3ae42e27912c366491511c21e67126c"
     }
    ]
   },
@@ -108691,7 +108706,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T05:44:02Z",
+ "updated_at": "2026-11-21T05:44:25Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T05:44:02Z by runner f48c110d7929 (manual).
+Updated 2026-11-21T05:44:25Z by runner f48c110d7929 (manual).
 
 **Building: T674 in progress since 04:40Z; 572 of 726 done; week 67% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,10 @@ Updated 2026-11-21T05:44:02Z by runner f48c110d7929 (manual).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 7: T674 claimed 04:40Z, lease until 07:40Z
 - **Week:** 67% used, 63.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:29Z, 14 min before this update
+- **Last run:** 05:44Z, 0 min before this update
 - **Keeper:** last ran 05:28Z, next wake 07:42Z
 
 ## Needs attention
-- BLOCKED T304: plan gap reported: PLAN GAP: app/portals/templates/owner_audit_log.html (owned by T205) and app/portals/templates/health.html (owned by T476) fail Ally once served: bare <table> at owner_audit_log.html:8, health.html:19 and :28 with no role=region tabindex=0 aria-label wrapper (as app/site/templates/business.html:43); reflow_spacing.spec.ts A11Y-008/009 fail at 320px, plus color-contrast incomplete on audit log td:nth-child(5). T304 Scope (kit/prompts/T304.md:35-51) does not allow editing them. Reviewer confirmed ownership via kit/tasks.json and the missing wrappers.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T304 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T776: plan gap reported: PLAN GAP: outside ownership: app/intake/src/matching.rs
 Worker: matching.rs:52 keyword RULES cover only plumbing, HVAC, electrical, handyman, pool, so no text reaches `tell` as local_moving, home_watch or turnover_cleaning; the T776 refusals can't be reached or tested end to end. matching.rs is owned by T042/T183/T716, not T776. Reviewer (Opus) confirmed: integration test intake_refusals_wired 0 passed, 3 failed (no trade read, nothing sent). Smallest fix: add keyword rules for those three trades (from docs/catalog/categories.yaml) in matching.rs, by a prior task or by adding matching.rs to T7; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T776 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
