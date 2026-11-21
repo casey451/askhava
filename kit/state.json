@@ -25677,7 +25677,8 @@
     "T116",
     "T117",
     "T109",
-    "T648"
+    "T648",
+    "T800"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -25976,7 +25977,12 @@
     "T782",
     "T783",
     "T790",
-    "T791"
+    "T791",
+    "T803",
+    "T802",
+    "T801",
+    "T804",
+    "T805"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -26024,7 +26030,14 @@
     "T787",
     "T788",
     "T790",
-    "T791"
+    "T791",
+    "T800",
+    "T801",
+    "T802",
+    "T803",
+    "T804",
+    "T805",
+    "T799"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -40333,7 +40346,9 @@
     "T719",
     "T736",
     "T741",
-    "T760"
+    "T760",
+    "T801",
+    "T803"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -99405,7 +99420,8 @@
     "T742",
     "T748",
     "T309",
-    "T609"
+    "T609",
+    "T804"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -105814,6 +105830,149 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null
+  },
+  {
+   "id": "T800",
+   "deps": [
+    "T750",
+    "T229",
+    "T428",
+    "T113",
+    "T112"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "twilio-campaign-package",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T801",
+   "deps": [
+    "T100",
+    "T594",
+    "T656",
+    "T181",
+    "T075",
+    "T646",
+    "T103",
+    "T645",
+    "T649",
+    "T057",
+    "T489",
+    "T517",
+    "T609",
+    "T595",
+    "T593",
+    "T343",
+    "T644",
+    "T763",
+    "T745",
+    "T676",
+    "T671",
+    "T725"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "chat-code-not-optin",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T802",
+   "deps": [
+    "T769",
+    "T057",
+    "T592",
+    "T517",
+    "T102",
+    "T609",
+    "T593",
+    "T725",
+    "T201",
+    "T202",
+    "T100",
+    "T115",
+    "T075"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "coverage-us-numbers",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T803",
+   "deps": [
+    "T029",
+    "T027",
+    "T755",
+    "T030",
+    "T100",
+    "T423",
+    "T075",
+    "T421",
+    "T356",
+    "T517",
+    "T057",
+    "T424",
+    "T483",
+    "T603"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "no-help-after-stop",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T804",
+   "deps": [
+    "T100",
+    "T561",
+    "T075",
+    "T674",
+    "T517",
+    "T057",
+    "T307",
+    "T748",
+    "T200"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "data-request-opted-out",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T805",
+   "deps": [
+    "T075",
+    "T100",
+    "T057",
+    "T517",
+    "T425",
+    "T096"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "no-tollfree-after-30951",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T799",
+   "deps": [
+    "T191",
+    "T282",
+    "T386",
+    "T147"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "copy-review-fixes",
+   "type": "harness",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -112983,7 +113142,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T23:15:53Z",
+ "updated_at": "2026-11-21T23:25:42Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -113081,7 +113240,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "05b3bbbd22f383ce2a82165239edaeb48f02fba6",
+ "runner_sha": "6730558382d8175b0d99537d6a94795aca0ed36a",
  "starter": "actions",
  "smoke_runs": [
   {
