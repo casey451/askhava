@@ -25538,8 +25538,8 @@
     "T206",
     "T707"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "runbook",
    "type": "docs",
    "stage": "5",
@@ -25552,10 +25552,33 @@
     5290,
     5291
    ],
-   "wip_claim": {
-    "attempt": 1,
-    "remote_sha": ""
-   }
+   "last_failure": "Reviewer after findings round still FINDINGS at df75c487ed3673fc4e0234c1563449e081d4939b:\n1. docs/runbook.md:51,58,60 restore from pre-rotation export: step 6 must add held old key versions to the host's sealed variables before pointing web/worker at the restored DB, and re-run re-encrypt/re-key so old version can be retired (PRIV-024, D-4748, D-4418).\n2. tests/docs/test_runbook.py:66-71 inventory check only non-empty cells; should require sealed paper escrow and sealed/off-host storage for PRIV-024 keys.\n3. tests/docs/test_runbook.py:87-93 restore-order test lets a pg_restore step before server replay pass (assert no numbered step runs pg_restore); line 56 test has wrong TD id (OPS-054 is TD-OPS-29 not TD-PRIV-09).\n4. docs/runbook.md:114 says plan gap raised for Casey but nothing added to docs/for-casey-review.md; D-5288 does not say D-4914's retention statement is wrong.\n5. docs/runbook.md:105 missing \"never a recorded message\" for the live call (incident-response-plan.md:34).",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-sonnet-5-5",
+     "model_evidence_count": 41,
+     "head_sha": "df75c487ed3673fc4e0234c1563449e081d4939b",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-21T22:21:46Z",
+     "ended_at": "2026-11-21T22:56:43Z",
+     "result": "QUEUED",
+     "usage": {
+      "worker": {
+       "tokens": 1013931,
+       "turns": 24
+      },
+      "reviewer": {
+       "tokens": 3037742,
+       "turns": 54
+      }
+     },
+     "wip_skipped": "PII scan: a commit message in 62c2b1c9e15373947a97cca183511a2a53006723"
+    }
+   ]
   },
   {
    "id": "T118",
@@ -105760,12 +105783,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T794",
-   "at": "2026-11-21T22:17:03Z",
-   "cache_creation_input_tokens": 103865,
-   "cache_read_input_tokens": 2273199,
-   "output_tokens": 26605,
-   "input_tokens": 84
+   "task": "T117",
+   "at": "2026-11-21T22:56:43Z",
+   "input_tokens": 151,
+   "output_tokens": 39290,
+   "cache_creation_input_tokens": 206976,
+   "cache_read_input_tokens": 3805256
   },
   "source": "session_reading 2026-11-21T22:22:26Z (week)",
   "by_task": {
@@ -112853,7 +112876,17 @@
    },
    "T117": {
     "estimated_bytes": 235246,
-    "estimated_tokens": 273586
+    "estimated_tokens": 273586,
+    "usage_counting": "message_id",
+    "input_tokens": 151,
+    "output_tokens": 39290,
+    "cache_creation_input_tokens": 206976,
+    "cache_read_input_tokens": 3805256,
+    "worker_tokens": 1013931,
+    "worker_turns": 24,
+    "reviewer_tokens": 3037742,
+    "reviewer_turns": 54,
+    "last_model": "claude-sonnet-5-5"
    },
    "T397": {
     "estimated_bytes": 474728,
@@ -112867,11 +112900,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-21T20:57:01Z",
-    "tokens": 3613467
+    "tokens": 4240409
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 126148994
+    "tokens": 126775936
    }
   },
   "session_reading": {
@@ -112882,7 +112915,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T22:52:32Z",
+ "updated_at": "2026-11-21T22:56:49Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -112980,7 +113013,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "62c2b1c9e15373947a97cca183511a2a53006723",
+ "runner_sha": "df75c487ed3673fc4e0234c1563449e081d4939b",
  "starter": "actions",
  "smoke_runs": [
   {

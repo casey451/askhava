@@ -1,25 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-21T22:52:32Z by runner 62c2b1c9e153 (actions).
+Updated 2026-11-21T22:56:49Z by runner df75c487ed36 (actions).
 
 **Building: T600 in progress since 22:29Z; 594 of 739 done; week 38% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 594 of 739 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T600 claimed 22:29Z, lease until 01:29Z; lane 2: T608 claimed 21:16Z, lease until 00:16Z; lane 3: T542 claimed 22:52Z, lease until 01:52Z; lane 4: T798 claimed 21:15Z, lease until 00:15Z; lane 5: T397 claimed 22:35Z, lease until 01:35Z; lane 6: T118 claimed 22:08Z, lease until 01:08Z; lane 7: T117 claimed 22:21Z, lease until 01:21Z
+- **Lane:** lane 1: T600 claimed 22:29Z, lease until 01:29Z; lane 2: T608 claimed 21:16Z, lease until 00:16Z; lane 3: T542 claimed 22:52Z, lease until 01:52Z; lane 4: T798 claimed 21:15Z, lease until 00:15Z; lane 5: T397 claimed 22:35Z, lease until 01:35Z; lane 6: T118 claimed 22:08Z, lease until 01:08Z
 - **Week:** 38% used, 111.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:50Z, 2 min before this update
+- **Last run:** 22:52Z, 4 min before this update
 - **Keeper:** last ran 22:22Z, next wake 00:18Z
 
 ## Needs attention
 - PLAN GAP T121 (since 2026-11-21T22:29:56Z, no attempt used; a plan change fixes it): T121: measures 46% of the context window, over its 45% limit
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 42 problem(s) on tasks still to run (+476 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 44 problem(s) on tasks still to run (+475 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | QUEUED | 1 | 34 min | 22:56Z | Reviewer after findings round still FINDINGS at df75c487ed3673fc4e0234c1563449e081d4939b: / 1. docs/runbook.md:51,58,60  |
 | T794 | adapters and server: the Twilio media delete and the product | done | 1 | 49 min | 22:17Z |  |
 | T788 | Tooling (harness): check_pr_change.py fails a task branch th | done | 1 | 64 min | 21:30Z |  |
 | T600 | intake, businesses, privacy and server: four worker handlers | resync | 1 | 57 min | 21:10Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
@@ -130,7 +131,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 4: T798 (lease until 2026-11-22T00:15:56Z)
 - lane 5: T397 (lease until 2026-11-22T01:35:47Z)
 - lane 6: T118 (lease until 2026-11-22T01:08:53Z)
-- lane 7: T117 (lease until 2026-11-22T01:21:46Z)
 
 ## Last usage reading
-- {"task": "T794", "at": "2026-11-21T22:17:03Z", "cache_creation_input_tokens": 103865, "cache_read_input_tokens": 2273199, "output_tokens": 26605, "input_tokens": 84}
+- {"task": "T117", "at": "2026-11-21T22:56:43Z", "input_tokens": 151, "output_tokens": 39290, "cache_creation_input_tokens": 206976, "cache_read_input_tokens": 3805256}
