@@ -9008,3 +9008,4 @@
 - 2026-11-21T04:02:07Z runner 7040ed647e64 (actions): {}
 - 2026-11-21T04:06:00Z runner 1e0fea3f6d2c (actions): {}
 - 2026-11-21T04:06:32Z runner 1e0fea3f6d2c (actions): {}
+- 2026-11-21T04:07:40Z runner 7040ed647e64 (actions): {"T691": "QUEUED -> IN_PROGRESS"}; T691 estimated 1.3M tokens (calibrated); week has 65.3M left (no five-hour budget, D-3056) after 4.7M still running in another lane (session_reading 2026-11-21T04:05:59Z (week)); claimed

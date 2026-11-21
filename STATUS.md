@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-21T04:06:32Z by runner 1e0fea3f6d2c (actions).
+Updated 2026-11-21T04:07:40Z by runner 7040ed647e64 (actions).
 
 **Building: T457 in progress since 03:41Z; 568 of 726 done; week 62% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 568 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T457 claimed 03:41Z, lease until 06:41Z; lane 3: T781 claimed 02:17Z, lease until 05:17Z; lane 4: T614 claimed 03:43Z, lease until 06:43Z; lane 5: T304 claimed 02:48Z, lease until 05:48Z
-- **Week:** 62% used, 63.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 2: T457 claimed 03:41Z, lease until 06:41Z; lane 3: T781 claimed 02:17Z, lease until 05:17Z; lane 4: T614 claimed 03:43Z, lease until 06:43Z; lane 5: T304 claimed 02:48Z, lease until 05:48Z; lane 7: T691 claimed 04:07Z, lease until 07:07Z
+- **Week:** 62% used, 65.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:06Z, 0 min before this update
 - **Keeper:** last ran 04:06Z, next wake 04:26Z
 
@@ -144,7 +144,7 @@ T777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-21T03:34:37Z (week)): week: 130.4M used, 63.6M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-03T20:33:44Z.
+- Pacing (session_reading 2026-11-21T04:05:59Z (week)): week: 128.7M used, 65.3M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-03T20:51:47Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -164,6 +164,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 3: T781 (lease until 2026-11-21T05:17:31Z)
 - lane 4: T614 (lease until 2026-11-21T06:43:38Z)
 - lane 5: T304 (lease until 2026-11-21T05:48:33Z)
+- lane 7: T691 (lease until 2026-11-21T07:07:30Z)
 
 ## Last usage reading
 - {"task": "T776", "at": "2026-11-21T04:00:50Z", "cache_creation_input_tokens": 127147, "cache_read_input_tokens": 2118758, "input_tokens": 77, "output_tokens": 37941}
