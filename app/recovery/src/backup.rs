@@ -13,9 +13,13 @@
 //! reuse it). The worker drops a handler unrecorded at its 2-minute lease, so each export has its
 //! own [`EXPORT_DEADLINE`] under it: past that the export is dropped, its `pg_dump` killed and
 //! reaped (the [`Dump`] guard), and the run recorded as a `timeout` failure. `pg_dump` starts with
-//! a cleared environment (only `PATH` and `PGPASSWORD`), so no host secret reaches it.
+//! a cleared environment (only `PATH` and `PGPASSWORD`), so no host secret reaches it. A run that
+//! ends not `ok` (failed or `timeout`) also raises one High [`EXPORT_FAILED_ALERT`] through
+//! `ops::api::raise_alert`, in the row's transaction, unless an earlier failed export started the
+//! same Arizona day (by the injected clock); it names no path, key or size and is not a safe-mode
+//! kind (D-5081).
 
-use std::ffi::OsStr;
+use std::ffi::{OsStr, OsString};
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
@@ -25,7 +29,8 @@ use std::time::Duration;
 use askhava_adapters::api::{IdempotencyKey, StorageAdapter};
 use askhava_core::api::{Clock, Environment, HandlerError, NewTask, Registry, Settings, enqueue};
 use askhava_ops::api::{
-    Actor, AuditEntry, BACKUP_EXPORT_FAILED_ACTION, BACKUP_EXPORTED_ACTION, Change, audit,
+    Actor, AuditEntry, BACKUP_EXPORT_FAILED_ACTION, BACKUP_EXPORTED_ACTION, Change, NewAlert,
+    Severity, audit, raise_alert,
 };
 use jiff::Timestamp;
 use jiff_sqlx::ToSqlx;
@@ -43,12 +48,18 @@ pub const EXPORT_KIND: &str = "recovery.nightly_export";
 /// The storage prefix of every export object, `exports/<date>/<task>.age` (PRIV-029).
 pub const EXPORT_PREFIX: &str = "exports";
 
+/// OPS-013, PRIV-029, D-5081: the High alert a failed or timed-out export raises, at most once per
+/// Arizona day, with no subject (so it names no path, key or size); never a safe-mode kind.
+pub const EXPORT_FAILED_ALERT: &str = "recovery.export_failed";
+
 /// The PostgreSQL major version of the tools and the server (D-4708); never a newer one.
 pub const PG_MAJOR: u32 = 16;
 
 /// OPS-013: the export's hour in UTC, 3 a.m. in Arizona (a fixed UTC-7), outside business hours.
 const EXPORT_HOUR_UTC: i64 = 10;
 const DAY_SECS: i64 = 86_400;
+/// Arizona's fixed offset from UTC in seconds (UTC-7, no daylight saving).
+const ARIZONA_OFFSET_SECS: i64 = -7 * 3_600;
 
 /// OPS-013: one export's deadline, under the worker's 2-minute lease so a slow run is still
 /// recorded (as `timeout`) rather than dropped by the worker unrecorded.
@@ -227,15 +238,16 @@ struct Stored {
     sha256: Vec<u8>,
 }
 
-/// OPS-013, PRIV-018, PRIV-029: one dump, encrypted and stored as `name`.
+/// OPS-013, PRIV-018, PRIV-029: one dump by the `pg_dump` found on `search`, encrypted and
+/// stored as `name`.
 async fn export_once<S: StorageAdapter>(
     pool: &PgPool,
     (store, secret): (&S, &SecretString),
     export: &Result<ExportSettings, RecoveryError>,
-    name: String,
+    (name, search): (String, OsString),
 ) -> Result<Stored, RecoveryError> {
     let export = export.as_ref().map_err(Clone::clone)?.clone();
-    let tool = tokio::task::spawn_blocking(|| pg_tool("pg_dump"))
+    let tool = tokio::task::spawn_blocking(move || pg_tool_on("pg_dump", &search))
         .await
         .map_err(|_| RecoveryError::Dump)??;
     check_server_major(pool, &tool).await?;
@@ -254,8 +266,9 @@ async fn export_once<S: StorageAdapter>(
     })
 }
 
-/// OPS-013, PRIV-028: one `recovery.backup_check` row for `result` and its audit entry, in one
-/// transaction; returns the row's ID.
+/// OPS-013, PRIV-028: one `recovery.backup_check` row for `result` and its audit entry, and for a
+/// failure the day's one High [`EXPORT_FAILED_ALERT`] (D-5081), in one transaction; returns the
+/// row's ID.
 async fn record(
     pool: &PgPool,
     (started, finished): (Timestamp, Timestamp),
@@ -291,8 +304,46 @@ async fn record(
     audit(&mut tx, &entry)
         .await
         .map_err(|_| RecoveryError::Database)?;
+    if failure.is_some() {
+        alert_first_failure(&mut tx, id, started).await?;
+    }
     tx.commit().await.map_err(db)?;
     Ok(id)
+}
+
+/// OPS-013, PRIV-029, D-5081: raises the High [`EXPORT_FAILED_ALERT`], with no subject, unless a
+/// failed export other than row `id` started the same Arizona day as `started`.
+async fn alert_first_failure(
+    tx: &mut PgConnection,
+    id: Uuid,
+    started: Timestamp,
+) -> Result<(), RecoveryError> {
+    let local = started.as_second() + ARIZONA_OFFSET_SECS;
+    let from = local.div_euclid(DAY_SECS) * DAY_SECS - ARIZONA_OFFSET_SECS;
+    let day = |s| Timestamp::from_second(s).map_err(|_| RecoveryError::Database);
+    let (from, to) = (day(from)?, day(from + DAY_SECS)?);
+    let earlier = sqlx::query_scalar!(
+        r#"SELECT EXISTS (SELECT 1 FROM recovery.backup_check WHERE kind = 'export' AND NOT ok
+           AND id <> $1 AND started_at >= $2 AND started_at < $3) AS "earlier!""#,
+        id,
+        from.to_sqlx(),
+        to.to_sqlx(),
+    )
+    .fetch_one(&mut *tx)
+    .await
+    .map_err(|_| RecoveryError::Database)?;
+    if earlier {
+        return Ok(());
+    }
+    let alert = NewAlert {
+        kind: EXPORT_FAILED_ALERT,
+        severity: Severity::High,
+        subject: None,
+    };
+    raise_alert(tx, &alert)
+        .await
+        .map(|_| ())
+        .map_err(|_| RecoveryError::Database)
 }
 
 /// The first export hour strictly after `now` (OPS-013).
@@ -322,13 +373,26 @@ pub async fn schedule_export(db: &mut PgConnection, now: Timestamp) -> Result<()
         .map_err(|_| RecoveryError::Database)
 }
 
-/// OPS-013, PRIV-018, PRIV-029: one nightly run: queue the next, export within `deadline` (past
-/// it the dump is killed and the run is a `timeout` failure), record the result.
+/// OPS-013, PRIV-018, PRIV-029: one nightly run with the `pg_dump` on this process's `PATH`.
 async fn run_export<S: StorageAdapter>(
     pool: &PgPool,
     parts: (&S, &SecretString, &dyn Clock),
     export: &Result<ExportSettings, RecoveryError>,
+    run: (i64, Duration),
+) -> Result<(), HandlerError> {
+    let search = std::env::var_os("PATH").unwrap_or_default();
+    run_export_on(pool, parts, export, run, search).await
+}
+
+/// OPS-013, PRIV-018, PRIV-029, D-5081: one nightly run with the `pg_dump` found on `search`:
+/// queue the next, export within `deadline` (past it the dump is killed and the run is a
+/// `timeout` failure), record the result (a failure alerts once a day).
+pub(crate) async fn run_export_on<S: StorageAdapter>(
+    pool: &PgPool,
+    parts: (&S, &SecretString, &dyn Clock),
+    export: &Result<ExportSettings, RecoveryError>,
     (task, deadline): (i64, Duration),
+    search: OsString,
 ) -> Result<(), HandlerError> {
     let (store, secret, clock) = parts;
     let started = clock.now();
@@ -341,7 +405,8 @@ async fn run_export<S: StorageAdapter>(
         "{EXPORT_PREFIX}/{}/{task}.age",
         started.strftime("%Y-%m-%d")
     );
-    let result = tokio::time::timeout(deadline, export_once(pool, (store, secret), export, name))
+    let once = export_once(pool, (store, secret), export, (name, search));
+    let result = tokio::time::timeout(deadline, once)
         .await
         .unwrap_or(Err(RecoveryError::Timeout));
     let finished = clock.now().max(started);
