@@ -202,7 +202,6 @@ async fn mark_applied(conn: &mut PgConnection, id: Uuid) -> Result<(), Businesse
 /// `license` hold left here ends in `license_standing`'s run on a later Active check (LIC-008).
 ///
 /// # Errors
-///
 /// `Database`, `Audit`, `Refused` or `MovedOn`.
 pub(crate) async fn lift_no_cover(
     tx: &mut PgConnection,
