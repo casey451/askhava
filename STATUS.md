@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T17:55:29Z by runner b801a6d3df9f (actions).
+Updated 2026-11-21T18:10:11Z by runner 5b5195da7475 (actions).
 
-**Building: T608 in progress since 15:59Z; 584 of 731 done; week 31% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T608 in progress since 15:59Z; 584 of 732 done; week 31% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 584 of 731 build tasks (owner gates not counted)
+- **Tasks done:** 584 of 732 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T608 claimed 15:59Z, lease until 18:59Z; lane 2: T690 claimed 16:56Z, lease until 19:56Z; lane 4: T615 claimed 17:10Z, lease until 20:10Z
 - **Week:** 31% used, 128.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:47Z, 7 min before this update
+- **Last run:** 17:55Z, 14 min before this update
 - **Keeper:** last ran 17:40Z, next wake 19:02Z
 
 ## Needs attention
@@ -76,7 +76,6 @@ Updated 2026-11-21T17:55:29Z by runner b801a6d3df9f (actions).
 | T661 | privacy: a business notice address with spaces, commas or co | done | 1 | 27 min | 19:04Z |  |
 | T614 | site: the V6 header in base.html (links, the Menu in the pag | BLOCKED | 2 | 80 min | 18:46Z |  |
 | T743 | messaging and privacy: opt-out listings are re-keyed to the  | QUEUED | 1 | 112 min | 18:17Z |  |
-| T573 | messaging and server: queued business texts are addressed to | done | 4 | 41 min | 18:01Z | model claude-opus-5-5 ran, task names claude-fable-5-2 / re-queued after plan fix D-4969: Coverage time-limit cancel, fi |
 
 ### Plan and harness merges on main
 - none
@@ -120,7 +119,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 227 of 311 done
+- stage 5: 227 of 312 done
 - stage 6: 0 of 67 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
