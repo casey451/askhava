@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T20:20:41Z by runner 2ba3a52a5d62 (actions).
+Updated 2026-11-21T20:22:26Z by runner 2ba3a52a5d62 (actions).
 
-**Building: T565 in progress since 19:19Z; 587 of 734 done; week 35% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T565 in progress since 19:19Z; 588 of 734 done; week 35% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 587 of 734 build tasks (owner gates not counted)
+- **Tasks done:** 588 of 734 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T565 claimed 19:19Z, lease until 22:19Z; lane 4: T691 claimed 20:16Z, lease until 23:16Z; lane 5: T600 claimed 20:12Z, lease until 23:12Z
 - **Week:** 35% used, 118.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:20Z, 0 min before this update
+- **Last run:** 20:20Z, 1 min before this update
 - **Keeper:** last ran 20:20Z, next wake 22:21Z
 
 ## Needs attention
@@ -26,7 +26,7 @@ Updated 2026-11-21T20:20:41Z by runner 2ba3a52a5d62 (actions).
 | T690 | businesses and server: a sign-up waiting on "That number is  | MERGE_PENDING | 1 | 2 h 30 min | 19:27Z |  |
 | T791 | Tests and templates (harness): three Spanish stay-on texts r | done | 1 | 36 min | 19:21Z |  |
 | T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 1 | 4 min | 19:13Z | PLAN GAP: no production PictureTextMedia / Twilio media DELETE exists (only the test fake at tests/integration/tests/int |
-| T790 | catalog, licensing and tests (harness): the termite report f | MERGE_PENDING | 1 | 57 min | 19:07Z |  |
+| T790 | catalog, licensing and tests (harness): the termite report f | done | 1 | 57 min | 19:07Z |  |
 | T608 | site and portals: the home page and the quote page in full V | check_failed | 1 | 2 h 46 min | 18:46Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-21T |
 | T615 | site and server: a styled 404 page for unknown paths, the fa | done | 4 | 68 min | 18:19Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T787 | intake: crate guide trimmed to 5,500 bytes, the detail moved | done | 1 | 68 min | 16:45Z |  |
@@ -86,7 +86,7 @@ Updated 2026-11-21T20:20:41Z by runner 2ba3a52a5d62 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 587 of 734
+**Tasks merged (throughput only):** 588 of 734
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -122,7 +122,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 230 of 312 done
+- stage 5: 231 of 312 done
 - stage 6: 0 of 69 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
