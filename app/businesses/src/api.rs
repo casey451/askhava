@@ -112,6 +112,10 @@ pub use crate::license_reapply::{
     BATCH as REAPPLY_BATCH, LIST_APPLIED, REAPPLY_KIND, RUN_HOUR, apply_lists, run_reapply,
     schedule_reapply,
 };
+pub use crate::license_standing::{
+    LAG as STANDING_LAG, LICENSE_UNKNOWN_KIND, STANDING_KIND, WARNED_ACTION, apply_standing,
+    run_standing, schedule_standing, standing_at,
+};
 pub use crate::links::{
     BusinessNames, CITY_LICENSE_MAX, GOOGLE_HOSTS, GOOGLE_SHAPES, GuardedOpener, LINK_MAX,
     LinkOpener, LinkRefusal, LinksError, NAME_MAX, NameRefusal, ReviewLinks, ReviewSite,
@@ -120,8 +124,8 @@ pub use crate::links::{
 };
 pub use crate::models::{Business, BusinessesError, Insurance};
 pub use crate::notice_emails::{
-    NOTICE_KINDS, NoticeParts, address_changed_words, after_hours_off_words, phone_linked_words,
-    returned_words, run_notice_email,
+    NOTICE_KINDS, NoticeParts, address_changed_words, after_hours_off_words, license_unknown_words,
+    phone_linked_words, returned_words, run_notice_email,
 };
 pub use crate::open_cards_times::{
     OpenCardsTime, OpenCardsTimes, open_cards_times, set_open_cards_times,

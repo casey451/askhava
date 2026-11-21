@@ -1091,7 +1091,9 @@ impl askhava_licensing::api::ActiveLicenses for ActiveRoc {
 /// LIC-007, LIC-039) on the worker clock over `ASKHAVA_LICENSE_BASE_URL` with the
 /// `DailyListSettings` in `pairs`; `worker.rs`'s `schedule_start` seeds it. Without the base URL
 /// a run does nothing and queues no next run in dev and CI; in test and live it is a start error
-/// (D-2954).
+/// (D-2954). With the same settings and clock it registers `businesses`' unknown-license run
+/// (`businesses.license_standing`, T655, LIC-008, D-4310), which reads the database only and so
+/// runs with or without the base URL; `schedule_start` seeds it too.
 fn register_daily_lists(
     registry: &mut Registry,
     settings: &Settings,
@@ -1111,6 +1113,14 @@ fn register_daily_lists(
             }
         },
     };
+    let standing_clock = Arc::clone(&clock);
+    registry.register(
+        askhava_businesses::api::STANDING_KIND,
+        move |pool, _task| {
+            let now = standing_clock.now();
+            async move { askhava_businesses::api::run_standing(&pool, now, lists).await }
+        },
+    );
     let source = Arc::new(source);
     registry.register(
         askhava_licensing::api::DAILY_LISTS_KIND,

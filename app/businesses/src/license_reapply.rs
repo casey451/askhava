@@ -198,10 +198,10 @@ async fn mark_applied(conn: &mut PgConnection, id: Uuid) -> Result<(), Businesse
 /// with its reason (audited): three complaints within the window, a pest license reported wrong,
 /// the latest daily check not Active. A pause that replaced the owner's own pause returns to it
 /// (audited); otherwise the business becomes active (status audit row). Any other status or
-/// reason, or no covered tick, is left as it is. Returns the status it moved to, if any.
+/// reason, or no covered tick, is left as it is. Returns the status it moved to, if any. A
+/// `license` hold left here ends in `license_standing`'s run on a later Active check (LIC-008).
 ///
 /// # Errors
-///
 /// `Database`, `Audit`, `Refused` or `MovedOn`.
 pub(crate) async fn lift_no_cover(
     tx: &mut PgConnection,
@@ -257,7 +257,7 @@ async fn covers_a_tick(
 
 /// BIZ-012, D-016: [`PAUSE_COUNT`] or more complaints within [`PAUSE_WINDOW_DAYS`] up to `now`,
 /// the count `complaints::record_complaint` pauses on.
-async fn complaints_hold(
+pub(crate) async fn complaints_hold(
     tx: &mut PgConnection,
     id: Uuid,
     now: Timestamp,
@@ -274,7 +274,7 @@ async fn complaints_hold(
 }
 
 /// LIC-047: the business's pest license was reported wrong and no found number replaced it.
-fn pest_reported(parts: &HolderParts) -> bool {
+pub(crate) fn pest_reported(parts: &HolderParts) -> bool {
     parts.holder.pest.as_ref().is_some_and(|p| p.is_paused())
 }
 
