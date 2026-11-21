@@ -90892,7 +90892,7 @@
     "T767",
     "T772"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 1,
    "slug": "confirm-press-moves",
    "type": "build",
@@ -90937,13 +90937,70 @@
      "model": "claude-fable-5-2",
      "model_evidence_count": 219,
      "head_sha": "159a7078b351a9d0b24761651cd36d2751f06997",
-     "pr": null,
-     "checks": null,
+     "pr": 1246,
+     "checks": [
+      {
+       "name": "backup lane 1",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-20T23:09:28Z",
      "ended_at": "2026-11-21T01:47:31Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "usage": {
       "worker": {
        "tokens": 18451136,
@@ -91006,7 +91063,19 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-21T01:53:57Z"
+   "merge_turn_since": "2026-11-21T01:53:57Z",
+   "merged_sha": "285a8c04ecb035d37b26435a7764246451f340b4",
+   "merged_at": "2026-11-21T02:33:57Z",
+   "files": [
+    "app/portals/NOTES.md",
+    "app/portals/src/confirm_moves.rs",
+    "app/portals/src/confirm_pay.rs",
+    "app/portals/src/lib.rs",
+    "app/portals/src/status.rs",
+    "app/server/tests/confirm_press_moves.rs",
+    "docs/decisions.md",
+    "docs/for-casey-review.md"
+   ]
   },
   {
    "id": "T665",
@@ -99508,7 +99577,7 @@
      }
     }
    ],
-   "reviewed_sha": "af287ae73bded96139449072c9112b31c812b0a4",
+   "reviewed_sha": "109ce4cdf51005006fe6c85a4824eed8a0b0f6c2",
    "review_lease": {
     "task": "T769",
     "session": "actions-44845910668",
@@ -99528,10 +99597,23 @@
      "main": "1846c812a70417d07bbd3308768e62f739e8c0a4",
      "how": "hand-in",
      "at": "2026-11-21T01:56:03Z"
+    },
+    {
+     "from": "af287ae73bded96139449072c9112b31c812b0a4",
+     "to": "109ce4cdf51005006fe6c85a4824eed8a0b0f6c2",
+     "main": "285a8c04ecb035d37b26435a7764246451f340b4",
+     "how": "runner",
+     "checks": {
+      "Ci": "success",
+      "Ally": "success",
+      "Twin": "success"
+     },
+     "at": "2026-11-21T02:35:54Z"
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merge_turn_since": "2026-11-21T02:35:54Z"
   },
   {
    "id": "T770",
@@ -107158,7 +107240,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T02:18:12Z",
+ "updated_at": "2026-11-21T02:36:01Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -107256,7 +107338,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "1846c812a70417d07bbd3308768e62f739e8c0a4",
+ "runner_sha": "285a8c04ecb035d37b26435a7764246451f340b4",
  "starter": "actions",
  "smoke_runs": [
   {
