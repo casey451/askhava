@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T02:39:12Z by runner 6f36936613bd (actions).
+Updated 2026-11-21T02:39:25Z by runner 285a8c04ecb0 (actions).
 
-**Building: T781 in progress since 02:17Z; 565 of 726 done; week 57% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T781 in progress since 02:17Z; 565 of 726 done; week 59% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 565 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T781 claimed 02:17Z, lease until 05:17Z; lane 4: T457 claimed 01:40Z, lease until 04:40Z; lane 6: T684 claimed 02:16Z, lease until 05:16Z; lane 7: T775 claimed 01:29Z, lease until 04:29Z
-- **Week:** 57% used, 76.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:38Z, 0 min before this update
+- **Week:** 59% used, 76.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 02:39Z, 0 min before this update
 - **Keeper:** last ran 02:10Z, next wake 02:30Z
 
 ## Needs attention
@@ -19,7 +19,7 @@ T777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T674 (since 2026-11-21T01:25:56Z, no attempt used; a plan change fixes it): outside ownership: tests/a11y/fixtures.ts — GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PAGE_STATES entry cannot cover a JPEG or 404). The file is owner-only since T267 moved the registry (page_states.ts:7-8); T674's Scope shares it only until then, and only for PAGE_STATES rows. Reviewer confirmed: no task grants that line (T766 does not). plan_pages.py gives a false negative for T674 because its goal mentions page_states.ts. Smallest plan change: grant T674 the one NOT_PAGES line in fixtures.ts. Worker's uncommitted work was not committed.
 - PLAN GAP T777 (since 2026-11-21T02:09:30Z, no attempt used; a plan change fixes it): outside ownership: app/server/tests/business_signin_route.rs
-- Strict plan check red: 47 problem(s) on tasks still to run (+440 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 55 problem(s) on tasks still to run (+444 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
