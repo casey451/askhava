@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T11:05:49Z by runner d7e50c517793 (actions).
+Updated 2026-11-21T11:11:55Z by runner 4d8cf0ae2015 (actions).
 
-**Building: T655 in progress since 10:47Z; 577 of 726 done; week 75% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T655 in progress since 10:47Z; 578 of 726 done; week 75% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 577 of 726 build tasks (owner gates not counted)
+- **Tasks done:** 578 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T655 claimed 10:47Z, lease until 13:47Z; lane 3: T615 claimed 09:42Z, lease until 12:42Z; lane 4: T581 claimed 10:47Z, lease until 13:47Z
 - **Week:** 75% used, 41.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:05Z, 0 min before this update
+- **Last run:** 11:06Z, 5 min before this update
 - **Keeper:** last ran 11:05Z, next wake 12:44Z
 
 ## Needs attention
@@ -17,13 +17,13 @@ Worker: D-5160's three trade-only rules (job_type: None) give candidate <trade>_
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T776 (since 2026-11-21T08:54:41Z, no attempt used; a plan change fixes it): outside ownership: app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml)
-- Strict plan check red: 55 problem(s) on tasks still to run (+450 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 57 problem(s) on tasks still to run (+456 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T754 | portals and payments: a $0 Confirm after a PaymentIntent was | MERGE_PENDING | 3 | 70 min | 10:58Z | PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and |
-| T458 | businesses, calls and server: the email's "Link this phone"  | MERGE_PENDING | 1 | 112 min | 10:35Z |  |
+| T458 | businesses, calls and server: the email's "Link this phone"  | done | 1 | 112 min | 10:35Z |  |
 | T654 | licensing and quotes: every ROC list import runs each active | done | 2 | 74 min | 10:15Z | PLAN GAP: outside ownership: app/quotes/src/service.rs, app/quotes/src/late_cards.rs, app/intake/src/cards_out.rs, app/i |
 | T615 | site and server: a styled 404 page for unknown paths, the fa | check_failed | 2 | 92 min | 09:28Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T776 | intake: a move out of Arizona and a property-management requ | BLOCKED | 2 | 11 min | 08:54Z | PLAN GAP: outside ownership: app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml) / Worker: D-5160's three tr |
@@ -96,8 +96,8 @@ Worker: D-5160's three trade-only rules (job_type: None) give candidate <trade>_
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 361 of 735 (49.1%) · partial 355 · unstarted 19
-**Tasks merged (throughput only):** 577 of 726
+**Requirements verified:** 363 of 735 (49.4%) · partial 353 · unstarted 19
+**Tasks merged (throughput only):** 578 of 726
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -115,7 +115,7 @@ Worker: D-5160's three trade-only rules (job_type: None) give candidate <trade>_
 | ops-recovery | 13 | 29 | 12 | 54 |
 | privacy | 10 | 21 | 0 | 31 |
 | quiet-hours | 3 | 6 | 0 | 9 |
-| quotes-pick | 26 | 30 | 0 | 56 |
+| quotes-pick | 28 | 28 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
 | security | 13 | 39 | 3 | 55 |
 | terms | 29 | 6 | 0 | 35 |
@@ -133,7 +133,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 220 of 306 done
+- stage 5: 221 of 306 done
 - stage 6: 0 of 67 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
