@@ -8,8 +8,8 @@
 //! ([`RESUME_BATCH_KEY`], default [`RESUME_BATCH`]) per list, in business ID order from the one
 //! after the last queued round to the start, so every waiting sign-up is reached in turn and those
 //! not reached on one list come first on the next; the dedupe key `<kind>.<business>.<list date>`
-//! gives one lookup per list. No column is added and `core.task` is never read here (TD-SEC-10:
-//! no SQL names another module's schema; D-5217).
+//! gives one lookup per list. No column is added and no SQL here names `core` (TD-SEC-10; D-5217):
+//! the start-up seed asks `core::api::due_or_running` whether a run is live and keys by due time.
 //!
 //! [`run_resume_one`] holds itself to 8 a.m. Arizona before any lookup outside 8 a.m. to 8 p.m.
 //! Arizona; then it makes one `licensing::api::read_own_record` through
@@ -22,7 +22,7 @@
 //! Nothing from the record is stored or logged (PRIV-001, D-1699).
 
 use askhava_adapters::api::{LicenseRecords, VerifyAdapter};
-use askhava_core::api::{Claimed, HandlerError, NewTask, SettingsError, enqueue};
+use askhava_core::api::{Claimed, HandlerError, NewTask, SettingsError, due_or_running, enqueue};
 use askhava_licensing::api::{DailyListSettings, next_slot, roc_lists};
 use askhava_messaging::api::{AreaCodes, SendWindow, window};
 use jiff::tz::{TimeZone, offset};
@@ -88,8 +88,11 @@ async fn queue_run(
     Ok(queued.map_err(|_| BusinessesError::Database)?.is_some())
 }
 
-/// BIZ-026, JOB-006: seeds the run chain with no list acted on yet; a no-op when the next run is
-/// already queued.
+/// BIZ-026, JOB-006: seeds the run chain with no list acted on yet; a no-op while any run of the
+/// chain is due or running (`core::api::due_or_running`), so a start-up never takes the key the
+/// live chain's next run needs, even with an overdue run not yet claimed. Otherwise it queues the
+/// run whose due time ([`RESUME_LAG`] after the slot) is next, so a seed between the list hour and
+/// its run takes today's key, not tomorrow's. A chain lost to a dead letter is seeded again.
 ///
 /// # Errors
 /// [`BusinessesError::Database`].
@@ -98,7 +101,14 @@ pub async fn schedule_record_resume(
     now: Timestamp,
     lists: DailyListSettings,
 ) -> Result<(), BusinessesError> {
-    queue_run(conn, now, lists, json!({})).await.map(|_| ())
+    let prefix = format!("{RESUME_KIND}.");
+    let live = due_or_running(conn, RESUME_KIND, &prefix).await;
+    if live.map_err(|_| BusinessesError::Database)? {
+        return Ok(());
+    }
+    let since = now.checked_sub(RESUME_LAG);
+    let since = since.map_err(|_| BusinessesError::Database)?;
+    queue_run(conn, since, lists, json!({})).await.map(|_| ())
 }
 
 /// The [`RESUME_KIND`] handler (BIZ-026, JOB-006): when the latest ROC list is not the one its

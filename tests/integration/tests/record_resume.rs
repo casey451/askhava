@@ -497,3 +497,51 @@ async fn td_biz_56_a_pacific_phone_waits_for_its_own_eight(pool: PgPool) {
     assert!(!waiting(&pool, ids[0]).await);
     assert_eq!(step(&pool, ids[0]).await.as_deref(), Some("text"));
 }
+
+/// The chain's run tasks: dedupe key, due time (UTC) and payload, oldest first.
+async fn chain(pool: &PgPool) -> Vec<(String, String, serde_json::Value)> {
+    sqlx::query_as(
+        "SELECT dedupe_key, to_char(run_at AT TIME ZONE 'UTC', 'MM-DD HH24:MI'), payload \
+         FROM core.task WHERE kind = $1 ORDER BY id",
+    )
+    .bind(RESUME_KIND)
+    .fetch_all(pool)
+    .await
+    .expect("chain")
+}
+
+/// BIZ-026, JOB-006 (D-5217): a start-up seed between the list hour and its run, or after the run
+/// is due but before it is claimed, never takes the key the live chain's next run needs, so the
+/// run still queues its batch and keeps its turn; with no live run, a seed between 6:00 and 6:30
+/// Arizona queues today's 6:30 run, not tomorrow's.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_biz_56_a_seed_before_the_run_keeps_the_batch_and_turn(pool: PgPool) {
+    let records = Records::new();
+    parked(&pool, &records, 30).await;
+    let mut conn = pool.acquire().await.expect("connection");
+    import(&mut conn, 20, 30).await;
+    for seed in ["2026-11-20T13:15:00Z", "2026-11-20T14:00:00Z"] {
+        let seeded = schedule_record_resume(&mut conn, at(seed), lists()).await;
+        seeded.expect("seeded");
+    }
+    assert_eq!(chain(&pool).await.len(), 1, "a seed adds no run");
+    assert_eq!(queue(&pool, at("2026-11-20T14:00:00Z")).await, 25);
+    let seeded = schedule_record_resume(&mut conn, at("2026-11-20T14:05:00Z"), lists()).await;
+    seeded.expect("seeded");
+    let runs = chain(&pool).await;
+    assert_eq!(runs.len(), 2, "a seed adds no run");
+    let (_, due, payload) = &runs[1];
+    assert_eq!(due, "11-21 13:30");
+    assert_eq!(payload["list"], "2026-11-20", "the turn is kept");
+    assert!(payload["after"].is_string(), "the turn is kept");
+    sqlx::query("UPDATE core.task SET done_at = now() WHERE kind = $1")
+        .bind(RESUME_KIND)
+        .execute(&pool)
+        .await
+        .expect("chain lost");
+    let seeded = schedule_record_resume(&mut conn, at("2026-11-22T13:15:00Z"), lists()).await;
+    seeded.expect("seeded");
+    let runs = chain(&pool).await;
+    assert_eq!(runs.len(), 3);
+    assert_eq!(runs[2].1, "11-22 13:30", "today's run, not tomorrow's");
+}
