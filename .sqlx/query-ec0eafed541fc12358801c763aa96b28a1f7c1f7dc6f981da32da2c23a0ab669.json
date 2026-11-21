@@ -1,0 +1,29 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT choice AS \"choice!\" FROM intake.intake_answer\n           WHERE conversation_id = $1 AND question_id = $2 AND choice IS NOT NULL",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "choice!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "intake.intake_answer",
+            "name": "choice"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": [
+      true
+    ]
+  },
+  "hash": "ec0eafed541fc12358801c763aa96b28a1f7c1f7dc6f981da32da2c23a0ab669"
+}

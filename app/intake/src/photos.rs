@@ -10,11 +10,19 @@
 //! person and no house number; REMOVE takes it off; no answer leaves it off with a note
 //! ([`photo_answer`], [`left_off_note`]). A request with no photo goes on the same way.
 //! [`photo_text`] also sends the design texts of `design.rs` (INT-045, INT-046).
+//!
+//! Her portal page's buttons (T674, D-4360, D-5082): [`press_photo`] takes "Send this photo" and
+//! "Take it off" about the job's newest photo with no [`PHOTO_OK`] row. A confirmation is one
+//! `intake.intake_answer` row (`photo_ok`, the photo's ID in its 32-digit form as the choice); a
+//! photo with no such row never goes on the card (INT-044, CARD-013). A removal is
+//! `privacy::api::delete_photo`, of her own job's photo only. Both, and an upload, are refused
+//! once her card was shown ([`card_went_out`]): a shown card keeps its photo IDs.
 
 use askhava_core::api::brand;
 use askhava_messaging::api::Language;
-use askhava_privacy::api::PhotoTaken;
+use askhava_privacy::api::{PhotoTaken, delete_photo, job_photos};
 use askhava_quotes::api::{HomeownerAnswer, LeftOff};
+use jiff::Timestamp;
 use secrecy::SecretString;
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
@@ -224,4 +232,147 @@ pub async fn photo_text(
     queue_body(db, secret, (msg.contact, template), &subject, &body)
         .await
         .map(Some)
+}
+
+/// The question ID of her photo confirmation rows (INT-044, CARD-013); the choice is the photo's
+/// ID in its 32-digit form.
+pub const PHOTO_OK: &str = "photo_ok";
+
+/// What her press on the upload page's preview did (INT-044).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PhotoPress {
+    /// "Send this photo": the confirmation row was recorded.
+    Confirmed,
+    /// "Take it off": the photo was deleted.
+    Removed,
+    /// No photo waits for her answer (a second press), or the answer was neither: nothing changed.
+    Nothing,
+    /// Her card was shown already: nothing changed.
+    CardOut,
+}
+
+/// The request that opened `job` (as its first job or through a `job.` link row, like
+/// `models::request_jobs`), of the homeowner whose vault contact is `contact` when one is given.
+async fn opener(
+    db: &mut PgConnection,
+    job: Uuid,
+    contact: Option<Uuid>,
+) -> Result<Option<Uuid>, IntakeError> {
+    sqlx::query_scalar!(
+        "SELECT c.id FROM intake.conversation c JOIN intake.homeowner h ON h.id = c.homeowner_id \
+         WHERE ($3::uuid IS NULL OR h.contact_id = $3) AND (c.job_id = $1 OR EXISTS \
+         (SELECT 1 FROM intake.intake_answer a WHERE a.conversation_id = c.id \
+          AND a.question_id LIKE 'job.%' AND a.choice = $2)) ORDER BY c.opened_at, c.id LIMIT 1",
+        job,
+        job.simple().to_string(),
+        contact
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| IntakeError::Database)
+}
+
+/// SEC-019 (T674, D-5083): whether `job` was opened by a request of the homeowner whose vault
+/// contact is `contact`, as its first job or a linked one; her upload page serves only these.
+///
+/// # Errors
+///
+/// [`IntakeError::Database`].
+pub async fn photo_job_is_hers(
+    db: &mut PgConnection,
+    contact: Uuid,
+    job: Uuid,
+) -> Result<bool, IntakeError> {
+    Ok(opener(db, job, Some(contact)).await?.is_some())
+}
+
+/// The request that opened `job` and whether its card was shown (a `card.<job>` state row).
+async fn request_of(db: &mut PgConnection, job: Uuid) -> Result<Option<(Uuid, bool)>, IntakeError> {
+    let Some(conversation) = opener(db, job, None).await? else {
+        return Ok(None);
+    };
+    let card = format!("card.{}", job.simple());
+    let shown = models::latest_answer(db, conversation, &card).await?;
+    Ok(Some((conversation, shown.is_some())))
+}
+
+/// INT-044, CARD-013 (D-5082): whether `job`'s card was shown to her, after which its photos no
+/// longer change; `false` for a job no request opened.
+///
+/// # Errors
+///
+/// [`IntakeError::Database`].
+pub async fn card_went_out(db: &mut PgConnection, job: Uuid) -> Result<bool, IntakeError> {
+    Ok(request_of(db, job).await?.is_some_and(|(_, shown)| shown))
+}
+
+/// The photo IDs of `conversation`'s [`PHOTO_OK`] rows.
+async fn confirmed(db: &mut PgConnection, conversation: Uuid) -> Result<Vec<Uuid>, IntakeError> {
+    let codes = sqlx::query_scalar!(
+        r#"SELECT choice AS "choice!" FROM intake.intake_answer
+           WHERE conversation_id = $1 AND question_id = $2 AND choice IS NOT NULL"#,
+        conversation,
+        PHOTO_OK
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| IntakeError::Database)?;
+    Ok(codes
+        .iter()
+        .filter_map(|c| Uuid::parse_str(c).ok())
+        .collect())
+}
+
+/// INT-044, CARD-013 (T674, D-4360): the photos of `job` she confirmed show no person and no
+/// house number; only these may go on its card, and a photo with no row never does.
+///
+/// # Errors
+///
+/// [`IntakeError::Database`].
+pub async fn confirmed_photos(db: &mut PgConnection, job: Uuid) -> Result<Vec<Uuid>, IntakeError> {
+    match request_of(db, job).await? {
+        Some((conversation, _)) => confirmed(db, conversation).await,
+        None => Ok(Vec::new()),
+    }
+}
+
+/// INT-044, CARD-013, PRIV-009 (T674, D-4360): her `answer` about `job`'s newest photo that has
+/// no [`PHOTO_OK`] row, only before her card was shown. Confirmed records one `photo_ok` row (a
+/// second press finds no waiting photo and records nothing); Removed deletes the photo through
+/// `privacy::api::delete_photo`, which never removes another job's photo.
+///
+/// # Errors
+///
+/// [`IntakeError::Database`].
+pub async fn press_photo(
+    db: &mut PgConnection,
+    job: Uuid,
+    answer: HomeownerAnswer,
+    at: Timestamp,
+) -> Result<PhotoPress, IntakeError> {
+    let Some((conversation, shown)) = request_of(db, job).await? else {
+        return Ok(PhotoPress::Nothing);
+    };
+    if shown {
+        return Ok(PhotoPress::CardOut);
+    }
+    let done = confirmed(db, conversation).await?;
+    let photos = job_photos(db, job).await;
+    let photos = photos.map_err(|_| IntakeError::Database)?;
+    let Some(photo) = photos.into_iter().find(|id| !done.contains(id)) else {
+        return Ok(PhotoPress::Nothing);
+    };
+    match answer {
+        HomeownerAnswer::Confirmed => {
+            let code = photo.simple().to_string();
+            models::insert_plain(db, conversation, (PHOTO_OK, &code), at).await?;
+            Ok(PhotoPress::Confirmed)
+        }
+        HomeownerAnswer::Removed => {
+            let gone = delete_photo(db, (job, photo), at).await;
+            gone.map_err(|_| IntakeError::Database)?;
+            Ok(PhotoPress::Removed)
+        }
+        HomeownerAnswer::NotConfirmed => Ok(PhotoPress::Nothing),
+    }
 }

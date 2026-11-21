@@ -152,6 +152,7 @@ struct BusinessParts {
     vault: Option<Arc<Vault>>,
     confirm: Option<ConfirmSettings>,
     homeowner: Option<homeowner_portal::HomeownerVerify>,
+    photos: Option<homeowner_portal::PhotoParts>,
     business_number: Option<askhava_messaging::api::SendingNumber>,
 }
 
@@ -187,6 +188,14 @@ impl RouterParts {
         verify: Option<homeowner_portal::HomeownerVerify>,
     ) -> Self {
         self.business.homeowner = verify;
+        self
+    }
+
+    /// Adds the homeowner photo routes' keys (T674; `homeowner_portal::photo_parts`); without
+    /// them an upload fails and every `/photos/{token}` is the 404.
+    #[must_use]
+    pub fn with_photos(mut self, photos: Option<homeowner_portal::PhotoParts>) -> Self {
+        self.business.photos = photos;
         self
     }
 
@@ -386,7 +395,7 @@ fn business_pages(
         webhooks.map(|hooks| hooks.id_secret.clone()),
     ));
     let cant_take = cant_take_route::routes(pool.clone());
-    let homeowner = homeowner_portal::routes(pool.clone(), webhooks, parts.homeowner);
+    let homeowner = homeowner_portal::routes(pool.clone(), webhooks, parts.homeowner, parts.photos);
     let step_up = business_step_up::routes(pool.clone(), parts.step_up);
     let portal_parts = (parts.vault, parts.business_number);
     let portal = business_portal::served(pool, portal_parts, (webhooks, voice))
