@@ -1,19 +1,19 @@
 {
  "schema": 1,
- "conclusion": "success",
+ "conclusion": "failure",
  "results": {
   "ci": "success",
   "twin": "success",
   "a11y": "success",
-  "named_mutants": "success",
+  "named_mutants": "failure",
   "stripe_ips": "success"
  },
- "started_at": "2026-11-20T17:49:00Z",
- "ran_at": "2026-11-20T18:17:21Z",
- "sha": "e4d287328e44bd15c3cbed150c58f54046678543",
+ "started_at": "2026-11-21T16:47:45Z",
+ "ran_at": "2026-11-21T17:12:39Z",
+ "sha": "4d7223083f3437121662f06138380d094b8e3a1d",
  "last_green": {
   "sha": "e4d287328e44bd15c3cbed150c58f54046678543",
   "ran_at": "2026-11-20T18:17:21Z"
  },
- "failures_since_green": 0
+ "failures_since_green": 1
 }
