@@ -98604,7 +98604,7 @@
     "T706",
     "T333"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "zero-fee-after-intent",
    "type": "build",
@@ -98617,19 +98617,8 @@
     5136,
     5137
    ],
-   "reason": "plan gap reported: PLAN GAP: outside ownership: app/adapters/src/payments.rs, stand_ins/stripe.py, stand_ins/server.py\nT754 requires cancelling the PaymentIntent at Stripe after a $0 press, but PaymentsAdapter/IntentStripe (app/adapters/src/payments.rs:343-397, app/payments/src/charge.rs:67) have no cancel method and stand_ins/stripe.py and stand_ins/server.py (route at server.py:457) have no cancel route. None is owned by T754 (owns confirm_pay.rs, release_proof.rs, routes.rs, zero_fee_after_intent.rs); stand_ins/ is protected. Existing callers of end_intent_unless_charging (confirm_moves.rs:137, cant_take.rs, ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T754 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: outside ownership: app/adapters/src/payments.rs, stand_ins/stripe.py, stand_ins/server.py\nT754 requires cancelling the PaymentIntent at Stripe after a $0 press, but PaymentsAdapter/IntentStripe (app/adapters/src/payments.rs:343-397, app/payments/src/charge.rs:67) have no cancel method and stand_ins/stripe.py and stand_ins/server.py (route at server.py:457) have no cancel route. None is owned by T754 (owns confirm_pay.rs, release_proof.rs, routes.rs, zero_fee_after_intent.rs); stand_ins/ is protected. Existing callers of end_intent_unless_charging (confirm_moves.rs:137, cant_take.rs, confirm_pay.rs:1033) only write ended_at in the database, so no retry precedent exists. Reviewer confirmed. Smallest fix: drop the Stripe cancel from T754 (DB end only), or add a harness task first adding cancel_payment_intent and the stand-in route.",
-   "plan_gap": {
-    "at": "2026-11-21T02:52:28Z",
-    "problems": [
-     "outside ownership: app/adapters/src/payments.rs, stand_ins/stripe.py, stand_ins/server.py"
-    ],
-    "paths": [
-     "app/adapters/src/payments.rs",
-     "stand_ins/stripe.py",
-     "stand_ins/server.py"
-    ]
-   },
+   "reason": null,
+   "last_failure": "PLAN GAP: outside ownership: app/adapters/src/payments.rs, stand_ins/stripe.py, stand_ins/server.py\nT754 requires cancelling the PaymentIntent at Stripe after a $0 press, but PaymentsAdapter/IntentStripe (app/adapters/src/payments.rs:343-397, app/payments/src/charge.rs:67) have no cancel method and stand_ins/stripe.py and stand_ins/server.py (route at server.py:457) have no cancel route. None is owned by T754 (owns confirm_pay.rs, release_proof.rs, routes.rs, zero_fee_after_intent.rs); stand_ins/ is protected. Existing callers of end_intent_unless_charging (confirm_moves.rs:137, cant_take.rs, confirm_pay.rs:1033) only write ended_at in the database, so no retry precedent exists. Reviewer confirmed. Smallest fix: drop the Stripe cancel from T754 (DB end only), or add a harness task first adding cancel_payment_intent and the stand-in route.\nre-queued after plan fix D-5158: money plan gap fixed: no Stripe cancel; FEE-021 only after an attempt; held_release and from_stored_success fall to no-fee",
    "history": [
     {
      "attempt": 1,
@@ -98653,6 +98642,21 @@
        "turns": 9
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-21T05:44:02Z",
+     "reason": "money plan gap fixed: no Stripe cancel; FEE-021 only after an attempt; held_release and from_stored_success fall to no-fee",
+     "by": "manual-07962d75e3e5",
+     "was": "plan gap reported: PLAN GAP: outside ownership: app/adapters/src/payments.rs, stand_ins/stripe.py, stand_ins/server.py\nT754 requires cancelling the PaymentIntent at Stripe after a $0 press, but PaymentsAdapter/IntentStripe (app/adapters/src/payments.rs:343-397, app/payments/src/charge.rs:67) have no cancel method and stand_ins/stripe.py and stand_ins/server.py (route at server.py:457) have no cancel route. None is owned by T754 (owns confirm_pay.rs, release_proof.rs, routes.rs, zero_fee_after_intent.rs); stand_ins/ is protected. Existing callers of end_intent_unless_charging (confirm_moves.rs:137, cant_take.rs, ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T754 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-5158",
+     "plan_since": "2026-11-21T02:49:20Z",
+     "plan_base": "5b6d2a6f40436fdc35ea0ceecb31185ac9e70dd2",
+     "plan_head": "f48c110d7929ad0ab08d663dec9ce2de08c53076",
+     "plan_then": "4f928d41d2c8fc210e959d8df54d46f3e1b5e7aab795b6668c08e77b8e806f80",
+     "plan_now": "b5f79bbc07a1a3abbf924e048d47a83425e3885fd2fa5be05303e15b392a6004"
     }
    ]
   },
@@ -108687,7 +108691,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T05:28:59Z",
+ "updated_at": "2026-11-21T05:44:02Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -108785,8 +108789,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "d8acafd04a11420c45a3c66324c62c4baa279dd1",
- "starter": "actions",
+ "runner_sha": "f48c110d7929ad0ab08d663dec9ce2de08c53076",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "c3bff35f9d54535704de3c0547b3caa76e5bc18b",
