@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T01:56:03Z by runner ab3ebfc0ef30 (actions).
+Updated 2026-11-21T01:56:30Z by runner ab3ebfc0ef30 (actions).
 
 **Building: T774 in progress since 01:32Z; 563 of 726 done; week 57% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 563 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T774 claimed 01:32Z, lease until 04:32Z; lane 3: T777 claimed 01:31Z, lease until 04:31Z; lane 4: T457 claimed 01:40Z, lease until 04:40Z; lane 5: T769 claimed 01:14Z, lease until 04:14Z; lane 7: T775 claimed 01:29Z, lease until 04:29Z
+- **Lane:** lane 2: T774 claimed 01:32Z, lease until 04:32Z; lane 3: T777 claimed 01:31Z, lease until 04:31Z; lane 4: T457 claimed 01:40Z, lease until 04:40Z; lane 7: T775 claimed 01:29Z, lease until 04:29Z
 - **Week:** 57% used, 74.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:55Z, 0 min before this update
+- **Last run:** 01:55Z, 1 min before this update
 - **Keeper:** last ran 01:55Z, next wake 04:17Z
 
 ## Needs attention
@@ -21,6 +21,7 @@ Updated 2026-11-21T01:56:03Z by runner ab3ebfc0ef30 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T769 | site: the business page's WEB-024 line follows the stored bu | MERGE_PENDING | 1 | 41 min | 01:56Z |  |
 | T580 | messaging: a failed, blocked or expired text reads as failed | MERGE_PENDING | 1 | 43 min | 01:53Z |  |
 | T664 | portals: the Confirm press re-checks the license and account | MERGE_PENDING | 2 | 2 h 38 min | 01:47Z | PLAN GAP: outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs / The pick's window deadline (picks.pic |
 | T674 | server: the homeowner's photo upload page and the short-live | BLOCKED | 1 | 17 min | 01:25Z | PLAN GAP: outside ownership: tests/a11y/fixtures.ts — GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PA |
@@ -147,8 +148,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T774 (lease until 2026-11-21T04:32:37Z)
 - lane 3: T777 (lease until 2026-11-21T04:31:36Z)
 - lane 4: T457 (lease until 2026-11-21T04:40:44Z)
-- lane 5: T769 (lease until 2026-11-21T04:14:17Z)
 - lane 7: T775 (lease until 2026-11-21T04:29:12Z)
 
 ## Last usage reading
-- {"task": "T580", "at": "2026-11-21T01:53:10Z", "output_tokens": 46176, "cache_creation_input_tokens": 139457, "input_tokens": 144, "cache_read_input_tokens": 4691090}
+- {"task": "T769", "at": "2026-11-21T01:56:02Z", "input_tokens": 86, "output_tokens": 26413, "cache_creation_input_tokens": 94102, "cache_read_input_tokens": 2039786}
