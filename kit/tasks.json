@@ -48274,11 +48274,11 @@
    ],
    "reads": [
     "docs/architecture.md",
-    "docs/code-docs.md",
     "docs/spec/intake.md",
     "docs/spec/privacy.md",
     "docs/spec/job-cards.md",
     "app/intake/src/summary_step.rs",
+    "app/intake/src/photos.rs",
     "docs/brains/rust-production.md",
     "docs/spec/quiet-hours.md",
     "docs/spec/lifecycle.md"
@@ -48304,7 +48304,7 @@
    "budget": {
     "files": 3,
     "lines": 450,
-    "context_pct": 43
+    "context_pct": 44
    },
    "checks": [
     "Ci",
@@ -51967,7 +51967,7 @@
    "id": "T799",
    "slug": "copy-review-fixes",
    "title": "Templates and tests (harness): copy review fixes (refund attempts, payment wording, closed request) and TXT-026's three-hour rule",
-   "goal": "Plan change D-5266 (the verified outcome of an outside English copy review; TXT-026 changed by spec, ID kept; FEE-022, TXT-044, TXT-003, WORD-028). Change these texts in the shared `app/messaging/templates/en.json` and `es.json`, word for word, and nothing else in them (an exception to D-491's add-only rule for these keys, D-5266): (a) `unreachable_no_attempts` and `unreachable_no_one_attempt`: \"The refund needs 2.\" becomes \"The refund needs 2 call attempts.\"; Spanish \"El reembolso necesita 2.\" becomes \"El reembolso necesita 2 llamadas.\"; (b) `card_fix_notice` and `card_fix_notice_untimed`: \"Your card didn't go through\" becomes \"Your payment didn't go through\" (\"another business's quote\" stays); Spanish \"Su tarjeta no pasó\" becomes \"Su pago no pasó\"; (c) `closed_no_quote_left`: \"{brand_short}: Request {job} is closed because none of its quotes are still available. Text us any time to start a new one.\"; Spanish \"…porque ninguna de sus cotizaciones sigue disponible. …\" in place of \"…puede seguir adelante. …\"; (d) `business_no_call_reminder` and `business_no_call_reminder_email` (TXT-026): \"Your 2 attempts can be on different days.\" becomes \"Your 2 attempts must be at least 3 hours apart and can be on different days.\" (FEE-022); Spanish \"Sus 2 intentos pueden ser en días distintos.\" becomes \"Sus 2 intentos deben tener al menos 3 horas de diferencia y pueden ser en días distintos.\". Spanish lines are drafts marked for native-speaker review (TXT-003); none of these keys is a Spanish stay-on text, so no TXT-039 back-translation is needed. Segments (TXT-044, counted on the brand-filled template, D-761): the plan's count raises `business_no_call_reminder_email` English from 2 to 3 (329 GSM-7 characters), Spanish `business_no_call_reminder` from 4 to 5 and `business_no_call_reminder_email` Spanish from 6 to 7; every other text stays within its recorded count; the template registry test's own count decides, and each raised value is logged in `docs/decisions.md`. The DONE test `tests/integration/tests/unreachable_refund.rs:223` (TD-TXT-30) pins the old reminder sentence; by logged spec change (D-5266, `BUILD_BRIEF.md:69`) only that string changes. `tests/integration/tests/business_notices.rs:567` to `:570` checks only \"didn't go through\" and \"Try again\" and passes unchanged; `tests/docs/test_brain_phrases.py:238` lists only \"no call yet.\" and passes unchanged. Run `scripts/check_copy.py` and `scripts/check_ai_smell.py`. Update `docs/decisions.md`.",
+   "goal": "Plan change D-5266 (the verified outcome of an outside English copy review; TXT-026 changed by spec, ID kept; FEE-022, TXT-044, TXT-003, WORD-028). Change these texts in the shared `app/messaging/templates/en.json` and `es.json`, word for word, and nothing else in them (an exception to D-491's add-only rule for these keys, D-5266): (a) `unreachable_no_attempts` and `unreachable_no_one_attempt`: \"The refund needs 2.\" becomes \"The refund needs 2 calls.\"; Spanish \"El reembolso necesita 2.\" becomes \"El reembolso necesita 2 llamadas.\"; (b) `card_fix_notice` and `card_fix_notice_untimed`: \"Your card didn't go through\" becomes \"Your payment didn't go through\" (\"another business's quote\" stays); Spanish \"Su tarjeta no pasó\" becomes \"Su pago no pasó\"; (c) `closed_no_quote_left`: \"{brand_short}: Request {job} is closed because none of its quotes are still available. Text us any time to start a new one.\"; Spanish \"…porque ninguna de sus cotizaciones sigue disponible. …\" in place of \"…puede seguir adelante. …\"; (d) `business_no_call_reminder` and `business_no_call_reminder_email` (TXT-026): \"Your 2 attempts can be on different days.\" becomes \"Your 2 attempts must be at least 3 hours apart and can be on different days.\" (FEE-022); Spanish \"Sus 2 intentos pueden ser en días distintos.\" becomes \"Sus 2 intentos deben tener al menos 3 horas de diferencia y pueden ser en días distintos.\". Spanish lines are drafts marked for native-speaker review (TXT-003); none of these keys is a Spanish stay-on text, so no TXT-039 back-translation is needed. Segments (TXT-044, counted on the brand-filled template, D-761): the task sets these recorded `segments` values and no others: en `business_no_call_reminder_email` 2 to 3 (329 GSM-7 characters), es `business_no_call_reminder` 4 to 5, es `business_no_call_reminder_email` 6 to 7; every other changed text stays within its recorded count, the English refund texts at 2 under both the real brand and the test brand (296 characters with Laftly, 299 with Testbrand, TD-WORD-38's `tests/integration/tests/brand_setting.rs`); each raised value is logged in `docs/decisions.md`. The DONE test `tests/integration/tests/unreachable_refund.rs:223` (TD-TXT-30) pins the old reminder sentence; by logged spec change (D-5266, `BUILD_BRIEF.md:69`) only that string changes. `tests/integration/tests/business_notices.rs:567` to `:570` checks only \"didn't go through\" and \"Try again\" and passes unchanged; `tests/docs/test_brain_phrases.py:238` lists only \"no call yet.\" and passes unchanged. Run `scripts/check_copy.py` and `scripts/check_ai_smell.py`. Update `docs/decisions.md`.",
    "type": "harness",
    "phase": 1,
    "stage": "5",
@@ -52016,7 +52016,7 @@
    "branch": "claude/task/T799-copy-review-fixes",
    "prompt": "kit/prompts/T799.md",
    "copy": true,
-   "acceptance": "`cargo test -p askhava-messaging` (the template registry and its segment check), `cargo test -p askhava-integration --test unreachable_refund --test business_notices` and `python3 -m pytest tests/docs` pass; the seven texts read exactly as the goal says in both languages and nothing else in the template files changes; `scripts/check_copy.py` and `scripts/check_ai_smell.py` pass."
+   "acceptance": "`cargo test -p askhava-messaging` (the template registry and its segment check), `cargo test -p askhava-integration --test unreachable_refund --test business_notices --test brand_setting` and `python3 -m pytest tests/docs` pass; the seven texts read exactly as the goal says in both languages and nothing else in the template files changes except the `segments` values named in the goal; `scripts/check_copy.py` and `scripts/check_ai_smell.py` pass."
   }
  ]
 }

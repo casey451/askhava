@@ -2243,7 +2243,7 @@ A second outside review of the whole repository found eight issues and listed so
 - Business notices now go by email unless texting is set up.
 - Texts start only after you turn on business texting. Even then, a text goes only to phones with the text box ticked. Everyone else gets the email.
 - Notices due overnight wait until 8 a.m. Arizona time. The email and the text then go out together, and a job card's 24 hours to quote start at 8 a.m.
-- The "job is confirmed" and "card didn't go through" emails carry a sign-in link made for that one person, good for 7 days. No homeowner details are in any email or text to a business.
+- The "job is confirmed" and "card didn't go through" emails (the text now says "Your payment didn't go through", D-5266) carry a sign-in link made for that one person, good for 7 days. No homeowner details are in any email or text to a business.
 - Job card emails have no photos, just a link to the job page in the business portal.
 - The "Sent to N businesses" count leaves out any business whose card email bounced.
 - Not built yet: the worker doesn't run these notices yet, the unsubscribe link in card emails, and Spanish business emails.
