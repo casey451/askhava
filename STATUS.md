@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T10:59:53Z by runner a251f571cd3c (actions).
+Updated 2026-11-21T11:05:19Z by runner d7e50c517793 (actions).
 
 **Building: T655 in progress since 10:47Z; 577 of 726 done; week 75% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-21T10:59:53Z by runner a251f571cd3c (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T655 claimed 10:47Z, lease until 13:47Z; lane 3: T615 claimed 09:42Z, lease until 12:42Z; lane 4: T581 claimed 10:47Z, lease until 13:47Z
 - **Week:** 75% used, 41.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:59Z, 0 min before this update
+- **Last run:** 11:05Z, 0 min before this update
 - **Keeper:** last ran 10:59Z, next wake 12:44Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Worker: D-5160's three trade-only rules (job_type: None) give candidate <trade>_
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T776 (since 2026-11-21T08:54:41Z, no attempt used; a plan change fixes it): outside ownership: app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml)
-- Strict plan check red: 54 problem(s) on tasks still to run (+450 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 55 problem(s) on tasks still to run (+450 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
