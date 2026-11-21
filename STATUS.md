@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T19:18:56Z by runner 8a91c382645c (actions).
+Updated 2026-11-21T19:19:37Z by runner 8a91c382645c (actions).
 
-**Building: T690 in progress since 16:56Z; 585 of 734 done; week 33% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T565 in progress since 19:19Z; 585 of 734 done; week 33% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 585 of 734 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T690 claimed 16:56Z, lease until 19:56Z; lane 3: T707 claimed 18:35Z, lease until 21:35Z; lane 5: T791 claimed 18:44Z, lease until 21:44Z; lane 7: T754 claimed 18:25Z, lease until 21:25Z
+- **Lane:** lane 1: T565 claimed 19:19Z, lease until 22:19Z; lane 2: T690 claimed 16:56Z, lease until 19:56Z; lane 3: T707 claimed 18:35Z, lease until 21:35Z; lane 5: T791 claimed 18:44Z, lease until 21:44Z; lane 7: T754 claimed 18:25Z, lease until 21:25Z
 - **Week:** 33% used, 123.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:18Z, 0 min before this update
+- **Last run:** 19:19Z, 0 min before this update
 - **Keeper:** last ran 19:18Z, next wake 19:38Z
 
 ## Needs attention
@@ -112,7 +112,7 @@ Updated 2026-11-21T19:18:56Z by runner 8a91c382645c (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-21T19:08:16Z (week)): week: 70.8M used, 123.2M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T22:03:21Z.
+- Pacing (session_reading 2026-11-21T19:18:37Z (week)): week: 70.8M used, 123.2M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T22:15:25Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -127,7 +127,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T565 (lease until 2026-11-21T22:19:14Z)
 - lane 2: T690 (lease until 2026-11-21T19:56:59Z)
 - lane 3: T707 (lease until 2026-11-21T21:35:59Z)
 - lane 5: T791 (lease until 2026-11-21T21:44:30Z)
