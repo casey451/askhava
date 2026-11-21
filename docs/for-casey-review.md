@@ -3201,7 +3201,7 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 - When a business changes a phone's number, the texting agreement given for the old number no longer counts. Job cards and notices for a business that chose text only go by email until someone ticks the texting box for the new number.
 - A box shown for the old number and sent after the change is turned down, so a tick never counts for a number the person did not see.
-- One leftover for a later task: the list of phones that may get a sign-in code still counts the old agreement after a member's own extra phone changes number. It sends nothing extra today beyond the sign-in code that member asked for, but it should follow the same rule.
+- The leftover is closed (T777, D-5102): the list of phones that may get a sign-in code now follows the same rule. After a member's own extra phone changes number, the sign-in code goes to that member's email until the texting box is ticked for the new number.
 - Nothing needs you now.
 ## Pre-claim checks of the audit fix tasks (D-4064, November 17)
 - Before any of the new audit fix tasks start, Opus checkers read each one against the code. Their fixes are now in the tasks.
