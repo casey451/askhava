@@ -3622,9 +3622,15 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 - Eleven new tasks and one change to a planned task fix the rest that matter before launch. The first three run ahead of everything else:
   - T775: a homeowner who answers a check-in with "PROBLEM gas smell" now gets the "call 911" text first. Before, she got only the check-in reply.
   - T776: a move out of Arizona and a "collect the rent" home-watch request are refused, as LIC-017 and LIC-018 say. Before, they got cards. The move check reads her words for another state or a nearby out-of-state town (Needles, Laughlin, Las Vegas and others). The list is in the task; say if a place is missing.
-  - T777: a sign-in code is texted only to a number that has its consent tick and the owner's approval.
+  - T777: a sign-in code is texted only to a number that has its consent tick (D-5117 took the owner's approval out of this task; see the note below).
 - Still open after this, for you to weigh:
   - The moving questions have no "to or from another state" answer. Adding one is planned once the trade-question step is built (after T723). Until then the move check rests on her own words.
   - Left for after launch, all low: sign-up double submit (F22), a refused email retried with a misleading error (F30), card text kept inside finished task rows (F27), one clock read in settle (F23), two slow reads (F3, F17), the band-floor check (F18), and two indexes for the health check (F36).
   - The nightly export's 100-second limit stays. T781 makes a failed or timed-out export raise an alert once a day; a longer limit is a separate choice when it starts to fire.
 - The sentence in this file that said bounced emails "are now acted on" was wrong: T659 has not run yet. It is corrected above.
+
+## Sign-in codes and phone approval (D-5117, November 21)
+
+- T777 now fixes one thing: after a team member changes their phone number, the sign-in code is not texted to the new number until its text box is ticked. Until then the code goes to their email.
+- It no longer also waits for your approval of the phone. Your approval decides whether a phone counts as the business's for texts and calls. A sign-in code goes to the member's own phone as their own second step, and an earlier decision's test expects that.
+- If you want a member's phone to get no sign-in code until you approve it, say so. It is a small change, and members would get their codes by email until the approval page (T397) is live.

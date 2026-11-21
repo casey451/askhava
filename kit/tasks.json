@@ -30151,14 +30151,17 @@
    "id": "T654",
    "slug": "card-pool-roc-check",
    "title": "licensing and quotes: every ROC list import runs each active business's daily check, and the card pool gives ROC classes only after a fresh Active latest check",
-   "goal": "Plan change D-4310 (Fable's decision on the licensing spot review of `main` 4fee847d, finding 2's first half; closes D-3181's CARD-015 gap; review R1 M1 and N1). `card_pool::one_business` (`app/quotes/src/card_pool.rs:227`) takes `parts.classes` (`:256`) from `holder_for`: the classes the latest ROC list shows Active for the latest check's number, never that check's status or age, so a business whose latest lookup read Inactive (the pick lookup or LIC-039's lookup while the list fails) or whose list stopped loading keeps getting ROC cards, and the homeowner spends a pick on a business Confirm refuses (PICK-020). And no list load writes a `license_check` row: only sign-up's `check_license`, the pick lookup and LIC-039's lookups do, although `migrations/0050_licensing_imports.sql` says the table is \"one row per business per daily check\" and CARD-015 says every license is checked daily; so the quote card's ROC line (`card_facts`, D-3646) dates its \"when we checked on\" from the sign-up check for ever. (1) Daily check, `app/licensing/src/daily_lists.rs`: after `run_daily_list` records an ROC list, the same run records `check_license` (`app/licensing/src/service.rs:288`) for every active ROC business, paged through the `ActiveLicenses` it already receives (`server`'s `ActiveRoc`, `app/server/src/lib.rs:852`), in batches the run's sweep budget allows, continuing in the next queued run until done; a business already checked against that list's date is skipped, so a retry or re-run writes no second row. This task owns the hook because `daily_lists.rs` has no other queued owner but T126 and is where the list is recorded; `check_license` is unchanged. The card's ROC line then dates from that day's check and stays true. (2) `app/licensing/src/service.rs`: a new `latest_check_allows_card(conn, business, fresh: Freshness) -> Result<bool, ImportError>`, exported through `licensing::api` beside `roc_check_allows_card` and with its rule: the business's latest `license_check` row overall (`ORDER BY checked_at DESC, id DESC LIMIT 1`, the row `holder_for` reads) is `active`, its `checked_at >= fresh.checked_since` and its `list_date >= fresh.listed_since`; no row (no ROC number) is false. (3) `one_business` keeps `parts.classes` only when it is true for `checked_since = now - pause_after`, LIC-008's 72-hour setting (`licensing::api::FailureLimits`), and `listed_since` that instant's Arizona day, as `picks::confirm::fresh_active` builds its `Freshness`; otherwise `classes` is empty, so ROC categories give no card while agency, pest, handyman and no-license standing are unchanged. The moment cards stop is the latest Active check's `checked_at + pause_after`; T655 pauses at the same instant. `now` is the pool's caller's clock (the worker clock, never the wall clock) and the setting is read the way the caller reads settings; if `card_pool` has no path to the setting, use `FailureLimits::default()` and log it in `docs/decisions.md`. A list outage past 72 hours with failing lookups stops every ROC card: LIC-008 intends that and LIC-039 alerts. Update the `one_business` doc and D-3181's sentence. Tests, fake data only, on PostgreSQL: TD-LIC-33 in `tests/integration/tests/card_pool_license_check.rs`. Ordering: after T601, which changes the same file. Update `app/quotes/NOTES.md`, `app/licensing/NOTES.md` and `docs/decisions.md`. D-4349: the Confirm press's PICK-020 re-check this goal relies on (\"a business Confirm refuses\") had no caller; T664 builds it, so this task runs after T664.",
+   "goal": "Plan change D-4310 (Fable's decision on the licensing spot review of `main` 4fee847d, finding 2's first half; closes D-3181's CARD-015 gap; review R1 M1 and N1). `card_pool::one_business` (`app/quotes/src/card_pool.rs:227`) takes `parts.classes` (`:256`) from `holder_for`: the classes the latest ROC list shows Active for the latest check's number, never that check's status or age, so a business whose latest lookup read Inactive (the pick lookup or LIC-039's lookup while the list fails) or whose list stopped loading keeps getting ROC cards, and the homeowner spends a pick on a business Confirm refuses (PICK-020). And no list load writes a `license_check` row: only sign-up's `check_license`, the pick lookup and LIC-039's lookups do, although `migrations/0050_licensing_imports.sql` says the table is \"one row per business per daily check\" and CARD-015 says every license is checked daily; so the quote card's ROC line (`card_facts`, D-3646) dates its \"when we checked on\" from the sign-up check for ever. (1) Daily check, `app/licensing/src/daily_lists.rs`: after `run_daily_list` records an ROC list, the same run records `check_license` (`app/licensing/src/service.rs:288`) for every active ROC business, paged through the `ActiveLicenses` it already receives (`server`'s `ActiveRoc`, `app/server/src/lib.rs:852`), in batches the run's sweep budget allows, continuing in the next queued run until done; a business already checked against that list's date is skipped, so a retry or re-run writes no second row. This task owns the hook because `daily_lists.rs` has no other queued owner but T126 and is where the list is recorded; `check_license` is unchanged. The card's ROC line then dates from that day's check and stays true. (2) `app/licensing/src/service.rs`: a new `latest_check_allows_card(conn, business, fresh: Freshness) -> Result<bool, ImportError>`, exported through `licensing::api` beside `roc_check_allows_card` and with its rule: the business's latest `license_check` row overall (`ORDER BY checked_at DESC, id DESC LIMIT 1`, the row `holder_for` reads) is `active`, its `checked_at >= fresh.checked_since` and its `list_date >= fresh.listed_since`; no row (no ROC number) is false. (3) `one_business` keeps `parts.classes` only when it is true for `checked_since = now - pause_after`, LIC-008's 72-hour setting (`licensing::api::FailureLimits`), and `listed_since` that instant's Arizona day, as `picks::confirm::fresh_active` builds its `Freshness`; otherwise `classes` is empty, so ROC categories give no card while agency, pest, handyman and no-license standing are unchanged. The moment cards stop is the latest Active check's `checked_at + pause_after`; T655 pauses at the same instant. `now` is the pool's caller's clock (the worker clock, never the wall clock) and the setting is read the way the caller reads settings; if `card_pool` has no path to the setting, use `FailureLimits::default()` and log it in `docs/decisions.md`. A list outage past 72 hours with failing lookups stops every ROC card: LIC-008 intends that and LIC-039 alerts. Update the `one_business` doc and D-3181's sentence. Tests, fake data only, on PostgreSQL: TD-LIC-33 in `tests/integration/tests/card_pool_license_check.rs`. Ordering: after T601, which changes the same file. Update `app/quotes/NOTES.md`, `app/licensing/NOTES.md` and `docs/decisions.md`. D-4349: the Confirm press's PICK-020 re-check this goal relies on (\"a business Confirm refuses\") had no caller; T664 builds it, so this task runs after T664. Plan change D-5117 (attempt 1's reviewer-confirmed plan gap): `card_pool` takes no clock, and adding one would change three done tests (`card_pool_queries.rs`, `radius_matching.rs`, `request_coverage_minimum.rs`) and `order_dispatch.rs`, none of them this task's. So `card_pool` keeps its signature, and a new `card_pool_at` beside it (exported by one line in the shared `api.rs`) takes the caller's `now`; both share one body. With `now`, (3) applies in full: `one_business` keeps `parts.classes` only when `latest_check_allows_card` is true for that instant's `Freshness`. Without it (plain `card_pool`), only the half that needs no clock applies: the classes are dropped when the latest check is not `active` or there is none, and its age is not tested; no wall clock and no database `now()` is read anywhere. This task also owns the two callers that give a business a card and switches each to `card_pool_at` with the `now` it already holds, changing nothing else in them: the card send in `app/intake/src/cards_out.rs` and the late cards in `app/quotes/src/late_cards.rs`. `quotes::api::request_coverage` and the two calls in `app/intake/src/order_dispatch.rs` stay on plain `card_pool` (they count coverage and read display names; no card leaves from them), and those files are not edited; say in `docs/decisions.md` that a coverage count does not apply the 72-hour age and that T655's pause removes such a business at the same instant. TD-LIC-33's cases run through `card_pool_at` with a set clock, and gain two that keep the split honest: plain `card_pool` drops the ROC classes of a business whose latest check read Inactive, and keeps those of one whose latest Active check is over 72 hours old, and one at the sender: with the clock set so a business's latest Active check is over 72 hours old, the late-cards run in `late_cards.rs` gives that business no `quotes.job_card` row, and gives it one when the check is fresh. T600, the queued owner of `cards_out.rs`, now runs after this task.",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": "quotes",
    "deps": [
     "T601",
-    "T664"
+    "T664",
+    "T526",
+    "T747",
+    "T677"
    ],
    "model": "claude-fable-5-2",
    "effort": "high",
@@ -30171,7 +30174,9 @@
     "app/quotes/src/card_pool.rs",
     "app/licensing/src/service.rs",
     "app/licensing/src/daily_lists.rs",
-    "tests/integration/tests/card_pool_license_check.rs"
+    "tests/integration/tests/card_pool_license_check.rs",
+    "app/intake/src/cards_out.rs",
+    "app/quotes/src/late_cards.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -30200,7 +30205,8 @@
     "D-2743",
     "D-2744",
     "D-941",
-    "D-4349"
+    "D-4349",
+    "D-5117"
    ],
    "cites": [
     "app/quotes/src/card_pool.rs:227",
@@ -30208,9 +30214,9 @@
     "app/licensing/src/service.rs:288"
    ],
    "budget": {
-    "files": 4,
-    "lines": 400,
-    "context_pct": 26
+    "files": 6,
+    "lines": 450,
+    "context_pct": 31
    },
    "checks": [
     "Ci",
@@ -41037,7 +41043,7 @@
    "budget": {
     "files": 5,
     "lines": 600,
-    "context_pct": 17
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -42771,7 +42777,8 @@
     "T257",
     "T274",
     "T083",
-    "T581"
+    "T581",
+    "T654"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -42825,7 +42832,7 @@
    "budget": {
     "files": 9,
     "lines": 400,
-    "context_pct": 31
+    "context_pct": 37
    },
    "checks": [
     "Ci",
@@ -46034,7 +46041,7 @@
    "id": "T674",
    "slug": "photo-upload-served",
    "title": "server: the homeowner's photo upload page and the short-lived photo links are served",
-   "goal": "Plan change D-4360 (orphan 1, photos; INT-044, PRIV-014, PRIV-015, PRIV-025, PRIV-028, CARD-013; D-2874). `portals::photo_upload_page` and `upload_screen` (`app/portals/src/photo_upload.rs`, route `PHOTO_UPLOAD_ROUTE` `/h/requests/{job}/photos`, whose comment says \"The route is T306's\") and `privacy::api::issue_link`/`photo_path` (`app/privacy/src/photos.rs:410`, `:444`, the `/photos/<token>` preview) are served by no route, and T306's goal does not serve them. In `app/server/src/homeowner_portal.rs` (after T561, its last queued owner): `GET` and a multipart `POST` of `PHOTO_UPLOAD_ROUTE` for the signed-in homeowner's own request only (anyone else's or an unknown number is the one not-found answer, SEC-019), body limit `MAX_PHOTO_BYTES`, `refuse_cross_site`, the CSRF token and `no_store` (SEC-034); the file goes through `privacy::api::take_upload` (format and size checks, metadata stripped, re-encoded on the server, no outside AI) and onto her job as `intake` records a photo, then `upload_screen`; the preview's \"Send this photo\" and \"Take it off\" arrive as `app/portals/templates/photo_upload.html` posts them, form-encoded to the same `PHOTO_UPLOAD_ROUTE` with `answer=yes` or `answer=remove`, so the one `POST` handler takes both bodies (multipart is the upload; form-encoded is the answer about the request's newest photo with no `photo_ok` row), with the same guards: \"Send this photo\" records her confirmation as one `intake.intake_answer` row (`photo_ok`, the photo's ID as the choice) through a new `intake::api` function in `app/intake/src/photos.rs`, and \"Take it off\" deletes the photo through a new `privacy::api::delete_photo` in `app/privacy/src/photos.rs` copying `purge_photos` and `run_photo_delete` (`app/privacy/src/purge.rs:189`, `:226`): in one transaction it deletes the row `WHERE id = $photo AND job_id = $job ... RETURNING storage_key` (its `photo_link` rows cascade), writes one audit row with IDs only and queues the existing `privacy.photo_delete` task for the sealed object, which is deleted after the commit and retried by that task (the orphan sweep, D-1793, covers the rest), so a failure never leaves a row whose object is gone; a photo of another job is never removed; it is called from `intake` (which may call `privacy`, `kit/layers.json`), and only before her card goes out (a shown card keeps its photo IDs; after that \"Take it off\" and REMOVE are refused with a plain line); a photo with no confirmation row never goes on the card (INT-044, read by T675's card step); and `GET /photos/{token}` serving the opened photo for a live token, 404 for a dead one, `no_store`, the token in the path only (PRIV-028). Its `PAGE_STATES` rows go in the shared `tests/a11y/page_states.ts`. Tests (TD-INT-48): the new `app/server/tests/photo_upload_route.rs` through the assembled router (her upload stored, \"Send this photo\" records the confirmation row once, \"Take it off\" removes it, a HEIC, a too-small and an over-limit file each give the page's error, another homeowner's request is not found, a cross-site post refused, an expired photo link 404) and the new `tests/e2e/photo_upload_served.spec.ts` (keyboard upload with JavaScript off, Ally clean), fake images and data only. Plan change D-4880: T766 comes first; this task edits none of `door_matrix.rs`, `auth_matrix.rs` or `door_cases.txt` and must pass them. Section 13 rows added `yes`: `GET` and `POST /h/requests/{job}/photos` (`portals`) and `GET /photos/{token}` (`server`, never `site`); no other path is served. The CSRF token is read from either body before anything else: a cross-site or wrong-token form-encoded post is a 403 with one `csrf_rejected` event naming the route template; the right token with no `answer` is the page's own 4xx, never a 403 or 5xx. Her `GET` is a 200 for any request of hers whatever its status; what a post after her card went out does is decided and logged, never a 5xx or the sign-in refusal. A dead or unknown photo token is a `no-store` 404 for everyone. `{job}` is the job number (`jobs::api::job_by_number`), and it is hers when `intake::api::jobs_of_contact` for her contact names that job, as the door fixture links them.",
+   "goal": "Plan change D-4360 (orphan 1, photos; INT-044, PRIV-014, PRIV-015, PRIV-025, PRIV-028, CARD-013; D-2874). `portals::photo_upload_page` and `upload_screen` (`app/portals/src/photo_upload.rs`, route `PHOTO_UPLOAD_ROUTE` `/h/requests/{job}/photos`, whose comment says \"The route is T306's\") and `privacy::api::issue_link`/`photo_path` (`app/privacy/src/photos.rs:410`, `:444`, the `/photos/<token>` preview) are served by no route, and T306's goal does not serve them. In `app/server/src/homeowner_portal.rs` (after T561, its last queued owner): `GET` and a multipart `POST` of `PHOTO_UPLOAD_ROUTE` for the signed-in homeowner's own request only (anyone else's or an unknown number is the one not-found answer, SEC-019), body limit `MAX_PHOTO_BYTES`, `refuse_cross_site`, the CSRF token and `no_store` (SEC-034); the file goes through `privacy::api::take_upload` (format and size checks, metadata stripped, re-encoded on the server, no outside AI) and onto her job as `intake` records a photo, then `upload_screen`; the preview's \"Send this photo\" and \"Take it off\" arrive as `app/portals/templates/photo_upload.html` posts them, form-encoded to the same `PHOTO_UPLOAD_ROUTE` with `answer=yes` or `answer=remove`, so the one `POST` handler takes both bodies (multipart is the upload; form-encoded is the answer about the request's newest photo with no `photo_ok` row), with the same guards: \"Send this photo\" records her confirmation as one `intake.intake_answer` row (`photo_ok`, the photo's ID as the choice) through a new `intake::api` function in `app/intake/src/photos.rs`, and \"Take it off\" deletes the photo through a new `privacy::api::delete_photo` in `app/privacy/src/photos.rs` copying `purge_photos` and `run_photo_delete` (`app/privacy/src/purge.rs:189`, `:226`): in one transaction it deletes the row `WHERE id = $photo AND job_id = $job ... RETURNING storage_key` (its `photo_link` rows cascade), writes one audit row with IDs only and queues the existing `privacy.photo_delete` task for the sealed object, which is deleted after the commit and retried by that task (the orphan sweep, D-1793, covers the rest), so a failure never leaves a row whose object is gone; a photo of another job is never removed; it is called from `intake` (which may call `privacy`, `kit/layers.json`), and only before her card goes out (a shown card keeps its photo IDs; after that \"Take it off\" and REMOVE are refused with a plain line); a photo with no confirmation row never goes on the card (INT-044, read by T675's card step); and `GET /photos/{token}` serving the opened photo for a live token, 404 for a dead one, `no_store`, the token in the path only (PRIV-028). Its `PAGE_STATES` rows go in the shared `tests/a11y/page_states.ts`. Tests (TD-INT-48): the new `app/server/tests/photo_upload_route.rs` through the assembled router (her upload stored, \"Send this photo\" records the confirmation row once, \"Take it off\" removes it, a HEIC, a too-small and an over-limit file each give the page's error, another homeowner's request is not found, a cross-site post refused, an expired photo link 404) and the new `tests/e2e/photo_upload_served.spec.ts` (keyboard upload with JavaScript off, Ally clean), fake images and data only. Plan change D-4880: T766 comes first; this task edits none of `door_matrix.rs`, `auth_matrix.rs` or `door_cases.txt` and must pass them. Section 13 rows added `yes`: `GET` and `POST /h/requests/{job}/photos` (`portals`) and `GET /photos/{token}` (`server`, never `site`); no other path is served. The CSRF token is read from either body before anything else: a cross-site or wrong-token form-encoded post is a 403 with one `csrf_rejected` event naming the route template; the right token with no `answer` is the page's own 4xx, never a 403 or 5xx. Her `GET` is a 200 for any request of hers whatever its status; what a post after her card went out does is decided and logged, never a 5xx or the sign-in refusal. A dead or unknown photo token is a `no-store` 404 for everyone. `{job}` is the job number (`jobs::api::job_by_number`), and it is hers when `intake::api::jobs_of_contact` for her contact names that job, as the door fixture links them. Plan change D-5117 (attempt 1's reviewer-confirmed plan gap): `GET /photos/{token}` answers an image or a 404, never a page, so it gets one reasoned `NOT_PAGES` line in `tests/a11y/fixtures.ts`, written with the route exactly as `readRouteTable` reads it. That file is a shared path in `kit/tasks.json` for this one line: add the line and change nothing else in it (no check, tag, width or other entry). The upload page's states still go in `tests/a11y/page_states.ts`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -46089,7 +46096,8 @@
    "decisions": [
     "D-2874",
     "D-4360",
-    "D-4880"
+    "D-4880",
+    "D-5117"
    ],
    "cites": [],
    "budget": {
@@ -50644,8 +50652,8 @@
   {
    "id": "T777",
    "slug": "sign-in-code-current-number",
-   "title": "businesses: a sign-in code is texted only to a line whose current number has its text consent and its approval",
-   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F39; CON-019, BIZ-033, SEC-004; D-4039's known gap). `sign_in_lines` in `app/businesses/src/sign_in_lines.rs` lists a member's extra line when any text-consent row exists for it: its `EXISTS` does not require the consent's `number_version` to equal the line's, which `consent::may_text` does, and it does not require the line's `approved_at`, which `notice_recipients` does. So after a member changes that line's number (`team::set_number` keeps the line and raises `number_version`), the next sign-in code is texted to a number nobody ticked, and a number a non-owner linked is used before the owner approved it. The query now requires the same `number_version` match as `may_text` and the same approval condition as `notice_recipients`; a line that fails either is left out, so the code goes to the member's sign-in email as it does for a member with no texting phone. Its `.sqlx/` query file is regenerated. No other file changes: `business_signin.rs`, `consent.rs`, `team.rs` and `channel_preference.rs` are read. Tests in the new `tests/integration/tests/sign_in_number_change.rs`, PostgreSQL, fake data only: a ticked, approved line is listed; after `set_number` it is not, and it is listed again once the new number is ticked (and approved when a non-owner set it); a line waiting for the owner's approval is not listed; a tick by a removed member still does not count. Every existing sign-in test passes unchanged. Remove the known-gap line in `app/businesses/NOTES.md` and close the leftover in `docs/for-casey-review.md`; update `docs/decisions.md`.",
+   "title": "businesses: a sign-in code is texted only to a line whose current number has its text consent",
+   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F39; CON-019, SEC-004; D-4039's known gap), as narrowed by D-5117. `sign_in_lines` in `app/businesses/src/sign_in_lines.rs` lists a member's extra line when any text-consent row exists for it: its `EXISTS` does not require the consent's `number_version` to equal the line's, which `consent::may_text` does. So after a member changes that line's number (`team::set_number` keeps the line and raises `number_version`), the next sign-in code is texted to a number nobody ticked. The query now requires the same `number_version` match as `may_text`; a line that fails it is left out, so the code goes to the member's sign-in email as it does for a member with no texting phone. Its `.sqlx/` query file is regenerated. The query adds no approval condition (D-5117): a ticked line the owner has not yet approved is still listed, as D-3562's test `d_3562_the_code_goes_to_the_members_own_line_else_own_address` in `app/server/tests/business_signin_route.rs` expects; that file is not edited. No other file changes: `business_signin.rs`, `consent.rs` and `team.rs` are read. Tests in the new `tests/integration/tests/sign_in_number_change.rs`, PostgreSQL, fake data only: a ticked line is listed; after `set_number` it is not, and it is listed again once the new number is ticked; a ticked line a non-owner linked and the owner has not approved is listed; a tick by a removed member still does not count. Every existing sign-in test passes unchanged. Remove the known-gap line in `app/businesses/NOTES.md` and close the leftover in `docs/for-casey-review.md`; update `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -50672,18 +50680,17 @@
     "docs/spec/consent.md",
     "docs/spec/businesses.md",
     "docs/spec/security.md",
-    "app/businesses/src/consent.rs",
-    "app/businesses/src/channel_preference.rs"
+    "app/businesses/src/consent.rs"
    ],
    "requirements": [
     "CON-019",
-    "BIZ-033",
     "SEC-004"
    ],
    "tests": [],
    "decisions": [
     "D-4039",
-    "D-5081"
+    "D-5081",
+    "D-5117"
    ],
    "cites": [],
    "budget": {
@@ -50698,7 +50705,7 @@
    ],
    "branch": "claude/task/T777-sign-in-code-current-number",
    "prompt": "kit/prompts/T777.md",
-   "acceptance": "`tests/integration/tests/sign_in_number_change.rs` passes against PostgreSQL with every listed case, the changed-number and unapproved cases failing on `main` before the change; every existing sign-in and consent test passes unchanged."
+   "acceptance": "`tests/integration/tests/sign_in_number_change.rs` passes against PostgreSQL with every listed case, the changed-number case failing on `main` before the change; `app/server/tests/business_signin_route.rs` and every existing sign-in and consent test pass unchanged."
   },
   {
    "id": "T778",
