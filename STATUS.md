@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T05:44:25Z by runner f48c110d7929 (manual).
+Updated 2026-11-21T05:44:43Z by runner f48c110d7929 (manual).
 
 **Building: T674 in progress since 04:40Z; 572 of 726 done; week 67% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -12,11 +12,8 @@ Updated 2026-11-21T05:44:25Z by runner f48c110d7929 (manual).
 - **Keeper:** last ran 05:28Z, next wake 07:42Z
 
 ## Needs attention
-- BLOCKED T776: plan gap reported: PLAN GAP: outside ownership: app/intake/src/matching.rs
-Worker: matching.rs:52 keyword RULES cover only plumbing, HVAC, electrical, handyman, pool, so no text reaches `tell` as local_moving, home_watch or turnover_cleaning; the T776 refusals can't be reached or tested end to end. matching.rs is owned by T042/T183/T716, not T776. Reviewer (Opus) confirmed: integration test intake_refusals_wired 0 passed, 3 failed (no trade read, nothing sent). Smallest fix: add keyword rules for those three trades (from docs/catalog/categories.yaml) in matching.rs, by a prior task or by adding matching.rs to T7; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T776 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- PLAN GAP T776 (since 2026-11-21T04:00:50Z, no attempt used; a plan change fixes it): outside ownership: app/intake/src/matching.rs
 - Strict plan check red: 55 problem(s) on tasks still to run (+448 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours

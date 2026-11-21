@@ -101027,7 +101027,7 @@
     "T673",
     "T672"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "intake-refusals-wired",
    "type": "build",
@@ -101041,17 +101041,8 @@
     5146,
     5147
    ],
-   "reason": "plan gap reported: PLAN GAP: outside ownership: app/intake/src/matching.rs\nWorker: matching.rs:52 keyword RULES cover only plumbing, HVAC, electrical, handyman, pool, so no text reaches `tell` as local_moving, home_watch or turnover_cleaning; the T776 refusals can't be reached or tested end to end. matching.rs is owned by T042/T183/T716, not T776. Reviewer (Opus) confirmed: integration test intake_refusals_wired 0 passed, 3 failed (no trade read, nothing sent). Smallest fix: add keyword rules for those three trades (from docs/catalog/categories.yaml) in matching.rs, by a prior task or by adding matching.rs to T7; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T776 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: outside ownership: app/intake/src/matching.rs\nWorker: matching.rs:52 keyword RULES cover only plumbing, HVAC, electrical, handyman, pool, so no text reaches `tell` as local_moving, home_watch or turnover_cleaning; the T776 refusals can't be reached or tested end to end. matching.rs is owned by T042/T183/T716, not T776. Reviewer (Opus) confirmed: integration test intake_refusals_wired 0 passed, 3 failed (no trade read, nothing sent). Smallest fix: add keyword rules for those three trades (from docs/catalog/categories.yaml) in matching.rs, by a prior task or by adding matching.rs to T776 ownership. Second gap: order::store_given keeps trade answers as code only, so LIC-018 \"answers\" can't be rechecked on later answers without more order_dispatch.rs change. Also routing::tell_coverage->not_covered always writes a recruiting-demand row, against D-1008 for second-job refusals.",
-   "plan_gap": {
-    "at": "2026-11-21T04:00:50Z",
-    "problems": [
-     "outside ownership: app/intake/src/matching.rs"
-    ],
-    "paths": [
-     "app/intake/src/matching.rs"
-    ]
-   },
+   "reason": null,
+   "last_failure": "PLAN GAP: outside ownership: app/intake/src/matching.rs\nWorker: matching.rs:52 keyword RULES cover only plumbing, HVAC, electrical, handyman, pool, so no text reaches `tell` as local_moving, home_watch or turnover_cleaning; the T776 refusals can't be reached or tested end to end. matching.rs is owned by T042/T183/T716, not T776. Reviewer (Opus) confirmed: integration test intake_refusals_wired 0 passed, 3 failed (no trade read, nothing sent). Smallest fix: add keyword rules for those three trades (from docs/catalog/categories.yaml) in matching.rs, by a prior task or by adding matching.rs to T776 ownership. Second gap: order::store_given keeps trade answers as code only, so LIC-018 \"answers\" can't be rechecked on later answers without more order_dispatch.rs change. Also routing::tell_coverage->not_covered always writes a recruiting-demand row, against D-1008 for second-job refusals.\nre-queued after plan fix D-5160: T776 owns matching.rs and adds three narrow keyword rules so the refusals are reachable",
    "history": [
     {
      "attempt": 1,
@@ -101075,6 +101066,21 @@
        "turns": 13
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-21T05:44:42Z",
+     "reason": "T776 owns matching.rs and adds three narrow keyword rules so the refusals are reachable",
+     "by": "manual-3b38d54b23af",
+     "was": "plan gap reported: PLAN GAP: outside ownership: app/intake/src/matching.rs\nWorker: matching.rs:52 keyword RULES cover only plumbing, HVAC, electrical, handyman, pool, so no text reaches `tell` as local_moving, home_watch or turnover_cleaning; the T776 refusals can't be reached or tested end to end. matching.rs is owned by T042/T183/T716, not T776. Reviewer (Opus) confirmed: integration test intake_refusals_wired 0 passed, 3 failed (no trade read, nothing sent). Smallest fix: add keyword rules for those three trades (from docs/catalog/categories.yaml) in matching.rs, by a prior task or by adding matching.rs to T7; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T776 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-5160",
+     "plan_since": "2026-11-21T03:49:27Z",
+     "plan_base": "7040ed647e649f2a6505050c2adfeb93e2e1bfe8",
+     "plan_head": "f48c110d7929ad0ab08d663dec9ce2de08c53076",
+     "plan_then": "24b25054422c4f415c44d6ead2ac5ed124be239cd360562d368e7c753a084c93",
+     "plan_now": "5e338ee89200945b023e3dcc27ae35c011c56a482d807a8c16b44781940dbf03"
     }
    ]
   },
@@ -108706,7 +108712,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T05:44:25Z",
+ "updated_at": "2026-11-21T05:44:43Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
