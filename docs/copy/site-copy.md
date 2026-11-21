@@ -89,3 +89,9 @@ Market names: each block below reads as today's one market renders it. On the pa
 
 ## Footer · not a contractor (homeowner, fixed)
 > Laftly is not a contractor and does not perform, bid on or supervise work. We pass along your request and show you quotes from independent local businesses, as they wrote them. You choose, and you hire the business directly. (WORD-002, WEB-015)
+
+## Not found · headline (homeowner)
+> We can't find that page.
+
+## Not found · sentence (homeowner)
+> That link may be old, so use the links at the top to go home or to Help.
