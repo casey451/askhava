@@ -17,7 +17,10 @@
     wording, so the skip link's wrapper, the nav and the Menu carry `lang="en"` and "Español" its
     own `lang="es"` (A11Y-004). Each nav link sits in a `<p>` so a page loaded with no stylesheet
     still separates them. `head` declares the light colour scheme and preloads the two first-screen
-    fonts at the addresses the stylesheet's `url()`s resolve to (WEB-030). No script is needed, and no script,
+    fonts at the addresses the stylesheet's `url()`s resolve to (WEB-030). It also names the mark as
+    the SVG icon, the 180 px touch icon, `canvas` as `theme-color`, the WEB-004 tagline as the meta
+    and share description, the brand file's name as the share title and the 1200 by 630 share image
+    on the brand file's domain (T615, WEB-027, DESIGN_SPEC section 5, D-4252). No script is needed, and no script,
     style or font comes from another host (SEC-013); every value is escaped (SEC-011). Forms post
     with novalidate and never disable their submit button (A11Y-030, A11Y-031). The stylesheet is
     linked first in `body`, not in `head`, so it never holds back a page's `autofocus` (an error
@@ -28,6 +31,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}{% endblock %} | {{ askhava_core::api::brand().display_name() }}</title>
 <meta name="color-scheme" content="light">
+<meta name="theme-color" content="#F7F5F0">
+<meta name="description" content="Local quotes. Your choice.">
+<meta property="og:title" content="{{ askhava_core::api::brand().display_name() }}">
+<meta property="og:description" content="Local quotes. Your choice.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://{{ askhava_core::api::brand().domain() }}/static/site/brand/share.png">
+<link rel="icon" href="/static/site/brand/mark.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/static/site/brand/touch-icon.png">
 <link rel="preload" as="font" type="font/woff2" crossorigin href="/static/site/fonts/gelasio-latin-500-normal.woff2">
 <link rel="preload" as="font" type="font/woff2" crossorigin href="/static/site/fonts/dm-sans-latin-wght-normal.woff2">
 </head>

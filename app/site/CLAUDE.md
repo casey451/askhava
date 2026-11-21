@@ -8,7 +8,7 @@ The layer-8 crate for the public website (`docs/architecture.md` section 3). It 
 - `base.html`'s `banner` block stays empty and only `site_layout.html` fills it, so no portal struct needs a `banner_shown` field; the banner is hidden by default: `cargo test -p askhava-site` (`td_web_01_banner_hidden_by_default_and_shown_when_on`).
 - The site's files are served by one `nest_service("/static/site", ...)` with no `.route(` and no `/`-prefixed `*_PATH`/`*_ROUTE` constant (D-3106): `app/server/tests/route_wiring.rs`.
 - No third-party load in any template or static file: `tests/security/tests/no_third_party.rs`.
-- WEB-012, D-3144: the old paths `/categories` and `/events` answer 200 with the home page, and there is no catch-all route, so any other unknown path stays a 404: `tests/e2e/site_pages.spec.ts`, `app/server/tests/route_wiring.rs`.
+- WEB-012, D-3144, D-4252: the old paths `/categories` and `/events` answer 200 with the home page; the one catch-all is the router's fallback `not_found`, so any other unknown path stays a 404 (the styled page, `no-store`, banner read at most once a minute) and never shadows a route: `tests/e2e/site_pages.spec.ts`, `tests/e2e/not_found.spec.ts`, `app/server/tests/route_wiring.rs`.
 - WEB-028, D-466: the home page's numbers come only from `intake::api::home_numbers` and show nothing below `ASKHAVA_HOME_NUMBERS_MIN_JOBS`; no number is typed: `tests/integration/tests/home_numbers.rs`.
 
 ## Detail

@@ -23,6 +23,11 @@
 //! `photos/hero-kitchen.webp` (no AVIF yet, D-4630), each 100 KB or less with no metadata, and the brand mark
 //! `brand/mark.svg` (no `<title>`, no script), copied from `docs/design/`. They are concept
 //! placeholders: licensed photos replace them at the same names and sizes before launch.
+//!
+//! The two head images (T615, WEB-027, D-4252) are `brand/touch-icon.png`, the mark on `canvas` at
+//! 180 by 180, and `brand/share.png`, the 1200 by 630 share image (the mark, the wordmark and the
+//! WEB-004 tagline on `canvas` in Gelasio and DM Sans, no photo), each rendered once from a local
+//! page with Playwright and kept with no chunk but `IHDR`, `IDAT` and `IEND`, so no metadata.
 
 /// One file served at `/static/site/<name>`.
 pub(crate) struct Asset {
@@ -35,7 +40,7 @@ pub(crate) struct Asset {
 }
 
 /// Every file the site serves (WEB-001: the daylight-and-evergreen stylesheet; WEB-027: its
-/// self-hosted fonts, the hero photo crops and the mark).
+/// self-hosted fonts, the hero photo crops, the mark, the touch icon and the share image).
 const ASSETS: &[Asset] = &[
     Asset {
         name: "site.css",
@@ -91,6 +96,16 @@ const ASSETS: &[Asset] = &[
         name: "brand/mark.svg",
         mime: "image/svg+xml",
         bytes: include_bytes!("../static/brand/mark.svg"),
+    },
+    Asset {
+        name: "brand/touch-icon.png",
+        mime: "image/png",
+        bytes: include_bytes!("../static/brand/touch-icon.png"),
+    },
+    Asset {
+        name: "brand/share.png",
+        mime: "image/png",
+        bytes: include_bytes!("../static/brand/share.png"),
     },
 ];
 
@@ -208,6 +223,39 @@ mod tests {
         for gone in ["<script", "<title", "<metadata", " on", "href"] {
             assert!(!text.contains(gone), "{gone}");
         }
+    }
+
+    /// WEB-027, D-4252: the touch icon (180 by 180) and the share image (1200 by 630) are listed
+    /// as PNG, hold PNG bytes of that size and carry no chunk but `IHDR`, `IDAT` and `IEND`.
+    #[test]
+    fn the_head_images_are_plain_pngs_of_their_size() {
+        for (name, width, height) in [
+            ("brand/touch-icon.png", 180_u32, 180_u32),
+            ("brand/share.png", 1200, 630),
+        ] {
+            let image = find(name).expect(name);
+            assert_eq!(image.mime, "image/png", "{name}");
+            assert!(image.bytes.starts_with(b"\x89PNG\r\n\x1a\n"), "{name}");
+            let size =
+                |at: usize| u32::from_be_bytes(image.bytes[at..at + 4].try_into().expect("4"));
+            assert_eq!((size(16), size(20)), (width, height), "{name}");
+            assert_eq!(png_chunks(image.bytes), ["IHDR", "IDAT", "IEND"], "{name}");
+        }
+    }
+
+    /// The distinct chunk kinds of a PNG, in first-seen order.
+    fn png_chunks(bytes: &[u8]) -> Vec<String> {
+        let mut kinds: Vec<String> = Vec::new();
+        let mut at = 8;
+        while at + 8 <= bytes.len() {
+            let length = u32::from_be_bytes(bytes[at..at + 4].try_into().expect("4"));
+            let kind = String::from_utf8_lossy(&bytes[at + 4..at + 8]).into_owned();
+            if !kinds.contains(&kind) {
+                kinds.push(kind);
+            }
+            at += 12 + usize::try_from(length).expect("fits");
+        }
+        kinds
     }
 
     /// An unlisted name, a path with a folder and an empty name are never found.
