@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-21T08:06:45Z by runner 09f78438793f (actions).
+Updated 2026-11-21T08:07:14Z by runner 09f78438793f (actions).
 
 **Building: T615 in progress since 07:56Z; 575 of 726 done; week 70% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 575 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T615 claimed 07:56Z, lease until 10:56Z; lane 7: T674 claimed 07:26Z, lease until 10:26Z
+- **Lane:** lane 1: T615 claimed 07:56Z, lease until 10:56Z
 - **Week:** 70% used, 52.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 07:57Z, 9 min before this update
 - **Keeper:** last ran 07:40Z, next wake 10:28Z
@@ -20,8 +20,9 @@ Updated 2026-11-21T08:06:45Z by runner 09f78438793f (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T674 | server: the homeowner's photo upload page and the short-live | MERGE_PENDING | 2 | 40 min | 08:06Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
 | T615 | site and server: a styled 404 page for unknown paths, the fa | check_failed | 1 | 55 min | 07:33Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
-| T674 | server: the homeowner's photo upload page and the short-live | resync | 2 | 2 h 38 min | 07:19Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
+| T674 | server: the homeowner's photo upload page and the short-live | resync | 2 | 2 h 38 min | 07:19Z |  |
 | T754 | portals and payments: a $0 Confirm after a PaymentIntent was | BLOCKED | 2 | 46 min | 06:41Z | PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and |
 | T755 | messaging: a sole opt-out word counts with any spacing ("STO | done | 1 | 66 min | 05:21Z |  |
 | T777 | businesses: a sign-in code is texted only to a line whose cu | done | 2 | 39 min | 05:05Z | PLAN GAP: outside ownership: app/server/tests/business_signin_route.rs / T777's approved_at filter in sign_in_lines fail |
@@ -141,7 +142,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T615 (lease until 2026-11-21T10:56:09Z)
-- lane 7: T674 (lease until 2026-11-21T10:26:01Z)
 
 ## Last usage reading
-- {"task": "T615", "at": "2026-11-21T07:33:40Z", "input_tokens": 161, "output_tokens": 51241, "cache_creation_input_tokens": 194831, "cache_read_input_tokens": 7841252}
+- {"task": "T674", "at": "2026-11-21T08:06:44Z", "cache_read_input_tokens": 1225466, "cache_creation_input_tokens": 77787, "output_tokens": 11086, "input_tokens": 69}
