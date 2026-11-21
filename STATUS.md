@@ -1,21 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-21T20:28:58Z by runner a0ed82b15a9f (actions).
+Updated 2026-11-21T20:40:32Z by runner c9349629907b (actions).
 
-**Building: T565 in progress since 19:19Z; 588 of 734 done; week 36% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T565 in progress since 19:19Z; 588 of 739 done; week 36% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 588 of 734 build tasks (owner gates not counted)
+- **Tasks done:** 588 of 739 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T565 claimed 19:19Z, lease until 22:19Z; lane 4: T691 claimed 20:16Z, lease until 23:16Z; lane 5: T600 claimed 20:12Z, lease until 23:12Z; lane 6: T788 claimed 20:25Z, lease until 23:25Z
 - **Week:** 36% used, 118.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:28Z, 0 min before this update
+- **Last run:** 20:29Z, 11 min before this update
 - **Keeper:** last ran 20:28Z, next wake 22:21Z
 
 ## Needs attention
 - BLOCKED T675: plan gap reported: PLAN GAP: no production PictureTextMedia / Twilio media DELETE exists (only the test fake at tests/integration/tests/intake_photos.rs:109); adding it needs app/adapters/src/sms.rs (owned by T016/T129/T336/T377), and layers.json plus pub(crate) TwilioHttp block every path T675 owns or shares. Secondary: budget files 7 / lines 550 is too small (est. 1000+ lines). Worker found also: photo_pending marker must be written before receive_raw_reply when a request is already open; photos_to_request wording has no Rust loader; no Concept images setting in rules::Settings. Reviewer confirmed the first cl; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T675 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 38 problem(s) on tasks still to run (+461 on DONE tasks); first: T624: stored context_pct 12% but it measures 17%; regenerate
+- Strict plan check red: 40 problem(s) on tasks still to run (+465 on DONE tasks); first: T624: stored context_pct 12% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -77,7 +77,6 @@ Updated 2026-11-21T20:28:58Z by runner a0ed82b15a9f (actions).
 | T750 | docs: the privacy policy draft says an opted-out number is k | done | 1 | 38 min | 21:20Z |  |
 | T558 | Decisions digest, piece 13: the next entries after the heade | done | 1 | 28 min | 20:57Z |  |
 | T682 | picks: a pick waiting for Confirm gets its hourly reminders, | QUEUED | 1 | 105 min | 20:49Z |  |
-| T743 | messaging and privacy: opt-out listings are re-keyed to the  | done | 2 | 2 h 11 min | 20:36Z | Second review (head 7921ab0285f5916db9a9df89ee828c150908805e) ended FINDINGS: tests/integration/tests/suppression_rekey. |
 
 ### Plan and harness merges on main
 - none
@@ -85,7 +84,7 @@ Updated 2026-11-21T20:28:58Z by runner a0ed82b15a9f (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 588 of 734
+**Tasks merged (throughput only):** 588 of 739
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -121,8 +120,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 231 of 312 done
-- stage 6: 0 of 69 done
+- stage 5: 231 of 314 done
+- stage 6: 0 of 72 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
 - stage kit: 14 of 15 done

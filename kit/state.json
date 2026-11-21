@@ -25990,7 +25990,8 @@
     "T127",
     "T275",
     "T336",
-    "T377"
+    "T377",
+    "T794"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -31426,7 +31427,9 @@
     "T784",
     "T785",
     "T791",
-    "T793"
+    "T793",
+    "T795",
+    "T797"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -94397,7 +94400,9 @@
     "T673",
     "T674",
     "T573",
-    "T776"
+    "T776",
+    "T794",
+    "T798"
    ],
    "status": "BLOCKED",
    "attempts": 1,
@@ -104791,6 +104796,70 @@
    "slug": "email-quiet-drain",
    "type": "build",
    "stage": "6"
+  },
+  {
+   "id": "T794",
+   "deps": [
+    "T377",
+    "T336",
+    "T212",
+    "T100",
+    "T110",
+    "T517"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "twilio-media-delete",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T795",
+   "deps": [
+    "T754",
+    "T785"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "release-after-refund",
+   "type": "build",
+   "stage": "6"
+  },
+  {
+   "id": "T796",
+   "deps": [
+    "T785"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "reconcile-partial-refunds",
+   "type": "build",
+   "stage": "6"
+  },
+  {
+   "id": "T797",
+   "deps": [
+    "T796",
+    "T380"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "refund-status-guards",
+   "type": "build",
+   "stage": "6"
+  },
+  {
+   "id": "T798",
+   "deps": [
+    "T212",
+    "T100",
+    "T517"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "photo-asks-loader",
+   "type": "build",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -111876,7 +111945,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T20:28:58Z",
+ "updated_at": "2026-11-21T20:40:32Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -111974,7 +112043,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "a0ed82b15a9fb1febf550318618b84d41ade3de0",
+ "runner_sha": "c9349629907becec692fe2a289e997696a7a8594",
  "starter": "actions",
  "smoke_runs": [
   {
