@@ -1,0 +1,65 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT c.job_id, c.sent_at, s.category, s.town FROM quotes.job_card c JOIN LATERAL (SELECT category, town FROM quotes.shown_card s WHERE s.job_id = c.job_id AND s.sent_at IS NOT NULL ORDER BY s.sent_at, s.id LIMIT 1) s ON true WHERE c.business_id = $1 AND c.sent_at > $2 AND NOT EXISTS ( SELECT 1 FROM quotes.quote q WHERE q.job_id = c.job_id AND q.business_id = c.business_id AND q.withdrawn_at IS NULL) ORDER BY c.sent_at, c.job_id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "job_id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "quotes.job_card",
+            "name": "job_id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "sent_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "quotes.job_card",
+            "name": "sent_at"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "category",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "quotes.shown_card",
+            "name": "category"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "town",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "quotes.shown_card",
+            "name": "town"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "46ac5d9a4a5ca78c1ff5f931ec2743b5bffad647697ea237a95d6d0a9df1f0d6"
+}

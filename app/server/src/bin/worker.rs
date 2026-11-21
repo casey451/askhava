@@ -105,7 +105,8 @@ async fn schedule_messaging(conn: &mut sqlx::PgConnection, now: jiff::Timestamp)
 /// The first nightly Stripe reconcile (T433), then the first runs of `watch_checks`' hourly
 /// vault-read check and daily volume check (T525, SEC-047, OPS-052), the nightly encrypted export
 /// (T109, OPS-013), the first monthly test restore (T648, OPS-013), `businesses`' daily
-/// deliverability re-test run (T686, BIZ-042), `intake`'s daily consent
+/// deliverability re-test run (T686, BIZ-042), `picks`' hourly open-cards email run (T684,
+/// CARD-022), `intake`'s daily consent
 /// sweep (T563, CON-022) and, only when `email` (the provider and vault exist), `messaging`'s
 /// queued-email drain (T470, D-3750), each under its own dedupe key.
 async fn schedule_checks(
@@ -134,6 +135,9 @@ async fn schedule_checks(
         .await
         .map_err(io::Error::other)?;
     askhava_businesses::api::schedule_retests(conn, now)
+        .await
+        .map_err(io::Error::other)?;
+    askhava_picks::api::schedule_open_cards(conn, now)
         .await
         .map_err(io::Error::other)?;
     askhava_intake::api::schedule_consent_sweep(conn, now)

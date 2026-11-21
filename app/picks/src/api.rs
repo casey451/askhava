@@ -141,6 +141,10 @@ pub use crate::money_notices::{
 pub use crate::open_cards_email::{
     ComposedEmail, OpenCard, WaitingPick, chosen_minutes, missed_cards_line, open_cards_email,
 };
+pub use crate::open_cards_run::{
+    DigestLink, OPEN_CARDS_EMAIL_KIND, OPEN_CARDS_TEMPLATE, OpenCardsLinks, OpenCardsParts,
+    run_open_cards_email, schedule_open_cards,
+};
 pub use crate::pick_ended::PICK_LAPSED_TEMPLATE;
 pub use crate::pick_ended::PICK_MOVED_TEMPLATE;
 pub use crate::pick_ended::ended_businesses;

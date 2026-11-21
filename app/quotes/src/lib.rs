@@ -61,6 +61,7 @@ mod late_cards;
 mod models;
 mod notes;
 mod notify;
+mod open_cards;
 mod photos;
 mod quote_card;
 mod quote_facts;
