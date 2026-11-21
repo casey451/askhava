@@ -391,3 +391,55 @@ def test_trim_not_tripped_by_merge_of_main(tmp_path: Path) -> None:
     git(root, "checkout", "-q", "work")
     git(root, "merge", "-q", "--no-edit", "main")
     assert trim_run(root) == 0
+
+
+def test_trim_reads_rule_marker_at_claim_base_not_head(tmp_path: Path) -> None:
+    root = trim_repo(tmp_path, 8000, script="old\n")
+    (root / "app/foo/src").mkdir()
+    (root / "app/foo/src/a.rs").write_text("a\n", encoding="utf-8")
+    commit(root)
+    git(root, "checkout", "-q", "main")
+    (root / "scripts/check_pr_change.py").write_text(RULE6_SCRIPT, encoding="utf-8")
+    git(root, "commit", "-qam", "main gains rule 6")
+    git(root, "checkout", "-q", "work")
+    git(root, "merge", "-q", "--no-edit", "main")
+    assert RULE6_SCRIPT == (root / "scripts/check_pr_change.py").read_text(encoding="utf-8")
+    assert cc.crate_guide_trim_check(root, BRANCH, "main") == []
+
+
+def test_trim_two_commit_branch_uses_oldest_commit_for_claim_base(tmp_path: Path) -> None:
+    root = trim_repo(tmp_path, 7000)
+    set_guide(root, 8000)
+    set_guide(root, 8100)
+    assert trim_run(root) == 0
+
+
+def test_trim_boundary_exactly_7392_at_claim_base_is_not_over(tmp_path: Path) -> None:
+    root = trim_repo(tmp_path, 7392)
+    set_guide(root, 8000)
+    assert trim_run(root) == 0
+
+
+def test_trim_boundary_7393_at_claim_base_is_over(tmp_path: Path) -> None:
+    root = trim_repo(tmp_path, 7393)
+    set_guide(root, 8000)
+    assert trim_run(root) == 1
+
+
+def test_trim_skipped_when_claim_base_cannot_be_found(tmp_path: Path) -> None:
+    root = trim_repo(tmp_path, 8000)
+    git(root, "checkout", "-q", "--orphan", "island")
+    set_guide(root, 8100)
+    assert cc.claim_base(root, "main") is None
+    assert cc.crate_guide_trim_check(root, BRANCH, "main") == []
+
+
+def test_trim_crate_from_module_only_and_from_owned_paths_only(tmp_path: Path, monkeypatch) -> None:
+    root = trim_repo(tmp_path, 8000)
+    set_guide(root, 8100)
+    for task in (
+        {"id": "T050", "module": "foo", "owns": []},
+        {"id": "T050", "owns": ["app/foo/src/a.rs"]},
+    ):
+        monkeypatch.setattr(cc, "task_for_branch", lambda *_a, task=task: task)
+        assert trim_run(root) == 1
