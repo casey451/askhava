@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-21T18:47:19Z by runner b5e6128da683 (actions).
+Updated 2026-11-21T18:53:27Z by runner 7143385c9180 (actions).
 
-**Building: T690 in progress since 16:56Z; 585 of 732 done; week 32% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T690 in progress since 16:56Z; 585 of 732 done; week 33% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 585 of 732 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T690 claimed 16:56Z, lease until 19:56Z; lane 3: T707 claimed 18:35Z, lease until 21:35Z; lane 5: T791 claimed 18:44Z, lease until 21:44Z; lane 6: T790 claimed 18:10Z, lease until 21:10Z; lane 7: T754 claimed 18:25Z, lease until 21:25Z
-- **Week:** 32% used, 122.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:47Z, 0 min before this update
+- **Week:** 33% used, 122.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 18:53Z, 0 min before this update
 - **Keeper:** last ran 18:47Z, next wake 19:59Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 57 problem(s) on tasks still to run (+462 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 39 problem(s) on tasks still to run (+461 on DONE tasks); first: T624: stored context_pct 12% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -82,7 +82,7 @@ Updated 2026-11-21T18:47:19Z by runner b5e6128da683 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 585 of 730
+**Tasks merged (throughput only):** 585 of 732
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
