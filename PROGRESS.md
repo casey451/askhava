@@ -9145,3 +9145,4 @@
 - 2026-11-21T08:07:44Z runner b448c7a9404d (actions): {}
 - 2026-11-21T08:08:15Z runner fabfe83d9707 (actions): {}
 - 2026-11-21T08:40:49Z runner 5effdc8ef3e2 (actions): {"T674": "MERGE_PENDING -> DONE"}
+- 2026-11-21T08:43:12Z runner 5effdc8ef3e2 (actions): {"T776": "QUEUED -> IN_PROGRESS"}; T776 estimated 1.4M tokens (calibrated); week has 52.4M left (no five-hour budget, D-3056) after 1.6M still running in another lane (session_reading 2026-11-21T08:07:43Z (week)); claimed
