@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T01:37:59Z by runner 1846c812a704 (actions).
+Updated 2026-11-21T01:40:56Z by runner 1846c812a704 (actions).
 
 **Building: T664 in progress since 23:09Z; 563 of 726 done; week 56% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 563 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T664 claimed 23:09Z, lease until 02:09Z; lane 2: T774 claimed 01:32Z, lease until 04:32Z; lane 3: T777 claimed 01:31Z, lease until 04:31Z; lane 5: T769 claimed 01:14Z, lease until 04:14Z; lane 6: T580 claimed 01:10Z, lease until 04:10Z; lane 7: T775 claimed 01:29Z, lease until 04:29Z
-- **Week:** 56% used, 75.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:35Z, 2 min before this update
+- **Lane:** lane 1: T664 claimed 23:09Z, lease until 02:09Z; lane 2: T774 claimed 01:32Z, lease until 04:32Z; lane 3: T777 claimed 01:31Z, lease until 04:31Z; lane 4: T457 claimed 01:40Z, lease until 04:40Z; lane 5: T769 claimed 01:14Z, lease until 04:14Z; lane 6: T580 claimed 01:10Z, lease until 04:10Z; lane 7: T775 claimed 01:29Z, lease until 04:29Z
+- **Week:** 56% used, 74.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 01:38Z, 2 min before this update
 - **Keeper:** last ran 01:34Z, next wake 02:11Z
 
 ## Needs attention
@@ -92,8 +92,6 @@ Updated 2026-11-21T01:37:59Z by runner 1846c812a704 (actions).
 | T763 | tests (harness): the web chat spec's fake numbers never coll | done | 1 | 25 min | 02:17Z |  |
 | T672 | intake: the dispatcher asks "How soon?", the night count and | BLOCKED | 1 | 13 min | 02:12Z |  |
 | T218 | Wording and template scans from the brains: sales phrases, n | done | 1 | 74 min | 01:46Z |  |
-| T663 | picks, jobs and payments (harness): a confirmed pick moves i | check_failed | 2 | 2 h 7 min | 01:40Z |  |
-| T527 | messaging, portals and server: the business-texting switch t | done | 1 | 93 min | 01:39Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -129,7 +127,7 @@ Updated 2026-11-21T01:37:59Z by runner 1846c812a704 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-21T01:26:35Z (week)): week: 119.0M used, 75.0M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-04T18:23:55Z.
+- Pacing (session_reading 2026-11-21T01:34:27Z (week)): week: 119.4M used, 74.6M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-04T17:54:16Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -147,6 +145,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T664 (lease until 2026-11-21T02:09:28Z)
 - lane 2: T774 (lease until 2026-11-21T04:32:37Z)
 - lane 3: T777 (lease until 2026-11-21T04:31:36Z)
+- lane 4: T457 (lease until 2026-11-21T04:40:44Z)
 - lane 5: T769 (lease until 2026-11-21T04:14:17Z)
 - lane 6: T580 (lease until 2026-11-21T04:10:04Z)
 - lane 7: T775 (lease until 2026-11-21T04:29:12Z)
