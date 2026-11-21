@@ -678,6 +678,11 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | POST | /owner/business-texting | server | yes |
 | GET | /owner/release | server | yes |
 | POST | /owner/release | server | yes |
+| GET | /owner/refunds/{pick} | server | yes |
+| POST | /owner/refunds/{pick}/refund | server | yes |
+| POST | /owner/refunds/{pick}/evidence | server | yes |
+| GET | /owner/audit-log | server | yes |
+| GET | /owner/health | server | yes |
 | GET | /owner/help | portals | yes |
 | POST | /owner/help/reply | portals | yes |
 | POST | /owner/help/close | portals | yes |

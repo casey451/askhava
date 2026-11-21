@@ -5,10 +5,12 @@
 {% block main %}
 <h1>Audit log</h1>
 <p>Every change, who made it and when (Arizona time), oldest first.</p>
-{% if rows.is_empty() %}<p>Nothing more to show.</p>{% else %}<table>
+{% if rows.is_empty() %}<p>Nothing more to show.</p>{% else %}<div role="region" tabindex="0" aria-label="Audit log rows">
+<table>
 <caption>Audit log rows</caption>
 <thead><tr><th scope="col">When</th><th scope="col">Who</th><th scope="col">Action</th><th scope="col">Record</th><th scope="col">Change</th></tr></thead>
 <tbody>{% for r in rows %}<tr><td>{{ r.at }}</td><td>{{ r.actor }}</td><td>{{ r.action }}</td><td>{{ r.subject }}</td><td>{{ r.change }}</td></tr>
-{% endfor %}</tbody></table>{% endif %}
+{% endfor %}</tbody></table>
+</div>{% endif %}
 {% if let Some(next) = next %}<p><a href="{{ next }}">Next page</a></p>{% endif %}
 {% endblock %}
