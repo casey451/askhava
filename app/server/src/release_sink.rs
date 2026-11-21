@@ -32,6 +32,9 @@
 //! line opens then.
 //!
 //! T408 (OPS-001, OPS-024, D-3144): in safe mode `settle_and_release` holds the pick instead.
+//! T707 (D-4419): in safe mode an `intake.address_in` run releases nothing and queues the next
+//! run 15 minutes later (`address_in_due`); an unreadable safe mode fails closed. Every settle,
+//! held or not, leaves a pick whose job is already final (FEE-017, FEE-021, D-4791).
 
 use std::io;
 use std::net::{IpAddr, Ipv4Addr};
@@ -39,22 +42,27 @@ use std::sync::Arc;
 
 use askhava_adapters::api::{AdapterMode, MaskedPool, StripePayments, TwilioConfig};
 use askhava_core::api::{
-    ClientIpPolicy, Clock, Environment, HandlerError, Registry, Settings, SystemClock, Vendor,
-    check_base_url,
+    ClientIpPolicy, Clock, Environment, HandlerError, NewTask, Registry, Settings, SystemClock,
+    Vendor, check_base_url, enqueue,
 };
 use askhava_intake::api::{ADDRESS_IN_KIND, job_homeowner};
+use askhava_jobs::api::current;
 use askhava_ops::api::{NewAlert, Severity, raise_alert, safe_mode_on};
 use askhava_payments::api::{
     MoneyEventError, PickNow, Releasable, ReleaseError, ReleaseSink, StripeAccount, StripeWebhook,
     late_success, reclear_release,
 };
-use askhava_picks::api::{Released, Settled, awaiting_address, contact_choice, release, settle};
+use askhava_picks::api::{
+    Released, Settled, awaiting_address, contact_choice, is_released, release, settle,
+};
 use askhava_privacy::api::{ReleaseBasis, Vault};
 use jiff::Timestamp;
 use secrecy::SecretString;
+use serde_json::{Value, json};
 use sqlx::types::Uuid;
-use sqlx::{PgConnection, PgPool};
+use sqlx::{PgConnection, PgPool, Postgres, Transaction};
 
+use crate::release_hold::HOLD_EVERY;
 use crate::{release_hold, release_minter};
 
 /// The Stripe webhook signing secret (`whsec_…`, SEC-039).
@@ -123,7 +131,7 @@ impl PickReleaser {
             return release_hold::hold(&mut conn, cleared.pick(), at).await;
         }
         drop(conn);
-        self.release_now(cleared, at).await
+        self.settle_release(cleared, at).await
     }
 
     /// The releaser's clock: the instant a held release is cleared and released at (OPS-024).
@@ -131,9 +139,22 @@ impl PickReleaser {
         self.clock.now()
     }
 
-    /// The settle and release with no safe-mode read: [`Self::settle_and_release`] once safe mode
-    /// is off, and the held-release task after its own read (OPS-024, FEE-017, PICK-022).
+    /// The held-release task's settle and release, after its own safe-mode read (OPS-024,
+    /// FEE-017, FEE-021, PICK-022, D-4419): as [`Self::settle_and_release`] once safe mode is
+    /// off: a pick whose job went final (cancelled) while it was held is not moved, a paid one
+    /// gets its one late-success refund and the answer is `MovedOn`.
     pub(crate) async fn release_now(
+        &self,
+        cleared: Releasable,
+        at: Timestamp,
+    ) -> Result<Released, ReleaseError> {
+        self.settle_release(cleared, at).await
+    }
+
+    /// Settles and releases `cleared` at `at`; on every path (held or not, D-4791) a pick moved
+    /// now for a job already final is rolled back and left (FEE-017, PICK-022, T707), so a later
+    /// verified event for that pick releases nothing either.
+    async fn settle_release(
         &self,
         cleared: Releasable,
         at: Timestamp,
@@ -146,6 +167,9 @@ impl PickReleaser {
         let settled = settle(&mut tx, &cleared)
             .await
             .map_err(|_| ReleaseError::Database)?;
+        if job_went_final(&mut tx, settled, cleared.pick()).await? {
+            return leave_final(&self.pool, tx, &cleared, at).await;
+        }
         if settled == Settled::Left && matches!(cleared.basis(), ReleaseBasis::PaidCharge) {
             moved_on_success(&mut tx, cleared.pick(), at).await?;
         }
@@ -153,6 +177,51 @@ impl PickReleaser {
         let keys = (&self.vault, &self.masked);
         release_settled(&self.pool, keys, (cleared, settled), at).await
     }
+}
+
+/// FEE-017, OPS-024, PICK-022 (T707, D-4792): whether the settled pick's job is already in a
+/// final status (cancelled, such as while its release was held or its address deferred) with
+/// the pick not yet released: a pick the settle just moved (`Settled::Moved`), or one already
+/// paid or free (`Settled::Was`) with no `picks.release` row; a `Was` pick already released is
+/// left to [`release_settled`], which answers `Already`, so nothing is refunded.
+async fn job_went_final(
+    conn: &mut PgConnection,
+    settled: Settled,
+    pick: Uuid,
+) -> Result<bool, ReleaseError> {
+    let job = match settled {
+        Settled::Left => return Ok(false),
+        Settled::Moved(job) => job,
+        Settled::Was(job) => {
+            let claimed = is_released(&mut *conn, pick).await;
+            if claimed.map_err(|_| ReleaseError::Database)? {
+                return Ok(false);
+            }
+            job
+        }
+    };
+    let found = current(conn, job)
+        .await
+        .map_err(|_| ReleaseError::Database)?;
+    Ok(found.status.is_final())
+}
+
+/// FEE-017, FEE-021, PICK-022 (T707, D-4791, D-4792): leaves a pick whose job went final: the
+/// settle's transaction `tx` is rolled back (no move, no re-clear), a paid pick gets its one
+/// late-success refund ([`moved_on_success`]) in a new one, and nothing is released (`MovedOn`).
+async fn leave_final(
+    pool: &PgPool,
+    tx: Transaction<'_, Postgres>,
+    cleared: &Releasable,
+    at: Timestamp,
+) -> Result<Released, ReleaseError> {
+    tx.rollback().await.map_err(|_| ReleaseError::Database)?;
+    if matches!(cleared.basis(), ReleaseBasis::PaidCharge) {
+        let mut tx = pool.begin().await.map_err(|_| ReleaseError::Database)?;
+        moved_on_success(&mut tx, cleared.pick(), at).await?;
+        tx.commit().await.map_err(|_| ReleaseError::Database)?;
+    }
+    Ok(Released::MovedOn)
 }
 
 /// FEE-021, D-1547 (T433): a verified paid success for a pick `picks` left (`Settled::Left`) is a
@@ -225,20 +294,86 @@ async fn contact_of(pool: &PgPool, pick: Uuid, job: Uuid) -> Result<Option<Uuid>
     Ok(found.map(|h| h.contact))
 }
 
-/// The re-release once an emergency address arrived (INT-029, PICK-022, SEC-030, D-1563,
-/// D-1739, D-3358, D-3384): in one transaction `picks::api::awaiting_address` must find the
-/// pick's `picks.address_wait` row (with none, nothing is re-cleared or released), then
+/// The re-release once an emergency address arrived (INT-029, PICK-022, SEC-030, OPS-001,
+/// OPS-024, D-1563, D-1739, D-3358, D-3384, D-4419): [`address_in_due`] with no due time, so
+/// safe mode is read first and, while it is on, nothing is released and the next run is queued.
+/// Then, in one transaction, `picks::api::awaiting_address` must find the pick's
+/// `picks.address_wait` row (with none, nothing is re-cleared or released),
 /// `payments::api::reclear_release` re-clears it from its own stored success or recorded $0
 /// decision and `picks::api::settle` checks it is still `paid` or `free`; the commit comes after
 /// the settle, so no refund starts between the check and the settle. Then the same mint and
 /// release as a first clearing: the address goes at most once (the release row), only through
 /// that proof, and the masked line opens. A pick that left paid or free, ended, was refunded or
-/// disputed is `MovedOn`; a second address finds the release row, `Already`.
+/// disputed is `MovedOn`; so is one whose job went final while it waited (FEE-017, FEE-021,
+/// D-4792: nothing re-cleared, a paid pick's one late-success refund); a second address finds
+/// the release row, `Already`.
 ///
 /// # Errors
-/// [`ReleaseError::Database`] when a read, the settle, the vault read or the release's writes
-/// fail; the task is tried again.
+/// [`ReleaseError::Database`] when the safe-mode read (fails closed: nothing released or
+/// queued), the deferral, a read, the settle, the vault read or the release's writes fail; the
+/// task is tried again.
 pub async fn address_in(
+    pool: &PgPool,
+    keys: (&Vault, &MaskedPool),
+    pick: Uuid,
+    at: Timestamp,
+) -> Result<Released, ReleaseError> {
+    address_in_due(pool, keys, pick, (at, None)).await
+}
+
+/// The safe-mode gate of the re-release (OPS-001, OPS-024, D-3263, D-3879, D-4419): `run_at` is
+/// the run's payload due time (`None` for `intake`'s first run). An unreadable `ops.safe_mode`
+/// is `ReleaseError::Database` (fails closed); while it is on, nothing is released, the next
+/// run is queued ([`defer_address_in`]) and the answer is `MovedOn`; else [`rerelease`].
+async fn address_in_due(
+    pool: &PgPool,
+    keys: (&Vault, &MaskedPool),
+    pick: Uuid,
+    (at, run_at): (Timestamp, Option<Timestamp>),
+) -> Result<Released, ReleaseError> {
+    let mut conn = pool.acquire().await.map_err(|_| ReleaseError::Database)?;
+    if safe_mode_on(&mut conn)
+        .await
+        .map_err(|_| ReleaseError::Database)?
+    {
+        defer_address_in(&mut conn, pick, at, run_at).await?;
+        return Ok(Released::MovedOn);
+    }
+    drop(conn);
+    rerelease(pool, keys, pick, at).await
+}
+
+/// Queues the next [`ADDRESS_IN_KIND`] run of `pick` [`HOLD_EVERY`] after the run's due time
+/// (`at` when it has none), payload `{"pick", "run_at"}` (OPS-024, D-3263, D-4419). The first
+/// deferral's key is `intake.address_in.<pick>.held` (`intake`'s own `intake.address_in.<pick>`
+/// is used for all time), every later one `intake.address_in.<pick>.<run_at microseconds>` of
+/// the run it follows, so a rerun of a run queues nothing.
+async fn defer_address_in(
+    conn: &mut PgConnection,
+    pick: Uuid,
+    at: Timestamp,
+    run_at: Option<Timestamp>,
+) -> Result<(), ReleaseError> {
+    let (due, key) = match run_at {
+        None => (at, format!("{ADDRESS_IN_KIND}.{pick}.held")),
+        Some(due) => (
+            due,
+            format!("{ADDRESS_IN_KIND}.{pick}.{}", due.as_microsecond()),
+        ),
+    };
+    let next = due.checked_add(HOLD_EVERY).unwrap_or(due);
+    let payload = json!({"pick": pick, "run_at": next.to_string()});
+    let mut task = NewTask::new(ADDRESS_IN_KIND, payload, next);
+    task.dedupe_key = Some(key);
+    enqueue(conn, &task)
+        .await
+        .map(|_| ())
+        .map_err(|_| ReleaseError::Database)
+}
+
+/// The re-release itself, once safe mode is off (see [`address_in`]; INT-029, PICK-022,
+/// SEC-030, D-3384).
+async fn rerelease(
     pool: &PgPool,
     keys: (&Vault, &MaskedPool),
     pick: Uuid,
@@ -259,14 +394,28 @@ pub async fn address_in(
     let settled = settle(&mut tx, &cleared)
         .await
         .map_err(|_| ReleaseError::Database)?;
+    if job_went_final(&mut tx, settled, pick).await? {
+        return leave_final(pool, tx, &cleared, at).await;
+    }
     tx.commit().await.map_err(|_| ReleaseError::Database)?;
     release_settled(pool, keys, (cleared, settled), at).await
 }
 
-/// Registers the [`ADDRESS_IN_KIND`] handler, [`address_in`] over the vault from `pairs` and
-/// `masked` on `clock` (INT-029, D-1739); payload `{"pick"}`. Called by `worker_registry` with the
-/// Twilio settings; without both vault keys nothing is registered (dev and CI), as `vault_from`
-/// allows.
+/// The pick and the optional due time of an `intake.address_in` payload (`{"pick"}` from
+/// `intake`, `{"pick", "run_at"}` from a deferral; D-4419); a bad `run_at` is a bad payload.
+fn address_payload(payload: &Value) -> Option<(Uuid, Option<Timestamp>)> {
+    let pick = Uuid::parse_str(payload["pick"].as_str()?).ok()?;
+    let run_at = match &payload["run_at"] {
+        Value::Null => None,
+        due => Some(due.as_str()?.parse().ok()?),
+    };
+    Some((pick, run_at))
+}
+
+/// Registers the [`ADDRESS_IN_KIND`] handler over the vault from `pairs` and `masked` on
+/// `clock` (INT-029, OPS-001, D-1739, D-4419): it reads the payload's pick and due time and runs
+/// the safe-mode gate and re-release. Called by `worker_registry` with the Twilio settings;
+/// without both vault keys nothing is registered (dev and CI), as `vault_from` allows.
 ///
 /// # Errors
 /// A malformed vault key, named, never its value.
@@ -286,11 +435,9 @@ where
     registry.register(ADDRESS_IN_KIND, move |pool, task| {
         let (vault, masked, at) = (Arc::clone(&vault), masked.clone(), clock.now());
         async move {
-            let pick = task.payload["pick"]
-                .as_str()
-                .and_then(|p| Uuid::parse_str(p).ok());
-            let pick = pick.ok_or(HandlerError(BAD_ADDRESS_IN))?;
-            address_in(&pool, (&vault, &masked), pick, at)
+            let parsed = address_payload(&task.payload);
+            let (pick, run_at) = parsed.ok_or(HandlerError(BAD_ADDRESS_IN))?;
+            address_in_due(&pool, (&vault, &masked), pick, (at, run_at))
                 .await
                 .map(|_| ())
                 .map_err(|_| HandlerError(ADDRESS_IN_FAILED))

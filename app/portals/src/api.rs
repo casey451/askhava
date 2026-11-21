@@ -129,6 +129,10 @@ pub use crate::emergency_switch_page::{
     emergency_switch_page_with_box, held_back_link, missing_steps, post_step,
 };
 pub use crate::feedback::{FEEDBACK_ROUTE, feedback_routes, share_label};
+pub use crate::guarded_changes::{
+    FEE_LIMIT_ROUTE, GuardedChangeError, TEAM_REMOVE_ROUTE, TEAM_ROLE_ROUTE, change_monthly_limit,
+    change_team_role, remove_team_member,
+};
 pub use crate::health_page::{
     AccountIds, DEFAULT_QUOTED_WITHIN, HealthInputs, OWNER_HEALTH_ROUTE, SPOT_CHECK_CARDS,
     SecretLine, UPTIME_HISTORY_URL, owner_health_page,
