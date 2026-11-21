@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T05:24:04Z by runner d8acafd04a11 (actions).
+Updated 2026-11-21T05:25:47Z by runner d8acafd04a11 (actions).
 
-**Building: T674 in progress since 04:40Z; 571 of 726 done; week 67% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T674 in progress since 04:40Z; 572 of 726 done; week 67% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 571 of 726 build tasks (owner gates not counted)
+- **Tasks done:** 572 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 7: T674 claimed 04:40Z, lease until 07:40Z
 - **Week:** 67% used, 63.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:23Z, 0 min before this update
+- **Last run:** 05:24Z, 1 min before this update
 - **Keeper:** last ran 05:24Z, next wake 07:43Z
 
 ## Needs attention
@@ -27,7 +27,7 @@ Worker: matching.rs:52 keyword RULES cover only plumbing, HVAC, electrical, hand
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T755 | messaging: a sole opt-out word counts with any spacing ("STO | MERGE_PENDING | 1 | 66 min | 05:21Z |  |
-| T777 | businesses: a sign-in code is texted only to a line whose cu | MERGE_PENDING | 2 | 39 min | 05:05Z | PLAN GAP: outside ownership: app/server/tests/business_signin_route.rs / T777's approved_at filter in sign_in_lines fail |
+| T777 | businesses: a sign-in code is texted only to a line whose cu | done | 2 | 39 min | 05:05Z | PLAN GAP: outside ownership: app/server/tests/business_signin_route.rs / T777's approved_at filter in sign_in_lines fail |
 | T614 | site: the V6 header in base.html (links, the Menu in the pag | MERGE_PENDING | 3 | 53 min | 04:37Z | PLAN GAP: tests/integration/tests/quote_page.rs:172 (owner T052, protected) bans the word "summary" anywhere in the quot |
 | T691 | intake (harness): START into an open request resends the con | QUEUED | 1 | 27 min | 04:35Z | session ended without handing in |
 | T304 | server and portals: the owner refund review, the audit log v | BLOCKED | 1 | 91 min | 04:20Z | PLAN GAP: app/portals/templates/owner_audit_log.html (owned by T205) and app/portals/templates/health.html (owned by T47 |
@@ -108,7 +108,7 @@ Worker: matching.rs:52 keyword RULES cover only plumbing, HVAC, electrical, hand
 ## Progress (requirements verified)
 
 **Requirements verified:** 359 of 735 (48.8%) · partial 357 · unstarted 19
-**Tasks merged (throughput only):** 571 of 726
+**Tasks merged (throughput only):** 572 of 726
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -144,7 +144,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 214 of 306 done
+- stage 5: 215 of 306 done
 - stage 6: 0 of 67 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
