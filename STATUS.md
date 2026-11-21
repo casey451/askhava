@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-21T04:14:02Z by runner 78ca4c1ab6db (actions).
+Updated 2026-11-21T04:14:36Z by runner 78ca4c1ab6db (actions).
 
 **Building: T457 in progress since 03:41Z; 569 of 726 done; week 63% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 569 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T457 claimed 03:41Z, lease until 06:41Z; lane 3: T781 claimed 02:17Z, lease until 05:17Z; lane 4: T614 claimed 03:43Z, lease until 06:43Z; lane 5: T304 claimed 02:48Z, lease until 05:48Z; lane 7: T691 claimed 04:07Z, lease until 07:07Z
+- **Lane:** lane 2: T457 claimed 03:41Z, lease until 06:41Z; lane 4: T614 claimed 03:43Z, lease until 06:43Z; lane 5: T304 claimed 02:48Z, lease until 05:48Z; lane 7: T691 claimed 04:07Z, lease until 07:07Z
 - **Week:** 63% used, 65.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:13Z, 1 min before this update
 - **Keeper:** last ran 04:12Z, next wake 04:32Z
@@ -33,6 +33,7 @@ T777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T781 | recovery: a failed or timed-out nightly export raises one al | MERGE_PENDING | 1 | 116 min | 04:14Z |  |
 | T776 | intake: a move out of Arizona and a property-management requ | BLOCKED | 1 | 11 min | 04:00Z | PLAN GAP: outside ownership: app/intake/src/matching.rs / Worker: matching.rs:52 keyword RULES cover only plumbing, HVAC |
 | T684 | picks and server: the open-cards email goes at the times eac | done | 2 | 93 min | 03:50Z | PLAN GAP: app/quotes/src/models.rs:265 `card_sent_at` is pub(crate); T684 owns no app/quotes/src file. quotes::api has n |
 | T780 | payments and portals: the scorecard's refund and dispute rat | MERGE_PENDING | 1 | 33 min | 03:33Z |  |
@@ -160,10 +161,9 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T457 (lease until 2026-11-21T06:41:23Z)
-- lane 3: T781 (lease until 2026-11-21T05:17:31Z)
 - lane 4: T614 (lease until 2026-11-21T06:43:38Z)
 - lane 5: T304 (lease until 2026-11-21T05:48:33Z)
 - lane 7: T691 (lease until 2026-11-21T07:07:30Z)
 
 ## Last usage reading
-- {"task": "T776", "at": "2026-11-21T04:00:50Z", "cache_creation_input_tokens": 127147, "cache_read_input_tokens": 2118758, "input_tokens": 77, "output_tokens": 37941}
+- {"task": "T781", "at": "2026-11-21T04:14:00Z", "input_tokens": 160, "cache_read_input_tokens": 5638663, "cache_creation_input_tokens": 135570, "output_tokens": 43660}
