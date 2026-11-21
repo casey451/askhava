@@ -24,7 +24,13 @@
 //! expire the row. The number is read through [`LinePhones`] only after the line is open, Arizona
 //! quiet hours passed and `may_text` passed; it goes to the area-code window check (QH-001,
 //! QH-003) and the carrier call and nowhere else. [`expire_job_rows`] is the job's side of QH-007.
+//!
+//! A homeowner's given-up text with no email on file raises Casey's call-back, due as her job's
+//! urgency sets (INT-023, TXT-015, D-4052): the composition passes an [`UrgencySource`]
+//! ([`OutboxSender::with_urgency`]), since `messaging` never reads `intake`; without one the
+//! call-back is no-rush, and a failed read holds the row for its retry.
 
+use std::pin::Pin;
 use std::sync::{Arc, LazyLock};
 
 use askhava_adapters::api::SmsAdapter;
@@ -97,6 +103,24 @@ pub trait LinePhones: Send + Sync {
     ) -> impl Future<Output = Result<SecretString, PhoneUnread>> + Send;
 }
 
+/// What [`UrgencySource::urgency`] answers: her job's urgency, or an error when it could not be
+/// read (the row is then held for its retry, never guessed).
+pub type UrgencyRead<'a> = Pin<Box<dyn Future<Output = Result<Urgency, OutboxError>> + Send + 'a>>;
+
+/// Answers how soon the homeowner with a given vault contact needs her call-back when her text is
+/// given up with no email on file; the composition implements it over `intake`, as `messaging`
+/// never reads that crate (INT-023, TXT-015, D-4052).
+pub trait UrgencySource: Send + Sync {
+    /// The urgency of the job of the homeowner with vault contact `contact` at `now`, read on
+    /// `conn`.
+    fn urgency<'a>(
+        &'a self,
+        conn: &'a mut PgConnection,
+        contact: Uuid,
+        now: Timestamp,
+    ) -> UrgencyRead<'a>;
+}
+
 /// The gate and phone reader of a sender built without [`OutboxSender::with_business`]: it
 /// refuses every phone and reads none; no business row reaches it, since the line has no number.
 pub struct NoBusiness;
@@ -120,7 +144,8 @@ impl LinePhones for NoBusiness {
 /// What the sender needs: the keys, the carrier, the vault, the configured homeowner number (none:
 /// the line has no sender and nothing goes, TXT-022), the footer's postal line for a text's email
 /// copy (none in dev and CI: no copy is queued) and the worker's clock; for business rows also the
-/// business number, the CON-019 gate and the phone reader ([`OutboxSender::with_business`]).
+/// business number, the CON-019 gate and the phone reader ([`OutboxSender::with_business`]); and
+/// the call-back urgency source ([`OutboxSender::with_urgency`], none: no rush).
 pub struct OutboxSender<C, G = NoBusiness, P = NoBusiness> {
     secret: SecretString,
     carrier: C,
@@ -132,6 +157,7 @@ pub struct OutboxSender<C, G = NoBusiness, P = NoBusiness> {
     business: Option<SendingNumber>,
     gate: G,
     phones: P,
+    urgency: Option<Arc<dyn UrgencySource>>,
 }
 
 impl<C> OutboxSender<C> {
@@ -157,6 +183,7 @@ impl<C> OutboxSender<C> {
             business: None,
             gate: NoBusiness,
             phones: NoBusiness,
+            urgency: None,
         })
     }
 
@@ -178,6 +205,19 @@ impl<C> OutboxSender<C> {
             business: number,
             gate,
             phones,
+            urgency: self.urgency,
+        }
+    }
+}
+
+impl<C, G, P> OutboxSender<C, G, P> {
+    /// INT-023, TXT-015, D-4052: the sender whose given-up homeowner texts take their call-back
+    /// urgency from `source` (without it every call-back is no-rush).
+    #[must_use]
+    pub fn with_urgency(self, source: Arc<dyn UrgencySource>) -> Self {
+        Self {
+            urgency: Some(source),
+            ..self
         }
     }
 }
@@ -503,9 +543,10 @@ async fn after_error<C, G, P>(
     }
 }
 
-/// TXT-014, TXT-015, QH-008: a refused row waits for its next retry; after the last, with the
-/// footer's postal line, it is given up (email copy and portal line, or Casey's call-back). A
-/// business row's last refusal expires it: its notice has its own email (BIZ-037, D-4898).
+/// TXT-014, TXT-015, QH-008, INT-023: a refused row waits for its next retry; after the last, with
+/// the footer's postal line, it is given up (email copy and portal line, or Casey's call-back, due
+/// as her job's urgency sets, D-4052). A business row's last refusal expires it: its notice has its
+/// own email (BIZ-037, D-4898).
 async fn refused<C, G, P>(
     db: &mut PgConnection,
     s: &OutboxSender<C, G, P>,
@@ -519,7 +560,7 @@ async fn refused<C, G, P>(
         (Step::GiveUp, Some(postal)) => {
             let reach = Reach::Homeowner {
                 vault: &s.vault,
-                urgency: Urgency::NoRush,
+                urgency: urgency(db, s, row.recipient, now).await?,
                 no_rush: NO_RUSH_CALL_BACK,
             };
             let to = email_to(row.recipient, row.language.as_deref());
@@ -527,6 +568,20 @@ async fn refused<C, G, P>(
                 .await
                 .map(|_| ())
         }
+    }
+}
+
+/// INT-023, TXT-015, D-4052: how soon the homeowner with vault contact `contact` needs her
+/// call-back, from the sender's [`UrgencySource`]; with none, no rush.
+async fn urgency<C, G, P>(
+    db: &mut PgConnection,
+    s: &OutboxSender<C, G, P>,
+    contact: Uuid,
+    now: Timestamp,
+) -> Result<Urgency, OutboxError> {
+    match &s.urgency {
+        Some(source) => source.urgency(db, contact, now).await,
+        None => Ok(Urgency::NoRush),
     }
 }
 

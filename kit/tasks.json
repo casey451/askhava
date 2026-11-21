@@ -33878,7 +33878,8 @@
     "T640",
     "T724",
     "T764",
-    "T770"
+    "T770",
+    "T788"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -35162,7 +35163,10 @@
     "T760",
     "T763",
     "T764",
-    "T773"
+    "T773",
+    "T786",
+    "T787",
+    "T788"
    ],
    "model": null,
    "effort": null,
@@ -43808,7 +43812,7 @@
    "id": "T615",
    "slug": "site-404-icons",
    "title": "site and server: a styled 404 page for unknown paths, the favicon and touch icon, theme-color, a meta description and a share image",
-   "goal": "Plan change D-4252 (Fable's UI and accessibility review of the D-4246 tasks; Casey, Nov 17, 2026: \"make it exceptional and meet all of the ADA requirements\"). DESIGN_SPEC section 5 (`docs/design/DESIGN_SPEC.md:98`): an unknown path answers 404 with a page in the site layout, and the head carries the icon, `theme-color` and share details. Today there is no catch-all (`app/site/src/pages.rs:6`), so an unknown path gets an empty 404, and no template has an icon, `theme-color`, meta description or share tags. (1) 404: a new `app/site/src/not_found.rs` serves `templates/not_found.html` (extends `site_layout.html`, so the header and footer show, `banner_shown` read as every site page reads it, WEB-007) with status 404, registered as the router's fallback in `app/server/src/lib.rs` (a shared path; one `.fallback(` line, `docs/code-docs.md` section 9); `/static/site/` keeps its own empty 404 (`tests/e2e/site_no_js.spec.ts:69`). The page holds an `h1` and one sentence, both new blocks in `docs/copy/site-copy.md` written to `docs/voice.md` and reviewed by the copy panel (`docs/copy/copy-panel.md`), passing `scripts/check_copy.py` and `scripts/check_ai_smell.py`; the header gives the links to home and help. (2) In `base.html`'s `head`: `<link rel=\"icon\" href=\"/static/site/brand/mark.svg\" type=\"image/svg+xml\">`, `<link rel=\"apple-touch-icon\" href=\"/static/site/brand/touch-icon.png\">` (180 by 180, the mark on `canvas`), `<meta name=\"theme-color\" content=\"#F7F5F0\">` (`canvas`), `<meta name=\"description\">` with the WEB-004 tagline (words every page already shows), and `og:title` (the brand name from `askhava_core::api::brand()`), `og:description` (the tagline), `og:type` and `og:image` (`https://` plus the brand domain plus `/static/site/brand/share.png`). (3) `share.png`: 1200 by 630, the mark, the wordmark and the WEB-004 tagline on `canvas` in Gelasio and DM Sans, no photo (so it claims nothing about work shown), rendered once from a local HTML page with Playwright (the HTML is not committed), no metadata (`scripts/pii_scan.py`); both PNGs are added to `app/site/src/assets.rs`'s fixed list as `image/png`. (4) The new `tests/e2e/not_found.spec.ts`: an unknown path answers 404 with the page's `h1`, the header and footer, axe-core 0 violations at 390 and 1440, no script; the icon, touch icon and share image answer 200 with their types; the home page's head has each tag above once. Every existing test passes unchanged (the fallback must not catch a route another crate serves). Fake data only. Review round 1 (D-4252): (a) A11Y-002 coverage: the 404 page is checked as a real page state, so the whole Ally suite runs on it: the task adds a `PAGE_STATES` entry for `/no-such-page` in `tests/a11y/page_states.ts` with an expected status of 404, and gives `tests/a11y/fixtures.ts`'s `open` an optional per-state expected status that defaults to 200 (today it asserts 200 at `:161`), so every other state is checked exactly as before; both files are shared paths any task may add to (D-1772, D-1788; T496 also owns `fixtures.ts`, so the change is additive and merges with it); the router's `.fallback(` call is matched to that state, or, if `readRouteTable` cannot see a fallback, a `NOT_PAGES` line says it is checked through `/no-such-page`. (b) The 404 answer keeps every security header the other pages carry (the server's header layers wrap the fallback), adds `Cache-Control: no-store`, and costs no database query per unknown path: the WEB-007 banner is read through a 60-second in-process cache shared with nothing else, so a scanner's thousand paths cost at most one read a minute.",
+   "goal": "Plan change D-4252 (Fable's UI and accessibility review of the D-4246 tasks; Casey, Nov 17, 2026: \"make it exceptional and meet all of the ADA requirements\"). DESIGN_SPEC section 5 (`docs/design/DESIGN_SPEC.md:98`): an unknown path answers 404 with a page in the site layout, and the head carries the icon, `theme-color` and share details. Today there is no catch-all (`app/site/src/pages.rs:6`), so an unknown path gets an empty 404, and no template has an icon, `theme-color`, meta description or share tags. (1) 404: a new `app/site/src/not_found.rs` serves `templates/not_found.html` (extends `site_layout.html`, so the header and footer show, `banner_shown` read as every site page reads it, WEB-007) with status 404, registered as the router's fallback in `app/server/src/lib.rs` (a shared path; one `.fallback(` line, `docs/code-docs.md` section 9); `/static/site/` keeps its own empty 404 (`tests/e2e/site_no_js.spec.ts:69`). The page holds an `h1` and one sentence, both new blocks in `docs/copy/site-copy.md` written to `docs/voice.md` and reviewed by the copy panel (`docs/copy/copy-panel.md`), passing `scripts/check_copy.py` and `scripts/check_ai_smell.py`; the header gives the links to home and help. (2) In `base.html`'s `head`: `<link rel=\"icon\" href=\"/static/site/brand/mark.svg\" type=\"image/svg+xml\">`, `<link rel=\"apple-touch-icon\" href=\"/static/site/brand/touch-icon.png\">` (180 by 180, the mark on `canvas`), `<meta name=\"theme-color\" content=\"#F7F5F0\">` (`canvas`), `<meta name=\"description\">` with the WEB-004 tagline (words every page already shows), and `og:title` (the brand name from `askhava_core::api::brand()`), `og:description` (the tagline), `og:type` and `og:image` (`https://` plus the brand domain plus `/static/site/brand/share.png`). (3) `share.png`: 1200 by 630, the mark, the wordmark and the WEB-004 tagline on `canvas` in Gelasio and DM Sans, no photo (so it claims nothing about work shown), rendered once from a local HTML page with Playwright (the HTML is not committed), no metadata (`scripts/pii_scan.py`); both PNGs are added to `app/site/src/assets.rs`'s fixed list as `image/png`. (4) The new `tests/e2e/not_found.spec.ts`: an unknown path answers 404 with the page's `h1`, the header and footer, axe-core 0 violations at 390 and 1440, no script; the icon, touch icon and share image answer 200 with their types; the home page's head has each tag above once. Every existing test passes unchanged (the fallback must not catch a route another crate serves). Fake data only. Review round 1 (D-4252): (a) A11Y-002 coverage: the 404 page is checked as a real page state, so the whole Ally suite runs on it: the task adds a `PAGE_STATES` entry for `/no-such-page` in `tests/a11y/page_states.ts` with an expected status of 404, and gives `tests/a11y/fixtures.ts`'s `open` an optional per-state expected status that defaults to 200 (today it asserts 200 at `:161`), so every other state is checked exactly as before; both files are shared paths any task may add to (D-1772, D-1788; T496 also owns `fixtures.ts`, so the change is additive and merges with it); the router's `.fallback(` call is matched to that state, or, if `readRouteTable` cannot see a fallback, a `NOT_PAGES` line says it is checked through `/no-such-page`. (b) The 404 answer keeps every security header the other pages carry (the server's header layers wrap the fallback), adds `Cache-Control: no-store`, and costs no database query per unknown path: the WEB-007 banner is read through a 60-second in-process cache shared with nothing else, so a scanner's thousand paths cost at most one read a minute. Retry note (D-5190): attempts 1 and 2 failed on one flaky `Ci` check, not on this task's code: TD-INT-47's no-contact check (`tests/integration/tests/intake_order_card.rs:46` and `:268`) looks for \"555\" in a text that holds the random 64-hex quote-page token (`app/jobs/src/quote_token.rs:47`), which contains it in about 1.5% of runs; T789 fixes that check first. Attempt 3 passed its pre-hand-in gate and was refused only because the runner did not record the Fable usage-limit fallback; this retry is requeued only once D-5189 (the switch off Fable, PR #1277) has merged, so it runs on Opus. Continue from the earlier attempts' work; nothing in the goal changes.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -43816,7 +43820,8 @@
    "deps": [
     "T614",
     "T613",
-    "T593"
+    "T593",
+    "T789"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -43865,7 +43870,8 @@
     "D-4246",
     "D-3331",
     "D-3144",
-    "D-474"
+    "D-474",
+    "D-5190"
    ],
    "cites": [
     "docs/design/DESIGN_SPEC.md:98"
@@ -43873,7 +43879,7 @@
    "budget": {
     "files": 8,
     "lines": 340,
-    "context_pct": 29
+    "context_pct": 39
    },
    "checks": [
     "Ci",
@@ -50057,7 +50063,7 @@
    "id": "T754",
    "slug": "zero-fee-after-intent",
    "title": "portals and payments: a $0 Confirm after a PaymentIntent was opened ends the intent and releases, and a refused paid event raises a High alert",
-   "goal": "Plan change D-4763 (Fable's money audit of `main` 79e9b499, finding M1 major and m3 minor; FEE-010, FEE-013, FEE-016, PICK-022, SEC-049; D-3717, D-3719, D-3813, D-3824, D-2713). M1: the Confirm page opens a PaymentIntent when the waiver decided on the page read is none (`card_section`, `app/portals/src/confirm_pay.rs:1219` to `:1228`), but the press can then decide $0 (a free first win or a repeat customer that the page read did not see, `waiver_now`, `confirm_pay.rs:1242` to `:1252`; `decide_and_pay`, `:1492` to `:1494`; `decided`, `app/payments/src/free_wins.rs:166`; `is_repeat`, `:221`); `no_fee_release` (`app/payments/src/release_proof.rs:285`) refuses any pick with a `payments.pick_intent` row (`:298`, `NOT EXISTS`), so a $0 Confirm after an intent was opened never releases her details and the business is stuck. This task: (1) in the press transaction that records a $0 decision, `confirm_pay.rs` calls `payments::api::end_intent_unless_charging` (`app/payments/src/pick_fee.rs:222`) for the pick's open intent on `tx` before `press_move` (`confirm_pay.rs:1502`, `app/portals/src/confirm_moves.rs:174`, which commits `tx`) and makes no Stripe call for the ended intent, as that function's other callers make none (the intent is unconfirmed and holds no funds; a later success on it after a declined attempt is refunded under FEE-021, and one with no attempt at all raises m3's High alert below). When `end_intent_unless_charging` answers false, the whole press transaction, which has already written the $0 row (`decide_and_pay`, `confirm_pay.rs:1492` to `:1494`), is rolled back and the press answers with the attempt's state (`attempt_state`, `confirm_pay.rs:1028`), so a pick is never both charged and waived; (2) `no_fee_release` accepts a pick whose intents are all ended with no live or succeeded attempt (still refusing one with a live or succeeded attempt, so a pick is never both charged and free, FEE-016); (3) `held_release` (`release_proof.rs:247` to `:256`), which sends any pick with a `pick_intent` row down the paid path, falls to `held_no_fee` for a pick whose intents are all ended with no live or succeeded attempt, so a $0-after-intent release held in safe mode is released, not answered `NotPaid` and dropped by `run_held_release` (`app/server/src/release_hold.rs:86`); 'live or succeeded attempt' in (2) to (4) means an attempt in `sent`, `processing`, `succeeded`, `needs_action` or `unreachable`, the set `end_intent_unless_charging` reads (`pick_fee.rs:239`), so the done test `td_fee_72_an_ended_pick_queues_one_late_refund` (`app/payments/src/tests/held_release.rs`, an ended intent with a `sent` attempt) still takes the paid path, and an intent not yet ended is still refused by `no_fee_release` (done test `td_fee_57_a_pick_with_a_payment_intent_is_refused`, `tests/integration/tests/no_fee_release_binding.rs:130`); (4) `from_stored_success` (`release_proof.rs:331`), for a pick whose intents are all ended with no live or succeeded attempt, no refund and no dispute, answers `no_fee_release`'s result for the pick's own `pick_fee` pair when that clears, else `PickEnded` as today; a `Database` error stays `Database` (else `release_sink.rs:254` to `:258` would read it as `MovedOn` and drop the release for good), so `reclear_release` (`app/payments/src/reclear.rs:30` to `:43`), which falls to `no_fee_release` only on `WrongIntent`, releases a $0-after-intent pick on an emergency job whose release waited for the address instead of answering `PickEnded` (which `release_sink.rs:254` to `:258` reads as `MovedOn`); `reclear.rs` is not edited, and its done test `td_int_39_the_first_failing_check_wins` (`reclear.rs:236` to `:242`: an ended intent, a declined attempt and no $0 row answer `PickEnded`) stays green. m3: a verified `payment_intent.succeeded` that `paid_release` refuses as `WrongAmount`, `WrongPick`, `NotPaid` or `WrongIntent` is only info-logged (`app/payments/src/routes.rs:384` to `:388`); the route's `release` now raises one High alert through `ops::api::raise_alert_once` (IDs and the reason only, never an amount tied to a person or a card detail; deduplicated per pick and reason) only when the event's PaymentIntent id equals the pick's stored `payments.pick_intent.stripe_intent_id`: that is every `WrongAmount`, `WrongPick` and `NotPaid` (`check_intent` runs after the id match, `release_proof.rs:218` to `:225`) and the `WrongIntent` of `store_success` (`:482`, no attempt). A `WrongIntent` for an event naming another intent id (`:218` to `:220`) or a pick with no `pick_intent` row (`:424`) raises no alert and is info-logged as today (done test `td_fee_43_a_database_error_is_resent_and_handled`, `tests/integration/tests/stripe_webhook_dispatch.rs:426` to `:430`, not owned, stays green). `paid_release`'s signature and answers do not change and `ReleaseError` gains no variant; the route tells the cases apart by a crate-private read in `release_proof.rs`; a failed read or a failed alert write answers as a `Database` refusal (500, Stripe resends). A refusal from the `ReleaseSink` raises no m3 alert. Still answering Stripe 200 and resending nothing; `Stripe` and `Database` refusals are retried as today. Tests in the new `tests/integration/tests/zero_fee_after_intent.rs`, PostgreSQL and the Stripe stand-in, fake data only: a page read that opens an intent, then a press that decides $0 (a free first win recorded between the read and the press), ends the intent once (`ended_at` set, no further Stripe request for that intent) and releases her details exactly once; a press with a charge in flight does not take the $0 path and leaves no $0 ledger row; `no_fee_release` still refuses a pick with a succeeded attempt; each `payment_intent.succeeded` on the pick's own stored intent refused as `WrongAmount`, `WrongPick`, `NotPaid` or no-attempt `WrongIntent` raises one High alert and a replay raises none; one naming another intent id raises none; a $0-after-intent release held in safe mode is released by `held_release` through `held_no_fee`; a $0-after-intent release that waited for an address: this case is an in-crate test in `release_proof.rs`'s `mod tests` (owned) that calls `Releasable::from_stored_success` directly: an ended intent with no live or succeeded attempt and the pick's $0 ledger row clears with the no-fee basis; the same rows with a refund or a dispute answer `PickEnded`. Neither `reclear_release` nor `from_stored_success` is named in code in `zero_fee_after_intent.rs` or outside `app/payments/src/` (`reclear.rs:334` to `:359`). Plan change D-5158 (Fable, option (a)): D-4763's Stripe cancel is dropped. The same file must also show, for a `payment_intent.succeeded` on the ended intent after a $0 release: (a) after a declined press attempt, then the $0 press, the success queues one late-success refund task and raises one High alert (FEE-021, `late_success`, `app/payments/src/late.rs:70` to `:111`) and makes no second release; (b) with no attempt at all (`store_success`, `release_proof.rs:473` to `:482`, answers `WrongIntent` before `late_success` runs), it raises m3's High alert and makes no release. If cheap, it also shows that the press reply carries no `client_secret` once the press answers $0 (`press_reply`, `app/portals/src/confirm_pay.rs:333`, its `client_secret` filter at `:343`). Every Confirm route, waiver and release test passes unchanged; `app/payments/` keeps its 95% floor. Money: Opus worker, Opus money and security review, two review rounds. Update the `portals` and `payments` notes, `docs/architecture.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4763 (Fable's money audit of `main` 79e9b499, finding M1 major and m3 minor; FEE-010, FEE-013, FEE-016, PICK-022, SEC-049; D-3717, D-3719, D-3813, D-3824, D-2713). M1: the Confirm page opens a PaymentIntent when the waiver decided on the page read is none (`card_section`, `app/portals/src/confirm_pay.rs:1219` to `:1228`), but the press can then decide $0 (a free first win or a repeat customer that the page read did not see, `waiver_now`, `confirm_pay.rs:1242` to `:1252`; `decide_and_pay`, `:1492` to `:1494`; `decided`, `app/payments/src/free_wins.rs:166`; `is_repeat`, `:221`); `no_fee_release` (`app/payments/src/release_proof.rs:285`) refuses any pick with a `payments.pick_intent` row (`:298`, `NOT EXISTS`), so a $0 Confirm after an intent was opened never releases her details and the business is stuck. This task: (1) in the press transaction that records a $0 decision, `confirm_pay.rs` calls `payments::api::end_intent_unless_charging` (`app/payments/src/pick_fee.rs:222`) for the pick's open intent on `tx` before `press_move` (`confirm_pay.rs:1502`, `app/portals/src/confirm_moves.rs:174`, which commits `tx`) and makes no Stripe call for the ended intent, as that function's other callers make none (the intent is unconfirmed and holds no funds; a later success on it after a declined attempt is refunded under FEE-021, and one with no attempt at all raises m3's High alert below). When `end_intent_unless_charging` answers false, the whole press transaction, which has already written the $0 row (`decide_and_pay`, `confirm_pay.rs:1492` to `:1494`), is rolled back and the press answers with the attempt's state (`attempt_state`, `confirm_pay.rs:1028`), so a pick is never both charged and waived; (2) `no_fee_release` accepts a pick whose intents are all ended with no live or succeeded attempt (still refusing one with a live or succeeded attempt, so a pick is never both charged and free, FEE-016); (3) `held_release` (`release_proof.rs:247` to `:256`), which sends any pick with a `pick_intent` row down the paid path, falls to `held_no_fee` for a pick whose intents are all ended with no live or succeeded attempt, so a $0-after-intent release held in safe mode is released, not answered `NotPaid` and dropped by `run_held_release` (`app/server/src/release_hold.rs:86`); 'live or succeeded attempt' in (2) to (4) means an attempt in `sent`, `processing`, `succeeded`, `needs_action` or `unreachable`, the set `end_intent_unless_charging` reads (`pick_fee.rs:239`), so the done test `td_fee_72_an_ended_pick_queues_one_late_refund` (`app/payments/src/tests/held_release.rs`, an ended intent with a `sent` attempt) still takes the paid path, and an intent not yet ended is still refused by `no_fee_release` (done test `td_fee_57_a_pick_with_a_payment_intent_is_refused`, `tests/integration/tests/no_fee_release_binding.rs:130`); (4) `from_stored_success` (`release_proof.rs:331`), for a pick whose intents are all ended with no live or succeeded attempt, no refund and no dispute, answers `no_fee_release`'s result for the pick's own `pick_fee` pair when that clears, else `PickEnded` as today; a `Database` error stays `Database` (else `release_sink.rs:254` to `:258` would read it as `MovedOn` and drop the release for good), so `reclear_release` (`app/payments/src/reclear.rs:30` to `:43`), which falls to `no_fee_release` only on `WrongIntent`, releases a $0-after-intent pick on an emergency job whose release waited for the address instead of answering `PickEnded` (which `release_sink.rs:254` to `:258` reads as `MovedOn`); `reclear.rs` is not edited, and its done test `td_int_39_the_first_failing_check_wins` (`reclear.rs:236` to `:242`: an ended intent, a declined attempt and no $0 row answer `PickEnded`) stays green. m3: a verified `payment_intent.succeeded` that `paid_release` refuses as `WrongAmount`, `WrongPick`, `NotPaid` or `WrongIntent` is only info-logged (`app/payments/src/routes.rs:384` to `:388`); the route's `release` now raises one High alert through `ops::api::raise_alert_once` (IDs and the reason only, never an amount tied to a person or a card detail; deduplicated per pick and reason) only when the event's PaymentIntent id equals the pick's stored `payments.pick_intent.stripe_intent_id`: that is every `WrongAmount`, `WrongPick` and `NotPaid` (`check_intent` runs after the id match, `release_proof.rs:218` to `:225`) and the `WrongIntent` of `store_success` (`:482`, no attempt). A `WrongIntent` for an event naming another intent id (`:218` to `:220`) or a pick with no `pick_intent` row (`:424`) raises no alert and is info-logged as today (done test `td_fee_43_a_database_error_is_resent_and_handled`, `tests/integration/tests/stripe_webhook_dispatch.rs:426` to `:430`, not owned, stays green). `paid_release`'s signature and answers do not change and `ReleaseError` gains no variant; the route tells the cases apart by a crate-private read in `release_proof.rs`; a failed read or a failed alert write answers as a `Database` refusal (500, Stripe resends). A refusal from the `ReleaseSink` raises no m3 alert. Still answering Stripe 200 and resending nothing; `Stripe` and `Database` refusals are retried as today. Tests in the new `tests/integration/tests/zero_fee_after_intent.rs`, PostgreSQL and the Stripe stand-in, fake data only: a page read that opens an intent, then a press that decides $0 (a free first win recorded between the read and the press), ends the intent once (`ended_at` set, no further Stripe request for that intent) and releases her details exactly once; a press with a charge in flight does not take the $0 path and leaves no $0 ledger row; `no_fee_release` still refuses a pick with a succeeded attempt; each `payment_intent.succeeded` on the pick's own stored intent refused as `WrongAmount`, `WrongPick`, `NotPaid` or no-attempt `WrongIntent` raises one High alert and a replay raises none; one naming another intent id raises none; a $0-after-intent release held in safe mode is released by `held_release` through `held_no_fee`; a $0-after-intent release that waited for an address: this case is an in-crate test in `release_proof.rs`'s `mod tests` (owned) that calls `Releasable::from_stored_success` directly: an ended intent with no live or succeeded attempt and the pick's $0 ledger row clears with the no-fee basis; the same rows with a refund or a dispute answer `PickEnded`. Neither `reclear_release` nor `from_stored_success` is named in code in `zero_fee_after_intent.rs` or outside `app/payments/src/` (`reclear.rs:334` to `:359`). Plan change D-5158 (Fable, option (a)): D-4763's Stripe cancel is dropped. The same file must also show, for a `payment_intent.succeeded` on the ended intent after a $0 release: (a) after a declined press attempt, then the $0 press, the success queues one late-success refund task and raises one High alert (FEE-021, `late_success`, `app/payments/src/late.rs:70` to `:111`) and makes no second release; (b) with no attempt at all (`store_success`, `release_proof.rs:473` to `:482`, answers `WrongIntent` before `late_success` runs), it raises m3's High alert and makes no release. If cheap, it also shows that the press reply carries no `client_secret` once the press answers $0 (`press_reply`, `app/portals/src/confirm_pay.rs:333`, its `client_secret` filter at `:343`). Every Confirm route, waiver and release test passes unchanged; `app/payments/` keeps its 95% floor. Money: Opus worker, Opus money and security review, two review rounds. Update the `portals` and `payments` notes, `docs/architecture.md` and `docs/decisions.md`. Retry note (D-5192): the done scan `td_sec_12_status_modules_deny_wildcards_and_statuses_are_enums` (`tests/security/tests/status_enums.rs:147` to `:152`) bans the text `status: &str` anywhere in payments, test code and function parameters included: name such a parameter `outcome` (not `attempt_status`). The retry continues the pushed branch `claude/task/T754-zero-fee-after-intent` (44ec8aa).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -50108,7 +50114,8 @@
     "D-3824",
     "D-4763",
     "D-5158",
-    "D-5171"
+    "D-5171",
+    "D-5192"
    ],
    "cites": [],
    "budget": {
@@ -51199,6 +51206,196 @@
    "branch": "claude/task/T785-dispute-without-due-date",
    "prompt": "kit/prompts/T785.md",
    "acceptance": "`tests/integration/tests/dispute_no_due_date.rs` passes against PostgreSQL with every listed case, the null case failing on `main` before the change (no dispute row there); every existing dispute and refund test passes unchanged except that one TD-FEE-43 case; the migration only drops the `NOT NULL`; `app/payments/` stays at or above its branch floor."
+  },
+  {
+   "id": "T789",
+   "slug": "order-card-contact-check-token",
+   "title": "Tests (harness): TD-INT-47's no-contact check ignores the random quote-link token (flaky test fix)",
+   "goal": "Plan change D-5191 (a flaky test; it cost T615 attempts 1 and 2 on Nov 21, 2026, Ci run 44880845069; `BUILD_BRIEF.md:272`; precedent D-4196, T599). `tests/integration/tests/intake_order_card.rs:268` (T673, DONE; TD-INT-47, INT-041, CARD-007) asserts that none of `CONTACT` (`:46`: \"Testa\", \"Sample Ave\", \"555\", \"@\") is in a long card's text, and that text also holds her quote-page link `https://<domain>/q/<token>`, whose token is 64 random hex characters (`app/jobs/src/quote_token.rs:47`, `link_token`), so \"555\" turns up in it by chance in about 1.5% of runs (62 places times 16 to the minus 3). Fix, keeping the check at least as strict: in `td_int_47_a_long_card_is_shown_by_link`, cut each `/q/` followed by 64 hex characters down to `/q/` and assert the cut removed exactly one token (so a link that changes shape fails the test), then assert that no `CONTACT` item is in the rest of the text, so her fake name, street, a 555 number or an `@` anywhere in the words still fails. Narrowing \"555\" to a longer fragment for every check was rejected: it would weaken the three checks on texts with no link (`:199`, `:206`, `:299`), which stay unchanged. Sweep: grep `tests/` and `app/` for other negative `contains` checks of 3- or 4-character digit or hex strings on a text holding a random token, and report any new case in the hand-in; this task changes only its one file. Nothing in the app changes.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T673"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "low",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "harness"
+   ],
+   "owns": [
+    "tests/integration/tests/intake_order_card.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "app/jobs/src/quote_token.rs",
+    "app/core/src/ids.rs",
+    "docs/spec/intake.md",
+    "docs/spec/job-cards.md"
+   ],
+   "requirements": [
+    "INT-041",
+    "CARD-007"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-5191",
+    "D-4196"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 40,
+    "context_pct": 17
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T789-order-card-contact-check-token",
+   "prompt": "kit/prompts/T789.md",
+   "acceptance": "`cargo test -p askhava-integration --test intake_order_card` passes against PostgreSQL with every case; the long-card check still fails when a `CONTACT` item is put in the text outside the link (shown in the report by a temporary local edit, not committed) and passes for any token; the other `CONTACT` checks are unchanged; the report lists the sweep's grep and its result."
+  },
+  {
+   "id": "T786",
+   "slug": "server-guide-trim",
+   "title": "server: crate guide trimmed to 5,500 bytes, the detail moved word for word to NOTES.md",
+   "goal": "Plan change D-5193 (blocked lanes under the scope freeze, D-4824 clause (1); D-5172, D-5080, D-4433). `app/server/CLAUDE.md` is 7,462 bytes on `main`, over D-5080's 7,392, so the runner holds tasks that write `server` (D-5172 dropped its trim when a task claimed the crate first). Trim it to at most 5,500 bytes by D-5172's method (D-4433, by hand per item): whole pieces, cut at a sentence end or \"; \", move word for word from `CLAUDE.md` to `NOTES.md` as `- [REQ-IDS] (never N) text` entries (the IDs each piece names, else the item's); every kept item keeps its leading IDs, every requirement ID it names and its guarding test, and ends \"More: `(never N)` in NOTES.md.\"; an item already pointed keeps its N and its new entries go right after its existing `(never N)` entries; a new N is the item's position, never one in use. Nothing is deleted or reworded; a piece that limits or excepts a kept rule stays with that rule: the SIGTERM drain clause and TD-SEC-41's duty sentence stay (D-5172). The proof is the full list of lost words and sentences, not `--verify`'s output (it prints only the first five and already reports items on `main`): run `python3 -c \"import sys,subprocess;sys.path.insert(0,'scripts');import split_crate_doc as s;c=sys.argv[1];o=subprocess.run(['git','show','origin/main:app/'+c+'/CLAUDE.md'],capture_output=True,text=True,check=True).stdout;print(s.lost(o,open('app/'+c+'/CLAUDE.md').read(),open('app/'+c+'/NOTES.md').read()))\" server` (`split_crate_doc.lost(old, guide_text, notes_text)`) once on unchanged `main` and once on the head, and quote both outputs in the hand-in; they must be identical. If 5,500 cannot be reached without cutting inside a rule, stop at the smallest size the method reaches and report the remaining items with their bytes. No code changes. `app/server/NOTES.md` is a shared path (D-3474), so this task owns only the guide.",
+   "type": "docs",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T009"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [],
+   "owns": [
+    "app/server/CLAUDE.md"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "scripts/split_crate_doc.py"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-5193",
+    "D-4433"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 200,
+    "context_pct": 7
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T786-server-guide-trim",
+   "prompt": "kit/prompts/T786.md",
+   "acceptance": "`wc -c app/server/CLAUDE.md` is at most 5,500 (or the hand-in reports why not); the full `split_crate_doc.lost` list (the goal's command) is identical on unchanged `main` and on the head, both outputs quoted; `python3 scripts/check_code_docs.py` reports 0 problems; no file outside the two is changed."
+  },
+  {
+   "id": "T787",
+   "slug": "intake-guide-trim",
+   "title": "intake: crate guide trimmed to 5,500 bytes, the detail moved word for word to NOTES.md",
+   "goal": "Plan change D-5193 (blocked lanes under the scope freeze, D-4824 clause (1); D-5172, D-5080, D-4433). `app/intake/CLAUDE.md` is 8,162 bytes on `main`, over D-5080's 7,392, so the runner holds tasks that write `intake` (D-5172 dropped its trim when a task claimed the crate first). Trim it to at most 5,500 bytes by D-5172's method (D-4433, by hand per item): whole pieces, cut at a sentence end or \"; \", move word for word from `CLAUDE.md` to `NOTES.md` as `- [REQ-IDS] (never N) text` entries (the IDs each piece names, else the item's); every kept item keeps its leading IDs, every requirement ID it names and its guarding test, and ends \"More: `(never N)` in NOTES.md.\"; an item already pointed keeps its N and its new entries go right after its existing `(never N)` entries; a new N is the item's position, never one in use. Nothing is deleted or reworded; a piece that limits or excepts a kept rule stays with that rule: \"Consent first ...\" with its 911-before-consent sentences, the emergency item's \"each emergency job of a request once\", the close item (never 13) with its opt-out piece \"... only CANCEL or CANCELAR alone pauses;\", the walker item's `may_text` sentence, the ZIP and consent-sweep privacy items and the web-chat refusal stay in the guide (D-5172 and its review). The proof is the full list of lost words and sentences, not `--verify`'s output (it prints only the first five and already reports items on `main`): run `python3 -c \"import sys,subprocess;sys.path.insert(0,'scripts');import split_crate_doc as s;c=sys.argv[1];o=subprocess.run(['git','show','origin/main:app/'+c+'/CLAUDE.md'],capture_output=True,text=True,check=True).stdout;print(s.lost(o,open('app/'+c+'/CLAUDE.md').read(),open('app/'+c+'/NOTES.md').read()))\" intake` (`split_crate_doc.lost(old, guide_text, notes_text)`) once on unchanged `main` and once on the head, and quote both outputs in the hand-in; they must be identical. If 5,500 cannot be reached without cutting inside a rule, stop at the smallest size the method reaches and report the remaining items with their bytes. No code changes. `app/intake/NOTES.md` is a shared path (D-3474), so this task owns only the guide.",
+   "type": "docs",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T038"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [],
+   "owns": [
+    "app/intake/CLAUDE.md"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "scripts/split_crate_doc.py"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-5193",
+    "D-4433"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 200,
+    "context_pct": 7
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T787-intake-guide-trim",
+   "prompt": "kit/prompts/T787.md",
+   "acceptance": "`wc -c app/intake/CLAUDE.md` is at most 5,500 (or the hand-in reports why not); the full `split_crate_doc.lost` list (the goal's command) is identical on unchanged `main` and on the head, both outputs quoted; `python3 scripts/check_code_docs.py` reports 0 problems; no file outside the two is changed."
+  },
+  {
+   "id": "T788",
+   "slug": "crate-guide-trim-check",
+   "title": "Tooling (harness): check_pr_change.py fails a task branch that leaves an over-limit crate guide untrimmed (D-5080)",
+   "goal": "Plan change D-5193 (D-5080, D-5172; scope freeze D-4824 clause (1)): D-5080's \"Trim when alone\" (`docs/code-docs.md` section 2) is a rule no machine checks, so T674 merged without it and lanes stood idle (D-5172). Add rule 6 to `scripts/check_pr_change.py` (its module docstring lists it), on `claude/task/T###` branches only: the claim base is the parent of the oldest commit in `git rev-list --first-parent HEAD --not <the --base ref>`; for each crate the task writes (its owned `app/<crate>/` paths plus its `module`), if the claim base's `app/<crate>/CLAUDE.md` is over 7,392 bytes, the head's must be at most 5,500, else an error naming the crate, both sizes and D-5080's steps (move the oldest `## Never break` bullets' detail word for word to `NOTES.md` as `(never N)` lines, keep each invariant and its guarding test, end the bullet \"More: `(never N)` in NOTES.md.\", run `python3 scripts/split_crate_doc.py --verify origin/main app/<crate>`). The rule is skipped when the claim base's own `scripts/check_pr_change.py` does not have it (so tasks claimed before it merged are not held), when the claim base cannot be found, and on any other branch; because it compares with the claim base, an update merge of `main` never trips it. `docs/code-docs.md` section 2's \"Trim when alone\" paragraph gains one sentence saying `check_pr_change.py` rule 6 checks it on task branches. New cases in `tests/test_check_pr_change.py` on throwaway git repos: over 7,392 at the claim base and untrimmed fails; trimmed to 5,500 passes; under 7,392 at the claim base passes even if it grows; a claim base without the rule skips; a non-task branch skips; growth that arrives only by a merge of `main` passes. Rewrite `kit/plan.lock` (`python3 scripts/check_plan_lock.py --write`).",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "ops",
+   "deps": [
+    "T786",
+    "T787"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    "scripts/check_pr_change.py",
+    "tests/test_check_pr_change.py",
+    "docs/code-docs.md"
+   ],
+   "reads": [
+    "scripts/split_crate_doc.py",
+    "scripts/check_plan_lock.py"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-5193"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 250,
+    "context_pct": 10
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T788-crate-guide-trim-check",
+   "prompt": "kit/prompts/T788.md",
+   "acceptance": "`python3 -m pytest tests/test_check_pr_change.py` passes with every existing case unchanged and each new case listed in the goal; `python3 scripts/check_pr_change.py --base origin/main` passes on this branch; `python3 scripts/check_plan_lock.py` matches."
   }
  ]
 }

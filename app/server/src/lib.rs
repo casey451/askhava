@@ -2022,7 +2022,8 @@ const HOMEOWNER_NUMBER: &str = "ASKHAVA_HOMEOWNER_NUMBER";
 /// unsent (D-3149); unset in dev and CI the line has no sender and rows wait (TXT-022). The caller
 /// adds the business side (`with_business`: [`NoticeChecks`] as the CON-019 gate and
 /// `business_text_phone` as the phone reader, D-4051, D-4913); its number is `None` until T526
-/// passes the configured one, so business rows wait.
+/// passes the configured one, so business rows wait. A given-up homeowner text's call-back takes
+/// its urgency from `intake` ([`IntakeUrgency`], INT-023, TXT-015, D-4052).
 ///
 /// # Errors
 ///
@@ -2041,7 +2042,32 @@ fn outbox_sender(
             .or_else(|_| PostalAddress::new(line, MailboxKind::PrivateMailbox))
             .ok()
     });
-    OutboxSender::new(keys, sms, (number, postal), clock).map_err(io::Error::other)
+    OutboxSender::new(keys, sms, (number, postal), clock)
+        .map(|sender| sender.with_urgency(Arc::new(IntakeUrgency)))
+        .map_err(io::Error::other)
+}
+
+/// The outbox sender's call-back urgency source (INT-023, TXT-015, D-4052):
+/// `intake::api::contact_urgent`, `Urgent` when her open or latest request counts as urgent; a
+/// read error is an error, so the sender holds the row for its retry.
+struct IntakeUrgency;
+
+impl askhava_messaging::api::UrgencySource for IntakeUrgency {
+    fn urgency<'a>(
+        &'a self,
+        conn: &'a mut sqlx::PgConnection,
+        contact: Uuid,
+        now: jiff::Timestamp,
+    ) -> askhava_messaging::api::UrgencyRead<'a> {
+        use askhava_messaging::api::{OutboxError, Urgency};
+        Box::pin(async move {
+            match askhava_intake::api::contact_urgent(conn, contact, now).await {
+                Ok(true) => Ok(Urgency::Urgent),
+                Ok(false) => Ok(Urgency::NoRush),
+                Err(_) => Err(OutboxError::Database),
+            }
+        })
+    }
 }
 
 /// TXT-035, D-3881, D-3882 (T526): the business line's own sending number from the trimmed
