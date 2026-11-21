@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T15:34:33Z by runner e133fb18d6ae (actions).
+Updated 2026-11-21T15:36:44Z by runner e133fb18d6ae (actions).
 
 **Building: T655 in progress since 13:31Z; 580 of 730 done; week 29% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 580 of 730 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T655 claimed 13:31Z, lease until 16:31Z; lane 4: T789 claimed 15:10Z, lease until 18:10Z
-- **Week:** 29% used, 132.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:26Z, 7 min before this update
+- **Lane:** lane 2: T655 claimed 13:31Z, lease until 16:31Z; lane 4: T789 claimed 15:10Z, lease until 18:10Z; lane 5: T787 claimed 15:36Z, lease until 18:36Z
+- **Week:** 29% used, 133.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 15:34Z, 1 min before this update
 - **Keeper:** last ran 15:26Z, next wake 16:33Z
 
 ## Needs attention
@@ -100,7 +100,6 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 | T771 | a11y tests (harness): reflow_spacing's hidden-control check  | done | 2 | 50 min | 16:34Z | PLAN GAP: kit/prompts/T771.md:9 (D-4970, docs/decisions.md:2604) contradicts itself: rule (1) checks the hidden Menu sum |
 | T664 | portals: the Confirm press re-checks the license and account | BLOCKED | 1 | 5 min | 16:15Z |  |
 | T684 | picks and server: the open-cards email goes at the times eac | BLOCKED | 1 | 4 min | 15:41Z |  |
-| T770 | ci (harness): the Coverage job's time limit goes from 25 to  | done | 1 | 61 min | 15:35Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -136,7 +135,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-21T14:38:18Z (week)): week: 61.2M used, 132.8M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T14:23:45Z.
+- Pacing (session_reading 2026-11-21T15:25:44Z (week)): week: 60.2M used, 133.8M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-06T10:20:42Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -154,6 +153,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T655 (lease until 2026-11-21T16:31:07Z)
 - lane 4: T789 (lease until 2026-11-21T18:10:14Z)
+- lane 5: T787 (lease until 2026-11-21T18:36:33Z)
 
 ## Last usage reading
 - {"task": "T304", "at": "2026-11-21T15:18:26Z", "cache_read_input_tokens": 28000006, "output_tokens": 131783, "cache_creation_input_tokens": 494437, "input_tokens": 327}
