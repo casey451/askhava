@@ -384,7 +384,7 @@ button:active {
 }
 
 /* A wide table scrolls inside its own keyboard-focusable region, never the page (A11Y-008, D-5159). */
-[role="region"][tabindex="0"] { overflow-x: auto; }
+[role="region"][tabindex="0"] { overflow-x: auto; overflow-wrap: anywhere; }
 
 /* The home hero (T216; DESIGN_SPEC sections 4, 5 and 9; D-4252). Phones: the photo runs edge to
    edge under the header, a strip as tall as the first screen allows, so the photo and the
