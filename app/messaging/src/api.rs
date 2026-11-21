@@ -117,6 +117,8 @@ pub use crate::optout_email::{
     OPTOUT_CONFIRMATION_EMAIL, OPTOUT_WROTE_AGAIN_EMAIL, OptOutEmailSender, WROTE_AGAIN_ACTION,
     WroteAgain, queue_optout_confirmation_email, queue_optout_wrote_again, render_wrote_again,
 };
+pub use crate::outbox_sender::UrgencyRead;
+pub use crate::outbox_sender::UrgencySource;
 pub use crate::outbox_sender::{
     CLOSE_TEXTS, EXPIRED_ACTION, LinePhones, NoBusiness,
     OUTCOME_UNKNOWN_ALERT as SEND_OUTCOME_UNKNOWN_ALERT, OutboxSender, PhoneUnread, SEND_DUE_KIND,
