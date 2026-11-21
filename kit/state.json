@@ -101064,7 +101064,7 @@
     "T373",
     "T280"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "sign-in-code-current-number",
    "type": "build",
@@ -101078,17 +101078,8 @@
     5105,
     5106
    ],
-   "reason": "plan gap reported: PLAN GAP: outside ownership: app/server/tests/business_signin_route.rs\nT777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_code_goes_to_the_members_own_line_else_own_address (business_signin_route.rs:447), which links a non-owner line (helper `line()` lines 181-192, never approve_phone) and expects SMS. T777 owns only sign_in_lines.rs and sign_in_number_change.rs and requires existing sign-in tests unchanged. Smallest plan change: add that file to T777's owned paths so the helper can have the owner approve the line. Reviewer confirmed (PLAN-GAP: CONFIRMED).; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T777 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: outside ownership: app/server/tests/business_signin_route.rs\nT777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_code_goes_to_the_members_own_line_else_own_address (business_signin_route.rs:447), which links a non-owner line (helper `line()` lines 181-192, never approve_phone) and expects SMS. T777 owns only sign_in_lines.rs and sign_in_number_change.rs and requires existing sign-in tests unchanged. Smallest plan change: add that file to T777's owned paths so the helper can have the owner approve the line. Reviewer confirmed (PLAN-GAP: CONFIRMED).",
-   "plan_gap": {
-    "at": "2026-11-21T02:09:30Z",
-    "problems": [
-     "outside ownership: app/server/tests/business_signin_route.rs"
-    ],
-    "paths": [
-     "app/server/tests/business_signin_route.rs"
-    ]
-   },
+   "reason": null,
+   "last_failure": "PLAN GAP: outside ownership: app/server/tests/business_signin_route.rs\nT777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_code_goes_to_the_members_own_line_else_own_address (business_signin_route.rs:447), which links a non-owner line (helper `line()` lines 181-192, never approve_phone) and expects SMS. T777 owns only sign_in_lines.rs and sign_in_number_change.rs and requires existing sign-in tests unchanged. Smallest plan change: add that file to T777's owned paths so the helper can have the owner approve the line. Reviewer confirmed (PLAN-GAP: CONFIRMED).\nre-queued after plan fix D-5117: number-version consent only (D-5117)",
    "history": [
     {
      "attempt": 1,
@@ -101112,6 +101103,21 @@
        "turns": 6
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-21T04:22:02Z",
+     "reason": "number-version consent only (D-5117)",
+     "by": "manual-089baa95de44",
+     "was": "plan gap reported: PLAN GAP: outside ownership: app/server/tests/business_signin_route.rs\nT777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_code_goes_to_the_members_own_line_else_own_address (business_signin_route.rs:447), which links a non-owner line (helper `line()` lines 181-192, never approve_phone) and expects SMS. T777 owns only sign_in_lines.rs and sign_in_number_change.rs and requires existing sign-in tests unchanged. Smallest plan change: add that file to T777's owned paths so the helper can have the owner approve the line. Reviewer confirmed (PLAN-GAP: CONFIRMED).; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T777 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-5117",
+     "plan_since": "2026-11-21T01:31:36Z",
+     "plan_base": "e6f56fd39ecb1dfbae3fef391a31d796541531e8",
+     "plan_head": "d772bd88b2c9e911de0008f81fa040b53ee52344",
+     "plan_then": "0a85192ee838a685f639cc6520df24b7a65074449f51a1c6a32f95c40ec51663",
+     "plan_now": "83be4484cf56a121f937ccbf5d6133929a72a0a383387c40b3a7e7af348767b8"
     }
    ]
   },
@@ -108245,7 +108251,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T04:21:56Z",
+ "updated_at": "2026-11-21T04:22:04Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -108343,8 +108349,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "5b6d2a6f40436fdc35ea0ceecb31185ac9e70dd2",
- "starter": "actions",
+ "runner_sha": "d772bd88b2c9e911de0008f81fa040b53ee52344",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "241af707947a9b3a020ebf68aa8c651b7f2e164b",

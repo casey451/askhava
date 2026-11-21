@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T04:21:56Z by runner 5b6d2a6f4043 (actions).
+Updated 2026-11-21T04:22:04Z by runner d772bd88b2c9 (manual).
 
 **Building: T614 in progress since 03:43Z; 569 of 726 done; week 63% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -20,16 +20,13 @@ Evidence: part (3) needs `now` (the caller's worker clock) in card_pool/one_busi
 T754 requires cancelling the PaymentIntent at Stripe after a $0 press, but PaymentsAdapter/IntentStripe (app/adapters/src/payments.rs:343-397, app/payments/src/charge.rs:67) have no cancel method and stand_ins/stripe.py and stand_ins/server.py (route at server.py:457) have no cancel route. None is owned by T754 (owns confirm_pay.rs, release_proof.rs, routes.rs, zero_fee_after_intent.rs); stand_ins/ is protected. Existing callers of end_intent_unless_charging (confirm_moves.rs:137, cant_take.rs, ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T754 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T776: plan gap reported: PLAN GAP: outside ownership: app/intake/src/matching.rs
 Worker: matching.rs:52 keyword RULES cover only plumbing, HVAC, electrical, handyman, pool, so no text reaches `tell` as local_moving, home_watch or turnover_cleaning; the T776 refusals can't be reached or tested end to end. matching.rs is owned by T042/T183/T716, not T776. Reviewer (Opus) confirmed: integration test intake_refusals_wired 0 passed, 3 failed (no trade read, nothing sent). Smallest fix: add keyword rules for those three trades (from docs/catalog/categories.yaml) in matching.rs, by a prior task or by adding matching.rs to T7; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T776 --plan-fix D-### --reason "..."` (D-2859)
-- BLOCKED T777: plan gap reported: PLAN GAP: outside ownership: app/server/tests/business_signin_route.rs
-T777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_code_goes_to_the_members_own_line_else_own_address (business_signin_route.rs:447), which links a non-owner line (helper `line()` lines 181-192, never approve_phone) and expects SMS. T777 owns only sign_in_lines.rs and sign_in_number_change.rs and requires existing sign-in tests unchanged. Smallest plan change: add that file to T777's owned paths so the helper can have the owner approve the line. Reviewer confirmed (PLAN-GAP: CONFIRMED).; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T777 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T654 (since 2026-11-21T02:42:55Z, no attempt used; a plan change fixes it): outside ownership: app/quotes/src/service.rs, app/quotes/src/late_cards.rs, app/intake/src/cards_out.rs, app/intake/src/order_dispatch.rs, tests/integration/tests/card_pool_queries.rs, tests/integration/tests/radius_matching.rs
 - PLAN GAP T674 (since 2026-11-21T01:25:56Z, no attempt used; a plan change fixes it): outside ownership: tests/a11y/fixtures.ts — GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PAGE_STATES entry cannot cover a JPEG or 404). The file is owner-only since T267 moved the registry (page_states.ts:7-8); T674's Scope shares it only until then, and only for PAGE_STATES rows. Reviewer confirmed: no task grants that line (T766 does not). plan_pages.py gives a false negative for T674 because its goal mentions page_states.ts. Smallest plan change: grant T674 the one NOT_PAGES line in fixtures.ts. Worker's uncommitted work was not committed.
 - PLAN GAP T754 (since 2026-11-21T02:52:28Z, no attempt used; a plan change fixes it): outside ownership: app/adapters/src/payments.rs, stand_ins/stripe.py, stand_ins/server.py
 - PLAN GAP T776 (since 2026-11-21T04:00:50Z, no attempt used; a plan change fixes it): outside ownership: app/intake/src/matching.rs
-- PLAN GAP T777 (since 2026-11-21T02:09:30Z, no attempt used; a plan change fixes it): outside ownership: app/server/tests/business_signin_route.rs
-- Strict plan check red: 55 problem(s) on tasks still to run (+444 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 57 problem(s) on tasks still to run (+450 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -118,31 +115,31 @@ T777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 359 of 735 (48.8%) · partial 357 · unstarted 19
+**Requirements verified:** 96 of 735 (13.1%) · partial 620 · unstarted 19
 **Tasks merged (throughput only):** 569 of 726
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 18 | 17 | 0 | 35 |
-| ai | 8 | 18 | 3 | 29 |
-| businesses | 22 | 35 | 1 | 58 |
-| calls | 15 | 10 | 0 | 25 |
-| consent | 17 | 18 | 0 | 35 |
-| fees | 25 | 27 | 0 | 52 |
-| intake | 12 | 31 | 0 | 43 |
-| job-cards | 12 | 12 | 0 | 24 |
-| licensing | 31 | 17 | 0 | 48 |
-| lifecycle | 21 | 7 | 0 | 28 |
-| messaging | 26 | 19 | 0 | 45 |
-| ops-recovery | 13 | 29 | 12 | 54 |
-| privacy | 10 | 21 | 0 | 31 |
-| quiet-hours | 3 | 6 | 0 | 9 |
-| quotes-pick | 25 | 31 | 0 | 56 |
-| recurring | 10 | 1 | 0 | 11 |
-| security | 13 | 39 | 3 | 55 |
-| terms | 29 | 6 | 0 | 35 |
+| accessibility | 3 | 32 | 0 | 35 |
+| ai | 1 | 25 | 3 | 29 |
+| businesses | 1 | 56 | 1 | 58 |
+| calls | 1 | 24 | 0 | 25 |
+| consent | 3 | 32 | 0 | 35 |
+| fees | 1 | 51 | 0 | 52 |
+| intake | 1 | 42 | 0 | 43 |
+| job-cards | 0 | 24 | 0 | 24 |
+| licensing | 0 | 48 | 0 | 48 |
+| lifecycle | 0 | 28 | 0 | 28 |
+| messaging | 2 | 43 | 0 | 45 |
+| ops-recovery | 10 | 32 | 12 | 54 |
+| privacy | 1 | 30 | 0 | 31 |
+| quiet-hours | 0 | 9 | 0 | 9 |
+| quotes-pick | 0 | 56 | 0 | 56 |
+| recurring | 3 | 8 | 0 | 11 |
+| security | 2 | 50 | 3 | 55 |
+| terms | 27 | 8 | 0 | 35 |
 | website | 20 | 10 | 0 | 30 |
-| wording | 29 | 3 | 0 | 32 |
+| wording | 20 | 12 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
