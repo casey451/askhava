@@ -8,7 +8,7 @@
 //! business ticked and whose card it does not hold, and for each, in one transaction, locks the
 //! job's row (`jobs::api::lock_for_quote_change`), goes on only while the job `takes_late_cards`
 //! (Open or No quotes yet), builds the pool from the stored card and the job's town as the card
-//! sender does (`card_pool`), keeps in it only the job's card holders and the business itself (so
+//! sender does (`card_pool_at` at its `now`), keeps in it only the job's card holders and the business itself (so
 //! only that business can get a new card, and overflow still reads the holders), records the cards
 //! through [`send_late_cards_in_reach`] (sent now, so each card's 24 hours start now) and queues
 //! its notice: `queue_card_notice`, or
@@ -38,7 +38,7 @@ use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection, PgPool};
 
 use crate::card_notices::{CardNotice, queue_card_notice};
-use crate::card_pool::{CardPool, card_pool};
+use crate::card_pool::{CardPool, card_pool_at};
 use crate::emergency_card_notice::queue_emergency_card;
 use crate::job_text::{StoredCard, description, sent_card};
 use crate::models::{self, CardLines, Pool, QuotesError, Recipient};
@@ -157,7 +157,7 @@ async fn job_late_cards(
         .await?
         .map(|d| d.text())
         .unwrap_or_default();
-    let pool = card_pool(&mut tx, ((&town, None), &stored.facts), text, None).await?;
+    let pool = card_pool_at(&mut tx, ((&town, None), &stored.facts), text, None, now).await?;
     let holders = models::card_holders(&mut tx, job).await?;
     let kept: Vec<_> = pool
         .businesses

@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM licensing.license_check WHERE business_id = $1 AND list_date = (SELECT max(list_date) FROM licensing.list_import WHERE source = 'roc')) AS \"checked!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "checked!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "e94488db85e154203814744685765441a0ed93081b9cccd45428e89ae8b02c43"
+}
