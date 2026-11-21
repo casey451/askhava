@@ -3592,6 +3592,7 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 - **A.R.S. 3-3633 not checked (D-5216):** the termite report moves to pest control on the trade notes' reading of A.R.S. 3-3633 (wood-destroying insect reports are a pest licensee's work); that statute was not independently verified.
 - **Spanish style notes for the paid review (D-5222):** from the first AI back-translation: "el dueño" reads as male; "PARAR para salir" is stiff; "Se canceló su suscripción" can sound like a paid plan; "Por ahora seguimos en inglés" is vague. These wait for the professional review (CON-018 and CON-031 pin the first two).
 - **Duplicate `under_18` in es.json (D-5222):** `app/messaging/templates/es.json` holds the `under_18` key twice (`:75` and `:213`), so the second copy wins when the file is read; T791 changes both, and a later cleanup removes the first.
+- **List-Unsubscribe on card emails (D-5231, your call: "Defer to post-launch"):** TXT-045's List-Unsubscribe and one-click headers on job-card and open-cards emails are not built; T147 was recorded done with them, so TD-TXT-27 is unmet until a later task adds them.
 
 ## The monthly backup test checks the backup's record (D-4835)
 
@@ -3699,3 +3700,9 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 - **AI:** before you say 'go live' at Gate C you turn "AI on scrubbed text" on in the owner portal and run the phone rehearsal with it on. Gate C no longer accepts a written note launching without the AI writing calls; that work (T394) must be done.
 - **Termite report:** "termite report for a sale or loan" becomes a pest-control job, only for a pest business that says it holds the wood-destroying category, and it stays free of the introduction fee. T790 makes the catalog and test change.
 - **Keywords:** T716 adds 42 checked keyword phrases for when the AI is off.
+
+## Outside code review 3 (D-5228 to D-5232, November 21)
+
+- **Fixed by tasks:** a START racing an opt-out re-key now takes the number lock (T738); Confirm reminders follow the night hold and every business notice waits for each recipient's own time zone (T792); business notice emails no longer go out at night from the email queue (T793).
+- **Sign-in link exception (D-5231):** the business-notice sign-in link keeps its code in the web address. It opens no session; it only offers a button that emails the same person a one-time 15-minute link, and the page tells browsers not to pass the address on. The privacy and security rules now name this as their one exception.
+- **Spanish check (D-5232):** ChatGPT's blind back-translation of the 8 final Spanish texts matched all 8; the second AI's check (Grok) is still to do.

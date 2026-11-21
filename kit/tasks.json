@@ -38052,7 +38052,8 @@
     "T760",
     "T784",
     "T785",
-    "T791"
+    "T791",
+    "T793"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -49229,7 +49230,7 @@
    "id": "T738",
    "slug": "owner-settings-errors",
    "title": "portals and server: owner settings refusals show an accessible error, and the opt-out and Stripe-answer filings are audit-logged",
-   "goal": "Plan change D-4727 (F and G; A11Y-030, CON-035, PICK-048, SEC-006, SEC-043; D-3753, D-3878). (F) A refused owner settings change (T484's opt-out number and Stripe answer, T310's category switches) answers 400 with the plain page again (`not_made`, `app/server/src/owner_portal.rs:282`): no \"Error: \" title, summary, field link, `aria-invalid` or kept value, because `SettingsNotice` (`app/portals/src/owner_portal.rs:953`) is success-only and `owner_settings.html:6` takes no error. Follow T540's `owner_release.html` pattern: the settings page takes an optional error naming its form and field and the typed value (never logged; the phone stays redacted in `Debug`); `not_made` passes it on `Refused`; the page shows \"Error: \" in the title, a focused summary linking the field, the message by the field with `aria-invalid` and `aria-describedby`, the value kept; the step-up and database answers stay as they are. (G) `owner_record_opt_out` (`:1053`, through `messaging::api::suppress`, `app/messaging/src/optout.rs:311`) and `owner_file_stripe_answer` (`:1095`, through `quotes::api::file_stripe_answer`, `app/quotes/src/auto_confirm_box.rs:262`) write no `ops.audit_log` row (SEC-006: every owner action). Each now runs in one portals transaction with one `Actor::Owner` audit row of IDs only: the opt-out event's ID (a new `suppress_logged` in `optout.rs` beside `suppress` returns it with the newly-listed flag; `suppress` and its callers are unchanged) and the new `quotes.stripe_written_answer` row's ID (`file_stripe_answer` returns it); no phone, digest or reference in the row. A repeat opt-out of a listed number writes its audit row too. Tests in the new `app/server/tests/owner_settings_errors.rs` (TD-SEC-81), the assembled router with T303's owner session, fake data only. Update `docs/decisions.md`. After T712 (the last queued owner of `app/server/src/owner_portal.rs`, after T527 for the portals file and template) and T645 (the queued owner of `optout.rs`).",
+   "goal": "Plan change D-4727 (F and G; A11Y-030, CON-035, PICK-048, SEC-006, SEC-043; D-3753, D-3878). (F) A refused owner settings change (T484's opt-out number and Stripe answer, T310's category switches) answers 400 with the plain page again (`not_made`, `app/server/src/owner_portal.rs:282`): no \"Error: \" title, summary, field link, `aria-invalid` or kept value, because `SettingsNotice` (`app/portals/src/owner_portal.rs:953`) is success-only and `owner_settings.html:6` takes no error. Follow T540's `owner_release.html` pattern: the settings page takes an optional error naming its form and field and the typed value (never logged; the phone stays redacted in `Debug`); `not_made` passes it on `Refused`; the page shows \"Error: \" in the title, a focused summary linking the field, the message by the field with `aria-invalid` and `aria-describedby`, the value kept; the step-up and database answers stay as they are. (G) `owner_record_opt_out` (`:1053`, through `messaging::api::suppress`, `app/messaging/src/optout.rs:311`) and `owner_file_stripe_answer` (`:1095`, through `quotes::api::file_stripe_answer`, `app/quotes/src/auto_confirm_box.rs:262`) write no `ops.audit_log` row (SEC-006: every owner action). Each now runs in one portals transaction with one `Actor::Owner` audit row of IDs only: the opt-out event's ID (a new `suppress_logged` in `optout.rs` beside `suppress` returns it with the newly-listed flag; `suppress` and its callers are unchanged) and the new `quotes.stripe_written_answer` row's ID (`file_stripe_answer` returns it); no phone, digest or reference in the row. A repeat opt-out of a listed number writes its audit row too. Tests in the new `app/server/tests/owner_settings_errors.rs` (TD-SEC-81), the assembled router with T303's owner session, fake data only. Update `docs/decisions.md`. After T712 (the last queued owner of `app/server/src/owner_portal.rs`, after T527 for the portals file and template) and T645 (the queued owner of `optout.rs`). Plan change D-5228 (outside code review 3, verified by Opus; closes D-5014's open item; CON-015, CON-022, CON-035, D-4418): (H) the START arm of `on_inbound_text` (`Classified::Resubscribe if listed`, `app/messaging/src/optout.rs:178` to `:190`) calls `lock_number(&mut tx, &digests)` before `insert_optout_event` and `lift_suppression`, so a START during a suppression re-key waits for the re-key's commit and then lifts every row, the new active-version row included, and the number ends unsuppressed; nothing else in the arm changes, and `suppress` and its callers are unchanged. The race test is the new `tests/integration/tests/start_rekey_race.rs` (TD-CON-38), fake numbers only.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -49252,7 +49253,8 @@
     "app/server/src/owner_portal.rs",
     "app/messaging/src/optout.rs",
     "app/quotes/src/auto_confirm_box.rs",
-    "app/server/tests/owner_settings_errors.rs"
+    "app/server/tests/owner_settings_errors.rs",
+    "tests/integration/tests/start_rekey_race.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -49270,21 +49272,24 @@
     "CON-035",
     "PICK-048",
     "SEC-006",
-    "SEC-043"
+    "SEC-043",
+    "CON-015"
    ],
    "tests": [
-    "TD-SEC-81"
+    "TD-SEC-81",
+    "TD-CON-38"
    ],
    "decisions": [
     "D-3753",
     "D-3878",
-    "D-4727"
+    "D-4727",
+    "D-5228"
    ],
    "cites": [],
    "budget": {
-    "files": 6,
-    "lines": 500,
-    "context_pct": 27
+    "files": 7,
+    "lines": 560,
+    "context_pct": 34
    },
    "checks": [
     "Ci",
@@ -49293,7 +49298,7 @@
    ],
    "branch": "claude/task/T738-owner-settings-errors",
    "prompt": "kit/prompts/T738.md",
-   "acceptance": "TD-SEC-81 passes through the assembled router; Ally passes on the error states; every owner portal, opt-out and auto-confirm box test passes unchanged."
+   "acceptance": "TD-SEC-81 passes through the assembled router; TD-CON-38 passes against PostgreSQL; Ally passes on the error states; every owner portal, opt-out and auto-confirm box test passes unchanged."
   },
   {
    "id": "T739",
@@ -51556,6 +51561,121 @@
    "branch": "claude/task/T791-spanish-stay-on-wording",
    "prompt": "kit/prompts/T791.md",
    "acceptance": "`cargo test -p askhava-intake --lib -- safety_text conversation` and `cargo test -p askhava-messaging` pass; the template registry test reports no segment count above its recorded value; the three texts in `es.json` read exactly as the goal says and nothing else in `es.json` changes."
+  },
+  {
+   "type": "build",
+   "phase": 2,
+   "stage": "6",
+   "module": "messaging",
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance",
+    "privacy"
+   ],
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "cites": [],
+   "id": "T792",
+   "slug": "notice-emergency-and-zones",
+   "title": "messaging and picks: a business notice's night hold reads the job's real emergency flag and every recipient's area-code zone",
+   "goal": "Plan change D-5229 (outside code review 3, findings 1 and 2, verified by Opus; Fable decided; QH-004, QH-005, PICK-037; supersedes D-1829 (1)'s Arizona-only rule for business notices and restores D-767; closes D-5035's open item). (1) `parse` (`app/messaging/src/business_notices.rs:263`) reads `subject` and `first_line` whenever the payload carries them, not only under `emergency: true`, and only `emergency: true` skips the night hold (`business_notice`, `:511`); `app/picks/src/reminder_run.rs:190` passes the job's real emergency flag in place of a fixed `true`, so a Confirm reminder of a non-emergency job queued at 7:59 p.m. and sent after 8 p.m. is held to the morning (QH-004, QH-005). (2) `SendChecks` (`business_notices.rs:79`) gains each recipient's area-code zone: a new method answering the zone of a linked phone, implemented in `server` (`NoticeChecks`, `app/server/src/lib.rs:2142`, a shared path) through `LinePhones` (`app/server/src/business_text_phone.rs`), so `messaging` still never holds a business number (D-492); the whole notice holds until every recipient's window is open in the stricter of Arizona and that recipient's zone (QH-005: every channel of one notice is sent or held together), and a recipient with email only and no phone stays on Arizona time; `outbox_sender.rs`'s `NoBusiness` answers no zone. Tests in the new `tests/integration/tests/business_notice_zones.rs`, PostgreSQL, fake numbers only: a non-emergency reminder near 8 p.m. is held; an emergency one is not; a notice to a recipient in an Eastern area code at 7:30 a.m. Arizona time holds until both windows are open; an email-only recipient follows Arizona. Every business-notice test passes unchanged. Update `app/messaging/NOTES.md` and `docs/decisions.md`.",
+   "deps": [
+    "T735"
+   ],
+   "owns": [
+    "app/messaging/src/business_notices.rs",
+    "app/picks/src/reminder_run.rs",
+    "tests/integration/tests/business_notice_zones.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quiet-hours.md",
+    "docs/spec/quotes-pick.md",
+    "app/server/src/business_text_phone.rs",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "QH-004",
+    "QH-005",
+    "PICK-037"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-5229",
+    "D-767",
+    "D-5035"
+   ],
+   "budget": {
+    "files": 3,
+    "lines": 400,
+    "context_pct": 22
+   },
+   "branch": "claude/task/T792-notice-emergency-and-zones",
+   "prompt": "kit/prompts/T792.md",
+   "acceptance": "`tests/integration/tests/business_notice_zones.rs` passes against PostgreSQL with every case in the goal, the non-emergency reminder and the Eastern-zone cases failing on `main` before the change; every business-notice, reminder and outbox test passes unchanged; clippy and fmt clean."
+  },
+  {
+   "type": "build",
+   "phase": 2,
+   "stage": "6",
+   "module": "messaging",
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance",
+    "privacy"
+   ],
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "cites": [],
+   "id": "T793",
+   "slug": "email-quiet-drain",
+   "title": "messaging: a non-emergency business notice email carries a quiet flag and the email drain holds it at night",
+   "goal": "Plan change D-5230 (outside code review 3, finding 3, verified by Opus; Fable decided; QH-005, TXT-014). A business notice email held by the night rule can still be sent at night by the email drain, which has no hour check (`drain_one`, `app/messaging/src/email_due.rs:238`). (1) `migrations/0220_messaging_email_quiet.sql` adds a stored per-row quiet flag to the email outbox row (default false; re-check the next free number at claim time against the migration-order rule). (2) A new function in `app/messaging/src/models.rs` sets it; the business-notice path (`app/messaging/src/business_notices.rs`) calls it for each non-emergency business notice email it queues, so `app/messaging/src/email.rs` is not changed and every other email (sign-in links, receipts and anything a person just asked for) is never flagged and never held. (3) `drain_one` holds a flagged row leased outside the 8 a.m. to 8 p.m. window (the notice's own zone rule, as T792 leaves it) until the next opening, without counting a failure. Tests in the new `tests/integration/tests/email_quiet_drain.rs`, PostgreSQL, fake addresses only: a flagged business notice email leased at 9 p.m. is held to the morning and then sent once; an unflagged sign-in email at 9 p.m. goes at once; an emergency notice email is never flagged. Every email drain test passes unchanged. Update `app/messaging/NOTES.md` and `docs/decisions.md`.",
+   "deps": [
+    "T792"
+   ],
+   "owns": [
+    "app/messaging/src/email_due.rs",
+    "app/messaging/src/models.rs",
+    "app/messaging/src/business_notices.rs",
+    "migrations/0220_messaging_email_quiet.sql",
+    "tests/integration/tests/email_quiet_drain.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quiet-hours.md",
+    "docs/spec/messaging.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "QH-005",
+    "TXT-014"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-5230",
+    "D-5229"
+   ],
+   "budget": {
+    "files": 5,
+    "lines": 450,
+    "context_pct": 27
+   },
+   "branch": "claude/task/T793-email-quiet-drain",
+   "prompt": "kit/prompts/T793.md",
+   "acceptance": "`tests/integration/tests/email_quiet_drain.rs` passes against PostgreSQL, the 9 p.m. case failing on `main` before the change; every email drain, business-notice and email test passes unchanged; the migration only adds the column; clippy and fmt clean."
   }
  ]
 }
