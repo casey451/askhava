@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T20:43:57Z by runner c9349629907b (manual).
+Updated 2026-11-21T20:55:27Z by runner c9349629907b (actions).
 
 **Building: T565 in progress since 19:19Z; 588 of 739 done; week 36% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-21T20:43:57Z by runner c9349629907b (manual).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T565 claimed 19:19Z, lease until 22:19Z; lane 4: T691 claimed 20:16Z, lease until 23:16Z; lane 5: T600 claimed 20:12Z, lease until 23:12Z; lane 6: T788 claimed 20:25Z, lease until 23:25Z
 - **Week:** 36% used, 118.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:43Z, 0 min before this update
+- **Last run:** 20:55Z, 0 min before this update
 - **Keeper:** last ran 20:41Z, next wake 22:21Z
 
 ## Needs attention
@@ -75,7 +75,6 @@ Updated 2026-11-21T20:43:57Z by runner c9349629907b (manual).
 | T752 | catalog and twin (harness): the `launch_open` comment says a | done | 1 | 39 min | 21:24Z |  |
 | T750 | docs: the privacy policy draft says an opted-out number is k | done | 1 | 38 min | 21:20Z |  |
 | T558 | Decisions digest, piece 13: the next entries after the heade | done | 1 | 28 min | 20:57Z |  |
-| T682 | picks: a pick waiting for Confirm gets its hourly reminders, | QUEUED | 1 | 105 min | 20:49Z |  |
 
 ### Plan and harness merges on main
 - none
