@@ -268,3 +268,6 @@
 - [BIZ-032] (change) a business row's `recipient_id` is always the phone's line ID (`sender_line`); a row holding a business ID is expired, never guessed (D-4051).
 - [TXT-035 QH-007] (tests) `tests/integration/tests/outbox_business_rows.rs` (T573).
 - [TXT-035] (task 526) change: `NoticeSender::with_business_number` keeps the configured business number; `run_business_notice` passes it to `load_lines`, so a business text is stored only while the stored switch is on and that number is set, else email (D-3882, D-5070). `NoticeSender::new` is unchanged. Tests: `tests/integration/tests/business_texting_switch.rs`.
+- [TXT-013 INT-041] (task 580) change: `delivery_status` reads `blocked`, `failed` and `expired` as `Failed` and `unknown` as `Sent` (never resent), so a watching card timer stops or starts its wait instead of re-checking a dead text (D-4052, D-5087).
+- [TXT-011 TXT-014] (task 580) change: a carrier 429 or Twilio 20429 is `OutboxError::RateLimited`: released as any refusal, then held with no `record_failure`, 1 minute past the time from queueing to its current hold's end, at most 15 (1, 2, 4, 8, 15); no migration, no `Retry-After` (D-5087).
+- [SEC-028] (task 580) change: the failed-text email copy's manage link is the absolute `OnDomain("/h")` link in both parts (D-4327). Tests: `tests/integration/tests/outbox_end_states.rs`.
