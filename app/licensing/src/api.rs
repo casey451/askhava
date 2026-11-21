@@ -103,5 +103,5 @@ pub use crate::pest_report::{
 pub use crate::rules::{city_list_standing, eligibility, eligibility_for_request, inspection_fee};
 pub use crate::service::{
     DailyCheck, Freshness, ImportSummary, ReadBack, check_license, city_standing, import_city_list,
-    import_roc_list, read_back, roc_check_allows_card,
+    import_roc_list, latest_check_allows_card, read_back, roc_check_allows_card,
 };
