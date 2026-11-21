@@ -9311,3 +9311,4 @@
 - 2026-11-21T17:07:27Z runner 04d214018f8f (manual): {"T754": "BLOCKED -> QUEUED"}
 - 2026-11-21T17:07:46Z runner 04d214018f8f (manual): {"T615": "BLOCKED -> QUEUED"}
 - 2026-11-21T17:11:07Z runner d04b0752db50 (actions): {}
+- 2026-11-21T17:11:42Z runner d04b0752db50 (actions): {"T615": "QUEUED -> IN_PROGRESS"}; T615 estimated 1.7M tokens (calibrated); week has 128.7M left (no five-hour budget, D-3056) after 3.3M still running in another lane (session_reading 2026-11-21T16:58:08Z (week)); claimed
