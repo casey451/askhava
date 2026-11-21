@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T05:21:42Z by runner 5c12812e34af (actions).
+Updated 2026-11-21T05:22:08Z by runner 5c12812e34af (actions).
 
-**Building: T755 in progress since 04:14Z; 571 of 726 done; week 66% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T674 in progress since 04:40Z; 571 of 726 done; week 66% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 571 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 6: T755 claimed 04:14Z, lease until 07:14Z; lane 7: T674 claimed 04:40Z, lease until 07:40Z
+- **Lane:** lane 7: T674 claimed 04:40Z, lease until 07:40Z
 - **Week:** 66% used, 63.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:13Z, 8 min before this update
+- **Last run:** 05:13Z, 9 min before this update
 - **Keeper:** last ran 05:12Z, next wake 07:17Z
 
 ## Needs attention
@@ -26,6 +26,7 @@ Worker: matching.rs:52 keyword RULES cover only plumbing, HVAC, electrical, hand
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T755 | messaging: a sole opt-out word counts with any spacing ("STO | MERGE_PENDING | 1 | 66 min | 05:21Z |  |
 | T777 | businesses: a sign-in code is texted only to a line whose cu | MERGE_PENDING | 2 | 39 min | 05:05Z | PLAN GAP: outside ownership: app/server/tests/business_signin_route.rs / T777's approved_at filter in sign_in_lines fail |
 | T614 | site: the V6 header in base.html (links, the Menu in the pag | MERGE_PENDING | 3 | 53 min | 04:37Z | PLAN GAP: tests/integration/tests/quote_page.rs:172 (owner T052, protected) bans the word "summary" anywhere in the quot |
 | T691 | intake (harness): START into an open request resends the con | QUEUED | 1 | 27 min | 04:35Z | session ended without handing in |
@@ -151,8 +152,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 6: T755 (lease until 2026-11-21T07:14:59Z)
 - lane 7: T674 (lease until 2026-11-21T07:40:32Z)
 
 ## Last usage reading
-- {"task": "T777", "at": "2026-11-21T05:05:30Z", "cache_creation_input_tokens": 82770, "cache_read_input_tokens": 1389315, "output_tokens": 20754, "input_tokens": 67}
+- {"task": "T755", "at": "2026-11-21T05:21:40Z", "cache_creation_input_tokens": 114350, "input_tokens": 65, "cache_read_input_tokens": 1177421, "output_tokens": 21295}
