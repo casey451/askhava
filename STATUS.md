@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-21T19:07:48Z by runner 5c3d8b10405d (actions).
+Updated 2026-11-21T19:08:01Z by runner 5c3d8b10405d (actions).
 
 **Building: T690 in progress since 16:56Z; 585 of 734 done; week 33% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 585 of 734 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T690 claimed 16:56Z, lease until 19:56Z; lane 3: T707 claimed 18:35Z, lease until 21:35Z; lane 5: T791 claimed 18:44Z, lease until 21:44Z; lane 6: T790 claimed 18:10Z, lease until 21:10Z; lane 7: T754 claimed 18:25Z, lease until 21:25Z
+- **Lane:** lane 2: T690 claimed 16:56Z, lease until 19:56Z; lane 3: T707 claimed 18:35Z, lease until 21:35Z; lane 5: T791 claimed 18:44Z, lease until 21:44Z; lane 7: T754 claimed 18:25Z, lease until 21:25Z
 - **Week:** 33% used, 122.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 19:06Z, 1 min before this update
 - **Keeper:** last ran 19:06Z, next wake 19:26Z
@@ -19,6 +19,7 @@ Updated 2026-11-21T19:07:48Z by runner 5c3d8b10405d (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T790 | catalog, licensing and tests (harness): the termite report f | MERGE_PENDING | 1 | 57 min | 19:07Z |  |
 | T608 | site and portals: the home page and the quote page in full V | check_failed | 1 | 2 h 46 min | 18:46Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-21T |
 | T615 | site and server: a styled 404 page for unknown paths, the fa | MERGE_PENDING | 4 | 68 min | 18:19Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T787 | intake: crate guide trimmed to 5,500 bytes, the detail moved | done | 1 | 68 min | 16:45Z |  |
@@ -128,8 +129,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T690 (lease until 2026-11-21T19:56:59Z)
 - lane 3: T707 (lease until 2026-11-21T21:35:59Z)
 - lane 5: T791 (lease until 2026-11-21T21:44:30Z)
-- lane 6: T790 (lease until 2026-11-21T21:10:08Z)
 - lane 7: T754 (lease until 2026-11-21T21:25:20Z)
 
 ## Last usage reading
-- {"task": "T608", "at": "2026-11-21T18:46:28Z", "output_tokens": 76770, "cache_read_input_tokens": 15540822, "input_tokens": 307, "cache_creation_input_tokens": 324018}
+- {"task": "T790", "at": "2026-11-21T19:07:45Z", "output_tokens": 30739, "cache_read_input_tokens": 3557562, "cache_creation_input_tokens": 118360, "input_tokens": 128}
