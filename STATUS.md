@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T19:04:43Z by runner a51179a0d6d9 (actions).
+Updated 2026-11-21T19:04:55Z by runner a51179a0d6d9 (actions).
 
 **Building: T690 in progress since 16:56Z; 585 of 734 done; week 33% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -19,7 +19,7 @@ Updated 2026-11-21T19:04:43Z by runner a51179a0d6d9 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T608 | site and portals: the home page and the quote page in full V | MERGE_PENDING | 1 | 2 h 46 min | 18:46Z |  |
+| T608 | site and portals: the home page and the quote page in full V | check_failed | 1 | 2 h 46 min | 18:46Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-21T |
 | T615 | site and server: a styled 404 page for unknown paths, the fa | MERGE_PENDING | 4 | 68 min | 18:19Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T787 | intake: crate guide trimmed to 5,500 bytes, the detail moved | done | 1 | 68 min | 16:45Z |  |
 | T786 | server: crate guide trimmed to 5,500 bytes, the detail moved | done | 1 | 34 min | 16:33Z |  |

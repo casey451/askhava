@@ -86836,8 +86836,8 @@
     "T203",
     "T304"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "home-quote-polish",
    "type": "build",
    "stage": "5",
@@ -86855,13 +86855,54 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 222,
      "head_sha": "20cae0e25457409f38e542e0a0e67621003ecebb",
-     "pr": null,
-     "checks": null,
+     "pr": 1288,
+     "checks": [
+      {
+       "name": "Ci",
+       "conclusion": "failure"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-21T15:59:45Z",
      "ended_at": "2026-11-21T18:46:28Z",
-     "result": "MERGE_PENDING",
+     "result": "check_failed",
      "usage": {
       "worker": {
        "tokens": 14460518,
@@ -86896,7 +86937,8 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "last_failure": "Ci: failure; E2e: failure\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n{\"timestamp\":\"2026-11-21T18:51:43.176909Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1264,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-21T18:51:43.180090Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1267,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-21T18:51:43.180724Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1268,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-21T18:51:43.180840Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1270,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-21T18:51:43.181067Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1269,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-21T18:51:43.183600Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1271,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n  \u2718  112 [main] \u203a tests/e2e/who_runs_links.spec.ts:40:3 \u203a TD-WEB-10 WEB-021 WEB-022: / leaves out the record link and license while unset (100ms)\n##[error]  1) [main] \u203a tests/e2e/who_runs_links.spec.ts:40:3 \u203a TD-WEB-10 WEB-021 WEB-022: / leaves out the record link and license while unset \nCi failed at step: All five jobs passed\n##[error]Process completed with exit code 1."
   },
   {
    "id": "T609",
@@ -87566,7 +87608,7 @@
      }
     }
    ],
-   "reviewed_sha": "de21770e7ead1bc36fa0a53f3426fd3b2ccdc27a",
+   "reviewed_sha": "fde95224c8a49087b7ef7a1fafe0bc55fe239e53",
    "review_lease": {
     "task": "T615",
     "session": "actions-44926803513",
@@ -87617,6 +87659,17 @@
       "Ally": "success"
      },
      "at": "2026-11-21T18:40:17Z"
+    },
+    {
+     "from": "de21770e7ead1bc36fa0a53f3426fd3b2ccdc27a",
+     "to": "fde95224c8a49087b7ef7a1fafe0bc55fe239e53",
+     "main": "a51179a0d6d9cf8b86485a4248a38e6bcfa4c408",
+     "how": "runner",
+     "checks": {
+      "Twin": "success",
+      "Ally": "success"
+     },
+     "at": "2026-11-21T19:04:40Z"
     }
    ],
    "update_waiting_since": null,
@@ -111264,7 +111317,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T19:04:43Z",
+ "updated_at": "2026-11-21T19:04:55Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
