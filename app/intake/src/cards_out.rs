@@ -40,7 +40,7 @@ use std::sync::Arc;
 
 use askhava_core::api::{Claimed, Guarded, HandlerError, NewTask, enqueue};
 use askhava_jobs::api::{JobStatus, job_number, lock_for_quote_change, move_to, record_job_facts};
-use askhava_messaging::api::{SendWindow, held_until, send_window};
+use askhava_messaging::api::{SendWindow, SendingNumber, held_until, load_lines, send_window};
 use askhava_ops::api::Actor;
 use askhava_privacy::api::Vault;
 use askhava_quotes::api::{
@@ -66,8 +66,6 @@ use crate::summary_step::{CARDS_APPROVED_KIND, approved_card};
 pub const CARDS_OUT_TEMPLATE: &str = "request_out";
 /// The "How soon?" code of "Today, it's urgent" (INT-030), for TXT-032's extra lines.
 const TODAY: &str = "today";
-/// Business texting is off until a business number exists (D-492), so notices go by email.
-const BUSINESS_TEXTING_ON: bool = false;
 const BAD_PAYLOAD: &str = "bad intake card sender payload";
 const FAILED: &str = "the intake card sender failed";
 /// INT-005, D-3182: how long a card event held by a 911 text waiting for SAFE waits before it runs
@@ -79,13 +77,26 @@ pub const HOLD_RECHECK: SignedDuration = SignedDuration::from_mins(5);
 pub struct CardsOutKeys {
     outbox: SecretString,
     vault: Vault,
+    business: Option<SendingNumber>,
 }
 
 impl CardsOutKeys {
     /// The `ID_SECRET` as outbox key and the vault.
     #[must_use]
     pub fn new(outbox: SecretString, vault: Vault) -> Self {
-        Self { outbox, vault }
+        Self {
+            outbox,
+            vault,
+            business: None,
+        }
+    }
+
+    /// TXT-035, D-3882: the keys with the configured business sending `number`; with none (the
+    /// default) business texting counts as off and every card notice goes by email (BIZ-036).
+    #[must_use]
+    pub fn with_business_number(mut self, number: Option<SendingNumber>) -> Self {
+        self.business = number;
+        self
     }
 }
 
@@ -371,7 +382,8 @@ async fn send_stored(
     )
     .await
     .map_err(|_| IntakeError::Job)?;
-    let count = notices(&mut tx, (conversation, stored), &pool, &new, now).await?;
+    let parts = (&pool, keys.business.clone());
+    let count = notices(&mut tx, (conversation, stored), parts, &new, now).await?;
     tx.commit().await.map_err(|_| IntakeError::Database)?;
     let text = cards_out(db, keys, (conversation, stored), (&pool, count), now).await?;
     Ok(CardsSent::Sent {
@@ -442,15 +454,20 @@ fn band_question(job: Uuid) -> String {
 }
 
 /// CARD-019, CARD-020, CARD-021: queues each new recipient's notice with the card text sent to
-/// it; returns N, the job's card holders.
+/// it; returns N, the job's card holders. TXT-035, BIZ-036, D-3881, D-3882: business texting is
+/// on only while the stored switch is on and `business` (the configured number) is set; a failed
+/// switch read is [`IntakeError::Database`], so the task is retried, never counted as off.
 async fn notices(
     tx: &mut PgConnection,
     (conversation, stored): (Uuid, &StoredCard),
-    pool: &CardPool,
+    (pool, business): (&CardPool, Option<SendingNumber>),
     new: &[Recipient],
     now: Timestamp,
 ) -> Result<u32, IntakeError> {
     let quotes = |_| IntakeError::Quotes;
+    let line = load_lines(tx, (None, business)).await;
+    let line = line.map_err(|_| IntakeError::Database)?.business;
+    let texting_on = line.texting_on && line.number.is_some();
     let holders = card_holders(tx, stored.job).await.map_err(quotes)?;
     let count = u32::try_from(holders.len()).map_err(|_| IntakeError::Quotes)?;
     let number = job_number(tx, stored.job)
@@ -480,7 +497,7 @@ async fn notices(
         if stored.facts.emergency {
             queue_emergency_card(tx, pair, &notice, now).await
         } else {
-            queue_card_notice(tx, pair, &notice, (BUSINESS_TEXTING_ON, now)).await
+            queue_card_notice(tx, pair, &notice, (texting_on, now)).await
         }
         .map_err(quotes)?;
     }

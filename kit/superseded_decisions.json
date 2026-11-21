@@ -109,6 +109,10 @@
   "D-3642": {
    "by": "D-4310",
    "cut": ", since the row is the record read at sign-up"
+  },
+  "D-4434": {
+   "by": "D-5081",
+   "cut": "`ops.volume_low` is shown wherever open Normal alerts are (the owner portal's alert list)"
   }
  }
 }

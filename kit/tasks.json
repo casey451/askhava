@@ -33679,7 +33679,14 @@
     "T760",
     "T763",
     "T764",
-    "T768"
+    "T768",
+    "T777",
+    "T778",
+    "T779",
+    "T780",
+    "T781",
+    "T782",
+    "T783"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -35526,7 +35533,8 @@
     "T131",
     "T293",
     "T584",
-    "T751"
+    "T751",
+    "T542"
    ],
    "model": "claude-fable-5-2",
    "effort": "medium",
@@ -38021,7 +38029,9 @@
     "T514",
     "T758",
     "T759",
-    "T760"
+    "T760",
+    "T784",
+    "T785"
    ],
    "model": "claude-fable-5-2",
    "effort": "high",
@@ -40974,7 +40984,7 @@
    "id": "T542",
    "slug": "notice-address-changes",
    "title": "portals and server: notice and backup address changes are requested, mailed, confirmed and removed behind SEC-038's step-up",
-   "goal": "Plan change D-3890 (Fable's pre-claim checks of the remaining stage-5 tasks, Nov 16, 2026): Split from T364. `request_change` returns the code to email to the new address and the old one stays until `confirm` (`app/businesses/src/email_verification.rs:317`, `:375`); `request_backup`, `confirm_backup` and `remove_backup` (`app/businesses/src/backup_address.rs:154`, `:237`, `:280`) have no caller in `server` or `portals`. (1) `app/portals/src/address_changes.rs` and `templates/address_change.html` (extends `business_layout.html`): the notice and backup address forms under `SensitiveChange::NoticeAddress` and `BackupAddress` (`app/portals/src/business_portal.rs:51` to `:69`), each calling `require_step_up` first and turning `NeedsCode` into T364's step-up page; the typed address's mailbox is minted on the server with T412's `privacy::api::mailbox_for`, never taken from the request (D-3262); the code is mailed to the new address only, through the email provider T469 and T490 build (`MailboxCodeSender`, as sign-up's email check sends it), and the code-entry form confirms it (`confirm`, `confirm_backup`); the old notice address keeps every notice until then and is told of the change by email (BIZ-040, BIZ-043; for a backup address, the person's main notice address is told); removing a backup address needs the same step-up. (2) `app/server/src/address_changes.rs` serves the page and its `POST`s behind the business session, `refuse_cross_site` and CSRF before the session check, the SEC-014 per-IP and per-member limits, `no_store`, one section 13 row per method and path (Wired `yes`), fixed paths with IDs in the form body; the page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts`. Tests: `app/server/tests/address_changes_route.rs` (TD-SEC-71), fake data only. Build notes go at the end of `app/server/NOTES.md` and `app/portals/NOTES.md`; `app/server/CLAUDE.md` is at its 8,192-byte cap and is not edited, whatever earlier sentences say. Update `docs/architecture.md` (section 13) and `docs/decisions.md`. Plan change D-3892 (Opus pre-claim check, Nov 16, 2026): `confirm` needs the mailbox ID and no public `businesses` function returns a member's open change, so the code form carries the typed address again and the server re-mints its mailbox with `mailbox_for` (the same mailbox), never a posted mailbox ID; `confirm_backup` needs only the member (it takes the member's newest request, `app/businesses/src/backup_address.rs:228` to `:237`).",
+   "goal": "Plan change D-3890 (Fable's pre-claim checks of the remaining stage-5 tasks, Nov 16, 2026): Split from T364. `request_change` returns the code to email to the new address and the old one stays until `confirm` (`app/businesses/src/email_verification.rs:317`, `:375`); `request_backup`, `confirm_backup` and `remove_backup` (`app/businesses/src/backup_address.rs:154`, `:237`, `:280`) have no caller in `server` or `portals`. (1) `app/portals/src/address_changes.rs` and `templates/address_change.html` (extends `business_layout.html`): the notice and backup address forms under `SensitiveChange::NoticeAddress` and `BackupAddress` (`app/portals/src/business_portal.rs:51` to `:69`), each calling `require_step_up` first and turning `NeedsCode` into T364's step-up page; the typed address's mailbox is minted on the server with T412's `privacy::api::mailbox_for`, never taken from the request (D-3262); the code is mailed to the new address only, through the email provider T469 and T490 build (`MailboxCodeSender`, as sign-up's email check sends it), and the code-entry form confirms it (`confirm`, `confirm_backup`); the old notice address keeps every notice until then and is told of the change by email (BIZ-040, BIZ-043; for a backup address, the person's main notice address is told); removing a backup address needs the same step-up. (2) `app/server/src/address_changes.rs` serves the page and its `POST`s behind the business session, `refuse_cross_site` and CSRF before the session check, the SEC-014 per-IP and per-member limits, `no_store`, one section 13 row per method and path (Wired `yes`), fixed paths with IDs in the form body; the page's `PAGE_STATES` entry goes in the shared `tests/a11y/page_states.ts`. Tests: `app/server/tests/address_changes_route.rs` (TD-SEC-71), fake data only. Build notes go at the end of `app/server/NOTES.md` and `app/portals/NOTES.md`; `app/server/CLAUDE.md` is at its 8,192-byte cap and is not edited, whatever earlier sentences say. Update `docs/architecture.md` (section 13) and `docs/decisions.md`. Plan change D-3892 (Opus pre-claim check, Nov 16, 2026): `confirm` needs the mailbox ID and no public `businesses` function returns a member's open change, so the code form carries the typed address again and the server re-mints its mailbox with `mailbox_for` (the same mailbox), never a posted mailbox ID; `confirm_backup` needs only the member (it takes the member's newest request, `app/businesses/src/backup_address.rs:228` to `:237`). Plan change D-5081 (external code review, finding F28; BIZ-040, A11Y-030): this task also owns `app/businesses/src/email_verification.rs` (T133, its other queued owner, now runs after this task). `request_change` refuses, before any code is sent, an address that another current member of the same business signs in with, with a new `EmailCheckError::MailboxTaken`; `moved` maps a clash with `team_member_mailbox_idx` to the same error instead of a database error and closes the pending change, so a retry does not fail the same way; the served flow shows a plain message for it beside the field (A11Y-030), naming no other member. Nothing else in that file changes. `address_changes_route.rs` gains the case: a change to another member's address is refused with the message, nothing is emailed and no pending row stays open. Budget 600 lines.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -40995,7 +41005,8 @@
     "app/portals/src/address_changes.rs",
     "app/portals/templates/address_change.html",
     "app/server/src/address_changes.rs",
-    "app/server/tests/address_changes_route.rs"
+    "app/server/tests/address_changes_route.rs",
+    "app/businesses/src/email_verification.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -41019,12 +41030,13 @@
     "D-2636",
     "D-3262",
     "D-3890",
-    "D-3892"
+    "D-3892",
+    "D-5081"
    ],
    "cites": [],
    "budget": {
-    "files": 4,
-    "lines": 550,
+    "files": 5,
+    "lines": 600,
     "context_pct": 17
    },
    "checks": [
@@ -43640,10 +43652,63 @@
    "acceptance": "The Ally suite passes on main; each planted failing page is reported and each planted passing page is not; the diff changes only the hidden-control loop and adds the planted tests; no other assertion changes."
   },
   {
+   "id": "T774",
+   "slug": "quote-page-summary-scan",
+   "title": "tests (harness): the quote page's no-AI-summary check leaves out the shared header's <summary> tag",
+   "goal": "Plan change D-5059 (T614 BLOCKED on attempt 2, reviewer-confirmed plan gap). `td_pick_38_page_lines_and_empty_status` in `tests/integration/tests/quote_page.rs:170` to `:175` lower-cases the whole page and fails on the substring `summary`. TD-PICK-38 means PICK-003's AI quote summary (\"no summary element exists\", D-373), not the HTML `<summary>` tag, and `docs/design/DESIGN_SPEC.md:102` puts a `<details><summary>Menu</summary>` in the shared header of every page. A logged spec change to a wrong test (`BUILD_BRIEF.md:69`), in that loop only: the word `summary` is looked for in the body with the span from the first `<header` to the first `</header>` after it cut out, once only (any later `<header>` element, such as one inside `main`, is still scanned, as are the banner, `main` and the footer); the other seven words (`★`, `stars`, `rating:`, `rated`, `hires`, `hired`, `reviews)`) are looked for in the whole body exactly as now. The test fails, with a clear message, when the body has no `<header`, or no `</header>` after the first `<header` (nothing is ever cut to the end of the body). Add one unit-style test in the same file that feeds the helper fixed strings: `summary` inside the header passes; `summary` in `main`, in the footer, or before the header fails; `summary` inside a second `<header>` in `main` fails; a body whose first `<header` has no `</header>` after it fails; a body with no header fails. No other assertion, test name or fixture changes. Fake data only. Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T052",
+    "T424"
+   ],
+   "model": "claude-fable-5-2",
+   "effort": "low",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    "tests/integration/tests/quote_page.rs"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/design/DESIGN_SPEC.md"
+   ],
+   "requirements": [
+    "PICK-003"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-373",
+    "D-4252",
+    "D-5059"
+   ],
+   "cites": [
+    "docs/design/DESIGN_SPEC.md:102"
+   ],
+   "budget": {
+    "files": 1,
+    "lines": 60,
+    "context_pct": 8
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T774-quote-page-summary-scan",
+   "prompt": "kit/prompts/T774.md",
+   "acceptance": "`tests/integration/tests/quote_page.rs` passes on main; the new helper test shows `summary` failing in `main`, in the footer and before the header, and passing only inside the header; the diff changes only the word loop at `:170` to `:175` and adds the helper and its test."
+  },
+  {
    "id": "T614",
    "slug": "site-header",
    "title": "site: the V6 header in base.html (links, the Menu in the page flow, English tagged on Spanish pages), color-scheme and the font preloads, with the open-Menu focus test",
-   "goal": "Plan change D-4252 (Fable's UI and accessibility review of the D-4246 tasks; Casey, Nov 17, 2026: \"make it exceptional and meet all of the ADA requirements\"). DESIGN_SPEC section 6 sets the header (`docs/design/DESIGN_SPEC.md:102`): on phones the wordmark and mark, then \"Español\" and a \"Menu\" pill, a `<details>` disclosure holding How it works, What we cover, For businesses and Help; from 1024 px the same four links as plain text and \"Español\". No task had built it: `app/site/templates/base.html` has the wordmark and one Help link, and D-4246's T608 changed only its `head`. This task writes that header in `base.html` under the reference's markup and class names (`docs/design/reference/home.html:13` to `:34`; T607 styles them, the open `.menu-list` in the page flow): the wordmark link with T216's mark beside, not inside, it (TD-WORD-37, `tests/e2e/pick_flow.spec.ts:98`), a `<nav class=\"site-nav\" aria-label=\"Site\">` of plain links (no `header-link` class, so they keep the `evergreen` link colour of `docs/design/DESIGN_SPEC.md:107` and `tests/e2e/site_no_js.spec.ts:58` to `:63` holds unchanged) to `/how-it-works`, `/coverage`, `/business` and `/help`, \"Español\" to `/es` with `lang=\"es\" hreflang=\"es\"`, and `<details class=\"menu\"><summary>Menu</summary>` holding a `menu-list` of the same four links; the words are the ones `:102` names and pass `scripts/check_copy.py` and `scripts/check_ai_smell.py`. The header is the same on every page, site and portal, so the help link keeps one landmark and one place everywhere (A11Y-017; `tests/a11y/page_structure.spec.ts:77` to `:110`); T200's `get_help` block stays directly after the shared Help link; the header stays not sticky (A11Y-026). Spanish pages (WCAG 3.1.2, A11Y-004): the spec has no Spanish header wording, so the skip link, the `<nav>` and the Menu carry `lang=\"en\"` on every page (harmless on an English page) and \"Español\" keeps its own `lang=\"es\"`. In `head`: `<meta name=\"color-scheme\" content=\"light\">` (`:47`) and the two font preloads D-4246 gave T608 (`<link rel=\"preload\" as=\"font\" type=\"font/woff2\" crossorigin>` for `/static/site/fonts/gelasio-latin-500-normal.woff2` and T617's `/static/site/fonts/dm-sans-latin-wght-normal.woff2`, the same URLs the stylesheet's `url()`s resolve to); the stylesheet stays first in `body` (D-3901). The new `tests/a11y/header_nav.spec.ts` (Ally config; fixtures' `open` and `STATES_TO_CHECK`) fails when: the header's link list, leaving out the business pages' `[data-get-help]` link (T200, BIZ-047, D-4293), differs between two states; on a `lang=\"es\"` page the skip link or a header link other than \"Español\" resolves (nearest `[lang]` ancestor) to anything but `en`, or \"Español\" to anything but `es`; at 390 by 844 on the home, help, how-it-works and terms pages, after opening the Menu from the keyboard and tabbing through its four links and ten more stops into `main`, any focused element's box is fully covered by another element (the `elementFromPoint` check A11Y-026's test uses; WCAG 2.4.11) or the page scrolls sideways; or a preloaded font is never requested by a `@font-face` the page uses on some state (so T612's unused-preload check holds on every portal state; a state with no serif heading is reported as a plan gap). Every existing test passes unchanged; if one pins the header's text or link count, report a plan gap rather than changing it. Fake data only. Review round 1 (D-4252): the wordmark link keeps the `evergreen` link colour, so `tests/e2e/pick_flow.spec.ts:98` to `:104` (the first `header a` and the links in `main` share one colour) holds unchanged; the header adds Tab stops before `main` (\"Español\" and the Menu's summary on phones, the four links and \"Español\" from 1024 px), so the task counts them against the Tab-press limits of the keyboard journeys at every width they run: J1's `tabTo` stops at 40 presses (`tests/a11y/j1_keyboard.spec.ts:95` to `:99`; its `noTrap` stops at 60, `:103` to `:109`), J2's `tabTo` and `noTrap` at 60 (`tests/a11y/j2_keyboard.spec.ts:61` to `:85`), and reports a plan gap if any journey would pass a limit. Plan change D-4886 (Fable's pre-claim checks, Nov 20, 2026): where the reference's markup and a passing test differ, the test wins. Keep `<p class=\"wordmark\">` with `svg.mark` beside the home link and no `.brand` class or `<img>` (`tests/e2e/home_first_screen.spec.ts:95` to `:97`). The skip link's tag stays exactly `<a class=\"skip-link\" href=\"#main\">Skip to main content</a>` (`app/site/src/routes.rs:137`), so its `lang=\"en\"` goes on a wrapper element around it, never on the link. The header keeps one `<a href=\"/help\">Help</a>` with no class (`routes.rs:143`), and `<details class=\"menu\">` sits outside the `<nav>`, so `header nav a[href='/help']` matches one link (`tests/e2e/site_no_js.spec.ts:48`). \"Español\" carries no `header-link` class either. `.site-nav` is hidden below 1024 px, so `{% block get_help %}{% endblock %}` moves to directly after `</nav>` (still the next link after the shared Help link, outside `.site-nav`, no class), so the business pages' \"Get help\" shows at every width (BIZ-047); `header_nav.spec.ts` also fails when a `[data-get-help]` link is not visible at 390 px. If the header then scrolls sideways at 320 px without a file this task does not own, report a plan gap. Plan change D-4970: this task also owns `app/site/static/site.css`, for two rules only: `.menu:not([open]) .menu-list { display: none; }` (so closed Menu links have no box and are not Tab stops in `tests/a11y/j1_keyboard.spec.ts:56` and `j2_keyboard.spec.ts:26`), and the open Menu fitting at 320 px (document `scrollWidth` at most 320). Read only the `.menu`, `.menu-list` and `.site-nav` rules (`:484` to `:491`, `:783`), not the whole file; no other rule changes. T771 changed `reflow_spacing`'s hidden-control rule first. `header_nav.spec.ts` also fails when: at 320, 390 and 768 px the Menu summary is not visible or, once opened, any of its four links is not visible or the page scrolls sideways; at 1024 and 1280 px any of the four `.site-nav` links or \"Español\" is not visible.",
+   "goal": "Plan change D-4252 (Fable's UI and accessibility review of the D-4246 tasks; Casey, Nov 17, 2026: \"make it exceptional and meet all of the ADA requirements\"). DESIGN_SPEC section 6 sets the header (`docs/design/DESIGN_SPEC.md:102`): on phones the wordmark and mark, then \"Español\" and a \"Menu\" pill, a `<details>` disclosure holding How it works, What we cover, For businesses and Help; from 1024 px the same four links as plain text and \"Español\". No task had built it: `app/site/templates/base.html` has the wordmark and one Help link, and D-4246's T608 changed only its `head`. This task writes that header in `base.html` under the reference's markup and class names (`docs/design/reference/home.html:13` to `:34`; T607 styles them, the open `.menu-list` in the page flow): the wordmark link with T216's mark beside, not inside, it (TD-WORD-37, `tests/e2e/pick_flow.spec.ts:98`), a `<nav class=\"site-nav\" aria-label=\"Site\">` of plain links (no `header-link` class, so they keep the `evergreen` link colour of `docs/design/DESIGN_SPEC.md:107` and `tests/e2e/site_no_js.spec.ts:58` to `:63` holds unchanged) to `/how-it-works`, `/coverage`, `/business` and `/help`, \"Español\" to `/es` with `lang=\"es\" hreflang=\"es\"`, and `<details class=\"menu\"><summary>Menu</summary>` holding a `menu-list` of the same four links; the words are the ones `:102` names and pass `scripts/check_copy.py` and `scripts/check_ai_smell.py`. The header is the same on every page, site and portal, so the help link keeps one landmark and one place everywhere (A11Y-017; `tests/a11y/page_structure.spec.ts:77` to `:110`); T200's `get_help` block stays directly after the shared Help link; the header stays not sticky (A11Y-026). Spanish pages (WCAG 3.1.2, A11Y-004): the spec has no Spanish header wording, so the skip link, the `<nav>` and the Menu carry `lang=\"en\"` on every page (harmless on an English page) and \"Español\" keeps its own `lang=\"es\"`. In `head`: `<meta name=\"color-scheme\" content=\"light\">` (`:47`) and the two font preloads D-4246 gave T608 (`<link rel=\"preload\" as=\"font\" type=\"font/woff2\" crossorigin>` for `/static/site/fonts/gelasio-latin-500-normal.woff2` and T617's `/static/site/fonts/dm-sans-latin-wght-normal.woff2`, the same URLs the stylesheet's `url()`s resolve to); the stylesheet stays first in `body` (D-3901). The new `tests/a11y/header_nav.spec.ts` (Ally config; fixtures' `open` and `STATES_TO_CHECK`) fails when: the header's link list, leaving out the business pages' `[data-get-help]` link (T200, BIZ-047, D-4293), differs between two states; on a `lang=\"es\"` page the skip link or a header link other than \"Español\" resolves (nearest `[lang]` ancestor) to anything but `en`, or \"Español\" to anything but `es`; at 390 by 844 on the home, help, how-it-works and terms pages, after opening the Menu from the keyboard and tabbing through its four links and ten more stops into `main`, any focused element's box is fully covered by another element (the `elementFromPoint` check A11Y-026's test uses; WCAG 2.4.11) or the page scrolls sideways; or a preloaded font is never requested by a `@font-face` the page uses on some state (so T612's unused-preload check holds on every portal state; a state with no serif heading is reported as a plan gap). Every existing test passes unchanged; if one pins the header's text or link count, report a plan gap rather than changing it. Fake data only. Review round 1 (D-4252): the wordmark link keeps the `evergreen` link colour, so `tests/e2e/pick_flow.spec.ts:98` to `:104` (the first `header a` and the links in `main` share one colour) holds unchanged; the header adds Tab stops before `main` (\"Español\" and the Menu's summary on phones, the four links and \"Español\" from 1024 px), so the task counts them against the Tab-press limits of the keyboard journeys at every width they run: J1's `tabTo` stops at 40 presses (`tests/a11y/j1_keyboard.spec.ts:95` to `:99`; its `noTrap` stops at 60, `:103` to `:109`), J2's `tabTo` and `noTrap` at 60 (`tests/a11y/j2_keyboard.spec.ts:61` to `:85`), and reports a plan gap if any journey would pass a limit. Plan change D-4886 (Fable's pre-claim checks, Nov 20, 2026): where the reference's markup and a passing test differ, the test wins. Keep `<p class=\"wordmark\">` with `svg.mark` beside the home link and no `.brand` class or `<img>` (`tests/e2e/home_first_screen.spec.ts:95` to `:97`). The skip link's tag stays exactly `<a class=\"skip-link\" href=\"#main\">Skip to main content</a>` (`app/site/src/routes.rs:137`), so its `lang=\"en\"` goes on a wrapper element around it, never on the link. The header keeps one `<a href=\"/help\">Help</a>` with no class (`routes.rs:143`), and `<details class=\"menu\">` sits outside the `<nav>`, so `header nav a[href='/help']` matches one link (`tests/e2e/site_no_js.spec.ts:48`). \"Español\" carries no `header-link` class either. `.site-nav` is hidden below 1024 px, so `{% block get_help %}{% endblock %}` moves to directly after `</nav>` (still the next link after the shared Help link, outside `.site-nav`, no class), so the business pages' \"Get help\" shows at every width (BIZ-047); `header_nav.spec.ts` also fails when a `[data-get-help]` link is not visible at 390 px. If the header then scrolls sideways at 320 px without a file this task does not own, report a plan gap. Plan change D-4970: this task also owns `app/site/static/site.css`, for header rules only (D-5059 widens the two below): `.menu:not([open]) .menu-list { display: none; }` (so closed Menu links have no box and are not Tab stops in `tests/a11y/j1_keyboard.spec.ts:56` and `j2_keyboard.spec.ts:26`), and the open Menu fitting at 320 px (document `scrollWidth` at most 320). Read only the `.menu`, `.menu-list` and `.site-nav` rules (`:484` to `:491`, `:782`, `:783`) and the `body > header` rules (`:233` to `:258`, `:694` to `:697`), not the whole file. T771 changed `reflow_spacing`'s hidden-control rule first. `header_nav.spec.ts` also fails when: at 320, 390 and 768 px the Menu summary is not visible or, once opened, any of its four links is not visible or the page scrolls sideways; at 1024 and 1280 px any of the four `.site-nav` links or \"Español\" is not visible. Plan change D-5059 (attempt 2's reviewer-confirmed plan gap; Fable adjudicated). (1) T774 ran first: the quote page's no-AI-summary check now leaves out the header, so `<summary>Menu</summary>` in `base.html` passes `tests/integration/tests/quote_page.rs`. (2) `site.css`: this task may add or change any rule whose every selector begins with `.menu`, `.menu-list` or `.site-nav` (so it can match only inside the header), as many as the outcomes below need; it changes no other rule, and lists each rule it added or changed in its `docs/decisions.md` entry. Put them beside the existing `.menu` rules, before the `min-width: 1024px` block, so `.menu { display: none; }` there still wins. The set attempt 2 measured, to start from: `.menu:not([open]) .menu-list { display: none; }`; `.menu { display: contents; }` and, as a separate rule, `.menu::details-content { display: contents; }` (never one selector list: an engine that does not know the pseudo-element would drop both); `.menu-list { flex: 0 0 100%; }`, so the open list is its own row in the page flow under the header row; `.menu > summary { margin: calc((var(--header-h) - 44px) / 2) 0 calc((var(--header-h) - 44px) / 2) -12px; }`, so the 44 px pill with its margins is the header's height (60 px, 76 px from 768 px) and the row does not move when the Menu opens, and the row fits 280 px at 320 px. The open list may span the header's width; say so in `docs/for-casey-review.md` (the reference shows a 280 px panel). (3) Markup: each of the four `.site-nav` links and \"Español\" sits in its own `<p>` (`<p><a href=\"/help\">Help</a></p>`, the link text and attributes unchanged; `body > header p` already has no margin), because `tests/e2e/capability_setup.spec.ts` and `tests/e2e/emergency_switch_after_hours.spec.ts` scan pages loaded with no stylesheet, where bare adjacent links fail axe. `{% block get_help %}{% endblock %}` stays bare directly after `</nav>` (an empty `<p>` would add a flex gap on every other page); run both of those specs and, if the bare \"Get help\" link fails the unstyled scan, put a single space-free `<span>` around the block only if that passes every test here, else report it. (4) `header_nav.spec.ts` also fails when: at 320 and 390 px on the home page the closed header is taller than `--header-h` plus its 1 px border (the wordmark, \"Español\" and the Menu pill share one row); opening the Menu moves the wordmark, \"Español\" or the pill vertically; or the open list's top is above the pill's bottom. (5) Run before hand-in, all passing: the Ally suite, `tests/e2e/home_first_screen.spec.ts`, `site_no_js.spec.ts`, `pick_flow.spec.ts`, `capability_setup.spec.ts`, `emergency_switch_after_hours.spec.ts`, `site_polish.spec.ts`, `cargo test -p askhava-integration --test quote_page`, and `cargo test -p askhava-site`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -43652,7 +43717,8 @@
     "T607",
     "T593",
     "T617",
-    "T771"
+    "T771",
+    "T774"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -43699,7 +43765,8 @@
     "D-4293",
     "D-4886",
     "D-4970",
-    "D-4991"
+    "D-4991",
+    "D-5059"
    ],
    "cites": [
     "docs/design/DESIGN_SPEC.md:102",
@@ -43708,7 +43775,7 @@
    ],
    "budget": {
     "files": 3,
-    "lines": 290,
+    "lines": 330,
     "context_pct": 38
    },
    "checks": [
@@ -46040,6 +46107,66 @@
    "acceptance": "TD-INT-48 passes through the assembled router and in Playwright with Ally clean; only the signed-in homeowner's own request takes an upload; a photo is stored only after `take_upload`'s checks and goes on the card only with its `photo_ok` row; a dead photo link is 404."
   },
   {
+   "id": "T776",
+   "slug": "intake-refusals-wired",
+   "title": "intake: a move out of Arizona and a property-management request are refused, at the trade step and again before any card",
+   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F20; LIC-017, LIC-018, INT-016, INT-017; D-1008, D-1011; compliance). `routing::route` holds both refusals, but its only production caller, `tell` in `app/intake/src/order_dispatch.rs`, builds its `Request` with `words: \"\"`, `move_states: None` and `job_types: &[]`, so neither can fire: a move to another state and a \"collect the rent\" home-watch request get cards (D-1008 left the inputs as \"the caller's wiring\"; T671 wired `route` with them empty). (1) A new `app/intake/src/refusal_inputs.rs` (declared by one line in the shared `lib.rs`) holds the pure reading of her kept words: whether a moving request names a move that does not stay in Arizona, from a folded phrase list as `PROPERTY_MANAGEMENT` in `routing.rs` is (D-1011), in English and Spanish: \"out of state\", \"another state\", \"different state\", \"out of Arizona\", \"leaving Arizona\", \"cross country\", \"across the country\", \"interstate\", \"fuera del estado\", \"otro estado\", \"fuera de Arizona\"; the full name of every other US state and \"Mexico\" when it is not part of \"New Mexico\"; a state name directly followed by `king` (\"California king\") is not a match; and the out-of-state places people near Lake Havasu name: Needles, Laughlin, Las Vegas, Henderson, Blythe, Palm Springs, Los Angeles, San Diego, Reno, Salt Lake City, Albuquerque, Denver. An Arizona town (Phoenix, Bullhead City, Kingman, Parker, Yuma, Tucson, Flagstaff) never matches. A match is passed as `move_states` with one side not Arizona, so `routing::move_refused` decides; `routing.rs` is not edited. (2) `tell` passes her kept words as `Request.words`, the reading of (1) as `move_states`, and the job's candidate job types as `job_types`. (3) The same check runs again on all her kept words before a card is shown and before it is sent (the card step and its SEND), because LIC-018 says \"description or answers\" and her later answers and EDIT words arrive after `tell`: a refusal there gives the INT-017 reply through `routing::apply` for the first job, and marks a second job Not covered for that job alone as `tell` does, with no card stored or sent and no recruiting-demand row (D-1008); `apply` runs once however often the text repeats. Nothing else in `order_dispatch.rs` changes. Tests in the new `tests/integration/tests/intake_refusals_wired.rs`, PostgreSQL through `intake::api::receive_raw_reply`, fake data only: \"Need movers, Lake Havasu City to Las Vegas\" and a Spanish \"fuera del estado\" move get the not-covered reply, the job Not covered, no `quotes.job_card` row and no recruiting-demand row; a home-watch \"check the house weekly and collect the rent\" and a Spanish \"cobrar la renta\" the same; a property-management phrase or an out-of-state place that first appears in an EDIT or a later answer gets no card and the reply; \"moving to Phoenix\", \"moving a California king bed across town\" and a turnover \"clean after the renters check out\" still get the coverage line and their card; the same text twice adds nothing. Unit tests for `refusal_inputs.rs` in-crate (each phrase group, each Arizona town, \"New Mexico\" against \"Mexico\", \"California king\"). `app/intake/src/tests/routing_outcomes.rs` and every existing intake test pass unchanged. T675, the next queued owner of `order_dispatch.rs`, now depends on this task. Build notes go to the end of `app/intake/NOTES.md`; update `docs/decisions.md` and log the phrase list in `docs/for-casey-review.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T673",
+    "T672"
+   ],
+   "model": "claude-fable-5-2",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "licensing",
+    "compliance"
+   ],
+   "owns": [
+    "app/intake/src/order_dispatch.rs",
+    "app/intake/src/refusal_inputs.rs",
+    "tests/integration/tests/intake_refusals_wired.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/licensing.md",
+    "docs/spec/intake.md",
+    "app/intake/src/routing.rs"
+   ],
+   "requirements": [
+    "LIC-017",
+    "LIC-018",
+    "INT-016",
+    "INT-017"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-1008",
+    "D-1011",
+    "D-4360",
+    "D-5081"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 450,
+    "context_pct": 25
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T776-intake-refusals-wired",
+   "prompt": "kit/prompts/T776.md",
+   "acceptance": "`tests/integration/tests/intake_refusals_wired.rs` passes against PostgreSQL with every listed case, the refusal cases failing on `main` before the change (cards go out there); the in-crate tests of `refusal_inputs.rs` pass; `routing_outcomes.rs` and every existing intake test pass unchanged; `routing.rs` is not in the diff."
+  },
+  {
    "id": "T675",
    "slug": "intake-order-photos",
    "title": "intake and server (harness): the dispatcher asks for photos and, in design categories, look pictures, and picture texts are taken off the texting provider by a queued task",
@@ -46051,7 +46178,8 @@
    "deps": [
     "T673",
     "T674",
-    "T573"
+    "T573",
+    "T776"
    ],
    "model": "claude-fable-5-2",
    "effort": "high",
@@ -48330,6 +48458,61 @@
    "acceptance": "`python3 -m pytest tests/test_runner_wip.py tests/test_runner_logic.py tests/test_runner_merge_train.py tests/test_failure_drills.py` passes, the WIP cases failing against `main`'s runner; every other `tests/test_runner_*.py` and `tests/test_workflow_shell.py` passes unchanged; `python3 scripts/check_state.py` passes on a state with a `wip` record and on one without; actionlint reports nothing new on `backup-runner.yml`; `git diff origin/main -- runner/github_env.py runner/__main__.py runner/wip.py` is empty."
   },
   {
+   "id": "T775",
+   "slug": "check-in-911-first",
+   "title": "intake: a check-in reply that names a 911 danger gets the 911 screen first",
+   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F24; INT-002, INT-004, D-4293 (5); safety). `reply_in` in `app/intake/src/replies.rs` runs the check-in step (`check_in_reply`) and returns before `receive_text`, which holds the only 911 screen, and the check-in parser in `jobs` reads any text whose first word is PROBLEM or PROBLEMA as a problem report. So \"PROBLEM gas smell again\", sent while a Connected job's check-in is due, closes the job with the check-in reply: no INT-004 text, no `intake.emergency_event` row, no critical alert and no safety call. D-4293 (5) set the order: the 911-list screen first, then the command parsers. The fix is in `reply_in` only: when `emergency::check`, called as `receive_text` calls it (the name-and-address answer exempt), reads her words as a 911-list match, the check-in step is skipped and the text takes `receive_text`'s path, exactly as a 911 text with no check-in due does (the INT-004 text, the event row, Casey's critical alert, and the safety call when its own rule holds). The check-in answer is not consumed: the check-in stays due and nothing is recorded as PROBLEM, YES or NO for that text (Casey's critical alert carries it); say so in the decision entry. A text with no 911-list match behaves as today. `check_in_replies.rs`, `emergency.rs`, `service.rs` and `jobs` are read, not edited. Tests in the new `tests/integration/tests/check_in_911.rs`, PostgreSQL through `intake::api::receive_raw_reply`, fake data only, a Connected job with its check-in due: a PROBLEM text with a gas phrase in English, a PROBLEMA text with one in Spanish, and a NO text and a PROBLEM text with two other kinds of phrase from the INT-004 list in `emergency.rs` each queue exactly one INT-004 text and one `intake.emergency_event` row, answer no `Reply::CheckedIn`, and leave the check-in due; \"PROBLEM leak is back\", \"YES\" and \"NO\" are recorded as today with no 911 text; a 911 text with no check-in due is unchanged. `tests/integration/tests/check_in_replies.rs` passes unchanged. T728, the queued owner of `replies.rs`, now depends on this task. Build notes go to the end of `app/intake/NOTES.md`; update `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T673",
+    "T482"
+   ],
+   "model": "claude-fable-5-2",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/intake/src/replies.rs",
+    "tests/integration/tests/check_in_911.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/intake.md",
+    "app/intake/src/check_in_replies.rs",
+    "app/intake/src/emergency.rs"
+   ],
+   "requirements": [
+    "INT-002",
+    "INT-004"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-4293",
+    "D-5081"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 200,
+    "context_pct": 23
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T775-check-in-911-first",
+   "prompt": "kit/prompts/T775.md",
+   "acceptance": "`tests/integration/tests/check_in_911.rs` passes against PostgreSQL with every listed case, the four 911 cases failing on `main` before the change; `tests/integration/tests/check_in_replies.rs` and every existing intake test pass unchanged; the diff to `replies.rs` touches only `reply_in`'s check-in step."
+  },
+  {
    "id": "T728",
    "slug": "intake-text-pick-reply",
    "title": "intake: a homeowner's \"<n> YES\" text from her phone picks through `answer_text_pick`",
@@ -48339,7 +48522,8 @@
    "stage": "5",
    "module": "intake",
    "deps": [
-    "T673"
+    "T673",
+    "T775"
    ],
    "model": "claude-fable-5-2",
    "effort": "high",
@@ -50456,6 +50640,528 @@
    "branch": "claude/task/T764-bootstrap-sql-path-rules",
    "prompt": "kit/prompts/T764.md",
    "acceptance": "`scripts/check_include_paths.py` passes with `include_str!(\"../../../scripts/bootstrap_roles.sql\")` present; the checks, lint and coverage rules and `RUST_PATHS` gain only `scripts/bootstrap_roles\\.sql`, the e2e rule is unchanged; `tests/test_ci_workflow.py`, `tests/test_check_include_paths.py` and `tests/test_prehandin.py` pass unchanged."
+  },
+  {
+   "id": "T777",
+   "slug": "sign-in-code-current-number",
+   "title": "businesses: a sign-in code is texted only to a line whose current number has its text consent and its approval",
+   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F39; CON-019, BIZ-033, SEC-004; D-4039's known gap). `sign_in_lines` in `app/businesses/src/sign_in_lines.rs` lists a member's extra line when any text-consent row exists for it: its `EXISTS` does not require the consent's `number_version` to equal the line's, which `consent::may_text` does, and it does not require the line's `approved_at`, which `notice_recipients` does. So after a member changes that line's number (`team::set_number` keeps the line and raises `number_version`), the next sign-in code is texted to a number nobody ticked, and a number a non-owner linked is used before the owner approved it. The query now requires the same `number_version` match as `may_text` and the same approval condition as `notice_recipients`; a line that fails either is left out, so the code goes to the member's sign-in email as it does for a member with no texting phone. Its `.sqlx/` query file is regenerated. No other file changes: `business_signin.rs`, `consent.rs`, `team.rs` and `channel_preference.rs` are read. Tests in the new `tests/integration/tests/sign_in_number_change.rs`, PostgreSQL, fake data only: a ticked, approved line is listed; after `set_number` it is not, and it is listed again once the new number is ticked (and approved when a non-owner set it); a line waiting for the owner's approval is not listed; a tick by a removed member still does not count. Every existing sign-in test passes unchanged. Remove the known-gap line in `app/businesses/NOTES.md` and close the leftover in `docs/for-casey-review.md`; update `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "businesses",
+   "deps": [
+    "T373",
+    "T280"
+   ],
+   "model": "claude-fable-5-2",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security",
+    "compliance"
+   ],
+   "owns": [
+    "app/businesses/src/sign_in_lines.rs",
+    "tests/integration/tests/sign_in_number_change.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/consent.md",
+    "docs/spec/businesses.md",
+    "docs/spec/security.md",
+    "app/businesses/src/consent.rs",
+    "app/businesses/src/channel_preference.rs"
+   ],
+   "requirements": [
+    "CON-019",
+    "BIZ-033",
+    "SEC-004"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-4039",
+    "D-5081"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 180,
+    "context_pct": 19
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T777-sign-in-code-current-number",
+   "prompt": "kit/prompts/T777.md",
+   "acceptance": "`tests/integration/tests/sign_in_number_change.rs` passes against PostgreSQL with every listed case, the changed-number and unapproved cases failing on `main` before the change; every existing sign-in and consent test passes unchanged."
+  },
+  {
+   "id": "T778",
+   "slug": "stuck-tasks-found",
+   "title": "jobs, core and server: a dead Payment pending timer is revived, a task that died on its last try is reaped on a busy queue, and a slow queue read is not reported as the database being down",
+   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding s F32, F35 and F36; JOB-006, JOB-014, PRIV-007, OPS-004, OPS-007; D-2640, D-3144, D-4349). Three ways a stuck task is never found or is misreported. (1) F32: the daily backstop's `check_timer` (`app/jobs/src/timer_backstop.rs`) revives only a dead `jobs.timeout` task; a Payment pending job's wait is a `picks.payment_returned` task (`PAYMENT_RETURNED_KIND`, its key built in `payment_wait.rs`), and when that one is dead the job stays in Payment pending for good, never reaches a final status, and its PRIV-007 purge is never queued. `check_timer` now also runs `revive_dead` on that key when the job is in Payment pending and its own timer is alive, under the same `MOST_REVIVALS` cap, audit row and alert. (2) F35: `reap_expired` (`app/core/src/tasks.rs`) runs only on a poll that claimed nothing, so on a busy queue a task whose worker died on its last attempt is never dead-lettered, is invisible to the dead-letter alert, and `queue_health`'s oldest-waiting read (`app/core/src/queue_health.rs`), which has no `attempts < max_attempts` filter, counts it until `/healthz` answers 503. The reaper now runs on every poll that claimed fewer tasks than it asked for and at least once a minute whatever was claimed, and the oldest-waiting read leaves out a row no claim can take; `reap_expired`'s and `claim`'s signatures stay. (3) F36: `check` in `app/server/src/healthz.rs` reports a queue-read error or timeout as the database being down although its round trip has just passed; it now reports database up and worker not known to be running, the answer's shape and status codes otherwise unchanged. This task adds no migration: the two indexes for `queue_health`'s `max()` reads wait for a later plan change (see D-5081), and no row of `core.task` is deleted (a done row's dedupe key means once ever). Tests, fake data only: the new `tests/integration/tests/payment_returned_backstop.rs` (a dead `payment_returned` task on a Payment pending job is revived once and the job leaves Payment pending; after the cap, one High alert; one on a job that moved on is left alone) and `tests/integration/tests/stuck_task_health.rs` (a task at its last attempt with an expired lease, beside a steady supply of due tasks, is dead-lettered within a minute and counted by the dead-letter alert, and the probe never reports the worker down for it; a failed queue read answers database up). Every existing `timer_backstop`, task-queue and `healthz` test passes unchanged; if one pins the reaper to an empty poll, report it, do not change it. Build notes go to the end of each crate's `NOTES.md`; update `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "core",
+   "deps": [
+    "T366",
+    "T663",
+    "T106",
+    "T013"
+   ],
+   "model": "claude-fable-5-2",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "recovery",
+    "security"
+   ],
+   "owns": [
+    "app/jobs/src/timer_backstop.rs",
+    "app/core/src/tasks.rs",
+    "app/core/src/queue_health.rs",
+    "app/server/src/healthz.rs",
+    "tests/integration/tests/payment_returned_backstop.rs",
+    "tests/integration/tests/stuck_task_health.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/lifecycle.md",
+    "docs/spec/privacy.md",
+    "docs/spec/ops-recovery.md",
+    "app/jobs/src/payment_wait.rs"
+   ],
+   "requirements": [
+    "JOB-006",
+    "JOB-014",
+    "PRIV-007",
+    "OPS-004",
+    "OPS-007"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-2640",
+    "D-3144",
+    "D-4349",
+    "D-5081"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 420,
+    "context_pct": 19
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T778-stuck-tasks-found",
+   "prompt": "kit/prompts/T778.md",
+   "acceptance": "Both new test files pass against PostgreSQL with every listed case, the revival and the busy-queue cases failing on `main` before the change; no migration is added; every existing `timer_backstop`, task-queue and `healthz` test passes unchanged."
+  },
+  {
+   "id": "T779",
+   "slug": "alerts-seen-and-closed",
+   "title": "ops, server and portals: alerts that do not push show in the owner portal, volume alerts close when the level drops, and a storage read failure is not reported as tampering",
+   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding s F33 and F34 and the triage's side finding; OPS-029, OPS-052, OPS-010, PRIV-029; D-4434). (1) OPS-029 says every alert that does not push \"waits in the owner portal and the weekly digest\", and OPS-052 says the Low volume alert is \"shown in the owner portal\", but the portal's list is `pushed_alerts` alone (`app/ops/src/owner_alerts.rs`, read by `alert_rows` in `app/portals/src/owner_portal.rs`), so `ops.volume_low`, `ops.volume_high`, `ops.audit_chain_broken` and every other open alert with no push row appear nowhere in the portal; D-4434 (4) said they do. `owner_alerts.rs` gains a reader of open alerts that have no push row (kind, severity, raised time, subject ID; newest first; a fixed cap), exported by one line in the shared `api.rs`, and the owner home page lists them under their own heading below the pushed ones, each with its kind's plain name and time and no acknowledge button (acknowledging stays for pushed alerts); the page stays axe-clean and every value is escaped. (2) F34: `ops.volume_low` and `ops.volume_high` are raised through `raise_kind_once` and nothing ever resolves them, so after the first breach every later one is silent. The daily check in `app/ops/src/volume_check.rs` now resolves, as the system actor, each open volume alert whose level no longer holds, with its own statements in `volume_check.rs`, written as the private `acknowledge_one` in `alerts.rs` does (the alert's `resolved_at`, one `ops.alert_ack` row by `system`, one `ops.alert_acknowledged` audit row), in one transaction: below 70% both; from 70% to 85% the High one (the Low one is raised or stays); above 85% the Low one stays open beside the High one. `alerts.rs` is not edited. (3) F33: `verify_audit_chain` in `app/server/src/offdb_stream.rs` turns every storage read error into a broken chain (`.ok()`), so a storage outage raises a High `ops.audit_chain_broken` each night. Only a not-found answer or a mismatch is a broken chain; any other adapter error is a storage error: the task fails and retries and no alert is raised; the alert itself is raised once while one is open. Tests in the new `tests/integration/tests/alert_lifecycle.rs`, PostgreSQL, fake data only: 72% then 60% raises Low and resolves it; 72%, 60%, 72% raises a second Low; 90% then 75% resolves High and leaves or raises Low; a storage fake answering an unknown outcome raises no alert and fails the task, one answering not found raises one alert, and a second night adds none; the owner home page lists an open non-pushed alert without an acknowledge button and still lists a pushed one with its button. The page's `PAGE_STATES` entry in the shared `tests/a11y/page_states.ts` gains the state with a non-pushed alert. Every existing alert, volume and audit-stream test passes unchanged. Build notes go to the end of each crate's `NOTES.md`; update `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "ops",
+   "deps": [
+    "T738",
+    "T737",
+    "T712",
+    "T525"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "accessibility"
+   ],
+   "owns": [
+    "app/ops/src/volume_check.rs",
+    "app/ops/src/owner_alerts.rs",
+    "app/server/src/offdb_stream.rs",
+    "app/portals/src/owner_portal.rs",
+    "app/portals/templates/owner_home.html",
+    "tests/integration/tests/alert_lifecycle.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/ops-recovery.md",
+    "docs/spec/privacy.md",
+    "docs/spec/accessibility.md"
+   ],
+   "requirements": [
+    "OPS-029",
+    "OPS-052",
+    "OPS-010",
+    "PRIV-029"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-4434",
+    "D-5081"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 6,
+    "lines": 500,
+    "context_pct": 27
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T779-alerts-seen-and-closed",
+   "prompt": "kit/prompts/T779.md",
+   "acceptance": "`tests/integration/tests/alert_lifecycle.rs` passes against PostgreSQL with every listed case; `Ally` passes with the new page state; every existing alert, volume, audit-stream and owner-portal test passes unchanged; `app/ops/src/alerts.rs` is not in the diff."
+  },
+  {
+   "id": "T780",
+   "slug": "scorecard-rates-and-lines",
+   "title": "payments and portals: the scorecard's refund and dispute rates are read against their own charges, and a GO line worse than its STOP is refused at start-up",
+   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding s F37 and F38; OPS-039). (1) `ledger_totals` in `app/payments/src/scorecard_inputs.rs` counts refunds, disputes and charges each by their own record time inside the window, and `money_figs` in `app/portals/src/scorecard.rs` divides one by the other, so a week with two refunds of earlier charges and one new charge reads \"200.0% (2 of 1)\" and a week with refunds and no charge reads \"No data yet\". The rates are now a cohort: of the charges recorded in the window, how many have a refund and how many a dispute recorded by now, so no rate passes 100%; a window with no charge shows \"No data yet\" for the rate and, beside it, the plain count of refunds and disputes recorded in the window, so they are never hidden. Say in the decision entry and on the page's note that a recent window's rate can still rise. (2) `ScorecardLines::from_pairs` in `app/portals/src/scorecard_lines.rs` checks only that each key is present, so a swapped GO and STOP pair turns an amber or red figure green. It now refuses, with a new error naming the key, a line whose GO is worse than its STOP for that line's direction (equal values pass); start-up refuses as it does for a missing key, and the shipped defaults pass. Tests in the new `tests/integration/tests/scorecard_rates.rs`, PostgreSQL, fake data only: a refund in week 2 of a week-1 charge counts against week 1 and not week 2; no figure is over 100%; a week with refunds and no charge shows the count and no rate; unit cases in-crate for each direction of a swapped line, an equal pair and the shipped defaults. `tests/integration/tests/scorecard.rs` passes unchanged; if one of its cases pins the old division, report it, do not change it. `scorecard_inputs.rs` is money code under the `payments` 95% branch floor. Build notes go to the end of each crate's `NOTES.md`; update `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "portals",
+   "deps": [
+    "T158",
+    "T477",
+    "T621"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "security"
+   ],
+   "owns": [
+    "app/payments/src/scorecard_inputs.rs",
+    "app/portals/src/scorecard.rs",
+    "app/portals/src/scorecard_lines.rs",
+    "tests/integration/tests/scorecard_rates.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/ops-recovery.md"
+   ],
+   "requirements": [
+    "OPS-039"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-4448",
+    "D-5081"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 350,
+    "context_pct": 21
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T780-scorecard-rates-and-lines",
+   "prompt": "kit/prompts/T780.md",
+   "acceptance": "`tests/integration/tests/scorecard_rates.rs` and the new in-crate cases pass; no scorecard figure can pass 100%; a swapped line refuses start-up and the shipped defaults start; `tests/integration/tests/scorecard.rs` passes unchanged; `app/payments/` stays at or above its branch floor."
+  },
+  {
+   "id": "T781",
+   "slug": "export-failure-alert",
+   "title": "recovery: a failed or timed-out nightly export raises one alert a day",
+   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F13, part (a); OPS-013, PRIV-029; D-4701). A nightly export that fails or passes its 100-second deadline (`EXPORT_DEADLINE`, `app/recovery/src/backup.rs`) writes its `recovery.backup_check` row and a `recovery.export_failed` audit entry and tells no one: only the health page and the monthly test restore read it, so exports can fail every night for a month unseen, and a growing database will pass the deadline every night. A run that ends not `ok` now also raises one High `recovery.export_failed` alert through `ops::api`, at most once per Arizona day, naming no path, key or size; it is not a safe-mode kind and never starts safe mode, and a good export raises nothing. The deadline, the lease and the export itself are unchanged (a longer lease or a heartbeat is a separate decision, logged in `docs/for-casey-review.md`). Tests in the new in-crate `app/recovery/src/tests/export_alert.rs` (one `mod` line in the shared `tests/mod.rs`), fake data only, with a fake `pg_dump` made through a waited-on child process as `write_script` in `backup.rs`'s tests does (D-4864; write your own few-line copy): a dump that sleeps past the deadline gives one `timeout` row and one alert; a second failure the same day raises no second alert; a failure the next day raises one; a stored export raises none. Every existing `backup` test passes unchanged. Build notes go to the end of `app/recovery/NOTES.md`; update `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "recovery",
+   "deps": [
+    "T109",
+    "T765"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "recovery"
+   ],
+   "owns": [
+    "app/recovery/src/backup.rs",
+    "app/recovery/src/tests/export_alert.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/ops-recovery.md",
+    "docs/spec/privacy.md"
+   ],
+   "requirements": [
+    "OPS-013",
+    "PRIV-029"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-4701",
+    "D-4864",
+    "D-5081"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 220,
+    "context_pct": 17
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T781-export-failure-alert",
+   "prompt": "kit/prompts/T781.md",
+   "acceptance": "`app/recovery/src/tests/export_alert.rs` passes with every listed case, the alert cases failing on `main` before the change; every existing `backup` test passes unchanged; `EXPORT_DEADLINE` is unchanged."
+  },
+  {
+   "id": "T782",
+   "slug": "released-job-number-and-calls",
+   "title": "server and calls: the released job's page shows its job number and its call log",
+   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F21; PICK-024, BIZ-013; D-3664's logged gap). `job_page` in `app/server/src/business_portal.rs` builds the released job's page with `job_number: 0` and no calls, so a business reads \"Job 0\" and never sees the call log BIZ-013 and its no-show disputes rest on. After the page's existing ownership check (another business's pick, a member without \"Confirm and billing\" and a bad ID stay the one not-found answer, with nothing read first), the handler reads the pick's job through `own_pick_job` and its number through `jobs::api::job_number`, and the pick's calls through a new `calls::api::pick_call_log(db, pick)` in the new `app/calls/src/pick_call_log.rs` (exported by one line in the shared `api.rs`), which finds the pick's line as `pick_has_line` does and returns `call_log`'s rows, empty when the pick has no line. A failed read shows the page's existing failure answer, never job 0. The call rows hold what `call_log` already returns and no homeowner number. Tests in the new `app/server/tests/released_job_page.rs`, PostgreSQL through the assembled router, fake data only: a released pick's page shows its real job number and one planted call; a pick with no line shows the number and no call; another business's pick is still the one not-found answer. Every existing released-pick and door test passes unchanged. Close D-3664's gap line in `app/server/NOTES.md` and `docs/for-casey-review.md`; update `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T526"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/server/src/business_portal.rs",
+    "app/calls/src/pick_call_log.rs",
+    "app/server/tests/released_job_page.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/quotes-pick.md",
+    "docs/spec/businesses.md",
+    "app/calls/src/pick_line.rs"
+   ],
+   "requirements": [
+    "PICK-024",
+    "BIZ-013"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-3664",
+    "D-1739",
+    "D-5081"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 280,
+    "context_pct": 23
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T782-released-job-number-and-calls",
+   "prompt": "kit/prompts/T782.md",
+   "acceptance": "`app/server/tests/released_job_page.rs` passes against PostgreSQL with every listed case, the job-number case failing on `main` before the change; every existing released-pick and door-matrix test passes unchanged."
+  },
+  {
+   "id": "T783",
+   "slug": "picture-text-delete-kept",
+   "title": "intake: a picture text's media is deleted at the provider after a failed delete and after a store that can never succeed",
+   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F19; INT-044, PRIV-014). `privacy::api::take_picture_text` leaves the media at the texting provider when storing the photo fails, and answers `DeletePending` when the store worked and the delete did not; T675's caller in `app/intake/src/picture_text.rs` does not say what then happens, so a homeowner's photo can stay at the provider with no retry. In `picture_text.rs`: a `DeletePending` answer queues a delete-only task under its own dedupe key (the media's ID) that retries with backoff until the provider confirms, and raises one alert after its last attempt; and when the store has failed on its last retry the media is deleted at the provider too, nothing being kept, as on the 72-hour path. `media_fetch.rs` is read, not edited. Tests in the new `tests/integration/tests/picture_text_delete.rs`, PostgreSQL with the Twilio stand-in, fake data only: the stand-in's delete fails once and the retry deletes; storage fails on every retry and the media is then deleted at the stand-in with no photo row; a media that deletes at once queues no task. T675's own tests pass unchanged. Build notes go to the end of `app/intake/NOTES.md`; update `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T675"
+   ],
+   "model": "claude-fable-5-2",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy"
+   ],
+   "owns": [
+    "app/intake/src/picture_text.rs",
+    "tests/integration/tests/picture_text_delete.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/intake.md",
+    "docs/spec/privacy.md",
+    "app/privacy/src/media_fetch.rs"
+   ],
+   "requirements": [
+    "INT-044",
+    "PRIV-014"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-491",
+    "D-5081"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 250,
+    "context_pct": 17
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T783-picture-text-delete-kept",
+   "prompt": "kit/prompts/T783.md",
+   "acceptance": "`tests/integration/tests/picture_text_delete.rs` passes against PostgreSQL with every listed case; T675's tests pass unchanged; `app/privacy/src/media_fetch.rs` is not in the diff."
+  },
+  {
+   "id": "T784",
+   "slug": "returned-mailbox-no-notice",
+   "title": "businesses: a returned mailbox gets no job card, pick or money notice",
+   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F40; BIZ-040, BIZ-055, SEC-025; D-1846, D-4327). `may_get_notices` exists but only the businesses' own account emails ask it: `channel_preference::notice_recipients` and `team::notice_addresses` never look at `businesses.mailbox_check`, so once T659 marks an address returned (a hard bounce or a spam complaint) it keeps getting job cards, pick and Confirm notices and money notices, which costs the shared sender its standing (SEC-025). Both readers now leave out a mailbox whose check row has `returned_at` set: in `notice_recipients` that person's `email` is false while their approved phones still get texts (BIZ-040's \"texts continue\"), and in `notice_addresses` the returned sign-in address is dropped while a verified backup address is still used where `backup_address::notice_addresses` applies. A mailbox with no check row, or one not yet verified, is still sent to: D-1846 does not hold a business with no row, so the filter is returned-only; say so in the decision entry. No caller changes. Tests in the new `tests/integration/tests/returned_mailbox_notices.rs`, PostgreSQL, fake data only, marking the address through T659's `mark_returned`: a returned owner mailbox gets no card email while the owner's approved phone still gets the card text; an EMERGENCY card leaves it out of both the immediate and the 8 a.m. task; a returned member with a verified backup gets the pick notice at the backup; with every mailbox returned and no phone nothing is queued and `queue_card_notice` answers false; a mailbox with no check row still gets its card. `tests/integration/tests/business_event_emails.rs` and every existing card and notice test pass unchanged. Remove the \"Not wired yet\" line in `app/businesses/NOTES.md`; update `docs/decisions.md`.",
+   "type": "build",
+   "phase": 2,
+   "stage": "6",
+   "module": "businesses",
+   "deps": [
+    "T659",
+    "T677"
+   ],
+   "model": "claude-fable-5-2",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/businesses/src/channel_preference.rs",
+    "app/businesses/src/team.rs",
+    "tests/integration/tests/returned_mailbox_notices.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/businesses.md",
+    "docs/spec/security.md",
+    "app/businesses/src/email_verification.rs"
+   ],
+   "requirements": [
+    "BIZ-040",
+    "BIZ-055",
+    "SEC-025"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-1846",
+    "D-4327",
+    "D-5081"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 300,
+    "context_pct": 21
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T784-returned-mailbox-no-notice",
+   "prompt": "kit/prompts/T784.md",
+   "acceptance": "`tests/integration/tests/returned_mailbox_notices.rs` passes against PostgreSQL with every listed case, the returned-mailbox cases failing on `main` before the change; `business_event_emails.rs` and every existing card and notice test pass unchanged."
+  },
+  {
+   "id": "T785",
+   "slug": "dispute-without-due-date",
+   "title": "payments: a dispute with no usable evidence date is still recorded and still blocks refunds",
+   "goal": "Plan change D-5081 (external code review of Nov 20, 2026, finding F26; FEE-026, FEE-027; D-2073 (1)). A `charge.dispute.created` whose `evidence_details.due_by` is null is read as unreadable (`app/payments/src/routes.rs`): one High alert with no subject, no `payments.dispute` row and no ledger entry, so FEE-026's refund block never applies and an automatic refund can go out on a disputed charge; D-2073 (1) said Casey records such a dispute by hand, but no screen or caller exists for that. A `due_by` of 0 or below is stored as 1970 and its tasks fire at once. The new `migrations/0219_payments_dispute_due_optional.sql` drops `NOT NULL` from `payments.dispute.due_at`. The webhook route now treats a null, zero, negative or already-past `due_by` as no date and still records the dispute: the dispute row, the ledger entry and the dispute alert are written exactly as for a dated one, so refunds on that pick are blocked and flagged, and only the submit task and the due reminders, which need a date, are skipped; the alert says the evidence date is missing and names the pick, so Casey can act in Stripe. `record_dispute`'s existing signature stays for dated disputes; the undated case is a new entry beside it in `app/payments/src/disputes.rs`, so no done test changes. Every reader of `payments.dispute.due_at` handles a missing date: the ones in these two files, and `place_dispute_holds` in `app/payments/src/purge.rs`, which this task also owns for that read alone: an undated dispute's PRIV-007 hold counts from `opened_at` in place of the missing date, and the decision entry and `docs/for-casey-review.md` say so. Tests in the new `tests/integration/tests/dispute_no_due_date.rs`, PostgreSQL with the Stripe stand-in's signing, fake data only, the event bodies built in the test: `due_by` null makes one dispute row with no date and one ledger entry, and a later refund on that pick is blocked and flagged; `due_by` 0 and a past date do the same and queue no task due in the past; an undated dispute still places its retention hold; a dated dispute behaves as today. Every existing dispute and refund test passes unchanged. It is money code under the `payments` 95% branch floor. Build notes go to the end of `app/payments/NOTES.md`; update `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 2,
+   "stage": "6",
+   "module": "payments",
+   "deps": [
+    "T381"
+   ],
+   "model": "claude-fable-5-2",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "money",
+    "security"
+   ],
+   "owns": [
+    "app/payments/src/disputes.rs",
+    "app/payments/src/routes.rs",
+    "app/payments/src/purge.rs",
+    "migrations/0219_payments_dispute_due_optional.sql",
+    "tests/integration/tests/dispute_no_due_date.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/fees.md",
+    "docs/brains/payments-stripe.md"
+   ],
+   "requirements": [
+    "FEE-026",
+    "FEE-027"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-2073",
+    "D-5081"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 5,
+    "lines": 350,
+    "context_pct": 22
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T785-dispute-without-due-date",
+   "prompt": "kit/prompts/T785.md",
+   "acceptance": "`tests/integration/tests/dispute_no_due_date.rs` passes against PostgreSQL with every listed case, the null case failing on `main` before the change (no dispute row there); every existing dispute and refund test passes unchanged; the migration only drops the `NOT NULL`; `app/payments/` stays at or above its branch floor."
   }
  ]
 }

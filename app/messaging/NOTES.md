@@ -267,3 +267,4 @@
 - [QH-007] (task 573) `expire_job_rows(conn, job, closed_at)` expires a closed job's queued and held rows created before `closed_at`, one `messaging.text_expired` audit row each, except the `CLOSE_TEXTS` LIKE patterns; T744's `jobs.final_status` handler is its caller, not yet wired (D-4764, D-4899).
 - [BIZ-032] (change) a business row's `recipient_id` is always the phone's line ID (`sender_line`); a row holding a business ID is expired, never guessed (D-4051).
 - [TXT-035 QH-007] (tests) `tests/integration/tests/outbox_business_rows.rs` (T573).
+- [TXT-035] (task 526) change: `NoticeSender::with_business_number` keeps the configured business number; `run_business_notice` passes it to `load_lines`, so a business text is stored only while the stored switch is on and that number is set, else email (D-3882, D-5070). `NoticeSender::new` is unchanged. Tests: `tests/integration/tests/business_texting_switch.rs`.

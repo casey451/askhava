@@ -140,8 +140,8 @@ pub use crate::scorecard_inputs::{
     SignupRoutes, SignupSource, complaints_for_jobs, signup_routes, signups_by_source,
 };
 pub use crate::service::{
-    Ticks, apply, create, night_count, own_hours, pause_for_rule, pause_self, resume_self,
-    set_job_types, set_own_hours, set_ticks, set_towns,
+    BECAME_ELIGIBLE_KIND, Ticks, apply, create, night_count, own_hours, pause_for_rule, pause_self,
+    queue_eligible, resume_self, set_job_types, set_own_hours, set_ticks, set_towns,
 };
 pub use crate::service_area::{
     MAX_RADIUS_MILES, MIN_RADIUS_MILES, ServiceArea, ServiceAreaProblem, StoredServiceArea,
@@ -164,6 +164,7 @@ pub use crate::team::{
     Acting, MEMBER_REMOVED_KIND, NoticePurpose, Roles, SenderLink, TeamError, TeamMember,
     add_member, add_owner, members, remove_member, set_roles, unlink_phone,
 };
+pub use crate::texting_switch::business_texting_on;
 
 /// SEC-038, D-480: whether `by`, a current member of `by.business`, passed a Verify code (to their
 /// verified phone, or email without a texting phone) no more than [`STEP_UP_LIFE`] before `now`;

@@ -152,6 +152,7 @@ struct BusinessParts {
     vault: Option<Arc<Vault>>,
     confirm: Option<ConfirmSettings>,
     homeowner: Option<homeowner_portal::HomeownerVerify>,
+    business_number: Option<askhava_messaging::api::SendingNumber>,
 }
 
 impl RouterParts {
@@ -186,6 +187,18 @@ impl RouterParts {
         verify: Option<homeowner_portal::HomeownerVerify>,
     ) -> Self {
         self.business.homeowner = verify;
+        self
+    }
+
+    /// Adds the configured business sending number ([`business_number`]) the portal's notice
+    /// settings read the texting switch with (T526, TXT-035, D-3881); without it business texting
+    /// counts as off there.
+    #[must_use]
+    pub fn with_business_number(
+        mut self,
+        number: Option<askhava_messaging::api::SendingNumber>,
+    ) -> Self {
+        self.business.business_number = number;
         self
     }
 
@@ -375,7 +388,8 @@ fn business_pages(
     let cant_take = cant_take_route::routes(pool.clone());
     let homeowner = homeowner_portal::routes(pool.clone(), webhooks, parts.homeowner);
     let step_up = business_step_up::routes(pool.clone(), parts.step_up);
-    let portal = business_portal::served(pool, parts.vault, (webhooks, voice))
+    let portal_parts = (parts.vault, parts.business_number);
+    let portal = business_portal::served(pool, portal_parts, (webhooks, voice))
         .merge(confirm)
         .merge(cant_take)
         .merge(step_up);
@@ -870,6 +884,7 @@ where
     );
     register_request_counts(&mut registry, Arc::clone(&clock));
     register_safe_mode(&mut registry, Arc::clone(&clock));
+    register_late_cards(&mut registry, Arc::clone(&clock));
     registry.register(
         askhava_quotes::api::WINDOWS_KIND,
         askhava_quotes::api::run_windows_end,
@@ -898,6 +913,18 @@ where
         register_job_texts(&mut registry, &keys, &clock);
     }
     registry
+}
+
+/// `quotes`' late cards on `businesses.became_eligible` (CARD-018, CARD-020, T677, D-4360) on
+/// the worker's clock.
+fn register_late_cards(registry: &mut Registry, clock: Arc<dyn Clock>) {
+    registry.register(
+        askhava_businesses::api::BECAME_ELIGIBLE_KIND,
+        move |pool, task| {
+            let now = clock.now();
+            askhava_quotes::api::run_became_eligible(pool, task, now)
+        },
+    );
 }
 
 /// `intake`'s homeowner job texts (`jobs.homeowner_text`, D-1030 (A)) and quote-count update
@@ -933,7 +960,8 @@ fn register_held_success(registry: &mut Registry, hooks: Option<release_sink::St
 
 /// `picks`' notices to the business: the pick notice with the worker's Confirm window and its end
 /// (PICK-019, PICK-037, T063), the window's end and its lapse on the worker clock (PICK-046,
-/// PICK-047, T491, D-3882), the Payment pending wait's end on the worker clock (JOB-014, T663,
+/// PICK-047, T491, D-3882), the Confirm reminders' run (PICK-037, PICK-044, T682, D-4361), the
+/// Payment pending wait's end on the worker clock (JOB-014, T663,
 /// D-4349), "This job is no longer active." on a final move (PICK-026, T681, D-4361) and the
 /// withdrawn-pick notice (PICK-032, CON-029, T330).
 fn register_pick_notices(
@@ -948,6 +976,15 @@ fn register_pick_notices(
     registry.register(askhava_picks::api::CONFIRM_ENDS_KIND, move |pool, task| {
         let now = ends_clock.now();
         askhava_picks::api::run_confirm_ends_at(pool, task, now)
+    });
+    let remind_clock = Arc::clone(&clock);
+    let kind = askhava_picks::api::CONFIRM_REMINDER_KIND;
+    registry.register(kind, move |pool, task| {
+        let (rules, now) = (
+            askhava_picks::api::WindowRules::default(),
+            remind_clock.now(),
+        );
+        askhava_picks::api::run_confirm_reminder_at(pool, rules, task, now)
     });
     registry.register(
         askhava_jobs::api::PAYMENT_RETURNED_KIND,
@@ -1200,7 +1237,8 @@ fn register_twilio_handlers(
         let sender = outbox_sender(settings, keys, sms.clone(), (&pairs, Arc::clone(&clock)))?;
         let gate = NoticeChecks { confirm };
         let phones = business_text_phone::BusinessTextPhone::new(phones);
-        let sender = sender.with_business((gate, phones), None);
+        let number = business_number(settings.business_number())?;
+        let sender = sender.with_business((gate, phones), number);
         askhava_messaging::api::register_send_due(registry, Arc::new(sender));
     }
     let (sms, scan_clock) = (Arc::new(sms), Arc::clone(&clock));
@@ -1826,10 +1864,9 @@ fn register_card_sender(
     let Some(vault) = vault_from(settings, pairs)? else {
         return Ok(());
     };
-    let keys = Arc::new(askhava_intake::api::CardsOutKeys::new(
-        id_secret.clone(),
-        vault,
-    ));
+    let number = business_number(settings.business_number())?;
+    let keys = askhava_intake::api::CardsOutKeys::new(id_secret.clone(), vault);
+    let keys = Arc::new(keys.with_business_number(number));
     let approved = Arc::clone(&keys);
     registry.register(
         askhava_intake::api::CARDS_APPROVED_KIND,
@@ -1918,6 +1955,21 @@ fn outbox_sender(
             .ok()
     });
     OutboxSender::new(keys, sms, (number, postal), clock).map_err(io::Error::other)
+}
+
+/// TXT-035, D-3881, D-3882 (T526): the business line's own sending number from the trimmed
+/// `ASKHAVA_BUSINESS_NUMBER` value `raw` (`Settings::business_number`, or the sign-up's pairs);
+/// `None` when unset in every environment, and business texting then counts as off.
+///
+/// # Errors
+///
+/// A value that is not `+1` and ten digits, naming the key, never the value.
+pub fn business_number(
+    raw: Option<&str>,
+) -> io::Result<Option<askhava_messaging::api::SendingNumber>> {
+    raw.map(|raw| askhava_messaging::api::SendingNumber::parse(raw.trim()))
+        .transpose()
+        .map_err(|_| io::Error::other("setting ASKHAVA_BUSINESS_NUMBER has an invalid value"))
 }
 
 /// `ASKHAVA_HOMEOWNER_NUMBER` from `pairs` (the last one wins): `None` when unset in dev and CI,
@@ -2013,6 +2065,7 @@ fn notice_senders(
     let invalid = |_| io::Error::other("setting ASKHAVA_POSTAL_ADDRESS has an invalid value");
     let links = IdSecret::new(1, id_secret.clone()).map_err(io::Error::other)?;
     let notice = NoticeSender::new((id_secret.clone(), links), postal, kind).map_err(invalid)?;
+    let notice = notice.with_business_number(business_number(settings.business_number())?);
     let receipt = ReceiptSender::new(id_secret.clone(), postal, kind).map_err(invalid)?;
     Ok(Some((notice, receipt)))
 }

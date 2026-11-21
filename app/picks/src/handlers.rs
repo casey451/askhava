@@ -54,6 +54,7 @@ use crate::connect::{PendingEnd, end_pending};
 use crate::models::{self, PicksError};
 use crate::money_notices::BUSINESS_NOTICE_KIND;
 use crate::pick_ended::queue_backup_text;
+use crate::reminder_run::remind;
 use crate::status::{awaits_confirm, confirm_backstop_minutes, pick_lost, returned_unconfirmed};
 
 /// The `core.task` kind of the Confirm window's end (PICK-019).
@@ -64,7 +65,7 @@ pub const HOLD_END_TEMPLATE: &str = "hold_end_notice";
 
 const DB_FAILED: HandlerError = HandlerError("pick window database statement failed");
 
-fn id(payload: &Value, name: &str) -> Result<Uuid, HandlerError> {
+pub(crate) fn id(payload: &Value, name: &str) -> Result<Uuid, HandlerError> {
     payload[name]
         .as_str()
         .and_then(|v| Uuid::parse_str(v).ok())
@@ -118,7 +119,8 @@ pub async fn run_pick_notice(
 /// none for an emergency job (PICK-044, `jobs`' 60 clock minutes), which still gets one
 /// [`CONFIRM_ENDS_KIND`] task at the end of those 60 minutes. `jobs`' backstop is restarted one
 /// business minute past the end, so the window's own task decides. A repeat with the same instant
-/// restarts nothing and queues nothing new (D-1503). BIZ-034, D-285: while the business is away
+/// restarts nothing and queues nothing new (D-1503). PICK-037, D-4361: the send also queues the
+/// pick's first reminder run ([`remind`], `reminder_run.rs`), once per pick and time. BIZ-034, D-285: while the business is away
 /// at the send, a non-emergency window starts when away ends and the pick is marked
 /// `away_delayed`; an emergency pick never waits.
 ///
@@ -156,6 +158,7 @@ pub async fn notice_sent(
     }
     if row.emergency {
         emergency_window(&mut tx, (pick, job), row.timer_from).await?;
+        remind(&mut tx, pick, (start, start), WindowRules::default()).await?;
         tx.commit().await.map_err(|_| PicksError::Database)?;
         return Ok(None);
     }
@@ -166,6 +169,7 @@ pub async fn notice_sent(
     if delayed {
         mark_away_delayed(&mut tx, pick).await?;
     }
+    remind(&mut tx, pick, (start, start), WindowRules::default()).await?;
     tx.commit().await.map_err(|_| PicksError::Database)?;
     Ok(Some(due))
 }
@@ -310,17 +314,20 @@ async fn queue_hold_notice(
 }
 
 /// A waiting pick's HOLD facts as stored (PICK-043, BIZ-034).
-struct HoldRow {
-    job: Uuid,
-    business: Uuid,
-    due: Option<Timestamp>,
-    away_delayed: bool,
-    held: bool,
+pub(crate) struct HoldRow {
+    pub(crate) job: Uuid,
+    pub(crate) business: Uuid,
+    pub(crate) due: Option<Timestamp>,
+    pub(crate) away_delayed: bool,
+    pub(crate) held: bool,
 }
 
 /// Waiting pick `pick`'s job, business, stored Confirm end, Away mark and whether a HOLD was
 /// stored for it; none when it does not wait.
-async fn hold_row(db: &mut PgConnection, pick: Uuid) -> Result<Option<HoldRow>, PicksError> {
+pub(crate) async fn hold_row(
+    db: &mut PgConnection,
+    pick: Uuid,
+) -> Result<Option<HoldRow>, PicksError> {
     let row = sqlx::query!(
         "SELECT p.job_id, p.business_id, p.confirm_due, p.away_delayed, \
          EXISTS (SELECT 1 FROM picks.window_extension e \
@@ -497,7 +504,7 @@ pub async fn run_confirm_ends_at(
 }
 
 /// A whole-second instant named `name` in a window task's payload.
-fn second(payload: &Value, name: &str) -> Result<Timestamp, HandlerError> {
+pub(crate) fn second(payload: &Value, name: &str) -> Result<Timestamp, HandlerError> {
     payload[name]
         .as_i64()
         .and_then(|s| Timestamp::from_second(s).ok())
