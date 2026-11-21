@@ -708,8 +708,9 @@ a.card { display: block; color: var(--ink); text-decoration: none; }
 /* T608 (WEB-027, D-4246, D-4252): the home page's and quote page's own placements of the
    components above, on markup whose words and ids stay as they were. The home's bands sit inside
    main as rounded panels; the "Who runs" facts (each a `.who-fact` paragraph, kept a sibling of the
-   heading for tests/e2e/who_runs_links.spec.ts) are stacked rows on phones and one ruled row from
-   1024 px. The quote page's cards: the number heading above a rule, the card lines as ruled rows
+   heading for tests/e2e/who_runs_links.spec.ts) are stacked rows on phones; from 1024 px the
+   section takes the full width (the 911 note below it) and the facts share one ruled row, each an
+   equal cell that wraps its own words, so the row never breaks into lines (DESIGN_SPEC :113). The quote page's cards: the number heading above a rule, the card lines as ruled rows
    with the business name in the serif, a gone card in ink-soft; its three states each a panel. */
 .home-band { padding-inline: 20px; border: 1px solid var(--line); border-radius: var(--radius-card); margin-block: 40px; }
 .home-band.night { border-color: var(--night); }
@@ -732,9 +733,12 @@ a.card { display: block; color: var(--ink); text-decoration: none; }
 #tier-summary p, #tier-summary ul { margin: 0; }
 #closed-note { padding-block: 12px; border-block: 1px solid var(--line); }
 @media (min-width: 1024px) {
-  .who > div:first-child { display: flex; flex-wrap: wrap; align-items: baseline; }
-  .who > div:first-child > * { flex: 1 0 100%; }
-  .who > div:first-child > .who-fact { flex: 0 1 auto; margin-top: 16px; padding: 12px 32px 12px 0; border-block: 1px solid var(--line); }
+  .who > div:first-child { display: flex; flex-wrap: wrap; }
+  .who > div:first-child > :not(.who-fact) { flex: 0 0 100%; box-sizing: border-box; }
+  .who > div:first-child > p:not(.who-fact) { max-width: none; padding-right: max(0px, 100% - 70ch); }
+  .who > div:first-child > .who-fact { flex: 1 1 0; min-width: 0; overflow-wrap: anywhere; margin-top: 16px; padding: 12px 32px 12px 0; border-block: 1px solid var(--line); }
+  .who > div:first-child > .who-fact ~ .who-fact { padding-left: 32px; border-left: 1px solid var(--line); }
+  .who > div:first-child > .who-fact + :not(.who-fact) { margin-top: 16px; }
 }
 
 @media (min-width: 768px) {
@@ -844,7 +848,7 @@ a.card { display: block; color: var(--ink); text-decoration: none; }
   .fair { padding-block: 96px; }
   .fair-list { column-gap: 56px; }
   .biz-grid { grid-template-columns: 1.1fr 0.9fr; gap: 88px; align-items: center; }
-  .who { gap: 88px; }
+  .who { grid-template-columns: minmax(0, 1fr); gap: 40px; }
   .end { padding-block: 72px; }
   .footer-grid { gap: 88px; }
   .quote-page { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr); column-gap: 88px; align-items: start; }
