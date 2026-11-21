@@ -3720,4 +3720,4 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 - **No HELP reply after STOP.** Twilio blocks it. The SMS terms now send opted-out people to laftly.com/help and help@laftly.com.
 - **Canada.** We now say texts work with US numbers; Canadian numbers aren't confirmed yet.
 - **Not changed:** the STOP reply keeps its exact wording; a help link there would break its rule (only confirm).
-- **Spanish check without Grok (D-5292):** each Spanish text that stays on is translated back to English twice by two fresh AI sessions that see only the Spanish (ChatGPT, plus a second model you have, or a second fresh ChatGPT chat). The ChatGPT round you ran counts as the first; the second is still to do.
+- **Spanish check without Grok (D-5292):** each Spanish text that stays on is translated back to English twice by two fresh AI sessions that see only the Spanish (ChatGPT, plus a second model you have, or a second fresh ChatGPT chat). Done: both rounds (ChatGPT, then a fresh ChatGPT chat) matched all 8 texts. The style notes go to the paid review.
