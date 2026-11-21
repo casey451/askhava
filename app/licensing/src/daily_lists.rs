@@ -16,7 +16,10 @@
 //! for that batch within `sweep_budget`, so a slow agency site or a handler timeout can never lose
 //! the chain, an alert or the cursor, and a retried run repeats no lookups (D-3416). The pairs come
 //! from the caller's [`ActiveLicenses`] (`businesses`, wired by `server`). A good list ends the
-//! failure and queues the next run hour. Every slot lies on one grid anchored at the run hour and
+//! failure and queues the next run hour. A recorded ROC list also runs the daily check of every
+//! active ROC business (`check_once`, T654, D-4310), a page of `batch` at a time until
+//! `sweep_budget` is spent; the rest go on in a run at the next `retry_every` slot, whose payload
+//! carries the cursor and the list day it belongs to. Every slot lies on one grid anchored at the run hour and
 //! its dedupe key names the list and the instant, so a retried run lands on its own slot
 //! (JOB-006, R11, D-3412).
 
@@ -36,7 +39,7 @@ use crate::handlers::{
     FailureLimits, ListFailureAlert, alert_list_failure, arizona_day, lookup_while_list_fails,
 };
 use crate::imports::ImportError;
-use crate::service::{ImportSummary, import_city_list, import_roc_list};
+use crate::service::{ImportSummary, check_once, import_city_list, import_roc_list};
 
 /// The `core.task` kind of one list's daily run (LIC-007, LIC-039).
 pub const DAILY_LISTS_KIND: &str = "licensing.daily_lists";
@@ -399,9 +402,54 @@ async fn look_up<S: LicenseSource + Sync>(
     }
 }
 
+/// D-4310: splits a payload's cursor by its meaning. With a failure start it is the lookups' own.
+/// Without one it is the daily check's, used only for the list day `day` it was left on, and the
+/// state a failing run reads starts its lookups afresh.
+fn check_cursor(state: ListState, day: Date) -> (Option<Uuid>, ListState) {
+    if state.failing_since.is_some() {
+        return (None, state);
+    }
+    let lookups = ListState {
+        after: None,
+        swept_on: None,
+        ..state
+    };
+    (state.after.filter(|_| state.swept_on == Some(day)), lookups)
+}
+
+/// CARD-015, LIC-007, D-4310: the daily check of every active ROC business against the list just
+/// recorded, by ID from `after`, a page of `batch` at a time until `sweep_budget` is spent (at
+/// least one page a run); a business already checked against that list's date is skipped. Returns
+/// the cursor the next run goes on from, or `None` when every business is checked.
+async fn check_active<A: ActiveLicenses + Sync>(
+    conn: &mut PgConnection,
+    active: &A,
+    mut after: Option<Uuid>,
+    settings: DailyListSettings,
+) -> Result<Option<Uuid>, HandlerError> {
+    let began = std::time::Instant::now();
+    let budget = std::time::Duration::try_from(settings.sweep_budget).unwrap_or_default();
+    let full = usize::try_from(settings.batch).unwrap_or(usize::MAX);
+    loop {
+        let page = active.active_after(conn, after, settings.batch).await;
+        let page = page.map_err(|_| FAILED)?;
+        for (id, number) in &page {
+            check_once(conn, *id, number).await.map_err(|_| FAILED)?;
+        }
+        if page.len() < full {
+            return Ok(None);
+        }
+        after = page.last().map(|(id, _)| *id);
+        if began.elapsed() >= budget {
+            return Ok(after);
+        }
+    }
+}
+
 /// The [`DAILY_LISTS_KIND`] handler (LIC-006, LIC-007, LIC-008, LIC-010, LIC-039, CARD-015,
-/// D-2704, D-3416): fetches and records the task's list for its list day and queues the next run
-/// hour; on a failure, [`run_failing`].
+/// D-2704, D-3416, D-4310): fetches and records the task's list for its list day, runs the ROC
+/// list's daily checks ([`check_active`]) and queues the next run hour, or the next retry slot
+/// while checks are left; on a failure, [`run_failing`].
 ///
 /// # Errors
 ///
@@ -421,11 +469,25 @@ where
     let mut conn = pool.acquire().await.map_err(|_| FAILED)?;
     let day = list_day(now, settings.run_hour);
     let recorded = fetch_and_record(&mut conn, parts.0, state.list, day).await?;
+    let (after, state) = check_cursor(state, day);
     if recorded.is_none() {
         return run_failing(&mut conn, parts, state, (now, settings)).await;
     }
-    let next = ListState::fresh(state.list, Some(now));
-    let next_run = next_slot(now, settings.run_hour, DAY).ok_or(FAILED)?;
+    let left = match state.list {
+        DailyList::Roc => check_active(&mut conn, parts.1, after, settings).await?,
+        DailyList::City => None,
+    };
+    let every = if left.is_some() {
+        settings.retry_every
+    } else {
+        DAY
+    };
+    let next = ListState {
+        after: left,
+        swept_on: left.map(|_| day),
+        ..ListState::fresh(state.list, Some(now))
+    };
+    let next_run = next_slot(now, settings.run_hour, every).ok_or(FAILED)?;
     queue(&mut conn, &next, next_run).await?;
     Ok(ListRun {
         list: state.list,
