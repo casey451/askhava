@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T02:50:56Z by runner ac0991eaa273 (actions).
+Updated 2026-11-21T02:51:25Z by runner ac0991eaa273 (actions).
 
 **Building: T754 in progress since 02:49Z; 566 of 726 done; week 59% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 566 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T754 claimed 02:49Z, lease until 05:49Z; lane 3: T781 claimed 02:17Z, lease until 05:17Z; lane 4: T457 claimed 01:40Z, lease until 04:40Z; lane 5: T304 claimed 02:48Z, lease until 05:48Z; lane 6: T684 claimed 02:16Z, lease until 05:16Z; lane 7: T775 claimed 01:29Z, lease until 04:29Z
+- **Lane:** lane 1: T754 claimed 02:49Z, lease until 05:49Z; lane 3: T781 claimed 02:17Z, lease until 05:17Z; lane 5: T304 claimed 02:48Z, lease until 05:48Z; lane 6: T684 claimed 02:16Z, lease until 05:16Z; lane 7: T775 claimed 01:29Z, lease until 04:29Z
 - **Week:** 59% used, 70.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:50Z, 0 min before this update
+- **Last run:** 02:50Z, 1 min before this update
 - **Keeper:** last ran 02:46Z, next wake 03:06Z
 
 ## Needs attention
@@ -27,6 +27,7 @@ T777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T457 | portals and server: the Confirm email link asks for a code w | MERGE_PENDING | 1 | 70 min | 02:50Z |  |
 | T654 | licensing and quotes: every ROC list import runs each active | BLOCKED | 1 | 2 min | 02:42Z | PLAN GAP: outside ownership: app/quotes/src/service.rs, app/quotes/src/late_cards.rs, app/intake/src/cards_out.rs, app/i |
 | T774 | tests (harness): the quote page's no-AI-summary check leaves | MERGE_PENDING | 1 | 65 min | 02:38Z |  |
 | T777 | businesses: a sign-in code is texted only to a line whose cu | BLOCKED | 1 | 37 min | 02:09Z | PLAN GAP: outside ownership: app/server/tests/business_signin_route.rs / T777's approved_at filter in sign_in_lines fail |
@@ -153,10 +154,9 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T754 (lease until 2026-11-21T05:49:20Z)
 - lane 3: T781 (lease until 2026-11-21T05:17:31Z)
-- lane 4: T457 (lease until 2026-11-21T04:40:44Z)
 - lane 5: T304 (lease until 2026-11-21T05:48:33Z)
 - lane 6: T684 (lease until 2026-11-21T05:16:31Z)
 - lane 7: T775 (lease until 2026-11-21T04:29:12Z)
 
 ## Last usage reading
-- {"task": "T654", "at": "2026-11-21T02:42:55Z", "input_tokens": 26, "cache_creation_input_tokens": 62223, "output_tokens": 7574, "cache_read_input_tokens": 338131}
+- {"task": "T457", "at": "2026-11-21T02:50:55Z", "cache_creation_input_tokens": 255897, "input_tokens": 172, "cache_read_input_tokens": 10212677, "output_tokens": 68582}
