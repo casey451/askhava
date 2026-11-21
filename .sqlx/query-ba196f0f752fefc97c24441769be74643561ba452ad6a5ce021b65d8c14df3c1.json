@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO payments.ledger_entry (kind, business_id, job_id, amount_cents, idempotency_key) VALUES ('free-first-win', $1, $1, 0, 'fake.t754.' || $2::text)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "ba196f0f752fefc97c24441769be74643561ba452ad6a5ce021b65d8c14df3c1"
+}

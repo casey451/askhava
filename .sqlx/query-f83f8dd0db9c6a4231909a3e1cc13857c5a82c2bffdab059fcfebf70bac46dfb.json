@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO payments.pick_intent (pick_id, business_id, job_id, amount_cents, stripe_intent_id, emergency, created_at, ended_at) VALUES ($1, $1, $1, 2500, 'pi_fake' || $2::text, true, now(), now())",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "f83f8dd0db9c6a4231909a3e1cc13857c5a82c2bffdab059fcfebf70bac46dfb"
+}
