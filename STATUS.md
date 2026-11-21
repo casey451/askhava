@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T20:57:41Z by runner 5d3172ad2092 (actions).
+Updated 2026-11-21T20:58:00Z by runner 8a91c382645c (actions).
 
 **Building: T691 in progress since 20:16Z; 588 of 739 done; week 36% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,12 +9,12 @@ Updated 2026-11-21T20:57:41Z by runner 5d3172ad2092 (actions).
 - **Lane:** lane 4: T691 claimed 20:16Z, lease until 23:16Z; lane 5: T600 claimed 20:12Z, lease until 23:12Z; lane 6: T788 claimed 20:25Z, lease until 23:25Z
 - **Week:** 36% used, 118.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 20:57Z, 0 min before this update
-- **Keeper:** last ran 20:57Z, next wake 22:22Z
+- **Keeper:** last ran 20:57Z, next wake 23:14Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 39 problem(s) on tasks still to run (+462 on DONE tasks); first: T624: stored context_pct 12% but it measures 17%; regenerate
+- Strict plan check red: 38 problem(s) on tasks still to run (+461 on DONE tasks); first: T624: stored context_pct 12% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -75,7 +75,6 @@ Updated 2026-11-21T20:57:41Z by runner 5d3172ad2092 (actions).
 | T739 | picks: the owner's re-send of a release goes only while the  | done | 1 | 52 min | 21:49Z |  |
 | T752 | catalog and twin (harness): the `launch_open` comment says a | done | 1 | 39 min | 21:24Z |  |
 | T750 | docs: the privacy policy draft says an opted-out number is k | done | 1 | 38 min | 21:20Z |  |
-| T558 | Decisions digest, piece 13: the next entries after the heade | done | 1 | 28 min | 20:57Z |  |
 
 ### Plan and harness merges on main
 - none
