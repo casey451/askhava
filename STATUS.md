@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T10:35:58Z by runner c1964bbe7727 (actions).
+Updated 2026-11-21T10:36:26Z by runner c1964bbe7727 (actions).
 
 **Building: T754 in progress since 09:47Z; 576 of 726 done; week 74% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 576 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T754 claimed 09:47Z, lease until 12:47Z; lane 3: T615 claimed 09:42Z, lease until 12:42Z; lane 7: T458 claimed 08:43Z, lease until 11:43Z
+- **Lane:** lane 1: T754 claimed 09:47Z, lease until 12:47Z; lane 3: T615 claimed 09:42Z, lease until 12:42Z
 - **Week:** 74% used, 44.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:23Z, 12 min before this update
+- **Last run:** 10:23Z, 13 min before this update
 - **Keeper:** last ran 10:23Z, next wake 11:46Z
 
 ## Needs attention
@@ -22,6 +22,7 @@ Worker: D-5160's three trade-only rules (job_type: None) give candidate <trade>_
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T458 | businesses, calls and server: the email's "Link this phone"  | MERGE_PENDING | 1 | 112 min | 10:35Z |  |
 | T654 | licensing and quotes: every ROC list import runs each active | MERGE_PENDING | 2 | 74 min | 10:15Z | PLAN GAP: outside ownership: app/quotes/src/service.rs, app/quotes/src/late_cards.rs, app/intake/src/cards_out.rs, app/i |
 | T615 | site and server: a styled 404 page for unknown paths, the fa | check_failed | 2 | 92 min | 09:28Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T776 | intake: a move out of Arizona and a property-management requ | BLOCKED | 2 | 11 min | 08:54Z | PLAN GAP: outside ownership: app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml) / Worker: D-5160's three tr |
@@ -141,7 +142,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T754 (lease until 2026-11-21T12:47:34Z)
 - lane 3: T615 (lease until 2026-11-21T12:42:33Z)
-- lane 7: T458 (lease until 2026-11-21T11:43:47Z)
 
 ## Last usage reading
-- {"task": "T654", "at": "2026-11-21T10:15:43Z", "input_tokens": 154, "cache_read_input_tokens": 7114112, "cache_creation_input_tokens": 214818, "output_tokens": 62709}
+- {"task": "T458", "at": "2026-11-21T10:35:56Z", "cache_read_input_tokens": 10504298, "cache_creation_input_tokens": 244318, "input_tokens": 173, "output_tokens": 75277}
