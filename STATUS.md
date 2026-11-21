@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-21T23:03:45Z by runner 095075c72e0f (actions).
+Updated 2026-11-21T23:04:04Z by runner 095075c72e0f (actions).
 
 **Building: T600 in progress since 22:29Z; 594 of 739 done; week 40% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 594 of 739 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T600 claimed 22:29Z, lease until 01:29Z; lane 2: T608 claimed 21:16Z, lease until 00:16Z; lane 3: T542 claimed 22:52Z, lease until 01:52Z; lane 4: T798 claimed 21:15Z, lease until 00:15Z; lane 5: T397 claimed 22:35Z, lease until 01:35Z; lane 6: T118 claimed 22:08Z, lease until 01:08Z; lane 7: T117 claimed 23:02Z, lease until 02:02Z
+- **Lane:** lane 1: T600 claimed 22:29Z, lease until 01:29Z; lane 2: T608 claimed 21:16Z, lease until 00:16Z; lane 3: T542 claimed 22:52Z, lease until 01:52Z; lane 5: T397 claimed 22:35Z, lease until 01:35Z; lane 6: T118 claimed 22:08Z, lease until 01:08Z; lane 7: T117 claimed 23:02Z, lease until 02:02Z
 - **Week:** 40% used, 106.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:02Z, 1 min before this update
 - **Keeper:** last ran 22:57Z, next wake 23:17Z
@@ -20,6 +20,7 @@ Updated 2026-11-21T23:03:45Z by runner 095075c72e0f (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T798 | catalog: the photo asks' English wording loaded from the tra | MERGE_PENDING | 1 | 107 min | 23:03Z |  |
 | T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | QUEUED | 1 | 34 min | 22:56Z | Reviewer after findings round still FINDINGS at df75c487ed3673fc4e0234c1563449e081d4939b: / 1. docs/runbook.md:51,58,60  |
 | T794 | adapters and server: the Twilio media delete and the product | done | 1 | 49 min | 22:17Z |  |
 | T788 | Tooling (harness): check_pr_change.py fails a task branch th | done | 1 | 64 min | 21:30Z |  |
@@ -128,10 +129,9 @@ A requirement is verified only when every task naming it merged green, every tes
 - T600 (lease until 2026-11-22T01:29:56Z)
 - lane 2: T608 (lease until 2026-11-22T00:16:35Z)
 - lane 3: T542 (lease until 2026-11-22T01:52:12Z)
-- lane 4: T798 (lease until 2026-11-22T00:15:56Z)
 - lane 5: T397 (lease until 2026-11-22T01:35:47Z)
 - lane 6: T118 (lease until 2026-11-22T01:08:53Z)
 - lane 7: T117 (lease until 2026-11-22T02:02:15Z)
 
 ## Last usage reading
-- {"task": "T117", "at": "2026-11-21T22:56:43Z", "input_tokens": 151, "output_tokens": 39290, "cache_creation_input_tokens": 206976, "cache_read_input_tokens": 3805256}
+- {"task": "T798", "at": "2026-11-21T23:03:42Z", "cache_creation_input_tokens": 109184, "cache_read_input_tokens": 1331875, "output_tokens": 20217, "input_tokens": 89}
