@@ -90530,7 +90530,27 @@
    "wip_claim": {
     "attempt": 2,
     "remote_sha": ""
-   }
+   },
+   "reviewed_sha": "4fe1f9b40c3eee5b8282f524cad7689686aad154",
+   "review_lease": {
+    "task": "T654",
+    "session": "actions-44887096046",
+    "expires": "2026-11-21T12:01:19Z",
+    "lane": "2"
+   },
+   "branch": "claude/task/T654-card-pool-roc-check",
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "8c691ecb491369f88514a332727a3cf040e79aa5",
+     "to": "4fe1f9b40c3eee5b8282f524cad7689686aad154",
+     "main": "9b2e4670e6b6410a8253ceeb60cfa0fe17002837",
+     "how": "hand-in",
+     "at": "2026-11-21T10:15:45Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T655",
@@ -109433,7 +109453,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T10:04:07Z",
+ "updated_at": "2026-11-21T10:15:45Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -109531,7 +109551,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "9b2e4670e6b6410a8253ceeb60cfa0fe17002837",
+ "runner_sha": "8c691ecb491369f88514a332727a3cf040e79aa5",
  "starter": "actions",
  "smoke_runs": [
   {
