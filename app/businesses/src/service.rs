@@ -12,14 +12,20 @@
 //! count, so two changes at once never report a stale count and two reports in one transaction
 //! cannot deadlock on key order ([`report_coverage`]). A license change that drops job types
 //! through `capability.rs` reports through [`report_edit`] too (T585, D-4052).
+//! T677 (CARD-018, D-4360, D-5075): a move into a status that `receives_cards` from one that does
+//! not, and, on a business that receives cards, a towns or job-type edit that adds one or a tick
+//! turned on (overflow, after hours), queue one [`BECAME_ELIGIBLE_KIND`] task in the same
+//! transaction ([`queue_eligible`]); `quotes` sends the late cards.
 
 use std::collections::BTreeSet;
 
+use askhava_core::api::{NewTask, enqueue};
 use askhava_ops::api::{
     Actor, AuditEntry, Change, CoverageCount, CoverageScope, audit, lock_coverage,
     record_business_counts,
 };
 use jiff::Timestamp;
+use serde_json::json;
 use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
@@ -28,6 +34,37 @@ use crate::rules::{self, Event, JobTypeChoice, OwnHours};
 use crate::status::{AccountStatus, PauseReason, next, replaces_self_pause};
 
 const SUBJECT: &str = "businesses.business";
+
+/// The `core.task` kind queued when a business may newly get job cards (CARD-018, D-4360): its
+/// payload is `{"business": <id>}` only, never a homeowner detail; `quotes` handles it.
+pub const BECAME_ELIGIBLE_KIND: &str = "businesses.became_eligible";
+
+/// CARD-018, D-4360, D-5075: queues one [`BECAME_ELIGIBLE_KIND`] task for business `id` in the
+/// caller's transaction, one per business and minute of `now` (the dedupe key); it is due at the
+/// start of the next minute, so a later change in the same minute is committed before it runs.
+/// `quotes` calls it too, to look again once the welcome email has gone (D-5076).
+///
+/// # Errors
+///
+/// [`BusinessesError::Database`].
+pub async fn queue_eligible(
+    tx: &mut PgConnection,
+    id: Uuid,
+    now: Timestamp,
+) -> Result<(), BusinessesError> {
+    let minute = now.as_second().div_euclid(60);
+    let due = Timestamp::from_second((minute + 1) * 60).unwrap_or(now);
+    let mut task = NewTask::new(
+        BECAME_ELIGIBLE_KIND,
+        json!({ "business": id }),
+        due.max(now),
+    );
+    task.dedupe_key = Some(format!("{BECAME_ELIGIBLE_KIND}.{id}.{minute}"));
+    enqueue(tx, &task)
+        .await
+        .map(|_| ())
+        .map_err(|_| BusinessesError::Database)
+}
 
 /// The ticks and answers a business sets for itself (BIZ-005 to BIZ-008).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -142,6 +179,9 @@ async fn move_status(
     if from.counts_for_coverage() || to.counts_for_coverage() {
         let keys = coverage_keys(tx, id).await?;
         report_coverage(tx, keys, now).await?;
+    }
+    if to.receives_cards() && !from.receives_cards() {
+        queue_eligible(tx, id, now).await?;
     }
     Ok(to)
 }
@@ -410,6 +450,7 @@ pub async fn set_ticks(
         ("insured", b.insurance != ticks.insurance),
         ("after_hours", b.after_hours != ticks.after_hours),
     ];
+    let ticked_on = (ticks.overflow_on && !b.overflow_on) || (ticks.after_hours && !b.after_hours);
     (b.overflow_on, b.speaks_spanish) = (ticks.overflow_on, ticks.speaks_spanish);
     (b.insurance, b.after_hours) = (ticks.insurance, ticks.after_hours);
     models::update_ticks(&mut tx, &b).await?;
@@ -422,6 +463,9 @@ pub async fn set_ticks(
             Change::Field(field),
         )
         .await?;
+    }
+    if ticked_on && b.status.receives_cards() {
+        queue_eligible(&mut tx, id, Timestamp::now()).await?;
     }
     db(tx.commit().await)
 }
@@ -439,14 +483,15 @@ pub async fn set_towns(
 ) -> Result<(), BusinessesError> {
     let towns = rules::towns(towns)?;
     let mut tx = db(conn.begin().await)?;
-    let active = models::read(&mut tx, id)
-        .await?
-        .status
-        .counts_for_coverage();
+    let status = models::read(&mut tx, id).await?.status;
     let before = coverage_keys(&mut tx, id).await?;
+    let added = towns.iter().any(|t| !before.0.contains(t));
     models::replace_towns(&mut tx, id, &towns).await?;
-    if active {
+    if status.counts_for_coverage() {
         report_edit(&mut tx, id, before).await?;
+    }
+    if added && status.receives_cards() {
+        queue_eligible(&mut tx, id, Timestamp::now()).await?;
     }
     log(
         &mut tx,
@@ -474,14 +519,16 @@ pub async fn set_job_types(
 ) -> Result<(), BusinessesError> {
     let chosen = rules::checklist(ticked, allowed)?;
     let mut tx = db(conn.begin().await)?;
-    let active = models::read(&mut tx, id)
-        .await?
-        .status
-        .counts_for_coverage();
+    let status = models::read(&mut tx, id).await?.status;
     let before = coverage_keys(&mut tx, id).await?;
+    let had = models::job_types(&mut tx, id).await?;
+    let added = chosen.iter().any(|c| !had.contains(c));
     models::replace_job_types(&mut tx, id, &chosen).await?;
-    if active {
+    if status.counts_for_coverage() {
         report_edit(&mut tx, id, before).await?;
+    }
+    if added && status.receives_cards() {
+        queue_eligible(&mut tx, id, Timestamp::now()).await?;
     }
     log(
         &mut tx,

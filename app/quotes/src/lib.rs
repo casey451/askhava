@@ -57,6 +57,7 @@ mod intake;
 mod intake_report;
 mod job_page;
 mod job_text;
+mod late_cards;
 mod models;
 mod notes;
 mod notify;
