@@ -311,6 +311,7 @@ agencies:
       pest_control: {only: [general pest service, scorpions]}
     record_category_needed:
       termites: "the wood-destroying organism category on the Department record"
+      termite report for a sale or loan: "the wood-destroying organism category on the Department record"
       pre-emergent weed control: "the weed control category on the Department record"
   - license: "Board of Technical Registration certified home inspector"
     job_types:
