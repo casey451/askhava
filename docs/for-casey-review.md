@@ -3587,6 +3587,9 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 - **Call log on the released job's page (D-5162):** the page shows the real job number but still says "No calls yet." even when calls exist (BIZ-035). Stripe dispute handling (FEE-022) does not depend on the page.
 - **Returned mailboxes and card notices (D-5165):** some card notices (`app/picks/src/aftermath.rs:213`) still go to a mailbox marked returned; fixing that needs the notice email sender (`notice_emails.rs`) changed too.
 - **Card-step texts ignore a Spanish switch-off mid-request (night overseer, November 21):** the card preview, cards-out and T776's card-step refusal read with `spanish_on: true` (`app/intake/src/summary_step.rs:105-109`, `app/intake/src/cards_out.rs:542`), so a request stored as Spanish still gets the Spanish text if the switch goes off after it opened (TXT-039). The `tell` path honours the switch (`order_dispatch.rs:802`). Fable judged it low; a fix reads `askhava_messaging::api::spanish_switch` at those steps.
+- **Keyword-only mode limits (D-5214, D-5215):** Laftly launches with the AI on; keyword-only mode is the fallback for an outage. Its known limits stay for after launch: token-set and synonym matching; narrowing the broad words door, leaking, clogged, ac and panel; with AI off, GoOn without a question; the silent wait after two missed trade questions; and the rest of the 388 outside-research phrases (42 vetted ones go in with T716).
+- **Termite report: old placement in the trade notes (D-5216):** the home-inspection trade notes (`docs/catalog/trade_kb/trades/home_inspection.yaml`, its `wdiir` job type, and `docs/catalog/trade_kb/test_set.csv:145`) and the comment at `app/licensing/src/tests/prop_rules.rs:198` still describe the termite report under home inspection; nothing runs them, so they are left for after launch.
+- **A.R.S. 3-3633 not checked (D-5216):** the termite report moves to pest control on the trade notes' reading of A.R.S. 3-3633 (wood-destroying insect reports are a pest licensee's work); that statute was not independently verified.
 
 ## The monthly backup test checks the backup's record (D-4835)
 
@@ -3673,6 +3676,7 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 - **Worth knowing.** The email that asks the owner to approve a phone a team member linked this way cannot be sent yet: it names the phone's last 4 digits, and for a phone linked from a blocked call we keep no digits. Until that is solved the owner approves the phone on the phones page of the business account. Also, no email carries the "Link this phone" link yet (recorded in D-3675).
 - **Nothing needs you now.**
 - A licensed-trade (ROC) business now gets a job card only while its latest license check reads Active and is under 72 hours old; every day the ROC list loads, each active business gets that day's check, so the "checked on" date on a quote card is current (D-5123, D-5124). If the ROC list and the live lookups both fail for 72 hours, ROC cards stop until one works again, as LIC-008 intends.
+- If the state's ROC list can't be loaded, each licensed business whose last good check is going stale now gets one email after 24 hours saying so and naming when its job cards will pause; at 72 hours after its last good check the account is paused, and it resumes by itself, with no review, on the first list that shows the license Active. The pauses and resumes are counted in your weekly digest (T655, D-5184 to D-5186). Nothing needs you.
 
 ## Moves out of Arizona and rent-collection requests are now refused by text (T776, D-5081, D-5143, November 21)
 
@@ -3686,3 +3690,10 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 - **What happened.** When Fable hit its usage limit, the runner was meant to re-run the task on Opus without counting an attempt. It did not record that switch, because its "was this a refusal?" check does not recognise a usage-limit (429) message (`runner/model_window.py` `REFUSAL`, used at `runner/cycle.py:3330` and `runner/__main__.py:493`). T615 lost a good attempt to it.
 - **Now.** Once D-5189 (the switch off Fable, PR #1277) merges, no task runs on Fable and the bug cannot bite. T615 gets one more attempt after its flaky test is fixed (T789) and that switch has merged.
 - **Before Fable is switched back on**, a harness task must make that check accept usage-limit and rate-limit text.
+
+## No AI-off launch; termite report moves to pest control (D-5214 to D-5216, November 21)
+
+- **Your words:** "No AI-off launch" and "Move to pest control".
+- **AI:** before you say 'go live' at Gate C you turn "AI on scrubbed text" on in the owner portal and run the phone rehearsal with it on. Gate C no longer accepts a written note launching without the AI writing calls; that work (T394) must be done.
+- **Termite report:** "termite report for a sale or loan" becomes a pest-control job, only for a pest business that says it holds the wood-destroying category, and it stays free of the introduction fee. T790 makes the catalog and test change.
+- **Keywords:** T716 adds 42 checked keyword phrases for when the AI is off.
