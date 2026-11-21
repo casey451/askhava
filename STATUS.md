@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T17:47:37Z by runner 5b5195da7475 (manual).
+Updated 2026-11-21T17:55:29Z by runner b801a6d3df9f (actions).
 
-**Building: T608 in progress since 15:59Z; 583 of 731 done; week 31% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T608 in progress since 15:59Z; 584 of 731 done; week 31% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 583 of 731 build tasks (owner gates not counted)
+- **Tasks done:** 584 of 731 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T608 claimed 15:59Z, lease until 18:59Z; lane 2: T690 claimed 16:56Z, lease until 19:56Z; lane 4: T615 claimed 17:10Z, lease until 20:10Z
 - **Week:** 31% used, 128.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:40Z, 7 min before this update
+- **Last run:** 17:47Z, 7 min before this update
 - **Keeper:** last ran 17:40Z, next wake 19:02Z
 
 ## Needs attention
@@ -21,7 +21,7 @@ Updated 2026-11-21T17:47:37Z by runner 5b5195da7475 (manual).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T787 | intake: crate guide trimmed to 5,500 bytes, the detail moved | MERGE_PENDING | 1 | 68 min | 16:45Z |  |
-| T786 | server: crate guide trimmed to 5,500 bytes, the detail moved | MERGE_PENDING | 1 | 34 min | 16:33Z |  |
+| T786 | server: crate guide trimmed to 5,500 bytes, the detail moved | done | 1 | 34 min | 16:33Z |  |
 | T655 | businesses: an unknown ROC license status warns at 24 hours, | done | 2 | 2 h 34 min | 16:05Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
 | T789 | Tests (harness): TD-INT-47's no-contact check ignores the ra | done | 1 | 27 min | 15:38Z |  |
 | T304 | server and portals: the owner refund review, the audit log v | done | 2 | 2 h 44 min | 15:18Z | PLAN GAP: app/portals/templates/owner_audit_log.html (owned by T205) and app/portals/templates/health.html (owned by T47 |
@@ -84,7 +84,7 @@ Updated 2026-11-21T17:47:37Z by runner 5b5195da7475 (manual).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 583 of 731
+**Tasks merged (throughput only):** 584 of 731
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -120,7 +120,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 226 of 311 done
+- stage 5: 227 of 311 done
 - stage 6: 0 of 67 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
