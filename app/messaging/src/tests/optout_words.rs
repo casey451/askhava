@@ -78,6 +78,135 @@ fn capitalize(word: &str) -> String {
         .unwrap_or_default()
 }
 
+/// CON-008, CON-035, D-4764: a sole word said with other spacing opts out ("STOP ALL" is
+/// stopall), English and Spanish alike; a word with more around it still does not.
+#[test]
+fn a_sole_word_in_any_spacing_opts_out() {
+    for (text, word) in [
+        ("STOP ALL", "stopall"),
+        ("stop all", "stopall"),
+        ("Stop  all", "stopall"),
+        ("opt out", "opt out"),
+        ("opt  out", "opt out"),
+        ("OPT-OUT", "opt out"),
+        ("optout", "optout"),
+        ("PARAR", "parar"),
+        ("Baja.", "baja"),
+        ("can celar", "cancelar"),
+        ("s t o p", "stop"),
+    ] {
+        assert_eq!(detect_opt_out(text), Some(Detected::Word(word)), "{text:?}");
+    }
+    for text in [
+        "stop please",
+        "please stop",
+        "can stop by at 3",
+        " ",
+        "stop 2",
+    ] {
+        assert_eq!(detect_opt_out(text), None, "{text:?}");
+    }
+}
+
+/// Everyday English and Spanish words short enough to be half of a listed opt-out word.
+const EVERYDAY_WORDS: [&str; 30] = [
+    "a",
+    "al",
+    "all",
+    "an",
+    "as",
+    "be",
+    "can",
+    "cancel",
+    "en",
+    "end",
+    "it",
+    "la",
+    "no",
+    "of",
+    "on",
+    "opt",
+    "or",
+    "out",
+    "par",
+    "para",
+    "so",
+    "stop",
+    "sub",
+    "subscribe",
+    "to",
+    "top",
+    "un",
+    "up",
+    "us",
+    "ya",
+];
+
+/// CON-008, CON-011, D-4764: every way to say a listed word as two words opts out, and no
+/// ordinary two-word phrase is among them: the only pairs of everyday words are the opt-out words
+/// themselves said as two ("stop all", "opt out", "un subscribe") and "al to", a Spanish word and
+/// an English one that make no phrase in either language.
+#[test]
+fn no_ordinary_word_pair_collapses_into_a_listed_word() {
+    let mut everyday = Vec::new();
+    for word in PROVIDER_OPT_OUT_WORDS.iter().chain(&APP_OPT_OUT_WORDS) {
+        let word = word.replace(' ', "");
+        for at in 1..word.len() {
+            let (head, tail) = word.split_at(at);
+            let pair = format!("{head} {tail}");
+            assert!(
+                matches!(detect_opt_out(&pair), Some(Detected::Word(_))),
+                "{pair:?} opts out"
+            );
+            if EVERYDAY_WORDS.contains(&head) && EVERYDAY_WORDS.contains(&tail) {
+                everyday.push(pair);
+            }
+        }
+    }
+    everyday.sort();
+    everyday.dedup();
+    assert_eq!(everyday, ["al to", "opt out", "stop all", "un subscribe"]);
+}
+
+/// A phrase as a phone that sends decomposed accents types it: each accented letter becomes its
+/// base letter followed by a combining mark.
+fn decomposed(phrase: &str) -> String {
+    phrase
+        .chars()
+        .map(|c| match c {
+            'á' => "a\u{0301}".to_owned(),
+            'é' => "e\u{0301}".to_owned(),
+            'í' => "i\u{0301}".to_owned(),
+            'ó' => "o\u{0301}".to_owned(),
+            'ú' => "u\u{0301}".to_owned(),
+            'ñ' => "n\u{0303}".to_owned(),
+            c => c.to_string(),
+        })
+        .collect()
+}
+
+/// CON-010, CON-035, D-4764: each Spanish phrase typed with decomposed accents is detected, in any
+/// case, and so is a sole word typed with a combining mark.
+#[test]
+fn decomposed_accents_fold_as_precomposed_ones_do() {
+    let typed = "qui\u{0301}tenme de la lista";
+    assert_eq!(decomposed("quítenme de la lista"), typed);
+    for (id, phrase) in OPT_OUT_PHRASES
+        .iter()
+        .filter(|(id, _)| id.starts_with("es."))
+    {
+        for form in [decomposed(phrase), decomposed(phrase).to_uppercase()] {
+            let text = format!("Por favor, {form}.");
+            assert_eq!(detect_opt_out(&text), Some(Detected::Phrase(id)), "{id}");
+        }
+    }
+    assert_eq!(
+        detect_opt_out("Cancela\u{0301}r"),
+        Some(Detected::Word("cancelar"))
+    );
+    assert_eq!(detect_opt_out("can stop by at 3\u{0301}"), None);
+}
+
 /// TD-CON-04, CON-010: "please stop texting me" and its Spanish form opt out, as does every
 /// listed phrase in any case and with any punctuation; Spanish phrases are marked Spanish.
 #[test]
