@@ -579,7 +579,10 @@ pub async fn queue_call_back(
 
 /// [`counts_urgent`] on what request `conversation` stored: its "How soon?" answer, a 911-list
 /// match (any emergency event but an INT-037 beep question) and the emergency choice (D-277).
-async fn request_urgent(db: &mut PgConnection, conversation: Uuid) -> Result<bool, IntakeError> {
+pub(crate) async fn request_urgent(
+    db: &mut PgConnection,
+    conversation: Uuid,
+) -> Result<bool, IntakeError> {
     let how_soon = models::latest_answer(db, conversation, "how_soon").await?;
     let choice = models::latest_answer(db, conversation, "emergency_choice").await?;
     let keyword = models::events(db, conversation)

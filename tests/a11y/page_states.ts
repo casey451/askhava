@@ -497,6 +497,34 @@ const OWNER_HELP_STATES: readonly PageState[] = [
   ["owner help requests", "No open requests", "Nothing was sent", OWNER_SESSION_SQL],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: OWNER_HELP_ROUTE, name, shows, hides, sql, statusRegions: ["help-status"] }));
 
+const OWNER_REFUND_ROUTE = "/owner/refunds/{pick}";
+const OWNER_AUDIT_LOG_ROUTE = "/owner/audit-log";
+const OWNER_HEALTH_ROUTE = "/owner/health";
+
+/**
+ * The owner tools (T304; FEE-026, OPS-010, OPS-008, D-5159): a fake pick's refund review step, the
+ * audit log with a seeded row and the health page with a seeded job card, so each table renders.
+ */
+const OWNER_TOOLS_STATES: readonly PageState[] = [
+  [OWNER_REFUND_ROUTE, "owner refund review", "Disputes on this charge", "Error:", ""],
+  [
+    OWNER_AUDIT_LOG_ROUTE,
+    "owner audit log, rows",
+    "Audit log rows",
+    "Nothing more to show.",
+    `; INSERT INTO ops.audit_log (actor_kind, action, subject_kind, subject_id, field)
+      VALUES ('system', 'ops.fake_check', 'ops.fake_record', gen_random_uuid(), 'fake_field')`,
+  ],
+  [
+    OWNER_HEALTH_ROUTE,
+    "owner health page, a card to check",
+    "Job cards to check",
+    "so there are none to check",
+    `; INSERT INTO quotes.job_card (job_id, business_id, handyman, sent_at)
+      VALUES (gen_random_uuid(), gen_random_uuid(), false, now())`,
+  ],
+].map(([route = "", name = "", shows = "", hides = "", extra = ""]) => ({ route, name, shows, hides, sql: OWNER_SESSION_SQL + extra, statusRegions: [] }));
+
 const COMPLAINTS_ROUTE = "/b/complaints";
 const EMERGENCY_ROUTE = "/b/emergency-emails";
 const NOTICE_LOG_ROUTE = "/b/picks/{pick}/notices";
@@ -709,6 +737,9 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: OWNER_SETTINGS_ROUTE, seed: portalSeed(false), states: OWNER_SETTINGS_STATES },
   { route: OWNER_RELEASE_ROUTE, seed: portalSeed(false), states: OWNER_RELEASE_STATES },
   { route: OWNER_HELP_ROUTE, seed: portalSeed(false), states: OWNER_HELP_STATES },
+  { route: OWNER_REFUND_ROUTE, seed: portalSeed(false), states: OWNER_TOOLS_STATES.filter((s) => s.route === OWNER_REFUND_ROUTE) },
+  { route: OWNER_AUDIT_LOG_ROUTE, seed: portalSeed(false), states: OWNER_TOOLS_STATES.filter((s) => s.route === OWNER_AUDIT_LOG_ROUTE) },
+  { route: OWNER_HEALTH_ROUTE, seed: portalSeed(false), states: OWNER_TOOLS_STATES.filter((s) => s.route === OWNER_HEALTH_ROUTE) },
   { route: JOB_TYPES_ROUTE, seed: portalSeed(false), states: JOB_TYPES_STATES },
   { route: HOMEOWNER_SIGNIN_ROUTE, seed: (state) => state.route, states: HOMEOWNER_SIGNIN_STATES },
   { route: HOMEOWNER_HOME_ROUTE, seed: homeownerSeed, states: HOMEOWNER_HOME_STATES },

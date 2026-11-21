@@ -129,6 +129,14 @@
   "D-5158": {
    "by": "D-5171",
    "cut": "so T754 adds `WrongIntent` to m3's alerted refusals"
+  },
+  "D-5160": {
+   "by": "D-5178",
+   "cut": "each `job_type: None`, "
+  },
+  "D-3080": {
+   "by": "D-5214",
+   "cut": "or Casey's dated written acceptance is recorded"
   }
  }
 }

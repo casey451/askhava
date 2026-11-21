@@ -97,6 +97,7 @@ use crate::order::{
     choose_with_card, keep_words, show_built_card, spanish_line,
 };
 use crate::question_bank::starts_now;
+use crate::refusal_inputs::move_states;
 use crate::replies::quote_link;
 use crate::routing::{
     Outcome, Request, Routing, SPLIT_TEMPLATE, apply, is_split_reply, route, tell_coverage,
@@ -476,6 +477,9 @@ pub(crate) async fn show_card_step(
     if emergency || place.waiting_safe || !may_text(tx, msg.contact).await? {
         return Ok(Vec::new());
     }
+    if let Some(told) = refuse_card(tx, secret, (msg, conversation), &place).await? {
+        return Ok(told);
+    }
     let soon = open_step(tx, conversation).await?.1;
     let Some(card) = card_in(tx, conversation, &place, soon.as_deref()).await? else {
         return Ok(Vec::new());
@@ -513,6 +517,9 @@ async fn card_answer(
             Ok(Some(shown))
         }
         Some(shown) if shown.starts_with(CARD_SHOWN) => {
+            if let Some(told) = refuse_card(tx, secret, (msg, conversation), place).await? {
+                return Ok(Some(told));
+            }
             let step = answer_card(tx, secret, msg, (conversation, job)).await?;
             Ok(Some(match step {
                 CardStep::Edit(asked) => vec![asked],
@@ -776,7 +783,9 @@ async fn trade_answer(
 /// in no open category gets the INT-017 reply through `routing::apply`, else the `trade_check`
 /// marker is written; a second job's is `Coverage::NotCovered` for that job alone. Otherwise the
 /// count, by `quotes::api::request_coverage` for the trade's candidates read from `words`, goes
-/// through `routing::tell_coverage`.
+/// through `routing::tell_coverage`. LIC-017, LIC-018 (T776, D-5081): `route` reads `words`, the
+/// move reading of `refusal_inputs::move_states` and the candidate job types, so a move leaving
+/// Arizona or a property-management request is refused here ([`refuse_card`] checks again later).
 async fn tell(
     tx: &mut PgConnection,
     secret: &SecretString,
@@ -785,14 +794,16 @@ async fn tell(
     ((town, zip), settings, first): ((&str, Option<&str>), Settings, bool),
 ) -> Result<Vec<Queued>, IntakeError> {
     let area = [town];
+    let found = facts(trade, words).candidates;
+    let job_types: Vec<&str> = found.iter().map(String::as_str).collect();
     let req = Request {
         town,
         area: &area,
         trade,
         trade_open: trade_is_open(tx, trade).await?,
-        words: "",
-        move_states: None,
-        job_types: &[],
+        words,
+        move_states: move_states(words),
+        job_types: &job_types,
     };
     let label = trade_label(trade);
     let routing = Routing {
@@ -971,6 +982,9 @@ async fn timing_answer(
         }
         (Open::Day, _) => (Vec::new(), answer_day(tx, request).await?),
         (Open::Choice, soon) => {
+            if let Some(told) = refuse_card(tx, secret, request, place).await? {
+                return Ok(told);
+            }
             let Some(card) = card_in(tx, conversation, place, soon.as_deref()).await? else {
                 return Ok(Vec::new());
             };
@@ -985,6 +999,52 @@ async fn timing_answer(
         texts.extend(ask_step(tx, secret, request, place, settings).await?);
     }
     Ok(texts)
+}
+
+/// LIC-017, LIC-018, INT-017, D-5081, D-5178: the refusal check again on all the kept words of the
+/// request's first job, before its card is built, shown or sent (her EDIT words arrive after
+/// [`tell`]): a move leaving Arizona or a property-management request goes through
+/// `routing::apply` (the INT-017 reply, the request closed, no recruiting-demand row, D-1008).
+/// `Some` with the reply (none when the request was already closed) when refused, so the caller
+/// stores, shows and sends no card; `None` when the card may go on.
+async fn refuse_card(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    (msg, conversation): (&TextIn<'_>, Uuid),
+    place: &Place,
+) -> Result<Option<Vec<Queued>>, IntakeError> {
+    let (Some(trade), Some(job), Some(town)) =
+        (place.trades.first(), place.job, place.town.as_deref())
+    else {
+        return Ok(None);
+    };
+    let words = kept_words(tx, job).await?;
+    let found = facts(trade, &words).candidates;
+    let job_types: Vec<&str> = found.iter().map(String::as_str).collect();
+    let req = Request {
+        town,
+        area: &[town],
+        trade,
+        trade_open: true,
+        words: &words,
+        move_states: move_states(&words),
+        job_types: &job_types,
+    };
+    let outcome = route(&req);
+    if outcome == Outcome::Continue {
+        return Ok(None);
+    }
+    let label = trade_label(trade);
+    let routing = Routing {
+        conversation,
+        msg,
+        language: request_language(tx, conversation).await?,
+        spanish_on: true,
+        label: &label,
+        job_type: None,
+    };
+    let told = apply(tx, secret, (&req, outcome), &routing).await?;
+    Ok(Some(told.into_iter().collect()))
 }
 
 /// INT-029, CARD-007, INT-030: the card `order::choose_with_card` stores before the choice can

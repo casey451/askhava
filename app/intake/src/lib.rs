@@ -52,6 +52,7 @@ mod photos;
 mod purge;
 mod question_bank;
 mod quote_updates;
+mod refusal_inputs;
 mod replies;
 mod resubscribe;
 mod routing;
@@ -62,6 +63,7 @@ mod scorecard_inputs;
 mod service;
 mod status;
 mod summary_step;
+mod text_failed_urgency;
 mod web_chat;
 mod zip_step;
 

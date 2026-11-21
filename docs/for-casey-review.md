@@ -2,6 +2,12 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Owner health page: what "Right environment: Yes" does and does not prove (D-5128, D-5132, November 21)
+
+- **What happened.** The owner health page (`/owner/health`, T304) lists each secret the site needs with three answers: Set, Reads correctly, Right environment. The site checks its settings once, when it starts, and refuses to start on a bad one.
+- **What it means.** "Set" is exact: a missing or empty secret shows No. For the Stripe secret key the other two answers are checked at start too. For the Twilio token, the Resend key, the Stripe webhook secret, the ID secret and the database address, the start check only makes sure the value is not a Stripe key from the other environment. So a Yes there does not prove the secret belongs to the right account: a token copied from another Twilio or Resend account would still show Yes, and the first text or email would fail instead. The account names shown under the table are checked against your allowed list, so compare those when in doubt.
+- **Nothing needs you now.** If you want a real per-vendor check behind each Yes, say so and it becomes its own task.
+
 ## Help replies: the first version texts homeowners only; email replies come in a later step (D-4726, November 19, open)
 
 - **What happened.** The owner help page (T530) lets you answer a help request. The rule says a reply goes by text to a homeowner who can be texted, and otherwise by email, always by email to a business on email. Texts to businesses are not sent yet, and nothing stores the address of someone who wrote to the help email.
@@ -3570,6 +3576,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 
 Items kept for after launch under the scope freeze (D-4824). Each is a note, not a task.
 
+- **Moving keyword reads an in-state move as in-town (D-5178):** with AI off, "movers" reads "in-town move" even for a move to another Arizona town; and a two-word first text ("interstate movers") keeps no words. Both accepted.
+- **Out-of-state moves the refusal cannot see (D-5178):** with AI off, a first text that names no trade is never kept, so "relocating to Las Vegas" followed by the trade answer "movers" is carded; and "Need movers" (two words) gets the not-covered reply and a demand row even though a mover is active.
+- **Trade-only texts with AI off (D-5178):** With AI off, any trade-only text (e.g. 'I need a plumber') reads `<trade>_other`, which no category lists, so it is never carded in any trade (found by Fable in the T776 diagnosis, D-5178); needs a decision before launch with AI off.
 - **Code digests coverage:** the digest tasks (T556 to T558) cover about 0.9 MB of the about 1.58 MB of code to summarise after D-3357; T514 or T142 weighs whether that matters before the handover.
 - **Open PaymentIntents at Stripe (D-5158):** Ended picks leave their unconfirmed PaymentIntent open at Stripe (all `end_intent_unless_charging` callers and `end_pick`). No funds are held. A late success after a declined attempt is auto-refunded (FEE-021); one on an intent that was never attempted is not released and raises one High alert, and you refund it in Stripe. They show as Incomplete in the Stripe dashboard. If a late success lands on the ended intent while a $0 release is held in safe mode, `held_release` takes the paid path and answers `PickEnded`: the charge is refunded but the business is not released; accepted as rare. Consider a best-effort `cancel_payment_intent` in T132 or after launch.
 - **Scrollable tables on finished pages (D-5159):** the tables in `scorecard.html` (two), `money_view.html` and `intake_report.html` are not yet wrapped in a focusable scroll region as the business page's fee table is; their tasks are done, so the one-line wrapper waits for after launch.
@@ -3578,6 +3587,11 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 - **Call log on the released job's page (D-5162):** the page shows the real job number but still says "No calls yet." even when calls exist (BIZ-035). Stripe dispute handling (FEE-022) does not depend on the page.
 - **Returned mailboxes and card notices (D-5165):** some card notices (`app/picks/src/aftermath.rs:213`) still go to a mailbox marked returned; fixing that needs the notice email sender (`notice_emails.rs`) changed too.
 - **Card-step texts ignore a Spanish switch-off mid-request (night overseer, November 21):** the card preview, cards-out and T776's card-step refusal read with `spanish_on: true` (`app/intake/src/summary_step.rs:105-109`, `app/intake/src/cards_out.rs:542`), so a request stored as Spanish still gets the Spanish text if the switch goes off after it opened (TXT-039). The `tell` path honours the switch (`order_dispatch.rs:802`). Fable judged it low; a fix reads `askhava_messaging::api::spanish_switch` at those steps.
+- **Keyword-only mode limits (D-5214, D-5215):** Laftly launches with the AI on; keyword-only mode is the fallback for an outage. Its known limits stay for after launch: token-set and synonym matching; narrowing the broad words door, leaking, clogged, ac and panel; with AI off, GoOn without a question; the silent wait after two missed trade questions; and the rest of the 388 outside-research phrases (42 vetted ones go in with T716).
+- **Termite report: old placement in the trade notes (D-5216):** the home-inspection trade notes (`docs/catalog/trade_kb/trades/home_inspection.yaml`, its `wdiir` job type, and `docs/catalog/trade_kb/test_set.csv:145`) and the comment at `app/licensing/src/tests/prop_rules.rs:198` still describe the termite report under home inspection; nothing runs them, so they are left for after launch.
+- **A.R.S. 3-3633 not checked (D-5216):** the termite report moves to pest control on the trade notes' reading of A.R.S. 3-3633 (wood-destroying insect reports are a pest licensee's work); that statute was not independently verified.
+- **Spanish style notes for the paid review (D-5222):** from the first AI back-translation: "el dueño" reads as male; "PARAR para salir" is stiff; "Se canceló su suscripción" can sound like a paid plan; "Por ahora seguimos en inglés" is vague. These wait for the professional review (CON-018 and CON-031 pin the first two).
+- **Duplicate `under_18` in es.json (D-5222):** `app/messaging/templates/es.json` holds the `under_18` key twice (`:75` and `:213`), so the second copy wins when the file is read; T791 changes both, and a later cleanup removes the first.
 
 ## The monthly backup test checks the backup's record (D-4835)
 
@@ -3664,3 +3678,24 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 - **Worth knowing.** The email that asks the owner to approve a phone a team member linked this way cannot be sent yet: it names the phone's last 4 digits, and for a phone linked from a blocked call we keep no digits. Until that is solved the owner approves the phone on the phones page of the business account. Also, no email carries the "Link this phone" link yet (recorded in D-3675).
 - **Nothing needs you now.**
 - A licensed-trade (ROC) business now gets a job card only while its latest license check reads Active and is under 72 hours old; every day the ROC list loads, each active business gets that day's check, so the "checked on" date on a quote card is current (D-5123, D-5124). If the ROC list and the live lookups both fail for 72 hours, ROC cards stop until one works again, as LIC-008 intends.
+- If the state's ROC list can't be loaded, each licensed business whose last good check is going stale now gets one email after 24 hours saying so and naming when its job cards will pause; at 72 hours after its last good check the account is paused, and it resumes by itself, with no review, on the first list that shows the license Active. The pauses and resumes are counted in your weekly digest (T655, D-5184 to D-5186). Nothing needs you.
+
+## Moves out of Arizona and rent-collection requests are now refused by text (T776, D-5081, D-5143, November 21)
+
+- **What changed.** A text asking for movers to another state, or for home watch that includes collecting rent, finding tenants or leasing, now gets the "we don't cover" reply and no card goes to a business. This is checked when the trade is known and again before her card is shown or sent, so words added with EDIT are checked too. Moves inside Arizona and turnover cleaning "after the renters check out" go on as before.
+- **The words that mean "this move leaves Arizona".** Phrases: out of state, another state, different state, out of Arizona, leaving Arizona, cross country, across the country, interstate, fuera del estado, otro estado, fuera de Arizona. Places: the full name of every other US state, Mexico, the Spanish state names Nueva York, Nueva Jersey, Nuevo or Nueva Hampshire, Carolina del Norte, Carolina del Sur, Dakota del Norte, Dakota del Sur, Pensilvania, Hawái, Luisiana, Misisipi, Misuri, Minesota (added after review; "Tejas" is left out because it also means roof tiles), and Needles, Laughlin, Vegas (so "Las Vegas" too), Henderson, Blythe, Palm Springs, Los Angeles, San Diego, Reno, Salt Lake City, Albuquerque, Denver. "California king" (a bed) does not count. Arizona towns never count.
+- **New keywords with AI off.** Moving: movers, moving help, mudanza fuera, necesito mudanza, hacer una mudanza, ayuda con mudanza. Home watch: home watch, house check, house checks, cuidar la casa. Turnover cleaning: turnover clean, turnover cleaning, turnover cleaner, airbnb cleaning, vrbo cleaning.
+- **Worth knowing.** A moving text that uses a state name another way ("by the Colorado River", "Washington Street") is refused too; she can text again without it. Tell us if a nearby town is missing from the list.
+- **Nothing needs you now.**
+## Fable's usage-limit fallback has a runner bug (D-5190, November 21)
+
+- **What happened.** When Fable hit its usage limit, the runner was meant to re-run the task on Opus without counting an attempt. It did not record that switch, because its "was this a refusal?" check does not recognise a usage-limit (429) message (`runner/model_window.py` `REFUSAL`, used at `runner/cycle.py:3330` and `runner/__main__.py:493`). T615 lost a good attempt to it.
+- **Now.** Once D-5189 (the switch off Fable, PR #1277) merges, no task runs on Fable and the bug cannot bite. T615 gets one more attempt after its flaky test is fixed (T789) and that switch has merged.
+- **Before Fable is switched back on**, a harness task must make that check accept usage-limit and rate-limit text.
+
+## No AI-off launch; termite report moves to pest control (D-5214 to D-5216, November 21)
+
+- **Your words:** "No AI-off launch" and "Move to pest control".
+- **AI:** before you say 'go live' at Gate C you turn "AI on scrubbed text" on in the owner portal and run the phone rehearsal with it on. Gate C no longer accepts a written note launching without the AI writing calls; that work (T394) must be done.
+- **Termite report:** "termite report for a sale or loan" becomes a pest-control job, only for a pest business that says it holds the wood-destroying category, and it stays free of the introduction fee. T790 makes the catalog and test change.
+- **Keywords:** T716 adds 42 checked keyword phrases for when the AI is off.
