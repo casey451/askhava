@@ -311,3 +311,36 @@ async fn td_card_17_other_statuses_holders_and_out_of_reach_get_nothing(pool: Pg
     assert_eq!(late_cards(&mut db, b, later).await, Ok(Vec::new()));
     assert_eq!(got(&mut db, open, b).await, (1, 1, 2), "already carded");
 }
+
+/// TD-CARD-17 (CARD-001, CARD-018, BIZ-049, D-5077): a business whose largest job is $1,500 gets
+/// no late card while the band is unknown, neither on another business's run nor its own; the
+/// other business's run sends only its own card.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_card_17_a_largest_job_limit_gets_no_late_card(pool: PgPool) {
+    let mut db = setup(&pool).await;
+    let job = open_job(&mut db).await;
+    let small = pending(&mut db, 2, TOWN, true).await;
+    sqlx::query(
+        "INSERT INTO businesses.capability (business_id, largest_job_cents, recurring, changed_at) \
+         VALUES ($1, 150000, true, now())",
+    )
+    .bind(small)
+    .execute(&mut db)
+    .await
+    .expect("capability");
+    activate(&mut db, small, ts(NOW)).await;
+    let b = pending(&mut db, 1, TOWN, true).await;
+    activate(&mut db, b, ts(NOW)).await;
+    sends_once(&mut db, job, b).await;
+    assert_eq!(
+        got(&mut db, job, small).await.2,
+        0,
+        "only the payload business"
+    );
+    assert_eq!(late_cards(&mut db, small, ts(NOW)).await, Ok(Vec::new()));
+    assert_eq!(
+        got(&mut db, job, small).await.2,
+        0,
+        "a limit gets no late card"
+    );
+}
