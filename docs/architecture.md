@@ -740,3 +740,6 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | POST | /owner/ai/terms | portals | T737 |
 | POST | /owner/ai/policy | portals | T737 |
 | POST | /owner/ai/switch | portals | T737 |
+| POST | /b/team/role | portals | yes |
+| POST | /b/team/remove | portals | yes |
+| POST | /b/billing/limit | portals | yes |

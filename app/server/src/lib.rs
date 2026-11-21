@@ -37,6 +37,7 @@ use tower_http::trace::TraceLayer;
 pub mod account_directory;
 pub mod action_links;
 pub mod business_contacts;
+pub mod business_guarded_changes;
 pub mod business_portal;
 pub mod business_signin;
 pub mod business_signup;
@@ -380,7 +381,8 @@ impl ApprovalSecret for StripeApproval {
 /// the business portal (T300) over `pool`, always (`business_portal::served`), and the Confirm
 /// route (T261) from the Stripe hooks, with the parts' Confirm settings, else none; the "Can't
 /// take it" page and button ([`cant_take_route`], T472), always; the business step-up page
-/// ([`business_step_up`], T364), always, sending codes only with its part; and the
+/// ([`business_step_up`], T364), always, sending codes only with its part, and the role, removal
+/// and monthly-limit changes behind it ([`business_guarded_changes`], T565), always; and the
 /// owner's sign-in, step-up and sign-out routes ([`owner_signin`], T303) and home, settings and
 /// switches ([`owner_portal`], T310, the opt-out with the portal's vault) and refund review, audit
 /// log and health page ([`owner_tools`], T304, refunding only with the Stripe hooks and the
@@ -419,7 +421,8 @@ fn business_pages(
     let tools = owner_tools::routes(pool.clone(), stripe, &parts.confirm, parts.report);
     let cant_take = cant_take_route::routes(pool.clone());
     let homeowner = homeowner_portal::routes(pool.clone(), webhooks, parts.homeowner, parts.photos);
-    let step_up = business_step_up::routes(pool.clone(), parts.step_up);
+    let step_up = business_step_up::routes(pool.clone(), parts.step_up)
+        .merge(business_guarded_changes::routes(pool.clone()));
     let portal_parts = (parts.vault, parts.business_number);
     let portal = business_portal::served(pool, portal_parts, (webhooks, voice))
         .merge(confirm)
