@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T05:01:41Z by runner 436a388db578 (actions).
+Updated 2026-11-21T05:05:27Z by runner d8acafd04a11 (actions).
 
-**Building: T777 in progress since 04:26Z; 570 of 726 done; week 65% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T777 in progress since 04:26Z; 571 of 726 done; week 65% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 570 of 726 build tasks (owner gates not counted)
+- **Tasks done:** 571 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 5: T777 claimed 04:26Z, lease until 07:26Z; lane 6: T755 claimed 04:14Z, lease until 07:14Z; lane 7: T674 claimed 04:40Z, lease until 07:40Z
 - **Week:** 65% used, 63.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:01Z, 0 min before this update
+- **Last run:** 05:02Z, 3 min before this update
 - **Keeper:** last ran 05:01Z, next wake 07:17Z
 
 ## Needs attention
@@ -30,7 +30,7 @@ Worker: matching.rs:52 keyword RULES cover only plumbing, HVAC, electrical, hand
 | T691 | intake (harness): START into an open request resends the con | QUEUED | 1 | 27 min | 04:35Z | session ended without handing in |
 | T304 | server and portals: the owner refund review, the audit log v | BLOCKED | 1 | 91 min | 04:20Z | PLAN GAP: app/portals/templates/owner_audit_log.html (owned by T205) and app/portals/templates/health.html (owned by T47 |
 | T457 | portals and server: the Confirm email link asks for a code w | MERGE_PENDING | 1 | 35 min | 04:16Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
-| T781 | recovery: a failed or timed-out nightly export raises one al | MERGE_PENDING | 1 | 116 min | 04:14Z |  |
+| T781 | recovery: a failed or timed-out nightly export raises one al | done | 1 | 116 min | 04:14Z |  |
 | T776 | intake: a move out of Arizona and a property-management requ | BLOCKED | 1 | 11 min | 04:00Z | PLAN GAP: outside ownership: app/intake/src/matching.rs / Worker: matching.rs:52 keyword RULES cover only plumbing, HVAC |
 | T684 | picks and server: the open-cards email goes at the times eac | done | 2 | 93 min | 03:50Z | PLAN GAP: app/quotes/src/models.rs:265 `card_sent_at` is pub(crate); T684 owns no app/quotes/src file. quotes::api has n |
 | T780 | payments and portals: the scorecard's refund and dispute rat | done | 1 | 33 min | 03:33Z |  |
@@ -99,7 +99,6 @@ Worker: matching.rs:52 keyword RULES cover only plumbing, HVAC, electrical, hand
 | T573 | messaging and server: queued business texts are addressed to | BLOCKED | 1 | 5 min | 06:27Z |  |
 | T561 | server and portals: the homeowner's "Download my data" and h | resync | 1 | 60 min | 06:26Z |  |
 | T765 | recovery (tests): the backup tests' fake binaries can no lon | done | 1 | 65 min | 06:11Z |  |
-| T751 | stand-ins (harness): the Stripe stand-in detaches a payment  | done | 1 | 51 min | 05:02Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -107,7 +106,7 @@ Worker: matching.rs:52 keyword RULES cover only plumbing, HVAC, electrical, hand
 ## Progress (requirements verified)
 
 **Requirements verified:** 359 of 735 (48.8%) · partial 357 · unstarted 19
-**Tasks merged (throughput only):** 570 of 726
+**Tasks merged (throughput only):** 571 of 726
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -143,7 +142,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 213 of 306 done
+- stage 5: 214 of 306 done
 - stage 6: 0 of 67 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
