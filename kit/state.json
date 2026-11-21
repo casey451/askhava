@@ -89864,8 +89864,8 @@
     "T601",
     "T664"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "card-pool-roc-check",
    "type": "build",
    "stage": "5",
@@ -89877,10 +89877,47 @@
     5126,
     5127
    ],
-   "wip_claim": {
-    "attempt": 1,
-    "remote_sha": ""
-   }
+   "reason": "plan gap reported: PLAN GAP: outside ownership: app/quotes/src/service.rs, app/quotes/src/late_cards.rs, app/intake/src/cards_out.rs, app/intake/src/order_dispatch.rs, tests/integration/tests/card_pool_queries.rs, tests/integration/tests/radius_matching.rs\nEvidence: part (3) needs `now` (the caller's worker clock) in card_pool/one_business (app/quotes/src/card_pool.rs:74,227), which take no clock. Adding one changes every card_pool caller (order_dispatch.rs:831,1007; cards_out.rs:358; late_cards.rs:160; quotes/service.rs:204; card_pool_queries.rs:109; radius_matching.rs:198,210), none owned by T654, while T654.m; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T654 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: outside ownership: app/quotes/src/service.rs, app/quotes/src/late_cards.rs, app/intake/src/cards_out.rs, app/intake/src/order_dispatch.rs, tests/integration/tests/card_pool_queries.rs, tests/integration/tests/radius_matching.rs\nEvidence: part (3) needs `now` (the caller's worker clock) in card_pool/one_business (app/quotes/src/card_pool.rs:74,227), which take no clock. Adding one changes every card_pool caller (order_dispatch.rs:831,1007; cards_out.rs:358; late_cards.rs:160; quotes/service.rs:204; card_pool_queries.rs:109; radius_matching.rs:198,210), none owned by T654, while T654.md:11 requires existing card-pool tests pass unchanged. Wall clock is forbidden (T654.md:9). Reviewer confirmed. Smallest fix: give T654 those callers/tests, or split a prior task adding a now parameter.",
+   "plan_gap": {
+    "at": "2026-11-21T02:42:55Z",
+    "problems": [
+     "outside ownership: app/quotes/src/service.rs, app/quotes/src/late_cards.rs, app/intake/src/cards_out.rs, app/intake/src/order_dispatch.rs, tests/integration/tests/card_pool_queries.rs, tests/integration/tests/radius_matching.rs"
+    ],
+    "paths": [
+     "app/quotes/src/service.rs",
+     "app/quotes/src/late_cards.rs",
+     "app/intake/src/cards_out.rs",
+     "app/intake/src/order_dispatch.rs",
+     "tests/integration/tests/card_pool_queries.rs",
+     "tests/integration/tests/radius_matching.rs"
+    ]
+   },
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-fable-5-2",
+     "model_evidence_count": 14,
+     "head_sha": "285a8c04ecb035d37b26435a7764246451f340b4",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-21T02:40:50Z",
+     "ended_at": "2026-11-21T02:42:55Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 234403,
+       "turns": 7
+      },
+      "reviewer": {
+       "tokens": 173551,
+       "turns": 6
+      }
+     }
+    }
+   ]
   },
   {
    "id": "T655",
@@ -100547,12 +100584,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T774",
-   "at": "2026-11-21T02:38:26Z",
-   "output_tokens": 12978,
-   "cache_read_input_tokens": 789041,
-   "input_tokens": 60,
-   "cache_creation_input_tokens": 64998
+   "task": "T654",
+   "at": "2026-11-21T02:42:55Z",
+   "input_tokens": 26,
+   "cache_creation_input_tokens": 62223,
+   "output_tokens": 7574,
+   "cache_read_input_tokens": 338131
   },
   "source": "session_reading 2026-11-21T02:39:29Z (week)",
   "by_task": {
@@ -107290,17 +107327,27 @@
    },
    "T654": {
     "estimated_bytes": 505009,
-    "estimated_tokens": 1455907
+    "estimated_tokens": 1455907,
+    "usage_counting": "message_id",
+    "input_tokens": 26,
+    "cache_creation_input_tokens": 62223,
+    "output_tokens": 7574,
+    "cache_read_input_tokens": 338131,
+    "worker_tokens": 234403,
+    "worker_turns": 7,
+    "reviewer_tokens": 173551,
+    "reviewer_turns": 6,
+    "last_model": "claude-fable-5-2"
    }
   },
   "windows": {
    "five_hour": {
     "start": "2026-11-21T00:19:55Z",
-    "tokens": 7911688
+    "tokens": 8015324
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 88173353
+    "tokens": 88276989
    }
   },
   "session_reading": {
@@ -107311,7 +107358,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T02:41:12Z",
+ "updated_at": "2026-11-21T02:42:56Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
