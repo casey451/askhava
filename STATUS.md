@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T01:02:44Z by runner faa769e40793 (actions).
+Updated 2026-11-21T01:03:11Z by runner faa769e40793 (actions).
 
 **Building: T664 in progress since 23:09Z; 562 of 714 done; week 55% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 562 of 714 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T664 claimed 23:09Z, lease until 02:09Z; lane 4: T677 claimed 23:11Z, lease until 02:11Z
+- **Lane:** lane 1: T664 claimed 23:09Z, lease until 02:09Z
 - **Week:** 55% used, 89.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:42Z, 20 min before this update
+- **Last run:** 00:42Z, 21 min before this update
 - **Keeper:** last ran 00:21Z, next wake 02:12Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Updated 2026-11-21T01:02:44Z by runner faa769e40793 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T677 | quotes, businesses and server: a business that becomes eligi | MERGE_PENDING | 1 | 111 min | 01:02Z |  |
 | T526 | server, intake, businesses and site: business texting follow | done | 1 | 71 min | 00:19Z |  |
 | T773 | Runner (harness): the merge train can carry a third car, bui | done | 1 | 33 min | 23:17Z |  |
 | T682 | picks: a pick waiting for Confirm gets its hourly reminders, | done | 2 | 91 min | 22:27Z | app/picks/src/reminder_run.rs:316 (remind): a waiting pick whose job was cancelled or closed after the notice keeps gett |
@@ -142,7 +143,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T664 (lease until 2026-11-21T02:09:28Z)
-- lane 4: T677 (lease until 2026-11-21T02:11:01Z)
 
 ## Last usage reading
-- {"task": "T526", "at": "2026-11-21T00:19:55Z", "cache_read_input_tokens": 8051327, "output_tokens": 56731, "cache_creation_input_tokens": 219204, "input_tokens": 150}
+- {"task": "T677", "at": "2026-11-21T01:02:43Z", "output_tokens": 86307, "input_tokens": 303, "cache_creation_input_tokens": 337808, "cache_read_input_tokens": 13044286}
