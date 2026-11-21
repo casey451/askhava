@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-21T01:47:32Z by runner 159a7078b351 (actions).
+Updated 2026-11-21T01:48:01Z by runner 159a7078b351 (actions).
 
-**Building: T664 in progress since 23:09Z; 563 of 726 done; week 56% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T774 in progress since 01:32Z; 563 of 726 done; week 56% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 563 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T664 claimed 23:09Z, lease until 02:09Z; lane 2: T774 claimed 01:32Z, lease until 04:32Z; lane 3: T777 claimed 01:31Z, lease until 04:31Z; lane 4: T457 claimed 01:40Z, lease until 04:40Z; lane 5: T769 claimed 01:14Z, lease until 04:14Z; lane 6: T580 claimed 01:10Z, lease until 04:10Z; lane 7: T775 claimed 01:29Z, lease until 04:29Z
+- **Lane:** lane 2: T774 claimed 01:32Z, lease until 04:32Z; lane 3: T777 claimed 01:31Z, lease until 04:31Z; lane 4: T457 claimed 01:40Z, lease until 04:40Z; lane 5: T769 claimed 01:14Z, lease until 04:14Z; lane 6: T580 claimed 01:10Z, lease until 04:10Z; lane 7: T775 claimed 01:29Z, lease until 04:29Z
 - **Week:** 56% used, 74.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:41Z, 6 min before this update
 - **Keeper:** last ran 01:34Z, next wake 02:11Z
@@ -21,6 +21,7 @@ Updated 2026-11-21T01:47:32Z by runner 159a7078b351 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T664 | portals: the Confirm press re-checks the license and account | MERGE_PENDING | 2 | 2 h 38 min | 01:47Z | PLAN GAP: outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs / The pick's window deadline (picks.pic |
 | T674 | server: the homeowner's photo upload page and the short-live | BLOCKED | 1 | 17 min | 01:25Z | PLAN GAP: outside ownership: tests/a11y/fixtures.ts — GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PA |
 | T677 | quotes, businesses and server: a business that becomes eligi | done | 1 | 111 min | 01:02Z |  |
 | T526 | server, intake, businesses and site: business texting follow | done | 1 | 71 min | 00:19Z |  |
@@ -45,7 +46,7 @@ Updated 2026-11-21T01:47:32Z by runner 159a7078b351 (actions).
 | T530 | portals: the owner help page and its screened reply box (D-3 | resync | 3 | 71 min | 16:40Z |  |
 | T681 | picks and jobs: the businesses that lost a pick and every qu | done | 1 | 50 min | 16:38Z |  |
 | T771 | a11y tests (harness): reflow_spacing's hidden-control check  | done | 2 | 50 min | 16:34Z | PLAN GAP: kit/prompts/T771.md:9 (D-4970, docs/decisions.md:2604) contradicts itself: rule (1) checks the hidden Menu sum |
-| T664 | portals: the Confirm press re-checks the license and account | BLOCKED | 1 | 5 min | 16:15Z | PLAN GAP: outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs / The pick's window deadline (picks.pic |
+| T664 | portals: the Confirm press re-checks the license and account | BLOCKED | 1 | 5 min | 16:15Z |  |
 | T684 | picks and server: the open-cards email goes at the times eac | BLOCKED | 1 | 4 min | 15:41Z | PLAN GAP: app/quotes/src/models.rs:265 `card_sent_at` is pub(crate); T684 owns no app/quotes/src file. quotes::api has n |
 | T770 | ci (harness): the Coverage job's time limit goes from 25 to  | done | 1 | 61 min | 15:35Z |  |
 | T771 | a11y tests (harness): reflow_spacing's hidden-control check  | BLOCKED | 1 | 3 min | 15:22Z |  |
@@ -141,7 +142,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T664 (lease until 2026-11-21T02:09:28Z)
+- nothing
 - lane 2: T774 (lease until 2026-11-21T04:32:37Z)
 - lane 3: T777 (lease until 2026-11-21T04:31:36Z)
 - lane 4: T457 (lease until 2026-11-21T04:40:44Z)
@@ -150,4 +151,4 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 7: T775 (lease until 2026-11-21T04:29:12Z)
 
 ## Last usage reading
-- {"task": "T674", "at": "2026-11-21T01:25:56Z", "cache_read_input_tokens": 8255113, "output_tokens": 77625, "cache_creation_input_tokens": 212666, "input_tokens": 142}
+- {"task": "T664", "at": "2026-11-21T01:47:31Z", "input_tokens": 299, "cache_creation_input_tokens": 437921, "cache_read_input_tokens": 20432675, "output_tokens": 140340}
