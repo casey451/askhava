@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT status_changed_at AS \"at: jiff_sqlx::Timestamp\" FROM businesses.business\n           WHERE id = $1 AND status = 'paused' AND pause_reason = 'license' FOR UPDATE",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "at: jiff_sqlx::Timestamp",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "businesses.business",
+            "name": "status_changed_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "9fea73f02a0d2ae9e42627ed39d7e7af88055066cbeba0f6e6bb198530b6a720"
+}

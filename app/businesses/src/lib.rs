@@ -56,6 +56,7 @@ mod identity;
 mod join_date;
 mod leaving;
 mod license_reapply;
+mod license_standing;
 mod links;
 mod models;
 mod notice_emails;
