@@ -98795,8 +98795,8 @@
     "T706",
     "T333"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 1,
+   "status": "BLOCKED",
+   "attempts": 2,
    "slug": "zero-fee-after-intent",
    "type": "build",
    "stage": "5",
@@ -98808,8 +98808,8 @@
     5136,
     5137
    ],
-   "reason": null,
-   "last_failure": "PLAN GAP: outside ownership: app/adapters/src/payments.rs, stand_ins/stripe.py, stand_ins/server.py\nT754 requires cancelling the PaymentIntent at Stripe after a $0 press, but PaymentsAdapter/IntentStripe (app/adapters/src/payments.rs:343-397, app/payments/src/charge.rs:67) have no cancel method and stand_ins/stripe.py and stand_ins/server.py (route at server.py:457) have no cancel route. None is owned by T754 (owns confirm_pay.rs, release_proof.rs, routes.rs, zero_fee_after_intent.rs); stand_ins/ is protected. Existing callers of end_intent_unless_charging (confirm_moves.rs:137, cant_take.rs, confirm_pay.rs:1033) only write ended_at in the database, so no retry precedent exists. Reviewer confirmed. Smallest fix: drop the Stripe cancel from T754 (DB end only), or add a harness task first adding cancel_payment_intent and the stand-in route.\nre-queued after plan fix D-5158: money plan gap fixed: no Stripe cancel; FEE-021 only after an attempt; held_release and from_stored_success fall to no-fee",
+   "reason": "plan gap reported: PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and_handled, owned by T785 after T259/T331/T352) expects a verified payment_intent.succeeded naming pi_FakeNone for a pick stored with pi_Fake9 (refused WrongIntent, release_proof.rs:220-221) to change nothing, including ops.alert rows; kit/prompts/T754.md:9 (m3) requires one High alert for every WrongIntent refusal. T754 does not own that test file (T754.md:37-40, :53, :104). Reviewer confirmed (GAP-VERDICT: CONFIRMED). Smallest fix: (1) give T754 a one-time edit of stripe_webh; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T754 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and_handled, owned by T785 after T259/T331/T352) expects a verified payment_intent.succeeded naming pi_FakeNone for a pick stored with pi_Fake9 (refused WrongIntent, release_proof.rs:220-221) to change nothing, including ops.alert rows; kit/prompts/T754.md:9 (m3) requires one High alert for every WrongIntent refusal. T754 does not own that test file (T754.md:37-40, :53, :104). Reviewer confirmed (GAP-VERDICT: CONFIRMED). Smallest fix: (1) give T754 a one-time edit of stripe_webhook_dispatch.rs:430 to expect one alert payments.success_refused_wrong_intent, logged as a spec change; or (2) narrow m3 so WrongIntent alerts only when the event's intent is the pick's stored intent (store_success / missing pick_intent / refunded_or_disputed paths), no test edit.",
    "history": [
     {
      "attempt": 1,
@@ -98833,6 +98833,29 @@
        "turns": 9
       }
      }
+    },
+    {
+     "attempt": 2,
+     "model": "claude-fable-5-2",
+     "model_evidence_count": 126,
+     "head_sha": "f48c110d7929ad0ab08d663dec9ce2de08c53076",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-21T05:54:47Z",
+     "ended_at": "2026-11-21T06:41:19Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 7880338,
+       "turns": 67
+      },
+      "reviewer": {
+       "tokens": 345342,
+       "turns": 10
+      }
+     }
     }
    ],
    "requeues": [
@@ -98850,11 +98873,7 @@
      "plan_now": "b5f79bbc07a1a3abbf924e048d47a83425e3885fd2fa5be05303e15b392a6004"
     }
    ],
-   "lane": "5",
-   "wip_claim": {
-    "attempt": 2,
-    "remote_sha": ""
-   }
+   "lane": "5"
   },
   {
    "id": "T755",
@@ -102031,12 +102050,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T755",
-   "at": "2026-11-21T05:21:40Z",
-   "cache_creation_input_tokens": 114350,
-   "input_tokens": 65,
-   "cache_read_input_tokens": 1177421,
-   "output_tokens": 21295
+   "task": "T754",
+   "at": "2026-11-21T06:41:19Z",
+   "cache_read_input_tokens": 7948742,
+   "cache_creation_input_tokens": 206147,
+   "input_tokens": 152,
+   "output_tokens": 70639
   },
   "source": "session_reading 2026-11-21T06:28:41Z (week)",
   "by_task": {
@@ -108834,14 +108853,14 @@
     "estimated_bytes": 597263,
     "estimated_tokens": 1429290,
     "usage_counting": "message_id",
-    "output_tokens": 10478,
-    "input_tokens": 49,
-    "cache_creation_input_tokens": 79071,
-    "cache_read_input_tokens": 866650,
-    "worker_tokens": 713160,
-    "worker_turns": 15,
-    "reviewer_tokens": 243088,
-    "reviewer_turns": 9,
+    "output_tokens": 81117,
+    "input_tokens": 201,
+    "cache_creation_input_tokens": 285218,
+    "cache_read_input_tokens": 8815392,
+    "worker_tokens": 8593498,
+    "worker_turns": 82,
+    "reviewer_tokens": 588430,
+    "reviewer_turns": 19,
     "last_model": "claude-fable-5-2"
    },
    "T780": {
@@ -108898,11 +108917,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-21T05:21:40Z",
-    "tokens": 253452
+    "tokens": 1325264
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 96832407
+    "tokens": 97904219
    }
   },
   "session_reading": {
@@ -108913,7 +108932,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T06:39:22Z",
+ "updated_at": "2026-11-21T06:41:20Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -109011,7 +109030,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "a4aa767722f6ef6fec7342c4abd52c442d05485b",
+ "runner_sha": "f48c110d7929ad0ab08d663dec9ce2de08c53076",
  "starter": "actions",
  "smoke_runs": [
   {
