@@ -40,6 +40,7 @@ mod business_portal;
 mod business_signup;
 mod checkin;
 mod code_challenge;
+mod confirm_moves;
 mod confirm_pay;
 mod confirm_waiver;
 mod data_download;
@@ -73,6 +74,7 @@ mod scorecard_lines;
 mod scorecard_panels;
 mod security;
 mod session;
+mod status;
 mod step_up_page;
 #[cfg(test)]
 mod tests;
