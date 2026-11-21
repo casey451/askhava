@@ -1,0 +1,10 @@
+{% extends "site_layout.html" %}
+{#- The page an unknown path answers with status 404 (T615; WEB-027, A11Y-003, D-4252): the site
+    layout's header (the wordmark links home, Help sits in the nav) and footer around one `h1` and
+    one sentence, both from docs/copy/site-copy.md's "Not found" blocks. `banner_shown` comes from
+    the 60-second cache in app/site/src/not_found.rs (WEB-007). -#}
+{% block title %}Page not found{% endblock %}
+{% block content %}
+<h1>We can't find that page.</h1>
+<p>That link may be old, so use the links at the top to go home or to Help.</p>
+{% endblock %}
