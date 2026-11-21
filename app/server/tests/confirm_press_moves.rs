@@ -36,10 +36,11 @@ use askhava_ops::api::{Actor, Switch, set_switch};
 use askhava_payments::api::{
     AUTHORIZATION_TEXT, BusinessId, FeeJob, FeeMode, FeeQuote, IntentStripe, PeriodJob,
     RecurringCap, Service, StripeAccount, StripeWebhook, VisitTier, accept_authorization,
-    ensure_customer, fee_at_pick, fee_terms_in_force,
+    end_pick_intent, ensure_customer, fee_at_pick, fee_terms_in_force,
 };
 use askhava_picks::api::{
-    ConfirmSettings as Window, PagePick, cant_take_job, notice_sent, page_pick, pick_numbers,
+    ConfirmSettings as Window, INACTIVE_TEMPLATE, PagePick, cant_take_job, notice_sent, page_pick,
+    pick_numbers,
 };
 use askhava_portals::api::{
     ApprovalSecret, ConfirmFee, ConfirmRoute, ConfirmSettings, ConfirmedPick, CookieJar,
@@ -647,8 +648,18 @@ async fn state(pool: &PgPool, p: &Picked) -> String {
     format!("{status} waits={waits} lapsed={lapsed}")
 }
 
-/// Her queued PICK-046 texts for `p`'s job, claiming every queued task.
-async fn her_texts(pool: &PgPool, p: &Picked) -> usize {
+/// Whether `p`'s pick has a PaymentIntent record not yet ended (FEE-017): `payments`' own pick
+/// end, in a transaction rolled back, answers false for an ended one or none.
+async fn intent_open(pool: &PgPool, p: &Picked) -> bool {
+    let mut tx = pool.begin().await.expect("tx");
+    let open = end_pick_intent(&mut tx, p.pick, now()).await;
+    tx.rollback().await.expect("rollback");
+    open.expect("intent")
+}
+
+/// Her queued PICK-046 texts for `p`'s job and the "This job is no longer active." notices
+/// (PICK-026) queued to `p`'s business for it, claiming every queued task.
+async fn her_texts(pool: &PgPool, p: &Picked) -> (usize, usize) {
     let owner = WorkerId::new(pool).await.expect("worker");
     let later = now() + SignedDuration::from_hours(24 * 30);
     let claimed = claim(pool, owner, later, SignedDuration::from_secs(60), 1000).await;
@@ -657,7 +668,14 @@ async fn her_texts(pool: &PgPool, p: &Picked) -> usize {
         let payload = t.payload.to_string();
         t.kind == TEXT_KIND && payload.contains(&job) && payload.contains("pick_lapsed")
     };
-    claimed.expect("claim").iter().filter(hers).count()
+    let business = p.business.to_string();
+    let inactive = |t: &&Claimed| {
+        let payload = t.payload.to_string();
+        payload.contains(INACTIVE_TEMPLATE) && payload.contains(&job) && payload.contains(&business)
+    };
+    let claimed = claimed.expect("claim");
+    let texts = claimed.iter().filter(hers).count();
+    (texts, claimed.iter().filter(inactive).count())
 }
 
 /// Starts `p`'s Confirm window now, `minutes` business minutes long; returns how far ahead of
@@ -702,8 +720,9 @@ async fn win_unused(pool: &PgPool, business: Uuid) -> bool {
 
 /// TD-JOB-19 (PICK-020, JOB-013, D-056, D-4897): a first press whose stored check is stale, not
 /// Active or missing, whose account is not Active or whose window ended is refused before any
-/// charge: no attempt, the pick ended (`expired` only for the window), the job back in Quotes
-/// ready with her PICK-046 text, and an answer naming no license detail.
+/// charge: no attempt, the pick ended (`expired` only for the window) with the idle intent the
+/// page load opened closed, the job back in Quotes ready with her PICK-046 text, and an answer
+/// naming no license detail.
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn td_job_19_an_ineligible_first_press_is_refused_before_any_charge(pool: PgPool) {
     let stale = SignedDuration::from_hours(25);
@@ -723,13 +742,21 @@ async fn td_job_19_an_ineligible_first_press_is_refused_before_any_charge(pool: 
         };
         let c = counted(&pool, OLD, ahead);
         c.send(&p, None).await;
+        assert!(
+            intent_open(&pool, &p).await,
+            "{n}: the load opens the intent"
+        );
         let reply = c.send(&p, CARD).await;
         assert!(reply.contains("\"ended\""), "{n}: {reply}");
+        assert!(
+            !intent_open(&pool, &p).await,
+            "{n}: its idle intent is closed"
+        );
         assert!(!reply.to_lowercase().contains("license"), "{reply}");
         let lapsed = u32::from(over);
         let ended = format!("quotes_ready waits=false lapsed={lapsed}");
         assert_eq!(state(&pool, &p).await, ended, "case {n}");
-        assert_eq!((c.confirms(), her_texts(&pool, &p).await), (0, 1), "{n}");
+        assert_eq!((c.confirms(), her_texts(&pool, &p).await.0), (0, 1), "{n}");
         let again = c.send(&p, CARD).await;
         assert!(again.contains("\"ended\"") && c.confirms() == 0, "{again}");
     }
@@ -761,7 +788,8 @@ async fn td_job_19_a_category_with_no_roc_class_needs_no_stored_check(pool: PgPo
 /// TD-JOB-19 (JOB-014, PICK-019, PICK-044, FEE-020): loading the page moves nothing; an eligible
 /// press with a card moves the job to Payment pending before the charge; a declined card leaves
 /// it there; a retry after the window's deadline is not refused as expired and moves nothing
-/// more; a retry after the license check went stale ends the pick through `end_pending`, back
+/// more; a retry after the license check went stale ends the pick through `end_pending` as
+/// `ineligible` (its business gets "This job is no longer active.", which no other end sends), back
 /// to Quotes ready with her text.
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn td_job_19_a_press_with_a_card_moves_the_job_and_a_retry_is_never_expired(pool: PgPool) {
@@ -796,7 +824,12 @@ async fn td_job_19_a_press_with_a_card_moves_the_job_and_a_retry_is_never_expire
     let reply = lapsed.send(&p, CARD).await;
     assert!(reply.contains("\"ended\""), "{reply}");
     assert_eq!(state(&pool, &p).await, "quotes_ready waits=false lapsed=0");
-    assert_eq!((lapsed.confirms(), her_texts(&pool, &p).await), (0, 1));
+    let queued = her_texts(&pool, &p).await;
+    assert_eq!(
+        (lapsed.confirms(), queued),
+        (0, (1, 1)),
+        "ended as ineligible"
+    );
 }
 
 /// TD-JOB-19 (PICK-019, OPS-024): a press with no card, a press while charges are paused (the
