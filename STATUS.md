@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T03:33:35Z by runner 681a0b807fba (actions).
+Updated 2026-11-21T03:34:04Z by runner 681a0b807fba (actions).
 
-**Building: T780 in progress since 02:59Z; 567 of 726 done; week 61% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T781 in progress since 02:17Z; 567 of 726 done; week 61% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 567 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T780 claimed 02:59Z, lease until 05:59Z; lane 3: T781 claimed 02:17Z, lease until 05:17Z; lane 5: T304 claimed 02:48Z, lease until 05:48Z; lane 6: T684 claimed 02:16Z, lease until 05:16Z
+- **Lane:** lane 3: T781 claimed 02:17Z, lease until 05:17Z; lane 5: T304 claimed 02:48Z, lease until 05:48Z; lane 6: T684 claimed 02:16Z, lease until 05:16Z
 - **Week:** 61% used, 66.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:14Z, 18 min before this update
+- **Last run:** 03:14Z, 19 min before this update
 - **Keeper:** last ran 03:11Z, next wake 05:18Z
 
 ## Needs attention
@@ -30,6 +30,7 @@ T777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T780 | payments and portals: the scorecard's refund and dispute rat | MERGE_PENDING | 1 | 33 min | 03:33Z |  |
 | T775 | intake: a check-in reply that names a 911 danger gets the 91 | MERGE_PENDING | 1 | 94 min | 03:03Z |  |
 | T754 | portals and payments: a $0 Confirm after a PaymentIntent was | BLOCKED | 1 | 3 min | 02:52Z | PLAN GAP: outside ownership: app/adapters/src/payments.rs, stand_ins/stripe.py, stand_ins/server.py / T754 requires canc |
 | T457 | portals and server: the Confirm email link asks for a code w | resync | 1 | 70 min | 02:50Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
@@ -153,10 +154,10 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T780 (lease until 2026-11-21T05:59:39Z)
+- nothing
 - lane 3: T781 (lease until 2026-11-21T05:17:31Z)
 - lane 5: T304 (lease until 2026-11-21T05:48:33Z)
 - lane 6: T684 (lease until 2026-11-21T05:16:31Z)
 
 ## Last usage reading
-- {"task": "T775", "at": "2026-11-21T03:03:34Z", "output_tokens": 43515, "cache_creation_input_tokens": 169987, "input_tokens": 131, "cache_read_input_tokens": 2895495}
+- {"task": "T780", "at": "2026-11-21T03:33:34Z", "input_tokens": 130, "output_tokens": 34781, "cache_read_input_tokens": 4117609, "cache_creation_input_tokens": 130034}
