@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T18:36:30Z by runner b801a6d3df9f (actions).
+Updated 2026-11-21T18:40:25Z by runner 7143385c9180 (actions).
 
-**Building: T608 in progress since 15:59Z; 584 of 732 done; week 32% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T608 in progress since 15:59Z; 585 of 732 done; week 32% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 584 of 732 build tasks (owner gates not counted)
+- **Tasks done:** 585 of 732 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T608 claimed 15:59Z, lease until 18:59Z; lane 2: T690 claimed 16:56Z, lease until 19:56Z; lane 3: T707 claimed 18:35Z, lease until 21:35Z; lane 6: T790 claimed 18:10Z, lease until 21:10Z; lane 7: T754 claimed 18:25Z, lease until 21:25Z
 - **Week:** 32% used, 123.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:25Z, 10 min before this update
+- **Last run:** 18:36Z, 3 min before this update
 - **Keeper:** last ran 18:25Z, next wake 18:45Z
 
 ## Needs attention
@@ -20,7 +20,7 @@ Updated 2026-11-21T18:36:30Z by runner b801a6d3df9f (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T615 | site and server: a styled 404 page for unknown paths, the fa | MERGE_PENDING | 4 | 68 min | 18:19Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
-| T787 | intake: crate guide trimmed to 5,500 bytes, the detail moved | MERGE_PENDING | 1 | 68 min | 16:45Z |  |
+| T787 | intake: crate guide trimmed to 5,500 bytes, the detail moved | done | 1 | 68 min | 16:45Z |  |
 | T786 | server: crate guide trimmed to 5,500 bytes, the detail moved | done | 1 | 34 min | 16:33Z |  |
 | T655 | businesses: an unknown ROC license status warns at 24 hours, | done | 2 | 2 h 34 min | 16:05Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
 | T789 | Tests (harness): TD-INT-47's no-contact check ignores the ra | done | 1 | 27 min | 15:38Z |  |
@@ -82,7 +82,7 @@ Updated 2026-11-21T18:36:30Z by runner b801a6d3df9f (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 584 of 731
+**Tasks merged (throughput only):** 585 of 732
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -118,7 +118,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 227 of 312 done
+- stage 5: 228 of 312 done
 - stage 6: 0 of 67 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
