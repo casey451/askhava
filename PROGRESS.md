@@ -9130,3 +9130,4 @@
 - 2026-11-21T07:26:37Z runner fabfe83d9707 (actions): {"T674": "QUEUED -> IN_PROGRESS"}; T674 estimated 1.5M tokens (calibrated); week has 54.4M left (no five-hour budget, D-3056) after 1.6M still running in another lane (session_reading 2026-11-21T07:20:32Z (week)); claimed
 - 2026-11-21T07:26:56Z runner fabfe83d9707 (actions): {}
 - 2026-11-21T07:33:41Z runner c8ce0c181591 (actions): {}
+- 2026-11-21T07:34:10Z runner c8ce0c181591 (actions): {"T615": "IN_PROGRESS -> MERGE_PENDING"}
