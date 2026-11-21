@@ -513,7 +513,7 @@ button:active {
 
 /* Type roles: px sizes only, none under 16 px (WEB-027); the kicker and small labels at 600, a true
    600 from the variable DM Sans file (D-4252, T617). */
-.kicker { font: 600 16px/24px var(--sans); letter-spacing: 0.01em; }
+.kicker { font: 600 16px/24px var(--sans); letter-spacing: 0.05em; text-transform: uppercase; }
 .display { font: 500 30px/34px var(--serif); letter-spacing: -0.02em; text-wrap: balance; }
 .title { font: 500 30px/34px var(--serif); letter-spacing: -0.015em; }
 .section-title { font: 500 28px/34px var(--serif); letter-spacing: -0.015em; text-wrap: balance; }
@@ -569,12 +569,14 @@ a.card { display: block; color: var(--ink); text-decoration: none; }
 .cover-grid p { color: var(--ink-soft); }
 
 /* How it works: scoped to a list with numerals, so a plain numbered list keeps its markers. */
-.steps:has(.num) { list-style: none; padding: 0; margin: 0; display: grid; }
-.steps:has(.num) li { display: grid; grid-template-columns: 44px minmax(0, 1fr); column-gap: 12px; padding-block: 22px; border-top: 1px solid var(--line); max-width: none; }
-.steps:has(.num) li:last-child { border-bottom: 1px solid var(--line); }
-.steps .num { font: 400 44px/44px var(--serif); color: var(--evergreen); }
-.steps:has(.num) h3 { font: 500 22px/28px var(--serif); margin: 0 0 6px; }
-.steps:has(.num) p { color: var(--ink-soft); margin: 0; }
+.steps { list-style: none; padding: 0; margin: 0; display: grid; }
+.steps li { display: grid; grid-template-columns: 44px minmax(0, 1fr); column-gap: 12px; padding-block: 22px; border-top: 1px solid var(--line); max-width: none; }
+.steps li:last-child { border-bottom: 1px solid var(--line); }
+.steps { counter-reset: step; }
+.steps li { counter-increment: step; }
+.steps li::before { content: counter(step) / ""; font: 400 44px/44px var(--serif); color: var(--evergreen); }
+.steps h3 { font: 500 22px/28px var(--serif); margin: 0 0 6px; }
+.steps p { color: var(--ink-soft); margin: 0; }
 
 /* Example quotes */
 .example-label { display: flex; justify-content: space-between; gap: 4px 16px; flex-wrap: wrap; font: 600 16px/24px var(--sans); color: var(--evergreen); margin: 0 0 12px; max-width: none; }
@@ -703,6 +705,36 @@ a.card { display: block; color: var(--ink); text-decoration: none; }
   outline-color: var(--focus-on-night);
 }
 
+/* T608 (WEB-027, D-4246, D-4252): the home page's and quote page's own placements of the
+   components above, on markup whose words and ids stay as they were. The home's bands sit inside
+   main as rounded panels; the "Who runs" facts are stacked rows on phones and one ruled row from
+   1024 px. The quote page's cards: the number heading above a rule, the card lines as ruled rows
+   with the business name in the serif, a gone card in ink-soft; its three states each a panel. */
+.home-band { padding-inline: 20px; border: 1px solid var(--line); border-radius: var(--radius-card); margin-block: 40px; }
+.home-band.night { border-color: var(--night); }
+.fair-list p { margin: 0; }
+.section > h2, .who h2, .section-head h2, .cover-grid h2, .fair h2 { margin-top: 0; }
+.who-facts { margin-top: 16px; }
+.who-facts p { margin: 0; padding-block: 8px; border-top: 1px solid var(--line); }
+.note-911 p { margin: 0; }
+.page-head h1, .page-head p, .page-head ul { margin: 0; }
+.quote h2.quote-top { font: 700 16px/24px var(--sans); letter-spacing: 0; color: var(--ink); margin: 0; }
+.card-lines { list-style: none; padding: 0; margin: 0; font-size: 16px; line-height: 24px; }
+.card-lines li { padding-block: 10px; border-top: 1px solid var(--line); }
+.card-lines li:first-child { font: 500 26px/32px var(--serif); letter-spacing: -0.015em; padding-top: 0; border-top: 0; }
+.quote.gone, .quote.gone h2.quote-top { color: var(--ink-soft); }
+.words-panel blockquote, .words-panel p { margin: 0; }
+.quote form { margin: 0; }
+#accepted-quote { margin-top: 8px; }
+#no-quotes { margin: 0; padding: 20px; background: var(--band); border-radius: var(--radius-inner); font: 500 28px/34px var(--serif); letter-spacing: -0.015em; }
+#tier-summary { margin: 0 0 24px; padding: 20px; background: var(--surface); border: 2px solid var(--alert); border-radius: var(--radius-note); }
+#tier-summary p, #tier-summary ul { margin: 0; }
+#closed-note { padding-block: 12px; border-block: 1px solid var(--line); }
+@media (min-width: 1024px) {
+  .who-facts { display: flex; flex-wrap: wrap; column-gap: 32px; border-block: 1px solid var(--line); }
+  .who-facts p { border-top: 0; padding-block: 12px; }
+}
+
 @media (min-width: 768px) {
   body > header {
     min-height: 76px;
@@ -743,10 +775,10 @@ a.card { display: block; color: var(--ink); text-decoration: none; }
   .section-title { font-size: 36px; line-height: 42px; }
   .title { font-size: 44px; line-height: 50px; }
   .cover-grid { grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
-  .steps:has(.num) { grid-template-columns: repeat(3, 1fr); column-gap: 36px; }
-  .steps:has(.num) li, .steps:has(.num) li:last-child { display: block; padding-block: 24px 0; border-top: 1px solid var(--ink); border-bottom: 0; }
-  .steps .num { display: block; font-size: 64px; line-height: 64px; margin-bottom: 20px; }
-  .steps:has(.num) h3 { font-size: 24px; line-height: 30px; margin-bottom: 8px; }
+  .steps { grid-template-columns: repeat(3, 1fr); column-gap: 36px; }
+  .steps li, .steps li:last-child { display: block; padding-block: 24px 0; border-top: 1px solid var(--ink); border-bottom: 0; }
+  .steps li::before { display: block; font-size: 64px; line-height: 64px; margin-bottom: 20px; }
+  .steps h3 { font-size: 24px; line-height: 30px; margin-bottom: 8px; }
   .example-grid { grid-template-columns: 1fr 1fr; gap: 20px; }
   .fair-list { grid-template-columns: repeat(3, 1fr); column-gap: 36px; margin-top: 36px; }
   .fair-list li, .fair-list li:last-child { padding-block: 24px 0; }
@@ -804,7 +836,7 @@ a.card { display: block; color: var(--ink); text-decoration: none; }
   .section-title { font-size: 40px; line-height: 46px; }
   .cover { padding-block: 44px; }
   .cover-grid { gap: 88px; }
-  .steps:has(.num) { column-gap: 56px; }
+  .steps { column-gap: 56px; }
   .example { display: grid; grid-template-columns: 0.72fr 1.28fr; gap: 72px; align-items: center; }
   .example .section-head { margin-bottom: 0; }
   .fair { padding-block: 96px; }

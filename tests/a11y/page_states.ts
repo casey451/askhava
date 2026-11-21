@@ -92,6 +92,8 @@ const QUOTE_STATES: readonly PageState[] = [
   ["after a pick", "Pick #1", "Pick #2", quotePage("awaiting_confirm", 3)],
   ["after the business confirmed", "Quote #3", "Pick #", quotePage("payment_pending", 3)],
   ["closed", "Quote #2 (no longer available)", "Pick #", quotePage("closed", 3)],
+  // T608 (D-4252): a long list, so the 900 ms end-time check sees the capped stagger.
+  ["eight quotes", "Pick #8", "Quote #9", quotePage("quotes_ready", 8)],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: QUOTE_ROUTE, name, shows, hides, sql, statusRegions: ["quote-status"] }));
 
 const FEEDBACK_ROUTE = "/f/{token}";
