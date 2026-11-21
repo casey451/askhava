@@ -868,7 +868,8 @@ a.card { display: block; color: var(--ink); text-decoration: none; }
    for less: the 150 ms button colour fade, the 0.975 press, the arrow's 3 px nudge and a link
    card's 2 px lift under 350 ms, and the quote page's first-render cards rising 12 px on the
    spring, about 90 ms apart, the sixth and later sharing the fifth delay, so the last ends by
-   810 ms. Transform only; nothing fades. Outside this block nothing moves (A11Y-009). */
+   810 ms; a card that takes focus mid-rise stops at rest, so a Tab never scrolls to a moving
+   control (A11Y-005, T608). Transform only; nothing fades. Outside this block nothing moves (A11Y-009). */
 @media (prefers-reduced-motion: no-preference) {
   button, .button { transition: background-color var(--fade) ease, transform var(--quick) var(--spring); }
   button:active, .button:active { transform: scale(var(--press)); }
@@ -884,6 +885,7 @@ a.card { display: block; color: var(--ink); text-decoration: none; }
   .rise:nth-child(3) { animation-delay: 180ms; }
   .rise:nth-child(4) { animation-delay: 270ms; }
   .rise:nth-child(5), .rise:nth-child(n+6) { animation-delay: 360ms; }
+  .rise:focus-within { animation: none; }
 }
 
 /* More contrast asked for (DESIGN_SPEC section 2, D-4252): card, row and section edges take
