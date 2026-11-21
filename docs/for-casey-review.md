@@ -3667,3 +3667,9 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 - **Worth knowing.** The email that asks the owner to approve a phone a team member linked this way cannot be sent yet: it names the phone's last 4 digits, and for a phone linked from a blocked call we keep no digits. Until that is solved the owner approves the phone on the phones page of the business account. Also, no email carries the "Link this phone" link yet (recorded in D-3675).
 - **Nothing needs you now.**
 - A licensed-trade (ROC) business now gets a job card only while its latest license check reads Active and is under 72 hours old; every day the ROC list loads, each active business gets that day's check, so the "checked on" date on a quote card is current (D-5123, D-5124). If the ROC list and the live lookups both fail for 72 hours, ROC cards stop until one works again, as LIC-008 intends.
+
+## Fable's usage-limit fallback has a runner bug (D-5190, November 21)
+
+- **What happened.** When Fable hit its usage limit, the runner was meant to re-run the task on Opus without counting an attempt. It did not record that switch, because its "was this a refusal?" check does not recognise a usage-limit (429) message (`runner/model_window.py` `REFUSAL`, used at `runner/cycle.py:3330` and `runner/__main__.py:493`). T615 lost a good attempt to it.
+- **Now.** No task runs on Fable (D-5189), so the bug cannot bite. T615 gets one more attempt after its flaky test is fixed (T789).
+- **Before Fable is switched back on**, a harness task must make that check accept usage-limit and rate-limit text.
