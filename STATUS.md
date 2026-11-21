@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-21T10:15:45Z by runner 8c691ecb4913 (actions).
+Updated 2026-11-21T10:16:14Z by runner 8c691ecb4913 (actions).
 
 **Building: T754 in progress since 09:47Z; 576 of 726 done; week 74% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 576 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T754 claimed 09:47Z, lease until 12:47Z; lane 2: T654 claimed 09:01Z, lease until 12:01Z; lane 3: T615 claimed 09:42Z, lease until 12:42Z; lane 7: T458 claimed 08:43Z, lease until 11:43Z
+- **Lane:** lane 1: T754 claimed 09:47Z, lease until 12:47Z; lane 3: T615 claimed 09:42Z, lease until 12:42Z; lane 7: T458 claimed 08:43Z, lease until 11:43Z
 - **Week:** 74% used, 44.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 10:04Z, 11 min before this update
 - **Keeper:** last ran 10:04Z, next wake 11:46Z
@@ -22,6 +22,7 @@ Worker: D-5160's three trade-only rules (job_type: None) give candidate <trade>_
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T654 | licensing and quotes: every ROC list import runs each active | MERGE_PENDING | 2 | 74 min | 10:15Z | PLAN GAP: outside ownership: app/quotes/src/service.rs, app/quotes/src/late_cards.rs, app/intake/src/cards_out.rs, app/i |
 | T615 | site and server: a styled 404 page for unknown paths, the fa | check_failed | 2 | 92 min | 09:28Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T776 | intake: a move out of Arizona and a property-management requ | BLOCKED | 2 | 11 min | 08:54Z | PLAN GAP: outside ownership: app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml) / Worker: D-5160's three tr |
 | T674 | server: the homeowner's photo upload page and the short-live | done | 2 | 40 min | 08:06Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
@@ -41,7 +42,7 @@ Worker: D-5160's three trade-only rules (job_type: None) give candidate <trade>_
 | T775 | intake: a check-in reply that names a 911 danger gets the 91 | done | 1 | 94 min | 03:03Z |  |
 | T754 | portals and payments: a $0 Confirm after a PaymentIntent was | BLOCKED | 1 | 3 min | 02:52Z |  |
 | T457 | portals and server: the Confirm email link asks for a code w | resync | 1 | 70 min | 02:50Z |  |
-| T654 | licensing and quotes: every ROC list import runs each active | BLOCKED | 1 | 2 min | 02:42Z | PLAN GAP: outside ownership: app/quotes/src/service.rs, app/quotes/src/late_cards.rs, app/intake/src/cards_out.rs, app/i |
+| T654 | licensing and quotes: every ROC list import runs each active | BLOCKED | 1 | 2 min | 02:42Z |  |
 | T774 | tests (harness): the quote page's no-AI-summary check leaves | done | 1 | 65 min | 02:38Z |  |
 | T777 | businesses: a sign-in code is texted only to a line whose cu | BLOCKED | 1 | 37 min | 02:09Z |  |
 | T769 | site: the business page's WEB-024 line follows the stored bu | done | 1 | 41 min | 01:56Z |  |
@@ -139,9 +140,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T754 (lease until 2026-11-21T12:47:34Z)
-- lane 2: T654 (lease until 2026-11-21T12:01:19Z)
 - lane 3: T615 (lease until 2026-11-21T12:42:33Z)
 - lane 7: T458 (lease until 2026-11-21T11:43:47Z)
 
 ## Last usage reading
-- {"task": "T615", "at": "2026-11-21T09:28:25Z", "cache_creation_input_tokens": 103933, "cache_read_input_tokens": 1421262, "output_tokens": 14830, "input_tokens": 75}
+- {"task": "T654", "at": "2026-11-21T10:15:43Z", "input_tokens": 154, "cache_read_input_tokens": 7114112, "cache_creation_input_tokens": 214818, "output_tokens": 62709}
