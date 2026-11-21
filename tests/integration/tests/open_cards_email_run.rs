@@ -25,6 +25,8 @@ use sqlx::{PgConnection, PgPool};
 
 /// 8:05 a.m., 12:05 p.m. and 5:05 p.m. Arizona time (UTC-7) on November 10, 2026.
 const EIGHT: &str = "2026-11-10T15:05:00Z";
+/// A retry of the 8 a.m. run at another minute of the same clock hour.
+const EIGHT_LATER: &str = "2026-11-10T15:40:00Z";
 const NOON: &str = "2026-11-10T19:05:00Z";
 const FIVE: &str = "2026-11-11T00:05:00Z";
 /// A card sent then ends at 7 p.m. Arizona time that day: open at all three runs.
@@ -117,6 +119,8 @@ async fn quote(db: &mut PgConnection, job: Uuid, business: Uuid) {
 /// business and the three mailboxes in that order.
 async fn team(db: &mut PgConnection) -> (Uuid, [Uuid; 3]) {
     let start = at("2026-11-01T00:00:00Z");
+    let catalog = askhava_catalog::api::load_embedded(db).await;
+    catalog.expect("catalog");
     let business = create(db, false, start).await.expect("business");
     let active = "UPDATE businesses.business SET status = $2 WHERE id = ($1::uuid[])[1]";
     seed(db, active, &[business], "active").await;
@@ -176,7 +180,7 @@ fn still_open() -> String {
 async fn td_card_18_each_chosen_slot_once_listing_only_open_unquoted_cards(pool: PgPool) {
     let mut db = pool.acquire().await.expect("connection");
     let (business, boxes) = team(&mut db).await;
-    let plumbing = card(&mut db, business, ("open", "plumbing"), SENT).await;
+    let plumbing = card(&mut db, business, ("open", "plumbing_repair"), SENT).await;
     // 25 minutes left at 8:05 a.m.; quoted; and on a job that takes no more quotes.
     card(
         &mut db,
@@ -185,12 +189,12 @@ async fn td_card_18_each_chosen_slot_once_listing_only_open_unquoted_cards(pool:
         "2026-11-09T15:30:00Z",
     )
     .await;
-    let quoted = card(&mut db, business, ("open", "roofing"), SENT).await;
+    let quoted = card(&mut db, business, ("open", "roof_repair"), SENT).await;
     quote(&mut db, quoted, business).await;
     card(&mut db, business, ("closed", "painting"), SENT).await;
 
     run(&pool, EIGHT).await;
-    run(&pool, EIGHT).await;
+    run(&pool, EIGHT_LATER).await;
     let sent = emails(&mut db).await;
     assert_eq!(
         sent.len(),
@@ -203,14 +207,14 @@ async fn td_card_18_each_chosen_slot_once_listing_only_open_unquoted_cards(pool:
         (boxes[1], &still_open(), "bulk")
     );
     let line = format!(
-        "plumbing in Fake Town. Quote by 7 p.m.: https://{}/b/a/quote/{plumbing}/",
+        "Plumbing repair in Fake Town. Quote by 7 p.m.: https://{}/b/a/quote/{plumbing}/",
         brand().domain()
     );
     assert!(
         plain.contains(&line),
         "trade, town, end time and Quote link"
     );
-    for absent in ["electrical", "roofing", "painting", "Fake card"] {
+    for absent in ["Electrical", "Roof repair", "Painting", "Fake card"] {
         assert!(!plain.contains(absent), "{absent} is not listed");
     }
     assert!(plain.contains("(tap ⋯, then Open in browser)."));
@@ -248,7 +252,7 @@ async fn td_card_18_none_when_no_card_qualifies(pool: PgPool) {
         "2026-11-09T15:30:00Z",
     )
     .await;
-    let quoted = card(&mut db, business, ("open", "roofing"), SENT).await;
+    let quoted = card(&mut db, business, ("open", "roof_repair"), SENT).await;
     quote(&mut db, quoted, business).await;
     run(&pool, EIGHT).await;
     run(&pool, FIVE).await;
@@ -259,7 +263,7 @@ async fn td_card_18_none_when_no_card_qualifies(pool: PgPool) {
 async fn td_card_18_a_waiting_pick_comes_first_with_the_pick_waiting_subject(pool: PgPool) {
     let mut db = pool.acquire().await.expect("connection");
     let (business, boxes) = team(&mut db).await;
-    card(&mut db, business, ("open", "plumbing"), SENT).await;
+    card(&mut db, business, ("open", "plumbing_repair"), SENT).await;
     let picked = card(&mut db, business, ("awaiting_confirm", "roofing"), SENT).await;
     quote(&mut db, picked, business).await;
     let ids = [Uuid::new_v4(), picked, business];
@@ -290,21 +294,21 @@ async fn td_card_18_a_waiting_pick_comes_first_with_the_pick_waiting_subject(poo
     assert_eq!(owner.2, fill.expect("the brand fills"));
     let confirm = format!("https://{}/b/a/confirm/{}/", brand().domain(), ids[0]);
     assert!(owner.3.starts_with("Job 1042:") && owner.3.contains(&confirm));
-    assert!(owner.3.find("Job 1042:") < owner.3.find("plumbing in Fake Town"));
+    assert!(owner.3.find("Job 1042:") < owner.3.find("Plumbing repair in Fake Town"));
     // BIZ-037: a "Cards and quotes" member gets no picks, so no pick line and the plain subject.
     let member = sent
         .iter()
         .find(|e| e.1 == boxes[1])
         .expect("member's email");
     assert_eq!(member.2, still_open());
-    assert!(!member.3.contains("Job 1042") && member.3.contains("plumbing in Fake Town"));
+    assert!(!member.3.contains("Job 1042") && member.3.contains("Plumbing repair in Fake Town"));
 }
 
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_card_18_above_90_percent_of_the_limit_it_is_bulk_and_waits_for_the_reset(pool: PgPool) {
     let mut db = pool.acquire().await.expect("connection");
     let (business, _) = team(&mut db).await;
-    card(&mut db, business, ("open", "plumbing"), SENT).await;
+    card(&mut db, business, ("open", "plumbing_repair"), SENT).await;
     // OPS-038: 91 of the day's 100 emails already went.
     let earlier = "INSERT INTO messaging.email_outbox (idempotency_key, template_id, \
                    recipient_id, recipient_kind, subject_ids, class, status, not_before, \

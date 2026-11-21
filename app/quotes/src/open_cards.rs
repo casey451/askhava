@@ -5,7 +5,8 @@
 //! [`open_cards`] lists, for one business, each card it holds and has not quoted (no unwithdrawn
 //! quote of its own) whose own quote window ([`QUOTE_WINDOW`] from the card's send, unchanged) is
 //! still open, on a job that still takes quotes (`JobStatus::takes_quotes`): the job, the trade
-//! and town as the sent card names them, and the window's end. [`card_businesses`] names the
+//! by its catalog name (the sent card's category code read through `catalog::api::category`, as
+//! the job-card email names it; D-4995), the sent card's town, and the window's end. [`card_businesses`] names the
 //! businesses holding any card whose window is open, the run's worklist. Nothing here reads or
 //! returns a homeowner detail, and nothing is changed.
 
@@ -22,7 +23,7 @@ use crate::models::QuotesError;
 pub struct OpenCardFacts {
     /// The job the card is for; its Quote link is made from it (BIZ-038).
     pub job: Uuid,
-    /// The trade, as on the sent card.
+    /// The trade: the catalog name of the sent card's category, never its code (D-4995).
     pub trade: String,
     /// The town, as on the sent card.
     pub town: String,
@@ -59,7 +60,8 @@ pub async fn card_businesses(
 ///
 /// # Errors
 ///
-/// [`QuotesError::Database`], or [`QuotesError::Job`] when a job cannot be read.
+/// [`QuotesError::Database`] (also a category the catalog does not hold), or
+/// [`QuotesError::Job`] when a job cannot be read.
 pub async fn open_cards(
     db: &mut PgConnection,
     business: Uuid,
@@ -86,11 +88,19 @@ pub async fn open_cards(
             let ends = r.sent_at.to_jiff().saturating_add(QUOTE_WINDOW);
             open.push(OpenCardFacts {
                 job: r.job_id,
-                trade: r.category,
+                trade: trade_name(db, &r.category).await?,
                 town: r.town,
                 ends: ends.map_err(|_| QuotesError::Database)?,
             });
         }
     }
     Ok(open)
+}
+
+/// CARD-022, D-4995: the catalog's display name of the category `code`, as the job-card email
+/// names the trade.
+async fn trade_name(db: &mut PgConnection, code: &str) -> Result<String, QuotesError> {
+    let stored = askhava_catalog::api::category(db, code).await;
+    let stored = stored.map_err(|_| QuotesError::Database)?;
+    Ok(stored.ok_or(QuotesError::Database)?.name)
 }
