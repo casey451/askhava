@@ -59,8 +59,8 @@ def test_planted_job_type_no_license_covers_fails(tmp_path: Path) -> None:
     errors = errors_after(
         tmp_path,
         "categories.yaml",
-        "job_types: [general pest service, scorpions, termites, pre-emergent weed control]",
-        "job_types: [general pest service, scorpions, termites, pre-emergent weed control, bee removal]",
+        "job_types: [general pest service, scorpions, termites, pre-emergent weed control, termite report for a sale or loan]",
+        "job_types: [general pest service, scorpions, termites, pre-emergent weed control, termite report for a sale or loan, bee removal]",
     )
     assert any("pest_control job type 'bee removal' has no license scope" in e for e in errors), errors
 

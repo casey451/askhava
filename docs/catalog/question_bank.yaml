@@ -142,12 +142,12 @@ sets:
       - {id: pets, card_field: true, en: "Any pets in the home?", es: "¿Hay mascotas en la casa?", options_en: ["Yes", "No"], options_es: ["Sí", "No"]}
 
   pest_control:
-    version: 1
+    version: 2
     confirmed_by: []
     kb_trade: pest_control
     photos: [p1, p2, p3]
     questions:
-      - {id: pest, card_field: true, en: "What are you seeing?", es: "¿Qué está viendo?", options_en: [Scorpions, Ants or roaches, Spiders, Termites, Rodents, Weeds (pre-emergent)], options_es: [Alacranes, Hormigas o cucarachas, Arañas, Termitas, Roedores, Hierba mala (preemergente)]}
+      - {id: pest, card_field: true, en: "What are you seeing?", es: "¿Qué está viendo?", options_en: [Scorpions, Ants or roaches, Spiders, Termites, Rodents, Weeds (pre-emergent), Termite report for a home sale or loan], options_es: [Alacranes, Hormigas o cucarachas, Arañas, Termitas, Roedores, Hierba mala (preemergente), Reporte de termitas para venta o préstamo]}
       - {id: how_often, card_field: true, en: "One-time or ongoing?", es: "¿Una vez o servicio continuo?", options_en: [One-time, Monthly, Every other month, Quarterly], options_es: [Una vez, Cada mes, Cada dos meses, Cada tres meses]}
       - {id: where, card_field: true, en: "Where?", es: "¿Dónde?", options_en: [Inside, Outside, Both], options_es: [Adentro, Afuera, Ambos]}
       - {id: home_size, card_field: true, en: "About how big is the home?", es: "¿Más o menos qué tamaño tiene la casa?", options_en: ["Under 1,500 sq ft", "1,500 to 2,500 sq ft", "Over 2,500 sq ft"], options_es: ["Menos de 1,500 pies²", "1,500 a 2,500 pies²", "Más de 2,500 pies²"]}
@@ -355,13 +355,13 @@ sets:
       - {id: have_cameras, card_field: true, en: "Do you already have the cameras?", es: "¿Ya tiene las cámaras?", options_en: ["Yes", "No"], options_es: ["Sí", "No"]}
 
   home_inspection:
-    version: 1
+    version: 2
     confirmed_by: []
     kb_trade: home_inspection
     photos: [p1]
     questions:
       - {id: sale, card_field: true, en: "Is this inspection for a home sale, purchase or refinance?", es: "¿Esta inspección es para una venta, compra o refinanciamiento?", options_en: ["Yes", "No"], options_es: ["Sí", "No"]}
-      - {id: kind, card_field: true, en: "What kind of inspection?", es: "¿Qué tipo de inspección?", options_en: [Whole home, Termite (wood-destroying insect) report, One system or area], options_es: [Toda la casa, Reporte de termitas, Un sistema o un área]}
+      - {id: kind, card_field: true, en: "What kind of inspection?", es: "¿Qué tipo de inspección?", options_en: [Whole home, One system or area], options_es: [Toda la casa, Un sistema o un área]}
       - {id: home_size, card_field: true, en: "About how big is the home?", es: "¿Más o menos qué tamaño tiene la casa?", options_en: ["Under 1,500 sq ft", "1,500 to 2,500 sq ft", "Over 2,500 sq ft"], options_es: ["Menos de 1,500 pies²", "1,500 a 2,500 pies²", "Más de 2,500 pies²"]}
       - {id: extras, card_field: true, en: "Is there a pool or a detached building?", es: "¿Hay alberca o un edificio aparte?", options_en: [Pool, Detached building, Both, Neither], options_es: [Alberca, Edificio aparte, Ambos, Ninguno]}
 

@@ -177,14 +177,14 @@ async fn td_biz_46_agency_licensees_get_their_job_types(pool: sqlx::PgPool) {
             "buyer inspection",
             "pre-listing inspection",
             "refinance inspection",
-            "termite report for a sale or loan",
         ],
     );
     pre_ticks_and_stores(&mut conn, inspector, inspections).await;
 }
 
-/// TD-BIZ-46 (LIC-012, LIC-047): a pest attester gets general pest service and scorpions
-/// pre-ticked; termites only with the wood-destroying organism record category.
+/// TD-BIZ-46 (LIC-012, LIC-047, D-5216): a pest attester gets general pest service and scorpions
+/// pre-ticked; termites and the termite report for a sale or loan only with the wood-destroying
+/// organism record category.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_biz_46_pest_attester_gets_its_record_categories(pool: sqlx::PgPool) {
     let mut conn = app(&pool).await;
@@ -200,7 +200,12 @@ async fn td_biz_46_pest_attester_gets_its_record_categories(pool: sqlx::PgPool) 
     pre_ticks_and_stores(&mut conn, plain, set("pest_control", &general)).await;
     let with_termites = set(
         "pest_control",
-        &["general pest service", "scorpions", "termites"],
+        &[
+            "general pest service",
+            "scorpions",
+            "termites",
+            "termite report for a sale or loan",
+        ],
     );
     pre_ticks_and_stores(&mut conn, wood, with_termites).await;
 }
