@@ -1154,6 +1154,46 @@ fn register_daily_lists(
     Ok(())
 }
 
+/// Registers `businesses`' daily record resume run (`businesses.record_resume`) and its
+/// per-sign-up lookup (`businesses.record_resume_one`, T690, BIZ-026, D-4361) on the worker clock
+/// with the `DailyListSettings` and `ASKHAVA_BIZ_RESUME_BATCH` in `pairs`; the lookup uses
+/// `ASKHAVA_LICENSE_BASE_URL`, the Twilio Verify client and the ID secret, and without the base
+/// URL or Twilio (dev and CI) does nothing. `worker.rs`'s `schedule_licenses` seeds the run.
+fn register_record_resume(
+    registry: &mut Registry,
+    settings: &Settings,
+    (id_secret, clock): (&SecretString, &Arc<dyn Clock>),
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
+    use askhava_businesses::api::{
+        RESUME_KIND, RESUME_ONE_KIND, run_record_resume, run_resume_one,
+    };
+    let lists = askhava_licensing::api::DailyListSettings::from_pairs(pairs.clone())
+        .map_err(io::Error::other)?;
+    let batch = askhava_businesses::api::resume_batch(pairs.clone()).map_err(io::Error::other)?;
+    let source = settings.license_base_url().map(LicenseLists::new);
+    let source = source.transpose().map_err(io::Error::other)?;
+    let verify = twilio_config(settings, pairs)?.map(|c| twilio_clients(&c).map(|(_, _, v)| v));
+    let verify = verify.transpose().map_err(io::Error::other)?;
+    let parts = Arc::new(source.zip(verify).map(|p| (p, id_secret.clone())));
+    let run_clock = Arc::clone(clock);
+    registry.register(RESUME_KIND, move |pool, task| {
+        let now = run_clock.now();
+        async move { run_record_resume(&pool, &task, now, (lists, batch)).await }
+    });
+    let clock = Arc::clone(clock);
+    registry.register(RESUME_ONE_KIND, move |pool, task| {
+        let (parts, now) = (Arc::clone(&parts), clock.now());
+        async move {
+            let Some(((source, verify), secret)) = parts.as_ref() else {
+                return Ok(());
+            };
+            run_resume_one(&pool, &task, (source, verify, secret), now).await
+        }
+    });
+    Ok(())
+}
+
 /// The production worker's whole registry (T327, D-2285): [`register_handlers`], then what only
 /// the worker adds: `privacy`'s sealed photo delete over the stream's store (PRIV-009, T276),
 /// `messaging`'s paused-emergency follow-up on the call list (TXT-023, T279), with the footer
@@ -1162,7 +1202,7 @@ fn register_daily_lists(
 /// dead-letter check ([`no_handler_alert`], OPS-004), `jobs`' daily timer backstop
 /// ([`register_timer_backstop`], T366), `businesses`' daily license-map re-apply and
 /// deliverability re-test run ([`register_license_reapply`], T372, T686), `licensing`'s daily ROC and city list run
-/// ([`register_daily_lists`], T371) and, with the Twilio settings in `pairs`
+/// ([`register_daily_lists`], T371), `businesses`' record resume ([`register_record_resume`], T690) and, with the Twilio settings in `pairs`
 /// (required in test and live, D-1688), `messaging`'s day-31 body delete (PRIV-027), `picks`'
 /// masked-line retry (CALL-001), the safety voice call ([`register_safety_call`], T330, D-3134)
 /// and, with the vault keys too, `messaging`'s outbox sender
@@ -1214,6 +1254,7 @@ where
     register_timer_backstop(&mut registry, Arc::clone(&clock));
     register_license_reapply(&mut registry, Arc::clone(&clock));
     register_daily_lists(&mut registry, settings, Arc::clone(&clock), pairs.clone())?;
+    register_record_resume(&mut registry, settings, (&id_secret, &clock), pairs.clone())?;
     register_card_sender(&mut registry, settings, &id_secret, pairs.clone())?;
     register_consent_sweep(&mut registry, settings, &clock, pairs.clone())?;
     register_opted_out_live(&mut registry, settings, &id_secret, pairs.clone())?;
