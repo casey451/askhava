@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-21T19:08:31Z by runner 5b5195da7475 (actions).
+Updated 2026-11-21T19:09:45Z by runner a51179a0d6d9 (actions).
 
-**Building: T690 in progress since 16:56Z; 585 of 734 done; week 33% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T675 in progress since 19:09Z; 585 of 734 done; week 33% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 585 of 734 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T690 claimed 16:56Z, lease until 19:56Z; lane 3: T707 claimed 18:35Z, lease until 21:35Z; lane 5: T791 claimed 18:44Z, lease until 21:44Z; lane 7: T754 claimed 18:25Z, lease until 21:25Z
-- **Week:** 33% used, 122.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:08Z, 0 min before this update
+- **Lane:** lane 1: T675 claimed 19:09Z, lease until 22:09Z; lane 2: T690 claimed 16:56Z, lease until 19:56Z; lane 3: T707 claimed 18:35Z, lease until 21:35Z; lane 5: T791 claimed 18:44Z, lease until 21:44Z; lane 7: T754 claimed 18:25Z, lease until 21:25Z
+- **Week:** 33% used, 123.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 19:08Z, 1 min before this update
 - **Keeper:** last ran 19:08Z, next wake 19:28Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 39 problem(s) on tasks still to run (+461 on DONE tasks); first: T624: stored context_pct 12% but it measures 17%; regenerate
+- Strict plan check red: 38 problem(s) on tasks still to run (+461 on DONE tasks); first: T624: stored context_pct 12% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -82,7 +82,7 @@ Updated 2026-11-21T19:08:31Z by runner 5b5195da7475 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 585 of 731
+**Tasks merged (throughput only):** 585 of 734
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -110,7 +110,7 @@ Updated 2026-11-21T19:08:31Z by runner 5b5195da7475 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-21T18:24:52Z (week)): week: 71.5M used, 122.5M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T19:13:16Z.
+- Pacing (session_reading 2026-11-21T19:08:16Z (week)): week: 70.8M used, 123.2M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T22:03:21Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -125,7 +125,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T675 (lease until 2026-11-21T22:09:28Z)
 - lane 2: T690 (lease until 2026-11-21T19:56:59Z)
 - lane 3: T707 (lease until 2026-11-21T21:35:59Z)
 - lane 5: T791 (lease until 2026-11-21T21:44:30Z)
