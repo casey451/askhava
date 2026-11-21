@@ -74,7 +74,7 @@ impl ReleaseSink for Sink {
 
 /// What the fake Stripe answers a PaymentIntent read with, and every intent call it got.
 struct Told {
-    status: &'static str,
+    state: &'static str,
     amount: i64,
     pick: Uuid,
     calls: Vec<String>,
@@ -107,7 +107,7 @@ impl PaymentsAdapter for FakeStripe {
         told.calls.push(format!("fetch {id}"));
         Ok(PaymentIntent {
             id: id.to_owned(),
-            status: told.status.to_owned(),
+            status: told.state.to_owned(),
             amount: told.amount,
             currency: "usd".to_owned(),
             customer: "cus_fake754".to_owned(),
@@ -174,7 +174,7 @@ struct World {
 
 fn world(pool: &PgPool, pick: Uuid) -> World {
     let told = Told {
-        status: "succeeded",
+        state: "succeeded",
         amount: 2500,
         pick,
         calls: Vec::new(),
@@ -524,11 +524,11 @@ async fn alerts(pool: &PgPool, pick: Uuid) -> Vec<String> {
     rows.into_iter().map(|(kind, _)| kind).collect()
 }
 
-/// One attempt of `pick` with `status`, as a press left it.
-async fn attempt(pool: &PgPool, pick: Uuid, status: &str) {
+/// One attempt of `pick` in `outcome`, as a press left it.
+async fn attempt(pool: &PgPool, pick: Uuid, outcome: &str) {
     let sql = "INSERT INTO payments.charge_attempt (pick_id, try_no, press_id, status, started_at)
        VALUES ($1, 1, gen_random_uuid(), $2, now())";
-    let run = sqlx::query(sql).bind(pick).bind(status);
+    let run = sqlx::query(sql).bind(pick).bind(outcome);
     run.execute(pool).await.expect("attempt");
 }
 
@@ -628,7 +628,7 @@ async fn a_refused_success_on_the_picks_own_intent_alerts_once(pool: PgPool) {
     for (status, amount, pick, reason) in cases {
         {
             let mut told = w.stripe.told();
-            (told.status, told.amount, told.pick) = (status, amount, pick);
+            (told.state, told.amount, told.pick) = (status, amount, pick);
         }
         for _ in 0..2 {
             assert_eq!(w.succeeded(&stored, p.pick).await, 200, "{reason}");

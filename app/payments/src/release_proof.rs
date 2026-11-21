@@ -596,8 +596,8 @@ mod tests {
     }
 
     /// Pick `pick` (its own business and job, fake data): an ended $25 intent, its fee row, a $0
-    /// free-first-win entry and one attempt with `status`.
-    async fn seed(db: &mut PgConnection, pick: Uuid, status: &str) {
+    /// free-first-win entry and one attempt in `outcome`.
+    async fn seed(db: &mut PgConnection, pick: Uuid, outcome: &str) {
         let tag = pick.simple().to_string();
         sqlx::query!(
             "INSERT INTO payments.pick_intent (pick_id, business_id, job_id, amount_cents, \
@@ -631,7 +631,7 @@ mod tests {
             "INSERT INTO payments.charge_attempt (pick_id, try_no, press_id, status, started_at) \
              VALUES ($1, 1, $1, $2, now())",
             pick,
-            status
+            outcome
         )
         .execute(&mut *db)
         .await
