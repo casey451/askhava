@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-21T23:15:06Z by runner 74830b4f91c2 (actions).
+Updated 2026-11-21T23:15:21Z by runner 74830b4f91c2 (actions).
 
-**Building: T600 in progress since 22:29Z; 594 of 739 done; week 40% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T608 in progress since 21:16Z; 594 of 739 done; week 40% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 594 of 739 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T600 claimed 22:29Z, lease until 01:29Z; lane 2: T608 claimed 21:16Z, lease until 00:16Z; lane 3: T542 claimed 22:52Z, lease until 01:52Z; lane 5: T397 claimed 22:35Z, lease until 01:35Z; lane 6: T118 claimed 22:08Z, lease until 01:08Z; lane 7: T117 claimed 23:02Z, lease until 02:02Z
+- **Lane:** lane 2: T608 claimed 21:16Z, lease until 00:16Z; lane 3: T542 claimed 22:52Z, lease until 01:52Z; lane 5: T397 claimed 22:35Z, lease until 01:35Z; lane 6: T118 claimed 22:08Z, lease until 01:08Z; lane 7: T117 claimed 23:02Z, lease until 02:02Z
 - **Week:** 40% used, 106.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:04Z, 10 min before this update
 - **Keeper:** last ran 23:04Z, next wake 00:18Z
@@ -20,11 +20,12 @@ Updated 2026-11-21T23:15:06Z by runner 74830b4f91c2 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T600 | intake, businesses, privacy and server: four worker handlers | MERGE_PENDING | 1 | 45 min | 23:15Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
 | T798 | catalog: the photo asks' English wording loaded from the tra | MERGE_PENDING | 1 | 107 min | 23:03Z |  |
 | T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | QUEUED | 1 | 34 min | 22:56Z | Reviewer after findings round still FINDINGS at df75c487ed3673fc4e0234c1563449e081d4939b: / 1. docs/runbook.md:51,58,60  |
 | T794 | adapters and server: the Twilio media delete and the product | done | 1 | 49 min | 22:17Z |  |
 | T788 | Tooling (harness): check_pr_change.py fails a task branch th | done | 1 | 64 min | 21:30Z |  |
-| T600 | intake, businesses, privacy and server: four worker handlers | resync | 1 | 57 min | 21:10Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
+| T600 | intake, businesses, privacy and server: four worker handlers | resync | 1 | 57 min | 21:10Z |  |
 | T565 | portals and server: the business team role change, removal a | done | 1 | 97 min | 20:57Z |  |
 | T754 | portals and payments: a $0 Confirm after a PaymentIntent was | done | 4 | 113 min | 20:18Z | PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and |
 | T707 | server: an emergency pick's address re-release waits while s | done | 3 | 97 min | 20:13Z | Reviewer after the findings round still ends REVIEW-VERDICT: FINDINGS (head 2f9bf610c3700bb46a4670ade27d67afda63591a). / |
@@ -126,7 +127,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T600 (lease until 2026-11-22T01:29:56Z)
+- nothing
 - lane 2: T608 (lease until 2026-11-22T00:16:35Z)
 - lane 3: T542 (lease until 2026-11-22T01:52:12Z)
 - lane 5: T397 (lease until 2026-11-22T01:35:47Z)
@@ -134,4 +135,4 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 7: T117 (lease until 2026-11-22T02:02:15Z)
 
 ## Last usage reading
-- {"task": "T798", "at": "2026-11-21T23:03:42Z", "cache_creation_input_tokens": 109184, "cache_read_input_tokens": 1331875, "output_tokens": 20217, "input_tokens": 89}
+- {"task": "T600", "at": "2026-11-21T23:15:04Z", "cache_creation_input_tokens": 89042, "cache_read_input_tokens": 1128739, "input_tokens": 63, "output_tokens": 11327}
