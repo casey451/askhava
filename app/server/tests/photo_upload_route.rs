@@ -1,6 +1,8 @@
 //! TD-INT-48 through the assembled router (T674, D-4360, D-5082; INT-044, PRIV-014, PRIV-015,
 //! PRIV-025, PRIV-028, CARD-013, SEC-019, SEC-034, A11Y-027): the signed-in homeowner's photo
 //! upload page and the short-lived photo links.
+//! The fix-round cases (D-5084): a split request's photo stays with its own job, a press waits
+//! for the homeowner's row lock, and each refused post is one `csrf_rejected` event ([`Events`]).
 //!
 //! Each test builds `build_router` with the webhooks' vault and [`PhotoParts`] over a scratch
 //! folder, a fake homeowner with a session, her request and its job. The images are made here
@@ -9,7 +11,9 @@
 use askhava_adapters::api::LocalStorage;
 use askhava_core::api::{IdSecret, NewTask, Settings, TestControl, enqueue};
 use askhava_intake::api::rules::{Inbound, Settings as IntakeSettings};
-use askhava_intake::api::{Answer, TextIn, confirmed_photos, receive_text, record_answer};
+use askhava_intake::api::{
+    Answer, TextIn, confirmed_photos, paused_under_lock, receive_text, record_answer,
+};
 use askhava_jobs::api::{create, job_number};
 use askhava_ops::api::{Actor, AuditRow, export_audit};
 use askhava_portals::api::{
@@ -17,8 +21,8 @@ use askhava_portals::api::{
     start_session,
 };
 use askhava_privacy::api::{
-    MAX_PHOTO_BYTES, NewContact, PHOTO_DELETE_KIND, Vault, issue_link, job_photos, photo_path,
-    store_contact,
+    MAX_PHOTO_BYTES, NewContact, PHOTO_DELETE_KIND, Vault, delete_photo, issue_link, job_photos,
+    photo_path, store_contact,
 };
 use askhava_server::homeowner_portal::PhotoParts;
 use askhava_server::{RouterParts, build_router, webhooks};
@@ -29,6 +33,8 @@ use base64::Engine as _;
 use base64::engine::general_purpose::STANDARD;
 use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
+use std::sync::{Arc, Mutex, PoisonError};
+
 use sqlx::PgPool;
 use sqlx::types::Uuid;
 use tower::ServiceExt;
@@ -367,6 +373,168 @@ async fn td_int_48_take_it_off_removes_only_her_photo_before_the_card(pool: PgPo
         200,
         "her GET stays a 200"
     );
+}
+
+/// A second job, linked to request `conversation` as a split request links it (a `job.` row).
+async fn second_job(pool: &PgPool, conversation: Uuid) -> (Uuid, i64) {
+    let mut db = pool.acquire().await.expect("db");
+    let now = Timestamp::now() - SignedDuration::from_mins(30);
+    let job = create(&mut db, now, false, Actor::System)
+        .await
+        .expect("job");
+    let code = job.simple().to_string();
+    let named = Answer {
+        conversation,
+        question: "job.electrical.p0",
+        options: Some(&[(code.as_str(), "fakejob")]),
+        words: "fakejob",
+        reply: (Uuid::new_v4(), now),
+    };
+    record_answer(&mut db, &named)
+        .await
+        .expect("her second job");
+    (job, job_number(&mut db, job).await.expect("number"))
+}
+
+/// TD-INT-48 (INT-044, CARD-013, D-5084): in a request split into two jobs, a photo confirmed on
+/// one job is never among the other's confirmed photos, and `delete_photo` called with one job
+/// and the other's photo answers `false` and keeps the row.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_int_48_a_photo_stays_with_its_own_job_of_a_split_request(pool: PgPool) {
+    let app = app(&pool);
+    let (jar, first, first_number, conversation) = homeowner(&pool, "+19285550148").await;
+    let (second, second_number) = second_job(&pool, conversation).await;
+    upload(&app, &jar, second_number).await;
+    let path = format!("/h/requests/{second_number}/photos");
+    let yes = Some(Post::Form("csrf={csrf}&answer=yes"));
+    assert_eq!(call(&app, &path, &jar, yes).await.0, 200);
+    let photo = photos(&pool, second).await.0[0];
+    let mut db = pool.acquire().await.expect("db");
+    let on_second = confirmed_photos(&mut db, second).await;
+    assert_eq!(on_second.expect("confirmed"), vec![photo]);
+    let on_first = confirmed_photos(&mut db, first).await;
+    assert_eq!(on_first.expect("confirmed"), Vec::<Uuid>::new());
+    upload(&app, &jar, first_number).await;
+    assert_eq!(photos(&pool, first).await.1, 0, "her new photo waits");
+    let gone = delete_photo(&mut db, (first, photo), Timestamp::now()).await;
+    assert_eq!(gone.ok(), Some(false), "a photo of another job is kept");
+    assert_eq!(
+        (held(&pool, second).await, held(&pool, first).await),
+        (1, 1)
+    );
+    let audit = export_audit(&mut db, 0, 10_000).await.expect("audit");
+    let removed = |row: &&AuditRow| row.action == "privacy.photo_removed";
+    assert_eq!(audit.iter().filter(removed).count(), 0);
+}
+
+/// TD-INT-48 (INT-044, D-5084): a "Send this photo" press waits for the homeowner's row lock
+/// (taken here as `paused_under_lock` takes it), so its check and its write never land beside
+/// another press or the card step; presses at once still confirm her photo once.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_int_48_a_double_press_records_one_confirmation(pool: PgPool) {
+    let app = app(&pool);
+    let (jar, job, number, conversation) = homeowner(&pool, "+19285550149").await;
+    upload(&app, &jar, number).await;
+    let path = format!("/h/requests/{number}/photos");
+    let yes = || Some(Post::Form("csrf={csrf}&answer=yes"));
+    let mut held_lock = pool.begin().await.expect("transaction");
+    let paused = paused_under_lock(&mut held_lock, conversation, job).await;
+    assert_eq!(paused.ok(), Some(false), "her row is locked");
+    let (router, to, cookies) = (app.clone(), path.clone(), jar.clone());
+    let mut press = tokio::spawn(async move { call(&router, &to, &cookies, yes()).await.0 });
+    let wait = std::time::Duration::from_millis(500);
+    let waited = tokio::time::timeout(wait, &mut press).await;
+    assert!(waited.is_err(), "the press waits for her row's lock");
+    assert_eq!(photos(&pool, job).await.1, 0, "nothing recorded meanwhile");
+    held_lock.rollback().await.expect("release");
+    assert_eq!(press.await.ok(), Some(200));
+    let again = || call(&app, &path, &jar, yes());
+    let all = tokio::join!(again(), again(), again());
+    assert_eq!((all.0.0, all.1.0, all.2.0), (200, 200, 200));
+    let mut db = pool.acquire().await.expect("db");
+    let confirmed = confirmed_photos(&mut db, job).await.expect("confirmed");
+    assert_eq!(confirmed, job_photos(&mut db, job).await.expect("photos"));
+    assert_eq!(confirmed.len(), 1);
+}
+
+/// The `kind` and `route` of every "security event" log line while it is the default subscriber
+/// (SEC-048).
+#[derive(Clone, Default)]
+struct Events(Arc<Mutex<Vec<(String, String)>>>);
+
+/// One log event's `message`, `kind` and `route`.
+#[derive(Default)]
+struct Fields(Option<String>, String, String);
+
+impl tracing::field::Visit for Fields {
+    fn record_str(&mut self, field: &tracing::field::Field, value: &str) {
+        self.record_debug(field, &value);
+    }
+
+    fn record_debug(&mut self, field: &tracing::field::Field, value: &dyn std::fmt::Debug) {
+        let value = format!("{value:?}").trim_matches('"').to_owned();
+        match field.name() {
+            "message" => self.0 = Some(value),
+            "kind" => self.1 = value,
+            "route" => self.2 = value,
+            _ => {}
+        }
+    }
+}
+
+impl tracing::Subscriber for Events {
+    fn enabled(&self, _: &tracing::Metadata<'_>) -> bool {
+        true
+    }
+
+    fn new_span(&self, _: &tracing::span::Attributes<'_>) -> tracing::span::Id {
+        tracing::span::Id::from_u64(1)
+    }
+
+    fn record(&self, _: &tracing::span::Id, _: &tracing::span::Record<'_>) {}
+
+    fn record_follows_from(&self, _: &tracing::span::Id, _: &tracing::span::Id) {}
+
+    fn event(&self, event: &tracing::Event<'_>) {
+        let mut fields = Fields::default();
+        event.record(&mut fields);
+        if fields.0.as_deref() == Some("security event") {
+            let mut all = self.0.lock().unwrap_or_else(PoisonError::into_inner);
+            all.push((fields.1, fields.2));
+        }
+    }
+
+    fn enter(&self, _: &tracing::span::Id) {}
+
+    fn exit(&self, _: &tracing::span::Id) {}
+}
+
+/// TD-INT-48 (SEC-042, SEC-048): a cross-site post, a wrong token and a missing one, form-encoded
+/// or multipart, are each a 403 with one `csrf_rejected` event naming the route template, never
+/// her request's number, and store nothing.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_int_48_a_refused_post_is_one_csrf_rejected_event(pool: PgPool) {
+    let app = app(&pool);
+    let (jar, job, number, _) = homeowner(&pool, "+19285550150").await;
+    let path = format!("/h/requests/{number}/photos");
+    let no_session = CookieJar::new();
+    let events = Events::default();
+    let _guard = tracing::subscriber::set_default(events.clone());
+    let refused = [
+        (&jar, Post::CrossSite("csrf={csrf}&answer=yes")),
+        (&jar, Post::Form("csrf=0000&answer=yes")),
+        (&jar, Post::Form("answer=remove")),
+        (&no_session, Post::File(png(400, 320))),
+    ];
+    for (sent, (jar, post)) in refused.into_iter().enumerate() {
+        assert_eq!(call(&app, &path, jar, Some(post)).await.0, 403);
+        let all = events.0.lock().unwrap_or_else(PoisonError::into_inner);
+        assert_eq!(all.len(), sent + 1, "one event for each refusal");
+        let (kind, route) = &all[sent];
+        assert_eq!(kind, "csrf_rejected");
+        assert_eq!(route, "/h/requests/{job}/photos", "the template");
+    }
+    assert_eq!(held(&pool, job).await, 0);
 }
 
 /// TD-INT-48 (PRIV-025, INT-044): a HEIC, an undecodable, a too-small and an over-limit file each

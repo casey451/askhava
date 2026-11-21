@@ -17,6 +17,8 @@
 //! photo with no such row never goes on the card (INT-044, CARD-013). A removal is
 //! `privacy::api::delete_photo`, of her own job's photo only. Both, and an upload, are refused
 //! once her card was shown ([`card_went_out`]): a shown card keeps its photo IDs.
+//! [`press_photo`] checks and writes in one transaction under `models::lock_homeowner`, and
+//! [`confirmed_photos`] names only photos stored on the job asked about (D-5084).
 
 use askhava_core::api::brand;
 use askhava_messaging::api::Language;
@@ -24,8 +26,8 @@ use askhava_privacy::api::{PhotoTaken, delete_photo, job_photos};
 use askhava_quotes::api::{HomeownerAnswer, LeftOff};
 use jiff::Timestamp;
 use secrecy::SecretString;
-use sqlx::PgConnection;
 use sqlx::types::Uuid;
+use sqlx::{Connection, PgConnection};
 
 use crate::design::{CONCEPT_OFFER_TEMPLATE, LOOK_ASK_TEMPLATE, LOOK_DESCRIBE_TEMPLATE};
 use crate::handlers::queue_body;
@@ -323,23 +325,30 @@ async fn confirmed(db: &mut PgConnection, conversation: Uuid) -> Result<Vec<Uuid
         .collect())
 }
 
-/// INT-044, CARD-013 (T674, D-4360): the photos of `job` she confirmed show no person and no
-/// house number; only these may go on its card, and a photo with no row never does.
+/// INT-044, CARD-013 (T674, D-4360, D-5084): the photos of `job` itself she confirmed show no
+/// person and no house number, each once, newest first; only these may go on its card. A photo
+/// with no row never does, and neither does a confirmed photo of another job of the same request.
 ///
 /// # Errors
 ///
 /// [`IntakeError::Database`].
 pub async fn confirmed_photos(db: &mut PgConnection, job: Uuid) -> Result<Vec<Uuid>, IntakeError> {
-    match request_of(db, job).await? {
-        Some((conversation, _)) => confirmed(db, conversation).await,
-        None => Ok(Vec::new()),
-    }
+    let Some((conversation, _)) = request_of(db, job).await? else {
+        return Ok(Vec::new());
+    };
+    let done = confirmed(db, conversation).await?;
+    let photos = job_photos(db, job).await;
+    let photos = photos.map_err(|_| IntakeError::Database)?;
+    Ok(photos.into_iter().filter(|id| done.contains(id)).collect())
 }
 
-/// INT-044, CARD-013, PRIV-009 (T674, D-4360): her `answer` about `job`'s newest photo that has
-/// no [`PHOTO_OK`] row, only before her card was shown. Confirmed records one `photo_ok` row (a
-/// second press finds no waiting photo and records nothing); Removed deletes the photo through
-/// `privacy::api::delete_photo`, which never removes another job's photo.
+/// INT-044, CARD-013, PRIV-009 (T674, D-4360, D-5084): her `answer` about `job`'s newest photo
+/// that has no [`PHOTO_OK`] row, only before her card was shown. Confirmed records one `photo_ok`
+/// row (a second press finds no waiting photo and records nothing); Removed deletes the photo
+/// through `privacy::api::delete_photo`, which never removes another job's photo. The card check,
+/// the read of her confirmations and the write are one transaction under
+/// `models::lock_homeowner`, so two presses at once record one row and none lands after the card
+/// step marked her card shown.
 ///
 /// # Errors
 ///
@@ -350,10 +359,31 @@ pub async fn press_photo(
     answer: HomeownerAnswer,
     at: Timestamp,
 ) -> Result<PhotoPress, IntakeError> {
-    let Some((conversation, shown)) = request_of(db, job).await? else {
+    let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
+    let Some(conversation) = opener(&mut tx, job, None).await? else {
         return Ok(PhotoPress::Nothing);
     };
-    if shown {
+    let Some((homeowner, _)) = models::conversation_state(&mut tx, conversation).await? else {
+        return Ok(PhotoPress::Nothing);
+    };
+    models::lock_homeowner(&mut tx, homeowner).await?;
+    let pressed = pressed(&mut tx, (conversation, job), answer, at).await?;
+    tx.commit().await.map_err(|_| IntakeError::Database)?;
+    Ok(pressed)
+}
+
+/// [`press_photo`]'s check and write, inside its transaction and under its homeowner lock.
+async fn pressed(
+    db: &mut PgConnection,
+    (conversation, job): (Uuid, Uuid),
+    answer: HomeownerAnswer,
+    at: Timestamp,
+) -> Result<PhotoPress, IntakeError> {
+    let card = format!("card.{}", job.simple());
+    if models::latest_answer(db, conversation, &card)
+        .await?
+        .is_some()
+    {
         return Ok(PhotoPress::CardOut);
     }
     let done = confirmed(db, conversation).await?;
