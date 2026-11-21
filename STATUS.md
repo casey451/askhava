@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T04:37:13Z by runner d772bd88b2c9 (manual).
+Updated 2026-11-21T04:37:39Z by runner a579060d9447 (actions).
 
 **Building: T614 in progress since 03:43Z; 569 of 726 done; week 64% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -21,7 +21,7 @@ Worker: matching.rs:52 keyword RULES cover only plumbing, HVAC, electrical, hand
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T754 (since 2026-11-21T02:52:28Z, no attempt used; a plan change fixes it): outside ownership: app/adapters/src/payments.rs, stand_ins/stripe.py, stand_ins/server.py
 - PLAN GAP T776 (since 2026-11-21T04:00:50Z, no attempt used; a plan change fixes it): outside ownership: app/intake/src/matching.rs
-- Strict plan check red: 57 problem(s) on tasks still to run (+450 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 55 problem(s) on tasks still to run (+444 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -111,31 +111,31 @@ Worker: matching.rs:52 keyword RULES cover only plumbing, HVAC, electrical, hand
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 294 of 735 (40.0%) · partial 422 · unstarted 19
+**Requirements verified:** 359 of 735 (48.8%) · partial 357 · unstarted 19
 **Tasks merged (throughput only):** 569 of 726
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 16 | 19 | 0 | 35 |
-| ai | 7 | 19 | 3 | 29 |
-| businesses | 21 | 36 | 1 | 58 |
-| calls | 13 | 12 | 0 | 25 |
-| consent | 12 | 23 | 0 | 35 |
-| fees | 24 | 28 | 0 | 52 |
+| accessibility | 18 | 17 | 0 | 35 |
+| ai | 8 | 18 | 3 | 29 |
+| businesses | 22 | 35 | 1 | 58 |
+| calls | 15 | 10 | 0 | 25 |
+| consent | 17 | 18 | 0 | 35 |
+| fees | 25 | 27 | 0 | 52 |
 | intake | 12 | 31 | 0 | 43 |
 | job-cards | 12 | 12 | 0 | 24 |
 | licensing | 31 | 17 | 0 | 48 |
-| lifecycle | 17 | 11 | 0 | 28 |
-| messaging | 24 | 21 | 0 | 45 |
-| ops-recovery | 12 | 30 | 12 | 54 |
+| lifecycle | 21 | 7 | 0 | 28 |
+| messaging | 26 | 19 | 0 | 45 |
+| ops-recovery | 13 | 29 | 12 | 54 |
 | privacy | 10 | 21 | 0 | 31 |
 | quiet-hours | 3 | 6 | 0 | 9 |
-| quotes-pick | 22 | 34 | 0 | 56 |
-| recurring | 9 | 2 | 0 | 11 |
+| quotes-pick | 25 | 31 | 0 | 56 |
+| recurring | 10 | 1 | 0 | 11 |
 | security | 13 | 39 | 3 | 55 |
-| terms | 13 | 22 | 0 | 35 |
-| website | 9 | 21 | 0 | 30 |
-| wording | 14 | 18 | 0 | 32 |
+| terms | 29 | 6 | 0 | 35 |
+| website | 20 | 10 | 0 | 30 |
+| wording | 29 | 3 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
