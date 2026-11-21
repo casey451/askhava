@@ -255,6 +255,26 @@ async fn td_int_47_no_reply_sends_the_card_after_30_minutes(mut db: Db) {
     assert_eq!(tasks(&mut db, CARDS_APPROVED_KIND).await, 1);
 }
 
+/// The text with each `/q/` followed by 64 hex characters cut to `/q/`, and how many were cut.
+fn cut_quote_tokens(text: &str) -> (String, usize) {
+    let mut out = String::new();
+    let mut cut = 0;
+    let mut rest = text;
+    while let Some(at) = rest.find("/q/") {
+        let (head, tail) = rest.split_at(at + 3);
+        out.push_str(head);
+        let hex = tail.bytes().take_while(u8::is_ascii_hexdigit).count();
+        if hex == 64 {
+            cut += 1;
+            rest = &tail[64..];
+        } else {
+            rest = tail;
+        }
+    }
+    out.push_str(rest);
+    (out, cut)
+}
+
 /// TD-INT-47 (INT-041, CARD-007): a card too long for 2 segments is shown by her page link, and
 /// the text holds none of the card.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
@@ -265,7 +285,10 @@ async fn td_int_47_a_long_card_is_shown_by_link(mut db: Db) {
     assert_eq!(template, CARD_LINK_TEMPLATE);
     let link = format!("https://{}/q/", brand().domain());
     assert!(body.contains(&link) && !body.contains("scrapes"), "{body}");
-    assert!(!CONTACT.iter().any(|c| body.contains(c)), "{body}");
+    // The quote link's 64-hex token is random and may hold "555" by chance: cut it, exactly once.
+    let (words, cut) = cut_quote_tokens(&body);
+    assert_eq!(cut, 1, "one 64-hex quote token, cut once: {body}");
+    assert!(!CONTACT.iter().any(|c| words.contains(c)), "{body}");
     assert_eq!(
         tasks(&mut db, CARD_TIMER_KIND).await,
         1,
