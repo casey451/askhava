@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T02:52:48Z by runner 5b6d2a6f4043 (actions).
+Updated 2026-11-21T02:53:11Z by runner 1846c812a704 (actions).
 
 **Building: T781 in progress since 02:17Z; 566 of 726 done; week 60% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-21T02:52:48Z by runner 5b6d2a6f4043 (actions).
 - **Lane:** lane 3: T781 claimed 02:17Z, lease until 05:17Z; lane 5: T304 claimed 02:48Z, lease until 05:48Z; lane 6: T684 claimed 02:16Z, lease until 05:16Z; lane 7: T775 claimed 01:29Z, lease until 04:29Z
 - **Week:** 60% used, 70.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 02:52Z, 0 min before this update
-- **Keeper:** last ran 02:46Z, next wake 03:06Z
+- **Keeper:** last ran 02:52Z, next wake 04:31Z
 
 ## Needs attention
 - BLOCKED T654: plan gap reported: PLAN GAP: outside ownership: app/quotes/src/service.rs, app/quotes/src/late_cards.rs, app/intake/src/cards_out.rs, app/intake/src/order_dispatch.rs, tests/integration/tests/card_pool_queries.rs, tests/integration/tests/radius_matching.rs
@@ -25,7 +25,7 @@ T777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_
 - PLAN GAP T674 (since 2026-11-21T01:25:56Z, no attempt used; a plan change fixes it): outside ownership: tests/a11y/fixtures.ts — GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PAGE_STATES entry cannot cover a JPEG or 404). The file is owner-only since T267 moved the registry (page_states.ts:7-8); T674's Scope shares it only until then, and only for PAGE_STATES rows. Reviewer confirmed: no task grants that line (T766 does not). plan_pages.py gives a false negative for T674 because its goal mentions page_states.ts. Smallest plan change: grant T674 the one NOT_PAGES line in fixtures.ts. Worker's uncommitted work was not committed.
 - PLAN GAP T754 (since 2026-11-21T02:52:28Z, no attempt used; a plan change fixes it): outside ownership: app/adapters/src/payments.rs, stand_ins/stripe.py, stand_ins/server.py
 - PLAN GAP T777 (since 2026-11-21T02:09:30Z, no attempt used; a plan change fixes it): outside ownership: app/server/tests/business_signin_route.rs
-- Strict plan check red: 55 problem(s) on tasks still to run (+444 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 55 problem(s) on tasks still to run (+443 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
