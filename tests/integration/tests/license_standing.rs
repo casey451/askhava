@@ -161,6 +161,7 @@ async fn td_lic_05_warned_at_24_hours_and_paused_when_the_cards_stop(pool: sqlx:
     run(&mut db, warn - SECOND).await;
     assert!(notices(&mut db).await.is_empty());
     run(&mut db, warn).await;
+    assert_eq!(notices(&mut db).await.len(), 1, "warned at 24:00:00");
     run(&mut db, warn + SECOND).await;
     let sent = notices(&mut db).await;
     assert_eq!(sent.len(), 1, "one email per spell");
@@ -206,6 +207,36 @@ async fn td_lic_05_never_a_pause_without_a_warning(pool: sqlx::PgPool) {
     assert_eq!(sent[1]["business"], id.to_string());
     assert_eq!(sent[1]["paused"], true);
     assert_eq!(audits(&mut db, id, WARNED_ACTION).await, 1);
+}
+
+/// TD-LIC-05 (LIC-008, D-4310 B3): a check 60 hours before the failure start has its pause moment
+/// 12 hours into the failure, before the failure start plus 24 hours. The warning moment is then
+/// the pause moment: nothing at the failure start or one second before the pause moment, and at
+/// the pause moment the one email and the pause together, with no second email at 24 hours.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_lic_05_a_pause_inside_the_first_24_hours_carries_the_warning(pool: sqlx::PgPool) {
+    let mut db = pool.acquire().await.expect("db");
+    record(&mut db, LIST_DAY, &[("R-11", "Active")]).await;
+    let id = biz(&mut db, ("active", None), Some("2026-11-01T01:00:00Z")).await;
+    let pause = at("2026-11-04T01:00:00Z");
+    run(&mut db, at(START)).await;
+    run(&mut db, pause - SECOND).await;
+    assert!(notices(&mut db).await.is_empty());
+    assert_eq!(audits(&mut db, id, WARNED_ACTION).await, 0);
+    assert_eq!(standing(&mut db, id).await, active());
+    assert!(card_allowed(&mut db, id, pause - SECOND).await);
+    run(&mut db, pause).await;
+    assert_eq!(standing(&mut db, id).await, paused("license"));
+    assert!(!card_allowed(&mut db, id, pause).await);
+    run(&mut db, at(START) + SignedDuration::from_hours(24)).await;
+    let sent = notices(&mut db).await;
+    assert_eq!(sent.len(), 1, "one email per spell");
+    assert_eq!(sent[0]["business"], id.to_string());
+    assert_eq!(sent[0]["since"], at(START).as_second());
+    assert_eq!(sent[0]["pause_at"], pause.as_second());
+    assert_eq!(sent[0]["paused"], true);
+    assert_eq!(audits(&mut db, id, WARNED_ACTION).await, 1);
+    assert_eq!(audits(&mut db, id, "paused").await, 1);
 }
 
 /// TD-LIC-05 (LIC-008, D-199, D-4310): a fresh list showing the license Active gives the paused

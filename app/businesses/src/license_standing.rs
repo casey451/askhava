@@ -125,8 +125,9 @@ pub async fn apply_standing(
 /// and the pause moment; `None` unless `check` is Active, not after the list's failure start, and
 /// `now` has reached that start. The pause moment is `checked_at + pause_after` (never more than
 /// `pause_after` after the status became unknown); the warning moment is the earlier of
-/// `failure start + warn_after` and the pause moment. `unknown_standing` from the failure start
-/// is the answer, brought forward to those two moments.
+/// `failure start + warn_after` and the pause moment, which the pause, read first, gives with no
+/// cap written here. `unknown_standing` from the failure start is the answer, brought forward to
+/// those two moments.
 #[must_use]
 pub fn standing_at(
     check: RocStanding,
@@ -135,7 +136,7 @@ pub fn standing_at(
 ) -> Option<(UnknownStanding, Timestamp, Timestamp)> {
     let since = check.failing_since.filter(|s| check.active && now >= *s)?;
     let pause_at = check.checked_at.checked_add(limits.pause_after).ok()?;
-    let warn_at = since.checked_add(limits.warn_after).ok()?.min(pause_at);
+    let warn_at = since.checked_add(limits.warn_after).ok()?;
     let by_list = unknown_standing(since, now, limits);
     let standing = if now >= pause_at || by_list == UnknownStanding::Paused {
         UnknownStanding::Paused
