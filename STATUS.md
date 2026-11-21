@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T04:15:34Z by runner 1ef2032c2365 (actions).
+Updated 2026-11-21T04:16:00Z by runner 78ca4c1ab6db (actions).
 
 **Building: T457 in progress since 03:41Z; 569 of 726 done; week 63% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-21T04:15:34Z by runner 1ef2032c2365 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T457 claimed 03:41Z, lease until 06:41Z; lane 4: T614 claimed 03:43Z, lease until 06:43Z; lane 5: T304 claimed 02:48Z, lease until 05:48Z; lane 6: T755 claimed 04:14Z, lease until 07:14Z; lane 7: T691 claimed 04:07Z, lease until 07:07Z
 - **Week:** 63% used, 63.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:14Z, 0 min before this update
+- **Last run:** 04:15Z, 0 min before this update
 - **Keeper:** last ran 04:12Z, next wake 04:32Z
 
 ## Needs attention
@@ -28,7 +28,7 @@ T777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_
 - PLAN GAP T754 (since 2026-11-21T02:52:28Z, no attempt used; a plan change fixes it): outside ownership: app/adapters/src/payments.rs, stand_ins/stripe.py, stand_ins/server.py
 - PLAN GAP T776 (since 2026-11-21T04:00:50Z, no attempt used; a plan change fixes it): outside ownership: app/intake/src/matching.rs
 - PLAN GAP T777 (since 2026-11-21T02:09:30Z, no attempt used; a plan change fixes it): outside ownership: app/server/tests/business_signin_route.rs
-- Strict plan check red: 59 problem(s) on tasks still to run (+450 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 55 problem(s) on tasks still to run (+443 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
