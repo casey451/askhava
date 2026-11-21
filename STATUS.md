@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-21T18:19:06Z by runner e3e0b250c037 (actions).
+Updated 2026-11-21T18:19:20Z by runner e3e0b250c037 (actions).
 
 **Building: T608 in progress since 15:59Z; 584 of 732 done; week 31% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 584 of 732 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T608 claimed 15:59Z, lease until 18:59Z; lane 2: T690 claimed 16:56Z, lease until 19:56Z; lane 4: T615 claimed 17:10Z, lease until 20:10Z; lane 6: T790 claimed 18:10Z, lease until 21:10Z
+- **Lane:** lane 1: T608 claimed 15:59Z, lease until 18:59Z; lane 2: T690 claimed 16:56Z, lease until 19:56Z; lane 6: T790 claimed 18:10Z, lease until 21:10Z
 - **Week:** 31% used, 127.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 18:10Z, 8 min before this update
 - **Keeper:** last ran 17:40Z, next wake 19:02Z
@@ -19,6 +19,7 @@ Updated 2026-11-21T18:19:06Z by runner e3e0b250c037 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T615 | site and server: a styled 404 page for unknown paths, the fa | MERGE_PENDING | 4 | 68 min | 18:19Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T787 | intake: crate guide trimmed to 5,500 bytes, the detail moved | MERGE_PENDING | 1 | 68 min | 16:45Z |  |
 | T786 | server: crate guide trimmed to 5,500 bytes, the detail moved | done | 1 | 34 min | 16:33Z |  |
 | T655 | businesses: an unknown ROC license status warns at 24 hours, | done | 2 | 2 h 34 min | 16:05Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
@@ -28,7 +29,7 @@ Updated 2026-11-21T18:19:06Z by runner e3e0b250c037 (actions).
 | T655 | businesses: an unknown ROC license status warns at 24 hours, | QUEUED | 1 | 2 h 36 min | 13:24Z |  |
 | T707 | server: an emergency pick's address re-release waits while s | QUEUED | 2 | 77 min | 12:31Z | Reviewer after the findings round still ends REVIEW-VERDICT: FINDINGS (head 2f9bf610c3700bb46a4670ade27d67afda63591a). / |
 | T581 | messaging, intake and server: a failed text's call-back is d | done | 1 | 76 min | 12:03Z |  |
-| T615 | site and server: a styled 404 page for unknown paths, the fa | BLOCKED | 3 | 2 h 11 min | 11:53Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
+| T615 | site and server: a styled 404 page for unknown paths, the fa | BLOCKED | 3 | 2 h 11 min | 11:53Z |  |
 | T754 | portals and payments: a $0 Confirm after a PaymentIntent was | check_failed | 3 | 70 min | 10:58Z | PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and |
 | T458 | businesses, calls and server: the email's "Link this phone"  | done | 1 | 112 min | 10:35Z |  |
 | T654 | licensing and quotes: every ROC list import runs each active | done | 2 | 74 min | 10:15Z | PLAN GAP: outside ownership: app/quotes/src/service.rs, app/quotes/src/late_cards.rs, app/intake/src/cards_out.rs, app/i |
@@ -126,8 +127,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T608 (lease until 2026-11-21T18:59:45Z)
 - lane 2: T690 (lease until 2026-11-21T19:56:59Z)
-- lane 4: T615 (lease until 2026-11-21T20:10:57Z)
 - lane 6: T790 (lease until 2026-11-21T21:10:08Z)
 
 ## Last usage reading
-- {"task": "T787", "at": "2026-11-21T16:45:03Z", "cache_creation_input_tokens": 124365, "input_tokens": 98, "cache_read_input_tokens": 1595918, "output_tokens": 31069}
+- {"task": "T615", "at": "2026-11-21T18:19:05Z", "input_tokens": 84, "cache_creation_input_tokens": 97780, "output_tokens": 13203, "cache_read_input_tokens": 1834238}
