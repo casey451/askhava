@@ -47,6 +47,7 @@ mod data_download;
 mod email_check;
 mod emergency_switch_page;
 mod feedback;
+mod guarded_changes;
 mod health_page;
 mod help;
 mod homeowner_portal;
