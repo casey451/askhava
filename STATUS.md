@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T20:41:22Z by runner c9349629907b (actions).
+Updated 2026-11-21T20:41:34Z by runner c9349629907b (manual).
 
 **Building: T565 in progress since 19:19Z; 588 of 739 done; week 36% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -12,7 +12,6 @@ Updated 2026-11-21T20:41:22Z by runner c9349629907b (actions).
 - **Keeper:** last ran 20:41Z, next wake 22:21Z
 
 ## Needs attention
-- BLOCKED T675: plan gap reported: PLAN GAP: no production PictureTextMedia / Twilio media DELETE exists (only the test fake at tests/integration/tests/intake_photos.rs:109); adding it needs app/adapters/src/sms.rs (owned by T016/T129/T336/T377), and layers.json plus pub(crate) TwilioHttp block every path T675 owns or shares. Secondary: budget files 7 / lines 550 is too small (est. 1000+ lines). Worker found also: photo_pending marker must be written before receive_raw_reply when a request is already open; photos_to_request wording has no Rust loader; no Concept images setting in rules::Settings. Reviewer confirmed the first cl; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T675 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - Strict plan check red: 40 problem(s) on tasks still to run (+465 on DONE tasks); first: T624: stored context_pct 12% but it measures 17%; regenerate
