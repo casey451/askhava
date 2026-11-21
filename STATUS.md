@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T04:38:52Z by runner 1e0fea3f6d2c (actions).
+Updated 2026-11-21T04:40:47Z by runner d772bd88b2c9 (actions).
 
 **Building: T777 in progress since 04:26Z; 569 of 726 done; week 64% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 569 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 5: T777 claimed 04:26Z, lease until 07:26Z; lane 6: T755 claimed 04:14Z, lease until 07:14Z
-- **Week:** 64% used, 64.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:38Z, 0 min before this update
+- **Lane:** lane 5: T777 claimed 04:26Z, lease until 07:26Z; lane 6: T755 claimed 04:14Z, lease until 07:14Z; lane 7: T674 claimed 04:40Z, lease until 07:40Z
+- **Week:** 64% used, 63.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 04:39Z, 1 min before this update
 - **Keeper:** last ran 04:38Z, next wake 04:58Z
 
 ## Needs attention
@@ -21,7 +21,7 @@ Worker: matching.rs:52 keyword RULES cover only plumbing, HVAC, electrical, hand
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T754 (since 2026-11-21T02:52:28Z, no attempt used; a plan change fixes it): outside ownership: app/adapters/src/payments.rs, stand_ins/stripe.py, stand_ins/server.py
 - PLAN GAP T776 (since 2026-11-21T04:00:50Z, no attempt used; a plan change fixes it): outside ownership: app/intake/src/matching.rs
-- Strict plan check red: 55 problem(s) on tasks still to run (+444 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 57 problem(s) on tasks still to run (+450 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -141,7 +141,7 @@ Worker: matching.rs:52 keyword RULES cover only plumbing, HVAC, electrical, hand
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-21T04:24:28Z (week)): week: 129.9M used, 64.1M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-04T15:30:13Z.
+- Pacing (session_reading 2026-11-21T04:38:20Z (week)): week: 130.2M used, 63.8M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-04T15:44:29Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -159,6 +159,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 5: T777 (lease until 2026-11-21T07:26:16Z)
 - lane 6: T755 (lease until 2026-11-21T07:14:59Z)
+- lane 7: T674 (lease until 2026-11-21T07:40:32Z)
 
 ## Last usage reading
 - {"task": "T614", "at": "2026-11-21T04:37:13Z", "cache_read_input_tokens": 4568972, "cache_creation_input_tokens": 159305, "output_tokens": 52898, "input_tokens": 133}
