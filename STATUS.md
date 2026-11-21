@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T12:59:38Z by runner 19556a6dd00e (actions).
+Updated 2026-11-21T13:24:57Z by runner 6f556c92b421 (actions).
 
 **Building: T304 in progress since 12:33Z; 579 of 726 done; week 27% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 579 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T304 claimed 12:33Z, lease until 15:33Z; lane 2: T655 claimed 10:47Z, lease until 13:47Z; lane 3: T776 claimed 12:57Z, lease until 15:57Z
+- **Lane:** lane 1: T304 claimed 12:33Z, lease until 15:33Z; lane 3: T776 claimed 12:57Z, lease until 15:57Z
 - **Week:** 27% used, 138.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:59Z, 0 min before this update
+- **Last run:** 13:00Z, 24 min before this update
 - **Keeper:** last ran 12:59Z, next wake 13:50Z
 
 ## Needs attention
@@ -35,11 +35,12 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ##[error]Process completed with exit code 1.
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 57 problem(s) on tasks still to run (+460 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 56 problem(s) on tasks still to run (+457 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T655 | businesses: an unknown ROC license status warns at 24 hours, | QUEUED | 1 | 2 h 36 min | 13:24Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
 | T707 | server: an emergency pick's address re-release waits while s | QUEUED | 2 | 77 min | 12:31Z | Reviewer after the findings round still ends REVIEW-VERDICT: FINDINGS (head 2f9bf610c3700bb46a4670ade27d67afda63591a). / |
 | T581 | messaging, intake and server: a failed text's call-back is d | done | 1 | 76 min | 12:03Z |  |
 | T615 | site and server: a styled 404 page for unknown paths, the fa | BLOCKED | 3 | 2 h 11 min | 11:53Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
@@ -105,8 +106,6 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 | T767 | tests (harness): the Confirm press fixtures get an Active ac | done | 1 | 108 min | 14:41Z |  |
 | T670 | picks: the pick notice's send never records a pressed pick a | done | 1 | 86 min | 14:26Z |  |
 | T667 | picks and calls: a reconnected job's failed masked line is r | done | 1 | 58 min | 13:54Z |  |
-| T727 | Runner (harness): a retry after a review failure or a plan-f | done | 2 | 87 min | 13:23Z | Ci: failure; Coverage: cancelled / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / tes |
-| T496 | a11y (harness): stub Stripe.js in the Ally suite and scan th | done | 1 | 81 min | 13:06Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -158,8 +157,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T304 (lease until 2026-11-21T15:33:37Z)
-- lane 2: T655 (lease until 2026-11-21T13:47:58Z)
 - lane 3: T776 (lease until 2026-11-21T15:57:35Z)
 
 ## Last usage reading
-- {"task": "T707", "at": "2026-11-21T12:31:58Z", "input_tokens": 223, "output_tokens": 47571, "cache_read_input_tokens": 5490255, "cache_creation_input_tokens": 238681}
+- {"task": "T655", "at": "2026-11-21T13:24:55Z", "input_tokens": 233, "cache_creation_input_tokens": 252472, "cache_read_input_tokens": 6803689, "output_tokens": 60572}
