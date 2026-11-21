@@ -64,6 +64,7 @@ mod open_cards_times;
 mod pest_identity;
 mod phone_approval;
 mod public_name;
+mod record_resume;
 mod reply_link;
 mod retest_run;
 mod review_queue;

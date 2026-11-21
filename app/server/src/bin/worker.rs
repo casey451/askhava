@@ -145,7 +145,8 @@ async fn schedule_checks(
         .map_err(io::Error::other)
 }
 
-/// The first runs of the license chains: the license-map re-apply (T372), the unknown-license run
+/// The first runs of the license chains: the license-map re-apply (T372), the record resume run
+/// (T690, BIZ-026), the unknown-license run
 /// (T655, LIC-008) and each daily license list (T371), on the list run's settings.
 async fn schedule_licenses(
     conn: &mut sqlx::PgConnection,
@@ -153,6 +154,9 @@ async fn schedule_licenses(
     lists: askhava_licensing::api::DailyListSettings,
 ) -> io::Result<()> {
     askhava_businesses::api::schedule_reapply(conn, now)
+        .await
+        .map_err(io::Error::other)?;
+    askhava_businesses::api::schedule_record_resume(conn, now, lists)
         .await
         .map_err(io::Error::other)?;
     askhava_businesses::api::schedule_standing(conn, now, lists)

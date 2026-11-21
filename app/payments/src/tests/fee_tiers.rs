@@ -143,18 +143,9 @@ fn td_fee_27_wide_range_and_hourly() {
     assert_eq!(fee_for(reversed, PRICED), Err(FeeError::Amounts));
 }
 
-/// TD-FEE-28, TD-LIC-17 (FEE-045, LIC-015, D-403): the catalog's buyer, pre-listing and
-/// refinance inspections and the termite report for a sale or loan pay $0 for every kind of
-/// quote; the general condition inspection is charged by its tier.
-#[test]
-fn td_fee_28_fee_free_job_types_pay_nothing() {
-    let catalog = askhava_catalog::api::parse(CATEGORIES).expect("catalog parses");
-    let def = catalog
-        .categories
-        .iter()
-        .find(|c| c.id == "home_inspection")
-        .expect("home inspection");
-    assert_eq!(def.fee_free_job_types.len(), 4);
+/// Each of a category's job types pays $0 for every kind of quote when the catalog lists it as
+/// fee-free, and is charged otherwise (FEE-045).
+fn assert_fee_free_by_catalog(job_types: &[String], fee_free_job_types: &[String]) {
     let quotes = [
         FeeQuote::Fixed(45_000),
         FeeQuote::Fixed(900_000),
@@ -164,8 +155,8 @@ fn td_fee_28_fee_free_job_types_pay_nothing() {
         },
         FeeQuote::DiagnosticVisit { visit_fee: 0 },
     ];
-    for job_type in &def.job_types {
-        let fee_free = def.fee_free_job_types.contains(job_type);
+    for job_type in job_types {
+        let fee_free = fee_free_job_types.contains(job_type);
         let job = FeeJob { fee_free, ..VISIT };
         for quote in quotes {
             let fee = fee_for(quote, job).expect("priced");
@@ -173,6 +164,30 @@ fn td_fee_28_fee_free_job_types_pay_nothing() {
             assert_eq!(fee.cents() == 0, fee_free, "{job_type}");
         }
     }
+}
+
+/// TD-FEE-28, TD-LIC-17 (FEE-045, LIC-015, D-403, D-5216): the catalog's buyer, pre-listing and
+/// refinance inspections and pest control's termite report for a sale or loan pay $0 for every
+/// kind of quote; the general condition inspection and every other pest job type are charged.
+#[test]
+fn td_fee_28_fee_free_job_types_pay_nothing() {
+    let catalog = askhava_catalog::api::parse(CATEGORIES).expect("catalog parses");
+    let find = |id: &str| {
+        catalog
+            .categories
+            .iter()
+            .find(|c| c.id == id)
+            .expect("category")
+    };
+    let def = find("home_inspection");
+    assert_eq!(def.fee_free_job_types.len(), 3);
+    assert_fee_free_by_catalog(&def.job_types, &def.fee_free_job_types);
+    let pest = find("pest_control");
+    assert_eq!(
+        pest.fee_free_job_types,
+        ["termite report for a sale or loan"]
+    );
+    assert_fee_free_by_catalog(&pest.job_types, &pest.fee_free_job_types);
     let general = def
         .job_types
         .iter()
