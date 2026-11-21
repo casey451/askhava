@@ -92197,8 +92197,8 @@
     "T561",
     "T766"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "photo-upload-served",
    "type": "build",
    "stage": "5",
@@ -92211,10 +92211,43 @@
     5085,
     5086
    ],
-   "wip_claim": {
-    "attempt": 1,
-    "remote_sha": ""
-   }
+   "reason": "plan gap reported: PLAN GAP: outside ownership: tests/a11y/fixtures.ts \u2014 GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PAGE_STATES entry cannot cover a JPEG or 404). The file is owner-only since T267 moved the registry (page_states.ts:7-8); T674's Scope shares it only until then, and only for PAGE_STATES rows. Reviewer confirmed: no task grants that line (T766 does not). plan_pages.py gives a false negative for T674 because its goal mentions page_states.ts. Smallest plan change: grant T674 the one NOT_PAGES line in fixtures.ts. Worker's uncommitted work was not committed.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T674 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: outside ownership: tests/a11y/fixtures.ts \u2014 GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PAGE_STATES entry cannot cover a JPEG or 404). The file is owner-only since T267 moved the registry (page_states.ts:7-8); T674's Scope shares it only until then, and only for PAGE_STATES rows. Reviewer confirmed: no task grants that line (T766 does not). plan_pages.py gives a false negative for T674 because its goal mentions page_states.ts. Smallest plan change: grant T674 the one NOT_PAGES line in fixtures.ts. Worker's uncommitted work was not committed.",
+   "plan_gap": {
+    "at": "2026-11-21T01:25:56Z",
+    "problems": [
+     "outside ownership: tests/a11y/fixtures.ts \u2014 GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PAGE_STATES entry cannot cover a JPEG or 404). The file is owner-only since T267 moved the registry (page_states.ts:7-8); T674's Scope shares it only until then, and only for PAGE_STATES rows. Reviewer confirmed: no task grants that line (T766 does not). plan_pages.py gives a false negative for T674 because its goal mentions page_states.ts. Smallest plan change: grant T674 the one NOT_PAGES line in fixtures.ts. Worker's uncommitted work was not committed."
+    ],
+    "paths": [
+     "tests/a11y/fixtures.ts \u2014 GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PAGE_STATES entry cannot cover a JPEG or 404). The file is owner-only since T267 moved the registry (page_states.ts:7-8); T674's Scope shares it only until then",
+     "and only for PAGE_STATES rows. Reviewer confirmed: no task grants that line (T766 does not). plan_pages.py gives a false negative for T674 because its goal mentions page_states.ts. Smallest plan change: grant T674 the one NOT_PAGES line in fixtures.ts. Worker's uncommitted work was not committed."
+    ]
+   },
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-fable-5-2",
+     "model_evidence_count": 127,
+     "head_sha": "e6f56fd39ecb1dfbae3fef391a31d796541531e8",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-21T01:08:34Z",
+     "ended_at": "2026-11-21T01:25:56Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 8397462,
+       "turns": 67
+      },
+      "reviewer": {
+       "tokens": 148084,
+       "turns": 6
+      }
+     }
+    }
+   ]
   },
   {
    "id": "T675",
@@ -100014,12 +100047,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T677",
-   "at": "2026-11-21T01:02:43Z",
-   "output_tokens": 86307,
-   "input_tokens": 303,
-   "cache_creation_input_tokens": 337808,
-   "cache_read_input_tokens": 13044286
+   "task": "T674",
+   "at": "2026-11-21T01:25:56Z",
+   "cache_read_input_tokens": 8255113,
+   "output_tokens": 77625,
+   "cache_creation_input_tokens": 212666,
+   "input_tokens": 142
   },
   "source": "session_reading 2026-11-21T01:03:44Z (week)",
   "by_task": {
@@ -106675,7 +106708,17 @@
    },
    "T674": {
     "estimated_bytes": 557240,
-    "estimated_tokens": 1469999
+    "estimated_tokens": 1469999,
+    "usage_counting": "message_id",
+    "cache_read_input_tokens": 8255113,
+    "output_tokens": 77625,
+    "cache_creation_input_tokens": 212666,
+    "input_tokens": 142,
+    "worker_tokens": 8397462,
+    "worker_turns": 67,
+    "reviewer_tokens": 148084,
+    "reviewer_turns": 6,
+    "last_model": "claude-fable-5-2"
    },
    "T580": {
     "estimated_bytes": 503034,
@@ -106689,11 +106732,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-21T00:19:55Z",
-    "tokens": 2810063
+    "tokens": 3926007
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 83071728
+    "tokens": 84187672
    }
   },
   "session_reading": {
@@ -106704,7 +106747,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T01:25:45Z",
+ "updated_at": "2026-11-21T01:26:18Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -106802,7 +106845,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "c3bff35f9d54535704de3c0547b3caa76e5bc18b",
+ "runner_sha": "e6f56fd39ecb1dfbae3fef391a31d796541531e8",
  "starter": "actions",
  "smoke_runs": [
   {

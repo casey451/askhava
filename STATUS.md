@@ -1,28 +1,31 @@
 # Ask Hava build status
 
-Updated 2026-11-21T01:25:45Z by runner c3bff35f9d54 (actions).
+Updated 2026-11-21T01:26:18Z by runner e6f56fd39ecb (actions).
 
 **Building: T664 in progress since 23:09Z; 562 of 726 done; week 56% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 562 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T664 claimed 23:09Z, lease until 02:09Z; lane 2: T674 claimed 01:08Z, lease until 04:08Z; lane 5: T769 claimed 01:14Z, lease until 04:14Z; lane 6: T580 claimed 01:10Z, lease until 04:10Z
+- **Lane:** lane 1: T664 claimed 23:09Z, lease until 02:09Z; lane 5: T769 claimed 01:14Z, lease until 04:14Z; lane 6: T580 claimed 01:10Z, lease until 04:10Z
 - **Week:** 56% used, 79.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:25Z, 0 min before this update
+- **Last run:** 01:26Z, 0 min before this update
 - **Keeper:** last ran 01:25Z, next wake 02:11Z
 
 ## Needs attention
+- BLOCKED T674: plan gap reported: PLAN GAP: outside ownership: tests/a11y/fixtures.ts — GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PAGE_STATES entry cannot cover a JPEG or 404). The file is owner-only since T267 moved the registry (page_states.ts:7-8); T674's Scope shares it only until then, and only for PAGE_STATES rows. Reviewer confirmed: no task grants that line (T766 does not). plan_pages.py gives a false negative for T674 because its goal mentions page_states.ts. Smallest plan change: grant T674 the one NOT_PAGES line in fixtures.ts. Worker's uncommitted work was not committed.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T674 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
+- PLAN GAP T674 (since 2026-11-21T01:25:56Z, no attempt used; a plan change fixes it): outside ownership: tests/a11y/fixtures.ts — GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PAGE_STATES entry cannot cover a JPEG or 404). The file is owner-only since T267 moved the registry (page_states.ts:7-8); T674's Scope shares it only until then, and only for PAGE_STATES rows. Reviewer confirmed: no task grants that line (T766 does not). plan_pages.py gives a false negative for T674 because its goal mentions page_states.ts. Smallest plan change: grant T674 the one NOT_PAGES line in fixtures.ts. Worker's uncommitted work was not committed.
 - PLAN GAP T774 (since 2026-11-21T01:10:04Z, no attempt used; a plan change fixes it): T774: prompt kit/prompts/T774.md is missing; run scripts/gen_prompts.py; T774: branch claude/task/T774-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
 - PLAN GAP T777 (since 2026-11-21T01:10:04Z, no attempt used; a plan change fixes it): T777: prompt kit/prompts/T777.md is missing; run scripts/gen_prompts.py; T777: branch claude/task/T777-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
 - PLAN GAP T780 (since 2026-11-21T01:10:04Z, no attempt used; a plan change fixes it): T780: prompt kit/prompts/T780.md is missing; run scripts/gen_prompts.py; T780: branch claude/task/T780-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
 - PLAN GAP T781 (since 2026-11-21T01:10:04Z, no attempt used; a plan change fixes it): T781: prompt kit/prompts/T781.md is missing; run scripts/gen_prompts.py; T781: branch claude/task/T781-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
-- Strict plan check red: 47 problem(s) on tasks still to run (+432 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 50 problem(s) on tasks still to run (+438 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T674 | server: the homeowner's photo upload page and the short-live | BLOCKED | 1 | 17 min | 01:25Z | PLAN GAP: outside ownership: tests/a11y/fixtures.ts — GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PA |
 | T677 | quotes, businesses and server: a business that becomes eligi | MERGE_PENDING | 1 | 111 min | 01:02Z |  |
 | T526 | server, intake, businesses and site: business texting follow | done | 1 | 71 min | 00:19Z |  |
 | T773 | Runner (harness): the merge train can carry a third car, bui | done | 1 | 33 min | 23:17Z |  |
@@ -101,26 +104,26 @@ Updated 2026-11-21T01:25:45Z by runner c3bff35f9d54 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 362 of 735 (49.3%) · partial 354 · unstarted 19
-**Tasks merged (throughput only):** 562 of 714
+**Requirements verified:** 356 of 735 (48.4%) · partial 360 · unstarted 19
+**Tasks merged (throughput only):** 562 of 726
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 18 | 17 | 0 | 35 |
 | ai | 8 | 18 | 3 | 29 |
-| businesses | 23 | 34 | 1 | 58 |
+| businesses | 22 | 35 | 1 | 58 |
 | calls | 15 | 10 | 0 | 25 |
 | consent | 17 | 18 | 0 | 35 |
 | fees | 25 | 27 | 0 | 52 |
 | intake | 12 | 31 | 0 | 43 |
 | job-cards | 12 | 12 | 0 | 24 |
-| licensing | 33 | 15 | 0 | 48 |
+| licensing | 31 | 17 | 0 | 48 |
 | lifecycle | 21 | 7 | 0 | 28 |
 | messaging | 26 | 19 | 0 | 45 |
-| ops-recovery | 15 | 27 | 12 | 54 |
+| ops-recovery | 13 | 29 | 12 | 54 |
 | privacy | 10 | 21 | 0 | 31 |
 | quiet-hours | 3 | 6 | 0 | 9 |
-| quotes-pick | 26 | 30 | 0 | 56 |
+| quotes-pick | 25 | 31 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
 | security | 13 | 39 | 3 | 55 |
 | terms | 27 | 8 | 0 | 35 |
@@ -146,9 +149,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T664 (lease until 2026-11-21T02:09:28Z)
-- lane 2: T674 (lease until 2026-11-21T04:08:34Z)
 - lane 5: T769 (lease until 2026-11-21T04:14:17Z)
 - lane 6: T580 (lease until 2026-11-21T04:10:04Z)
 
 ## Last usage reading
-- {"task": "T677", "at": "2026-11-21T01:02:43Z", "output_tokens": 86307, "input_tokens": 303, "cache_creation_input_tokens": 337808, "cache_read_input_tokens": 13044286}
+- {"task": "T674", "at": "2026-11-21T01:25:56Z", "cache_read_input_tokens": 8255113, "output_tokens": 77625, "cache_creation_input_tokens": 212666, "input_tokens": 142}
