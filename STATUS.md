@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T02:38:28Z by runner 6f36936613bd (actions).
+Updated 2026-11-21T02:39:12Z by runner 6f36936613bd (actions).
 
-**Building: T774 in progress since 01:32Z; 565 of 726 done; week 57% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T781 in progress since 02:17Z; 565 of 726 done; week 57% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 565 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T774 claimed 01:32Z, lease until 04:32Z; lane 3: T781 claimed 02:17Z, lease until 05:17Z; lane 4: T457 claimed 01:40Z, lease until 04:40Z; lane 6: T684 claimed 02:16Z, lease until 05:16Z; lane 7: T775 claimed 01:29Z, lease until 04:29Z
+- **Lane:** lane 3: T781 claimed 02:17Z, lease until 05:17Z; lane 4: T457 claimed 01:40Z, lease until 04:40Z; lane 6: T684 claimed 02:16Z, lease until 05:16Z; lane 7: T775 claimed 01:29Z, lease until 04:29Z
 - **Week:** 57% used, 76.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:36Z, 1 min before this update
+- **Last run:** 02:38Z, 0 min before this update
 - **Keeper:** last ran 02:10Z, next wake 02:30Z
 
 ## Needs attention
@@ -24,6 +24,7 @@ T777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T774 | tests (harness): the quote page's no-AI-summary check leaves | MERGE_PENDING | 1 | 65 min | 02:38Z |  |
 | T777 | businesses: a sign-in code is texted only to a line whose cu | BLOCKED | 1 | 37 min | 02:09Z | PLAN GAP: outside ownership: app/server/tests/business_signin_route.rs / T777's approved_at filter in sign_in_lines fail |
 | T769 | site: the business page's WEB-024 line follows the stored bu | MERGE_PENDING | 1 | 41 min | 01:56Z |  |
 | T580 | messaging: a failed, blocked or expired text reads as failed | done | 1 | 43 min | 01:53Z |  |
@@ -147,11 +148,10 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T774 (lease until 2026-11-21T04:32:37Z)
 - lane 3: T781 (lease until 2026-11-21T05:17:31Z)
 - lane 4: T457 (lease until 2026-11-21T04:40:44Z)
 - lane 6: T684 (lease until 2026-11-21T05:16:31Z)
 - lane 7: T775 (lease until 2026-11-21T04:29:12Z)
 
 ## Last usage reading
-- {"task": "T777", "at": "2026-11-21T02:09:30Z", "input_tokens": 56, "cache_creation_input_tokens": 80832, "cache_read_input_tokens": 1270683, "output_tokens": 19493}
+- {"task": "T774", "at": "2026-11-21T02:38:26Z", "output_tokens": 12978, "cache_read_input_tokens": 789041, "input_tokens": 60, "cache_creation_input_tokens": 64998}
