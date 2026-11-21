@@ -43,6 +43,7 @@ const NOT_PAGES: readonly (readonly [string, string])[] = [
   ["nest_service(\"/static/site\")", "the site's compiled-in stylesheet at /static/site/<name>, a file not a page, checked through every page that links it (T101)"],
   ["nest_service(&mount)", "server's built browser scripts at /static/<crate>/, files not pages, run by the pages that load them (T362)"],
   ["/healthz", "T106's JSON health check, not a page"],
+  ["/photos/{token}", "T674's short-lived photo link: a JPEG for a live token, a bare 404 otherwise, never a page; the page that shows it is /h/requests/{job}/photos (D-5117)"],
   ["/h/my-data", "T561's \"Download my data\" JSON file, a download not a page; its request screen is axe-checked in tests/e2e/homeowner_portal_served.spec.ts"],
 ];
 const notAPage = (entry: string): boolean => NOT_PAGES.some(([listed]) => listed === entry);

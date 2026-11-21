@@ -3646,6 +3646,13 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 - It no longer also waits for your approval of the phone. Your approval decides whether a phone counts as the business's for texts and calls. A sign-in code goes to the member's own phone as their own second step, and an earlier decision's test expects that.
 - If you want a member's phone to get no sign-in code until you approve it, say so. It is a small change, and members would get their codes by email until the approval page (T397) is live.
 
+## Homeowner photo upload page is served (T674, D-5082, November 21)
+
+- A signed-in homeowner can now add photos to her own request, see each one as businesses will, and send it or take it off. A photo she has not sent never goes on the card.
+- Once her request summary has been shown to her, the photos can't change; the page says "Your request is past the photo step, so its photos can't change now." That line is new and short; change it if you want other words.
+- There is no cap yet on how many photos one request can hold (the spec asks for up to 3 kinds of photo but sets no upload limit). Say so if you want one.
+- When one request covers two kinds of work, a photo she sends for one never shows on the other's card, and pressing "Send this photo" twice counts once (D-5084).
+- Nothing needs you now.
 ## Disputes with no evidence date (D-5164, November 21)
 
 - A Stripe dispute that arrives without an evidence due date is now recorded and blocks refunds on that pick, with an alert naming the pick. Nothing is auto-submitted for it: you must counter or accept it in Stripe yourself. Its PRIV-007 retention hold counts from the day it was opened.

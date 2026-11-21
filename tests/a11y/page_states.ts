@@ -621,6 +621,44 @@ function homeownerSeed(state: PageState): Seeded {
   return { url: `${keyedUrl()}${state.route}`, cookies: [{ name: "__Host-askhava-session", value: token }] };
 }
 
+/**
+ * The homeowner's photo upload page (T674; INT-044, PRIV-015, A11Y-027): a fake contact with a
+ * homeowner session, her request and its job; the seed fills `{job}` with the job's number.
+ */
+const PHOTO_UPLOAD_ROUTE = "/h/requests/{job}/photos";
+const PHOTO_UPLOAD_STATES: readonly PageState[] = [
+  [
+    "homeowner photo upload form",
+    "No photo is fine too.",
+    "Fix this to add your photo",
+    `WITH c AS (INSERT INTO privacy.contact (id, phone) VALUES (':contact', decode(':phone', 'hex')) RETURNING id),
+    s AS (INSERT INTO portals.session (token_sha256, realm, actor_id, created_at, expires_at)
+      SELECT decode(':hash', 'hex'), 'homeowner', id, now(), now() + interval '30 days' FROM c),
+    j AS (INSERT INTO jobs.job (id, status, emergency, created_at, status_at, timer_from)
+      VALUES (gen_random_uuid(), 'intake', false, now(), now(), now()) RETURNING id),
+    n AS (UPDATE jobs.job_number_next SET next = next + 1 RETURNING next - 1 AS n),
+    num AS (INSERT INTO jobs.job_number (number, job_id, issued_at) SELECT n.n, j.id, now() FROM n, j),
+    h AS (INSERT INTO intake.homeowner (contact_id, created_at) SELECT id, now() FROM c RETURNING id),
+    v AS (INSERT INTO intake.conversation (homeowner_id, job_id, language, first_inbox_id, consent_template,
+      consent_sent_at, opened_at) SELECT h.id, j.id, 'en', gen_random_uuid(), 'consent', now(), now() FROM h, j)
+    SELECT n FROM n`,
+  ],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: PHOTO_UPLOAD_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
+/** Seeds a photo upload state on the keyed binary and opens her request's page with her session cookie. */
+function photoUploadSeed(state: PageState): Seeded {
+  const token = randomBytes(32).toString("hex");
+  const contact = randomUUID();
+  const sql = state.sql
+    .replaceAll(":hash", createHash("sha256").update(token).digest("hex"))
+    .replaceAll(":contact", contact)
+    .replaceAll(":phone", seal("privacy.contact", "phone", contact, "+19285550165").toString("hex"));
+  const done = spawnSync("psql", [process.env.DATABASE_URL ?? "", "-v", "ON_ERROR_STOP=1", "-qtA", "-c", sql], { encoding: "utf8" });
+  if (done.status !== 0) throw new Error(`seeding "${state.name}" failed: ${done.stderr}`);
+  const url = `${keyedUrl()}${state.route.replace("{job}", done.stdout.trim())}`;
+  return { url, cookies: [{ name: "__Host-askhava-session", value: token }] };
+}
+
 /** Every page's entry: its route, its states and its seed function. Append a new page's entry. */
 export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: QUOTE_ROUTE, seed: tokenSeed, states: QUOTE_STATES },
@@ -674,6 +712,7 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: JOB_TYPES_ROUTE, seed: portalSeed(false), states: JOB_TYPES_STATES },
   { route: HOMEOWNER_SIGNIN_ROUTE, seed: (state) => state.route, states: HOMEOWNER_SIGNIN_STATES },
   { route: HOMEOWNER_HOME_ROUTE, seed: homeownerSeed, states: HOMEOWNER_HOME_STATES },
+  { route: PHOTO_UPLOAD_ROUTE, seed: photoUploadSeed, states: PHOTO_UPLOAD_STATES },
 ];
 
 /** Every state of every page, in entry order. */

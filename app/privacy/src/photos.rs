@@ -25,7 +25,7 @@ use std::time::Duration;
 use aes_gcm::aead::{Aead, Generate, KeyInit, Nonce, Payload};
 use aes_gcm::{Aes256Gcm, Key};
 use askhava_adapters::api::{IdempotencyKey, StorageAdapter, StorageDelete};
-use askhava_core::api::{IdSecret, LinkKind, LinkSalt, LinkToken, link_token};
+use askhava_core::api::{IdSecret, LinkKind, LinkSalt, LinkToken, NewTask, enqueue, link_token};
 use askhava_ops::api::{Actor, AuditEntry, Change, audit};
 use base64::Engine as _;
 use base64::engine::general_purpose::STANDARD;
@@ -35,12 +35,14 @@ use image::{DynamicImage, ImageDecoder, ImageFormat, ImageReader, Limits};
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
 use secrecy::{ExposeSecret, SecretString};
+use serde_json::json;
 use sqlx::types::Uuid;
 use sqlx::types::uuid::Builder;
 use sqlx::{Connection, PgConnection};
 use tokio::sync::Semaphore;
 
 use crate::models::PhotoError;
+use crate::purge::PHOTO_DELETE_KIND;
 use crate::vault::in_transaction;
 
 /// The largest upload accepted, in bytes; the photo route's body limit is this too (PRIV-013).
@@ -486,6 +488,62 @@ pub async fn open_link<S: StorageAdapter>(
     record(&mut tx, row.id, "privacy.photo_opened").await?;
     tx.commit().await.map_err(db_err)?;
     Ok(CleanPhoto(plain))
+}
+
+/// The tries the queued object delete of a removed photo gets, as the purge's (PRIV-009).
+const DELETE_ATTEMPTS: i32 = 10;
+
+/// INT-044, CARD-013 (T674, D-4360): the IDs of `job`'s stored photos, newest first, for the
+/// homeowner's answer about the newest one she has not confirmed.
+///
+/// # Errors
+///
+/// [`PhotoError::Database`].
+pub async fn job_photos(db: &mut PgConnection, job: Uuid) -> Result<Vec<Uuid>, PhotoError> {
+    sqlx::query_scalar!(
+        "SELECT id FROM privacy.photo WHERE job_id = $1 ORDER BY stored_at DESC, id",
+        job
+    )
+    .fetch_all(db)
+    .await
+    .map_err(db_err)
+}
+
+/// INT-044, PRIV-009, PRIV-028 (T674, D-4360): the homeowner's "Take it off". In one transaction
+/// it deletes `photo` only while it is a photo of `job` (its `photo_link` rows cascade, so every
+/// link is dead at once), writes one `privacy.photo_removed` audit row naming the photo ID only
+/// and queues the [`PHOTO_DELETE_KIND`] task for the sealed object, as `purge_photos` does; the
+/// object is deleted by that task after the commit and retried there (the orphan sweep covers
+/// the rest, D-1793), so a failure never leaves a row whose object is gone. `false`, changing
+/// nothing, for an unknown photo or a photo of another job.
+///
+/// # Errors
+///
+/// [`PhotoError::Database`].
+pub async fn delete_photo(
+    db: &mut PgConnection,
+    (job, photo): (Uuid, Uuid),
+    at: Timestamp,
+) -> Result<bool, PhotoError> {
+    let mut tx = db.begin().await.map_err(db_err)?;
+    let name = sqlx::query_scalar!(
+        "DELETE FROM privacy.photo WHERE id = $1 AND job_id = $2 RETURNING storage_key",
+        photo,
+        job
+    )
+    .fetch_optional(&mut *tx)
+    .await
+    .map_err(db_err)?;
+    let Some(name) = name else {
+        return Ok(false);
+    };
+    record(&mut tx, photo, "privacy.photo_removed").await?;
+    let mut task = NewTask::new(PHOTO_DELETE_KIND, json!({ "name": name }), at);
+    task.max_attempts = DELETE_ATTEMPTS;
+    task.dedupe_key = Some(format!("{PHOTO_DELETE_KIND}:purged:{name}"));
+    enqueue(&mut tx, &task).await.map_err(db_err)?;
+    tx.commit().await.map_err(db_err)?;
+    Ok(true)
 }
 
 /// Re-seals up to `limit` photos whose `key_version` is below the active `VAULT_KEY` version and
