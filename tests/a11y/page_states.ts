@@ -22,6 +22,8 @@ export interface PageState {
   hides: string;
   /** SQL that seeds the state; `:hash` is the token's SHA256 in hex. */
   sql: string;
+  /** The HTTP status the state answers with; `open` expects 200 when it is left out (T615). */
+  status?: number;
 }
 
 /**
@@ -687,6 +689,14 @@ function photoUploadSeed(state: PageState): Seeded {
   return { url, cookies: [{ name: "__Host-askhava-session", value: token }] };
 }
 
+/** The router's fallback (`.fallback(not_found)` in app/server/src/lib.rs, T615, D-4252): an unknown path's 404 page. */
+const NOT_FOUND_ROUTE = "fallback(not_found)";
+
+/** The styled 404 page, opened at a path no route serves; it answers 404, not 200 (WEB-027). */
+const NOT_FOUND_STATES: readonly PageState[] = [
+  { route: NOT_FOUND_ROUTE, name: "unknown path, 404 page", statusRegions: [], shows: "We can't find that page.", hides: "Para propietarios", sql: "", status: 404 },
+];
+
 /** Every page's entry: its route, its states and its seed function. Append a new page's entry. */
 export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: QUOTE_ROUTE, seed: tokenSeed, states: QUOTE_STATES },
@@ -744,6 +754,7 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: HOMEOWNER_SIGNIN_ROUTE, seed: (state) => state.route, states: HOMEOWNER_SIGNIN_STATES },
   { route: HOMEOWNER_HOME_ROUTE, seed: homeownerSeed, states: HOMEOWNER_HOME_STATES },
   { route: PHOTO_UPLOAD_ROUTE, seed: photoUploadSeed, states: PHOTO_UPLOAD_STATES },
+  { route: NOT_FOUND_ROUTE, seed: () => "/no-such-page", states: NOT_FOUND_STATES },
 ];
 
 /** Every state of every page, in entry order. */
