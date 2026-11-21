@@ -86205,7 +86205,7 @@
     "T617",
     "T771"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 2,
    "slug": "site-header",
    "type": "build",
@@ -86219,8 +86219,8 @@
     4947,
     4948
    ],
-   "reason": "plan gap reported: PLAN GAP: tests/integration/tests/quote_page.rs:172 (owner T052, protected) bans the word \"summary\" anywhere in the quote page's HTML, but T614 must put <details class=\"menu\"><summary>Menu</summary> in the header of every page (docs/design/DESIGN_SPEC.md:102); quote_page.html extends base.html. Smallest plan change: a harness task narrows the check at quote_page.rs:170-174 to the page's <main>. Also D-4970's \"two rules only\" is not enough: a third rule is needed in site.css: .menu > summary { margin: calc((var(--header-h) - 44px) / 2) 0 calc((var(--header-h) - 44px) / 2) -12px; } (else the row; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T614 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: tests/integration/tests/quote_page.rs:172 (owner T052, protected) bans the word \"summary\" anywhere in the quote page's HTML, but T614 must put <details class=\"menu\"><summary>Menu</summary> in the header of every page (docs/design/DESIGN_SPEC.md:102); quote_page.html extends base.html. Smallest plan change: a harness task narrows the check at quote_page.rs:170-174 to the page's <main>. Also D-4970's \"two rules only\" is not enough: a third rule is needed in site.css: .menu > summary { margin: calc((var(--header-h) - 44px) / 2) 0 calc((var(--header-h) - 44px) / 2) -12px; } (else the row is 289px in 280px at 320px and home_first_screen.spec.ts:75 fails); plus .menu, .menu::details-content { display: contents; } and .menu-list flex: 0 0 100%; and each .site-nav link and Espanol wrapped in a <p> for unstyled axe runs (capability_setup.spec.ts:62, emergency_switch_after_hours.spec.ts:33). Work kept in /tmp/T614-attempt.patch (stash on the worker's machine). Reviewer ab0c98e06113eaf23 confirmed: PLAN-GAP: CONFIRMED.",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/integration/tests/quote_page.rs:172 (owner T052, protected) bans the word \"summary\" anywhere in the quote page's HTML, but T614 must put <details class=\"menu\"><summary>Menu</summary> in the header of every page (docs/design/DESIGN_SPEC.md:102); quote_page.html extends base.html. Smallest plan change: a harness task narrows the check at quote_page.rs:170-174 to the page's <main>. Also D-4970's \"two rules only\" is not enough: a third rule is needed in site.css: .menu > summary { margin: calc((var(--header-h) - 44px) / 2) 0 calc((var(--header-h) - 44px) / 2) -12px; } (else the row is 289px in 280px at 320px and home_first_screen.spec.ts:75 fails); plus .menu, .menu::details-content { display: contents; } and .menu-list flex: 0 0 100%; and each .site-nav link and Espanol wrapped in a <p> for unstyled axe runs (capability_setup.spec.ts:62, emergency_switch_after_hours.spec.ts:33). Work kept in /tmp/T614-attempt.patch (stash on the worker's machine). Reviewer ab0c98e06113eaf23 confirmed: PLAN-GAP: CONFIRMED.\nre-queued after plan fix D-5059: T774 narrows the quote page summary ban; T614 header CSS bound (D-5059)",
    "history": [
     {
      "attempt": 1,
@@ -86282,6 +86282,19 @@
      "plan_head": "2de3f26c0335736f78c75ae582a6354de4ab60a0",
      "plan_then": "ec523d378cf52001a5fa98cc94cb29ba862d2679db4af41beb6179c42a4903ed",
      "plan_now": "15139af0f7e24cb7f3f69c860c9bd474f8c3ee7a231b83d7fa15c75002e40678"
+    },
+    {
+     "at": "2026-11-21T01:09:37Z",
+     "reason": "T774 narrows the quote page summary ban; T614 header CSS bound (D-5059)",
+     "by": "manual-544ffb04f29e",
+     "was": "plan gap reported: PLAN GAP: tests/integration/tests/quote_page.rs:172 (owner T052, protected) bans the word \"summary\" anywhere in the quote page's HTML, but T614 must put <details class=\"menu\"><summary>Menu</summary> in the header of every page (docs/design/DESIGN_SPEC.md:102); quote_page.html extends base.html. Smallest plan change: a harness task narrows the check at quote_page.rs:170-174 to the page's <main>. Also D-4970's \"two rules only\" is not enough: a third rule is needed in site.css: .menu > summary { margin: calc((var(--header-h) - 44px) / 2) 0 calc((var(--header-h) - 44px) / 2) -12px; } (else the row; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T614 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 2,
+     "plan_fix": "D-5059",
+     "plan_since": "2026-11-20T17:26:36Z",
+     "plan_base": "431f3db7d6d49d1e8f3578991cd8a9e78ae4ef5e",
+     "plan_head": "e6f56fd39ecb1dfbae3fef391a31d796541531e8",
+     "plan_then": "5c8b28421d139196e39a8199c2208163238209f3661fe281c500e0d8b179c004",
+     "plan_now": "fb99f00f1117c953b32dc1d5e52378466c31c4010ca2ecb9fbf0c529a1bac71e"
     }
    ]
   },
@@ -106459,7 +106472,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T01:09:23Z",
+ "updated_at": "2026-11-21T01:09:37Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -106557,8 +106570,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "c3bff35f9d54535704de3c0547b3caa76e5bc18b",
- "starter": "actions",
+ "runner_sha": "e6f56fd39ecb1dfbae3fef391a31d796541531e8",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "f230bf40dfe5c49ad0c0208f4d2b25855eb91d3d",
