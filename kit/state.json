@@ -25958,7 +25958,10 @@
     "T760",
     "T763",
     "T764",
-    "T773"
+    "T773",
+    "T786",
+    "T787",
+    "T788"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -75051,7 +75054,8 @@
     "T640",
     "T724",
     "T764",
-    "T770"
+    "T770",
+    "T788"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -87158,7 +87162,8 @@
    "deps": [
     "T614",
     "T613",
-    "T593"
+    "T593",
+    "T789"
    ],
    "status": "BLOCKED",
    "attempts": 3,
@@ -103133,6 +103138,51 @@
    "slug": "dispute-without-due-date",
    "type": "build",
    "stage": "6"
+  },
+  {
+   "id": "T789",
+   "deps": [
+    "T673"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "order-card-contact-check-token",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T786",
+   "deps": [
+    "T009"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "server-guide-trim",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T787",
+   "deps": [
+    "T038"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-guide-trim",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T788",
+   "deps": [
+    "T786",
+    "T787"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "crate-guide-trim-check",
+   "type": "harness",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -110094,7 +110144,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T14:38:55Z",
+ "updated_at": "2026-11-21T15:10:17Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -110192,7 +110242,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "19556a6dd00e2bb5904254f6b25997ef6d06db63",
+ "runner_sha": "3653ff5e6df06ad9f1c7c39a432906673295c493",
  "starter": "actions",
  "smoke_runs": [
   {

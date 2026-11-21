@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T14:38:55Z by runner 19556a6dd00e (actions).
+Updated 2026-11-21T15:10:17Z by runner 3653ff5e6df0 (actions).
 
-**Building: T304 in progress since 12:33Z; 579 of 726 done; week 29% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T304 in progress since 12:33Z; 579 of 730 done; week 29% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 579 of 726 build tasks (owner gates not counted)
+- **Tasks done:** 579 of 730 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T304 claimed 12:33Z, lease until 15:33Z; lane 2: T655 claimed 13:31Z, lease until 16:31Z
 - **Week:** 29% used, 135.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:38Z, 0 min before this update
+- **Last run:** 14:39Z, 30 min before this update
 - **Keeper:** last ran 14:38Z, next wake 15:35Z
 
 ## Needs attention
@@ -35,7 +35,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ##[error]Process completed with exit code 1.
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 57 problem(s) on tasks still to run (+460 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 56 problem(s) on tasks still to run (+460 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -101,10 +101,6 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 | T684 | picks and server: the open-cards email goes at the times eac | BLOCKED | 1 | 4 min | 15:41Z |  |
 | T770 | ci (harness): the Coverage job's time limit goes from 25 to  | done | 1 | 61 min | 15:35Z |  |
 | T771 | a11y tests (harness): reflow_spacing's hidden-control check  | BLOCKED | 1 | 3 min | 15:22Z |  |
-| T557 | Decisions digest, piece 12: the next entries after the heade | done | 1 | 65 min | 14:55Z |  |
-| T672 | intake: the dispatcher asks "How soon?", the night count and | resync | 3 | 2 h 13 min | 14:53Z |  |
-| T206 | recovery: the local restore drill with no double send or cha | done | 1 | 89 min | 14:50Z |  |
-| T767 | tests (harness): the Confirm press fixtures get an Active ac | done | 1 | 108 min | 14:41Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -112,7 +108,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Progress (requirements verified)
 
 **Requirements verified:** 363 of 735 (49.4%) · partial 353 · unstarted 19
-**Tasks merged (throughput only):** 579 of 726
+**Tasks merged (throughput only):** 579 of 730
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -148,7 +144,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 222 of 306 done
+- stage 5: 222 of 310 done
 - stage 6: 0 of 67 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
