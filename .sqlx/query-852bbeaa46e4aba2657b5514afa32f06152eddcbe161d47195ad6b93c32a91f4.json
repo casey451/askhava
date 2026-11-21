@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM payments.pick_intent WHERE pick_id = $1\n             AND stripe_intent_id = $2) AS \"own!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "own!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "852bbeaa46e4aba2657b5514afa32f06152eddcbe161d47195ad6b93c32a91f4"
+}
