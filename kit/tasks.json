@@ -52563,13 +52563,11 @@
    "reads": [
     "docs/architecture.md",
     "docs/spec/security.md",
-    "docs/spec/businesses.md",
     "docs/spec/messaging.md"
    ],
    "requirements": [
     "SEC-004",
     "SEC-027",
-    "BIZ-046",
     "TXT-038"
    ],
    "tests": [
