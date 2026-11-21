@@ -100834,7 +100834,7 @@
     }
    ],
    "lane": "7",
-   "reviewed_sha": "3ef93f2dc5bf8058876159ac52d8aee1cbff08df",
+   "reviewed_sha": "553d14d1055ff6ee9430052c70a1cb44a4a43e39",
    "review_lease": {
     "task": "T754",
     "session": "actions-44931534981",
@@ -100869,6 +100869,17 @@
       "Ally": "success"
      },
      "at": "2026-11-21T21:24:54Z"
+    },
+    {
+     "from": "3ef93f2dc5bf8058876159ac52d8aee1cbff08df",
+     "to": "553d14d1055ff6ee9430052c70a1cb44a4a43e39",
+     "main": "1c5b8c44ddbd27f58102a14bff6f38057e2d8367",
+     "how": "runner",
+     "checks": {
+      "Twin": "success",
+      "Ally": "success"
+     },
+     "at": "2026-11-21T21:39:07Z"
     }
    ],
    "update_waiting_since": null,
@@ -104722,7 +104733,7 @@
     "T786",
     "T787"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "crate-guide-trim-check",
    "type": "harness",
@@ -104742,13 +104753,70 @@
      "model": "claude-sonnet-5-5",
      "model_evidence_count": 36,
      "head_sha": "59e1aa1a968c2cbcafd0c3ce4e197c980087f53b",
-     "pr": null,
-     "checks": null,
+     "pr": 1300,
+     "checks": [
+      {
+       "name": "backup lane 6",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-21T20:25:35Z",
      "ended_at": "2026-11-21T21:30:08Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "usage": {
       "worker": {
        "tokens": 661689,
@@ -104784,7 +104852,16 @@
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merged_sha": "1c5b8c44ddbd27f58102a14bff6f38057e2d8367",
+   "merged_at": "2026-11-21T21:38:01Z",
+   "files": [
+    "docs/code-docs.md",
+    "docs/decisions.md",
+    "kit/plan.lock",
+    "scripts/check_pr_change.py",
+    "tests/test_check_pr_change.py"
+   ]
   },
   {
    "id": "T790",
@@ -112349,7 +112426,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T21:36:57Z",
+ "updated_at": "2026-11-21T21:39:24Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

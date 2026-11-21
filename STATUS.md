@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T21:36:57Z by runner 6381f4f0f9ca (actions).
+Updated 2026-11-21T21:39:24Z by runner 6381f4f0f9ca (actions).
 
-**Building: T608 in progress since 21:16Z; 590 of 739 done; week 37% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T608 in progress since 21:16Z; 591 of 739 done; week 37% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 590 of 739 build tasks (owner gates not counted)
+- **Tasks done:** 591 of 739 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T608 claimed 21:16Z, lease until 00:16Z; lane 3: T794 claimed 21:27Z, lease until 00:27Z; lane 4: T798 claimed 21:15Z, lease until 00:15Z
 - **Week:** 37% used, 118.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:36Z, 0 min before this update
+- **Last run:** 21:37Z, 2 min before this update
 - **Keeper:** last ran 21:36Z, next wake 00:18Z
 
 ## Needs attention
@@ -19,7 +19,7 @@ Updated 2026-11-21T21:36:57Z by runner 6381f4f0f9ca (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T788 | Tooling (harness): check_pr_change.py fails a task branch th | MERGE_PENDING | 1 | 64 min | 21:30Z |  |
+| T788 | Tooling (harness): check_pr_change.py fails a task branch th | done | 1 | 64 min | 21:30Z |  |
 | T600 | intake, businesses, privacy and server: four worker handlers | MERGE_PENDING | 1 | 57 min | 21:10Z |  |
 | T565 | portals and server: the business team role change, removal a | MERGE_PENDING | 1 | 97 min | 20:57Z |  |
 | T754 | portals and payments: a $0 Confirm after a PaymentIntent was | MERGE_PENDING | 4 | 113 min | 20:18Z | PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and |
@@ -82,7 +82,7 @@ Updated 2026-11-21T21:36:57Z by runner 6381f4f0f9ca (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 590 of 739
+**Tasks merged (throughput only):** 591 of 739
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -118,7 +118,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 233 of 314 done
+- stage 5: 234 of 314 done
 - stage 6: 0 of 72 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
