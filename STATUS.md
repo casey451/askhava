@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-21T21:10:21Z by runner 591c8bfc043e (actions).
+Updated 2026-11-21T21:10:34Z by runner 591c8bfc043e (actions).
 
 **Building: T691 in progress since 20:16Z; 588 of 739 done; week 36% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 588 of 739 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 4: T691 claimed 20:16Z, lease until 23:16Z; lane 5: T600 claimed 20:12Z, lease until 23:12Z; lane 6: T788 claimed 20:25Z, lease until 23:25Z
+- **Lane:** lane 4: T691 claimed 20:16Z, lease until 23:16Z; lane 6: T788 claimed 20:25Z, lease until 23:25Z
 - **Week:** 36% used, 118.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 21:02Z, 7 min before this update
 - **Keeper:** last ran 21:02Z, next wake 23:14Z
@@ -19,6 +19,7 @@ Updated 2026-11-21T21:10:21Z by runner 591c8bfc043e (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T600 | intake, businesses, privacy and server: four worker handlers | MERGE_PENDING | 1 | 57 min | 21:10Z |  |
 | T565 | portals and server: the business team role change, removal a | MERGE_PENDING | 1 | 97 min | 20:57Z |  |
 | T754 | portals and payments: a $0 Confirm after a PaymentIntent was | MERGE_PENDING | 4 | 113 min | 20:18Z | PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and |
 | T707 | server: an emergency pick's address re-release waits while s | MERGE_PENDING | 3 | 97 min | 20:13Z | Reviewer after the findings round still ends REVIEW-VERDICT: FINDINGS (head 2f9bf610c3700bb46a4670ade27d67afda63591a). / |
@@ -127,8 +128,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 4: T691 (lease until 2026-11-21T23:16:22Z)
-- lane 5: T600 (lease until 2026-11-21T23:12:21Z)
 - lane 6: T788 (lease until 2026-11-21T23:25:35Z)
 
 ## Last usage reading
-- {"task": "T565", "at": "2026-11-21T20:57:01Z", "input_tokens": 297, "cache_creation_input_tokens": 242070, "cache_read_input_tokens": 17387849, "output_tokens": 70891}
+- {"task": "T600", "at": "2026-11-21T21:10:19Z", "cache_creation_input_tokens": 184164, "input_tokens": 147, "output_tokens": 46105, "cache_read_input_tokens": 6370700}
