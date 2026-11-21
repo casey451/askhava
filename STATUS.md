@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-21T06:12:05Z by runner f48c110d7929 (actions).
+Updated 2026-11-21T06:25:12Z by runner 8de808693ac9 (actions).
 
-**Building: T754 in progress since 05:54Z; 572 of 726 done; week 68% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T754 in progress since 05:54Z; 573 of 726 done; week 68% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 572 of 726 build tasks (owner gates not counted)
+- **Tasks done:** 573 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 5: T754 claimed 05:54Z, lease until 08:54Z; lane 7: T674 claimed 04:40Z, lease until 07:40Z
 - **Week:** 68% used, 58.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:11Z, 0 min before this update
+- **Last run:** 06:12Z, 12 min before this update
 - **Keeper:** last ran 06:12Z, next wake 07:43Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 55 problem(s) on tasks still to run (+448 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 54 problem(s) on tasks still to run (+449 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -24,7 +24,7 @@ Updated 2026-11-21T06:12:05Z by runner f48c110d7929 (actions).
 | T614 | site: the V6 header in base.html (links, the Menu in the pag | MERGE_PENDING | 3 | 53 min | 04:37Z | PLAN GAP: tests/integration/tests/quote_page.rs:172 (owner T052, protected) bans the word "summary" anywhere in the quot |
 | T691 | intake (harness): START into an open request resends the con | QUEUED | 1 | 27 min | 04:35Z | session ended without handing in |
 | T304 | server and portals: the owner refund review, the audit log v | BLOCKED | 1 | 91 min | 04:20Z | PLAN GAP: app/portals/templates/owner_audit_log.html (owned by T205) and app/portals/templates/health.html (owned by T47 |
-| T457 | portals and server: the Confirm email link asks for a code w | MERGE_PENDING | 1 | 35 min | 04:16Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
+| T457 | portals and server: the Confirm email link asks for a code w | done | 1 | 35 min | 04:16Z |  |
 | T781 | recovery: a failed or timed-out nightly export raises one al | done | 1 | 116 min | 04:14Z |  |
 | T776 | intake: a move out of Arizona and a property-management requ | BLOCKED | 1 | 11 min | 04:00Z | PLAN GAP: outside ownership: app/intake/src/matching.rs / Worker: matching.rs:52 keyword RULES cover only plumbing, HVAC |
 | T684 | picks and server: the open-cards email goes at the times eac | done | 2 | 93 min | 03:50Z | PLAN GAP: app/quotes/src/models.rs:265 `card_sent_at` is pub(crate); T684 owns no app/quotes/src file. quotes::api has n |
@@ -99,8 +99,8 @@ Updated 2026-11-21T06:12:05Z by runner f48c110d7929 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 360 of 735 (49.0%) · partial 356 · unstarted 19
-**Tasks merged (throughput only):** 572 of 726
+**Requirements verified:** 361 of 735 (49.1%) · partial 355 · unstarted 19
+**Tasks merged (throughput only):** 573 of 726
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -118,7 +118,7 @@ Updated 2026-11-21T06:12:05Z by runner f48c110d7929 (actions).
 | ops-recovery | 13 | 29 | 12 | 54 |
 | privacy | 10 | 21 | 0 | 31 |
 | quiet-hours | 3 | 6 | 0 | 9 |
-| quotes-pick | 25 | 31 | 0 | 56 |
+| quotes-pick | 26 | 30 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
 | security | 13 | 39 | 3 | 55 |
 | terms | 29 | 6 | 0 | 35 |
@@ -136,7 +136,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 215 of 306 done
+- stage 5: 216 of 306 done
 - stage 6: 0 of 67 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
