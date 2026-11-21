@@ -102373,7 +102373,16 @@
    "wip_claim": {
     "attempt": 3,
     "remote_sha": ""
-   }
+   },
+   "reviewed_sha": "bf0f59f657b5ffecc91be98bbb5798efdc2762dc",
+   "review_lease": {
+    "task": "T776",
+    "session": "actions-44905834626",
+    "expires": "2026-11-21T15:57:35Z",
+    "lane": "3"
+   },
+   "branch": "claude/task/T776-intake-refusals-wired",
+   "head_check_since": null
   },
   {
    "id": "T775",
@@ -110062,7 +110071,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T13:31:55Z",
+ "updated_at": "2026-11-21T14:37:07Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -110160,7 +110169,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "19556a6dd00e2bb5904254f6b25997ef6d06db63",
+ "runner_sha": "bf0f59f657b5ffecc91be98bbb5798efdc2762dc",
  "starter": "actions",
  "smoke_runs": [
   {

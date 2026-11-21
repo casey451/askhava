@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T13:31:55Z by runner 19556a6dd00e (actions).
+Updated 2026-11-21T14:37:07Z by runner bf0f59f657b5 (actions).
 
 **Building: T304 in progress since 12:33Z; 579 of 726 done; week 28% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-21T13:31:55Z by runner 19556a6dd00e (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T304 claimed 12:33Z, lease until 15:33Z; lane 2: T655 claimed 13:31Z, lease until 16:31Z; lane 3: T776 claimed 12:57Z, lease until 15:57Z
 - **Week:** 28% used, 135.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:26Z, 5 min before this update
+- **Last run:** 13:31Z, 65 min before this update
 - **Keeper:** last ran 13:26Z, next wake 13:46Z
 
 ## Needs attention
@@ -35,7 +35,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ##[error]Process completed with exit code 1.
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 57 problem(s) on tasks still to run (+460 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 59 problem(s) on tasks still to run (+460 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -104,8 +104,6 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 | T672 | intake: the dispatcher asks "How soon?", the night count and | resync | 3 | 2 h 13 min | 14:53Z |  |
 | T206 | recovery: the local restore drill with no double send or cha | done | 1 | 89 min | 14:50Z |  |
 | T767 | tests (harness): the Confirm press fixtures get an Active ac | done | 1 | 108 min | 14:41Z |  |
-| T670 | picks: the pick notice's send never records a pressed pick a | done | 1 | 86 min | 14:26Z |  |
-| T667 | picks and calls: a reconnected job's failed masked line is r | done | 1 | 58 min | 13:54Z |  |
 
 ### Plan and harness merges on main
 - none
