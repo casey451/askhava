@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T19:27:51Z by runner 534ebc1a7284 (actions).
+Updated 2026-11-21T19:28:07Z by runner 534ebc1a7284 (actions).
 
 **Building: T565 in progress since 19:19Z; 585 of 734 done; week 34% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 585 of 734 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T565 claimed 19:19Z, lease until 22:19Z; lane 2: T690 claimed 16:56Z, lease until 22:25Z; lane 3: T707 claimed 18:35Z, lease until 21:35Z; lane 7: T754 claimed 18:25Z, lease until 21:25Z
+- **Lane:** lane 1: T565 claimed 19:19Z, lease until 22:19Z; lane 3: T707 claimed 18:35Z, lease until 21:35Z; lane 7: T754 claimed 18:25Z, lease until 21:25Z
 - **Week:** 34% used, 123.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:25Z, 1 min before this update
+- **Last run:** 19:25Z, 2 min before this update
 - **Keeper:** last ran 19:22Z, next wake 19:59Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Updated 2026-11-21T19:27:51Z by runner 534ebc1a7284 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T690 | businesses and server: a sign-up waiting on "That number is  | MERGE_PENDING | 1 | 2 h 30 min | 19:27Z |  |
 | T791 | Tests and templates (harness): three Spanish stay-on texts r | MERGE_PENDING | 1 | 36 min | 19:21Z |  |
 | T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 1 | 4 min | 19:13Z | PLAN GAP: no production PictureTextMedia / Twilio media DELETE exists (only the test fake at tests/integration/tests/int |
 | T790 | catalog, licensing and tests (harness): the termite report f | MERGE_PENDING | 1 | 57 min | 19:07Z |  |
@@ -129,9 +130,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T565 (lease until 2026-11-21T22:19:14Z)
-- lane 2: T690 (lease until 2026-11-21T22:25:35Z)
 - lane 3: T707 (lease until 2026-11-21T21:35:59Z)
 - lane 7: T754 (lease until 2026-11-21T21:25:20Z)
 
 ## Last usage reading
-- {"task": "T791", "at": "2026-11-21T19:21:21Z", "output_tokens": 7215, "cache_read_input_tokens": 575797, "cache_creation_input_tokens": 49578, "input_tokens": 48}
+- {"task": "T690", "at": "2026-11-21T19:27:49Z", "output_tokens": 100580, "input_tokens": 295, "cache_creation_input_tokens": 333956, "cache_read_input_tokens": 14965582}
