@@ -1455,6 +1455,7 @@ fn register_unreachable(
             .or_else(|_| PostalAddress::new(line, MailboxKind::PrivateMailbox))
             .ok()
     });
+    register_open_cards(registry, (id_secret, clock), postal.clone());
     let parts = Arc::new(StepParts {
         stripe,
         secret: id_secret.clone(),
@@ -1483,6 +1484,57 @@ fn register_unreachable(
         move |pool, task| run_fraud_warning(pool, Arc::clone(&parts), task, fraud_clock.now()),
     );
     Ok(())
+}
+
+/// T684 (CARD-022, BIZ-038, OPS-038, D-4361, D-5017): `picks.open_cards_email`, the hourly
+/// open-cards email run at the worker clock's now, always registered; without the footer postal
+/// line (dev and CI) a run queues only the next one.
+fn register_open_cards(
+    registry: &mut Registry,
+    (id_secret, clock): (&SecretString, &Arc<dyn Clock>),
+    postal: Option<askhava_messaging::api::PostalAddress>,
+) {
+    use askhava_picks::api::{OPEN_CARDS_EMAIL_KIND, OpenCardsParts, run_open_cards_email};
+    let parts = Arc::new(OpenCardsParts {
+        secret: id_secret.clone(),
+        postal,
+        links: PortalDigestLinks,
+    });
+    let clock = Arc::clone(clock);
+    registry.register(OPEN_CARDS_EMAIL_KIND, move |pool, task| {
+        run_open_cards_email(pool, Arc::clone(&parts), task, clock.now())
+    });
+}
+
+/// The open-cards email's signed Quote and Confirm links (BIZ-038, SEC-025, T684, D-5017):
+/// `portals::api::mint_action_link`'s, each for one person and one job or pick, working only
+/// until that card's quote window or that pick's Confirm window ends.
+struct PortalDigestLinks;
+
+impl askhava_picks::api::OpenCardsLinks for PortalDigestLinks {
+    async fn link(
+        &self,
+        db: &mut sqlx::PgConnection,
+        (business, member): (Uuid, Uuid),
+        to: askhava_picks::api::DigestLink,
+        now_ends: (jiff::Timestamp, jiff::Timestamp),
+    ) -> Result<SecretString, askhava_core::api::HandlerError> {
+        use askhava_picks::api::DigestLink;
+        use askhava_portals::api::{ActionKind, ActionTarget, mint_action_link};
+        let (kind, object) = match to {
+            DigestLink::Quote(job) => (ActionKind::Quote, job),
+            DigestLink::Confirm(pick) => (ActionKind::Confirm, pick),
+        };
+        let target = ActionTarget {
+            kind,
+            object,
+            member,
+            business,
+        };
+        mint_action_link(db, target, None, now_ends)
+            .await
+            .map_err(|_| askhava_core::api::HandlerError("the email link could not be made"))
+    }
 }
 
 /// The worker's one Stripe client, the Stripe webhook's ([`stripe_hooks`]); `None` in dev and CI
