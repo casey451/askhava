@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T23:04:21Z by runner 095075c72e0f (actions).
+Updated 2026-11-21T23:04:41Z by runner 970fd9ee6f72 (actions).
 
 **Building: T600 in progress since 22:29Z; 594 of 739 done; week 40% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-21T23:04:21Z by runner 095075c72e0f (actions).
 - **Lane:** lane 1: T600 claimed 22:29Z, lease until 01:29Z; lane 2: T608 claimed 21:16Z, lease until 00:16Z; lane 3: T542 claimed 22:52Z, lease until 01:52Z; lane 5: T397 claimed 22:35Z, lease until 01:35Z; lane 6: T118 claimed 22:08Z, lease until 01:08Z; lane 7: T117 claimed 23:02Z, lease until 02:02Z
 - **Week:** 40% used, 106.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:04Z, 0 min before this update
-- **Keeper:** last ran 22:57Z, next wake 23:17Z
+- **Keeper:** last ran 23:04Z, next wake 00:18Z
 
 ## Needs attention
 - PLAN GAP T121 (since 2026-11-21T22:29:56Z, no attempt used; a plan change fixes it): T121: measures 46% of the context window, over its 45% limit
