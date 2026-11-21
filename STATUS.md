@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T15:43:33Z by runner e133fb18d6ae (actions).
+Updated 2026-11-21T15:44:04Z by runner e133fb18d6ae (actions).
 
 **Building: T655 in progress since 13:31Z; 580 of 730 done; week 30% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-21T15:43:33Z by runner e133fb18d6ae (actions).
 - **Lane:** lane 2: T655 claimed 13:31Z, lease until 16:31Z; lane 5: T787 claimed 15:36Z, lease until 18:36Z
 - **Week:** 30% used, 133.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:43Z, 0 min before this update
-- **Keeper:** last ran 15:39Z, next wake 16:33Z
+- **Keeper:** last ran 15:44Z, next wake 16:34Z
 
 ## Needs attention
 - BLOCKED T615: model claude-opus-5-5 ran, task names claude-fable-5-2
