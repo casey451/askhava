@@ -313,3 +313,4 @@
 - [SEC-008 SEC-034 SEC-042 SEC-046 CON-035] (never 25) no homeowner session gets the 401 linking to `/h/sign-in`;
 - [SEC-008 SEC-034 SEC-042 SEC-046 CON-035] (never 25) any sign-in number gets the same code page at once, never awaiting the send (D-4013);
 - [SEC-008 SEC-034 SEC-042 SEC-046 CON-035] (never 25) a send or check past its limit calls no Verify;
+- [PICK-001 INT-019 INT-027 INT-041 BIZ-029 PRIV-007 SEC-035] (task 600) the card sender, card timer, no-reply, address-needed and box-closed handlers are registered as their `*_at` versions on the worker clock (`register_card_sender` takes `(id_secret, clock)`, new `register_business_clocked`), and `stage_step` runs `run_complaint_holds_at` at its `now` (D-4196, D-4310, D-5256).

@@ -187,6 +187,19 @@ pub async fn any_held(db: &mut PgConnection, jobs: &[Uuid]) -> Result<bool, Vaul
 /// # Errors
 /// [`VaultError::Database`].
 pub async fn purge_photos(db: &mut PgConnection, job: Uuid) -> Result<u64, VaultError> {
+    purge_photos_at(db, job, Timestamp::now()).await
+}
+
+/// PRIV-009, D-4196: [`purge_photos`] with each object's delete queued at `now` (the worker's
+/// clock on a purge task).
+///
+/// # Errors
+/// [`VaultError::Database`].
+pub async fn purge_photos_at(
+    db: &mut PgConnection,
+    job: Uuid,
+    now: Timestamp,
+) -> Result<u64, VaultError> {
     let mut tx = sqlx::Acquire::begin(db).await.map_err(db_err)?;
     let names = sqlx::query_scalar!(
         "DELETE FROM privacy.photo WHERE job_id = $1 RETURNING storage_key",
@@ -196,7 +209,7 @@ pub async fn purge_photos(db: &mut PgConnection, job: Uuid) -> Result<u64, Vault
     .await
     .map_err(db_err)?;
     for name in &names {
-        queue_object_delete(&mut tx, name, "purged", Timestamp::now()).await?;
+        queue_object_delete(&mut tx, name, "purged", now).await?;
     }
     tx.commit().await.map_err(db_err)?;
     Ok(u64::try_from(names.len()).unwrap_or(u64::MAX))
