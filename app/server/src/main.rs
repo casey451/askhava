@@ -126,7 +126,11 @@ fn business_parts(
         .with_confirm_link_codes(link_codes)
         .with_chat_codes(chat)
         .with_site_pages(pages.with_business_number(number))
-        .with_environment(settings.environment()))
+        .with_environment(settings.environment())
+        .with_secret_report(askhava_server::owner_tools::SecretReport::from_settings(
+            settings,
+            std::env::vars(),
+        )))
 }
 
 /// Applies every pending migration over `ASKHAVA_MIGRATION_DATABASE_URL`, never the app
