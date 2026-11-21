@@ -27,7 +27,7 @@ pub use crate::signatures::{
     WebhookVendor, check_webhook_source, refuse, verify_webhook, webhook_source_list,
 };
 pub use crate::sms::{
-    MessageBody, ReadMessage, SentText, SmsAdapter, SmsBodyDelete, SmsBodyRead,
+    MessageBody, ReadMessage, SentText, SmsAdapter, SmsBodyDelete, SmsBodyRead, SmsMediaDelete,
     TwilioMessageReader, TwilioSms,
 };
 pub use crate::sms_list::{SENT_LOG_MAX_PAGES, SENT_LOG_PAGE_SIZE, SentMessage, SmsSentLog};
