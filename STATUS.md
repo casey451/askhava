@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T11:29:32Z by runner 4d8cf0ae2015 (actions).
+Updated 2026-11-21T11:42:46Z by runner 4d8cf0ae2015 (actions).
 
 **Building: T655 in progress since 10:47Z; 578 of 726 done; week 75% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,10 +8,30 @@ Updated 2026-11-21T11:29:32Z by runner 4d8cf0ae2015 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T655 claimed 10:47Z, lease until 13:47Z; lane 3: T615 claimed 09:42Z, lease until 12:42Z; lane 4: T581 claimed 10:47Z, lease until 13:47Z; lane 5: T707 claimed 11:14Z, lease until 14:14Z
 - **Week:** 75% used, 39.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:29Z, 0 min before this update
+- **Last run:** 11:29Z, 12 min before this update
 - **Keeper:** last ran 11:29Z, next wake 12:45Z
 
 ## Needs attention
+- BLOCKED T754: Ci: failure; Checks: failure
+Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)
+     Running tests/status_enums.rs (target/debug/deps/status_enums-3039d66fa660459e)
+running 3 tests
+test td_sec_12_status_modules_deny_wildcards_and_statuses_are_enums ... FAILED
+test td_sec_12_the_scan_fails_on_each_planted_shape ... ok
+test td_sec_12_the_repository_has_no_status_shortcut ... ok
+failures:
+---- td_sec_12_status_modules_deny_wildcards_and_statuses_are_enums stdout ----
+thread 'td_sec_12_status_modules_deny_wildcards_and_statuses_are_enums' (39320) panicked at tests/security/tests/status_enums.rs:151:17:
+/home/runner/work/askhava/askhava/tests/security/../../app/payments/src/release_proof.rs holds a status as text
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+failures:
+    td_sec_12_status_modules_deny_wildcards_and_statuses_are_enums
+test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 30.39s
+error: test failed, to rerun pass `-p askhava-security --test status_enums`
+##[error]Process completed with exit code 101.
+Ci failed at step: All five jobs passed
+Checks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success
+##[error]Process completed with exit code 1.
 - BLOCKED T776: plan gap reported: PLAN GAP: outside ownership: app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml)
 Worker: D-5160's three trade-only rules (job_type: None) give candidate <trade>_other; card_pool.rs:150-163 marks it listed only if in the category's stored job types; categories.yaml lists no <trade>_other for local_moving, home_watch, turnover_cleaning (all license none); licensing/rules.rs:80-82 no_license returns RefusedJobType, so in-Arizona moving/turnover texts get not_covered and no card, contradicting T776's tests (Need movers to Phoenix, California king, Turnover cleaning after renters check ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T776 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
@@ -22,7 +42,7 @@ Worker: D-5160's three trade-only rules (job_type: None) give candidate <trade>_
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T754 | portals and payments: a $0 Confirm after a PaymentIntent was | MERGE_PENDING | 3 | 70 min | 10:58Z | PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and |
+| T754 | portals and payments: a $0 Confirm after a PaymentIntent was | check_failed | 3 | 70 min | 10:58Z | PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and |
 | T458 | businesses, calls and server: the email's "Link this phone"  | done | 1 | 112 min | 10:35Z |  |
 | T654 | licensing and quotes: every ROC list import runs each active | done | 2 | 74 min | 10:15Z | PLAN GAP: outside ownership: app/quotes/src/service.rs, app/quotes/src/late_cards.rs, app/intake/src/cards_out.rs, app/i |
 | T615 | site and server: a styled 404 page for unknown paths, the fa | check_failed | 2 | 92 min | 09:28Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
@@ -88,7 +108,6 @@ Worker: D-5160's three trade-only rules (job_type: None) give candidate <trade>_
 | T496 | a11y (harness): stub Stripe.js in the Ally suite and scan th | done | 1 | 81 min | 13:06Z |  |
 | T648 | recovery: the monthly test restore into a throwaway cluster, | done | 2 | 112 min | 12:29Z | PLAN GAP: app/recovery/src/restore.rs:44 include_str!("../../../scripts/bootstrap_roles.sql") is required by the goal, b |
 | T573 | messaging and server: queued business texts are addressed to | check_failed | 3 | 70 min | 12:25Z |  |
-| T614 | site: the V6 header in base.html (links, the Menu in the pag | BLOCKED | 1 | 16 min | 11:39Z |  |
 
 ### Plan and harness merges on main
 - none
