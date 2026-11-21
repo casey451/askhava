@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T08:50:37Z by runner 5effdc8ef3e2 (actions).
+Updated 2026-11-21T08:51:11Z by runner 5effdc8ef3e2 (actions).
 
 **Building: T615 in progress since 07:56Z; 576 of 726 done; week 71% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-21T08:50:37Z by runner 5effdc8ef3e2 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T615 claimed 07:56Z, lease until 10:56Z; lane 2: T776 claimed 08:42Z, lease until 11:42Z; lane 7: T458 claimed 08:43Z, lease until 11:43Z
 - **Week:** 71% used, 51.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:50Z, 0 min before this update
-- **Keeper:** last ran 08:45Z, next wake 10:58Z
+- **Last run:** 08:51Z, 0 min before this update
+- **Keeper:** last ran 08:51Z, next wake 10:59Z
 
 ## Needs attention
 - BLOCKED T754: plan gap reported: PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and_handled, owned by T785 after T259/T331/T352) expects a verified payment_intent.succeeded naming pi_FakeNone for a pick stored with pi_Fake9 (refused WrongIntent, release_proof.rs:220-221) to change nothing, including ops.alert rows; kit/prompts/T754.md:9 (m3) requires one High alert for every WrongIntent refusal. T754 does not own that test file (T754.md:37-40, :53, :104). Reviewer confirmed (GAP-VERDICT: CONFIRMED). Smallest fix: (1) give T754 a one-time edit of stripe_webh; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T754 --plan-fix D-### --reason "..."` (D-2859)
