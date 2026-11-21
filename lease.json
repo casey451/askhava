@@ -10,17 +10,12 @@
   },
   "3": null,
   "4": null,
-  "5": {
-   "task": "T707",
-   "session": "actions-44897572206",
-   "expires": "2026-11-21T14:14:11Z",
-   "lane": "5"
-  },
+  "5": null,
   "6": null,
   "7": null,
   "fix": null
  },
- "seq": 9172,
- "runner_sha": "2ce468444a2e537ce825d86faa21e444d0a1d5fc",
- "starter": "manual"
+ "seq": 9173,
+ "runner_sha": "2f9bf610c3700bb46a4670ade27d67afda63591a",
+ "starter": "actions"
 }
