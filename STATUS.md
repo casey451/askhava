@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T06:11:34Z by runner f48c110d7929 (actions).
+Updated 2026-11-21T06:12:05Z by runner f48c110d7929 (actions).
 
 **Building: T754 in progress since 05:54Z; 572 of 726 done; week 68% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-21T06:11:34Z by runner f48c110d7929 (actions).
 - **Lane:** lane 5: T754 claimed 05:54Z, lease until 08:54Z; lane 7: T674 claimed 04:40Z, lease until 07:40Z
 - **Week:** 68% used, 58.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 06:11Z, 0 min before this update
-- **Keeper:** last ran 06:06Z, next wake 07:43Z
+- **Keeper:** last ran 06:12Z, next wake 07:43Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
@@ -93,7 +93,6 @@ Updated 2026-11-21T06:11:34Z by runner f48c110d7929 (actions).
 | T669 | picks: "Can't take it" and a business leaving end a pick in  | QUEUED | 1 | 56 min | 07:07Z |  |
 | T573 | messaging and server: queued business texts are addressed to | BLOCKED | 1 | 5 min | 06:27Z |  |
 | T561 | server and portals: the homeowner's "Download my data" and h | resync | 1 | 60 min | 06:26Z |  |
-| T765 | recovery (tests): the backup tests' fake binaries can no lon | done | 1 | 65 min | 06:11Z |  |
 
 ### Plan and harness merges on main
 - none
