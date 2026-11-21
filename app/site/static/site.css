@@ -707,15 +707,16 @@ a.card { display: block; color: var(--ink); text-decoration: none; }
 
 /* T608 (WEB-027, D-4246, D-4252): the home page's and quote page's own placements of the
    components above, on markup whose words and ids stay as they were. The home's bands sit inside
-   main as rounded panels; the "Who runs" facts are stacked rows on phones and one ruled row from
+   main as rounded panels; the "Who runs" facts (each a `.who-fact` paragraph, kept a sibling of the
+   heading for tests/e2e/who_runs_links.spec.ts) are stacked rows on phones and one ruled row from
    1024 px. The quote page's cards: the number heading above a rule, the card lines as ruled rows
    with the business name in the serif, a gone card in ink-soft; its three states each a panel. */
 .home-band { padding-inline: 20px; border: 1px solid var(--line); border-radius: var(--radius-card); margin-block: 40px; }
 .home-band.night { border-color: var(--night); }
 .fair-list p { margin: 0; }
 .section > h2, .who h2, .section-head h2, .cover-grid h2, .fair h2 { margin-top: 0; }
-.who-facts { margin-top: 16px; }
-.who-facts p { margin: 0; padding-block: 8px; border-top: 1px solid var(--line); }
+.who-fact { margin: 0; padding-block: 8px; border-top: 1px solid var(--line); }
+.who > div:first-child > p:nth-of-type(2) { margin-top: 16px; }
 .note-911 p { margin: 0; }
 .page-head h1, .page-head p, .page-head ul { margin: 0; }
 .quote h2.quote-top { font: 700 16px/24px var(--sans); letter-spacing: 0; color: var(--ink); margin: 0; }
@@ -731,8 +732,9 @@ a.card { display: block; color: var(--ink); text-decoration: none; }
 #tier-summary p, #tier-summary ul { margin: 0; }
 #closed-note { padding-block: 12px; border-block: 1px solid var(--line); }
 @media (min-width: 1024px) {
-  .who-facts { display: flex; flex-wrap: wrap; column-gap: 32px; border-block: 1px solid var(--line); }
-  .who-facts p { border-top: 0; padding-block: 12px; }
+  .who > div:first-child { display: flex; flex-wrap: wrap; align-items: baseline; }
+  .who > div:first-child > * { flex: 1 0 100%; }
+  .who > div:first-child > .who-fact { flex: 0 1 auto; margin-top: 16px; padding: 12px 32px 12px 0; border-block: 1px solid var(--line); }
 }
 
 @media (min-width: 768px) {

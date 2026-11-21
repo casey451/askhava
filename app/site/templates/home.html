@@ -101,18 +101,16 @@ never a share of the job.</p>
 <div>
 <h2>Who runs {{ askhava_core::api::brand().display_name() }}</h2>
 <p>{{ askhava_core::api::brand().display_name() }} is run by {{ askhava_core::api::brand().legal_name() }}, a Lake Havasu City business. Its owner lives in Havasu.</p>
-<div class="who-facts">
 {%- if let Some(address) = who.mailing_address %}
-<p>Mailing address: {{ address }}</p>
+<p class="who-fact">Mailing address: {{ address }}</p>
 {%- endif %}
 {%- if let Some(url) = who.record_url %}
-<p><a href="{{ url }}">{{ askhava_core::api::brand().legal_name() }} on the Arizona Corporation Commission site</a></p>
+<p class="who-fact"><a href="{{ url }}">{{ askhava_core::api::brand().legal_name() }} on the Arizona Corporation Commission site</a></p>
 {%- endif %}
 {%- if let Some(number) = who.city_license %}
-<p>Lake Havasu City business license: {{ number }}</p>
+<p class="who-fact">Lake Havasu City business license: {{ number }}</p>
 {%- endif %}
-<p>Help email: <a href="mailto:help@{{ askhava_core::api::brand().domain() }}">help@{{ askhava_core::api::brand().domain() }}</a></p>
-</div>
+<p class="who-fact">Help email: <a href="mailto:help@{{ askhava_core::api::brand().domain() }}">help@{{ askhava_core::api::brand().domain() }}</a></p>
 <p data-fixed="WEB-021">The owner has a full-time day job. Sign-up reviews are usually answered within 4 days, help and charge questions usually within 2 days, and this page shows when the owner is away.</p>
 </div>
 <div class="note-911">

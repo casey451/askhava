@@ -36,18 +36,16 @@
 <div>
 <h2>Quién opera {{ brand }}</h2>
 <p>{{ brand }} lo opera {{ askhava_core::api::brand().es().legal_name() }}, un negocio de Lake Havasu City. Su dueño vive en Havasu.</p>
-<div class="who-facts">
 {%- if let Some(address) = who.mailing_address %}
-<p>Dirección postal: {{ address }}</p>
+<p class="who-fact">Dirección postal: {{ address }}</p>
 {%- endif %}
 {%- if let Some(url) = who.record_url %}
-<p><a href="{{ url }}">{{ askhava_core::api::brand().es().legal_name() }} en el sitio de la Arizona Corporation Commission</a></p>
+<p class="who-fact"><a href="{{ url }}">{{ askhava_core::api::brand().es().legal_name() }} en el sitio de la Arizona Corporation Commission</a></p>
 {%- endif %}
 {%- if let Some(number) = who.city_license %}
-<p>Licencia comercial de Lake Havasu City: {{ number }}</p>
+<p class="who-fact">Licencia comercial de Lake Havasu City: {{ number }}</p>
 {%- endif %}
-<p>Correo de ayuda: <a href="mailto:help@{{ askhava_core::api::brand().domain() }}">help@{{ askhava_core::api::brand().domain() }}</a></p>
-</div>
+<p class="who-fact">Correo de ayuda: <a href="mailto:help@{{ askhava_core::api::brand().domain() }}">help@{{ askhava_core::api::brand().domain() }}</a></p>
 <p>El dueño tiene un trabajo de tiempo completo. Las solicitudes de registro normalmente se revisan en 4 días, las preguntas de ayuda y de cobros normalmente en 2 días, y esta página indica cuando el dueño no está.</p>
 </div>
 <div class="note-911">
