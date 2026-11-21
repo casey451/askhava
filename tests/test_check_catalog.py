@@ -318,7 +318,7 @@ def test_one_time_job_in_recurring_category_is_face_value() -> None:
         ),
         (
             "categories.yaml",
-            "    one_time_job_types: [termites]\n",
+            "    one_time_job_types: [termites, termite report for a sale or loan]\n",
             "    one_time_job_types: [bed bugs]\n",
             "one_time_job_types not in job_types",
         ),
@@ -386,6 +386,11 @@ def test_not_a_contractor_wording_fails(tmp_path: Path, phrase: str) -> None:
             "home_inspection: charges a sale-related inspection",
         ),
         (
+            "    fee_free_job_types: [termite report for a sale or loan]\n",
+            "",
+            "pest_control: charges a sale-related report",
+        ),
+        (
             "    job_types: [weekly yard pickup]",
             "    job_types: [weekly yard pickup, home warranty]",
             "warranty or protection plan (LIC-042)",
@@ -393,8 +398,8 @@ def test_not_a_contractor_wording_fails(tmp_path: Path, phrase: str) -> None:
     ],
 )
 def test_legal_holds_are_enforced(tmp_path: Path, old: str, new: str, expected: str) -> None:
-    """LIC-012, LIC-015, LIC-042 (D-402, D-403): pest licensed-only, sale inspections
-    fee-free, no warranties."""
+    """LIC-012, LIC-015, LIC-042 (D-402, D-403, D-5216): pest licensed-only, sale inspections
+    and the pest termite report for a sale fee-free, no warranties."""
     errors = errors_after(tmp_path, "categories.yaml", old, new)
     assert any(expected in e for e in errors), errors
 

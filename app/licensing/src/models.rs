@@ -132,11 +132,12 @@ pub enum PestRecordCategory {
 
 impl PestRecordCategory {
     /// The record category a pest job type needs; general pest service and scorpions need none
-    /// (`record_category_needed` in the license map, LIC-012).
+    /// (`record_category_needed` in the license map, LIC-012). The termite report for a sale or
+    /// loan needs the wood-destroying organism category like termites (LIC-015, D-5216).
     #[must_use]
     pub fn needed_for(job_type: &str) -> Option<Self> {
         match job_type {
-            "termites" => Some(Self::WoodDestroying),
+            "termites" | "termite report for a sale or loan" => Some(Self::WoodDestroying),
             "pre-emergent weed control" => Some(Self::WeedControl),
             _ => None,
         }
