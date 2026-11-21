@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T09:29:31Z by runner 75f700f12437 (actions).
+Updated 2026-11-21T09:30:08Z by runner fabfe83d9707 (actions).
 
 **Building: T654 in progress since 09:01Z; 576 of 726 done; week 73% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-21T09:29:31Z by runner 75f700f12437 (actions).
 - **Lane:** lane 2: T654 claimed 09:01Z, lease until 12:01Z; lane 7: T458 claimed 08:43Z, lease until 11:43Z
 - **Week:** 73% used, 49.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:29Z, 0 min before this update
-- **Keeper:** last ran 08:55Z, next wake 09:15Z
+- **Keeper:** last ran 09:30Z, next wake 09:50Z
 
 ## Needs attention
 - BLOCKED T776: plan gap reported: PLAN GAP: outside ownership: app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml)
@@ -17,7 +17,7 @@ Worker: D-5160's three trade-only rules (job_type: None) give candidate <trade>_
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T776 (since 2026-11-21T08:54:41Z, no attempt used; a plan change fixes it): outside ownership: app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml)
-- Strict plan check red: 54 problem(s) on tasks still to run (+454 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 54 problem(s) on tasks still to run (+449 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
