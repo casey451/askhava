@@ -3593,6 +3593,7 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 - **Spanish style notes for the paid review (D-5222):** from the first AI back-translation: "el dueño" reads as male; "PARAR para salir" is stiff; "Se canceló su suscripción" can sound like a paid plan; "Por ahora seguimos en inglés" is vague. These wait for the professional review (CON-018 and CON-031 pin the first two).
 - **Duplicate `under_18` in es.json (D-5222):** `app/messaging/templates/es.json` holds the `under_18` key twice (`:75` and `:213`), so the second copy wins when the file is read; T791 changes both, and a later cleanup removes the first.
 - **List-Unsubscribe on card emails (D-5231, your call: "Defer to post-launch"):** TXT-045's List-Unsubscribe and one-click headers on job-card and open-cards emails are not built; T147 was recorded done with them, so TD-TXT-27 is unmet until a later task adds them.
+- **Other business emails at night (D-5230):** T793 holds only business notice emails at night; the open-cards digest, check-in and coverage emails to businesses are not yet checked against the night window.
 
 ## The monthly backup test checks the backup's record (D-4835)
 
