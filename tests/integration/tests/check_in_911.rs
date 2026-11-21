@@ -92,10 +92,9 @@ async fn connected_job(db: &mut PgConnection, days: i64) -> (Uuid, Uuid) {
 async fn reply(db: &mut PgConnection, her: Uuid, words: &str, minutes: i64) -> Reply {
     let msg = text_in(her, words, now() + SignedDuration::from_mins(minutes));
     let raw = SecretString::from(words.to_owned());
-    let vault = vault();
     let keys = RawReply {
         raw: &raw,
-        vault: &vault,
+        vault: &vault(),
     };
     receive_raw_reply(db, &secret(), (&msg, keys), (Settings::default(), &[]))
         .await
@@ -125,19 +124,14 @@ async fn assert_911(db: &mut PgConnection, reply: Reply, job: Uuid, words: &str)
     assert_eq!(job.status.code(), "connected", "{words}");
 }
 
-/// INT-002, INT-004, D-5081: with the day-3 check-in due, `words` takes the 911 path, and the
-/// check-in is still due after it: a later PROBLEM with no match is the check-in answer.
+/// INT-002, INT-004, D-5081: a due check-in's `words` take the 911 path; the check-in stays due.
 async fn danger_goes_first(pool: &PgPool, words: &str) {
     let mut db = pool.acquire().await.expect("conn");
     let (her, job) = connected_job(&mut db, 4).await;
     let first = reply(&mut db, her, words, 0).await;
     assert_911(&mut db, first, job, words).await;
     let later = reply(&mut db, her, "PROBLEM leak is back", 5).await;
-    assert_eq!(
-        later,
-        Reply::CheckedIn(job),
-        "{words}: the check-in stays due"
-    );
+    assert_eq!(later, Reply::CheckedIn(job), "{words}: still due");
 }
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn a_problem_with_a_gas_smell_gets_the_911_text(pool: PgPool) {
@@ -148,16 +142,15 @@ async fn a_problema_with_a_gas_smell_in_spanish_gets_the_911_text(pool: PgPool) 
     danger_goes_first(&pool, "PROBLEMA huele a gas otra vez").await;
 }
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
-async fn a_no_with_a_sparking_outlet_gets_the_911_text(pool: PgPool) {
-    danger_goes_first(&pool, "NO, the outlet is sparking").await;
+async fn a_problem_with_a_sparking_outlet_gets_the_911_text(pool: PgPool) {
+    danger_goes_first(&pool, "PROBLEM the outlet is sparking").await;
 }
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn a_problem_with_a_power_line_down_gets_the_911_text(pool: PgPool) {
     danger_goes_first(&pool, "PROBLEM power line down in the yard").await;
 }
 
-/// JOB-015, INT-002: with no 911-list match the due check-in is answered as before: a PROBLEM
-/// closes the job and keeps its words, a NO is the check-in answer, a YES goes on to intake.
+/// JOB-015, INT-037: with no 911 match (a beeping alarm is none) the answer is taken as before.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn a_text_with_no_match_is_answered_as_before(pool: PgPool) {
     let mut db = pool.acquire().await.expect("conn");
@@ -176,6 +169,14 @@ async fn a_no_with_no_match_is_the_check_in_answer(pool: PgPool) {
     let (her, job) = connected_job(&mut db, 4).await;
     assert_eq!(reply(&mut db, her, "NO", 0).await, Reply::CheckedIn(job));
     assert_eq!(rows(&mut db).await, (0, 0));
+}
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_problem_about_a_beeping_alarm_is_the_check_in_answer(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("conn");
+    let (her, job) = connected_job(&mut db, 4).await;
+    let beep = reply(&mut db, her, "PROBLEM the CO alarm keeps beeping", 0).await;
+    assert_eq!(beep, Reply::CheckedIn(job));
+    assert_eq!(rows(&mut db).await, (0, 1));
 }
 
 /// INT-004: a 911 text with no check-in due is unchanged.
