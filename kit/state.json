@@ -95588,7 +95588,14 @@
    "update_waiting_since": null,
    "update_push_failures": null,
    "merge_turn_since": "2026-11-19T23:29:13Z",
-   "last_failure": "Ci: failure; Coverage: cancelled\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_sec_43_refusals_are_one_not_found_and_read_nothing ... ok\ntest result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.73s\n     Running tests/business_signin_route.rs (target/llvm-cov-target/debug/build/askhava-server/a0bcc78d54665842/out/business_signin_route-a0bcc78d54665842)\nrunning 7 tests\ntest d_3562_no_code_for_a_member_removed_after_the_link ... ok\ntest td_sec_40_no_code_configuration_refuses_to_start ... ok\ntest d_3220_an_encoded_code_field_name_still_counts_as_a_try ... ok\ntest d_3562_the_code_goes_to_the_members_own_line_else_own_address ... ok\ntest td_sec_40_a_link_signs_in_only_with_the_right_code ... ok\ntest td_sec_40_the_limits_refuse_before_any_email_or_verify ... ok\ntest td_sec_40_the_link_and_try_caps_hold_through_the_route ... ok\ntest result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.35s\n     Running tests/business_signup_route.rs (target/llvm-cov-target/debug/build/askhava-server/a38149a3e72a907d/out/business_signup_route-a38149a3e72a907d)\nrunning 18 tests\n##[error]The operation was canceled.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: cancelled, E2e: success\n##[error]Process completed with exit code 1."
+   "last_failure": "Ci: failure; Coverage: cancelled\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_sec_43_refusals_are_one_not_found_and_read_nothing ... ok\ntest result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.73s\n     Running tests/business_signin_route.rs (target/llvm-cov-target/debug/build/askhava-server/a0bcc78d54665842/out/business_signin_route-a0bcc78d54665842)\nrunning 7 tests\ntest d_3562_no_code_for_a_member_removed_after_the_link ... ok\ntest td_sec_40_no_code_configuration_refuses_to_start ... ok\ntest d_3220_an_encoded_code_field_name_still_counts_as_a_try ... ok\ntest d_3562_the_code_goes_to_the_members_own_line_else_own_address ... ok\ntest td_sec_40_a_link_signs_in_only_with_the_right_code ... ok\ntest td_sec_40_the_limits_refuse_before_any_email_or_verify ... ok\ntest td_sec_40_the_link_and_try_caps_hold_through_the_route ... ok\ntest result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.35s\n     Running tests/business_signup_route.rs (target/llvm-cov-target/debug/build/askhava-server/a38149a3e72a907d/out/business_signup_route-a38149a3e72a907d)\nrunning 18 tests\n##[error]The operation was canceled.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: cancelled, E2e: success\n##[error]Process completed with exit code 1.",
+   "wip_claim": {
+    "attempt": 2,
+    "remote_sha": "55c9752c35d6268a6adcd269f94e6ebb6057ec7c"
+   },
+   "runner_closed_prs": [
+    1154
+   ]
   },
   {
    "id": "T702",
@@ -109787,7 +109794,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T11:14:26Z",
+ "updated_at": "2026-11-21T11:14:55Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
