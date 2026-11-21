@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T04:08:01Z by runner 7040ed647e64 (actions).
+Updated 2026-11-21T04:11:41Z by runner 7040ed647e64 (actions).
 
-**Building: T457 in progress since 03:41Z; 568 of 726 done; week 62% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T457 in progress since 03:41Z; 569 of 726 done; week 62% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 568 of 726 build tasks (owner gates not counted)
+- **Tasks done:** 569 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T457 claimed 03:41Z, lease until 06:41Z; lane 3: T781 claimed 02:17Z, lease until 05:17Z; lane 4: T614 claimed 03:43Z, lease until 06:43Z; lane 5: T304 claimed 02:48Z, lease until 05:48Z; lane 7: T691 claimed 04:07Z, lease until 07:07Z
 - **Week:** 62% used, 65.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:06Z, 1 min before this update
+- **Last run:** 04:08Z, 3 min before this update
 - **Keeper:** last ran 04:06Z, next wake 04:26Z
 
 ## Needs attention
@@ -34,7 +34,7 @@ T777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T776 | intake: a move out of Arizona and a property-management requ | BLOCKED | 1 | 11 min | 04:00Z | PLAN GAP: outside ownership: app/intake/src/matching.rs / Worker: matching.rs:52 keyword RULES cover only plumbing, HVAC |
-| T684 | picks and server: the open-cards email goes at the times eac | MERGE_PENDING | 2 | 93 min | 03:50Z | PLAN GAP: app/quotes/src/models.rs:265 `card_sent_at` is pub(crate); T684 owns no app/quotes/src file. quotes::api has n |
+| T684 | picks and server: the open-cards email goes at the times eac | done | 2 | 93 min | 03:50Z | PLAN GAP: app/quotes/src/models.rs:265 `card_sent_at` is pub(crate); T684 owns no app/quotes/src file. quotes::api has n |
 | T780 | payments and portals: the scorecard's refund and dispute rat | MERGE_PENDING | 1 | 33 min | 03:33Z |  |
 | T775 | intake: a check-in reply that names a 911 danger gets the 91 | done | 1 | 94 min | 03:03Z |  |
 | T754 | portals and payments: a $0 Confirm after a PaymentIntent was | BLOCKED | 1 | 3 min | 02:52Z | PLAN GAP: outside ownership: app/adapters/src/payments.rs, stand_ins/stripe.py, stand_ins/server.py / T754 requires canc |
@@ -108,7 +108,6 @@ T777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_
 | T110 | recovery: replay with derived IDs | done | 1 | 2 h 36 min | 04:55Z |  |
 | T663 | picks, jobs and payments (harness): a confirmed pick moves i | done | 3 | 65 min | 04:54Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T556 | Decisions digest, piece 11: the next entries after the heade | done | 1 | 51 min | 04:50Z |  |
-| T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 2 | 32 min | 04:08Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -116,7 +115,7 @@ T777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_
 ## Progress (requirements verified)
 
 **Requirements verified:** 359 of 735 (48.8%) · partial 357 · unstarted 19
-**Tasks merged (throughput only):** 568 of 726
+**Tasks merged (throughput only):** 569 of 726
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -152,7 +151,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 211 of 306 done
+- stage 5: 212 of 306 done
 - stage 6: 0 of 67 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
