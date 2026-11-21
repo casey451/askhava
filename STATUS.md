@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T03:11:40Z by runner 5b6d2a6f4043 (actions).
+Updated 2026-11-21T03:14:30Z by runner 1e0fea3f6d2c (actions).
 
-**Building: T780 in progress since 02:59Z; 566 of 726 done; week 61% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T780 in progress since 02:59Z; 567 of 726 done; week 61% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 566 of 726 build tasks (owner gates not counted)
+- **Tasks done:** 567 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T780 claimed 02:59Z, lease until 05:59Z; lane 3: T781 claimed 02:17Z, lease until 05:17Z; lane 5: T304 claimed 02:48Z, lease until 05:48Z; lane 6: T684 claimed 02:16Z, lease until 05:16Z
 - **Week:** 61% used, 66.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:11Z, 0 min before this update
+- **Last run:** 03:12Z, 2 min before this update
 - **Keeper:** last ran 03:11Z, next wake 05:18Z
 
 ## Needs attention
@@ -32,9 +32,9 @@ T777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_
 |---|---|---|---|---|---|---|
 | T775 | intake: a check-in reply that names a 911 danger gets the 91 | MERGE_PENDING | 1 | 94 min | 03:03Z |  |
 | T754 | portals and payments: a $0 Confirm after a PaymentIntent was | BLOCKED | 1 | 3 min | 02:52Z | PLAN GAP: outside ownership: app/adapters/src/payments.rs, stand_ins/stripe.py, stand_ins/server.py / T754 requires canc |
-| T457 | portals and server: the Confirm email link asks for a code w | MERGE_PENDING | 1 | 70 min | 02:50Z |  |
+| T457 | portals and server: the Confirm email link asks for a code w | resync | 1 | 70 min | 02:50Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
 | T654 | licensing and quotes: every ROC list import runs each active | BLOCKED | 1 | 2 min | 02:42Z | PLAN GAP: outside ownership: app/quotes/src/service.rs, app/quotes/src/late_cards.rs, app/intake/src/cards_out.rs, app/i |
-| T774 | tests (harness): the quote page's no-AI-summary check leaves | MERGE_PENDING | 1 | 65 min | 02:38Z |  |
+| T774 | tests (harness): the quote page's no-AI-summary check leaves | done | 1 | 65 min | 02:38Z |  |
 | T777 | businesses: a sign-in code is texted only to a line whose cu | BLOCKED | 1 | 37 min | 02:09Z | PLAN GAP: outside ownership: app/server/tests/business_signin_route.rs / T777's approved_at filter in sign_in_lines fail |
 | T769 | site: the business page's WEB-024 line follows the stored bu | done | 1 | 41 min | 01:56Z |  |
 | T580 | messaging: a failed, blocked or expired text reads as failed | done | 1 | 43 min | 01:53Z |  |
@@ -112,7 +112,7 @@ T777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_
 ## Progress (requirements verified)
 
 **Requirements verified:** 359 of 735 (48.8%) · partial 357 · unstarted 19
-**Tasks merged (throughput only):** 566 of 726
+**Tasks merged (throughput only):** 567 of 726
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -148,7 +148,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 209 of 306 done
+- stage 5: 210 of 306 done
 - stage 6: 0 of 67 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
