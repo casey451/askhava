@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T01:55:23Z by runner 1846c812a704 (actions).
+Updated 2026-11-21T01:56:03Z by runner ab3ebfc0ef30 (actions).
 
 **Building: T774 in progress since 01:32Z; 563 of 726 done; week 57% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -16,7 +16,7 @@ Updated 2026-11-21T01:55:23Z by runner 1846c812a704 (actions).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T674 (since 2026-11-21T01:25:56Z, no attempt used; a plan change fixes it): outside ownership: tests/a11y/fixtures.ts — GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PAGE_STATES entry cannot cover a JPEG or 404). The file is owner-only since T267 moved the registry (page_states.ts:7-8); T674's Scope shares it only until then, and only for PAGE_STATES rows. Reviewer confirmed: no task grants that line (T766 does not). plan_pages.py gives a false negative for T674 because its goal mentions page_states.ts. Smallest plan change: grant T674 the one NOT_PAGES line in fixtures.ts. Worker's uncommitted work was not committed.
-- Strict plan check red: 56 problem(s) on tasks still to run (+442 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 48 problem(s) on tasks still to run (+439 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
