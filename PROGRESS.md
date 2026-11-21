@@ -9254,3 +9254,4 @@
 - 2026-11-21T15:10:48Z runner 3653ff5e6df0 (actions): {"T789": "QUEUED -> IN_PROGRESS"}; T789 estimated 433k tokens (calibrated); week has 132.8M left (no five-hour budget, D-3056) after 3.2M still running in another lane (session_reading 2026-11-21T14:38:18Z (week)); claimed
 - 2026-11-21T15:11:07Z runner 3653ff5e6df0 (actions): {}
 - 2026-11-21T15:18:28Z runner b33b087688cd (actions): {}
+- 2026-11-21T15:18:59Z runner b33b087688cd (actions): {"T304": "IN_PROGRESS -> MERGE_PENDING"}
