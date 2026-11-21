@@ -31562,7 +31562,6 @@
    ],
    "reads": [
     "docs/architecture.md",
-    "docs/code-docs.md",
     "docs/spec/security.md",
     "docs/brains/rust-production.md"
    ],
@@ -31597,7 +31596,7 @@
    "budget": {
     "files": 6,
     "lines": 550,
-    "context_pct": 42
+    "context_pct": 45
    },
    "checks": [
     "Ci",
@@ -31612,7 +31611,7 @@
    "id": "T122",
    "slug": "account-checklist",
    "title": "docs/account-checklist.md: Part 1 test accounts, Part 2 business accounts",
-   "goal": "`docs/account-checklist.md` lists the Part 1 test accounts and the Part 2 business accounts, the key inventory, every OPS-042 hardware-key and break-glass item before any live key, and the OPS-043 release record Casey signs after an independent security review, and a docs test checks each item is there (PRIV-024, OPS-042, OPS-043). The checklist also holds the OPS-048 ADOR ruling-request item, the Railway usage email alert with no hard limit (OPS-042), the protected `release` branch (OPS-043), and the AI provider's flagged-content retention period and Console spend limit recorded before the AI switch first goes on (AI-008) (D-492). The checklist also says the texting campaign is registered only once the full site is live and after Casey has sent the written eligibility question and filed the answer, and keeps business texting off unless that answer is yes (TERMS-014, TD-WEB-12) (D-493). Nov 11 vendor-double review batch 4 (D-2763, D-2769): (1) Twilio retries a webhook only on connection failures by default, once, and never on a 500 or a read timeout, so the inbound routes' \"roll back so Twilio sends it again\" (D-1307, D-1751) holds only with a connection override; the Twilio part of Part 1 (test number) and Part 2 (live number) says: set the incoming-message webhook to `/webhooks/twilio/sms` with a connection-override fragment asking for the most retries Twilio allows on 5xx responses, connection failures and read timeouts, in the syntax of Twilio's \"Webhooks connection overrides\" page (https://twilio.com/docs/usage/webhooks/webhooks-connection-overrides), or set the same through the Webhooks configuration API that page recommends; set the Fallback URL to the same route; the fragment is not signed, so nothing in the app changes; no console status-callback URL is needed (each text asks for its own, T377); and the same for the voice webhook. (2) Twilio Verify's email channel needs a Twilio SendGrid email integration on the Verify service (https://twilio.com/docs/verify/email): Part 1 and Part 2 list a SendGrid account, its domain authentication for the sending domain, an API key kept as a secret, the code email template and the Verify service's email integration, set before T131 checks the email channel and before Gate C; and SendGrid is listed with the other providers that receive personal data (email addresses), for the privacy notice's provider list. The docs test checks both items. The Stripe webhook endpoint's enabled events (Part 1 and Part 2) include `charge.dispute.updated` and `charge.dispute.funds_withdrawn` beside the events the app already handles (T381, D-2771). Plan change D-3891 (Fable's pre-claim check, nits): the docs test maps each CON-032 item to a TD ID present in `docs/test-design.md`; whether that entry passed in the latest run on `main` (`docs/spec/consent.md:36`) cannot run in `Ci`, because `kit/nightly.json` lives only on `claude/kit-state`, so the checklist row says it is confirmed from the nightly before Gate C. The pasted D-305 and D-322 predate the brand change: the checklist says Laftly and laftly.com (D-3347). Plan change D-4293: Part 1 also lists, for each Railway project, the throwaway PostgreSQL 16 service for the monthly test restore (T648, `ASKHAVA_RESTORE_ADMIN_URL` on `worker` only) and the bootstrap run with `ASKHAVA_BACKUP_PASSWORD` set that gives the `askhava_backup` role its login (T109, `ASKHAVA_BACKUP_DATABASE_URL` on `worker` only), each in the key inventory.",
+   "goal": "`docs/account-checklist.md` lists the Part 1 test accounts and the Part 2 business accounts, the key inventory, every OPS-042 hardware-key and break-glass item before any live key, and the OPS-043 release record Casey signs after an independent security review, and a docs test checks each item is there (PRIV-024, OPS-042, OPS-043). The checklist also holds the OPS-048 ADOR ruling-request item, the Railway usage email alert with no hard limit (OPS-042), the protected `release` branch (OPS-043), and the AI provider's flagged-content retention period and Console spend limit recorded before the AI switch first goes on (AI-008) (D-492). The checklist also says the texting campaign is registered only once the full site is live and after Casey has sent the written eligibility question and filed the answer, and keeps business texting off unless that answer is yes (TERMS-014, TD-WEB-12) (D-493). Nov 11 vendor-double review batch 4 (D-2763, D-2769): (1) Twilio retries a webhook only on connection failures by default, once, and never on a 500 or a read timeout, so the inbound routes' \"roll back so Twilio sends it again\" (D-1307, D-1751) holds only with a connection override; the Twilio part of Part 1 (test number) and Part 2 (live number) says: set the incoming-message webhook to `/webhooks/twilio/sms` with a connection-override fragment asking for the most retries Twilio allows on 5xx responses, connection failures and read timeouts, in the syntax of Twilio's \"Webhooks connection overrides\" page (https://twilio.com/docs/usage/webhooks/webhooks-connection-overrides), or set the same through the Webhooks configuration API that page recommends; set the Fallback URL to the same route; the fragment is not signed, so nothing in the app changes; no console status-callback URL is needed (each text asks for its own, T377); and the same for the voice webhook. (2) Twilio Verify's email channel needs a Twilio SendGrid email integration on the Verify service (https://twilio.com/docs/verify/email): Part 1 and Part 2 list a SendGrid account, its domain authentication for the sending domain, an API key kept as a secret, the code email template and the Verify service's email integration, set before T131 checks the email channel and before Gate C; and SendGrid is listed with the other providers that receive personal data (email addresses), for the privacy notice's provider list. The docs test checks both items. The Stripe webhook endpoint's enabled events (Part 1 and Part 2) include `charge.dispute.updated` and `charge.dispute.funds_withdrawn` beside the events the app already handles (T381, D-2771). Plan change D-3891 (Fable's pre-claim check, nits): the docs test maps each CON-032 item to a TD ID present in `docs/test-design.md`; whether that entry passed in the latest run on `main` (`docs/spec/consent.md:36`) cannot run in `Ci`, because `kit/nightly.json` lives only on `claude/kit-state`, so the checklist row says it is confirmed from the nightly before Gate C. The pasted D-305 and D-322 predate the brand change: the checklist says Laftly and laftly.com (D-3347). Plan change D-4293: Part 1 also lists, for each Railway project, the throwaway PostgreSQL 16 service for the monthly test restore (T648, `ASKHAVA_RESTORE_ADMIN_URL` on `worker` only) and the bootstrap run with `ASKHAVA_BACKUP_PASSWORD` set that gives the `askhava_backup` role its login (T109, `ASKHAVA_BACKUP_DATABASE_URL` on `worker` only), each in the key inventory. Plan change D-5278: the texting-campaign registration step first checks `docs/legal/twilio-campaign.md`'s description and samples against Twilio's December 9, 2026 rejection codes (30977, 30984, 30988, 30965, 30987, 30966, 30978), uses a public screenshot or evidence link of the call-to-action page as it will be at launch (no number is public before Gate C, WEB-017), confirms no placeholder is left unfilled, and is done only after Twilio's written answer to `docs/handoff/Twilio_question.md`; a 30951 answer or refusal means no registration and web-and-email mode, back to Casey.",
    "type": "docs",
    "phase": 1,
    "stage": "5",
@@ -31621,7 +31620,8 @@
     "T116",
     "T117",
     "T109",
-    "T648"
+    "T648",
+    "T800"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -31681,7 +31681,8 @@
     "D-2769",
     "D-2771",
     "D-3891",
-    "D-4293"
+    "D-4293",
+    "D-5278"
    ],
    "cites": [
     "BUILD_BRIEF.md:180",
@@ -32351,7 +32352,6 @@
    ],
    "reads": [
     "docs/architecture.md",
-    "docs/code-docs.md",
     "docs/spec/accessibility.md",
     "docs/spec/security.md",
     "docs/spec/businesses.md",
@@ -32380,7 +32380,7 @@
    "budget": {
     "files": 7,
     "lines": 560,
-    "context_pct": 32
+    "context_pct": 45
    },
    "checks": [
     "Ci",
@@ -33694,7 +33694,12 @@
     "T782",
     "T783",
     "T790",
-    "T791"
+    "T791",
+    "T803",
+    "T802",
+    "T801",
+    "T804",
+    "T805"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -35126,7 +35131,7 @@
    "id": "T127",
    "slug": "account-checkpoint",
    "title": "Account checkpoint: 'Your turn: set up accounts'",
-   "goal": "Runner sets WAITING_FOR_OWNER, sends docs/account-checklist.md, and stops (BUILD_BRIEF.md:174-186).",
+   "goal": "Runner sets WAITING_FOR_OWNER, sends docs/account-checklist.md, and stops (BUILD_BRIEF.md:174-186). D-5278: the texting-campaign step of the checklist (Casey registers by hand, after Twilio's written answer to `docs/handoff/Twilio_question.md`) first checks the description and samples of `docs/legal/twilio-campaign.md` against Twilio's December 9, 2026 rejection codes (30977, 30984, 30988, 30965, 30987, 30966, 30978), that a public screenshot or evidence link shows the call-to-action page as it will be at launch (no number is public before Gate C, WEB-017), and that no placeholder is left unfilled in the Console copy; a 30951 answer or refusal means no registration and web-and-email mode, and the choice goes back to Casey.",
    "type": "gate",
    "phase": 0,
    "stage": "checkpoint",
@@ -35169,7 +35174,14 @@
     "T787",
     "T788",
     "T790",
-    "T791"
+    "T791",
+    "T800",
+    "T801",
+    "T802",
+    "T803",
+    "T804",
+    "T805",
+    "T799"
    ],
    "model": null,
    "effort": null,
@@ -35182,7 +35194,8 @@
    "decisions": [
     "D-1154",
     "D-3856",
-    "D-4392"
+    "D-4392",
+    "D-5278"
    ],
    "cites": [
     "BUILD_BRIEF.md:174"
@@ -36502,7 +36515,7 @@
    "id": "T299",
    "slug": "ai-intake-wiring",
    "title": "server and intake: the AI client built once per process and the AI reading called from texts and web chat",
-   "goal": "IC-23's second half (D-2065): T236 builds the first intake caller of the AI reading (in `app/intake/src/service.rs`, through the gated `read_intake` taking the pool, with no connection held across the provider await, AI-029) and T298 the AI endpoint settings and the real Claude client, but nothing builds the client in a running process (`app/server/src/main.rs` and `app/server/src/bin/worker.rs` build no AI client today) or calls the reading from a homeowner's text or web chat, so the app would run AI-off for ever and the war games would never exercise the AI. (1) In `app/server/src/ai_client.rs`, build from the settings one `ai::api::AdapterTransport` over T298's client (one reused HTTP client) with its `ai::api::AiConfig` (the AI-023 reply budget T296 set, the AI-024 model, the AI-021 cap), once per process at start-up and shared by reference: in the web process, and in the worker if the text path's AI turn runs there (below); a settings error stops start-up naming the key, except T298's AI-off endpoint in live (no key set), with which the process starts, every step takes the AI-off path with no request made, and one high owner alert and one log line name the missing setting, never a value (D-2065); with no AI keys in dev and ci it is the stand-in; start-up makes no AI call. (2) The text path: in `app/server/src/inbound_text.rs` the webhook's transaction commits its durable record of the text before any AI call is made for it and never awaits the AI inside it (AI-029's webhook half, which T236 left to this task); the AI turn then runs off that transaction, either in the request after the commit or in a `core.task` queued in that transaction and run by the worker. Choose, log the reason in `docs/decisions.md`, and make sure a process stopped between the commit and the turn never loses the step (at worst it is asked on the AI-off path). The homeowner's wait is end to end: if the worker runs the turn, the queue and poll wait before it counts inside AI-023's 3-second reply budget (the AI call gets only what is left, and none left means the AI-off path at once) and inside the time to the next question that T234 and T297 measure, never only the AI call's own time. The AI-008 case through the real inbound route needs the route to know its environment: use the `Environment` T317 adds to the route's state (`Webhooks` in `app/server/src/inbound_text.rs`, set from the settings in `main.rs`; D-2206) and pass it to the gated entry; add no other field to `Webhooks`, since the done tests that build it are T317's (D-2206). The turn (`app/intake/src/ai_turn.rs`) calls T236's caller at each step of the INT-043 order that makes an AI call as the code then stands (the intake reading today) and sends the next step through the outbox: the one the applied reading leads to, or the fixed question-bank question at once (INT-021, INT-039) when the AI-008 switch is off, the AI-023 budget runs out, an AI-028 budget or the AI-021 cap refuses the call, or the reading fails or is discarded; steps that make no AI call never wait on one. (3) The web-chat path (T103's `app/intake/src/web_chat.rs` and `app/site/src/chat.rs`): no AI call before the session's phone code is verified (AI-021); after it, the same turn, the page showing the next question within the reply budget (AI-023). On both paths only `ScrubbedText` reaches `ai` (AI-004), no call is made before the consent text went and the ZIP and area check passed (AI-028), and no database connection or open transaction is held while the AI is awaited (AI-029). The AI writing calls (reword, follow-up, card, project file; D-990) are not this task's: IC-53 tracks them. Update `app/server/CLAUDE.md`, `app/intake/CLAUDE.md` and `docs/architecture.md` (shared), and name in the hand-in the commit and the tests that close IC-23 for the next plan change. Plan change D-4292: this task now depends on T645 (the web chat's opt-out words, INT-038 stop and stored first-message language) and T646 (the chat's client IP for the new-request limit). In `chat_message` keep T645's order: the opt-out check first, then the 911 check and the under-18 stop, and only then the AI turn; no AI call is made for a chat message that opted out or that the INT-038 stop closed, and the turn uses the session's stored language. Plan change D-4326: ordered after T656, which first changes `app/site/src/chat.rs`'s failed-submit page (the focused error summary, `aria-invalid` and the refilled words and number, A11Y-030); this task keeps them. Plan change D-4360: the INT-043 order is walked by `app/intake/src/order_dispatch.rs` (T671 to T675), whose trade check uses the stored keyword reading (the AI-off path). The dispatcher runs inside `reply_in`'s and the webhook's transaction, so it never awaits the AI: at a step that makes an AI call it hands the step to this task's AI turn (after the commit or in the queued task chosen above, AI-029) and takes the turn's result as the step's answer when it lands; this task owns that file after T675 and runs after it. Plan change D-4360: T672's dispatcher rebuilds the question bank's position on each text by replaying the stored answers keyed on their question IDs; an AI follow-up or reworded question must be stored under its own question ID so the replay stays in step with the AI on.",
+   "goal": "IC-23's second half (D-2065): T236 builds the first intake caller of the AI reading (in `app/intake/src/service.rs`, through the gated `read_intake` taking the pool, with no connection held across the provider await, AI-029) and T298 the AI endpoint settings and the real Claude client, but nothing builds the client in a running process (`app/server/src/main.rs` and `app/server/src/bin/worker.rs` build no AI client today) or calls the reading from a homeowner's text or web chat, so the app would run AI-off for ever and the war games would never exercise the AI. (1) In `app/server/src/ai_client.rs`, build from the settings one `ai::api::AdapterTransport` over T298's client (one reused HTTP client) with its `ai::api::AiConfig` (the AI-023 reply budget T296 set, the AI-024 model, the AI-021 cap), once per process at start-up and shared by reference: in the web process, and in the worker if the text path's AI turn runs there (below); a settings error stops start-up naming the key, except T298's AI-off endpoint in live (no key set), with which the process starts, every step takes the AI-off path with no request made, and one high owner alert and one log line name the missing setting, never a value (D-2065); with no AI keys in dev and ci it is the stand-in; start-up makes no AI call. (2) The text path: in `app/server/src/inbound_text.rs` the webhook's transaction commits its durable record of the text before any AI call is made for it and never awaits the AI inside it (AI-029's webhook half, which T236 left to this task); the AI turn then runs off that transaction, either in the request after the commit or in a `core.task` queued in that transaction and run by the worker. Choose, log the reason in `docs/decisions.md`, and make sure a process stopped between the commit and the turn never loses the step (at worst it is asked on the AI-off path). The homeowner's wait is end to end: if the worker runs the turn, the queue and poll wait before it counts inside AI-023's 3-second reply budget (the AI call gets only what is left, and none left means the AI-off path at once) and inside the time to the next question that T234 and T297 measure, never only the AI call's own time. The AI-008 case through the real inbound route needs the route to know its environment: use the `Environment` T317 adds to the route's state (`Webhooks` in `app/server/src/inbound_text.rs`, set from the settings in `main.rs`; D-2206) and pass it to the gated entry; add no other field to `Webhooks`, since the done tests that build it are T317's (D-2206). The turn (`app/intake/src/ai_turn.rs`) calls T236's caller at each step of the INT-043 order that makes an AI call as the code then stands (the intake reading today) and sends the next step through the outbox: the one the applied reading leads to, or the fixed question-bank question at once (INT-021, INT-039) when the AI-008 switch is off, the AI-023 budget runs out, an AI-028 budget or the AI-021 cap refuses the call, or the reading fails or is discarded; steps that make no AI call never wait on one. (3) The web-chat path (T103's `app/intake/src/web_chat.rs` and `app/site/src/chat.rs`): no AI call before the session's phone code is verified (AI-021); after it, the same turn, the page showing the next question within the reply budget (AI-023). On both paths only `ScrubbedText` reaches `ai` (AI-004), no call is made before the consent text went and the ZIP and area check passed (AI-028), and no database connection or open transaction is held while the AI is awaited (AI-029). The AI writing calls (reword, follow-up, card, project file; D-990) are not this task's: IC-53 tracks them. Update `app/server/CLAUDE.md`, `app/intake/CLAUDE.md` and `docs/architecture.md` (shared), and name in the hand-in the commit and the tests that close IC-23 for the next plan change. Plan change D-4292: this task now depends on T645 (the web chat's opt-out words, INT-038 stop and stored first-message language) and T646 (the chat's client IP for the new-request limit). In `chat_message` keep T645's order: the opt-out check first, then the 911 check and the under-18 stop, and only then the AI turn; no AI call is made for a chat message that opted out or that the INT-038 stop closed, and the turn uses the session's stored language. Plan change D-4326: ordered after T656, which first changes `app/site/src/chat.rs`'s failed-submit page (the focused error summary, `aria-invalid` and the refilled words and number, A11Y-030); this task keeps them. Plan change D-4360: the INT-043 order is walked by `app/intake/src/order_dispatch.rs` (T671 to T675), whose trade check uses the stored keyword reading (the AI-off path). The dispatcher runs inside `reply_in`'s and the webhook's transaction, so it never awaits the AI: at a step that makes an AI call it hands the step to this task's AI turn (after the commit or in the queued task chosen above, AI-029) and takes the turn's result as the step's answer when it lands; this task owns that file after T675 and runs after it. Plan change D-4360: T672's dispatcher rebuilds the question bank's position on each text by replaying the stored answers keyed on their question IDs; an AI follow-up or reworded question must be stored under its own question ID so the replay stays in step with the AI on. Plan change D-5280: also correct `app/server/src/inbound_text.rs`'s doc comments at `:21`, `:855` and `:956`, which say the HELP reply reaches an opted-out number; it no longer does (T803).",
    "type": "build",
    "phase": 2,
    "stage": "6",
@@ -36527,7 +36540,9 @@
     "T719",
     "T736",
     "T741",
-    "T760"
+    "T760",
+    "T801",
+    "T803"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -36579,7 +36594,8 @@
     "D-4292",
     "D-4294",
     "D-4326",
-    "D-4360"
+    "D-4360",
+    "D-5280"
    ],
    "cites": [],
    "budget": {
@@ -43265,7 +43281,7 @@
    "id": "T609",
    "slug": "site-pages-polish",
    "title": "site: the D-4246 polish on the footer, how it works, the business page, coverage, services, help and the chat start screen",
-   "goal": "Plan change D-4246 (Casey, Nov 17, 2026, about 1:15 pm MST: \"the things that really make a website look premium\"; keep the idea, the V6 colors, Gelasio and DM Sans, the hero photo and every word; fast; Rust and Askama server rendering; no front-end framework; no new site JavaScript). DESIGN_SPEC now allows a polish layer within fixed limits: the layered `paper-shadow` and `paper-lift` (`docs/design/DESIGN_SPEC.md:44`, `:77`), 20 px cards with 12 px inner boxes (`:76`), tabular figures and `text-wrap: pretty` (`:62`, `:70`), one italic serif accent a page (`:53`), small capital labels with +0.05em tracking (`:68`), one `aria-hidden` arrow inside a primary button (`:105`), a CSS-drawn external-link mark after the ROC, Google and Yelp links (`:109`), hover, press and motion rules (`:123`, `:124`, `:128`), the speed limits (`:129`) and the checks (`:152` to `:154`); WEB-029 (motion, depth, arrow) and WEB-030 (speed) are the requirements. Limits every polish task keeps (WEB-029, WEB-030): CSS only, no script added to any site page; movement is `transform` alone and no element that holds text starts below full opacity (so axe's contrast, the design-token test and the first-screen measurements see the resting page); entrance motion only on the first render of the quote page's cards (D-4252 dropped the home page's), at most 12 px, staggered with `:nth-child` (the CSP allows no `style` attribute, SEC-013) and capped so the sixth card and every later one share the last delay, every animation's end time (delay plus duration times iterations) within 900 ms; no view transition between pages (D-4246 dropped it); hover and press under 350 ms; no animation repeats more than 3 times; every animation and transition inside `@media (prefers-reduced-motion: no-preference)`, so A11Y-009's test (`tests/a11y/reflow_spacing.spec.ts`) passes unchanged; colors only as section 2's tokens (shadows as `rgba(30,41,38,a)` or `rgba(36,88,73,a)`, the primary button's inner highlight as `rgba(255,255,255,a)`, no other hex), no font size under 16 px or in a unit other than px, no `linear-gradient(` (an axe incomplete on a gradient button would fail TD-A11Y-01), and no class name containing the words badge, pill, chip or tag (`docs/ai_smell.yaml`'s badge-or-pill rule is a `\\b` match, so `quote-tag` fails; D-4246 declines chips and pills). Every word stays as it is: markup and classes change, text does not; capitals (`text-transform: uppercase`) never go on text a test reads through `innerText`, which returns the shown case (for example `tests/e2e/business_portal_served.spec.ts:114` and `tests/e2e/pick_flow.spec.ts:106`, whose page text must keep its case), and `scripts/check_copy.py`, `scripts/check_ai_smell.py` and every existing test that reads page text pass unchanged. The remaining English site pages take the V6 components T607 styled: the footer in `site_layout.html` as section 6 sets it (mark, serif tagline, two link columns of 44 px rows, the not-a-contractor statement); how it works with the serif numerals and rules; the business page's fee card with tabular figures (the fee lines and the WEB-024 notice line read from data, as today); coverage, services and help with paper cards where section 8 puts them (the 911 note on help, its 2 px `alert` border, no shadow); and the chat start screen (`request.html`, the CON-025 consent text and the 18-or-older line) with its form on a paper card and its \"Send\" button (class `button`) carrying the arrow span only after the task has checked that no test reads that label as raw text or markup (as T608 checks \"Get quotes\"; `tests/e2e/web_chat.spec.ts` included; if one does, the button stays without it, an open item for Casey in `docs/for-casey-review.md`, D-4252); the code buttons get no arrow. Existing kickers and fact-row labels take the small-label style, and a page may set one short phrase of an existing headline in the italic accent (`:53`). These pages get depth, type, hover and press, and no entrance motion (section 7 keeps entrance motion to the home and quote pages). The header is T608's `base.html`, unchanged here. Plan change D-4252 (Fable's UI and accessibility review of the D-4246 tasks; Casey, Nov 17, 2026: \"make it exceptional and meet all of the ADA requirements\"): (a) T115, which serves `/accessibility`, is now a dependency, so the footer's \"Accessibility\" link (`:117`) never points at a missing page; the footer's \"Español\" link carries `lang=\"es\" hreflang=\"es\"` (A11Y-004). (b) A form on these pages that shows an error (the help form, the chat start screen) gives the field the 2 px `alert` border beside its existing \"Error:\" text (`:114`), with no new words. (c) (Casey, Nov 17, 2026, about 2:55 pm MST: \"Do whatever fable says\") From 1024 px up only, the home request box (T593's markup, keyed on its existing class, no template change) sits on a paper card: `surface`, the 1 px `line` border, `paper-shadow`, 20 px corners, padding from section 4's steps (`:104`); under 1024 px nothing changes, so `tests/e2e/home_first_screen.spec.ts` passes unchanged at 390 by 844 and 320 by 740 and the button stays inside the first screen at 1440 by 900; the screenshot review checks the home page's 1440 first screen (`polish_screens.spec.ts` saves it) beside `v6-home-1440-first-screen.png`, the card being the one difference D-4252 sets. Plan change D-4326 (night accessibility spot review, Nov 18, 2026, re-verified on `main` d662af7e5; A11Y-008): the fee table's wrapper in `business.html` (`:43`) keeps `role=\"region\"`, `tabindex=\"0\"` and its `aria-label` (`tests/a11y/reflow_spacing.spec.ts:16`, `:25` fail a table outside such a region, so dropping the tabindex would fail Ally), and `site.css` gains one rule keyed on those attributes, `[role=\"region\"][tabindex=\"0\"] { overflow-x: auto; }`, with no markup change, so the region scrolls sideways at 320 px and 400% zoom instead of being a Tab stop that never scrolls; the Spanish page's wrapper (`es_business.html:42`, T610's) gets the same rule from it.",
+   "goal": "Plan change D-4246 (Casey, Nov 17, 2026, about 1:15 pm MST: \"the things that really make a website look premium\"; keep the idea, the V6 colors, Gelasio and DM Sans, the hero photo and every word; fast; Rust and Askama server rendering; no front-end framework; no new site JavaScript). DESIGN_SPEC now allows a polish layer within fixed limits: the layered `paper-shadow` and `paper-lift` (`docs/design/DESIGN_SPEC.md:44`, `:77`), 20 px cards with 12 px inner boxes (`:76`), tabular figures and `text-wrap: pretty` (`:62`, `:70`), one italic serif accent a page (`:53`), small capital labels with +0.05em tracking (`:68`), one `aria-hidden` arrow inside a primary button (`:105`), a CSS-drawn external-link mark after the ROC, Google and Yelp links (`:109`), hover, press and motion rules (`:123`, `:124`, `:128`), the speed limits (`:129`) and the checks (`:152` to `:154`); WEB-029 (motion, depth, arrow) and WEB-030 (speed) are the requirements. Limits every polish task keeps (WEB-029, WEB-030): CSS only, no script added to any site page; movement is `transform` alone and no element that holds text starts below full opacity (so axe's contrast, the design-token test and the first-screen measurements see the resting page); entrance motion only on the first render of the quote page's cards (D-4252 dropped the home page's), at most 12 px, staggered with `:nth-child` (the CSP allows no `style` attribute, SEC-013) and capped so the sixth card and every later one share the last delay, every animation's end time (delay plus duration times iterations) within 900 ms; no view transition between pages (D-4246 dropped it); hover and press under 350 ms; no animation repeats more than 3 times; every animation and transition inside `@media (prefers-reduced-motion: no-preference)`, so A11Y-009's test (`tests/a11y/reflow_spacing.spec.ts`) passes unchanged; colors only as section 2's tokens (shadows as `rgba(30,41,38,a)` or `rgba(36,88,73,a)`, the primary button's inner highlight as `rgba(255,255,255,a)`, no other hex), no font size under 16 px or in a unit other than px, no `linear-gradient(` (an axe incomplete on a gradient button would fail TD-A11Y-01), and no class name containing the words badge, pill, chip or tag (`docs/ai_smell.yaml`'s badge-or-pill rule is a `\\b` match, so `quote-tag` fails; D-4246 declines chips and pills). Every word stays as it is: markup and classes change, text does not; capitals (`text-transform: uppercase`) never go on text a test reads through `innerText`, which returns the shown case (for example `tests/e2e/business_portal_served.spec.ts:114` and `tests/e2e/pick_flow.spec.ts:106`, whose page text must keep its case), and `scripts/check_copy.py`, `scripts/check_ai_smell.py` and every existing test that reads page text pass unchanged. The remaining English site pages take the V6 components T607 styled: the footer in `site_layout.html` as section 6 sets it (mark, serif tagline, two link columns of 44 px rows, the not-a-contractor statement); how it works with the serif numerals and rules; the business page's fee card with tabular figures (the fee lines and the WEB-024 notice line read from data, as today); coverage, services and help with paper cards where section 8 puts them (the 911 note on help, its 2 px `alert` border, no shadow); and the chat start screen (`request.html`, the CON-025 consent text and the 18-or-older line) with its form on a paper card and its \"Send\" button (class `button`) carrying the arrow span only after the task has checked that no test reads that label as raw text or markup (as T608 checks \"Get quotes\"; `tests/e2e/web_chat.spec.ts` included; if one does, the button stays without it, an open item for Casey in `docs/for-casey-review.md`, D-4252); the code buttons get no arrow. Existing kickers and fact-row labels take the small-label style, and a page may set one short phrase of an existing headline in the italic accent (`:53`). These pages get depth, type, hover and press, and no entrance motion (section 7 keeps entrance motion to the home and quote pages). The header is T608's `base.html`, unchanged here. Plan change D-4252 (Fable's UI and accessibility review of the D-4246 tasks; Casey, Nov 17, 2026: \"make it exceptional and meet all of the ADA requirements\"): (a) T115, which serves `/accessibility`, is now a dependency, so the footer's \"Accessibility\" link (`:117`) never points at a missing page; the footer's \"Español\" link carries `lang=\"es\" hreflang=\"es\"` (A11Y-004). (b) A form on these pages that shows an error (the help form, the chat start screen) gives the field the 2 px `alert` border beside its existing \"Error:\" text (`:114`), with no new words. (c) (Casey, Nov 17, 2026, about 2:55 pm MST: \"Do whatever fable says\") From 1024 px up only, the home request box (T593's markup, keyed on its existing class, no template change) sits on a paper card: `surface`, the 1 px `line` border, `paper-shadow`, 20 px corners, padding from section 4's steps (`:104`); under 1024 px nothing changes, so `tests/e2e/home_first_screen.spec.ts` passes unchanged at 390 by 844 and 320 by 740 and the button stays inside the first screen at 1440 by 900; the screenshot review checks the home page's 1440 first screen (`polish_screens.spec.ts` saves it) beside `v6-home-1440-first-screen.png`, the card being the one difference D-4252 sets. Plan change D-4326 (night accessibility spot review, Nov 18, 2026, re-verified on `main` d662af7e5; A11Y-008): the fee table's wrapper in `business.html` (`:43`) keeps `role=\"region\"`, `tabindex=\"0\"` and its `aria-label` (`tests/a11y/reflow_spacing.spec.ts:16`, `:25` fail a table outside such a region, so dropping the tabindex would fail Ally), and `site.css` gains one rule keyed on those attributes, `[role=\"region\"][tabindex=\"0\"] { overflow-x: auto; }`, with no markup change, so the region scrolls sideways at 320 px and 400% zoom instead of being a Tab stop that never scrolls; the Spanish page's wrapper (`es_business.html:42`, T610's) gets the same rule from it. Plan change D-5279: `app/site/templates/how_it_works.html:25`'s \"Get quotes in the chat\" becomes \"Get quotes\" (the link stays `/request`, whose page shows how to start: the chat before texting is live, the number once it is, CON-025).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -43313,7 +43329,8 @@
     "D-4246",
     "D-3331",
     "D-3878",
-    "D-4326"
+    "D-4326",
+    "D-5279"
    ],
    "cites": [
     "docs/design/DESIGN_SPEC.md:111",
@@ -48182,7 +48199,7 @@
    "id": "T725",
    "slug": "home-texting-number",
    "title": "site: the home page shows the texting number with its consent line, together, only after Gate C",
-   "goal": "Plan change D-4709 (Nov 19, 2026; Fable's decision; WEB-017, CON-005). The home page shows no texting number before Gate C (WEB-017, `docs/spec/website.md:21`), and no task places it, with its consent line (`docs/copy/site-copy.md:23`, wording unchanged), after Gate C. (1) In `app/businesses/src/texting_switch.rs` (T526's), `businesses::api::homeowner_texting_number(db, (number, launch), now)` (re-exported by one line in the shared `api.rs`) returns the homeowner number only when `launch` (`ASKHAVA_LAUNCH_DATE`, the Gate C instant, `app/core/src/settings.rs:630`) is set and not after `now`, and `messaging::api::load_lines(db, (number, None))`'s homeowner line's `sender()` is `Some` (switch on, number configured, not paused, `app/messaging/src/mode.rs:180`); a read error (logged as a warning, never the number), an unset number or date, the switch off or a paused number gives `None`. (2) `server` passes the configured homeowner number (`ASKHAVA_HOMEOWNER_NUMBER`, parsed at `app/server/src/lib.rs:1753`) and the launch date to `site` the way T526 passes the business number (the shared `app/server/src/lib.rs`; read `main` at claim), and `app/site/src/pages.rs`'s home read calls the reader on the connection it already holds. (3) `app/site/templates/home.html`: inside one `{% if %}` on that one value, the start line's full block (`site-copy.md:20`) with the number shown as text, and directly after it the consent line word for word (its citation dropped; \"Terms\" and \"Privacy\" linking to the site's terms and privacy pages); otherwise the page is as before (the chat sentence only). The number can never render without the line. The Spanish home page is not changed and shows neither until a Spanish consent line is in the copy file. (4) Tests, fake data only (555-01xx numbers): `app/site/src/tests/home_texting_line.rs` (registered in the shared `app/site/src/tests/mod.rs`) renders `pages::home_page` with no database for every combination of banner, numbers and texting value, and asserts the number is in the page exactly when the consent line is (the line read from `docs/copy/site-copy.md` by its heading `## Home · texting consent line`, compared with T161's normalisation), that neither appears with no value, and that the Spanish home page holds neither; `app/businesses/src/tests/homeowner_texting.rs` against PostgreSQL covers before and after the launch date, an unset date, the switch off, a paused number, an unset number and the on case. (5) If `home_page`'s parameters change, update the one call in T161's `app/site/src/tests/site_copy_blocks.rs` (no texting value) and nothing else there. (6) Plan change D-4748 (Fable's decision (13b); TXT-003): the task also drafts the Spanish home texting consent line, a new block appended at the end of `docs/copy/site-copy.md` (after T615, which also edits the file; appended, so no cited line moves), headed in the file's form for a fixed homeowner block and naming Spanish, the line in Spanish with the English line's meaning and links, marked in its block as a draft for native-speaker review (TXT-003). The Spanish home page still shows neither the number nor the line: placing them waits for Casey's review of the draft (a `docs/for-casey-review.md` item) and a later plan change. Update `docs/decisions.md` and the `site` and `businesses` notes.",
+   "goal": "Plan change D-4709 (Nov 19, 2026; Fable's decision; WEB-017, CON-005). The home page shows no texting number before Gate C (WEB-017, `docs/spec/website.md:21`), and no task places it, with its consent line (`docs/copy/site-copy.md:23`, wording unchanged), after Gate C. (1) In `app/businesses/src/texting_switch.rs` (T526's), `businesses::api::homeowner_texting_number(db, (number, launch), now)` (re-exported by one line in the shared `api.rs`) returns the homeowner number only when `launch` (`ASKHAVA_LAUNCH_DATE`, the Gate C instant, `app/core/src/settings.rs:630`) is set and not after `now`, and `messaging::api::load_lines(db, (number, None))`'s homeowner line's `sender()` is `Some` (switch on, number configured, not paused, `app/messaging/src/mode.rs:180`); a read error (logged as a warning, never the number), an unset number or date, the switch off or a paused number gives `None`. (2) `server` passes the configured homeowner number (`ASKHAVA_HOMEOWNER_NUMBER`, parsed at `app/server/src/lib.rs:1753`) and the launch date to `site` the way T526 passes the business number (the shared `app/server/src/lib.rs`; read `main` at claim), and `app/site/src/pages.rs`'s home read calls the reader on the connection it already holds. (3) `app/site/templates/home.html`: inside one `{% if %}` on that one value, the start line's full block (`site-copy.md:20`) with the number shown as text, and directly after it the consent line word for word (its citation dropped; \"Terms\" and \"Privacy\" linking to the site's terms and privacy pages); otherwise the page is as before (the chat sentence only). The number can never render without the line. The Spanish home page is not changed and shows neither until a Spanish consent line is in the copy file. (4) Tests, fake data only (555-01xx numbers): `app/site/src/tests/home_texting_line.rs` (registered in the shared `app/site/src/tests/mod.rs`) renders `pages::home_page` with no database for every combination of banner, numbers and texting value, and asserts the number is in the page exactly when the consent line is (the line read from `docs/copy/site-copy.md` by its heading `## Home · texting consent line`, compared with T161's normalisation), that neither appears with no value, and that the Spanish home page holds neither; `app/businesses/src/tests/homeowner_texting.rs` against PostgreSQL covers before and after the launch date, an unset date, the switch off, a paused number, an unset number and the on case. (5) If `home_page`'s parameters change, update the one call in T161's `app/site/src/tests/site_copy_blocks.rs` (no texting value) and nothing else there. (6) Plan change D-4748 (Fable's decision (13b); TXT-003): the task also drafts the Spanish home texting consent line, a new block appended at the end of `docs/copy/site-copy.md` (after T615, which also edits the file; appended, so no cited line moves), headed in the file's form for a fixed homeowner block and naming Spanish, the line in Spanish with the English line's meaning and links, marked in its block as a draft for native-speaker review (TXT-003). The Spanish home page still shows neither the number nor the line: placing them waits for Casey's review of the draft (a `docs/for-casey-review.md` item) and a later plan change. Update `docs/decisions.md` and the `site` and `businesses` notes. Plan change D-5279: while homeowner texting is live (this task's reader answers a number), the home page's chat lines (`app/site/templates/home.html:39`, `docs/copy/site-copy.md:45`, \"Start in the chat on this site...\") and its \"Get quotes\" box point to texting the shown number, not to the chat, since the chat then only shows the number and asks her to text it (CON-025); before that they stay as they are.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -48230,7 +48247,8 @@
     "D-4709",
     "D-4669",
     "D-3890",
-    "D-4748"
+    "D-4748",
+    "D-5279"
    ],
    "cites": [],
    "budget": {
@@ -48273,7 +48291,6 @@
    ],
    "reads": [
     "docs/architecture.md",
-    "docs/code-docs.md",
     "docs/spec/intake.md",
     "docs/spec/privacy.md",
     "docs/spec/job-cards.md",
@@ -48343,7 +48360,6 @@
    ],
    "reads": [
     "docs/architecture.md",
-    "docs/code-docs.md",
     "docs/spec/intake.md",
     "docs/spec/messaging.md",
     "docs/spec/quiet-hours.md",
@@ -49448,7 +49464,8 @@
     "T742",
     "T748",
     "T309",
-    "T609"
+    "T609",
+    "T804"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -51963,6 +51980,474 @@
    "branch": "claude/task/T798-photo-asks-loader",
    "prompt": "kit/prompts/T798.md",
    "acceptance": "`cargo test -p askhava-catalog` passes with the new cases; every photo ID in `docs/catalog/question_bank.yaml` resolves; every existing catalog test passes unchanged; clippy and fmt clean."
+  },
+  {
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T750",
+    "T229",
+    "T428",
+    "T113",
+    "T112"
+   ],
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "tests": [],
+   "cites": [],
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "id": "T800",
+   "slug": "twilio-campaign-package",
+   "title": "Legal docs and tests (harness): the Twilio campaign submission package, one opt-in path, five samples, and the privacy policy's vendor lines",
+   "goal": "Plan change D-5278 (Fable's decisions for Casey under D-305; TERMS-011, TERMS-013, TERMS-014, TERMS-029, TERMS-030, CON-005, CON-033, TXT-043; findings checked against Twilio and CTIA: 30951 third-party lead generation with no resubmission (toll-free 30468 the same), 30931/30925 optional unchecked consent, Advanced Opt-Out, a `help_message` of 20 to 320 characters, 2 to 5 samples with [brackets], an approved campaign cannot be edited, and the rejection codes from December 9, 2026: 30977, 30984 unfilled placeholders, 30988 a chat widget named but absent, 30965, 30987, 30966, 30978). Rewrite `docs/legal/twilio-campaign.md` (new version line) as the submission package: (1) section 1: register only after Twilio's written answer to `docs/handoff/Twilio_question.md`; the stale business-texting question goes (D-424 settled it); (2) section 2: brand type Low-Volume Standard and use case Low Volume Mixed, named separately, unless Twilio's answer says otherwise; no \"Don't ask for pre-clearance\" (D-305, TERMS-014); (3) section 3: a full, honest description (a quote-request service; the homeowner texts first after a public page that shows the number and the SMS disclosures; only Laftly texts her, only about her request; the business she picks pays Laftly a fixed introduction fee of $25, $75 or $199 by job size, some jobs fee-free, and only then sees her first name and the job address; her phone and SMS consent never go to a business; calls go through a masked number; no marketing; a person asking to join as a business gets one reply with the sign-up link; texts in English and, to people who write in Spanish, in Spanish, Spanish conversations being switched on later); it never names the web chat (30988); (4) sections 5 and 6: message_flow names one opt-in path, the homeowner's own first inbound text after the public call-to-action page, and the chat's Verify code is not opt-in (CON-005, CON-025); five samples, each a real template word for word: `consent`, `first_quote`, `text_pick_done`, `whos_calling` and the Spanish `consent`; the STOP sample goes (the opt-out field covers it) and `business_signup_reply` is described in the description, staying in the product; the Console copy uses [brackets] for filled values and no unfilled placeholder (30984), while this file keeps the templates as written for the docs test; (5) the opt-out field's text (item 10); (6) section 7: the first registration declares English and Spanish with the Spanish consent sample (the in-place edit plan goes); (7) section 8: a 30951 or other lead-generation refusal means no registration and no toll-free fallback: the service stays in web-and-email mode and the choice goes back to Casey (CON-033); (8) a pre-submit check, also named in T127's and T122's steps: the description and samples against the December 9 codes above, a public screenshot or evidence link of the call-to-action page as it will be at launch (no number is public before Gate C, WEB-017; no exception to it), and no unfilled placeholder. `tests/docs/test_campaign.py` (DONE) pins the six samples and the old description (`SAMPLES`, `DESCRIPTION`); by logged spec change (D-5278, `BUILD_BRIEF.md:69`) it pins the five new samples, the Spanish sample as a sample, and the new description, every other check kept. (9) the provider's HELP auto-reply is off and the app sends CON-018's full `help_reply` in every language, unchanged (CON-030); the registration's `help_message` (320 characters or fewer) is a verbatim excerpt of the live English reply, made only of its whole sentences, and the file says so: \"Laftly: Tell us what's wrong in one text. The Laftly owner gets HELP messages right away and usually replies within 2 days, or within 24 hours if your job is urgent. This number is text-only. If anyone is in danger, call 911. Help: help@laftly.com or laftly.com/help Reply STOP to opt out.\" (289 characters); if Twilio ever rejects the registration for a mismatch, the choice is revisited (D-5280); (10) the opt-out field is pinned to the exact CON-009 English and Spanish confirmations, the same texts `stand_ins/provider_optout.json` holds, and a docs check compares them. Also in `docs/legal/privacy-policy.md` (new version line): the chat-code opt-in sentence at `:56` goes (\"your first text … is your OK to get automated texts about your own request\" only, D-5279), codes go by Twilio Verify text message (the vendor line), and \"never shared with any business or third party\" becomes \"never shared with any business or marketer; our messaging vendor processes it to deliver texts\", with `tests/docs/test_privacy_policy.py` (DONE; TD-TERMS-04 at `:451`) changed only for those sentences, its never-shared sentence to TERMS-031's new wording (D-5281); and in `docs/legal/homeowner-terms.md` (new version line) section 7 (`:55`) drops the chat-code opt-in clause the same way. `python3 scripts/check_legal_docs.py` passes. Update `docs/decisions.md`.",
+   "type": "harness",
+   "model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "compliance",
+    "privacy"
+   ],
+   "owns": [
+    "docs/legal/twilio-campaign.md",
+    "tests/docs/test_campaign.py",
+    "docs/legal/privacy-policy.md",
+    "tests/docs/test_privacy_policy.py",
+    "docs/legal/homeowner-terms.md"
+   ],
+   "reads": [
+    "docs/spec/consent.md",
+    "docs/spec/terms.md",
+    "docs/spec/privacy.md",
+    "docs/handoff/Twilio_question.md",
+    "docs/legal/sms-terms.md"
+   ],
+   "requirements": [
+    "TERMS-011",
+    "TERMS-013",
+    "TERMS-014",
+    "CON-005",
+    "CON-033",
+    "TERMS-031"
+   ],
+   "decisions": [
+    "D-5278",
+    "D-5281"
+   ],
+   "budget": {
+    "files": 5,
+    "lines": 300,
+    "context_pct": 13
+   },
+   "acceptance": "`python3 -m pytest tests/docs -q` and `python3 scripts/check_legal_docs.py` pass; the five samples equal their templates; the `help_message` is a verbatim excerpt of `help_reply`, 320 characters or fewer; the description names the fee and the release and never the chat; no unfilled placeholder is in the Console copy.",
+   "branch": "claude/task/T800-twilio-campaign-package",
+   "prompt": "kit/prompts/T800.md"
+  },
+  {
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T100",
+    "T594",
+    "T656",
+    "T181",
+    "T075",
+    "T646",
+    "T103",
+    "T645",
+    "T649",
+    "T057",
+    "T489",
+    "T517",
+    "T609",
+    "T595",
+    "T593",
+    "T343",
+    "T644",
+    "T763",
+    "T745",
+    "T676",
+    "T671",
+    "T725"
+   ],
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "tests": [
+    "TD-CON-10"
+   ],
+   "cites": [],
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "id": "T801",
+   "slug": "chat-code-not-optin",
+   "title": "intake and site (harness): with texting on, the web chat only shows the number and the SMS disclosures and asks her to text it; a chat consent record never permits a text",
+   "goal": "Plan change D-5279 (Fable's decision for Casey under D-305; CON-005, CON-007, CON-025 and TXT-034 as reworded; TXT-021, TXT-038). Review round 1 chose the narrow path, because the text path stops at every step without a consent record (`order_dispatch.rs:327`, `:431`, `service.rs:878`, `quote_updates.rs:115`). This task: (1) while homeowner texting is live: T725's `businesses::api::homeowner_texting_number` answers a number (the switch on, a number configured, texting not paused or suspended, WEB-007, and the Gate C launch date reached), the web chat (`app/intake/src/web_chat.rs`, `app/site/src/chat.rs`, `app/site/templates/request.html`) has no phone or code step and opens no request: its start screen shows the Laftly number with the SMS disclosures (message frequency, rates, HELP, STOP, the terms and privacy links) and the 18-or-older line, and says \"Text {number} from your phone to continue.\" (draft copy for the copy panel, WORD-028); a message typed there gets the same answer, except that a 911-list match still shows the INT-004 text and a business-intent message still shows `business_signup_reply` (shown, never texted); her first inbound text then opens the request and gets the full consent text as any first text does; (2) outside that state (in CI, before Gate C, while texting is paused or suspended, or in web-and-email mode) the chat keeps today's chat-run behaviour (the consent text above the chat box, the Verify code, a `web_chat` consent record and the chat-run request), so `tests/a11y/page_states.ts:446`, `tests/e2e/home_first_screen.spec.ts:117`, the tests of T645, T646, T649 and T656 and T299's pass unchanged; (3) a `web_chat` consent record never permits a text: `models::contact_consented` (`app/intake/src/models.rs`, read by `service::may_text`, `service.rs:890`) counts only consent records of the text channel, while `card_allowed` keeps counting any record, so a chat-run request keeps its steps and its number is texted only after it texts in. Done tests that run the chat while texting is live change by logged spec change (D-5279, `BUILD_BRIEF.md:69`) only to expect the new start screen or to set web-and-email mode where they test the chat-run request: `tests/integration/tests/web_chat.rs`, `app/server/tests/web_chat_route.rs`, `tests/e2e/web_chat.spec.ts`, `tests/integration/tests/consent_records.rs`, `app/server/tests/home_request_box.rs` and `tests/e2e/j1_homeowner.spec.ts`; the shared `tests/a11y/page_states.ts` `/request` entries are updated add-only for the new screen. Run every test that drives the chat (`grep -rln 'web_chat\\|/request' tests app/server/tests`) and report one this task does not own that fails as a plan gap. Consent: Opus worker, Opus consent and privacy review, two review rounds. Update `app/intake/CLAUDE.md`, `docs/architecture.md` and `docs/decisions.md`.",
+   "type": "harness",
+   "model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "compliance",
+    "privacy"
+   ],
+   "owns": [
+    "app/intake/src/web_chat.rs",
+    "app/intake/src/models.rs",
+    "app/site/src/chat.rs",
+    "app/site/templates/request.html",
+    "tests/integration/tests/web_chat.rs",
+    "app/server/tests/web_chat_route.rs",
+    "tests/e2e/web_chat.spec.ts",
+    "tests/integration/tests/consent_records.rs",
+    "app/server/tests/home_request_box.rs",
+    "tests/e2e/j1_homeowner.spec.ts"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/consent.md",
+    "docs/spec/messaging.md",
+    "docs/spec/intake.md"
+   ],
+   "requirements": [
+    "CON-005",
+    "CON-007",
+    "CON-025",
+    "TXT-021",
+    "TXT-034",
+    "TXT-038"
+   ],
+   "decisions": [
+    "D-5279",
+    "D-470"
+   ],
+   "budget": {
+    "files": 10,
+    "lines": 700,
+    "context_pct": 39
+   },
+   "acceptance": "Every test in the owned files passes with only the chat-with-texting-on assertions changed; while texting is live the chat opens no request and shows the number with the SMS disclosures; her first inbound text gets the consent text; outside that state the chat behaves as before; a `web_chat` consent record never lets `may_text` answer yes; Ally passes.",
+   "branch": "claude/task/T801-chat-code-not-optin",
+   "prompt": "kit/prompts/T801.md"
+  },
+  {
+   "phase": 1,
+   "stage": "5",
+   "module": "site",
+   "deps": [
+    "T769",
+    "T057",
+    "T592",
+    "T517",
+    "T102",
+    "T609",
+    "T593",
+    "T725",
+    "T201",
+    "T202",
+    "T100",
+    "T115",
+    "T075"
+   ],
+   "effort": "low",
+   "reviewer_model": "claude-opus-5-5",
+   "tests": [],
+   "cites": [],
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "id": "T802",
+   "slug": "coverage-us-numbers",
+   "title": "site (harness): the coverage page says texts work with US numbers and Canada is not confirmed",
+   "goal": "Plan change D-5281 (Fable's decision for Casey under D-305; WEB-023 as reworded). Canadian numbers are not confirmed for the campaign, so the coverage page (`app/site/templates/coverage.html:30` to `:31`) says \"Texts work with US mobile numbers. Canadian numbers are not confirmed yet.\" under a heading that fits, in place of \"Texting from Canada\" and \"Canadian numbers work. Your phone company may charge roaming fees.\"; the DONE pins change only for that line by logged spec change (D-5281): `app/site/src/pages.rs:1092`, `tests/e2e/site_help_pages.spec.ts` and `tests/a11y/page_states.ts:436`'s expected words (owned here for that entry). The HELP reply's Canadian roaming variants (`help_reply_ca`, `help_reply_away_ca`, CON-018, D-889) stay: they reach only a Canadian number that texts in. Update `docs/decisions.md`.",
+   "type": "harness",
+   "model": "claude-sonnet-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    "app/site/templates/coverage.html",
+    "app/site/src/pages.rs",
+    "tests/e2e/site_help_pages.spec.ts",
+    "tests/a11y/page_states.ts"
+   ],
+   "reads": [
+    "docs/spec/website.md"
+   ],
+   "requirements": [
+    "WEB-023"
+   ],
+   "decisions": [
+    "D-5281"
+   ],
+   "budget": {
+    "files": 4,
+    "lines": 40,
+    "context_pct": 17
+   },
+   "acceptance": "`cargo test -p askhava-site`, the e2e `site_help_pages` spec and Ally pass; the page shows the new line and no other text changes.",
+   "branch": "claude/task/T802-coverage-us-numbers",
+   "prompt": "kit/prompts/T802.md"
+  },
+  {
+   "phase": 1,
+   "stage": "5",
+   "module": "messaging",
+   "deps": [
+    "T029",
+    "T027",
+    "T755",
+    "T030",
+    "T100",
+    "T423",
+    "T075",
+    "T421",
+    "T356",
+    "T517",
+    "T057",
+    "T424",
+    "T483",
+    "T603"
+   ],
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "tests": [],
+   "cites": [],
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "id": "T803",
+   "slug": "no-help-after-stop",
+   "title": "messaging (harness): an opted-out number gets no HELP reply; help goes by the web and email",
+   "goal": "Plan change D-5280 (Fable's decision for Casey under D-305; CON-013 and CON-018 as reworded; D-131 narrowed). With Twilio's Advanced Opt-Out an opted-out number gets no HELP reply and a send to it fails with 21610, so `rules::may_send_to` (`app/messaging/src/rules.rs:553` to `:567`) no longer lets `HELP_TEMPLATE` through to a listed number: only the opt-out confirmation within 5 minutes passes; a HELP text from a listed number queues nothing that could be sent (the sender expires it). The DONE tests that pin the HELP reply to an opted-out number change by logged spec change (D-5280) only in those assertions: `app/messaging/src/tests/optout_words.rs` (`may_send_to` cases near `:326` to `:331`), `app/messaging/src/tests/prop_optout_props.rs`, `tests/integration/tests/outbox_sender.rs:291` to `:314` (TD-QH-05: a suppressed number now gets nothing but the confirmation), `tests/integration/tests/optout_flow.rs:264` and `tests/integration/tests/help_start.rs:173` to `:209` (TD-CON-07). `tests/mutation/mutants.toml:204`'s \"HELP after STOP not answered\" mutant is replaced by the reverse one, which lets `HELP_TEMPLATE` through on a listed number again (its `find` and `replace` written against the code this task leaves), and the new tests kill it; the twin answers HELP after STOP too: `twin/app.py:302`, `:409`, `twin/twin.py:835`, `:1068` and `docs/twin-warnings.md:174` change so an opted-out number's HELP gets no text and `help_not_answered` no longer flags that case (the twin gate passes); `app/messaging/src/keywords.rs:5`'s doc comment says the HELP reply is never let through to an opted-out number; `docs/architecture.md:199` (`reply_to_help` queues the CON-018 reply \"from any number including an opted-out one\") is corrected to say the reply is never sent to an opted-out number. Consent: Opus worker and review. Update `app/messaging/NOTES.md` and `docs/decisions.md`.",
+   "type": "harness",
+   "model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "compliance"
+   ],
+   "owns": [
+    "app/messaging/src/rules.rs",
+    "app/messaging/src/tests/optout_words.rs",
+    "app/messaging/src/tests/prop_optout_props.rs",
+    "tests/integration/tests/outbox_sender.rs",
+    "tests/integration/tests/optout_flow.rs",
+    "tests/integration/tests/help_start.rs",
+    "tests/mutation/mutants.toml",
+    "twin/app.py",
+    "twin/twin.py",
+    "docs/twin-warnings.md",
+    "app/messaging/src/keywords.rs"
+   ],
+   "reads": [
+    "docs/spec/consent.md",
+    "docs/code-docs.md"
+   ],
+   "requirements": [
+    "CON-013",
+    "CON-018"
+   ],
+   "decisions": [
+    "D-5280",
+    "D-131"
+   ],
+   "budget": {
+    "files": 11,
+    "lines": 300,
+    "context_pct": 48
+   },
+   "acceptance": "`cargo test -p askhava-messaging` and the owned integration tests pass with only the HELP-to-opted-out assertions changed; a HELP from a listed number sends nothing; the confirmation within 5 minutes still goes.",
+   "branch": "claude/task/T803-no-help-after-stop",
+   "prompt": "kit/prompts/T803.md"
+  },
+  {
+   "phase": 1,
+   "stage": "5",
+   "module": "portals",
+   "deps": [
+    "T100",
+    "T561",
+    "T075",
+    "T674",
+    "T517",
+    "T057",
+    "T307",
+    "T748",
+    "T200"
+   ],
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "tests": [
+    "TD-PRIV-32"
+   ],
+   "cites": [],
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "id": "T804",
+   "slug": "data-request-opted-out",
+   "title": "server and portals: a delete or copy request for an opted-out number is confirmed by an email link",
+   "goal": "Plan change D-5281 (Fable's decision for Casey under D-305; PRIV-031 as reworded; SEC-014, SEC-034). A delete or copy request for a number on the suppression list is confirmed by email, a stricter choice than a code by text: on the portal data-request route (`data_request`, `app/server/src/homeowner_portal.rs:729`) and the help form's delete or copy answer (`app/portals/src/help.rs:19` to `:21`), when her number is listed, the confirmation is a single-use link (15 minutes) sent to the update email on file (TXT-018), reusing SEC-037's action-link tokens (`core::api::link_token` with `LinkKind::Action` over the data request's own record and a salt stored with it) and no new migration; if the data request's record holds no place for the salt, the task reports it as a plan gap with the migration it would need (the next free number at claim time) rather than adding one unplanned, and following it acts on the request as a typed code does; with no email on file the answer tells her to email help@ from her own address, which opens a help request for Casey (OPS-036). Tests in the new `tests/integration/tests/data_request_opted_out.rs`, PostgreSQL, fake data only: a listed number gets the email link and no Verify send; the link works once; no email on file gets the help-email answer; an unlisted number is unchanged. Privacy: Opus worker, Opus privacy and security review. Update `docs/decisions.md`.",
+   "type": "build",
+   "model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/server/src/homeowner_portal.rs",
+    "app/portals/src/help.rs",
+    "tests/integration/tests/data_request_opted_out.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/privacy.md",
+    "docs/spec/security.md",
+    "docs/spec/messaging.md"
+   ],
+   "requirements": [
+    "PRIV-031",
+    "SEC-014"
+   ],
+   "decisions": [
+    "D-5281"
+   ],
+   "budget": {
+    "files": 3,
+    "lines": 450,
+    "context_pct": 25
+   },
+   "acceptance": "`tests/integration/tests/data_request_opted_out.rs` passes against PostgreSQL; every homeowner portal and help test passes unchanged; no number or address is logged.",
+   "branch": "claude/task/T804-data-request-opted-out",
+   "prompt": "kit/prompts/T804.md"
+  },
+  {
+   "id": "T805",
+   "slug": "no-tollfree-after-30951",
+   "title": "messaging (harness): the toll-free fallback is refused after a 30951 lead-generation refusal",
+   "goal": "Plan change D-5278 (review round 1; CON-033 as reworded; TD-CON-16). `TollFree::configure` (`app/messaging/src/mode.rs:426` to `:431`) accepts any recorded refusal, so a 30951 refusal (third-party lead generation, which toll-free bans too, 30468) still lets the toll-free fallback be configured. This task: `configure` answers a new `ModeError::LeadGenRefusal` when the recorded refusal's reference is 30951 (trimmed), before the go check; and the DONE test `tests/integration/tests/web_email_mode.rs:443` to `:479` (TD-CON-16), which configures toll-free with a 30951 refusal, changes by logged spec change (D-5278, `BUILD_BRIEF.md:69`) to use another refusal code for the configured cases and to expect `LeadGenRefusal` for 30951. Opus worker and review. Update `app/messaging/NOTES.md` and `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "messaging",
+   "deps": [
+    "T075",
+    "T100",
+    "T057",
+    "T517",
+    "T425",
+    "T096"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "compliance"
+   ],
+   "owns": [
+    "app/messaging/src/mode.rs",
+    "tests/integration/tests/web_email_mode.rs"
+   ],
+   "reads": [
+    "docs/spec/consent.md",
+    "docs/spec/messaging.md",
+    "docs/code-docs.md"
+   ],
+   "requirements": [
+    "CON-033",
+    "TXT-021"
+   ],
+   "tests": [
+    "TD-CON-16"
+   ],
+   "decisions": [
+    "D-5278",
+    "D-315"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 80,
+    "context_pct": 9
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T805-no-tollfree-after-30951",
+   "prompt": "kit/prompts/T805.md",
+   "acceptance": "`cargo test -p askhava-messaging` and `--test web_email_mode` pass; a 30951 refusal answers `LeadGenRefusal`; every other configure case is unchanged."
+  },
+  {
+   "id": "T799",
+   "slug": "copy-review-fixes",
+   "title": "Templates and tests (harness): copy review fixes (refund attempts, payment wording, closed request) and TXT-026's three-hour rule",
+   "goal": "Plan change D-5266 (the verified outcome of an outside English copy review; TXT-026 changed by spec, ID kept; FEE-022, TXT-044, TXT-003, WORD-028). Change these texts in the shared `app/messaging/templates/en.json` and `es.json`, word for word, and nothing else in them (an exception to D-491's add-only rule for these keys, D-5266): (a) `unreachable_no_attempts` and `unreachable_no_one_attempt`: \"The refund needs 2.\" becomes \"The refund needs 2 calls.\"; Spanish \"El reembolso necesita 2.\" becomes \"El reembolso necesita 2 llamadas.\"; (b) `card_fix_notice` and `card_fix_notice_untimed`: \"Your card didn't go through\" becomes \"Your payment didn't go through\" (\"another business's quote\" stays); Spanish \"Su tarjeta no pasó\" becomes \"Su pago no pasó\"; (c) `closed_no_quote_left`: \"{brand_short}: Request {job} is closed because none of its quotes are still available. Text us any time to start a new one.\"; Spanish \"…porque ninguna de sus cotizaciones sigue disponible. …\" in place of \"…puede seguir adelante. …\"; (d) `business_no_call_reminder` and `business_no_call_reminder_email` (TXT-026): \"Your 2 attempts can be on different days.\" becomes \"Your 2 attempts must be at least 3 hours apart and can be on different days.\" (FEE-022); Spanish \"Sus 2 intentos pueden ser en días distintos.\" becomes \"Sus 2 intentos deben tener al menos 3 horas de diferencia y pueden ser en días distintos.\". Spanish lines are drafts marked for native-speaker review (TXT-003); none of these keys is a Spanish stay-on text, so no TXT-039 back-translation is needed. Segments (TXT-044, counted on the brand-filled template, D-761): the task sets these recorded `segments` values and no others: en `business_no_call_reminder_email` 2 to 3 (329 GSM-7 characters), es `business_no_call_reminder` 4 to 5, es `business_no_call_reminder_email` 6 to 7; every other changed text stays within its recorded count, the English refund texts at 2 under both the real brand and the test brand (296 characters with Laftly, 299 with Testbrand, TD-WORD-38's `tests/integration/tests/brand_setting.rs`); each raised value is logged in `docs/decisions.md`. The DONE test `tests/integration/tests/unreachable_refund.rs:223` (TD-TXT-30) pins the old reminder sentence; by logged spec change (D-5266, `BUILD_BRIEF.md:69`) only that string changes. `tests/integration/tests/business_notices.rs:567` to `:570` checks only \"didn't go through\" and \"Try again\" and passes unchanged; `tests/docs/test_brain_phrases.py:238` lists only \"no call yet.\" and passes unchanged. Run `scripts/check_copy.py` and `scripts/check_ai_smell.py`. Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T191",
+    "T282",
+    "T386",
+    "T147"
+   ],
+   "model": "claude-sonnet-5-5",
+   "effort": "low",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness",
+    "compliance"
+   ],
+   "owns": [
+    "tests/integration/tests/unreachable_refund.rs"
+   ],
+   "reads": [
+    "docs/spec/messaging.md",
+    "docs/spec/fees.md",
+    "docs/copy/copy-panel.md"
+   ],
+   "requirements": [
+    "TXT-026",
+    "FEE-022",
+    "TXT-044"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-5266"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 40,
+    "context_pct": 7
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T799-copy-review-fixes",
+   "prompt": "kit/prompts/T799.md",
+   "copy": true,
+   "acceptance": "`cargo test -p askhava-messaging` (the template registry and its segment check), `cargo test -p askhava-integration --test unreachable_refund --test business_notices --test brand_setting` and `python3 -m pytest tests/docs` pass; the seven texts read exactly as the goal says in both languages and nothing else in the template files changes except the `segments` values named in the goal; `scripts/check_copy.py` and `scripts/check_ai_smell.py` pass."
   }
  ]
 }
