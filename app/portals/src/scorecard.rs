@@ -11,7 +11,8 @@
 //! counts the Arizona month. Requests and sign-ups by source, intake completion, minutes per paid
 //! introduction and the BIZ-054 leaving and pause answers are total only (their readers take no
 //! job IDs). T622's panels (`scorecard_panels`) add OPS-046's email panel and OPS-047's figures
-//! for the pushed trades. A color is also written as a word, never shown by color alone. The page
+//! for the pushed trades. Refunds and bank disputes are rates over the window's own charges, never
+//! over 100%, and a window with none shows its plain counts (D-5081). A color is also written as a word, never shown by color alone. The page
 //! decides nothing: a GET reads only, and no color raises an alert, a task or a change (D-396,
 //! D-446). The one write is [`owner_record_minutes`], the weekly minutes form, through
 //! `ops::api::record_minutes`. `portals` cannot read `Settings`, so the serving route (T305,
@@ -26,7 +27,7 @@ use askhava_core::api::arizona_time;
 use askhava_intake::api::{cards_approved, intake_completion, requests_by_source};
 use askhava_jobs::api::{jobs_by_trade as routable_jobs, requests_per_week};
 use askhava_ops::api::{WeekMinutes, minutes_for_week, record_minutes};
-use askhava_payments::api::{Share, free_share, ledger_totals, paying_again};
+use askhava_payments::api::{Share, charge_outcomes, free_share, ledger_totals, paying_again};
 use askhava_picks::api::{confirmed_share, diagnostic_share, picked_requests};
 use askhava_quotes::api::{
     active_businesses, diagnostic_quotes, jobs_by_trade, notes_returned, quotes_per_business,
@@ -197,8 +198,10 @@ fn label(m: M) -> &'static str {
         M::AverageFee => "Average introduction fee by job size",
         M::NetPerIntroduction => "Net per paid introduction",
         M::FreeShare => "Free introductions after a business's first win",
-        M::Refunds => "Refunds per paid introduction",
-        M::BankDisputes => "Bank disputes per paid introduction",
+        M::Refunds => "Paid introductions refunded so far (recent weeks can still rise)",
+        M::BankDisputes => {
+            "Paid introductions with a bank dispute so far (recent weeks can still rise)"
+        }
         M::PayingAgainIn60Days => "Businesses paying again within 60 days",
         M::MaskedCallsAnswered => "Masked calls a person answered",
         M::ComplaintsPer20Jobs => "Homeowner complaints per 20 jobs",
@@ -238,6 +241,16 @@ fn share(measure: M, s: Option<Share>) -> Fig {
     fig(measure, value, |v| {
         format!("{v:.1}% ({} of {})", counts.0, counts.1)
     })
+}
+
+/// OPS-039, D-5081: a refund or dispute rate over the window's charges; with no charge, "No data
+/// yet" uncolored and, when any were recorded in the window, their plain count beside it.
+fn rate(measure: M, s: Option<Share>, in_window: i64) -> Fig {
+    let mut f = share(measure, s);
+    if f.value.is_none() && in_window > 0 {
+        f.text = format!("No data yet ({in_window} recorded in this period)");
+    }
+    f
 }
 
 fn num(measure: M, value: Option<f64>) -> Fig {
@@ -321,7 +334,8 @@ async fn pick_figs(
     ])
 }
 
-/// OPS-039, FEE-046, D-458: the money figures of `jobs` in `w`, and the paid introductions.
+/// OPS-039, FEE-046, D-458, D-5081: the money figures of `jobs` in `w`, and the paid
+/// introductions; refunds and disputes are rates over the window's own charges.
 async fn money_figs(
     c: &mut PgConnection,
     jobs: &[Uuid],
@@ -329,6 +343,7 @@ async fn money_figs(
     set_aside: u16,
 ) -> Result<(Vec<Fig>, i64), OwnerToolError> {
     let t = read!(ledger_totals(c, jobs, w.0, w.1));
+    let o = read!(charge_outcomes(c, jobs, w.0, w.1));
     let paid = t.map_or(0, |t| t.paid_introductions);
     let figs = vec![
         dollars(M::AverageFee, t.and_then(|t| t.average_fee_cents())),
@@ -337,8 +352,16 @@ async fn money_figs(
             t.and_then(|t| t.net_per_introduction_cents(set_aside)),
         ),
         share(M::FreeShare, read!(free_share(c, jobs, w.0, w.1))),
-        share(M::Refunds, t.and_then(|t| part(t.refunds, paid))),
-        share(M::BankDisputes, t.and_then(|t| part(t.disputes, paid))),
+        rate(
+            M::Refunds,
+            part(o.refunded, o.charges),
+            t.map_or(0, |t| t.refunds),
+        ),
+        rate(
+            M::BankDisputes,
+            part(o.disputed, o.charges),
+            t.map_or(0, |t| t.disputes),
+        ),
         share(
             M::PayingAgainIn60Days,
             read!(paying_again(c, jobs, w.0, w.1)),
