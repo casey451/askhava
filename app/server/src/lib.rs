@@ -62,6 +62,7 @@ pub mod owner_portal;
 pub mod owner_signin;
 pub mod owner_tools;
 pub mod payment_jobs;
+pub mod picture_media;
 pub mod release_hold;
 pub mod release_sink;
 pub mod request_timeout;
