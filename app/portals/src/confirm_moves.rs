@@ -70,12 +70,12 @@ pub(crate) enum Stop {
 }
 
 /// D-4897 (1): whether `job`'s category needs an ROC class, from its facts row and the catalog's
-/// license kind; `None` for a job with no facts row, an unknown category or an unreadable kind.
+/// license kind; `None` for a job with no facts row (no category has the empty code), an unknown
+/// category or an unreadable kind.
 async fn needs_roc(tx: &mut PgConnection, job: Uuid) -> Result<Option<bool>, ()> {
-    let Some(facts) = job_facts(tx, job).await.map_err(|_| ())? else {
-        return Ok(None);
-    };
-    let stored = category(tx, &facts.category).await.map_err(|_| ())?;
+    let facts = job_facts(tx, job).await.map_err(|_| ())?;
+    let code = facts.map(|f| f.category).unwrap_or_default();
+    let stored = category(tx, &code).await.map_err(|_| ())?;
     let kind = stored.and_then(|c| LicenseKind::parse(&c.license_kind).ok());
     Ok(kind.map(|k| matches!(k, LicenseKind::Roc | LicenseKind::RocAndStateAgency)))
 }
