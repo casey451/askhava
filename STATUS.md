@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T04:34:37Z by runner 4942695dbe65 (actions).
+Updated 2026-11-21T04:35:05Z by runner 4942695dbe65 (actions).
 
 **Building: T614 in progress since 03:43Z; 569 of 726 done; week 64% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 569 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 4: T614 claimed 03:43Z, lease until 06:43Z; lane 5: T777 claimed 04:26Z, lease until 07:26Z; lane 6: T755 claimed 04:14Z, lease until 07:14Z; lane 7: T691 claimed 04:07Z, lease until 07:07Z
+- **Lane:** lane 4: T614 claimed 03:43Z, lease until 06:43Z; lane 5: T777 claimed 04:26Z, lease until 07:26Z; lane 6: T755 claimed 04:14Z, lease until 07:14Z
 - **Week:** 64% used, 64.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:29Z, 4 min before this update
+- **Last run:** 04:34Z, 0 min before this update
 - **Keeper:** last ran 04:29Z, next wake 06:46Z
 
 ## Needs attention
@@ -26,6 +26,7 @@ Worker: matching.rs:52 keyword RULES cover only plumbing, HVAC, electrical, hand
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T691 | intake (harness): START into an open request resends the con | QUEUED | 1 | 27 min | 04:35Z | session ended without handing in |
 | T304 | server and portals: the owner refund review, the audit log v | BLOCKED | 1 | 91 min | 04:20Z | PLAN GAP: app/portals/templates/owner_audit_log.html (owned by T205) and app/portals/templates/health.html (owned by T47 |
 | T457 | portals and server: the Confirm email link asks for a code w | MERGE_PENDING | 1 | 35 min | 04:16Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
 | T781 | recovery: a failed or timed-out nightly export raises one al | MERGE_PENDING | 1 | 116 min | 04:14Z |  |
@@ -158,7 +159,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 4: T614 (lease until 2026-11-21T06:43:38Z)
 - lane 5: T777 (lease until 2026-11-21T07:26:16Z)
 - lane 6: T755 (lease until 2026-11-21T07:14:59Z)
-- lane 7: T691 (lease until 2026-11-21T07:07:30Z)
 
 ## Last usage reading
 - {"task": "T304", "at": "2026-11-21T04:20:14Z", "input_tokens": 215, "cache_read_input_tokens": 15610261, "output_tokens": 87275, "cache_creation_input_tokens": 287743}
