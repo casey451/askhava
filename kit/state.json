@@ -25908,7 +25908,14 @@
     "T760",
     "T763",
     "T764",
-    "T768"
+    "T768",
+    "T777",
+    "T778",
+    "T779",
+    "T780",
+    "T781",
+    "T782",
+    "T783"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -26042,7 +26049,8 @@
     "T131",
     "T293",
     "T584",
-    "T751"
+    "T751",
+    "T542"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -31407,7 +31415,9 @@
     "T514",
     "T758",
     "T759",
-    "T760"
+    "T760",
+    "T784",
+    "T785"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -86203,7 +86213,8 @@
     "T607",
     "T593",
     "T617",
-    "T771"
+    "T771",
+    "T774"
    ],
    "status": "QUEUED",
    "attempts": 2,
@@ -92197,7 +92208,8 @@
    "deps": [
     "T673",
     "T674",
-    "T573"
+    "T573",
+    "T776"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -96283,7 +96295,8 @@
   {
    "id": "T728",
    "deps": [
-    "T673"
+    "T673",
+    "T775"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -99763,6 +99776,152 @@
     "runner/cycle.py",
     "tests/test_runner_merge_train.py"
    ]
+  },
+  {
+   "id": "T774",
+   "deps": [
+    "T052",
+    "T424"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "quote-page-summary-scan",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T776",
+   "deps": [
+    "T673",
+    "T672"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-refusals-wired",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T775",
+   "deps": [
+    "T673",
+    "T482"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "check-in-911-first",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T777",
+   "deps": [
+    "T373",
+    "T280"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "sign-in-code-current-number",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T778",
+   "deps": [
+    "T366",
+    "T663",
+    "T106",
+    "T013"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "stuck-tasks-found",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T779",
+   "deps": [
+    "T738",
+    "T737",
+    "T712",
+    "T525"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "alerts-seen-and-closed",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T780",
+   "deps": [
+    "T158",
+    "T477",
+    "T621"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "scorecard-rates-and-lines",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T781",
+   "deps": [
+    "T109",
+    "T765"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "export-failure-alert",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T782",
+   "deps": [
+    "T526"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "released-job-number-and-calls",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T783",
+   "deps": [
+    "T675"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "picture-text-delete-kept",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T784",
+   "deps": [
+    "T659",
+    "T677"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "returned-mailbox-no-notice",
+   "type": "build",
+   "stage": "6"
+  },
+  {
+   "id": "T785",
+   "deps": [
+    "T381"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "dispute-without-due-date",
+   "type": "build",
+   "stage": "6"
   }
  ],
  "owner_waits": [],
@@ -106472,7 +106631,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T01:09:37Z",
+ "updated_at": "2026-11-21T01:10:08Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -106570,8 +106729,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "e6f56fd39ecb1dfbae3fef391a31d796541531e8",
- "starter": "manual",
+ "runner_sha": "c3bff35f9d54535704de3c0547b3caa76e5bc18b",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "f230bf40dfe5c49ad0c0208f4d2b25855eb91d3d",

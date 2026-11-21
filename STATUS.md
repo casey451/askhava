@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T01:09:37Z by runner e6f56fd39ecb (manual).
+Updated 2026-11-21T01:10:08Z by runner c3bff35f9d54 (actions).
 
 **Building: T664 in progress since 23:09Z; 562 of 726 done; week 55% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -14,7 +14,7 @@ Updated 2026-11-21T01:09:37Z by runner e6f56fd39ecb (manual).
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 49 problem(s) on tasks still to run (+438 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 47 problem(s) on tasks still to run (+432 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -97,31 +97,31 @@ Updated 2026-11-21T01:09:37Z by runner e6f56fd39ecb (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 93 of 735 (12.7%) · partial 623 · unstarted 19
-**Tasks merged (throughput only):** 562 of 726
+**Requirements verified:** 362 of 735 (49.3%) · partial 354 · unstarted 19
+**Tasks merged (throughput only):** 562 of 714
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 3 | 32 | 0 | 35 |
-| ai | 1 | 25 | 3 | 29 |
-| businesses | 1 | 56 | 1 | 58 |
-| calls | 1 | 24 | 0 | 25 |
-| consent | 3 | 32 | 0 | 35 |
-| fees | 1 | 51 | 0 | 52 |
-| intake | 1 | 42 | 0 | 43 |
-| job-cards | 0 | 24 | 0 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 2 | 43 | 0 | 45 |
-| ops-recovery | 10 | 32 | 12 | 54 |
-| privacy | 1 | 30 | 0 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 0 | 56 | 0 | 56 |
-| recurring | 3 | 8 | 0 | 11 |
-| security | 2 | 50 | 3 | 55 |
-| terms | 25 | 10 | 0 | 35 |
+| accessibility | 18 | 17 | 0 | 35 |
+| ai | 8 | 18 | 3 | 29 |
+| businesses | 23 | 34 | 1 | 58 |
+| calls | 15 | 10 | 0 | 25 |
+| consent | 17 | 18 | 0 | 35 |
+| fees | 25 | 27 | 0 | 52 |
+| intake | 12 | 31 | 0 | 43 |
+| job-cards | 12 | 12 | 0 | 24 |
+| licensing | 33 | 15 | 0 | 48 |
+| lifecycle | 21 | 7 | 0 | 28 |
+| messaging | 26 | 19 | 0 | 45 |
+| ops-recovery | 15 | 27 | 12 | 54 |
+| privacy | 10 | 21 | 0 | 31 |
+| quiet-hours | 3 | 6 | 0 | 9 |
+| quotes-pick | 26 | 30 | 0 | 56 |
+| recurring | 10 | 1 | 0 | 11 |
+| security | 13 | 39 | 3 | 55 |
+| terms | 27 | 8 | 0 | 35 |
 | website | 20 | 10 | 0 | 30 |
-| wording | 19 | 13 | 0 | 32 |
+| wording | 28 | 4 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -134,8 +134,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 205 of 296 done
-- stage 6: 0 of 65 done
+- stage 5: 205 of 306 done
+- stage 6: 0 of 67 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
 - stage kit: 14 of 15 done
