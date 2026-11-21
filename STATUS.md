@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T07:19:29Z by runner 8fc16fa69d40 (actions).
+Updated 2026-11-21T07:19:57Z by runner 8fc16fa69d40 (actions).
 
 **Building: T615 in progress since 06:37Z; 575 of 726 done; week 69% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 575 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 4: T615 claimed 06:37Z, lease until 09:37Z; lane 7: T674 claimed 04:40Z, lease until 07:40Z
+- **Lane:** lane 4: T615 claimed 06:37Z, lease until 09:37Z
 - **Week:** 69% used, 55.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:02Z, 16 min before this update
+- **Last run:** 07:02Z, 17 min before this update
 - **Keeper:** last ran 07:02Z, next wake 07:43Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Updated 2026-11-21T07:19:29Z by runner 8fc16fa69d40 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T674 | server: the homeowner's photo upload page and the short-live | MERGE_PENDING | 2 | 2 h 38 min | 07:19Z | PLAN GAP: outside ownership: tests/a11y/fixtures.ts — GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PA |
 | T754 | portals and payments: a $0 Confirm after a PaymentIntent was | BLOCKED | 2 | 46 min | 06:41Z | PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and |
 | T755 | messaging: a sole opt-out word counts with any spacing ("STO | done | 1 | 66 min | 05:21Z |  |
 | T777 | businesses: a sign-in code is texted only to a line whose cu | done | 2 | 39 min | 05:05Z | PLAN GAP: outside ownership: app/server/tests/business_signin_route.rs / T777's approved_at filter in sign_in_lines fail |
@@ -40,7 +41,7 @@ Updated 2026-11-21T07:19:29Z by runner 8fc16fa69d40 (actions).
 | T769 | site: the business page's WEB-024 line follows the stored bu | done | 1 | 41 min | 01:56Z |  |
 | T580 | messaging: a failed, blocked or expired text reads as failed | done | 1 | 43 min | 01:53Z |  |
 | T664 | portals: the Confirm press re-checks the license and account | done | 2 | 2 h 38 min | 01:47Z | PLAN GAP: outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs / The pick's window deadline (picks.pic |
-| T674 | server: the homeowner's photo upload page and the short-live | BLOCKED | 1 | 17 min | 01:25Z | PLAN GAP: outside ownership: tests/a11y/fixtures.ts — GET /photos/{token} needs one NOT_PAGES line there (A11Y-002; a PA |
+| T674 | server: the homeowner's photo upload page and the short-live | BLOCKED | 1 | 17 min | 01:25Z |  |
 | T677 | quotes, businesses and server: a business that becomes eligi | done | 1 | 111 min | 01:02Z |  |
 | T526 | server, intake, businesses and site: business texting follow | done | 1 | 71 min | 00:19Z |  |
 | T773 | Runner (harness): the merge train can carry a third car, bui | done | 1 | 33 min | 23:17Z |  |
@@ -144,7 +145,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 4: T615 (lease until 2026-11-21T09:37:55Z)
-- lane 7: T674 (lease until 2026-11-21T07:40:32Z)
 
 ## Last usage reading
-- {"task": "T754", "at": "2026-11-21T06:41:19Z", "cache_read_input_tokens": 7948742, "cache_creation_input_tokens": 206147, "input_tokens": 152, "output_tokens": 70639}
+- {"task": "T674", "at": "2026-11-21T07:19:28Z", "output_tokens": 149324, "cache_creation_input_tokens": 483682, "cache_read_input_tokens": 20960977, "input_tokens": 360}
