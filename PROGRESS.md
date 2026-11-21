@@ -9231,3 +9231,4 @@
 - 2026-11-21T12:32:35Z runner 2f9bf610c370 (actions): {}
 - 2026-11-21T12:33:04Z runner 2ce468444a2e (actions): {}
 - 2026-11-21T12:33:07Z runner 4d8cf0ae2015 (actions): {}
+- 2026-11-21T12:33:50Z runner 2ce468444a2e (actions): {"T304": "QUEUED -> IN_PROGRESS"}; T304 estimated 1.4M tokens (calibrated); week has 140.4M left (no five-hour budget, D-3056) after 1.6M still running in another lane (session_reading 2026-11-21T12:32:35Z (week)); claimed
