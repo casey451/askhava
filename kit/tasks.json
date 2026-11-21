@@ -5,7 +5,8 @@
  "models": {
   "haiku": "claude-haiku-5-5",
   "sonnet": "claude-sonnet-5-5",
-  "opus": "claude-opus-5-5"
+  "opus": "claude-opus-5-5",
+  "fable": "claude-fable-5-2"
  },
  "protected_paths": [
   ".github/",
@@ -10428,7 +10429,7 @@
     "T412",
     "T536"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -10657,7 +10658,7 @@
     "T747",
     "T759"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -10702,7 +10703,7 @@
    "budget": {
     "files": 7,
     "lines": 320,
-    "context_pct": 38
+    "context_pct": 34
    },
    "checks": [
     "Ci",
@@ -10753,7 +10754,7 @@
     "T704",
     "T741"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -10820,7 +10821,7 @@
     "T402",
     "T590"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -14928,7 +14929,7 @@
     "T477",
     "T624"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -29943,7 +29944,7 @@
     "T645",
     "T585"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -30094,7 +30095,7 @@
     "T745",
     "T573"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -30136,7 +30137,7 @@
    "budget": {
     "files": 5,
     "lines": 480,
-    "context_pct": 20
+    "context_pct": 16
    },
    "checks": [
     "Ci",
@@ -30163,7 +30164,7 @@
     "T747",
     "T677"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -30243,7 +30244,7 @@
     "T584",
     "T490"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -30460,7 +30461,7 @@
     "T648",
     "T765"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -30500,7 +30501,7 @@
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 19
+    "context_pct": 13
    },
    "checks": [
     "Ci",
@@ -31398,7 +31399,7 @@
     "T664",
     "T675"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -31442,7 +31443,7 @@
    "budget": {
     "files": 2,
     "lines": 600,
-    "context_pct": 15
+    "context_pct": 11
    },
    "checks": [
     "Ci",
@@ -31480,7 +31481,7 @@
     "T540",
     "T666"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -31546,7 +31547,7 @@
     "T488",
     "T586"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -32715,7 +32716,7 @@
     "T648",
     "T708"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -32745,7 +32746,7 @@
    "budget": {
     "files": 1,
     "lines": 300,
-    "context_pct": 14
+    "context_pct": 10
    },
    "checks": [
     "Ci",
@@ -32908,7 +32909,7 @@
     "T648",
     "T708"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -32961,7 +32962,7 @@
     "T550",
     "T769"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -33017,7 +33018,7 @@
     "T410",
     "T527"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -33095,7 +33096,7 @@
     "T593",
     "T747"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -35256,7 +35257,7 @@
     "T336",
     "T377"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -35304,7 +35305,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 19
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -35372,7 +35373,7 @@
     "T751",
     "T129"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -35459,7 +35460,7 @@
     "T751",
     "T754"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -35546,7 +35547,7 @@
     "T751",
     "T542"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -35640,7 +35641,7 @@
     "T385",
     "T751"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -35719,7 +35720,7 @@
     "T109",
     "T648"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -35846,7 +35847,7 @@
     "T376",
     "T127"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -35912,7 +35913,7 @@
     "T298",
     "T135"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -35983,7 +35984,7 @@
    "deps": [
     "T135"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -36036,7 +36037,7 @@
     "T138",
     "T137"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -36102,7 +36103,7 @@
     "T298",
     "T136"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -36146,7 +36147,7 @@
    "budget": {
     "files": 2,
     "lines": 800,
-    "context_pct": 25
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -36222,7 +36223,7 @@
     "T416",
     "T600"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -36291,7 +36292,7 @@
     "T234",
     "T416"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -36349,7 +36350,7 @@
     "T234",
     "T680"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -36524,7 +36525,7 @@
     "T741",
     "T760"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -36580,7 +36581,7 @@
    "budget": {
     "files": 7,
     "lines": 600,
-    "context_pct": 40
+    "context_pct": 33
    },
    "checks": [
     "Ci",
@@ -37095,7 +37096,7 @@
     "T651",
     "T614"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -37181,7 +37182,7 @@
     "T348",
     "T530"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -37717,7 +37718,7 @@
     "T348",
     "T410"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -38049,7 +38050,7 @@
     "T784",
     "T785"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -38151,7 +38152,7 @@
     "T759",
     "T760"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -38248,7 +38249,7 @@
     "T759",
     "T760"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -38327,7 +38328,7 @@
     "T239",
     "T392"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -39917,7 +39918,7 @@
     "T333",
     "T134"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -40264,7 +40265,7 @@
     "T722",
     "T754"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -40302,7 +40303,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 29
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -40679,7 +40680,7 @@
     "T464",
     "T564"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -40876,7 +40877,7 @@
    "deps": [
     "T364"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -41011,7 +41012,7 @@
     "T412",
     "T490"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -41075,7 +41076,7 @@
    "deps": [
     "T565"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -41275,7 +41276,7 @@
     "T136",
     "T137"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -41339,7 +41340,7 @@
     "T236",
     "T420"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -41420,7 +41421,7 @@
     "T700",
     "T727"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -41479,7 +41480,7 @@
     "T753",
     "T773"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -41785,7 +41786,7 @@
     "T494",
     "T495"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -41825,7 +41826,7 @@
    "budget": {
     "files": 5,
     "lines": 600,
-    "context_pct": 24
+    "context_pct": 14
    },
    "checks": [
     "Ci",
@@ -41849,7 +41850,7 @@
     "T457",
     "T396"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -41886,7 +41887,7 @@
    "budget": {
     "files": 5,
     "lines": 600,
-    "context_pct": 24
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -43629,7 +43630,7 @@
    "deps": [
     "T053"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -43684,7 +43685,7 @@
     "T052",
     "T424"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "low",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -43811,7 +43812,7 @@
    "id": "T615",
    "slug": "site-404-icons",
    "title": "site and server: a styled 404 page for unknown paths, the favicon and touch icon, theme-color, a meta description and a share image",
-   "goal": "Plan change D-4252 (Fable's UI and accessibility review of the D-4246 tasks; Casey, Nov 17, 2026: \"make it exceptional and meet all of the ADA requirements\"). DESIGN_SPEC section 5 (`docs/design/DESIGN_SPEC.md:98`): an unknown path answers 404 with a page in the site layout, and the head carries the icon, `theme-color` and share details. Today there is no catch-all (`app/site/src/pages.rs:6`), so an unknown path gets an empty 404, and no template has an icon, `theme-color`, meta description or share tags. (1) 404: a new `app/site/src/not_found.rs` serves `templates/not_found.html` (extends `site_layout.html`, so the header and footer show, `banner_shown` read as every site page reads it, WEB-007) with status 404, registered as the router's fallback in `app/server/src/lib.rs` (a shared path; one `.fallback(` line, `docs/code-docs.md` section 9); `/static/site/` keeps its own empty 404 (`tests/e2e/site_no_js.spec.ts:69`). The page holds an `h1` and one sentence, both new blocks in `docs/copy/site-copy.md` written to `docs/voice.md` and reviewed by the copy panel (`docs/copy/copy-panel.md`), passing `scripts/check_copy.py` and `scripts/check_ai_smell.py`; the header gives the links to home and help. (2) In `base.html`'s `head`: `<link rel=\"icon\" href=\"/static/site/brand/mark.svg\" type=\"image/svg+xml\">`, `<link rel=\"apple-touch-icon\" href=\"/static/site/brand/touch-icon.png\">` (180 by 180, the mark on `canvas`), `<meta name=\"theme-color\" content=\"#F7F5F0\">` (`canvas`), `<meta name=\"description\">` with the WEB-004 tagline (words every page already shows), and `og:title` (the brand name from `askhava_core::api::brand()`), `og:description` (the tagline), `og:type` and `og:image` (`https://` plus the brand domain plus `/static/site/brand/share.png`). (3) `share.png`: 1200 by 630, the mark, the wordmark and the WEB-004 tagline on `canvas` in Gelasio and DM Sans, no photo (so it claims nothing about work shown), rendered once from a local HTML page with Playwright (the HTML is not committed), no metadata (`scripts/pii_scan.py`); both PNGs are added to `app/site/src/assets.rs`'s fixed list as `image/png`. (4) The new `tests/e2e/not_found.spec.ts`: an unknown path answers 404 with the page's `h1`, the header and footer, axe-core 0 violations at 390 and 1440, no script; the icon, touch icon and share image answer 200 with their types; the home page's head has each tag above once. Every existing test passes unchanged (the fallback must not catch a route another crate serves). Fake data only. Review round 1 (D-4252): (a) A11Y-002 coverage: the 404 page is checked as a real page state, so the whole Ally suite runs on it: the task adds a `PAGE_STATES` entry for `/no-such-page` in `tests/a11y/page_states.ts` with an expected status of 404, and gives `tests/a11y/fixtures.ts`'s `open` an optional per-state expected status that defaults to 200 (today it asserts 200 at `:161`), so every other state is checked exactly as before; both files are shared paths any task may add to (D-1772, D-1788; T496 also owns `fixtures.ts`, so the change is additive and merges with it); the router's `.fallback(` call is matched to that state, or, if `readRouteTable` cannot see a fallback, a `NOT_PAGES` line says it is checked through `/no-such-page`. (b) The 404 answer keeps every security header the other pages carry (the server's header layers wrap the fallback), adds `Cache-Control: no-store`, and costs no database query per unknown path: the WEB-007 banner is read through a 60-second in-process cache shared with nothing else, so a scanner's thousand paths cost at most one read a minute. Retry note (D-5190): attempts 1 and 2 failed on one flaky `Ci` check, not on this task's code: TD-INT-47's no-contact check (`tests/integration/tests/intake_order_card.rs:46` and `:268`) looks for \"555\" in a text that holds the random 64-hex quote-page token (`app/jobs/src/quote_token.rs:47`), which contains it in about 1.5% of runs; T789 fixes that check first. Attempt 3 passed its pre-hand-in gate and was refused only because the runner did not record the Fable usage-limit fallback; no task runs on Fable now (D-5189). Continue from the earlier attempts' work; nothing in the goal changes.",
+   "goal": "Plan change D-4252 (Fable's UI and accessibility review of the D-4246 tasks; Casey, Nov 17, 2026: \"make it exceptional and meet all of the ADA requirements\"). DESIGN_SPEC section 5 (`docs/design/DESIGN_SPEC.md:98`): an unknown path answers 404 with a page in the site layout, and the head carries the icon, `theme-color` and share details. Today there is no catch-all (`app/site/src/pages.rs:6`), so an unknown path gets an empty 404, and no template has an icon, `theme-color`, meta description or share tags. (1) 404: a new `app/site/src/not_found.rs` serves `templates/not_found.html` (extends `site_layout.html`, so the header and footer show, `banner_shown` read as every site page reads it, WEB-007) with status 404, registered as the router's fallback in `app/server/src/lib.rs` (a shared path; one `.fallback(` line, `docs/code-docs.md` section 9); `/static/site/` keeps its own empty 404 (`tests/e2e/site_no_js.spec.ts:69`). The page holds an `h1` and one sentence, both new blocks in `docs/copy/site-copy.md` written to `docs/voice.md` and reviewed by the copy panel (`docs/copy/copy-panel.md`), passing `scripts/check_copy.py` and `scripts/check_ai_smell.py`; the header gives the links to home and help. (2) In `base.html`'s `head`: `<link rel=\"icon\" href=\"/static/site/brand/mark.svg\" type=\"image/svg+xml\">`, `<link rel=\"apple-touch-icon\" href=\"/static/site/brand/touch-icon.png\">` (180 by 180, the mark on `canvas`), `<meta name=\"theme-color\" content=\"#F7F5F0\">` (`canvas`), `<meta name=\"description\">` with the WEB-004 tagline (words every page already shows), and `og:title` (the brand name from `askhava_core::api::brand()`), `og:description` (the tagline), `og:type` and `og:image` (`https://` plus the brand domain plus `/static/site/brand/share.png`). (3) `share.png`: 1200 by 630, the mark, the wordmark and the WEB-004 tagline on `canvas` in Gelasio and DM Sans, no photo (so it claims nothing about work shown), rendered once from a local HTML page with Playwright (the HTML is not committed), no metadata (`scripts/pii_scan.py`); both PNGs are added to `app/site/src/assets.rs`'s fixed list as `image/png`. (4) The new `tests/e2e/not_found.spec.ts`: an unknown path answers 404 with the page's `h1`, the header and footer, axe-core 0 violations at 390 and 1440, no script; the icon, touch icon and share image answer 200 with their types; the home page's head has each tag above once. Every existing test passes unchanged (the fallback must not catch a route another crate serves). Fake data only. Review round 1 (D-4252): (a) A11Y-002 coverage: the 404 page is checked as a real page state, so the whole Ally suite runs on it: the task adds a `PAGE_STATES` entry for `/no-such-page` in `tests/a11y/page_states.ts` with an expected status of 404, and gives `tests/a11y/fixtures.ts`'s `open` an optional per-state expected status that defaults to 200 (today it asserts 200 at `:161`), so every other state is checked exactly as before; both files are shared paths any task may add to (D-1772, D-1788; T496 also owns `fixtures.ts`, so the change is additive and merges with it); the router's `.fallback(` call is matched to that state, or, if `readRouteTable` cannot see a fallback, a `NOT_PAGES` line says it is checked through `/no-such-page`. (b) The 404 answer keeps every security header the other pages carry (the server's header layers wrap the fallback), adds `Cache-Control: no-store`, and costs no database query per unknown path: the WEB-007 banner is read through a 60-second in-process cache shared with nothing else, so a scanner's thousand paths cost at most one read a minute. Retry note (D-5190): attempts 1 and 2 failed on one flaky `Ci` check, not on this task's code: TD-INT-47's no-contact check (`tests/integration/tests/intake_order_card.rs:46` and `:268`) looks for \"555\" in a text that holds the random 64-hex quote-page token (`app/jobs/src/quote_token.rs:47`), which contains it in about 1.5% of runs; T789 fixes that check first. Attempt 3 passed its pre-hand-in gate and was refused only because the runner did not record the Fable usage-limit fallback; this retry is requeued only once D-5189 (the switch off Fable, PR #1277) has merged, so it runs on Opus. Continue from the earlier attempts' work; nothing in the goal changes.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -44390,7 +44391,7 @@
     "T593",
     "T645"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -44453,7 +44454,7 @@
     "T645",
     "T646"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -44710,7 +44711,7 @@
     "T469",
     "T652"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -45118,7 +45119,7 @@
     "T644",
     "T766"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -45173,7 +45174,7 @@
     "T663",
     "T669"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -45240,7 +45241,7 @@
     "T767",
     "T772"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -45378,7 +45379,7 @@
     "T665",
     "T540"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -45450,7 +45451,7 @@
    "deps": [
     "T663"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -45649,7 +45650,7 @@
     "T669",
     "T543"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -45931,7 +45932,7 @@
    "deps": [
     "T672"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -45982,7 +45983,7 @@
    "budget": {
     "files": 5,
     "lines": 600,
-    "context_pct": 41
+    "context_pct": 34
    },
    "checks": [
     "Ci",
@@ -46065,7 +46066,7 @@
     "T561",
     "T766"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -46118,7 +46119,7 @@
    "budget": {
     "files": 5,
     "lines": 450,
-    "context_pct": 37
+    "context_pct": 27
    },
    "checks": [
     "Ci",
@@ -46142,7 +46143,7 @@
     "T673",
     "T672"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -46208,7 +46209,7 @@
     "T573",
     "T776"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -46263,7 +46264,7 @@
    "budget": {
     "files": 7,
     "lines": 550,
-    "context_pct": 42
+    "context_pct": 34
    },
    "checks": [
     "Ci",
@@ -46420,7 +46421,7 @@
     "T588",
     "T746"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -46496,7 +46497,7 @@
     "T745",
     "T704"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -46710,7 +46711,7 @@
     "T675",
     "T714"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -46758,7 +46759,7 @@
    "budget": {
     "files": 4,
     "lines": 460,
-    "context_pct": 30
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -46974,7 +46975,7 @@
     "T678",
     "T746"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -47094,7 +47095,7 @@
     "T132",
     "T380"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -47297,7 +47298,7 @@
     "T672",
     "T573"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -47611,7 +47612,7 @@
     "T470",
     "T661"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -47652,7 +47653,7 @@
    "budget": {
     "files": 6,
     "lines": 560,
-    "context_pct": 30
+    "context_pct": 26
    },
    "checks": [
     "Ci",
@@ -47676,7 +47677,7 @@
     "T458",
     "T588"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -47713,7 +47714,7 @@
    "budget": {
     "files": 2,
     "lines": 260,
-    "context_pct": 25
+    "context_pct": 21
    },
    "checks": [
     "Ci",
@@ -48010,7 +48011,7 @@
     "T675",
     "T654"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48071,7 +48072,7 @@
    "budget": {
     "files": 6,
     "lines": 600,
-    "context_pct": 31
+    "context_pct": 27
    },
    "checks": [
     "Ci",
@@ -48096,7 +48097,7 @@
     "T716",
     "T717"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48151,7 +48152,7 @@
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 41
+    "context_pct": 35
    },
    "checks": [
     "Ci",
@@ -48179,7 +48180,7 @@
     "T615",
     "T769"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48244,7 +48245,7 @@
    "deps": [
     "T723"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48289,7 +48290,7 @@
    "budget": {
     "files": 3,
     "lines": 450,
-    "context_pct": 45
+    "context_pct": 39
    },
    "checks": [
     "Ci",
@@ -48312,7 +48313,7 @@
    "deps": [
     "T718"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48357,7 +48358,7 @@
    "budget": {
     "files": 5,
     "lines": 450,
-    "context_pct": 45
+    "context_pct": 40
    },
    "checks": [
     "Ci",
@@ -48497,7 +48498,7 @@
     "T673",
     "T482"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48552,7 +48553,7 @@
     "T673",
     "T775"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48618,7 +48619,7 @@
     "T608",
     "T600"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48695,7 +48696,7 @@
     "T684",
     "T580"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48763,7 +48764,7 @@
     "T746",
     "T766"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -48806,7 +48807,7 @@
    "budget": {
     "files": 3,
     "lines": 450,
-    "context_pct": 41
+    "context_pct": 35
    },
    "checks": [
     "Ci",
@@ -48959,7 +48960,7 @@
     "T541",
     "T751"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -49100,7 +49101,7 @@
    "deps": [
     "T719"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -49135,7 +49136,7 @@
    "budget": {
     "files": 2,
     "lines": 400,
-    "context_pct": 29
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -49158,7 +49159,7 @@
    "deps": [
     "T712"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -49299,7 +49300,7 @@
    "deps": [
     "T540"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -49360,7 +49361,7 @@
     "T675",
     "T728"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -49431,7 +49432,7 @@
     "T309",
     "T609"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -49473,7 +49474,7 @@
    "budget": {
     "files": 9,
     "lines": 700,
-    "context_pct": 24
+    "context_pct": 18
    },
    "checks": [
     "Ci",
@@ -49500,7 +49501,7 @@
     "T600",
     "T151"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -49538,7 +49539,7 @@
    "budget": {
     "files": 5,
     "lines": 600,
-    "context_pct": 24
+    "context_pct": 20
    },
    "checks": [
     "Ci",
@@ -49562,7 +49563,7 @@
     "T701",
     "T702"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -49599,7 +49600,7 @@
    "budget": {
     "files": 3,
     "lines": 500,
-    "context_pct": 30
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -49635,7 +49636,7 @@
     "T410",
     "T754"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -49672,7 +49673,7 @@
    "budget": {
     "files": 6,
     "lines": 450,
-    "context_pct": 35
+    "context_pct": 31
    },
    "checks": [
     "Ci",
@@ -50073,7 +50074,7 @@
     "T706",
     "T333"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -50146,7 +50147,7 @@
     "T100",
     "T517"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -50202,7 +50203,7 @@
     "T658",
     "T351"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -50259,7 +50260,7 @@
     "T600",
     "T729"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -50428,7 +50429,7 @@
     "T717",
     "T736"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -50457,7 +50458,7 @@
    "budget": {
     "files": 2,
     "lines": 300,
-    "context_pct": 22
+    "context_pct": 17
    },
    "checks": [
     "Ci",
@@ -50687,7 +50688,7 @@
     "T373",
     "T280"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -50747,7 +50748,7 @@
     "T106",
     "T013"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -51043,7 +51044,7 @@
    "deps": [
     "T675"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -51097,7 +51098,7 @@
     "T659",
     "T677"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -51157,7 +51158,7 @@
     "T738",
     "T779"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-fable-5-2",
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [

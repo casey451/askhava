@@ -3671,5 +3671,5 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 ## Fable's usage-limit fallback has a runner bug (D-5190, November 21)
 
 - **What happened.** When Fable hit its usage limit, the runner was meant to re-run the task on Opus without counting an attempt. It did not record that switch, because its "was this a refusal?" check does not recognise a usage-limit (429) message (`runner/model_window.py` `REFUSAL`, used at `runner/cycle.py:3330` and `runner/__main__.py:493`). T615 lost a good attempt to it.
-- **Now.** No task runs on Fable (D-5189), so the bug cannot bite. T615 gets one more attempt after its flaky test is fixed (T789).
+- **Now.** Once D-5189 (the switch off Fable, PR #1277) merges, no task runs on Fable and the bug cannot bite. T615 gets one more attempt after its flaky test is fixed (T789) and that switch has merged.
 - **Before Fable is switched back on**, a harness task must make that check accept usage-limit and rate-limit text.
