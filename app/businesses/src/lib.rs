@@ -76,6 +76,7 @@ mod signup_record;
 mod signup_view;
 mod status;
 mod team;
+mod texting_switch;
 
 #[cfg(test)]
 mod tests;

@@ -164,6 +164,7 @@ pub use crate::team::{
     Acting, MEMBER_REMOVED_KIND, NoticePurpose, Roles, SenderLink, TeamError, TeamMember,
     add_member, add_owner, members, remove_member, set_roles, unlink_phone,
 };
+pub use crate::texting_switch::business_texting_on;
 
 /// SEC-038, D-480: whether `by`, a current member of `by.business`, passed a Verify code (to their
 /// verified phone, or email without a texting phone) no more than [`STEP_UP_LIFE`] before `now`;

@@ -31,6 +31,7 @@ const STATIC_DIR: &str = "ASKHAVA_STATIC_DIR";
 const LICENSE_BASE_URL: &str = "ASKHAVA_LICENSE_BASE_URL";
 const SECURITY_EVENTS_PER_MINUTE: &str = "ASKHAVA_SECURITY_EVENTS_PER_MINUTE";
 const MAIN_NUMBER: &str = "ASKHAVA_MAIN_NUMBER";
+const BUSINESS_NUMBER: &str = "ASKHAVA_BUSINESS_NUMBER";
 const STRIPE_PUBLISHABLE_KEY: &str = "ASKHAVA_STRIPE_PUBLISHABLE_KEY";
 const LAUNCH_DATE: &str = "ASKHAVA_LAUNCH_DATE";
 const SET_ASIDE: &str = "ASKHAVA_SALES_TAX_SET_ASIDE_BASIS_POINTS";
@@ -78,6 +79,9 @@ const KEYS: &[&str] = &[
     SECURITY_EVENTS_PER_MINUTE,
     // The Laftly main number, read as the safety call's callback (T330, CALL-022, D-3134).
     MAIN_NUMBER,
+    // The business line's own sending number, parsed by `askhava_server`; unset means business
+    // texting counts as off (T526, TXT-035, D-3881, D-3882).
+    BUSINESS_NUMBER,
     // The home page's numbers threshold and the "Who runs" block's record link and city license
     // number, each optional (T102, WEB-021, WEB-028, D-3878, D-3890).
     HOME_NUMBERS_MIN_JOBS,
@@ -434,6 +438,7 @@ pub struct Settings {
     license_base_url: Option<String>,
     security_events_per_minute: Option<u32>,
     main_number: Option<String>,
+    business_number: Option<String>,
     stripe_publishable_key: Option<String>,
     launch_date: Option<jiff::Timestamp>,
     set_aside_basis_points: u16,
@@ -491,6 +496,7 @@ impl Settings {
             license_base_url: license_base_url(environment, raw.remove(LICENSE_BASE_URL))?,
             security_events_per_minute: per_minute(raw.remove(SECURITY_EVENTS_PER_MINUTE))?,
             main_number: main_number(raw.remove(MAIN_NUMBER))?,
+            business_number: e164(raw.remove(BUSINESS_NUMBER), BUSINESS_NUMBER)?,
             stripe_publishable_key: publishable_key(raw.remove(STRIPE_PUBLISHABLE_KEY))?,
             launch_date: launch_date(raw.remove(LAUNCH_DATE))?,
             set_aside_basis_points: set_aside(raw.remove(SET_ASIDE))?,
@@ -626,6 +632,14 @@ impl Settings {
     #[must_use]
     pub fn main_number(&self) -> Option<&str> {
         self.main_number.as_deref()
+    }
+
+    /// The business line's own sending number (`ASKHAVA_BUSINESS_NUMBER`, E.164, trimmed), the
+    /// only number business texts go from (TXT-035, D-3881); `None` while unset, and then business
+    /// texting counts as off whatever the stored switch says.
+    #[must_use]
+    pub fn business_number(&self) -> Option<&str> {
+        self.business_number.as_deref()
     }
 
     /// Casey's own phone (`ASKHAVA_OWNER_PHONE`, E.164, trimmed, a secret never logged), which the
