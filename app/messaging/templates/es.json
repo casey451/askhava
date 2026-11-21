@@ -41,7 +41,7 @@
     "audience": "homeowner",
     "draft": true,
     "segments": 8,
-    "text": "{brand_short}: Díganos qué pasa en un solo texto. El dueño de {brand} recibe los mensajes de AYUDA de inmediato y normalmente responde en {reply_time}. Este número es solo para textos. Si alguien está en peligro, llame al 911. ¿No puede abrir enlaces? Responda LISTA para recibir sus cotizaciones por texto. Los números de Canadá pueden pagar cargos de roaming. Ayuda: help@{domain} o {domain}/help Responda PARAR para salir.",
+    "text": "{brand_short}: Díganos qué pasa en un solo texto. El dueño de {brand} recibe los mensajes de AYUDA de inmediato y normalmente responde en {reply_time}. Este número es solo para textos. Si alguien está en peligro, llame al 911. ¿No puede abrir enlaces? Responda LISTA para recibir sus cotizaciones por texto. Si su número es de Canadá, pueden aplicar cargos de roaming. Ayuda: help@{domain} o {domain}/help Responda PARAR para salir.",
     "spanish_stays_on": true
   },
   "help_reply_away": {
@@ -55,14 +55,14 @@
     "audience": "homeowner",
     "draft": true,
     "segments": 7,
-    "text": "{brand_short}: Díganos qué pasa en un solo texto. El dueño de {brand} está fuera hasta el {time} y responderá para entonces. Si alguien está en peligro, llame al 911. ¿No puede abrir enlaces? Responda LISTA para recibir sus cotizaciones por texto. Los números de Canadá pueden pagar cargos de roaming. Ayuda: help@{domain} o {domain}/help Responda PARAR para salir.",
+    "text": "{brand_short}: Díganos qué pasa en un solo texto. El dueño de {brand} está fuera hasta el {time} y responderá para entonces. Si alguien está en peligro, llame al 911. ¿No puede abrir enlaces? Responda LISTA para recibir sus cotizaciones por texto. Si su número es de Canadá, pueden aplicar cargos de roaming. Ayuda: help@{domain} o {domain}/help Responda PARAR para salir.",
     "spanish_stays_on": true
   },
   "emergency_911": {
     "audience": "homeowner",
     "draft": true,
     "segments": 4,
-    "text": "{brand_short}: {brand} no es un servicio de emergencia. Si huele a gas, ve humo o fuego, suena una alarma de CO o hay un cable de luz caído, saque a todos y llame al 911 desde afuera. Responda SEGURO cuando esté a salvo.",
+    "text": "{brand_short}: {brand} no es un servicio de emergencia. Si huele a gas, ve humo o fuego, suena una alarma de monóxido de carbono (CO) o hay un cable de luz caído, saque a todos y llame al 911 desde afuera. Responda SEGURO cuando esté a salvo.",
     "spanish_stays_on": true
   },
   "spanish_not_yet": {
@@ -76,7 +76,7 @@
     "audience": "homeowner",
     "draft": true,
     "segments": 2,
-    "text": "{brand_short}: Lo sentimos, debe tener 18 años o más para usar {brand}. Pídale a un padre o adulto que nos escriba."
+    "text": "{brand_short}: Lo sentimos, debe tener 18 años o más para usar {brand}. Pídale a su madre, a su padre o a otro adulto que nos escriba."
   },
   "request_out": {
     "audience": "homeowner",
@@ -214,7 +214,7 @@
     "audience": "homeowner",
     "draft": true,
     "segments": 2,
-    "text": "{brand_short}: Lo sentimos, debe tener 18 años o más para usar {brand}. Pídale a un padre o adulto que nos escriba.",
+    "text": "{brand_short}: Lo sentimos, debe tener 18 años o más para usar {brand}. Pídale a su madre, a su padre o a otro adulto que nos escriba.",
     "spanish_stays_on": true
   },
   "name_address": {

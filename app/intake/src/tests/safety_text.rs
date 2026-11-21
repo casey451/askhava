@@ -19,7 +19,7 @@ use crate::api::{
 use crate::rules::{CONSENT_TEMPLATE, Inbound, SAFETY_TEMPLATE, Send, Settings, Then, plan};
 
 const INT_004_EN: &str = "{brand_short}: {brand} isn't an emergency service. If you smell gas, see smoke or fire, a CO alarm is going off, or a power line is down, get everyone out and call 911 from outside. Reply SAFE when you're safe.";
-const INT_004_ES: &str = "{brand_short}: {brand} no es un servicio de emergencia. Si huele a gas, ve humo o fuego, suena una alarma de CO o hay un cable de luz caído, saque a todos y llame al 911 desde afuera. Responda SEGURO cuando esté a salvo.";
+const INT_004_ES: &str = "{brand_short}: {brand} no es un servicio de emergencia. Si huele a gas, ve humo o fuego, suena una alarma de monóxido de carbono (CO) o hay un cable de luz caído, saque a todos y llame al 911 desde afuera. Responda SEGURO cuando esté a salvo.";
 /// Advice D-436 removed: no cause, symptom, health, heat, water, shutoff, utility or appliance line.
 const NO_ADVICE: &str = "211|cooling|heat|water|shutoff|shut off|breaker|utility|unisource|epcor|\
     propane company|symptom|headache|dizzy|doctor|window|appliance|agua|calor|enfriamiento|llave";
