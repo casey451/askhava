@@ -31562,7 +31562,6 @@
    ],
    "reads": [
     "docs/architecture.md",
-    "docs/code-docs.md",
     "docs/spec/security.md",
     "docs/brains/rust-production.md"
    ],
@@ -31597,7 +31596,7 @@
    "budget": {
     "files": 6,
     "lines": 550,
-    "context_pct": 42
+    "context_pct": 45
    },
    "checks": [
     "Ci",
@@ -32353,7 +32352,6 @@
    ],
    "reads": [
     "docs/architecture.md",
-    "docs/code-docs.md",
     "docs/spec/accessibility.md",
     "docs/spec/security.md",
     "docs/spec/businesses.md",
@@ -32382,7 +32380,7 @@
    "budget": {
     "files": 7,
     "lines": 560,
-    "context_pct": 32
+    "context_pct": 45
    },
    "checks": [
     "Ci",
