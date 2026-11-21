@@ -3571,6 +3571,9 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 Items kept for after launch under the scope freeze (D-4824). Each is a note, not a task.
 
 - **Code digests coverage:** the digest tasks (T556 to T558) cover about 0.9 MB of the about 1.58 MB of code to summarise after D-3357; T514 or T142 weighs whether that matters before the handover.
+- **Open PaymentIntents at Stripe (D-5158):** Ended picks leave their unconfirmed PaymentIntent open at Stripe (all `end_intent_unless_charging` callers and `end_pick`). No funds are held and a late success is auto-refunded (FEE-021), but they show as Incomplete in the Stripe dashboard. Consider a best-effort `cancel_payment_intent` in T132 or after launch.
+- **Scrollable tables on finished pages (D-5159):** the tables in `scorecard.html` (two), `money_view.html` and `intake_report.html` are not yet wrapped in a focusable scroll region as the business page's fee table is; their tasks are done, so the one-line wrapper waits for after launch.
+- **Keyword reading with AI off (D-5160):** all other open categories remain unreachable by keyword with AI off; bare "moving", "turnover", "snowbird" and "vacation rental" were left out to avoid false two-job reads.
 
 ## The monthly backup test checks the backup's record (D-4835)
 

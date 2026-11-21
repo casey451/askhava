@@ -117,6 +117,10 @@
   "D-5081": {
    "by": "D-5117",
    "cut": "and the line's approval"
+  },
+  "D-4763": {
+   "by": "D-5158",
+   "cut": " and cancels it at Stripe"
   }
  }
 }
