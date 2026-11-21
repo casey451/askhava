@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T04:35:05Z by runner 4942695dbe65 (actions).
+Updated 2026-11-21T04:35:38Z by runner 7040ed647e64 (actions).
 
 **Building: T614 in progress since 03:43Z; 569 of 726 done; week 64% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-21T04:35:05Z by runner 4942695dbe65 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 4: T614 claimed 03:43Z, lease until 06:43Z; lane 5: T777 claimed 04:26Z, lease until 07:26Z; lane 6: T755 claimed 04:14Z, lease until 07:14Z
 - **Week:** 64% used, 64.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:34Z, 0 min before this update
-- **Keeper:** last ran 04:29Z, next wake 06:46Z
+- **Last run:** 04:35Z, 0 min before this update
+- **Keeper:** last ran 04:35Z, next wake 04:55Z
 
 ## Needs attention
 - BLOCKED T304: plan gap reported: PLAN GAP: app/portals/templates/owner_audit_log.html (owned by T205) and app/portals/templates/health.html (owned by T476) fail Ally once served: bare <table> at owner_audit_log.html:8, health.html:19 and :28 with no role=region tabindex=0 aria-label wrapper (as app/site/templates/business.html:43); reflow_spacing.spec.ts A11Y-008/009 fail at 320px, plus color-contrast incomplete on audit log td:nth-child(5). T304 Scope (kit/prompts/T304.md:35-51) does not allow editing them. Reviewer confirmed ownership via kit/tasks.json and the missing wrappers.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T304 --plan-fix D-### --reason "..."` (D-2859)
@@ -21,7 +21,7 @@ Worker: matching.rs:52 keyword RULES cover only plumbing, HVAC, electrical, hand
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T754 (since 2026-11-21T02:52:28Z, no attempt used; a plan change fixes it): outside ownership: app/adapters/src/payments.rs, stand_ins/stripe.py, stand_ins/server.py
 - PLAN GAP T776 (since 2026-11-21T04:00:50Z, no attempt used; a plan change fixes it): outside ownership: app/intake/src/matching.rs
-- Strict plan check red: 56 problem(s) on tasks still to run (+444 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 55 problem(s) on tasks still to run (+444 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
