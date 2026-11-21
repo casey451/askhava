@@ -1,7 +1,7 @@
 """Checks on one change set (a task branch or a plan change) against its base commit.
 
 Run by `Ci` on every push and pull request, comparing the head against the merge base
-with `main`. It makes four governance rules machine-enforced (docs/governance.md):
+with `main`. It makes six governance rules machine-enforced (docs/governance.md):
 
 1. **Task branches stay inside their task.** A branch named `claude/task/T###-<slug>`
    may change only the paths task T### owns in `kit/tasks.json` plus the shared paths,
@@ -24,6 +24,14 @@ with `main`. It makes four governance rules machine-enforced (docs/governance.md
    or locked path must carry a `Plan-Change: D-###` trailer on one of its commits naming one
    of the new decision entries. (Until Claude runs under its own GitHub identity, this proves
    intent, not authorship; docs/governance.md section 2 records that gap.)
+6. **An over-limit crate guide is trimmed when the task is alone in its crate (D-5080).**
+   On `claude/task/T###` branches only: the claim base is the parent of the oldest commit in
+   `git rev-list --first-parent HEAD --not <base>`. For each crate the task writes (its owned
+   `app/<crate>/` paths plus its `module`), if the claim base's `app/<crate>/CLAUDE.md` is over
+   7,392 bytes, the head's must be at most 5,500. Skipped when the claim base's own copy of this
+   script lacks the rule (tasks claimed earlier are not held), when the claim base cannot be
+   found, and on other branches. It compares with the claim base, so an update merge of `main`
+   never trips it.
 
 Diffs are listed with `--no-renames`, so a protected file moved into an owned path shows as
 a deletion.
@@ -80,6 +88,10 @@ def base_graph(root: Path) -> dict:
 
 
 BASE: list[str] = []
+GUIDE_OVER = 7392
+GUIDE_TRIMMED = 5500
+RULE6_MARK = "def crate_guide_trim_check"
+APP_PATH = re.compile(r"^app/(?P<crate>[^/]+)/")
 
 
 def task_paths_check(root: Path, branch: str, changed: list[str]) -> list[str]:
@@ -174,6 +186,43 @@ def task_for_branch(root: Path, branch: str) -> dict | None:
         return None
     graph = base_graph(root)
     return next((t for t in graph["tasks"] if t["id"] == m.group("id")), None)
+
+
+def claim_base(root: Path, base_ref: str) -> str | None:
+    """The parent of the task's oldest first-parent commit not on the base ref, or None."""
+    try:
+        commits = git(root, "rev-list", "--first-parent", "HEAD", "--not", base_ref).split()
+        return git(root, "rev-parse", f"{commits[-1]}^").strip() if commits else None
+    except subprocess.CalledProcessError:
+        return None
+
+
+def crate_guide_trim_check(root: Path, branch: str, base_ref: str) -> list[str]:
+    """Rule 6 (D-5080): a crate guide over 7,392 bytes at the claim base is at most 5,500 at the head."""
+    task = task_for_branch(root, branch)
+    if task is None:
+        return []
+    claim = claim_base(root, base_ref)
+    if claim is None or RULE6_MARK not in (show(root, claim, "scripts/check_pr_change.py") or ""):
+        return []
+    crates = {m.group("crate") for p in task.get("owns", []) if (m := APP_PATH.match(p))}
+    if task.get("module"):
+        crates.add(task["module"])
+    errors = []
+    for crate in sorted(crates):
+        path = f"app/{crate}/CLAUDE.md"
+        before, after = show(root, claim, path), show(root, "HEAD", path)
+        if before is None or after is None:
+            continue
+        old, new = len(before.encode("utf-8")), len(after.encode("utf-8"))
+        if old > GUIDE_OVER and new > GUIDE_TRIMMED:
+            errors.append(
+                f"crate guide not trimmed: {path} was {old} bytes at the claim base (over {GUIDE_OVER}) and is {new} now "
+                f"(limit {GUIDE_TRIMMED}); D-5080: move the oldest `## Never break` bullets' detail word for word to NOTES.md "
+                f"as `(never N)` lines, keep each invariant and its guarding test, end the bullet \"More: `(never N)` in NOTES.md.\", "
+                f"run `python3 scripts/split_crate_doc.py --verify origin/main app/{crate}`"
+            )
+    return errors
 
 
 def lock_rewrite_check(root: Path, branch: str, changed: list[str]) -> list[str]:
@@ -277,6 +326,7 @@ def main(argv: list[str] | None = None) -> int:
     errors += decisions_not_taken_on_main(base_dec, show(root, args.base, DECISIONS), head_dec)
     added = new_decisions(base_dec, head_dec)
     errors += locked_change_check(root, base, changed, added)
+    errors += crate_guide_trim_check(root, args.branch, args.base)
     errors += lock_rewrite_check(root, args.branch, changed)
     errors += plan_change_trailer_check(root, args.branch, changed, added, base)
     spec_ids, spec_errors = spec_changes(root, base, changed)
