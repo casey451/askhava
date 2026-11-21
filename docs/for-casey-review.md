@@ -3675,3 +3675,8 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 - **New keywords with AI off.** Moving: movers, moving help, mudanza fuera, necesito mudanza, hacer una mudanza, ayuda con mudanza. Home watch: home watch, house check, house checks, cuidar la casa. Turnover cleaning: turnover clean, turnover cleaning, turnover cleaner, airbnb cleaning, vrbo cleaning.
 - **Worth knowing.** A moving text that uses a state name another way ("by the Colorado River", "Washington Street") is refused too; she can text again without it. Tell us if a nearby town is missing from the list.
 - **Nothing needs you now.**
+## Fable's usage-limit fallback has a runner bug (D-5190, November 21)
+
+- **What happened.** When Fable hit its usage limit, the runner was meant to re-run the task on Opus without counting an attempt. It did not record that switch, because its "was this a refusal?" check does not recognise a usage-limit (429) message (`runner/model_window.py` `REFUSAL`, used at `runner/cycle.py:3330` and `runner/__main__.py:493`). T615 lost a good attempt to it.
+- **Now.** Once D-5189 (the switch off Fable, PR #1277) merges, no task runs on Fable and the bug cannot bite. T615 gets one more attempt after its flaky test is fixed (T789) and that switch has merged.
+- **Before Fable is switched back on**, a harness task must make that check accept usage-limit and rate-limit text.
