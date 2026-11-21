@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-21T20:13:34Z by runner a71c79b4462c (actions).
+Updated 2026-11-21T20:13:51Z by runner a71c79b4462c (actions).
 
 **Building: T565 in progress since 19:19Z; 587 of 734 done; week 34% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 587 of 734 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T565 claimed 19:19Z, lease until 22:19Z; lane 3: T707 claimed 18:35Z, lease until 21:35Z; lane 5: T600 claimed 20:12Z, lease until 23:12Z; lane 7: T754 claimed 18:25Z, lease until 21:25Z
+- **Lane:** lane 1: T565 claimed 19:19Z, lease until 22:19Z; lane 5: T600 claimed 20:12Z, lease until 23:12Z; lane 7: T754 claimed 18:25Z, lease until 21:25Z
 - **Week:** 34% used, 121.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 20:12Z, 0 min before this update
 - **Keeper:** last ran 19:43Z, next wake 20:03Z
@@ -21,6 +21,7 @@ Updated 2026-11-21T20:13:34Z by runner a71c79b4462c (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T707 | server: an emergency pick's address re-release waits while s | MERGE_PENDING | 3 | 97 min | 20:13Z | Reviewer after the findings round still ends REVIEW-VERDICT: FINDINGS (head 2f9bf610c3700bb46a4670ade27d67afda63591a). / |
 | T690 | businesses and server: a sign-up waiting on "That number is  | MERGE_PENDING | 1 | 2 h 30 min | 19:27Z |  |
 | T791 | Tests and templates (harness): three Spanish stay-on texts r | done | 1 | 36 min | 19:21Z |  |
 | T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 1 | 4 min | 19:13Z | PLAN GAP: no production PictureTextMedia / Twilio media DELETE exists (only the test fake at tests/integration/tests/int |
@@ -34,7 +35,7 @@ Updated 2026-11-21T20:13:34Z by runner a71c79b4462c (actions).
 | T304 | server and portals: the owner refund review, the audit log v | done | 2 | 2 h 44 min | 15:18Z | PLAN GAP: app/portals/templates/owner_audit_log.html (owned by T205) and app/portals/templates/health.html (owned by T47 |
 | T776 | intake: a move out of Arizona and a property-management requ | done | 3 | 99 min | 14:37Z | PLAN GAP: outside ownership: app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml) / Worker: D-5160's three tr |
 | T655 | businesses: an unknown ROC license status warns at 24 hours, | QUEUED | 1 | 2 h 36 min | 13:24Z |  |
-| T707 | server: an emergency pick's address re-release waits while s | QUEUED | 2 | 77 min | 12:31Z | Reviewer after the findings round still ends REVIEW-VERDICT: FINDINGS (head 2f9bf610c3700bb46a4670ade27d67afda63591a). / |
+| T707 | server: an emergency pick's address re-release waits while s | QUEUED | 2 | 77 min | 12:31Z |  |
 | T581 | messaging, intake and server: a failed text's call-back is d | done | 1 | 76 min | 12:03Z |  |
 | T615 | site and server: a styled 404 page for unknown paths, the fa | BLOCKED | 3 | 2 h 11 min | 11:53Z |  |
 | T754 | portals and payments: a $0 Confirm after a PaymentIntent was | check_failed | 3 | 70 min | 10:58Z | PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and |
@@ -128,9 +129,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T565 (lease until 2026-11-21T22:19:14Z)
-- lane 3: T707 (lease until 2026-11-21T21:35:59Z)
 - lane 5: T600 (lease until 2026-11-21T23:12:21Z)
 - lane 7: T754 (lease until 2026-11-21T21:25:20Z)
 
 ## Last usage reading
-- {"task": "T690", "at": "2026-11-21T19:27:49Z", "output_tokens": 100580, "input_tokens": 295, "cache_creation_input_tokens": 333956, "cache_read_input_tokens": 14965582}
+- {"task": "T707", "at": "2026-11-21T20:13:31Z", "cache_creation_input_tokens": 155704, "input_tokens": 125, "cache_read_input_tokens": 4231023, "output_tokens": 35810}

@@ -96325,7 +96325,7 @@
    "deps": [
     "T408"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 2,
    "slug": "safe-mode-address-in",
    "type": "build",
@@ -96430,6 +96430,29 @@
        "turns": 62
       }
      }
+    },
+    {
+     "attempt": 3,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 77,
+     "head_sha": "a71c79b4462cd3978c5393e2976443103097d282",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-21T18:35:59Z",
+     "ended_at": "2026-11-21T20:13:31Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 3367170,
+       "turns": 43
+      },
+      "reviewer": {
+       "tokens": 1055492,
+       "turns": 19
+      }
+     }
     }
    ],
    "reviewed_sha": "d51d96d088c4e636fa1116da2d18d2cd69a8de48",
@@ -96442,18 +96465,13 @@
    "branch": "claude/task/T707-safe-mode-address-in",
    "auto_merge": {
     "enabled": true,
-    "why": "auto-merge on #1154 (gh pr merge)",
-    "head": "07d18de27b3ca5807d99604c451b43d5820dcb09"
+    "why": "auto-merge on #1296 (gh pr merge)",
+    "head": "d51d96d088c4e636fa1116da2d18d2cd69a8de48"
    },
    "last_failure": "Reviewer after the findings round still ends REVIEW-VERDICT: FINDINGS (head 2f9bf610c3700bb46a4670ade27d67afda63591a).\n1. app/server/src/release_sink.rs:372 (money): Settled::Was plus a final job is treated as never released without checking for a release row; a retry after a failed release (D-1739) with the job cancelled meanwhile would queue a refund and High alert for an already released introduction. Fix: for Was, check picks::api::is_released (app/picks/src/release.rs:389) first and go to release_settled (Already); add a case.\n2. app/server/src/release_sink.rs:392 (money test coverage): the paid-pick refund branch of rerelease (D-4793) runs in no test; deleting the moved_on_success call leaves tests green. Fix: add a paid-pick case to TD-OPS-48 (address run deferred, job cancelled): one late-success refund, no release, still one on a rerun.",
    "runner_closed_prs": [
     1154
    ],
-   "wip_claim": {
-    "attempt": 3,
-    "remote_sha": "55c9752c35d6268a6adcd269f94e6ebb6057ec7c"
-   },
-   "head_check_since": null,
    "update_merges": [
     {
      "from": "a71c79b4462cd3978c5393e2976443103097d282",
@@ -104693,12 +104711,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T690",
-   "at": "2026-11-21T19:27:49Z",
-   "output_tokens": 100580,
-   "input_tokens": 295,
-   "cache_creation_input_tokens": 333956,
-   "cache_read_input_tokens": 14965582
+   "task": "T707",
+   "at": "2026-11-21T20:13:31Z",
+   "cache_creation_input_tokens": 155704,
+   "input_tokens": 125,
+   "cache_read_input_tokens": 4231023,
+   "output_tokens": 35810
   },
   "source": "session_reading 2026-11-21T19:43:26Z (week)",
   "by_task": {
@@ -110614,15 +110632,15 @@
     "estimated_bytes": 492630,
     "estimated_tokens": 1434813,
     "usage_counting": "message_id",
-    "cache_read_input_tokens": 16879825,
-    "input_tokens": 491,
-    "output_tokens": 136665,
-    "cache_creation_input_tokens": 558831,
-    "worker_tokens": 11672408,
-    "worker_turns": 140,
-    "reviewer_tokens": 5903404,
-    "reviewer_turns": 103,
-    "last_model": "claude-fable-5-2"
+    "cache_read_input_tokens": 21110848,
+    "input_tokens": 616,
+    "output_tokens": 172475,
+    "cache_creation_input_tokens": 714535,
+    "worker_tokens": 15039578,
+    "worker_turns": 183,
+    "reviewer_tokens": 6958896,
+    "reviewer_turns": 122,
+    "last_model": "claude-opus-5-5"
    },
    "T726": {
     "estimated_bytes": 364389,
@@ -111732,11 +111750,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-21T15:38:10Z",
-    "tokens": 8020912
+    "tokens": 8635653
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 121554775
+    "tokens": 122169516
    }
   },
   "session_reading": {
@@ -111747,7 +111765,7 @@
    }
   }
  },
- "updated_at": "2026-11-21T20:13:34Z",
+ "updated_at": "2026-11-21T20:13:51Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
