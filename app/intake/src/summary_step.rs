@@ -322,15 +322,29 @@ async fn watch(tx: &mut PgConnection, t: &CardTimer, now: Timestamp) -> Result<(
     queue_timer(tx, &next).await
 }
 
-/// The [`CARD_TIMER_KIND`] handler `server` registers: [`card_timer_step`] on the payload.
+/// The [`CARD_TIMER_KIND`] handler: [`run_card_timer_at`] at the wall clock.
+///
+/// # Errors
+///
+/// As [`run_card_timer_at`].
+pub async fn run_card_timer(pool: PgPool, task: Claimed) -> Result<(), HandlerError> {
+    run_card_timer_at(pool, task, SystemClock.now()).await
+}
+
+/// The [`CARD_TIMER_KIND`] handler `server` registers on the worker clock (INT-041, D-4310):
+/// [`card_timer_step`] on the payload at `now`, so a run at or after its due time sends the card.
 ///
 /// # Errors
 ///
 /// A fixed [`HandlerError`] sentence on a bad payload or a failed step.
-pub async fn run_card_timer(pool: PgPool, task: Claimed) -> Result<(), HandlerError> {
+pub async fn run_card_timer_at(
+    pool: PgPool,
+    task: Claimed,
+    now: Timestamp,
+) -> Result<(), HandlerError> {
     let timer = parse(&task.payload).ok_or(HandlerError(BAD_PAYLOAD))?;
     let mut db = pool.acquire().await.map_err(|_| HandlerError(FAILED))?;
-    card_timer_step(&mut db, &timer, SystemClock.now())
+    card_timer_step(&mut db, &timer, now)
         .await
         .map(|_| ())
         .map_err(|_| HandlerError(FAILED))

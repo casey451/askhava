@@ -56,12 +56,14 @@ pub use crate::channel_preference::{
     ChannelError, NoticeChannel, NoticeRecipient, notice_channel, notice_recipients,
     set_notice_channel,
 };
-pub use crate::complaint_holds::{COMPLAINT_HOLD_KIND, queue_complaint_holds, run_complaint_holds};
+pub use crate::complaint_holds::{
+    COMPLAINT_HOLD_KIND, queue_complaint_holds, run_complaint_holds, run_complaint_holds_at,
+};
 pub use crate::complaints::{
     BOX_CLOSED_KIND, CaseyView, Complaint, ComplaintError, DIGEST_ALERT, NewComplaint, PAUSE_COUNT,
     PAUSE_WINDOW_DAYS, PHONE_LINKED_KIND, REPLY_BOX, REPLY_MAX, Recorded, ReplyFacts, SAFETY_ALERT,
     complaints, for_casey, has_safety_word, list_closed, phone_linked_line, record_complaint,
-    reply, run_box_closed,
+    reply, run_box_closed, run_box_closed_at,
 };
 pub use crate::confirm_terms::{
     BUSINESS_TERMS_DOCUMENT, ConfirmTerms, confirm_assent_line, record_confirm_terms,

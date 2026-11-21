@@ -45,15 +45,29 @@ pub enum AskedAgain {
     NoRequest,
 }
 
-/// The `picks.address_needed` handler (INT-029, TD-INT-34): payload `{"job", "pick"}`, run at
-/// the system clock's now. Safe to run twice: the mark makes the second run ask nothing.
+/// The `picks.address_needed` handler: [`run_address_needed_at`] at the system clock's now.
 ///
 /// # Errors
-/// A [`HandlerError`] for a malformed payload or a failed step (the task is retried).
+/// As [`run_address_needed_at`].
 pub async fn run_address_needed(
     pool: PgPool,
     secret: SecretString,
     task: Claimed,
+) -> Result<(), HandlerError> {
+    run_address_needed_at(pool, secret, task, SystemClock.now()).await
+}
+
+/// The `picks.address_needed` handler `server` registers on the worker clock (INT-027, INT-029,
+/// TD-INT-34, D-4310): payload `{"job", "pick"}`, [`ask_again`] at `now`. Safe to run twice: the
+/// mark makes the second run ask nothing.
+///
+/// # Errors
+/// A [`HandlerError`] for a malformed payload or a failed step (the task is retried).
+pub async fn run_address_needed_at(
+    pool: PgPool,
+    secret: SecretString,
+    task: Claimed,
+    now: Timestamp,
 ) -> Result<(), HandlerError> {
     let id = |key: &str| {
         task.payload[key]
@@ -64,7 +78,7 @@ pub async fn run_address_needed(
         return Err(HandlerError(BAD_PAYLOAD));
     };
     let mut db = pool.acquire().await.map_err(|_| HandlerError(FAILED))?;
-    ask_again(&mut db, &secret, (job, pick), SystemClock.now())
+    ask_again(&mut db, &secret, (job, pick), now)
         .await
         .map(|_| ())
         .map_err(|_| HandlerError(FAILED))
