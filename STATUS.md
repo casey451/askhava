@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T09:47:41Z by runner a251f571cd3c (actions).
+Updated 2026-11-21T09:48:03Z by runner a251f571cd3c (actions).
 
 **Building: T754 in progress since 09:47Z; 576 of 726 done; week 73% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -88,7 +88,6 @@ Worker: D-5160's three trade-only rules (job_type: None) give candidate <trade>_
 | T614 | site: the V6 header in base.html (links, the Menu in the pag | BLOCKED | 1 | 16 min | 11:39Z |  |
 | T463 | businesses and server: "Busy for <n> days" pauses job cards  | done | 1 | 58 min | 11:16Z |  |
 | T768 | runner tests (harness): the seed test fakes free disk, so a  | done | 1 | 22 min | 10:38Z |  |
-| T573 | messaging and server: queued business texts are addressed to | QUEUED | 2 | 53 min | 09:48Z |  |
 
 ### Plan and harness merges on main
 - none
