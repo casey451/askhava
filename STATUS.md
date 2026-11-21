@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T07:40:43Z by runner fabfe83d9707 (actions).
+Updated 2026-11-21T07:56:15Z by runner fabfe83d9707 (actions).
 
 **Building: T674 in progress since 07:26Z; 575 of 726 done; week 70% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-21T07:40:43Z by runner fabfe83d9707 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 7: T674 claimed 07:26Z, lease until 10:26Z
 - **Week:** 70% used, 54.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:40Z, 0 min before this update
+- **Last run:** 07:41Z, 15 min before this update
 - **Keeper:** last ran 07:40Z, next wake 10:28Z
 
 ## Needs attention
@@ -20,7 +20,7 @@ Updated 2026-11-21T07:40:43Z by runner fabfe83d9707 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T615 | site and server: a styled 404 page for unknown paths, the fa | MERGE_PENDING | 1 | 55 min | 07:33Z |  |
+| T615 | site and server: a styled 404 page for unknown paths, the fa | check_failed | 1 | 55 min | 07:33Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T674 | server: the homeowner's photo upload page and the short-live | resync | 2 | 2 h 38 min | 07:19Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
 | T754 | portals and payments: a $0 Confirm after a PaymentIntent was | BLOCKED | 2 | 46 min | 06:41Z | PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and |
 | T755 | messaging: a sole opt-out word counts with any spacing ("STO | done | 1 | 66 min | 05:21Z |  |
@@ -91,8 +91,6 @@ Updated 2026-11-21T07:40:43Z by runner fabfe83d9707 (actions).
 | T116 | Stage 0.5 static page set and the DNS records file | done | 1 | 50 min | 08:48Z |  |
 | T669 | picks: "Can't take it" and a business leaving end a pick in  | done | 2 | 80 min | 08:32Z | runner smoke red on c403ea4898ac (bash scripts/smoke.sh, D-3530): / line = cache.seed(tmp_path, smoke, debug, lambda arg |
 | T672 | intake: the dispatcher asks "How soon?", the night count and | QUEUED | 2 | 89 min | 08:05Z |  |
-| T561 | server and portals: the homeowner's "Download my data" and h | done | 1 | 33 min | 07:51Z |  |
-| T762 | runner and workflow (harness): fix-round workers commit with | done | 1 | 68 min | 07:44Z |  |
 
 ### Plan and harness merges on main
 - none
