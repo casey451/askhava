@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T03:04:10Z by runner e556a808702e (actions).
+Updated 2026-11-21T03:04:51Z by runner e556a808702e (actions).
 
 **Building: T780 in progress since 02:59Z; 566 of 726 done; week 61% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-21T03:04:10Z by runner e556a808702e (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T780 claimed 02:59Z, lease until 05:59Z; lane 3: T781 claimed 02:17Z, lease until 05:17Z; lane 5: T304 claimed 02:48Z, lease until 05:48Z; lane 6: T684 claimed 02:16Z, lease until 05:16Z
 - **Week:** 61% used, 66.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:00Z, 4 min before this update
+- **Last run:** 03:04Z, 0 min before this update
 - **Keeper:** last ran 02:58Z, next wake 03:18Z
 
 ## Needs attention
@@ -105,7 +105,6 @@ T777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 2 | 32 min | 04:08Z |  |
 | T747 | intake and jobs: the homeowner's INT-029 emergency choice ma | done | 1 | 71 min | 03:25Z |  |
 | T726 | Runner (harness): a failed attempt's unpushed work can be ke | resync | 2 | 2 h 16 min | 03:22Z |  |
-| T617 | site: DM Sans from one weight-axis variable file (smaller th | BLOCKED | 1 | 2 min | 03:04Z |  |
 
 ### Plan and harness merges on main
 - none
