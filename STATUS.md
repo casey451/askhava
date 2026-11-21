@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-21T02:58:39Z by runner 5b6d2a6f4043 (actions).
+Updated 2026-11-21T03:00:00Z by runner 5b6d2a6f4043 (actions).
 
-**Building: T781 in progress since 02:17Z; 566 of 726 done; week 61% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T780 in progress since 02:59Z; 566 of 726 done; week 61% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 566 of 726 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T781 claimed 02:17Z, lease until 05:17Z; lane 5: T304 claimed 02:48Z, lease until 05:48Z; lane 6: T684 claimed 02:16Z, lease until 05:16Z; lane 7: T775 claimed 01:29Z, lease until 04:29Z
-- **Week:** 61% used, 70.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:58Z, 0 min before this update
+- **Lane:** lane 1: T780 claimed 02:59Z, lease until 05:59Z; lane 3: T781 claimed 02:17Z, lease until 05:17Z; lane 5: T304 claimed 02:48Z, lease until 05:48Z; lane 6: T684 claimed 02:16Z, lease until 05:16Z; lane 7: T775 claimed 01:29Z, lease until 04:29Z
+- **Week:** 61% used, 66.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 02:59Z, 0 min before this update
 - **Keeper:** last ran 02:58Z, next wake 03:18Z
 
 ## Needs attention
@@ -140,7 +140,7 @@ T777's approved_at filter in sign_in_lines fails the T280-owned test d_3562_the_
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-21T02:45:59Z (week)): week: 123.9M used, 70.1M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T10:47:13Z.
+- Pacing (session_reading 2026-11-21T02:58:07Z (week)): week: 127.3M used, 66.7M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-05T10:57:33Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -155,7 +155,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T780 (lease until 2026-11-21T05:59:39Z)
 - lane 3: T781 (lease until 2026-11-21T05:17:31Z)
 - lane 5: T304 (lease until 2026-11-21T05:48:33Z)
 - lane 6: T684 (lease until 2026-11-21T05:16:31Z)
