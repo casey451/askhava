@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-21T17:12:01Z by runner d04b0752db50 (actions).
+Updated 2026-11-21T17:21:51Z by runner 04d214018f8f (actions).
 
-**Building: T608 in progress since 15:59Z; 583 of 730 done; week 31% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T608 in progress since 15:59Z; 583 of 731 done; week 31% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 583 of 730 build tasks (owner gates not counted)
+- **Tasks done:** 583 of 731 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T608 claimed 15:59Z, lease until 18:59Z; lane 2: T690 claimed 16:56Z, lease until 19:56Z; lane 4: T615 claimed 17:10Z, lease until 20:10Z
 - **Week:** 31% used, 128.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:07Z, 4 min before this update
+- **Last run:** 17:21Z, 0 min before this update
 - **Keeper:** last ran 16:58Z, next wake 19:02Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 59 problem(s) on tasks still to run (+469 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 38 problem(s) on tasks still to run (+461 on DONE tasks); first: T624: stored context_pct 12% but it measures 17%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -77,38 +77,37 @@ Updated 2026-11-21T17:12:01Z by runner d04b0752db50 (actions).
 | T743 | messaging and privacy: opt-out listings are re-keyed to the  | QUEUED | 1 | 112 min | 18:17Z |  |
 | T573 | messaging and server: queued business texts are addressed to | done | 4 | 41 min | 18:01Z | model claude-opus-5-5 ran, task names claude-fable-5-2 / re-queued after plan fix D-4969: Coverage time-limit cancel, fi |
 | T686 | businesses and server: a 90-day-old inbox or alert Yes gets  | done | 1 | 76 min | 17:39Z |  |
-| T672 | intake: the dispatcher asks "How soon?", the night count and | done | 3 | 52 min | 17:14Z | merging main into the reviewed head conflicts in docs/for-casey-review.md; a resync merges it in on this attempt (D-891) |
 
 ### Plan and harness merges on main
 - none
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 364 of 735 (49.5%) · partial 352 · unstarted 19
+**Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
 **Tasks merged (throughput only):** 583 of 730
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 18 | 17 | 0 | 35 |
-| ai | 8 | 18 | 3 | 29 |
-| businesses | 23 | 34 | 1 | 58 |
-| calls | 15 | 10 | 0 | 25 |
-| consent | 17 | 18 | 0 | 35 |
-| fees | 25 | 27 | 0 | 52 |
-| intake | 12 | 31 | 0 | 43 |
-| job-cards | 12 | 12 | 0 | 24 |
-| licensing | 32 | 16 | 0 | 48 |
-| lifecycle | 21 | 7 | 0 | 28 |
-| messaging | 26 | 19 | 0 | 45 |
-| ops-recovery | 13 | 29 | 12 | 54 |
-| privacy | 10 | 21 | 0 | 31 |
-| quiet-hours | 3 | 6 | 0 | 9 |
-| quotes-pick | 28 | 28 | 0 | 56 |
-| recurring | 10 | 1 | 0 | 11 |
-| security | 13 | 39 | 3 | 55 |
-| terms | 29 | 6 | 0 | 35 |
-| website | 20 | 10 | 0 | 30 |
-| wording | 29 | 3 | 0 | 32 |
+| accessibility | 0 | 35 | 0 | 35 |
+| ai | 0 | 26 | 3 | 29 |
+| businesses | 0 | 57 | 1 | 58 |
+| calls | 0 | 25 | 0 | 25 |
+| consent | 0 | 35 | 0 | 35 |
+| fees | 0 | 52 | 0 | 52 |
+| intake | 0 | 43 | 0 | 43 |
+| job-cards | 0 | 24 | 0 | 24 |
+| licensing | 0 | 48 | 0 | 48 |
+| lifecycle | 0 | 28 | 0 | 28 |
+| messaging | 0 | 45 | 0 | 45 |
+| ops-recovery | 0 | 42 | 12 | 54 |
+| privacy | 0 | 31 | 0 | 31 |
+| quiet-hours | 0 | 9 | 0 | 9 |
+| quotes-pick | 0 | 56 | 0 | 56 |
+| recurring | 0 | 11 | 0 | 11 |
+| security | 0 | 52 | 3 | 55 |
+| terms | 0 | 35 | 0 | 35 |
+| website | 0 | 30 | 0 | 30 |
+| wording | 0 | 32 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -121,7 +120,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 226 of 310 done
+- stage 5: 226 of 311 done
 - stage 6: 0 of 67 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
