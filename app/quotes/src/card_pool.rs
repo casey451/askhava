@@ -19,6 +19,12 @@
 //! joins the pool by the same reads and skips, so a send scans `businesses.service_area` once,
 //! whatever the number of businesses with one. A job with no
 //! ZIP or no centroid, or a business with no service area or a base with no centroid, is towns only.
+//!
+//! T654 (CARD-015, LIC-008, D-4310, D-5117): a business keeps its ROC classes only while its
+//! latest daily check overall is Active (`licensing::api::latest_check_allows_card`).
+//! [`card_pool_at`], the card senders' entry, also needs that check under LIC-008's 72 hours old
+//! at the caller's `now`; plain [`card_pool`] (coverage counts and display names) has no clock
+//! and does not test the age. Neither reads the wall clock or the database's.
 
 use std::collections::BTreeSet;
 
@@ -27,8 +33,12 @@ use askhava_businesses::api::{
     job_types, may_get_cards, service_areas, towns,
 };
 use askhava_catalog::api::{Category, Centroid, category, service_area_towns, zip_location};
-use askhava_licensing::api::{CityRecord, ClassMap, Job, LicenseKind};
+use askhava_licensing::api::{
+    CityRecord, ClassMap, FailureLimits, Freshness, Job, LicenseKind, arizona_day,
+    latest_check_allows_card,
+};
 use askhava_ops::api::{Switch, is_paused};
+use jiff::{SignedDuration, Timestamp};
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
@@ -73,9 +83,48 @@ fn biz<T>(result: Result<T, BusinessesError>) -> Result<T, QuotesError> {
 /// [`QuotesError::Business`] when a business cannot be read.
 pub async fn card_pool(
     conn: &mut PgConnection,
-    ((town, zip), facts): ((&str, Option<&str>), &CardFacts),
+    job: ((&str, Option<&str>), &CardFacts),
     text: String,
     band_floor_cents: Option<u64>,
+) -> Result<CardPool, QuotesError> {
+    let any_age = Freshness {
+        checked_since: Timestamp::UNIX_EPOCH,
+        listed_since: arizona_day(Timestamp::UNIX_EPOCH),
+    };
+    pool_for(conn, job, (text, band_floor_cents), any_age).await
+}
+
+/// CARD-015, LIC-008, D-4310, D-5117: [`card_pool`] for a card send at the caller's `now` (the
+/// worker clock): a business keeps its ROC classes only when its latest daily check is Active
+/// and was made after `now` less LIC-008's 72 hours (`FailureLimits::default()`, D-5123) against
+/// a list dated on or after that instant's Arizona day, so ROC cards stop at the check's
+/// `checked_at` plus 72 hours exactly.
+///
+/// # Errors
+/// As [`card_pool`].
+pub async fn card_pool_at(
+    conn: &mut PgConnection,
+    job: ((&str, Option<&str>), &CardFacts),
+    text: String,
+    band_floor_cents: Option<u64>,
+    now: Timestamp,
+) -> Result<CardPool, QuotesError> {
+    let pause_after = FailureLimits::default().pause_after;
+    let since = now.saturating_sub(pause_after).unwrap_or(now);
+    let fresh = Freshness {
+        checked_since: since + SignedDuration::from_micros(1),
+        listed_since: arizona_day(since),
+    };
+    pool_for(conn, job, (text, band_floor_cents), fresh).await
+}
+
+/// The shared body of [`card_pool`] and [`card_pool_at`]: `fresh` is how new a business's latest
+/// Active daily check must be for it to keep its ROC classes.
+async fn pool_for(
+    conn: &mut PgConnection,
+    ((town, zip), facts): ((&str, Option<&str>), &CardFacts),
+    (text, band_floor_cents): (String, Option<u64>),
+    fresh: Freshness,
 ) -> Result<CardPool, QuotesError> {
     let stored = category(conn, &facts.category)
         .await
@@ -100,7 +149,7 @@ pub async fn card_pool(
         None => None,
     };
     let (ids, reach) = reached(conn, &place.code, job_at).await?;
-    let businesses = pooled(conn, &ids, fit).await?;
+    let businesses = pooled(conn, &ids, fit, fresh).await?;
     let pauses = owner_pauses(conn, &stored).await?;
     let fee_free = facts.candidates.iter().all(|t| fee_free(&stored, t));
     Ok(CardPool {
@@ -209,10 +258,11 @@ async fn pooled(
     conn: &mut PgConnection,
     ids: &[Uuid],
     fit: JobFit,
+    fresh: Freshness,
 ) -> Result<Vec<Pooled>, QuotesError> {
     let mut pool = Vec::new();
     for &id in ids {
-        if let Some(one) = one_business(conn, id).await? {
+        if let Some(one) = one_business(conn, id, fresh).await? {
             pool.push(one);
         }
     }
@@ -223,8 +273,15 @@ async fn pooled(
 
 /// One business as matching reads it, or `None` when it may not get cards now (CARD-016,
 /// CON-020, D-1715). An active business has passed its identity check; its license standing is
-/// the holder's (D-3181).
-async fn one_business(conn: &mut PgConnection, id: Uuid) -> Result<Option<Pooled>, QuotesError> {
+/// the holder's (D-3181), except that its ROC classes are kept only when its latest daily check
+/// overall is Active and within `fresh` (CARD-015, LIC-008, LIC-007, PICK-020, D-4310): otherwise
+/// `classes` is empty, so an ROC category gives no card, while agency, pest, handyman and
+/// no-license standing are unchanged.
+async fn one_business(
+    conn: &mut PgConnection,
+    id: Uuid,
+    fresh: Freshness,
+) -> Result<Option<Pooled>, QuotesError> {
     let record = biz(business(conn, id).await)?;
     let consented = may_get_cards(conn, id)
         .await
@@ -243,6 +300,11 @@ async fn one_business(conn: &mut PgConnection, id: Uuid) -> Result<Option<Pooled
         city_names: names.as_ref(),
     };
     let parts = biz(holding(conn, id, known).await)?;
+    let checked = latest_check_allows_card(conn, id, fresh).await;
+    let classes = match checked.map_err(|_| QuotesError::Database)? {
+        true => parts.classes,
+        false => Vec::new(),
+    };
     let ticked = biz(job_types(conn, id).await)?
         .into_iter()
         .map(|c| (c.category, c.job_type))
@@ -253,7 +315,7 @@ async fn one_business(conn: &mut PgConnection, id: Uuid) -> Result<Option<Pooled
         verified: true,
         towns: biz(towns(conn, id).await)?.into_iter().collect(),
         ticked,
-        classes: parts.classes,
+        classes,
         licenses: parts.holder,
     };
     Ok(Some(Pooled {
