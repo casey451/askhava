@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-21T04:22:30Z by runner d772bd88b2c9 (manual).
+Updated 2026-11-21T04:22:54Z by runner 1ef2032c2365 (actions).
 
 **Building: T614 in progress since 03:43Z; 569 of 726 done; week 63% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-21T04:22:30Z by runner d772bd88b2c9 (manual).
 - **Lane:** lane 4: T614 claimed 03:43Z, lease until 06:43Z; lane 6: T755 claimed 04:14Z, lease until 07:14Z; lane 7: T691 claimed 04:07Z, lease until 07:07Z
 - **Week:** 63% used, 63.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:22Z, 0 min before this update
-- **Keeper:** last ran 04:21Z, next wake 04:41Z
+- **Keeper:** last ran 04:22Z, next wake 04:42Z
 
 ## Needs attention
 - BLOCKED T304: plan gap reported: PLAN GAP: app/portals/templates/owner_audit_log.html (owned by T205) and app/portals/templates/health.html (owned by T476) fail Ally once served: bare <table> at owner_audit_log.html:8, health.html:19 and :28 with no role=region tabindex=0 aria-label wrapper (as app/site/templates/business.html:43); reflow_spacing.spec.ts A11Y-008/009 fail at 320px, plus color-contrast incomplete on audit log td:nth-child(5). T304 Scope (kit/prompts/T304.md:35-51) does not allow editing them. Reviewer confirmed ownership via kit/tasks.json and the missing wrappers.; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T304 --plan-fix D-### --reason "..."` (D-2859)
@@ -21,7 +21,7 @@ Worker: matching.rs:52 keyword RULES cover only plumbing, HVAC, electrical, hand
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T754 (since 2026-11-21T02:52:28Z, no attempt used; a plan change fixes it): outside ownership: app/adapters/src/payments.rs, stand_ins/stripe.py, stand_ins/server.py
 - PLAN GAP T776 (since 2026-11-21T04:00:50Z, no attempt used; a plan change fixes it): outside ownership: app/intake/src/matching.rs
-- Strict plan check red: 57 problem(s) on tasks still to run (+450 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
+- Strict plan check red: 59 problem(s) on tasks still to run (+450 on DONE tasks); first: T704: stored context_pct 34% but it measures 38%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -110,31 +110,31 @@ Worker: matching.rs:52 keyword RULES cover only plumbing, HVAC, electrical, hand
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 96 of 735 (13.1%) · partial 620 · unstarted 19
+**Requirements verified:** 359 of 735 (48.8%) · partial 357 · unstarted 19
 **Tasks merged (throughput only):** 569 of 726
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 3 | 32 | 0 | 35 |
-| ai | 1 | 25 | 3 | 29 |
-| businesses | 1 | 56 | 1 | 58 |
-| calls | 1 | 24 | 0 | 25 |
-| consent | 3 | 32 | 0 | 35 |
-| fees | 1 | 51 | 0 | 52 |
-| intake | 1 | 42 | 0 | 43 |
-| job-cards | 0 | 24 | 0 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 2 | 43 | 0 | 45 |
-| ops-recovery | 10 | 32 | 12 | 54 |
-| privacy | 1 | 30 | 0 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 0 | 56 | 0 | 56 |
-| recurring | 3 | 8 | 0 | 11 |
-| security | 2 | 50 | 3 | 55 |
-| terms | 27 | 8 | 0 | 35 |
+| accessibility | 18 | 17 | 0 | 35 |
+| ai | 8 | 18 | 3 | 29 |
+| businesses | 22 | 35 | 1 | 58 |
+| calls | 15 | 10 | 0 | 25 |
+| consent | 17 | 18 | 0 | 35 |
+| fees | 25 | 27 | 0 | 52 |
+| intake | 12 | 31 | 0 | 43 |
+| job-cards | 12 | 12 | 0 | 24 |
+| licensing | 31 | 17 | 0 | 48 |
+| lifecycle | 21 | 7 | 0 | 28 |
+| messaging | 26 | 19 | 0 | 45 |
+| ops-recovery | 13 | 29 | 12 | 54 |
+| privacy | 10 | 21 | 0 | 31 |
+| quiet-hours | 3 | 6 | 0 | 9 |
+| quotes-pick | 25 | 31 | 0 | 56 |
+| recurring | 10 | 1 | 0 | 11 |
+| security | 13 | 39 | 3 | 55 |
+| terms | 29 | 6 | 0 | 35 |
 | website | 20 | 10 | 0 | 30 |
-| wording | 20 | 12 | 0 | 32 |
+| wording | 29 | 3 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
