@@ -98,7 +98,10 @@ pub use crate::business_signup::{
     submit_signup,
 };
 pub use crate::checkin::{CHECK_IN_ROUTE, checkin_routes};
+pub use crate::confirm_pay::CONFIRM_SEND_ROUTE;
+pub use crate::confirm_pay::PressCodes;
 pub use crate::confirm_pay::confirm_page_with_tier;
+pub use crate::confirm_pay::confirm_routes_with;
 pub use crate::confirm_pay::{Answer, SAVE_CODE_LABEL};
 pub use crate::confirm_pay::{
     ApprovalSecret, CARD_OFF_LINE, CONFIRM_ROUTE, ConfirmRoute, ConfirmSettings, FEE_TERMS_LINE,
