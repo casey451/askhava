@@ -63,6 +63,7 @@ pub mod owner_portal;
 pub mod owner_signin;
 pub mod owner_tools;
 pub mod payment_jobs;
+pub mod phone_approval;
 pub mod picture_media;
 pub mod release_hold;
 pub mod release_sink;
@@ -404,7 +405,8 @@ impl ApprovalSecret for StripeApproval {
 /// take it" page and button ([`cant_take_route`], T472), always; the business step-up page
 /// ([`business_step_up`], T364), always, sending codes only with its part, and the role, removal
 /// and monthly-limit changes behind it ([`business_guarded_changes`], T565), and the notice and
-/// backup address changes ([`address_changes`], T542, changing only with their part), always; and the
+/// backup address changes ([`address_changes`], T542, changing only with their part), and the
+/// owner's waiting-phones page ([`phone_approval`], T397, with the portal's vault), always; and the
 /// owner's sign-in, step-up and sign-out routes ([`owner_signin`], T303) and home, settings and
 /// switches ([`owner_portal`], T310, the opt-out with the portal's vault) and refund review, audit
 /// log and health page ([`owner_tools`], T304, refunding only with the Stripe hooks and the
@@ -446,7 +448,12 @@ fn business_pages(
     let homeowner = homeowner_portal::routes(pool.clone(), webhooks, parts.homeowner, parts.photos);
     let step_up = business_step_up::routes(pool.clone(), parts.step_up)
         .merge(business_guarded_changes::routes(pool.clone()))
-        .merge(address_changes::routes(pool.clone(), parts.address));
+        .merge(address_changes::routes(pool.clone(), parts.address))
+        .merge(phone_approval::routes(
+            pool.clone(),
+            parts.vault.clone(),
+            webhooks,
+        ));
     let portal_parts = (parts.vault, parts.business_number);
     let portal = business_portal::served(pool, portal_parts, (webhooks, voice))
         .merge(confirm)
