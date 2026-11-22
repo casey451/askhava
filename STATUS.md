@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T11:56:19Z by runner 5aac787a2648 (actions).
+Updated 2026-11-22T12:04:46Z by runner 0688d1d0d9ba (actions).
 
 **Building: T645 in progress since 11:44Z; 608 of 769 done; week 57% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-22T11:56:19Z by runner 5aac787a2648 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T645 claimed 11:44Z, lease until 14:44Z; lane 2: T830 claimed 11:45Z, lease until 14:45Z; lane 3: T729 claimed 11:36Z, lease until 14:36Z; lane 4: T725 claimed 11:56Z, lease until 14:56Z; lane 5: T589 claimed 10:36Z, lease until 13:36Z; lane 6: T610 claimed 11:39Z, lease until 14:39Z
 - **Week:** 57% used, 73.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:55Z, 0 min before this update
+- **Last run:** 11:56Z, 8 min before this update
 - **Keeper:** last ran 11:39Z, next wake 11:59Z
 
 ## Needs attention
@@ -53,7 +53,7 @@ assert 'skipped: not finished in 540 s (Ci runs Ally)' in '\n== Ally: pages chan
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T832 (since 2026-11-22T11:35:50Z, no attempt used; a plan change fixes it): T832: prompt kit/prompts/T832.md is missing; run scripts/gen_prompts.py; T832: branch claude/task/T832-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet; T832: dependency T828 is DONE but its owned file .gitleaksignore is not on main
 - OWNED GAP T828 (DONE, since 2026-11-22T08:18:31Z; a later task or plan change must add it): T828: .gitleaksignore missing on main
-- Strict plan check red: 32 problem(s) on tasks still to run (+486 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 34 problem(s) on tasks still to run (+489 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -122,7 +122,6 @@ assert 'skipped: not finished in 540 s (Ci runs Ally)' in '\n== Ally: pages chan
 | T776 | intake: a move out of Arizona and a property-management requ | done | 3 | 99 min | 14:37Z | PLAN GAP: outside ownership: app/quotes/src/card_pool.rs (also docs/catalog/categories.yaml) / Worker: D-5160's three tr |
 | T655 | businesses: an unknown ROC license status warns at 24 hours, | QUEUED | 1 | 2 h 36 min | 13:24Z |  |
 | T707 | server: an emergency pick's address re-release waits while s | QUEUED | 2 | 77 min | 12:31Z |  |
-| T581 | messaging, intake and server: a failed text's call-back is d | done | 1 | 76 min | 12:03Z |  |
 
 ### Plan and harness merges on main
 - 11:22Z Plan: unblock T725 (D-5518) and T803 via T832 Checks timeout 60 min (D-5519) (#1347)
@@ -131,7 +130,7 @@ assert 'skipped: not finished in 540 s (Ci runs Ally)' in '\n== Ally: pages chan
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 608 of 768
+**Tasks merged (throughput only):** 608 of 767
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
