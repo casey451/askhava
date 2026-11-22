@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-22T12:46:53Z by runner 421b16645410 (actions).
+Updated 2026-11-22T12:47:04Z by runner 421b16645410 (actions).
 
 **Building: T645 in progress since 11:44Z; 608 of 770 done; week 58% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 608 of 770 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T645 claimed 11:44Z, lease until 14:44Z; lane 2: T830 claimed 11:45Z, lease until 14:45Z; lane 4: T725 claimed 11:56Z, lease until 14:56Z
+- **Lane:** lane 1: T645 claimed 11:44Z, lease until 14:44Z; lane 4: T725 claimed 11:56Z, lease until 14:56Z
 - **Week:** 58% used, 73.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 12:35Z, 11 min before this update
 - **Keeper:** last ran 12:35Z, next wake 14:47Z
@@ -58,6 +58,7 @@ assert 'skipped: not finished in 540 s (Ci runs Ally)' in '\n== Ally: pages chan
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T830 | server: `server rotate-keys` and `server retire-index-versio | MERGE_PENDING | 1 | 61 min | 12:46Z |  |
 | T729 | portals and privacy: the quote page offers updates by email  | MERGE_PENDING | 2 | 49 min | 12:26Z | merging main into the reviewed head conflicts in app/server/src/lib.rs, app/server/src/main.rs; a resync merges it in on |
 | T610 | site: the D-4246 polish on the Spanish pages, the legal page | MERGE_PENDING | 2 | 40 min | 12:19Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T589 | intake and portals: the pick review page is shown in her req | MERGE_PENDING | 2 | 87 min | 12:04Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
@@ -177,8 +178,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T645 (lease until 2026-11-22T14:44:36Z)
-- lane 2: T830 (lease until 2026-11-22T14:45:18Z)
 - lane 4: T725 (lease until 2026-11-22T14:56:02Z)
 
 ## Last usage reading
-- {"task": "T729", "at": "2026-11-22T12:26:01Z", "output_tokens": 14720, "input_tokens": 90, "cache_creation_input_tokens": 112820, "cache_read_input_tokens": 1995365}
+- {"task": "T830", "at": "2026-11-22T12:46:51Z", "cache_creation_input_tokens": 187509, "input_tokens": 179, "cache_read_input_tokens": 7287089, "output_tokens": 57297}
