@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T10:43:05Z by runner dd295e06660e (actions).
+Updated 2026-11-22T10:51:47Z by runner dd295e06660e (actions).
 
 **Building: T829 in progress since 10:24Z; 607 of 767 done; week 56% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-22T10:43:05Z by runner dd295e06660e (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T829 claimed 10:24Z, lease until 13:24Z; lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 3: T725 claimed 10:31Z, lease until 13:31Z; lane 5: T589 claimed 10:36Z, lease until 13:36Z; lane 7: T805 claimed 10:42Z, lease until 13:42Z
 - **Week:** 56% used, 76.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:41Z, 1 min before this update
+- **Last run:** 10:43Z, 8 min before this update
 - **Keeper:** last ran 10:41Z, next wake 11:01Z
 
 ## Needs attention
@@ -31,11 +31,11 @@ At 1280x900 the /request chat start screen textarea box spans y=784..914, partly
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T729 | portals and privacy: the quote page offers updates by email  | MERGE_PENDING | 2 | 2 h 32 min | 10:40Z | PLAN GAP: tests/integration/tests/architecture_migrations.rs:288-294 (with :320-332) contradicts kit/prompts/T729.md:9 ( |
+| T729 | portals and privacy: the quote page offers updates by email  | resync | 2 | 2 h 32 min | 10:40Z | merging main into the reviewed head conflicts in app/server/src/lib.rs, app/server/src/main.rs; a resync merges it in on |
 | T803 | messaging (harness): an opted-out number gets no HELP reply; | BLOCKED | 3 | 25 min | 10:25Z | Ci: failure; Checks: cancelled / Checks failed at step: Named mutants of the files this change touches (scripts/run_name |
 | T589 | intake and portals: the pick review page is shown in her req | check_failed | 1 | 53 min | 10:04Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
 | T725 | site: the home page shows the texting number with its consen | check_failed | 2 | 57 min | 09:57Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
-| T610 | site: the D-4246 polish on the Spanish pages, the legal page | MERGE_PENDING | 1 | 39 min | 09:00Z |  |
+| T610 | site: the D-4246 polish on the Spanish pages, the legal page | check_failed | 1 | 39 min | 09:00Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | BLOCKED | 4 | 45 min | 08:54Z | PLAN GAP: outside ownership: app/site/templates/request.html, app/site/static/site.css / At 1280x900 the /request chat s |
 | T829 | server tests (harness): the door matrix's owner sign-ins nev | check_failed | 2 | 48 min | 08:40Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T609 | site (harness): the D-4246 polish on the footer, how it work | done | 3 | 65 min | 07:14Z | PLAN GAP: tests/e2e/web_chat.spec.ts:123 (owned by T489) uses strict locator main.locator('[lang="es"]'); the footer's E |

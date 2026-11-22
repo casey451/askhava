@@ -88393,8 +88393,8 @@
    "deps": [
     "T609"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "site-pages-polish-two",
    "type": "build",
    "stage": "5",
@@ -88413,13 +88413,58 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 56,
      "head_sha": "3e5fc4ca268c9280bf09a09646c174de5a8b4d8b",
-     "pr": null,
-     "checks": null,
+     "pr": 1340,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "failure"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-22T08:20:52Z",
      "ended_at": "2026-11-22T09:00:09Z",
-     "result": "MERGE_PENDING",
+     "result": "check_failed",
      "usage": {
       "worker": {
        "tokens": 1881860,
@@ -88468,7 +88513,8 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-22T10:19:05Z"
+   "merge_turn_since": "2026-11-22T10:19:05Z",
+   "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust dependency audit (cargo-audit, cargo-deny)\nCrate:     basic-toml\nVersion:   0.1.10\nWarning:   unmaintained\nTitle:     `basic-toml` is unmaintained\nDate:      2026-09-26\nID:        RUSTSEC-2026-0374\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0374\nCrate:     proc-macro-error2\nVersion:   2.0.1\nWarning:   unmaintained\nTitle:     proc-macro-error2 is unmaintained\nDate:      2026-06-07\nID:        RUSTSEC-2026-0173\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0173\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1."
   },
   {
    "id": "T611",
@@ -101282,7 +101328,7 @@
     "T608",
     "T600"
    ],
-   "status": "MERGE_PENDING",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "update-email-choice",
    "type": "build",
@@ -101297,7 +101343,7 @@
     5425
    ],
    "reason": null,
-   "last_failure": "PLAN GAP: tests/integration/tests/architecture_migrations.rs:288-294 (with :320-332) contradicts kit/prompts/T729.md:9 (D-4727 (1)). One migration 0215 must both create a privacy table and ALTER messaging.update_channel (add reverted_at); the protected migration test allows one module header per file and flags other-schema names, and CROSS_SCHEMA_CALLS covers only function calls. Fix: give T729 a second messaging-headed migration (0216_messaging_update_reverted.sql) or move reverted_at to T730. Related: the quote page needs a messaging reader for reverted_at (email.rs is read-only for T729). Reviewer confirmed.\nre-queued after plan fix D-5442: bounce on the privacy table, 0215 privacy-only, quote_page_routes_with keys (merged #1326)",
+   "last_failure": "merging main into the reviewed head conflicts in app/server/src/lib.rs, app/server/src/main.rs; a resync merges it in on this attempt (D-891)",
    "history": [
     {
      "attempt": 1,
@@ -101327,13 +101373,50 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 280,
      "head_sha": "620569b68dafb1f3a8f5cff0e6e67e58cc26d94b",
-     "pr": null,
-     "checks": null,
+     "pr": 1345,
+     "checks": [
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Checks",
+       "conclusion": null
+      },
+      {
+       "name": "Coverage",
+       "conclusion": null
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": null
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-22T08:07:49Z",
      "ended_at": "2026-11-22T10:40:38Z",
-     "result": "MERGE_PENDING",
+     "result": "resync",
      "usage": {
       "worker": {
        "tokens": 21303708,
@@ -101373,7 +101456,35 @@
     "enabled": true,
     "why": "auto-merge on #1345 (gh pr merge)",
     "head": "620569b68dafb1f3a8f5cff0e6e67e58cc26d94b"
-   }
+   },
+   "merge_turn_since": "2026-11-22T10:51:35Z",
+   "runner_closed_prs": [
+    1345
+   ],
+   "resync": {
+    "attempt": 2,
+    "from": "620569b68dafb1f3a8f5cff0e6e67e58cc26d94b",
+    "main": "dd295e06660e0308300490a7b00829730b7a7197",
+    "paths": [
+     "app/server/src/lib.rs",
+     "app/server/src/main.rs"
+    ],
+    "at": "2026-11-22T10:51:35Z"
+   },
+   "resyncs": [
+    {
+     "attempt": 2,
+     "from": "620569b68dafb1f3a8f5cff0e6e67e58cc26d94b",
+     "main": "dd295e06660e0308300490a7b00829730b7a7197",
+     "paths": [
+      "app/server/src/lib.rs",
+      "app/server/src/main.rs"
+     ],
+     "at": "2026-11-22T10:51:35Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T730",
@@ -116830,7 +116941,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T10:43:05Z",
+ "updated_at": "2026-11-22T10:51:47Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -119112,7 +119223,7 @@
    ]
   },
   "6": {
-   "count": 0,
+   "count": 1,
    "last": [
     {
      "at": "2026-11-19T20:22:02Z",
@@ -119121,6 +119232,10 @@
     {
      "at": "2026-11-19T23:58:40Z",
      "why": "T707 check_failed: Ci: failure; Coverage: cancelled\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_sec_43_refusals_are_one_not_found_and_read_nothing ... ok\ntest result: ok. 9 pa"
+    },
+    {
+     "at": "2026-11-22T10:51:35Z",
+     "why": "T610 check_failed: Ci: failure; Checks: failure\nChecks failed at step: Rust dependency audit (cargo-audit, cargo-deny)\nCrate:     basic-toml\nVersion:   0.1.10\nWarning:   unmaintained\nTitle:     `basic-toml` is unmaintai"
     }
    ]
   }
