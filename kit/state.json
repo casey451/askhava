@@ -26508,7 +26508,8 @@
     "T804",
     "T805",
     "T799",
-    "T815"
+    "T815",
+    "T836"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -26617,7 +26618,8 @@
     "T260",
     "T275",
     "T385",
-    "T751"
+    "T751",
+    "T779"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -57594,7 +57596,8 @@
     "T700",
     "T727",
     "T753",
-    "T773"
+    "T773",
+    "T835"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -75930,7 +75933,8 @@
     "T764",
     "T770",
     "T788",
-    "T828"
+    "T828",
+    "T836"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -76999,7 +77003,8 @@
     "T551",
     "T552",
     "T726",
-    "T828"
+    "T828",
+    "T836"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -100891,7 +100896,8 @@
   {
    "id": "T718",
    "deps": [
-    "T723"
+    "T723",
+    "T745"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -102860,7 +102866,8 @@
     "T711",
     "T650",
     "T662",
-    "T653"
+    "T653",
+    "T672"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -111301,6 +111308,47 @@
     "docs/decisions.md",
     "tests/test_prehandin.py"
    ]
+  },
+  {
+   "id": "T834",
+   "deps": [
+    "T283",
+    "T724",
+    "T764",
+    "T832"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "workflow-skips-fail-closed",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T835",
+   "deps": [
+    "T834",
+    "T700",
+    "T727",
+    "T753",
+    "T773"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "cancelled-run-no-strike",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T836",
+   "deps": [
+    "T835",
+    "T762"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "cancelled-gate-and-concurrency",
+   "type": "harness",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -118804,7 +118852,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T20:35:50Z",
+ "updated_at": "2026-11-22T20:36:19Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
