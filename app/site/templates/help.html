@@ -4,14 +4,15 @@
     brand file's forbidden_alone word, never typed (D-4044). The form posts to POST /help, which T309
     serves (D-2128) through portals::api::send_help_form (T200, D-491); `csrf` is the token server's
     layer sets, empty when absent (D-3890). The optional mobile number is used only to stop texts
-    when the message asks to (CON-035, D-4293); it is never stored with the message. -#}
+    when the message asks to (CON-035, D-4293); it is never stored with the message. The WEB-008 line that ends "call 911" is the 911 note (2 px
+    alert border, no shadow) and the form sits on a paper card (T609, D-4246, DESIGN_SPEC section 8). -#}
 {% block title %}Help{% endblock %}
 {% block content %}
 {%- let brand = askhava_core::api::brand().display_name() %}
 <h1>Help</h1>
 <h2>Is {{ brand }} a person?</h2>
 <p data-fixed="WEB-008">{{ brand }} is a local service. Our texts are automated.</p>
-<p data-fixed="WEB-008">The {{ brand }} owner reads HELP messages and flagged messages, usually within 2 days, or within 24 hours if your job is urgent. Messages are not watched around the clock. In an emergency, call 911.</p>
+<p class="note-911" data-fixed="WEB-008">The {{ brand }} owner reads HELP messages and flagged messages, usually within 2 days, or within 24 hours if your job is urgent. Messages are not watched around the clock. In an emergency, call 911.</p>
 <h2>How we use AI</h2>
 {%- if ai_on %}
 <p data-fixed="AI-018">To sort your request and help word our questions, an AI service from Anthropic reads your job description after our software removes names, phone numbers, emails and street numbers. It also writes your job card, which you see before it goes out. The AI never sees your contact details, never gives prices or diagnoses, and never makes decisions about money or who gets your details.</p>
@@ -25,7 +26,7 @@
 <h2>A problem with a contractor's work</h2>
 <p>If a contractor's work went wrong, you can file a complaint with the Arizona Registrar of Contractors. <a href="/help/roc-complaint">How to complain to the Registrar of Contractors</a></p>
 <h2 id="message">Send the {{ brand }} owner a message</h2>
-<form method="post" action="/help">
+<form class="card form-card" method="post" action="/help">
 <input type="hidden" name="csrf" value="{{ csrf }}">
 <p><label for="help-message">Your message</label></p>
 <p id="help-message-hint">Say what you need help with. If anyone is in danger, call 911.</p>
@@ -35,6 +36,6 @@
 <p><label for="help-mobile">Your mobile number (optional)</label></p>
 <p id="help-mobile-hint">Only needed if you want us to stop texting you.</p>
 <p><input id="help-mobile" name="mobile" type="tel" autocomplete="tel" aria-describedby="help-mobile-hint"></p>
-<p><button type="submit">Send message</button></p>
+<p><button class="button" type="submit">Send message</button></p>
 </form>
 {% endblock %}

@@ -120,7 +120,7 @@ test("TD-CON-10 TD-WEB-01 CON-025 WEB-006 WEB-014 AI-026: the Spanish draft, the
   const form = html.indexOf("<form");
   expect(spanish).toBeGreaterThan(-1);
   expect([spanish < english, english < adult, adult < form, ai > -1 && ai < form]).toEqual([true, true, true, true]);
-  await expect(main.locator('[lang="es"]')).toContainText(/revisión por un hablante nativo/);
+  await expect(main.locator('[lang="es"]:not(footer *)')).toContainText(/revisión por un hablante nativo/);
   await expect(main.locator('[data-fixed="WEB-014"]')).toContainText(/STOP/);
   await expect(main).toContainText(`You must be 18 or older to use ${BRAND.display_name}.`);
   await expect(main.getByRole("button", { name: /agree|^ok$|acepto/i })).toHaveCount(0);

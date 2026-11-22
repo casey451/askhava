@@ -1,20 +1,30 @@
 {% extends "site_layout.html" %}
 {#- The how-it-works page (T102; WEB-001, WEB-009, WEB-026), worded from docs/copy/site-copy.md;
     its Spanish page is es_how_it_works.html (WEB-002). The fee amounts come from the fee tiers
-    (`payments::api::Tier`), so the WEB-026 sentence always matches the fee settings (D-384). -#}
+    (`payments::api::Tier`), so the WEB-026 sentence always matches the fee settings (D-384). The
+    three steps sit in ruled sections with their numbers set in the serif (T609, D-4246); the start
+    link reads "Get quotes" (D-5279). -#}
 {% block title %}How it works{% endblock %}
 {% block content %}
 <h1>How it works</h1>
 <p>Tell us about a job you need done. Havasu businesses that do that work can quote, and you choose.</p>
 
-<h2>1. Tell us what you need</h2>
+<div class="how-steps">
+<section class="how-step" aria-labelledby="step-1">
+<h2 id="step-1">1. Tell us what you need</h2>
 <p>Answer a few short questions and add a photo if you have one. Unless it's an emergency, you see the request before it goes out. Your name and number are never on it.</p>
 
-<h2>2. Havasu businesses quote</h2>
+</section>
+<section class="how-step" aria-labelledby="step-2">
+<h2 id="step-2">2. Havasu businesses quote</h2>
 <p>Your request goes to Havasu businesses that take this kind of job. Each one has 24 hours to quote. Every quote lists the same details: the price, what's included and when they can come. Not every business answers.</p>
 
-<h2>3. You pick one</h2>
+</section>
+<section class="how-step" aria-labelledby="step-3">
+<h2 id="step-3">3. You pick one</h2>
 <p>Check their license and reviews, then choose. You hire the business directly. If nothing fits, you don't have to pick anyone.</p>
+</section>
+</div>
 
 <h2>What it costs</h2>
 <p data-fixed="WEB-026">The business you choose pays {{ askhava_core::api::brand().display_name() }} a set introduction fee (${{ fees.small }}, ${{ fees.medium }} or ${{ fees.large }}, by quote size). You pay {{ askhava_core::api::brand().display_name() }} nothing.</p>
@@ -22,6 +32,6 @@
 
 <h2>Start a request</h2>
 <p>Start in the chat on this site. It works any time, with or without texting.</p>
-<p><a href="/request">Get quotes in the chat</a></p>
+<p><a href="/request">Get quotes</a></p>
 <p lang="es"><a href="/es/how-it-works">Cómo funciona, en español</a></p>
 {% endblock %}
