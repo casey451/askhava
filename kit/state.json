@@ -26094,13 +26094,7 @@
      "plan_then": "9d43020edab4e84cdacc3f24a188da9daf7dbe252f7e55fc86dc1a1656141357",
      "plan_now": "4f100f935a6a89e3dcefa0141a2aac4382364c30fee8b6552cef06bf4febd0e4"
     }
-   ],
-   "plan_gap": {
-    "at": "2026-11-22T10:24:41Z",
-    "problems": [
-     "T121: dependency T828 is DONE but its owned file .gitleaksignore is not on main"
-    ]
-   }
+   ]
   },
   {
    "id": "T122",
@@ -102446,7 +102440,17 @@
    "attempts": 0,
    "slug": "update-email-sends",
    "type": "build",
-   "stage": "5"
+   "stage": "5",
+   "plan_gap": {
+    "at": "2026-11-22T17:07:39Z",
+    "problems": [
+     "T730: dependency T729 is DONE but its owned file migrations/0215_update_email_choice.sql is not on main",
+     "T730: dependency T729 is DONE but its owned file app/privacy/src/update_email.rs is not on main",
+     "T730: dependency T729 is DONE but its owned file app/portals/src/update_channel.rs is not on main",
+     "T730: dependency T729 is DONE but its owned file tests/integration/tests/update_email_choice.rs is not on main",
+     "T730: dependency T729 is DONE but its owned file tests/a11y/update_email.spec.ts is not on main"
+    ]
+   }
   },
   {
    "id": "T731",
@@ -104526,7 +104530,17 @@
    "attempts": 0,
    "slug": "delete-message-bodies",
    "type": "build",
-   "stage": "5"
+   "stage": "5",
+   "plan_gap": {
+    "at": "2026-11-22T17:07:39Z",
+    "problems": [
+     "T757: dependency T729 is DONE but its owned file migrations/0215_update_email_choice.sql is not on main",
+     "T757: dependency T729 is DONE but its owned file app/privacy/src/update_email.rs is not on main",
+     "T757: dependency T729 is DONE but its owned file app/portals/src/update_channel.rs is not on main",
+     "T757: dependency T729 is DONE but its owned file tests/integration/tests/update_email_choice.rs is not on main",
+     "T757: dependency T729 is DONE but its owned file tests/a11y/update_email.spec.ts is not on main"
+    ]
+   }
   },
   {
    "id": "T758",
@@ -110962,13 +110976,7 @@
    "attempts": 0,
    "slug": "checks-timeout-full-mutants",
    "type": "harness",
-   "stage": "5",
-   "plan_gap": {
-    "at": "2026-11-22T11:35:50Z",
-    "problems": [
-     "T832: dependency T828 is DONE but its owned file .gitleaksignore is not on main"
-    ]
-   }
+   "stage": "5"
   },
   {
    "id": "T833",
@@ -118604,7 +118612,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T17:08:03Z",
+ "updated_at": "2026-11-22T17:08:15Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -118705,14 +118713,6 @@
  "runner_sha": "bd27a597ce3e2d3361b4a10a953f8dee73a5c561",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "dd295e06660e0308300490a7b00829730b7a7197",
-   "ok": true,
-   "at": "2026-11-22T10:24:41Z",
-   "why": "start routine (ancestry reuse of 5adc4d114966, 2026-11-22T07:52:02Z)",
-   "reused": "2026-11-22T07:52:02Z",
-   "base": "5adc4d114966860b5db0ed380ff800da15fa1414"
-  },
   {
    "sha": "dd295e06660e0308300490a7b00829730b7a7197",
    "ok": true,
@@ -118861,6 +118861,14 @@
    "why": "start routine (ancestry reuse of 726be6527c21, 2026-11-22T14:25:03Z)",
    "reused": "2026-11-22T14:25:03Z",
    "base": "726be6527c2135a423cfbf222232e21ec8e4d9bc"
+  },
+  {
+   "sha": "bd27a597ce3e2d3361b4a10a953f8dee73a5c561",
+   "ok": false,
+   "at": "2026-11-22T17:06:34Z",
+   "why": "start routine (pre-session, ancestor of d806a387d9f1)",
+   "seconds": 1500,
+   "timed_out": true
   }
  ],
  "main_red": null,
