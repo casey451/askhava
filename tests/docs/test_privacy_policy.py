@@ -307,8 +307,8 @@ TRUE_SENTENCES = (
 
 # Must pass: the spec's own sentences, from `scripts/check_legal_docs.py` and the spec text.
 SPEC_SENTENCES = (
-    "Your phone number and your texting permission are never shared with any business or third "
-    "party, and your texts are never used for marketing.",
+    "Your phone number and your texting permission are never shared with any business or marketer; "
+    "our messaging vendor processes it to deliver texts, and your texts are never used for marketing.",
     check_legal_docs.TWILIO_LINE[1],
     "Text messaging originator opt-in data and consent will not be shared with any third parties.",
     "{brand} never gives your number to any business. If a business asks for it on the call, that's your choice.",
@@ -448,8 +448,9 @@ def test_sharing_sentence_and_texting_section_are_separate() -> None:
     texting = check_legal_docs.normalize(section(text, "## 5. Text messages"))
     assert check_legal_docs.normalize(fill(TERMS_025)) in picked
     assert (
-        "Your phone number and your texting permission are never shared with any business or third party, "
-        "and your texts are never used for marketing." in texting
+        "Your phone number and your texting permission are never shared with any business or marketer; "
+        "our messaging vendor processes it to deliver texts, and your texts are never used for marketing."
+        in texting
     )
     assert "does {brand} give that one business".format(brand=fill("{brand}")) not in texting
 
