@@ -9889,3 +9889,4 @@
 - 2026-11-22T11:55:10Z runner 2d3500bae425 (manual): {"T397": "BLOCKED -> QUEUED"}
 - 2026-11-22T11:55:34Z runner 2d3500bae425 (manual): {}
 - 2026-11-22T11:56:14Z runner 5aac787a2648 (actions): {"T725": "QUEUED -> IN_PROGRESS"}; T725 estimated 1.6M tokens (calibrated); week has 73.1M left (no five-hour budget, D-3056) after 6.9M still running in another lane (session_reading 2026-11-22T11:39:37Z (week)); claimed
+- 2026-11-22T11:56:19Z runner 5aac787a2648 (actions): {}
