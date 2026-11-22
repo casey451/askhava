@@ -9840,3 +9840,4 @@
 - 2026-11-22T10:31:41Z runner dd295e06660e (actions): {"T725": "QUEUED -> IN_PROGRESS"}; T725 estimated 1.6M tokens (calibrated); week has 77.6M left (no five-hour budget, D-3056) after 4.4M still running in another lane (session_reading 2026-11-22T10:26:11Z (week)); claimed
 - 2026-11-22T10:31:47Z runner dd295e06660e (actions): {}
 - 2026-11-22T10:37:02Z runner dd295e06660e (actions): {"T589": "MERGE_PENDING -> QUEUED"}
+- 2026-11-22T10:37:25Z runner dd295e06660e (actions): {"T589": "QUEUED -> IN_PROGRESS"}; T589 estimated 1.5M tokens (calibrated); week has 76.0M left (no five-hour budget, D-3056) after 6.0M still running in another lane (session_reading 2026-11-22T10:26:11Z (week)); claimed
