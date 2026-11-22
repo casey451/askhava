@@ -108148,7 +108148,8 @@
    },
    "last_failure": "Ci: failure; Checks: cancelled\nChecks failed at step: Named mutants of the files this change touches (scripts/run_named_mutants.py, D-481)\nkilled      4.5s  Consent and opt-out | opt-out word removed: opt out\nkilled      4.4s  Consent and opt-out | sole-word match -> contains-word (\"can stop by at 3\" opts out)\nkilled      4.3s  Consent and opt-out | send rule skips the opt-out check\nkilled      4.3s  Consent and opt-out | HELP reply let through to an opted-out number (D-5280)\nkilled     25.4s  Consent and opt-out | send path skips the opt-out check\nkilled     26.0s  Consent and opt-out | a second opt-out confirmation\nkilled     26.4s  Consent and opt-out | a 21610 failure retried\nkilled     21.6s  Consent and opt-out | a non-consent text first: the consent text dropped\nkilled     11.3s  Consent and opt-out | the consent text sent twice for one request\nkilled     10.3s  Consent and opt-out | STOP answered with the consent text\nkilled     10.3s  Consent and opt-out | bare HELP answered with the consent text\nkilled      9.2s  Consent and opt-out | an opt-out closing a job (D-005)\nkilled      9.6s  Consent and opt-out | bare \"cancel\" closing a job\nkilled      7.0s  Consent and opt-out | a sole-word CANCEL with a live job not pausing the job\n##[error]The operation was canceled.\nCi failed at step: All five jobs passed\nChecks: cancelled, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
    "runner_closed_prs": [
-    1316
+    1316,
+    1327
    ],
    "update_merges": [
     {
@@ -108208,7 +108209,11 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-22T09:09:17Z"
+   "merge_turn_since": "2026-11-22T09:09:17Z",
+   "wip_claim": {
+    "attempt": 3,
+    "remote_sha": "c07c4bd49dad8b3ffd052e24a4d5c9b96c3d48d4"
+   }
   },
   {
    "id": "T804",
@@ -116536,7 +116541,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T10:00:37Z",
+ "updated_at": "2026-11-22T10:00:51Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
