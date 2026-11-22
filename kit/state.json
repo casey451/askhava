@@ -58040,7 +58040,7 @@
     "T412",
     "T536"
    ],
-   "status": "IN_PROGRESS",
+   "status": "QUEUED",
    "attempts": 0,
    "slug": "phone-approval-page",
    "type": "build",
@@ -58057,7 +58057,15 @@
    "wip_claim": {
     "attempt": 1,
     "remote_sha": ""
-   }
+   },
+   "stale_leases": [
+    {
+     "task": "T397",
+     "session": "actions-44957094146",
+     "expires": "2026-11-22T01:35:47Z",
+     "lane": "5"
+    }
+   ]
   },
   {
    "id": "T399",
@@ -113931,7 +113939,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T01:40:09Z",
+ "updated_at": "2026-11-22T01:45:05Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -114029,7 +114037,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "05b3bbbd22f383ce2a82165239edaeb48f02fba6",
+ "runner_sha": "21d99167398b19ca15d194afa6d72778eae8afc0",
  "starter": "actions",
  "smoke_runs": [
   {
