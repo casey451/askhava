@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T04:10:56Z by runner 0a4f9baa2aa4 (actions).
+Updated 2026-11-22T04:11:12Z by runner 0a4f9baa2aa4 (actions).
 
 **Building: T675 in progress since 03:54Z; 600 of 767 done; week 50% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 600 of 767 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T675 claimed 03:54Z, lease until 06:54Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z; lane 6: T609 claimed 04:01Z, lease until 07:01Z; lane 7: T721 claimed 02:54Z, lease until 05:54Z
+- **Lane:** lane 2: T675 claimed 03:54Z, lease until 06:54Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z; lane 6: T609 claimed 04:01Z, lease until 07:01Z
 - **Week:** 50% used, 89.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:02Z, 8 min before this update
+- **Last run:** 04:02Z, 9 min before this update
 - **Keeper:** last ran 03:50Z, next wake 04:10Z
 
 ## Needs attention
@@ -30,6 +30,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T721 | businesses and portals: Casey counts a check-in PROBLEM repo | MERGE_PENDING | 1 | 76 min | 04:10Z |  |
 | T616 | site: strong per-coding ETags with 304 revalidation, a one-y | MERGE_PENDING | 1 | 96 min | 03:07Z |  |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | check_failed | 2 | 2 h 19 min | 03:06Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / ✓  120 [main] › tests/e2e |
 | T810 | portals and server: a shared-inbox Confirm press asks for it | BLOCKED | 2 | 2 min | 03:05Z | PLAN GAP: outside ownership: app/server/tests/confirm_press_code.rs. TD-SEC-82 requires a direct portals.shared_inbox in |
@@ -142,7 +143,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T675 (lease until 2026-11-22T06:54:25Z)
 - lane 5: T542 (lease until 2026-11-22T04:45:48Z)
 - lane 6: T609 (lease until 2026-11-22T07:01:34Z)
-- lane 7: T721 (lease until 2026-11-22T05:54:28Z)
 
 ## Last usage reading
-- {"task": "T616", "at": "2026-11-22T03:07:30Z", "output_tokens": 47978, "cache_creation_input_tokens": 186252, "cache_read_input_tokens": 3538750, "input_tokens": 147}
+- {"task": "T721", "at": "2026-11-22T04:10:55Z", "cache_creation_input_tokens": 220495, "input_tokens": 218, "output_tokens": 55078, "cache_read_input_tokens": 8022592}
