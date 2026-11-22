@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T01:29:48Z by runner 4de98e6fb74e (actions).
+Updated 2026-11-22T01:30:06Z by runner 62c2b1c9e153 (actions).
 
 **Building: T691 in progress since 00:03Z; 598 of 752 done; week 45% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-22T01:29:48Z by runner 4de98e6fb74e (actions).
 - **Lane:** lane 1: T691 claimed 00:03Z, lease until 03:03Z; lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 5: T397 claimed 22:35Z, lease until 01:35Z; lane 6: T117 claimed 00:49Z, lease until 03:49Z
 - **Week:** 45% used, 100.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:29Z, 0 min before this update
-- **Keeper:** last ran 01:24Z, next wake 01:44Z
+- **Keeper:** last ran 01:30Z, next wake 01:50Z
 
 ## Needs attention
 - BLOCKED T609: plan gap reported: PLAN GAP: tests/e2e/site_pages.spec.ts:26-28 (owned by T102) requires exactly one footer h2 "Homeowners" and exactly four footer links (toEqual), but T609's goal (DESIGN_SPEC.md:117, D-4252(a)) requires a second footer column (For businesses, Español, Terms, Privacy, Accessibility), and the prompt says that test must pass unchanged and T609 does not own it. Reviewer confirmed at HEAD 907c2ff0ac1a: current footer has one h2 and four links, so adding the second column fails lines 26-28. Smallest plan change: logged change to site_pages.spec.ts:26-28 to allow both columns, or drop the second colu; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T609 --plan-fix D-### --reason "..."` (D-2859)
@@ -17,7 +17,7 @@ Updated 2026-11-22T01:29:48Z by runner 4de98e6fb74e (actions).
 - PLAN GAP T121 (since 2026-11-21T22:29:56Z, no attempt used; a plan change fixes it): T121: measures 46% of the context window, over its 45% limit
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 43 problem(s) on tasks still to run (+476 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 42 problem(s) on tasks still to run (+476 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
