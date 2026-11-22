@@ -32,6 +32,7 @@
 //! Other crates reach it only through [`api`].
 
 mod action_links;
+mod address_changes;
 pub mod api;
 mod business_actions;
 mod business_auth;
