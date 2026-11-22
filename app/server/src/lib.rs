@@ -68,6 +68,7 @@ pub mod picture_media;
 pub mod release_hold;
 pub mod release_sink;
 pub mod request_timeout;
+pub mod rotate_keys;
 pub mod static_files;
 pub mod voice_status;
 pub mod watch_checks;

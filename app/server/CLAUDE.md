@@ -30,6 +30,7 @@ Builds the two processes from one crate: `server` (the `web` process, Axum) and 
 - BIZ-025, FEE-014, D-3790 to D-3792: the portal home's "Your numbers" come only from `quote_numbers`, `pick_numbers`, `finished_counts` and the statement, and `/b/billing` lists saved cards only through `saved_cards` (brand and last four): `tests/integration/tests/business_numbers.rs`, `tests/business_portal_route.rs`.
 - SEC-008, SEC-034, SEC-042, SEC-046, CON-035, D-4010: every homeowner portal route (`homeowner_portal`) is `no-store`; `/h/my-data` holds only her items and a data request acts only after its code (T561): `tests/homeowner_portal_route.rs`. More: `(never 25)` in NOTES.md.
 - BIZ-037, SEC-047, D-4913: only `business_text_phone` reads a phone under `BusinessText`, only as the outbox sender's `LinePhones`, and never logs or stores the number (`src/business_text_phone.rs` tests, `tests/integration/tests/outbox_business_rows.rs`).
+- PRIV-024, PRIV-016, D-5412: `server rotate-keys` stops each batch loop at its cap, refuses before any batch while a photo would be stranded, and neither it nor `retire-index-version` prints a key, digest, phone or contact ID: `tests/rotate_keys_command.rs`.
 - BIZ-033, SEC-038, SEC-019, D-3081, D-3889: `/b/phones` acts only for the owner after a fresh step-up and only on the `number_set_at` shown; a member, another business or a stale form changes nothing; every answer `no-store`: `tests/phone_approval_route.rs` (TD-SEC-65).
 
 ## Detail
