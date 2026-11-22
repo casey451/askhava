@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-22T10:40:40Z by runner 620569b68daf (actions).
+Updated 2026-11-22T10:40:56Z by runner 620569b68daf (actions).
 
 **Building: T829 in progress since 10:24Z; 607 of 767 done; week 56% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 607 of 767 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T829 claimed 10:24Z, lease until 13:24Z; lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 3: T725 claimed 10:31Z, lease until 13:31Z; lane 4: T729 claimed 08:07Z, lease until 11:07Z; lane 5: T589 claimed 10:36Z, lease until 13:36Z
+- **Lane:** lane 1: T829 claimed 10:24Z, lease until 13:24Z; lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 3: T725 claimed 10:31Z, lease until 13:31Z; lane 5: T589 claimed 10:36Z, lease until 13:36Z
 - **Week:** 56% used, 76.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 10:37Z, 3 min before this update
 - **Keeper:** last ran 10:26Z, next wake 10:46Z
@@ -31,6 +31,7 @@ At 1280x900 the /request chat start screen textarea box spans y=784..914, partly
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T729 | portals and privacy: the quote page offers updates by email  | MERGE_PENDING | 2 | 2 h 32 min | 10:40Z | PLAN GAP: tests/integration/tests/architecture_migrations.rs:288-294 (with :320-332) contradicts kit/prompts/T729.md:9 ( |
 | T803 | messaging (harness): an opted-out number gets no HELP reply; | BLOCKED | 3 | 25 min | 10:25Z | Ci: failure; Checks: cancelled / Checks failed at step: Named mutants of the files this change touches (scripts/run_name |
 | T589 | intake and portals: the pick review page is shown in her req | check_failed | 1 | 53 min | 10:04Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
 | T725 | site: the home page shows the texting number with its consen | check_failed | 2 | 57 min | 09:57Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
@@ -47,7 +48,7 @@ At 1280x900 the /request chat start screen textarea box spans y=784..914, partly
 | T803 | messaging (harness): an opted-out number gets no HELP reply; | check_failed | 2 | 63 min | 05:27Z |  |
 | T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 2 | 50 min | 04:44Z | PLAN GAP: tests/integration/tests/intake_order_card.rs:285, tests/integration/tests/intake_refusals_wired.rs:399, tests/ |
 | T542 | portals and server: notice and backup address changes are re | done | 2 | 2 h 42 min | 04:28Z | Reviewer after the findings round still ended REVIEW-VERDICT: FINDINGS at head 4de98e6fb74e1e5394629d7a1abe0694167723a2: |
-| T729 | portals and privacy: the quote page offers updates by email  | BLOCKED | 1 | 2 min | 04:19Z | PLAN GAP: tests/integration/tests/architecture_migrations.rs:288-294 (with :320-332) contradicts kit/prompts/T729.md:9 ( |
+| T729 | portals and privacy: the quote page offers updates by email  | BLOCKED | 1 | 2 min | 04:19Z |  |
 | T609 | site (harness): the D-4246 polish on the footer, how it work | BLOCKED | 2 | 13 min | 04:15Z |  |
 | T721 | businesses and portals: Casey counts a check-in PROBLEM repo | done | 1 | 76 min | 04:10Z |  |
 | T616 | site: strong per-coding ETags with 304 revalidation, a one-y | check_failed | 1 | 96 min | 03:07Z |  |
@@ -146,8 +147,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T829 (lease until 2026-11-22T13:24:41Z)
 - lane 2: T675 (lease until 2026-11-22T11:47:43Z)
 - lane 3: T725 (lease until 2026-11-22T13:31:16Z)
-- lane 4: T729 (lease until 2026-11-22T11:07:49Z)
 - lane 5: T589 (lease until 2026-11-22T13:36:51Z)
 
 ## Last usage reading
-- {"task": "T803", "at": "2026-11-22T10:25:49Z", "input_tokens": 38, "cache_creation_input_tokens": 33303, "cache_read_input_tokens": 618101, "output_tokens": 6590}
+- {"task": "T729", "at": "2026-11-22T10:40:38Z", "cache_creation_input_tokens": 448885, "cache_read_input_tokens": 24133056, "input_tokens": 400, "output_tokens": 125804}
