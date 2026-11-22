@@ -57,6 +57,10 @@ pub enum EmailCheckError {
     /// No such member of the business.
     #[error("unknown team member")]
     UnknownMember,
+    /// BIZ-040, A11Y-030 (D-5081): another current member of the business signs in with the
+    /// address; nothing was sent or kept open.
+    #[error("another team member uses this address")]
+    MailboxTaken,
 }
 
 /// What the email provider reported for an address (BIZ-040, BIZ-055).
@@ -289,6 +293,22 @@ async fn may_change(
     Ok(())
 }
 
+/// BIZ-040 (D-5081): whether another current member of `business` signs in with `mailbox`.
+async fn taken_by_other(
+    tx: &mut PgConnection,
+    business: Uuid,
+    (member, mailbox): (Uuid, Uuid),
+) -> Result<bool, EmailCheckError> {
+    let q = sqlx::query_scalar!(
+        "SELECT EXISTS (SELECT 1 FROM businesses.team_member WHERE business_id = $1 \
+         AND mailbox_id = $3 AND id <> $2 AND removed_at IS NULL) AS \"taken!\"",
+        business,
+        member,
+        mailbox
+    );
+    db(q.fetch_one(tx).await)
+}
+
 /// Closes every other open change for `member`, so only the newest request's code works (D-1850).
 async fn cancel_older(
     tx: &mut PgConnection,
@@ -309,11 +329,13 @@ async fn cancel_older(
 /// older pending change for the member stops working. `mailbox` equal to the member's own
 /// re-verifies it (a returned address is fixed this way); `None` when it is verified and not
 /// returned, which logs nothing. A refusal is audit-logged as `businesses.notice_change_refused`,
-/// a request as `businesses.notice_change_requested`, each with the acting member (D-1850).
+/// a request as `businesses.notice_change_requested`, each with the acting member (D-1850). An
+/// address another current member signs in with is refused before any code, nothing kept
+/// (BIZ-040, D-5081).
 ///
 /// # Errors
 /// [`EmailCheckError::NotAllowed`], [`EmailCheckError::NoFreshCode`],
-/// [`EmailCheckError::UnknownMember`] or `Database`.
+/// [`EmailCheckError::UnknownMember`], [`EmailCheckError::MailboxTaken`] or `Database`.
 pub async fn request_change(
     conn: &mut PgConnection,
     secret: &SecretString,
@@ -341,6 +363,9 @@ pub async fn request_change(
         by.business
     );
     let old = db(q.fetch_optional(&mut *tx).await)?.ok_or(EmailCheckError::UnknownMember)?;
+    if taken_by_other(&mut tx, by.business, (member, mailbox)).await? {
+        return Err(EmailCheckError::MailboxTaken);
+    }
     cancel_older(&mut tx, (by.business, member, mailbox)).await?;
     let o = Opening {
         business: by.business,
@@ -369,10 +394,12 @@ pub async fn request_change(
 /// mailbox, else the check closes unverified and this returns false), the change is audit-logged
 /// and one [`CHANGED_KIND`] task tells the old address, in one transaction; for the sign-up email
 /// the sign-up settles (activation) in the same transaction, so a failed settle leaves the code
-/// open for a retry (D-4052 B9). Returns whether the code was taken.
+/// open for a retry (D-4052 B9). Returns whether the code was taken. A change whose address
+/// another member took meanwhile closes unverified and is [`EmailCheckError::MailboxTaken`]
+/// (D-5081), so a retry does not fail the same way.
 ///
 /// # Errors
-/// [`EmailCheckError::Database`].
+/// [`EmailCheckError::MailboxTaken`] or `Database`.
 pub async fn confirm(
     conn: &mut PgConnection,
     secret: &SecretString,
@@ -404,10 +431,14 @@ pub async fn confirm(
         db(tx.commit().await)?;
         return Ok(false);
     }
-    let taken = match row.change_for {
-        Some(member) => moved(&mut tx, (business, member, mailbox), &row, now).await?,
-        None => true,
+    let outcome = match row.change_for {
+        Some(member) => moved(&mut tx, (business, member, mailbox), &row, now).await,
+        None => Ok(true),
     };
+    if outcome != Err(EmailCheckError::MailboxTaken) {
+        outcome?;
+    }
+    let taken = outcome == Ok(true);
     close(&mut tx, row.id, taken, now).await?;
     if taken && row.member_id.is_none() && row.change_for.is_none() {
         crate::identity::settle(&mut tx, business, now)
@@ -415,7 +446,7 @@ pub async fn confirm(
             .map_err(|_| EmailCheckError::Database)?;
     }
     db(tx.commit().await)?;
-    Ok(taken)
+    outcome
 }
 
 /// The open check `confirm` reads, locked.
@@ -450,7 +481,8 @@ async fn close(
 
 /// SEC-024: moves the member's address (or, for a re-verify, checks it is still theirs) only while
 /// the member is current; then queues the old address's notice and writes the audit rows. Returns
-/// false, writing nothing, when no member row matched.
+/// false, writing nothing, when no member row matched; a clash with `team_member_mailbox_idx`
+/// rolls back only its savepoint and is [`EmailCheckError::MailboxTaken`] (D-5081).
 async fn moved(
     tx: &mut PgConnection,
     (business, member, new): (Uuid, Uuid, Uuid),
@@ -466,7 +498,15 @@ async fn moved(
         old,
         new
     );
-    if db(q.execute(&mut *tx).await)?.rows_affected() == 0 {
+    let mut point = db(Connection::begin(&mut *tx).await)?;
+    let rows = match q.execute(&mut *point).await {
+        Err(sqlx::Error::Database(d)) if d.constraint() == Some("team_member_mailbox_idx") => {
+            return Err(EmailCheckError::MailboxTaken);
+        }
+        done => db(done)?.rows_affected(),
+    };
+    db(point.commit().await)?;
+    if rows == 0 {
         return Ok(false);
     }
     let who = (row.requested_by.unwrap_or(member), member);
