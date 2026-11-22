@@ -8,17 +8,22 @@
     for now, D-4630), and no text ever sits on the photo. T593 (D-3331, D-4098): the hero's words
     and the request box, whose form posts her words (`words`) to /request (never a URL) with the `csrf` token
     server's chat layer sets, to land on the CON-025 start screen with them in the chat box; the
-    market names come from docs/catalog/markets.yaml (`market`, D-1515, INT-048), never typed. -#}
+    market names come from docs/catalog/markets.yaml (`market`, D-1515, INT-048), never typed.
+    T608 (WEB-027, WEB-029, WEB-030, D-4246, D-4252): the V6 reference's section classes on the
+    same words. The headline's one italic accent is a span on words it already has; the kicker's
+    capitals and the steps' numbers are CSS alone; the hero photo is never lazy; nothing here
+    carries `rise`. "Get quotes" keeps its bare markup and no arrow, since a test reads that
+    markup (`app/site/src/pages.rs`). From 1024 px the "Who runs" facts sit as one ruled row. -#}
 {% block title %}Local quotes for {{ market.short_name }} homes{% endblock %}
 {% block content %}
 <div class="hero">
 <picture class="hero-photo">
 <source media="(max-width: 767px)" type="image/webp" srcset="/static/site/photos/hero-kitchen-phone.webp" width="557" height="343">
-<img src="/static/site/photos/hero-kitchen.webp" width="557" height="941" alt="" fetchpriority="high">
+<img src="/static/site/photos/hero-kitchen.webp" width="557" height="941" alt="" fetchpriority="high" decoding="async">
 </picture>
 <div class="hero-text">
 <p class="kicker">{{ market.name }}, {{ market.state_name }}</p>
-<h1>Get local quotes without giving out your number.</h1>
+<h1 class="display">Get local quotes <span class="accent">without giving out</span> your number.</h1>
 <p class="lede">Tell us what needs doing. We'll ask {{ market.short_name }} businesses that do that work and show you their quotes on one page.</p>
 <form class="request-box" method="post" action="/request" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
@@ -32,28 +37,36 @@
 </div>
 </div>
 
-<h2>Pools, AC, boats, yards and more</h2>
+<section class="tint cover home-band">
+<div class="cover-grid">
+<h2 class="section-title">Pools, AC, boats, yards and more</h2>
 <p>We're adding more. Send us any job and we'll tell you if we cover it. <a href="/coverage">See the full list</a></p>
+</div>
+</section>
 
-<h2>How it works</h2>
-<p>Start in the chat on this site. You don't need to know which trade to ask for.</p>
+<section class="section">
+<div class="section-head">
+<h2 class="section-title">How it works</h2>
+<p class="soft">Start in the chat on this site. You don't need to know which trade to ask for.</p>
+</div>
 <ol class="steps">
-<li>
+<li><div>
 <h3>Tell us what you need.</h3>
 <p>Answer a few short questions and add a photo if you have one. Unless it's an emergency, you see the request before it goes out. Your name and number are never on it.</p>
-</li>
-<li>
+</div></li>
+<li><div>
 <h3>{{ market.short_name }} businesses quote.</h3>
 <p>It goes to {{ market.short_name }} businesses that take this kind of job. Each one has 24 hours to quote. Every quote lists the same details: the price, what's included and when they can come. Not every business answers.</p>
-</li>
-<li>
+</div></li>
+<li><div>
 <h3>You pick one, or none.</h3>
 <p>Check their license and reviews, then choose. You hire the business directly.</p>
-</li>
+</div></li>
 </ol>
+</section>
 {%- if let Some(n) = numbers %}
 
-<h2>{{ market.short_name }} requests so far</h2>
+<h2 class="section-title">{{ market.short_name }} requests so far</h2>
 <ul>
 <li>Requests sent to businesses: {{ n.requests }}</li>
 {%- if let Some(wait) = n.wait %}
@@ -64,32 +77,44 @@
 <p>These numbers cover {{ n.range }} and {{ n.trades }}.</p>
 {%- endif %}
 
-<h2>How we keep it fair</h2>
-<p>Your number stays with us. Businesses see the job, not you. Your number is never shared. Your first name and address go only to the business you pick.</p>
-<p>Nobody pays to be first. Quotes show in the order they came in.
-{{ askhava_core::api::brand().display_name() }} doesn't rank or rate businesses, and no business can pay for a better spot.</p>
-<p>Asking costs you nothing. {{ askhava_core::api::brand().display_name() }} is a quote-request service; the business you choose pays {{ askhava_core::api::brand().display_name() }} a set introduction fee. That's ${{ fees.small }}, ${{ fees.medium }} or ${{ fees.large }}, by quote size. You pay {{ askhava_core::api::brand().display_name() }} nothing. If no quote fits, close the request.</p>
+<section class="night home-band fair">
+<h2 class="section-title">How we keep it fair</h2>
+<ul class="fair-list">
+<li><p>Your number stays with us. Businesses see the job, not you. Your number is never shared. Your first name and address go only to the business you pick.</p></li>
+<li><p>Nobody pays to be first. Quotes show in the order they came in.
+{{ askhava_core::api::brand().display_name() }} doesn't rank or rate businesses, and no business can pay for a better spot.</p></li>
+<li><p>Asking costs you nothing. {{ askhava_core::api::brand().display_name() }} is a quote-request service; the business you choose pays {{ askhava_core::api::brand().display_name() }} a set introduction fee. That's ${{ fees.small }}, ${{ fees.medium }} or ${{ fees.large }}, by quote size. You pay {{ askhava_core::api::brand().display_name() }} nothing. If no quote fits, close the request.</p></li>
+</ul>
+</section>
 
-<h2>For businesses</h2>
+<section class="section biz-text">
+<h2 class="section-title">For businesses</h2>
 <p>Quote for free. Pay only if a homeowner picks you.</p>
 <p>When a homeowner sends a job you do, we email you the details and you decide whether to quote. Every card says how many businesses got it. You quote once. No bidding rounds, no paid placement.</p>
 <p>If the homeowner picks you, you pay a fixed introduction fee by job size,
 never a share of the job.</p>
 <p>${{ fees.small }} for a quote under $500. ${{ fees.medium }} for $500 to $1,500. ${{ fees.large }} for over $1,500.</p>
 <p data-fixed="WEB-005">Launch offer: your first win is free, on any job size, when you join in the first 90 days or within 90 days after your trade opens.</p>
+</section>
 
+<section class="section who">
+<div>
 <h2>Who runs {{ askhava_core::api::brand().display_name() }}</h2>
 <p>{{ askhava_core::api::brand().display_name() }} is run by {{ askhava_core::api::brand().legal_name() }}, a Lake Havasu City business. Its owner lives in Havasu.</p>
 {%- if let Some(address) = who.mailing_address %}
-<p>Mailing address: {{ address }}</p>
+<p class="who-fact">Mailing address: {{ address }}</p>
 {%- endif %}
 {%- if let Some(url) = who.record_url %}
-<p><a href="{{ url }}">{{ askhava_core::api::brand().legal_name() }} on the Arizona Corporation Commission site</a></p>
+<p class="who-fact"><a href="{{ url }}">{{ askhava_core::api::brand().legal_name() }} on the Arizona Corporation Commission site</a></p>
 {%- endif %}
 {%- if let Some(number) = who.city_license %}
-<p>Lake Havasu City business license: {{ number }}</p>
+<p class="who-fact">Lake Havasu City business license: {{ number }}</p>
 {%- endif %}
-<p>Help email: <a href="mailto:help@{{ askhava_core::api::brand().domain() }}">help@{{ askhava_core::api::brand().domain() }}</a></p>
+<p class="who-fact">Help email: <a href="mailto:help@{{ askhava_core::api::brand().domain() }}">help@{{ askhava_core::api::brand().domain() }}</a></p>
 <p data-fixed="WEB-021">The owner has a full-time day job. Sign-up reviews are usually answered within 4 days, help and charge questions usually within 2 days, and this page shows when the owner is away.</p>
+</div>
+<div class="note-911">
 <p data-fixed="WEB-022">{{ askhava_core::api::brand().display_name() }} isn't an emergency service and doesn't judge what needs an emergency response. If your message mentions gas, smoke, fire, a CO alarm going off or a downed power line, we send one automatic reminder to call 911. Don't rely on {{ askhava_core::api::brand().display_name() }} in an emergency: call 911.</p>
+</div>
+</section>
 {% endblock %}
