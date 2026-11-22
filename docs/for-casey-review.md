@@ -2,6 +2,22 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Privacy, intake and Spanish fixes from the outside review jobs 14 to 16 (D-5399 to D-5402, November 22)
+
+Fable decided these for you; one item is yours to look at when you have time.
+
+- **Your look, when you have time: the Spanish texting line on the Spanish home page (D-5402).** Once texting is live, the English home page shows our number with "Reply STOP to opt out". A required check says the Spanish page must then say PARAR too, so the Spanish page now shows the number with a draft Spanish line (T725). It is a draft like all our Spanish until the native-speaker review.
+- **Kept words go when they should.** A stop for a child under 13 now also deletes the words kept from the child's messages (T818). The daily clean-up of leftover photo files can no longer stop for good after one bad day (T757).
+- **Feedback is cleaned before it is saved.** A phone number, email or street address typed into feedback is removed before it is stored or shown (T819).
+- **"Download my data" is complete.** The file also lists withdrawn quotes (marked), each job description, her answers to our questions (not her name or address), her feedback and her STOP, HELP and START texts (T820). The privacy policy says so, and mentions the email link for people who opted out of texts (T822).
+- **5-year records.** After 5 years with no message, an old START record and the person's help-request records are deleted with the rest; an opt-out record that still blocks texts stays (T821).
+- **Questions asked at most twice.** "How soon?" ends as "Not sure" (treated as "in the next few days"); the emergency question ends as regular; if the name and address can't be read twice, the request goes out and we ask for the address when she picks a business. A phone number or "5pm" is no longer read as a house number (T823).
+- **Short first texts keep their words.** A request like "sticky door" now keeps those words for the business once the ZIP opens the job (T716).
+- **"Close which?" expires after a day,** so a later "ALL" can't close jobs by accident (T824).
+- **Spanish trade names.** Spanish texts will name the trade in Spanish (plomería, not plumbing) (T825). Known gap: business notices stay in English; a per-business language setting is not built.
+- **Spanish wording fixes** in the refund and reminder texts and on the Spanish pages (T799, T826). One change from the review: "Esta línea" would make the business sign-up reply cost 3 text segments instead of 2, so it reads "Este canal de textos" instead.
+- **Spanish home request box:** left as it is for now (Fable).
+
 ## Opt-out timing fixes from the outside review job 12 (D-5382 to D-5385, November 22)
 
 Fable decided these for you; nothing needs you.
