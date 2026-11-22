@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T15:41:52Z by runner e8e6af81881f (actions).
+Updated 2026-11-22T16:10:20Z by runner c290a2c2ed35 (actions).
 
 **Building: T675 in progress since 15:41Z; 615 of 770 done; week 61% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-22T15:41:52Z by runner e8e6af81881f (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T675 claimed 15:41Z, lease until 18:41Z; lane 2: T122 claimed 14:55Z, lease until 17:55Z; lane 4: T725 claimed 14:53Z, lease until 17:53Z; lane 5: T831 claimed 14:25Z, lease until 17:25Z; lane 6: T729 claimed 14:37Z, lease until 17:37Z; lane 7: T590 claimed 14:41Z, lease until 17:41Z
 - **Week:** 61% used, 66.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:39Z, 2 min before this update
+- **Last run:** 15:41Z, 28 min before this update
 - **Keeper:** last ran 15:19Z, next wake 15:39Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-22T15:41:52Z by runner e8e6af81881f (actions).
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T832 (since 2026-11-22T11:35:50Z, no attempt used; a plan change fixes it): T832: dependency T828 is DONE but its owned file .gitleaksignore is not on main
 - OWNED GAP T828 (DONE, since 2026-11-22T08:18:31Z; a later task or plan change must add it): T828: .gitleaksignore missing on main
-- Strict plan check red: 35 problem(s) on tasks still to run (+495 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 34 problem(s) on tasks still to run (+492 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -88,7 +88,6 @@ Updated 2026-11-22T15:41:52Z by runner e8e6af81881f (actions).
 | T615 | site and server: a styled 404 page for unknown paths, the fa | done | 4 | 68 min | 18:19Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T787 | intake: crate guide trimmed to 5,500 bytes, the detail moved | done | 1 | 68 min | 16:45Z |  |
 | T786 | server: crate guide trimmed to 5,500 bytes, the detail moved | done | 1 | 34 min | 16:33Z |  |
-| T655 | businesses: an unknown ROC license status warns at 24 hours, | done | 2 | 2 h 34 min | 16:05Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
 
 ### Plan and harness merges on main
 - 12:43Z Plan: pre-flight goal fixes for T666, T778, T820, T524, T825, T831 (D-5526) (#1354)
