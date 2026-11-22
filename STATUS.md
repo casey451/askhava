@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T04:47:52Z by runner 073da52ea9e9 (actions).
+Updated 2026-11-22T04:50:22Z by runner 073da52ea9e9 (actions).
 
 **Building: T118 in progress since 04:18Z; 600 of 767 done; week 52% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 600 of 767 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T118 claimed 04:18Z, lease until 07:18Z; lane 3: T803 claimed 04:24Z, lease until 07:24Z; lane 6: T828 claimed 04:21Z, lease until 07:21Z
-- **Week:** 52% used, 89.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:47Z, 0 min before this update
+- **Lane:** lane 1: T118 claimed 04:18Z, lease until 07:18Z; lane 2: T827 claimed 04:50Z, lease until 07:50Z; lane 3: T803 claimed 04:24Z, lease until 07:24Z; lane 6: T828 claimed 04:21Z, lease until 07:21Z
+- **Week:** 52% used, 88.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 04:48Z, 2 min before this update
 - **Keeper:** last ran 04:47Z, next wake 05:07Z
 
 ## Needs attention
@@ -126,7 +126,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-22T04:19:42Z (week)): week: 104.1M used, 89.9M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T01:48:53Z.
+- Pacing (session_reading 2026-11-22T04:47:31Z (week)): week: 105.9M used, 88.1M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T02:14:16Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -142,6 +142,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T118 (lease until 2026-11-22T07:18:11Z)
+- lane 2: T827 (lease until 2026-11-22T07:50:07Z)
 - lane 3: T803 (lease until 2026-11-22T07:24:45Z)
 - lane 6: T828 (lease until 2026-11-22T07:21:18Z)
 
