@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-22T16:23:32Z by runner e8e6af81881f (actions).
+Updated 2026-11-22T16:23:47Z by runner d65c48968946 (actions).
 
 **Building: T675 in progress since 15:41Z; 615 of 770 done; week 62% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 615 of 770 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T675 claimed 15:41Z, lease until 18:41Z; lane 2: T122 claimed 14:55Z, lease until 17:55Z; lane 7: T590 claimed 14:41Z, lease until 17:41Z
+- **Lane:** lane 1: T675 claimed 15:41Z, lease until 18:41Z; lane 7: T590 claimed 14:41Z, lease until 17:41Z
 - **Week:** 62% used, 66.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:23Z, 0 min before this update
 - **Keeper:** last ran 16:23Z, next wake 16:43Z
@@ -18,11 +18,12 @@ Updated 2026-11-22T16:23:32Z by runner e8e6af81881f (actions).
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T832 (since 2026-11-22T11:35:50Z, no attempt used; a plan change fixes it): T832: dependency T828 is DONE but its owned file .gitleaksignore is not on main
 - OWNED GAP T828 (DONE, since 2026-11-22T08:18:31Z; a later task or plan change must add it): T828: .gitleaksignore missing on main
-- Strict plan check red: 35 problem(s) on tasks still to run (+495 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 35 problem(s) on tasks still to run (+492 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T122 | docs/account-checklist.md: Part 1 test accounts, Part 2 busi | QUEUED | 1 | 88 min | 16:23Z | Reviewer after the findings round (head d65c4896894680459870359165740cf8b3a2bf57) still ended FINDINGS: / 1. tests/docs/ |
 | T725 | site: the home page shows the texting number with its consen | MERGE_PENDING | 4 | 82 min | 16:15Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T831 | site: the /request start screen's words box sits fully insid | MERGE_PENDING | 1 | 107 min | 16:13Z |  |
 | T729 | portals and privacy: the quote page offers updates by email  | MERGE_PENDING | 3 | 92 min | 16:10Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
@@ -144,8 +145,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T675 (lease until 2026-11-22T18:41:28Z)
-- lane 2: T122 (lease until 2026-11-22T17:55:31Z)
 - lane 7: T590 (lease until 2026-11-22T17:41:54Z)
 
 ## Last usage reading
-- {"task": "T725", "at": "2026-11-22T16:15:41Z", "cache_read_input_tokens": 1656467, "input_tokens": 88, "output_tokens": 14510, "cache_creation_input_tokens": 80639}
+- {"task": "T122", "at": "2026-11-22T16:23:31Z", "output_tokens": 35180, "cache_read_input_tokens": 2591401, "cache_creation_input_tokens": 188458, "input_tokens": 117}

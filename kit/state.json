@@ -26111,8 +26111,8 @@
     "T648",
     "T800"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "account-checklist",
    "type": "docs",
    "stage": "5",
@@ -26125,10 +26125,33 @@
     5548,
     5549
    ],
-   "wip_claim": {
-    "attempt": 1,
-    "remote_sha": ""
-   }
+   "last_failure": "Reviewer after the findings round (head d65c4896894680459870359165740cf8b3a2bf57) still ended FINDINGS:\n1. tests/docs/test_account_checklist.py:140 - the texting-campaign test does not guard two TERMS-014 points: docs/account-checklist.md:124 changed to \"is registered only if the business answer is yes\" still passes (TERMS-014 says homeowner campaign is registered even if the business answer is no); deleting \"and only if its answer is unclear to one alternative provider\" (account-checklist.md:118-119) still passes. Fix: add \"registered even if the business answer is no\" and \"one alternative provider\" to the test's phrases.\n2. docs/account-checklist.md:103 (test at test_account_checklist.py:104) - release record says \"an independent security review\"; OPS-043 (docs/spec/ops-recovery.md:47) requires \"an independent Opus security review\". Fix: use that wording and test it.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-sonnet-5-5",
+     "model_evidence_count": 69,
+     "head_sha": "d65c4896894680459870359165740cf8b3a2bf57",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-22T14:55:31Z",
+     "ended_at": "2026-11-22T16:23:31Z",
+     "result": "QUEUED",
+     "usage": {
+      "worker": {
+       "tokens": 1742491,
+       "turns": 39
+      },
+      "reviewer": {
+       "tokens": 1072665,
+       "turns": 22
+      }
+     },
+     "wip_skipped": "PII scan: a commit message in bd27a597ce3e2d3361b4a10a953f8dee73a5c561"
+    }
+   ]
   },
   {
    "id": "T123",
@@ -110876,12 +110899,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T725",
-   "at": "2026-11-22T16:15:41Z",
-   "cache_read_input_tokens": 1656467,
-   "input_tokens": 88,
-   "output_tokens": 14510,
-   "cache_creation_input_tokens": 80639
+   "task": "T122",
+   "at": "2026-11-22T16:23:31Z",
+   "output_tokens": 35180,
+   "cache_read_input_tokens": 2591401,
+   "cache_creation_input_tokens": 188458,
+   "input_tokens": 117
   },
   "source": "session_reading 2026-11-22T15:19:23Z (week)",
   "by_task": {
@@ -118311,17 +118334,27 @@
    },
    "T122": {
     "estimated_bytes": 416392,
-    "estimated_tokens": 486392
+    "estimated_tokens": 486392,
+    "usage_counting": "message_id",
+    "output_tokens": 35180,
+    "cache_read_input_tokens": 2591401,
+    "cache_creation_input_tokens": 188458,
+    "input_tokens": 117,
+    "worker_tokens": 1742491,
+    "worker_turns": 39,
+    "reviewer_tokens": 1072665,
+    "reviewer_turns": 22,
+    "last_model": "claude-sonnet-5-5"
    }
   },
   "windows": {
    "five_hour": {
     "start": "2026-11-22T12:19:43Z",
-    "tokens": 4960676
+    "tokens": 5443571
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 170743409
+    "tokens": 171226304
    }
   },
   "session_reading": {
@@ -118332,7 +118365,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T16:23:32Z",
+ "updated_at": "2026-11-22T16:23:47Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -118430,7 +118463,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "e8e6af81881faac745ba7c2afc562cc22d1042ff",
+ "runner_sha": "d65c4896894680459870359165740cf8b3a2bf57",
  "starter": "actions",
  "smoke_runs": [
   {
