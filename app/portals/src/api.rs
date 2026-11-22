@@ -230,6 +230,10 @@ pub use crate::owner_step_up_page::{
     OWNER_SIGN_OUT_ALL_ROUTE, OWNER_SIGN_OUT_ROUTE, OWNER_STEP_UP_ROUTE, StepUpScreen,
     owner_signed_out, owner_step_up_page,
 };
+pub use crate::phone_approval::{
+    APPROVE_PHONE_ROUTE, PHONES_ROUTE, PhonesNote, REJECT_PHONE_ROUTE, ShownPhone,
+    phone_approval_page, posted_phone,
+};
 pub use crate::photo_upload::{
     HEIC_ERROR, PHOTO_UPLOAD_ROUTE, REASK_ERROR, TOO_BIG_ERROR, TOO_MANY_PIXELS_ERROR,
     UploadScreen, photo_upload_page, upload_screen,
