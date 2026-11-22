@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T02:49:54Z by runner 6fa96edb3efe (actions).
+Updated 2026-11-22T02:52:28Z by runner b3e4c6cdedb5 (actions).
 
-**Building: T118 in progress since 00:46Z; 598 of 753 done; week 48% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T118 in progress since 00:46Z; 599 of 753 done; week 48% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 598 of 753 build tasks (owner gates not counted)
+- **Tasks done:** 599 of 753 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 4: T616 claimed 01:30Z, lease until 04:30Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z; lane 6: T810 claimed 02:18Z, lease until 05:18Z
 - **Week:** 48% used, 92.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:49Z, 0 min before this update
+- **Last run:** 02:50Z, 2 min before this update
 - **Keeper:** last ran 02:49Z, next wake 03:48Z
 
 ## Needs attention
@@ -32,7 +32,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 |---|---|---|---|---|---|---|
 | T803 | messaging (harness): an opted-out number gets no HELP reply; | MERGE_PENDING | 1 | 69 min | 02:44Z |  |
 | T691 | intake (harness): START into an open request resends the con | MERGE_PENDING | 2 | 2 h 16 min | 02:20Z | session ended without handing in |
-| T759 | intake: "Close which?" expires on a worded reply that is not | MERGE_PENDING | 1 | 28 min | 02:19Z |  |
+| T759 | intake: "Close which?" expires on a worded reply that is not | done | 1 | 28 min | 02:19Z |  |
 | T397 | server and portals: the owner approves or declines a member- | BLOCKED | 1 | 27 min | 02:12Z | PLAN GAP: outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per p |
 | T121 | Startup key checks, control router absent in live, supply-ch | BLOCKED | 1 | 15 min | 01:45Z | PLAN GAP: outside ownership: app/server/src/owner_portal.rs, app/server/src/owner_tools.rs, app/portals/src/owner_help.r |
 | T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | BLOCKED | 3 | 49 min | 01:39Z | Reviewer after findings round still FINDINGS at 4f79a8b8c4195e68ccfba3a25eaab6d612560536: / 1. docs/runbook.md:139-142 a |
@@ -88,8 +88,6 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 | T684 | picks and server: the open-cards email goes at the times eac | done | 2 | 93 min | 03:50Z | PLAN GAP: app/quotes/src/models.rs:265 `card_sent_at` is pub(crate); T684 owns no app/quotes/src file. quotes::api has n |
 | T780 | payments and portals: the scorecard's refund and dispute rat | done | 1 | 33 min | 03:33Z |  |
 | T775 | intake: a check-in reply that names a 911 danger gets the 91 | done | 1 | 94 min | 03:03Z |  |
-| T754 | portals and payments: a $0 Confirm after a PaymentIntent was | BLOCKED | 1 | 3 min | 02:52Z |  |
-| T457 | portals and server: the Confirm email link asks for a code w | resync | 1 | 70 min | 02:50Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -97,7 +95,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 598 of 753
+**Tasks merged (throughput only):** 599 of 753
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -133,7 +131,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 241 of 328 done
+- stage 5: 242 of 328 done
 - stage 6: 0 of 72 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
