@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T11:02:01Z by runner a8795aa52939 (manual).
+Updated 2026-11-22T11:05:53Z by runner dd295e06660e (actions).
 
-**Building: T829 in progress since 10:24Z; 607 of 767 done; week 57% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T829 in progress since 10:24Z; 607 of 768 done; week 57% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 607 of 767 build tasks (owner gates not counted)
+- **Tasks done:** 607 of 768 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T829 claimed 10:24Z, lease until 13:24Z; lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 5: T589 claimed 10:36Z, lease until 13:36Z; lane 7: T805 claimed 10:42Z, lease until 13:42Z
 - **Week:** 57% used, 76.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:01Z, 0 min before this update
+- **Last run:** 11:05Z, 0 min before this update
 - **Keeper:** last ran 10:53Z, next wake 11:13Z
 
 ## Needs attention
@@ -97,7 +97,7 @@ At 1280x900 the /request chat start screen textarea box spans y=784..914, partly
 | T615 | site and server: a styled 404 page for unknown paths, the fa | BLOCKED | 3 | 2 h 11 min | 11:53Z |  |
 
 ### Plan and harness merges on main
-- none
+- 11:05Z Plan: T831 fits the /request words box in the first screen; T118 depends on it (A11Y-005, D-5502) (#1343)
 
 ## Progress (requirements verified)
 
@@ -138,7 +138,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 250 of 339 done
+- stage 5: 250 of 340 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done

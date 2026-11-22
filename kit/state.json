@@ -25639,7 +25639,8 @@
     "T310",
     "T414",
     "T707",
-    "T536"
+    "T536",
+    "T831"
    ],
    "status": "BLOCKED",
    "attempts": 4,
@@ -88520,7 +88521,8 @@
    "id": "T611",
    "deps": [
     "T610",
-    "T520"
+    "T520",
+    "T831"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -93335,7 +93337,8 @@
    "deps": [
     "T593",
     "T609",
-    "T649"
+    "T649",
+    "T831"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -108256,7 +108259,8 @@
     "T745",
     "T676",
     "T671",
-    "T725"
+    "T725",
+    "T831"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -109537,6 +109541,21 @@
     "app/server/src/owner_tools.rs",
     "docs/decisions.md"
    ]
+  },
+  {
+   "id": "T831",
+   "deps": [
+    "T610",
+    "T609",
+    "T595",
+    "T593",
+    "T489"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "request-start-fits",
+   "type": "build",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -116960,7 +116979,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T11:02:01Z",
+ "updated_at": "2026-11-22T11:05:53Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -117058,8 +117077,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "a8795aa5293964893a5954ea2cd41355ad6e6b6c",
- "starter": "manual",
+ "runner_sha": "dd295e06660e0308300490a7b00829730b7a7197",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "073da52ea9e971e6df8a97a9aa7d4228831d613e",
