@@ -23,7 +23,7 @@ A rule enforced only by a document is a rule a tired session can skip. The matri
 | Rule | Enforced by |
 |---|---|
 | `sources/` never changes | `Ci` fingerprint step |
-| No secrets in the tree | `Ci` gitleaks step; deny rules on `.env*` (SEC-045 adds a commit-range scan at T169) |
+| No secrets in the tree | `Ci` gitleaks step; deny rules on `.env*` (SEC-045's commit-range scan: T828, D-5410) |
 | No real personal data in the tree | `Ci` PII scan |
 | `main` takes only pull requests with the required checks green; no force-push, no deletion | GitHub ruleset `protect-main` (verified by the runner at K0, `ruleset_verified` in `kit/state.json`). **Open (E-2):** `Governance` added as required, the Actions source on every check, up-to-date branches, a `claude/kit-state` ruleset |
 | The rules a pull request is checked against come from `main`, not from the branch | `Governance` check (`.github/workflows/governance.yml`, `workflow_run`) runs `main`'s `check_plan_lock.py` and `check_pr_change.py` against the head |
