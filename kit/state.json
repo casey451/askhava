@@ -87614,8 +87614,8 @@
     "T115",
     "T748"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "site-pages-polish",
    "type": "build",
    "stage": "5",
@@ -87628,10 +87628,33 @@
     5345,
     5346
    ],
-   "wip_claim": {
-    "attempt": 1,
-    "remote_sha": ""
-   }
+   "reason": "plan gap reported: PLAN GAP: tests/e2e/site_pages.spec.ts:26-28 (owned by T102) requires exactly one footer h2 \"Homeowners\" and exactly four footer links (toEqual), but T609's goal (DESIGN_SPEC.md:117, D-4252(a)) requires a second footer column (For businesses, Espa\u00f1ol, Terms, Privacy, Accessibility), and the prompt says that test must pass unchanged and T609 does not own it. Reviewer confirmed at HEAD 907c2ff0ac1a: current footer has one h2 and four links, so adding the second column fails lines 26-28. Smallest plan change: logged change to site_pages.spec.ts:26-28 to allow both columns, or drop the second colu; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T609 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: tests/e2e/site_pages.spec.ts:26-28 (owned by T102) requires exactly one footer h2 \"Homeowners\" and exactly four footer links (toEqual), but T609's goal (DESIGN_SPEC.md:117, D-4252(a)) requires a second footer column (For businesses, Espa\u00f1ol, Terms, Privacy, Accessibility), and the prompt says that test must pass unchanged and T609 does not own it. Reviewer confirmed at HEAD 907c2ff0ac1a: current footer has one h2 and four links, so adding the second column fails lines 26-28. Smallest plan change: logged change to site_pages.spec.ts:26-28 to allow both columns, or drop the second column from T609.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 40,
+     "head_sha": "907c2ff0ac1a1c71034f623825d74f8d67c96d8e",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-22T00:54:31Z",
+     "ended_at": "2026-11-22T00:57:22Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 1108178,
+       "turns": 20
+      },
+      "reviewer": {
+       "tokens": 186002,
+       "turns": 5
+      }
+     }
+    }
+   ]
   },
   {
    "id": "T610",
@@ -106512,12 +106535,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T117",
-   "at": "2026-11-22T00:48:35Z",
-   "output_tokens": 65882,
-   "cache_creation_input_tokens": 229432,
-   "cache_read_input_tokens": 6609592,
-   "input_tokens": 216
+   "task": "T609",
+   "at": "2026-11-22T00:57:22Z",
+   "cache_creation_input_tokens": 102621,
+   "output_tokens": 11383,
+   "input_tokens": 50,
+   "cache_read_input_tokens": 1180126
   },
   "source": "session_reading 2026-11-22T00:49:08Z (week)",
   "by_task": {
@@ -113661,17 +113684,27 @@
    },
    "T609": {
     "estimated_bytes": 532172,
-    "estimated_tokens": 1558984
+    "estimated_tokens": 1558984,
+    "usage_counting": "message_id",
+    "cache_creation_input_tokens": 102621,
+    "output_tokens": 11383,
+    "input_tokens": 50,
+    "cache_read_input_tokens": 1180126,
+    "worker_tokens": 1108178,
+    "worker_turns": 20,
+    "reviewer_tokens": 186002,
+    "reviewer_turns": 5,
+    "last_model": "claude-opus-5-5"
    }
   },
   "windows": {
    "five_hour": {
     "start": "2026-11-21T20:57:01Z",
-    "tokens": 9874210
+    "tokens": 10106276
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 132409737
+    "tokens": 132641803
    }
   },
   "session_reading": {
@@ -113682,7 +113715,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T00:55:03Z",
+ "updated_at": "2026-11-22T00:57:23Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -113780,7 +113813,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "a6b5bb82ade9889562aa80a38868e40342235430",
+ "runner_sha": "907c2ff0ac1a1c71034f623825d74f8d67c96d8e",
  "starter": "actions",
  "smoke_runs": [
   {

@@ -9546,3 +9546,4 @@
 - 2026-11-22T00:54:40Z runner a6b5bb82ade9 (actions): {}
 - 2026-11-22T00:54:58Z runner a6b5bb82ade9 (actions): {"T609": "QUEUED -> IN_PROGRESS"}; T609 estimated 1.6M tokens (calibrated); week has 102.8M left (no five-hour budget, D-3056) after 5.2M still running in another lane (session_reading 2026-11-22T00:49:08Z (week)); claimed
 - 2026-11-22T00:55:03Z runner a6b5bb82ade9 (actions): {}
+- 2026-11-22T00:57:23Z runner 907c2ff0ac1a (actions): {"T609": "IN_PROGRESS -> BLOCKED"}
