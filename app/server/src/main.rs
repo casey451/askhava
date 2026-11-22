@@ -114,6 +114,7 @@ fn business_parts(
     let homeowner = askhava_server::homeowner_portal::homeowner_verify(settings, std::env::vars())?;
     let photos = askhava_server::homeowner_portal::photo_parts(settings, std::env::vars())?;
     let link_codes = askhava_server::action_links::confirm_link_codes(settings, std::env::vars())?;
+    let press_codes = askhava_server::action_links::confirm_link_codes(settings, std::env::vars())?;
     let number = askhava_server::business_number(settings.business_number())?;
     let env: Vec<(String, String)> = std::env::vars().collect();
     let texting = askhava_server::homeowner_number(settings, &env)?;
@@ -130,6 +131,7 @@ fn business_parts(
         .with_business_number(number.clone())
         .with_confirm_part(confirm)
         .with_confirm_link_codes(link_codes)
+        .with_confirm_codes(press_codes)
         .with_chat_codes(chat)
         .with_site_pages(pages.with_business_number(number))
         .with_environment(settings.environment())
