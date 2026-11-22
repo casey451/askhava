@@ -49,8 +49,9 @@ pub const MAX_PICTURES: usize = 3;
 pub const HOLD_EVERY: SignedDuration = SignedDuration::from_mins(15);
 /// How long a picture text is held for a job, from the text (INT-019's no-reply close).
 pub const HOLD_FOR: SignedDuration = SignedDuration::from_hours(72);
-/// The row recording one media's outcome; its choice is `<media SID> <outcome>`.
-const PHOTO_MEDIA: &str = "photo_media";
+/// The prefix of the row recording one media's outcome: `photo_media.<media SID in lowercase>`,
+/// its choice the outcome ([`code_of`]).
+const PHOTO_MEDIA: &str = "photo_media.";
 const BAD_PAYLOAD: &str = "bad intake picture text payload";
 const FAILED: &str = "the intake picture text task failed";
 
@@ -220,8 +221,11 @@ async fn take_all<P: PictureSource>(
     let done = outcomes(db, conversation).await.map_err(fail)?;
     let mut steps = Vec::new();
     for media in &picture.media {
-        let prefix = format!("{media} ");
-        let known = done.iter().find_map(|d| d.strip_prefix(&prefix));
+        let question = format!("{PHOTO_MEDIA}{}", media.to_lowercase());
+        let known = done
+            .iter()
+            .find(|(q, _)| *q == question)
+            .map(|(_, c)| c.as_str());
         let taken = match known {
             Some(code) => taken_of(code),
             None => {
@@ -229,8 +233,8 @@ async fn take_all<P: PictureSource>(
                 let one = take_one(db, &keys.source, (job, &tail), now).await;
                 match one {
                     Some(taken) => {
-                        let code = format!("{prefix}{}", code_of(taken));
-                        models::insert_plain(db, conversation, (PHOTO_MEDIA, &code), now)
+                        let code = code_of(taken);
+                        models::insert_plain(db, conversation, (&question, &code), now)
                             .await
                             .map_err(fail)?;
                         taken
@@ -271,23 +275,30 @@ async fn take_one<P: PictureSource>(
     }
 }
 
-/// The `photo_media` rows of `conversation`.
-async fn outcomes(db: &mut PgConnection, conversation: Uuid) -> Result<Vec<String>, IntakeError> {
-    sqlx::query_scalar!(
-        r#"SELECT choice AS "choice!" FROM intake.intake_answer
-           WHERE conversation_id = $1 AND question_id = $2 AND choice IS NOT NULL"#,
+/// The `photo_media.<SID>` rows of `conversation`, as (question, outcome).
+async fn outcomes(
+    db: &mut PgConnection,
+    conversation: Uuid,
+) -> Result<Vec<(String, String)>, IntakeError> {
+    let rows = sqlx::query!(
+        r#"SELECT question_id, choice AS "choice!" FROM intake.intake_answer
+           WHERE conversation_id = $1 AND starts_with(question_id, $2) AND choice IS NOT NULL"#,
         conversation,
         PHOTO_MEDIA
     )
     .fetch_all(db)
     .await
-    .map_err(|_| IntakeError::Database)
+    .map_err(|_| IntakeError::Database)?;
+    Ok(rows
+        .into_iter()
+        .map(|r| (r.question_id, r.choice))
+        .collect())
 }
 
 /// A `photo_media` outcome code.
 fn code_of(taken: PhotoTaken) -> String {
     match taken {
-        PhotoTaken::Stored(id) => format!("stored:{}", id.simple()),
+        PhotoTaken::Stored(id) => format!("stored.{}", id.simple()),
         PhotoTaken::ReAsk => "reask".to_owned(),
         PhotoTaken::Heic => "heic".to_owned(),
         PhotoTaken::Refused | PhotoTaken::TooManyPixels => "off".to_owned(),
@@ -300,7 +311,7 @@ fn taken_of(code: &str) -> PhotoTaken {
         "reask" => PhotoTaken::ReAsk,
         "heic" => PhotoTaken::Heic,
         _ => code
-            .strip_prefix("stored:")
+            .strip_prefix("stored.")
             .and_then(|id| Uuid::parse_str(id).ok())
             .map_or(PhotoTaken::Refused, PhotoTaken::Stored),
     }

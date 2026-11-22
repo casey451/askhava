@@ -431,6 +431,8 @@ const PHOTO_SHOWN: &str = "photo_shown";
 const PHOTO_ANSWERED: &str = "photo_answered";
 /// The one re-ask was sent (INT-044).
 const PHOTO_REASKED: &str = "photo_reask";
+/// The choice of a step-9 or step-10 marker row (a choice is lowercase letters and digits).
+const MARKED: &str = "yes";
 /// Every step-9 and step-10 marker [`stage`] reads.
 const STAGE_MARKERS: [&str; 6] = [
     PHOTO_ASKED,
@@ -593,7 +595,7 @@ async fn ask_photos(
         return Ok(Vec::new());
     };
     let at = request.0.received_at;
-    models::insert_plain(db, request.1, (PHOTO_ASKED, ""), at).await?;
+    models::insert_plain(db, request.1, (PHOTO_ASKED, MARKED), at).await?;
     let mut texts = vec![queued];
     if let (_, unshown) = photo_queue(db, request.1, about.job).await?
         && let Some(first) = unshown.first()
@@ -615,7 +617,7 @@ async fn ask_marked(
         return Ok(Vec::new());
     };
     let at = request.0.received_at;
-    models::insert_plain(db, request.1, (marker, ""), at).await?;
+    models::insert_plain(db, request.1, (marker, MARKED), at).await?;
     Ok(vec![queued])
 }
 
@@ -658,7 +660,7 @@ async fn end_photos(
     } else {
         PHOTO_DONE
     };
-    models::insert_plain(db, request.1, (marker, ""), request.0.received_at).await?;
+    models::insert_plain(db, request.1, (marker, MARKED), request.0.received_at).await?;
     advance(db, secret, request, about).await
 }
 
@@ -706,7 +708,7 @@ pub(crate) async fn photo_steps(
             let words = (msg.inbound.words, msg.received_at);
             crate::order::keep_words(db, (conversation, about.job), msg.inbox_id, words).await?;
         }
-        models::insert_plain(db, conversation, (DESCRIBED, ""), msg.received_at).await?;
+        models::insert_plain(db, conversation, (DESCRIBED, MARKED), msg.received_at).await?;
         return advance(db, secret, request, about).await;
     }
     let (waiting, unshown) = photo_queue(db, conversation, about.job).await?;
