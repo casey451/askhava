@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-22T17:03:12Z by runner d7ebff526219 (actions).
+Updated 2026-11-22T17:03:26Z by runner d7ebff526219 (actions).
 
-**Building: T675 in progress since 15:41Z; 616 of 770 done; week 63% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Idle since 17:03Z; 616 of 770 done; week 63% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 616 of 770 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T675 claimed 15:41Z, lease until 18:41Z
+- **Lane:** idle since 17:03Z (no task in progress)
 - **Week:** 63% used, 66.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 17:01Z, 2 min before this update
 - **Keeper:** last ran 16:41Z, next wake 17:01Z
@@ -23,6 +23,7 @@ Updated 2026-11-22T17:03:12Z by runner d7ebff526219 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T675 | intake and server (harness): the dispatcher asks for photos  | MERGE_PENDING | 4 | 81 min | 17:03Z | PLAN GAP: tests/integration/tests/intake_order_card.rs:285, tests/integration/tests/intake_refusals_wired.rs:399, tests/ |
 | T590 | calls, picks and server: the who's-calling and missed-call t | MERGE_PENDING | 1 | 118 min | 16:40Z |  |
 | T122 | docs/account-checklist.md: Part 1 test accounts, Part 2 busi | QUEUED | 1 | 88 min | 16:23Z | Reviewer after the findings round (head d65c4896894680459870359165740cf8b3a2bf57) still ended FINDINGS: / 1. tests/docs/ |
 | T725 | site: the home page shows the texting number with its consen | MERGE_PENDING | 4 | 82 min | 16:15Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
@@ -35,7 +36,7 @@ Updated 2026-11-22T17:03:12Z by runner d7ebff526219 (actions).
 | T729 | portals and privacy: the quote page offers updates by email  | check_failed | 2 | 49 min | 12:26Z |  |
 | T610 | site: the D-4246 polish on the Spanish pages, the legal page | done | 2 | 40 min | 12:19Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T589 | intake and portals: the pick review page is shown in her req | done | 2 | 87 min | 12:04Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
-| T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 3 | 2 h 50 min | 11:38Z | PLAN GAP: tests/integration/tests/intake_order_card.rs:285, tests/integration/tests/intake_refusals_wired.rs:399, tests/ |
+| T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 3 | 2 h 50 min | 11:38Z |  |
 | T805 | messaging (harness): the toll-free fallback is refused after | done | 1 | 50 min | 11:32Z |  |
 | T829 | server tests (harness): the door matrix's owner sign-ins nev | done | 3 | 46 min | 11:10Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T725 | site: the home page shows the texting number with its consen | BLOCKED | 3 | 21 min | 10:52Z |  |
@@ -143,7 +144,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T675 (lease until 2026-11-22T18:41:28Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T590", "at": "2026-11-22T16:40:23Z", "input_tokens": 137, "cache_read_input_tokens": 4792155, "output_tokens": 39096, "cache_creation_input_tokens": 148283}
+- {"task": "T675", "at": "2026-11-22T17:03:10Z", "input_tokens": 393, "output_tokens": 151893, "cache_read_input_tokens": 35329205, "cache_creation_input_tokens": 396323}
