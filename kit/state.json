@@ -87905,7 +87905,7 @@
     "T115",
     "T748"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 2,
    "slug": "site-pages-polish",
    "type": "build",
@@ -87919,8 +87919,8 @@
     5345,
     5346
    ],
-   "reason": "plan gap reported: PLAN GAP: tests/e2e/web_chat.spec.ts:123 (owned by T489) uses strict locator main.locator('[lang=\"es\"]'); the footer's Espanol link, which D-4252 (a), D-5386 and DESIGN_SPEC:117 require to carry lang=\"es\" hreflang=\"es\", sits inside main (D-3994), so on /request the locator matches two elements (Spanish consent draft and footer link) and the test fails. T609 owns neither web_chat.spec.ts nor base.html (the only way to move the footer out of main), and its acceptance says web_chat.spec.ts passes unchanged. Reviewer confirmed. Smallest plan change: give T609 ownership of tests/e2e/web_chat.spec.t; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T609 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: tests/e2e/web_chat.spec.ts:123 (owned by T489) uses strict locator main.locator('[lang=\"es\"]'); the footer's Espanol link, which D-4252 (a), D-5386 and DESIGN_SPEC:117 require to carry lang=\"es\" hreflang=\"es\", sits inside main (D-3994), so on /request the locator matches two elements (Spanish consent draft and footer link) and the test fails. T609 owns neither web_chat.spec.ts nor base.html (the only way to move the footer out of main), and its acceptance says web_chat.spec.ts passes unchanged. Reviewer confirmed. Smallest plan change: give T609 ownership of tests/e2e/web_chat.spec.ts and scope line 123 to e.g. main.locator('[lang=\"es\"]:not(footer *)'). Also for the next attempt: leave the aria-hidden arrow off the \"Send\" button on request.html (axe color-contrast incomplete on /request at 320, 768, 1280) and log it in docs/for-casey-review.md.",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/e2e/web_chat.spec.ts:123 (owned by T489) uses strict locator main.locator('[lang=\"es\"]'); the footer's Espanol link, which D-4252 (a), D-5386 and DESIGN_SPEC:117 require to carry lang=\"es\" hreflang=\"es\", sits inside main (D-3994), so on /request the locator matches two elements (Spanish consent draft and footer link) and the test fails. T609 owns neither web_chat.spec.ts nor base.html (the only way to move the footer out of main), and its acceptance says web_chat.spec.ts passes unchanged. Reviewer confirmed. Smallest plan change: give T609 ownership of tests/e2e/web_chat.spec.ts and scope line 123 to e.g. main.locator('[lang=\"es\"]:not(footer *)'). Also for the next attempt: leave the aria-hidden arrow off the \"Send\" button on request.html (axe color-contrast incomplete on /request at 320, 768, 1280) and log it in docs/for-casey-review.md.\nre-queued after plan fix D-5441: web_chat.spec.ts:123 locator scoped past the footer Espanol link (merged #1326)",
    "history": [
     {
      "attempt": 1,
@@ -87982,6 +87982,19 @@
      "plan_head": "de7e41db8c6036badb8f964414f63e16a837f1d7",
      "plan_then": "e6503109e30511d595b1a825fb6f8906d256e6ff4b1618194819d64b20070065",
      "plan_now": "7094f006bd6012c5033c01cd2d2f34fc4780b5186b537eb1160031839c34f2ce"
+    },
+    {
+     "at": "2026-11-22T04:57:26Z",
+     "reason": "web_chat.spec.ts:123 locator scoped past the footer Espanol link (merged #1326)",
+     "by": "manual-da9966504756",
+     "was": "plan gap reported: PLAN GAP: tests/e2e/web_chat.spec.ts:123 (owned by T489) uses strict locator main.locator('[lang=\"es\"]'); the footer's Espanol link, which D-4252 (a), D-5386 and DESIGN_SPEC:117 require to carry lang=\"es\" hreflang=\"es\", sits inside main (D-3994), so on /request the locator matches two elements (Spanish consent draft and footer link) and the test fails. T609 owns neither web_chat.spec.ts nor base.html (the only way to move the footer out of main), and its acceptance says web_chat.spec.ts passes unchanged. Reviewer confirmed. Smallest plan change: give T609 ownership of tests/e2e/web_chat.spec.t; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T609 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 2,
+     "plan_fix": "D-5441",
+     "plan_since": "2026-11-22T04:01:34Z",
+     "plan_base": "dfc4f31032dda9d428ca2272b8e57c969bc82814",
+     "plan_head": "619c9afc042ce00c9e53aea938d722852430a864",
+     "plan_then": "7094f006bd6012c5033c01cd2d2f34fc4780b5186b537eb1160031839c34f2ce",
+     "plan_now": "43ff5cd156c602f8f7178dc904e779d23f67c4dd611958b27f082fb7fe55771d"
     }
    ]
   },
@@ -115249,7 +115262,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T04:54:19Z",
+ "updated_at": "2026-11-22T04:57:26Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -115347,8 +115360,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "073da52ea9e971e6df8a97a9aa7d4228831d613e",
- "starter": "actions",
+ "runner_sha": "619c9afc042ce00c9e53aea938d722852430a864",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "907c2ff0ac1a1c71034f623825d74f8d67c96d8e",
