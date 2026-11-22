@@ -10078,3 +10078,4 @@
 - 2026-11-22T23:39:00Z runner bd3e4e9cdad1 (manual): {}
 - 2026-11-22T23:48:35Z runner bd3e4e9cdad1 (actions): {"T118": "IN_PROGRESS -> QUEUED", "T121": "IN_PROGRESS -> QUEUED", "T645": "IN_PROGRESS -> QUEUED", "T675": "IN_PROGRESS -> QUEUED", "T725": "IN_PROGRESS -> QUEUED", "T730": "IN_PROGRESS -> QUEUED", "T832": "IN_PROGRESS -> QUEUED"}
 - 2026-11-22T23:49:07Z runner bd3e4e9cdad1 (actions): {"T675": "QUEUED -> IN_PROGRESS"}; T675 estimated 2.0M tokens (calibrated); week has 64.0M left (no five-hour budget, D-3056) (session_reading 2026-11-22T18:46:13Z (week)); claimed
+- 2026-11-22T23:50:00Z runner bd3e4e9cdad1 (actions): {"T725": "QUEUED -> IN_PROGRESS"}; T725 estimated 1.6M tokens (calibrated); week has 62.0M left (no five-hour budget, D-3056) after 2.0M still running in another lane (session_reading 2026-11-22T18:46:13Z (week)); claimed
