@@ -1,8 +1,8 @@
-"""The homeowner texting campaign draft matches the real templates (T113).
+"""The homeowner texting campaign draft matches the real templates (T113, T800).
 
 TD-TERMS-01, TD-TERMS-02, TD-WEB-12, TD-CON-16, TD-TXT-26 (TERMS-002 to TERMS-004, TERMS-006 to
 TERMS-009, TERMS-011, TERMS-013 to TERMS-015, TERMS-018, TERMS-029, TERMS-030, TERMS-032, TXT-043,
-CON-033; D-304, D-419, D-490, D-3880, D-4147).
+CON-005, CON-009, CON-018, CON-030, CON-033; D-304, D-419, D-490, D-3880, D-4147, D-5278, D-5280).
 
 Reads `docs/legal/twilio-campaign.md` and `app/messaging/templates/en.json` and `es.json`. Each sample
 in the draft is a fenced block after a line ending "Template `<key>`:" ("Spanish template" for the
@@ -13,6 +13,9 @@ its `audience` is `homeowner` (`Line::sender` sends from the audience's one numb
 business template allowed there is `business_signup_reply` (TERMS-029). The TERMS-002 to TERMS-009
 clauses live in the other drafts, checked by tests/docs/test_terms_clauses.py; this file checks the
 campaign's share of TD-TERMS-01. Brand text comes from the brand file, never a literal. Fake data only.
+D-5278 (logged spec change, BUILD_BRIEF.md:69) moved the samples to five, the Spanish consent among
+them, the description to the full one with the fee and the release, and added the checks on the
+Console copy, the opt-out field (stand_ins/provider_optout.json) and the `help_message` excerpt.
 
 Run: python3 -m pytest tests/docs/test_campaign.py -q -p no:cacheprovider
 """
@@ -32,20 +35,35 @@ ROOT = Path(__file__).resolve().parents[2]
 DOC = ROOT / "docs" / "legal" / "twilio-campaign.md"
 TEMPLATES = ROOT / "app" / "messaging" / "templates"
 BRAND = brand.load()
-# TERMS-013, TERMS-029, TERMS-030, D-3880: the six homeowner samples, in this order.
-SAMPLES = ("consent", "first_quote", "text_pick_done", "opt_out_confirmation", "whos_calling", "business_signup_reply")
+# TERMS-013, TERMS-030, D-5278: the four English samples, in this order, then the Spanish consent.
+SAMPLES = ("consent", "first_quote", "text_pick_done", "whos_calling")
 SAMPLE = re.compile(r"^(?:[^\n]* )?(Spanish template|Template) `([a-z0-9_]+)`:\n\n```text\n(.*?)\n```$", re.M | re.S)
-# TERMS-011 and D-088's drafted wording, with D-419's opt-in (no reply of OK) and TERMS-029's sentence.
+# TERMS-011, TERMS-029 and D-5278: the full description, with the fee, the release and no chat.
 DESCRIPTION = (
-    "{brand_legal} is a local service in Lake Havasu City, AZ. People text us, or start on {domain}, to ask "
-    "for quotes on a home or local service they need. They opt in by texting us first, or by entering in the "
-    "{domain} chat a code we text to their mobile number; our first reply states message frequency, rates, "
-    "HELP and STOP. We text them only about their own request: confirmations, when quotes arrive, the business "
-    "they choose and who will call them. We never share, sell or transfer phone numbers or opt-in consent, and "
-    "businesses never send messages on this campaign. Businesses get no texts on this number; they are notified "
-    "by email. A person who texts asking to join as a business gets one reply with the sign-up link. Use case: "
-    "Customer Care, Low-Volume Standard."
+    "{brand_legal} runs {brand}, a quote-request service for homes in Lake Havasu City, AZ. A homeowner "
+    "finds our number on a public page on {domain}, next to our SMS disclosures, and texts us first. Our "
+    "first reply is the full consent text: message frequency, rates, HELP and STOP. Only {brand} "
+    "texts her, and only about her own request: questions about the job, confirmations, when quotes arrive, "
+    "her pick and who will call her. Local businesses get the job without her name, phone, email or street "
+    "address and post quotes on {domain}. The business she picks pays {brand} a fixed introduction fee by "
+    "job size: $25, $75 or $199. Some jobs are fee-free. Only then does that business see her first name "
+    "and the job address. Her phone number and her SMS consent are never given to any business; calls go through a "
+    "masked number. We send no marketing, and businesses never send messages on this campaign. Businesses "
+    "get no texts on this number; they are notified by email. A person who texts asking to join as a "
+    "business gets one reply with the sign-up link. Texts are in English. Once we turn Spanish on, people "
+    "who write to us in Spanish get Spanish texts."
 )
+# D-5278, 30984: each filled value in the Console copy, in [brackets].
+BRACKETS = {
+    "job": "[request number]",
+    "link": f"https://{BRAND['domain']}/q/[private code]",
+    "quoted": "[quote number]",
+    "business": "[business name]",
+    "number": "[masked phone number]",
+}
+CONSOLE = re.compile(r"^Console sample (\d):\n\n```text\n(.*?)\n```$", re.M | re.S)
+FENCE = re.compile(r"^```text\n(.*?)\n```$", re.M | re.S)
+OPTOUT = json.loads((ROOT / "stand_ins" / "provider_optout.json").read_text(encoding="utf-8"))["opt_out"]["reply"]
 SIGNUP_REPLY = "business_signup_reply"
 # Template keys that name a business message, whatever audience a later edit gives them.
 BUSINESS_PREFIXES = (
@@ -101,11 +119,41 @@ def registry() -> dict[str, dict[str, dict]]:
     return {"en": load("en"), "es": load("es")}
 
 
-def test_samples_are_exactly_the_six_templates() -> None:
-    """TD-TERMS-02, TD-WEB-12, TERMS-013, TERMS-029, TERMS-030: the six homeowner samples, then the Spanish one."""
-    found = samples(doc())
-    assert [key for lang, key, _ in found if lang == "en"] == list(SAMPLES)
-    assert [key for lang, key, _ in found if lang == "es"] == ["consent"]
+def test_samples_are_exactly_the_five_templates() -> None:
+    """TD-TERMS-02, TD-WEB-12, TERMS-013, TERMS-030, D-5278: four English samples, then the Spanish consent."""
+    found = samples(section(doc(), "6. Sample messages"))
+    assert [(lang, key) for lang, key, _ in found] == [("en", key) for key in SAMPLES] + [("es", "consent")]
+    assert samples(doc()) == found
+    assert "opt_out_confirmation" not in [key for _, key, _ in found]
+    assert SIGNUP_REPLY not in [key for _, key, _ in found]
+
+
+def console_copy(text: str) -> list[str]:
+    """The Console samples, in their numbered order."""
+    found = CONSOLE.findall(text)
+    assert [int(n) for n, _ in found] == list(range(1, len(found) + 1))
+    return [body for _, body in found]
+
+
+def bracketed(body: str) -> str:
+    """A sample as the Console takes it: each {token} filled with its [bracketed] value (30984)."""
+    return re.sub(r"\{([a-z_]+)\}", lambda m: BRACKETS[m.group(1)], body)
+
+
+def test_console_copy_is_each_sample_with_brackets_and_no_unfilled_placeholder() -> None:
+    """TERMS-013, D-5278: five Console samples, each its sample with [brackets]; no braces or angle brackets."""
+    text = doc()
+    console = console_copy(text)
+    assert console == [bracketed(body) for _, _, body in samples(text)]
+    for body in console:
+        assert not re.search(r"[{}<>]", body), body
+
+
+def test_a_planted_unfilled_placeholder_in_the_console_copy_fails() -> None:
+    """D-5278, 30984: a token left in braces in the Console copy turns the check red."""
+    text = doc()
+    planted = text.replace("[request number] is in", "{job} is in", 1)
+    assert console_copy(planted) != [bracketed(body) for _, _, body in samples(planted)]
 
 
 def test_every_sample_is_its_template_word_for_word() -> None:
@@ -153,16 +201,91 @@ def test_description_is_the_drafted_wording() -> None:
     assert quoted.index("Businesses get no texts on this number; they are notified by email.") > never
 
 
+def test_description_names_the_fee_and_the_release_and_never_the_chat() -> None:
+    """TERMS-011, D-5278, 30988: the fee and the first-name-and-address release are named; no chat or widget."""
+    quoted = section(doc(), "3. Campaign description")
+    assert "fixed introduction fee by job size: $25, $75 or $199." in quoted
+    assert "Only then does that business see her first name and the job address." in quoted
+    assert not re.search(r"\b(?:chat|widget)", quoted, re.I)
+
+
 def test_registration_ticks_links_and_phone_numbers_after_the_mailing_address() -> None:
-    """TD-WEB-12, TD-TERMS-01, TERMS-011, TERMS-030, TERMS-032: use case, ticks and the address first."""
+    """TD-WEB-12, TD-TERMS-01, TERMS-011, TERMS-030, TERMS-032: brand type, use case, ticks and the address first."""
     text = doc()
     settings = section(text, "2. Campaign settings")
-    assert "Use case: Customer Care, Low-Volume Standard." in settings
+    assert "- Brand type: Low-Volume Standard.\n- Use case: Low Volume Mixed.\n" in settings
+    assert "pre-clearance" not in text
     assert '"Messages will include embedded links": yes' in settings
     assert '"Messages will include phone numbers": yes' in settings
     before = section(text, "1. Before registering")
     assert f"{BRAND['domain']} and the SMS terms show the {BRAND['legal_name']} mailing address" in before
     assert "{number}" in next(b for lang, k, b in samples(text) if k == "whos_calling")
+
+
+def test_register_only_after_the_written_answer_and_the_pre_submit_check() -> None:
+    """TERMS-014, CON-005, D-5278: the filed answer to the question, then the December 9 codes and the evidence."""
+    before = " ".join(section(doc(), "1. Before registering").split())
+    assert "sent Twilio the written question in `docs/handoff/Twilio_question.md` and filed Twilio's" in before
+    assert "including the request page, the privacy policy and the SMS terms" in before
+    assert "whether businesses may get texts" not in doc()
+    check = " ".join(section(doc(), "9. Pre-submit check").split())
+    for code in ("30977", "30984", "30988", "30965", "30987", "30966", "30978"):
+        assert code in check
+    assert "public screenshot or evidence link" in check
+    assert "No number is public before Gate C, and there is no exception to that." in check
+    assert "no unfilled placeholder is left" in check
+
+
+def test_one_opt_in_path_the_first_inbound_text() -> None:
+    """CON-005, CON-025, D-5278: the message flow names the first inbound text only; a Verify code is not opt-in."""
+    optin = section(doc(), "5. How people opt in")
+    flow = next(line for line in optin.splitlines() if line.startswith("> "))
+    first = brand.fill("A person opts in by sending their own first text to the {brand} number.", data=BRAND)
+    assert flow.startswith("> " + first)
+    assert not re.search(r"\b(?:chat|widget|code)", flow, re.I)
+    assert "There is one way to opt in" in optin
+    assert "A sign-in code sent by Twilio Verify is not an opt-in." in optin
+
+
+def test_opt_out_field_is_the_exact_provider_confirmation() -> None:
+    """CON-009, CON-030, D-5278: the opt-out field equals stand_ins/provider_optout.json, English then Spanish."""
+    optin = section(doc(), "5. How people opt in")
+    assert FENCE.findall(optin)[:2] == [OPTOUT["en"], OPTOUT["es"]]
+
+
+def help_sentences(text: str) -> list[str]:
+    """The whole sentences of a help text, in order."""
+    return re.split(r"(?<=[.?!])\s+", text.strip())
+
+
+def live_help_reply() -> str:
+    """CON-018: the English `help_reply` as sent, its {reply_time} taken from check_legal_docs.USUALLY."""
+    reply_time = re.search(r"usually replies within (.*)\.$", check_legal_docs.USUALLY[1]).group(1)
+    return brand.fill(load("en")["help_reply"]["text"].replace("{reply_time}", reply_time), data=BRAND)
+
+
+def is_excerpt(field: str, live: str) -> bool:
+    """D-5280: every sentence of the field is a whole sentence of the live reply, in its order."""
+    remaining = iter(help_sentences(live))
+    return all(sentence in remaining for sentence in help_sentences(field))
+
+
+def test_help_message_is_a_whole_sentence_excerpt_of_the_live_reply() -> None:
+    """CON-018, CON-030, D-5278, D-5280: the `help_message` field, 20 to 320 characters, cut from `help_reply`."""
+    field = FENCE.findall(section(doc(), "5. How people opt in"))[2]
+    assert 20 <= len(field) <= 320
+    assert is_excerpt(field, live_help_reply())
+    assert not is_excerpt(field.replace("one text.", "a text."), live_help_reply())
+    assert not is_excerpt(field.replace("Help:", "Help now:"), live_help_reply())
+
+
+def test_a_30951_refusal_means_no_registration_and_no_toll_free() -> None:
+    """TD-CON-16, CON-033, D-5278: after 30951 no toll-free fallback; web-and-email mode and the owner decides."""
+    refused = " ".join(section(doc(), "8. If the campaign is refused").split())
+    assert "If the refusal is error 30951" in refused
+    assert "there is no registration and no toll-free fallback, because toll-free has the same ban (30468)" in refused
+    assert "The service stays in web-and-email mode, and the choice goes back to the owner." in refused
+    assert "refused for any other reason, then only with the owner's go" in refused
 
 
 def test_toll_free_fallback_only_with_the_owners_go() -> None:
@@ -176,10 +299,11 @@ def test_toll_free_fallback_only_with_the_owners_go() -> None:
 
 
 def test_spanish_note_sample_and_review_items() -> None:
-    """TD-TXT-26, TD-TERMS-01, TXT-043, TERMS-018: the Spanish note and sample on file, and the review order."""
+    """TD-TXT-26, TD-TERMS-01, TXT-043, TERMS-018, D-5278: both languages declared at once, and the review order."""
     spanish = " ".join(section(doc(), "7. Spanish").split())
-    assert 'Add the sentence "Texts are in English or Spanish." to the campaign description' in spanish
-    assert "2. Add the Spanish sample below as a sample message. 3. Log the change." in spanish
+    assert "The first registration declares English and Spanish, with the Spanish consent text as sample 5." in spanish
+    assert "Languages: English and Spanish" in section(doc(), "2. Campaign settings")
+    assert "Add the Spanish sample" not in doc()
     assert "only the Spanish texts that stay on while Spanish conversations are off are checked" in spanish
     assert "Two AI tools translate them back to English for that check." in spanish
     assert "paid professional review of every Spanish template comes before the Spanish conversations" in spanish

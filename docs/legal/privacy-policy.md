@@ -1,5 +1,5 @@
 Draft prepared with AI research; not reviewed by a lawyer.
-Version 0.7 (draft, D-492 changes, email codes) · November 17, 2026 · Not yet in effect
+Version 0.8 (draft, texting opt-in and vendor lines, D-5278, D-5281) · November 21, 2026 · Not yet in effect
 
 # Laftly Privacy Policy
 
@@ -47,17 +47,17 @@ Your number is never shared. Your first name and address go only to the business
 
 The business you pick may use your details only for your job and follow-up about it. Our business terms forbid marketing lists and resale.
 
-**Vendors** work under contract, only to run Laftly. They provide texting and calls (Twilio), email (Resend) and one-time codes sent by email (Twilio SendGrid, which sees the email address we send each code to). They also provide payments (Stripe), hosting and its 30-day logs (Railway) and encrypted backup storage (Backblaze B2). Other vendors provide error monitoring (Sentry), letters for business identity checks (Lob) and website delivery and security (Cloudflare). Our AI vendor provides automated text reading (Anthropic; see section 6) only once it is switched on.
+**Vendors** work under contract, only to run Laftly. They provide texting and calls (Twilio), email (Resend), one-time codes sent by text message (Twilio Verify) and one-time codes sent by email (Twilio SendGrid, which sees the email address we send each code to). They also provide payments (Stripe), hosting and its 30-day logs (Railway) and encrypted backup storage (Backblaze B2). Other vendors provide error monitoring (Sentry), letters for business identity checks (Lob) and website delivery and security (Cloudflare). Our AI vendor provides automated text reading (Anthropic; see section 6) only once it is switched on.
 
 **Legal demands.** We'll tell you about a legal demand for your data unless the law forbids it.
 
 ## 5. Text messages
 
-You choose to text us: your first text, or giving us your mobile number in the chat on laftly.com and typing the code we send to it, is your OK to get automated texts about your own request, and we text you only about that request. We keep the time of that first message and the version of our first reply as proof. Quote updates come by text unless you switch to email, or both, on your quote page; if you give an email for updates, we use it only for your request and never share it with businesses unless you choose email contact when you pick. Every update email has an unsubscribe link. Message frequency varies. Message and data rates may apply. Reply HELP for help and STOP to opt out at any time.
+You choose to text us. Your first text is your OK to get automated texts about your own request, and we text you about nothing else. We keep the time of that first message and the version of our first reply as proof. Quote updates come by text unless you switch to email, or both, on your quote page; if you give an email for updates, we use it only for your request and never share it with businesses unless you choose email contact when you pick. Every update email has an unsubscribe link. Message frequency varies. Message and data rates may apply. Reply HELP for help and STOP to opt out at any time.
 
 You can also opt out by emailing help@laftly.com, replying to any Laftly email, using the help form on laftly.com, or switching texts off on your quote page. Every opt-out goes on one list at once and stops all texts and automated calls from Laftly to that number. To use Laftly by text again, text START.
 
-Your phone number and your texting permission are never shared with any business or third party, and your texts are never used for marketing.
+Your phone number and your texting permission are never shared with any business or marketer; our messaging vendor processes it to deliver texts, and your texts are never used for marketing.
 
 No mobile information will be shared with third parties or affiliates for marketing or promotional purposes. Text messaging originator opt-in data and consent will not be shared with any third parties.
 
