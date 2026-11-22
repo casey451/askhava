@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T15:19:24Z by runner 03fa94c2c0f1 (actions).
+Updated 2026-11-22T15:19:46Z by runner 03fa94c2c0f1 (actions).
 
 **Building: T122 in progress since 14:55Z; 614 of 770 done; week 61% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-22T15:19:24Z by runner 03fa94c2c0f1 (actions).
 - **Lane:** lane 2: T122 claimed 14:55Z, lease until 17:55Z; lane 4: T725 claimed 14:53Z, lease until 17:53Z; lane 5: T831 claimed 14:25Z, lease until 17:25Z; lane 6: T729 claimed 14:37Z, lease until 17:37Z; lane 7: T590 claimed 14:41Z, lease until 17:41Z
 - **Week:** 61% used, 69.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:19Z, 0 min before this update
-- **Keeper:** last ran 15:13Z, next wake 15:33Z
+- **Keeper:** last ran 15:19Z, next wake 15:39Z
 
 ## Needs attention
 - BLOCKED T803: Worker made no change. All 83 named mutants are killed; the Checks job timed out (40 min limit) because the Rust build took ~26 min and mutants.toml changes trigger all 83 mutants (cut off after mutant 72). Needs a harness fix (raise Checks timeout-minutes or run only changed mutants) or a faster CI build. Smoke did not finish in the worker's polls.
