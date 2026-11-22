@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-22T11:32:51Z by runner 190b8bc3aa0c (actions).
+Updated 2026-11-22T11:33:06Z by runner 190b8bc3aa0c (actions).
 
 **Building: T675 in progress since 08:47Z; 607 of 769 done; week 57% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 607 of 769 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 5: T589 claimed 10:36Z, lease until 13:36Z; lane 7: T805 claimed 10:42Z, lease until 13:42Z
+- **Lane:** lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 5: T589 claimed 10:36Z, lease until 13:36Z
 - **Week:** 57% used, 76.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:28Z, 4 min before this update
 - **Keeper:** last ran 11:21Z, next wake 11:49Z
@@ -28,6 +28,7 @@ Nit: runbook.md:101, :174, :177 exceed wrap width.
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T805 | messaging (harness): the toll-free fallback is refused after | MERGE_PENDING | 1 | 50 min | 11:32Z |  |
 | T829 | server tests (harness): the door matrix's owner sign-ins nev | MERGE_PENDING | 3 | 46 min | 11:10Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T725 | site: the home page shows the texting number with its consen | BLOCKED | 3 | 21 min | 10:52Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T729 | portals and privacy: the quote page offers updates by email  | resync | 2 | 2 h 32 min | 10:40Z | merging main into the reviewed head conflicts in app/server/src/lib.rs, app/server/src/main.rs; a resync merges it in on |
@@ -146,7 +147,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T675 (lease until 2026-11-22T11:47:43Z)
 - lane 5: T589 (lease until 2026-11-22T13:36:51Z)
-- lane 7: T805 (lease until 2026-11-22T13:42:38Z)
 
 ## Last usage reading
-- {"task": "T829", "at": "2026-11-22T11:10:57Z", "cache_read_input_tokens": 961272, "cache_creation_input_tokens": 72064, "output_tokens": 12473, "input_tokens": 58}
+- {"task": "T805", "at": "2026-11-22T11:32:49Z", "cache_creation_input_tokens": 49405, "cache_read_input_tokens": 688666, "output_tokens": 9261, "input_tokens": 46}
