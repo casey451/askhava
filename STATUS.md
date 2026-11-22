@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T17:07:42Z by runner bd27a597ce3e (actions).
+Updated 2026-11-22T17:08:03Z by runner bd27a597ce3e (actions).
 
 **Idle since 17:03Z; 616 of 770 done; week 63% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -23,7 +23,7 @@ Updated 2026-11-22T17:07:42Z by runner bd27a597ce3e (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T675 | intake and server (harness): the dispatcher asks for photos  | MERGE_PENDING | 4 | 81 min | 17:03Z | PLAN GAP: tests/integration/tests/intake_order_card.rs:285, tests/integration/tests/intake_refusals_wired.rs:399, tests/ |
-| T590 | calls, picks and server: the who's-calling and missed-call t | MERGE_PENDING | 1 | 118 min | 16:40Z |  |
+| T590 | calls, picks and server: the who's-calling and missed-call t | check_failed | 1 | 118 min | 16:40Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T122 | docs/account-checklist.md: Part 1 test accounts, Part 2 busi | QUEUED | 1 | 88 min | 16:23Z | Reviewer after the findings round (head d65c4896894680459870359165740cf8b3a2bf57) still ended FINDINGS: / 1. tests/docs/ |
 | T725 | site: the home page shows the texting number with its consen | MERGE_PENDING | 4 | 82 min | 16:15Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T831 | site: the /request start screen's words box sits fully insid | MERGE_PENDING | 1 | 107 min | 16:13Z |  |
