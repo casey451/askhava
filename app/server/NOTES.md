@@ -332,12 +332,12 @@
 - [SEC-038 SEC-014 BIZ-040 BIZ-043] (task 542) D-5298 to D-5300: `src/address_changes.rs` serves `GET /b/addresses` and the request, confirm and remove-backup `POST`s (CSRF before the session, `refuse_cross_site`, `no-store`, 422 on an unknown field such as `mailbox`); sends admitted by `CODE_SENDS_PER_IP` and `ADDRESS_SENDS_PER_MEMBER`, tries by `CODE_TRIES_PER_IP` and `ADDRESS_TRIES_PER_MEMBER`.
 - [SEC-038 BIZ-040 BIZ-043] (tests) TD-SEC-71: `tests/address_changes_route.rs` (step-up redirect, new-address-only code, old address kept through a wrong and an expired code, told by task, not-found and csrf events, taken address message with no request logged, a clash at the code closing the check).
 - [SEC-043] (task 829) The door matrix reuses the owner's live jar while `owner_principal` answers Some and signs in afresh only after a session ended, each fresh sign-in at a past wall-clock TOTP step (now - 20 min + 30 s x k), so no session starts after the request it serves (D-5475).
-- [SEC-019 SEC-042 SEC-048] (never 24) the sign-up form `POST` binds the browser only by the `__Host-askhava-signup` MAC cookie that `bound_signup` verifies; the cookie name is `__Host-askhava-signup` (D-3641). Moved word for word from the guide: "takes the consent wording only from the verified seal, stores no record name or contact, and binds the browser only by the `__Host-askhava-signup` MAC cookie that `bound_signup` verifies (`tests/business_signup_route.rs`)."
+- [SEC-019 SEC-042 SEC-048] (never 24) the sign-up form `POST` binds the browser only by the `__Host-askhava-signup` MAC cookie that `bound_signup` verifies; the cookie name is `__Host-askhava-signup` (D-3641).
 - [SEC-019 SEC-042 SEC-048] (never 24) a cross-site or wrong-CSRF sign-up `POST` answers 403, records a security event and signs nobody up.
 - [-] (never 29) TD-SEC-41, D-1868, D-2269: a listed route never merged fails naming its row. An axum router cannot list its routes, so a route served with no row is not caught.
 - [-] (never 29) TD-SEC-41, D-1868, D-2269: a `yes` row must be served by `build_router` and a row naming a task must not be.
 - [BIZ-025 FEE-014] (never 30) `/b/billing` shows each saved card as brand and last four only (D-3790 to D-3792).
-- [SEC-014 BIZ-040] (never 26) a refused send opens and sends nothing; the sign-up identity session is inbox, capability: session (D-3806).
+- [SEC-014 BIZ-040] (never 26) a refusal opens and sends nothing; inbox, capability: session (D-3806).
 - [SEC-016 SEC-017 PRIV-016] (never 3) the dialed-status route logs each call once per CallSid with one `business_call` check (TD-CALL-16).
 - [SEC-002] (never 16) a bad setting exits 1 before anything is served or claimed.
-- [OPS-004] (never 22) a deploy never strands a task for a lease length.
+- [-] (never 22) a deploy never strands a task for a lease length.
