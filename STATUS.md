@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-22T16:13:04Z by runner 9d1526396779 (actions).
+Updated 2026-11-22T16:13:17Z by runner 9d1526396779 (actions).
 
 **Building: T675 in progress since 15:41Z; 615 of 770 done; week 62% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 615 of 770 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T675 claimed 15:41Z, lease until 18:41Z; lane 2: T122 claimed 14:55Z, lease until 17:55Z; lane 4: T725 claimed 14:53Z, lease until 17:53Z; lane 5: T831 claimed 14:25Z, lease until 17:25Z; lane 7: T590 claimed 14:41Z, lease until 17:41Z
+- **Lane:** lane 1: T675 claimed 15:41Z, lease until 18:41Z; lane 2: T122 claimed 14:55Z, lease until 17:55Z; lane 4: T725 claimed 14:53Z, lease until 17:53Z; lane 7: T590 claimed 14:41Z, lease until 17:41Z
 - **Week:** 62% used, 66.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:11Z, 1 min before this update
 - **Keeper:** last ran 16:11Z, next wake 16:31Z
@@ -23,6 +23,7 @@ Updated 2026-11-22T16:13:04Z by runner 9d1526396779 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T831 | site: the /request start screen's words box sits fully insid | MERGE_PENDING | 1 | 107 min | 16:13Z |  |
 | T729 | portals and privacy: the quote page offers updates by email  | MERGE_PENDING | 3 | 92 min | 16:10Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T397 | server and portals: the owner approves or declines a member- | done | 2 | 2 h 0 min | 15:12Z | PLAN GAP: outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per p |
 | T833 | pre-hand-in gate test (harness): the Ally-step test holds th | done | 1 | 65 min | 14:05Z |  |
@@ -144,8 +145,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T675 (lease until 2026-11-22T18:41:28Z)
 - lane 2: T122 (lease until 2026-11-22T17:55:31Z)
 - lane 4: T725 (lease until 2026-11-22T17:53:24Z)
-- lane 5: T831 (lease until 2026-11-22T17:25:48Z)
 - lane 7: T590 (lease until 2026-11-22T17:41:54Z)
 
 ## Last usage reading
-- {"task": "T729", "at": "2026-11-22T16:10:18Z", "cache_creation_input_tokens": 156147, "cache_read_input_tokens": 4739679, "input_tokens": 145, "output_tokens": 23548}
+- {"task": "T831", "at": "2026-11-22T16:13:02Z", "cache_read_input_tokens": 4007904, "output_tokens": 36264, "input_tokens": 136, "cache_creation_input_tokens": 116984}
