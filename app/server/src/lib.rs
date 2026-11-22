@@ -866,12 +866,12 @@ where
 
 /// `intake`'s no-reply reminder and close (INT-019), a business's "Ask about a charge" help request
 /// (OPS-036, T151) and the emergency address asked again on `picks.address_needed` (INT-029,
-/// T255), the first and last with the `ID_SECRET` as outbox key, the help request on the worker
-/// clock.
+/// T255), the first and last with the `ID_SECRET` as outbox key, all three on the worker clock
+/// (D-4310).
 fn register_intake_asks(registry: &mut Registry, id_secret: &SecretString, clock: &Arc<dyn Clock>) {
-    let secret = id_secret.clone();
+    let (secret, at) = (id_secret.clone(), Arc::clone(clock));
     registry.register(askhava_intake::api::NO_REPLY_KIND, move |pool, task| {
-        askhava_intake::api::run_no_reply(pool, secret.clone(), task)
+        askhava_intake::api::run_no_reply_at(pool, secret.clone(), task, at.now())
     });
     let help_clock = Arc::clone(clock);
     registry.register(
@@ -880,10 +880,12 @@ fn register_intake_asks(registry: &mut Registry, id_secret: &SecretString, clock
             askhava_intake::api::run_help_request_opened(pool, task, help_clock.now())
         },
     );
-    let asked = id_secret.clone();
+    let (asked, at) = (id_secret.clone(), Arc::clone(clock));
     registry.register(
         askhava_picks::api::ADDRESS_NEEDED_KIND,
-        move |pool, task| askhava_intake::api::run_address_needed(pool, asked.clone(), task),
+        move |pool, task| {
+            askhava_intake::api::run_address_needed_at(pool, asked.clone(), task, at.now())
+        },
     );
 }
 
@@ -917,10 +919,10 @@ where
     let clock = Arc::clone(&stream.clock);
     let mut registry = Registry::new();
     register_intake_asks(&mut registry, &stream.id_secret, &clock);
-    registry.register(
-        askhava_intake::api::CARD_TIMER_KIND,
-        askhava_intake::api::run_card_timer,
-    );
+    let at = Arc::clone(&clock);
+    registry.register(askhava_intake::api::CARD_TIMER_KIND, move |pool, task| {
+        askhava_intake::api::run_card_timer_at(pool, task, at.now())
+    });
     offdb_stream::register(&mut registry, stream);
     registry.register(askhava_jobs::api::TIMER_KIND, askhava_jobs::api::run_timer);
     registry.register(
@@ -1265,7 +1267,7 @@ where
     register_license_reapply(&mut registry, Arc::clone(&clock));
     register_daily_lists(&mut registry, settings, Arc::clone(&clock), pairs.clone())?;
     register_record_resume(&mut registry, settings, (&id_secret, &clock), pairs.clone())?;
-    register_card_sender(&mut registry, settings, &id_secret, pairs.clone())?;
+    register_card_sender(&mut registry, settings, (&id_secret, &clock), pairs.clone())?;
     register_consent_sweep(&mut registry, settings, &clock, pairs.clone())?;
     register_opted_out_live(&mut registry, settings, &id_secret, pairs.clone())?;
     register_optout_followup(&mut registry, settings, &id_secret, pairs.clone())?;
@@ -2001,12 +2003,12 @@ fn register_safety_call(
 
 /// T251 (D-3180; CARD-025, INT-029, TXT-032): with both vault keys, `intake`'s card sender on
 /// `intake.cards_approved` and `intake.emergency_released`, with the `ID_SECRET` as outbox key and
-/// the vault for the cards-out text's send window; without them (dev and CI) nothing is
-/// registered and the events wait, as `vault_from` allows.
+/// the vault for the cards-out text's send window, on the worker clock (PICK-001, D-4196);
+/// without them (dev and CI) nothing is registered and the events wait, as `vault_from` allows.
 fn register_card_sender(
     registry: &mut Registry,
     settings: &Settings,
-    id_secret: &SecretString,
+    (id_secret, clock): (&SecretString, &Arc<dyn Clock>),
     pairs: Vec<(String, String)>,
 ) -> io::Result<()> {
     let Some(vault) = vault_from(settings, pairs)? else {
@@ -2015,17 +2017,18 @@ fn register_card_sender(
     let number = business_number(settings.business_number())?;
     let keys = askhava_intake::api::CardsOutKeys::new(id_secret.clone(), vault);
     let keys = Arc::new(keys.with_business_number(number));
-    let approved = Arc::clone(&keys);
+    let (approved, at) = (Arc::clone(&keys), Arc::clone(clock));
     registry.register(
         askhava_intake::api::CARDS_APPROVED_KIND,
         move |pool, task| {
-            askhava_intake::api::run_cards_approved(pool, Arc::clone(&approved), task)
+            askhava_intake::api::run_cards_approved_at(pool, Arc::clone(&approved), task, at.now())
         },
     );
+    let at = Arc::clone(clock);
     registry.register(
         askhava_intake::api::EMERGENCY_RELEASED_KIND,
         move |pool, task| {
-            askhava_intake::api::run_emergency_released(pool, Arc::clone(&keys), task)
+            askhava_intake::api::run_emergency_released_at(pool, Arc::clone(&keys), task, at.now())
         },
     );
     Ok(())
@@ -2309,14 +2312,7 @@ fn register_business_handlers(
     registry.register(askhava_intake::api::NOT_COVERED_KIND, move |pool, task| {
         run_coverage_notice(pool, coverage.clone(), task)
     });
-    registry.register(
-        askhava_businesses::api::BOX_CLOSED_KIND,
-        askhava_businesses::api::run_box_closed,
-    );
-    let at = Arc::clone(clock);
-    registry.register(askhava_businesses::api::BUSY_END_KIND, move |pool, task| {
-        askhava_businesses::api::run_busy_end(pool, task, at.now())
-    });
+    register_business_clocked(registry, clock);
     registry.register(
         askhava_businesses::api::MEMBER_REMOVED_KIND,
         askhava_portals::api::run_member_removed,
@@ -2336,6 +2332,20 @@ fn register_business_handlers(
         });
     }
     register_accepted_quote(registry, settings, provider.as_ref(), pairs)
+}
+
+/// BIZ-029, BIZ-028, D-4196: `businesses`' complaint reply-box close and Busy end, each on the
+/// worker clock.
+fn register_business_clocked(registry: &mut Registry, clock: &Arc<dyn Clock>) {
+    let at = Arc::clone(clock);
+    registry.register(
+        askhava_businesses::api::BOX_CLOSED_KIND,
+        move |pool, task| askhava_businesses::api::run_box_closed_at(pool, task, at.now()),
+    );
+    let at = Arc::clone(clock);
+    registry.register(askhava_businesses::api::BUSY_END_KIND, move |pool, task| {
+        askhava_businesses::api::run_busy_end(pool, task, at.now())
+    });
 }
 
 /// SEC-025, OPS-038, D-3750 (T470): `messaging.email_due`, always registered: with T469's
@@ -2649,7 +2659,8 @@ async fn stage_step(
     task: &askhava_core::api::Claimed,
     now: jiff::Timestamp,
 ) -> Result<(), askhava_core::api::HandlerError> {
-    let queued = askhava_businesses::api::run_complaint_holds(pool.clone(), task.clone()).await?;
+    let queued =
+        askhava_businesses::api::run_complaint_holds_at(pool.clone(), task.clone(), now).await?;
     askhava_payments::api::run_dispute_holds_at(pool.clone(), task.clone(), now).await?;
     askhava_privacy::api::run_purge_due_after_at(pool.clone(), task.clone(), (queued, now)).await
 }
