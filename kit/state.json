@@ -101341,7 +101341,16 @@
    "wip_claim": {
     "attempt": 2,
     "remote_sha": ""
-   }
+   },
+   "reviewed_sha": "620569b68dafb1f3a8f5cff0e6e67e58cc26d94b",
+   "review_lease": {
+    "task": "T729",
+    "session": "actions-45000950684",
+    "expires": "2026-11-22T11:07:49Z",
+    "lane": "4"
+   },
+   "branch": "claude/task/T729-update-email-choice",
+   "head_check_since": null
   },
   {
    "id": "T730",
@@ -116781,7 +116790,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T10:37:34Z",
+ "updated_at": "2026-11-22T10:40:40Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -116879,7 +116888,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "dd295e06660e0308300490a7b00829730b7a7197",
+ "runner_sha": "620569b68dafb1f3a8f5cff0e6e67e58cc26d94b",
  "starter": "actions",
  "smoke_runs": [
   {
