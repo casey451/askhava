@@ -9798,3 +9798,4 @@
 - 2026-11-22T08:55:04Z runner cb4a620172dd (actions): {}
 - 2026-11-22T08:55:22Z runner 9b5f9617df3e (actions): {}
 - 2026-11-22T08:58:37Z runner 23fcbe8c11d7 (manual): {"T121": "BLOCKED -> QUEUED"}
+- 2026-11-22T09:00:02Z runner 23fcbe8c11d7 (actions): {"T725": "QUEUED -> IN_PROGRESS"}; T725 estimated 1.6M tokens (calibrated); week has 78.5M left (no five-hour budget, D-3056) after 5.5M still running in another lane (session_reading 2026-11-22T08:55:04Z (week)); claimed

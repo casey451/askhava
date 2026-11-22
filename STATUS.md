@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T08:58:37Z by runner 23fcbe8c11d7 (manual).
+Updated 2026-11-22T09:00:02Z by runner 23fcbe8c11d7 (actions).
 
 **Building: T675 in progress since 08:47Z; 606 of 767 done; week 55% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 606 of 767 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 4: T729 claimed 08:07Z, lease until 11:07Z; lane 6: T610 claimed 08:20Z, lease until 11:20Z
-- **Week:** 55% used, 80.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:55Z, 3 min before this update
+- **Lane:** lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 4: T729 claimed 08:07Z, lease until 11:07Z; lane 5: T725 claimed 08:59Z, lease until 11:59Z; lane 6: T610 claimed 08:20Z, lease until 11:20Z
+- **Week:** 55% used, 78.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 08:58Z, 1 min before this update
 - **Keeper:** last ran 08:55Z, next wake 09:15Z
 
 ## Needs attention
@@ -125,7 +125,7 @@ At 1280x900 the /request chat start screen textarea box spans y=784..914, partly
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-22T08:47:06Z (week)): week: 113.9M used, 80.1M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T02:59:37Z.
+- Pacing (session_reading 2026-11-22T08:55:04Z (week)): week: 115.5M used, 78.5M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T03:11:38Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -143,6 +143,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T675 (lease until 2026-11-22T11:47:43Z)
 - lane 4: T729 (lease until 2026-11-22T11:07:49Z)
+- lane 5: T725 (lease until 2026-11-22T11:59:45Z)
 - lane 6: T610 (lease until 2026-11-22T11:20:52Z)
 
 ## Last usage reading
