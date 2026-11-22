@@ -107560,7 +107560,7 @@
     "T754",
     "T541"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 2,
    "slug": "shared-inbox-press-code",
    "type": "build",
@@ -107574,7 +107574,7 @@
     5375,
     5376
    ],
-   "last_failure": "PLAN GAP: outside ownership: app/server/tests/confirm_press_code.rs. TD-SEC-82 requires a direct portals.shared_inbox insert (never set_inbox_shared/record_step_up, D-5319), but TD-SEC-10 (tests/integration/tests/architecture_migrations.rs check_app :737, check_sql_forms :660-677, schema_refs :295) scans every .rs under app/: macro form fails \"`portals.` names another module's schema\", plain sqlx::query fails \"SQL outside the query macros: `query`\". Reviewer confirmed. Smallest plan change: T810 owns tests/integration/tests/confirm_press_code.rs (not scanned; confirm_terms.rs:238 does the plain insert there); update docs/test-design.md:939 and kit/tasks.json TD-SEC-82 paths and run command to `cargo test -p askhava-integration --test confirm_press_code`.",
+   "last_failure": "PLAN GAP: outside ownership: app/server/tests/confirm_press_code.rs. TD-SEC-82 requires a direct portals.shared_inbox insert (never set_inbox_shared/record_step_up, D-5319), but TD-SEC-10 (tests/integration/tests/architecture_migrations.rs check_app :737, check_sql_forms :660-677, schema_refs :295) scans every .rs under app/: macro form fails \"`portals.` names another module's schema\", plain sqlx::query fails \"SQL outside the query macros: `query`\". Reviewer confirmed. Smallest plan change: T810 owns tests/integration/tests/confirm_press_code.rs (not scanned; confirm_terms.rs:238 does the plain insert there); update docs/test-design.md:939 and kit/tasks.json TD-SEC-82 paths and run command to `cargo test -p askhava-integration --test confirm_press_code`.\nre-queued after plan fix D-5443: TD-SEC-82 test moves to tests/integration (merged #1326)",
    "history": [
     {
      "attempt": 1,
@@ -107623,21 +107623,22 @@
      }
     }
    ],
-   "reason": "plan gap reported: PLAN GAP: outside ownership: app/server/tests/confirm_press_code.rs. TD-SEC-82 requires a direct portals.shared_inbox insert (never set_inbox_shared/record_step_up, D-5319), but TD-SEC-10 (tests/integration/tests/architecture_migrations.rs check_app :737, check_sql_forms :660-677, schema_refs :295) scans every .rs under app/: macro form fails \"`portals.` names another module's schema\", plain sqlx::query fails \"SQL outside the query macros: `query`\". Reviewer confirmed. Smallest plan change: T810 owns tests/integration/tests/confirm_press_code.rs (not scanned; confirm_terms.rs:238 does the plai; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T810 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "plan_gap": {
-    "at": "2026-11-22T03:05:53Z",
-    "problems": [
-     "outside ownership: app/server/tests/confirm_press_code.rs. TD-SEC-82 requires a direct portals.shared_inbox insert (never set_inbox_shared/record_step_up, D-5319), but TD-SEC-10 (tests/integration/tests/architecture_migrations.rs check_app :737, check_sql_forms :660-677, schema_refs :295) scans every .rs under app/: macro form fails \"`portals.` names another module's schema\", plain sqlx::query fails \"SQL outside the query macros: `query`\". Reviewer confirmed. Smallest plan change: T810 owns tests/integration/tests/confirm_press_code.rs (not scanned; confirm_terms.rs:238 does the plain insert there); update docs/test-design.md:939 and kit/tasks.json TD-SEC-82 paths and run command to `cargo test -p askhava-integration --test confirm_press_code`."
-    ],
-    "paths": [
-     "app/server/tests/confirm_press_code.rs. TD-SEC-82 requires a direct portals.shared_inbox insert (never set_inbox_shared/record_step_up",
-     "D-5319)",
-     "but TD-SEC-10 (tests/integration/tests/architecture_migrations.rs check_app :737",
-     "check_sql_forms :660-677",
-     "schema_refs :295) scans every .rs under app/: macro form fails \"`portals.` names another module's schema\"",
-     "plain sqlx::query fails \"SQL outside the query macros: `query`\". Reviewer confirmed. Smallest plan change: T810 owns tests/integration/tests/confirm_press_code.rs (not scanned; confirm_terms.rs:238 does the plain insert there); update docs/test-design.md:939 and kit/tasks.json TD-SEC-82 paths and run command to `cargo test -p askhava-integration --test confirm_press_code`."
-    ]
-   }
+   "reason": null,
+   "requeues": [
+    {
+     "at": "2026-11-22T04:57:57Z",
+     "reason": "TD-SEC-82 test moves to tests/integration (merged #1326)",
+     "by": "manual-ae709a8ef0b4",
+     "was": "plan gap reported: PLAN GAP: outside ownership: app/server/tests/confirm_press_code.rs. TD-SEC-82 requires a direct portals.shared_inbox insert (never set_inbox_shared/record_step_up, D-5319), but TD-SEC-10 (tests/integration/tests/architecture_migrations.rs check_app :737, check_sql_forms :660-677, schema_refs :295) scans every .rs under app/: macro form fails \"`portals.` names another module's schema\", plain sqlx::query fails \"SQL outside the query macros: `query`\". Reviewer confirmed. Smallest plan change: T810 owns tests/integration/tests/confirm_press_code.rs (not scanned; confirm_terms.rs:238 does the plai; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T810 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 2,
+     "plan_fix": "D-5443",
+     "plan_since": "2026-11-22T03:03:29Z",
+     "plan_base": "b3e4c6cdedb591f75835d776403051752532f7cd",
+     "plan_head": "619c9afc042ce00c9e53aea938d722852430a864",
+     "plan_then": "8d2d48c8e1539e24446bcc70e1a39e9c81a72c559c58c619517f1e3a2d2fa509",
+     "plan_now": "0bc00b2eba48c995ca7dd692b00a848cec010c4ed13118dff29368b6244eb7d0"
+    }
+   ]
   },
   {
    "id": "T811",
@@ -115277,7 +115278,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T04:57:42Z",
+ "updated_at": "2026-11-22T04:57:57Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
