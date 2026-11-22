@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T13:18:09Z by runner fbb43dfc4bef (actions).
+Updated 2026-11-22T13:19:52Z by runner fbb43dfc4bef (manual).
 
 **Building: T397 in progress since 13:11Z; 609 of 770 done; week 58% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,10 @@ Updated 2026-11-22T13:18:09Z by runner fbb43dfc4bef (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T397 claimed 13:11Z, lease until 16:11Z; lane 4: T833 claimed 12:59Z, lease until 15:59Z
 - **Week:** 58% used, 77.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:12Z, 5 min before this update
+- **Last run:** 13:18Z, 1 min before this update
 - **Keeper:** last ran 13:06Z, next wake 13:26Z
 
 ## Needs attention
-- BLOCKED T117: Reviewer after findings round still FINDINGS at 6670a168e2d4d62e56e23b50ed17253f85e6af47:
-1. docs/runbook.md:180-181 (blocking, recovery): restore of an older export puts the old key version back only for the replay run, but step 8 starts worker (and step 10 web) with the host key list lacking v1, so they refuse to start (and VAULT_KEY v1 rows unreadable). Fix: in restore step 8 put the old version back on the host key list, re-run rotate_batch and rekey_suppression_batch to 0, call retire_index_version, then drop v1 again; the paper-copy clock restarts; test should assert it.
-2. docs/runbook.md:173 and :169 (minor): retire_index_version deletes only messaging.suppression rows (suppression_rekey.rs:231-234); stale v1 phone digests are removed by a later rotate_batch after v1 is dropped from the key list (privacy/src/vault.rs:752,760-761). Rotation drill omits that clean-up run.
-Nit: runbook.md:101, :174, :177 exceed wrap width.
 - BLOCKED T675: runner smoke red on 4ac8ae78a989 (bash scripts/smoke.sh, D-3530):
         env = {"PATH": path, "PREHANDIN_ROOT": str(work), "HOME": str(tmp_path), "DATABASE_URL": "postgres://fake@localhost/none",
                "E2E_PORT": "39871", "FAKE_CODE": str(code)}
