@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T08:06:25Z by runner eff90c80a8f7 (actions).
+Updated 2026-11-22T08:08:07Z by runner eff90c80a8f7 (actions).
 
 **Building: T829 in progress since 07:52Z; 604 of 767 done; week 54% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 604 of 767 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T829 claimed 07:52Z, lease until 10:52Z
-- **Week:** 54% used, 86.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:52Z, 13 min before this update
+- **Lane:** lane 1: T829 claimed 07:52Z, lease until 10:52Z; lane 4: T729 claimed 08:07Z, lease until 11:07Z
+- **Week:** 54% used, 85.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 08:06Z, 1 min before this update
 - **Keeper:** last ran 07:37Z, next wake 07:57Z
 
 ## Needs attention
@@ -88,7 +88,6 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 | T654 | licensing and quotes: every ROC list import runs each active | done | 2 | 74 min | 10:15Z | PLAN GAP: outside ownership: app/quotes/src/service.rs, app/quotes/src/late_cards.rs, app/intake/src/cards_out.rs, app/i |
 | T615 | site and server: a styled 404 page for unknown paths, the fa | check_failed | 2 | 92 min | 09:28Z |  |
 | T776 | intake: a move out of Arizona and a property-management requ | BLOCKED | 2 | 11 min | 08:54Z |  |
-| T674 | server: the homeowner's photo upload page and the short-live | done | 2 | 40 min | 08:06Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
 
 ### Plan and harness merges on main
 - none
@@ -124,7 +123,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-22T07:37:31Z (week)): week: 108.0M used, 86.0M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T03:26:33Z.
+- Pacing (session_reading 2026-11-22T07:37:31Z (week)): week: 108.4M used, 85.6M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T02:51:25Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -140,6 +139,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T829 (lease until 2026-11-22T10:52:28Z)
+- lane 4: T729 (lease until 2026-11-22T11:07:49Z)
 
 ## Last usage reading
 - {"task": "T609", "at": "2026-11-22T07:14:36Z", "output_tokens": 35415, "input_tokens": 119, "cache_creation_input_tokens": 149072, "cache_read_input_tokens": 4706644}
