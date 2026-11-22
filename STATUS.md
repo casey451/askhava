@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T01:39:18Z by runner 6670a168e2d4 (actions).
+Updated 2026-11-22T01:39:32Z by runner e6fbd4ffb5ed (actions).
 
 **Building: T691 in progress since 00:03Z; 598 of 752 done; week 45% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -20,7 +20,7 @@ Nit: runbook.md:101, :174, :177 exceed wrap width.
 - BLOCKED T725: plan gap reported: PLAN GAP: tests/docs/test_required_lines.py:139 (WORD-013, docs/spec/wording.md:17) contradicts kit/prompts/T725.md:9 (Spanish home page unchanged, shows neither). The consent line word for word in home.html contains "Reply STOP"; WORD-013 reads raw template text ignoring {% if %} and requires PARAR on es_home.html. Smoke fails: test_td_word_02_word_013_spanish_page_matches_its_english_page[es_home.html] assert ['PARAR'] == []. Task does not own es_home.html or the test. Reviewer confirmed. Smallest fix: harness plan change so WORD-013 exempts a STOP only inside the post-Gate C texting block, ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T725 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 36 problem(s) on tasks still to run (+476 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 43 problem(s) on tasks still to run (+476 on DONE tasks); first: T397: stored context_pct 18% but it measures 26%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -93,7 +93,7 @@ Nit: runbook.md:101, :174, :177 exceed wrap width.
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 598 of 752
+**Tasks merged (throughput only):** 597 of 739
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
