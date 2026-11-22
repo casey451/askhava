@@ -9891,3 +9891,4 @@
 - 2026-11-22T11:56:14Z runner 5aac787a2648 (actions): {"T725": "QUEUED -> IN_PROGRESS"}; T725 estimated 1.6M tokens (calibrated); week has 73.1M left (no five-hour budget, D-3056) after 6.9M still running in another lane (session_reading 2026-11-22T11:39:37Z (week)); claimed
 - 2026-11-22T11:56:19Z runner 5aac787a2648 (actions): {}
 - 2026-11-22T12:04:46Z runner 0688d1d0d9ba (actions): {}
+- 2026-11-22T12:05:02Z runner 0688d1d0d9ba (actions): {"T589": "IN_PROGRESS -> MERGE_PENDING"}

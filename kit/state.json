@@ -85071,7 +85071,7 @@
     "T480",
     "T363"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 1,
    "slug": "pick-review-language-and-name",
    "type": "build",
@@ -85153,6 +85153,29 @@
        "turns": 15
       }
      }
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 34,
+     "head_sha": "0688d1d0d9ba159764f43f23670d72f87962e9a9",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-22T10:36:51Z",
+     "ended_at": "2026-11-22T12:04:44Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 730642,
+       "turns": 21
+      },
+      "reviewer": {
+       "tokens": 425950,
+       "turns": 11
+      }
+     }
     }
    ],
    "reviewed_sha": "aee19caae755ce78502a4d9f42b03ab7128389f4",
@@ -85165,18 +85188,13 @@
    "branch": "claude/task/T589-pick-review-language-and-name",
    "auto_merge": {
     "enabled": true,
-    "why": "auto-merge on #1342 (gh pr merge)",
-    "head": "9f815148531814118f641f65ccb873722ec8b788"
+    "why": "auto-merge on #1350 (gh pr merge)",
+    "head": "aee19caae755ce78502a4d9f42b03ab7128389f4"
    },
    "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust dependency audit (cargo-audit, cargo-deny)\nWarning:   unmaintained\nTitle:     `basic-toml` is unmaintained\nDate:      2026-09-26\nID:        RUSTSEC-2026-0374\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0374\nCrate:     proc-macro-error2\nVersion:   2.0.1\nWarning:   unmaintained\nTitle:     proc-macro-error2 is unmaintained\nDate:      2026-06-07\nerror: 1 vulnerability found!\nwarning: 2 allowed warnings found\nID:        RUSTSEC-2026-0173\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0173\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
-   "wip_claim": {
-    "attempt": 2,
-    "remote_sha": "9f815148531814118f641f65ccb873722ec8b788"
-   },
    "runner_closed_prs": [
     1342
    ],
-   "head_check_since": null,
    "update_merges": [
     {
      "from": "0688d1d0d9ba159764f43f23670d72f87962e9a9",
@@ -109819,12 +109837,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T675",
-   "at": "2026-11-22T11:38:35Z",
-   "cache_read_input_tokens": 29303272,
-   "input_tokens": 444,
-   "cache_creation_input_tokens": 499668,
-   "output_tokens": 167399
+   "task": "T589",
+   "at": "2026-11-22T12:04:44Z",
+   "input_tokens": 61,
+   "cache_read_input_tokens": 1075097,
+   "output_tokens": 10166,
+   "cache_creation_input_tokens": 71268
   },
   "source": "session_reading 2026-11-22T11:39:37Z (week)",
   "by_task": {
@@ -117182,14 +117200,14 @@
     "estimated_bytes": 509519,
     "estimated_tokens": 1483861,
     "usage_counting": "message_id",
-    "input_tokens": 113,
-    "cache_creation_input_tokens": 130669,
-    "cache_read_input_tokens": 3350333,
-    "output_tokens": 28464,
-    "worker_tokens": 2886413,
-    "worker_turns": 42,
-    "reviewer_tokens": 623166,
-    "reviewer_turns": 15,
+    "input_tokens": 174,
+    "cache_creation_input_tokens": 201937,
+    "cache_read_input_tokens": 4425430,
+    "output_tokens": 38630,
+    "worker_tokens": 3617055,
+    "worker_turns": 63,
+    "reviewer_tokens": 1049116,
+    "reviewer_turns": 26,
     "last_model": "claude-opus-5-5"
    },
    "T805": {
@@ -117214,11 +117232,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-22T07:14:36Z",
-    "tokens": 10433560
+    "tokens": 10622564
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 165593729
+    "tokens": 165782733
    }
   },
   "session_reading": {
@@ -117229,7 +117247,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T12:04:46Z",
+ "updated_at": "2026-11-22T12:05:02Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
