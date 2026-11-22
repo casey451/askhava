@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-22T07:14:38Z by runner 964035a8d45f (actions).
+Updated 2026-11-22T07:14:52Z by runner 964035a8d45f (actions).
 
-**Building: T609 in progress since 06:09Z; 602 of 767 done; week 54% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Idle since 07:14Z; 602 of 767 done; week 54% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 602 of 767 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 5: T609 claimed 06:09Z, lease until 09:09Z
+- **Lane:** idle since 07:14Z (no task in progress)
 - **Week:** 54% used, 85.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 07:07Z, 6 min before this update
 - **Keeper:** last ran 07:03Z, next wake 07:23Z
@@ -28,6 +28,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T609 | site (harness): the D-4246 polish on the footer, how it work | MERGE_PENDING | 3 | 65 min | 07:14Z | PLAN GAP: tests/e2e/web_chat.spec.ts:123 (owned by T489) uses strict locator main.locator('[lang="es"]'); the footer's E |
 | T810 | portals and server: a shared-inbox Confirm press asks for it | MERGE_PENDING | 3 | 76 min | 06:46Z | PLAN GAP: outside ownership: app/server/tests/confirm_press_code.rs. TD-SEC-82 requires a direct portals.shared_inbox in |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | BLOCKED | 3 | 2 h 17 min | 06:35Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / ✓  120 [main] › tests/e2e |
 | T827 | server and portals: the owner and homeowner forms refuse unk | MERGE_PENDING | 1 | 82 min | 06:12Z |  |
@@ -38,7 +39,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 | T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 2 | 50 min | 04:44Z | PLAN GAP: tests/integration/tests/intake_order_card.rs:285, tests/integration/tests/intake_refusals_wired.rs:399, tests/ |
 | T542 | portals and server: notice and backup address changes are re | done | 2 | 2 h 42 min | 04:28Z | Reviewer after the findings round still ended REVIEW-VERDICT: FINDINGS at head 4de98e6fb74e1e5394629d7a1abe0694167723a2: |
 | T729 | portals and privacy: the quote page offers updates by email  | BLOCKED | 1 | 2 min | 04:19Z | PLAN GAP: tests/integration/tests/architecture_migrations.rs:288-294 (with :320-332) contradicts kit/prompts/T729.md:9 ( |
-| T609 | site (harness): the D-4246 polish on the footer, how it work | BLOCKED | 2 | 13 min | 04:15Z | PLAN GAP: tests/e2e/web_chat.spec.ts:123 (owned by T489) uses strict locator main.locator('[lang="es"]'); the footer's E |
+| T609 | site (harness): the D-4246 polish on the footer, how it work | BLOCKED | 2 | 13 min | 04:15Z |  |
 | T721 | businesses and portals: Casey counts a check-in PROBLEM repo | done | 1 | 76 min | 04:10Z |  |
 | T616 | site: strong per-coding ETags with 304 revalidation, a one-y | check_failed | 1 | 96 min | 03:07Z |  |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | check_failed | 2 | 2 h 19 min | 03:06Z |  |
@@ -141,7 +142,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 5: T609 (lease until 2026-11-22T09:09:07Z)
 
 ## Last usage reading
-- {"task": "T810", "at": "2026-11-22T06:46:09Z", "cache_read_input_tokens": 9041272, "output_tokens": 62540, "input_tokens": 179, "cache_creation_input_tokens": 217214}
+- {"task": "T609", "at": "2026-11-22T07:14:36Z", "output_tokens": 35415, "input_tokens": 119, "cache_creation_input_tokens": 149072, "cache_read_input_tokens": 4706644}
