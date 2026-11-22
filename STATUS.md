@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T18:15:03Z by runner 294bda79664e (actions).
+Updated 2026-11-22T18:23:26Z by runner 294bda79664e (actions).
 
 **Idle since 17:36Z; 617 of 770 done; week 64% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-22T18:15:03Z by runner 294bda79664e (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 17:36Z (no task in progress)
 - **Week:** 64% used, 66.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:14Z, 0 min before this update
+- **Last run:** 18:23Z, 0 min before this update
 - **Keeper:** last ran 18:15Z, next wake 23:55Z
 
 ## Needs attention
@@ -88,7 +88,6 @@ Updated 2026-11-22T18:15:03Z by runner 294bda79664e (actions).
 | T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 1 | 4 min | 19:13Z |  |
 | T790 | catalog, licensing and tests (harness): the termite report f | done | 1 | 57 min | 19:07Z |  |
 | T608 | site and portals: the home page and the quote page in full V | check_failed | 1 | 2 h 46 min | 18:46Z |  |
-| T615 | site and server: a styled 404 page for unknown paths, the fa | done | 4 | 68 min | 18:19Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 
 ### Plan and harness merges on main
 - 17:04Z Plan: unblock T121/T832/T499/T514 (D-5552); pre-flight fixes job 24 (D-5551) (#1363)
