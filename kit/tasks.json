@@ -31188,6 +31188,52 @@
    "acceptance": "`app/server/tests/rotate_keys_command.rs` passes: a two-version rotation run by the commands ends with every vault, photo, staff-phone and opt-out row under the new version, the old version retired and dropped, and `check_index_keys` passing; bad arguments, no vault, a v1 photo with no photo settings and a loop past its cap exit non-zero changing nothing more; no output holds a planted value; every other server test passes unchanged."
   },
   {
+   "id": "T832",
+   "slug": "checks-timeout-full-mutants",
+   "title": "ci (harness): the Checks job allows 60 minutes, so a full named-mutant run fits after a cold build",
+   "goal": "Plan change D-5519 (T803 BLOCKED after 3 attempts on `Checks`' time limit; D-1285). In `.github/workflows/ci.yml` the `checks` job's `timeout-minutes` (`:40`) goes from 40 to 60, and the comment above it (`:39`) becomes `# 60, not 40: a change to tests/mutation/mutants.toml or its script runs every named mutant (D-1285), after a cold build when the change reaches a base crate (D-5519).` Nothing else in the file changes: no other job's timeout (\"Lint and slow tests\" keeps 40), step, path rule or check. Why: a change to `tests/mutation/mutants.toml` or its script makes `scripts/run_named_mutants.py --base origin/main` run every named mutant (83) strictly (`scripts/run_named_mutants.py:148`); on T803's runs the Rust build took about 26 minutes (its change reaches `askhava-messaging`) and the job was cancelled at 40 minutes after mutant 72, every one killed. A limit only stops a run that would otherwise finish, so no passing run gets slower and no check is dropped. Update `docs/decisions.md`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T828"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "low",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    ".github/workflows/ci.yml"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "scripts/run_named_mutants.py"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-1285",
+    "D-5519"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 10,
+    "context_pct": 12
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T832-checks-timeout-full-mutants",
+   "prompt": "kit/prompts/T832.md",
+   "acceptance": "`.github/workflows/ci.yml` differs from `main` only in the `checks` job's `timeout-minutes` (60) and the comment above it; `tests/test_ci_workflow.py`, `scripts/smoke.sh` and every `Ci` job pass unchanged."
+  },
+  {
    "id": "T117",
    "slug": "runbook",
    "title": "docs/runbook.md: outages, safe mode, refunds, disputes, complaints, STOP issues, restore, breach steps",
@@ -48567,7 +48613,7 @@
    "id": "T725",
    "slug": "home-texting-number",
    "title": "site: the home page shows the texting number with its consent line, together, only after Gate C",
-   "goal": "Plan change D-4709 (Nov 19, 2026; Fable's decision; WEB-017, CON-005). The home page shows no texting number before Gate C (WEB-017, `docs/spec/website.md:21`), and no task places it, with its consent line (`docs/copy/site-copy.md:23`, wording unchanged), after Gate C. (1) In `app/businesses/src/texting_switch.rs` (T526's), `businesses::api::homeowner_texting_number(db, (number, launch), now)` (re-exported by one line in the shared `api.rs`) returns the homeowner number only when `launch` (`ASKHAVA_LAUNCH_DATE`, the Gate C instant, `app/core/src/settings.rs:630`) is set and not after `now`, and `messaging::api::load_lines(db, (number, None))`'s homeowner line's `sender()` is `Some` (switch on, number configured, not paused, `app/messaging/src/mode.rs:180`); a read error (logged as a warning, never the number), an unset number or date, the switch off or a paused number gives `None`. (2) `server` passes the configured homeowner number (`ASKHAVA_HOMEOWNER_NUMBER`, parsed at `app/server/src/lib.rs:1753`) and the launch date to `site` the way T526 passes the business number (the shared `app/server/src/lib.rs`; read `main` at claim), and `app/site/src/pages.rs`'s home read calls the reader on the connection it already holds. (3) `app/site/templates/home.html`: inside one `{% if %}` on that one value, the start line's full block (`site-copy.md:20`) with the number shown as text, and directly after it the consent line word for word (its citation dropped; \"Terms\" and \"Privacy\" linking to the site's terms and privacy pages); otherwise the page is as before (the chat sentence only). The number can never render without the line. Plan change D-5402: the Spanish home page (`app/site/templates/es_home.html`, now this task's) shows, inside one `{% if %}` on the same value passed to `EsHomePage`, the number with this task's Spanish texting consent line (part (6)) directly after it, and otherwise is byte-for-byte as before. (4) Tests, fake data only (555-01xx numbers): `app/site/src/tests/home_texting_line.rs` (registered in the shared `app/site/src/tests/mod.rs`) renders `pages::home_page` with no database for every combination of banner, numbers and texting value, and asserts the number is in the page exactly when the consent line is (the line read from `docs/copy/site-copy.md` by its heading `## Home · texting consent line`, compared with T161's normalisation), that neither appears with no value, and that the Spanish home page holds the number exactly when its Spanish consent line (read from the Spanish block) is there, and neither with no value; `app/businesses/src/tests/homeowner_texting.rs` against PostgreSQL covers before and after the launch date, an unset date, the switch off, a paused number, an unset number and the on case. (5) If `home_page`'s parameters change, update the one call in T161's `app/site/src/tests/site_copy_blocks.rs` (no texting value) and nothing else there. (6) Plan change D-4748 (Fable's decision (13b); TXT-003): the task also drafts the Spanish home texting consent line, a new block appended at the end of `docs/copy/site-copy.md` (after T615, which also edits the file; appended, so no cited line moves), headed in the file's form for a fixed homeowner block and naming Spanish, the line in Spanish with the English line's meaning and links, marked in its block as a draft for native-speaker review (TXT-003), and holding \"PARAR\" for STOP. Plan change D-5402 (this task's attempt-1 plan gap): WORD-013 (`docs/spec/wording.md:17`) requires a Spanish page to carry PARAR when its English page carries STOP, and `tests/docs/test_required_lines.py:139` (T202, DONE) reads the template text whatever its `{% if %}`, so the Spanish line is placed on `es_home.html` as part (3) says (a draft like every Spanish line, TXT-003; still a `docs/for-casey-review.md` item); the test is not changed. Its heading is `## Spanish home · texting consent line (homeowner, fixed)` (D-5341 (1): not a `## Home · ` block, so neither `app/site/src/tests/site_copy_blocks.rs` nor `app/server/tests/home_request_box.rs` collects it, and the lookup of `## Home · texting consent line` stays unique); cite `site-copy.md:27` to `:28`, `:45` and `home.html:50` as they now stand. Update `docs/decisions.md` and the `site` and `businesses` notes. Plan change D-5279: while homeowner texting is live (this task's reader answers a number), the home page's chat lines (`app/site/templates/home.html:39`, `docs/copy/site-copy.md:45`, \"Start in the chat on this site...\") and its \"Get quotes\" box point to texting the shown number, not to the chat, since the chat then only shows the number and asks her to text it (CON-025); before that they stay as they are.",
+   "goal": "Plan change D-4709 (Nov 19, 2026; Fable's decision; WEB-017, CON-005). The home page shows no texting number before Gate C (WEB-017, `docs/spec/website.md:21`), and no task places it, with its consent line (`docs/copy/site-copy.md:23`, wording unchanged), after Gate C. (1) In `app/businesses/src/texting_switch.rs` (T526's), `businesses::api::homeowner_texting_number(db, (number, launch), now)` (re-exported by one line in the shared `api.rs`) returns the homeowner number only when `launch` (`ASKHAVA_LAUNCH_DATE`, the Gate C instant, `app/core/src/settings.rs:630`) is set and not after `now`, and `messaging::api::load_lines(db, (number, None))`'s homeowner line's `sender()` is `Some` (switch on, number configured, not paused, `app/messaging/src/mode.rs:180`); a read error (logged as a warning, never the number), an unset number or date, the switch off or a paused number gives `None`. (2) `server` passes the configured homeowner number (`ASKHAVA_HOMEOWNER_NUMBER`, parsed at `app/server/src/lib.rs:1753`) and the launch date to `site` the way T526 passes the business number (the shared `app/server/src/lib.rs`; read `main` at claim), and `app/site/src/pages.rs`'s home read calls the reader on the connection it already holds. (3) `app/site/templates/home.html`: inside one `{% if %}` on that one value, the start line's full block (`site-copy.md:20`) with the number shown as text, and directly after it the consent line word for word (its citation dropped; \"Terms\" and \"Privacy\" linking to the site's terms and privacy pages); otherwise the page is as before (the chat sentence only). The number can never render without the line. Plan change D-5402: the Spanish home page (`app/site/templates/es_home.html`, now this task's) shows, inside one `{% if %}` on the same value passed to `EsHomePage`, the number with this task's Spanish texting consent line (part (6)) directly after it, and otherwise is byte-for-byte as before. (4) Tests, fake data only (555-01xx numbers): `app/site/src/tests/home_texting_line.rs` (registered in the shared `app/site/src/tests/mod.rs`) renders `pages::home_page` with no database for every combination of banner, numbers and texting value, and asserts the number is in the page exactly when the consent line is (the line read from `docs/copy/site-copy.md` by its heading `## Home · texting consent line`, compared with T161's normalisation), that neither appears with no value, and that the Spanish home page holds the number exactly when its Spanish consent line (read from the Spanish block) is there, and neither with no value; `app/businesses/src/tests/homeowner_texting.rs` against PostgreSQL covers before and after the launch date, an unset date, the switch off, a paused number, an unset number and the on case. (5) If `home_page`'s parameters change, update the one call in T161's `app/site/src/tests/site_copy_blocks.rs` (no texting value) and nothing else there. (6) Plan change D-4748 (Fable's decision (13b); TXT-003): the task also drafts the Spanish home texting consent line, a new block appended at the end of `docs/copy/site-copy.md` (after T615, which also edits the file; appended, so no cited line moves), headed in the file's form for a fixed homeowner block and naming Spanish, the line in Spanish with the English line's meaning and links, marked in its block as a draft for native-speaker review (TXT-003), and holding \"PARAR\" for STOP. Plan change D-5402 (this task's attempt-1 plan gap): WORD-013 (`docs/spec/wording.md:17`) requires a Spanish page to carry PARAR when its English page carries STOP, and `tests/docs/test_required_lines.py:139` (T202, DONE) reads the template text whatever its `{% if %}`, so the Spanish line is placed on `es_home.html` as part (3) says (a draft like every Spanish line, TXT-003; still a `docs/for-casey-review.md` item); the test is not changed. Its heading is `## Spanish home · texting consent line (homeowner, fixed)` (D-5341 (1): not a `## Home · ` block, so neither `app/site/src/tests/site_copy_blocks.rs` nor `app/server/tests/home_request_box.rs` collects it, and the lookup of `## Home · texting consent line` stays unique); cite `site-copy.md:27` to `:28`, `:45` and `home.html:50` as they now stand. Update `docs/decisions.md` and the `site` and `businesses` notes. Plan change D-5279: while homeowner texting is live (this task's reader answers a number), the home page's chat lines (`app/site/templates/home.html:39`, `docs/copy/site-copy.md:45`, \"Start in the chat on this site...\") and its \"Get quotes\" box point to texting the shown number, not to the chat, since the chat then only shows the number and asks her to text it (CON-025); before that they stay as they are. Plan change D-5518 (attempt 3 BLOCKED with no plan gap; scope unchanged): attempt 2's only red was `Checks`' Rust dependency audit on RUSTSEC-2026-0592 (`url` 2.5.8), main-wide and fixed on `main` by D-5512 (#1344, `url` 2.5.9 in `Cargo.lock`), which the retry branch carries once `main` is merged in; attempt 1's plan gap was D-5402's. Attempt 3 stopped only because the smoke had not finished after two polls on a cold compile (252 results passed, none failed). For this task: start the smoke in the background as soon as the branch is checked out, before reading the scope, and while its log keeps growing with no failure line keep polling to its `exit=` line, up to four polls, before treating it as a timeout; a failure still stops you at once.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -48621,7 +48667,8 @@
     "D-4748",
     "D-5279",
     "D-5341",
-    "D-5402"
+    "D-5402",
+    "D-5518"
    ],
    "cites": [],
    "budget": {
@@ -52622,7 +52669,8 @@
     "T057",
     "T424",
     "T483",
-    "T603"
+    "T603",
+    "T832"
    ],
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
@@ -52636,7 +52684,7 @@
    "id": "T803",
    "slug": "no-help-after-stop",
    "title": "messaging (harness): an opted-out number gets no HELP reply; help goes by the web and email",
-   "goal": "Plan change D-5280 (Fable's decision for Casey under D-305; CON-013 and CON-018 as reworded; D-131 narrowed). With Twilio's Advanced Opt-Out an opted-out number gets no HELP reply and a send to it fails with 21610, so `rules::may_send_to` (`app/messaging/src/rules.rs:553` to `:567`) no longer lets `HELP_TEMPLATE` through to a listed number: only the opt-out confirmation within 5 minutes passes; a HELP text from a listed number queues nothing that could be sent (the sender expires it). The DONE tests that pin the HELP reply to an opted-out number change by logged spec change (D-5280) only in those assertions: `app/messaging/src/tests/optout_words.rs` (`may_send_to` cases near `:326` to `:331`), `app/messaging/src/tests/prop_optout_props.rs`, `tests/integration/tests/outbox_sender.rs:291` to `:314` (TD-QH-05: a suppressed number now gets nothing but the confirmation), `tests/integration/tests/optout_flow.rs:264` and `tests/integration/tests/help_start.rs:173` to `:209` (TD-CON-07). `tests/mutation/mutants.toml:204`'s \"HELP after STOP not answered\" mutant is replaced by the reverse one, which lets `HELP_TEMPLATE` through on a listed number again (its `find` and `replace` written against the code this task leaves), and the new tests kill it; the twin answers HELP after STOP too: `twin/app.py:302`, `:409`, `twin/twin.py:835`, `:1068` and `docs/twin-warnings.md:174` change so an opted-out number's HELP gets no text and `help_not_answered` no longer flags that case (the twin gate passes); `app/messaging/src/keywords.rs:5`'s doc comment says the HELP reply is never let through to an opted-out number; `docs/architecture.md:199` (`reply_to_help` queues the CON-018 reply \"from any number including an opted-out one\") is corrected to say the reply is never sent to an opted-out number. Consent: Opus worker and review. Update `app/messaging/NOTES.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-5280 (Fable's decision for Casey under D-305; CON-013 and CON-018 as reworded; D-131 narrowed). With Twilio's Advanced Opt-Out an opted-out number gets no HELP reply and a send to it fails with 21610, so `rules::may_send_to` (`app/messaging/src/rules.rs:553` to `:567`) no longer lets `HELP_TEMPLATE` through to a listed number: only the opt-out confirmation within 5 minutes passes; a HELP text from a listed number queues nothing that could be sent (the sender expires it). The DONE tests that pin the HELP reply to an opted-out number change by logged spec change (D-5280) only in those assertions: `app/messaging/src/tests/optout_words.rs` (`may_send_to` cases near `:326` to `:331`), `app/messaging/src/tests/prop_optout_props.rs`, `tests/integration/tests/outbox_sender.rs:291` to `:314` (TD-QH-05: a suppressed number now gets nothing but the confirmation), `tests/integration/tests/optout_flow.rs:264` and `tests/integration/tests/help_start.rs:173` to `:209` (TD-CON-07). `tests/mutation/mutants.toml:204`'s \"HELP after STOP not answered\" mutant is replaced by the reverse one, which lets `HELP_TEMPLATE` through on a listed number again (its `find` and `replace` written against the code this task leaves), and the new tests kill it; the twin answers HELP after STOP too: `twin/app.py:302`, `:409`, `twin/twin.py:835`, `:1068` and `docs/twin-warnings.md:174` change so an opted-out number's HELP gets no text and `help_not_answered` no longer flags that case (the twin gate passes); `app/messaging/src/keywords.rs:5`'s doc comment says the HELP reply is never let through to an opted-out number; `docs/architecture.md:199` (`reply_to_help` queues the CON-018 reply \"from any number including an opted-out one\") is corrected to say the reply is never sent to an opted-out number. Consent: Opus worker and review. Update `app/messaging/NOTES.md` and `docs/decisions.md`. Plan change D-5519 (attempts 2 and 3 BLOCKED on `Checks`' time limit, no code fault; scope unchanged): because this task changes `tests/mutation/mutants.toml`, `scripts/run_named_mutants.py --base origin/main` runs all 83 named mutants strictly (`scripts/run_named_mutants.py:148`, D-1285), and after a cold Rust build of about 26 minutes (`askhava-messaging` sits under most crates) the job hit its 40-minute limit after mutant 72, every one killed. T832 (a dep) raises that job's limit to 60 minutes, so the same full run fits; no mutant is dropped or skipped. With the list changed every entry runs strictly, so the entry `card sent when the latest daily check is not Active` (its `find` occurs twice in `app/licensing/src/service.rs` on `main`) is made unique in the same change by a longer `find` with the same mutation, as attempt 2's branch did.",
    "type": "harness",
    "model": "claude-opus-5-5",
    "review_areas": [
@@ -52666,7 +52714,8 @@
    ],
    "decisions": [
     "D-5280",
-    "D-131"
+    "D-131",
+    "D-5519"
    ],
    "budget": {
     "files": 11,
