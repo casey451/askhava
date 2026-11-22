@@ -1,0 +1,33 @@
+{% extends "business_layout.html" %}
+{#- The owner's waiting-phones page (T397; BIZ-033, BIZ-038, SEC-009, SEC-038; D-3081, D-3744). One
+    entry per phone a team member added or renumbered: who set the number (their sign-in email, or
+    one fixed line when it can't be read), its last 4 digits and when it was set, Arizona time, no
+    countdown. Approve and Don't approve are each their own form with the CSRF token, the line and
+    the number_set_at shown. Works without JavaScript; buttons are never disabled. No whole number. -#}
+{% block title %}Team phones waiting for your approval{% endblock %}
+{% block main %}<h1>Team phones waiting for your approval</h1>
+{% match note %}{% when PhonesNote::NumberChanged %}<p id="number-changed" role="status">A teammate changed this phone's number after you opened this page. We didn't approve or remove it. Check the new last 4 digits below.</p>
+{% when PhonesNote::NumberTaken %}<p id="number-taken" role="status">Another phone already uses that number, so we didn't approve it. You can press Don't approve to remove it.</p>
+{% when PhonesNote::None %}{% endmatch %}<p>When a teammate adds a phone or changes its number, it won't work for your business until you approve it. Only approve a number you know belongs to your team. Before you press Approve or Don't approve, we send you a code to check it's you.</p>
+{% if entries.is_empty() %}<p>No phones are waiting for you to approve.</p>
+{% else %}<ul>
+{% for e in entries %}<li>
+<h2 id="phone-{{ loop.index }}">{% if let Some(end) = e.end %}Phone number ending in {{ end }}{% else %}A phone with no number on file{% endif %}</h2>
+<p>Added by {% if let Some(who) = e.who %}{{ who }}{% else %}someone on your team{% endif %}</p>
+<p>Number added or changed {{ e.when }}, Arizona time</p>
+<form method="post" action="{{ approve_route }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="line" value="{{ e.line }}">
+<input type="hidden" name="number_set_at" value="{{ e.set_at }}">
+<p><button type="submit" aria-describedby="phone-{{ loop.index }}">Approve</button></p>
+</form>
+<form method="post" action="{{ reject_route }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="line" value="{{ e.line }}">
+<input type="hidden" name="number_set_at" value="{{ e.set_at }}">
+<p><button type="submit" aria-describedby="phone-{{ loop.index }}">Don't approve</button></p>
+</form>
+<p>If you don't approve it, we remove the phone from your account. Your teammate can add it again later.</p>
+</li>
+{% endfor %}</ul>
+{% endif %}{% endblock %}
