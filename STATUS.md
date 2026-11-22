@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T02:52:28Z by runner b3e4c6cdedb5 (actions).
+Updated 2026-11-22T02:54:44Z by runner b3e4c6cdedb5 (actions).
 
 **Building: T118 in progress since 00:46Z; 599 of 753 done; week 48% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 599 of 753 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 4: T616 claimed 01:30Z, lease until 04:30Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z; lane 6: T810 claimed 02:18Z, lease until 05:18Z
-- **Week:** 48% used, 92.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:50Z, 2 min before this update
+- **Lane:** lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 4: T616 claimed 01:30Z, lease until 04:30Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z; lane 6: T810 claimed 02:18Z, lease until 05:18Z; lane 7: T721 claimed 02:54Z, lease until 05:54Z
+- **Week:** 48% used, 93.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 02:52Z, 2 min before this update
 - **Keeper:** last ran 02:49Z, next wake 03:48Z
 
 ## Needs attention
@@ -123,7 +123,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-22T02:13:02Z (week)): week: 101.3M used, 92.7M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-06T15:45:54Z.
+- Pacing (session_reading 2026-11-22T02:49:38Z (week)): week: 100.8M used, 93.2M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-06T14:37:34Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -143,6 +143,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 4: T616 (lease until 2026-11-22T04:30:46Z)
 - lane 5: T542 (lease until 2026-11-22T04:45:48Z)
 - lane 6: T810 (lease until 2026-11-22T05:18:33Z)
+- lane 7: T721 (lease until 2026-11-22T05:54:28Z)
 
 ## Last usage reading
 - {"task": "T803", "at": "2026-11-22T02:44:33Z", "cache_creation_input_tokens": 192683, "cache_read_input_tokens": 4838160, "output_tokens": 42267, "input_tokens": 202}
