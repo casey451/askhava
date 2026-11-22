@@ -30029,7 +30029,7 @@
    "id": "T745",
    "slug": "intake-answers-reader",
    "title": "intake: a reader for a job's intake answers through `intake::api`, and every job a request opened kept after the request closes",
-   "goal": "Plan change D-4748 (Fable's decision (5a); CARD-023, FEE-013, FEE-036, PRIV-011; D-3189, D-3719, D-1939). CARD-023 (`docs/spec/job-cards.md:27`) puts every intake answer on the business job page, but nothing outside `intake` can read them: `intake.intake_answer` is keyed by request (`migrations/0053_intake_tables.sql:64`) and `models::latest_answer` is crate-private (`app/intake/src/models.rs:530`), so the Quote link's page passes none (`app/server/src/action_links.rs:296`). And a job opened by an ALSO reply (INT-032, `begin_job`, `app/intake/src/conversation.rs:131`) lives only in a `job.%` link row that `close_request` drops (`models.rs:718`), so `intake::api::jobs_of_contact` (`app/intake/src/api.rs:182`, which reads only `intake.conversation.job_id`) misses it: a repeat customer picked on such a job is charged the full fee instead of $0 at Confirm (FEE-013, FEE-036; D-3719's known limit) and her portal delete misses its photos (PRIV-011). This task: (1) `migrations/0213_intake_request_job.sql` (after T653's 0212 and before T729's 0215 in the runner's serial order, which is why this task waits for T653; re-check the next free number at claim time) adds `intake.request_job (conversation_id, job_id, opened_at)`, one row per job a request opened, never dropped by a close, backfilled from `conversation.job_id` and the live `job.%` links; `begin_job` and `set_first_job` (`models.rs:800`) write it in their transaction; the retention purge must remove it with its request (check `app/privacy/src/purge.rs`'s intake tables; a row that would outlive its request is a plan gap to report). (2) `jobs_of_contact` reads it (still one homeowner's, `DISTINCT`), so FEE-013's same-customer check and PRIV-011's delete see ALSO-reply jobs and closed requests. (3) The new `app/intake/src/job_answers.rs`, re-exported through the shared `intake::api`: `job_answers(conn, job) -> Result<Vec<JobAnswer>, IntakeError>`, the latest answer to each question of the request that opened `job` (through `request_job`), as question ID and stored code or scrubbed value in question-bank order (`docs/catalog/question_bank.yaml`); the contact questions (her name, street address and any on-site contact, INT-041) are never returned (PRIV-001, PICK-022); a job with no request reads none. Tests in the new `tests/integration/tests/job_answers_reader.rs`, PostgreSQL, fake data only: the first job and an ALSO-reply job each read their own request's answers before and after the request closes; no contact answer appears; `jobs_of_contact` returns both jobs after the close; (D-5317, the risky order) the earlier paid pick is on an ALSO-reply job of a request that is now closed, and a later pick of the same business on a new request of the same homeowner is found by the Confirm route's same-customer check (`intake::api::jobs_of_contact` feeding `same_customer_jobs` in `payments::api::waive_at_confirm`, D-3719), waived as Repeat, and uses no free first win. Every existing intake, conversation and close test passes unchanged. Opus worker, Opus money and privacy review, two review rounds. Update the `intake` notes, `docs/architecture.md` and `docs/decisions.md`. The \"Known limit (D-3719)\" doc comment at `app/portals/src/confirm_pay.rs:1260` goes stale with this task; this task does not own that file, and T746 updates that comment (D-5319).",
+   "goal": "Plan change D-4748 (Fable's decision (5a); CARD-023, FEE-013, FEE-036, PRIV-011; D-3189, D-3719, D-1939). CARD-023 (`docs/spec/job-cards.md:27`) puts every intake answer on the business job page, but nothing outside `intake` can read them: `intake.intake_answer` is keyed by request (`migrations/0053_intake_tables.sql:64`) and `models::latest_answer` is crate-private (`app/intake/src/models.rs:530`), so the Quote link's page passes none (`app/server/src/action_links.rs:366`). And a job opened by an ALSO reply (INT-032, `order_dispatch::open_job`, `app/intake/src/order_dispatch.rs:289`, not owned) lives only in a `job.%` link row that `close_request` drops (`models.rs:720`), so `intake::api::jobs_of_contact` (`app/intake/src/api.rs:191`, which reads only `intake.conversation.job_id`) misses it: a repeat customer picked on such a job is charged the full fee instead of $0 at Confirm (FEE-013, FEE-036; D-3719's known limit) and her portal delete misses its photos (PRIV-011). This task: (1) `migrations/0213_intake_request_job.sql` (after T653's 0212 and before T729's 0215 in the runner's serial order, which is why this task waits for T653; re-check the next free number at claim time) adds `intake.request_job (conversation_id, job_id, opened_at)`, one row per job a request opened, never dropped by a close, backfilled from `conversation.job_id` and the live `job.%` links; `begin_job` and `set_first_job` (`models.rs:799`) write it in their transaction; `models::set_first_job` also inserts the `request_job` row `ON CONFLICT DO NOTHING`, which covers `open_job` and `begin_job`; the retention purge must remove it with its request (check `app/privacy/src/purge.rs`'s intake tables; a row that would outlive its request is a plan gap to report). (2) `jobs_of_contact` reads it (still one homeowner's, `DISTINCT`), so FEE-013's same-customer check and PRIV-011's delete see ALSO-reply jobs and closed requests. (3) The new `app/intake/src/job_answers.rs`, re-exported through the shared `intake::api`: `job_answers(conn, job) -> Result<Vec<JobAnswer>, IntakeError>`, the latest answer to each question of the request that opened `job` (through `request_job`), as question ID and stored code or scrubbed value in question-bank order (`docs/catalog/question_bank.yaml`); the contact questions (her name, street address and any on-site contact, INT-041) are never returned (PRIV-001, PICK-022); a job with no request reads none. Plan change D-5553 (Fable's decision (a): per-job bank answers): `order.rs`: the request's first job keeps `bank.<question ID>`; any other job stores and replays `bank.<job, 32 hex>.<question ID>`; the first job's read excludes `bank.%.%`; `job_answers` returns only that job's bank answers through one crate reader in `order.rs` (`bank_answers`, `app/intake/src/order.rs:475`; `store_given`, `:581`). `purge.rs`: `owner_of`, `standing` and `purge_answers` find a job's request and her jobs through `request_job` (`app/intake/src/purge.rs:85`, `:117`, `:261`); purging a later job deletes only its `bank.<job>.%` rows while the request has other jobs. Tests in the new `tests/integration/tests/job_answers_reader.rs`, PostgreSQL, fake data only: the first job and an ALSO-reply job each read their own request's answers before and after the request closes; no contact answer appears; `jobs_of_contact` returns both jobs after the close; (D-5317, the risky order) the earlier paid pick is on an ALSO-reply job of a request that is now closed, and a later pick of the same business on a new request of the same homeowner is found by the Confirm route's same-customer check (`intake::api::jobs_of_contact` feeding `same_customer_jobs` in `payments::api::waive_at_confirm`, D-3719), waived as Repeat, and uses no free first win; (D-5553) planted `bank.` rows for two jobs of one request that both answered `details` (in the plumbing, HVAC, handyman and appliance sets of `docs/catalog/question_bank.yaml`): each job's `job_answers` reads its own answer, and purging the second job leaves the first job's rows. A crate-level `#[sqlx::test]` in an in-file `#[cfg(test)]` module of `order.rs` drives `bank_turn` with a reply for a request's second job and asserts the `bank.<job>.<question ID>` row and its replay, so the write branch's coverage does not wait for T718 (`app/intake/src/tests/mod.rs` is a shared path, but a new file under `src/tests/` would be an eighth owned file). Every existing intake, conversation and close test passes unchanged. Opus worker, Opus money and privacy review, two review rounds. Update the `intake` notes, `docs/architecture.md` and `docs/decisions.md`. The \"Known limit (D-3719)\" doc comment at `app/portals/src/confirm_pay.rs:1365` goes stale with this task; this task does not own that file, and T746 updates that comment (D-5319).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -30039,7 +30039,8 @@
     "T711",
     "T650",
     "T662",
-    "T653"
+    "T653",
+    "T672"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -30053,7 +30054,9 @@
     "app/intake/src/job_answers.rs",
     "app/intake/src/conversation.rs",
     "app/intake/src/models.rs",
-    "tests/integration/tests/job_answers_reader.rs"
+    "tests/integration/tests/job_answers_reader.rs",
+    "app/intake/src/order.rs",
+    "app/intake/src/purge.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -30076,13 +30079,14 @@
     "D-3719",
     "D-4748",
     "D-5317",
-    "D-5319"
+    "D-5319",
+    "D-5553"
    ],
    "cites": [],
    "budget": {
-    "files": 5,
-    "lines": 500,
-    "context_pct": 21
+    "files": 7,
+    "lines": 600,
+    "context_pct": 30
    },
    "checks": [
     "Ci",
@@ -31545,13 +31549,14 @@
     "D-3744",
     "D-3844",
     "D-3889",
-    "D-3893"
+    "D-3893",
+    "D-5553"
    ],
    "cites": [],
    "budget": {
     "files": 3,
     "lines": 600,
-    "context_pct": 10
+    "context_pct": 15
    },
    "checks": [
     "Ci",
@@ -48704,13 +48709,14 @@
    "id": "T718",
    "slug": "intake-order-second-job-steps",
    "title": "intake: the dispatcher's steps 8 to 12 for a request's second job: its trade questions, photos and card, after the first job's",
-   "goal": "Plan change D-4441 (INT-032, INT-043, INT-039, INT-041, INT-029; D-1020). After T711 a request can hold two live jobs (ALSO, TAMBIÉN, SPLIT), but steps 6 to 12 as T672, T673 and T675 built them drive the request's first job (`intake.conversation.job_id`) only, so the second job never gets its trade questions, photos or card. Extend `app/intake/src/order_dispatch.rs`, calling only existing step functions (`routing.rs`, `conversation.rs`, `service.rs`, `summary_step.rs` and `cards_out.rs` are not edited): \"How soon?\", the INT-006 choice (with the night count) and the name and address stay the request's, asked once, and apply to every live job of it; the trade questions (INT-039), the photos (INT-044), the design step and the card (INT-041; on the emergency path the emergency card, INT-029) run for each live job in turn, first job first, the second job's starting once the first job's card is approved: on SEND, OK, YES or ENVIAR in that reply's turn; on the 30-minute auto-send (`summary_step::run_card_timer`, `app/intake/src/summary_step.rs:330`, registered for `CARD_TIMER_KIND` in the shared `app/server/src/lib.rs`, `:756`) through a new handler in `order_dispatch.rs` registered there in its place, which runs the card-timer step on the handler's own transaction (its `begin` becomes a savepoint) and queues the second job's first question in that same transaction, as a text that is not a direct reply (quiet hours, QH-001: held to 8 a.m.); because `card_timer_step` reports the approval only on the approving run (`summary_step.rs:291` to `:302`), the question is decided from stored rows (the first job's card approved, the second job's first question not yet asked) and queued under a dedupe key derived from the job and the step (JOB-006, rust brain R12), so a rerun after the approval queues it exactly once; its asked row carries no inbox ID; on the emergency path, where step 12 is skipped and the cards went at the choice, in the turn that answers the first job's step 11, a direct reply; a job that left Intake (Not covered, closed) is skipped; `ask_open_again` names the job its open question belongs to as the `two_jobs` text does. The build logs in `docs/decisions.md` how each step's stored rows tell the two jobs apart. Tests (TD-INT-55) in the new `tests/integration/tests/intake_order_second_job.rs`, PostgreSQL, the stand-ins, fake data and 555 numbers only, through `intake::api::receive_raw_reply`. Before hand-in, run every test that posts to `/webhooks/twilio/sms` or calls `receive_reply`/`receive_raw_reply`; a failing one not owned here is a plan gap to report, not to edit. Update `app/intake/CLAUDE.md` and `docs/decisions.md`.",
+   "goal": "Plan change D-4441 (INT-032, INT-043, INT-039, INT-041, INT-029; D-1020). After T711 a request can hold two live jobs (ALSO, TAMBIÉN, SPLIT), but steps 6 to 12 as T672, T673 and T675 built them drive the request's first job (`intake.conversation.job_id`) only, so the second job never gets its trade questions, photos or card. Extend `app/intake/src/order_dispatch.rs`, calling only existing step functions (`routing.rs`, `conversation.rs`, `service.rs`, `summary_step.rs` and `cards_out.rs` are not edited): \"How soon?\", the INT-006 choice (with the night count) and the name and address stay the request's, asked once, and apply to every live job of it; the trade questions (INT-039), the photos (INT-044), the design step and the card (INT-041; on the emergency path the emergency card, INT-029) run for each live job in turn, first job first, the second job's starting once the first job's card is approved: on SEND, OK, YES or ENVIAR in that reply's turn; on the 30-minute auto-send (`summary_step::run_card_timer_at`, `app/intake/src/summary_step.rs:340`, registered for `CARD_TIMER_KIND` on the worker clock in the shared `app/server/src/lib.rs`, `:998`) through a new handler in `order_dispatch.rs` registered there in its place, which runs the card-timer step on the handler's own transaction (its `begin` becomes a savepoint) and queues the second job's first question in that same transaction, as a text that is not a direct reply (quiet hours, QH-001: held to 8 a.m.); because `card_timer_step` reports the approval only on the approving run (`summary_step.rs:291` to `:302`), the question is decided from stored rows (the first job's card approved, the second job's first question not yet asked) and queued under a dedupe key derived from the job and the step (JOB-006, rust brain R12), so a rerun after the approval queues it exactly once; its asked row carries no inbox ID; on the emergency path, where step 12 is skipped and the cards went at the choice, in the turn that answers the first job's step 11, a direct reply; a job that left Intake (Not covered, closed) is skipped; `ask_open_again` names the job its open question belongs to as the `two_jobs` text does. Bank answers are per job after T745 (`order.rs`, not edited or read here); TD-INT-55 asserts a question ID in both jobs' sets (`details`) is asked again for the second job and stored under `bank.<job>.details`. Plan change D-5553: `summary_step.rs` is no longer a whole read; open it only at `:222` to `:352` (`answer_card`, `CardTimer`, `card_timer_step`, `run_card_timer_at`) and `:455` (its `parse` is private, so the new handler builds `CardTimer` from the payload's public fields). The build logs in `docs/decisions.md` how each step's stored rows tell the two jobs apart. Tests (TD-INT-55) in the new `tests/integration/tests/intake_order_second_job.rs`, PostgreSQL, the stand-ins, fake data and 555 numbers only, through `intake::api::receive_raw_reply`. Before hand-in, run every test that posts to `/webhooks/twilio/sms` or calls `receive_reply`/`receive_raw_reply`; a failing one not owned here is a plan gap to report, not to edit. Update `app/intake/CLAUDE.md` and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
    "module": "intake",
    "deps": [
-    "T723"
+    "T723",
+    "T745"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -48729,7 +48735,6 @@
     "docs/spec/intake.md",
     "docs/spec/privacy.md",
     "docs/spec/job-cards.md",
-    "app/intake/src/summary_step.rs",
     "app/intake/src/photos.rs",
     "docs/brains/rust-production.md",
     "docs/spec/quiet-hours.md",
@@ -48750,7 +48755,8 @@
    "decisions": [
     "D-1020",
     "D-4360",
-    "D-4441"
+    "D-4441",
+    "D-5553"
    ],
    "cites": [],
    "budget": {
@@ -53078,7 +53084,7 @@
    "id": "T812",
    "slug": "step-up-session-record",
    "title": "businesses and portals: a passed step-up records the session it was passed in",
-   "goal": "Plan change D-5314 (outside review job 8, SEC-038 step-up, checked on `main` 62c2b1c; Fable's decision for Casey; first of two tasks, T813 second). SEC-038's fresh code is kept per member (`businesses.team_member.step_up_at`, migration 0142; `record_step_up`, `app/businesses/src/email_verification.rs:212` to `:224`), so a stolen session cookie rides the real member's 5-minute window. This task records the session; T813 makes the check require it. (1) Migration `migrations/0216_businesses_step_up_session.sql` (after T729's `0215` in the runner's serial order; T236, T685, T742, T785 and T793 move to `0217` to `0221`) adds a nullable `step_up_session uuid` to `businesses.team_member` beside `step_up_at` (if a merged migration already uses `0216` at claim time, report a plan gap). (2) A new `record_session_step_up(conn, by, session, at)` beside `record_step_up` in `email_verification.rs`, re-exported through the shared `businesses::api`, writes both columns in one statement; `record_step_up(conn, by, at)` keeps its signature and now sets `step_up_session` to null, a step-up bound to no session (the businesses-level checks in `backup_address::allowed` and `email_verification::may_change` read only the time and stay as they are, D-5314; after T813 `require_step_up` never accepts it). (3) `BusinessPrincipal` (`app/portals/src/business_auth.rs:244` to `:251`) gains a `pub(crate)` session field, set in `business_principal` from `current_session`'s `Session::id()` (the `portals.session` row ID, never the cookie or its hash), with a read-only `session()` accessor like `member()`. Check in `app/portals/src/session.rs` that a business session's row ID never changes while it lives; if it does, report a plan gap. (4) The served step-up page's `confirm` (`app/portals/src/step_up_page.rs:420` to `:437`) records with `record_session_step_up` and the principal's session, in the same transaction as today. Nothing reads the session yet. Adding the field breaks the `BusinessPrincipal` struct literals in `#[cfg(test)]` modules (review round 1): `app/portals/src/business_portal.rs:901`, `:918`, `:1115`, `:1142`, `app/portals/src/help.rs:706` and `app/portals/src/confirm_pay.rs:2006`; this task owns those three files for those literals only, each gaining `session: Uuid::new_v4()` and nothing else (it runs after T810 and T748, DONE, the earlier `help.rs` owner (D-5341), and before T811, T746, T132 and T740); grep `BusinessPrincipal {` across `app/` at claim time, and a literal elsewhere is a plan gap to report. Every other DONE test passes unchanged. Unit tests in the owned files, fake data only: both columns written; `record_step_up` clears the session; the principal's session is the cookie's row; the step-up page's right code stores its session. Update `app/businesses/NOTES.md`, `app/portals/NOTES.md` and `docs/decisions.md`. Plan change D-5336: this task's migration moves to `migrations/0217_businesses_step_up_session.sql` for T804's `0216_portals_data_request_link.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5341: this task's migration is `migrations/0216_businesses_step_up_session.sql` again and it no longer waits for T804, which takes `0217` (D-5336's `0217` is history).",
+   "goal": "Plan change D-5314 (outside review job 8, SEC-038 step-up, checked on `main` 62c2b1c; Fable's decision for Casey; first of two tasks, T813 second). SEC-038's fresh code is kept per member (`businesses.team_member.step_up_at`, migration 0142; `record_step_up`, `app/businesses/src/email_verification.rs:212` to `:224`), so a stolen session cookie rides the real member's 5-minute window. This task records the session; T813 makes the check require it. (1) Migration `migrations/0216_businesses_step_up_session.sql` (after T729's `0215` in the runner's serial order; the move of T236, T685, T742, T785 and T793 to `0217` to `0221` is history: the owners now are `0218` T236, `0219` T685, `0220` T742, `0221` T785 and `0222` T793, D-5341) adds a nullable `step_up_session uuid` to `businesses.team_member` beside `step_up_at` (if a merged migration already uses `0216` at claim time, report a plan gap). (2) A new `record_session_step_up(conn, by, session, at)` beside `record_step_up` in `email_verification.rs`, re-exported through the shared `businesses::api`, writes both columns in one statement; `record_step_up(conn, by, at)` keeps its signature and now sets `step_up_session` to null, a step-up bound to no session (the businesses-level checks in `backup_address::allowed` and `email_verification::may_change` read only the time and stay as they are, D-5314; after T813 `require_step_up` never accepts it). (3) `BusinessPrincipal` (`app/portals/src/business_auth.rs:244` to `:251`) gains a `pub(crate)` session field, set in `business_principal` from `current_session`'s `Session::id()` (the `portals.session` row ID, never the cookie or its hash), with a read-only `session()` accessor like `member()`. Check in `app/portals/src/session.rs` that a business session's row ID never changes while it lives; if it does, report a plan gap. (4) The served step-up page's `confirm` (`app/portals/src/step_up_page.rs:420` to `:437`) records with `record_session_step_up` and the principal's session, in the same transaction as today. Nothing reads the session yet. Adding the field breaks the `BusinessPrincipal` struct literals in `#[cfg(test)]` modules (review round 1): `app/portals/src/business_portal.rs:901`, `:918`, `:1115`, `:1142`, `app/portals/src/help.rs:706` and `app/portals/src/confirm_pay.rs:2006`; this task owns those three files for those literals only, each gaining `session: Uuid::new_v4()` and nothing else (it runs after T810 and T748, DONE, the earlier `help.rs` owner (D-5341), and before T811, T746, T132 and T740); grep `BusinessPrincipal {` across `app/` at claim time, and a literal elsewhere is a plan gap to report. Every other DONE test passes unchanged. Unit tests in the owned files, fake data only: both columns written; `record_step_up` clears the session; the principal's session is the cookie's row; the step-up page's right code stores its session. Update `app/businesses/NOTES.md`, `app/portals/NOTES.md` and `docs/decisions.md`. Plan change D-5336: this task's migration moves to `migrations/0217_businesses_step_up_session.sql` for T804's `0216_portals_data_request_link.sql`, which runs earlier (V9); earlier numbers in this goal are history. Plan change D-5341: this task's migration is `migrations/0216_businesses_step_up_session.sql` again and it no longer waits for T804, which takes `0217` (D-5336's `0217` is history).",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -53121,7 +53127,8 @@
     "D-5319",
     "D-5336",
     "D-5339",
-    "D-5341"
+    "D-5341",
+    "D-5553"
    ],
    "cites": [],
    "budget": {
@@ -53190,13 +53197,14 @@
     "D-1847",
     "D-480",
     "D-1850",
-    "D-5319"
+    "D-5319",
+    "D-5553"
    ],
    "cites": [],
    "budget": {
     "files": 13,
     "lines": 400,
-    "context_pct": 39
+    "context_pct": 46
    },
    "checks": [
     "Ci",
