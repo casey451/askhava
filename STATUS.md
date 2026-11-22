@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T23:10:54Z by runner 21be2b3d8975 (actions).
+Updated 2026-11-22T23:39:00Z by runner bd3e4e9cdad1 (manual).
 
 **Building: T675 in progress since 20:30Z; 617 of 773 done; week 65% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,14 @@ Updated 2026-11-22T23:10:54Z by runner 21be2b3d8975 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T675 claimed 20:30Z, lease until 23:30Z; lane 2: T118 claimed 20:37Z, lease until 23:37Z; lane 3: T730 claimed 20:39Z, lease until 23:39Z; lane 4: T121 claimed 20:35Z, lease until 23:35Z; lane 5: T832 claimed 20:38Z, lease until 23:38Z; lane 6: T725 claimed 20:35Z, lease until 23:35Z; lane 7: T645 claimed 20:37Z, lease until 23:37Z
 - **Week:** 65% used, 56.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:10Z, 0 min before this update
+- **Last run:** 23:16Z, 22 min before this update
 - **Keeper:** last ran 23:10Z, next wake 23:33Z
 
 ## Needs attention
 - BLOCKED T803: Worker made no change. All 83 named mutants are killed; the Checks job timed out (40 min limit) because the Rust build took ~26 min and mutants.toml changes trigger all 83 mutants (cut off after mutant 72). Needs a harness fix (raise Checks timeout-minutes or run only changed mutants) or a faster CI build. Smoke did not finish in the worker's polls.
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 31 problem(s) on tasks still to run (+496 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 27 problem(s) on tasks still to run (+496 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -73,8 +73,6 @@ Updated 2026-11-22T23:10:54Z by runner 21be2b3d8975 (actions).
 | T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | QUEUED | 2 | 106 min | 00:48Z |  |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | QUEUED | 1 | 2 h 35 min | 00:44Z |  |
 | T800 | Legal docs and tests (harness): the Twilio campaign submissi | done | 1 | 46 min | 00:39Z |  |
-| T608 | site and portals: the home page and the quote page in full V | done | 2 | 2 h 21 min | 23:38Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-21T |
-| T600 | intake, businesses, privacy and server: four worker handlers | done | 1 | 45 min | 23:15Z |  |
 
 ### Plan and harness merges on main
 - 17:04Z Plan: unblock T121/T832/T499/T514 (D-5552); pre-flight fixes job 24 (D-5551) (#1363)
@@ -85,7 +83,7 @@ Updated 2026-11-22T23:10:54Z by runner 21be2b3d8975 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 403 of 735 (54.8%) · partial 319 · unstarted 13
-**Tasks merged (throughput only):** 617 of 770
+**Tasks merged (throughput only):** 617 of 773
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
