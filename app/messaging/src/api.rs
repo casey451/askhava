@@ -169,6 +169,7 @@ pub use crate::spanish_switch::{
     turn_spanish_off, turn_spanish_on,
 };
 pub use crate::status::DeliveryStatus;
+pub use crate::suppression_backlog::suppression_backlog;
 pub use crate::suppression_rekey::{
     INDEX_VERSION_RETIRED_ACTION, RekeyError, rekey_suppression_batch, retire_index_version,
 };

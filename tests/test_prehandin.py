@@ -6,9 +6,12 @@ data only.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import re
+import socket
 import subprocess
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
@@ -889,9 +892,41 @@ CASES = [  # (report, exit code, gate exit, wanted lines)
 ]
 
 
+@contextlib.contextmanager
+def _held_ally_ports() -> Iterator[tuple[int, socket.socket]]:
+    """D-5525: holds the three ports the gate's `ally_ready` probes (4010, E2E_PORT, E2E_PORT + 19) for one run.
+
+    Each is bound on 127.0.0.1 without listen() and without SO_REUSEADDR: the gate's /dev/tcp probe is refused, so it
+    sees the port free, and no other process can bind it meanwhile. The web port is one the kernel picks whose port + 19
+    binds too (a few tries). Yields the web port and its socket. 4010 already taken fails the test, never skips it.
+    """
+    held: list[socket.socket] = []
+    try:
+        held.append(socket.socket())
+        try:
+            held[0].bind(("127.0.0.1", 4010))
+        except OSError as err:
+            pytest.fail(f"port 4010 is in use on this host (a live Ally or e2e suite?): {err}")
+        for _ in range(10):
+            web, plus = socket.socket(), socket.socket()
+            held += [web, plus]
+            web.bind(("127.0.0.1", 0))
+            port = web.getsockname()[1]
+            try:
+                plus.bind(("127.0.0.1", port + 19))
+            except (OSError, OverflowError):
+                continue
+            yield port, web
+            return
+        pytest.fail("no kernel-picked web port whose port + 19 was free in 10 tries")
+    finally:
+        for sock in held:
+            sock.close()
+
+
 @pytest.mark.parametrize(("report", "code", "gate_exit", "wanted"), CASES)
 def test_the_ally_step_fails_only_on_failed_tests_and_skips_what_it_cannot_judge(
-        tmp_path: Path, report: str | None, code: int, gate_exit: int, wanted: list[str]) -> None:
+        tmp_path: Path, report: str | None, code: int, gate_exit: int, wanted: list[str], busy: bool = False) -> None:
     """A fake npx (no build, no browser): failed tests are red; a suite that never started, a timeout (124, or 137
     after the kill grace) and no report are skips that leave the verdict to Ci, and never say "green"."""
     work = _ally_repo(tmp_path)
@@ -904,16 +939,27 @@ def test_the_ally_step_fails_only_on_failed_tests_and_skips_what_it_cannot_judge
         (Path(path) / tool).write_text(text)
         (Path(path) / tool).chmod(0o755)
     env = {"PATH": path, "PREHANDIN_ROOT": str(work), "HOME": str(tmp_path), "DATABASE_URL": "postgres://fake@localhost/none",
-           "E2E_PORT": "39871", "FAKE_CODE": str(code)}
+           "FAKE_CODE": str(code)}
     if report is not None:
         (tmp_path / "report.json").write_text(json.dumps(REPORTS[report]))
         env["FAKE_REPORT"] = str(tmp_path / "report.json")
-    done = subprocess.run(["bash", str(GATE), "--ally", "--base", "origin/main"], cwd=work, capture_output=True, text=True,
-                          env=env, check=False)
+    with _held_ally_ports() as (web, web_socket):
+        env["E2E_PORT"] = str(web)
+        if busy:
+            web_socket.listen()
+            wanted = [f"skipped: port {web} is in use; the suite needs 4010, {web} and {web + 19} free (Ci runs Ally)",
+                      "prehandin --ally: skipped (Ci runs Ally)"]
+        done = subprocess.run(["bash", str(GATE), "--ally", "--base", "origin/main"], cwd=work, capture_output=True,
+                              text=True, env=env, check=False)
     assert done.returncode == gate_exit, done.stdout
     for line in wanted:
         assert line in done.stdout, (line, done.stdout)
     assert "green" not in done.stdout or report == "green" and code == 0
+
+
+def test_the_ally_step_skips_when_another_process_listens_on_the_web_port(tmp_path: Path) -> None:
+    """D-5525: a listener on E2E_PORT is a skip naming the three ports (Ci runs Ally), exit 0, never "green"."""
+    test_the_ally_step_fails_only_on_failed_tests_and_skips_what_it_cannot_judge(tmp_path, None, 0, 0, [], busy=True)
 
 
 def _pg16_function(script: str, fake: Path) -> str:

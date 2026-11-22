@@ -438,15 +438,20 @@ async fn td_txt_16_no_call_while_the_setting_is_off(db: PgPool) {
 
 /// TD-CON-16 (CON-033, TXT-022, D-315, D-1806): the toll-free fallback needs a recorded refusal
 /// and Casey's go, is refused for a suspended number and for business templates, and keeps the
-/// launch channel web-and-email until verified.
+/// launch channel web-and-email until verified; a 30951 lead-generation refusal leaves no
+/// toll-free fallback (D-5278).
 #[test]
 fn td_con_16_the_toll_free_fallback_rule() {
     let refusal = Refusal {
         date: "2026-10-01".parse().expect("date"),
-        reference: "30951".to_owned(),
+        reference: "30909".to_owned(),
     };
     let blank = Refusal {
         reference: " ".to_owned(),
+        ..refusal.clone()
+    };
+    let lead_gen = Refusal {
+        reference: " 30951 ".to_owned(),
         ..refusal.clone()
     };
     let working = NumberState::Working;
@@ -457,6 +462,14 @@ fn td_con_16_the_toll_free_fallback_rule() {
     assert_eq!(
         TollFree::configure(Some(&blank), true, working),
         Err(ModeError::NoRefusal)
+    );
+    assert_eq!(
+        TollFree::configure(Some(&lead_gen), true, working),
+        Err(ModeError::LeadGenRefusal)
+    );
+    assert_eq!(
+        TollFree::configure(Some(&lead_gen), false, working),
+        Err(ModeError::LeadGenRefusal)
     );
     assert_eq!(
         TollFree::configure(Some(&refusal), false, working),
