@@ -8,7 +8,8 @@
 //! through `messaging::api::sender_business`. Fake numbers (555-01xx), fake addresses and fake
 //! IDs only.
 
-use std::sync::{Arc, Mutex, PoisonError};
+use std::sync::{Arc, Mutex, OnceLock, PoisonError};
+use std::thread::ThreadId;
 
 use askhava_businesses::api::{
     Acting, Roles, SenderLink, TeamError, add_member, add_owner, change_phone_at, create,
@@ -424,8 +425,8 @@ async fn td_sec_65_cross_site_and_wrong_token_are_refused_and_logged(pool: PgPoo
     let line = linked(&w, w.team.member, "928-555-0166", 30).await;
     let form = shown_form(&w, w.team.owner.business, line).await;
     let owner = session(&w, (w.team.owner, w.team.owner_box), true).await;
-    let events = Events::default();
-    let _guard = tracing::subscriber::set_default(events.clone());
+    let events = Events::captured();
+    let before = events.count();
     let sites = [Site::Cross, Site::OtherOrigin, Site::WrongToken];
     for path in [APPROVE, REJECT] {
         for site in sites {
@@ -434,7 +435,7 @@ async fn td_sec_65_cross_site_and_wrong_token_are_refused_and_logged(pool: PgPoo
         }
     }
     assert_eq!(
-        events.count(),
+        events.count() - before,
         2 * sites.len(),
         "each refusal is a security event"
     );
@@ -455,13 +456,32 @@ async fn td_sec_65_without_a_vault_the_fixed_line_shows(pool: PgPool) {
     assert!(!r.text.contains("@example.com"));
 }
 
-/// The security events logged while it is the default subscriber (SEC-048).
+/// The security events every test thread logs, by thread (SEC-048). The binary's one global
+/// subscriber, not a thread's default: a callsite another test's thread registers first would
+/// otherwise stay cached as "never" for this thread (as in `address_changes_route.rs`).
 #[derive(Clone, Default)]
-struct Events(Arc<Mutex<usize>>);
+struct Events(Arc<Mutex<Vec<ThreadId>>>);
 
 impl Events {
+    /// The global subscriber, installed on first use.
+    fn captured() -> Self {
+        static EVENTS: OnceLock<Events> = OnceLock::new();
+        EVENTS
+            .get_or_init(|| {
+                let events = Events::default();
+                tracing::subscriber::set_global_default(events.clone())
+                    .expect("one global subscriber");
+                events
+            })
+            .clone()
+    }
+
+    /// How many security events this test's thread has logged; each `sqlx::test` runs on its
+    /// own thread, so a test running alongside never adds to it.
     fn count(&self) -> usize {
-        *self.0.lock().unwrap_or_else(PoisonError::into_inner)
+        let me = std::thread::current().id();
+        let all = self.0.lock().unwrap_or_else(PoisonError::into_inner);
+        all.iter().filter(|t| **t == me).count()
     }
 }
 
@@ -494,7 +514,10 @@ impl tracing::Subscriber for Events {
         let mut seen = IsEvent::default();
         event.record(&mut seen);
         if seen.0 {
-            *self.0.lock().unwrap_or_else(PoisonError::into_inner) += 1;
+            self.0
+                .lock()
+                .unwrap_or_else(PoisonError::into_inner)
+                .push(std::thread::current().id());
         }
     }
 
