@@ -3,7 +3,8 @@
 // card that became "no longer available", whose Pick form came or went or whose quote was edited
 // or withdrawn (PICK-051), and writes one short line per batch into the status region (new quotes
 // and quotes no longer available together), never one line per quote. Every word it writes comes from the page's own data attributes, so
-// the words stay in the template. Without JavaScript the page works the same on a reload.
+// the words stay in the template. Without JavaScript the page works the same on a reload. A card
+// imported after load loses its `rise` class first, so it appears with no motion (WEB-029, T608).
 
 const POLL_MS = 30_000;
 
@@ -32,6 +33,12 @@ function changed(old: Element, item: Element): boolean {
   );
 }
 
+function still(item: Element): Element {
+  const copy = document.importNode(item, true);
+  copy.classList.remove("rise");
+  return copy;
+}
+
 function merge(list: HTMLElement, fresh: Element): Batch {
   const shown = byNumber(list);
   const batch: Batch = { added: 0, gone: 0 };
@@ -42,14 +49,14 @@ function merge(list: HTMLElement, fresh: Element): Batch {
     }
     const old = shown.get(n);
     if (old === undefined) {
-      list.append(document.importNode(item, true));
+      list.append(still(item));
       batch.added += 1;
     } else if (changed(old, item)) {
       const wasOpen = old.getAttribute("data-available") === "true";
       if (wasOpen && item.getAttribute("data-available") === "false") {
         batch.gone += 1;
       }
-      old.replaceWith(document.importNode(item, true));
+      old.replaceWith(still(item));
     }
   }
   return batch;
