@@ -74,7 +74,7 @@ mutants = [
 rule = "License filter"
 package = "askhava-integration"
 mutants = [
-  { name = "card sent when the latest daily check is not Active", file = "app/licensing/src/service.rs", find = "r.status == \"active\" && r.fresh", replace = "r.fresh", target = "--test license_imports", tests = ["card_needs_latest_daily_check_active"] },
+  { name = "card sent when the latest daily check is not Active", file = "app/licensing/src/service.rs", find = "r.status == \"active\" && r.fresh))\n}\n\n/// Whether the business's latest ROC check overall", replace = "r.fresh))\n}\n\n/// Whether the business's latest ROC check overall", target = "--test license_imports", tests = ["card_needs_latest_daily_check_active"] },
   { name = "license end date ignored", file = "app/licensing/src/handlers.rs", find = "[license_ends_on, bond_cancelled_on]", replace = "[None, bond_cancelled_on]", target = "--test license_lookup_failures", tests = ["end_and_bond_cancel_dates_pause_from_arizona_midnight"] },
 ]
 
