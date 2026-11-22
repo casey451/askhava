@@ -82,3 +82,4 @@ mod status;
 mod step_up_page;
 #[cfg(test)]
 mod tests;
+mod update_channel;

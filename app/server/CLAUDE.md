@@ -11,18 +11,18 @@ Builds the two processes from one crate: `server` (the `web` process, Axum) and 
 - SEC-016, SEC-039: no module sees a Twilio delivery before `verify_webhook` passed over `ASKHAVA_PUBLIC_BASE_URL` plus path and query; Guarded by `tests/integration/tests/inbound_text_route.rs`. More: `(never 4)` in NOTES.md.
 - OPS-011, PRIV-029: every request hands one request-log line holding request ID, Guarded by `tests/integration/tests/offdb_stream.rs`. More: `(never 5)` in NOTES.md.
 - SEC-016, SEC-048, D-3471, D-3473: on the four webhook routers a 403 means a source or signature refusal and nothing else, Guarded by `tests/security/tests/security_event_cap.rs`. More: `(never 7)` in NOTES.md.
-- `install_crypto_provider()` runs first in both binaries, so sqlx and reqwest share the aws-lc-rs provider (D-481, D-488).
+- `install_crypto_provider()` runs first in both binaries (D-481, D-488).
 - Both binaries exit 0 on SIGTERM; the web server drains in-flight requests first (D-491).
 - Errors at start never echo a setting's value; both binaries call `start_up()` right after the TLS provider, More: `(never 10)` in NOTES.md.
 - Routes are merged before the layers in `build_router()`, so every route gets the request ID and the route-template span (PRIV-016, PRIV-028).
-- SEC-012, D-2633: `/static/` is mounted only as a nested service, never a one-line route or a `*_PATH`/`*_ROUTE` constant (`tests/security/tests/auth_matrix.rs` would read it as a page route), More: `(never 11)` in NOTES.md.
+- SEC-012, D-2633: `/static/` is mounted only as a nested service, never a one-line route or `*_PATH`/`*_ROUTE` constant; Guarded by `tests/static_files_route.rs`. More: `(never 11)` in NOTES.md.
 - D-1870, D-2208, SEC-012: the layers, innermost first, are `catch_panic`, Guarded by `tests/request_timeout.rs`. More: `(never 12)` in NOTES.md.
 - Any future `src/status.rs` must start with `#![deny(clippy::wildcard_enum_match_arm, clippy::match_wildcard_for_single_variants)]` (SEC-031, D-488).
-- OPS-004, JOB-006, D-2285: a task kind the app queues is registered in `worker_registry` or listed with its owner in `tests/task_kinds_deferred.json`, More: `(never 14)` in NOTES.md.
-- The worker gives back its leases after the drain on every signal, so a deploy never strands a task for a lease length (rust brain R14).
+- OPS-004, JOB-006, D-2285: a task kind the app queues is registered in `worker_registry` or listed with its owner in `tests/task_kinds_deferred.json`; Guarded by `tests/integration/tests/task_registry.rs`. More: `(never 14)` in NOTES.md.
+- The worker gives back its leases after the drain on every signal (rust brain R14). More: `(never 22)` in NOTES.md.
 - SEC-004, SEC-019, SEC-034, SEC-048, T300: every `business_portal` route reads `business_principal` first; Guarded by `tests/business_portal_route.rs`. More: `(never 17)` in NOTES.md.
 - SEC-019, SEC-042, SEC-048, D-3641: the sign-up form `POST` admits its limit first, Guarded by `tests/business_signup_route.rs`. More: `(never 18)` in NOTES.md.
-- SEC-019, SEC-048, D-3641, D-3779: each sign-up identity step (`/b/signup/send`, `old`, `letter`, `identity-code`) acts only for the sign-up its verified `__Host-askhava-signup` cookie names, Guarded by `tests/business_signup_route.rs`. More: `(never 19)` in NOTES.md.
+- SEC-019, SEC-048, D-3641, D-3779: each sign-up identity step acts only for the sign-up its verified `__Host-askhava-signup` cookie names, Guarded by `tests/business_signup_route.rs`. More: `(never 19)` in NOTES.md.
 - SEC-014, BIZ-040, D-3806: sign-up email codes go only to the sign-up mailbox, Guarded by `tests/business_signup_route.rs`. More: `(never 20)` in NOTES.md.
 - SEC-026, SEC-025, D-3669, D-3675: an action link's `GET` keeps nothing (its `use_action_link` rolls back), Guarded by `tests/action_links_route.rs`. More: `(never 21)` in NOTES.md.
 - OPS-007: `/healthz` shows no secret or setting (`health.rs`).

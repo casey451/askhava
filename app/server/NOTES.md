@@ -129,10 +129,13 @@
 - [SEC-016 SEC-039] (never 4) a refusal is 403 with one log line; a checked delivery is one transaction, 200 unless the database failed (500); the inbound order is `receive_inbound`, the sender lookup (blind index only), `read_inbound_for` for a homeowner (her vault and stated names, in the delivery's transaction, D-1752;
 - [-] (never 5) the nightly `ops.offdb_verify` first queues tomorrow's run, then purges stand-in request days older than 30 and last raises a High `ops.audit_chain_broken` alert on any mismatch; the worker also queues today's and tomorrow's at start (`tests/integration/tests/offdb_stream.rs`).
 - [OPS-011 PRIV-029] (never 5) audit row `n` is stored as `audit/<n>.json` with its line and the ID and line hash of the row before it, and waits (retries) up to 2 minutes for a missing lower ID;
+- [OPS-011 PRIV-029] (never 5) when the log queue overflows, lines are dropped and counted.
 - [-] (never 11) `ServeDir` follows symlinks inside the folder and serves dotfiles, so the image's folder must hold only the plain files the `Dockerfile` copies (no links, no dotfiles); a crate with a new browser script adds its name to `CRATES`.
+- [SEC-012] (never 11) a request path, plain or encoded `..`, never reaches outside its crate's folder (D-2633).
 - [FEE-037] (never 12) A dropped handler commits nothing half-done (every write is in a transaction or keyed), and a Confirm press cut mid-Stripe-call stays `sent` until Stripe says it failed (FEE-037): `tests/request_timeout.rs`, `tests/server_hardening.rs`.
 - [SEC-012] (never 12) a timed-out request is 503 with `Retry-After: 5` and a panic 500, each with `no-store`, the request ID, the security headers and no body text.
 - [-] (never 14) every other dead letter raises one High `core.task_dead_letter` alert per kind and day (`tests/integration/tests/timer_backstop.rs`, TD-OPS-38, T366).
+- [OPS-004 JOB-006] (never 14) a `NO_HANDLER` dead letter raises one open High alert per kind in test and live (D-2285).
 - [OPS-010 OPS-011 PRIV-029] (task 017) cross-reference (D-3620): the build note of T017 is in `app/ops/NOTES.md`: `grep -n '(task 017)' app/ops/NOTES.md`.
 - [INT-019 INT-021 INT-023 TXT-031] (task 048) cross-reference (D-3620): the build note of T048 is in `app/intake/NOTES.md`: `grep -n '(task 048)' app/intake/NOTES.md`.
 - [INT-019 INT-032] (task 241) cross-reference (D-3620): the build note of T241 is in `app/intake/NOTES.md`: `grep -n '(task 241)' app/intake/NOTES.md`.
@@ -246,10 +249,15 @@
 - [SEC-042 SEC-048 SEC-019] (task 643) D-4292, D-4339: `tests/door_matrix.rs` sends own and wrong-token posts as a browser does (`Sec-Fetch-Site: same-origin`, `Origin: null`), adds `Site::NullWrongToken` (no `Sec-Fetch-Site`, `Origin: null`) on every probed and skipped sign-in or link `POST`, serves `ServedSignIn`, and fails an own-site `POST` on a 403 or a `csrf_rejected` event (TD-SEC-73).
 - [-] (purpose) It is the only crate that may depend on every module; it wires their routes and task handlers together and owns process concerns (TLS provider, port, signals) (`docs/architecture.md` section 2, D-481).
 - [-] (never 2) a new call adds its `$defs.calls` entry and a case on both contract sides (D-1592): `tests/rules_bridge_contract.rs`, `tests/contract/test_rules_bridge.py`.
+- [-] (never 2) `rules_bridge` keeps to `rules_bridge.schema.json`.
 - [SEC-016 SEC-048] (never 7) a new 403 on those routes (or a new webhook router) must keep that true or tell the cases apart without the body: `tests/security/tests/security_event_cap.rs` (its source check pins the four `refused(...)` calls).
 - [SEC-004 SEC-019 SEC-034 SEC-048] (never 17) no business person gets a 401 linking to `/b/sign-in` (never a redirect, no record detail); every refusal by a signed-in person is the one 404 with an `authz_denied` event and reads no vault value; all `no-store`: `tests/business_portal_route.rs` (TD-SEC-43), `tests/door_matrix.rs`.
 - [SEC-019 SEC-048] (never 19) codes go only to the bound record's contact read in that request, and none while `waiting_on_record` (after "That number is old", D-1712: the saved screen, no Verify call) (`tests/business_signup_route.rs`).
+- [SEC-019 SEC-048] (never 19) no code check happens before a step was sent, so no try is used.
+- [SEC-019 SEC-048] (never 19) the sign-up identity steps are `/b/signup/send`, `old`, `letter` and `identity-code`; each acts only for the sign-up its verified `__Host-askhava-signup` cookie names.
 - [SEC-026 SEC-025] (never 21) a wrong kind, object or person, an ended, used or removed member's token, and a job with no sent card are that same 404: `tests/action_links_route.rs`, `tests/door_matrix.rs`.
+- [SEC-026 SEC-025] (never 21) the bare 404 for other kinds' `POST` comes before any token read.
+- [SEC-026 SEC-025] (never 21) an action link's `GET` keeps nothing because its `use_action_link` rolls back.
 - [PICK-050 SEC-019 SEC-026 SEC-048] (task 472) D-4413: `cant_take_route.rs` serves `/b/picks/{pick}/cant-take`: GET renders `cant_take_page` (job number, CSRF) for the owner or a billing member while the pick waits, rolled back; POST runs `cant_take_pick` in one transaction, 303 to `/b`; else the portal's one 404 with `authz_denied`: `tests/cant_take_route.rs`.
 - [SEC-019 SEC-048] (task 665) D-4349: `tests/door_matrix.rs` fills `{j}` with each side's own carded job number (`Fixtures::numbers`), so business X asking `/b/jobs/{j}` with Y's number must be the one not-found answer; a planted router proves the fill (TD-SEC-79). Section 13 row `GET /b/jobs/{j}` waits on T666.
 - [SEC-047 OPS-052] (task 525) D-4434: `watch_checks.rs` registers `privacy.read_rate_check` (hourly, `check_read_rates` for the hour in its payload, next hour queued due at that hour's end, D-4435) and `ops.volume_check` (daily, `ops::api::check_volume`), each re-queued per run under an hour/day dedupe key, seeded by `worker.rs`'s `schedule_checks`; no `ASKHAVA_DB_VOLUME_BYTES` fails registration in test and live; dev and Ci raise nothing. Test: `watch_checks.rs`.
@@ -315,6 +323,7 @@
 - [SEC-008 SEC-034 SEC-042 SEC-046 CON-035] (never 25) no homeowner session gets the 401 linking to `/h/sign-in`;
 - [SEC-008 SEC-034 SEC-042 SEC-046 CON-035] (never 25) any sign-in number gets the same code page at once, never awaiting the send (D-4013);
 - [SEC-008 SEC-034 SEC-042 SEC-046 CON-035] (never 25) a send or check past its limit calls no Verify;
+- [SEC-008 SEC-034 SEC-042 SEC-046 CON-035] (never 25) a `/h/my-data` data request acts only after its code (T561).
 - [PICK-001 INT-019 INT-027 INT-041 BIZ-029 PRIV-007 SEC-035] (task 600) the card sender, card timer, no-reply, address-needed and box-closed handlers are registered as their `*_at` versions on the worker clock (`register_card_sender` takes `(id_secret, clock)`, new `register_business_clocked`), and `stage_step` runs `run_complaint_holds_at` at its `now` (D-4196, D-4310, D-5256).
 - [SEC-038 SEC-019 SEC-042 SEC-048] (task 565) D-5246: `business_guarded_changes.rs` serves `POST /b/team/role`, `/b/team/remove` and `/b/billing/limit` (merged beside `business_step_up` in `business_pages`), member and limit in the form body; no step-up in 5 minutes is a 303 to `/b/step-up?return=` the change's page (`/b` for team changes until T544's team page, `/b/billing`); no role or unknown member is the one 404 with an `authz_denied` event; a bad form is a 422.
 - [SEC-038] (tests) TD-SEC-64: `tests/business_step_up_route.rs` (role, removal, limit through `build_router`, step-ups recorded with `record_step_up`) and `tests/e2e/business_step_up_served.spec.ts` (the step-up walk, then the role change and the limit posted with the page's CSRF field; the stored limit is read only there, since `server` tests may name no schema, TD-SEC-10).
@@ -323,6 +332,15 @@
 - [SEC-038 SEC-014 BIZ-040 BIZ-043] (task 542) D-5298 to D-5300: `src/address_changes.rs` serves `GET /b/addresses` and the request, confirm and remove-backup `POST`s (CSRF before the session, `refuse_cross_site`, `no-store`, 422 on an unknown field such as `mailbox`); sends admitted by `CODE_SENDS_PER_IP` and `ADDRESS_SENDS_PER_MEMBER`, tries by `CODE_TRIES_PER_IP` and `ADDRESS_TRIES_PER_MEMBER`.
 - [SEC-038 BIZ-040 BIZ-043] (tests) TD-SEC-71: `tests/address_changes_route.rs` (step-up redirect, new-address-only code, old address kept through a wrong and an expired code, told by task, not-found and csrf events, taken address message with no request logged, a clash at the code closing the check).
 - [SEC-043] (task 829) The door matrix reuses the owner's live jar while `owner_principal` answers Some and signs in afresh only after a session ended, each fresh sign-in at a past wall-clock TOTP step (now - 20 min + 30 s x k), so no session starts after the request it serves (D-5475).
+- [SEC-019 SEC-042 SEC-048] (never 24) the sign-up form `POST` binds the browser only by the `__Host-askhava-signup` MAC cookie that `bound_signup` verifies; the cookie name is `__Host-askhava-signup` (D-3641).
+- [SEC-019 SEC-042 SEC-048] (never 24) a cross-site or wrong-CSRF sign-up `POST` answers 403, records a security event and signs nobody up.
+- [-] (never 29) TD-SEC-41, D-1868, D-2269: a listed route never merged fails naming its row. An axum router cannot list its routes, so a route served with no row is not caught.
+- [-] (never 29) TD-SEC-41, D-1868, D-2269: a `yes` row must be served by `build_router` and a row naming a task must not be.
+- [BIZ-025 FEE-014] (never 30) `/b/billing` shows each saved card as brand and last four only (D-3790 to D-3792).
+- [SEC-014 BIZ-040] (never 26) a refusal opens and sends nothing; inbox, capability: session (D-3806).
+- [SEC-016 SEC-017 PRIV-016] (never 3) the dialed-status route logs each call once per CallSid with one `business_call` check (TD-CALL-16).
+- [SEC-002] (never 16) a bad setting exits 1 before anything is served or claimed.
+- [-] (never 22) a deploy never strands a task for a lease length.
 - [BIZ-033 BIZ-038 SEC-038 SEC-042 SEC-048] (task 397) `phone_approval` serves `GET /b/phones` and `POST /b/phones/approve`, `/reject` (line and `number_set_at` in the body): cross-site, CSRF, principal, owner, step-up (303 to `/b/step-up?return=%2Fb%2Fphones`), then `approve_phone`/`reject_phone`; a changed number or a taken one is the page again (409); anything else the one 404 (D-5293).
 - [BIZ-033 PRIV-016] (task 397) The waiting member's address is read with `read_business_mailbox` under `PhoneApproval` from `RouterParts::with_vault`'s vault, else the webhooks'; no vault, a removed member or a forgotten mailbox shows the fixed line. `no_store` is layered outside `refuse_cross_site`. Tests: `tests/phone_approval_route.rs` (TD-SEC-65).
 - [PRIV-024 PRIV-016] (task 830) `server rotate-keys` runs the four rotation batches to 0 through `rotate_keys::run_batches` (cap backlog / 100 + 2 passes) and prints `<batch>: N moved, M skipped`; `server retire-index-version <version>` retires an index version; both via `rotate_keys::run`, tested in `tests/rotate_keys_command.rs` (D-5412, D-5520).
@@ -347,3 +365,8 @@
 - [BIZ-037 SEC-047] (never 29) only as the outbox sender's `LinePhones`, and never logs or stores the number (`src/business_text_phone.rs` tests, `tests/integration/tests/outbox_business_rows.rs`).
 - [PRIV-024 PRIV-016] (never 30) refuses before any batch while a photo would be stranded, and neither it nor `retire-index-version` prints a key, digest, phone or contact ID: `tests/rotate_keys_command.rs`.
 - [BIZ-033 SEC-038 SEC-019] (never 31) a member, another business or a stale form changes nothing; every answer `no-store`: `tests/phone_approval_route.rs` (TD-SEC-65).
+- [SEC-026 SEC-025] (never 21) D-3839: with one's own session Pause, Resume, Ask about a charge (D-3839) Approve (+ fresh step-up, T399), Away (T543) and Busy (T463) act, a Confirm link only by its own person's session or right Verify code (T457).
+- [BIZ-025 FEE-014] (never 30) `/b/billing` lists saved cards only through `saved_cards` (brand and last four).
+- [SEC-012] (never 11) why no one-line route or constant: `auth_matrix.rs` would read it as a page route (D-5527).
+- [-] (never 29) why each new route's row lands in the same change: a route served with no row is not caught (TD-SEC-41, D-5527).
+- [-] (never 8) `install_crypto_provider()` runs first so sqlx and reqwest share the aws-lc-rs provider (D-481, D-488, D-5527).
