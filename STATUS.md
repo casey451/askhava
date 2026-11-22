@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-22T02:44:35Z by runner 89ca2bb76f0f (actions).
+Updated 2026-11-22T02:44:46Z by runner 89ca2bb76f0f (actions).
 
 **Building: T118 in progress since 00:46Z; 598 of 753 done; week 47% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 598 of 753 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 3: T803 claimed 01:35Z, lease until 04:35Z; lane 4: T616 claimed 01:30Z, lease until 04:30Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z; lane 6: T810 claimed 02:18Z, lease until 05:18Z
+- **Lane:** lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 4: T616 claimed 01:30Z, lease until 04:30Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z; lane 6: T810 claimed 02:18Z, lease until 05:18Z
 - **Week:** 47% used, 92.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 02:27Z, 17 min before this update
 - **Keeper:** last ran 02:27Z, next wake 03:49Z
@@ -30,6 +30,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T803 | messaging (harness): an opted-out number gets no HELP reply; | MERGE_PENDING | 1 | 69 min | 02:44Z |  |
 | T691 | intake (harness): START into an open request resends the con | MERGE_PENDING | 2 | 2 h 16 min | 02:20Z | session ended without handing in |
 | T759 | intake: "Close which?" expires on a worded reply that is not | MERGE_PENDING | 1 | 28 min | 02:19Z |  |
 | T397 | server and portals: the owner approves or declines a member- | BLOCKED | 1 | 27 min | 02:12Z | PLAN GAP: outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per p |
@@ -141,10 +142,9 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T118 (lease until 2026-11-22T03:46:46Z)
-- lane 3: T803 (lease until 2026-11-22T04:35:04Z)
 - lane 4: T616 (lease until 2026-11-22T04:30:46Z)
 - lane 5: T542 (lease until 2026-11-22T04:45:48Z)
 - lane 6: T810 (lease until 2026-11-22T05:18:33Z)
 
 ## Last usage reading
-- {"task": "T691", "at": "2026-11-22T02:20:23Z", "output_tokens": 54909, "input_tokens": 243, "cache_read_input_tokens": 5769193, "cache_creation_input_tokens": 240742}
+- {"task": "T803", "at": "2026-11-22T02:44:33Z", "cache_creation_input_tokens": 192683, "cache_read_input_tokens": 4838160, "output_tokens": 42267, "input_tokens": 202}
