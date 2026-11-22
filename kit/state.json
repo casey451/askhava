@@ -26140,7 +26140,15 @@
     "T801",
     "T804",
     "T805",
-    "T815"
+    "T815",
+    "T817",
+    "T819",
+    "T820",
+    "T822",
+    "T823",
+    "T824",
+    "T826",
+    "T799"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -26467,7 +26475,10 @@
     "T757",
     "T758",
     "T759",
-    "T760"
+    "T760",
+    "T818",
+    "T821",
+    "T825"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -31661,7 +31672,10 @@
     "T791",
     "T793",
     "T795",
-    "T797"
+    "T797",
+    "T818",
+    "T821",
+    "T825"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -94029,7 +94043,8 @@
    "id": "T668",
    "deps": [
     "T666",
-    "T306"
+    "T306",
+    "T782"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -97255,7 +97270,8 @@
     "T723",
     "T745",
     "T747",
-    "T759"
+    "T759",
+    "T824"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -107085,7 +107101,8 @@
     "T191",
     "T282",
     "T386",
-    "T147"
+    "T147",
+    "T791"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -107254,6 +107271,130 @@
    "status": "QUEUED",
    "attempts": 0,
    "slug": "data-request-link-email",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T817",
+   "deps": [
+    "T730",
+    "T738",
+    "T741"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "consent-send-races",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T818",
+   "deps": [
+    "T757",
+    "T680"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "under-13-purge-words",
+   "type": "build",
+   "stage": "6"
+  },
+  {
+   "id": "T819",
+   "deps": [
+    "T611"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "feedback-scrubbed",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T820",
+   "deps": [
+    "T804",
+    "T745",
+    "T819"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "data-download-contents",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T821",
+   "deps": [
+    "T742",
+    "T793"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "consent-purge-start-help",
+   "type": "build",
+   "stage": "6"
+  },
+  {
+   "id": "T822",
+   "deps": [
+    "T820",
+    "T800"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "privacy-policy-portal-link",
+   "type": "docs",
+   "stage": "5"
+  },
+  {
+   "id": "T823",
+   "deps": [
+    "T760",
+    "T728",
+    "T758"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "intake-second-miss",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T824",
+   "deps": [
+    "T759"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "close-which-day",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T825",
+   "deps": [
+    "T823",
+    "T716",
+    "T704",
+    "T236",
+    "T790"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "spanish-trade-names",
+   "type": "build",
+   "stage": "6"
+  },
+  {
+   "id": "T826",
+   "deps": [
+    "T610",
+    "T802"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "spanish-site-copy",
    "type": "build",
    "stage": "5"
   }
@@ -114581,7 +114722,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T03:08:34Z",
+ "updated_at": "2026-11-22T03:09:24Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -114679,7 +114820,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "21d99167398b19ca15d194afa6d72778eae8afc0",
+ "runner_sha": "b3e4c6cdedb591f75835d776403051752532f7cd",
  "starter": "actions",
  "smoke_runs": [
   {
