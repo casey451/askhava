@@ -10,6 +10,7 @@ Fable decided these for you; nothing needs you.
 - **A late START could undo a newer STOP.** If a START text failed and was retried after she had texted STOP again, the retry could take her off the list. Now a START only takes her off the list if no STOP came after it; when the order is unclear, the STOP wins (T817).
 - **Invisible characters.** A hidden character inside "stop texting me" (some phones and pastes add one) stopped it counting as an opt-out. Those characters are now ignored (T803).
 - Smaller: a millisecond timing slip in the quiet-hours check is accepted as harmless; the stage cleanup notes that an unused quiet-hours helper has no live caller.
+- **Website footer (D-5366).** The site-polish task (T609) stopped because an older test allowed only the four "Homeowners" footer links, while the design adds a second column (For businesses, Español, Terms, Privacy, Accessibility). The test now checks both columns exactly, and the "Get quotes" link on How it works under its new name.
 
 ## Pre-flight fixes from the outside review job 10 (D-5331 to D-5335, November 22)
 
