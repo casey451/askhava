@@ -46,13 +46,26 @@ pub async fn queue_complaint_holds(
     Ok(queued)
 }
 
-/// The composition's step on a contact-stage purge task (payload `{"job", "stage"}`): runs
-/// [`queue_complaint_holds`] at the wall clock and returns how many events were new, so `privacy`
-/// waits for them before it decides (D-1799); any other stage is left alone (0).
+/// [`run_complaint_holds_at`] at the wall clock.
+///
+/// # Errors
+/// As [`run_complaint_holds_at`].
+pub async fn run_complaint_holds(pool: PgPool, task: Claimed) -> Result<usize, HandlerError> {
+    run_complaint_holds_at(pool, task, Timestamp::now()).await
+}
+
+/// PRIV-007, BIZ-029, D-4196: the composition's step on a contact-stage purge task (payload
+/// `{"job", "stage"}`): runs [`queue_complaint_holds`] at `now` (the worker's clock) and returns
+/// how many events were new, so `privacy` waits for them before it decides (D-1799); any other
+/// stage is left alone (0).
 ///
 /// # Errors
 /// A fixed [`HandlerError`] for a bad payload or a database failure.
-pub async fn run_complaint_holds(pool: PgPool, task: Claimed) -> Result<usize, HandlerError> {
+pub async fn run_complaint_holds_at(
+    pool: PgPool,
+    task: Claimed,
+    now: Timestamp,
+) -> Result<usize, HandlerError> {
     if task.payload["stage"].as_str() != Some("contact") {
         return Ok(0);
     }
@@ -62,7 +75,7 @@ pub async fn run_complaint_holds(pool: PgPool, task: Claimed) -> Result<usize, H
         .ok_or(HandlerError("purge task payload is not a job"))?;
     let failed = HandlerError("complaint hold database call failed");
     let mut conn = pool.acquire().await.map_err(|_| failed)?;
-    queue_complaint_holds(&mut conn, job, Timestamp::now())
+    queue_complaint_holds(&mut conn, job, now)
         .await
         .map_err(|_| failed)
 }

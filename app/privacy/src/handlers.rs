@@ -18,7 +18,7 @@ use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
 use crate::models::{HoldSource, PurgeStage};
-use crate::purge::{is_held, place_hold, purge_photos, release_hold};
+use crate::purge::{is_held, place_hold, purge_photos_at, release_hold};
 
 /// The contact stage's own re-check: an hour after it first comes due, then daily while held.
 pub const RECHECK_KIND: &str = "privacy.purge_recheck";
@@ -64,7 +64,7 @@ pub async fn run_purge_due_at(
     let (job, stage) = purge_target(&task)?;
     let mut conn = pool.acquire().await.map_err(|_| DB_FAILED)?;
     match stage {
-        PurgeStage::Photos => purge_photos(&mut conn, job).await.map(|_| ()),
+        PurgeStage::Photos => purge_photos_at(&mut conn, job, now).await.map(|_| ()),
         PurgeStage::Text => return hand_on(&mut conn, job, stage, now).await,
         PurgeStage::Contact if task.kind != RECHECK_KIND => {
             return recheck(&mut conn, job, now + FIRST_WAIT, "first").await;
