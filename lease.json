@@ -1,16 +1,7 @@
 {
- "lease": {
-  "task": "T691",
-  "session": "actions-44964068610",
-  "expires": "2026-11-22T03:03:26Z"
- },
+ "lease": null,
  "leases": {
-  "1": {
-   "task": "T691",
-   "session": "actions-44964068610",
-   "expires": "2026-11-22T03:03:26Z",
-   "lane": "1"
-  },
+  "1": null,
   "2": {
    "task": "T118",
    "session": "actions-44965210964",
@@ -44,7 +35,7 @@
   "7": null,
   "fix": null
  },
- "seq": 9537,
+ "seq": 9538,
  "runner_sha": "6826130e0386d01489746227be976a071944741c",
  "starter": "actions"
 }
