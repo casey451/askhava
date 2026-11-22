@@ -88514,11 +88514,11 @@
      }
     }
    ],
-   "reviewed_sha": "d6953494cdd3975f5d0b61386768b319cf20c1bd",
+   "reviewed_sha": "e7f4d5d22250a978f0e48d42c80d81a2cccc5c47",
    "review_lease": {
     "task": "T610",
-    "session": "actions-45001635294",
-    "expires": "2026-11-22T11:20:52Z",
+    "session": "actions-45014486613",
+    "expires": "2026-11-22T14:39:14Z",
     "lane": "6"
    },
    "branch": "claude/task/T610-site-pages-polish-two",
@@ -88527,30 +88527,6 @@
     "why": "auto-merge on #1340 (gh pr merge)",
     "head": "6cdc23d487997a06da97ad49f026753bcd5142f9"
    },
-   "update_merges": [
-    {
-     "from": "3e5fc4ca268c9280bf09a09646c174de5a8b4d8b",
-     "to": "6cdc23d487997a06da97ad49f026753bcd5142f9",
-     "main": "23fcbe8c11d7e98a6b62b7774fd0a382bd408518",
-     "how": "hand-in",
-     "at": "2026-11-22T09:00:17Z"
-    },
-    {
-     "from": "6cdc23d487997a06da97ad49f026753bcd5142f9",
-     "to": "d6953494cdd3975f5d0b61386768b319cf20c1bd",
-     "main": "dd295e06660e0308300490a7b00829730b7a7197",
-     "how": "runner",
-     "checks": {
-      "Ci": "success",
-      "Ally": "success",
-      "Twin": "success"
-     },
-     "at": "2026-11-22T10:19:05Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
-   "merge_turn_since": "2026-11-22T10:19:05Z",
    "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust dependency audit (cargo-audit, cargo-deny)\nCrate:     basic-toml\nVersion:   0.1.10\nWarning:   unmaintained\nTitle:     `basic-toml` is unmaintained\nDate:      2026-09-26\nID:        RUSTSEC-2026-0374\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0374\nCrate:     proc-macro-error2\nVersion:   2.0.1\nWarning:   unmaintained\nTitle:     proc-macro-error2 is unmaintained\nDate:      2026-06-07\nID:        RUSTSEC-2026-0173\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0173\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
    "wip_claim": {
     "attempt": 2,
@@ -88558,7 +88534,19 @@
    },
    "runner_closed_prs": [
     1340
-   ]
+   ],
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "424f306b75dfe742e4b1b86d367246adbde01799",
+     "to": "e7f4d5d22250a978f0e48d42c80d81a2cccc5c47",
+     "main": "4442330006385415ec1d006403a71f6acb531124",
+     "how": "hand-in",
+     "at": "2026-11-22T12:19:45Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T611",
@@ -117271,7 +117259,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T12:18:44Z",
+ "updated_at": "2026-11-22T12:19:45Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -117369,7 +117357,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "4442330006385415ec1d006403a71f6acb531124",
+ "runner_sha": "424f306b75dfe742e4b1b86d367246adbde01799",
  "starter": "actions",
  "smoke_runs": [
   {
