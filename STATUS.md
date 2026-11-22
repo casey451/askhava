@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T11:33:26Z by runner 190b8bc3aa0c (actions).
+Updated 2026-11-22T11:33:44Z by runner dd295e06660e (actions).
 
 **Building: T675 in progress since 08:47Z; 607 of 769 done; week 57% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-22T11:33:26Z by runner 190b8bc3aa0c (actions).
 - **Lane:** lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 5: T589 claimed 10:36Z, lease until 13:36Z
 - **Week:** 57% used, 76.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:33Z, 0 min before this update
-- **Keeper:** last ran 11:21Z, next wake 11:49Z
+- **Keeper:** last ran 11:33Z, next wake 11:53Z
 
 ## Needs attention
 - BLOCKED T117: Reviewer after findings round still FINDINGS at 6670a168e2d4d62e56e23b50ed17253f85e6af47:
