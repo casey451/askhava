@@ -665,6 +665,42 @@ a.card { display: block; color: var(--ink); text-decoration: none; }
 .footer-links a:hover { text-decoration: underline; }
 .footer-base { margin: 28px 0 0; padding-top: 18px; border-top: 1px solid var(--line); font-size: 16px; line-height: 24px; color: var(--ink-soft); }
 
+/* The remaining English site pages (T609; WEB-027, WEB-029, D-4246, D-4252, D-5386): the footer's
+   column headings, how it works's ruled steps with serif numerals, the business page's fee table on
+   a paper card with tabular figures and its sample job cards, coverage's ruled lists, the services
+   sections' top rules, help's 911 note (2 px alert border, no shadow) and the help and chat forms on
+   paper cards, a field in error keeping its 2 px alert border (D-4252 (b)). No entrance motion. */
+.site-footer nav h2 { font: 700 16px/24px var(--sans); letter-spacing: 0; margin: 0 0 2px; }
+.how-steps { display: grid; margin-top: 32px; }
+.how-step { border-top: 1px solid var(--line); padding-block: 20px 4px; }
+.how-step:last-child { border-bottom: 1px solid var(--line); }
+.how-step h2 { margin: 0 0 8px; font-variant-numeric: lining-nums tabular-nums; }
+.fee-table { padding: 0; margin-block: 12px 20px; max-width: 640px; }
+.fee-table table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.fee-table caption { text-align: left; padding: 16px 20px; font-weight: 700; border-bottom: 1px solid var(--line); }
+.fee-table th, .fee-table td { text-align: left; vertical-align: baseline; padding: 14px 20px; border-bottom: 1px solid var(--line); }
+.fee-table tbody tr:last-child td { border-bottom: 0; }
+.fee-table th:last-child, .fee-table td:last-child { text-align: right; white-space: nowrap; }
+.fee-table td:last-child { font: 500 28px/32px var(--serif); }
+.sample-card { margin-block: 16px; max-width: 640px; }
+.sample-card h3 { margin-top: 0; }
+.sample-card ul { margin-bottom: 0; padding-left: 20px; }
+.ruled-list { list-style: none; padding: 0; max-width: 640px; }
+.ruled-list li { padding-block: 10px; border-top: 1px solid var(--line); max-width: none; }
+.ruled-list li:last-child { border-bottom: 1px solid var(--line); }
+.service { border-top: 1px solid var(--line); margin-top: 32px; }
+.service h2 { margin-top: 24px; }
+p.note-911 { max-width: 640px; box-sizing: border-box; }
+.form-card { max-width: 640px; margin-top: 16px; }
+.form-card > p:first-of-type { margin-top: 0; }
+.form-card > p:last-child { margin-bottom: 0; }
+.form-card textarea, .form-card input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]) { width: 100%; }
+.form-card .button { width: 100%; }
+ol:has(> .said-ours, > .said-hers) { list-style: none; padding: 0; display: grid; gap: 8px; max-width: 640px; }
+.said-ours, .said-hers { padding: 12px 16px; border-radius: var(--radius-inner); max-width: none; }
+.said-ours { background: var(--surface); border: 1px solid var(--line); }
+.said-hers { background: var(--band); }
+
 @media (max-width: 359px) {
   .hero-photo {
     height: clamp(124px, 100vh - 616px, 252px);
@@ -851,6 +887,8 @@ a.card { display: block; color: var(--ink); text-decoration: none; }
   .who { grid-template-columns: minmax(0, 1fr); gap: 40px; }
   .end { padding-block: 72px; }
   .footer-grid { gap: 88px; }
+  .how-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 56px; }
+  .how-step, .how-step:last-child { border-top-color: var(--ink); border-bottom: 0; }
   .quote-page { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr); column-gap: 88px; align-items: start; }
   .quote-page .page-head { padding-block: 48px; }
   .quote-page .quote-list { padding-top: 48px; }

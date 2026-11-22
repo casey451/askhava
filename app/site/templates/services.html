@@ -2,7 +2,7 @@
 {#- The services page, /services (T201; WEB-015, D-3878, D-3879): one section per switched-on trade,
     anchored at #<category code>, with its own h2. A licensed trade's section opens with
     "Get quotes from licensed <plural>." and the long not-a-contractor statement, the plural read
-    from catalog::api::category_list. -#}
+    from catalog::api::category_list. Each section opens with a ruled top edge (T609, D-4246). -#}
 {% block title %}Jobs you can get quotes for{% endblock %}
 {% block content %}
 {%- let brand = askhava_core::api::brand().display_name() %}
@@ -11,7 +11,7 @@
 <p>No trades are open yet. See what's coming on <a href="/coverage">What we cover now</a>.</p>
 {%- endif %}
 {%- for c in trades %}
-<section id="{{ c.code }}" aria-labelledby="{{ c.code }}-title">
+<section class="service" id="{{ c.code }}" aria-labelledby="{{ c.code }}-title">
 <h2 id="{{ c.code }}-title">{{ c.name }}</h2>
 {%- if c.license_kind == "none" %}
 <p>Get quotes from local {{ c.plural }}.</p>
