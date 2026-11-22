@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-22T00:39:14Z by runner af16658d9442 (actions).
+Updated 2026-11-22T00:39:29Z by runner af16658d9442 (actions).
 
 **Building: T691 in progress since 00:03Z; 596 of 752 done; week 42% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 596 of 752 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T691 claimed 00:03Z, lease until 03:03Z; lane 3: T542 claimed 22:52Z, lease until 03:07Z; lane 4: T800 claimed 23:52Z, lease until 02:52Z; lane 5: T397 claimed 22:35Z, lease until 01:35Z; lane 6: T118 claimed 22:08Z, lease until 01:08Z; lane 7: T117 claimed 23:02Z, lease until 02:02Z
+- **Lane:** lane 1: T691 claimed 00:03Z, lease until 03:03Z; lane 3: T542 claimed 22:52Z, lease until 03:07Z; lane 5: T397 claimed 22:35Z, lease until 01:35Z; lane 6: T118 claimed 22:08Z, lease until 01:08Z; lane 7: T117 claimed 23:02Z, lease until 02:02Z
 - **Week:** 42% used, 106.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 00:14Z, 24 min before this update
 - **Keeper:** last ran 00:14Z, next wake 01:11Z
@@ -20,6 +20,7 @@ Updated 2026-11-22T00:39:14Z by runner af16658d9442 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T800 | Legal docs and tests (harness): the Twilio campaign submissi | MERGE_PENDING | 1 | 46 min | 00:39Z |  |
 | T608 | site and portals: the home page and the quote page in full V | MERGE_PENDING | 2 | 2 h 21 min | 23:38Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-21T |
 | T600 | intake, businesses, privacy and server: four worker handlers | done | 1 | 45 min | 23:15Z |  |
 | T798 | catalog: the photo asks' English wording loaded from the tra | done | 1 | 107 min | 23:03Z |  |
@@ -128,10 +129,9 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T691 (lease until 2026-11-22T03:03:26Z)
 - lane 3: T542 (lease until 2026-11-22T03:07:08Z)
-- lane 4: T800 (lease until 2026-11-22T02:52:15Z)
 - lane 5: T397 (lease until 2026-11-22T01:35:47Z)
 - lane 6: T118 (lease until 2026-11-22T01:08:53Z)
 - lane 7: T117 (lease until 2026-11-22T02:02:15Z)
 
 ## Last usage reading
-- {"task": "T608", "at": "2026-11-21T23:38:00Z", "cache_read_input_tokens": 5781848, "output_tokens": 47030, "cache_creation_input_tokens": 221832, "input_tokens": 247}
+- {"task": "T800", "at": "2026-11-22T00:39:12Z", "output_tokens": 42498, "cache_read_input_tokens": 3078233, "cache_creation_input_tokens": 137729, "input_tokens": 96}
