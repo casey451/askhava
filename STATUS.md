@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T09:06:07Z by runner 23fcbe8c11d7 (actions).
+Updated 2026-11-22T09:09:33Z by runner dd295e06660e (actions).
 
-**Building: T675 in progress since 08:47Z; 606 of 767 done; week 55% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T675 in progress since 08:47Z; 607 of 767 done; week 55% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 606 of 767 build tasks (owner gates not counted)
+- **Tasks done:** 607 of 767 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 4: T729 claimed 08:07Z, lease until 11:07Z; lane 5: T725 claimed 08:59Z, lease until 11:59Z
 - **Week:** 55% used, 78.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:05Z, 0 min before this update
+- **Last run:** 09:06Z, 3 min before this update
 - **Keeper:** last ran 09:06Z, next wake 11:10Z
 
 ## Needs attention
@@ -24,7 +24,7 @@ At 1280x900 the /request chat start screen textarea box spans y=784..914, partly
 - PLAN GAP T397 (since 2026-11-22T02:12:37Z, no attempt used; a plan change fixes it): outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per probed Owner row; past ~60 rows expires_at < created_at, violating portals.session CHECK (expires_at > created_at), so POST /owner/help/close as Owner returns 500. Marking the three /b/phones rows yes in docs/architecture.md section 13 turns td_sec_61_every_served_door_row_over_http red (reproduced by worker and by reviewer: exit 101, door_matrix.rs:1533). Smallest fix: a harness task that bases owner_jar sign-in times in the past (e.g. key.now - OWNER_IDLE_LIMIT) or spaces TOTP steps differently. Prompt forbids editing door_matrix.rs and forbids working around an unreachable route. Worker work is uncommitted in the tree.
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - OWNED GAP T828 (DONE, since 2026-11-22T08:18:31Z; a later task or plan change must add it): T828: .gitleaksignore missing on main
-- Strict plan check red: 32 problem(s) on tasks still to run (+485 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 33 problem(s) on tasks still to run (+486 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -33,7 +33,7 @@ At 1280x900 the /request chat start screen textarea box spans y=784..914, partly
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | BLOCKED | 4 | 45 min | 08:54Z | PLAN GAP: outside ownership: app/site/templates/request.html, app/site/static/site.css / At 1280x900 the /request chat s |
 | T829 | server tests (harness): the door matrix's owner sign-ins nev | MERGE_PENDING | 2 | 48 min | 08:40Z | PLAN GAP: tests/integration/tests/architecture_migrations.rs:791 (TD-SEC-10, not owned by T829) refuses the fix D-5411 p |
 | T609 | site (harness): the D-4246 polish on the footer, how it work | done | 3 | 65 min | 07:14Z | PLAN GAP: tests/e2e/web_chat.spec.ts:123 (owned by T489) uses strict locator main.locator('[lang="es"]'); the footer's E |
-| T810 | portals and server: a shared-inbox Confirm press asks for it | MERGE_PENDING | 3 | 76 min | 06:46Z | PLAN GAP: outside ownership: app/server/tests/confirm_press_code.rs. TD-SEC-82 requires a direct portals.shared_inbox in |
+| T810 | portals and server: a shared-inbox Confirm press asks for it | done | 3 | 76 min | 06:46Z | PLAN GAP: outside ownership: app/server/tests/confirm_press_code.rs. TD-SEC-82 requires a direct portals.shared_inbox in |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | BLOCKED | 3 | 2 h 17 min | 06:35Z |  |
 | T827 | server and portals: the owner and homeowner forms refuse unk | done | 1 | 82 min | 06:12Z |  |
 | T829 | server tests (harness): the door matrix's owner sign-ins nev | BLOCKED | 1 | 19 min | 06:03Z |  |
@@ -98,7 +98,7 @@ At 1280x900 the /request chat start screen textarea box spans y=784..914, partly
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 606 of 767
+**Tasks merged (throughput only):** 607 of 767
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -134,7 +134,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 249 of 339 done
+- stage 5: 250 of 339 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
