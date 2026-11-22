@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-22T05:27:58Z by runner 6005d6011d11 (actions).
+Updated 2026-11-22T05:28:12Z by runner 6005d6011d11 (actions).
 
 **Building: T118 in progress since 04:18Z; 601 of 767 done; week 52% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 601 of 767 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T118 claimed 04:18Z, lease until 07:18Z; lane 2: T827 claimed 04:50Z, lease until 07:50Z; lane 3: T803 claimed 04:24Z, lease until 07:24Z; lane 4: T616 claimed 04:52Z, lease until 07:52Z; lane 6: T828 claimed 04:21Z, lease until 07:21Z
+- **Lane:** lane 1: T118 claimed 04:18Z, lease until 07:18Z; lane 2: T827 claimed 04:50Z, lease until 07:50Z; lane 4: T616 claimed 04:52Z, lease until 07:52Z; lane 6: T828 claimed 04:21Z, lease until 07:21Z
 - **Week:** 52% used, 87.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 05:27Z, 0 min before this update
 - **Keeper:** last ran 05:21Z, next wake 07:20Z
@@ -29,6 +29,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T803 | messaging (harness): an opted-out number gets no HELP reply; | MERGE_PENDING | 2 | 63 min | 05:27Z | Ci: failure; Checks: failure / Checks failed at step: Named mutants of the files this change touches (scripts/run_named_ |
 | T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 2 | 50 min | 04:44Z | PLAN GAP: tests/integration/tests/intake_order_card.rs:285, tests/integration/tests/intake_refusals_wired.rs:399, tests/ |
 | T542 | portals and server: notice and backup address changes are re | MERGE_PENDING | 2 | 2 h 42 min | 04:28Z | Reviewer after the findings round still ended REVIEW-VERDICT: FINDINGS at head 4de98e6fb74e1e5394629d7a1abe0694167723a2: |
 | T729 | portals and privacy: the quote page offers updates by email  | BLOCKED | 1 | 2 min | 04:19Z | PLAN GAP: tests/integration/tests/architecture_migrations.rs:288-294 (with :320-332) contradicts kit/prompts/T729.md:9 ( |
@@ -38,7 +39,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | check_failed | 2 | 2 h 19 min | 03:06Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / ✓  120 [main] › tests/e2e |
 | T810 | portals and server: a shared-inbox Confirm press asks for it | BLOCKED | 2 | 2 min | 03:05Z | PLAN GAP: outside ownership: app/server/tests/confirm_press_code.rs. TD-SEC-82 requires a direct portals.shared_inbox in |
 | T810 | portals and server: a shared-inbox Confirm press asks for it | QUEUED | 1 | 39 min | 02:57Z |  |
-| T803 | messaging (harness): an opted-out number gets no HELP reply; | check_failed | 1 | 69 min | 02:44Z | Ci: failure; Checks: failure / Checks failed at step: Named mutants of the files this change touches (scripts/run_named_ |
+| T803 | messaging (harness): an opted-out number gets no HELP reply; | check_failed | 1 | 69 min | 02:44Z |  |
 | T691 | intake (harness): START into an open request resends the con | done | 2 | 2 h 16 min | 02:20Z | session ended without handing in |
 | T759 | intake: "Close which?" expires on a worded reply that is not | done | 1 | 28 min | 02:19Z |  |
 | T397 | server and portals: the owner approves or declines a member- | BLOCKED | 1 | 27 min | 02:12Z | PLAN GAP: outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per p |
@@ -137,9 +138,8 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T118 (lease until 2026-11-22T07:18:11Z)
 - lane 2: T827 (lease until 2026-11-22T07:50:07Z)
-- lane 3: T803 (lease until 2026-11-22T07:24:45Z)
 - lane 4: T616 (lease until 2026-11-22T07:52:37Z)
 - lane 6: T828 (lease until 2026-11-22T07:21:18Z)
 
 ## Last usage reading
-- {"task": "T675", "at": "2026-11-22T04:44:37Z", "input_tokens": 227, "cache_creation_input_tokens": 258775, "cache_read_input_tokens": 18396897, "output_tokens": 111757}
+- {"task": "T803", "at": "2026-11-22T05:27:55Z", "output_tokens": 15955, "input_tokens": 104, "cache_creation_input_tokens": 103779, "cache_read_input_tokens": 1817331}
