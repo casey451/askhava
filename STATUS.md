@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T09:40:53Z by runner dd295e06660e (actions).
+Updated 2026-11-22T09:54:47Z by runner dd295e06660e (actions).
 
 **Building: T675 in progress since 08:47Z; 607 of 767 done; week 56% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-22T09:40:53Z by runner dd295e06660e (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 4: T729 claimed 08:07Z, lease until 11:07Z; lane 5: T725 claimed 08:59Z, lease until 11:59Z; lane 7: T589 claimed 09:11Z, lease until 12:11Z
 - **Week:** 56% used, 78.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:40Z, 0 min before this update
+- **Last run:** 09:41Z, 13 min before this update
 - **Keeper:** last ran 09:40Z, next wake 11:09Z
 
 ## Needs attention
@@ -39,7 +39,7 @@ At 1280x900 the /request chat start screen textarea box spans y=784..914, partly
 | T829 | server tests (harness): the door matrix's owner sign-ins nev | BLOCKED | 1 | 19 min | 06:03Z |  |
 | T828 | ci (harness): gitleaks scans each push's commit range, with  | done | 1 | 84 min | 05:45Z |  |
 | T616 | site: strong per-coding ETags with 304 revalidation, a one-y | done | 2 | 39 min | 05:32Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
-| T803 | messaging (harness): an opted-out number gets no HELP reply; | MERGE_PENDING | 2 | 63 min | 05:27Z | Ci: failure; Checks: failure / Checks failed at step: Named mutants of the files this change touches (scripts/run_named_ |
+| T803 | messaging (harness): an opted-out number gets no HELP reply; | check_failed | 2 | 63 min | 05:27Z | Ci: failure; Checks: cancelled / Checks failed at step: Named mutants of the files this change touches (scripts/run_name |
 | T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 2 | 50 min | 04:44Z | PLAN GAP: tests/integration/tests/intake_order_card.rs:285, tests/integration/tests/intake_refusals_wired.rs:399, tests/ |
 | T542 | portals and server: notice and backup address changes are re | done | 2 | 2 h 42 min | 04:28Z | Reviewer after the findings round still ended REVIEW-VERDICT: FINDINGS at head 4de98e6fb74e1e5394629d7a1abe0694167723a2: |
 | T729 | portals and privacy: the quote page offers updates by email  | BLOCKED | 1 | 2 min | 04:19Z | PLAN GAP: tests/integration/tests/architecture_migrations.rs:288-294 (with :320-332) contradicts kit/prompts/T729.md:9 ( |
