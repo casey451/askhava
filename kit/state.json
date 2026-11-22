@@ -101212,12 +101212,12 @@
      "plan_now": "c410e48106063be012664907dcc709cc97b87379dc8a0eaaddfb7e2b0a82c919"
     }
    ],
-   "reviewed_sha": "d1afbddc5f3c5b29da55f74afe9a9e01090d9b70",
+   "reviewed_sha": "82cffdc48c712b9ecc845fb3519e7c6f68c11a41",
    "review_lease": {
     "task": "T725",
-    "session": "actions-45005009546",
-    "expires": "2026-11-22T11:59:45Z",
-    "lane": "5"
+    "session": "actions-45025030708",
+    "expires": "2026-11-22T17:53:24Z",
+    "lane": "4"
    },
    "branch": "claude/task/T725-home-texting-number",
    "auto_merge": {
@@ -101225,17 +101225,6 @@
     "why": "auto-merge on #1341 (gh pr merge)",
     "head": "d1afbddc5f3c5b29da55f74afe9a9e01090d9b70"
    },
-   "update_merges": [
-    {
-     "from": "461fd3744b3db36a1960077e83ab31905c97b590",
-     "to": "d1afbddc5f3c5b29da55f74afe9a9e01090d9b70",
-     "main": "dd295e06660e0308300490a7b00829730b7a7197",
-     "how": "hand-in",
-     "at": "2026-11-22T09:57:29Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
    "runner_closed_prs": [
     1341
    ],
@@ -101250,7 +101239,19 @@
      "expires": "2026-11-22T14:56:02Z",
      "lane": "4"
     }
-   ]
+   ],
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "fa109e48616f568489e03d615b35efc6a2497e94",
+     "to": "82cffdc48c712b9ecc845fb3519e7c6f68c11a41",
+     "main": "e8e6af81881faac745ba7c2afc562cc22d1042ff",
+     "how": "hand-in",
+     "at": "2026-11-22T16:15:43Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T726",
@@ -118301,7 +118302,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T16:14:02Z",
+ "updated_at": "2026-11-22T16:15:43Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -118399,7 +118400,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "726be6527c2135a423cfbf222232e21ec8e4d9bc",
+ "runner_sha": "fa109e48616f568489e03d615b35efc6a2497e94",
  "starter": "actions",
  "smoke_runs": [
   {
