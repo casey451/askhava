@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T06:12:24Z by runner a7f0f6ce6607 (actions).
+Updated 2026-11-22T06:12:38Z by runner a7f0f6ce6607 (actions).
 
 **Building: T118 in progress since 04:18Z; 602 of 767 done; week 53% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 602 of 767 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T118 claimed 04:18Z, lease until 07:18Z; lane 2: T827 claimed 04:50Z, lease until 07:50Z; lane 5: T609 claimed 06:09Z, lease until 09:09Z; lane 7: T810 claimed 05:29Z, lease until 08:29Z
+- **Lane:** lane 1: T118 claimed 04:18Z, lease until 07:18Z; lane 5: T609 claimed 06:09Z, lease until 09:09Z; lane 7: T810 claimed 05:29Z, lease until 08:29Z
 - **Week:** 53% used, 85.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:09Z, 2 min before this update
+- **Last run:** 06:09Z, 3 min before this update
 - **Keeper:** last ran 06:04Z, next wake 06:24Z
 
 ## Needs attention
@@ -30,6 +30,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T827 | server and portals: the owner and homeowner forms refuse unk | MERGE_PENDING | 1 | 82 min | 06:12Z |  |
 | T829 | server tests (harness): the door matrix's owner sign-ins nev | BLOCKED | 1 | 19 min | 06:03Z | PLAN GAP: tests/integration/tests/architecture_migrations.rs:791 (TD-SEC-10, not owned by T829) refuses the fix D-5411 p |
 | T828 | ci (harness): gitleaks scans each push's commit range, with  | MERGE_PENDING | 1 | 84 min | 05:45Z |  |
 | T616 | site: strong per-coding ETags with 304 revalidation, a one-y | MERGE_PENDING | 2 | 39 min | 05:32Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
@@ -141,9 +142,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T118 (lease until 2026-11-22T07:18:11Z)
-- lane 2: T827 (lease until 2026-11-22T07:50:07Z)
 - lane 5: T609 (lease until 2026-11-22T09:09:07Z)
 - lane 7: T810 (lease until 2026-11-22T08:29:15Z)
 
 ## Last usage reading
-- {"task": "T829", "at": "2026-11-22T06:03:21Z", "cache_creation_input_tokens": 82289, "input_tokens": 71, "cache_read_input_tokens": 1359708, "output_tokens": 17309}
+- {"task": "T827", "at": "2026-11-22T06:12:22Z", "cache_creation_input_tokens": 115532, "input_tokens": 123, "cache_read_input_tokens": 3747322, "output_tokens": 31293}
