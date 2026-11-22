@@ -63,6 +63,7 @@ pub use crate::reader::{
     read_inbound_email,
 };
 pub use crate::released_reader::read_released;
+pub use crate::rotation_backlog::{RotationBacklog, rotation_backlog};
 pub use crate::scrub::{
     CommonWords, DEFAULT_COMMON_WORDS, Known, NEVER_A_NAME, NameMemory, REMOVED, REPLY_WORDS,
     ScrubbedText, is_format, scrub,
