@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T02:54:50Z by runner b3e4c6cdedb5 (actions).
+Updated 2026-11-22T02:57:42Z by runner 6fa96edb3efe (actions).
 
 **Building: T118 in progress since 00:46Z; 599 of 753 done; week 48% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 599 of 753 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 4: T616 claimed 01:30Z, lease until 04:30Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z; lane 6: T810 claimed 02:18Z, lease until 05:18Z; lane 7: T721 claimed 02:54Z, lease until 05:54Z
+- **Lane:** lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 4: T616 claimed 01:30Z, lease until 04:30Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z; lane 7: T721 claimed 02:54Z, lease until 05:54Z
 - **Week:** 48% used, 93.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:52Z, 2 min before this update
+- **Last run:** 02:54Z, 2 min before this update
 - **Keeper:** last ran 02:49Z, next wake 03:48Z
 
 ## Needs attention
@@ -25,11 +25,12 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T397 (since 2026-11-22T02:12:37Z, no attempt used; a plan change fixes it): outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per probed Owner row; past ~60 rows expires_at < created_at, violating portals.session CHECK (expires_at > created_at), so POST /owner/help/close as Owner returns 500. Marking the three /b/phones rows yes in docs/architecture.md section 13 turns td_sec_61_every_served_door_row_over_http red (reproduced by worker and by reviewer: exit 101, door_matrix.rs:1533). Smallest fix: a harness task that bases owner_jar sign-in times in the past (e.g. key.now - OWNER_IDLE_LIMIT) or spaces TOTP steps differently. Prompt forbids editing door_matrix.rs and forbids working around an unreachable route. Worker work is uncommitted in the tree.
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 33 problem(s) on tasks still to run (+477 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 34 problem(s) on tasks still to run (+477 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T810 | portals and server: a shared-inbox Confirm press asks for it | QUEUED | 1 | 39 min | 02:57Z | T810: work built but uncommitted. TD-SEC-10 (tests/integration/tests/architecture_migrations.rs) fails on app/server/tes |
 | T803 | messaging (harness): an opted-out number gets no HELP reply; | MERGE_PENDING | 1 | 69 min | 02:44Z |  |
 | T691 | intake (harness): START into an open request resends the con | MERGE_PENDING | 2 | 2 h 16 min | 02:20Z | session ended without handing in |
 | T759 | intake: "Close which?" expires on a worded reply that is not | done | 1 | 28 min | 02:19Z |  |
@@ -142,8 +143,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T118 (lease until 2026-11-22T03:46:46Z)
 - lane 4: T616 (lease until 2026-11-22T04:30:46Z)
 - lane 5: T542 (lease until 2026-11-22T04:45:48Z)
-- lane 6: T810 (lease until 2026-11-22T05:18:33Z)
 - lane 7: T721 (lease until 2026-11-22T05:54:28Z)
 
 ## Last usage reading
-- {"task": "T803", "at": "2026-11-22T02:44:33Z", "cache_creation_input_tokens": 192683, "cache_read_input_tokens": 4838160, "output_tokens": 42267, "input_tokens": 202}
+- {"task": "T810", "at": "2026-11-22T02:57:41Z", "cache_read_input_tokens": 11643100, "cache_creation_input_tokens": 224185, "input_tokens": 217, "output_tokens": 67755}
