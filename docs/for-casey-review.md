@@ -2,6 +2,14 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Pre-flight fixes from the outside review job 10 (D-5331 to D-5335, November 22)
+
+Plan corrections only; nothing needs you.
+
+- **Delete or copy by email link, for a number that opted out of texts.** The plan said to build it with no new database table, which could not work. It now gets one small table (IDs and times only). Opening the link in the email only shows a page with a button; nothing happens until the person presses it, so a mail scanner that opens links can't delete anyone's data (T804). The rule for update emails now says they may carry this one link, never a code.
+- **The photo step in texting (T675)** is about 1,300 lines, not 800. Its first try stopped partly over size; the size is now a guide, not a stop.
+- Smaller: a test description still said an opted-out number gets the HELP reply (it gets nothing but the opt-out confirmation, D-5280); T716 keeps a shared card type unchanged; T778 gets a realistic size; T518's prompt no longer claims a payments file it gave up.
+
 ## Four security fixes from the outside review (D-5313 to D-5317, November 21)
 
 Casey asked Fable to decide these; nothing needs you now.
