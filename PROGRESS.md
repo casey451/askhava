@@ -9769,3 +9769,4 @@
 - 2026-11-22T07:37:44Z runner 5adc4d114966 (actions): {}
 - 2026-11-22T07:37:59Z runner 5adc4d114966 (actions): {}
 - 2026-11-22T07:41:03Z runner 9b5f9617df3e (actions): {"T609": "MERGE_PENDING -> DONE"}
+- 2026-11-22T07:52:46Z runner 5adc4d114966 (actions): {"T829": "QUEUED -> IN_PROGRESS"}; T829 estimated 416k tokens (calibrated); week has 86.0M left (no five-hour budget, D-3056) (session_reading 2026-11-22T07:37:31Z (week)); claimed
