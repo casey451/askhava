@@ -956,6 +956,7 @@ async fn photos_page(
 /// One photo post, from either body: the CSRF token, her answer (`yes` or `remove`) and the
 /// uploaded file; `over` when the file ran past the body limit.
 #[derive(Default, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 struct PhotoPost {
     #[serde(default)]
     csrf: String,
@@ -973,26 +974,40 @@ impl CsrfField for PhotoPost {
     }
 }
 
-/// The fields of a multipart upload; a file past the body limit is `over`, never kept.
-async fn upload_fields(mut parts: Multipart) -> PhotoPost {
+/// The parts `photo_upload.html`'s multipart form posts (SEC-010, D-5410).
+const UPLOAD_PARTS: [&str; 2] = ["csrf", "photo"];
+
+/// The fields of a multipart upload, and whether every part was one the served form posts, each
+/// once (SEC-010, D-5410). A file past the body limit is `over`, never kept; an unknown or
+/// repeated part is read past, never kept, so the caller still checks the CSRF token first.
+async fn upload_fields(mut parts: Multipart) -> (PhotoPost, bool) {
     let mut post = PhotoPost::default();
+    let mut seen: Vec<String> = Vec::new();
+    let mut known = true;
     while let Ok(Some(field)) = parts.next_field().await {
-        match field.name().map(str::to_owned).as_deref() {
-            Some("csrf") => post.csrf = field.text().await.unwrap_or_default(),
-            Some("photo") => match field.bytes().await {
+        let name = field.name().unwrap_or_default().to_owned();
+        if !UPLOAD_PARTS.contains(&name.as_str()) || seen.contains(&name) {
+            known = false;
+            continue;
+        }
+        if name == "csrf" {
+            post.csrf = field.text().await.unwrap_or_default();
+        } else {
+            match field.bytes().await {
                 Ok(bytes) => post.photo = Some(bytes.to_vec()),
                 Err(_) => post.over = true,
-            },
-            _ => {}
+            }
         }
+        seen.push(name);
     }
-    post
+    (post, known)
 }
 
 /// SEC-042, SEC-048: the post with its CSRF token checked before anything else. A form-encoded
 /// body goes through `CsrfForm`; a multipart body's token is checked the same way, and a wrong
 /// one is refused by `CsrfForm` itself over the same request with an empty token, so either
-/// refusal is the one 403 and one `csrf_rejected` event naming the route template.
+/// refusal is the one 403 and one `csrf_rejected` event naming the route template. Only after a
+/// right token, a multipart post with an unknown or repeated part is a bare 400 (SEC-010, D-5410).
 async fn csrf_checked(state: &Portal, request: Request) -> Result<PhotoPost, Box<Response>> {
     let kind = request.headers().get(CONTENT_TYPE);
     let kind = kind.and_then(|v| v.to_str().ok()).unwrap_or_default();
@@ -1003,8 +1018,11 @@ async fn csrf_checked(state: &Portal, request: Request) -> Result<PhotoPost, Box
     let (parts, body) = request.into_parts();
     let request = Request::from_parts(parts.clone(), body);
     let fields = Multipart::from_request(request, state).await;
-    let post = upload_fields(fields.map_err(|e| Box::new(e.into_response()))?).await;
+    let (post, known) = upload_fields(fields.map_err(|e| Box::new(e.into_response()))?).await;
     if csrf_matches(&CookieJar::from_headers(&parts.headers), &post.csrf) {
+        if !known {
+            return Err(Box::new(StatusCode::BAD_REQUEST.into_response()));
+        }
         return Ok(post);
     }
     let mut refused = Request::from_parts(parts, Body::from("csrf="));
@@ -1130,5 +1148,66 @@ async fn photo(State(state): State<Portal>, Path(token): Path<String>) -> Respon
         }
         Err(PhotoError::LinkDead) => not_found(),
         Err(_) => failed("photo"),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    //! SEC-010, D-5410: the photo post refuses a field or part `photo_upload.html` does not post.
+
+    use super::*;
+    use crate::owner_tools::tests::{check, parses};
+
+    const BOUNDARY: &str = "fakeboundary827";
+
+    /// `upload_fields` over a multipart body posting `names` in order, each with a fake value.
+    async fn fields(names: &[&str]) -> (PhotoPost, bool) {
+        let mut body = String::new();
+        for name in names {
+            body.push_str(&format!(
+                "--{BOUNDARY}\r\nContent-Disposition: form-data; name=\"{name}\"\r\n\r\nfake\r\n"
+            ));
+        }
+        body.push_str(&format!("--{BOUNDARY}--\r\n"));
+        let request = Request::builder()
+            .method("POST")
+            .header(
+                CONTENT_TYPE,
+                format!("multipart/form-data; boundary={BOUNDARY}"),
+            )
+            .body(Body::from(body))
+            .expect("fake request");
+        let parts = Multipart::from_request(request, &())
+            .await
+            .expect("multipart");
+        upload_fields(parts).await
+    }
+
+    /// SEC-010: the form-encoded answer form takes `csrf` and `answer` and refuses an unknown
+    /// name, the multipart-only `photo` included.
+    #[test]
+    fn the_answer_form_refuses_an_unknown_field() {
+        check(&[(parses::<PhotoPost>, &["csrf", "answer"])]);
+        assert!(!parses::<PhotoPost>(&["csrf", "photo"]));
+    }
+
+    /// SEC-010: the served parts are taken; an unknown or a repeated part marks the post
+    /// refused, and the token is still read past an unknown part for the CSRF check.
+    #[tokio::test]
+    async fn the_upload_refuses_an_unknown_or_repeated_part() {
+        let (post, known) = fields(&["csrf", "photo"]).await;
+        assert!(known);
+        assert_eq!(post.csrf, "fake");
+        assert_eq!(post.photo.as_deref(), Some(&b"fake"[..]));
+        for names in [
+            &["csrf", "photo", "answer"][..],
+            &["csrf", "photo", "photo"],
+            &["csrf", "csrf", "photo"],
+        ] {
+            assert!(!fields(names).await.1, "{names:?}");
+        }
+        let (post, known) = fields(&["stray", "csrf"]).await;
+        assert!(!known);
+        assert_eq!(post.csrf, "fake");
     }
 }

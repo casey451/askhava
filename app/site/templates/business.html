@@ -5,7 +5,8 @@
     switched-on trade; the city-license guide shows on no-license cards, each part only while its
     setting is set. A switched-off trade shows its waitlist count. WEB-024's line follows
     `texting_on`, which the handler passes as false until T526 (D-3881). `facts.old_name` is the brand
-    file's forbidden_alone word, never typed (D-4044). Spanish twin: es_business.html. -#}
+    file's forbidden_alone word, never typed (D-4044). Spanish twin: es_business.html. The fee table
+    and each sample job card sit on paper cards, the fees in tabular figures (T609, D-4246, D-4326). -#}
 {% block title %}For businesses{% endblock %}
 {% block content %}
 {%- let brand = askhava_core::api::brand().display_name() %}
@@ -40,7 +41,7 @@
 </ul>
 
 <h2>Fees by job size</h2>
-<div role="region" tabindex="0" aria-label="Fees by job size">
+<div class="card fee-table" role="region" tabindex="0" aria-label="Fees by job size">
 <table>
 <caption>The introduction fee for each job size</caption>
 <thead><tr><th scope="col">Your quote</th><th scope="col">Introduction fee</th></tr></thead>
@@ -57,7 +58,7 @@
 <h2>Sample job cards</h2>
 <p>These cards are made up to show what you get. There is one for each open trade.</p>
 {%- for card in facts.cards %}
-<section class="sample-card" aria-labelledby="sample-{{ card.code }}">
+<section class="sample-card card" aria-labelledby="sample-{{ card.code }}">
 <h3 id="sample-{{ card.code }}">{{ card.name }}</h3>
 <ul>
 <li>Job: a sample request, made up for this page</li>

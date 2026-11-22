@@ -40,6 +40,15 @@
 //! [`ApprovalSecret::read_card`]'s type, brand and last four; a $0 Confirm uses
 //! [`ApprovalSecret::set_up_card`]. A change without a fresh code saves nothing and links the
 //! step-up page under [`SAVE_CODE_LABEL`]; the `pm_…` is never shown or logged.
+//!
+//! T810 (SEC-027, SEC-014, SEC-020, D-5313, D-5443): while the person's inbox is marked shared
+//! every press asks for its own fresh code. The `GET` shows the code step whenever
+//! [`confirm_code_needed`] says one is owed; `POST` [`CONFIRM_SEND_ROUTE`] ("Text me a code")
+//! texts one through [`send_confirm_code`] and shows the page again, changing nothing of the pick
+//! and opening no PaymentIntent; the press checks the posted `code` with [`check_confirm_code`]
+//! before its transaction opens, and only [`CodeCheck::Right`] lets it go on. The codes come from
+//! [`confirm_routes_with`]'s [`PressCodes`]; with none nothing is sent and a press that owes a
+//! code gets the shared-inbox line, as before.
 
 use std::net::IpAddr;
 use std::pin::Pin;
@@ -71,7 +80,7 @@ use axum::http::header::{ACCEPT, VARY};
 use axum::http::{HeaderMap, HeaderValue, StatusCode};
 use axum::middleware::{Next, from_fn, from_fn_with_state};
 use axum::response::{Html, IntoResponse, Json, Response};
-use axum::routing::get;
+use axum::routing::{get, post};
 use axum_extra::extract::CookieJar;
 use jiff::Timestamp;
 use secrecy::{ExposeSecret, SecretString};
@@ -80,7 +89,7 @@ use sqlx::{PgConnection, PgPool};
 
 use crate::action_links::{ActionKind, fresh_code_needed};
 use crate::business_auth::{
-    BusinessPrincipal, CodeAddress, CodeTo, Need, SIGNIN_ROUTE, business_principal,
+    BusinessPrincipal, CodeAddress, CodeFuture, CodeTo, Need, SIGNIN_ROUTE, business_principal,
 };
 use crate::business_portal::{
     SensitiveChange, StepUpError, change_saved_card, inbox_shared, require_step_up,
@@ -90,6 +99,7 @@ use crate::confirm_waiver::{
     ConfirmFee, ConfirmWaiverError, ConfirmedPick, decide_at_confirm, release_no_fee,
 };
 use crate::limits::{admit_code_send, admit_code_try};
+use crate::pick_flow::VERIFY_DAILY_THRESHOLD;
 use crate::security::{
     CsrfField, CsrfForm, SecurityEvent, SecurityEventKind, StripeConfirmCsp, WebSecurity,
     admit_security_event, no_store, record_security_event, refuse_cross_site,
@@ -579,9 +589,67 @@ pub async fn check_confirm_code<V: VerifyAdapter + Send + Sync>(
     })
 }
 
+/// The send and check of one [`ConfirmCodes`], whatever its Verify (SEC-027): `VerifyAdapter`
+/// answers with `impl Future`, so the served route holds its codes behind this.
+trait CodeDoor: Send + Sync {
+    /// [`send_confirm_code`].
+    fn send<'a>(
+        &'a self,
+        pool: &'a PgPool,
+        to: (IpAddr, Uuid, Uuid),
+        at: (Timestamp, i32),
+    ) -> CodeFuture<'a, Result<CodeSent, PortalsError>>;
+
+    /// [`check_confirm_code`].
+    fn check<'a>(
+        &'a self,
+        pool: &'a PgPool,
+        who: (IpAddr, Uuid, Uuid),
+        code: &'a str,
+        now: Timestamp,
+    ) -> CodeFuture<'a, Result<CodeCheck, PortalsError>>;
+}
+
+impl<V: VerifyAdapter + Send + Sync + 'static> CodeDoor for ConfirmCodes<V> {
+    fn send<'a>(
+        &'a self,
+        pool: &'a PgPool,
+        to: (IpAddr, Uuid, Uuid),
+        at: (Timestamp, i32),
+    ) -> CodeFuture<'a, Result<CodeSent, PortalsError>> {
+        Box::pin(send_confirm_code(self, pool, to, at))
+    }
+
+    fn check<'a>(
+        &'a self,
+        pool: &'a PgPool,
+        who: (IpAddr, Uuid, Uuid),
+        code: &'a str,
+        now: Timestamp,
+    ) -> CodeFuture<'a, Result<CodeCheck, PortalsError>> {
+        Box::pin(check_confirm_code(self, pool, who, code, now))
+    }
+}
+
+/// The served Confirm route's shared-inbox codes (SEC-027, D-5313): one [`ConfirmCodes`], whatever
+/// its Verify, given to [`confirm_routes_with`].
+#[derive(Clone)]
+pub struct PressCodes(Arc<dyn CodeDoor>);
+
+impl PressCodes {
+    /// The route's codes from `codes`.
+    #[must_use]
+    pub fn new<V: VerifyAdapter + Send + Sync + 'static>(codes: ConfirmCodes<V>) -> Self {
+        Self(Arc::new(codes))
+    }
+}
+
 /// The served Confirm route (D-1480, D-3813, T261): the page, its `Accept: application/json`
 /// state and the press.
 pub const CONFIRM_ROUTE: &str = "/b/picks/{pick}/confirm";
+
+/// SEC-027, D-5313: the Confirm page's "Text me a code" (T810).
+pub const CONFIRM_SEND_ROUTE: &str = "/b/picks/{pick}/confirm/code";
 
 /// D-3813: shown in place of the card form when the route has no settings part (dev and CI
 /// without the keys, the door tests); a press then charges nothing.
@@ -846,6 +914,7 @@ pub struct ConfirmRoute<S, R> {
 struct Served<S, R> {
     route: Arc<ConfirmRoute<S, R>>,
     security: WebSecurity,
+    codes: Option<PressCodes>,
 }
 
 impl<S, R> Clone for Served<S, R> {
@@ -853,6 +922,7 @@ impl<S, R> Clone for Served<S, R> {
         Self {
             route: Arc::clone(&self.route),
             security: self.security.clone(),
+            codes: self.codes.clone(),
         }
     }
 }
@@ -865,8 +935,19 @@ impl<S, R> FromRef<Served<S, R>> for WebSecurity {
 
 /// PICK-021, FEE-016, SEC-012, SEC-019, SEC-034, SEC-042, D-3813: `GET` and `POST`
 /// [`CONFIRM_ROUTE`] behind `no-store` and the cross-site refusal; only the page carries
-/// [`StripeConfirmCsp`].
+/// [`StripeConfirmCsp`]. [`confirm_routes_with`] with no codes: a press that owes a shared-inbox
+/// code is refused and "Text me a code" sends none.
 pub fn confirm_routes<S, R>(route: ConfirmRoute<S, R>) -> Router
+where
+    S: IntentStripe + Send + Sync + 'static,
+    R: ReleaseSink,
+{
+    confirm_routes_with(route, None)
+}
+
+/// SEC-027, SEC-014, D-5313: [`confirm_routes`] with the shared-inbox `codes`, and
+/// `POST` [`CONFIRM_SEND_ROUTE`] behind the same layers.
+pub fn confirm_routes_with<S, R>(route: ConfirmRoute<S, R>, codes: Option<PressCodes>) -> Router
 where
     S: IntentStripe + Send + Sync + 'static,
     R: ReleaseSink,
@@ -875,9 +956,11 @@ where
     let state = Served {
         route: Arc::new(route),
         security: security.clone(),
+        codes,
     };
     Router::new()
         .route(CONFIRM_ROUTE, get(load::<S, R>).post(press::<S, R>))
+        .route(CONFIRM_SEND_ROUTE, post(send_code::<S, R>))
         .route_layer(from_fn(note_site))
         .with_state(state)
         .layer(from_fn(no_store))
@@ -1073,7 +1156,7 @@ where
     let answer = if wants_json(&headers) {
         state_json(&route.hooks.pool, &mine, now).await
     } else {
-        page(route, &mine, &jar, now).await
+        page(route, &mine, &jar, now, Visit::OPENING).await
     };
     let mut response = answer.unwrap_or_else(|()| failed());
     response
@@ -1095,13 +1178,31 @@ async fn state_json(pool: &PgPool, mine: &Mine, now: Timestamp) -> Result<Respon
 /// What the page shows beside the facts: the line in place of the card section and a waiver.
 type Shown = (Option<&'static str>, Option<NoFee>);
 
-/// The page for `mine` (PICK-021, CON-029, OPS-037): a waiting pick stamps the pick notice's
-/// first opening; a paused one gets the refusal; one that moved on shows the attempt's state.
+/// One showing of the page (D-5313): whether it is the `GET`, which stamps the opening and opens
+/// the PaymentIntent, and the last "Text me a code" line for the code step.
+#[derive(Clone, Copy)]
+struct Visit {
+    opening: bool,
+    sent: Option<&'static str>,
+}
+
+impl Visit {
+    /// The `GET`: it stamps and opens, and no code was asked for yet.
+    const OPENING: Self = Self {
+        opening: true,
+        sent: None,
+    };
+}
+
+/// The page for `mine` (PICK-021, CON-029, OPS-037, SEC-027): on the `GET` a waiting pick stamps
+/// the pick notice's first opening; a paused one gets the refusal; one that moved on shows the
+/// attempt's state; the code step shows whenever [`confirm_code_needed`] says a code is owed.
 async fn page<S, R>(
     route: &ConfirmRoute<S, R>,
     mine: &Mine,
     jar: &CookieJar,
     now: Timestamp,
+    visit: Visit,
 ) -> Result<Response, ()>
 where
     S: IntentStripe + Send + Sync,
@@ -1112,11 +1213,13 @@ where
     let at = waiting(&mut tx, mine).await?;
     let (shown, paused) = match at {
         Some((job, false)) => {
-            let member = mine.who.member();
-            let opened = open_confirm_page(&mut tx, (mine.fee.business.0, job, member), now);
-            opened.await.map_err(|_| ())?;
+            if visit.opening {
+                let member = mine.who.member();
+                let opened = open_confirm_page(&mut tx, (mine.fee.business.0, job, member), now);
+                opened.await.map_err(|_| ())?;
+            }
             tx.commit().await.map_err(|_| ())?;
-            (card_section(route, mine, now).await?, false)
+            (card_section(route, mine, now, visit.opening).await?, false)
         }
         Some((_, true)) => ((None, None), true),
         None => {
@@ -1127,14 +1230,15 @@ where
     };
     let mut db = pool.acquire().await.map_err(|_| ())?;
     let number = job_number(&mut db, mine.fee.job).await.map_err(|_| ())?;
+    let owed = confirm_code_needed(&mut db, mine.who.member(), true).await;
+    let code = owed.map_err(|_| ())?.then_some(CodeStep {
+        line: visit.sent,
+        error: None,
+    });
     let key = route.settings.as_ref().map(|s| s.publishable_key.clone());
     let csrf = csrf_token(jar).ok_or(())?;
-    served_page(
-        mine,
-        (number, paused),
-        shown,
-        (csrf, key.unwrap_or_default()),
-    )
+    let csrf_key = (csrf, key.unwrap_or_default());
+    served_page(mine, (number, paused, code), shown, csrf_key)
 }
 
 /// The tier a stored fee of `cents` is (FEE-001).
@@ -1175,7 +1279,7 @@ fn picked_fee(fee: &StoredPickFee) -> Option<PickedFee> {
 /// Renders the served page with the Confirm route's CSP marker (SEC-012, D-3813).
 fn served_page(
     mine: &Mine,
-    (job_number, paused): (i64, bool),
+    (job_number, paused, code): (i64, bool, Option<CodeStep>),
     (card_off, waived): Shown,
     (csrf, stripe_key): (String, String),
 ) -> Result<Response, ()> {
@@ -1190,18 +1294,19 @@ fn served_page(
         csrf,
         stripe_key,
     };
-    let html = render_page(&facts, (None, None), card_off).map_err(|_| ())?;
+    let html = render_page(&facts, (code, None), card_off).map_err(|_| ())?;
     Ok((StripeConfirmCsp, Html(html)).into_response())
 }
 
 /// D-1871, D-3722, D-3813, FEE-047: the fee-terms line when the mode in force differs from the
 /// pick's (no PaymentIntent), the card-off line without settings or when Stripe can't be
 /// reached; else the $0 decision as it stands (rolled back) and, for a fee, the pick's one
-/// PaymentIntent opened.
+/// PaymentIntent opened when `opening` (the `GET`; "Text me a code" opens nothing, D-5313).
 async fn card_section<S, R>(
     route: &ConfirmRoute<S, R>,
     mine: &Mine,
     now: Timestamp,
+    opening: bool,
 ) -> Result<Shown, ()>
 where
     S: IntentStripe + Send + Sync,
@@ -1218,7 +1323,7 @@ where
         return Ok((Some(CARD_OFF_LINE), None));
     };
     let waived = waiver_now(pool, mine, settings).await?;
-    if waived.is_some() || !mine.fee.charged {
+    if waived.is_some() || !mine.fee.charged || !opening {
         return Ok((None, waived));
     }
     let press = press_of(mine, "", Uuid::nil()).ok_or(())?;
@@ -1303,10 +1408,24 @@ struct PressForm {
     press: String,
     #[serde(default)]
     payment_method: String,
-    #[serde(default, rename = "code")]
-    _code: String,
+    #[serde(default)]
+    code: String,
     #[serde(default)]
     save_card: String,
+}
+
+/// "Text me a code"'s one field (SEC-042); an unknown field is a 422 (SEC-010).
+#[derive(Debug, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct CodeForm {
+    #[serde(default)]
+    csrf: String,
+}
+
+impl CsrfField for CodeForm {
+    fn csrf(&self) -> &str {
+        &self.csrf
+    }
 }
 
 /// One press: its ID, the posted card (used only for the charge or the $0 SetupIntent, never
@@ -1319,6 +1438,8 @@ struct Attempt<'a> {
     now: Timestamp,
     /// The business has a Stripe customer (asked before the press's transaction, D-4349).
     customer: bool,
+    /// This press's own shared-inbox code was checked right (SEC-027, D-5313).
+    code_passed: bool,
 }
 
 impl CsrfField for PressForm {
@@ -1352,6 +1473,11 @@ where
     let Some(settings) = &route.settings else {
         return Json(said("try_later", CARD_OFF_REPLY, None)).into_response();
     };
+    let code_passed = match code_gate(&served, &mine, (site, &form.code), now).await {
+        Ok(Ok(passed)) => passed,
+        Ok(Err(reply)) => return Json(reply).into_response(),
+        Err(()) => return failed(),
+    };
     let (hooks, card) = (&route.hooks, form.payment_method.as_str());
     let made = ensure_customer(
         &hooks.pool,
@@ -1365,6 +1491,7 @@ where
         save: form.save_card == "yes",
         now,
         customer: card.starts_with("pm_") && made.await.is_ok(),
+        code_passed,
     };
     match pressed(route, settings, &mine, attempt).await {
         Ok(reply) => Json(reply).into_response(),
@@ -1372,9 +1499,95 @@ where
     }
 }
 
+/// SEC-027, SEC-020, D-5313, PT-04: before the press's transaction opens and before any Stripe
+/// call, the press's own code when one is owed: `Ok(false)` when none is owed, `Ok(true)` when
+/// Verify answered [`CodeCheck::Right`]; else the reply that charges nothing: that answer's
+/// error, or with no codes configured the shared-inbox line. No connection is held across Verify.
+async fn code_gate<S, R>(
+    served: &Served<S, R>,
+    mine: &Mine,
+    (site, code): (Site, &str),
+    now: Timestamp,
+) -> Result<Result<bool, PressReply>, ()> {
+    let pool = &served.route.hooks.pool;
+    let mut db = pool.acquire().await.map_err(|_| ())?;
+    let owed = confirm_code_needed(&mut db, mine.who.member(), true).await;
+    drop(db);
+    if !owed.map_err(|_| ())? {
+        return Ok(Ok(false));
+    }
+    let Some(PressCodes(codes)) = &served.codes else {
+        return Ok(Err(said("ended", CODE_LINE, None)));
+    };
+    let who = (site.client, mine.who.member(), mine.fee.business.0);
+    let checked = codes.check(pool, who, code, now).await.map_err(|_| ())?;
+    Ok(match checked.error() {
+        None => Ok(true),
+        Some(error) => Err(said("declined", error, None)),
+    })
+}
+
+/// `POST` [`CONFIRM_SEND_ROUTE`] (SEC-027, SEC-014, SEC-042, D-5313): "Text me a code". Behind
+/// the press's session, ownership, cross-site and CSRF checks, it texts a code only while one is
+/// owed and the person may Confirm, then shows the page again with the code step and the send's
+/// line; it changes nothing of the pick and opens no PaymentIntent.
+async fn send_code<S, R>(
+    State(served): State<Served<S, R>>,
+    jar: CookieJar,
+    Extension(site): Extension<Site>,
+    Path(pick): Path<String>,
+    CsrfForm(_form): CsrfForm<CodeForm>,
+) -> Response
+where
+    S: IntentStripe + Send + Sync + 'static,
+    R: ReleaseSink,
+{
+    let route = &served.route;
+    let now = route.hooks.clock.now();
+    let mine = match mine(&route.hooks.pool, &jar, (&pick, site), now).await {
+        Ok(mine) => mine,
+        Err(answer) => return *answer,
+    };
+    let Ok(sent) = code_sent(&served, &mine, site.client, now).await else {
+        return failed();
+    };
+    let visit = Visit {
+        opening: false,
+        sent,
+    };
+    let page = page(route, &mine, &jar, now, visit).await;
+    page.unwrap_or_else(|()| failed())
+}
+
+/// SEC-027, SEC-014: texts `mine`'s person a code from `client` when one is owed and they may
+/// Confirm, under the sign-in code's global threshold, and gives the send's line; with no codes
+/// configured nothing is sent and the line says so; with none owed, nothing and no line.
+async fn code_sent<S, R>(
+    served: &Served<S, R>,
+    mine: &Mine,
+    client: IpAddr,
+    now: Timestamp,
+) -> Result<Option<&'static str>, ()> {
+    let pool = &served.route.hooks.pool;
+    let mut db = pool.acquire().await.map_err(|_| ())?;
+    let owed = confirm_code_needed(&mut db, mine.who.member(), true).await;
+    drop(db);
+    let business = mine.fee.business.0;
+    if !owed.map_err(|_| ())? || !mine.who.may(business, Need::ConfirmAndBilling) {
+        return Ok(None);
+    }
+    let Some(PressCodes(codes)) = &served.codes else {
+        return Ok(Some(CodeSent::Failed.line()));
+    };
+    let threshold = i32::try_from(VERIFY_DAILY_THRESHOLD).unwrap_or(i32::MAX);
+    let to = (client, mine.who.member(), mine.pick);
+    let sent = codes.send(pool, to, (now, threshold)).await;
+    Ok(Some(sent.map_err(|_| ())?.line()))
+}
+
 /// The press after the route's checks, all in one transaction until the charge: the pick still
 /// waits and is not paused (CON-029, else the attempt's state), no shared-inbox code is owed
-/// (SEC-027), `payments::api::may_confirm` passes (FEE-007; a fee-mode switch ends the pick,
+/// unless this press's own code passed (SEC-027, D-5313),`payments::api::may_confirm` passes (FEE-007; a fee-mode switch ends the pick,
 /// D-3722), the license and account re-check passes (PICK-020, `confirm_moves::recheck`, which
 /// ends the pick on a refusal), the terms row is stored (TERMS-033), then the $0 decision or the
 /// charge.
@@ -1396,9 +1609,10 @@ where
         tx.rollback().await.map_err(|_| ())?;
         return Ok(reply);
     };
-    if confirm_code_needed(&mut tx, mine.who.member(), true)
-        .await
-        .map_err(|_| ())?
+    if !attempt.code_passed
+        && confirm_code_needed(&mut tx, mine.who.member(), true)
+            .await
+            .map_err(|_| ())?
     {
         return Ok(said("ended", CODE_LINE, None));
     }

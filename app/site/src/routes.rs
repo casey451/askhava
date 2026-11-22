@@ -7,37 +7,123 @@
 //! page extends `templates/site_layout.html` and sets its `banner_shown` field from
 //! [`banner_shown`] before it renders (WEB-007, D-1843, D-3144), or from [`banner_shown_on`] on
 //! a connection the page already holds (D-4098).
+//!
+//! Caching and compression (T616, WEB-030, D-4252, D-5318): the file service is wrapped, inside
+//! out, in a `CompressionLayer` that gzips or Brotli-compresses only `text/css` and
+//! `image/svg+xml` (static files only: no page passes through it, so no CSRF token is ever
+//! compressed, the BREACH rule), then in [`revalidate`], which sees the coding that layer chose
+//! and gives the strong `ETag` its per-coding suffix and answers a matching `If-None-Match` 304.
 
 use axum::Router;
-use axum::http::{StatusCode, Uri, header};
+use axum::extract::Request;
+use axum::http::{Extensions, HeaderMap, HeaderValue, StatusCode, Uri, Version, header};
+use axum::middleware::{Next, from_fn};
 use axum::response::{IntoResponse, Response};
 use axum::routing::get;
 use sqlx::{PgConnection, PgPool};
+use tower_http::compression::CompressionLayer;
 
 use crate::assets;
 
-/// WEB-001: the site's router: the static files at `/static/site/<name>` (T101). Site pages added
-/// by later tasks merge their own routers beside it in `server::build_router`.
+/// WEB-001: the site's router: the static files at `/static/site/<name>` (T101), compressed when
+/// they are text and revalidated by `ETag` (WEB-030, D-4252). Site pages added by later tasks
+/// merge their own routers beside it in `server::build_router`.
 pub fn site_routes() -> Router {
-    Router::new().nest_service("/static/site", get(asset))
+    let files = get(asset)
+        .layer(CompressionLayer::new().compress_when(compressible))
+        .layer(from_fn(revalidate));
+    Router::new().nest_service("/static/site", files)
 }
 
-/// `GET /static/site/<name>`: a listed file with its MIME type, else 404 (WEB-001, SEC-013). The
-/// browser keeps a file for an hour, so the next page's stylesheet comes from its cache and a
+/// `GET /static/site/<name>`: a listed file with its MIME type, its cache rule and a strong
+/// `ETag` of the first 16 hex digits of its SHA256, else 404 (WEB-001, SEC-013, WEB-030). The
+/// stylesheet keeps its hour, so the next page's stylesheet comes from the browser's cache and a
 /// page's `autofocus` is not held back by a fetch (A11Y-030, D-3901).
 async fn asset(uri: Uri) -> Response {
     let name = uri.path().strip_prefix('/').unwrap_or_default();
-    match assets::find(name) {
-        Some(file) => (
+    match (assets::find(name), assets::sha256(name)) {
+        (Some(file), Some(digest)) => (
             [
-                (header::CONTENT_TYPE, file.mime),
-                (header::CACHE_CONTROL, "public, max-age=3600"),
+                (header::CONTENT_TYPE, file.mime.to_owned()),
+                (header::CACHE_CONTROL, file.cache_control().to_owned()),
+                (
+                    header::ETAG,
+                    format!("\"{}\"", digest.get(..16).unwrap_or(digest)),
+                ),
             ],
             file.bytes,
         )
             .into_response(),
-        None => StatusCode::NOT_FOUND.into_response(),
+        _ => StatusCode::NOT_FOUND.into_response(),
     }
+}
+
+/// WEB-030, D-4252: only a successful stylesheet or SVG answer is compressed; fonts, photos and
+/// PNGs are compressed already.
+fn compressible(status: StatusCode, _: Version, headers: &HeaderMap, _: &Extensions) -> bool {
+    let kind = headers
+        .get(header::CONTENT_TYPE)
+        .and_then(|value| value.to_str().ok())
+        .unwrap_or_default();
+    status == StatusCode::OK && (kind.starts_with("text/css") || kind.starts_with("image/svg+xml"))
+}
+
+/// WEB-030, D-5318: outside the compression, so it sees the chosen `Content-Encoding`: the
+/// `ETag` gains `-gzip` or `-br` for a compressed answer, `Vary: Accept-Encoding` is set, and an
+/// `If-None-Match` naming the tag (or `*`) gets a 304 with the `ETag`, `Cache-Control` and `Vary`
+/// and no body. An answer with no `ETag` (a 404, a 405) passes unchanged.
+async fn revalidate(request: Request, next: Next) -> Response {
+    let wanted = request.headers().get(header::IF_NONE_MATCH).cloned();
+    let mut response = next.run(request).await;
+    let Some(tag) = coded_etag(response.headers()) else {
+        return response;
+    };
+    let headers = response.headers_mut();
+    headers.insert(header::ETAG, tag.clone());
+    if !headers.contains_key(header::VARY) {
+        headers.insert(header::VARY, HeaderValue::from_static("accept-encoding"));
+    }
+    if wanted.is_some_and(|list| names_tag(&list, &tag)) {
+        return not_modified(response.headers());
+    }
+    response
+}
+
+/// The handler's `ETag` with the suffix of the answer's `Content-Encoding` (none, `gzip`, `br`),
+/// or `None` when the answer has no `ETag`.
+fn coded_etag(headers: &HeaderMap) -> Option<HeaderValue> {
+    let plain = headers.get(header::ETAG)?.to_str().ok()?;
+    let coding = headers
+        .get(header::CONTENT_ENCODING)
+        .and_then(|value| value.to_str().ok());
+    let Some(coding) = coding else {
+        return HeaderValue::from_str(plain).ok();
+    };
+    let digits = plain.trim_matches('"');
+    HeaderValue::from_str(&format!("\"{digits}-{coding}\"")).ok()
+}
+
+/// Whether an `If-None-Match` list names `tag` or is `*`, by the weak comparison RFC 9110
+/// section 13.1.2 sets for it (a `W/` prefix is ignored).
+fn names_tag(list: &HeaderValue, tag: &HeaderValue) -> bool {
+    let Ok(list) = list.to_str() else {
+        return false;
+    };
+    let tag = tag.to_str().unwrap_or_default();
+    list.split(',')
+        .map(str::trim)
+        .any(|entry| entry == "*" || entry.strip_prefix("W/").unwrap_or(entry) == tag)
+}
+
+/// The 304: no body, and only the `ETag`, `Cache-Control` and `Vary` of the full answer.
+fn not_modified(full: &HeaderMap) -> Response {
+    let mut answer = StatusCode::NOT_MODIFIED.into_response();
+    for name in [header::ETAG, header::CACHE_CONTROL, header::VARY] {
+        if let Some(value) = full.get(&name) {
+            answer.headers_mut().insert(name, value.clone());
+        }
+    }
+    answer
 }
 
 /// WEB-007, D-1843: whether a site page shows the status banner, read from `ops::api` before the

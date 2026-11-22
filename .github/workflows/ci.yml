@@ -142,6 +142,41 @@ jobs:
           # The checkout keeps no credentials; fetch main with the job token (read-only), masked in logs.
           git fetch --no-tags --depth=200 "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}" main:refs/remotes/origin/main
 
+      - name: Commit-range scan check (planted two-commit secret)
+        run: |
+          # SEC-045, TD-SEC-24 (D-5410): a token gitleaks' default rules find, built here from pieces so no tracked
+          # file holds it, is committed and then deleted in a temporary repository; the history scan must find it
+          # (exit 1) and the final tree must be clean (exit 0), else a working-tree-only scan would pass it.
+          gl="$RUNNER_TEMP/gitleaks/gitleaks"; plant="$RUNNER_TEMP/planted-secret"
+          rm -rf "$plant" && git init -q "$plant"
+          g() { git -C "$plant" -c user.name=Fake -c user.email=fake@example.test "$@"; }
+          printf 'token = "%s%s"\n' "gh""p_" "$(openssl rand -hex 18)" > "$plant/planted.txt"
+          g add planted.txt && g commit -qm "add a planted secret" && g rm -q planted.txt && g commit -qm "remove it"
+          history=0; "$gl" git "$plant" --log-opts=HEAD --no-banner --redact --exit-code 1 >/dev/null 2>&1 || history=$?
+          tree=0; "$gl" dir "$plant" --no-banner --redact --exit-code 1 >/dev/null 2>&1 || tree=$?
+          echo "gitleaks git over the two commits: exit ${history}; gitleaks dir over the final tree: exit ${tree}"
+          [ "$history" = 1 ] && [ "$tree" = 0 ] || { echo "::error::the planted two-commit secret was not caught as expected"; exit 1; }
+
+      - name: Commit-range scan (gitleaks)
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          # SEC-045 (D-5410, D-5420): scan the pushed commits, not only the tree. A push scans before..HEAD when
+          # `before` is in the fetched history, else the fetched commits not on main; a non-push run (the nightly
+          # calls this workflow on main) or main's tip scans the fetched history (fetch-depth 200).
+          pick_range() { # $1 event, $2 before, $3 head; prints the --log-opts range, fails on an empty push range
+            if [ "$1" != push ] || [ "$(git rev-parse "$3")" = "$(git rev-parse origin/main)" ]; then echo "$3"; return; fi
+            if [ -n "$2" ] && git cat-file -e "$2^{commit}" 2>/dev/null; then r="$2..$3"; else r="origin/main..$3"; fi
+            [ "$(git rev-list --count "$r")" -gt 0 ] || { echo "::error::the push range $r holds no commit" >&2; return 1; }
+            echo "$r"
+          }
+          mainrange="$(pick_range "" "" origin/main)"
+          [ "$mainrange" = origin/main ] || { echo "::error::main's tip with no before picked '$mainrange'"; exit 1; }
+          range="$(pick_range "$EVENT_NAME" "$BEFORE" HEAD)"
+          echo "Commit range scanned: $range ($(git rev-list --count "$range") commits)"
+          "$RUNNER_TEMP/gitleaks/gitleaks" git --log-opts="$range" --no-banner --redact --verbose --exit-code 1
+
       # Skipped only on the merge train's throwaway refs (D-4281, T640): X carries two tasks' changes under no task
       # branch, so the change rules would fail it; both heads meet these rules on their own task branches.
       - name: Plan lock and change rules (docs/governance.md)
