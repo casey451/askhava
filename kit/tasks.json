@@ -31188,7 +31188,7 @@
    "acceptance": "`app/server/tests/rotate_keys_command.rs` passes: a two-version rotation run by the commands ends with every vault, photo, staff-phone and opt-out row under the new version, the old version retired and dropped, and `check_index_keys` passing; bad arguments, no vault, a v1 photo with no photo settings and a loop past its cap exit non-zero changing nothing more; no output holds a planted value; every other server test passes unchanged."
   },
   {
-   "id": "T831",
+   "id": "T832",
    "slug": "checks-timeout-full-mutants",
    "title": "ci (harness): the Checks job allows 60 minutes, so a full named-mutant run fits after a cold build",
    "goal": "Plan change D-5519 (T803 BLOCKED after 3 attempts on `Checks`' time limit; D-1285). In `.github/workflows/ci.yml` the `checks` job's `timeout-minutes` (`:40`) goes from 40 to 60, and the comment above it (`:39`) becomes `# 60, not 40: a change to tests/mutation/mutants.toml or its script runs every named mutant (D-1285), after a cold build when the change reaches a base crate (D-5519).` Nothing else in the file changes: no other job's timeout (\"Lint and slow tests\" keeps 40), step, path rule or check. Why: a change to `tests/mutation/mutants.toml` or its script makes `scripts/run_named_mutants.py --base origin/main` run every named mutant (83) strictly (`scripts/run_named_mutants.py:148`); on T803's runs the Rust build took about 26 minutes (its change reaches `askhava-messaging`) and the job was cancelled at 40 minutes after mutant 72, every one killed. A limit only stops a run that would otherwise finish, so no passing run gets slower and no check is dropped. Update `docs/decisions.md`.",
@@ -31229,8 +31229,8 @@
     "Twin",
     "Ally"
    ],
-   "branch": "claude/task/T831-checks-timeout-full-mutants",
-   "prompt": "kit/prompts/T831.md",
+   "branch": "claude/task/T832-checks-timeout-full-mutants",
+   "prompt": "kit/prompts/T832.md",
    "acceptance": "`.github/workflows/ci.yml` differs from `main` only in the `checks` job's `timeout-minutes` (60) and the comment above it; `tests/test_ci_workflow.py`, `scripts/smoke.sh` and every `Ci` job pass unchanged."
   },
   {
@@ -31366,10 +31366,66 @@
    "acceptance": "The e2e and a11y suites pass unchanged (apart from D-4675's notice count in `tests/e2e/j2.ts`) with the clock-advancing journeys (`j1_full*`, `j2_full*`, `j1_j2_web_email*`, `j3_*`, `j4_*`; in a11y `j_full_keyboard*`, `j3_*`, `j4_*`) in a project that runs after every other spec; the worker and both web binaries share one ID secret, the worker starts with the keyed values and the keyed binary serves a signed fake Twilio webhook; no secret value appears in any log. If an existing spec fails only because the worker now sends or the keyed binary now serves webhooks, the report opens with `PLAN GAP:` naming it."
   },
   {
+   "id": "T831",
+   "slug": "request-start-fits",
+   "title": "site: the /request start screen's words box sits fully inside the first screen at 1280 by 900, so keyboard focus never lands on a box cut by the fold (A11Y-005)",
+   "goal": "Plan change D-5502 (T118's attempt-4 plan gap, reproduced by its reviewer at cb4a620, checked on `main` 23fcbe8; A11Y-005, `docs/spec/accessibility.md:9`). At 1280 by 900 the chat start screen's `textarea#chat-words` (`app/site/templates/request.html:48`) spans y=784 to 914, partly below the viewport; Chrome does not scroll a partly visible control into view when Tab reaches it, so its focused box lies partly outside the viewport and A11Y-005 fails (T118's `tests/a11y/j3_keyboard.spec.ts` checks it at step 5). Scrolling the page in the test would hide the defect a keyboard user meets, so the page changes. Lay out the start screen so, at 900 px tall and at each width the keyboard journeys and Ally use (320, 768, 1024 and 1280), every control on it (the words box, its \"Send\" button) is either wholly inside the first screen or wholly below it, measured as the keyboard tests measure (a box outside by more than half a pixel counts, `tests/a11y/j2_keyboard.spec.ts:39`); at 1024 and 1280 the words box sits wholly inside it (\"Send\" may sit below: Chrome centres a wholly below-fold button when Tab reaches it). A Chrome mock with the real CSS and fonts puts the box at y=784 to 886 at 1280 by 900 with `rows=\"3\"` alone, so a small change suffices. Use spacing, padding and the textarea's height or `rows`, in markup in `request.html` or CSS in `site.css` scoped to a class this task adds in `request.html`; `.form-card` also styles `app/site/templates/help.html:29`, so no rule changes `main`, `h1`, `h2`, `p`, `textarea`, `.card` or `.form-card`, and `/help` renders unchanged; never by changing a word, the order of the consent text, the Spanish draft, the 18-or-older line, the AI line and the form (`tests/e2e/web_chat.spec.ts:116` to `:122`), the focus ring, a font size under 16 px or the 44 px targets; no script. Every DONE test of the page passes unchanged (`tests/e2e/web_chat.spec.ts`, `site_pages.spec.ts`, `site_no_js.spec.ts`, `tests/a11y/page_structure.spec.ts`, `reflow_spacing.spec.ts`, `design_tokens.spec.ts`, the `/request` states in `page_states.ts:448`, `:746`), and the screenshot review (`tests/a11y/polish_screens.spec.ts`) records the new first screen. The new `tests/a11y/request_first_screen.spec.ts` opens `/request` at each of those widths by 900 and asserts the rule above for each control, and, as J3 checks it, Tabs to `#chat-words` at 1280 by 900 with the AI-026 line shown and asserts its box is inside the viewport, also with the WEB-007 banner shown (about 45 px more) and with the safety-call consent shown (about 112 px more). Update `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T610",
+    "T609",
+    "T595",
+    "T593",
+    "T489"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "accessibility"
+   ],
+   "owns": [
+    "app/site/templates/request.html",
+    "app/site/static/site.css",
+    "tests/a11y/request_first_screen.spec.ts"
+   ],
+   "reads": [
+    "docs/spec/accessibility.md",
+    "docs/design/DESIGN_SPEC.md",
+    "docs/code-docs.md"
+   ],
+   "requirements": [
+    "A11Y-005"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-4246",
+    "D-4252",
+    "D-5502"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 160,
+    "context_pct": 14
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T831-request-start-fits",
+   "prompt": "kit/prompts/T831.md",
+   "acceptance": "`tests/a11y/request_first_screen.spec.ts` passes at 320, 768, 1024 and 1280 by 900, and Tab reaches `#chat-words` at 1280 by 900 with its box inside the viewport with the AI-026 line shown, with the WEB-007 banner and with the safety-call consent; `/help` renders unchanged; Ally (axe, design tokens, reduced motion) and every existing test of `/request` pass unchanged; no word or order changes."
+  },
+  {
    "id": "T118",
    "slug": "e2e-j3-operator",
    "title": "Journey J3 (operator) keyboard-only, with closing checks",
-   "goal": "Journey J3 (owner sign-in, pause, refund, fee mode, safe mode, audit viewer) runs end to end in Playwright, again keyboard-only, ending with the closing checks (A11Y-005, A11Y-021). Plan change D-3744: J3 step 5's paused release that goes ahead once the alert is acknowledged is T408's held-release task (`app/server/src/release_hold.rs`, `payments::api::held_release`), so this task depends on T707, the last task of T408's split (D-4419), which follows T408. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744). Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): J3's refund needs Stripe, which only the keyed binary has (`tests/e2e/webserver.ts:115` to `:137`), so the refund step runs on `keyedUrl()` with the owner signed in there through `owner_session.ts` (which takes the base URL, T303); no step relies on a session made on the other binary's port. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): T536 runs J3 and J4 in a Playwright project after every other spec (their clock advances would expire later specs' seeded sessions), starts the suite's worker with the keyed values so step 5's held release, safety text and STOP confirmation run, and gives the keyed binary a public base URL and a Twilio-signing helper so a STOP can be posted; so this task depends on T536. Its seeds take the app clock (`GET /__test/clock`), never the database's `now()`. Shared steps live in `tests/e2e/j3.ts` (as `tests/e2e/j2.ts` serves T099's two specs). `j3_keyboard.spec.ts` uses the e2e `test` with `test.use({ controlSecret: controlSecret() })` (the a11y config sets none). Step 4's \"business must accept a new authorization\" asserts only the refusal (no page stores the FEE-015 authorization, D-3857). TD-TXT-15 switches the launch channel to web-and-email (`app/messaging/src/mode_state.rs:198`) and back at the end, and safe mode is ended before the spec exits, each in an `afterAll` so a failure leaves the shared database clean. Plan change D-3893: this task's specs run in T536's late Playwright project, so a single-file run also runs the whole first project; add `--no-deps` while iterating on one spec, and the commands under \"Run your tests\" stay the hand-in check. Plan change D-5486 (BLOCKED after 3 attempts, Fable's triage; checked on `main`; SEC-005, SEC-043; D-3744, D-3889): owner routes run on `SystemClock` (`app/server/src/lib.rs:429`), so the journey ages only its own owner session row (found by the page cookie's `token_sha256`), never every owner row; `portals.session` has `CHECK (expires_at > created_at)` (`migrations/0058_portals_base_security.sql:27`). Idle: move only that session's `portals.owner_session.last_seen_at` back 31 minutes (`app/portals/src/owner_auth.rs:584` ends it). 12-hour cap: move only that session's `created_at` back and never write `expires_at`; the server writes the cap on the call after the lookup (`owner_auth.rs:588`, `:256` to `:258`; `owner_principal` looks the session up on the stored `expires_at > now`, `app/portals/src/models.rs:581`), so each check is two door calls: at 11:50 old both answer 200; at 12:01 old the second answers 401. The remote branch is attempt 2 (`eb49f86`, already at 600 lines): its `LEAST(...)` at `tests/e2e/j3.ts:66` to `:67` applies the cap itself and must go, and `j3.ts:70` ages every owner session's `expires_at`, breaking the CHECK (CI run 44979110535). Attempt 3's decision D-5286 is on neither `main` nor the branch, so the retry writes its decision again and corrects D-5282's wording (on the branch only) to this design. The SQL is the e2e helper's `psql`, TypeScript under `tests/e2e/`, which no architecture rule scans (TD-SEC-10 reads `app/` only). The line budget stays 600, the build maximum (`scripts/validate_tasks.py` `MAX_LINES`), and is a guide, not a stop: about 660 lines are expected; do not stop for size or cut a case, and say the final count in the hand-in. Approval notes (Fable, D-5486): (1) the server stores SHA-256 of the raw session cookie value (`app/portals/src/session.rs:181`, `:214`), so the journey finds its row by that digest, as `tests/a11y/page_states.ts:50` and `:280` do, with the cookie name `SESSION` from `tests/e2e/keyed.ts:154`. (2) Attempt 2's `j3.ts:135` ages sessions before the first sign-in, when the page holds no cookie: remove that call (an ageing helper given no cookie must change nothing).",
+   "goal": "Journey J3 (owner sign-in, pause, refund, fee mode, safe mode, audit viewer) runs end to end in Playwright, again keyboard-only, ending with the closing checks (A11Y-005, A11Y-021). Plan change D-3744: J3 step 5's paused release that goes ahead once the alert is acknowledged is T408's held-release task (`app/server/src/release_hold.rs`, `payments::api::held_release`), so this task depends on T707, the last task of T408's split (D-4419), which follows T408. It signs the owner in only through T303's shared `tests/e2e/owner_session.ts` helper, never running `bootstrap-owner` itself (D-3744). Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): J3's refund needs Stripe, which only the keyed binary has (`tests/e2e/webserver.ts:115` to `:137`), so the refund step runs on `keyedUrl()` with the owner signed in there through `owner_session.ts` (which takes the base URL, T303); no step relies on a session made on the other binary's port. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): T536 runs J3 and J4 in a Playwright project after every other spec (their clock advances would expire later specs' seeded sessions), starts the suite's worker with the keyed values so step 5's held release, safety text and STOP confirmation run, and gives the keyed binary a public base URL and a Twilio-signing helper so a STOP can be posted; so this task depends on T536. Its seeds take the app clock (`GET /__test/clock`), never the database's `now()`. Shared steps live in `tests/e2e/j3.ts` (as `tests/e2e/j2.ts` serves T099's two specs). `j3_keyboard.spec.ts` uses the e2e `test` with `test.use({ controlSecret: controlSecret() })` (the a11y config sets none). Step 4's \"business must accept a new authorization\" asserts only the refusal (no page stores the FEE-015 authorization, D-3857). TD-TXT-15 switches the launch channel to web-and-email (`app/messaging/src/mode_state.rs:198`) and back at the end, and safe mode is ended before the spec exits, each in an `afterAll` so a failure leaves the shared database clean. Plan change D-3893: this task's specs run in T536's late Playwright project, so a single-file run also runs the whole first project; add `--no-deps` while iterating on one spec, and the commands under \"Run your tests\" stay the hand-in check. Plan change D-5486 (BLOCKED after 3 attempts, Fable's triage; checked on `main`; SEC-005, SEC-043; D-3744, D-3889): owner routes run on `SystemClock` (`app/server/src/lib.rs:429`), so the journey ages only its own owner session row (found by the page cookie's `token_sha256`), never every owner row; `portals.session` has `CHECK (expires_at > created_at)` (`migrations/0058_portals_base_security.sql:27`). Idle: move only that session's `portals.owner_session.last_seen_at` back 31 minutes (`app/portals/src/owner_auth.rs:584` ends it). 12-hour cap: move only that session's `created_at` back and never write `expires_at`; the server writes the cap on the call after the lookup (`owner_auth.rs:588`, `:256` to `:258`; `owner_principal` looks the session up on the stored `expires_at > now`, `app/portals/src/models.rs:581`), so each check is two door calls: at 11:50 old both answer 200; at 12:01 old the second answers 401. The remote branch is attempt 2 (`eb49f86`, already at 600 lines): its `LEAST(...)` at `tests/e2e/j3.ts:66` to `:67` applies the cap itself and must go, and `j3.ts:70` ages every owner session's `expires_at`, breaking the CHECK (CI run 44979110535). Attempt 3's decision D-5286 is on neither `main` nor the branch, so the retry writes its decision again and corrects D-5282's wording (on the branch only) to this design. The SQL is the e2e helper's `psql`, TypeScript under `tests/e2e/`, which no architecture rule scans (TD-SEC-10 reads `app/` only). The line budget stays 600, the build maximum (`scripts/validate_tasks.py` `MAX_LINES`), and is a guide, not a stop: about 660 lines are expected; do not stop for size or cut a case, and say the final count in the hand-in. Approval notes (Fable, D-5486): (1) the server stores SHA-256 of the raw session cookie value (`app/portals/src/session.rs:181`, `:214`), so the journey finds its row by that digest, as `tests/a11y/page_states.ts:50` and `:280` do, with the cookie name `SESSION` from `tests/e2e/keyed.ts:154`. (2) Attempt 2's `j3.ts:135` ages sessions before the first sign-in, when the page holds no cookie: remove that call (an ageing helper given no cookie must change nothing). Plan change D-5502 (attempt 4's plan gap): at 1280 by 900 the `/request` words box was partly below the fold, so step 5's keyboard check failed (A11Y-005); T831 (a dep) fixes the page's layout. The journey does not scroll the page to place a control; with T831 merged, `j3_keyboard.spec.ts` checks A11Y-005 as it stands.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -31381,7 +31437,8 @@
     "T310",
     "T414",
     "T707",
-    "T536"
+    "T536",
+    "T831"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -31418,7 +31475,8 @@
     "D-3889",
     "D-3893",
     "D-4419",
-    "D-5486"
+    "D-5486",
+    "D-5502"
    ],
    "cites": [],
    "budget": {
@@ -43649,7 +43707,8 @@
    "module": "portals",
    "deps": [
     "T610",
-    "T520"
+    "T520",
+    "T831"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -43682,7 +43741,8 @@
     "D-4252",
     "D-4246",
     "D-3331",
-    "D-3878"
+    "D-3878",
+    "D-5502"
    ],
    "cites": [
     "docs/design/DESIGN_SPEC.md:124",
@@ -43694,7 +43754,7 @@
    "budget": {
     "files": 2,
     "lines": 350,
-    "context_pct": 25
+    "context_pct": 39
    },
    "checks": [
     "Ci",
@@ -44770,7 +44830,8 @@
    "deps": [
     "T593",
     "T609",
-    "T649"
+    "T649",
+    "T831"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -52464,7 +52525,8 @@
     "T745",
     "T676",
     "T671",
-    "T725"
+    "T725",
+    "T831"
    ],
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
@@ -52608,7 +52670,7 @@
     "T424",
     "T483",
     "T603",
-    "T831"
+    "T832"
    ],
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
@@ -52622,7 +52684,7 @@
    "id": "T803",
    "slug": "no-help-after-stop",
    "title": "messaging (harness): an opted-out number gets no HELP reply; help goes by the web and email",
-   "goal": "Plan change D-5280 (Fable's decision for Casey under D-305; CON-013 and CON-018 as reworded; D-131 narrowed). With Twilio's Advanced Opt-Out an opted-out number gets no HELP reply and a send to it fails with 21610, so `rules::may_send_to` (`app/messaging/src/rules.rs:553` to `:567`) no longer lets `HELP_TEMPLATE` through to a listed number: only the opt-out confirmation within 5 minutes passes; a HELP text from a listed number queues nothing that could be sent (the sender expires it). The DONE tests that pin the HELP reply to an opted-out number change by logged spec change (D-5280) only in those assertions: `app/messaging/src/tests/optout_words.rs` (`may_send_to` cases near `:326` to `:331`), `app/messaging/src/tests/prop_optout_props.rs`, `tests/integration/tests/outbox_sender.rs:291` to `:314` (TD-QH-05: a suppressed number now gets nothing but the confirmation), `tests/integration/tests/optout_flow.rs:264` and `tests/integration/tests/help_start.rs:173` to `:209` (TD-CON-07). `tests/mutation/mutants.toml:204`'s \"HELP after STOP not answered\" mutant is replaced by the reverse one, which lets `HELP_TEMPLATE` through on a listed number again (its `find` and `replace` written against the code this task leaves), and the new tests kill it; the twin answers HELP after STOP too: `twin/app.py:302`, `:409`, `twin/twin.py:835`, `:1068` and `docs/twin-warnings.md:174` change so an opted-out number's HELP gets no text and `help_not_answered` no longer flags that case (the twin gate passes); `app/messaging/src/keywords.rs:5`'s doc comment says the HELP reply is never let through to an opted-out number; `docs/architecture.md:199` (`reply_to_help` queues the CON-018 reply \"from any number including an opted-out one\") is corrected to say the reply is never sent to an opted-out number. Consent: Opus worker and review. Update `app/messaging/NOTES.md` and `docs/decisions.md`. Plan change D-5519 (attempts 2 and 3 BLOCKED on `Checks`' time limit, no code fault; scope unchanged): because this task changes `tests/mutation/mutants.toml`, `scripts/run_named_mutants.py --base origin/main` runs all 83 named mutants strictly (`scripts/run_named_mutants.py:148`, D-1285), and after a cold Rust build of about 26 minutes (`askhava-messaging` sits under most crates) the job hit its 40-minute limit after mutant 72, every one killed. T831 (a dep) raises that job's limit to 60 minutes, so the same full run fits; no mutant is dropped or skipped. With the list changed every entry runs strictly, so the entry `card sent when the latest daily check is not Active` (its `find` occurs twice in `app/licensing/src/service.rs` on `main`) is made unique in the same change by a longer `find` with the same mutation, as attempt 2's branch did.",
+   "goal": "Plan change D-5280 (Fable's decision for Casey under D-305; CON-013 and CON-018 as reworded; D-131 narrowed). With Twilio's Advanced Opt-Out an opted-out number gets no HELP reply and a send to it fails with 21610, so `rules::may_send_to` (`app/messaging/src/rules.rs:553` to `:567`) no longer lets `HELP_TEMPLATE` through to a listed number: only the opt-out confirmation within 5 minutes passes; a HELP text from a listed number queues nothing that could be sent (the sender expires it). The DONE tests that pin the HELP reply to an opted-out number change by logged spec change (D-5280) only in those assertions: `app/messaging/src/tests/optout_words.rs` (`may_send_to` cases near `:326` to `:331`), `app/messaging/src/tests/prop_optout_props.rs`, `tests/integration/tests/outbox_sender.rs:291` to `:314` (TD-QH-05: a suppressed number now gets nothing but the confirmation), `tests/integration/tests/optout_flow.rs:264` and `tests/integration/tests/help_start.rs:173` to `:209` (TD-CON-07). `tests/mutation/mutants.toml:204`'s \"HELP after STOP not answered\" mutant is replaced by the reverse one, which lets `HELP_TEMPLATE` through on a listed number again (its `find` and `replace` written against the code this task leaves), and the new tests kill it; the twin answers HELP after STOP too: `twin/app.py:302`, `:409`, `twin/twin.py:835`, `:1068` and `docs/twin-warnings.md:174` change so an opted-out number's HELP gets no text and `help_not_answered` no longer flags that case (the twin gate passes); `app/messaging/src/keywords.rs:5`'s doc comment says the HELP reply is never let through to an opted-out number; `docs/architecture.md:199` (`reply_to_help` queues the CON-018 reply \"from any number including an opted-out one\") is corrected to say the reply is never sent to an opted-out number. Consent: Opus worker and review. Update `app/messaging/NOTES.md` and `docs/decisions.md`. Plan change D-5519 (attempts 2 and 3 BLOCKED on `Checks`' time limit, no code fault; scope unchanged): because this task changes `tests/mutation/mutants.toml`, `scripts/run_named_mutants.py --base origin/main` runs all 83 named mutants strictly (`scripts/run_named_mutants.py:148`, D-1285), and after a cold Rust build of about 26 minutes (`askhava-messaging` sits under most crates) the job hit its 40-minute limit after mutant 72, every one killed. T832 (a dep) raises that job's limit to 60 minutes, so the same full run fits; no mutant is dropped or skipped. With the list changed every entry runs strictly, so the entry `card sent when the latest daily check is not Active` (its `find` occurs twice in `app/licensing/src/service.rs` on `main`) is made unique in the same change by a longer `find` with the same mutation, as attempt 2's branch did.",
    "type": "harness",
    "model": "claude-opus-5-5",
    "review_areas": [
