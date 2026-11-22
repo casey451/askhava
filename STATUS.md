@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-22T06:46:11Z by runner 83ffc1922099 (actions).
+Updated 2026-11-22T06:46:25Z by runner 83ffc1922099 (actions).
 
 **Building: T609 in progress since 06:09Z; 602 of 767 done; week 54% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 602 of 767 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 5: T609 claimed 06:09Z, lease until 09:09Z; lane 7: T810 claimed 05:29Z, lease until 08:29Z
+- **Lane:** lane 5: T609 claimed 06:09Z, lease until 09:09Z
 - **Week:** 54% used, 85.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 06:36Z, 9 min before this update
 - **Keeper:** last ran 06:36Z, next wake 06:56Z
@@ -29,6 +29,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T810 | portals and server: a shared-inbox Confirm press asks for it | MERGE_PENDING | 3 | 76 min | 06:46Z | PLAN GAP: outside ownership: app/server/tests/confirm_press_code.rs. TD-SEC-82 requires a direct portals.shared_inbox in |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | BLOCKED | 3 | 2 h 17 min | 06:35Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / ✓  120 [main] › tests/e2e |
 | T827 | server and portals: the owner and homeowner forms refuse unk | MERGE_PENDING | 1 | 82 min | 06:12Z |  |
 | T829 | server tests (harness): the door matrix's owner sign-ins nev | BLOCKED | 1 | 19 min | 06:03Z | PLAN GAP: tests/integration/tests/architecture_migrations.rs:791 (TD-SEC-10, not owned by T829) refuses the fix D-5411 p |
@@ -42,7 +43,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 | T721 | businesses and portals: Casey counts a check-in PROBLEM repo | done | 1 | 76 min | 04:10Z |  |
 | T616 | site: strong per-coding ETags with 304 revalidation, a one-y | check_failed | 1 | 96 min | 03:07Z |  |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | check_failed | 2 | 2 h 19 min | 03:06Z |  |
-| T810 | portals and server: a shared-inbox Confirm press asks for it | BLOCKED | 2 | 2 min | 03:05Z | PLAN GAP: outside ownership: app/server/tests/confirm_press_code.rs. TD-SEC-82 requires a direct portals.shared_inbox in |
+| T810 | portals and server: a shared-inbox Confirm press asks for it | BLOCKED | 2 | 2 min | 03:05Z |  |
 | T810 | portals and server: a shared-inbox Confirm press asks for it | QUEUED | 1 | 39 min | 02:57Z |  |
 | T803 | messaging (harness): an opted-out number gets no HELP reply; | check_failed | 1 | 69 min | 02:44Z |  |
 | T691 | intake (harness): START into an open request resends the con | done | 2 | 2 h 16 min | 02:20Z | session ended without handing in |
@@ -142,7 +143,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 5: T609 (lease until 2026-11-22T09:09:07Z)
-- lane 7: T810 (lease until 2026-11-22T08:29:15Z)
 
 ## Last usage reading
-- {"task": "T118", "at": "2026-11-22T06:35:40Z", "cache_read_input_tokens": 4681475, "input_tokens": 205, "output_tokens": 39753, "cache_creation_input_tokens": 184940}
+- {"task": "T810", "at": "2026-11-22T06:46:09Z", "cache_read_input_tokens": 9041272, "output_tokens": 62540, "input_tokens": 179, "cache_creation_input_tokens": 217214}
