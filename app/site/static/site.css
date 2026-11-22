@@ -701,6 +701,24 @@ ol:has(> .said-ours, > .said-hers) { list-style: none; padding: 0; display: grid
 .said-ours { background: var(--surface); border: 1px solid var(--line); }
 .said-hers { background: var(--band); }
 
+/* The Spanish pages, the legal pages and the data and help pages (T610; WEB-027, WEB-029, D-4246,
+   D-4326): the Spanish how it works and business pages reuse T609's .how-step, .fee-table and
+   .sample-card; the data pages' and business help's fact lists are paper cards of ruled rows in
+   tabular figures; the ROC page's facts sit on a paper card; each legal document is a reading
+   column on canvas with type and spacing polish only. No entrance motion, no hover lift. */
+.card.fact-list { list-style: none; padding-block: 4px; max-width: 640px; box-sizing: border-box; font-variant-numeric: tabular-nums; }
+.fact-list li { padding-block: 12px; border-top: 1px solid var(--line); max-width: none; }
+.fact-list li:first-child { border-top: 0; }
+.fact-card { max-width: 640px; box-sizing: border-box; margin-block: 16px; }
+.fact-card > p:first-child { margin-top: 0; }
+.fact-card > p:last-child { margin-bottom: 0; }
+.legal-doc { max-width: 70ch; font-variant-numeric: tabular-nums; }
+.legal-doc + .legal-doc { margin-top: 48px; padding-top: 8px; border-top: 1px solid var(--line); }
+.legal-doc h2 { margin-top: 40px; }
+.legal-doc h3 { margin-top: 32px; }
+.legal-doc li + li { margin-top: 8px; }
+.legal-version { color: var(--ink-soft); }
+
 @media (max-width: 359px) {
   .hero-photo {
     height: clamp(124px, 100vh - 616px, 252px);
