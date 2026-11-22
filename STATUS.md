@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-22T03:07:35Z by runner 59b85679e6d9 (actions).
+Updated 2026-11-22T03:07:49Z by runner 59b85679e6d9 (actions).
 
-**Building: T616 in progress since 01:30Z; 599 of 753 done; week 49% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T542 in progress since 01:45Z; 599 of 753 done; week 49% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 599 of 753 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 4: T616 claimed 01:30Z, lease until 06:04Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z; lane 7: T721 claimed 02:54Z, lease until 05:54Z
+- **Lane:** lane 5: T542 claimed 01:45Z, lease until 04:45Z; lane 7: T721 claimed 02:54Z, lease until 05:54Z
 - **Week:** 49% used, 91.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 03:07Z, 0 min before this update
 - **Keeper:** last ran 03:07Z, next wake 03:27Z
@@ -32,6 +32,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T616 | site: strong per-coding ETags with 304 revalidation, a one-y | MERGE_PENDING | 1 | 96 min | 03:07Z |  |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | MERGE_PENDING | 2 | 2 h 19 min | 03:06Z | Reviewer after fix round (head ee01dda321ae54d4c6af6a1e464281c92fbdcf1d) still FINDINGS: / 1. tests/e2e/j3_operator.spec |
 | T810 | portals and server: a shared-inbox Confirm press asks for it | BLOCKED | 2 | 2 min | 03:05Z | PLAN GAP: outside ownership: app/server/tests/confirm_press_code.rs. TD-SEC-82 requires a direct portals.shared_inbox in |
 | T810 | portals and server: a shared-inbox Confirm press asks for it | QUEUED | 1 | 39 min | 02:57Z |  |
@@ -143,9 +144,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 4: T616 (lease until 2026-11-22T06:04:24Z)
 - lane 5: T542 (lease until 2026-11-22T04:45:48Z)
 - lane 7: T721 (lease until 2026-11-22T05:54:28Z)
 
 ## Last usage reading
-- {"task": "T118", "at": "2026-11-22T03:06:23Z", "cache_creation_input_tokens": 351584, "input_tokens": 383, "output_tokens": 102771, "cache_read_input_tokens": 23262309}
+- {"task": "T616", "at": "2026-11-22T03:07:30Z", "output_tokens": 47978, "cache_creation_input_tokens": 186252, "cache_read_input_tokens": 3538750, "input_tokens": 147}
