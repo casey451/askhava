@@ -1,30 +1,30 @@
 # Ask Hava build status
 
-Updated 2026-11-22T17:31:21Z by runner b8866e98e1a0 (actions).
+Updated 2026-11-22T17:37:13Z by runner bd27a597ce3e (actions).
 
-**Idle since 17:03Z; 616 of 770 done; week 64% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Idle since 17:36Z; 617 of 770 done; week 64% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 616 of 770 build tasks (owner gates not counted)
+- **Tasks done:** 617 of 770 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** idle since 17:03Z (no task in progress)
+- **Lane:** idle since 17:36Z (no task in progress)
 - **Week:** 64% used, 66.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:31Z, 0 min before this update
+- **Last run:** 17:36Z, 0 min before this update
 - **Keeper:** last ran 17:31Z, next wake 17:51Z
 
 ## Needs attention
 - BLOCKED T803: Worker made no change. All 83 named mutants are killed; the Checks job timed out (40 min limit) because the Rust build took ~26 min and mutants.toml changes trigger all 83 mutants (cut off after mutant 72). Needs a harness fix (raise Checks timeout-minutes or run only changed mutants) or a faster CI build. Smoke did not finish in the worker's polls.
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 32 problem(s) on tasks still to run (+496 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 30 problem(s) on tasks still to run (+495 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T675 | intake and server (harness): the dispatcher asks for photos  | MERGE_PENDING | 4 | 81 min | 17:03Z | PLAN GAP: tests/integration/tests/intake_order_card.rs:285, tests/integration/tests/intake_refusals_wired.rs:399, tests/ |
+| T675 | intake and server (harness): the dispatcher asks for photos  | resync | 4 | 81 min | 17:03Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T590 | calls, picks and server: the who's-calling and missed-call t | check_failed | 1 | 118 min | 16:40Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T122 | docs/account-checklist.md: Part 1 test accounts, Part 2 busi | QUEUED | 1 | 88 min | 16:23Z | Reviewer after the findings round (head d65c4896894680459870359165740cf8b3a2bf57) still ended FINDINGS: / 1. tests/docs/ |
-| T725 | site: the home page shows the texting number with its consen | MERGE_PENDING | 4 | 82 min | 16:15Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
-| T831 | site: the /request start screen's words box sits fully insid | MERGE_PENDING | 1 | 107 min | 16:13Z |  |
+| T725 | site: the home page shows the texting number with its consen | resync | 4 | 82 min | 16:15Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
+| T831 | site: the /request start screen's words box sits fully insid | done | 1 | 107 min | 16:13Z |  |
 | T729 | portals and privacy: the quote page offers updates by email  | done | 3 | 92 min | 16:10Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T397 | server and portals: the owner approves or declines a member- | done | 2 | 2 h 0 min | 15:12Z | PLAN GAP: outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per p |
 | T833 | pre-hand-in gate test (harness): the Ally-step test holds th | done | 1 | 65 min | 14:05Z |  |
@@ -99,7 +99,7 @@ Updated 2026-11-22T17:31:21Z by runner b8866e98e1a0 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 722 · unstarted 13
-**Tasks merged (throughput only):** 616 of 770
+**Tasks merged (throughput only):** 617 of 770
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -135,7 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 259 of 342 done
+- stage 5: 260 of 342 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
