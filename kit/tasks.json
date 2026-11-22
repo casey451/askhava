@@ -33446,7 +33446,7 @@
    "id": "T126",
    "slug": "cleanup-stage5",
    "title": "Stage 5 cleanup: dead code, duplicates, docs up to date (end of Phase 1)",
-   "goal": "Scan-driven cleanup, fixing only what the tools flag: an unused-dependency check (`cargo machete` is not pinned, so `cargo tree` plus `python3 scripts/check_crates.py`), the duplicate-function scan `python3 scripts/check_duplicates.py --strict` (T516, D-3870), `python3 scripts/check_rust_rules.py`, `python3 scripts/check_code_docs.py`, a grep for commented-out code, and docs/architecture.md sections 7, 8, 9, 11 and 12 (and section 10 holding no build note: `python3 scripts/split_arch_notes.py --check` prints 0, D-3870) and the build notes in `app/*/NOTES.md` and `docs/build-notes.md` (found by grep, never loaded whole; D-3620) brought up to date with the stage's merges. Done means every scan prints zero findings in the task report and the stage's exit test in docs/build-readiness.md section 3 is not recorded here: the task report gives each exit-test clause's evidence, and the runner records the proof (D-479, D-3870). `tests/task_kinds_deferred.json` (T327) must hold, at this stage's end, only kinds whose owner task is still queued, each with its reason; any other entry is reported in the task report for the next plan change to remove or justify (D-2290). Plan change D-3891 (Fable's pre-claim check), as T100 (D-3870): for each duplicate group one copy stays and the others call it where `kit/layers.json` allows; behaviour is unchanged and every existing test passes unchanged; a group is merged only when every name its bodies use (constants, types, functions, imports) resolves to the same item in each copy; otherwise it goes on the keep-list (`KEEP`, `scripts/check_duplicates.py:28`) with its reason, and a keep-list edit rewrites `kit/plan.lock` (`python3 scripts/check_plan_lock.py --write`) in the same commit. For a security group (sign-in, session, link-token or CSRF code), the report names the existing tests that cover each remaining caller. Findings under `tests/` (which `check_rust_rules.py`, `check_code_docs.py` and `check_crates.py` also scan) are reported in the task report, not fixed. Stage 5's proof is hand-recorded (`runner/proof.py:108`): the task report gives each clause of row 5 (`docs/build-readiness.md:42`) its evidence, and the task never runs `--record-proof`. This is not stage 5's last task: the documentation pass (T498 to T514, T551 to T555) depends on it and starts only after the overseer records the stage-5 proof. Plan change D-4052 (audit batch B, items B29 and B21): one known leftover for this pass, removed only if the scans and a grep confirm no production caller: `businesses::api::night_count` (`app/businesses/src/api.rs:132`, `service::night_count`, the un-narrowed count beside `covered_night_count`, D-2010). `messaging::rules::plan_release` (`app/messaging/src/rules.rs:340`) is not removed in this pass: T583's sender does its job by reading the count at send time, but its unit tests are TD-QH-02's U-level cases (`app/messaging/src/tests/quiet_hours.rs`), so it stays until a decision names TD-QH-02 unit coverage that remains without it. Plan change D-4360: also after T676, T677 and T691.",
+   "goal": "Scan-driven cleanup, fixing only what the tools flag: an unused-dependency check (`cargo machete` is not pinned, so `cargo tree` plus `python3 scripts/check_crates.py`), the duplicate-function scan `python3 scripts/check_duplicates.py --strict` (T516, D-3870), `python3 scripts/check_rust_rules.py`, `python3 scripts/check_code_docs.py`, a grep for commented-out code, and docs/architecture.md sections 7, 8, 9, 11 and 12 (and section 10 holding no build note: `python3 scripts/split_arch_notes.py --check` prints 0, D-3870) and the build notes in `app/*/NOTES.md` and `docs/build-notes.md` (found by grep, never loaded whole; D-3620) brought up to date with the stage's merges. Done means every scan prints zero findings in the task report and the stage's exit test in docs/build-readiness.md section 3 is not recorded here: the task report gives each exit-test clause's evidence, and the runner records the proof (D-479, D-3870). `tests/task_kinds_deferred.json` (T327) must hold, at this stage's end, only kinds whose owner task is still queued, each with its reason; any other entry is reported in the task report for the next plan change to remove or justify (D-2290). Plan change D-3891 (Fable's pre-claim check), as T100 (D-3870): for each duplicate group one copy stays and the others call it where `kit/layers.json` allows; behaviour is unchanged and every existing test passes unchanged; a group is merged only when every name its bodies use (constants, types, functions, imports) resolves to the same item in each copy; otherwise it goes on the keep-list (`KEEP`, `scripts/check_duplicates.py:28`) with its reason, and a keep-list edit rewrites `kit/plan.lock` (`python3 scripts/check_plan_lock.py --write`) in the same commit. For a security group (sign-in, session, link-token or CSRF code), the report names the existing tests that cover each remaining caller. Findings under `tests/` (which `check_rust_rules.py`, `check_code_docs.py` and `check_crates.py` also scan) are reported in the task report, not fixed. Stage 5's proof is hand-recorded (`runner/proof.py:108`): the task report gives each clause of row 5 (`docs/build-readiness.md:42`) its evidence, and the task never runs `--record-proof`. This is not stage 5's last task: the documentation pass (T498 to T514, T551 to T555) depends on it and starts only after the overseer records the stage-5 proof. Plan change D-4052 (audit batch B, items B29 and B21): one known leftover for this pass, removed only if the scans and a grep confirm no production caller: `businesses::api::night_count` (`app/businesses/src/api.rs:132`, `service::night_count`, the un-narrowed count beside `covered_night_count`, D-2010). `messaging::rules::plan_release` (`app/messaging/src/rules.rs:340`) is not removed in this pass: T583's sender does its job by reading the count at send time, but its unit tests are TD-QH-02's U-level cases (`app/messaging/src/tests/quiet_hours.rs`), so it stays until a decision names TD-QH-02 unit coverage that remains without it. Plan change D-4360: also after T676, T677 and T691. Plan change D-5365 (outside review job 12, finding F11): if `messaging::rules::plan_release` stays after this pass, its `///` says it has no production caller (D-4052: TXT-025's merging is done by re-reading the count at send time, T583, T708, D-4571); deleting it instead needs the decision D-4052 asks for. Also after T817.",
    "type": "cleanup",
    "phase": 1,
    "stage": "5",
@@ -33706,7 +33706,8 @@
     "T801",
     "T804",
     "T805",
-    "T815"
+    "T815",
+    "T817"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -33757,7 +33758,8 @@
     "D-4360",
     "D-4708",
     "D-4709",
-    "D-4925"
+    "D-4925",
+    "D-5365"
    ],
    "cites": [
     "BUILD_BRIEF.md:488",
@@ -52286,7 +52288,7 @@
    "id": "T803",
    "slug": "no-help-after-stop",
    "title": "messaging (harness): an opted-out number gets no HELP reply; help goes by the web and email",
-   "goal": "Plan change D-5280 (Fable's decision for Casey under D-305; CON-013 and CON-018 as reworded; D-131 narrowed). With Twilio's Advanced Opt-Out an opted-out number gets no HELP reply and a send to it fails with 21610, so `rules::may_send_to` (`app/messaging/src/rules.rs:553` to `:567`) no longer lets `HELP_TEMPLATE` through to a listed number: only the opt-out confirmation within 5 minutes passes; a HELP text from a listed number queues nothing that could be sent (the sender expires it). The DONE tests that pin the HELP reply to an opted-out number change by logged spec change (D-5280) only in those assertions: `app/messaging/src/tests/optout_words.rs` (`may_send_to` cases near `:326` to `:331`), `app/messaging/src/tests/prop_optout_props.rs`, `tests/integration/tests/outbox_sender.rs:291` to `:314` (TD-QH-05: a suppressed number now gets nothing but the confirmation), `tests/integration/tests/optout_flow.rs:264` and `tests/integration/tests/help_start.rs:173` to `:209` (TD-CON-07). `tests/mutation/mutants.toml:204`'s \"HELP after STOP not answered\" mutant is replaced by the reverse one, which lets `HELP_TEMPLATE` through on a listed number again (its `find` and `replace` written against the code this task leaves), and the new tests kill it; the twin answers HELP after STOP too: `twin/app.py:302`, `:409`, `twin/twin.py:835`, `:1068` and `docs/twin-warnings.md:174` change so an opted-out number's HELP gets no text and `help_not_answered` no longer flags that case (the twin gate passes); `app/messaging/src/keywords.rs:5`'s doc comment says the HELP reply is never let through to an opted-out number; `docs/architecture.md:199` (`reply_to_help` queues the CON-018 reply \"from any number including an opted-out one\") is corrected to say the reply is never sent to an opted-out number. Consent: Opus worker and review. Update `app/messaging/NOTES.md` and `docs/decisions.md`. Plan change D-5334 (outside review job 10): TD-QH-05 now reads \"a suppressed number gets nothing but the CON-009 confirmation within 5 minutes (D-5280)\", and the `///` line above that case in `outbox_sender.rs` says the same; the shared `app/messaging/NOTES.md` (line 143, \"(never 8) ... a suppressed number gets only HELP\") is reworded to match (a crate's `NOTES.md` is shared, `runner/verify.py`). Plan change D-5338 (round 1 of the job 10 review): in `outbox_sender.rs` the `//!` header (line 8), the `///` line above the case, the test's name (`td_qh_05_a_suppressed_number_gets_only_help`) and its assert message (\"only the HELP reply reached the carrier\") change to say the confirmation only, and nothing else in the case; the matching `///` comment in `app/messaging/src/optout.rs` is not this task's file (T645 and T738 own it next) and T738 corrects it after this task.",
+   "goal": "Plan change D-5280 (Fable's decision for Casey under D-305; CON-013 and CON-018 as reworded; D-131 narrowed). With Twilio's Advanced Opt-Out an opted-out number gets no HELP reply and a send to it fails with 21610, so `rules::may_send_to` (`app/messaging/src/rules.rs:553` to `:567`) no longer lets `HELP_TEMPLATE` through to a listed number: only the opt-out confirmation within 5 minutes passes; a HELP text from a listed number queues nothing that could be sent (the sender expires it). The DONE tests that pin the HELP reply to an opted-out number change by logged spec change (D-5280) only in those assertions: `app/messaging/src/tests/optout_words.rs` (`may_send_to` cases near `:326` to `:331`), `app/messaging/src/tests/prop_optout_props.rs`, `tests/integration/tests/outbox_sender.rs:291` to `:314` (TD-QH-05: a suppressed number now gets nothing but the confirmation), `tests/integration/tests/optout_flow.rs:264` and `tests/integration/tests/help_start.rs:173` to `:209` (TD-CON-07). `tests/mutation/mutants.toml:204`'s \"HELP after STOP not answered\" mutant is replaced by the reverse one, which lets `HELP_TEMPLATE` through on a listed number again (its `find` and `replace` written against the code this task leaves), and the new tests kill it; the twin answers HELP after STOP too: `twin/app.py:302`, `:409`, `twin/twin.py:835`, `:1068` and `docs/twin-warnings.md:174` change so an opted-out number's HELP gets no text and `help_not_answered` no longer flags that case (the twin gate passes); `app/messaging/src/keywords.rs:5`'s doc comment says the HELP reply is never let through to an opted-out number; `docs/architecture.md:199` (`reply_to_help` queues the CON-018 reply \"from any number including an opted-out one\") is corrected to say the reply is never sent to an opted-out number. Consent: Opus worker and review. Update `app/messaging/NOTES.md` and `docs/decisions.md`. Plan change D-5334 (outside review job 10): TD-QH-05 now reads \"a suppressed number gets nothing but the CON-009 confirmation within 5 minutes (D-5280)\", and the `///` line above that case in `outbox_sender.rs` says the same; the shared `app/messaging/NOTES.md` (line 143, \"(never 8) ... a suppressed number gets only HELP\") is reworded to match (a crate's `NOTES.md` is shared, `runner/verify.py`). Plan change D-5338 (round 1 of the job 10 review): in `outbox_sender.rs` the `//!` header (line 8), the `///` line above the case, the test's name (`td_qh_05_a_suppressed_number_gets_only_help`) and its assert message (\"only the HELP reply reached the carrier\") change to say the confirmation only, and nothing else in the case; the matching `///` comment in `app/messaging/src/optout.rs` is not this task's file (T645 and T738 own it next) and T738 corrects it after this task. Plan change D-5364 (outside review job 12, finding F9; CON-008, CON-010; TD-CON-04 gains cases): `fold` (`app/messaging/src/rules.rs`, near `:586` to `:603`) turns an invisible formatting character into a space, so a sole word still matches (`sole_word` drops spaces) but a phrase breaks: \"stop tex\\u{200B}ting me\" or a soft hyphen inside \"texting\" is no opt-out. `fold` now drops U+00AD, U+200B to U+200F, U+2060 to U+2064 and U+FEFF (`continue`, as it does for apostrophes) and its `///` says so. New cases in `app/messaging/src/tests/optout_words.rs`: \"stop tex\\u{200B}ting me\", \"please stop tex\\u{00AD}ting me\", \"\\u{FEFF}STOP\", \"st\\u{200D}op\" and a listed Spanish phrase with a zero-width space inside a word are opt-outs; \"can stop\\u{200B} by at 3\" is not. No existing case changes.",
    "type": "harness",
    "model": "claude-opus-5-5",
    "review_areas": [
@@ -52318,14 +52320,15 @@
     "D-5280",
     "D-131",
     "D-5334",
-    "D-5338"
+    "D-5338",
+    "D-5364"
    ],
    "budget": {
     "files": 11,
-    "lines": 300,
+    "lines": 340,
     "context_pct": 48
    },
-   "acceptance": "`cargo test -p askhava-messaging` and the owned integration tests pass with only the HELP-to-opted-out assertions changed; a HELP from a listed number sends nothing; the confirmation within 5 minutes still goes.",
+   "acceptance": "`cargo test -p askhava-messaging` and the owned integration tests pass with only the HELP-to-opted-out assertions changed; a HELP from a listed number sends nothing; the confirmation within 5 minutes still goes. TD-CON-04's invisible-character cases (D-5364) pass.",
    "branch": "claude/task/T803-no-help-after-stop",
    "prompt": "kit/prompts/T803.md"
   },
@@ -52962,6 +52965,70 @@
    "branch": "claude/task/T816-data-request-link-email",
    "prompt": "kit/prompts/T816.md",
    "acceptance": "`tests/integration/tests/data_request_link_email.rs` passes against PostgreSQL with the email stand-in; only a confirmed update address gets the link; every T730 update-email test passes unchanged; no address is logged."
+  },
+  {
+   "id": "T817",
+   "slug": "consent-send-races",
+   "title": "messaging: a text re-checks the opt-out list after its claim, and a START lifts only a listing no later STOP renewed",
+   "goal": "Plan change D-5362 and D-5363 (outside review job 12, findings F3 and F6, verified by Opus on `main` 907c2ff0a; Fable's decisions for Casey under D-305; CON-013, CON-015, CON-022, CON-035; both change D-4418's rules). (1) Send race (F3, D-5362): `optout::send_checked` (`app/messaging/src/optout.rs`) reads the suppression list once, with no lock, then `service::send_at` (`app/messaging/src/service.rs`) claims the row (`models::claim`) and calls the carrier with no transaction open (R11), so an opt-out that commits between the check and the claim still gets a text. `send_at` now re-reads `models::listing` after a successful `models::claim` and immediately before the carrier call, using the number's digests that `send_checked` hands on beside the number and `now` it already passes (D-3149; one more element of `send_at`'s caller-supplied tuple); if the number is listed and `rules::may_send_to(listing, &claim.template_id, &claim.subject, now)` refuses, it calls `models::release` (the row is `queued` again; the attempt the claim counted stays) and returns `OutboxError::Suppressed` with no carrier call, which `outbox_sender::after_error` already turns into an expired row (CON-013). `send_checked` keeps its pre-claim check; `service::send` (called only by tests, never list-checked) passes no digests and behaves as now. The re-read takes no lock: R11 forbids holding one across the carrier call, so a send whose re-read precedes the opt-out's commit counts as already sent. (2) START race (F6, D-5363): after T738 (D-5228) the START arm of `on_inbound_text` (`Classified::Resubscribe if listed`) takes `lock_number` before it lifts the listing. After that lock it now reads this START's `messaging.inbox.received_at` by `msg.inbox_id` (no inbox row, as for the fake IDs DONE unit tests use: `now`) and lifts only if no `messaging.optout_event` with `action = 'opt_out'` under any of the number's digests (`index_version`, `digest`) has `effective_at` later than it. Otherwise it logs no `start` event, lifts nothing and answers as a listed text without START does (`Outcome::Suppressed`, with the CON-017 alert when flagged), so `inbound_retry`'s rerun of a START that failed before a later STOP (`app/server/src/inbound_text.rs`, `rerun`) cannot lift the newer listing, and a STOP received after a START wins whichever transaction takes the lock first. A START received after every opt-out lifts as now (CON-015). Correct the `///` on both functions and the D-4418 paragraph in `docs/architecture.md` section 8 (\"START takes no lock\" becomes: START takes the lock and lifts only a listing no later opt-out renewed, D-5228, D-5363). (3) Tests in the new `tests/integration/tests/consent_races.rs`, fake numbers only, against PostgreSQL (TD-CON-39, TD-CON-40, TD-CON-41): to hold the claim between the pre-check and the opt-out, another connection holds the outbox row `FOR UPDATE` and the wait is seen by a bounded poll of `pg_locks`, as `tests/integration/tests/optout_number_lock.rs` does for the number lock. Every existing send, outbox-sender, HELP/START, opt-out and re-key test passes unchanged (TD-CON-20, TD-QH-05, TD-CON-37, TD-CON-38); a DONE test that fails because of this change is a plan gap to report, never a test to edit. Consent: Opus worker and review. Update `app/messaging/NOTES.md`, `docs/architecture.md` and `docs/decisions.md`. After T730 (the last queued owner of `service.rs`) and T738 (the last queued owner of `optout.rs`, which adds the START lock this builds on).",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "messaging",
+   "deps": [
+    "T730",
+    "T738"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "compliance",
+    "privacy",
+    "security"
+   ],
+   "owns": [
+    "app/messaging/src/service.rs",
+    "app/messaging/src/optout.rs",
+    "tests/integration/tests/consent_races.rs"
+   ],
+   "reads": [
+    "docs/architecture.md",
+    "docs/code-docs.md",
+    "docs/spec/consent.md",
+    "tests/integration/tests/optout_number_lock.rs"
+   ],
+   "requirements": [
+    "CON-013",
+    "CON-015",
+    "CON-022",
+    "CON-035"
+   ],
+   "tests": [
+    "TD-CON-39",
+    "TD-CON-40",
+    "TD-CON-41"
+   ],
+   "decisions": [
+    "D-4418",
+    "D-5228",
+    "D-5362",
+    "D-5363"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 3,
+    "lines": 380,
+    "context_pct": 28
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T817-consent-send-races",
+   "prompt": "kit/prompts/T817.md",
+   "acceptance": "TD-CON-39 to TD-CON-41 pass against PostgreSQL; no carrier call reaches a number listed before the claim; every existing send, outbox-sender, opt-out, HELP/START and re-key test passes unchanged."
   }
  ]
 }
