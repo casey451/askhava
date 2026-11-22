@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T16:24:29Z by runner 03fa94c2c0f1 (actions).
+Updated 2026-11-22T16:40:25Z by runner aa259b528837 (actions).
 
 **Building: T675 in progress since 15:41Z; 615 of 770 done; week 62% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-22T16:24:29Z by runner 03fa94c2c0f1 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T675 claimed 15:41Z, lease until 18:41Z; lane 7: T590 claimed 14:41Z, lease until 17:41Z
 - **Week:** 62% used, 66.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:24Z, 0 min before this update
+- **Last run:** 16:24Z, 15 min before this update
 - **Keeper:** last ran 16:24Z, next wake 16:44Z
 
 ## Needs attention
@@ -91,7 +91,6 @@ Updated 2026-11-22T16:24:29Z by runner 03fa94c2c0f1 (actions).
 | T608 | site and portals: the home page and the quote page in full V | check_failed | 1 | 2 h 46 min | 18:46Z |  |
 | T615 | site and server: a styled 404 page for unknown paths, the fa | done | 4 | 68 min | 18:19Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T787 | intake: crate guide trimmed to 5,500 bytes, the detail moved | done | 1 | 68 min | 16:45Z |  |
-| T786 | server: crate guide trimmed to 5,500 bytes, the detail moved | done | 1 | 34 min | 16:33Z |  |
 
 ### Plan and harness merges on main
 - 12:43Z Plan: pre-flight goal fixes for T666, T778, T820, T524, T825, T831 (D-5526) (#1354)
