@@ -20,9 +20,11 @@
 //! [`press_photo`] checks and writes in one transaction under `models::lock_homeowner`, and
 //! [`confirmed_photos`] names only photos stored on the job asked about (D-5084).
 
-use askhava_core::api::brand;
+use askhava_catalog::api::photo_asks;
+use askhava_core::api::{IdSecret, brand};
+use askhava_jobs::api::job_number;
 use askhava_messaging::api::Language;
-use askhava_privacy::api::{PhotoTaken, delete_photo, job_photos};
+use askhava_privacy::api::{PhotoTaken, delete_photo, issue_link, job_photos, photo_path};
 use askhava_quotes::api::{HomeownerAnswer, LeftOff};
 use jiff::Timestamp;
 use secrecy::SecretString;
@@ -405,4 +407,441 @@ async fn pressed(
         }
         HomeownerAnswer::NotConfirmed => Ok(PhotoPress::Nothing),
     }
+}
+
+/// The step marker of a picture text (T675, D-4360, D-5251): one row per homeowner text with
+/// media, its choice the text's inbox ID in its 32-digit form, written by the inbound route. At
+/// steps 9 and 10 such a text never moves the order on; the picture task's photo step does.
+pub const PHOTO_PENDING: &str = "photo_pending";
+/// Step 9's marker: the photo ask was sent (INT-044).
+const PHOTO_ASKED: &str = "photo_ask";
+/// Step 9 is over: "no", any other text, or the photo step of a picture task that ended.
+const PHOTO_DONE: &str = "photo_done";
+/// Step 10's look-pictures question was sent (INT-045).
+const LOOK_ASKED: &str = "look_ask";
+/// Step 10's look pictures are over.
+const LOOK_DONE: &str = "look_done";
+/// Step 10's describe-the-look question was sent (INT-045, before the AI may read photos).
+const DESCRIBE_ASKED: &str = "look_describe";
+/// Step 10's describe-the-look question was answered or skipped.
+const DESCRIBED: &str = "look_described";
+/// A photo was shown for her YES or REMOVE; the choice is the photo's 32-digit ID.
+const PHOTO_SHOWN: &str = "photo_shown";
+/// Her answer to a shown photo came (YES, REMOVE or anything else); the choice is the photo's ID.
+const PHOTO_ANSWERED: &str = "photo_answered";
+/// The one re-ask was sent (INT-044).
+const PHOTO_REASKED: &str = "photo_reask";
+/// Every step-9 and step-10 marker [`stage`] reads.
+const STAGE_MARKERS: [&str; 6] = [
+    PHOTO_ASKED,
+    PHOTO_DONE,
+    LOOK_ASKED,
+    LOOK_DONE,
+    DESCRIBE_ASKED,
+    DESCRIBED,
+];
+/// Her upload page's path, from T674's route text (`portals::api::PHOTO_UPLOAD_ROUTE`; `intake`
+/// may not depend on `portals`), with `{job}` the job number (INT-044).
+pub const UPLOAD_PATH: &str = "/h/requests/{job}/photos";
+/// The words that skip the describe-the-look question (INT-045).
+const SKIP_WORDS: [&str; 2] = ["skip", "omitir"];
+
+/// The request's first job a photo step works on.
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct PhotoJob<'a> {
+    /// The job's trade code, which is also its question set's ID.
+    pub trade: &'a str,
+    /// The job.
+    pub job: Uuid,
+    /// "Spanish conversations" (TXT-039).
+    pub spanish_on: bool,
+}
+
+/// Where steps 9 and 10 stand, read from the markers.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Stage {
+    Ask,
+    Photos,
+    AskLook,
+    Look,
+    AskDescribe,
+    Describe,
+    Done,
+}
+
+/// INT-044, INT-045: the stage of `conversation`; step 10 only in a `design: true` category.
+async fn stage(
+    db: &mut PgConnection,
+    conversation: Uuid,
+    trade: &str,
+) -> Result<Stage, IntakeError> {
+    let markers: Vec<String> = STAGE_MARKERS.iter().map(|m| (*m).to_owned()).collect();
+    let have = sqlx::query_scalar!(
+        r#"SELECT ARRAY(SELECT DISTINCT question_id FROM intake.intake_answer
+             WHERE conversation_id = $1 AND question_id = ANY($2)) AS "have!: Vec<String>""#,
+        conversation,
+        &markers
+    )
+    .fetch_one(db)
+    .await
+    .map_err(|_| IntakeError::Database)?;
+    let has = |m: &str| have.iter().any(|h| h == m);
+    let design = crate::design::is_design_category(trade);
+    Ok(match () {
+        () if !has(PHOTO_ASKED) => Stage::Ask,
+        () if !has(PHOTO_DONE) => Stage::Photos,
+        () if !design => Stage::Done,
+        () if !has(LOOK_ASKED) => Stage::AskLook,
+        () if !has(LOOK_DONE) => Stage::Look,
+        () if !has(DESCRIBE_ASKED) => Stage::AskDescribe,
+        () if !has(DESCRIBED) => Stage::Describe,
+        () => Stage::Done,
+    })
+}
+
+/// The choices of `conversation`'s `question` rows.
+async fn choices(
+    db: &mut PgConnection,
+    conversation: Uuid,
+    question: &str,
+) -> Result<Vec<String>, IntakeError> {
+    sqlx::query_scalar!(
+        r#"SELECT choice AS "choice!" FROM intake.intake_answer
+           WHERE conversation_id = $1 AND question_id = $2 AND choice IS NOT NULL
+           ORDER BY answered_at, id"#,
+        conversation,
+        question
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| IntakeError::Database)
+}
+
+/// The job's photos, oldest first, split into the one shown and waiting for her answer and those
+/// never shown; a confirmed photo (a [`PHOTO_OK`] row, also from her upload page) is neither.
+async fn photo_queue(
+    db: &mut PgConnection,
+    conversation: Uuid,
+    job: Uuid,
+) -> Result<(Option<Uuid>, Vec<Uuid>), IntakeError> {
+    let mut photos = job_photos(db, job)
+        .await
+        .map_err(|_| IntakeError::Database)?;
+    photos.reverse();
+    let shown = choices(db, conversation, PHOTO_SHOWN).await?;
+    let answered = choices(db, conversation, PHOTO_ANSWERED).await?;
+    let ok = choices(db, conversation, PHOTO_OK).await?;
+    let code = |id: &Uuid| id.simple().to_string();
+    photos.retain(|id| !ok.contains(&code(id)));
+    let waiting = photos
+        .iter()
+        .find(|id| shown.contains(&code(id)) && !answered.contains(&code(id)))
+        .copied();
+    photos.retain(|id| !shown.contains(&code(id)));
+    Ok((waiting, photos))
+}
+
+/// INT-044, CARD-013, PRIV-014: shows `photo` as it will appear on the card through a
+/// short-lived `/photos/<token>` link (`privacy::api::issue_link`) and marks it shown.
+async fn show(
+    db: &mut PgConnection,
+    secret: &SecretString,
+    request: (&TextIn<'_>, Uuid),
+    (photo, spanish_on): (Uuid, bool),
+) -> Result<Vec<Queued>, IntakeError> {
+    let at = request.0.received_at;
+    let key = IdSecret::new(1, secret.clone()).map_err(|_| IntakeError::Job)?;
+    let token = issue_link(db, &key, photo, at)
+        .await
+        .map_err(|_| IntakeError::Database)?;
+    let link = format!("https://{}{}", brand().domain(), photo_path(&token));
+    let check = PhotoText::Check { link: &link };
+    let Some(queued) = photo_text(db, secret, request, check, spanish_on).await? else {
+        return Ok(Vec::new());
+    };
+    let code = photo.simple().to_string();
+    models::insert_plain(db, request.1, (PHOTO_SHOWN, &code), at).await?;
+    Ok(vec![queued])
+}
+
+/// INT-044, PRIV-015: step 9's photo ask: the job type's asks (`catalog::api::photo_asks` of its
+/// set, none in Spanish, TXT-039), her upload page link and PRIV-015's line; then the first
+/// photo stored before step 9 is shown. Nothing, and no marker, while a 911 text waits for SAFE.
+async fn ask_photos(
+    db: &mut PgConnection,
+    secret: &SecretString,
+    request: (&TextIn<'_>, Uuid),
+    about: PhotoJob<'_>,
+) -> Result<Vec<Queued>, IntakeError> {
+    let language = crate::service::request_language(db, request.1).await?;
+    let spanish = about.spanish_on && language == Language::Es;
+    let asks = if spanish {
+        Vec::new()
+    } else {
+        photo_asks(about.trade)
+    };
+    let number = job_number(db, about.job)
+        .await
+        .map_err(|_| IntakeError::Job)?;
+    let path = UPLOAD_PATH.replace("{job}", &number.to_string());
+    let link = format!("https://{}{path}", brand().domain());
+    let ask = PhotoText::Ask {
+        asks: &asks,
+        link: &link,
+    };
+    let Some(queued) = photo_text(db, secret, request, ask, about.spanish_on).await? else {
+        return Ok(Vec::new());
+    };
+    let at = request.0.received_at;
+    models::insert_plain(db, request.1, (PHOTO_ASKED, ""), at).await?;
+    let mut texts = vec![queued];
+    if let (_, unshown) = photo_queue(db, request.1, about.job).await?
+        && let Some(first) = unshown.first()
+    {
+        texts.extend(show(db, secret, request, (*first, about.spanish_on)).await?);
+    }
+    Ok(texts)
+}
+
+/// INT-045: one step-10 question (`text`) and its marker; nothing during a SAFE hold.
+async fn ask_marked(
+    db: &mut PgConnection,
+    secret: &SecretString,
+    request: (&TextIn<'_>, Uuid),
+    (text, marker): (PhotoText<'_>, &str),
+    spanish_on: bool,
+) -> Result<Vec<Queued>, IntakeError> {
+    let Some(queued) = photo_text(db, secret, request, text, spanish_on).await? else {
+        return Ok(Vec::new());
+    };
+    let at = request.0.received_at;
+    models::insert_plain(db, request.1, (marker, ""), at).await?;
+    Ok(vec![queued])
+}
+
+/// INT-043 to INT-045, INT-027: asks what the stage needs next: the photo ask (step 9), the
+/// look-pictures or describe-the-look question (step 10, design categories only; no concept
+/// image, D-5251), else step 11 (`order::ask_last_question`, once per request).
+async fn advance(
+    db: &mut PgConnection,
+    secret: &SecretString,
+    request: (&TextIn<'_>, Uuid),
+    about: PhotoJob<'_>,
+) -> Result<Vec<Queued>, IntakeError> {
+    let on = about.spanish_on;
+    match stage(db, request.1, about.trade).await? {
+        Stage::Ask => ask_photos(db, secret, request, about).await,
+        Stage::AskLook => {
+            ask_marked(db, secret, request, (PhotoText::LookAsk, LOOK_ASKED), on).await
+        }
+        Stage::AskDescribe => {
+            let text = (PhotoText::DescribeLook, DESCRIBE_ASKED);
+            ask_marked(db, secret, request, text, on).await
+        }
+        Stage::Done => Ok(crate::order::ask_last_question(db, secret, request, on)
+            .await?
+            .into_iter()
+            .collect()),
+        Stage::Photos | Stage::Look | Stage::Describe => Ok(Vec::new()),
+    }
+}
+
+/// Ends the open photo stage (step 9's photos or step 10's look pictures) and asks what follows.
+async fn end_photos(
+    db: &mut PgConnection,
+    secret: &SecretString,
+    request: (&TextIn<'_>, Uuid),
+    (about, now): (PhotoJob<'_>, Stage),
+) -> Result<Vec<Queued>, IntakeError> {
+    let marker = if now == Stage::Look {
+        LOOK_DONE
+    } else {
+        PHOTO_DONE
+    };
+    models::insert_plain(db, request.1, (marker, ""), request.0.received_at).await?;
+    advance(db, secret, request, about).await
+}
+
+/// Whether her text `msg` is a picture text of `conversation` ([`PHOTO_PENDING`]).
+async fn is_picture_text(
+    db: &mut PgConnection,
+    (msg, conversation): (&TextIn<'_>, Uuid),
+) -> Result<bool, IntakeError> {
+    let code = msg.inbox_id.simple().to_string();
+    Ok(choices(db, conversation, PHOTO_PENDING)
+        .await?
+        .contains(&code))
+}
+
+/// INT-043 to INT-045, INT-027, CARD-013 (T675, D-4360): steps 9 and 10 once the trade questions
+/// are done, called by the order walker; `hear` when her text answers the open question. A picture
+/// text never moves them on (the picture task's [`picture_step`] does). Her reply to a shown photo
+/// is YES (a [`PHOTO_OK`] row, as T674's "Send this photo"), REMOVE or QUITAR
+/// (`privacy::api::delete_photo`), or anything else (left off, INT-044); the next photo not yet
+/// shown is shown, else "no" or any other text ends the stage. Step 10's look described is kept
+/// as her words (`order::keep_words`, PRIV-008) unless she replies SKIP or OMITIR.
+///
+/// # Errors
+///
+/// The step functions' errors or [`IntakeError::Database`].
+pub(crate) async fn photo_steps(
+    db: &mut PgConnection,
+    secret: &SecretString,
+    request: (&TextIn<'_>, Uuid),
+    about: PhotoJob<'_>,
+    hear: bool,
+) -> Result<Vec<Queued>, IntakeError> {
+    let now = stage(db, request.1, about.trade).await?;
+    let open = matches!(now, Stage::Photos | Stage::Look | Stage::Describe);
+    if !hear || !open {
+        return advance(db, secret, request, about).await;
+    }
+    if is_picture_text(db, request).await? {
+        return Ok(Vec::new());
+    }
+    let (msg, conversation) = request;
+    if now == Stage::Describe {
+        let word = crate::rules::fold(msg.inbound.words.trim());
+        if !SKIP_WORDS.contains(&word.as_str()) {
+            let words = (msg.inbound.words, msg.received_at);
+            crate::order::keep_words(db, (conversation, about.job), msg.inbox_id, words).await?;
+        }
+        models::insert_plain(db, conversation, (DESCRIBED, ""), msg.received_at).await?;
+        return advance(db, secret, request, about).await;
+    }
+    let (waiting, unshown) = photo_queue(db, conversation, about.job).await?;
+    if let Some(photo) = waiting {
+        answer_shown(db, (conversation, about.job), photo, msg).await?;
+    }
+    if let Some(next) = unshown.first() {
+        return show(db, secret, request, (*next, about.spanish_on)).await;
+    }
+    end_photos(db, secret, request, (about, now)).await
+}
+
+/// INT-044, CARD-013: her reply `msg` to shown `photo`: YES records [`PHOTO_OK`], REMOVE deletes
+/// it (`privacy::api::delete_photo`, of this job only), anything else leaves it off the card.
+async fn answer_shown(
+    db: &mut PgConnection,
+    (conversation, job): (Uuid, Uuid),
+    photo: Uuid,
+    msg: &TextIn<'_>,
+) -> Result<(), IntakeError> {
+    let (code, at) = (photo.simple().to_string(), msg.received_at);
+    models::insert_plain(db, conversation, (PHOTO_ANSWERED, &code), at).await?;
+    match photo_answer(msg.inbound.words) {
+        HomeownerAnswer::Confirmed => {
+            models::insert_plain(db, conversation, (PHOTO_OK, &code), at).await
+        }
+        HomeownerAnswer::Removed => delete_photo(db, (job, photo), at)
+            .await
+            .map(|_| ())
+            .map_err(|_| IntakeError::Database),
+        HomeownerAnswer::NotConfirmed => Ok(()),
+    }
+}
+
+/// INT-044, PRIV-025 (T675, D-4360): the picture task's photo step for `request`, with what
+/// became of each of its media (`steps`, from [`after_photo`]). Only while step 9's photos or
+/// step 10's look pictures are open; before step 9 a stored photo waits for it. With a photo
+/// shown and waiting, nothing; else the first photo not yet shown is shown, else the one re-ask
+/// (once per request), else the HEIC reply, else (left off, refused or failed) the stage ends and
+/// the order moves on, so step 9 never waits on a task that has ended.
+///
+/// # Errors
+///
+/// The step functions' errors or [`IntakeError::Database`].
+pub(crate) async fn picture_step(
+    db: &mut PgConnection,
+    secret: &SecretString,
+    request: (&TextIn<'_>, Uuid),
+    about: PhotoJob<'_>,
+    steps: &[PhotoStep],
+) -> Result<Vec<Queued>, IntakeError> {
+    let now = stage(db, request.1, about.trade).await?;
+    if !matches!(now, Stage::Photos | Stage::Look) {
+        return Ok(Vec::new());
+    }
+    let (waiting, unshown) = photo_queue(db, request.1, about.job).await?;
+    if waiting.is_some() {
+        return Ok(Vec::new());
+    }
+    if let Some(next) = unshown.first() {
+        return show(db, secret, request, (*next, about.spanish_on)).await;
+    }
+    let on = about.spanish_on;
+    if steps.contains(&PhotoStep::ReAsk) {
+        let marked = (PhotoText::ReAsk, PHOTO_REASKED);
+        return ask_marked(db, secret, request, marked, on).await;
+    }
+    if steps.contains(&PhotoStep::Heic) {
+        return Ok(photo_text(db, secret, request, PhotoText::Heic, on)
+            .await?
+            .into_iter()
+            .collect());
+    }
+    end_photos(db, secret, request, (about, now)).await
+}
+
+/// Whether request `conversation` already sent its one re-ask (INT-044).
+///
+/// # Errors
+///
+/// [`IntakeError::Database`].
+pub(crate) async fn reasked(
+    db: &mut PgConnection,
+    conversation: Uuid,
+) -> Result<bool, IntakeError> {
+    Ok(models::latest_answer_time(db, conversation, PHOTO_REASKED)
+        .await?
+        .is_some())
+}
+
+/// INT-044 (T675, D-4360, D-5251): marks homeowner `contact`'s text `inbox` a picture text of her
+/// open request (one [`PHOTO_PENDING`] row, its choice the inbox ID's 32-digit form, at `at`), in
+/// the inbound route's transaction, so the order never moves on at steps 9 and 10 for its body.
+/// The route calls it before `receive_raw_reply` and again after it (for a request the text
+/// opened); a second call writes nothing. Returns whether the text is marked.
+///
+/// # Errors
+///
+/// [`IntakeError::Database`].
+pub async fn note_picture_text(
+    db: &mut PgConnection,
+    contact: Uuid,
+    inbox: Uuid,
+    at: Timestamp,
+) -> Result<bool, IntakeError> {
+    let Some(conversation) = models::open_conversation(db, contact).await? else {
+        return Ok(false);
+    };
+    let code = inbox.simple().to_string();
+    if !choices(db, conversation, PHOTO_PENDING)
+        .await?
+        .contains(&code)
+    {
+        models::insert_plain(db, conversation, (PHOTO_PENDING, &code), at).await?;
+    }
+    Ok(true)
+}
+
+/// The request picture text `inbox` was marked in and the marker's time (the text's), if any.
+///
+/// # Errors
+///
+/// [`IntakeError::Database`].
+pub(crate) async fn picture_request(
+    db: &mut PgConnection,
+    inbox: Uuid,
+) -> Result<Option<(Uuid, Timestamp)>, IntakeError> {
+    let row = sqlx::query!(
+        "SELECT conversation_id, answered_at FROM intake.intake_answer \
+         WHERE question_id = $1 AND choice = $2 ORDER BY answered_at, id LIMIT 1",
+        PHOTO_PENDING,
+        inbox.simple().to_string()
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| IntakeError::Database)?;
+    Ok(row.map(|r| (r.conversation_id, r.answered_at.to_jiff())))
 }

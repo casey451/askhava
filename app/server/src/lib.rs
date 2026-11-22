@@ -1282,12 +1282,11 @@ where
     if let Some(senders) = senders {
         register_notice_senders(&mut registry, senders, (Arc::clone(&clock), confirm));
     }
-    let photo_clock = Arc::clone(&clock);
     askhava_privacy::api::register_photo_deletes(
         &mut registry,
         Arc::clone(&photos),
         id_secret.clone(),
-        photo_clock,
+        Arc::clone(&clock),
     );
     register_alert_emails(&mut registry, settings, &clock, pairs.clone())?;
     register_business_handlers(&mut registry, settings, &clock, pairs.clone())?;
@@ -1322,21 +1321,24 @@ where
     askhava_recovery::api::register_restore(&mut registry, settings, Arc::clone(&clock))
         .map_err(io::Error::other)?;
     register_whos_calling(&mut registry, settings, (&id_secret, &clock), pairs.clone())?;
-    register_twilio_handlers(&mut registry, settings, (id_secret, clock, confirm), pairs)?;
+    let twilio = (id_secret, clock, confirm, photos);
+    register_twilio_handlers(&mut registry, settings, twilio, pairs)?;
     Ok(registry)
 }
 
 /// The handlers that need the Twilio settings: the inbound retry, the safety call, the two owner
-/// calls (T484), the outbox
+/// calls (T484), `intake`'s picture texts over the photo storage `photos` (T675,
+/// [`register_picture_text`]), the outbox
 /// sender (with both vault keys), the body deletes and the masked-line handlers. With no Twilio
 /// settings (dev and CI only) none is registered.
 fn register_twilio_handlers(
     registry: &mut Registry,
     settings: &Settings,
-    (id_secret, clock, confirm): (
+    (id_secret, clock, confirm, photos): (
         SecretString,
         Arc<dyn Clock>,
         askhava_picks::api::ConfirmSettings,
+        Arc<LocalStorage>,
     ),
     pairs: Vec<(String, String)>,
 ) -> io::Result<()> {
@@ -1358,6 +1360,8 @@ fn register_twilio_handlers(
     register_owner_calls(registry, settings, (&twilio, &id_secret), pairs.clone())?;
     let (sms, _, _) = twilio_clients(&twilio).map_err(io::Error::other)?;
     let sms = with_status_url(settings, sms);
+    let pictures = (photos, &id_secret, &clock);
+    register_picture_text(registry, (&twilio, sms.clone()), pictures, pairs.clone())?;
     let vaults = (
         vault_from(settings, pairs.clone())?,
         vault_from(settings, pairs.clone())?,
@@ -1375,6 +1379,96 @@ fn register_twilio_handlers(
     askhava_messaging::api::register_body_deletes(registry, sms, id_secret, scan_clock);
     let masked = (twilio.pool().clone(), clock);
     register_masked(registry, settings, masked, pairs)?;
+    Ok(())
+}
+
+/// INT-044, SEC-041, PRIV-014 (T675, D-5337, D-5459): the production
+/// `intake::api::PictureSource`: the photo storage, the seal from `VAULT_KEY` (as
+/// `homeowner_portal::PhotoParts::new` builds it), the ID secret, T794's
+/// `picture_media::TwilioPictureMedia` and the configured Twilio account SID, from which alone
+/// each media URL is rebuilt.
+struct ServerPictures {
+    storage: Arc<LocalStorage>,
+    seal: askhava_privacy::api::PhotoSeal,
+    id_secret: SecretString,
+    media: picture_media::TwilioPictureMedia,
+    account: String,
+}
+
+impl ServerPictures {
+    /// The Twilio media URL of `tail`, exactly `{message SID}/{media SID}` (D-5459); `None` for
+    /// any other shape.
+    fn url(&self, tail: &str) -> Option<String> {
+        let (message, media) = tail.split_once('/')?;
+        let sid = |s: &str| s.len() == 34 && s.bytes().all(|b| b.is_ascii_alphanumeric());
+        (sid(message) && sid(media)).then(|| {
+            format!(
+                "https://api.twilio.com/2010-04-01/Accounts/{}/Messages/{message}/Media/{media}",
+                self.account
+            )
+        })
+    }
+}
+
+impl askhava_intake::api::PictureSource for ServerPictures {
+    /// SEC-041: `privacy::api::take_picture_text` over the rebuilt URL; a tail of another shape is
+    /// refused with nothing fetched or deleted.
+    async fn take(
+        &self,
+        db: &mut sqlx::PgConnection,
+        job: Uuid,
+        url: &str,
+        (min_side, at): (u32, jiff::Timestamp),
+    ) -> Result<askhava_privacy::api::PictureText, askhava_privacy::api::PhotoError> {
+        use askhava_privacy::api::{MediaState, PhotoTaken, PictureText, take_picture_text};
+        let Some(url) = self.url(url) else {
+            let (taken, media) = (PhotoTaken::Refused, MediaState::NothingToDelete);
+            return Ok(PictureText { taken, media });
+        };
+        let keys = (&self.seal, &*self.storage, &self.id_secret);
+        take_picture_text(db, keys, &self.media, (job, &url), (min_side, at)).await
+    }
+
+    /// INT-044, SEC-018: deletes the media at Twilio, keyed on its URL.
+    async fn discard(&self, url: &str) -> bool {
+        use askhava_privacy::api::PictureTextMedia;
+        let Some(url) = self.url(url) else {
+            return false;
+        };
+        let key = askhava_adapters::api::IdempotencyKey::derive(
+            &self.id_secret,
+            "picture_text.media_discard",
+            &[&url],
+        );
+        self.media.delete_media(&key, &url).await.is_ok()
+    }
+}
+
+/// INT-044 (T675, D-5251, D-5337): `intake.picture_text` over [`ServerPictures`]; with no
+/// `VAULT_KEY` (dev and CI only) nothing is registered.
+fn register_picture_text(
+    registry: &mut Registry,
+    (twilio, sms): (&TwilioConfig, TwilioSms),
+    (photos, id_secret, clock): (Arc<LocalStorage>, &SecretString, &Arc<dyn Clock>),
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
+    let Some(key) = vault_keys(pairs).0 else {
+        return Ok(());
+    };
+    let seal = askhava_privacy::api::PhotoSeal::new(&key).map_err(io::Error::other)?;
+    let source = ServerPictures {
+        storage: photos,
+        seal,
+        id_secret: id_secret.clone(),
+        media: picture_media::TwilioPictureMedia::new(sms),
+        account: twilio.account_sid().to_owned(),
+    };
+    let secret = id_secret.clone();
+    let keys = Arc::new(askhava_intake::api::PictureKeys { source, secret });
+    let at = Arc::clone(clock);
+    registry.register(askhava_intake::api::PICTURE_TEXT_KIND, move |pool, task| {
+        askhava_intake::api::run_picture_text_at(pool, Arc::clone(&keys), task, at.now())
+    });
     Ok(())
 }
 
