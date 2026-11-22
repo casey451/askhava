@@ -8,7 +8,8 @@
 //! `intake.consent_sent` audit row), then, in the same transaction and under the same homeowner
 //! lock, hands the request to `order_dispatch::ask_open_again` (T691, D-4360), so her open
 //! question follows as its own text (CON-031): the ZIP question, "How soon?" or the shown card
-//! again; nothing while a 911 text waits for SAFE (INT-005) or when nothing is open. The re-ask
+//! again; nothing while a 911 text waits for SAFE (INT-005) or when nothing is open, and nothing
+//! before the ZIP question was first asked (the INT-037 alarm path, D-5149). The re-ask
 //! queues the question's text only and writes no asked or answer row, so it is not counted as an
 //! ask (the ZIP step's one re-ask is kept) and no row carries the START inbox ID. A resent START
 //! delivery queues nothing more. With no open request it does nothing, and the caller's usual
@@ -83,10 +84,35 @@ pub async fn restart_after_start(
         models::record_consent(&mut tx, ids, &version, msg.received_at).await?;
         let actor = Actor::Homeowner(row.homeowner_id);
         audit_action(&mut tx, actor, "intake.consent_sent", id).await?;
-        ask_open_again(&mut tx, secret, (msg, id), settings).await?;
+        if zip_reached(&mut tx, id).await? {
+            ask_open_again(&mut tx, secret, (msg, id), settings).await?;
+        }
     }
     tx.commit().await.map_err(|_| IntakeError::Database)?;
     Ok(Some(outbox))
+}
+
+/// INT-043, INT-037, TD-INT-51, D-5149: whether `conversation` has had its ZIP question asked
+/// (a `zip` asked row) or already holds a property, so `ask_open_again` re-asks a question it
+/// has already put to her. False on the smoke or CO alarm path before its INT-037 answer: there
+/// the re-ask would put the first ZIP question (and its `zip` row under the START inbox ID) ahead
+/// of the INT-037 answer, so START keeps the consent text alone.
+///
+/// # Errors
+///
+/// [`IntakeError::Database`].
+async fn zip_reached(tx: &mut PgConnection, conversation: Uuid) -> Result<bool, IntakeError> {
+    sqlx::query_scalar!(
+        r#"SELECT EXISTS (SELECT 1 FROM intake.intake_answer a
+             WHERE a.conversation_id = $1 AND a.question_id = 'zip')
+           OR EXISTS (SELECT 1 FROM intake.conversation c JOIN intake.property q
+             ON q.homeowner_id = c.homeowner_id AND q.created_at >= c.opened_at
+             WHERE c.id = $1) AS "reached!""#,
+        conversation
+    )
+    .fetch_one(tx)
+    .await
+    .map_err(|_| IntakeError::Database)
 }
 
 /// A sole-word CANCEL or CANCELAR from a number an earlier opt-out already listed (CON-029,

@@ -17,9 +17,10 @@ use askhava_businesses::api::{
 };
 use askhava_catalog::api::load_embedded;
 use askhava_core::api::{Environment, ManualClock};
-use askhava_intake::api::rules::{CONSENT_TEMPLATE, Settings as IntakeSettings};
+use askhava_intake::api::rules::{CONSENT_TEMPLATE, Inbound, Settings as IntakeSettings};
 use askhava_intake::api::{
-    CARD_SHOWN_TEMPLATE, HOW_SOON_TEMPLATE, ZIP_AGAIN_TEMPLATE, ZIP_QUESTION_TEMPLATE,
+    CARD_SHOWN_TEMPLATE, HOW_SOON_TEMPLATE, TextIn, ZIP_AGAIN_TEMPLATE, ZIP_QUESTION_TEMPLATE,
+    restart_after_start,
 };
 use askhava_licensing::api::import_city_list;
 use askhava_ops::api::Actor;
@@ -248,9 +249,60 @@ async fn td_int_51_start_while_waiting_for_safe_gets_only_the_consent_text(pool:
     assert_eq!(rows(&pool, Some(start)).await, 0, "START is no answer");
 }
 
+/// Replays START inbox row `start` into `restart_after_start` directly, as a delivery that got
+/// past the MessageSid check twice would (the served route stops a resend there).
+async fn replay(pool: &PgPool, start: Uuid) {
+    let contact = "SELECT contact_id FROM messaging.inbox_contact WHERE inbox_id = $1";
+    let contact: Uuid = sqlx::query_scalar(contact)
+        .bind(start)
+        .fetch_one(pool)
+        .await
+        .expect("contact");
+    let inbound = Inbound {
+        words: "START",
+        opt_out: false,
+        help: false,
+        emergency: false,
+        ai_spanish: None,
+    };
+    let msg = TextIn {
+        inbox_id: start,
+        contact,
+        inbound,
+        received_at: at(51),
+    };
+    let secret = SecretString::from(ID_SECRET.to_owned());
+    let mut db = pool.acquire().await.expect("connection");
+    let settings = IntakeSettings::default();
+    let again = restart_after_start(&mut db, &secret, &msg, settings).await;
+    assert!(again.expect("replay").is_some(), "her request is open");
+}
+
+/// TD-INT-51 (CON-031, D-5148): a replayed START row finds its consent text queued, so the ZIP
+/// question is not queued a second time.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_int_51_a_replayed_start_row_queues_no_second_question(pool: PgPool) {
+    let (start, _) = stop_start(&pool, &[DOOR]).await;
+    replay(&pool, start).await;
+    let mut want = vec![CONSENT_TEMPLATE, ZIP_QUESTION_TEMPLATE];
+    want.sort_unstable();
+    assert_eq!(queued(&pool, start).await, want, "nothing queued twice");
+}
+
+/// TD-INT-51 (INT-037, INT-043, CON-001, D-5149): on the alarm path, before the INT-037 answer
+/// and with no ZIP question yet, START gets only the consent text and writes no row.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_int_51_start_on_the_alarm_path_gets_only_the_consent_text(pool: PgPool) {
+    let (start, before) = stop_start(&pool, &["my smoke alarm is beeping"]).await;
+    assert_eq!(queued(&pool, start).await, [CONSENT_TEMPLATE]);
+    assert_eq!(rows(&pool, Some(start)).await, 0, "START is no answer");
+    assert_eq!(rows(&pool, None).await, before, "no ZIP row is written");
+}
+
 /// TD-INT-51 (INT-041, INT-043, CON-031): a request whose card is shown gets the consent text
 /// (under the START inbox row) then the card text again (under the card's own subject); the
-/// resent START shows nothing more.
+/// resent START and a replay of its row past the MessageSid check (the consent row already
+/// queued, D-5149) show nothing more.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_int_51_start_with_a_shown_card_shows_it_again(pool: PgPool) {
     business(&pool).await;
@@ -258,6 +310,7 @@ async fn td_int_51_start_with_a_shown_card_shows_it_again(pool: PgPool) {
     let last = ["it sticks at the top", "Testa 12 Sample Ave"];
     let all: Vec<&str> = words.into_iter().chain(last).collect();
     let (start, _) = stop_start(&pool, &all).await;
+    replay(&pool, start).await;
     assert_eq!(queued(&pool, start).await, [CONSENT_TEMPLATE]);
     let shown = "SELECT count(*) FROM messaging.outbox WHERE template_id = $1";
     let shown: i64 = sqlx::query_scalar(shown)
