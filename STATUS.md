@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T14:07:10Z by runner a116b287be6d (actions).
+Updated 2026-11-22T14:26:03Z by runner 726be6527c21 (actions).
 
-**Building: T397 in progress since 13:11Z; 611 of 770 done; week 59% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T397 in progress since 13:11Z; 612 of 770 done; week 59% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 611 of 770 build tasks (owner gates not counted)
+- **Tasks done:** 612 of 770 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T397 claimed 13:11Z, lease until 16:11Z
 - **Week:** 59% used, 76.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:06Z, 0 min before this update
+- **Last run:** 14:07Z, 18 min before this update
 - **Keeper:** last ran 14:06Z, next wake 14:26Z
 
 ## Needs attention
@@ -54,7 +54,7 @@ assert 'skipped: not finished in 540 s (Ci runs Ally)' in '\n== Ally: pages chan
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T833 | pre-hand-in gate test (harness): the Ally-step test holds th | MERGE_PENDING | 1 | 65 min | 14:05Z |  |
+| T833 | pre-hand-in gate test (harness): the Ally-step test holds th | done | 1 | 65 min | 14:05Z |  |
 | T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | MERGE_PENDING | 4 | 33 min | 13:54Z | Reviewer after findings round still FINDINGS at 4f79a8b8c4195e68ccfba3a25eaab6d612560536: / 1. docs/runbook.md:139-142 a |
 | T830 | server: `server rotate-keys` and `server retire-index-versio | done | 1 | 61 min | 12:46Z |  |
 | T729 | portals and privacy: the quote page offers updates by email  | check_failed | 2 | 49 min | 12:26Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
@@ -131,7 +131,7 @@ assert 'skipped: not finished in 540 s (Ci runs Ally)' in '\n== Ally: pages chan
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 611 of 770
+**Tasks merged (throughput only):** 612 of 770
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -167,7 +167,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 254 of 342 done
+- stage 5: 255 of 342 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
