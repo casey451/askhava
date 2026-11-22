@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T10:53:27Z by runner dd295e06660e (actions).
+Updated 2026-11-22T11:01:44Z by runner a8795aa52939 (manual).
 
 **Building: T829 in progress since 10:24Z; 607 of 767 done; week 57% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-22T10:53:27Z by runner dd295e06660e (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T829 claimed 10:24Z, lease until 13:24Z; lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 5: T589 claimed 10:36Z, lease until 13:36Z; lane 7: T805 claimed 10:42Z, lease until 13:42Z
 - **Week:** 57% used, 76.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:53Z, 0 min before this update
+- **Last run:** 11:01Z, 0 min before this update
 - **Keeper:** last ran 10:53Z, next wake 11:13Z
 
 ## Needs attention
@@ -95,7 +95,6 @@ At 1280x900 the /request chat start screen textarea box spans y=784..914, partly
 | T707 | server: an emergency pick's address re-release waits while s | QUEUED | 2 | 77 min | 12:31Z |  |
 | T581 | messaging, intake and server: a failed text's call-back is d | done | 1 | 76 min | 12:03Z |  |
 | T615 | site and server: a styled 404 page for unknown paths, the fa | BLOCKED | 3 | 2 h 11 min | 11:53Z |  |
-| T754 | portals and payments: a $0 Confirm after a PaymentIntent was | check_failed | 3 | 70 min | 10:58Z |  |
 
 ### Plan and harness merges on main
 - none
