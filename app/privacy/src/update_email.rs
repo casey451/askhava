@@ -298,3 +298,28 @@ async fn record(
         .map(drop)
         .map_err(|_| VaultError::Audit)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::UpdateAddress;
+
+    /// TXT-018: a name, one `@` and a dotted domain with no empty part; anything else is refused.
+    #[test]
+    fn only_a_shaped_address_parses() {
+        for typed in ["pat@mail.test", "  Pat@Mail.Test ", "Pat <pat@mail.test>"] {
+            assert!(UpdateAddress::parse(typed).is_some(), "{typed}");
+        }
+        for typed in [
+            "pat@",
+            "@mail.test",
+            "pat@one@mail.test",
+            "pat@mail",
+            "pat@mail..test",
+            "pat@.test",
+            "pat mail.test",
+            "pat@mail.test, sam@mail.test",
+        ] {
+            assert!(UpdateAddress::parse(typed).is_none(), "{typed}");
+        }
+    }
+}

@@ -26,8 +26,9 @@ use askhava_portals::api::{
     UPDATES_CONFIRM_ROUTE, UPDATES_ROUTE, quote_page_routes, quote_page_routes_with,
 };
 use askhava_privacy::api::{
-    Field, Purpose, Reader, UpdateStatus, Vault, mark_update_bounced, purge_contact, read_contact,
-    read_update_address, update_status,
+    Field, Purpose, Reader, UpdateAddress, UpdateStatus, Vault, VaultError, confirm_update_address,
+    mark_update_bounced, purge_contact, read_contact, read_update_address, store_update_address,
+    update_status,
 };
 use axum::Router;
 use axum::body::{Body, to_bytes};
@@ -414,4 +415,31 @@ async fn td_txt_38_a_keyless_router_asks_and_stores_nothing(pool: PgPool) {
     choose(&pool, &b, &token, "choice=email&email=pat%40mail.test").await;
     assert!(state(&pool, contact).await.is_none());
     assert_eq!(channel(&pool, contact).await, UpdateChannel::Text);
+}
+
+/// TD-TXT-38 (TXT-018, PRIV-001): an unknown contact gets no address row; a contact with no
+/// address reads `None`; an unknown row confirms and bounces nothing.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_txt_38_nothing_is_stored_or_changed_for_what_is_not_there(pool: PgPool) {
+    let (_, contact) = open_job(&pool, 0x7298).await;
+    let address = UpdateAddress::parse("pat@mail.test").expect("well formed");
+    let stranger = Uuid::from_u128(0x7299);
+    let mut db = pool.acquire().await.expect("db");
+    let stored = store_update_address(&mut db, &vault(), stranger, &address, at(1)).await;
+    assert_eq!(stored.err(), Some(VaultError::NotFound));
+    assert!(state(&pool, stranger).await.is_none());
+    let read = read_update_address(&mut db, &vault(), contact)
+        .await
+        .expect("read");
+    assert!(read.is_none(), "she gave no address");
+    assert!(
+        !confirm_update_address(&mut db, stranger, at(2))
+            .await
+            .expect("confirm")
+    );
+    assert!(
+        !mark_update_bounced(&mut db, stranger, at(3))
+            .await
+            .expect("bounce")
+    );
 }
