@@ -244,10 +244,10 @@ pub enum AddressScreen<'a> {
     Code(AddressKind, &'a str, bool),
     /// The code was taken.
     Confirmed(AddressKind),
-    /// The backup address was removed.
-    Removed,
-    /// Too many codes or tries from here or for this person (SEC-014).
-    Limited,
+    /// The backup address is gone; `true` when a verified one went and the main address was told.
+    Removed(bool),
+    /// Too many codes (`true`) or code tries (`false`) from here or for this person (SEC-014).
+    Limited(bool),
 }
 
 #[derive(Template)]
@@ -313,11 +313,15 @@ fn said_line(screen: AddressScreen<'_>) -> &'static str {
         AddressScreen::Confirmed(AddressKind::Backup) => {
             "Done. Your backup address now gets your notices too. We emailed your notice address to let you know."
         }
-        AddressScreen::Removed => {
+        AddressScreen::Removed(true) => {
             "We've removed your backup address and emailed your notice address to let you know."
         }
-        AddressScreen::Limited => {
-            "You've asked for too many codes. Try again in an hour. Your notices still go to your current address."
+        AddressScreen::Removed(false) => "You don't have a backup address now.",
+        AddressScreen::Limited(true) => {
+            "You've asked for too many codes. Try again later. Your notices still go to your current address."
+        }
+        AddressScreen::Limited(false) => {
+            "You've tried too many codes. Try again later. Your notices still go to your current address."
         }
         _ => "",
     }

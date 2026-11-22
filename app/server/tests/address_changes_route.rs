@@ -10,7 +10,8 @@
 //! `portals`' emailed-link sign-in, as `business_portal_route.rs` does. Every value is fake.
 
 use std::net::SocketAddr;
-use std::sync::{Arc, Mutex, PoisonError};
+use std::sync::{Arc, Mutex, OnceLock, PoisonError};
+use std::thread::ThreadId;
 
 use askhava_adapters::api::{AdapterError, Email, EmailAdapter, IdempotencyKey};
 use askhava_businesses::api::{
@@ -329,14 +330,32 @@ async fn queued(pool: &PgPool, kind: &str) -> Vec<serde_json::Value> {
         .collect()
 }
 
-/// The security events logged while it is the default subscriber, by kind (SEC-048).
+/// The security events every test thread logs, by thread and kind (SEC-048). The binary's one
+/// global subscriber, not a thread's default: a callsite another test's thread registers first
+/// would otherwise stay cached as "never" for this thread (as in `home_request_box.rs`).
 #[derive(Clone, Default)]
-struct Events(Arc<Mutex<Vec<String>>>);
+struct Events(Arc<Mutex<Vec<(ThreadId, String)>>>);
 
 impl Events {
+    /// The global subscriber, installed on first use.
+    fn captured() -> Self {
+        static EVENTS: OnceLock<Events> = OnceLock::new();
+        EVENTS
+            .get_or_init(|| {
+                let events = Events::default();
+                tracing::subscriber::set_global_default(events.clone())
+                    .expect("one global subscriber");
+                events
+            })
+            .clone()
+    }
+
+    /// How many `kind` events this test's thread has logged; each `sqlx::test` runs on its own
+    /// thread, so a test running alongside never adds to it.
     fn count(&self, kind: &str) -> usize {
+        let me = std::thread::current().id();
         let all = self.0.lock().unwrap_or_else(PoisonError::into_inner);
-        all.iter().filter(|k| *k == kind).count()
+        all.iter().filter(|(t, k)| *t == me && k == kind).count()
     }
 }
 
@@ -381,7 +400,7 @@ impl tracing::Subscriber for Events {
             self.0
                 .lock()
                 .unwrap_or_else(PoisonError::into_inner)
-                .push(kind);
+                .push((std::thread::current().id(), kind));
         }
     }
 
@@ -559,6 +578,11 @@ async fn td_sec_71_a_backup_change_and_its_removal(pool: PgPool) {
     assert!(r.status == 200 && r.text.contains("removed your backup address"));
     assert_eq!(card_notices(&pool, x.by.business).await, [x.mailbox]);
     assert_eq!(queued(&pool, BACKUP_CHANGED_KIND).await.len(), 1);
+    let r = post_own(&app, "/b/addresses/remove-backup", &x, &remove).await;
+    assert!(
+        r.status == 200 && r.text.contains("You don&#39;t have a backup address now."),
+        "no backup left: nothing said removed or emailed"
+    );
 }
 
 /// TD-SEC-71 (SEC-019, SEC-048): a member of another business, or another member for one who is
@@ -572,8 +596,8 @@ async fn td_sec_71_another_business_member_is_not_found(pool: PgPool) {
     let app = app(&pool, &mail);
     stepped_up(&pool, x.by, SignedDuration::from_mins(1)).await;
     stepped_up(&pool, helper.by, SignedDuration::from_mins(1)).await;
-    let events = Events::default();
-    let _guard = tracing::subscriber::set_default(events.clone());
+    let events = Events::captured();
+    let before = events.count("authz_denied");
     let cases = [
         (
             &x,
@@ -602,7 +626,7 @@ async fn td_sec_71_another_business_member_is_not_found(pool: PgPool) {
             r.status == 404 && r.text.contains("We can't find that page"),
             "{path}"
         );
-        assert_eq!(events.count("authz_denied"), n + 1, "{path}");
+        assert_eq!(events.count("authz_denied"), before + n + 1, "{path}");
     }
     assert!(mail.sent().is_empty(), "nothing emailed");
     assert_eq!(card_notices(&pool, y.by.business).await, [y.mailbox]);
@@ -628,15 +652,15 @@ async fn td_sec_71_cross_site_and_wrong_token_posts_are_refused_and_logged(pool:
         ),
     ];
     let audit = actions(&pool).await;
-    let events = Events::default();
-    let _guard = tracing::subscriber::set_default(events.clone());
+    let events = Events::captured();
+    let before = events.count("csrf_rejected");
     let mut n = 0;
     for site in [Site::Cross, Site::OtherOrigin, Site::WrongToken] {
         for (path, body) in &forms {
             let r = answer(&app, request(path, &x.jar, (site, body))).await;
             n += 1;
             assert_eq!(r.status, 403, "{site:?} {path}");
-            assert_eq!(events.count("csrf_rejected"), n, "{site:?} {path}");
+            assert_eq!(events.count("csrf_rejected"), before + n, "{site:?} {path}");
         }
     }
     assert!(mail.sent().is_empty(), "nothing emailed");

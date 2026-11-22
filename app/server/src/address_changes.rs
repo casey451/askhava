@@ -217,7 +217,7 @@ fn shown(jar: &CookieJar, who: &BusinessPrincipal, screen: AddressScreen<'_>) ->
         return failed("csrf token");
     };
     let status = match screen {
-        AddressScreen::Limited => StatusCode::TOO_MANY_REQUESTS,
+        AddressScreen::Limited(_) => StatusCode::TOO_MANY_REQUESTS,
         _ => StatusCode::OK,
     };
     match address_change_page(screen, who.member(), &csrf) {
@@ -393,7 +393,7 @@ async fn request(
         (ADDRESS_SENDS_PER_MEMBER, Key::Record(who.member())),
     ];
     if !admitted(&state, &checks).await {
-        return shown(&jar, &who, AddressScreen::Limited);
+        return shown(&jar, &who, AddressScreen::Limited(true));
     }
     let Ok(mut db) = state.pool.acquire().await else {
         return failed("connection");
@@ -441,7 +441,7 @@ async fn confirm(
         (ADDRESS_TRIES_PER_MEMBER, Key::Record(who.member())),
     ];
     if !admitted(&state, &checks).await {
-        return shown(&jar, &who, AddressScreen::Limited);
+        return shown(&jar, &who, AddressScreen::Limited(false));
     }
     let Ok(mut db) = state.pool.acquire().await else {
         return failed("connection");
@@ -479,7 +479,7 @@ async fn remove(
         return failed("connection");
     };
     match remove_backup_address(&mut db, &who, member, state.clock.now()).await {
-        Ok(_) => shown(&jar, &who, AddressScreen::Removed),
+        Ok(told) => shown(&jar, &who, AddressScreen::Removed(told)),
         Err(error) => {
             let site = (&state, &jar, ip);
             let at = (BACKUP_REMOVE_ROUTE, &who);
