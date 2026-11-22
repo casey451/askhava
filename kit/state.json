@@ -107425,7 +107425,14 @@
    "attempts": 0,
    "slug": "close-which-day",
    "type": "build",
-   "stage": "5"
+   "stage": "5",
+   "plan_gap": {
+    "at": "2026-11-22T03:17:02Z",
+    "problems": [
+     "T824: prompt kit/prompts/T824.md is missing; run scripts/gen_prompts.py",
+     "T824: branch claude/task/T824-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet"
+    ]
+   }
   },
   {
    "id": "T825",
@@ -114778,7 +114785,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T03:17:15Z",
+ "updated_at": "2026-11-22T03:17:20Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
