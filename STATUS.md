@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T04:17:28Z by runner 073da52ea9e9 (actions).
+Updated 2026-11-22T04:18:37Z by runner 8b785095872d (actions).
 
-**Building: T675 in progress since 03:54Z; 600 of 767 done; week 50% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T118 in progress since 04:18Z; 600 of 767 done; week 50% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 600 of 767 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T675 claimed 03:54Z, lease until 06:54Z; lane 3: T729 claimed 04:16Z, lease until 07:16Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z
-- **Week:** 50% used, 90.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:17Z, 0 min before this update
+- **Lane:** lane 1: T118 claimed 04:18Z, lease until 07:18Z; lane 2: T675 claimed 03:54Z, lease until 06:54Z; lane 3: T729 claimed 04:16Z, lease until 07:16Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z
+- **Week:** 50% used, 88.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 04:17Z, 1 min before this update
 - **Keeper:** last ran 04:17Z, next wake 04:37Z
 
 ## Needs attention
@@ -27,7 +27,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T810 (since 2026-11-22T03:05:53Z, no attempt used; a plan change fixes it): outside ownership: app/server/tests/confirm_press_code.rs. TD-SEC-82 requires a direct portals.shared_inbox insert (never set_inbox_shared/record_step_up, D-5319), but TD-SEC-10 (tests/integration/tests/architecture_migrations.rs check_app :737, check_sql_forms :660-677, schema_refs :295) scans every .rs under app/: macro form fails "`portals.` names another module's schema", plain sqlx::query fails "SQL outside the query macros: `query`". Reviewer confirmed. Smallest plan change: T810 owns tests/integration/tests/confirm_press_code.rs (not scanned; confirm_terms.rs:238 does the plain insert there); update docs/test-design.md:939 and kit/tasks.json TD-SEC-82 paths and run command to `cargo test -p askhava-integration --test confirm_press_code`.
 - PLAN GAP T828 (since 2026-11-22T04:16:39Z, no attempt used; a plan change fixes it): T828: prompt kit/prompts/T828.md is missing; run scripts/gen_prompts.py; T828: branch claude/task/T828-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
-- Strict plan check red: 29 problem(s) on tasks still to run (+477 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 30 problem(s) on tasks still to run (+478 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -97,7 +97,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 600 of 767
+**Tasks merged (throughput only):** 600 of 763
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -125,7 +125,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-22T04:15:56Z (week)): week: 103.4M used, 90.6M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T01:25:29Z.
+- Pacing (session_reading 2026-11-22T04:17:07Z (week)): week: 105.3M used, 88.7M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T01:27:01Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -140,7 +140,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T118 (lease until 2026-11-22T07:18:11Z)
 - lane 2: T675 (lease until 2026-11-22T06:54:25Z)
 - lane 3: T729 (lease until 2026-11-22T07:16:39Z)
 - lane 5: T542 (lease until 2026-11-22T04:45:48Z)
