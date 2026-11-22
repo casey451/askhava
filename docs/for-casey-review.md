@@ -7,6 +7,7 @@ These are decisions Claude made on its own and logged so the build never waits (
 Plan corrections only; nothing needs you.
 
 - **Delete or copy by email link, for a number that opted out of texts.** The plan said to build it with no new database table, which could not work. It now gets one small table (IDs and times only). Opening the link in the email only shows a page with a button; nothing happens until the person presses it, so a mail scanner that opens links can't delete anyone's data (T804). The rule for update emails now says they may carry this one link, never a code.
+- **Round 1 (D-5339), your call through Fable:** the email link is only for a request made after signing in to the portal, and only to an update email she has confirmed; the help form answers exactly as before, so it never shows whether a number opted out. A new small task (T816) writes the email itself.
 - **The photo step in texting (T675)** is about 1,300 lines, not 800. Its first try stopped partly over size; the size is now a guide, not a stop.
 - Smaller: a test description still said an opted-out number gets the HELP reply (it gets nothing but the opt-out confirmation, D-5280); T716 keeps a shared card type unchanged; T778 gets a realistic size; T518's prompt no longer claims a payments file it gave up.
 
