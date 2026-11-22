@@ -3706,6 +3706,11 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 - **Now.** Once D-5189 (the switch off Fable, PR #1277) merges, no task runs on Fable and the bug cannot bite. T615 gets one more attempt after its flaky test is fixed (T789) and that switch has merged.
 - **Before Fable is switched back on**, a harness task must make that check accept usage-limit and rate-limit text.
 
+## T608: the arrow on "Get quotes" is not drawn (D-5209)
+
+- **What.** The polish plan (D-4246) allows one arrow inside the home page's "Get quotes" button. A check in the site's own tests compares that button's code letter for letter, so adding the arrow would break it; the button stays as it was, without the arrow.
+- **Your call.** If you want the arrow, a small task changes that one test line and adds it. Nothing else on the page depends on it.
+
 ## No AI-off launch; termite report moves to pest control (D-5214 to D-5216, November 21)
 
 - **Your words:** "No AI-off launch" and "Move to pest control".
