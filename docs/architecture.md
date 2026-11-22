@@ -747,6 +747,8 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | POST | /b/team/role | portals | yes |
 | POST | /b/team/remove | portals | yes |
 | POST | /b/billing/limit | portals | yes |
+| GET | /help/my-data/{object}/{token} | portals | T804 |
+| POST | /help/my-data/{object}/{token} | portals | T804 |
 | GET | /b/addresses | portals | yes |
 | POST | /b/addresses/request | portals | yes |
 | POST | /b/addresses/confirm | portals | yes |

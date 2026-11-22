@@ -4,7 +4,8 @@
 //! closes that job, "CLOSE ALL" every open job; a cancel-intent message closes the only open job
 //! and says so, or, with several open jobs, asks "Close which?" with each number and an ALL
 //! option and closes nothing until answered (a lone open number or ALL then answers it; any other
-//! lone number is left to the normal intake); a message that only mentions cancelling gets the
+//! lone number is left to the normal intake; any other reply that closes nothing drops the
+//! question, so it never answers days later, D-5161); a message that only mentions cancelling gets the
 //! JOB-023 how-to-close line, naming the open number it holds, and closes nothing. An
 //! opt-out (bare "cancel" included) changes no job (D-005): `messaging` already answered it.
 //! [`close_from_page`] is the quote page's close button. A close moves the job to Cancelled from
@@ -24,7 +25,9 @@ use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
 use crate::models::{self, IntakeError};
-use crate::rules::{CloseReading, CloseTarget, close_reading, language_from_code, number_named};
+use crate::rules::{
+    CloseReading, CloseTarget, close_reading, fold, language_from_code, number_named,
+};
 use crate::service::{Queued, TextIn};
 
 /// "Close which?" with the open request numbers and the ALL option (JOB-021).
@@ -87,11 +90,7 @@ pub async fn answer_close(
     let reading = close_reading(msg.inbound.words, asked);
     let closing = decide(reading, &numbers, number_named(msg.inbound.words, &numbers));
     let at = msg.received_at;
-    let mark = match &closing {
-        Closing::Closed(_) if waiting.as_deref() == Some("asked") => Some("answered"),
-        Closing::Which(_) => Some("asked"),
-        _ => None,
-    };
+    let mark = which_mark(&closing, waiting.as_deref(), msg.inbound.words);
     if let Some(choice) = mark {
         models::insert_plain(&mut tx, conversation, (WHICH_QUESTION, choice), at).await?;
     }
@@ -105,6 +104,30 @@ pub async fn answer_close(
     let text = say(&mut tx, secret, (msg, conversation), &closing, &open).await?;
     tx.commit().await.map_err(|_| IntakeError::Database)?;
     Ok((closing, text))
+}
+
+/// The `close_which` mark this reply writes, if any (JOB-021, D-1203, D-4777, D-5161): `asked`
+/// when "Close which?" goes; while it waits, `answered` on a close, and `dropped` on a reply that
+/// closes nothing and is not a lone number, so a later lone number or ALL is no longer read as
+/// its answer. A lone number that is not open (a ZIP) leaves the question waiting.
+fn which_mark(closing: &Closing, waiting: Option<&str>, words: &str) -> Option<&'static str> {
+    let asked = waiting == Some("asked");
+    match closing {
+        Closing::Which(_) => Some("asked"),
+        Closing::Closed(_) if asked => Some("answered"),
+        Closing::Nothing | Closing::Explained(_) if asked && !lone_number(words) => Some("dropped"),
+        _ => None,
+    }
+}
+
+/// Whether `words` is one number alone, the lone-number arm of `rules::close_target` (D-5161).
+fn lone_number(words: &str) -> bool {
+    let folded = fold(words);
+    let tokens: Vec<&str> = folded.split(' ').filter(|t| !t.is_empty()).collect();
+    match tokens.as_slice() {
+        [t] => t.bytes().all(|b| b.is_ascii_digit()) && t.parse::<i64>().is_ok(),
+        _ => false,
+    }
 }
 
 /// The rule (JOB-019 to JOB-023, D-1201, D-1203): a number not open gets the how-to line with

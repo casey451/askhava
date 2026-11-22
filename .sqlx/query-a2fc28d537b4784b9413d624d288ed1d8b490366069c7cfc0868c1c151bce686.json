@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM intake.intake_answer a\n             WHERE a.conversation_id = $1 AND a.question_id = 'zip')\n           OR EXISTS (SELECT 1 FROM intake.conversation c JOIN intake.property q\n             ON q.homeowner_id = c.homeowner_id AND q.created_at >= c.opened_at\n             WHERE c.id = $1) AS \"reached!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "reached!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "a2fc28d537b4784b9413d624d288ed1d8b490366069c7cfc0868c1c151bce686"
+}
