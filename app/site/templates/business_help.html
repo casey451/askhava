@@ -1,13 +1,14 @@
 {% extends "site_layout.html" %}
 {#- The business help page, /business/help (T202; WEB-020, D-249): the safety tip for people working
-    alone in customers' homes, and where to ask for help (Get help: portals::api::GET_HELP_ROUTE). -#}
+    alone in customers' homes, and where to ask for help (Get help: portals::api::GET_HELP_ROUTE). The safety list sits on a paper card as ruled rows (T610,
+    D-4246). -#}
 {% block title %}Help for businesses{% endblock %}
 {% block content %}
 {%- let brand = askhava_core::api::brand().display_name() %}
 <h1>Help for businesses</h1>
 <h2>Safety when you work alone</h2>
 <p>If you go into customers' homes alone, these habits can keep you safer.</p>
-<ul>
+<ul class="card fact-list">
 <li>Before you go, tell someone where the job is and when you expect to finish.</li>
 <li>Keep your phone charged and on you.</li>
 <li>If something feels wrong, you can leave. You don't have to finish the job.</li>
