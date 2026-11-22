@@ -1,0 +1,50 @@
+{% extends "business_layout.html" %}
+{#- The notice and backup address page (T542; BIZ-040, BIZ-043, SEC-038, A11Y-030; D-3890). Each
+    change asks for a fresh step-up first; the code goes to the new address only, and the old
+    address keeps every notice until the code is entered. A problem puts "Error: " in the title and
+    a focused summary first, linked to the field, the typed value kept. Every form carries the CSRF
+    token and the member; forms post with novalidate. No homeowner detail. -#}
+{% block title %}{% if !problem.is_empty() || wrong %}Error: {% endif %}Change where your job notices go{% endblock %}
+{% block main %}{% if !problem.is_empty() %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>There is a problem</h2>
+<p><a href="#{{ kind }}-address">{{ problem }}</a></p>
+</div>
+{% else if wrong %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>That code didn't work</h2>
+<p><a href="#code">Type the last code we emailed you</a></p>
+</div>
+{% endif %}<link rel="stylesheet" href="/static/portals/forms.css">
+<h1>Change where your job notices go</h1>
+{% if !said.is_empty() %}<p id="address-said" role="status">{{ said }}</p>
+{% endif %}{% if code_form %}<p>We emailed a 6-digit code to {{ typed }}. Your notices keep going to your current address until you type the code here.</p>
+<form method="post" action="{{ crate::address_changes::ADDRESS_CONFIRM_ROUTE }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="member" value="{{ member }}">
+<input type="hidden" name="kind" value="{{ kind }}">
+<input type="hidden" name="address" value="{{ typed }}">
+<p><label for="code">Code</label></p>
+<p id="code-hint">The code works for 30 minutes.</p>
+{% if wrong %}<p id="code-error">Error: That code is wrong or too old. Type the last code we emailed you.</p>
+{% endif %}<p><input type="text" id="code" name="code" inputmode="numeric" autocomplete="one-time-code" spellcheck="false" aria-describedby="code-hint{% if wrong %} code-error{% endif %}"{% if wrong %} aria-invalid="true"{% endif %}></p>
+<p><button type="submit">Check code</button></p>
+</form>
+{% else %}<p>First we send a code to your phone to make sure it's you. No texts from us? We'll email it to your sign-in address. Then we email a second code to the new address. Your notices keep going to your current address until you type that second code. We also email your current address to tell you about the change.</p>
+{% for (code, label, hint) in forms %}<h2>{{ label }}</h2>
+<form method="post" action="{{ crate::address_changes::ADDRESS_REQUEST_ROUTE }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="member" value="{{ member }}">
+<input type="hidden" name="kind" value="{{ code }}">
+<p><label for="{{ code }}-address">{{ label }}</label></p>
+<p id="{{ code }}-hint">{{ hint }}</p>
+{% if self.on(code) %}<p id="{{ code }}-error">Error: {{ problem }}</p>
+{% endif %}<p><input type="email" id="{{ code }}-address" name="address" autocomplete="email" spellcheck="false" value="{{ self.kept(code) }}" aria-describedby="{{ code }}-hint{% if self.on(code) %} {{ code }}-error{% endif %}"{% if self.on(code) %} aria-invalid="true"{% endif %}></p>
+<p><button type="submit">Email a code to this address</button></p>
+</form>
+{% endfor %}<h2>Remove your backup email</h2>
+<form method="post" action="{{ crate::address_changes::BACKUP_REMOVE_ROUTE }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="member" value="{{ member }}">
+<p><button type="submit">Remove backup email</button></p>
+</form>
+{% endif %}<p><a href="/b/notices">Back to your notice settings</a></p>
+{% endblock %}
