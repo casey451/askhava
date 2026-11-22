@@ -107,6 +107,7 @@ fn business_parts(
         std::env::vars(),
     )?;
     let step_up = askhava_server::business_step_up::step_up_codes(settings, std::env::vars())?;
+    let address = askhava_server::address_changes::address_parts(settings, std::env::vars())?;
     let confirm = askhava_server::confirm_settings(settings, std::env::vars())?;
     let chat = askhava_server::chat_codes::chat_keys(settings, std::env::vars())?;
     let homeowner = askhava_server::homeowner_portal::homeowner_verify(settings, std::env::vars())?;
@@ -118,6 +119,7 @@ fn business_parts(
         .with_sign_in(signin)
         .with_sign_up(signup)
         .with_step_up(step_up)
+        .with_address_changes(address)
         .with_homeowner_verify(homeowner)
         .with_photos(photos)
         .with_vault(vault)

@@ -32,6 +32,7 @@
 //! Other crates reach it only through [`api`].
 
 mod action_links;
+mod address_changes;
 pub mod api;
 mod business_actions;
 mod business_auth;
@@ -61,6 +62,7 @@ mod not_a_fit;
 mod notice_log;
 mod notice_settings;
 mod owner_auth;
+mod owner_complaint;
 mod owner_help;
 mod owner_portal;
 mod owner_release;
