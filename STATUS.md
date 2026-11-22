@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T17:08:49Z by runner bd27a597ce3e (actions).
+Updated 2026-11-22T17:21:19Z by runner d806a387d9f1 (manual).
 
 **Idle since 17:03Z; 616 of 770 done; week 63% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-22T17:08:49Z by runner bd27a597ce3e (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 17:03Z (no task in progress)
 - **Week:** 63% used, 66.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:08Z, 0 min before this update
+- **Last run:** 17:08Z, 12 min before this update
 - **Keeper:** last ran 17:08Z, next wake 17:28Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-22T17:08:49Z by runner bd27a597ce3e (actions).
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T730 (since 2026-11-22T17:07:39Z, no attempt used; a plan change fixes it): T730: dependency T729 is DONE but its owned file migrations/0215_update_email_choice.sql is not on main; T730: dependency T729 is DONE but its owned file app/privacy/src/update_email.rs is not on main; T730: dependency T729 is DONE but its owned file app/portals/src/update_channel.rs is not on main; T730: dependency T729 is DONE but its owned file tests/integration/tests/update_email_choice.rs is not on main; T730: dependency T729 is DONE but its owned file tests/a11y/update_email.spec.ts is not on main
 - PLAN GAP T757 (since 2026-11-22T17:07:39Z, no attempt used; a plan change fixes it): T757: dependency T729 is DONE but its owned file migrations/0215_update_email_choice.sql is not on main; T757: dependency T729 is DONE but its owned file app/privacy/src/update_email.rs is not on main; T757: dependency T729 is DONE but its owned file app/portals/src/update_channel.rs is not on main; T757: dependency T729 is DONE but its owned file tests/integration/tests/update_email_choice.rs is not on main; T757: dependency T729 is DONE but its owned file tests/a11y/update_email.spec.ts is not on main
-- Strict plan check red: 30 problem(s) on tasks still to run (+495 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 31 problem(s) on tasks still to run (+496 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
