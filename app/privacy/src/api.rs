@@ -69,6 +69,11 @@ pub use crate::scrub::{
 };
 pub use crate::scrub_context::read_inbound_for;
 pub use crate::suppression_phone::phone_for_index;
+pub use crate::update_email::{
+    UPDATE_EMAIL_BOUNCED, UPDATE_EMAIL_CONFIRMED, UPDATE_EMAIL_STORED, UpdateAddress, UpdateEmail,
+    UpdateStatus, confirm_update_address, mark_update_bounced, read_update_address,
+    store_update_address, update_status,
+};
 pub use crate::vault::{
     BASELINE_FLOOR, BASELINE_HOURS, IndexVersionsError, RATE_MULTIPLE, SHARED_AT_PICK, Vault,
     check_read_rates, find_by_phone, phone_digests, rotate_batch, settle_index_versions,

@@ -24,6 +24,7 @@ mod released_reader;
 mod scrub;
 mod scrub_context;
 mod suppression_phone;
+mod update_email;
 mod vault;
 
 #[cfg(test)]

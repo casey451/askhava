@@ -238,7 +238,7 @@ pub use crate::pick_flow::{
 pub use crate::quote_cards::CARD_FALLBACK_NAME;
 pub use crate::quote_page::{
     CLOSE_ROUTE, Numbered, QUOTE_PAGE_ROUTE, TOKEN_LIFE_AFTER_CLOSE, number_quotes,
-    quote_page_routes, token_expired,
+    quote_page_routes, quote_page_routes_with, token_expired,
 };
 pub use crate::receipts_page::{
     Basis, WHY_CHARGED_ROUTE, WhyCharged, why_charged_page, why_charged_page_without_basis,
@@ -273,3 +273,4 @@ pub use crate::step_up_page::{
     BusinessStepUpScreen, CODE_LIFE as STEP_UP_CODE_LIFE, ReturnPath, StepUpCodes,
     business_step_up_page, check_step_up_code, send_step_up_code,
 };
+pub use crate::update_channel::{UPDATES_CONFIRM_ROUTE, UPDATES_ROUTE};
