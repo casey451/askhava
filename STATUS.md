@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T09:11:43Z by runner dd295e06660e (actions).
+Updated 2026-11-22T09:40:35Z by runner dd295e06660e (actions).
 
-**Building: T675 in progress since 08:47Z; 607 of 767 done; week 55% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T675 in progress since 08:47Z; 607 of 767 done; week 56% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 607 of 767 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 4: T729 claimed 08:07Z, lease until 11:07Z; lane 5: T725 claimed 08:59Z, lease until 11:59Z; lane 7: T589 claimed 09:11Z, lease until 12:11Z
-- **Week:** 55% used, 78.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:09Z, 2 min before this update
+- **Week:** 56% used, 78.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 09:40Z, 0 min before this update
 - **Keeper:** last ran 09:06Z, next wake 11:10Z
 
 ## Needs attention
@@ -90,7 +90,6 @@ At 1280x900 the /request chat start screen textarea box spans y=784..914, partly
 | T754 | portals and payments: a $0 Confirm after a PaymentIntent was | check_failed | 3 | 70 min | 10:58Z |  |
 | T458 | businesses, calls and server: the email's "Link this phone"  | done | 1 | 112 min | 10:35Z |  |
 | T654 | licensing and quotes: every ROC list import runs each active | done | 2 | 74 min | 10:15Z | PLAN GAP: outside ownership: app/quotes/src/service.rs, app/quotes/src/late_cards.rs, app/intake/src/cards_out.rs, app/i |
-| T615 | site and server: a styled 404 page for unknown paths, the fa | check_failed | 2 | 92 min | 09:28Z |  |
 
 ### Plan and harness merges on main
 - none
