@@ -1,21 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-22T00:45:31Z by runner 1c5b8c44ddbd (actions).
+Updated 2026-11-22T00:47:00Z by runner d5ccd8204be3 (actions).
 
 **Building: T691 in progress since 00:03Z; 597 of 752 done; week 43% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 597 of 752 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T691 claimed 00:03Z, lease until 03:03Z; lane 3: T542 claimed 22:52Z, lease until 03:07Z; lane 5: T397 claimed 22:35Z, lease until 01:35Z; lane 7: T117 claimed 23:02Z, lease until 03:42Z
-- **Week:** 43% used, 106.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:45Z, 0 min before this update
+- **Lane:** lane 1: T691 claimed 00:03Z, lease until 03:03Z; lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 3: T542 claimed 22:52Z, lease until 03:07Z; lane 5: T397 claimed 22:35Z, lease until 01:35Z; lane 7: T117 claimed 23:02Z, lease until 03:42Z
+- **Week:** 43% used, 103.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 00:45Z, 1 min before this update
 - **Keeper:** last ran 00:45Z, next wake 01:05Z
 
 ## Needs attention
 - PLAN GAP T121 (since 2026-11-21T22:29:56Z, no attempt used; a plan change fixes it): T121: measures 46% of the context window, over its 45% limit
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 40 problem(s) on tasks still to run (+472 on DONE tasks); first: T624: stored context_pct 12% but it measures 17%; regenerate
+- PLAN GAP T609 (since 2026-11-22T00:46:46Z, no attempt used; a plan change fixes it): T609: dependency T608 is DONE but its owned file tests/a11y/polish_screens.spec.ts is not on main
+- PLAN GAP T725 (since 2026-11-22T00:46:46Z, no attempt used; a plan change fixes it): T725: dependency T608 is DONE but its owned file tests/a11y/polish_screens.spec.ts is not on main
+- Strict plan check red: 34 problem(s) on tasks still to run (+476 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -85,7 +87,7 @@ Updated 2026-11-22T00:45:31Z by runner 1c5b8c44ddbd (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 597 of 739
+**Tasks merged (throughput only):** 597 of 752
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -113,7 +115,7 @@ Updated 2026-11-22T00:45:31Z by runner 1c5b8c44ddbd (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-21T23:56:42Z (week)): week: 88.0M used, 106.0M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-06T07:12:09Z.
+- Pacing (session_reading 2026-11-22T00:45:15Z (week)): week: 90.8M used, 103.2M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-06T13:47:37Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -129,6 +131,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T691 (lease until 2026-11-22T03:03:26Z)
+- lane 2: T118 (lease until 2026-11-22T03:46:46Z)
 - lane 3: T542 (lease until 2026-11-22T03:07:08Z)
 - lane 5: T397 (lease until 2026-11-22T01:35:47Z)
 - lane 7: T117 (lease until 2026-11-22T03:42:32Z)
