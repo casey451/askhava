@@ -1,27 +1,27 @@
 # Ask Hava build status
 
-Updated 2026-11-21T23:56:57Z by runner 97fae5aef962 (actions).
+Updated 2026-11-22T00:01:50Z by runner d6ed7062195a (actions).
 
-**Building: T542 in progress since 22:52Z; 595 of 746 done; week 42% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T542 in progress since 22:52Z; 596 of 746 done; week 42% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 595 of 746 build tasks (owner gates not counted)
+- **Tasks done:** 596 of 746 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T542 claimed 22:52Z, lease until 01:52Z; lane 4: T800 claimed 23:52Z, lease until 02:52Z; lane 5: T397 claimed 22:35Z, lease until 01:35Z; lane 6: T118 claimed 22:08Z, lease until 01:08Z; lane 7: T117 claimed 23:02Z, lease until 02:02Z
 - **Week:** 42% used, 108.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:56Z, 0 min before this update
+- **Last run:** 23:57Z, 4 min before this update
 - **Keeper:** last ran 23:56Z, next wake 01:10Z
 
 ## Needs attention
 - PLAN GAP T121 (since 2026-11-21T22:29:56Z, no attempt used; a plan change fixes it): T121: measures 46% of the context window, over its 45% limit
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 38 problem(s) on tasks still to run (+476 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 39 problem(s) on tasks still to run (+476 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T608 | site and portals: the home page and the quote page in full V | MERGE_PENDING | 2 | 2 h 21 min | 23:38Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-21T |
-| T600 | intake, businesses, privacy and server: four worker handlers | MERGE_PENDING | 1 | 45 min | 23:15Z | merging main into the reviewed head conflicts in app/server/src/lib.rs; a resync merges it in on this attempt (D-891) |
+| T600 | intake, businesses, privacy and server: four worker handlers | done | 1 | 45 min | 23:15Z |  |
 | T798 | catalog: the photo asks' English wording loaded from the tra | done | 1 | 107 min | 23:03Z |  |
 | T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | QUEUED | 1 | 34 min | 22:56Z | Reviewer after findings round still FINDINGS at df75c487ed3673fc4e0234c1563449e081d4939b: / 1. docs/runbook.md:51,58,60  |
 | T794 | adapters and server: the Twilio media delete and the product | done | 1 | 49 min | 22:17Z |  |
@@ -84,7 +84,7 @@ Updated 2026-11-21T23:56:57Z by runner 97fae5aef962 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 595 of 746
+**Tasks merged (throughput only):** 596 of 746
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -120,7 +120,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 238 of 321 done
+- stage 5: 239 of 321 done
 - stage 6: 0 of 72 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
