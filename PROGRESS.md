@@ -9786,3 +9786,4 @@
 - 2026-11-22T08:44:33Z runner fda71be613a1 (actions): {"T827": "MERGE_PENDING -> DONE"}
 - 2026-11-22T08:47:06Z runner fda71be613a1 (actions): {}
 - 2026-11-22T08:47:25Z runner fda71be613a1 (actions): {}
+- 2026-11-22T08:47:57Z runner 23fcbe8c11d7 (actions): {"T675": "QUEUED -> IN_PROGRESS"}; T675 estimated 2.0M tokens (calibrated); week has 80.1M left (no five-hour budget, D-3056) after 3.9M still running in another lane (session_reading 2026-11-22T08:47:06Z (week)); claimed
