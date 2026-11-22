@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-22T10:04:36Z by runner 9f8151485318 (actions).
+Updated 2026-11-22T10:04:52Z by runner 9f8151485318 (actions).
 
 **Building: T675 in progress since 08:47Z; 607 of 767 done; week 56% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 607 of 767 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 3: T803 claimed 10:00Z, lease until 13:00Z; lane 4: T729 claimed 08:07Z, lease until 11:07Z; lane 7: T589 claimed 09:11Z, lease until 12:11Z
+- **Lane:** lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 3: T803 claimed 10:00Z, lease until 13:00Z; lane 4: T729 claimed 08:07Z, lease until 11:07Z
 - **Week:** 56% used, 76.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 10:03Z, 1 min before this update
 - **Keeper:** last ran 10:03Z, next wake 11:10Z
@@ -29,6 +29,7 @@ At 1280x900 the /request chat start screen textarea box spans y=784..914, partly
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T589 | intake and portals: the pick review page is shown in her req | MERGE_PENDING | 1 | 53 min | 10:04Z |  |
 | T725 | site: the home page shows the texting number with its consen | MERGE_PENDING | 2 | 57 min | 09:57Z | PLAN GAP: tests/docs/test_required_lines.py:139 (WORD-013, docs/spec/wording.md:17) contradicts kit/prompts/T725.md:9 (S |
 | T610 | site: the D-4246 polish on the Spanish pages, the legal page | MERGE_PENDING | 1 | 39 min | 09:00Z |  |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | BLOCKED | 4 | 45 min | 08:54Z | PLAN GAP: outside ownership: app/site/templates/request.html, app/site/static/site.css / At 1280x900 the /request chat s |
@@ -145,7 +146,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T675 (lease until 2026-11-22T11:47:43Z)
 - lane 3: T803 (lease until 2026-11-22T13:00:15Z)
 - lane 4: T729 (lease until 2026-11-22T11:07:49Z)
-- lane 7: T589 (lease until 2026-11-22T12:11:16Z)
 
 ## Last usage reading
-- {"task": "T725", "at": "2026-11-22T09:57:27Z", "cache_creation_input_tokens": 176577, "input_tokens": 177, "cache_read_input_tokens": 7214421, "output_tokens": 51930}
+- {"task": "T589", "at": "2026-11-22T10:04:35Z", "input_tokens": 113, "cache_creation_input_tokens": 130669, "cache_read_input_tokens": 3350333, "output_tokens": 28464}
