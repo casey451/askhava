@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T05:03:40Z by runner 619c9afc042c (actions).
+Updated 2026-11-22T05:21:16Z by runner 619c9afc042c (actions).
 
 **Building: T118 in progress since 04:18Z; 600 of 767 done; week 52% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-22T05:03:40Z by runner 619c9afc042c (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T118 claimed 04:18Z, lease until 07:18Z; lane 2: T827 claimed 04:50Z, lease until 07:50Z; lane 3: T803 claimed 04:24Z, lease until 07:24Z; lane 4: T616 claimed 04:52Z, lease until 07:52Z; lane 6: T828 claimed 04:21Z, lease until 07:21Z
 - **Week:** 52% used, 87.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:03Z, 0 min before this update
+- **Last run:** 05:21Z, 0 min before this update
 - **Keeper:** last ran 05:03Z, next wake 07:20Z
 
 ## Needs attention
@@ -86,7 +86,6 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 | T674 | server: the homeowner's photo upload page and the short-live | resync | 2 | 2 h 38 min | 07:19Z |  |
 | T754 | portals and payments: a $0 Confirm after a PaymentIntent was | BLOCKED | 2 | 46 min | 06:41Z |  |
 | T755 | messaging: a sole opt-out word counts with any spacing ("STO | done | 1 | 66 min | 05:21Z |  |
-| T777 | businesses: a sign-in code is texted only to a line whose cu | done | 2 | 39 min | 05:05Z | PLAN GAP: outside ownership: app/server/tests/business_signin_route.rs / T777's approved_at filter in sign_in_lines fail |
 
 ### Plan and harness merges on main
 - none
