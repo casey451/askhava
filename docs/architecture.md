@@ -482,7 +482,7 @@ The restore drill (T206; OPS-013, OPS-018, OPS-019; D-3889, D-4932, D-4971): `se
 | axum (features `multipart`) | 0.8.9 (2026-04-14) | MIT | HTTP server and routing |
 | axum-extra (`cookie`) | 0.12.6 (2026-04-14) | MIT | Signed `__Host-` cookies |
 | tokio (`macros`, `rt-multi-thread`, `signal`, `net`, `time`, `sync`) | 1.53.3 (2026-10-13) | MIT | Async runtime; `sync` is named because the worker's semaphore and watch need it and sqlx only happens to enable it (D-491); 1.54.1 is past the cutoff |
-| tower / tower-http (`set-header`, `limit`, `fs`, `trace`, `request-id`, `timeout`, `catch-panic`, `sensitive-headers`) | 0.5.3 / 0.7.1 | MIT | Middleware: headers, body limits, static files, tracing, request IDs, timeouts, panic capture (D-481) |
+| tower / tower-http (`set-header`, `limit`, `fs`, `trace`, `request-id`, `timeout`, `catch-panic`, `sensitive-headers`, `compression-gzip`, `compression-br`) | 0.5.3 / 0.7.1 | MIT | Middleware: headers, body limits, static files, tracing, request IDs, timeouts, panic capture (D-481), gzip and Brotli for the site stylesheet and mark only (D-5357) |
 | askama | 0.16.1 (2026-09-04) | MIT OR Apache-2.0 | Compile-time HTML templates, autoescaped |
 | pulldown-cmark | 0.13.6 (2026-10-30) | MIT | Renders the legal documents once at start-up from `include_str!` of each file (`app/site/src/legal_pages.rs`, T221, D-491, D-3878, D-4070); 0.13.6 for RUSTSEC-2026-0414 and RUSTSEC-2026-0433 (D-4031) |
 | serde / serde_json | 1.0.229 / 1.0.154 | MIT OR Apache-2.0 | Parsing with `deny_unknown_fields` |
