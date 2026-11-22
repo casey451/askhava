@@ -25538,8 +25538,8 @@
     "T206",
     "T707"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 1,
+   "status": "QUEUED",
+   "attempts": 2,
    "slug": "runbook",
    "type": "docs",
    "stage": "5",
@@ -25552,7 +25552,7 @@
     5290,
     5291
    ],
-   "last_failure": "Reviewer after findings round still FINDINGS at df75c487ed3673fc4e0234c1563449e081d4939b:\n1. docs/runbook.md:51,58,60 restore from pre-rotation export: step 6 must add held old key versions to the host's sealed variables before pointing web/worker at the restored DB, and re-run re-encrypt/re-key so old version can be retired (PRIV-024, D-4748, D-4418).\n2. tests/docs/test_runbook.py:66-71 inventory check only non-empty cells; should require sealed paper escrow and sealed/off-host storage for PRIV-024 keys.\n3. tests/docs/test_runbook.py:87-93 restore-order test lets a pg_restore step before server replay pass (assert no numbered step runs pg_restore); line 56 test has wrong TD id (OPS-054 is TD-OPS-29 not TD-PRIV-09).\n4. docs/runbook.md:114 says plan gap raised for Casey but nothing added to docs/for-casey-review.md; D-5288 does not say D-4914's retention statement is wrong.\n5. docs/runbook.md:105 missing \"never a recorded message\" for the live call (incident-response-plan.md:34).",
+   "last_failure": "Reviewer after findings round still FINDINGS at 4f79a8b8c4195e68ccfba3a25eaab6d612560536:\n1. docs/runbook.md:139-142 and :130: retiring a key never says to keep its paper copy while a kept 30-day export (OPS-013) still holds rows under it; restore step 6 would then fail and replay would resend texts (OPS-015). Same gap for the export age key row (line 130). No test checks it.\n2. docs/runbook.md:91 and :101-105: opt-outs received after the backup or during the restore are dropped (server replay rebuilds only from Twilio sent log and Stripe charges; web keeps writing until step 10). Runbook needs a manual check of Twilio inbound log and email/web opt-outs against the suppression list before ending the pause (CON-008 to CON-011, CON-035), and should stop web during the restore. No test covers it.\nNot a finding: rotate_batch, rotate_photos, rekey_suppression_batch are library calls only, with no command or job for Casey to run; a later task must expose them.",
    "history": [
     {
      "attempt": 1,
@@ -25577,12 +25577,32 @@
       }
      },
      "wip_skipped": "PII scan: a commit message in 62c2b1c9e15373947a97cca183511a2a53006723"
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 134,
+     "head_sha": "4f79a8b8c4195e68ccfba3a25eaab6d612560536",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-21T23:02:15Z",
+     "ended_at": "2026-11-22T00:48:35Z",
+     "result": "QUEUED",
+     "usage": {
+      "worker": {
+       "tokens": 5542524,
+       "turns": 79
+      },
+      "reviewer": {
+       "tokens": 1362598,
+       "turns": 32
+      }
+     },
+     "wip_skipped": "PII scan: a commit message in a6b5bb82ade9889562aa80a38868e40342235430"
     }
-   ],
-   "wip_claim": {
-    "attempt": 2,
-    "remote_sha": ""
-   }
+   ]
   },
   {
    "id": "T118",
@@ -106476,12 +106496,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T118",
-   "at": "2026-11-22T00:44:48Z",
-   "cache_creation_input_tokens": 422965,
-   "input_tokens": 461,
-   "cache_read_input_tokens": 23110057,
-   "output_tokens": 131460
+   "task": "T117",
+   "at": "2026-11-22T00:48:35Z",
+   "output_tokens": 65882,
+   "cache_creation_input_tokens": 229432,
+   "cache_read_input_tokens": 6609592,
+   "input_tokens": 216
   },
   "source": "session_reading 2026-11-22T00:45:15Z (week)",
   "by_task": {
@@ -113591,15 +113611,15 @@
     "estimated_bytes": 235246,
     "estimated_tokens": 273586,
     "usage_counting": "message_id",
-    "input_tokens": 151,
-    "output_tokens": 39290,
-    "cache_creation_input_tokens": 206976,
-    "cache_read_input_tokens": 3805256,
-    "worker_tokens": 1013931,
-    "worker_turns": 24,
-    "reviewer_tokens": 3037742,
-    "reviewer_turns": 54,
-    "last_model": "claude-sonnet-5-5"
+    "input_tokens": 367,
+    "output_tokens": 105172,
+    "cache_creation_input_tokens": 436408,
+    "cache_read_input_tokens": 10414848,
+    "worker_tokens": 6556455,
+    "worker_turns": 103,
+    "reviewer_tokens": 4400340,
+    "reviewer_turns": 86,
+    "last_model": "claude-opus-5-5"
    },
    "T397": {
     "estimated_bytes": 474728,
@@ -113627,11 +113647,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-21T20:57:01Z",
-    "tokens": 8917721
+    "tokens": 9874210
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 131453248
+    "tokens": 132409737
    }
   },
   "session_reading": {
@@ -113642,7 +113662,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T00:47:06Z",
+ "updated_at": "2026-11-22T00:48:42Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -113740,7 +113760,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "d5ccd8204be34af1a66bc5e213bb624424ebb232",
+ "runner_sha": "4f79a8b8c4195e68ccfba3a25eaab6d612560536",
  "starter": "actions",
  "smoke_runs": [
   {

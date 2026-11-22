@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T00:47:06Z by runner d5ccd8204be3 (actions).
+Updated 2026-11-22T00:48:42Z by runner 4f79a8b8c419 (actions).
 
 **Building: T691 in progress since 00:03Z; 597 of 752 done; week 43% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 597 of 752 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T691 claimed 00:03Z, lease until 03:03Z; lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 3: T542 claimed 22:52Z, lease until 03:07Z; lane 5: T397 claimed 22:35Z, lease until 01:35Z; lane 7: T117 claimed 23:02Z, lease until 03:42Z
+- **Lane:** lane 1: T691 claimed 00:03Z, lease until 03:03Z; lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 3: T542 claimed 22:52Z, lease until 03:07Z; lane 5: T397 claimed 22:35Z, lease until 01:35Z
 - **Week:** 43% used, 103.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:45Z, 1 min before this update
+- **Last run:** 00:47Z, 1 min before this update
 - **Keeper:** last ran 00:45Z, next wake 01:05Z
 
 ## Needs attention
@@ -17,17 +17,18 @@ Updated 2026-11-22T00:47:06Z by runner d5ccd8204be3 (actions).
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T609 (since 2026-11-22T00:46:46Z, no attempt used; a plan change fixes it): T609: dependency T608 is DONE but its owned file tests/a11y/polish_screens.spec.ts is not on main
 - PLAN GAP T725 (since 2026-11-22T00:46:46Z, no attempt used; a plan change fixes it): T725: dependency T608 is DONE but its owned file tests/a11y/polish_screens.spec.ts is not on main
-- Strict plan check red: 34 problem(s) on tasks still to run (+476 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 44 problem(s) on tasks still to run (+476 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | QUEUED | 2 | 106 min | 00:48Z | Reviewer after findings round still FINDINGS at 4f79a8b8c4195e68ccfba3a25eaab6d612560536: / 1. docs/runbook.md:139-142 a |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | QUEUED | 1 | 2 h 35 min | 00:44Z | Reviewer after fix round (head ee01dda321ae54d4c6af6a1e464281c92fbdcf1d) still FINDINGS: / 1. tests/e2e/j3_operator.spec |
 | T800 | Legal docs and tests (harness): the Twilio campaign submissi | MERGE_PENDING | 1 | 46 min | 00:39Z |  |
 | T608 | site and portals: the home page and the quote page in full V | done | 2 | 2 h 21 min | 23:38Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-21T |
 | T600 | intake, businesses, privacy and server: four worker handlers | done | 1 | 45 min | 23:15Z |  |
 | T798 | catalog: the photo asks' English wording loaded from the tra | done | 1 | 107 min | 23:03Z |  |
-| T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | QUEUED | 1 | 34 min | 22:56Z | Reviewer after findings round still FINDINGS at df75c487ed3673fc4e0234c1563449e081d4939b: / 1. docs/runbook.md:51,58,60  |
+| T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | QUEUED | 1 | 34 min | 22:56Z |  |
 | T794 | adapters and server: the Twilio media delete and the product | done | 1 | 49 min | 22:17Z |  |
 | T788 | Tooling (harness): check_pr_change.py fails a task branch th | done | 1 | 64 min | 21:30Z |  |
 | T600 | intake, businesses, privacy and server: four worker handlers | resync | 1 | 57 min | 21:10Z |  |
@@ -87,7 +88,7 @@ Updated 2026-11-22T00:47:06Z by runner d5ccd8204be3 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 597 of 752
+**Tasks merged (throughput only):** 597 of 739
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -134,7 +135,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T118 (lease until 2026-11-22T03:46:46Z)
 - lane 3: T542 (lease until 2026-11-22T03:07:08Z)
 - lane 5: T397 (lease until 2026-11-22T01:35:47Z)
-- lane 7: T117 (lease until 2026-11-22T03:42:32Z)
 
 ## Last usage reading
-- {"task": "T118", "at": "2026-11-22T00:44:48Z", "cache_creation_input_tokens": 422965, "input_tokens": 461, "cache_read_input_tokens": 23110057, "output_tokens": 131460}
+- {"task": "T117", "at": "2026-11-22T00:48:35Z", "output_tokens": 65882, "cache_creation_input_tokens": 229432, "cache_read_input_tokens": 6609592, "input_tokens": 216}
