@@ -108678,7 +108678,7 @@
      }
     }
    ],
-   "reviewed_sha": "4c1be944d9005a9b5a192409ef678e3839577815",
+   "reviewed_sha": "05640378e2de67176b7d56a6d051df473b7b1d47",
    "review_lease": {
     "task": "T805",
     "session": "actions-45013362707",
@@ -108698,10 +108698,21 @@
      "main": "989b62a224750b85c3bd59ff71a85fc8f79b65c6",
      "how": "hand-in",
      "at": "2026-11-22T11:32:50Z"
+    },
+    {
+     "from": "4c1be944d9005a9b5a192409ef678e3839577815",
+     "to": "05640378e2de67176b7d56a6d051df473b7b1d47",
+     "main": "2d3500bae42509329c47e8d72cacd688c51e9c9f",
+     "how": "runner",
+     "checks": {
+      "Twin": "success"
+     },
+     "at": "2026-11-22T11:44:36Z"
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merge_turn_since": "2026-11-22T11:44:36Z"
   },
   {
    "id": "T799",
@@ -109309,7 +109320,7 @@
     "T766",
     "T767"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 2,
    "slug": "door-matrix-owner-signin",
    "type": "harness",
@@ -109422,13 +109433,70 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 32,
      "head_sha": "f9de0a71bcbd921a2f41718b2283aff2e0d61fbb",
-     "pr": null,
-     "checks": null,
+     "pr": 1346,
+     "checks": [
+      {
+       "name": "backup lane 1",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-22T10:24:41Z",
      "ended_at": "2026-11-22T11:10:57Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "usage": {
       "worker": {
        "tokens": 716849,
@@ -109493,7 +109561,14 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-22T11:11:52Z"
+   "merge_turn_since": "2026-11-22T11:11:52Z",
+   "merged_sha": "2d3500bae42509329c47e8d72cacd688c51e9c9f",
+   "merged_at": "2026-11-22T11:43:36Z",
+   "files": [
+    "app/server/NOTES.md",
+    "app/server/tests/door_matrix.rs",
+    "docs/decisions.md"
+   ]
   },
   {
    "id": "T827",
@@ -117118,7 +117193,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T11:39:58Z",
+ "updated_at": "2026-11-22T11:44:47Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -117216,7 +117291,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "23fcbe8c11d7e98a6b62b7774fd0a382bd408518",
+ "runner_sha": "5aac787a2648d3e214a8ac84ca4588414ae565f0",
  "starter": "actions",
  "smoke_runs": [
   {
