@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T09:58:17Z by runner 23fcbe8c11d7 (actions).
+Updated 2026-11-22T10:00:37Z by runner dd295e06660e (actions).
 
 **Building: T675 in progress since 08:47Z; 607 of 767 done; week 56% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 607 of 767 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 4: T729 claimed 08:07Z, lease until 11:07Z; lane 7: T589 claimed 09:11Z, lease until 12:11Z
-- **Week:** 56% used, 78.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:58Z, 0 min before this update
+- **Lane:** lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 3: T803 claimed 10:00Z, lease until 13:00Z; lane 4: T729 claimed 08:07Z, lease until 11:07Z; lane 7: T589 claimed 09:11Z, lease until 12:11Z
+- **Week:** 56% used, 76.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 09:58Z, 2 min before this update
 - **Keeper:** last ran 09:58Z, next wake 10:18Z
 
 ## Needs attention
@@ -24,7 +24,7 @@ At 1280x900 the /request chat start screen textarea box spans y=784..914, partly
 - PLAN GAP T397 (since 2026-11-22T02:12:37Z, no attempt used; a plan change fixes it): outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per probed Owner row; past ~60 rows expires_at < created_at, violating portals.session CHECK (expires_at > created_at), so POST /owner/help/close as Owner returns 500. Marking the three /b/phones rows yes in docs/architecture.md section 13 turns td_sec_61_every_served_door_row_over_http red (reproduced by worker and by reviewer: exit 101, door_matrix.rs:1533). Smallest fix: a harness task that bases owner_jar sign-in times in the past (e.g. key.now - OWNER_IDLE_LIMIT) or spaces TOTP steps differently. Prompt forbids editing door_matrix.rs and forbids working around an unreachable route. Worker work is uncommitted in the tree.
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - OWNED GAP T828 (DONE, since 2026-11-22T08:18:31Z; a later task or plan change must add it): T828: .gitleaksignore missing on main
-- Strict plan check red: 32 problem(s) on tasks still to run (+485 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 33 problem(s) on tasks still to run (+486 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -126,7 +126,7 @@ At 1280x900 the /request chat start screen textarea box spans y=784..914, partly
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-22T09:05:50Z (week)): week: 115.6M used, 78.4M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T02:27:27Z.
+- Pacing (session_reading 2026-11-22T09:57:58Z (week)): week: 117.4M used, 76.6M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T03:16:26Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -143,6 +143,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T675 (lease until 2026-11-22T11:47:43Z)
+- lane 3: T803 (lease until 2026-11-22T13:00:15Z)
 - lane 4: T729 (lease until 2026-11-22T11:07:49Z)
 - lane 7: T589 (lease until 2026-11-22T12:11:16Z)
 
