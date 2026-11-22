@@ -120,15 +120,31 @@ pub enum CardsSent {
     Stopped,
 }
 
-/// The `intake.cards_approved` handler `server` registers: [`send_approved`] at `now()`.
+/// The `intake.cards_approved` handler: [`run_cards_approved_at`] at the wall clock.
 ///
 /// # Errors
 ///
-/// A fixed [`HandlerError`] sentence on a bad payload or a failed send, so the task retries.
+/// As [`run_cards_approved_at`].
 pub async fn run_cards_approved(
     pool: PgPool,
     keys: Arc<CardsOutKeys>,
     task: Claimed,
+) -> Result<(), HandlerError> {
+    run_cards_approved_at(pool, keys, task, Timestamp::now()).await
+}
+
+/// The `intake.cards_approved` handler `server` registers on the worker clock (PICK-001,
+/// INT-005, D-4196): [`send_approved`] at `now`, which stamps each card's `sent_at` (the start of
+/// its 24-hour quote window) and times a held run's recheck.
+///
+/// # Errors
+///
+/// A fixed [`HandlerError`] sentence on a bad payload or a failed send, so the task retries.
+pub async fn run_cards_approved_at(
+    pool: PgPool,
+    keys: Arc<CardsOutKeys>,
+    task: Claimed,
+    now: Timestamp,
 ) -> Result<(), HandlerError> {
     let id = |key: &str| {
         task.payload[key]
@@ -141,22 +157,36 @@ pub async fn run_cards_approved(
         return Err(HandlerError(BAD_PAYLOAD));
     };
     let mut db = pool.acquire().await.map_err(|_| HandlerError(FAILED))?;
-    let now = Timestamp::now();
     let sent = send_approved(&mut db, &keys, (conversation, job, &digest), now).await;
     settle(&mut db, (CARDS_APPROVED_KIND, &task), sent, now).await
 }
 
 /// The `intake.emergency_released` handler `server` registers (INT-029, D-4748): with a `job` in
 /// the payload [`send_emergency_job`], without one (an event queued before T747)
-/// [`send_emergency`], at `now()`.
+/// [`send_emergency`]: [`run_emergency_released_at`] at the wall clock.
 ///
 /// # Errors
 ///
-/// A fixed [`HandlerError`] sentence on a bad payload or a failed send, so the task retries.
+/// As [`run_emergency_released_at`].
 pub async fn run_emergency_released(
     pool: PgPool,
     keys: Arc<CardsOutKeys>,
     task: Claimed,
+) -> Result<(), HandlerError> {
+    run_emergency_released_at(pool, keys, task, Timestamp::now()).await
+}
+
+/// The `intake.emergency_released` handler `server` registers on the worker clock (INT-005,
+/// INT-029, PICK-001, D-4196): the cards' `sent_at` and a held run's recheck are timed at `now`.
+///
+/// # Errors
+///
+/// A fixed [`HandlerError`] sentence on a bad payload or a failed send, so the task retries.
+pub async fn run_emergency_released_at(
+    pool: PgPool,
+    keys: Arc<CardsOutKeys>,
+    task: Claimed,
+    now: Timestamp,
 ) -> Result<(), HandlerError> {
     let id = |key: &str| {
         task.payload[key]
@@ -169,7 +199,6 @@ pub async fn run_emergency_released(
         Some(_) => Some(id("job").ok_or(HandlerError(BAD_PAYLOAD))?),
     };
     let mut db = pool.acquire().await.map_err(|_| HandlerError(FAILED))?;
-    let now = Timestamp::now();
     let sent = match job {
         Some(job) => send_emergency_job(&mut db, &keys, (conversation, job), now).await,
         None => send_emergency(&mut db, &keys, conversation, now).await,

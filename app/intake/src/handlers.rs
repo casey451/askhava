@@ -198,20 +198,34 @@ fn parse(p: &Value) -> Option<Wait> {
     })
 }
 
-/// The [`NO_REPLY_KIND`] handler `server` registers, `secret` being the `ID_SECRET` (JOB-006):
-/// [`no_reply_step`] on the task's payload.
+/// The [`NO_REPLY_KIND`] handler: [`run_no_reply_at`] at the wall clock.
 ///
 /// # Errors
 ///
-/// A fixed [`HandlerError`] sentence on a bad payload or a failed step.
+/// As [`run_no_reply_at`].
 pub async fn run_no_reply(
     pool: PgPool,
     secret: SecretString,
     task: Claimed,
 ) -> Result<(), HandlerError> {
+    run_no_reply_at(pool, secret, task, SystemClock.now()).await
+}
+
+/// The [`NO_REPLY_KIND`] handler `server` registers on the worker clock, `secret` being the
+/// `ID_SECRET` (INT-019, JOB-006, D-4310): [`no_reply_step`] on the task's payload at `now`.
+///
+/// # Errors
+///
+/// A fixed [`HandlerError`] sentence on a bad payload or a failed step.
+pub async fn run_no_reply_at(
+    pool: PgPool,
+    secret: SecretString,
+    task: Claimed,
+    now: Timestamp,
+) -> Result<(), HandlerError> {
     let wait = parse(&task.payload).ok_or(HandlerError(BAD_PAYLOAD))?;
     let mut db = pool.acquire().await.map_err(|_| HandlerError(FAILED))?;
-    no_reply_step(&mut db, &secret, &wait, SystemClock.now())
+    no_reply_step(&mut db, &secret, &wait, now)
         .await
         .map(|_| ())
         .map_err(|_| HandlerError(FAILED))
