@@ -9567,3 +9567,4 @@
 - 2026-11-22T01:31:06Z runner 21d99167398b (actions): {}
 - 2026-11-22T01:35:15Z runner 21d99167398b (actions): {"T803": "QUEUED -> IN_PROGRESS"}; T803 estimated 1.2M tokens (calibrated); week has 97.1M left (no five-hour budget, D-3056) after 6.9M still running in another lane (session_reading 2026-11-22T01:29:47Z (week)); claimed
 - 2026-11-22T01:35:21Z runner 21d99167398b (actions): {}
+- 2026-11-22T01:39:18Z runner 6670a168e2d4 (actions): {"T117": "IN_PROGRESS -> BLOCKED"}

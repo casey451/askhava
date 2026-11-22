@@ -25538,8 +25538,8 @@
     "T206",
     "T707"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 2,
+   "status": "BLOCKED",
+   "attempts": 3,
    "slug": "runbook",
    "type": "docs",
    "stage": "5",
@@ -25601,12 +25601,33 @@
       }
      },
      "wip_skipped": "PII scan: a commit message in a6b5bb82ade9889562aa80a38868e40342235430"
+    },
+    {
+     "attempt": 3,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 75,
+     "head_sha": "6670a168e2d4d62e56e23b50ed17253f85e6af47",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-22T00:49:52Z",
+     "ended_at": "2026-11-22T01:39:07Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 2279877,
+       "turns": 44
+      },
+      "reviewer": {
+       "tokens": 674685,
+       "turns": 19
+      }
+     },
+     "wip_skipped": "PII scan: a commit message in 21d99167398b19ca15d194afa6d72778eae8afc0"
     }
    ],
-   "wip_claim": {
-    "attempt": 3,
-    "remote_sha": ""
-   }
+   "reason": "Reviewer after findings round still FINDINGS at 6670a168e2d4d62e56e23b50ed17253f85e6af47:\n1. docs/runbook.md:180-181 (blocking, recovery): restore of an older export puts the old key version back only for the replay run, but step 8 starts worker (and step 10 web) with the host key list lacking v1, so they refuse to start (and VAULT_KEY v1 rows unreadable). Fix: in restore step 8 put the old version back on the host key list, re-run rotate_batch and rekey_suppression_batch to 0, call retire_index_version, then drop v1 again; the paper-copy clock restarts; test should assert it.\n2. docs/runbook.md:173 and :169 (minor): retire_index_version deletes only messaging.suppression rows (suppression_rekey.rs:231-234); stale v1 phone digests are removed by a later rotate_batch after v1 is dropped from the key list (privacy/src/vault.rs:752,760-761). Rotation drill omits that clean-up run.\nNit: runbook.md:101, :174, :177 exceed wrap width."
   },
   {
    "id": "T118",
@@ -106694,12 +106715,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T542",
-   "at": "2026-11-22T01:29:15Z",
-   "output_tokens": 124729,
-   "cache_read_input_tokens": 21165632,
-   "cache_creation_input_tokens": 460009,
-   "input_tokens": 416
+   "task": "T117",
+   "at": "2026-11-22T01:39:07Z",
+   "cache_creation_input_tokens": 175654,
+   "cache_read_input_tokens": 2744008,
+   "output_tokens": 34777,
+   "input_tokens": 123
   },
   "source": "session_reading 2026-11-22T01:29:47Z (week)",
   "by_task": {
@@ -113809,14 +113830,14 @@
     "estimated_bytes": 235636,
     "estimated_tokens": 275249,
     "usage_counting": "message_id",
-    "input_tokens": 367,
-    "output_tokens": 105172,
-    "cache_creation_input_tokens": 436408,
-    "cache_read_input_tokens": 10414848,
-    "worker_tokens": 6556455,
-    "worker_turns": 103,
-    "reviewer_tokens": 4400340,
-    "reviewer_turns": 86,
+    "input_tokens": 490,
+    "output_tokens": 139949,
+    "cache_creation_input_tokens": 612062,
+    "cache_read_input_tokens": 13158856,
+    "worker_tokens": 8836332,
+    "worker_turns": 147,
+    "reviewer_tokens": 5075025,
+    "reviewer_turns": 105,
     "last_model": "claude-opus-5-5"
    },
    "T397": {
@@ -113895,11 +113916,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-21T20:57:01Z",
-    "tokens": 13503904
+    "tokens": 13988858
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 136039431
+    "tokens": 136524385
    }
   },
   "session_reading": {
@@ -113910,7 +113931,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T01:35:21Z",
+ "updated_at": "2026-11-22T01:39:18Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -114008,7 +114029,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "21d99167398b19ca15d194afa6d72778eae8afc0",
+ "runner_sha": "6670a168e2d4d62e56e23b50ed17253f85e6af47",
  "starter": "actions",
  "smoke_runs": [
   {
