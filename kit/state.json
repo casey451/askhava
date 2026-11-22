@@ -107333,7 +107333,14 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Named mutants of the files this change touches (scripts/run_named_mutants.py, D-481)\nFAIL: card sent when the latest daily check is not Active: `find` occurs 2 times in app/licensing/src/service.rs, not once\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1."
+   "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Named mutants of the files this change touches (scripts/run_named_mutants.py, D-481)\nFAIL: card sent when the latest daily check is not Active: `find` occurs 2 times in app/licensing/src/service.rs, not once\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
+   "wip_claim": {
+    "attempt": 2,
+    "remote_sha": "18bac1ff61b7325130821a15e32f1b39602c218c"
+   },
+   "runner_closed_prs": [
+    1316
+   ]
   },
   {
    "id": "T804",
@@ -115097,7 +115104,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T04:24:59Z",
+ "updated_at": "2026-11-22T04:25:11Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
