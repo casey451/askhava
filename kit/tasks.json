@@ -940,7 +940,7 @@
    "budget": {
     "files": 2,
     "lines": 600,
-    "context_pct": 20
+    "context_pct": 25
    },
    "checks": [
     "Ci",
@@ -10417,7 +10417,7 @@
    "id": "T397",
    "slug": "phone-approval-page",
    "title": "server and portals: the owner approves or declines a member-linked phone on a portal page that names the member and the last 4 digits",
-   "goal": "Register row IC-95, the owner's page (D-3081; BIZ-033, BIZ-038, SEC-038, SEC-004, SEC-009, SEC-034, SEC-042, SEC-048; D-311, D-480, D-1848, D-2440, D-2636). After T396 (`businesses::api::approve_phone`, `reject_phone`, `waiting_phones`) and T364 (the served business step-up page, without which `require_step_up` can never pass in production). The owner has no page that lists a phone waiting for approval. (1) `app/portals/src/phone_approval.rs` and `app/portals/templates/phone_approval.html` (new): the owner's waiting-phones page; for each waiting phone, the sign-in email address of the member who set its number (a member has no stored name; the address is read from the vault in `server` by the member's `mailbox_id` with T412's `privacy::api::read_business_mailbox` under `BusinessPurpose::PhoneApproval` on a bare connection, D-1848, D-3262), the phone's last 4 digits (`number_end`) and the time its number was set (Arizona time, never a countdown), with an Approve and a Don't approve button, each its own form with the CSRF token and the phone's `number_set_at` as shown; a `POST` whose `number_set_at` no longer matches (a member changed the number since the page was shown) changes nothing and shows the page again with the new number's digits and a line saying the number changed; an empty state; works without JavaScript; route constants `PHONES_ROUTE` `/b/phones`, `APPROVE_PHONE_ROUTE` `/b/phones/approve` and `REJECT_PHONE_ROUTE` `/b/phones/reject` (the line in the form body, so T348's probe needs no path parameter). (2) `app/server/src/phone_approval.rs` (new) serves `GET /b/phones` and both `POST`s behind `portals::api::business_principal`: a signed-out request gets the 4xx answer with the `/b/sign-in` link; a member who is not the owner, another business's line and an unknown line get the one not-found answer and change nothing; every response is `no_store`; each `POST` passes `refuse_cross_site` and the CSRF check (a refusal is a security event), then `require_step_up` with `SensitiveChange::ApprovePhone` before the change's transaction (no fresh code: to the step-up page and back, nothing changed), then calls `approve_phone` or `reject_phone`; merged in the shared `app/server/src/lib.rs` and composed in `main.rs`. (3) Tests in `app/server/tests/phone_approval_route.rs` (TD-SEC-65) against the assembled router, fake data only. The page's `PAGE_STATES` entries (with and without a waiting phone) go in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its three rows in `docs/architecture.md` section 13 are marked `yes`; its routes pass T348's doors unchanged (`tests/security/tests/auth_matrix.rs`, `app/server/tests/door_matrix.rs`), neither of which this task edits, and a route the probe cannot reach is reported, not worked around. The page's words go through the cold read and the copy panel. A link to the page from the portal home is left to that page's next owner, and the email's Approve link is T399's (D-3081). Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Plan change D-3744: (a) `phone_approval.html` extends T200's `app/portals/templates/business_layout.html`, not `base.html`, as T364's and T375's signed-in business pages do, so it shows the business-only \"Get help\" link (D-3155, BIZ-047); T410's template check, after this task, lists it. (b) The vault the member's address is read from is the one in the `webhooks` part inside `build_router` (`inbound_text::Webhooks`' `pub vault`, `app/server/src/inbound_text.rs:151`), handed to this task's router where `build_router` merges it; no new `RouterParts` part is added, so `app/server/tests/door_matrix.rs` and `app/server/tests/route_wiring.rs` need no change. The router is merged with or without that part; without it (dev, `Ci` and the end-to-end runs, which set no public base URL) each waiting phone shows one fixed line in place of the address (words for the copy panel) and everything else is unchanged. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): each `POST` checks in this order: the cross-site layer, the CSRF token, `business_principal`, the owner check, then `require_step_up`, so a non-owner gets the one not-found answer without a step-up (TD-SEC-65) and the anonymous CSRF probe (`app/server/tests/door_matrix.rs:1206`) still gets its 403. `businesses::api::sign_in_lines` answers `None` for a removed member, and the page then shows the same fixed line as when no vault part is present. D-4726 (supersedes the reuse sentence of D-3889): `app/server/src/business_portal.rs` is queued T526's file, so this task does not edit it: it copies the private `not_found` (`:251`) and adapts `event` (`:278`, which takes `business_portal.rs`'s private `Portal` and `Site`, `:143`, `:160`) to its own state in its own `app/server/src/phone_approval.rs` and answers a signed-out request with `portals::api::signed_out` (`app/portals/src/confirm_pay.rs:828`), as `business_portal.rs` does. The vault (part (b)) is the one `business_pages` in the shared `app/server/src/lib.rs` already hands the portal and owner routes: the parts' vault (`RouterParts::with_vault`, `lib.rs:179`, which `main.rs` sets from the vault keys alone, `app/server/src/main.rs:109`), else the webhooks' (`inbound_text.rs:151`), as `owner_portal::routes` takes it (`lib.rs:317` to `:321`); without either, the fixed line shows; no new `RouterParts` part is added. Review round (D-3889, independent Opus review): T397 runs after T536, which starts the keyed binary with the webhooks part, so the waiting-phones page's states are written against the suites as T536 leaves them.",
+   "goal": "Register row IC-95, the owner's page (D-3081; BIZ-033, BIZ-038, SEC-038, SEC-004, SEC-009, SEC-034, SEC-042, SEC-048; D-311, D-480, D-1848, D-2440, D-2636). After T396 (`businesses::api::approve_phone`, `reject_phone`, `waiting_phones`) and T364 (the served business step-up page, without which `require_step_up` can never pass in production). The owner has no page that lists a phone waiting for approval. (1) `app/portals/src/phone_approval.rs` and `app/portals/templates/phone_approval.html` (new): the owner's waiting-phones page; for each waiting phone, the sign-in email address of the member who set its number (a member has no stored name; the address is read from the vault in `server` by the member's `mailbox_id` with T412's `privacy::api::read_business_mailbox` under `BusinessPurpose::PhoneApproval` on a bare connection, D-1848, D-3262), the phone's last 4 digits (`number_end`) and the time its number was set (Arizona time, never a countdown), with an Approve and a Don't approve button, each its own form with the CSRF token and the phone's `number_set_at` as shown; a `POST` whose `number_set_at` no longer matches (a member changed the number since the page was shown) changes nothing and shows the page again with the new number's digits and a line saying the number changed; an empty state; works without JavaScript; route constants `PHONES_ROUTE` `/b/phones`, `APPROVE_PHONE_ROUTE` `/b/phones/approve` and `REJECT_PHONE_ROUTE` `/b/phones/reject` (the line in the form body, so T348's probe needs no path parameter). (2) `app/server/src/phone_approval.rs` (new) serves `GET /b/phones` and both `POST`s behind `portals::api::business_principal`: a signed-out request gets the 4xx answer with the `/b/sign-in` link; a member who is not the owner, another business's line and an unknown line get the one not-found answer and change nothing; every response is `no_store`; each `POST` passes `refuse_cross_site` and the CSRF check (a refusal is a security event), then `require_step_up` with `SensitiveChange::ApprovePhone` before the change's transaction (no fresh code: to the step-up page and back, nothing changed), then calls `approve_phone` or `reject_phone`; merged in the shared `app/server/src/lib.rs` and composed in `main.rs`. (3) Tests in `app/server/tests/phone_approval_route.rs` (TD-SEC-65) against the assembled router, fake data only. The page's `PAGE_STATES` entries (with and without a waiting phone) go in the shared `tests/a11y/page_states.ts` (D-1239, D-1788) and its three rows in `docs/architecture.md` section 13 are marked `yes`; its routes pass T348's doors unchanged (`tests/security/tests/auth_matrix.rs`, `app/server/tests/door_matrix.rs`), neither of which this task edits, and a route the probe cannot reach is reported, not worked around. The page's words go through the cold read and the copy panel. A link to the page from the portal home is left to that page's next owner, and the email's Approve link is T399's (D-3081). Update the `server` and `portals` `CLAUDE.md` files, `docs/architecture.md` and `docs/decisions.md`. Plan change D-3744: (a) `phone_approval.html` extends T200's `app/portals/templates/business_layout.html`, not `base.html`, as T364's and T375's signed-in business pages do, so it shows the business-only \"Get help\" link (D-3155, BIZ-047); T410's template check, after this task, lists it. (b) The vault the member's address is read from is the one in the `webhooks` part inside `build_router` (`inbound_text::Webhooks`' `pub vault`, `app/server/src/inbound_text.rs:151`), handed to this task's router where `build_router` merges it; no new `RouterParts` part is added, so `app/server/tests/door_matrix.rs` and `app/server/tests/route_wiring.rs` need no change. The router is merged with or without that part; without it (dev, `Ci` and the end-to-end runs, which set no public base URL) each waiting phone shows one fixed line in place of the address (words for the copy panel) and everything else is unchanged. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): each `POST` checks in this order: the cross-site layer, the CSRF token, `business_principal`, the owner check, then `require_step_up`, so a non-owner gets the one not-found answer without a step-up (TD-SEC-65) and the anonymous CSRF probe (`app/server/tests/door_matrix.rs:1206`) still gets its 403. `businesses::api::sign_in_lines` answers `None` for a removed member, and the page then shows the same fixed line as when no vault part is present. D-4726 (supersedes the reuse sentence of D-3889): `app/server/src/business_portal.rs` is queued T526's file, so this task does not edit it: it copies the private `not_found` (`:251`) and adapts `event` (`:278`, which takes `business_portal.rs`'s private `Portal` and `Site`, `:143`, `:160`) to its own state in its own `app/server/src/phone_approval.rs` and answers a signed-out request with `portals::api::signed_out` (`app/portals/src/confirm_pay.rs:828`), as `business_portal.rs` does. The vault (part (b)) is the one `business_pages` in the shared `app/server/src/lib.rs` already hands the portal and owner routes: the parts' vault (`RouterParts::with_vault`, `lib.rs:179`, which `main.rs` sets from the vault keys alone, `app/server/src/main.rs:109`), else the webhooks' (`inbound_text.rs:151`), as `owner_portal::routes` takes it (`lib.rs:317` to `:321`); without either, the fixed line shows; no new `RouterParts` part is added. Review round (D-3889, independent Opus review): T397 runs after T536, which starts the keyed binary with the webhooks part, so the waiting-phones page's states are written against the suites as T536 leaves them. Plan change D-5411 (attempt 1's plan gap): past about 60 probed Owner rows `door_matrix.rs`'s `owner_jar` started sessions after the requests they served and the three `/b/phones` rows answered 500; T829 (harness, a dep) fixes `owner_jar`'s timing first, so this task still edits neither door test.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -10426,7 +10426,8 @@
     "T396",
     "T364",
     "T412",
-    "T536"
+    "T536",
+    "T829"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -10472,7 +10473,8 @@
     "D-3262",
     "D-3744",
     "D-3889",
-    "D-4726"
+    "D-4726",
+    "D-5411"
    ],
    "cites": [],
    "budget": {
@@ -31129,17 +31131,74 @@
    "copy": true
   },
   {
+   "id": "T830",
+   "slug": "rotate-keys-command",
+   "title": "server: `server rotate-keys` and `server retire-index-version` run the vault key rotation to the end, for T117's runbook",
+   "goal": "Plan change D-5412 (T117 BLOCKED after 3 attempts with a plan gap, Fable's triage choice (a); PRIV-024, D-4418, D-4473). The rotation steps are library calls only: `privacy::api::rotate_batch` (`app/privacy/src/vault.rs:767`), `rotate_photos` (`app/privacy/src/photos.rs:565`), `rotate_business_batch` (`app/privacy/src/business_contacts.rs:474`), `messaging::api::rekey_suppression_batch` (`app/messaging/src/suppression_rekey.rs:76`) and `retire_index_version` (`:220`), with no command Casey can run, so the runbook cannot give a rotation step. In `app/server/src/rotate_keys.rs` (new), declared in the shared `lib.rs` and dispatched in the shared `main.rs` beside `migrate`, `bootstrap-owner` and `replay` (`main.rs:33` to `:42`), before the server binds or serves: (1) `server rotate-keys` builds the vault from `VAULT_KEY` and `VAULT_INDEX_KEY` as the server does (`business_portal::vault_from_settings`) and the photo parts as `homeowner_portal::photo_parts` does, then runs each of the four batches in a loop (a fixed batch size) until it returns 0, and prints one count line per batch. With no vault (`vault_from_settings` answers `None`, `app/server/src/business_portal.rs:239`) it exits non-zero. With no photo parts (`photo_parts` answers `None` without `ASKHAVA_STORAGE_BASE_URL` or `ASKHAVA_ID_SECRET`, `app/server/src/homeowner_portal.rs:864`) it counts the photo rows under a key version below the active one and exits non-zero naming the count and the missing settings when any is found (dropping v1 would strand them), else prints that no photo needs moving. Each loop is capped (D-753 warns of a batch that never ends): it stops with a fixed sentence and a non-zero exit after its starting backlog divided by the batch size plus 2 passes; a batch error stops it with the error's fixed text and a non-zero exit, and running it again resumes (each batch is its own transactions). (2) `server retire-index-version <version>` calls `retire_index_version` and prints the rows removed; a non-number, the active version or a refusal exits non-zero with the refusal's text. Round 2 (D-5412): `server` may not query another module's schema (SEC-029, D-491; `tests/integration/tests/architecture_migrations.rs:739` to `:752`, `schema_refs` `:287`), so the counts come from two new files, each `pub use`d in its crate's shared `api.rs` and declared in its shared `lib.rs`: `app/privacy/src/rotation_backlog.rs` (static SQL counts of contacts, photos and staff phones under a key version below a given one, and of contacts whose phone digests miss a configured index version) and `app/messaging/src/suppression_backlog.rs` (the count of `messaging.suppression` rows under a version other than the active one whose opt-out has no active-version row). The photo check of no photo settings and the loop cap use these counts. The batch loop is a `pub` function generic over a closure that runs one batch (re-exported in the server's shared `api.rs`), so a test drives the cap with a closure that never reaches 0. After each loop the command prints the rows moved and the rows skipped: for opt-outs, the suppression backlog left when `rekey_suppression_batch` returns 0 (the listings no contact's phone matches, which it only logs as a warning, `app/messaging/src/suppression_rekey.rs:16` to `:17`); for the vault and staff phones, the privacy backlog left. A skipped count above 0 ends the run non-zero. Neither prints a key, digest, phone, address or contact ID, and neither runs `check_index_keys`' refusal first (`rotate-keys` is how a refused start is cleared). Tests in `app/server/tests/rotate_keys_command.rs` against a real database with fake data: keys `1:` then `2:,1:` (vault, index key both rotating), contacts, a staff phone, a photo and opt-outs under v1; `rotate-keys` ends with every batch at 0 and every row under v2 and the v1 digests kept; `retire-index-version 1` removes the v1 opt-outs whose number has a v2 row; v1 then dropped from both lists, a second `rotate-keys` removes the stale v1 phone digests (`vault.rs:761` to `:762`) and `check_index_keys` passes; `retire-index-version 2` (active) and `abc` exit non-zero changing nothing; a v1 photo with no storage settings, and no vault keys, each exit non-zero; a batch that keeps returning rows stops at the cap; stdout and stderr hold no planted value. Update the `server` `CLAUDE.md` and `docs/architecture.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T206",
+    "T707"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "privacy",
+    "recovery"
+   ],
+   "owns": [
+    "app/server/src/rotate_keys.rs",
+    "app/server/tests/rotate_keys_command.rs",
+    "app/privacy/src/rotation_backlog.rs",
+    "app/messaging/src/suppression_backlog.rs"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/spec/privacy.md",
+    "docs/brains/rust-production.md"
+   ],
+   "requirements": [
+    "PRIV-024"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-4418",
+    "D-4473",
+    "D-5412"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 560,
+    "context_pct": 5
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T830-rotate-keys-command",
+   "prompt": "kit/prompts/T830.md",
+   "acceptance": "`app/server/tests/rotate_keys_command.rs` passes: a two-version rotation run by the commands ends with every vault, photo, staff-phone and opt-out row under the new version, the old version retired and dropped, and `check_index_keys` passing; bad arguments, no vault, a v1 photo with no photo settings and a loop past its cap exit non-zero changing nothing more; no output holds a planted value; every other server test passes unchanged."
+  },
+  {
    "id": "T117",
    "slug": "runbook",
    "title": "docs/runbook.md: outages, safe mode, refunds, disputes, complaints, STOP issues, restore, breach steps",
-   "goal": "`docs/runbook.md` covers outages, safe mode, refunds, disputes, STOP issues, the restore drill with the switch to the restored database, the host choice and the breach steps (pause texting and charging, preserve logs, Arizona's 45-day notice), with the key inventory and no hosting key for Claude (OPS-012, OPS-014, OPS-020 to OPS-022, PRIV-024). The breach-notice steps follow OPS-020 (letter, email or a live call, never text alone; substitute notice; the law-enforcement pause; the Attorney General's form; processors' duty), and the runbook says to fix forward after a key rotation and never roll back past it (OPS-054, D-492). Plan change D-3144: the safe-mode steps say that a release waits while safe mode is on and goes ahead after the FEE-017 check when it ends (T408, with T706 and T707, D-4419; T707, the last of them, a dependency), while charges and \"Confirm and pay\" presses are refused until it ends. Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): the runbook also covers complaints (`BUILD_BRIEF.md:526` lists them): how a homeowner's or business's complaint reaches Casey and what he does with it. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): TD-PRIV-09's \"inventory names every secret\" is checked against the secret names PRIV-024 lists, never by parsing `KEYS` in `app/core/src/settings.rs`, so a later task adding a key breaks no test of this task's; the restore steps name `server replay` (T206); and if T116's decision keeps inbound mail at the provider, the runbook records the provider's written retention period (OPS-045). Plan change D-4932: the restore steps are the operator's, off the app host: fetch the export object with a read key the host never holds (PRIV-029), decrypt it with `age -d` and the escrowed private key (PRIV-024), then run `server replay` with the plain `pg_dump -Fc` file and the fresh database's URL, and delete the plain file afterwards.",
+   "goal": "`docs/runbook.md` covers outages, safe mode, refunds, disputes, STOP issues, the restore drill with the switch to the restored database, the host choice and the breach steps (pause texting and charging, preserve logs, Arizona's 45-day notice), with the key inventory and no hosting key for Claude (OPS-012, OPS-014, OPS-020 to OPS-022, PRIV-024). The breach-notice steps follow OPS-020 (letter, email or a live call, never text alone; substitute notice; the law-enforcement pause; the Attorney General's form; processors' duty), and the runbook says to fix forward after a key rotation and never roll back past it (OPS-054, D-492). Plan change D-3144: the safe-mode steps say that a release waits while safe mode is on and goes ahead after the FEE-017 check when it ends (T408, with T706 and T707, D-4419; T707, the last of them, a dependency), while charges and \"Confirm and pay\" presses are refused until it ends. Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): the runbook also covers complaints (`BUILD_BRIEF.md:526` lists them): how a homeowner's or business's complaint reaches Casey and what he does with it. Plan change D-3889 (Fable's pre-claim check, Nov 16, 2026): TD-PRIV-09's \"inventory names every secret\" is checked against the secret names PRIV-024 lists, never by parsing `KEYS` in `app/core/src/settings.rs`, so a later task adding a key breaks no test of this task's; the restore steps name `server replay` (T206); and if T116's decision keeps inbound mail at the provider, the runbook records the provider's written retention period (OPS-045). Plan change D-4932: the restore steps are the operator's, off the app host: fetch the export object with a read key the host never holds (PRIV-029), decrypt it with `age -d` and the escrowed private key (PRIV-024), then run `server replay` with the plain `pg_dump -Fc` file and the fresh database's URL, and delete the plain file afterwards. Plan change D-5412 (3 attempts BLOCKED; every reviewer finding below is now in the goal): after T830 (a dep), the key steps name its commands. (1) Key format: `VAULT_KEY` and `VAULT_INDEX_KEY` are each a comma list of `<version>:<base64 of 32 bytes>`, the highest version active (`app/privacy/src/vault.rs:69` to `:71`). (2) The server and the worker run `check_index_keys` at start (`app/server/src/main.rs:55`, `app/server/src/bin/worker.rs:46`, `app/server/src/lib.rs:752` to `:767`) and refuse to start when contacts hold phone digests only under a version no longer configured (`vault.rs:985`) or opt-outs are held under an unconfigured version (`app/messaging/src/suppression_versions.rs:39`). (3) Rotation order (`app/messaging/src/suppression_rekey.rs:6` to `:8`): add v2 to both lists, run `server rotate-keys` until every batch is 0, `server retire-index-version 1`, drop v1 from both lists only after a `rotate-keys` run in which all four batches printed 0 moved and 0 skipped and none was refused; when `retire-index-version 1` refuses because v1 opt-outs have no v2 listing (a listing whose phone no contact holds, `app/messaging/src/suppression_rekey.rs:212` to `:214`), stop: keep v1 on both lists (the opt-outs stay honoured under it and the start check passes), note the count, and ask the developer; never delete those rows by hand, then run `server rotate-keys` once more (it removes the stale v1 phone digests, `vault.rs:761` to `:762`). (4) Restoring an export older than a rotation: put v1 back on the host lists before starting the worker or web, redo the rotation (3), then drop v1. (5) Keep a retired key's paper copy, and the old export key, until 30 days after the last export made under it (OPS-013, `docs/spec/ops-recovery.md:17`); the 30 days restart after a restore. (6) Stop web during a restore, and before ending the pause check Twilio's inbound log and the email and web opt-outs against the suppression list: `server replay` rebuilds only from Twilio's sent log and Stripe's charges (`lib.rs:1649`), never opt-outs (OPS-015, `ops-recovery.md:19`; CON-035). `tests/docs/test_runbook.py` asserts (1) to (6). Keep lines within the runbook's wrap width. Every commit message and file holds only fake values: the three earlier attempts' kept work was skipped because a commit failed the PII scan.",
    "type": "docs",
    "phase": 1,
    "stage": "5",
    "module": null,
    "deps": [
     "T206",
-    "T707"
+    "T707",
+    "T830"
    ],
    "model": "claude-sonnet-5-5",
    "effort": "medium",
@@ -31168,7 +31227,9 @@
     "OPS-021",
     "OPS-022",
     "PRIV-024",
-    "OPS-054"
+    "OPS-054",
+    "OPS-013",
+    "OPS-015"
    ],
    "tests": [
     "TD-OPS-05",
@@ -31183,14 +31244,15 @@
     "D-3844",
     "D-3889",
     "D-4419",
-    "D-4932"
+    "D-4932",
+    "D-5412"
    ],
    "cites": [
     "BUILD_BRIEF.md:526"
    ],
    "budget": {
     "files": 2,
-    "lines": 400,
+    "lines": 650,
     "context_pct": 5
    },
    "checks": [
@@ -31539,10 +31601,64 @@
    "acceptance": "`app/server/tests/browser_tamper.rs` passes; its planted cases (a changed fee, amount, business, quote and pick ID in a form and in a URL, by another signed-in user and beyond the user's rights; a planted sentinel in a served page) are each refused or found, and each refusal is logged; every other test passes unchanged."
   },
   {
+   "id": "T828",
+   "slug": "gitleaks-commit-range",
+   "title": "ci (harness): gitleaks scans each push's commit range, with a planted two-commit check (SEC-045)",
+   "goal": "Plan change D-5410 (T121's attempt-1 plan gap; SEC-045, TD-SEC-24). `.github/workflows/ci.yml`'s only secret scan is `gitleaks dir .` (`:128`), the working tree, so a secret added in one commit and removed in the next of the same push passes, and T121's supply-chain test cannot pass. In the Checks job, after the working-tree scan and with the same verified binary: (1) a step `Secret scan (gitleaks, commit range)` runs `gitleaks git --log-opts=<range> --no-banner --redact --exit-code 1` over the pushed commits: `before..sha` when the push's `before` is a commit in the fetched history (`fetch-depth: 200` stays), else, on a push (a new branch, a `before` outside the fetched history), the fetched commits not on `main`, fetching `main` with `--depth=200` first (or its merge base with the head); when the run is not a push (`nightly-main.yml:11` calls this workflow on `main` by schedule or `workflow_dispatch`, with no `before`) or `HEAD` is `main`'s tip, the fetched history (`--log-opts=HEAD`, bounded by `fetch-depth: 200`). The range is printed; only on a push does a range that resolves to no commit fail rather than scan nothing. Event values reach the script through `env:`, never inline in `run:`. (2) a step before it plants the case: in a temporary repository it commits a file holding a secret gitleaks' default rules find, built at run time from pieces so no tracked file holds it (the working-tree scan and `scripts/pii_scan.py` stay green), then a second commit deleting it; `gitleaks git` over the two commits must exit 1 and `gitleaks dir` over the final tree 0, else the step fails. Round 2 (D-5410): nightly and update-merge runs scan `main`'s history, so a historical hit since removed would turn `main` red with nothing to fix: before the step lands, run it over the 200 fetched commits of `main`; each historical finding, after its secret is confirmed rotated or never live, is listed by fingerprint in a new `.gitleaksignore` with a logged decision (the review scanned 4,980 commits clean, so the file is likely empty or absent; an empty list is not created). Nothing else in `ci.yml` changes; `tests/test_ci_workflow.py` and `scripts/smoke.sh` pass unchanged. It runs before T499 and T514, the next owners of `ci.yml`.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T764",
+    "T770",
+    "T640"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "harness"
+   ],
+   "owns": [
+    ".github/workflows/ci.yml",
+    ".gitleaksignore"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/spec/security.md"
+   ],
+   "requirements": [
+    "SEC-045"
+   ],
+   "tests": [
+    "TD-SEC-24"
+   ],
+   "decisions": [
+    "D-480",
+    "D-5410"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 70,
+    "context_pct": 12
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T828-gitleaks-commit-range",
+   "prompt": "kit/prompts/T828.md",
+   "acceptance": "On this branch's own push the commit-range step scans the pushed commits and passes; the range logic, run once in the step's own check against a checkout of `main`'s tip with no `before`, picks the fetched history and does not fail; the planted step's `gitleaks git` exits 1 and its `gitleaks dir` 0; `tests/test_ci_workflow.py`, `scripts/smoke.sh` and every other `Ci` job pass unchanged."
+  },
+  {
    "id": "T121",
    "slug": "security-startup-supply",
    "title": "Startup key checks, control router absent in live, supply-chain checks",
-   "goal": "Security tests prove the app refuses to start on a live key in test, a test key in live or a vendor account off the environment's allow-list, the test-control router is absent from the release build, every route input rejects unknown fields, and the supply-chain steps (audits, pinned Actions and images, gitleaks over the commit range) fail on a planted hit (SEC-001 to SEC-003, SEC-010, SEC-021, SEC-035, SEC-036, SEC-045). Pentest PT-01 (D-2347): the supply-chain test reads every `.github/workflows/*.yml` and `*.yaml` file, not only `ci.yml`, and fails on any external `uses:` (anything but a `./` local action) without a 40-character commit SHA, with a planted-hit case (a workflow text using a tag) that must fail (TD-SEC-24). After T345 pinned every current one. Plan change D-3750 (D-3744's gap): `AddressForm` (`app/portals/src/business_auth.rs:642`) and `CodeForm` (`:753`) lack `#[serde(deny_unknown_fields)]`, so SEC-010 fails on them; this task adds it to both and changes nothing else in that file (if a served form posts a field neither struct names, the struct gains that field; the attribute is never dropped), and its own SEC-010 check reads the type parameter of `CsrfForm<T>` (`app/portals/src/security.rs:355`) beside `Form`, `Json` and `Query`, because `tests/integration/tests/architecture.rs:55`'s extractor list lacks it and that file is T175's test, which a build task may not take over; it is left as is. The one unpinned workflow image (`.github/workflows/backup-runner.yml:197`) is pinned first by T473, so TD-SEC-24 passes on main. Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): D-3750's \"only `AddressForm` and `CodeForm` lack it\" was wrong: `Posted`, the quote form's fields in `app/server/src/action_links.rs` (`:361`, read through `CsrfForm<Posted>` at `:438`), lacks it too, so this task also owns that file, after its last queued co-owner T458 (T306, T399, T456, T463 and T457 come before T458), and adds `#[serde(deny_unknown_fields)]` to `Posted` and nothing else there (the same rule: a field a served form posts joins the struct; the attribute is never dropped). Its SEC-010 check treats a struct deserialized through `#[serde(try_from = ...)]` whose conversion refuses an unknown field name, as `TimesForm` does (`app/server/src/business_portal.rs:368` to `:390`), as equivalent, naming each such struct in the test. Current cites (grep at claim; they move): `AddressForm` `app/portals/src/business_auth.rs:678`, `CodeForm` `:819`, `TimesForm` `app/server/src/business_portal.rs:369`, `CsrfForm` `app/portals/src/security.rs:395`. Plan change D-3891 (Fable's pre-claim check): (1) a fifth form type fails SEC-010: `CapabilityForm` (`app/server/src/business_signup.rs:1563`, `#[serde(transparent)]` over `Vec<(String, String)>`, read through `CsrfForm<CapabilityForm>` at `:1666`, added by T464) silently drops unknown names (`app/portals/src/business_signup.rs:1136`, `_ => {}`), so it is not a `try_from` equivalent either. This task also owns that file, after its last queued co-owner T526 (T488 and T490 come before it): `CapabilityForm` becomes `#[serde(try_from = \"Vec<(String, String)>\")]` and refuses any name outside `csrf` and the eight that `CapabilityValues::from_pairs` reads; nothing else changes there. (2) At claim time list every `name=` in the forms `app/portals/templates/business_actions.html` posts to `ACTION_ROUTE` (on Nov 16 `days` at `:70`, the hidden `format` at `:85` sent on every quote post, `auto_confirm` at `:164` and `same` at `:168` are missing from `Posted`); each joins `Posted`, because `act` parses `CsrfForm<Posted>` before it reads the kind (`app/server/src/action_links.rs:438`) and `app/server/tests/action_links_route.rs:499` posts `&days=3` and expects the not-found answer. A field nothing reads is named `_x` with `#[serde(rename = \"x\")]`, so clippy's dead-code warning does not fail the build. Plan change D-4258 (closed scan lists, Nov 17, 2026): \"every route input rejects unknown fields\" named no closed set of input forms, so it is now this closed rule, one definition for worker and reviewer, built in the owned `tests/security/tests/startup_and_supply.rs` as one source scan with parametrized planted cases. (1) Scope: every `.rs` file under `app/*/src/` (390 on `main` b1fe64c; 387 on 2a27c18, when the prototype ran), `src/tests/` folders skipped, comments and string literals removed as `code_only` does (`tests/security/tests/vault_readers.rs:30`), and each `#[cfg(test)]` item removed to its matching `}` or `;` (never \"the rest of the file from the first `#[cfg(test)]`\": `app/ai/src/schemas.rs:19` marks an early item, and truncating there hides `parse_reading`). (2) The input forms, closed: (F1) a `fn` parameter typed `Json<T>`, `Form<T>`, `Query<T>`, `CsrfForm<T>` or `Path<T>`, with or without an `axum::`, `axum::extract::`, `security::` or `crate::security::` path, after a `use … as` rename or a `type X = …;` alias in the same file is followed (none on `main`); (F2) the turbofish `Json::<T>`, `Form::<T>`, `Query::<T>`, `Path::<T>` or `CsrfForm::<T>` (any of those paths) anywhere in code, e.g. `axum::Form::<Vec<(String, String)>>::from_request`; (F3) a `fn` parameter typed `RawQuery`, `RawForm`, `Multipart` or `Bytes` (`axum::body::Bytes` too); (F4) a call to `from_*` of `serde_json`, `serde_urlencoded`, `serde_saphyr`, `serde_yaml`, `toml`, `serde_qs` or `serde_html_form`, `form_urlencoded::parse`, or a bare `from_*` imported from one of them by `use` (`app/messaging/src/rules.rs:16`). (F5) a hand-written parser of a request body or query: a call to `to_bytes(` (`axum::body::to_bytes` too) or a `.split('&')` outside test code. A `Request` or `String` parameter is not otherwise a form: its body reaches serde only through F2 or F4, or is read by hand through F5. (3) The rule for T in F1 and F2: T is resolved by the alias and rename, then to the struct of that name defined in the same file, else in the same crate, else the workspace's one definition (a name defined in two other crates fails), never by bare name across the workspace: `Posted` is strict in `app/site/src/chat.rs` and is not in `app/server/src/action_links.rs`. T passes when it is a struct with `#[serde(deny_unknown_fields)]`, or a struct with `#[serde(try_from = …)]` named in the test's `REFUSING_TRY_FROM` (`TimesForm`, `app/server/src/business_portal.rs:359`, and `CapabilityForm` once this task converts it), or the generic `T` of `CsrfForm`'s own `FromRequest` impl in `app/portals/src/security.rs`. `HashMap`, `BTreeMap`, `Vec`, a tuple and `serde_json::Value` cannot deny unknown fields and fail as T, except as the source type of a `REFUSING_TRY_FROM` struct or at a `csrf-peek` site of (4). Nested: each field type of a passing struct that is a `Deserialize` struct of the workspace must pass the same rule (transitively); a unit-variant enum passes, because serde refuses an unknown variant (`ChannelChoice`, `business_portal.rs:608`); a field typed `HashMap`, `BTreeMap` or `Value` fails. `#[serde(flatten)]` on a field of a passing struct or of its nested types fails: serde does not support it together with `deny_unknown_fields`, and the flattened field swallows unknown names; the one flatten on `main` (`app/adapters/src/payments.rs:156`) is a Stripe response type, not an input, and stays. `Path<T>` passes for `String`, an integer type, `Uuid` or a tuple of those (positional segments carry no names) or a passing struct. (4) F3, F4 and F5 sites, and F2 sites whose T fails (3), are keyed by file and nearest enclosing `fn` (else the top-level `static`) and must be in the test's closed `CLASSIFIED` table, one class each; a site outside it fails, so a new raw or manual parse is classified in the change that adds it. The table on `main`: `provider-webhook`, a signed body in the provider's own schema (SEC-010 exception (a): the signature is verified before the parse; refusing a field the provider adds would drop its real events, so its typed structs ignore unknown fields): `app/payments/src/routes.rs` `receive` and `checked`, `app/payments/src/release_proof.rs` `from_webhook`, `app/messaging/src/email.rs` `parse_event`, `app/privacy/src/reader.rs` `read_inbound_email`, `app/adapters/src/signatures.rs` `json_id`, `app/server/src/call_status.rs` `status`, `app/server/src/inbound_text.rs` `inbound` and `status`, `app/server/src/inbound_voice.rs` `voice`, `app/server/src/voice_status.rs` `status`, `key` and `key_query` (F5), `app/adapters/src/signatures.rs` `form_pairs` (F5, the Twilio signature check reading the signed form's own pairs); `own-query` (reads back only a query this app wrote into its own callback URL and answers `None` for any other, so it rejects unknown fields and is not a SEC-010 exception; F5 detects `from_query`'s `.split('&')`, while `parse` uses `split_once` and is listed without F5 detecting it, so the test never requires every listed site to be found by F5): `app/calls/src/voice.rs` `from_query`, `app/server/src/inbound_voice.rs` `parse`; each of these two, private to its file, gets planted cases in that file's own `#[cfg(test)]` module, an unknown key and a repeated key added to a query it wrote, each answering `None` (this task owns the two files for those test cases and, if one answers otherwise, the smallest fix in that function); `webauthn` (SEC-010 exception (b): a passkey credential parsed and verified by webauthn-rs's own types): `app/portals/src/owner_auth.rs` `passkey_ok` and `finish_passkey_registration`; `raw-query` (SEC-010 exception (c): D-3028's sign-in link query and D-3645's quote-page query; named, shape-checked keys read, every other ignored): `app/portals/src/business_auth.rs` `signin_page`, `signin_open`, `signin_post`, `app/portals/src/quote_page.rs` `show` and `page_query` (F5), `business_auth.rs` `from_raw` (F5); `csrf-peek` (reads only `csrf` or `code` before the route's own strict parse): `app/server/src/chat_codes.rs` `posted_csrf`, `app/server/src/business_signin.rs` `has_code`, and their F5 body reads `chat_codes.rs` `check_token` and `business_signin.rs` `note_client`; `names-refused`: `app/server/src/business_signup.rs` `same_site` (see (5)); the classes below are not request inputs under SEC-010 (\"Our own stored, embedded, outbound-response, command-line and schema-checked AI data are not request inputs\"): `outbound-response` (a reply to our own call): `app/adapters/src/base.rs` `post_form` and `json`, `app/adapters/src/sms.rs` `fetch_message_from`, `error_answer` and `read_answer`; `stored` (our own stored JSON): `owner_auth.rs` `owner_passkeys` and `passkey_registration_options`, `app/server/src/offdb_stream.rs` `verify_audit_chain`; `cli`: `app/server/src/bin/rules_bridge.rs` `answer`; `ai-output` (schema-checked AI reply): `app/ai/src/schemas.rs` `parse_reading`; `embedded` (a compiled-in file): `app/adapters/src/signatures.rs` `STRIPE_IPS`, `app/ai/src/output_checks.rs` `is_opener` and `word_022`, `app/ai/src/schemas.rs` `intake_schema`, `app/catalog/src/loader.rs` `parse`, `app/catalog/src/markets.rs` `parse_markets`, `app/catalog/src/question_bank.rs` `parse_bank`, `app/core/src/brand.rs` `parse`, `app/intake/src/design.rs` `is_design_category`, `app/intake/src/golden_run.rs` `golden_rows`, `app/licensing/src/class_map.rs` `load` and `read_categories`, `app/licensing/src/handyman.rs` `parse_gas`, `app/licensing/src/lines.rs` `parse_templates`, `app/messaging/src/rules.rs` `parse`, `app/messaging/src/templates.rs` `parse_with`. (5) Prototype (`/tmp/claude-0/proto/d4258_t121_inputs.py`) on `main` 2a27c18: 387 files; F1 42 (`CsrfForm` 19, `Path` 16, `Query` 5, `Form` 1, `Json` 1), F2 4, F3 12 (`Bytes` 8, `RawQuery` 4), F4 37; 5 hits, each a real defect this task fixes: `AddressForm` (`app/portals/src/business_auth.rs:700`), `CodeForm` (`:848`), `Posted` (`app/server/src/action_links.rs:433`) and `CapabilityForm` (`app/server/src/business_signup.rs:1662`), all already above, and one new: `same_site` (`app/server/src/business_signup.rs:530` to `:547`) parses every sign-up post (`start_post`, the identity steps through `step_post`, `area_post`, `email_check`, `email_resend`, `later_post`) as `axum::Form::<Vec<(String, String)>>` and reads fields by name, so an unknown name passes silently. In this file, which it owns, this task gives `same_site` a `names: &'static [&'static str]` argument, one const per route, closed at claim from every `name=` of the forms posting to that route in `app/portals/templates/business_signup.html` (with every value `name=\"{{ name }}\"` at `:119` can take) and in `app/portals/templates/es_business_signup.html` once T488 (a dep) adds it, including its hidden `lang` field that carries `lang=es` through each `POST`, so the Spanish sign-up never answers 400 and every name its handler reads, and answers the same 400 as a body that is no form when a posted name is outside it or a name the handler reads once is repeated (a multi-value name such as `pest_category`, `:95` and `:97`, may repeat); the `names-refused` class requires `same_site`'s body to call that refusal, and the file's test module plants an unknown and a repeated name; `app/server/tests/business_signup_route.rs` passes unchanged. (6) Planted, each its own case through the same scan function, the struct definitions planted beside them: must fail `Form<Loose>` (no attribute), `Json<HashMap<String, String>>`, `Query<BTreeMap<String, String>>`, `Form<Vec<(String, String)>>`, `Json<serde_json::Value>`, `axum::Form::<Vec<(String, String)>>::from_request(r, &())` in an unlisted `fn`, `type In = Loose;` then `Form<In>`, `use axum::Json as J;` then `J<Loose>`, a strict struct with `#[serde(flatten)] extra: HashMap<String, String>`, a strict struct whose field is a loose struct, `Path<Loose>`, a `Multipart`, `RawQuery`, `RawForm` or `Bytes` parameter in an unlisted `fn`, `serde_json::from_slice(&body)` in an unlisted `fn`, a bare `from_str(body)` after `use serde_json::from_str;`, a `try_from` struct not in `REFUSING_TRY_FROM`, and a name strict in one crate and loose in the crate that uses it; must pass a strict struct under each of `Json`, `Form`, `Query`, `CsrfForm`, `Path<(String, String)>`, `Path<Uuid>`, a strict struct with a unit-enum field, `TimesForm`, `CsrfForm<T>` in `security.rs`, and every listed site. Passing the closed scans is the wording bar; an off-list phrasing that no file in scope contains is a note under 'Scan list notes (not findings)', not a finding (D-4038); here an input form or site outside (2) and (4) that no file in scope contains is such a note. Budget 550 lines (was 350): the class table, the planted cases and `same_site`'s names. It also depends on T586, the last DONE owner of `app/calls/src/voice.rs` (order only).",
+   "goal": "Security tests prove the app refuses to start on a live key in test, a test key in live or a vendor account off the environment's allow-list, the test-control router is absent from the release build, every route input rejects unknown fields, and the supply-chain steps (audits, pinned Actions and images, gitleaks over the commit range) fail on a planted hit (SEC-001 to SEC-003, SEC-010, SEC-021, SEC-035, SEC-036, SEC-045). Pentest PT-01 (D-2347): the supply-chain test reads every `.github/workflows/*.yml` and `*.yaml` file, not only `ci.yml`, and fails on any external `uses:` (anything but a `./` local action) without a 40-character commit SHA, with a planted-hit case (a workflow text using a tag) that must fail (TD-SEC-24). After T345 pinned every current one. Plan change D-3750 (D-3744's gap): `AddressForm` (`app/portals/src/business_auth.rs:642`) and `CodeForm` (`:753`) lack `#[serde(deny_unknown_fields)]`, so SEC-010 fails on them; this task adds it to both and changes nothing else in that file (if a served form posts a field neither struct names, the struct gains that field; the attribute is never dropped), and its own SEC-010 check reads the type parameter of `CsrfForm<T>` (`app/portals/src/security.rs:355`) beside `Form`, `Json` and `Query`, because `tests/integration/tests/architecture.rs:55`'s extractor list lacks it and that file is T175's test, which a build task may not take over; it is left as is. The one unpinned workflow image (`.github/workflows/backup-runner.yml:197`) is pinned first by T473, so TD-SEC-24 passes on main. Plan change D-3844 (the overseer's pre-claim scout, Nov 15, 2026): D-3750's \"only `AddressForm` and `CodeForm` lack it\" was wrong: `Posted`, the quote form's fields in `app/server/src/action_links.rs` (`:361`, read through `CsrfForm<Posted>` at `:438`), lacks it too, so this task also owns that file, after its last queued co-owner T458 (T306, T399, T456, T463 and T457 come before T458), and adds `#[serde(deny_unknown_fields)]` to `Posted` and nothing else there (the same rule: a field a served form posts joins the struct; the attribute is never dropped). Its SEC-010 check treats a struct deserialized through `#[serde(try_from = ...)]` whose conversion refuses an unknown field name, as `TimesForm` does (`app/server/src/business_portal.rs:368` to `:390`), as equivalent, naming each such struct in the test. Current cites (grep at claim; they move): `AddressForm` `app/portals/src/business_auth.rs:678`, `CodeForm` `:819`, `TimesForm` `app/server/src/business_portal.rs:369`, `CsrfForm` `app/portals/src/security.rs:395`. Plan change D-3891 (Fable's pre-claim check): (1) a fifth form type fails SEC-010: `CapabilityForm` (`app/server/src/business_signup.rs:1563`, `#[serde(transparent)]` over `Vec<(String, String)>`, read through `CsrfForm<CapabilityForm>` at `:1666`, added by T464) silently drops unknown names (`app/portals/src/business_signup.rs:1136`, `_ => {}`), so it is not a `try_from` equivalent either. This task also owns that file, after its last queued co-owner T526 (T488 and T490 come before it): `CapabilityForm` becomes `#[serde(try_from = \"Vec<(String, String)>\")]` and refuses any name outside `csrf` and the eight that `CapabilityValues::from_pairs` reads; nothing else changes there. (2) At claim time list every `name=` in the forms `app/portals/templates/business_actions.html` posts to `ACTION_ROUTE` (on Nov 16 `days` at `:70`, the hidden `format` at `:85` sent on every quote post, `auto_confirm` at `:164` and `same` at `:168` are missing from `Posted`); each joins `Posted`, because `act` parses `CsrfForm<Posted>` before it reads the kind (`app/server/src/action_links.rs:438`) and `app/server/tests/action_links_route.rs:499` posts `&days=3` and expects the not-found answer. A field nothing reads is named `_x` with `#[serde(rename = \"x\")]`, so clippy's dead-code warning does not fail the build. Plan change D-4258 (closed scan lists, Nov 17, 2026): \"every route input rejects unknown fields\" named no closed set of input forms, so it is now this closed rule, one definition for worker and reviewer, built in the owned `tests/security/tests/startup_and_supply.rs` as one source scan with parametrized planted cases. (1) Scope: every `.rs` file under `app/*/src/` (390 on `main` b1fe64c; 387 on 2a27c18, when the prototype ran), `src/tests/` folders skipped, comments and string literals removed as `code_only` does (`tests/security/tests/vault_readers.rs:30`), and each `#[cfg(test)]` item removed to its matching `}` or `;` (never \"the rest of the file from the first `#[cfg(test)]`\": `app/ai/src/schemas.rs:19` marks an early item, and truncating there hides `parse_reading`). (2) The input forms, closed: (F1) a `fn` parameter typed `Json<T>`, `Form<T>`, `Query<T>`, `CsrfForm<T>` or `Path<T>`, with or without an `axum::`, `axum::extract::`, `security::` or `crate::security::` path, after a `use … as` rename or a `type X = …;` alias in the same file is followed (none on `main`); (F2) the turbofish `Json::<T>`, `Form::<T>`, `Query::<T>`, `Path::<T>` or `CsrfForm::<T>` (any of those paths) anywhere in code, e.g. `axum::Form::<Vec<(String, String)>>::from_request`; (F3) a `fn` parameter typed `RawQuery`, `RawForm`, `Multipart` or `Bytes` (`axum::body::Bytes` too); (F4) a call to `from_*` of `serde_json`, `serde_urlencoded`, `serde_saphyr`, `serde_yaml`, `toml`, `serde_qs` or `serde_html_form`, `form_urlencoded::parse`, or a bare `from_*` imported from one of them by `use` (`app/messaging/src/rules.rs:16`). (F5) a hand-written parser of a request body or query: a call to `to_bytes(` (`axum::body::to_bytes` too) or a `.split('&')` outside test code. A `Request` or `String` parameter is not otherwise a form: its body reaches serde only through F2 or F4, or is read by hand through F5. (3) The rule for T in F1 and F2: T is resolved by the alias and rename, then to the struct of that name defined in the same file, else in the same crate, else the workspace's one definition (a name defined in two other crates fails), never by bare name across the workspace: `Posted` is strict in `app/site/src/chat.rs` and is not in `app/server/src/action_links.rs`. T passes when it is a struct with `#[serde(deny_unknown_fields)]`, or a struct with `#[serde(try_from = …)]` named in the test's `REFUSING_TRY_FROM` (`TimesForm`, `app/server/src/business_portal.rs:359`, and `CapabilityForm` once this task converts it), or the generic `T` of `CsrfForm`'s own `FromRequest` impl in `app/portals/src/security.rs`. `HashMap`, `BTreeMap`, `Vec`, a tuple and `serde_json::Value` cannot deny unknown fields and fail as T, except as the source type of a `REFUSING_TRY_FROM` struct or at a `csrf-peek` site of (4). Nested: each field type of a passing struct that is a `Deserialize` struct of the workspace must pass the same rule (transitively); a unit-variant enum passes, because serde refuses an unknown variant (`ChannelChoice`, `business_portal.rs:608`); a field typed `HashMap`, `BTreeMap` or `Value` fails. `#[serde(flatten)]` on a field of a passing struct or of its nested types fails: serde does not support it together with `deny_unknown_fields`, and the flattened field swallows unknown names; the one flatten on `main` (`app/adapters/src/payments.rs:156`) is a Stripe response type, not an input, and stays. `Path<T>` passes for `String`, an integer type, `Uuid` or a tuple of those (positional segments carry no names) or a passing struct. (4) F3, F4 and F5 sites, and F2 sites whose T fails (3), are keyed by file and nearest enclosing `fn` (else the top-level `static`) and must be in the test's closed `CLASSIFIED` table, one class each; a site outside it fails, so a new raw or manual parse is classified in the change that adds it. The table on `main`: `provider-webhook`, a signed body in the provider's own schema (SEC-010 exception (a): the signature is verified before the parse; refusing a field the provider adds would drop its real events, so its typed structs ignore unknown fields): `app/payments/src/routes.rs` `receive` and `checked`, `app/payments/src/release_proof.rs` `from_webhook`, `app/messaging/src/email.rs` `parse_event`, `app/privacy/src/reader.rs` `read_inbound_email`, `app/adapters/src/signatures.rs` `json_id`, `app/server/src/call_status.rs` `status`, `app/server/src/inbound_text.rs` `inbound` and `status`, `app/server/src/inbound_voice.rs` `voice`, `app/server/src/voice_status.rs` `status`, `key` and `key_query` (F5), `app/adapters/src/signatures.rs` `form_pairs` (F5, the Twilio signature check reading the signed form's own pairs); `own-query` (reads back only a query this app wrote into its own callback URL and answers `None` for any other, so it rejects unknown fields and is not a SEC-010 exception; F5 detects `from_query`'s `.split('&')`, while `parse` uses `split_once` and is listed without F5 detecting it, so the test never requires every listed site to be found by F5): `app/calls/src/voice.rs` `from_query`, `app/server/src/inbound_voice.rs` `parse`; each of these two, private to its file, gets planted cases in that file's own `#[cfg(test)]` module, an unknown key and a repeated key added to a query it wrote, each answering `None` (this task owns the two files for those test cases and, if one answers otherwise, the smallest fix in that function); `webauthn` (SEC-010 exception (b): a passkey credential parsed and verified by webauthn-rs's own types): `app/portals/src/owner_auth.rs` `passkey_ok` and `finish_passkey_registration`; `raw-query` (SEC-010 exception (c): D-3028's sign-in link query and D-3645's quote-page query; named, shape-checked keys read, every other ignored): `app/portals/src/business_auth.rs` `signin_page`, `signin_open`, `signin_post`, `app/portals/src/quote_page.rs` `show` and `page_query` (F5), `business_auth.rs` `from_raw` (F5); `csrf-peek` (reads only `csrf` or `code` before the route's own strict parse): `app/server/src/chat_codes.rs` `posted_csrf`, `app/server/src/business_signin.rs` `has_code`, and their F5 body reads `chat_codes.rs` `check_token` and `business_signin.rs` `note_client`; `names-refused`: `app/server/src/business_signup.rs` `same_site` (see (5)); the classes below are not request inputs under SEC-010 (\"Our own stored, embedded, outbound-response, command-line and schema-checked AI data are not request inputs\"): `outbound-response` (a reply to our own call): `app/adapters/src/base.rs` `post_form` and `json`, `app/adapters/src/sms.rs` `fetch_message_from`, `error_answer` and `read_answer`; `stored` (our own stored JSON): `owner_auth.rs` `owner_passkeys` and `passkey_registration_options`, `app/server/src/offdb_stream.rs` `verify_audit_chain`; `cli`: `app/server/src/bin/rules_bridge.rs` `answer`; `ai-output` (schema-checked AI reply): `app/ai/src/schemas.rs` `parse_reading`; `embedded` (a compiled-in file): `app/adapters/src/signatures.rs` `STRIPE_IPS`, `app/ai/src/output_checks.rs` `is_opener` and `word_022`, `app/ai/src/schemas.rs` `intake_schema`, `app/catalog/src/loader.rs` `parse`, `app/catalog/src/markets.rs` `parse_markets`, `app/catalog/src/question_bank.rs` `parse_bank`, `app/core/src/brand.rs` `parse`, `app/intake/src/design.rs` `is_design_category`, `app/intake/src/golden_run.rs` `golden_rows`, `app/licensing/src/class_map.rs` `load` and `read_categories`, `app/licensing/src/handyman.rs` `parse_gas`, `app/licensing/src/lines.rs` `parse_templates`, `app/messaging/src/rules.rs` `parse`, `app/messaging/src/templates.rs` `parse_with`. (5) Prototype (`/tmp/claude-0/proto/d4258_t121_inputs.py`) on `main` 2a27c18: 387 files; F1 42 (`CsrfForm` 19, `Path` 16, `Query` 5, `Form` 1, `Json` 1), F2 4, F3 12 (`Bytes` 8, `RawQuery` 4), F4 37; 5 hits, each a real defect this task fixes: `AddressForm` (`app/portals/src/business_auth.rs:700`), `CodeForm` (`:848`), `Posted` (`app/server/src/action_links.rs:433`) and `CapabilityForm` (`app/server/src/business_signup.rs:1662`), all already above, and one new: `same_site` (`app/server/src/business_signup.rs:530` to `:547`) parses every sign-up post (`start_post`, the identity steps through `step_post`, `area_post`, `email_check`, `email_resend`, `later_post`) as `axum::Form::<Vec<(String, String)>>` and reads fields by name, so an unknown name passes silently. In this file, which it owns, this task gives `same_site` a `names: &'static [&'static str]` argument, one const per route, closed at claim from every `name=` of the forms posting to that route in `app/portals/templates/business_signup.html` (with every value `name=\"{{ name }}\"` at `:119` can take) and in `app/portals/templates/es_business_signup.html` once T488 (a dep) adds it, including its hidden `lang` field that carries `lang=es` through each `POST`, so the Spanish sign-up never answers 400 and every name its handler reads, and answers the same 400 as a body that is no form when a posted name is outside it or a name the handler reads once is repeated (a multi-value name such as `pest_category`, `:95` and `:97`, may repeat); the `names-refused` class requires `same_site`'s body to call that refusal, and the file's test module plants an unknown and a repeated name; `app/server/tests/business_signup_route.rs` passes unchanged. (6) Planted, each its own case through the same scan function, the struct definitions planted beside them: must fail `Form<Loose>` (no attribute), `Json<HashMap<String, String>>`, `Query<BTreeMap<String, String>>`, `Form<Vec<(String, String)>>`, `Json<serde_json::Value>`, `axum::Form::<Vec<(String, String)>>::from_request(r, &())` in an unlisted `fn`, `type In = Loose;` then `Form<In>`, `use axum::Json as J;` then `J<Loose>`, a strict struct with `#[serde(flatten)] extra: HashMap<String, String>`, a strict struct whose field is a loose struct, `Path<Loose>`, a `Multipart`, `RawQuery`, `RawForm` or `Bytes` parameter in an unlisted `fn`, `serde_json::from_slice(&body)` in an unlisted `fn`, a bare `from_str(body)` after `use serde_json::from_str;`, a `try_from` struct not in `REFUSING_TRY_FROM`, and a name strict in one crate and loose in the crate that uses it; must pass a strict struct under each of `Json`, `Form`, `Query`, `CsrfForm`, `Path<(String, String)>`, `Path<Uuid>`, a strict struct with a unit-enum field, `TimesForm`, `CsrfForm<T>` in `security.rs`, and every listed site. Passing the closed scans is the wording bar; an off-list phrasing that no file in scope contains is a note under 'Scan list notes (not findings)', not a finding (D-4038); here an input form or site outside (2) and (4) that no file in scope contains is such a note. Budget 550 lines (was 350): the class table, the planted cases and `same_site`'s names. It also depends on T586, the last DONE owner of `app/calls/src/voice.rs` (order only). Plan change D-5410 (attempt 1's plan gap, checked on `main` b3e4c6c): (1) the eleven loose forms in files this task does not own (`owner_portal.rs`'s eight `*Body` structs, `owner_tools.rs` `EvidenceBody`, `owner_help.rs` `HelpForm`, `homeowner_portal.rs` `PhotoPost`), `owner_tools.rs` `audit_log`'s `RawQuery` and `homeowner_portal.rs` `upload_fields`' silent `_ => {}` are fixed first by T827 (a dep); after it, `app/server/src/homeowner_portal.rs` `upload_fields` (F3 `Multipart`) joins `names-refused` (its body refuses an unknown and a repeated part) and `audit_log` reads a strict `Query`. (2) `business_signup.rs` `Asked::from_query` (F5; reads only `lang=es`, ignores the rest) joins `raw-query`: SEC-010 (c) now names the sign-up page's query. (3) SEC-045's commit-range scan is T828's (a dep) `ci.yml` step; the supply-chain test requires in `ci.yml` a `gitleaks git` run with `--log-opts` and T828's planted two-commit step, and fails on a planted workflow text lacking either. A form or raw parse that fails the scan in a file another task changed after T827 is reported as a plan gap, not fixed here.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -31554,7 +31670,9 @@
     "T458",
     "T526",
     "T488",
-    "T586"
+    "T586",
+    "T827",
+    "T828"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -31600,7 +31718,8 @@
     "D-3844",
     "D-3877",
     "D-3891",
-    "D-4258"
+    "D-4258",
+    "D-5410"
    ],
    "cites": [],
    "budget": {
@@ -33905,7 +34024,8 @@
     "T724",
     "T764",
     "T770",
-    "T788"
+    "T788",
+    "T828"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -35097,7 +35217,8 @@
     "T558",
     "T551",
     "T552",
-    "T726"
+    "T726",
+    "T828"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -46130,6 +46251,58 @@
    "acceptance": "TD-SEC-61 passes with the new `PhotoLink` door (10 doors) and the `{job}` fill proved by planted cases; on the planted router an unissued photo token is a `no-store` 404 for all six actors, and the other side's and an unknown `{job}` number are the one not-found answer; every other door_matrix, auth_matrix and route_wiring case passes unchanged."
   },
   {
+   "id": "T829",
+   "slug": "door-matrix-owner-signin",
+   "title": "server tests (harness): the door matrix's owner sign-ins never start after the request they serve, before T397 adds three Owner rows",
+   "goal": "Plan change D-5411 (T397's attempt-1 plan gap, reproduced by its worker and reviewer, checked against the code on `main` b3e4c6c; SEC-043, D-3744). `owner_jar` (`app/server/tests/door_matrix.rs:1180`) signs the owner in at `key.now` plus 30 seconds times k, the k-th sign-in, so each TOTP step is new; the router runs on `SystemClock`, so past about 60 probed Owner rows a session starts more than `OWNER_IDLE_LIMIT` (30 minutes) after the request it serves, `owner_principal` stores `expires_at` as that request's time plus 30 minutes (`app/portals/src/owner_auth.rs:257`), earlier than `created_at`, `portals.session`'s `CHECK (expires_at > created_at)` (`migrations/0058_portals_base_security.sql:27`) fails and the row answers 500. T397's three `/b/phones` rows tip it over. Fix in `owner_jar` only: each sign-in is at the current wall-clock time minus a fixed offset longer than the 5-minute step-up window and shorter than the idle limit (for example 10 minutes), so every session is live, starts before the request it serves, and its factor is not fresh, as every Owner row after the first sees today; before each sign-in the test clears the owner factor's replay mark (`portals.owner_factor.totp_last_step`, `migrations/0135_portals_owner_auth.sql:28`, refused when not below the new step, `app/portals/src/models.rs:477`) through its own connection, so that step's code is accepted again (the replay refusal itself is `tests/security/tests/owner_auth.rs`'s, unchanged). `OwnerKey`'s counter goes if nothing else reads it. No assertion, row, door, actor or expected answer changes; a row whose answer changes with this timing is reported, not re-expected. A planted case signs in 80 times through `owner_jar` and each jar passes `owner_principal` when used.",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": "server",
+   "deps": [
+    "T766",
+    "T767"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security",
+    "harness"
+   ],
+   "owns": [
+    "app/server/tests/door_matrix.rs"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/spec/security.md"
+   ],
+   "requirements": [
+    "SEC-034"
+   ],
+   "tests": [
+    "TD-SEC-61"
+   ],
+   "decisions": [
+    "D-3744",
+    "D-5411"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 1,
+    "lines": 60,
+    "context_pct": 14
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T829-door-matrix-owner-signin",
+   "prompt": "kit/prompts/T829.md",
+   "acceptance": "Every `door_matrix.rs` case passes with its assertions unchanged, and the planted 80-sign-in case passes; `tests/security/tests/auth_matrix.rs`, `app/server/tests/route_wiring.rs` and `tests/security/tests/owner_auth.rs` pass unchanged."
+  },
+  {
    "id": "T674",
    "slug": "photo-upload-served",
    "title": "server: the homeowner's photo upload page and the short-lived photo links are served",
@@ -46205,6 +46378,64 @@
    "branch": "claude/task/T674-photo-upload-served",
    "prompt": "kit/prompts/T674.md",
    "acceptance": "TD-INT-48 passes through the assembled router and in Playwright with Ally clean; only the signed-in homeowner's own request takes an upload; a photo is stored only after `take_upload`'s checks and goes on the card only with its `photo_ok` row; a dead photo link is 404."
+  },
+  {
+   "id": "T827",
+   "slug": "owner-homeowner-strict-forms",
+   "title": "server and portals: the owner and homeowner forms refuse unknown fields (SEC-010), before T121's scan",
+   "goal": "Plan change D-5410 (T121's attempt-1 plan gap, checked on `main` b3e4c6c; SEC-010, D-4258). T121's closed SEC-010 scan fails on forms in four files T121 does not own; this task fixes them first and changes nothing else in those files. (1) `#[serde(deny_unknown_fields)]` on `app/server/src/owner_portal.rs` `ChangeBody`, `BridgeBody`, `OptOutBody`, `StripeBody`, `SafetyBody`, `SpanishBody`, `BusinessBody` and `ReleaseBody`, `app/server/src/owner_tools.rs` `EvidenceBody`, `app/portals/src/owner_help.rs` `HelpForm` and `app/server/src/homeowner_portal.rs` `PhotoPost` (grep at claim; lines move). Before adding it, list every `name=` each served form posting to that route sends (hidden fields, `csrf` and any `lang` included); each joins the struct, a field nothing reads named `_x` with `#[serde(rename = \"x\")]`; the attribute is never dropped. (2) `owner_tools.rs` `audit_log` takes `Result<Query<AuditQuery>, QueryRejection>`, `AuditQuery` a struct with `deny_unknown_fields` and `after: Option<String>`, in place of `RawQuery` and `.split('&')`, and acts on it only after `require_owner`, so a signed-out request still gets the door's refusal; a missing or non-number `after` still means 0, parsed in the handler; an unknown key, for the owner, gets the 400 the rejection carries. (3) `homeowner_portal.rs` `upload_fields` (the multipart photo post) refuses a part whose name is not one its served form posts (closed at claim from the template) or a repeated part, with the 400 a malformed form body gets, in place of `_ => {}`; nothing is stored; the CSRF check still comes first, so a post with a wrong token and an unknown part is the one 403 and `csrf_rejected` event (SEC-042, SEC-048). Each file's test module plants an unknown name for each struct it changed, and `upload_fields` an unknown and a repeated part. It runs before T712, T740 and T804, the next owners of these files (T738 and T820 follow them).",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T527",
+    "T540",
+    "T480",
+    "T407",
+    "T310",
+    "T304",
+    "T530",
+    "T674"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "security"
+   ],
+   "owns": [
+    "app/server/src/owner_portal.rs",
+    "app/server/src/owner_tools.rs",
+    "app/portals/src/owner_help.rs",
+    "app/server/src/homeowner_portal.rs"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/spec/security.md"
+   ],
+   "requirements": [
+    "SEC-010"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-4258",
+    "D-5410"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 220,
+    "context_pct": 20
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T827-owner-homeowner-strict-forms",
+   "prompt": "kit/prompts/T827.md",
+   "acceptance": "The eleven structs refuse an unknown field, `audit_log`'s query refuses an unknown key, `upload_fields` refuses an unknown and a repeated part, each by a planted case in its file's test module; every existing test (`app/server/tests/door_matrix.rs`, `owner_tools_route.rs`, the owner, help and homeowner route tests, the e2e journeys and Ally) passes unchanged."
   },
   {
    "id": "T776",
@@ -47631,7 +47862,8 @@
    "deps": [
     "T721",
     "T527",
-    "T484"
+    "T484",
+    "T827"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -47671,7 +47903,7 @@
    "budget": {
     "files": 5,
     "lines": 480,
-    "context_pct": 14
+    "context_pct": 24
    },
    "checks": [
     "Ci",
@@ -48863,7 +49095,8 @@
     "T687",
     "T746",
     "T766",
-    "T813"
+    "T813",
+    "T829"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -49545,7 +49778,8 @@
     "T742",
     "T748",
     "T309",
-    "T609"
+    "T609",
+    "T827"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -52381,7 +52615,8 @@
     "T200",
     "T729",
     "T730",
-    "T816"
+    "T816",
+    "T827"
    ],
    "effort": "high",
    "reviewer_model": "claude-opus-5-5",
