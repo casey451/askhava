@@ -3,42 +3,55 @@
     WORD-013), the twin of home.html with its fee line and privacy line in Spanish. All Spanish here is
     a draft marked for native-speaker review (WORD-002, D-180). The fee amounts come from the fee tiers
     (`payments::api::Tier`). The home page's numbers stay on the English page. The footer is the
-    Spanish one. -#}
+    Spanish one. T608 (WEB-027, D-4246, D-4252): the English home's section classes on the same
+    words, the kicker in the small-label style and no italic accent. -#}
 {% block lang %}es{% endblock %}
 {% block title %}Cotizaciones locales para casas en Havasu{% endblock %}
 {% block content %}
 {%- let brand = askhava_core::api::brand().es().display_name() %}
-<p>Para casas en Lake Havasu City</p>
-<h1>Reciba cotizaciones de negocios de Havasu sin dar su número.</h1>
+<section class="hero-text">
+<p class="kicker">Para casas en Lake Havasu City</p>
+<h1 class="display">Reciba cotizaciones de negocios de Havasu sin dar su número.</h1>
 <p>Díganos qué necesita y nosotros preguntamos por usted. Los negocios de Havasu que hacen ese trabajo envían sus cotizaciones, y usted las ve en una sola página. Elija una, o ninguna.</p>
 <p><a href="/request">Pida cotizaciones</a></p>
 <p><a href="/es/how-it-works">Vea cómo funciona</a></p>
 <p>Empiece en el chat de este sitio. No necesita enviar textos ni llamar.</p>
 <p>Es gratis para usted. El negocio que usted elija le paga a {{ brand }} una tarifa de presentación fija según el tamaño del trabajo: ${{ fees.small }}, ${{ fees.medium }} o ${{ fees.large }}.</p>
+</section>
 
-<h2>Cómo cuidamos su privacidad</h2>
+<section class="night home-band fair">
+<h2 class="section-title">Cómo cuidamos su privacidad</h2>
 <p>Su número nunca se comparte. Los negocios ven el trabajo, no a usted. Su nombre de pila y su dirección van solo al negocio que usted elija.</p>
 <p>Nadie paga por salir primero. Las cotizaciones aparecen en el orden en que llegaron. {{ brand }} no clasifica ni califica a los negocios.</p>
+</section>
 
-<h2>Para negocios</h2>
+<section class="section biz-text">
+<h2 class="section-title">Para negocios</h2>
 <p>Cotice gratis. Pague solo si un propietario lo elige.</p>
 <p>Oferta de lanzamiento: su primer trabajo ganado es gratis, de cualquier tamaño, si se registra en los primeros 90 días o dentro de los 90 días después de que abra su oficio.</p>
 <p><a href="/es/business">Información para negocios</a></p>
+</section>
 
+<section class="section who">
+<div>
 <h2>Quién opera {{ brand }}</h2>
 <p>{{ brand }} lo opera {{ askhava_core::api::brand().es().legal_name() }}, un negocio de Lake Havasu City. Su dueño vive en Havasu.</p>
 {%- if let Some(address) = who.mailing_address %}
-<p>Dirección postal: {{ address }}</p>
+<p class="who-fact">Dirección postal: {{ address }}</p>
 {%- endif %}
 {%- if let Some(url) = who.record_url %}
-<p><a href="{{ url }}">{{ askhava_core::api::brand().es().legal_name() }} en el sitio de la Arizona Corporation Commission</a></p>
+<p class="who-fact"><a href="{{ url }}">{{ askhava_core::api::brand().es().legal_name() }} en el sitio de la Arizona Corporation Commission</a></p>
 {%- endif %}
 {%- if let Some(number) = who.city_license %}
-<p>Licencia comercial de Lake Havasu City: {{ number }}</p>
+<p class="who-fact">Licencia comercial de Lake Havasu City: {{ number }}</p>
 {%- endif %}
-<p>Correo de ayuda: <a href="mailto:help@{{ askhava_core::api::brand().domain() }}">help@{{ askhava_core::api::brand().domain() }}</a></p>
+<p class="who-fact">Correo de ayuda: <a href="mailto:help@{{ askhava_core::api::brand().domain() }}">help@{{ askhava_core::api::brand().domain() }}</a></p>
 <p>El dueño tiene un trabajo de tiempo completo. Las solicitudes de registro normalmente se revisan en 4 días, las preguntas de ayuda y de cobros normalmente en 2 días, y esta página indica cuando el dueño no está.</p>
+</div>
+<div class="note-911">
 <p data-fixed="WEB-022">{{ brand }} no es un servicio de emergencias y no evalúa qué requiere una respuesta de emergencia. Si su mensaje menciona gas, humo, fuego, una alarma de monóxido de carbono sonando o un cable eléctrico caído, le enviamos un recordatorio automático para que llame al 911. No dependa de {{ brand }} en una emergencia: llame al 911.</p>
+</div>
+</section>
 <p lang="en"><a href="/">This page in English</a></p>
 {% endblock %}
 {% block footer %}

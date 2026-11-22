@@ -2,6 +2,17 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
+## Four security fixes from the outside review (D-5313 to D-5317, November 21)
+
+Casey asked Fable to decide these; nothing needs you now.
+
+- **Shared inbox: Confirm works again.** While a person's inbox is marked "This inbox is shared", every press of "Confirm and pay" was refused, so that business could never confirm a pick. T810 builds the missing step: the Confirm page has a "Text me a code" button, and each press needs its own fresh code from the person's own phone. A wrong or missing code charges nothing. Later option, not built: let the code typed when opening the Confirm link count for the first press too, which saves one text. Say so if you want it.
+- **A stolen login can't borrow a fresh code.** Changing an address, a phone, a role, a saved card, the monthly limit or auto-confirm needs a code from the last 5 minutes. That code counted for every login of the same person, so someone holding a stolen login could act inside the real person's 5 minutes. Now it counts only in the login where the code was typed (T812, T813). The rule's wording in the spec gets the same words once two steps now running finish.
+- **Email-only businesses can confirm from the email.** A person with no phone that gets texts now gets the Confirm link's code by email, as the rules always said (T811). It is never emailed while the inbox is marked shared. This works against the test stand-in now; the real email account is part of the live-launch checklist.
+- **A double tap shows the result, not an error.** Pressing a used email button a second time showed "not found". Now a second "Send quote" shows the job page with the quote as sent, a second Confirm press opens the Confirm page again, and every other button shows "This link was already used. Open your portal to see where things stand." (T814, D-5320). Nothing happens twice.
+- **One risk left on purpose.** A person with no phone that gets texts gets the Confirm code by email. If their sign-in email is itself shared with other staff, anyone reading it has both the link and the code and can confirm and pay. The rules allow this (SEC-004), and such a person can't mark the inbox shared until they link a phone. If you want to close it, the choice is to require a phone for every Confirm; say so (D-5320).
+- Also: the repeat-customer check gets a test for the exact case found (a past paid pick on an "also" job of a closed request, T745).
+
 ## Owner health page: what "Right environment: Yes" does and does not prove (D-5128, D-5132, November 21)
 
 - **What happened.** The owner health page (`/owner/health`, T304) lists each secret the site needs with three answers: Set, Reads correctly, Right environment. The site checks its settings once, when it starts, and refuses to start on a bad one.
@@ -2967,7 +2978,7 @@ Two large queued tasks were each split in two: the homeowner choosing a package 
 - Nothing needs you.
 ## A business that shares its email inbox cannot confirm a pick yet (D-3717, November 15)
 
-- When a business's sign-in email is a shared inbox, pressing "Confirm and pay" first needs a fresh code sent to the owner. The Confirm page (T261) refuses that press and charges nothing, but no task in the plan yet builds the route that sends the code, so such a business cannot confirm any pick. This needs a follow-up task in the plan before launch; nothing else needs you.
+- When a business's sign-in email is a shared inbox, pressing "Confirm and pay" first needs a fresh code sent to the owner. The Confirm page (T261) refuses that press and charges nothing, but no task in the plan yet builds the route that sends the code, so such a business cannot confirm any pick. This needs a follow-up task in the plan before launch; nothing else needs you. Update (D-5313): T810 builds that step.
 
 ## Repeat customers are free at Confirm, and bank approvals stay on one payment (D-3719, November 15)
 
@@ -3655,8 +3666,8 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 ## Confirm link in the email: code by text only (D-5112, November 21)
 
 - The Confirm link in a pick email now works in a browser that isn't signed in. It texts a code to that person's own phone, and the right code signs them in and opens the Confirm page.
-- Still open: a person with no phone that gets texts can't use the link yet. The page tells them to link a phone in the portal. The email code the spec allows for them (SEC-004) is not built.
-- Still open: a person who marked "This inbox is shared" is asked for a code by the link, and then the Confirm page asks for its own code before the press. That second code step is not wired yet (the known gap from T261).
+- Still open: a person with no phone that gets texts can't use the link yet. The page tells them to link a phone in the portal. The email code the spec allows for them (SEC-004) is not built. Update (D-5315): T811 builds it.
+- Still open: a person who marked "This inbox is shared" is asked for a code by the link, and then the Confirm page asks for its own code before the press. That second code step is not wired yet (the known gap from T261). Update (D-5313): T810 wires it; each press asks for its own code.
 ## Sign-in codes and phone approval (D-5117, November 21)
 
 - T777 now fixes one thing: after a team member changes their phone number, the sign-in code is not texted to the new number until its text box is ticked. Until then the code goes to their email.
@@ -3694,6 +3705,11 @@ Items kept for after launch under the scope freeze (D-4824). Each is a note, not
 - **What happened.** When Fable hit its usage limit, the runner was meant to re-run the task on Opus without counting an attempt. It did not record that switch, because its "was this a refusal?" check does not recognise a usage-limit (429) message (`runner/model_window.py` `REFUSAL`, used at `runner/cycle.py:3330` and `runner/__main__.py:493`). T615 lost a good attempt to it.
 - **Now.** Once D-5189 (the switch off Fable, PR #1277) merges, no task runs on Fable and the bug cannot bite. T615 gets one more attempt after its flaky test is fixed (T789) and that switch has merged.
 - **Before Fable is switched back on**, a harness task must make that check accept usage-limit and rate-limit text.
+
+## T608: the arrow on "Get quotes" is not drawn (D-5209)
+
+- **What.** The polish plan (D-4246) allows one arrow inside the home page's "Get quotes" button. A check in the site's own tests compares that button's code letter for letter, so adding the arrow would break it; the button stays as it was, without the arrow.
+- **Your call.** If you want the arrow, a small task changes that one test line and adds it. Nothing else on the page depends on it.
 
 ## No AI-off launch; termite report moves to pest control (D-5214 to D-5216, November 21)
 

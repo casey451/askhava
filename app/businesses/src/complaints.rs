@@ -473,12 +473,25 @@ pub async fn list_closed(
     Ok(true)
 }
 
-/// The [`BOX_CLOSED_KIND`] handler: [`list_closed`] at the wall clock; a box still open fails the
-/// attempt so it is retried, never dropped (JOB-006).
+/// The [`BOX_CLOSED_KIND`] handler: [`run_box_closed_at`] at the wall clock.
+///
+/// # Errors
+/// As [`run_box_closed_at`].
+pub async fn run_box_closed(pool: PgPool, task: Claimed) -> Result<(), HandlerError> {
+    run_box_closed_at(pool, task, Timestamp::now()).await
+}
+
+/// BIZ-029, D-4196: the [`BOX_CLOSED_KIND`] handler `server` registers on the worker clock:
+/// [`list_closed`] at `now`; a box still open fails the attempt so it is retried, never dropped
+/// (JOB-006).
 ///
 /// # Errors
 /// A fixed [`HandlerError`] for a bad payload, an open box or a database failure.
-pub async fn run_box_closed(pool: PgPool, task: Claimed) -> Result<(), HandlerError> {
+pub async fn run_box_closed_at(
+    pool: PgPool,
+    task: Claimed,
+    now: Timestamp,
+) -> Result<(), HandlerError> {
     let id = task.payload["complaint"]
         .as_str()
         .and_then(|s| Uuid::parse_str(s).ok());
@@ -487,7 +500,7 @@ pub async fn run_box_closed(pool: PgPool, task: Claimed) -> Result<(), HandlerEr
         .acquire()
         .await
         .map_err(|_| HandlerError("complaint database call failed"))?;
-    match list_closed(&mut conn, id, Timestamp::now()).await {
+    match list_closed(&mut conn, id, now).await {
         Ok(_) | Err(ComplaintError::Unknown) => Ok(()),
         Err(ComplaintError::BoxOpen) => Err(HandlerError("complaint reply box is still open")),
         Err(_) => Err(HandlerError("complaint listing failed")),

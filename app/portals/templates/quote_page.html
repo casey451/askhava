@@ -16,25 +16,35 @@
     lines, Google and Yelp as plain links (no stars, counts or excerpts), the "check it yourself"
     line, PICK-040 facts and the business's words; lang="es" on a Spanish card (PICK-041,
     BIZ-052, A11Y-004, T393). While the job is not final a close button posts its CSRF token to
-    /q/<token>/close, its own path (JOB-019, SEC-042, T308); its answer says the request is closed. -#}
+    /q/<token>/close, its own path (JOB-019, SEC-042, T308); its answer says the request is closed.
+    T608 (WEB-027, WEB-029, PICK-009, A11Y-033, D-4246, D-4252): the V6 head (its ruled list holds
+    the cost, ranking, order and WORD-002 lines) and paper cards: the number above a rule, the card
+    lines as ruled rows, "In their words" on a band panel, the external-link mark (CSS, `out` on a
+    link line's `<li>` only), withdrawn and unavailable cards in ink-soft. Each first-render card
+    carries `rise`, except after a failed pick or a close; quote_page.ts drops it from every card
+    it imports. Words, ids, roles, forms and data attributes are unchanged. -#}
 {% block title %}{% if self.choose_error().is_some() %}Error: {% endif %}Your quotes for request {{ request }}{% endblock %}
 {% block main %}
 {% if let Some(n) = self.choose_error() %}<div id="tier-summary" role="alert" tabindex="-1" autofocus>
 <p>Your pick didn't go through. Nothing was picked.</p>
 <ul><li><a href="#quote-{{ n }}-tier-1">Choose one package for quote #{{ n }}</a></li></ul>
 </div>
-{% endif %}<h1>Your quotes for request {{ request }}</h1>
+{% endif %}<div class="quote-page">
+<div class="page-head">
+<h1 class="title">Your quotes for request {{ request }}</h1>
 <p data-fixed="WORD-002">{{ askhava_core::api::brand().display_name() }} is not a contractor and does not perform, bid on or supervise work. We pass along your request and show you quotes from independent local businesses, as they wrote them. You choose, and you hire the business directly.</p>
 {% if self.just_closed() %}
 <p id="closed-note">Request {{ request }} is closed. No more quotes will come in for it.</p>
 {% endif %}{% if still_open %}
 <p>Your request {{ request }} is still open. Close it on your quote page.</p>
 {% endif %}
-<p>Free for you. The business you pick pays {{ askhava_core::api::brand().display_name() }} a set introduction fee.</p>
-<p>{{ askhava_core::api::brand().display_name() }} doesn't rank businesses or show ratings. Check each business yourself: its license, and its reviews on Google and Yelp.</p>
-<p>Every eligible quote shown, in the order received. #1 means first received, not first choice.</p>
+<ul class="notes">
+<li>Free for you. The business you pick pays {{ askhava_core::api::brand().display_name() }} a set introduction fee.</li>
+<li>{{ askhava_core::api::brand().display_name() }} doesn't rank businesses or show ratings. Check each business yourself: its license, and its reviews on Google and Yelp.</li>
+<li>Every eligible quote shown, in the order received. #1 means first received, not first choice.</li>
+</ul>
 {% if let Some(a) = self.accepted() %}{% let brand = askhava_core::api::brand() %}
-<section id="accepted-quote" aria-labelledby="accepted-quote-title">
+<section id="accepted-quote" aria-labelledby="accepted-quote-title" class="card">
 <h2 id="accepted-quote-title">You picked quote #{{ a.number }}</h2>
 <p>Type: {{ a.kind }}</p>
 <p>Amount: {{ a.amount }}</p>
@@ -48,29 +58,30 @@
 {% if quotes.is_empty() %}
 <p id="no-quotes">No quotes yet. New quotes show up here as they come in, and {{ askhava_core::api::brand().display_name() }} texts you when the first one arrives.</p>
 {% endif %}
-<ol id="quotes" data-live="{{ live }}">
+</div>
+<ol id="quotes" data-live="{{ live }}" class="quote-list">
 {% for q in quotes %}
-<li id="quote-{{ q.number }}" data-number="{{ q.number }}" data-available="{{ !q.quote.unavailable }}" data-pickable="{{ pick_open }}" data-updated="{{ q.quote.updated_stamp() }}">
-<article aria-labelledby="quote-{{ q.number }}-title">
+<li id="quote-{{ q.number }}"{% if self.choose_error().is_none() && !self.just_closed() %} class="rise"{% endif %} data-number="{{ q.number }}" data-available="{{ !q.quote.unavailable }}" data-pickable="{{ pick_open }}" data-updated="{{ q.quote.updated_stamp() }}">
+<article aria-labelledby="quote-{{ q.number }}-title" class="card quote{% if q.quote.withdrawn || q.quote.unavailable %} gone{% endif %}">
 {% if q.quote.withdrawn %}
-<h2 id="quote-{{ q.number }}-title">Quote #{{ q.number }}</h2>
+<h2 id="quote-{{ q.number }}-title" class="quote-top">Quote #{{ q.number }}</h2>
 <p>Withdrawn by the business.</p>
 {% else if q.quote.unavailable %}
-<h2 id="quote-{{ q.number }}-title">Quote #{{ q.number }} (no longer available)</h2>
+<h2 id="quote-{{ q.number }}-title" class="quote-top">Quote #{{ q.number }} (no longer available)</h2>
 <p>No longer available, so it can't be picked.</p>
 {% else %}
-<h2 id="quote-{{ q.number }}-title">Quote #{{ q.number }}</h2>
+<h2 id="quote-{{ q.number }}-title" class="quote-top">Quote #{{ q.number }}</h2>
 {% if let Some(lines) = self.card(q.number) %}<ul class="card-lines"{% if self.spanish() %} lang="es"{% endif %}>
-{% for line in lines %}<li{% if self.spanish() && crate::quote_cards::english_line(line) %} lang="en"{% endif %}>{% if let Some(href) = line.link %}<a href="{{ href }}">{{ line.text }}</a>{% else %}{{ line.text }}{% endif %}</li>
+{% for line in lines %}<li{% if line.link.is_some() %} class="out"{% endif %}{% if self.spanish() && crate::quote_cards::english_line(line) %} lang="en"{% endif %}>{% if let Some(href) = line.link %}<a href="{{ href }}">{{ line.text }}</a>{% else %}{{ line.text }}{% endif %}</li>
 {% endfor %}</ul>
 {% else %}{% if let Some(updated) = q.quote.updated_line() %}
 <p>{{ updated }}</p>
 {% endif %}
-<p>{{ askhava_core::api::brand().display_name() }} doesn't rank businesses; check it yourself.</p>
-<p>In their words:</p>
-<blockquote><p>{{ q.quote.original }}</p></blockquote>
+<p class="soft">{{ askhava_core::api::brand().display_name() }} doesn't rank businesses; check it yourself.</p>
+<div class="words-panel"><p class="words-label">In their words:</p>
+<blockquote class="words"><p>{{ q.quote.original }}</p></blockquote></div>
 {% endif %}{% if pick_open %}
-<form method="post" novalidate>
+<form method="post" novalidate class="pick">
 <input type="hidden" name="csrf" value="{{ csrf }}">
 <input type="hidden" name="quote" value="{{ q.number }}">
 <input type="hidden" name="business" value="{{ q.quote.business }}">
@@ -79,8 +90,8 @@
 {% if self.choose_again(q.number) %}<p id="quote-{{ q.number }}-tier-error" class="field-error">Error: Choose one package, then press Pick #{{ q.number }}. If you already chose one, the business has since changed its packages. Check the prices and choose again.</p>
 {% endif %}{% for p in packages %}<p><input type="radio" id="quote-{{ q.number }}-tier-{{ loop.index }}" name="tier" value="{{ p.value }}"> <label for="quote-{{ q.number }}-tier-{{ loop.index }}">{{ p.label }}</label></p>
 {% endfor %}</fieldset>
-{% endif %}<button type="submit">Pick #{{ q.number }}</button>
-<p>or reply {{ q.number }} YES</p>
+{% endif %}<button type="submit" class="button button-wide">Pick #{{ q.number }}</button>
+<p class="reply">or reply {{ q.number }} YES</p>
 </form>
 {% endif %}
 {% endif %}
@@ -88,16 +99,19 @@
 </li>
 {% endfor %}
 </ol>
+<div class="after-list">
 {% if let Some(action) = self.close_action() %}
 <section id="close-request" aria-labelledby="close-request-title">
 <h2 id="close-request-title">Don't need this done anymore?</h2>
 <p>Closing request {{ request }} is for good. Businesses will stop sending you quotes for it.</p>
 <form method="post" action="{{ action }}" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
-<button type="submit">Close request {{ request }}</button>
+<button type="submit" class="button button-quiet">Close request {{ request }}</button>
 </form>
 </section>
 {% endif %}
-<p>Can't open links? Reply LIST to get your quotes by text.</p>
+<p class="small soft">Can't open links? Reply LIST to get your quotes by text.</p>
+</div>
+</div>
 <script type="module" src="/static/portals/quote_page.js"></script>
 {% endblock %}
