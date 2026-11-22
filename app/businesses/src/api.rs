@@ -136,6 +136,9 @@ pub use crate::pest_identity::{PestIdentity, pest_identity, record_pest_match};
 pub use crate::phone_approval::{
     WaitingPhone, approve_phone, phone_standing, reject_phone, waiting_phones,
 };
+pub use crate::problem_complaint::{
+    Counted, PROBLEM_COUNTED_ACTION, PROBLEM_KINDS, count_problem, counted_jobs,
+};
 pub use crate::public_name::{PUBLIC_NAME_ALERT, public_names};
 pub use crate::record_resume::{
     RESUME_BATCH, RESUME_BATCH_KEY, RESUME_KIND, RESUME_LAG, RESUME_ONE_KIND, ResumeParts,
