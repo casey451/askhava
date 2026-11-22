@@ -701,6 +701,19 @@ ol:has(> .said-ours, > .said-hers) { list-style: none; padding: 0; display: grid
 .said-ours { background: var(--surface); border: 1px solid var(--line); }
 .said-hers { background: var(--band); }
 
+/* The /request start screen (T831; A11Y-005, D-5502): tighter steps between the consent lines and
+   inside the chat card, so at 900 px tall the words box sits wholly inside the first screen from
+   1024 px up, with the WEB-007 banner or the safety-call consent shown too; Chrome does not scroll a
+   box cut by the fold into view when Tab reaches it. Scoped to request.html's own classes. */
+.chat-intro { margin-bottom: 12px; }
+.chat-intro ~ h2 { margin: 12px 0 8px; }
+.chat-intro ~ p, .chat-intro ~ div > p { margin-block: 8px; }
+.form-card.chat-form { margin-top: 8px; padding-top: 16px; }
+.chat-form textarea { display: block; }
+.chat-form > p { margin-block: 8px; }
+.chat-form > p:first-of-type { margin-bottom: 4px; }
+.chat-form > p[id$="-hint"] { margin-top: 4px; }
+
 /* The Spanish pages, the legal pages and the data and help pages (T610; WEB-027, WEB-029, D-4246,
    D-4326): the Spanish how it works and business pages reuse T609's .how-step, .fee-table and
    .sample-card; the data pages' and business help's fact lists are paper cards of ruled rows in

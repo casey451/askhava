@@ -1,0 +1,54 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id, confirm_salt, confirmed_at IS NOT NULL AS \"confirmed!\",\n           bounced_at IS NOT NULL AS \"bounced!\"\n           FROM privacy.update_email WHERE contact_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "privacy.update_email",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "confirm_salt",
+        "type_info": "Bytea",
+        "origin": {
+          "Table": {
+            "table": "privacy.update_email",
+            "name": "confirm_salt"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "confirmed!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
+        "name": "bounced!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      null,
+      null
+    ]
+  },
+  "hash": "78ddc97a0dd9b39aa967ae671d41b6bd97ac94add3063ca4203f7a327e8cb27e"
+}

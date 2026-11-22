@@ -22,7 +22,8 @@ use askhava_intake::api::rules::Settings as IntakeSettings;
 use askhava_payments::api::{Minter, stripe_webhook_routes};
 use askhava_portals::api::{
     Answer, ApprovalSecret, ConfirmRoute, ConfirmSettings, PickCodeKeys, SecretAnswer,
-    confirm_routes_with, feedback_routes, pick_flow_routes, quote_page_routes, security_headers,
+    confirm_routes_with, feedback_routes, pick_flow_routes, quote_page_routes_with,
+    security_headers,
 };
 use askhava_privacy::api::{SessionMint, Vault};
 use axum::Router;
@@ -136,6 +137,7 @@ struct SiteParts {
     environment: Environment,
     chat: Option<chat_codes::ChatParts>,
     link_codes: Option<action_links::LinkCodes>,
+    quote_keys: Option<(Vault, IdSecret)>,
 }
 
 impl Default for SiteParts {
@@ -145,6 +147,7 @@ impl Default for SiteParts {
             environment: Environment::Dev,
             chat: None,
             link_codes: None,
+            quote_keys: None,
         }
     }
 }
@@ -293,6 +296,15 @@ impl RouterParts {
     #[must_use]
     pub fn with_confirm_link_codes(mut self, codes: action_links::LinkCodes) -> Self {
         self.site.link_codes = Some(codes);
+        self
+    }
+
+    /// Adds the quote page's update keys (T729, TXT-018, D-5442, [`quote_page_keys`]): the vault
+    /// that seals an update address and the ID secret of its confirm link; without them the update
+    /// choice stores nothing.
+    #[must_use]
+    pub fn with_quote_page_keys(mut self, keys: Option<(Vault, IdSecret)>) -> Self {
+        self.site.quote_keys = keys;
         self
     }
 
@@ -492,6 +504,7 @@ fn link_and_site_pages(
         environment,
         chat,
         link_codes,
+        quote_keys: _,
     } = site;
     let clock: Arc<dyn Clock> = Arc::new(SystemClock);
     let not_found = askhava_site::api::not_found(pool.clone());
@@ -569,11 +582,11 @@ pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterP
         limit,
         statics,
         business,
-        site,
+        mut site,
     } = parts.into();
     let (webhooks, voice, pick_keys, stripe) = hooks;
     let business = business_pages(business, pool.clone(), (&webhooks, &voice, &stripe));
-    let quote_page = quote_page_routes(pool.clone(), Arc::new(SystemClock));
+    let quote_page = quote_routes(&pool, &mut site);
     let pick_flow = pick_flow_routes(pool.clone(), Arc::new(SystemClock), pick_keys);
     let pages = link_and_site_pages(&pool, &statics, site, webhooks.as_deref());
     // Each 403 of these four is a source or signature refusal, recorded as a capped
@@ -744,6 +757,36 @@ where
     let terms = (terms_version(), HOMEOWNER_TERMS);
     let keys = PickCodeKeys::new(verify, vault, id_secret, terms);
     Ok(Some(keys.with_client_ip(client_ip)))
+}
+
+/// The quote page's routes with the parts' update keys, taken out of `site` (T729, TXT-018).
+fn quote_routes(pool: &PgPool, site: &mut SiteParts) -> Router {
+    quote_page_routes_with(pool.clone(), Arc::new(SystemClock), site.quote_keys.take())
+}
+
+/// The quote page's update keys (T729, TXT-018, D-5340): the vault from [`vault_from`] and
+/// `ASKHAVA_ID_SECRET`, checked as the webhooks check it; `None` when either is unset (the update
+/// choice then stores nothing).
+///
+/// # Errors
+///
+/// [`vault_from`]'s, or a too-short ID secret, named, never its value.
+pub fn quote_page_keys<I>(settings: &Settings, pairs: I) -> io::Result<Option<(Vault, IdSecret)>>
+where
+    I: IntoIterator<Item = (String, String)>,
+{
+    let pairs: Vec<(String, String)> = pairs.into_iter().collect();
+    let Some(vault) = vault_from(settings, pairs.clone())? else {
+        return Ok(None);
+    };
+    let Some((_, secret)) = pairs
+        .into_iter()
+        .find(|(k, v)| k == ID_SECRET && !v.trim().is_empty())
+    else {
+        return Ok(None);
+    };
+    let secret = IdSecret::new(1, SecretString::from(secret.trim().to_owned()));
+    Ok(Some((vault, secret.map_err(io::Error::other)?)))
 }
 
 /// The vault from `VAULT_KEY` and `VAULT_INDEX_KEY` in `pairs` (D-1302, D-1306): with neither,

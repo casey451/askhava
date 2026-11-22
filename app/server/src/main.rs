@@ -107,7 +107,7 @@ fn liveness_limit() -> io::Result<askhava_server::liveness::LivenessLimit> {
 
 /// `parts` with the served business sign-in, sign-up, portal `vault` (built and checked at start,
 /// D-4418) and Confirm settings from `settings` and the process environment (T280, T302, T300,
-/// T261), the step-up page's Verify part (T364), the homeowner sign-in's Verify part (T307), the web chat's code-step keys (T489) and the
+/// T261), the step-up page's Verify part (T364), the quote page's update keys (T729), the homeowner sign-in's Verify part (T307), the web chat's code-step keys (T489) and the
 /// site pages' settings (T102) with the business number for the business page's WEB-024 line
 /// (T769, D-4931) and the homeowner number with the Gate C launch date for the home pages' texting
 /// number (T725, WEB-017, D-4709); each errors as its own builder does, naming a key, never a value.
@@ -139,6 +139,7 @@ fn business_parts(
     let texting = askhava_server::homeowner_number(settings, &env)?;
     let pages = askhava_site::api::SitePages::from_settings(settings)
         .with_homeowner_texting(texting, settings.launch_date());
+    let quote_keys = askhava_server::quote_page_keys(settings, std::env::vars())?;
     Ok(parts
         .with_sign_in(signin)
         .with_sign_up(signup)
@@ -151,6 +152,7 @@ fn business_parts(
         .with_confirm_part(confirm)
         .with_confirm_link_codes(link_codes)
         .with_confirm_codes(press_codes)
+        .with_quote_page_keys(quote_keys)
         .with_chat_codes(chat)
         .with_site_pages(pages.with_business_number(number))
         .with_environment(settings.environment())
