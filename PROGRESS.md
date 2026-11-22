@@ -9943,3 +9943,4 @@
 - 2026-11-22T13:06:43Z runner a950af5bcf1d (actions): {}
 - 2026-11-22T13:12:18Z runner a950af5bcf1d (actions): {"T397": "QUEUED -> IN_PROGRESS"}; T397 estimated 1.4M tokens (calibrated); week has 77.7M left (no five-hour budget, D-3056) after 305k still running in another lane (session_reading 2026-11-22T13:06:19Z (week)); claimed
 - 2026-11-22T13:12:28Z runner a950af5bcf1d (actions): {}
+- 2026-11-22T13:18:09Z runner fbb43dfc4bef (actions): {"T830": "MERGE_PENDING -> DONE"}
