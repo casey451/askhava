@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T14:05:53Z by runner 8789c1a7f739 (actions).
+Updated 2026-11-22T14:06:13Z by runner a950af5bcf1d (actions).
 
 **Building: T397 in progress since 13:11Z; 610 of 770 done; week 59% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-22T14:05:53Z by runner 8789c1a7f739 (actions).
 - **Lane:** lane 1: T397 claimed 13:11Z, lease until 16:11Z
 - **Week:** 59% used, 76.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 14:05Z, 0 min before this update
-- **Keeper:** last ran 13:55Z, next wake 14:15Z
+- **Keeper:** last ran 14:06Z, next wake 14:26Z
 
 ## Needs attention
 - BLOCKED T675: runner smoke red on 4ac8ae78a989 (bash scripts/smoke.sh, D-3530):
