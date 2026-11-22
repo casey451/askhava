@@ -28,6 +28,27 @@
 //! 180 by 180, and `brand/share.png`, the 1200 by 630 share image (the mark, the wordmark and the
 //! WEB-004 tagline on `canvas` in Gelasio and DM Sans, no photo), each rendered once from a local
 //! page with Playwright and kept with no chunk but `IHDR`, `IDAT` and `IEND`, so no metadata.
+//!
+//! Caching (T616, WEB-030, D-4252): [`sha256`] hashes each listed file once, and the route's
+//! strong `ETag` is its first 16 hex digits; [`Asset::cache_control`] gives the fonts a year as
+//! `immutable` (a font's bytes are pinned by hash under its name in `tests/asset_cache.rs`, so
+//! changed bytes need a new name), the stylesheet its one hour (D-3901) and the rest `no-cache`.
+
+use std::fmt::Write as _;
+use std::sync::LazyLock;
+
+use sha2::{Digest, Sha256};
+
+/// WEB-030: the fonts' cache: a year, never revalidated, safe only because each font's name is
+/// pinned to its bytes (D-4252).
+const FONT_CACHE: &str = "public, max-age=31536000, immutable";
+
+/// WEB-030, A11Y-030, D-3901: the stylesheet's one-hour cache, never `no-cache`.
+const STYLESHEET_CACHE: &str = "public, max-age=3600";
+
+/// WEB-030, D-4252: the photos, the mark and the icons may change under the same name, so every
+/// use revalidates (a 304 when unchanged).
+const REVALIDATE: &str = "no-cache";
 
 /// One file served at `/static/site/<name>`.
 pub(crate) struct Asset {
@@ -109,9 +130,45 @@ const ASSETS: &[Asset] = &[
     },
 ];
 
+/// Each listed file's SHA256 as 64 lowercase hex digits, in [`ASSETS`] order, computed once.
+static DIGESTS: LazyLock<Vec<String>> = LazyLock::new(|| {
+    ASSETS
+        .iter()
+        .map(|asset| {
+            Sha256::digest(asset.bytes)
+                .iter()
+                .fold(String::with_capacity(64), |mut hex, byte| {
+                    let _ = write!(hex, "{byte:02x}");
+                    hex
+                })
+        })
+        .collect()
+});
+
+impl Asset {
+    /// WEB-030, D-4252, D-3901: the `Cache-Control` the file is served with: a year and
+    /// `immutable` for a font, an hour for the stylesheet, `no-cache` for the rest.
+    pub(crate) fn cache_control(&self) -> &'static str {
+        if self.name.starts_with("fonts/") {
+            FONT_CACHE
+        } else if self.name == "site.css" {
+            STYLESHEET_CACHE
+        } else {
+            REVALIDATE
+        }
+    }
+}
+
 /// The listed file called `name`, or `None` (the route answers 404).
 pub(crate) fn find(name: &str) -> Option<&'static Asset> {
     ASSETS.iter().find(|asset| asset.name == name)
+}
+
+/// WEB-030, D-4252: the SHA256 of the listed file called `name` as 64 lowercase hex digits, or
+/// `None` for an unlisted name.
+pub(crate) fn sha256(name: &str) -> Option<&'static str> {
+    let at = ASSETS.iter().position(|asset| asset.name == name)?;
+    DIGESTS.get(at).map(String::as_str)
 }
 
 #[cfg(test)]
