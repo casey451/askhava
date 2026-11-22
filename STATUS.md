@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T10:26:33Z by runner dd295e06660e (actions).
+Updated 2026-11-22T10:31:25Z by runner dd295e06660e (actions).
 
 **Building: T829 in progress since 10:24Z; 607 of 767 done; week 56% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-22T10:26:33Z by runner dd295e06660e (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T829 claimed 10:24Z, lease until 13:24Z; lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 4: T729 claimed 08:07Z, lease until 11:07Z
 - **Week:** 56% used, 76.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:26Z, 0 min before this update
+- **Last run:** 10:26Z, 4 min before this update
 - **Keeper:** last ran 10:26Z, next wake 10:46Z
 
 ## Needs attention
@@ -33,7 +33,7 @@ At 1280x900 the /request chat start screen textarea box spans y=784..914, partly
 |---|---|---|---|---|---|---|
 | T803 | messaging (harness): an opted-out number gets no HELP reply; | BLOCKED | 3 | 25 min | 10:25Z | Ci: failure; Checks: cancelled / Checks failed at step: Named mutants of the files this change touches (scripts/run_name |
 | T589 | intake and portals: the pick review page is shown in her req | MERGE_PENDING | 1 | 53 min | 10:04Z |  |
-| T725 | site: the home page shows the texting number with its consen | MERGE_PENDING | 2 | 57 min | 09:57Z | PLAN GAP: tests/docs/test_required_lines.py:139 (WORD-013, docs/spec/wording.md:17) contradicts kit/prompts/T725.md:9 (S |
+| T725 | site: the home page shows the texting number with its consen | check_failed | 2 | 57 min | 09:57Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T610 | site: the D-4246 polish on the Spanish pages, the legal page | MERGE_PENDING | 1 | 39 min | 09:00Z |  |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | BLOCKED | 4 | 45 min | 08:54Z | PLAN GAP: outside ownership: app/site/templates/request.html, app/site/static/site.css / At 1280x900 the /request chat s |
 | T829 | server tests (harness): the door matrix's owner sign-ins nev | check_failed | 2 | 48 min | 08:40Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |

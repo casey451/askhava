@@ -100404,8 +100404,8 @@
     "T615",
     "T769"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 1,
+   "status": "QUEUED",
+   "attempts": 2,
    "slug": "home-texting-number",
    "type": "build",
    "stage": "5",
@@ -100419,7 +100419,7 @@
     5351
    ],
    "reason": null,
-   "last_failure": "PLAN GAP: tests/docs/test_required_lines.py:139 (WORD-013, docs/spec/wording.md:17) contradicts kit/prompts/T725.md:9 (Spanish home page unchanged, shows neither). The consent line word for word in home.html contains \"Reply STOP\"; WORD-013 reads raw template text ignoring {% if %} and requires PARAR on es_home.html. Smoke fails: test_td_word_02_word_013_spanish_page_matches_its_english_page[es_home.html] assert ['PARAR'] == []. Task does not own es_home.html or the test. Reviewer confirmed. Smallest fix: harness plan change so WORD-013 exempts a STOP only inside the post-Gate C texting block, or let T725 place a reviewed Spanish line with PARAR on es_home.html.\nre-queued after plan fix D-5402: D-5402: T725 owns es_home.html and adds the Spanish consent line with PARAR for WORD-013, pinned heading (merged in #1317)",
+   "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust dependency audit (cargo-audit, cargo-deny)\nCrate:     basic-toml\nVersion:   0.1.10\nWarning:   unmaintained\nTitle:     `basic-toml` is unmaintained\nDate:      2026-09-26\nID:        RUSTSEC-2026-0374\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0374\nCrate:     proc-macro-error2\nVersion:   2.0.1\nWarning:   unmaintained\nTitle:     proc-macro-error2 is unmaintained\nDate:      2026-06-07\nID:        RUSTSEC-2026-0173\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0173\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
    "history": [
     {
      "attempt": 1,
@@ -100449,13 +100449,58 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 112,
      "head_sha": "461fd3744b3db36a1960077e83ab31905c97b590",
-     "pr": null,
-     "checks": null,
+     "pr": 1341,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "failure"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-22T08:59:45Z",
      "ended_at": "2026-11-22T09:57:27Z",
-     "result": "MERGE_PENDING",
+     "result": "check_failed",
      "usage": {
       "worker": {
        "tokens": 6304102,
@@ -116676,7 +116721,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T10:26:33Z",
+ "updated_at": "2026-11-22T10:31:25Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
