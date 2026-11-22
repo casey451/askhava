@@ -109646,7 +109646,15 @@
    "attempts": 0,
    "slug": "checks-timeout-full-mutants",
    "type": "harness",
-   "stage": "5"
+   "stage": "5",
+   "plan_gap": {
+    "at": "2026-11-22T11:35:50Z",
+    "problems": [
+     "T832: prompt kit/prompts/T832.md is missing; run scripts/gen_prompts.py",
+     "T832: branch claude/task/T832-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet",
+     "T832: dependency T828 is DONE but its owned file .gitleaksignore is not on main"
+    ]
+   }
   }
  ],
  "owner_waits": [],
@@ -117080,7 +117088,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T11:33:44Z",
+ "updated_at": "2026-11-22T11:36:00Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
