@@ -191,6 +191,9 @@ pub use crate::owner_auth::{
     owner_signin_page, owner_step_up, passkey_registered, passkey_registration_options,
     passkey_sign_in_options, password_problem, require_owner_step_up, sign_out_everywhere,
 };
+pub use crate::owner_complaint::{
+    CountRefused, ProblemReport, count_problem_as_complaint, problem_reports,
+};
 pub use crate::owner_help::{
     OWNER_HELP_CLOSE_ROUTE, OWNER_HELP_REPLY_ROUTE, OWNER_HELP_ROUTE, OWNER_REPLY_MAX,
     OWNER_REPLY_TEMPLATE, ReplyRefusal, owner_help_routes, reply_body, screen_reply,
