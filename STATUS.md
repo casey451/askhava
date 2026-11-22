@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-22T11:44:47Z by runner 5aac787a2648 (actions).
+Updated 2026-11-22T11:45:01Z by runner 5aac787a2648 (actions).
 
-**Building: T729 in progress since 11:36Z; 608 of 769 done; week 57% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T645 in progress since 11:44Z; 608 of 769 done; week 57% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 608 of 769 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T729 claimed 11:36Z, lease until 14:36Z; lane 5: T589 claimed 10:36Z, lease until 13:36Z; lane 6: T610 claimed 11:39Z, lease until 14:39Z
-- **Week:** 57% used, 76.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T645 claimed 11:44Z, lease until 14:44Z; lane 3: T729 claimed 11:36Z, lease until 14:36Z; lane 5: T589 claimed 10:36Z, lease until 13:36Z; lane 6: T610 claimed 11:39Z, lease until 14:39Z
+- **Week:** 57% used, 75.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:40Z, 4 min before this update
 - **Keeper:** last ran 11:39Z, next wake 11:59Z
 
@@ -162,7 +162,7 @@ assert 'skipped: not finished in 540 s (Ci runs Ally)' in '\n== Ally: pages chan
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-22T11:33:25Z (week)): week: 117.4M used, 76.6M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T05:21:27Z.
+- Pacing (session_reading 2026-11-22T11:39:37Z (week)): week: 119.0M used, 75.0M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T05:10:38Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -177,7 +177,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T645 (lease until 2026-11-22T14:44:36Z)
 - lane 3: T729 (lease until 2026-11-22T14:36:39Z)
 - lane 5: T589 (lease until 2026-11-22T13:36:51Z)
 - lane 6: T610 (lease until 2026-11-22T14:39:14Z)
