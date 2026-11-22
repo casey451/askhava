@@ -2,7 +2,7 @@
 
 These are decisions Claude made on its own and logged so the build never waits (`BUILD_BRIEF.md:542`). Older entries below may have been superseded by a later decision (the own-or-rent question, the 12-month price lock and then any price lock (D-1494), the 1-business-day reply, the call window, the heat text and 211 lines); the spec in `docs/spec/` and the latest `D-###` win (D-482). None of them blocks anything. Each item names its entry in `docs/decisions.md`, which has the exact source lines. The ones most worth a second look come first.
 
-## Opt-out timing fixes from the outside review job 12 (D-5377 to D-5380, November 22)
+## Opt-out timing fixes from the outside review job 12 (D-5382 to D-5385, November 22)
 
 Fable decided these for you; nothing needs you.
 
@@ -10,7 +10,7 @@ Fable decided these for you; nothing needs you.
 - **A late START could undo a newer STOP.** If a START text failed and was retried after she had texted STOP again, the retry could take her off the list. Now a START only takes her off the list if no STOP came after it; when the order is unclear, the STOP wins (T817).
 - **Invisible characters.** A hidden character inside "stop texting me" (some phones and pastes add one) stopped it counting as an opt-out. Those characters are now ignored (T817).
 - Smaller: a millisecond timing slip in the quiet-hours check is accepted as harmless; the stage cleanup notes that an unused quiet-hours helper has no live caller.
-- **Website footer (D-5381).** The site-polish task (T609) stopped because an older test allowed only the four "Homeowners" footer links, while the design adds a second column (For businesses, Español, Terms, Privacy, Accessibility). The test now checks both columns exactly, and the "Get quotes" link on How it works under its new name.
+- **Website footer (D-5386).** The site-polish task (T609) stopped because an older test allowed only the four "Homeowners" footer links, while the design adds a second column (For businesses, Español, Terms, Privacy, Accessibility). The test now checks both columns exactly, and the "Get quotes" link on How it works under its new name.
 
 ## Pre-flight fixes from the outside review job 10 (D-5331 to D-5335, November 22)
 
