@@ -25641,8 +25641,8 @@
     "T707",
     "T536"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 3,
+   "status": "BLOCKED",
+   "attempts": 4,
    "slug": "e2e-j3-operator",
    "type": "build",
    "stage": "5",
@@ -25655,7 +25655,7 @@
     5285,
     5286
    ],
-   "last_failure": "Ci: failure; E2e: failure\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n  \u2713  120 [main] \u203a tests/e2e/who_runs_links.spec.ts:40:3 \u203a TD-WEB-10 WEB-021 WEB-022: /es/business leaves out the record link and license while unset (89ms)\n{\"timestamp\":\"2026-11-22T03:11:43.602727Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1326,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-22T03:11:43.603036Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1328,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-22T03:11:43.603692Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1329,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-22T03:11:43.603916Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1327,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-22T03:11:43.605579Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1330,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n  \u2718  121 [late] \u203a tests/e2e/j3_operator.spec.ts:24:1 \u203a J3 TD-TXT-15: sign-in, pause, refund, fee mode, safe mode, audit log, with the closing checks, launch channel web-and-email (157ms)\n##[error]  1) [late] \u203a tests/e2e/j3_operator.spec.ts:24:1 \u203a J3 TD-TXT-15: sign-in, pause, refund, fee mode, safe mode, audit log, with the closing checks, launch channel web-and-email \u203a 1. owner sign-\nCi failed at st\nre-queued after plan fix D-5486: age only its own owner session; cap via created_at and two door calls (merged #1335)",
+   "last_failure": "PLAN GAP: outside ownership: app/site/templates/request.html, app/site/static/site.css\nAt 1280x900 the /request chat start screen textarea box spans y=784..914, partly below the viewport; Chrome does not scroll a partly visible control into view, so tests/a11y/j3_keyboard.spec.ts:56 fails with \"chat-words: outside the viewport\" (via tests/e2e/j3.ts:303, step 5) under A11Y-005 (docs/spec/accessibility.md:9). Reproduced by the reviewer at cb4a620. T118 owns only j3_operator.spec.ts, j3_keyboard.spec.ts, j3.ts. Fix: a site task (T593/T609 area) lays out the start screen so the textarea is never partly cut off at 1280x900, or a logged spec decision on A11Y-005 wording. j3_operator.spec.ts passed (worker run) with the D-5486 session-ageing fix at cb4a620; skipped smoke/prehandin because of the gap.",
    "history": [
     {
      "attempt": 1,
@@ -25771,6 +25771,29 @@
        "turns": 34
       }
      }
+    },
+    {
+     "attempt": 4,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 131,
+     "head_sha": "cb4a620172ddec55b89f5667b21200aed96c1e15",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-22T08:09:25Z",
+     "ended_at": "2026-11-22T08:54:42Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 3660410,
+       "turns": 73
+      },
+      "reviewer": {
+       "tokens": 1561756,
+       "turns": 30
+      }
+     }
     }
    ],
    "reviewed_sha": "eb49f86e89584b49d17bebae25b61d9e0bfbe37f",
@@ -25800,7 +25823,7 @@
    "runner_closed_prs": [
     1319
    ],
-   "reason": null,
+   "reason": "plan gap reported: PLAN GAP: outside ownership: app/site/templates/request.html, app/site/static/site.css\nAt 1280x900 the /request chat start screen textarea box spans y=784..914, partly below the viewport; Chrome does not scroll a partly visible control into view, so tests/a11y/j3_keyboard.spec.ts:56 fails with \"chat-words: outside the viewport\" (via tests/e2e/j3.ts:303, step 5) under A11Y-005 (docs/spec/accessibility.md:9). Reproduced by the reviewer at cb4a620. T118 owns only j3_operator.spec.ts, j3_keyboard.spec.ts, j3.ts. Fix: a site task (T593/T609 area) lays out the start screen so the textarea is never p; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T118 --plan-fix D-### --reason \"...\"` (D-2859)",
    "requeues": [
     {
      "at": "2026-11-22T07:07:48Z",
@@ -25816,9 +25839,15 @@
      "plan_now": "93466ae6f61fdb6deef766b539e0252c8d26e529a8baaf31d624501d58dcf5ab"
     }
    ],
-   "wip_claim": {
-    "attempt": 4,
-    "remote_sha": "eb49f86e89584b49d17bebae25b61d9e0bfbe37f"
+   "plan_gap": {
+    "at": "2026-11-22T08:54:42Z",
+    "problems": [
+     "outside ownership: app/site/templates/request.html, app/site/static/site.css"
+    ],
+    "paths": [
+     "app/site/templates/request.html",
+     "app/site/static/site.css"
+    ]
    }
   },
   {
@@ -108877,12 +108906,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T829",
-   "at": "2026-11-22T08:40:30Z",
-   "cache_creation_input_tokens": 70849,
-   "output_tokens": 15368,
-   "input_tokens": 64,
-   "cache_read_input_tokens": 1231877
+   "task": "T118",
+   "at": "2026-11-22T08:54:42Z",
+   "input_tokens": 204,
+   "output_tokens": 40577,
+   "cache_creation_input_tokens": 181429,
+   "cache_read_input_tokens": 4999956
   },
   "source": "session_reading 2026-11-22T08:47:06Z (week)",
   "by_task": {
@@ -115988,14 +116017,14 @@
     "estimated_bytes": 370732,
     "estimated_tokens": 433056,
     "usage_counting": "message_id",
-    "cache_creation_input_tokens": 959489,
-    "input_tokens": 1049,
-    "cache_read_input_tokens": 51053841,
-    "output_tokens": 273984,
-    "worker_tokens": 44589400,
-    "worker_turns": 405,
-    "reviewer_tokens": 7698963,
-    "reviewer_turns": 138,
+    "cache_creation_input_tokens": 1140918,
+    "input_tokens": 1253,
+    "cache_read_input_tokens": 56053797,
+    "output_tokens": 314561,
+    "worker_tokens": 48249810,
+    "worker_turns": 478,
+    "reviewer_tokens": 9260719,
+    "reviewer_turns": 168,
     "last_model": "claude-opus-5-5"
    },
    "T117": {
@@ -116230,11 +116259,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-22T07:14:36Z",
-    "tokens": 864738
+    "tokens": 1586943
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 156024907
+    "tokens": 156747112
    }
   },
   "session_reading": {
@@ -116245,7 +116274,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T08:53:12Z",
+ "updated_at": "2026-11-22T08:54:42Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -116343,7 +116372,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "23fcbe8c11d7e98a6b62b7774fd0a382bd408518",
+ "runner_sha": "cb4a620172ddec55b89f5667b21200aed96c1e15",
  "starter": "actions",
  "smoke_runs": [
   {
