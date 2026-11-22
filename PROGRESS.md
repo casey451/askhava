@@ -9887,3 +9887,4 @@
 - 2026-11-22T11:45:25Z runner 989b62a22475 (actions): {"T830": "QUEUED -> IN_PROGRESS"}; T830 estimated 230k tokens (calibrated); week has 73.4M left (no five-hour budget, D-3056) after 6.6M still running in another lane (session_reading 2026-11-22T11:39:37Z (week)); claimed
 - 2026-11-22T11:45:31Z runner 989b62a22475 (actions): {}
 - 2026-11-22T11:55:10Z runner 2d3500bae425 (manual): {"T397": "BLOCKED -> QUEUED"}
+- 2026-11-22T11:55:34Z runner 2d3500bae425 (manual): {}
