@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T06:26:00Z by runner a474f22e9cd5 (manual).
+Updated 2026-11-22T06:35:41Z by runner c1afe20f73c9 (actions).
 
-**Building: T118 in progress since 04:18Z; 602 of 767 done; week 54% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T609 in progress since 06:09Z; 602 of 767 done; week 54% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 602 of 767 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T118 claimed 04:18Z, lease until 07:18Z; lane 5: T609 claimed 06:09Z, lease until 09:09Z; lane 7: T810 claimed 05:29Z, lease until 08:29Z
+- **Lane:** lane 5: T609 claimed 06:09Z, lease until 09:09Z; lane 7: T810 claimed 05:29Z, lease until 08:29Z
 - **Week:** 54% used, 85.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:19Z, 6 min before this update
+- **Last run:** 06:26Z, 9 min before this update
 - **Keeper:** last ran 06:19Z, next wake 07:20Z
 
 ## Needs attention
@@ -16,6 +16,7 @@ Updated 2026-11-22T06:26:00Z by runner a474f22e9cd5 (manual).
 1. docs/runbook.md:180-181 (blocking, recovery): restore of an older export puts the old key version back only for the replay run, but step 8 starts worker (and step 10 web) with the host key list lacking v1, so they refuse to start (and VAULT_KEY v1 rows unreadable). Fix: in restore step 8 put the old version back on the host key list, re-run rotate_batch and rekey_suppression_batch to 0, call retire_index_version, then drop v1 again; the paper-copy clock restarts; test should assert it.
 2. docs/runbook.md:173 and :169 (minor): retire_index_version deletes only messaging.suppression rows (suppression_rekey.rs:231-234); stale v1 phone digests are removed by a later rotate_batch after v1 is dropped from the key list (privacy/src/vault.rs:752,760-761). Rotation drill omits that clean-up run.
 Nit: runbook.md:101, :174, :177 exceed wrap width.
+- BLOCKED T118: Reviewer after the findings round (head c1afe20f73c9473b305723ab6199f5f6ef4fcb14) still ended FINDINGS: tests/e2e/j3.ts:136-137, the "11 hours 58 minutes live" check does not depend on the server's 12-hour cap. The first door call after ageOwnerSessions(11*60+58, "start") is answered from the end stored at sign-in (T0+30m); the cap is written by that same call. With OWNER_SESSION_LIFE = 11h the journey would still pass. Fix: call the door twice after the "start" ageing so the second call reads the server-stored end (T0+2m); about one line, 598 of 600 budget. Alternatively reword the assertion and D-5282 to claim only the 12:01 refusal.
 - BLOCKED T121: plan gap reported: PLAN GAP: outside ownership: app/server/src/owner_portal.rs, app/server/src/owner_tools.rs, app/portals/src/owner_help.rs, app/server/src/homeowner_portal.rs
 SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (owner_portal ChangeBody, BridgeBody, OptOutBody, StripeBody, SafetyBody, SpanishBody, BusinessBody, ReleaseBody; owner_tools EvidenceBody; owner_help HelpForm; homeowner_portal PhotoPost) and unclassified raw parses (owner_tools audit_log RawQuery, homeowner_portal upload_fields Multipart and csrf_checked), none owned by T121. Also business_signup.rs Asked::from_; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T121 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T397: plan gap reported: PLAN GAP: outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per probed Owner row; past ~60 rows expires_at < created_at, violating portals.session CHECK (expires_at > created_at), so POST /owner/help/close as Owner returns 500. Marking the three /b/phones rows yes in docs/architecture.md section 13 turns td_sec_61_every_served_door_row_over_http red (reproduced by worker and by reviewer: exit 101, door_matrix.rs:1533). Smallest fix: a harness task that bases owner_jar sign-in times in the past (e.g. key.now - OWNER_IDLE_LIMIT) or spaces TO; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T397 --plan-fix D-### --reason "..."` (D-2859)
@@ -23,11 +24,12 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T397 (since 2026-11-22T02:12:37Z, no attempt used; a plan change fixes it): outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per probed Owner row; past ~60 rows expires_at < created_at, violating portals.session CHECK (expires_at > created_at), so POST /owner/help/close as Owner returns 500. Marking the three /b/phones rows yes in docs/architecture.md section 13 turns td_sec_61_every_served_door_row_over_http red (reproduced by worker and by reviewer: exit 101, door_matrix.rs:1533). Smallest fix: a harness task that bases owner_jar sign-in times in the past (e.g. key.now - OWNER_IDLE_LIMIT) or spaces TOTP steps differently. Prompt forbids editing door_matrix.rs and forbids working around an unreachable route. Worker work is uncommitted in the tree.
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 32 problem(s) on tasks still to run (+483 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 28 problem(s) on tasks still to run (+478 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T118 | Journey J3 (operator) keyboard-only, with closing checks | BLOCKED | 3 | 2 h 17 min | 06:35Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / ✓  120 [main] › tests/e2e |
 | T827 | server and portals: the owner and homeowner forms refuse unk | MERGE_PENDING | 1 | 82 min | 06:12Z |  |
 | T829 | server tests (harness): the door matrix's owner sign-ins nev | BLOCKED | 1 | 19 min | 06:03Z | PLAN GAP: tests/integration/tests/architecture_migrations.rs:791 (TD-SEC-10, not owned by T829) refuses the fix D-5411 p |
 | T828 | ci (harness): gitleaks scans each push's commit range, with  | MERGE_PENDING | 1 | 84 min | 05:45Z |  |
@@ -39,7 +41,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 | T609 | site (harness): the D-4246 polish on the footer, how it work | BLOCKED | 2 | 13 min | 04:15Z | PLAN GAP: tests/e2e/web_chat.spec.ts:123 (owned by T489) uses strict locator main.locator('[lang="es"]'); the footer's E |
 | T721 | businesses and portals: Casey counts a check-in PROBLEM repo | done | 1 | 76 min | 04:10Z |  |
 | T616 | site: strong per-coding ETags with 304 revalidation, a one-y | check_failed | 1 | 96 min | 03:07Z |  |
-| T118 | Journey J3 (operator) keyboard-only, with closing checks | check_failed | 2 | 2 h 19 min | 03:06Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / ✓  120 [main] › tests/e2e |
+| T118 | Journey J3 (operator) keyboard-only, with closing checks | check_failed | 2 | 2 h 19 min | 03:06Z |  |
 | T810 | portals and server: a shared-inbox Confirm press asks for it | BLOCKED | 2 | 2 min | 03:05Z | PLAN GAP: outside ownership: app/server/tests/confirm_press_code.rs. TD-SEC-82 requires a direct portals.shared_inbox in |
 | T810 | portals and server: a shared-inbox Confirm press asks for it | QUEUED | 1 | 39 min | 02:57Z |  |
 | T803 | messaging (harness): an opted-out number gets no HELP reply; | check_failed | 1 | 69 min | 02:44Z |  |
@@ -139,9 +141,9 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T118 (lease until 2026-11-22T07:18:11Z)
+- nothing
 - lane 5: T609 (lease until 2026-11-22T09:09:07Z)
 - lane 7: T810 (lease until 2026-11-22T08:29:15Z)
 
 ## Last usage reading
-- {"task": "T827", "at": "2026-11-22T06:12:22Z", "cache_creation_input_tokens": 115532, "input_tokens": 123, "cache_read_input_tokens": 3747322, "output_tokens": 31293}
+- {"task": "T118", "at": "2026-11-22T06:35:40Z", "cache_read_input_tokens": 4681475, "input_tokens": 205, "output_tokens": 39753, "cache_creation_input_tokens": 184940}

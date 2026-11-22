@@ -25641,8 +25641,8 @@
     "T707",
     "T536"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 2,
+   "status": "BLOCKED",
+   "attempts": 3,
    "slug": "e2e-j3-operator",
    "type": "build",
    "stage": "5",
@@ -25748,6 +25748,29 @@
        "turns": 29
       }
      }
+    },
+    {
+     "attempt": 3,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 138,
+     "head_sha": "c1afe20f73c9473b305723ab6199f5f6ef4fcb14",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-22T04:18:11Z",
+     "ended_at": "2026-11-22T06:35:40Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 3683956,
+       "turns": 71
+      },
+      "reviewer": {
+       "tokens": 1222417,
+       "turns": 34
+      }
+     }
     }
    ],
    "reviewed_sha": "eb49f86e89584b49d17bebae25b61d9e0bfbe37f",
@@ -25774,13 +25797,10 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "wip_claim": {
-    "attempt": 3,
-    "remote_sha": "eb49f86e89584b49d17bebae25b61d9e0bfbe37f"
-   },
    "runner_closed_prs": [
     1319
-   ]
+   ],
+   "reason": "Reviewer after the findings round (head c1afe20f73c9473b305723ab6199f5f6ef4fcb14) still ended FINDINGS: tests/e2e/j3.ts:136-137, the \"11 hours 58 minutes live\" check does not depend on the server's 12-hour cap. The first door call after ageOwnerSessions(11*60+58, \"start\") is answered from the end stored at sign-in (T0+30m); the cap is written by that same call. With OWNER_SESSION_LIFE = 11h the journey would still pass. Fix: call the door twice after the \"start\" ageing so the second call reads the server-stored end (T0+2m); about one line, 598 of 600 budget. Alternatively reword the assertion and D-5282 to claim only the 12:01 refusal."
   },
   {
    "id": "T119",
@@ -108327,12 +108347,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T827",
-   "at": "2026-11-22T06:12:22Z",
-   "cache_creation_input_tokens": 115532,
-   "input_tokens": 123,
-   "cache_read_input_tokens": 3747322,
-   "output_tokens": 31293
+   "task": "T118",
+   "at": "2026-11-22T06:35:40Z",
+   "cache_read_input_tokens": 4681475,
+   "input_tokens": 205,
+   "output_tokens": 39753,
+   "cache_creation_input_tokens": 184940
   },
   "source": "session_reading 2026-11-22T06:03:46Z (week)",
   "by_task": {
@@ -115438,14 +115458,14 @@
     "estimated_bytes": 365852,
     "estimated_tokens": 427356,
     "usage_counting": "message_id",
-    "cache_creation_input_tokens": 774549,
-    "input_tokens": 844,
-    "cache_read_input_tokens": 46372366,
-    "output_tokens": 234231,
-    "worker_tokens": 40905444,
-    "worker_turns": 334,
-    "reviewer_tokens": 6476546,
-    "reviewer_turns": 104,
+    "cache_creation_input_tokens": 959489,
+    "input_tokens": 1049,
+    "cache_read_input_tokens": 51053841,
+    "output_tokens": 273984,
+    "worker_tokens": 44589400,
+    "worker_turns": 405,
+    "reviewer_tokens": 7698963,
+    "reviewer_turns": 138,
     "last_model": "claude-opus-5-5"
    },
    "T117": {
@@ -115676,11 +115696,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-22T02:12:37Z",
-    "tokens": 15844462
+    "tokens": 16537507
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 153283064
+    "tokens": 153976109
    }
   },
   "session_reading": {
@@ -115691,7 +115711,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T06:26:00Z",
+ "updated_at": "2026-11-22T06:35:41Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -115789,8 +115809,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "a474f22e9cd50f3392df07221e7bf636b54539e1",
- "starter": "manual",
+ "runner_sha": "c1afe20f73c9473b305723ab6199f5f6ef4fcb14",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "21d99167398b19ca15d194afa6d72778eae8afc0",
