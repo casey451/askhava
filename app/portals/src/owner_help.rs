@@ -318,6 +318,7 @@ struct HelpQuery {
 
 /// The posted IDs and text; a missing field is empty (D-3890: no path parameter).
 #[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 struct HelpForm {
     #[serde(default)]
     csrf: String,
@@ -522,4 +523,40 @@ async fn close(
         (Some(Ok(notice)), ""),
     )
     .await
+}
+
+#[cfg(test)]
+mod tests {
+    //! SEC-010, D-5410: the help reply and close forms refuse a field `help_request.html` does not post.
+
+    use super::*;
+
+    /// Whether `T` takes a body posting each of `names` once (fake values).
+    fn parses<T: serde::de::DeserializeOwned>(names: &[&str]) -> bool {
+        let body = names.iter().map(|n| ((*n).to_owned(), "fake".into()));
+        let body = serde_json::Value::Object(body.collect());
+        serde_json::from_value::<T>(body).is_ok()
+    }
+
+    /// A form's parser and the names its served form posts.
+    type Served<'a> = (fn(&[&str]) -> bool, &'a [&'a str]);
+
+    /// Each form takes the names its served form posts and refuses one planted unknown name.
+    fn check(forms: &[Served]) {
+        for (parses, names) in forms {
+            assert!(parses(names), "served names {names:?}");
+            let planted = [*names, &["stray"]].concat();
+            assert!(!parses(&planted), "an unknown name beside {names:?}");
+        }
+    }
+
+    /// SEC-010: the reply and the close or reopen form take their served names and refuse an
+    /// unknown one.
+    #[test]
+    fn the_help_forms_refuse_an_unknown_field() {
+        check(&[
+            (parses::<HelpForm>, &["csrf", "request", "press", "text"]),
+            (parses::<HelpForm>, &["csrf", "request", "reopen"]),
+        ]);
+    }
 }
