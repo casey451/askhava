@@ -9963,3 +9963,4 @@
 - 2026-11-22T14:26:26Z runner 726be6527c21 (actions): {}
 - 2026-11-22T14:37:13Z runner a116b287be6d (actions): {"T805": "MERGE_PENDING -> DONE"}
 - 2026-11-22T14:37:28Z runner 1a1917eed465 (manual): {"T675": "BLOCKED -> QUEUED"}
+- 2026-11-22T14:37:59Z runner a116b287be6d (actions): {"T729": "QUEUED -> IN_PROGRESS"}; T729 estimated 1.9M tokens (calibrated); week has 74.3M left (no five-hour budget, D-3056) after 1.7M still running in another lane (session_reading 2026-11-22T14:05:52Z (week)); claimed
