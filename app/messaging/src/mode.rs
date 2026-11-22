@@ -54,6 +54,10 @@ pub enum ModeError {
     /// CON-033: no refusal of the homeowner campaign is recorded.
     #[error("no recorded campaign refusal")]
     NoRefusal,
+    /// CON-033, D-5278: the refusal was Twilio 30951 (third-party lead generation), which the
+    /// toll-free rules forbid too (30468), so there is no toll-free fallback.
+    #[error("a 30951 lead-generation refusal leaves no toll-free fallback")]
+    LeadGenRefusal,
     /// CON-033: Casey has not given his go.
     #[error("no go from the owner")]
     NoGo,
@@ -397,8 +401,12 @@ fn claim(action: &'static str, kind: &'static str, id: Uuid) -> AuditEntry {
     }
 }
 
+/// Twilio's refusal code for third-party lead generation, which toll-free forbids too (CON-033,
+/// D-5278).
+const LEAD_GEN_REFUSAL: &str = "30951";
+
 /// A recorded refusal of the homeowner 10DLC campaign (CON-033): its date and the provider's
-/// reference (an error code such as 30951).
+/// reference (an error code such as 30909 or 30951).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Refusal {
     /// When it was refused.
@@ -415,13 +423,14 @@ pub struct TollFree {
 }
 
 impl TollFree {
-    /// CON-033, TXT-022, D-315, D-1806: configured only with a recorded refusal (non-empty
-    /// reference) and Casey's go, and never while the homeowner number is suspended or waiting
-    /// for Casey after one. Starts unverified.
+    /// CON-033, TXT-022, D-315, D-1806, D-5278: configured only with a recorded refusal (non-empty
+    /// reference other than 30951, lead generation) and Casey's go, and never while the homeowner
+    /// number is suspended or waiting for Casey after one. Starts unverified.
     ///
     /// # Errors
     ///
-    /// [`ModeError::NoRefusal`], [`ModeError::NoGo`], [`ModeError::Suspended`].
+    /// [`ModeError::NoRefusal`], [`ModeError::LeadGenRefusal`], [`ModeError::NoGo`],
+    /// [`ModeError::Suspended`].
     pub fn configure(
         refusal: Option<&Refusal>,
         casey_go: bool,
@@ -429,6 +438,9 @@ impl TollFree {
     ) -> Result<Self, ModeError> {
         if !refusal.is_some_and(|r| !r.reference.trim().is_empty()) {
             return Err(ModeError::NoRefusal);
+        }
+        if refusal.is_some_and(|r| r.reference.trim() == LEAD_GEN_REFUSAL) {
+            return Err(ModeError::LeadGenRefusal);
         }
         if !casey_go {
             return Err(ModeError::NoGo);
