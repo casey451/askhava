@@ -2,8 +2,10 @@
 // TD-WEB-07, TD-WEB-09, TD-TXT-15's WEB-009 case; WEB-001, WEB-002, WEB-003, WEB-004, WEB-005,
 // WEB-009, WEB-012, WEB-022, WEB-026, WORD-002; D-3144, D-3878).
 //
-// Each page must render whole without a script, in its language, with the footer's "Homeowners"
-// column, tagline and not-a-contractor statement, and no directory, events or /chat link. The old
+// Each page must render whole without a script, in its language, with the footer's two columns
+// (the "Homeowners" column, then the brand's column with For businesses, Español, Terms, Privacy and
+// Accessibility; D-5386), tagline and not-a-contractor statement, and no directory, events or /chat
+// link. The old
 // directory paths answer 200 with the home page, while any other unknown path stays a 404. The fee
 // amounts are checked against the fee tiers in app/site/src/pages.rs (TD-WEB-09) and the WEB-028
 // numbers in tests/integration/tests/home_numbers.rs (TD-JOB-04). The brand is read from the brand
@@ -23,9 +25,11 @@ test("TD-WEB-01 TD-TXT-15 WEB-001 WEB-003 WEB-004 WEB-005 WEB-009 WORD-002: the 
   await expect(page.locator("h1")).toHaveCount(1);
   await expect(page.locator("script")).toHaveCount(0);
   const footer = page.locator("footer");
-  await expect(footer.locator("h2")).toHaveText("Homeowners");
+  await expect(footer.locator("h2")).toHaveText(["Homeowners", BRAND]);
   const links = await footer.locator("a").evaluateAll((all) => all.map((a) => [a.textContent, a.getAttribute("href")]));
-  expect(links).toEqual([["How it works", "/how-it-works"], ["Services", "/services"], ["Get quotes", "/request"], ["Help", "/help"]]);
+  expect(links).toEqual([["How it works", "/how-it-works"], ["Services", "/services"], ["Get quotes", "/request"], ["Help", "/help"], ["For businesses", "/business"], ["Español", "/es"], ["Terms", "/terms"], ["Privacy", "/privacy"], ["Accessibility", "/accessibility"]]);
+  const spanish = footer.locator("a[href='/es']");
+  expect([await spanish.getAttribute("lang"), await spanish.getAttribute("hreflang")]).toEqual(["es", "es"]);
   await expect(footer).toContainText("Local quotes. Your choice.");
   await expect(footer).toContainText(STATEMENT);
   await expect(page.locator("main")).toContainText("Launch offer: your first win is free, on any job size, when you join in the first 90 days or within 90 days after your trade opens.");
@@ -63,7 +67,7 @@ test("TD-WEB-01 TD-WEB-09 WEB-002 WEB-026: the how-it-works pages in English and
   expect((await page.goto("/how-it-works"))?.status()).toBe(200);
   await expect(page.locator("h1")).toHaveText("How it works");
   await expect(page.locator("main")).toContainText(/The business you choose pays \S+ a set introduction fee \(\$\d+, \$\d+ or \$\d+, by quote size\)\. You pay \S+ nothing\./);
-  await expect(page.getByRole("link", { name: "Get quotes in the chat" })).toHaveAttribute("href", "/request");
+  await expect(page.locator("main a[href='/request']:not(footer a)")).toHaveText("Get quotes");
   await expect(page.locator("footer")).toContainText(STATEMENT);
   expect((await page.goto("/es/how-it-works"))?.status()).toBe(200);
   expect(await page.locator("html").getAttribute("lang")).toBe("es");
