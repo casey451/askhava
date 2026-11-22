@@ -1,19 +1,19 @@
 {
  "schema": 1,
- "conclusion": "failure",
+ "conclusion": "success",
  "results": {
   "ci": "success",
   "twin": "success",
   "a11y": "success",
-  "named_mutants": "failure",
+  "named_mutants": "success",
   "stripe_ips": "success"
  },
- "started_at": "2026-11-22T17:09:47Z",
- "ran_at": "2026-11-22T17:39:53Z",
- "sha": "d806a387d9f1c7da3143ca56f71d3ca0c4e13ab5",
+ "started_at": "2026-11-22T19:59:02Z",
+ "ran_at": "2026-11-22T20:25:50Z",
+ "sha": "21be2b3d8975c3857eb2ea48ff28574d6a5af688",
  "last_green": {
-  "sha": "e4d287328e44bd15c3cbed150c58f54046678543",
-  "ran_at": "2026-11-20T18:17:21Z"
+  "sha": "21be2b3d8975c3857eb2ea48ff28574d6a5af688",
+  "ran_at": "2026-11-22T20:25:50Z"
  },
- "failures_since_green": 2
+ "failures_since_green": 0
 }
