@@ -4,7 +4,8 @@
     terms, each a section with its own heading, anchor and version line; /privacy and /sms-terms
     hold one, whose title is the page's h1. A body is the draft's own Markdown as HTML, with any
     raw HTML shown as text; its type, `legal_pages::LegalHtml`, is marked HTML-safe for Askama,
-    so the template needs no escape filter (SEC-011). -#}
+    so the template needs no escape filter (SEC-011). Each document is a reading column on canvas with
+    type and spacing polish only (`.legal-doc` in site.css; T610, D-4246, DESIGN_SPEC section 8). -#}
 {% block title %}{{ title }}{% endblock %}
 {% block content %}
 <h1>{{ title }}</h1>
