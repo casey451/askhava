@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T01:24:51Z by runner 907c2ff0ac1a (actions).
+Updated 2026-11-22T01:27:34Z by runner 21d99167398b (actions).
 
-**Building: T691 in progress since 00:03Z; 597 of 752 done; week 45% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T691 in progress since 00:03Z; 598 of 752 done; week 45% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 597 of 752 build tasks (owner gates not counted)
+- **Tasks done:** 598 of 752 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T691 claimed 00:03Z, lease until 03:03Z; lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 3: T542 claimed 22:52Z, lease until 04:23Z; lane 5: T397 claimed 22:35Z, lease until 01:35Z; lane 6: T117 claimed 00:49Z, lease until 03:49Z
 - **Week:** 45% used, 100.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:24Z, 0 min before this update
+- **Last run:** 01:24Z, 2 min before this update
 - **Keeper:** last ran 01:24Z, next wake 01:44Z
 
 ## Needs attention
@@ -17,7 +17,7 @@ Updated 2026-11-22T01:24:51Z by runner 907c2ff0ac1a (actions).
 - PLAN GAP T121 (since 2026-11-21T22:29:56Z, no attempt used; a plan change fixes it): T121: measures 46% of the context window, over its 45% limit
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 34 problem(s) on tasks still to run (+476 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 34 problem(s) on tasks still to run (+477 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -26,7 +26,7 @@ Updated 2026-11-22T01:24:51Z by runner 907c2ff0ac1a (actions).
 | T609 | site: the D-4246 polish on the footer, how it works, the bus | BLOCKED | 1 | 2 min | 00:57Z | PLAN GAP: tests/e2e/site_pages.spec.ts:26-28 (owned by T102) requires exactly one footer h2 "Homeowners" and exactly fou |
 | T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | QUEUED | 2 | 106 min | 00:48Z | Reviewer after findings round still FINDINGS at 4f79a8b8c4195e68ccfba3a25eaab6d612560536: / 1. docs/runbook.md:139-142 a |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | QUEUED | 1 | 2 h 35 min | 00:44Z | Reviewer after fix round (head ee01dda321ae54d4c6af6a1e464281c92fbdcf1d) still FINDINGS: / 1. tests/e2e/j3_operator.spec |
-| T800 | Legal docs and tests (harness): the Twilio campaign submissi | MERGE_PENDING | 1 | 46 min | 00:39Z |  |
+| T800 | Legal docs and tests (harness): the Twilio campaign submissi | done | 1 | 46 min | 00:39Z |  |
 | T608 | site and portals: the home page and the quote page in full V | done | 2 | 2 h 21 min | 23:38Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-21T |
 | T600 | intake, businesses, privacy and server: four worker handlers | done | 1 | 45 min | 23:15Z |  |
 | T798 | catalog: the photo asks' English wording loaded from the tra | done | 1 | 107 min | 23:03Z |  |
@@ -81,7 +81,6 @@ Updated 2026-11-22T01:24:51Z by runner 907c2ff0ac1a (actions).
 | T769 | site: the business page's WEB-024 line follows the stored bu | done | 1 | 41 min | 01:56Z |  |
 | T580 | messaging: a failed, blocked or expired text reads as failed | done | 1 | 43 min | 01:53Z |  |
 | T664 | portals: the Confirm press re-checks the license and account | done | 2 | 2 h 38 min | 01:47Z | PLAN GAP: outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs / The pick's window deadline (picks.pic |
-| T674 | server: the homeowner's photo upload page and the short-live | BLOCKED | 1 | 17 min | 01:25Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -89,7 +88,7 @@ Updated 2026-11-22T01:24:51Z by runner 907c2ff0ac1a (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 597 of 752
+**Tasks merged (throughput only):** 598 of 752
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -125,7 +124,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 240 of 327 done
+- stage 5: 241 of 327 done
 - stage 6: 0 of 72 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
