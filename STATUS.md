@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-22T09:00:21Z by runner 3e5fc4ca268c (actions).
+Updated 2026-11-22T09:00:31Z by runner 3e5fc4ca268c (actions).
 
 **Building: T675 in progress since 08:47Z; 606 of 767 done; week 55% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 606 of 767 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 4: T729 claimed 08:07Z, lease until 11:07Z; lane 5: T725 claimed 08:59Z, lease until 11:59Z; lane 6: T610 claimed 08:20Z, lease until 11:20Z
+- **Lane:** lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 4: T729 claimed 08:07Z, lease until 11:07Z; lane 5: T725 claimed 08:59Z, lease until 11:59Z
 - **Week:** 55% used, 78.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:00Z, 0 min before this update
 - **Keeper:** last ran 08:55Z, next wake 09:15Z
@@ -29,6 +29,7 @@ At 1280x900 the /request chat start screen textarea box spans y=784..914, partly
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T610 | site: the D-4246 polish on the Spanish pages, the legal page | MERGE_PENDING | 1 | 39 min | 09:00Z |  |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | BLOCKED | 4 | 45 min | 08:54Z | PLAN GAP: outside ownership: app/site/templates/request.html, app/site/static/site.css / At 1280x900 the /request chat s |
 | T829 | server tests (harness): the door matrix's owner sign-ins nev | MERGE_PENDING | 2 | 48 min | 08:40Z | PLAN GAP: tests/integration/tests/architecture_migrations.rs:791 (TD-SEC-10, not owned by T829) refuses the fix D-5411 p |
 | T609 | site (harness): the D-4246 polish on the footer, how it work | done | 3 | 65 min | 07:14Z | PLAN GAP: tests/e2e/web_chat.spec.ts:123 (owned by T489) uses strict locator main.locator('[lang="es"]'); the footer's E |
@@ -144,7 +145,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T675 (lease until 2026-11-22T11:47:43Z)
 - lane 4: T729 (lease until 2026-11-22T11:07:49Z)
 - lane 5: T725 (lease until 2026-11-22T11:59:45Z)
-- lane 6: T610 (lease until 2026-11-22T11:20:52Z)
 
 ## Last usage reading
-- {"task": "T118", "at": "2026-11-22T08:54:42Z", "input_tokens": 204, "output_tokens": 40577, "cache_creation_input_tokens": 181429, "cache_read_input_tokens": 4999956}
+- {"task": "T610", "at": "2026-11-22T09:00:09Z", "cache_read_input_tokens": 2073383, "cache_creation_input_tokens": 107103, "input_tokens": 81, "output_tokens": 17151}
