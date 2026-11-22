@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T04:15:38Z by runner dfc4f31032dd (actions).
+Updated 2026-11-22T04:15:50Z by runner 8b785095872d (actions).
 
 **Building: T675 in progress since 03:54Z; 600 of 767 done; week 50% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-22T04:15:38Z by runner dfc4f31032dd (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T675 claimed 03:54Z, lease until 06:54Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z
 - **Week:** 50% used, 89.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:11Z, 3 min before this update
+- **Last run:** 04:15Z, 0 min before this update
 - **Keeper:** last ran 04:11Z, next wake 04:31Z
 
 ## Needs attention
@@ -26,7 +26,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 - PLAN GAP T397 (since 2026-11-22T02:12:37Z, no attempt used; a plan change fixes it): outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per probed Owner row; past ~60 rows expires_at < created_at, violating portals.session CHECK (expires_at > created_at), so POST /owner/help/close as Owner returns 500. Marking the three /b/phones rows yes in docs/architecture.md section 13 turns td_sec_61_every_served_door_row_over_http red (reproduced by worker and by reviewer: exit 101, door_matrix.rs:1533). Smallest fix: a harness task that bases owner_jar sign-in times in the past (e.g. key.now - OWNER_IDLE_LIMIT) or spaces TOTP steps differently. Prompt forbids editing door_matrix.rs and forbids working around an unreachable route. Worker work is uncommitted in the tree.
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T810 (since 2026-11-22T03:05:53Z, no attempt used; a plan change fixes it): outside ownership: app/server/tests/confirm_press_code.rs. TD-SEC-82 requires a direct portals.shared_inbox insert (never set_inbox_shared/record_step_up, D-5319), but TD-SEC-10 (tests/integration/tests/architecture_migrations.rs check_app :737, check_sql_forms :660-677, schema_refs :295) scans every .rs under app/: macro form fails "`portals.` names another module's schema", plain sqlx::query fails "SQL outside the query macros: `query`". Reviewer confirmed. Smallest plan change: T810 owns tests/integration/tests/confirm_press_code.rs (not scanned; confirm_terms.rs:238 does the plain insert there); update docs/test-design.md:939 and kit/tasks.json TD-SEC-82 paths and run command to `cargo test -p askhava-integration --test confirm_press_code`.
-- Strict plan check red: 29 problem(s) on tasks still to run (+477 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 30 problem(s) on tasks still to run (+478 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -97,7 +97,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 600 of 767
+**Tasks merged (throughput only):** 600 of 763
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -133,7 +133,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 243 of 335 done
+- stage 5: 243 of 339 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done

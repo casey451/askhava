@@ -25536,7 +25536,8 @@
    "id": "T117",
    "deps": [
     "T206",
-    "T707"
+    "T707",
+    "T830"
    ],
    "status": "BLOCKED",
    "attempts": 3,
@@ -25817,7 +25818,9 @@
     "T458",
     "T526",
     "T488",
-    "T586"
+    "T586",
+    "T827",
+    "T828"
    ],
    "status": "BLOCKED",
    "attempts": 1,
@@ -58175,7 +58178,8 @@
     "T396",
     "T364",
     "T412",
-    "T536"
+    "T536",
+    "T829"
    ],
    "status": "BLOCKED",
    "attempts": 1,
@@ -75544,7 +75548,8 @@
     "T724",
     "T764",
     "T770",
-    "T788"
+    "T788",
+    "T828"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -76612,7 +76617,8 @@
     "T558",
     "T551",
     "T552",
-    "T726"
+    "T726",
+    "T828"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -98647,7 +98653,8 @@
    "deps": [
     "T721",
     "T527",
-    "T484"
+    "T484",
+    "T827"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -100325,7 +100332,8 @@
     "T742",
     "T748",
     "T309",
-    "T609"
+    "T609",
+    "T827"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -100392,7 +100400,8 @@
     "T687",
     "T746",
     "T766",
-    "T813"
+    "T813",
+    "T829"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -107291,7 +107300,8 @@
     "T200",
     "T729",
     "T730",
-    "T816"
+    "T816",
+    "T827"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -107615,6 +107625,61 @@
    "status": "QUEUED",
    "attempts": 0,
    "slug": "spanish-site-copy",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T830",
+   "deps": [
+    "T206",
+    "T707"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "rotate-keys-command",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T828",
+   "deps": [
+    "T764",
+    "T770",
+    "T640"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "gitleaks-commit-range",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T829",
+   "deps": [
+    "T766",
+    "T767"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "door-matrix-owner-signin",
+   "type": "harness",
+   "stage": "5"
+  },
+  {
+   "id": "T827",
+   "deps": [
+    "T527",
+    "T540",
+    "T480",
+    "T407",
+    "T310",
+    "T304",
+    "T530",
+    "T674"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "owner-homeowner-strict-forms",
    "type": "build",
    "stage": "5"
   }
@@ -114952,7 +115017,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T04:15:38Z",
+ "updated_at": "2026-11-22T04:15:50Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -115050,7 +115115,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "dfc4f31032dda9d428ca2272b8e57c969bc82814",
+ "runner_sha": "8b785095872dc4b58ccbdca002008eebe9776496",
  "starter": "actions",
  "smoke_runs": [
   {
