@@ -9780,3 +9780,4 @@
 - 2026-11-22T08:21:04Z runner fda71be613a1 (actions): {"T610": "QUEUED -> IN_PROGRESS"}; T610 estimated 1.5M tokens (calibrated); week has 83.2M left (no five-hour budget, D-3056) after 2.8M still running in another lane (session_reading 2026-11-22T07:37:31Z (week)); claimed
 - 2026-11-22T08:21:10Z runner fda71be613a1 (actions): {}
 - 2026-11-22T08:40:31Z runner 694a3848c6ae (actions): {}
+- 2026-11-22T08:40:45Z runner 694a3848c6ae (actions): {"T829": "IN_PROGRESS -> MERGE_PENDING"}

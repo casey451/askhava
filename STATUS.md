@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-22T08:40:31Z by runner 694a3848c6ae (actions).
+Updated 2026-11-22T08:40:45Z by runner 694a3848c6ae (actions).
 
-**Building: T829 in progress since 07:52Z; 605 of 767 done; week 54% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T729 in progress since 08:07Z; 605 of 767 done; week 54% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 605 of 767 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T829 claimed 07:52Z, lease until 10:52Z; lane 4: T729 claimed 08:07Z, lease until 11:07Z; lane 5: T118 claimed 08:09Z, lease until 11:09Z; lane 6: T610 claimed 08:20Z, lease until 11:20Z
+- **Lane:** lane 4: T729 claimed 08:07Z, lease until 11:07Z; lane 5: T118 claimed 08:09Z, lease until 11:09Z; lane 6: T610 claimed 08:20Z, lease until 11:20Z
 - **Week:** 54% used, 83.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 08:21Z, 19 min before this update
 - **Keeper:** last ran 07:37Z, next wake 07:57Z
@@ -29,11 +29,12 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T829 | server tests (harness): the door matrix's owner sign-ins nev | MERGE_PENDING | 2 | 48 min | 08:40Z | PLAN GAP: tests/integration/tests/architecture_migrations.rs:791 (TD-SEC-10, not owned by T829) refuses the fix D-5411 p |
 | T609 | site (harness): the D-4246 polish on the footer, how it work | done | 3 | 65 min | 07:14Z | PLAN GAP: tests/e2e/web_chat.spec.ts:123 (owned by T489) uses strict locator main.locator('[lang="es"]'); the footer's E |
 | T810 | portals and server: a shared-inbox Confirm press asks for it | MERGE_PENDING | 3 | 76 min | 06:46Z | PLAN GAP: outside ownership: app/server/tests/confirm_press_code.rs. TD-SEC-82 requires a direct portals.shared_inbox in |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | BLOCKED | 3 | 2 h 17 min | 06:35Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / ✓  120 [main] › tests/e2e |
 | T827 | server and portals: the owner and homeowner forms refuse unk | MERGE_PENDING | 1 | 82 min | 06:12Z |  |
-| T829 | server tests (harness): the door matrix's owner sign-ins nev | BLOCKED | 1 | 19 min | 06:03Z | PLAN GAP: tests/integration/tests/architecture_migrations.rs:791 (TD-SEC-10, not owned by T829) refuses the fix D-5411 p |
+| T829 | server tests (harness): the door matrix's owner sign-ins nev | BLOCKED | 1 | 19 min | 06:03Z |  |
 | T828 | ci (harness): gitleaks scans each push's commit range, with  | done | 1 | 84 min | 05:45Z |  |
 | T616 | site: strong per-coding ETags with 304 revalidation, a one-y | done | 2 | 39 min | 05:32Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T803 | messaging (harness): an opted-out number gets no HELP reply; | MERGE_PENDING | 2 | 63 min | 05:27Z | Ci: failure; Checks: failure / Checks failed at step: Named mutants of the files this change touches (scripts/run_named_ |
@@ -139,10 +140,10 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T829 (lease until 2026-11-22T10:52:28Z)
+- nothing
 - lane 4: T729 (lease until 2026-11-22T11:07:49Z)
 - lane 5: T118 (lease until 2026-11-22T11:09:25Z)
 - lane 6: T610 (lease until 2026-11-22T11:20:52Z)
 
 ## Last usage reading
-- {"task": "T609", "at": "2026-11-22T07:14:36Z", "output_tokens": 35415, "input_tokens": 119, "cache_creation_input_tokens": 149072, "cache_read_input_tokens": 4706644}
+- {"task": "T829", "at": "2026-11-22T08:40:30Z", "cache_creation_input_tokens": 70849, "output_tokens": 15368, "input_tokens": 64, "cache_read_input_tokens": 1231877}
