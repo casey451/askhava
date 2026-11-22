@@ -30,12 +30,7 @@
    "expires": "2026-11-22T17:25:48Z",
    "lane": "5"
   },
-  "6": {
-   "task": "T729",
-   "session": "actions-45030776828",
-   "expires": "2026-11-22T17:37:42Z",
-   "lane": "6"
-  },
+  "6": null,
   "7": {
    "task": "T590",
    "session": "actions-45033753540",
@@ -44,7 +39,7 @@
   },
   "fix": null
  },
- "seq": 9929,
+ "seq": 9930,
  "runner_sha": "c290a2c2ed352d0e5d772197243df67d4836f7d3",
  "starter": "actions"
 }
