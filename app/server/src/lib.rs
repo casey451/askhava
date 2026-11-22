@@ -22,7 +22,7 @@ use askhava_intake::api::rules::Settings as IntakeSettings;
 use askhava_payments::api::{Minter, stripe_webhook_routes};
 use askhava_portals::api::{
     Answer, ApprovalSecret, ConfirmRoute, ConfirmSettings, PickCodeKeys, SecretAnswer,
-    confirm_routes, feedback_routes, pick_flow_routes, quote_page_routes, security_headers,
+    confirm_routes_with, feedback_routes, pick_flow_routes, quote_page_routes, security_headers,
 };
 use askhava_privacy::api::{SessionMint, Vault};
 use axum::Router;
@@ -158,6 +158,7 @@ struct BusinessParts {
     address: Option<address_changes::AddressParts>,
     vault: Option<Arc<Vault>>,
     confirm: Option<ConfirmSettings>,
+    confirm_codes: Option<askhava_portals::api::PressCodes>,
     homeowner: Option<homeowner_portal::HomeownerVerify>,
     photos: Option<homeowner_portal::PhotoParts>,
     business_number: Option<askhava_messaging::api::SendingNumber>,
@@ -293,6 +294,15 @@ impl RouterParts {
         self
     }
 
+    /// Adds the Confirm page's shared-inbox Verify codes (T810, SEC-027, D-5313,
+    /// [`action_links::confirm_link_codes`]); without them "Text me a code" sends none and a
+    /// press that owes a code is refused.
+    #[must_use]
+    pub fn with_confirm_codes(mut self, codes: action_links::LinkCodes) -> Self {
+        self.business.confirm_codes = Some(askhava_portals::api::PressCodes::new(codes));
+        self
+    }
+
     /// [`Self::with_confirm_settings`] with [`confirm_settings`]'s answer; `None` adds nothing.
     #[must_use]
     pub fn with_confirm_part(self, part: Option<(String, jiff::Timestamp, SecretString)>) -> Self {
@@ -413,11 +423,12 @@ fn business_pages(
 ) -> Router {
     let (webhooks, voice) = (webhooks.as_ref(), voice.as_ref());
     let confirm = stripe.as_ref().map_or_else(Router::new, |hooks| {
-        confirm_routes(ConfirmRoute {
+        let route = ConfirmRoute {
             hooks: Arc::clone(hooks),
             settings: parts.confirm.clone(),
             approval: Arc::new(StripeApproval(hooks.stripe.clone())),
-        })
+        };
+        confirm_routes_with(route, parts.confirm_codes.clone())
     });
     let owner = owner_signin::routes(pool.clone()).merge(owner_portal::routes(
         pool.clone(),
@@ -538,9 +549,10 @@ fn link_and_site_pages(
 /// "Nothing was picked" lines. `stripe` ([`release_sink::stripe_webhook`]) adds `payments`' Stripe
 /// webhook route, whose cleared picks [`release_sink::PickReleaser`] settles, mints and releases
 /// (PICK-022, SEC-039, D-1480, D-1739); serve with connect info, so the socket peer is known
-/// (SEC-040). `None` adds none. The business Confirm route (`portals::api::confirm_routes`,
+/// (SEC-040). `None` adds none. The business Confirm route (`portals::api::confirm_routes_with`,
 /// T261, D-3813) is merged from the same Stripe hooks, with the parts' Confirm settings
-/// ([`RouterParts::with_confirm_settings`]). Inside the request-ID and security-headers layers, every route
+/// ([`RouterParts::with_confirm_settings`]) and shared-inbox codes
+/// ([`RouterParts::with_confirm_codes`], T810). Inside the request-ID and security-headers layers, every route
 /// runs under the whole-request time limit (`request_timeout`, 503 with `Retry-After`, D-1870)
 /// and, innermost, the panic layer (500 naming no panic message, D-2208).
 pub fn build_router(pool: PgPool, test_control: Router, parts: impl Into<RouterParts>) -> Router {
