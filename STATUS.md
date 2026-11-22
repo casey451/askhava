@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T20:00:46Z by runner 294bda79664e (manual).
+Updated 2026-11-22T20:30:30Z by runner 21be2b3d8975 (actions).
 
-**Idle since 17:36Z; 617 of 770 done; week 65% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T675 in progress since 20:30Z; 617 of 770 done; week 65% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 617 of 770 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** idle since 17:36Z (no task in progress)
-- **Week:** 65% used, 66.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:13Z, 47 min before this update
+- **Lane:** lane 1: T675 claimed 20:30Z, lease until 23:30Z
+- **Week:** 65% used, 64.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 20:00Z, 29 min before this update
 - **Keeper:** last ran 18:46Z, next wake 00:26Z
 
 ## Needs attention
@@ -81,8 +81,6 @@ Updated 2026-11-22T20:00:46Z by runner 294bda79664e (manual).
 | T788 | Tooling (harness): check_pr_change.py fails a task branch th | done | 1 | 64 min | 21:30Z |  |
 | T600 | intake, businesses, privacy and server: four worker handlers | resync | 1 | 57 min | 21:10Z |  |
 | T565 | portals and server: the business team role change, removal a | done | 1 | 97 min | 20:57Z |  |
-| T754 | portals and payments: a $0 Confirm after a PaymentIntent was | done | 4 | 113 min | 20:18Z | PLAN GAP: tests/integration/tests/stripe_webhook_dispatch.rs:420-430 (done test td_fee_43_a_database_error_is_resent_and |
-| T707 | server: an emergency pick's address re-release waits while s | done | 3 | 97 min | 20:13Z | Reviewer after the findings round still ends REVIEW-VERDICT: FINDINGS (head 2f9bf610c3700bb46a4670ade27d67afda63591a). / |
 
 ### Plan and harness merges on main
 - 17:04Z Plan: unblock T121/T832/T499/T514 (D-5552); pre-flight fixes job 24 (D-5551) (#1363)
@@ -92,36 +90,36 @@ Updated 2026-11-22T20:00:46Z by runner 294bda79664e (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 0 of 735 (0.0%) · partial 722 · unstarted 13
+**Requirements verified:** 403 of 735 (54.8%) · partial 319 · unstarted 13
 **Tasks merged (throughput only):** 617 of 770
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 0 | 35 | 0 | 35 |
-| ai | 0 | 26 | 3 | 29 |
-| businesses | 0 | 57 | 1 | 58 |
-| calls | 0 | 25 | 0 | 25 |
-| consent | 0 | 35 | 0 | 35 |
-| fees | 0 | 52 | 0 | 52 |
-| intake | 0 | 43 | 0 | 43 |
-| job-cards | 0 | 24 | 0 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 0 | 45 | 0 | 45 |
-| ops-recovery | 0 | 48 | 6 | 54 |
-| privacy | 0 | 31 | 0 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 0 | 56 | 0 | 56 |
-| recurring | 0 | 11 | 0 | 11 |
-| security | 0 | 52 | 3 | 55 |
-| terms | 0 | 35 | 0 | 35 |
-| website | 0 | 30 | 0 | 30 |
-| wording | 0 | 32 | 0 | 32 |
+| accessibility | 25 | 10 | 0 | 35 |
+| ai | 7 | 19 | 3 | 29 |
+| businesses | 29 | 28 | 1 | 58 |
+| calls | 17 | 8 | 0 | 25 |
+| consent | 17 | 18 | 0 | 35 |
+| fees | 27 | 25 | 0 | 52 |
+| intake | 11 | 32 | 0 | 43 |
+| job-cards | 16 | 8 | 0 | 24 |
+| licensing | 36 | 12 | 0 | 48 |
+| lifecycle | 21 | 7 | 0 | 28 |
+| messaging | 26 | 19 | 0 | 45 |
+| ops-recovery | 17 | 31 | 6 | 54 |
+| privacy | 11 | 20 | 0 | 31 |
+| quiet-hours | 4 | 5 | 0 | 9 |
+| quotes-pick | 34 | 22 | 0 | 56 |
+| recurring | 10 | 1 | 0 | 11 |
+| security | 14 | 38 | 3 | 55 |
+| terms | 30 | 5 | 0 | 35 |
+| website | 22 | 8 | 0 | 30 |
+| wording | 29 | 3 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-22T15:19:23Z (week)): week: 127.7M used, 66.3M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T06:45:09Z.
+- Pacing (session_reading 2026-11-22T18:46:13Z (week)): week: 130.0M used, 64.0M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T11:28:31Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -136,7 +134,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T675 (lease until 2026-11-22T23:30:23Z)
 
 ## Last usage reading
 - {"task": "T675", "at": "2026-11-22T17:03:10Z", "input_tokens": 393, "output_tokens": 151893, "cache_read_input_tokens": 35329205, "cache_creation_input_tokens": 396323}
