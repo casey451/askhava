@@ -34,7 +34,8 @@ use askhava_portals::api::{
     owner_health_page, owner_refund, owner_refund_page, refuse_cross_site,
 };
 use axum::Router;
-use axum::extract::{Extension, FromRef, Path, RawQuery, State};
+use axum::extract::rejection::QueryRejection;
+use axum::extract::{Extension, FromRef, Path, Query, State};
 use axum::http::StatusCode;
 use axum::middleware::{from_fn, from_fn_with_state};
 use axum::response::{Html, IntoResponse, Response};
@@ -144,6 +145,7 @@ impl FromRef<Tools> for WebSecurity {
 
 /// The evidence press with its CSRF token; a missing field reaches the CSRF check (D-3878).
 #[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 struct EvidenceBody {
     #[serde(default)]
     csrf: String,
@@ -337,21 +339,32 @@ async fn evidence_press(
     }
 }
 
+/// The audit log viewer's query (SEC-010, D-5410): only `after`, kept as text so a value that is
+/// not a number still means 0; any other key is refused.
+#[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct AuditQuery {
+    #[serde(default)]
+    after: Option<String>,
+}
+
 /// `GET` [`OWNER_AUDIT_LOG_ROUTE`]: the audit log viewer after row `?after=` (0 when missing or
-/// not a number), for the owner only (SEC-006, SEC-034, OPS-010). Reads only.
+/// not a number), for the owner only (SEC-006, SEC-034, OPS-010). The query is read only after
+/// `require_owner`, so a signed-out request gets the door's refusal; for the owner an unknown
+/// key is the 400 its rejection carries (SEC-010, D-5410). Reads only.
 async fn audit_log(
     State(tools): State<Tools>,
     Extension(site): Extension<OwnerSite>,
-    RawQuery(query): RawQuery,
+    query: Result<Query<AuditQuery>, QueryRejection>,
     jar: CookieJar,
 ) -> Response {
     if let Err(refused) = require_owner(&tools.pool, &jar, &site, tools.clock.now()).await {
         return *refused;
     }
-    let query = query.unwrap_or_default();
-    let after = query
-        .split('&')
-        .find_map(|pair| pair.strip_prefix("after="));
+    let after = match query {
+        Ok(Query(query)) => query.after,
+        Err(rejection) => return rejection.into_response(),
+    };
     let after = after.and_then(|id| id.parse().ok()).unwrap_or(0);
     let Ok(mut db) = tools.pool.acquire().await else {
         return failed("database");
@@ -393,8 +406,9 @@ async fn health(
 }
 
 #[cfg(test)]
-mod tests {
-    //! OPS-008: `SecretReport::from_settings` over fake pairs (T304 fix round, D-5132).
+pub(crate) mod tests {
+    //! OPS-008: `SecretReport::from_settings` over fake pairs (T304 fix round, D-5132); SEC-010,
+    //! D-5410: the evidence form and the audit log query refuse an unknown name.
 
     use super::*;
 
@@ -476,4 +490,55 @@ mod tests {
             askhava_core::api::DEFAULT_SPOT_CHECK_EVERY_DAYS
         );
     }
+
+    /// Whether `T` takes a body posting each of `names` once (fake values); shared with the
+    /// other form modules' tests (SEC-010).
+    pub(crate) fn parses<T: serde::de::DeserializeOwned>(names: &[&str]) -> bool {
+        let body = names.iter().map(|n| ((*n).to_owned(), "fake".into()));
+        let body = serde_json::Value::Object(body.collect());
+        serde_json::from_value::<T>(body).is_ok()
+    }
+
+    /// A form's parser and the names its served form posts.
+    pub(crate) type Served<'a> = (fn(&[&str]) -> bool, &'a [&'a str]);
+
+    /// Each form takes the names its served form posts and refuses one planted unknown name.
+    pub(crate) fn check(forms: &[Served]) {
+        for (parses, names) in forms {
+            assert!(parses(names), "served names {names:?}");
+            let planted = [*names, &["stray"]].concat();
+            assert!(!parses(&planted), "an unknown name beside {names:?}");
+        }
+    }
+
+    /// SEC-010, D-5410: the evidence press takes `owner_refund.html`'s names and refuses an
+    /// unknown one.
+    #[test]
+    fn the_evidence_press_refuses_an_unknown_field() {
+        check(&[(parses::<EvidenceBody>, &["csrf", "dispute"])]);
+    }
+
+    /// The audit log query of `uri`: `after` as posted, or the rejection's status.
+    fn audit(uri: &str) -> Result<Option<String>, StatusCode> {
+        let uri: axum::http::Uri = uri.parse().expect("fake uri");
+        let query = Query::<AuditQuery>::try_from_uri(&uri);
+        query.map(|Query(q)| q.after).map_err(|r| r.status())
+    }
+
+    /// SEC-010, D-5410: `after` alone (missing, a number or not) is taken; an unknown or a
+    /// repeated key is the rejection's 400.
+    #[test]
+    fn the_audit_query_refuses_an_unknown_key() {
+        assert_eq!(audit(AUDIT_URI), Ok(None));
+        let seven = format!("{AUDIT_URI}?after=7");
+        assert_eq!(audit(&seven), Ok(Some("7".to_owned())));
+        let many = format!("{AUDIT_URI}?after=many");
+        assert_eq!(audit(&many), Ok(Some("many".to_owned())));
+        let stray = format!("{AUDIT_URI}?after=1&page=2");
+        assert_eq!(audit(&stray), Err(StatusCode::BAD_REQUEST));
+        let twice = format!("{AUDIT_URI}?after=1&after=2");
+        assert_eq!(audit(&twice), Err(StatusCode::BAD_REQUEST));
+    }
+
+    const AUDIT_URI: &str = "/owner/audit-log";
 }
