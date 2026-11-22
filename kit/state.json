@@ -99087,8 +99087,8 @@
     "T615",
     "T769"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "home-texting-number",
    "type": "build",
    "stage": "5",
@@ -99101,10 +99101,33 @@
     5350,
     5351
    ],
-   "wip_claim": {
-    "attempt": 1,
-    "remote_sha": ""
-   }
+   "reason": "plan gap reported: PLAN GAP: tests/docs/test_required_lines.py:139 (WORD-013, docs/spec/wording.md:17) contradicts kit/prompts/T725.md:9 (Spanish home page unchanged, shows neither). The consent line word for word in home.html contains \"Reply STOP\"; WORD-013 reads raw template text ignoring {% if %} and requires PARAR on es_home.html. Smoke fails: test_td_word_02_word_013_spanish_page_matches_its_english_page[es_home.html] assert ['PARAR'] == []. Task does not own es_home.html or the test. Reviewer confirmed. Smallest fix: harness plan change so WORD-013 exempts a STOP only inside the post-Gate C texting block, ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T725 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: tests/docs/test_required_lines.py:139 (WORD-013, docs/spec/wording.md:17) contradicts kit/prompts/T725.md:9 (Spanish home page unchanged, shows neither). The consent line word for word in home.html contains \"Reply STOP\"; WORD-013 reads raw template text ignoring {% if %} and requires PARAR on es_home.html. Smoke fails: test_td_word_02_word_013_spanish_page_matches_its_english_page[es_home.html] assert ['PARAR'] == []. Task does not own es_home.html or the test. Reviewer confirmed. Smallest fix: harness plan change so WORD-013 exempts a STOP only inside the post-Gate C texting block, or let T725 place a reviewed Spanish line with PARAR on es_home.html.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 109,
+     "head_sha": "907c2ff0ac1a1c71034f623825d74f8d67c96d8e",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-22T01:02:48Z",
+     "ended_at": "2026-11-22T01:24:05Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 5097386,
+       "turns": 60
+      },
+      "reviewer": {
+       "tokens": 140176,
+       "turns": 5
+      }
+     }
+    }
+   ]
   },
   {
    "id": "T726",
@@ -106548,12 +106571,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T609",
-   "at": "2026-11-22T00:57:22Z",
-   "cache_creation_input_tokens": 102621,
-   "output_tokens": 11383,
-   "input_tokens": 50,
-   "cache_read_input_tokens": 1180126
+   "task": "T725",
+   "at": "2026-11-22T01:24:05Z",
+   "cache_read_input_tokens": 5046278,
+   "cache_creation_input_tokens": 143859,
+   "input_tokens": 125,
+   "output_tokens": 47300
   },
   "source": "session_reading 2026-11-22T00:57:44Z (week)",
   "by_task": {
@@ -113711,17 +113734,27 @@
    },
    "T725": {
     "estimated_bytes": 527079,
-    "estimated_tokens": 1544064
+    "estimated_tokens": 1544064,
+    "usage_counting": "message_id",
+    "cache_read_input_tokens": 5046278,
+    "cache_creation_input_tokens": 143859,
+    "input_tokens": 125,
+    "output_tokens": 47300,
+    "worker_tokens": 5097386,
+    "worker_turns": 60,
+    "reviewer_tokens": 140176,
+    "reviewer_turns": 5,
+    "last_model": "claude-opus-5-5"
    }
   },
   "windows": {
    "five_hour": {
     "start": "2026-11-21T20:57:01Z",
-    "tokens": 10106276
+    "tokens": 10802187
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 132641803
+    "tokens": 133337714
    }
   },
   "session_reading": {
@@ -113732,7 +113765,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T01:23:11Z",
+ "updated_at": "2026-11-22T01:24:05Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -113830,7 +113863,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "4de98e6fb74e1e5394629d7a1abe0694167723a2",
+ "runner_sha": "907c2ff0ac1a1c71034f623825d74f8d67c96d8e",
  "starter": "actions",
  "smoke_runs": [
   {

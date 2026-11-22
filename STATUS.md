@@ -1,26 +1,28 @@
 # Ask Hava build status
 
-Updated 2026-11-22T01:23:11Z by runner 4de98e6fb74e (actions).
+Updated 2026-11-22T01:24:05Z by runner 907c2ff0ac1a (actions).
 
 **Building: T691 in progress since 00:03Z; 597 of 752 done; week 44% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 597 of 752 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T691 claimed 00:03Z, lease until 03:03Z; lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 3: T542 claimed 22:52Z, lease until 04:23Z; lane 5: T397 claimed 22:35Z, lease until 01:35Z; lane 6: T117 claimed 00:49Z, lease until 03:49Z; lane 7: T725 claimed 01:02Z, lease until 04:02Z
+- **Lane:** lane 1: T691 claimed 00:03Z, lease until 03:03Z; lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 3: T542 claimed 22:52Z, lease until 04:23Z; lane 5: T397 claimed 22:35Z, lease until 01:35Z; lane 6: T117 claimed 00:49Z, lease until 03:49Z
 - **Week:** 44% used, 100.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:22Z, 0 min before this update
+- **Last run:** 01:23Z, 0 min before this update
 - **Keeper:** last ran 01:22Z, next wake 01:38Z
 
 ## Needs attention
 - BLOCKED T609: plan gap reported: PLAN GAP: tests/e2e/site_pages.spec.ts:26-28 (owned by T102) requires exactly one footer h2 "Homeowners" and exactly four footer links (toEqual), but T609's goal (DESIGN_SPEC.md:117, D-4252(a)) requires a second footer column (For businesses, Español, Terms, Privacy, Accessibility), and the prompt says that test must pass unchanged and T609 does not own it. Reviewer confirmed at HEAD 907c2ff0ac1a: current footer has one h2 and four links, so adding the second column fails lines 26-28. Smallest plan change: logged change to site_pages.spec.ts:26-28 to allow both columns, or drop the second colu; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T609 --plan-fix D-### --reason "..."` (D-2859)
+- BLOCKED T725: plan gap reported: PLAN GAP: tests/docs/test_required_lines.py:139 (WORD-013, docs/spec/wording.md:17) contradicts kit/prompts/T725.md:9 (Spanish home page unchanged, shows neither). The consent line word for word in home.html contains "Reply STOP"; WORD-013 reads raw template text ignoring {% if %} and requires PARAR on es_home.html. Smoke fails: test_td_word_02_word_013_spanish_page_matches_its_english_page[es_home.html] assert ['PARAR'] == []. Task does not own es_home.html or the test. Reviewer confirmed. Smallest fix: harness plan change so WORD-013 exempts a STOP only inside the post-Gate C texting block, ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T725 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T121 (since 2026-11-21T22:29:56Z, no attempt used; a plan change fixes it): T121: measures 46% of the context window, over its 45% limit
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 43 problem(s) on tasks still to run (+476 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 35 problem(s) on tasks still to run (+476 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T725 | site: the home page shows the texting number with its consen | BLOCKED | 1 | 21 min | 01:24Z | PLAN GAP: tests/docs/test_required_lines.py:139 (WORD-013, docs/spec/wording.md:17) contradicts kit/prompts/T725.md:9 (S |
 | T609 | site: the D-4246 polish on the footer, how it works, the bus | BLOCKED | 1 | 2 min | 00:57Z | PLAN GAP: tests/e2e/site_pages.spec.ts:26-28 (owned by T102) requires exactly one footer h2 "Homeowners" and exactly fou |
 | T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | QUEUED | 2 | 106 min | 00:48Z | Reviewer after findings round still FINDINGS at 4f79a8b8c4195e68ccfba3a25eaab6d612560536: / 1. docs/runbook.md:139-142 a |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | QUEUED | 1 | 2 h 35 min | 00:44Z | Reviewer after fix round (head ee01dda321ae54d4c6af6a1e464281c92fbdcf1d) still FINDINGS: / 1. tests/e2e/j3_operator.spec |
@@ -87,7 +89,7 @@ Updated 2026-11-22T01:23:11Z by runner 4de98e6fb74e (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 597 of 739
+**Tasks merged (throughput only):** 597 of 752
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -135,7 +137,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 3: T542 (lease until 2026-11-22T04:23:11Z)
 - lane 5: T397 (lease until 2026-11-22T01:35:47Z)
 - lane 6: T117 (lease until 2026-11-22T03:49:52Z)
-- lane 7: T725 (lease until 2026-11-22T04:02:48Z)
 
 ## Last usage reading
-- {"task": "T609", "at": "2026-11-22T00:57:22Z", "cache_creation_input_tokens": 102621, "output_tokens": 11383, "input_tokens": 50, "cache_read_input_tokens": 1180126}
+- {"task": "T725", "at": "2026-11-22T01:24:05Z", "cache_read_input_tokens": 5046278, "cache_creation_input_tokens": 143859, "input_tokens": 125, "output_tokens": 47300}
