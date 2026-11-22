@@ -680,6 +680,23 @@ const ADDRESS_CHANGE_STATES: readonly PageState[] = [
   ["notice and backup address forms", "Change where your job notices go", "There is a problem", businessSql("")],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: ADDRESS_CHANGE_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
+/**
+ * The owner's waiting-phones page (T397; BIZ-033, BIZ-038): the owner signed in, with no phone
+ * waiting and with one a fake team member linked (last 4 digits only; the unkeyed binary shows the
+ * fixed line in place of the member's address).
+ */
+const PHONES_ROUTE = "/b/phones";
+const WAITING_PHONE_SQL = `,
+    mm AS (INSERT INTO businesses.team_member (business_id, mailbox_id, is_owner, cards_and_quotes,
+      confirm_and_billing, added_at) SELECT business_id, gen_random_uuid(), false, true, true, now() FROM m
+      RETURNING id, business_id),
+    sp AS (INSERT INTO businesses.staff_phone (business_id, linked_by, linked_at, approved_at, number_set_at,
+      number_set_by, number_end) SELECT business_id, id, now(), NULL, now(), id, '0150' FROM mm)`;
+const PHONES_STATES: readonly PageState[] = [
+  ["phones to approve, none waiting", "No phones are waiting for you to approve.", "Phone number ending in", businessSql("")],
+  ["phones to approve, one waiting", "Phone number ending in 0150", "No phones are waiting", businessSql(WAITING_PHONE_SQL)],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: PHONES_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
 /** The homeowner sign-in form (T307, SEC-008): no seed, the plain path. */
 const HOMEOWNER_SIGNIN_ROUTE = "/h/sign-in";
 const HOMEOWNER_SIGNIN_STATES: readonly PageState[] = [
@@ -821,6 +838,7 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: PHOTO_UPLOAD_ROUTE, seed: photoUploadSeed, states: PHOTO_UPLOAD_STATES },
   { route: NOT_FOUND_ROUTE, seed: () => "/no-such-page", states: NOT_FOUND_STATES },
   { route: ADDRESS_CHANGE_ROUTE, seed: portalSeed(false), states: ADDRESS_CHANGE_STATES },
+  { route: PHONES_ROUTE, seed: portalSeed(false), states: PHONES_STATES },
 ];
 
 /** Every state of every page, in entry order. */

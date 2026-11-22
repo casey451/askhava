@@ -67,6 +67,7 @@ mod owner_help;
 mod owner_portal;
 mod owner_release;
 mod owner_step_up_page;
+mod phone_approval;
 mod photo_upload;
 mod pick_flow;
 mod quote_cards;
