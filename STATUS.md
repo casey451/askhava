@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T12:54:42Z by runner a950af5bcf1d (actions).
+Updated 2026-11-22T12:58:25Z by runner a950af5bcf1d (actions).
 
 **Building: T645 in progress since 11:44Z; 608 of 770 done; week 58% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-22T12:54:42Z by runner a950af5bcf1d (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T645 claimed 11:44Z, lease until 14:44Z
 - **Week:** 58% used, 73.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:54Z, 0 min before this update
+- **Last run:** 12:54Z, 3 min before this update
 - **Keeper:** last ran 12:54Z, next wake 13:14Z
 
 ## Needs attention
@@ -59,7 +59,7 @@ assert 'skipped: not finished in 540 s (Ci runs Ally)' in '\n== Ally: pages chan
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T830 | server: `server rotate-keys` and `server retire-index-versio | MERGE_PENDING | 1 | 61 min | 12:46Z |  |
-| T729 | portals and privacy: the quote page offers updates by email  | MERGE_PENDING | 2 | 49 min | 12:26Z | merging main into the reviewed head conflicts in app/server/src/lib.rs, app/server/src/main.rs; a resync merges it in on |
+| T729 | portals and privacy: the quote page offers updates by email  | check_failed | 2 | 49 min | 12:26Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T610 | site: the D-4246 polish on the Spanish pages, the legal page | MERGE_PENDING | 2 | 40 min | 12:19Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T589 | intake and portals: the pick review page is shown in her req | MERGE_PENDING | 2 | 87 min | 12:04Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
 | T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 3 | 2 h 50 min | 11:38Z | PLAN GAP: tests/integration/tests/intake_order_card.rs:285, tests/integration/tests/intake_refusals_wired.rs:399, tests/ |
