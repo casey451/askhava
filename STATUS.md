@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T07:32:02Z by runner a474f22e9cd5 (actions).
+Updated 2026-11-22T07:37:09Z by runner a474f22e9cd5 (actions).
 
 **Idle since 07:14Z; 602 of 767 done; week 54% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-22T07:32:02Z by runner a474f22e9cd5 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 07:14Z (no task in progress)
 - **Week:** 54% used, 85.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:31Z, 0 min before this update
+- **Last run:** 07:36Z, 0 min before this update
 - **Keeper:** last ran 07:32Z, next wake 07:52Z
 
 ## Needs attention
@@ -89,7 +89,6 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 | T615 | site and server: a styled 404 page for unknown paths, the fa | check_failed | 2 | 92 min | 09:28Z |  |
 | T776 | intake: a move out of Arizona and a property-management requ | BLOCKED | 2 | 11 min | 08:54Z |  |
 | T674 | server: the homeowner's photo upload page and the short-live | done | 2 | 40 min | 08:06Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
-| T615 | site and server: a styled 404 page for unknown paths, the fa | check_failed | 1 | 55 min | 07:33Z |  |
 
 ### Plan and harness merges on main
 - none
