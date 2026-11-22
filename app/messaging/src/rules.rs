@@ -420,7 +420,8 @@ pub const OPT_OUT_PHRASES: [(&str, &str); 14] = [
 ];
 /// The template of the one opt-out confirmation (CON-009).
 pub const CONFIRMATION_TEMPLATE: &str = "opt_out_confirmation";
-/// The template of the HELP reply, which still goes to an opted-out number (CON-013, CON-018, D-131).
+/// The template of the HELP reply, which never goes to an opted-out number (CON-013, CON-018,
+/// D-5280).
 pub const HELP_TEMPLATE: &str = "help_reply";
 /// How long after an opt-out its one confirmation may still go; never later (CON-009, CON-030).
 pub const CONFIRM_WITHIN: SignedDuration = SignedDuration::from_mins(5);
@@ -545,10 +546,10 @@ pub struct Listing {
 }
 
 /// Whether text `template_id` with subject IDs `subject` may go at `now` to a number with
-/// `listing` (`None`: not listed). Only the HELP reply, and the one confirmation of this listing
-/// (its subject holds the listing's event) within [`CONFIRM_WITHIN`] of it, go to a listed
-/// number; a confirmation queued for an earlier listing never goes (CON-009, CON-013, CON-030,
-/// CON-035, D-131, D-870).
+/// `listing` (`None`: not listed). Only the one confirmation of this listing (its subject holds
+/// the listing's event) within [`CONFIRM_WITHIN`] of it goes to a listed number; a confirmation
+/// queued for an earlier listing never goes, nor does the HELP reply, which the provider would
+/// refuse with 21610 (CON-009, CON-013, CON-018, CON-030, CON-035, D-870, D-5280).
 #[must_use]
 pub fn may_send_to(
     listing: Option<Listing>,
@@ -559,11 +560,10 @@ pub fn may_send_to(
     let Some(Listing { since, event }) = listing else {
         return true;
     };
-    template_id == HELP_TEMPLATE
-        || (template_id == CONFIRMATION_TEMPLATE
-            && subject.contains(&event)
-            && now >= since
-            && now.duration_since(since) <= CONFIRM_WITHIN)
+    template_id == CONFIRMATION_TEMPLATE
+        && subject.contains(&event)
+        && now >= since
+        && now.duration_since(since) <= CONFIRM_WITHIN
 }
 
 /// The listed sole opt-out word that folded text `folded` is, however it is spaced (CON-008,

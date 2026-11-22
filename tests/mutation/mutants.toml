@@ -201,7 +201,7 @@ mutants = [
   { name = "opt-out word removed: opt out", find = "[&str; 1] = [\"opt out\"];", replace = "[&str; 1] = [\"opt out-x\"];" },
   { name = "sole-word match -> contains-word (\"can stop by at 3\" opts out)", find = ".find(|w| **w == folded)", replace = ".find(|w| folded.split(' ').any(|t| t == **w))" },
   { name = "send rule skips the opt-out check", find = "    let Some(Listing { since, event }) = listing else {", replace = "    let Some(Listing { since, event }) = None::<Listing> else {" },
-  { name = "HELP after STOP not answered", find = "    template_id == HELP_TEMPLATE\n", replace = "    false\n" },
+  { name = "HELP reply let through to an opted-out number (D-5280)", find = "    template_id == CONFIRMATION_TEMPLATE\n        && subject", replace = "    template_id == HELP_TEMPLATE\n        || template_id == CONFIRMATION_TEMPLATE\n        && subject" },
 ]
 
 [[group]]

@@ -64,11 +64,11 @@ proptest! {
     }
 
     /// TD-CON-05, CON-013, CON-015: after an opt-out, over any later sequence of inbound texts and
-    /// send attempts, nothing but the confirmation within 5 minutes and the HELP reply goes until
-    /// a START or UNSTOP. Each opt-out of a not-listed number is a new listing with its own event;
+    /// send attempts, nothing but the confirmation within 5 minutes goes until a START or UNSTOP,
+    /// not even the HELP reply (D-5280). Each opt-out of a not-listed number is a new listing with its own event;
     /// a confirmation goes only for the current one, and never late.
     #[test]
-    fn nothing_but_confirmation_and_help_until_start(
+    fn nothing_but_the_confirmation_until_start(
         events in proptest::collection::vec((0usize..9, 0usize..5, 0i64..900, 0u128..4), 1..40),
     ) {
         let opted = Timestamp::from_second(1_793_000_000).expect("time");
@@ -88,7 +88,7 @@ proptest! {
             if let Some(Listing { since, event }) = listing && may_send_to(listing, template, &subject, now) {
                 let late = now.duration_since(since) > SignedDuration::from_mins(5);
                 let current = subject.contains(&event);
-                prop_assert!(template == HELP_TEMPLATE || (template == CONFIRMATION_TEMPLATE && current && !late));
+                prop_assert!(template == CONFIRMATION_TEMPLATE && current && !late);
             }
         }
     }
