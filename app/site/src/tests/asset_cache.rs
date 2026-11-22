@@ -122,6 +122,19 @@ fn every_font_is_pinned_to_its_hash() {
     assert_eq!(assets::sha256("fonts/none.woff2"), None);
 }
 
+/// WEB-030, D-4252, D-5358: every `fonts/` file the site lists, each served a year as
+/// `immutable`, has a hash pin, and every pin names a listed file.
+#[test]
+fn every_listed_font_has_a_pin() {
+    let mut listed: Vec<&str> = assets::names()
+        .filter(|name| name.starts_with("fonts/"))
+        .collect();
+    let mut pinned: Vec<&str> = FONT_PINS.iter().map(|(name, _)| *name).collect();
+    listed.sort_unstable();
+    pinned.sort_unstable();
+    assert_eq!(listed, pinned, "a listed font needs a pin in FONT_PINS");
+}
+
 /// D-5318: the plain, gzip and Brotli answers of the stylesheet and the mark carry three
 /// different tags, the suffix taken from the coding actually sent, weights and `identity`
 /// included.

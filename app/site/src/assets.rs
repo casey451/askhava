@@ -171,6 +171,13 @@ pub(crate) fn sha256(name: &str) -> Option<&'static str> {
     DIGESTS.get(at).map(String::as_str)
 }
 
+/// WEB-030, D-4252: every listed name in [`ASSETS`] order, so a test can hold the `fonts/`
+/// names (each served a year as `immutable`) to the pinned set; test builds only.
+#[cfg(test)]
+pub(crate) fn names() -> impl Iterator<Item = &'static str> {
+    ASSETS.iter().map(|asset| asset.name)
+}
+
 #[cfg(test)]
 mod tests {
     use super::find;
