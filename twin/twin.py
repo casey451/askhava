@@ -9,7 +9,7 @@ then checks every rule the business promises (see INVARIANTS) and reports every 
 import heapq, random, math, json, sys, os, copy, re
 from collections import Counter, defaultdict
 import vendors as V
-from app import App, DAY, ZIP_TOWN, PHONE_RE, STOP_WORDS, NATURAL_OPTOUT
+from app import App, DAY, ZIP_TOWN, PHONE_RE
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 # The license oracle (D-107, D-541): generated from the catalog by oracle/gen_license_scope.py, never imported from app.py.
@@ -829,7 +829,8 @@ def check(sim):
     # --- texting rules, judged from the carrier log: night texts only as a direct reply (they texted in the last 15 min)
     def opted_out_before(phone, sid):
         """Whether `phone` was opted out when inbound text `sid` came in: its last opt-out word or natural opt-out
-        before it came after its last START or UNSTOP. Such a HELP gets no text reply (CON-013, CON-018, D-5280)."""
+        before it came after its last START or UNSTOP. Such a HELP gets no text reply (CON-013, CON-018, D-5280).
+        The word list and pattern are the checker's own, never app.py's (F07, D-107)."""
         out = False
         for frm, body, t, s in sim.sms.inbound_log:
             if s == sid:
@@ -837,7 +838,8 @@ def check(sim):
             up = body.strip().upper()
             if frm == phone and up in ("START", "UNSTOP"):
                 out = False
-            elif frm == phone and (up in STOP_WORDS or (up not in ("HELP", "INFO") and NATURAL_OPTOUT.search(body.strip()))):
+            elif frm == phone and (up in ("STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT")
+                                   or re.search(r"stop (texting|sending)|please stop", body.lower())):
                 out = True
         return out
     stop_at = {}

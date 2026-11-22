@@ -189,20 +189,19 @@ async fn td_con_07_help_from_an_opted_out_number_and_start(pool: PgPool) {
     on_inbound_text(&mut db, (&secret(), &vault), &ayuda, night())
         .await
         .expect("inbound");
-    if let Some(help) = reply_to_help(&mut db, &secret(), &ayuda, &settings(2, None))
+    let help = reply_to_help(&mut db, &secret(), &ayuda, &settings(2, None))
         .await
         .expect("reply")
-    {
-        let refused = send_checked(
-            &mut db,
-            (&secret(), &carrier, &vault),
-            help,
-            (to, FROM),
-            night(),
-        )
-        .await;
-        assert_eq!(refused.err(), Some(OutboxError::Suppressed));
-    }
+        .expect("the HELP reply is built; the send rule stops it");
+    let refused = send_checked(
+        &mut db,
+        (&secret(), &carrier, &vault),
+        help,
+        (to, FROM),
+        night(),
+    )
+    .await;
+    assert_eq!(refused.err(), Some(OutboxError::Suppressed));
     assert!(
         carrier.sent.lock().expect("lock").is_empty(),
         "D-5280: no HELP reply goes to an opted-out number"
