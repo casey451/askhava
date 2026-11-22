@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T18:46:13Z by runner 294bda79664e (actions).
+Updated 2026-11-22T18:46:30Z by runner 294bda79664e (actions).
 
 **Idle since 17:36Z; 617 of 770 done; week 65% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-22T18:46:13Z by runner 294bda79664e (actions).
 - **Lane:** idle since 17:36Z (no task in progress)
 - **Week:** 65% used, 66.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 18:46Z, 0 min before this update
-- **Keeper:** last ran 18:30Z, next wake 00:10Z
+- **Keeper:** last ran 18:46Z, next wake 00:26Z
 
 ## Needs attention
 - BLOCKED T803: Worker made no change. All 83 named mutants are killed; the Checks job timed out (40 min limit) because the Rust build took ~26 min and mutants.toml changes trigger all 83 mutants (cut off after mutant 72). Needs a harness fix (raise Checks timeout-minutes or run only changed mutants) or a faster CI build. Smoke did not finish in the worker's polls.
@@ -87,7 +87,6 @@ Updated 2026-11-22T18:46:13Z by runner 294bda79664e (actions).
 | T791 | Tests and templates (harness): three Spanish stay-on texts r | done | 1 | 36 min | 19:21Z |  |
 | T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 1 | 4 min | 19:13Z |  |
 | T790 | catalog, licensing and tests (harness): the termite report f | done | 1 | 57 min | 19:07Z |  |
-| T608 | site and portals: the home page and the quote page in full V | check_failed | 1 | 2 h 46 min | 18:46Z |  |
 
 ### Plan and harness merges on main
 - 17:04Z Plan: unblock T121/T832/T499/T514 (D-5552); pre-flight fixes job 24 (D-5551) (#1363)
