@@ -99405,7 +99405,7 @@
     "T615",
     "T769"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "home-texting-number",
    "type": "build",
@@ -99419,8 +99419,8 @@
     5350,
     5351
    ],
-   "reason": "plan gap reported: PLAN GAP: tests/docs/test_required_lines.py:139 (WORD-013, docs/spec/wording.md:17) contradicts kit/prompts/T725.md:9 (Spanish home page unchanged, shows neither). The consent line word for word in home.html contains \"Reply STOP\"; WORD-013 reads raw template text ignoring {% if %} and requires PARAR on es_home.html. Smoke fails: test_td_word_02_word_013_spanish_page_matches_its_english_page[es_home.html] assert ['PARAR'] == []. Task does not own es_home.html or the test. Reviewer confirmed. Smallest fix: harness plan change so WORD-013 exempts a STOP only inside the post-Gate C texting block, ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T725 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: tests/docs/test_required_lines.py:139 (WORD-013, docs/spec/wording.md:17) contradicts kit/prompts/T725.md:9 (Spanish home page unchanged, shows neither). The consent line word for word in home.html contains \"Reply STOP\"; WORD-013 reads raw template text ignoring {% if %} and requires PARAR on es_home.html. Smoke fails: test_td_word_02_word_013_spanish_page_matches_its_english_page[es_home.html] assert ['PARAR'] == []. Task does not own es_home.html or the test. Reviewer confirmed. Smallest fix: harness plan change so WORD-013 exempts a STOP only inside the post-Gate C texting block, or let T725 place a reviewed Spanish line with PARAR on es_home.html.",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/docs/test_required_lines.py:139 (WORD-013, docs/spec/wording.md:17) contradicts kit/prompts/T725.md:9 (Spanish home page unchanged, shows neither). The consent line word for word in home.html contains \"Reply STOP\"; WORD-013 reads raw template text ignoring {% if %} and requires PARAR on es_home.html. Smoke fails: test_td_word_02_word_013_spanish_page_matches_its_english_page[es_home.html] assert ['PARAR'] == []. Task does not own es_home.html or the test. Reviewer confirmed. Smallest fix: harness plan change so WORD-013 exempts a STOP only inside the post-Gate C texting block, or let T725 place a reviewed Spanish line with PARAR on es_home.html.\nre-queued after plan fix D-5402: D-5402: T725 owns es_home.html and adds the Spanish consent line with PARAR for WORD-013, pinned heading (merged in #1317)",
    "history": [
     {
      "attempt": 1,
@@ -99444,6 +99444,21 @@
        "turns": 5
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-22T03:08:20Z",
+     "reason": "D-5402: T725 owns es_home.html and adds the Spanish consent line with PARAR for WORD-013, pinned heading (merged in #1317)",
+     "by": "manual-159b70dc3442",
+     "was": "plan gap reported: PLAN GAP: tests/docs/test_required_lines.py:139 (WORD-013, docs/spec/wording.md:17) contradicts kit/prompts/T725.md:9 (Spanish home page unchanged, shows neither). The consent line word for word in home.html contains \"Reply STOP\"; WORD-013 reads raw template text ignoring {% if %} and requires PARAR on es_home.html. Smoke fails: test_td_word_02_word_013_spanish_page_matches_its_english_page[es_home.html] assert ['PARAR'] == []. Task does not own es_home.html or the test. Reviewer confirmed. Smallest fix: harness plan change so WORD-013 exempts a STOP only inside the post-Gate C texting block, ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T725 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-5402",
+     "plan_since": "2026-11-22T01:02:48Z",
+     "plan_base": "907c2ff0ac1a1c71034f623825d74f8d67c96d8e",
+     "plan_head": "de7e41db8c6036badb8f964414f63e16a837f1d7",
+     "plan_then": "b934a6898fad592de3218455047de6e8efc528e8e03bf44a8ac8969a3e364405",
+     "plan_now": "9947c74e2ee12029044ddaecab17d3466bfd3ff9eae7412f3eb8ab996f23ae03"
     }
    ]
   },
@@ -114566,7 +114581,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T03:08:13Z",
+ "updated_at": "2026-11-22T03:08:22Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -114664,8 +114679,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "59b85679e6d92d3c3c26be4054812e6b9736fe2d",
- "starter": "actions",
+ "runner_sha": "de7e41db8c6036badb8f964414f63e16a837f1d7",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "05b3bbbd22f383ce2a82165239edaeb48f02fba6",
