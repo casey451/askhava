@@ -346,3 +346,6 @@
 - [PRIV-024 PRIV-016] (task 830) `server rotate-keys` runs the four rotation batches to 0 through `rotate_keys::run_batches` (cap backlog / 100 + 2 passes) and prints `<batch>: N moved, M skipped`; `server retire-index-version <version>` retires an index version; both via `rotate_keys::run`, tested in `tests/rotate_keys_command.rs` (D-5412, D-5520).
 - [SEC-026 SEC-025] (never 21) D-3839: with one's own session Pause, Resume, Ask about a charge (D-3839) Approve (+ fresh step-up, T399), Away (T543) and Busy (T463) act, a Confirm link only by its own person's session or right Verify code (T457).
 - [BIZ-025 FEE-014] (never 30) `/b/billing` lists saved cards only through `saved_cards` (brand and last four).
+- [SEC-012] (never 11) why no one-line route or constant: `auth_matrix.rs` would read it as a page route (D-5527).
+- [-] (never 29) why each new route's row lands in the same change: a route served with no row is not caught (TD-SEC-41, D-5527).
+- [-] (never 8) `install_crypto_provider()` runs first so sqlx and reqwest share the aws-lc-rs provider (D-481, D-488, D-5527).
