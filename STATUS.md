@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T12:11:38Z by runner 2d3500bae425 (actions).
+Updated 2026-11-22T12:17:57Z by runner 444233000638 (actions).
 
-**Building: T645 in progress since 11:44Z; 608 of 769 done; week 57% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T645 in progress since 11:44Z; 608 of 770 done; week 57% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 608 of 769 build tasks (owner gates not counted)
+- **Tasks done:** 608 of 770 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T645 claimed 11:44Z, lease until 14:44Z; lane 2: T830 claimed 11:45Z, lease until 14:45Z; lane 3: T729 claimed 11:36Z, lease until 14:36Z; lane 4: T725 claimed 11:56Z, lease until 14:56Z; lane 6: T610 claimed 11:39Z, lease until 14:39Z
 - **Week:** 57% used, 73.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:11Z, 0 min before this update
+- **Last run:** 12:11Z, 6 min before this update
 - **Keeper:** last ran 12:11Z, next wake 14:39Z
 
 ## Needs attention
@@ -131,7 +131,7 @@ assert 'skipped: not finished in 540 s (Ci runs Ally)' in '\n== Ally: pages chan
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 608 of 769
+**Tasks merged (throughput only):** 608 of 770
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -167,7 +167,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 251 of 341 done
+- stage 5: 251 of 342 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
