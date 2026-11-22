@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-22T02:20:27Z by runner 6826130e0386 (actions).
+Updated 2026-11-22T02:20:43Z by runner 6826130e0386 (actions).
 
-**Building: T691 in progress since 00:03Z; 598 of 753 done; week 47% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T118 in progress since 00:46Z; 598 of 753 done; week 47% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 598 of 753 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T691 claimed 00:03Z, lease until 03:03Z; lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 3: T803 claimed 01:35Z, lease until 04:35Z; lane 4: T616 claimed 01:30Z, lease until 04:30Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z; lane 6: T810 claimed 02:18Z, lease until 05:18Z
+- **Lane:** lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 3: T803 claimed 01:35Z, lease until 04:35Z; lane 4: T616 claimed 01:30Z, lease until 04:30Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z; lane 6: T810 claimed 02:18Z, lease until 05:18Z
 - **Week:** 47% used, 92.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 02:20Z, 0 min before this update
 - **Keeper:** last ran 02:20Z, next wake 03:06Z
@@ -30,6 +30,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T691 | intake (harness): START into an open request resends the con | MERGE_PENDING | 2 | 2 h 16 min | 02:20Z | session ended without handing in |
 | T759 | intake: "Close which?" expires on a worded reply that is not | MERGE_PENDING | 1 | 28 min | 02:19Z |  |
 | T397 | server and portals: the owner approves or declines a member- | BLOCKED | 1 | 27 min | 02:12Z | PLAN GAP: outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per p |
 | T121 | Startup key checks, control router absent in live, supply-ch | BLOCKED | 1 | 15 min | 01:45Z | PLAN GAP: outside ownership: app/server/src/owner_portal.rs, app/server/src/owner_tools.rs, app/portals/src/owner_help.r |
@@ -78,7 +79,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 | T755 | messaging: a sole opt-out word counts with any spacing ("STO | done | 1 | 66 min | 05:21Z |  |
 | T777 | businesses: a sign-in code is texted only to a line whose cu | done | 2 | 39 min | 05:05Z | PLAN GAP: outside ownership: app/server/tests/business_signin_route.rs / T777's approved_at filter in sign_in_lines fail |
 | T614 | site: the V6 header in base.html (links, the Menu in the pag | done | 3 | 53 min | 04:37Z | PLAN GAP: tests/integration/tests/quote_page.rs:172 (owner T052, protected) bans the word "summary" anywhere in the quot |
-| T691 | intake (harness): START into an open request resends the con | QUEUED | 1 | 27 min | 04:35Z | session ended without handing in |
+| T691 | intake (harness): START into an open request resends the con | QUEUED | 1 | 27 min | 04:35Z |  |
 | T304 | server and portals: the owner refund review, the audit log v | BLOCKED | 1 | 91 min | 04:20Z |  |
 | T457 | portals and server: the Confirm email link asks for a code w | done | 1 | 35 min | 04:16Z |  |
 | T781 | recovery: a failed or timed-out nightly export raises one al | done | 1 | 116 min | 04:14Z |  |
@@ -140,7 +141,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T691 (lease until 2026-11-22T03:03:26Z)
+- nothing
 - lane 2: T118 (lease until 2026-11-22T03:46:46Z)
 - lane 3: T803 (lease until 2026-11-22T04:35:04Z)
 - lane 4: T616 (lease until 2026-11-22T04:30:46Z)
@@ -148,4 +149,4 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 6: T810 (lease until 2026-11-22T05:18:33Z)
 
 ## Last usage reading
-- {"task": "T759", "at": "2026-11-22T02:19:13Z", "cache_creation_input_tokens": 79509, "output_tokens": 16214, "cache_read_input_tokens": 1315243, "input_tokens": 67}
+- {"task": "T691", "at": "2026-11-22T02:20:23Z", "output_tokens": 54909, "input_tokens": 243, "cache_read_input_tokens": 5769193, "cache_creation_input_tokens": 240742}
