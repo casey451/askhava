@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-22T11:10:59Z by runner f9de0a71bcbd (actions).
+Updated 2026-11-22T11:11:14Z by runner f9de0a71bcbd (actions).
 
-**Building: T829 in progress since 10:24Z; 607 of 768 done; week 57% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T675 in progress since 08:47Z; 607 of 768 done; week 57% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 607 of 768 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T829 claimed 10:24Z, lease until 13:24Z; lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 5: T589 claimed 10:36Z, lease until 13:36Z; lane 7: T805 claimed 10:42Z, lease until 13:42Z
+- **Lane:** lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 5: T589 claimed 10:36Z, lease until 13:36Z; lane 7: T805 claimed 10:42Z, lease until 13:42Z
 - **Week:** 57% used, 76.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:10Z, 0 min before this update
 - **Keeper:** last ran 10:53Z, next wake 11:13Z
@@ -29,6 +29,7 @@ Nit: runbook.md:101, :174, :177 exceed wrap width.
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T829 | server tests (harness): the door matrix's owner sign-ins nev | MERGE_PENDING | 3 | 46 min | 11:10Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T725 | site: the home page shows the texting number with its consen | BLOCKED | 3 | 21 min | 10:52Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T729 | portals and privacy: the quote page offers updates by email  | resync | 2 | 2 h 32 min | 10:40Z | merging main into the reviewed head conflicts in app/server/src/lib.rs, app/server/src/main.rs; a resync merges it in on |
 | T803 | messaging (harness): an opted-out number gets no HELP reply; | BLOCKED | 3 | 25 min | 10:25Z | Ci: failure; Checks: cancelled / Checks failed at step: Named mutants of the files this change touches (scripts/run_name |
@@ -36,7 +37,7 @@ Nit: runbook.md:101, :174, :177 exceed wrap width.
 | T725 | site: the home page shows the texting number with its consen | check_failed | 2 | 57 min | 09:57Z |  |
 | T610 | site: the D-4246 polish on the Spanish pages, the legal page | check_failed | 1 | 39 min | 09:00Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | BLOCKED | 4 | 45 min | 08:54Z | PLAN GAP: outside ownership: app/site/templates/request.html, app/site/static/site.css / At 1280x900 the /request chat s |
-| T829 | server tests (harness): the door matrix's owner sign-ins nev | check_failed | 2 | 48 min | 08:40Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
+| T829 | server tests (harness): the door matrix's owner sign-ins nev | check_failed | 2 | 48 min | 08:40Z |  |
 | T609 | site (harness): the D-4246 polish on the footer, how it work | done | 3 | 65 min | 07:14Z | PLAN GAP: tests/e2e/web_chat.spec.ts:123 (owned by T489) uses strict locator main.locator('[lang="es"]'); the footer's E |
 | T810 | portals and server: a shared-inbox Confirm press asks for it | done | 3 | 76 min | 06:46Z | PLAN GAP: outside ownership: app/server/tests/confirm_press_code.rs. TD-SEC-82 requires a direct portals.shared_inbox in |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | BLOCKED | 3 | 2 h 17 min | 06:35Z |  |
@@ -142,10 +143,10 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T829 (lease until 2026-11-22T13:24:41Z)
+- nothing
 - lane 2: T675 (lease until 2026-11-22T11:47:43Z)
 - lane 5: T589 (lease until 2026-11-22T13:36:51Z)
 - lane 7: T805 (lease until 2026-11-22T13:42:38Z)
 
 ## Last usage reading
-- {"task": "T725", "at": "2026-11-22T10:52:52Z", "cache_creation_input_tokens": 29384, "cache_read_input_tokens": 407712, "output_tokens": 4086, "input_tokens": 25}
+- {"task": "T829", "at": "2026-11-22T11:10:57Z", "cache_read_input_tokens": 961272, "cache_creation_input_tokens": 72064, "output_tokens": 12473, "input_tokens": 58}
