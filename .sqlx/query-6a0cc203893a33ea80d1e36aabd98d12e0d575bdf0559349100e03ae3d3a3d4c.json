@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT EXISTS (SELECT 1 FROM businesses.complaint WHERE business_id = $1 AND job_id = $2) AS \"already!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "already!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "6a0cc203893a33ea80d1e36aabd98d12e0d575bdf0559349100e03ae3d3a3d4c"
+}
