@@ -108409,7 +108409,7 @@
     "T770",
     "T640"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 0,
    "slug": "gitleaks-commit-range",
    "type": "harness",
@@ -108429,13 +108429,70 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 46,
      "head_sha": "8d38f43777d9caf0ccb76de1df46ebb421362d42",
-     "pr": null,
-     "checks": null,
+     "pr": 1330,
+     "checks": [
+      {
+       "name": "backup lane 6",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-22T04:21:18Z",
      "ended_at": "2026-11-22T05:45:23Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "usage": {
       "worker": {
        "tokens": 938970,
@@ -108484,7 +108541,19 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-22T08:06:04Z"
+   "merge_turn_since": "2026-11-22T08:06:04Z",
+   "merged_sha": "fda71be613a1ab644ea0e9bb6d8d0e366d5b98e8",
+   "merged_at": "2026-11-22T08:15:48Z",
+   "files": [
+    ".github/workflows/ci.yml",
+    "docs/decisions.md"
+   ],
+   "owned_gap": {
+    "at": "2026-11-22T08:18:31Z",
+    "problems": [
+     "T828: .gitleaksignore missing on main"
+    ]
+   }
   },
   {
    "id": "T829",
@@ -108604,7 +108673,7 @@
      }
     }
    ],
-   "reviewed_sha": "d52f982fe429bb7db492f190b675d15714d00fb3",
+   "reviewed_sha": "345b179b1a854871c8274815388d1c6514fa4535",
    "review_lease": {
     "task": "T827",
     "session": "actions-44986394198",
@@ -108624,10 +108693,23 @@
      "main": "36b07635ccae0fc99bc498f02eb6799ef4dbccce",
      "how": "hand-in",
      "at": "2026-11-22T06:12:24Z"
+    },
+    {
+     "from": "d52f982fe429bb7db492f190b675d15714d00fb3",
+     "to": "345b179b1a854871c8274815388d1c6514fa4535",
+     "main": "fda71be613a1ab644ea0e9bb6d8d0e366d5b98e8",
+     "how": "runner",
+     "checks": {
+      "Ci": "success",
+      "Ally": "success",
+      "Twin": "success"
+     },
+     "at": "2026-11-22T08:18:31Z"
     }
    ],
    "update_waiting_since": null,
-   "update_push_failures": null
+   "update_push_failures": null,
+   "merge_turn_since": "2026-11-22T08:18:31Z"
   }
  ],
  "owner_waits": [],
@@ -116019,7 +116101,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T08:09:48Z",
+ "updated_at": "2026-11-22T08:18:45Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -116117,7 +116199,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "9b5f9617df3e3a2ebd809b5153957bae060d94ce",
+ "runner_sha": "fda71be613a1ab644ea0e9bb6d8d0e366d5b98e8",
  "starter": "actions",
  "smoke_runs": [
   {
