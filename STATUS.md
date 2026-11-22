@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T11:45:05Z by runner 5aac787a2648 (actions).
+Updated 2026-11-22T11:45:25Z by runner 989b62a22475 (actions).
 
 **Building: T645 in progress since 11:44Z; 608 of 769 done; week 57% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 608 of 769 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T645 claimed 11:44Z, lease until 14:44Z; lane 3: T729 claimed 11:36Z, lease until 14:36Z; lane 5: T589 claimed 10:36Z, lease until 13:36Z; lane 6: T610 claimed 11:39Z, lease until 14:39Z
-- **Week:** 57% used, 75.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:40Z, 4 min before this update
+- **Lane:** lane 1: T645 claimed 11:44Z, lease until 14:44Z; lane 2: T830 claimed 11:45Z, lease until 14:45Z; lane 3: T729 claimed 11:36Z, lease until 14:36Z; lane 5: T589 claimed 10:36Z, lease until 13:36Z; lane 6: T610 claimed 11:39Z, lease until 14:39Z
+- **Week:** 57% used, 73.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 11:45Z, 0 min before this update
 - **Keeper:** last ran 11:39Z, next wake 11:59Z
 
 ## Needs attention
@@ -53,7 +53,7 @@ assert 'skipped: not finished in 540 s (Ci runs Ally)' in '\n== Ally: pages chan
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T397 (since 2026-11-22T02:12:37Z, no attempt used; a plan change fixes it): outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per probed Owner row; past ~60 rows expires_at < created_at, violating portals.session CHECK (expires_at > created_at), so POST /owner/help/close as Owner returns 500. Marking the three /b/phones rows yes in docs/architecture.md section 13 turns td_sec_61_every_served_door_row_over_http red (reproduced by worker and by reviewer: exit 101, door_matrix.rs:1533). Smallest fix: a harness task that bases owner_jar sign-in times in the past (e.g. key.now - OWNER_IDLE_LIMIT) or spaces TOTP steps differently. Prompt forbids editing door_matrix.rs and forbids working around an unreachable route. Worker work is uncommitted in the tree.
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- PLAN GAP T832 (since 2026-11-22T11:35:50Z, no attempt used; a plan change fixes it): T832: prompt kit/prompts/T832.md is missing; run scripts/gen_prompts.py; T832: branch claude/task/T832-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet; T832: dependency T828 is DONE but its owned file .gitleaksignore is not on main
+- PLAN GAP T832 (since 2026-11-22T11:35:50Z, no attempt used; a plan change fixes it): T832: dependency T828 is DONE but its owned file .gitleaksignore is not on main
 - OWNED GAP T828 (DONE, since 2026-11-22T08:18:31Z; a later task or plan change must add it): T828: .gitleaksignore missing on main
 - Strict plan check red: 32 problem(s) on tasks still to run (+486 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
@@ -134,7 +134,7 @@ assert 'skipped: not finished in 540 s (Ci runs Ally)' in '\n== Ally: pages chan
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 608 of 768
+**Tasks merged (throughput only):** 608 of 769
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -162,7 +162,7 @@ assert 'skipped: not finished in 540 s (Ci runs Ally)' in '\n== Ally: pages chan
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-22T11:39:37Z (week)): week: 119.0M used, 75.0M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T05:10:38Z.
+- Pacing (session_reading 2026-11-22T11:39:37Z (week)): week: 120.6M used, 73.4M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T05:14:26Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -178,6 +178,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T645 (lease until 2026-11-22T14:44:36Z)
+- lane 2: T830 (lease until 2026-11-22T14:45:18Z)
 - lane 3: T729 (lease until 2026-11-22T14:36:39Z)
 - lane 5: T589 (lease until 2026-11-22T13:36:51Z)
 - lane 6: T610 (lease until 2026-11-22T14:39:14Z)
