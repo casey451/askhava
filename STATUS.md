@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-22T04:01:43Z by runner de7e41db8c60 (actions).
+Updated 2026-11-22T04:01:57Z by runner de7e41db8c60 (actions).
 
 **Building: T675 in progress since 03:54Z; 600 of 763 done; week 50% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 600 of 763 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T675 claimed 03:54Z, lease until 06:54Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z; lane 7: T721 claimed 02:54Z, lease until 05:54Z
-- **Week:** 50% used, 91.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 2: T675 claimed 03:54Z, lease until 06:54Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z; lane 6: T609 claimed 04:01Z, lease until 07:01Z; lane 7: T721 claimed 02:54Z, lease until 05:54Z
+- **Week:** 50% used, 89.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:01Z, 0 min before this update
 - **Keeper:** last ran 03:50Z, next wake 04:10Z
 
@@ -123,7 +123,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-22T03:50:22Z (week)): week: 102.9M used, 91.1M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-06T23:53:18Z.
+- Pacing (session_reading 2026-11-22T03:50:22Z (week)): week: 104.9M used, 89.1M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T00:00:28Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -141,6 +141,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T675 (lease until 2026-11-22T06:54:25Z)
 - lane 5: T542 (lease until 2026-11-22T04:45:48Z)
+- lane 6: T609 (lease until 2026-11-22T07:01:34Z)
 - lane 7: T721 (lease until 2026-11-22T05:54:28Z)
 
 ## Last usage reading
