@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T01:22:20Z by runner a6b5bb82ade9 (actions).
+Updated 2026-11-22T01:22:41Z by runner a6b5bb82ade9 (actions).
 
 **Building: T691 in progress since 00:03Z; 597 of 752 done; week 44% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-22T01:22:20Z by runner a6b5bb82ade9 (actions).
 - **Lane:** lane 1: T691 claimed 00:03Z, lease until 03:03Z; lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 3: T542 claimed 22:52Z, lease until 03:07Z; lane 5: T397 claimed 22:35Z, lease until 01:35Z; lane 6: T117 claimed 00:49Z, lease until 03:49Z; lane 7: T725 claimed 01:02Z, lease until 04:02Z
 - **Week:** 44% used, 100.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:22Z, 0 min before this update
-- **Keeper:** last ran 00:58Z, next wake 01:18Z
+- **Keeper:** last ran 01:22Z, next wake 01:38Z
 
 ## Needs attention
 - BLOCKED T609: plan gap reported: PLAN GAP: tests/e2e/site_pages.spec.ts:26-28 (owned by T102) requires exactly one footer h2 "Homeowners" and exactly four footer links (toEqual), but T609's goal (DESIGN_SPEC.md:117, D-4252(a)) requires a second footer column (For businesses, Español, Terms, Privacy, Accessibility), and the prompt says that test must pass unchanged and T609 does not own it. Reviewer confirmed at HEAD 907c2ff0ac1a: current footer has one h2 and four links, so adding the second column fails lines 26-28. Smallest plan change: logged change to site_pages.spec.ts:26-28 to allow both columns, or drop the second colu; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T609 --plan-fix D-### --reason "..."` (D-2859)
