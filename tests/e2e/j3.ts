@@ -35,7 +35,7 @@ export interface J3 {
   control: Control;
   drive: Driver;
   auditFrom: number; // the first audit row ID of this run
-  textsFrom: number; // the fake carrier's text count when the run began
+  textsFrom: number; emailsFrom: number; // the fake carrier's text and email counts when the run began
   picks: Seeded[]; // the picks this run paid or tried to pay
   alert?: string; // the seeded High alert, once raised
 }
@@ -109,8 +109,9 @@ export function before(): Before {
  * back as they were, so a failure leaves the shared database clean for the specs that follow.
  */
 export function restore(was: Before, alert: string | undefined): void {
-  const [on = "true", channel = "sms", line = "working", since = ""] = was.mode.split("|");
-  if (was.mode !== "" && modeState() !== was.mode) {
+  const target = was.mode || "true|sms|working|"; // no row before the run: the app's default applies
+  const [on = "true", channel = "sms", line = "working", since = ""] = target.split("|");
+  if ((modeState() || "true|sms|working|") !== target) {
     psql(`INSERT INTO messaging.mode_state (audience, texting_on, line_state, suspended_since, launch_channel, actor_id, changed_at)
       VALUES ('homeowner', ${on === "true" ? "true" : "false"}, '${line}', ${since === "" ? "NULL" : `'${since}'`}, '${channel}',
         '00000000-0000-4000-8000-0000000000aa', now())`);
@@ -124,9 +125,9 @@ export function restore(was: Before, alert: string | undefined): void {
 /** The run's starting marks. */
 export async function begin(page: Page, control: Control, drive: Driver): Promise<J3> {
   const auditFrom = Number(psql("SELECT coalesce(max(id), 0) + 1 FROM ops.audit_log"));
-  const textsFrom = (await control.sentTexts()).length;
+  const [textsFrom, emailsFrom] = [(await control.sentTexts()).length, (await control.sentEmails()).length];
   page.setDefaultTimeout(30_000);
-  return { page, control, drive, auditFrom, textsFrom, picks: [] };
+  return { page, control, drive, auditFrom, textsFrom, emailsFrom, picks: [] };
 }
 
 /** J3 step 1 (SEC-005): idle past 30 minutes, then password and TOTP; a session over 12 hours is refused. */
@@ -373,7 +374,7 @@ export async function step6AuditLog(j: J3): Promise<void> {
 export async function closingChecks(j: J3): Promise<void> {
   expect((await j.control.sentTexts()).length - j.textsFrom, "TD-TXT-15: texts sent").toBe(0);
   const emails = await j.control.sentEmails();
-  const keys = emails.map((e) => `${e.to.join(",")}|${e.subject}|${e.text}`);
+  const keys = emails.slice(j.emailsFrom).map((e) => `${e.to.join(",")}|${e.subject}|${e.text}`);
   expect(new Set(keys).size, "no duplicate email").toBe(keys.length);
   for (const seeded of j.picks) {
     const charges = await standInCharge(j.page.request, seeded.pick);
