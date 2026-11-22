@@ -1,21 +1,30 @@
 {% extends "site_layout.html" %}
 {#- The Spanish how-it-works page (T102; WEB-002, WEB-026, WORD-002), the English page's twin. All
     Spanish here is marked for native-speaker review (WORD-002, D-356). The fee amounts come from
-    the fee tiers (`payments::api::Tier`, D-384). The footer is the Spanish one. -#}
+    the fee tiers (`payments::api::Tier`, D-384). The footer is the Spanish one. The three steps sit in
+    ruled sections with their numbers set in the serif, as on the English page (T610, D-4246). -#}
 {% block lang %}es{% endblock %}
 {% block title %}Cómo funciona{% endblock %}
 {% block content %}
 <h1>Cómo funciona</h1>
 <p>Cuéntenos de un trabajo que necesita. Los negocios de Havasu que hacen ese trabajo pueden cotizar, y usted elige.</p>
 
-<h2>1. Díganos qué necesita</h2>
+<div class="how-steps">
+<section class="how-step" aria-labelledby="paso-1">
+<h2 id="paso-1">1. Díganos qué necesita</h2>
 <p>Conteste unas preguntas cortas y agregue una foto si tiene una. Salvo en una emergencia, usted ve la solicitud antes de que salga. Su nombre y su número nunca aparecen en ella.</p>
+</section>
 
-<h2>2. Los negocios de Havasu cotizan</h2>
+<section class="how-step" aria-labelledby="paso-2">
+<h2 id="paso-2">2. Los negocios de Havasu cotizan</h2>
 <p>La solicitud va a los negocios de Havasu que aceptan ese tipo de trabajo. Cada uno tiene 24 horas para cotizar. Cada cotización muestra los mismos datos: el precio, lo que incluye y cuándo pueden venir. No todos los negocios responden.</p>
+</section>
 
-<h2>3. Usted elige uno</h2>
+<section class="how-step" aria-labelledby="paso-3">
+<h2 id="paso-3">3. Usted elige uno</h2>
 <p>Revise la licencia y las reseñas de cada negocio, y luego elija. Usted contrata directamente al negocio, o puede no elegir ninguno.</p>
+</section>
+</div>
 
 <h2>Cuánto cuesta</h2>
 <p>El negocio que usted elija le paga a {{ askhava_core::api::brand().display_name() }} una tarifa de presentación fija (${{ fees.small }}, ${{ fees.medium }} o ${{ fees.large }}, según el tamaño de la cotización). Usted no le paga nada a {{ askhava_core::api::brand().display_name() }}.</p>

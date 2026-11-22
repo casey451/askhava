@@ -17,7 +17,9 @@
 //! a password read from standard input, and prints the first authenticator's secret and the
 //! recovery codes once to the operator's own terminal (SEC-044, SEC-007, D-1918). `server replay`
 //! restores an operator's decrypted export into the fresh database and replays from the vendors'
-//! records (`askhava_server::replay_drill`; OPS-013, OPS-018, OPS-019, T206).
+//! records (`askhava_server::replay_drill`; OPS-013, OPS-018, OPS-019, T206). `server rotate-keys`
+//! runs the vault key rotation batches to 0 and `server retire-index-version <version>` retires an
+//! index key version (`askhava_server::rotate_keys`; PRIV-024, T830).
 
 use std::future::IntoFuture;
 use std::io;
@@ -39,6 +41,9 @@ async fn main() -> io::Result<()> {
     if std::env::args().nth(1).as_deref() == Some("replay") {
         let args: Vec<String> = std::env::args().skip(2).collect();
         return askhava_server::replay_drill(&settings, std::env::vars().collect(), &args).await;
+    }
+    if let Some("rotate-keys" | "retire-index-version") = std::env::args().nth(1).as_deref() {
+        return rotate_keys(&settings).await;
     }
     // The security-event cap and the SEC-040 client address, once per process (T319, D-3134).
     let client_ip = askhava_core::api::ClientIpPolicy::from_pairs(std::env::vars())
@@ -76,6 +81,20 @@ async fn main() -> io::Result<()> {
         served = serve.into_future() => served,
         failed = watch => Err(failed),
     }
+}
+
+/// `server rotate-keys` or `server retire-index-version <version>` over one app-role connection,
+/// before anything binds or serves; counts go to standard output (PRIV-024, T830, D-5412).
+async fn rotate_keys(settings: &askhava_core::api::Settings) -> io::Result<()> {
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    let pool = askhava_core::api::app_pool(settings).map_err(io::Error::other)?;
+    let mut conn = pool
+        .acquire()
+        .await
+        .map_err(|_| io::Error::other("the database could not be reached"))?;
+    let pairs = std::env::vars().collect();
+    let mut out = io::stdout();
+    askhava_server::rotate_keys::run(settings, pairs, &mut conn, &args, &mut out).await
 }
 
 /// The liveness limit (OPS-049) and the `/healthz` thresholds (OPS-007), read once at start
