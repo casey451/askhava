@@ -2162,8 +2162,13 @@ pub fn business_number(
 }
 
 /// `ASKHAVA_HOMEOWNER_NUMBER` from `pairs` (the last one wins): `None` when unset in dev and CI,
-/// an error naming the key when unset in test and live (D-3149) or not `+1` and ten digits.
-fn homeowner_number(
+/// an error naming the key when unset in test and live (D-3149) or not `+1` and ten digits. The
+/// sender, the drill and the home pages' texting number (T725, WEB-017, D-4709) read it here.
+///
+/// # Errors
+///
+/// The missing or invalid setting, named, never its value.
+pub fn homeowner_number(
     settings: &Settings,
     pairs: &[(String, String)],
 ) -> io::Result<Option<askhava_messaging::api::SendingNumber>> {

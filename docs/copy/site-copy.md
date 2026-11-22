@@ -95,3 +95,18 @@ Market names: each block below reads as today's one market renders it. On the pa
 
 ## Not found · sentence (homeowner)
 > That link may be old, so use the links at the top to go home or to Help.
+
+## Home texting · request box (homeowner)
+> Text Laftly at (928) 555-0100 to get quotes. That number is text-only.
+
+Shown only while homeowner texting is live (from Gate C, WEB-017; T725, D-4709, D-5279), in place of the request box, with the configured number (the one here is a fake). The texting consent line above follows it directly, word for word, and the cost line after that; the chat is not offered there, since while texting is live the chat only shows the number and asks her to text it (CON-025). Not a `Home · ` block, so the page checks of the page before Gate C do not collect it.
+
+## Home texting · start line (homeowner)
+> Start by texting Laftly. You don't need to know which trade to ask for.
+
+Takes the place of the start line in "How it works" only while the number shows in the hero (D-5279); it names no number and no place on the page, so the number shows once, beside its consent line.
+
+## Spanish home · texting consent line (homeowner, fixed)
+> Enviar un texto a Laftly es su permiso para recibir textos automáticos sobre su solicitud. Pueden aplicar cargos por mensajes y datos. Responda PARAR para dejar de recibir textos. Términos y Privacidad. (CON-005; carrier rules)
+
+Draft for native-speaker review (TXT-003, D-4748, D-5402): the Spanish of the texting consent line above, with its meaning and its two links ("Términos" to the SMS terms, "Privacidad" to the privacy page), and PARAR for STOP (WORD-013). On the Spanish home page (`app/site/templates/es_home.html`) only while the texting number shows, directly after the line "Mande un mensaje de texto a Laftly al (928) 555-0100 para pedir cotizaciones. Este número solo recibe textos, no llamadas." (the number a fake here).
