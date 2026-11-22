@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T00:58:10Z by runner a6b5bb82ade9 (actions).
+Updated 2026-11-22T01:02:58Z by runner 907c2ff0ac1a (actions).
 
 **Building: T691 in progress since 00:03Z; 597 of 752 done; week 44% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 597 of 752 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T691 claimed 00:03Z, lease until 03:03Z; lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 3: T542 claimed 22:52Z, lease until 03:07Z; lane 5: T397 claimed 22:35Z, lease until 01:35Z; lane 6: T117 claimed 00:49Z, lease until 03:49Z
-- **Week:** 44% used, 102.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:57Z, 0 min before this update
+- **Lane:** lane 1: T691 claimed 00:03Z, lease until 03:03Z; lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 3: T542 claimed 22:52Z, lease until 03:07Z; lane 5: T397 claimed 22:35Z, lease until 01:35Z; lane 6: T117 claimed 00:49Z, lease until 03:49Z; lane 7: T725 claimed 01:02Z, lease until 04:02Z
+- **Week:** 44% used, 100.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 00:58Z, 4 min before this update
 - **Keeper:** last ran 00:58Z, next wake 01:18Z
 
 ## Needs attention
@@ -80,7 +80,6 @@ Updated 2026-11-22T00:58:10Z by runner a6b5bb82ade9 (actions).
 | T580 | messaging: a failed, blocked or expired text reads as failed | done | 1 | 43 min | 01:53Z |  |
 | T664 | portals: the Confirm press re-checks the license and account | done | 2 | 2 h 38 min | 01:47Z | PLAN GAP: outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs / The pick's window deadline (picks.pic |
 | T674 | server: the homeowner's photo upload page and the short-live | BLOCKED | 1 | 17 min | 01:25Z |  |
-| T677 | quotes, businesses and server: a business that becomes eligi | done | 1 | 111 min | 01:02Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -116,7 +115,7 @@ Updated 2026-11-22T00:58:10Z by runner a6b5bb82ade9 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-22T00:49:08Z (week)): week: 91.2M used, 102.8M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-06T14:02:50Z.
+- Pacing (session_reading 2026-11-22T00:57:44Z (week)): week: 93.2M used, 100.8M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-06T14:12:43Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -136,6 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 3: T542 (lease until 2026-11-22T03:07:08Z)
 - lane 5: T397 (lease until 2026-11-22T01:35:47Z)
 - lane 6: T117 (lease until 2026-11-22T03:49:52Z)
+- lane 7: T725 (lease until 2026-11-22T04:02:48Z)
 
 ## Last usage reading
 - {"task": "T609", "at": "2026-11-22T00:57:22Z", "cache_creation_input_tokens": 102621, "output_tokens": 11383, "input_tokens": 50, "cache_read_input_tokens": 1180126}
