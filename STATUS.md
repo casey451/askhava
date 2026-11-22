@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T11:38:43Z by runner dd295e06660e (actions).
+Updated 2026-11-22T11:38:53Z by runner 4ac8ae78a989 (actions).
 
-**Building: T675 in progress since 08:47Z; 607 of 769 done; week 57% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T729 in progress since 11:36Z; 607 of 769 done; week 57% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 607 of 769 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 3: T729 claimed 11:36Z, lease until 14:36Z; lane 5: T589 claimed 10:36Z, lease until 13:36Z
+- **Lane:** lane 3: T729 claimed 11:36Z, lease until 14:36Z; lane 5: T589 claimed 10:36Z, lease until 13:36Z
 - **Week:** 57% used, 76.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:37Z, 1 min before this update
+- **Last run:** 11:38Z, 0 min before this update
 - **Keeper:** last ran 11:33Z, next wake 11:53Z
 
 ## Needs attention
@@ -17,6 +17,37 @@ Updated 2026-11-22T11:38:43Z by runner dd295e06660e (actions).
 2. docs/runbook.md:173 and :169 (minor): retire_index_version deletes only messaging.suppression rows (suppression_rekey.rs:231-234); stale v1 phone digests are removed by a later rotate_batch after v1 is dropped from the key list (privacy/src/vault.rs:752,760-761). Rotation drill omits that clean-up run.
 Nit: runbook.md:101, :174, :177 exceed wrap width.
 - BLOCKED T397: plan gap reported: PLAN GAP: outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per probed Owner row; past ~60 rows expires_at < created_at, violating portals.session CHECK (expires_at > created_at), so POST /owner/help/close as Owner returns 500. Marking the three /b/phones rows yes in docs/architecture.md section 13 turns td_sec_61_every_served_door_row_over_http red (reproduced by worker and by reviewer: exit 101, door_matrix.rs:1533). Smallest fix: a harness task that bases owner_jar sign-in times in the past (e.g. key.now - OWNER_IDLE_LIMIT) or spaces TO; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T397 --plan-fix D-### --reason "..."` (D-2859)
+- BLOCKED T675: runner smoke red on 4ac8ae78a989 (bash scripts/smoke.sh, D-3530):
+        env = {"PATH": path, "PREHANDIN_ROOT": str(work), "HOME": str(tmp_path), "DATABASE_URL": "postgres://fake@localhost/none",
+               "E2E_PORT": "39871", "FAKE_CODE": str(code)}
+        if report is not None:
+            (tmp_path / "report.json").write_text(json.dumps(REPORTS[report]))
+            env["FAKE_REPORT"] = str(tmp_path / "report.json")
+        done = subprocess.run(["bash", str(GATE), "--ally", "--base", "origin/main"], cwd=work, capture_output=True, text=True,
+                              env=env, check=False)
+        assert done.returncode == gate_exit, done.stdout
+        for line in wanted:
+>           assert line in done.stdout, (line, done.stdout)
+E           AssertionError: ('skipped: not finished in 540 s (Ci runs Ally)', '
+E             == Ally: pages changed? (scripts/prehandin_ally.py)
+E             touches app/...90 is in use; the suite needs 4010, 39871 and 39890 free (Ci runs Ally)
+E             
+E             prehandin --ally: skipped (Ci runs Ally)
+E             ')
+E           assert 'skipped: not finished in 540 s (Ci runs Ally)' in '\n== Ally: pages changed? (scripts/prehandin_ally.py)\ntouches app/portals/templates/page.html\n\n== Ally (as a11y.ym...890 is in
+E            +  where '\n== Ally: pages changed? (scripts/prehandin_ally.py)\ntouches app/portals/templates/page.html\n\n== Ally (as a11y.ym...890 is in use; the suite needs 4010, 39871 and 39890 free
+
+tests/test_prehandin.py:915: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_prehandin.py::test_the_ally_step_fails_only_on_failed_tests_and_skips_what_it_cannot_judge[None-124-0-wanted4] - AssertionError: ('skipped: not finished in 540 s (Ci runs Ally)', '
+  == Ally: pages changed? (scripts/prehandin_ally.py)
+  touches app/...90 is in use; the suite needs 4010, 39871 and 39890 free (Ci runs Ally)
+  
+  prehandin --ally: skipped (Ci runs Ally)
+  ')
+assert 'skipped: not finished in 540 s (Ci runs Ally)' in '\n== Ally: pages changed? (scripts/prehandin_ally.py)\ntouches app/portals/templates/page.html\n\n== Ally (as a11y.ym...890 is in use; the su
+ +  where '\n== Ally: pages changed? (scripts/prehandin_ally.py)\ntouches app/portals/templates/page.html\n\n== Ally (as a11y.ym...890 is in use; the suite needs 4010, 39871 and 39890 free (Ci runs Al
+1 failed, 5687 passed, 19 skipped in 236.58s (0:03:56)
 - BLOCKED T803: Worker made no change. All 83 named mutants are killed; the Checks job timed out (40 min limit) because the Rust build took ~26 min and mutants.toml changes trigger all 83 mutants (cut off after mutant 72). Needs a harness fix (raise Checks timeout-minutes or run only changed mutants) or a faster CI build. Smoke did not finish in the worker's polls.
 - PLAN GAP T121 (since 2026-11-22T10:24:41Z, no attempt used; a plan change fixes it): T121: dependency T828 is DONE but its owned file .gitleaksignore is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
@@ -24,11 +55,12 @@ Nit: runbook.md:101, :174, :177 exceed wrap width.
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T832 (since 2026-11-22T11:35:50Z, no attempt used; a plan change fixes it): T832: prompt kit/prompts/T832.md is missing; run scripts/gen_prompts.py; T832: branch claude/task/T832-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet; T832: dependency T828 is DONE but its owned file .gitleaksignore is not on main
 - OWNED GAP T828 (DONE, since 2026-11-22T08:18:31Z; a later task or plan change must add it): T828: .gitleaksignore missing on main
-- Strict plan check red: 33 problem(s) on tasks still to run (+486 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 38 problem(s) on tasks still to run (+489 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 3 | 2 h 50 min | 11:38Z | PLAN GAP: tests/integration/tests/intake_order_card.rs:285, tests/integration/tests/intake_refusals_wired.rs:399, tests/ |
 | T805 | messaging (harness): the toll-free fallback is refused after | MERGE_PENDING | 1 | 50 min | 11:32Z |  |
 | T829 | server tests (harness): the door matrix's owner sign-ins nev | MERGE_PENDING | 3 | 46 min | 11:10Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T725 | site: the home page shows the texting number with its consen | BLOCKED | 3 | 21 min | 10:52Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
@@ -47,7 +79,7 @@ Nit: runbook.md:101, :174, :177 exceed wrap width.
 | T828 | ci (harness): gitleaks scans each push's commit range, with  | done | 1 | 84 min | 05:45Z |  |
 | T616 | site: strong per-coding ETags with 304 revalidation, a one-y | done | 2 | 39 min | 05:32Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T803 | messaging (harness): an opted-out number gets no HELP reply; | check_failed | 2 | 63 min | 05:27Z |  |
-| T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 2 | 50 min | 04:44Z | PLAN GAP: tests/integration/tests/intake_order_card.rs:285, tests/integration/tests/intake_refusals_wired.rs:399, tests/ |
+| T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 2 | 50 min | 04:44Z |  |
 | T542 | portals and server: notice and backup address changes are re | done | 2 | 2 h 42 min | 04:28Z | Reviewer after the findings round still ended REVIEW-VERDICT: FINDINGS at head 4de98e6fb74e1e5394629d7a1abe0694167723a2: |
 | T729 | portals and privacy: the quote page offers updates by email  | BLOCKED | 1 | 2 min | 04:19Z |  |
 | T609 | site (harness): the D-4246 polish on the footer, how it work | BLOCKED | 2 | 13 min | 04:15Z |  |
@@ -146,9 +178,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T675 (lease until 2026-11-22T11:47:43Z)
 - lane 3: T729 (lease until 2026-11-22T14:36:39Z)
 - lane 5: T589 (lease until 2026-11-22T13:36:51Z)
 
 ## Last usage reading
-- {"task": "T805", "at": "2026-11-22T11:32:49Z", "cache_creation_input_tokens": 49405, "cache_read_input_tokens": 688666, "output_tokens": 9261, "input_tokens": 46}
+- {"task": "T675", "at": "2026-11-22T11:38:35Z", "cache_read_input_tokens": 29303272, "input_tokens": 444, "cache_creation_input_tokens": 499668, "output_tokens": 167399}

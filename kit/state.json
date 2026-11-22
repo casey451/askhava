@@ -96163,8 +96163,8 @@
     "T789",
     "T715"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 2,
+   "status": "BLOCKED",
+   "attempts": 3,
    "slug": "intake-order-photos",
    "type": "harness",
    "stage": "5",
@@ -96176,7 +96176,7 @@
     5244,
     5245
    ],
-   "reason": null,
+   "reason": "runner smoke red on 4ac8ae78a989 (bash scripts/smoke.sh, D-3530):\n        env = {\"PATH\": path, \"PREHANDIN_ROOT\": str(work), \"HOME\": str(tmp_path), \"DATABASE_URL\": \"postgres://fake@localhost/none\",\n               \"E2E_PORT\": \"39871\", \"FAKE_CODE\": str(code)}\n        if report is not None:\n            (tmp_path / \"report.json\").write_text(json.dumps(REPORTS[report]))\n            env[\"FAKE_REPORT\"] = str(tmp_path / \"report.json\")\n        done = subprocess.run([\"bash\", str(GATE), \"--ally\", \"--base\", \"origin/main\"], cwd=work, capture_output=True, text=True,\n                              env=env, check=False)\n        assert done.returncode == gate_exit, done.stdout\n        for line in wanted:\n>           assert line in done.stdout, (line, done.stdout)\nE           AssertionError: ('skipped: not finished in 540 s (Ci runs Ally)', '\nE             == Ally: pages changed? (scripts/prehandin_ally.py)\nE             touches app/...90 is in use; the suite needs 4010, 39871 and 39890 free (Ci runs Ally)\nE             \nE             prehandin --ally: skipped (Ci runs Ally)\nE             ')\nE           assert 'skipped: not finished in 540 s (Ci runs Ally)' in '\\n== Ally: pages changed? (scripts/prehandin_ally.py)\\ntouches app/portals/templates/page.html\\n\\n== Ally (as a11y.ym...890 is in\nE            +  where '\\n== Ally: pages changed? (scripts/prehandin_ally.py)\\ntouches app/portals/templates/page.html\\n\\n== Ally (as a11y.ym...890 is in use; the suite needs 4010, 39871 and 39890 free\n\ntests/test_prehandin.py:915: AssertionError\n=========================== short test summary info ============================\nFAILED tests/test_prehandin.py::test_the_ally_step_fails_only_on_failed_tests_and_skips_what_it_cannot_judge[None-124-0-wanted4] - AssertionError: ('skipped: not finished in 540 s (Ci runs Ally)', '\n  == Ally: pages changed? (scripts/prehandin_ally.py)\n  touches app/...90 is in use; the suite needs 4010, 39871 and 39890 free (Ci runs Ally)\n  \n  prehandin --ally: skipped (Ci runs Ally)\n  ')\nassert 'skipped: not finished in 540 s (Ci runs Ally)' in '\\n== Ally: pages changed? (scripts/prehandin_ally.py)\\ntouches app/portals/templates/page.html\\n\\n== Ally (as a11y.ym...890 is in use; the su\n +  where '\\n== Ally: pages changed? (scripts/prehandin_ally.py)\\ntouches app/portals/templates/page.html\\n\\n== Ally (as a11y.ym...890 is in use; the suite needs 4010, 39871 and 39890 free (Ci runs Al\n1 failed, 5687 passed, 19 skipped in 236.58s (0:03:56)",
    "last_failure": "PLAN GAP: tests/integration/tests/intake_order_card.rs:285, tests/integration/tests/intake_refusals_wired.rs:399, tests/integration/tests/start_resumes_order.rs:321, app/server/tests/name_address_answer.rs:376. Four tests T675 does not own script replies from the trade questions straight to name-and-address; step 9 (photo ask, INT-044) now sits between, so they fail. Reviewer confirmed all four fail at the cited lines. Also the tree changes app/intake/src/api.rs, app/intake/src/lib.rs, app/server/src/lib.rs, which T675 does not own: 10 files against a budget of 7, 14 with the four tests. Nothing committed.\nre-queued after plan fix D-5459: owns the four DONE tests that walk past the photo step; shared paths off the budget (merged #1329)",
    "history": [
     {
@@ -96224,6 +96224,29 @@
        "turns": 6
       }
      }
+    },
+    {
+     "attempt": 3,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 336,
+     "head_sha": "4ac8ae78a989793116c85d2656835d947c32de28",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-22T08:47:43Z",
+     "ended_at": "2026-11-22T11:38:35Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 28383956,
+       "turns": 195
+      },
+      "reviewer": {
+       "tokens": 1586827,
+       "turns": 29
+      }
+     }
     }
    ],
    "requeues": [
@@ -96254,11 +96277,7 @@
      "plan_now": "2dabcef0921bc4c2d1dae99fb3fa68abc751db6a1a16fb3ec4923890bcc0c19f"
     }
    ],
-   "lane": "2",
-   "wip_claim": {
-    "attempt": 3,
-    "remote_sha": ""
-   }
+   "lane": "2"
   },
   {
    "id": "T676",
@@ -109686,12 +109705,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T805",
-   "at": "2026-11-22T11:32:49Z",
-   "cache_creation_input_tokens": 49405,
-   "cache_read_input_tokens": 688666,
-   "output_tokens": 9261,
-   "input_tokens": 46
+   "task": "T675",
+   "at": "2026-11-22T11:38:35Z",
+   "cache_read_input_tokens": 29303272,
+   "input_tokens": 444,
+   "cache_creation_input_tokens": 499668,
+   "output_tokens": 167399
   },
   "source": "session_reading 2026-11-22T11:33:25Z (week)",
   "by_task": {
@@ -116713,14 +116732,14 @@
     "estimated_bytes": 687079,
     "estimated_tokens": 2000774,
     "usage_counting": "message_id",
-    "input_tokens": 330,
-    "cache_read_input_tokens": 21981663,
-    "cache_creation_input_tokens": 396329,
-    "output_tokens": 133776,
-    "worker_tokens": 21936401,
-    "worker_turns": 151,
-    "reviewer_tokens": 575697,
-    "reviewer_turns": 20,
+    "input_tokens": 774,
+    "cache_read_input_tokens": 51284935,
+    "cache_creation_input_tokens": 895997,
+    "output_tokens": 301175,
+    "worker_tokens": 50320357,
+    "worker_turns": 346,
+    "reviewer_tokens": 2162524,
+    "reviewer_turns": 49,
     "last_model": "claude-opus-5-5"
    },
    "T565": {
@@ -117077,11 +117096,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-22T07:14:36Z",
-    "tokens": 6835722
+    "tokens": 10433560
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 161995891
+    "tokens": 165593729
    }
   },
   "session_reading": {
@@ -117092,7 +117111,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T11:38:43Z",
+ "updated_at": "2026-11-22T11:38:53Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -117190,7 +117209,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "dd295e06660e0308300490a7b00829730b7a7197",
+ "runner_sha": "4ac8ae78a989793116c85d2656835d947c32de28",
  "starter": "actions",
  "smoke_runs": [
   {
