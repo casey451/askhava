@@ -1,5 +1,5 @@
 Draft prepared with AI research; not reviewed by a lawyer.
-Version 0.6 (draft, D-492 clauses) · November 16, 2026 · Not yet in effect
+Version 0.7 (draft, texting opt-in, D-5278) · November 21, 2026 · Not yet in effect
 
 # Laftly Homeowner Terms
 
@@ -52,7 +52,7 @@ Laftly is not an emergency service and does not watch messages around the clock.
 
 ## 7. Texts and emails
 
-Our texts are automated. When you text Laftly, or give us your mobile number in the chat on laftly.com and type the code we send to it, you agree to get automated texts about your own request; you don't need to reply to agree. Quote updates come by text unless you switch to email, or both, on your quote page, and every update links to your private quote page. Message frequency varies. Message and data rates may apply. Reply HELP for help and STOP to opt out at any time. You can also opt out by emailing help@laftly.com, using the help form, or switching texts off on your quote page. The details are in the Laftly SMS Terms.
+Our texts are automated. When you text Laftly, you agree to get automated texts about your own request. You don't need to reply to agree. Quote updates come by text unless you switch to email, or both, on your quote page, and every update links to your private quote page. Message frequency varies. Message and data rates may apply. Reply HELP for help and STOP to opt out at any time. You can also opt out by emailing help@laftly.com, using the help form, or switching texts off on your quote page. The details are in the Laftly SMS Terms.
 
 ## 8. Electronic signatures
 
