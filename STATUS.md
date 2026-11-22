@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T14:37:13Z by runner a116b287be6d (actions).
+Updated 2026-11-22T14:37:28Z by runner 1a1917eed465 (manual).
 
 **Building: T397 in progress since 13:11Z; 613 of 770 done; week 59% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -12,37 +12,6 @@ Updated 2026-11-22T14:37:13Z by runner a116b287be6d (actions).
 - **Keeper:** last ran 14:06Z, next wake 14:26Z
 
 ## Needs attention
-- BLOCKED T675: runner smoke red on 4ac8ae78a989 (bash scripts/smoke.sh, D-3530):
-        env = {"PATH": path, "PREHANDIN_ROOT": str(work), "HOME": str(tmp_path), "DATABASE_URL": "postgres://fake@localhost/none",
-               "E2E_PORT": "39871", "FAKE_CODE": str(code)}
-        if report is not None:
-            (tmp_path / "report.json").write_text(json.dumps(REPORTS[report]))
-            env["FAKE_REPORT"] = str(tmp_path / "report.json")
-        done = subprocess.run(["bash", str(GATE), "--ally", "--base", "origin/main"], cwd=work, capture_output=True, text=True,
-                              env=env, check=False)
-        assert done.returncode == gate_exit, done.stdout
-        for line in wanted:
->           assert line in done.stdout, (line, done.stdout)
-E           AssertionError: ('skipped: not finished in 540 s (Ci runs Ally)', '
-E             == Ally: pages changed? (scripts/prehandin_ally.py)
-E             touches app/...90 is in use; the suite needs 4010, 39871 and 39890 free (Ci runs Ally)
-E             
-E             prehandin --ally: skipped (Ci runs Ally)
-E             ')
-E           assert 'skipped: not finished in 540 s (Ci runs Ally)' in '\n== Ally: pages changed? (scripts/prehandin_ally.py)\ntouches app/portals/templates/page.html\n\n== Ally (as a11y.ym...890 is in
-E            +  where '\n== Ally: pages changed? (scripts/prehandin_ally.py)\ntouches app/portals/templates/page.html\n\n== Ally (as a11y.ym...890 is in use; the suite needs 4010, 39871 and 39890 free
-
-tests/test_prehandin.py:915: AssertionError
-=========================== short test summary info ============================
-FAILED tests/test_prehandin.py::test_the_ally_step_fails_only_on_failed_tests_and_skips_what_it_cannot_judge[None-124-0-wanted4] - AssertionError: ('skipped: not finished in 540 s (Ci runs Ally)', '
-  == Ally: pages changed? (scripts/prehandin_ally.py)
-  touches app/...90 is in use; the suite needs 4010, 39871 and 39890 free (Ci runs Ally)
-  
-  prehandin --ally: skipped (Ci runs Ally)
-  ')
-assert 'skipped: not finished in 540 s (Ci runs Ally)' in '\n== Ally: pages changed? (scripts/prehandin_ally.py)\ntouches app/portals/templates/page.html\n\n== Ally (as a11y.ym...890 is in use; the su
- +  where '\n== Ally: pages changed? (scripts/prehandin_ally.py)\ntouches app/portals/templates/page.html\n\n== Ally (as a11y.ym...890 is in use; the suite needs 4010, 39871 and 39890 free (Ci runs Al
-1 failed, 5687 passed, 19 skipped in 236.58s (0:03:56)
 - BLOCKED T803: Worker made no change. All 83 named mutants are killed; the Checks job timed out (40 min limit) because the Rust build took ~26 min and mutants.toml changes trigger all 83 mutants (cut off after mutant 72). Needs a harness fix (raise Checks timeout-minutes or run only changed mutants) or a faster CI build. Smoke did not finish in the worker's polls.
 - PLAN GAP T121 (since 2026-11-22T10:24:41Z, no attempt used; a plan change fixes it): T121: dependency T828 is DONE but its owned file .gitleaksignore is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json

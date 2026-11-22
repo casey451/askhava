@@ -96463,7 +96463,7 @@
     "T715",
     "T833"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 3,
    "slug": "intake-order-photos",
    "type": "harness",
@@ -96476,8 +96476,8 @@
     5244,
     5245
    ],
-   "reason": "runner smoke red on 4ac8ae78a989 (bash scripts/smoke.sh, D-3530):\n        env = {\"PATH\": path, \"PREHANDIN_ROOT\": str(work), \"HOME\": str(tmp_path), \"DATABASE_URL\": \"postgres://fake@localhost/none\",\n               \"E2E_PORT\": \"39871\", \"FAKE_CODE\": str(code)}\n        if report is not None:\n            (tmp_path / \"report.json\").write_text(json.dumps(REPORTS[report]))\n            env[\"FAKE_REPORT\"] = str(tmp_path / \"report.json\")\n        done = subprocess.run([\"bash\", str(GATE), \"--ally\", \"--base\", \"origin/main\"], cwd=work, capture_output=True, text=True,\n                              env=env, check=False)\n        assert done.returncode == gate_exit, done.stdout\n        for line in wanted:\n>           assert line in done.stdout, (line, done.stdout)\nE           AssertionError: ('skipped: not finished in 540 s (Ci runs Ally)', '\nE             == Ally: pages changed? (scripts/prehandin_ally.py)\nE             touches app/...90 is in use; the suite needs 4010, 39871 and 39890 free (Ci runs Ally)\nE             \nE             prehandin --ally: skipped (Ci runs Ally)\nE             ')\nE           assert 'skipped: not finished in 540 s (Ci runs Ally)' in '\\n== Ally: pages changed? (scripts/prehandin_ally.py)\\ntouches app/portals/templates/page.html\\n\\n== Ally (as a11y.ym...890 is in\nE            +  where '\\n== Ally: pages changed? (scripts/prehandin_ally.py)\\ntouches app/portals/templates/page.html\\n\\n== Ally (as a11y.ym...890 is in use; the suite needs 4010, 39871 and 39890 free\n\ntests/test_prehandin.py:915: AssertionError\n=========================== short test summary info ============================\nFAILED tests/test_prehandin.py::test_the_ally_step_fails_only_on_failed_tests_and_skips_what_it_cannot_judge[None-124-0-wanted4] - AssertionError: ('skipped: not finished in 540 s (Ci runs Ally)', '\n  == Ally: pages changed? (scripts/prehandin_ally.py)\n  touches app/...90 is in use; the suite needs 4010, 39871 and 39890 free (Ci runs Ally)\n  \n  prehandin --ally: skipped (Ci runs Ally)\n  ')\nassert 'skipped: not finished in 540 s (Ci runs Ally)' in '\\n== Ally: pages changed? (scripts/prehandin_ally.py)\\ntouches app/portals/templates/page.html\\n\\n== Ally (as a11y.ym...890 is in use; the su\n +  where '\\n== Ally: pages changed? (scripts/prehandin_ally.py)\\ntouches app/portals/templates/page.html\\n\\n== Ally (as a11y.ym...890 is in use; the suite needs 4010, 39871 and 39890 free (Ci runs Al\n1 failed, 5687 passed, 19 skipped in 236.58s (0:03:56)",
-   "last_failure": "PLAN GAP: tests/integration/tests/intake_order_card.rs:285, tests/integration/tests/intake_refusals_wired.rs:399, tests/integration/tests/start_resumes_order.rs:321, app/server/tests/name_address_answer.rs:376. Four tests T675 does not own script replies from the trade questions straight to name-and-address; step 9 (photo ask, INT-044) now sits between, so they fail. Reviewer confirmed all four fail at the cited lines. Also the tree changes app/intake/src/api.rs, app/intake/src/lib.rs, app/server/src/lib.rs, which T675 does not own: 10 files against a budget of 7, 14 with the four tests. Nothing committed.\nre-queued after plan fix D-5459: owns the four DONE tests that walk past the photo step; shared paths off the budget (merged #1329)",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/integration/tests/intake_order_card.rs:285, tests/integration/tests/intake_refusals_wired.rs:399, tests/integration/tests/start_resumes_order.rs:321, app/server/tests/name_address_answer.rs:376. Four tests T675 does not own script replies from the trade questions straight to name-and-address; step 9 (photo ask, INT-044) now sits between, so they fail. Reviewer confirmed all four fail at the cited lines. Also the tree changes app/intake/src/api.rs, app/intake/src/lib.rs, app/server/src/lib.rs, which T675 does not own: 10 files against a budget of 7, 14 with the four tests. Nothing committed.\nre-queued after plan fix D-5459: owns the four DONE tests that walk past the photo step; shared paths off the budget (merged #1329)\nre-queued after plan fix D-5525: T833 (prehandin Ally test holds its own ports, D-5528) is DONE on main 58e140e; T675's attempt-3 block was the host port collision, not its change",
    "history": [
     {
      "attempt": 1,
@@ -96575,6 +96575,19 @@
      "plan_head": "0d3b99473e1e2da8ad96c9b39e0a617f0bbaab53",
      "plan_then": "9ca02c947d6242361fddd18a9b7f3020f179c90c0c6d6facfdb8fa3cbad55792",
      "plan_now": "2dabcef0921bc4c2d1dae99fb3fa68abc751db6a1a16fb3ec4923890bcc0c19f"
+    },
+    {
+     "at": "2026-11-22T14:37:28Z",
+     "reason": "T833 (prehandin Ally test holds its own ports, D-5528) is DONE on main 58e140e; T675's attempt-3 block was the host port collision, not its change",
+     "by": "manual-e9885ecc046b",
+     "was": "runner smoke red on 4ac8ae78a989 (bash scripts/smoke.sh, D-3530):\n        env = {\"PATH\": path, \"PREHANDIN_ROOT\": str(work), \"HOME\": str(tmp_path), \"DATABASE_URL\": \"postgres://fake@localhost/none\",\n               \"E2E_PORT\": \"39871\", \"FAKE_CODE\": str(code)}\n        if report is not None:\n            (tmp_path / \"report.json\").write_text(json.dumps(REPORTS[report]))\n            env[\"FAKE_REPORT\"] = str(tmp_path / \"report.json\")\n        done = subprocess.run([\"bash\", str(GATE), \"--ally\", \"--base\", \"origin/main\"], cwd=work, capture_output=True, text=True,\n                              env=env, check=False)\n        assert done.returncode == gate_exit, done.stdout\n        for line in wanted:\n>           assert line in done.stdout, (line, done.stdout)\nE           AssertionError: ('skipped: not finished in 540 s (Ci runs Ally)', '\nE             == Ally: pages changed? (scripts/prehandin_ally.py)\nE             touches app/...90 is in use; the suite needs 4010, 39871 and 39890 free (Ci runs Ally)\nE             \nE             prehandin --ally: skipped (Ci runs Ally)\nE             ')\nE           assert 'skipped: not finished in 540 s (Ci runs Ally)' in '\\n== Ally: pages changed? (scripts/prehandin_ally.py)\\ntouches app/portals/templates/page.html\\n\\n== Ally (as a11y.ym...890 is in\nE            +  where '\\n== Ally: pages changed? (scripts/prehandin_ally.py)\\ntouches app/portals/templates/page.html\\n\\n== Ally (as a11y.ym...890 is in use; the suite needs 4010, 39871 and 39890 free\n\ntests/test_prehandin.py:915: AssertionError\n=========================== short test summary info ============================\nFAILED tests/test_prehandin.py::test_the_ally_step_fails_only_on_failed_tests_and_skips_what_it_cannot_judge[None-124-0-wanted4] - AssertionError: ('skipped: not finished in 540 s (Ci runs Ally)', '\n  == Ally: pages changed? (scripts/prehandin_ally.py)\n  touches app/...90 is in use; the suite needs 4010, 39871 and 39890 free (Ci runs Ally)\n  \n  prehandin --ally: skipped (Ci runs Ally)\n  ')\nassert 'skipped: not finished in 540 s (Ci runs Ally)' in '\\n== Ally: pages changed? (scripts/prehandin_ally.py)\\ntouches app/portals/templates/page.html\\n\\n== Ally (as a11y.ym...890 is in use; the su\n +  where '\\n== Ally: pages changed? (scripts/prehandin_ally.py)\\ntouches app/portals/templates/page.html\\n\\n== Ally (as a11y.ym...890 is in use; the suite needs 4010, 39871 and 39890 free (Ci runs Al\n1 failed, 5687 passed, 19 skipped in 236.58s (0:03:56)",
+     "attempts": 3,
+     "plan_fix": "D-5525",
+     "plan_since": "2026-11-22T08:47:43Z",
+     "plan_base": "23fcbe8c11d7e98a6b62b7774fd0a382bd408518",
+     "plan_head": "1a1917eed4659785348905d19e7671b0b95d3b71",
+     "plan_then": "2dabcef0921bc4c2d1dae99fb3fa68abc751db6a1a16fb3ec4923890bcc0c19f",
+     "plan_now": "22bc2e50a7f31938268923929236427f9f7b0bb627d8ddb913c3faf917198421"
     }
    ],
    "lane": "2"
@@ -117990,7 +118003,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T14:37:13Z",
+ "updated_at": "2026-11-22T14:37:28Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -118088,8 +118101,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "a116b287be6d86f7f8f1b4fbfdde901dc62a2fca",
- "starter": "actions",
+ "runner_sha": "1a1917eed4659785348905d19e7671b0b95d3b71",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "fda71be613a1ab644ea0e9bb6d8d0e366d5b98e8",
