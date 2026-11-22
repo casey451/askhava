@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T17:04:04Z by runner e8e6af81881f (actions).
+Updated 2026-11-22T17:07:42Z by runner bd27a597ce3e (actions).
 
 **Idle since 17:03Z; 616 of 770 done; week 63% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-22T17:04:04Z by runner e8e6af81881f (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 17:03Z (no task in progress)
 - **Week:** 63% used, 66.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:03Z, 0 min before this update
+- **Last run:** 17:04Z, 3 min before this update
 - **Keeper:** last ran 17:04Z, next wake 17:24Z
 
 ## Needs attention
@@ -17,8 +17,7 @@ Updated 2026-11-22T17:04:04Z by runner e8e6af81881f (actions).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T832 (since 2026-11-22T11:35:50Z, no attempt used; a plan change fixes it): T832: dependency T828 is DONE but its owned file .gitleaksignore is not on main
-- OWNED GAP T828 (DONE, since 2026-11-22T08:18:31Z; a later task or plan change must add it): T828: .gitleaksignore missing on main
-- Strict plan check red: 34 problem(s) on tasks still to run (+496 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 30 problem(s) on tasks still to run (+495 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -94,6 +93,7 @@ Updated 2026-11-22T17:04:04Z by runner e8e6af81881f (actions).
 | T615 | site and server: a styled 404 page for unknown paths, the fa | done | 4 | 68 min | 18:19Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 
 ### Plan and harness merges on main
+- 17:04Z Plan: unblock T121/T832/T499/T514 (D-5552); pre-flight fixes job 24 (D-5551) (#1363)
 - 12:43Z Plan: pre-flight goal fixes for T666, T778, T820, T524, T825, T831 (D-5526) (#1354)
 - 11:22Z Plan: unblock T725 (D-5518) and T803 via T832 Checks timeout 60 min (D-5519) (#1347)
 - 11:05Z Plan: T831 fits the /request words box in the first screen; T118 depends on it (A11Y-005, D-5502) (#1343)
