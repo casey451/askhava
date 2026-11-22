@@ -25642,7 +25642,7 @@
     "T536",
     "T831"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 4,
    "slug": "e2e-j3-operator",
    "type": "build",
@@ -25656,7 +25656,7 @@
     5285,
     5286
    ],
-   "last_failure": "PLAN GAP: outside ownership: app/site/templates/request.html, app/site/static/site.css\nAt 1280x900 the /request chat start screen textarea box spans y=784..914, partly below the viewport; Chrome does not scroll a partly visible control into view, so tests/a11y/j3_keyboard.spec.ts:56 fails with \"chat-words: outside the viewport\" (via tests/e2e/j3.ts:303, step 5) under A11Y-005 (docs/spec/accessibility.md:9). Reproduced by the reviewer at cb4a620. T118 owns only j3_operator.spec.ts, j3_keyboard.spec.ts, j3.ts. Fix: a site task (T593/T609 area) lays out the start screen so the textarea is never partly cut off at 1280x900, or a logged spec decision on A11Y-005 wording. j3_operator.spec.ts passed (worker run) with the D-5486 session-ageing fix at cb4a620; skipped smoke/prehandin because of the gap.",
+   "last_failure": "PLAN GAP: outside ownership: app/site/templates/request.html, app/site/static/site.css\nAt 1280x900 the /request chat start screen textarea box spans y=784..914, partly below the viewport; Chrome does not scroll a partly visible control into view, so tests/a11y/j3_keyboard.spec.ts:56 fails with \"chat-words: outside the viewport\" (via tests/e2e/j3.ts:303, step 5) under A11Y-005 (docs/spec/accessibility.md:9). Reproduced by the reviewer at cb4a620. T118 owns only j3_operator.spec.ts, j3_keyboard.spec.ts, j3.ts. Fix: a site task (T593/T609 area) lays out the start screen so the textarea is never partly cut off at 1280x900, or a logged spec decision on A11Y-005 wording. j3_operator.spec.ts passed (worker run) with the D-5486 session-ageing fix at cb4a620; skipped smoke/prehandin because of the gap.\nre-queued after plan fix D-5502: T831 fits the /request words box in the first screen (A11Y-005)",
    "history": [
     {
      "attempt": 1,
@@ -25824,7 +25824,7 @@
    "runner_closed_prs": [
     1319
    ],
-   "reason": "plan gap reported: PLAN GAP: outside ownership: app/site/templates/request.html, app/site/static/site.css\nAt 1280x900 the /request chat start screen textarea box spans y=784..914, partly below the viewport; Chrome does not scroll a partly visible control into view, so tests/a11y/j3_keyboard.spec.ts:56 fails with \"chat-words: outside the viewport\" (via tests/e2e/j3.ts:303, step 5) under A11Y-005 (docs/spec/accessibility.md:9). Reproduced by the reviewer at cb4a620. T118 owns only j3_operator.spec.ts, j3_keyboard.spec.ts, j3.ts. Fix: a site task (T593/T609 area) lays out the start screen so the textarea is never p; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T118 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "reason": null,
    "requeues": [
     {
      "at": "2026-11-22T07:07:48Z",
@@ -25838,18 +25838,21 @@
      "plan_head": "5adc4d114966860b5db0ed380ff800da15fa1414",
      "plan_then": "ab23cffaf6eb525f3ef3dde36f1e6efba599d261255364f189766dae2d689464",
      "plan_now": "93466ae6f61fdb6deef766b539e0252c8d26e529a8baaf31d624501d58dcf5ab"
+    },
+    {
+     "at": "2026-11-22T11:10:29Z",
+     "reason": "T831 fits the /request words box in the first screen (A11Y-005)",
+     "by": "manual-679615083805",
+     "was": "plan gap reported: PLAN GAP: outside ownership: app/site/templates/request.html, app/site/static/site.css\nAt 1280x900 the /request chat start screen textarea box spans y=784..914, partly below the viewport; Chrome does not scroll a partly visible control into view, so tests/a11y/j3_keyboard.spec.ts:56 fails with \"chat-words: outside the viewport\" (via tests/e2e/j3.ts:303, step 5) under A11Y-005 (docs/spec/accessibility.md:9). Reproduced by the reviewer at cb4a620. T118 owns only j3_operator.spec.ts, j3_keyboard.spec.ts, j3.ts. Fix: a site task (T593/T609 area) lays out the start screen so the textarea is never p; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T118 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 4,
+     "plan_fix": "D-5502",
+     "plan_since": "2026-11-22T08:09:25Z",
+     "plan_base": "eff90c80a8f73885df6584b0a1254a106a080c33",
+     "plan_head": "5aac787a2648d3e214a8ac84ca4588414ae565f0",
+     "plan_then": "93466ae6f61fdb6deef766b539e0252c8d26e529a8baaf31d624501d58dcf5ab",
+     "plan_now": "9d13c67fd141a35ae2db8b42947f88c6c99a5bda2a54f904d65213b0080098eb"
     }
-   ],
-   "plan_gap": {
-    "at": "2026-11-22T08:54:42Z",
-    "problems": [
-     "outside ownership: app/site/templates/request.html, app/site/static/site.css"
-    ],
-    "paths": [
-     "app/site/templates/request.html",
-     "app/site/static/site.css"
-    ]
-   }
+   ]
   },
   {
    "id": "T119",
@@ -116979,7 +116982,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T11:05:53Z",
+ "updated_at": "2026-11-22T11:10:29Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -117077,8 +117080,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "dd295e06660e0308300490a7b00829730b7a7197",
- "starter": "actions",
+ "runner_sha": "5aac787a2648d3e214a8ac84ca4588414ae565f0",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "073da52ea9e971e6df8a97a9aa7d4228831d613e",
