@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T14:06:13Z by runner a950af5bcf1d (actions).
+Updated 2026-11-22T14:07:10Z by runner a116b287be6d (actions).
 
-**Building: T397 in progress since 13:11Z; 610 of 770 done; week 59% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T397 in progress since 13:11Z; 611 of 770 done; week 59% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 610 of 770 build tasks (owner gates not counted)
+- **Tasks done:** 611 of 770 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T397 claimed 13:11Z, lease until 16:11Z
 - **Week:** 59% used, 76.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:05Z, 0 min before this update
+- **Last run:** 14:06Z, 0 min before this update
 - **Keeper:** last ran 14:06Z, next wake 14:26Z
 
 ## Needs attention
@@ -49,7 +49,7 @@ assert 'skipped: not finished in 540 s (Ci runs Ally)' in '\n== Ally: pages chan
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T832 (since 2026-11-22T11:35:50Z, no attempt used; a plan change fixes it): T832: dependency T828 is DONE but its owned file .gitleaksignore is not on main
 - OWNED GAP T828 (DONE, since 2026-11-22T08:18:31Z; a later task or plan change must add it): T828: .gitleaksignore missing on main
-- Strict plan check red: 30 problem(s) on tasks still to run (+487 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 33 problem(s) on tasks still to run (+491 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -58,7 +58,7 @@ assert 'skipped: not finished in 540 s (Ci runs Ally)' in '\n== Ally: pages chan
 | T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | MERGE_PENDING | 4 | 33 min | 13:54Z | Reviewer after findings round still FINDINGS at 4f79a8b8c4195e68ccfba3a25eaab6d612560536: / 1. docs/runbook.md:139-142 a |
 | T830 | server: `server rotate-keys` and `server retire-index-versio | done | 1 | 61 min | 12:46Z |  |
 | T729 | portals and privacy: the quote page offers updates by email  | check_failed | 2 | 49 min | 12:26Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
-| T610 | site: the D-4246 polish on the Spanish pages, the legal page | MERGE_PENDING | 2 | 40 min | 12:19Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
+| T610 | site: the D-4246 polish on the Spanish pages, the legal page | done | 2 | 40 min | 12:19Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T589 | intake and portals: the pick review page is shown in her req | done | 2 | 87 min | 12:04Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
 | T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 3 | 2 h 50 min | 11:38Z | PLAN GAP: tests/integration/tests/intake_order_card.rs:285, tests/integration/tests/intake_refusals_wired.rs:399, tests/ |
 | T805 | messaging (harness): the toll-free fallback is refused after | MERGE_PENDING | 1 | 50 min | 11:32Z |  |
@@ -131,7 +131,7 @@ assert 'skipped: not finished in 540 s (Ci runs Ally)' in '\n== Ally: pages chan
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 610 of 770
+**Tasks merged (throughput only):** 611 of 770
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -167,7 +167,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 253 of 342 done
+- stage 5: 254 of 342 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
