@@ -25641,7 +25641,7 @@
     "T707",
     "T536"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 3,
    "slug": "e2e-j3-operator",
    "type": "build",
@@ -25655,7 +25655,7 @@
     5285,
     5286
    ],
-   "last_failure": "Ci: failure; E2e: failure\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n  \u2713  120 [main] \u203a tests/e2e/who_runs_links.spec.ts:40:3 \u203a TD-WEB-10 WEB-021 WEB-022: /es/business leaves out the record link and license while unset (89ms)\n{\"timestamp\":\"2026-11-22T03:11:43.602727Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1326,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-22T03:11:43.603036Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1328,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-22T03:11:43.603692Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1329,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-22T03:11:43.603916Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1327,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-22T03:11:43.605579Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1330,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n  \u2718  121 [late] \u203a tests/e2e/j3_operator.spec.ts:24:1 \u203a J3 TD-TXT-15: sign-in, pause, refund, fee mode, safe mode, audit log, with the closing checks, launch channel web-and-email (157ms)\n##[error]  1) [late] \u203a tests/e2e/j3_operator.spec.ts:24:1 \u203a J3 TD-TXT-15: sign-in, pause, refund, fee mode, safe mode, audit log, with the closing checks, launch channel web-and-email \u203a 1. owner sign-\nCi failed at st",
+   "last_failure": "Ci: failure; E2e: failure\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n  \u2713  120 [main] \u203a tests/e2e/who_runs_links.spec.ts:40:3 \u203a TD-WEB-10 WEB-021 WEB-022: /es/business leaves out the record link and license while unset (89ms)\n{\"timestamp\":\"2026-11-22T03:11:43.602727Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1326,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-22T03:11:43.603036Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1328,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-22T03:11:43.603692Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1329,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-22T03:11:43.603916Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1327,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-22T03:11:43.605579Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":1330,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n  \u2718  121 [late] \u203a tests/e2e/j3_operator.spec.ts:24:1 \u203a J3 TD-TXT-15: sign-in, pause, refund, fee mode, safe mode, audit log, with the closing checks, launch channel web-and-email (157ms)\n##[error]  1) [late] \u203a tests/e2e/j3_operator.spec.ts:24:1 \u203a J3 TD-TXT-15: sign-in, pause, refund, fee mode, safe mode, audit log, with the closing checks, launch channel web-and-email \u203a 1. owner sign-\nCi failed at st\nre-queued after plan fix D-5486: age only its own owner session; cap via created_at and two door calls (merged #1335)",
    "history": [
     {
      "attempt": 1,
@@ -25800,7 +25800,22 @@
    "runner_closed_prs": [
     1319
    ],
-   "reason": "Reviewer after the findings round (head c1afe20f73c9473b305723ab6199f5f6ef4fcb14) still ended FINDINGS: tests/e2e/j3.ts:136-137, the \"11 hours 58 minutes live\" check does not depend on the server's 12-hour cap. The first door call after ageOwnerSessions(11*60+58, \"start\") is answered from the end stored at sign-in (T0+30m); the cap is written by that same call. With OWNER_SESSION_LIFE = 11h the journey would still pass. Fix: call the door twice after the \"start\" ageing so the second call reads the server-stored end (T0+2m); about one line, 598 of 600 budget. Alternatively reword the assertion and D-5282 to claim only the 12:01 refusal."
+   "reason": null,
+   "requeues": [
+    {
+     "at": "2026-11-22T07:07:48Z",
+     "reason": "age only its own owner session; cap via created_at and two door calls (merged #1335)",
+     "by": "manual-6dce5200e676",
+     "was": "Reviewer after the findings round (head c1afe20f73c9473b305723ab6199f5f6ef4fcb14) still ended FINDINGS: tests/e2e/j3.ts:136-137, the \"11 hours 58 minutes live\" check does not depend on the server's 12-hour cap. The first door call after ageOwnerSessions(11*60+58, \"start\") is answered from the end stored at sign-in (T0+30m); the cap is written by that same call. With OWNER_SESSION_LIFE = 11h the journey would still pass. Fix: call the door twice after the \"start\" ageing so the second call reads the server-stored end (T0+2m); about one line, 598 of 600 budget. Alternatively reword the assertion and D-5282 to claim only the 12:01 refusal.",
+     "attempts": 3,
+     "plan_fix": "D-5486",
+     "plan_since": "2026-11-22T04:18:11Z",
+     "plan_base": "073da52ea9e971e6df8a97a9aa7d4228831d613e",
+     "plan_head": "5adc4d114966860b5db0ed380ff800da15fa1414",
+     "plan_then": "ab23cffaf6eb525f3ef3dde36f1e6efba599d261255364f189766dae2d689464",
+     "plan_now": "93466ae6f61fdb6deef766b539e0252c8d26e529a8baaf31d624501d58dcf5ab"
+    }
+   ]
   },
   {
    "id": "T119",
@@ -115766,7 +115781,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T07:03:07Z",
+ "updated_at": "2026-11-22T07:07:48Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -115864,8 +115879,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "a474f22e9cd50f3392df07221e7bf636b54539e1",
- "starter": "actions",
+ "runner_sha": "5adc4d114966860b5db0ed380ff800da15fa1414",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "21d99167398b19ca15d194afa6d72778eae8afc0",
