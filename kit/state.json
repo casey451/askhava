@@ -25731,8 +25731,8 @@
     "T488",
     "T586"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "security-startup-supply",
    "type": "build",
    "stage": "5",
@@ -25745,10 +25745,45 @@
     5355,
     5356
    ],
-   "wip_claim": {
-    "attempt": 1,
-    "remote_sha": ""
-   }
+   "reason": "plan gap reported: PLAN GAP: outside ownership: app/server/src/owner_portal.rs, app/server/src/owner_tools.rs, app/portals/src/owner_help.rs, app/server/src/homeowner_portal.rs\nSEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (owner_portal ChangeBody, BridgeBody, OptOutBody, StripeBody, SafetyBody, SpanishBody, BusinessBody, ReleaseBody; owner_tools EvidenceBody; owner_help HelpForm; homeowner_portal PhotoPost) and unclassified raw parses (owner_tools audit_log RawQuery, homeowner_portal upload_fields Multipart and csrf_checked), none owned by T121. Also business_signup.rs Asked::from_; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T121 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: outside ownership: app/server/src/owner_portal.rs, app/server/src/owner_tools.rs, app/portals/src/owner_help.rs, app/server/src/homeowner_portal.rs\nSEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (owner_portal ChangeBody, BridgeBody, OptOutBody, StripeBody, SafetyBody, SpanishBody, BusinessBody, ReleaseBody; owner_tools EvidenceBody; owner_help HelpForm; homeowner_portal PhotoPost) and unclassified raw parses (owner_tools audit_log RawQuery, homeowner_portal upload_fields Multipart and csrf_checked), none owned by T121. Also business_signup.rs Asked::from_query (owned) is a request input fitting none of SEC-010's exceptions; needs a spec line. SEC-045 gitleaks commit-range scan needs a harness change (.github/workflows/ci.yml:128 runs only gitleaks dir). Reviewer confirmed all against main 21d991673. Worker's partial work left uncommitted.",
+   "plan_gap": {
+    "at": "2026-11-22T01:45:41Z",
+    "problems": [
+     "outside ownership: app/server/src/owner_portal.rs, app/server/src/owner_tools.rs, app/portals/src/owner_help.rs, app/server/src/homeowner_portal.rs"
+    ],
+    "paths": [
+     "app/server/src/owner_portal.rs",
+     "app/server/src/owner_tools.rs",
+     "app/portals/src/owner_help.rs",
+     "app/server/src/homeowner_portal.rs"
+    ]
+   },
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 130,
+     "head_sha": "21d99167398b19ca15d194afa6d72778eae8afc0",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-22T01:30:17Z",
+     "ended_at": "2026-11-22T01:45:41Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 6446512,
+       "turns": 72
+      },
+      "reviewer": {
+       "tokens": 251090,
+       "turns": 7
+      }
+     }
+    }
+   ]
   },
   {
    "id": "T122",
@@ -106723,12 +106758,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T117",
-   "at": "2026-11-22T01:39:07Z",
-   "cache_creation_input_tokens": 175654,
-   "cache_read_input_tokens": 2744008,
-   "output_tokens": 34777,
-   "input_tokens": 123
+   "task": "T121",
+   "at": "2026-11-22T01:45:41Z",
+   "cache_creation_input_tokens": 190427,
+   "cache_read_input_tokens": 6425983,
+   "output_tokens": 81041,
+   "input_tokens": 151
   },
   "source": "session_reading 2026-11-22T01:39:34Z (week)",
   "by_task": {
@@ -113910,7 +113945,17 @@
    },
    "T121": {
     "estimated_bytes": 620275,
-    "estimated_tokens": 1814779
+    "estimated_tokens": 1814779,
+    "usage_counting": "message_id",
+    "cache_creation_input_tokens": 190427,
+    "cache_read_input_tokens": 6425983,
+    "output_tokens": 81041,
+    "input_tokens": 151,
+    "worker_tokens": 6446512,
+    "worker_turns": 72,
+    "reviewer_tokens": 251090,
+    "reviewer_turns": 7,
+    "last_model": "claude-opus-5-5"
    },
    "T616": {
     "estimated_bytes": 463207,
@@ -113924,11 +113969,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-21T20:57:01Z",
-    "tokens": 13988858
+    "tokens": 14903075
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 136524385
+    "tokens": 137438602
    }
   },
   "session_reading": {
@@ -113939,7 +113984,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T01:45:21Z",
+ "updated_at": "2026-11-22T01:45:42Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
