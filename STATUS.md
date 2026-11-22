@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-22T15:12:46Z by runner 0cccb7353a1e (actions).
+Updated 2026-11-22T15:13:01Z by runner 0cccb7353a1e (actions).
 
-**Building: T397 in progress since 13:11Z; 614 of 770 done; week 59% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T122 in progress since 14:55Z; 614 of 770 done; week 59% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 614 of 770 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T397 claimed 13:11Z, lease until 18:12Z; lane 2: T122 claimed 14:55Z, lease until 17:55Z; lane 4: T725 claimed 14:53Z, lease until 17:53Z; lane 5: T831 claimed 14:25Z, lease until 17:25Z; lane 6: T729 claimed 14:37Z, lease until 17:37Z; lane 7: T590 claimed 14:41Z, lease until 17:41Z
+- **Lane:** lane 2: T122 claimed 14:55Z, lease until 17:55Z; lane 4: T725 claimed 14:53Z, lease until 17:53Z; lane 5: T831 claimed 14:25Z, lease until 17:25Z; lane 6: T729 claimed 14:37Z, lease until 17:37Z; lane 7: T590 claimed 14:41Z, lease until 17:41Z
 - **Week:** 59% used, 69.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 15:12Z, 0 min before this update
 - **Keeper:** last ran 14:06Z, next wake 14:26Z
@@ -23,6 +23,7 @@ Updated 2026-11-22T15:12:46Z by runner 0cccb7353a1e (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T397 | server and portals: the owner approves or declines a member- | MERGE_PENDING | 2 | 2 h 0 min | 15:12Z | PLAN GAP: outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per p |
 | T833 | pre-hand-in gate test (harness): the Ally-step test holds th | done | 1 | 65 min | 14:05Z |  |
 | T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | done | 4 | 33 min | 13:54Z | Reviewer after findings round still FINDINGS at 4f79a8b8c4195e68ccfba3a25eaab6d612560536: / 1. docs/runbook.md:139-142 a |
 | T830 | server: `server rotate-keys` and `server retire-index-versio | done | 1 | 61 min | 12:46Z |  |
@@ -60,7 +61,7 @@ Updated 2026-11-22T15:12:46Z by runner 0cccb7353a1e (actions).
 | T803 | messaging (harness): an opted-out number gets no HELP reply; | check_failed | 1 | 69 min | 02:44Z |  |
 | T691 | intake (harness): START into an open request resends the con | done | 2 | 2 h 16 min | 02:20Z | session ended without handing in |
 | T759 | intake: "Close which?" expires on a worded reply that is not | done | 1 | 28 min | 02:19Z |  |
-| T397 | server and portals: the owner approves or declines a member- | BLOCKED | 1 | 27 min | 02:12Z | PLAN GAP: outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per p |
+| T397 | server and portals: the owner approves or declines a member- | BLOCKED | 1 | 27 min | 02:12Z |  |
 | T121 | Startup key checks, control router absent in live, supply-ch | BLOCKED | 1 | 15 min | 01:45Z | PLAN GAP: outside ownership: app/server/src/owner_portal.rs, app/server/src/owner_tools.rs, app/portals/src/owner_help.r |
 | T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | BLOCKED | 3 | 49 min | 01:39Z |  |
 | T542 | portals and server: notice and backup address changes are re | QUEUED | 1 | 2 h 37 min | 01:29Z |  |
@@ -142,7 +143,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T397 (lease until 2026-11-22T18:12:04Z)
+- nothing
 - lane 2: T122 (lease until 2026-11-22T17:55:31Z)
 - lane 4: T725 (lease until 2026-11-22T17:53:24Z)
 - lane 5: T831 (lease until 2026-11-22T17:25:48Z)
@@ -150,4 +151,4 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 7: T590 (lease until 2026-11-22T17:41:54Z)
 
 ## Last usage reading
-- {"task": "T833", "at": "2026-11-22T14:05:11Z", "input_tokens": 62, "output_tokens": 16019, "cache_read_input_tokens": 917213, "cache_creation_input_tokens": 68552}
+- {"task": "T397", "at": "2026-11-22T15:12:44Z", "cache_read_input_tokens": 9139161, "input_tokens": 247, "output_tokens": 62131, "cache_creation_input_tokens": 295283}
