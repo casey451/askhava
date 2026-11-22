@@ -180,6 +180,7 @@ pub use crate::service::{ChosenTier, TierPick};
 pub use crate::settle::{
     ACCEPTED_QUOTE_KIND, AcceptedPick, LINE_RETRY_KIND, Settled, accepted_pick, retry_line, settle,
 };
+pub use crate::settled_pick::{SettledPick, settled_pick};
 pub use crate::share_consent::{bind_share, share_ticked, tick_share};
 pub use crate::unreachable_refund::{
     AtNinetySix, MISSED_CALL_TEMPLATE, REMINDER_EMAIL_TEMPLATE, REMINDER_TEMPLATE, REMINDERS_AFTER,

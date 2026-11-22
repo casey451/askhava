@@ -66,6 +66,7 @@ mod rules;
 mod scorecard_inputs;
 mod service;
 mod settle;
+mod settled_pick;
 mod share_consent;
 mod status;
 mod unreachable_refund;
