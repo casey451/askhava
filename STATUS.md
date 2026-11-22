@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T01:46:35Z by runner 21d99167398b (actions).
+Updated 2026-11-22T01:50:27Z by runner 21d99167398b (actions).
 
 **Building: T691 in progress since 00:03Z; 598 of 752 done; week 46% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 598 of 752 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T691 claimed 00:03Z, lease until 03:03Z; lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 3: T803 claimed 01:35Z, lease until 04:35Z; lane 4: T616 claimed 01:30Z, lease until 04:30Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z; lane 6: T397 claimed 01:45Z, lease until 04:45Z
-- **Week:** 46% used, 98.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:46Z, 0 min before this update
+- **Lane:** lane 1: T691 claimed 00:03Z, lease until 03:03Z; lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 3: T803 claimed 01:35Z, lease until 04:35Z; lane 4: T616 claimed 01:30Z, lease until 04:30Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z; lane 6: T397 claimed 01:45Z, lease until 04:45Z; lane 7: T759 claimed 01:50Z, lease until 04:50Z
+- **Week:** 46% used, 94.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 01:46Z, 3 min before this update
 - **Keeper:** last ran 01:46Z, next wake 02:06Z
 
 ## Needs attention
@@ -89,7 +89,6 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 | T777 | businesses: a sign-in code is texted only to a line whose cu | BLOCKED | 1 | 37 min | 02:09Z |  |
 | T769 | site: the business page's WEB-024 line follows the stored bu | done | 1 | 41 min | 01:56Z |  |
 | T580 | messaging: a failed, blocked or expired text reads as failed | done | 1 | 43 min | 01:53Z |  |
-| T664 | portals: the Confirm press re-checks the license and account | done | 2 | 2 h 38 min | 01:47Z | PLAN GAP: outside ownership: app/picks/src/handlers.rs, app/picks/src/confirm.rs / The pick's window deadline (picks.pic |
 
 ### Plan and harness merges on main
 - none
@@ -125,7 +124,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-22T01:39:34Z (week)): week: 96.0M used, 98.0M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-06T14:03:44Z.
+- Pacing (session_reading 2026-11-22T01:46:03Z (week)): week: 99.5M used, 94.5M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-06T14:08:09Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -146,6 +145,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 4: T616 (lease until 2026-11-22T04:30:46Z)
 - lane 5: T542 (lease until 2026-11-22T04:45:48Z)
 - lane 6: T397 (lease until 2026-11-22T04:45:02Z)
+- lane 7: T759 (lease until 2026-11-22T04:50:14Z)
 
 ## Last usage reading
 - {"task": "T121", "at": "2026-11-22T01:45:41Z", "cache_creation_input_tokens": 190427, "cache_read_input_tokens": 6425983, "output_tokens": 81041, "input_tokens": 151}
