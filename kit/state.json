@@ -88841,7 +88841,7 @@
    "deps": [
     "T615"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 1,
    "slug": "site-asset-caching",
    "type": "build",
@@ -88923,6 +88923,29 @@
        "turns": 18
       }
      }
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 24,
+     "head_sha": "9f1c1d81239cb6790d6f59b02e93b6b018306331",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-22T04:52:37Z",
+     "ended_at": "2026-11-22T05:32:28Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 399770,
+       "turns": 12
+      },
+      "reviewer": {
+       "tokens": 383050,
+       "turns": 10
+      }
+     }
     }
    ],
    "reviewed_sha": "2b5cdd8e59a5fefa5c5f8766b77d552017b1620f",
@@ -88935,18 +88958,13 @@
    "branch": "claude/task/T616-site-asset-caching",
    "auto_merge": {
     "enabled": true,
-    "why": "auto-merge on #1320 (gh pr merge)",
-    "head": "0dc7ff3f9d43b6cbf7a71fced9f8da75b706f375"
+    "why": "auto-merge on #1328 (gh pr merge)",
+    "head": "2b5cdd8e59a5fefa5c5f8766b77d552017b1620f"
    },
    "last_failure": "Ci: failure; Coverage: failure\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_priv_21_sign_in_by_texted_code_and_the_same_answer_for_any_number ... ok\ntest td_priv_21_the_data_routes_keep_the_doors ... ok\ntest td_priv_21_request_codes_past_the_limits_send_and_check_nothing ... ok\ntest td_priv_21_the_home_shows_only_her_own_record ... FAILED\nfailures:\n---- td_priv_21_the_home_shows_only_her_own_record stdout ----\nthread 'td_priv_21_the_home_shows_only_her_own_record' (40576) panicked at app/server/tests/homeowner_portal_route.rs:429:5:\nassertion failed: !page.text.contains(\"0111\") && !page.text.contains(HER.1)\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_priv_21_the_home_shows_only_her_own_record\ntest result: FAILED. 12 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 10.34s\nerror: test failed, to rerun pass `-p askhava-server --test homeowner_portal_route`\nerror: process didn't exit successfully: `/home/runner/.rustup/toolchains/nightly-2026-10-15-x86_64-unknown-linux-gnu/bin/cargo test --tests --manifest-path /home/runner/work/askhava/askhava/Cargo.tom\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: failure, E2e: success\n##[error]Process completed with exit code 1.",
-   "wip_claim": {
-    "attempt": 2,
-    "remote_sha": "9f1c1d81239cb6790d6f59b02e93b6b018306331"
-   },
    "runner_closed_prs": [
     1320
    ],
-   "head_check_since": null,
    "update_merges": [
     {
      "from": "9f1c1d81239cb6790d6f59b02e93b6b018306331",
@@ -108046,12 +108064,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T803",
-   "at": "2026-11-22T05:27:55Z",
-   "output_tokens": 15955,
-   "input_tokens": 104,
-   "cache_creation_input_tokens": 103779,
-   "cache_read_input_tokens": 1817331
+   "task": "T616",
+   "at": "2026-11-22T05:32:28Z",
+   "input_tokens": 44,
+   "output_tokens": 9918,
+   "cache_creation_input_tokens": 68431,
+   "cache_read_input_tokens": 704427
   },
   "source": "session_reading 2026-11-22T05:28:30Z (week)",
   "by_task": {
@@ -115269,14 +115287,14 @@
     "estimated_bytes": 463405,
     "estimated_tokens": 1349694,
     "usage_counting": "message_id",
-    "output_tokens": 47978,
-    "cache_creation_input_tokens": 186252,
-    "cache_read_input_tokens": 3538750,
-    "input_tokens": 147,
-    "worker_tokens": 3129990,
-    "worker_turns": 57,
-    "reviewer_tokens": 643137,
-    "reviewer_turns": 18,
+    "output_tokens": 57896,
+    "cache_creation_input_tokens": 254683,
+    "cache_read_input_tokens": 4243177,
+    "input_tokens": 191,
+    "worker_tokens": 3529760,
+    "worker_turns": 69,
+    "reviewer_tokens": 1026187,
+    "reviewer_turns": 28,
     "last_model": "claude-opus-5-5"
    },
    "T803": {
@@ -115361,11 +115379,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-22T02:12:37Z",
-    "tokens": 14715038
+    "tokens": 14863873
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 152153640
+    "tokens": 152302475
    }
   },
   "session_reading": {
@@ -115376,7 +115394,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T05:32:29Z",
+ "updated_at": "2026-11-22T05:32:41Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
