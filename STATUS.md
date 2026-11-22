@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-22T04:28:35Z by runner fd5a2bd57e7e (actions).
+Updated 2026-11-22T04:28:48Z by runner fd5a2bd57e7e (actions).
 
 **Building: T118 in progress since 04:18Z; 600 of 767 done; week 50% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 600 of 767 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T118 claimed 04:18Z, lease until 07:18Z; lane 2: T675 claimed 03:54Z, lease until 06:54Z; lane 3: T803 claimed 04:24Z, lease until 07:24Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z; lane 6: T828 claimed 04:21Z, lease until 07:21Z
+- **Lane:** lane 1: T118 claimed 04:18Z, lease until 07:18Z; lane 2: T675 claimed 03:54Z, lease until 06:54Z; lane 3: T803 claimed 04:24Z, lease until 07:24Z; lane 6: T828 claimed 04:21Z, lease until 07:21Z
 - **Week:** 50% used, 89.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 04:25Z, 3 min before this update
 - **Keeper:** last ran 04:20Z, next wake 04:40Z
@@ -32,6 +32,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T542 | portals and server: notice and backup address changes are re | MERGE_PENDING | 2 | 2 h 42 min | 04:28Z | Reviewer after the findings round still ended REVIEW-VERDICT: FINDINGS at head 4de98e6fb74e1e5394629d7a1abe0694167723a2: |
 | T729 | portals and privacy: the quote page offers updates by email  | BLOCKED | 1 | 2 min | 04:19Z | PLAN GAP: tests/integration/tests/architecture_migrations.rs:288-294 (with :320-332) contradicts kit/prompts/T729.md:9 ( |
 | T609 | site (harness): the D-4246 polish on the footer, how it work | BLOCKED | 2 | 13 min | 04:15Z | PLAN GAP: tests/e2e/web_chat.spec.ts:123 (owned by T489) uses strict locator main.locator('[lang="es"]'); the footer's E |
 | T721 | businesses and portals: Casey counts a check-in PROBLEM repo | MERGE_PENDING | 1 | 76 min | 04:10Z |  |
@@ -45,7 +46,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 | T397 | server and portals: the owner approves or declines a member- | BLOCKED | 1 | 27 min | 02:12Z | PLAN GAP: outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per p |
 | T121 | Startup key checks, control router absent in live, supply-ch | BLOCKED | 1 | 15 min | 01:45Z | PLAN GAP: outside ownership: app/server/src/owner_portal.rs, app/server/src/owner_tools.rs, app/portals/src/owner_help.r |
 | T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | BLOCKED | 3 | 49 min | 01:39Z | Reviewer after findings round still FINDINGS at 4f79a8b8c4195e68ccfba3a25eaab6d612560536: / 1. docs/runbook.md:139-142 a |
-| T542 | portals and server: notice and backup address changes are re | QUEUED | 1 | 2 h 37 min | 01:29Z | Reviewer after the findings round still ended REVIEW-VERDICT: FINDINGS at head 4de98e6fb74e1e5394629d7a1abe0694167723a2: |
+| T542 | portals and server: notice and backup address changes are re | QUEUED | 1 | 2 h 37 min | 01:29Z |  |
 | T725 | site: the home page shows the texting number with its consen | BLOCKED | 1 | 21 min | 01:24Z | PLAN GAP: tests/docs/test_required_lines.py:139 (WORD-013, docs/spec/wording.md:17) contradicts kit/prompts/T725.md:9 (S |
 | T609 | site (harness): the D-4246 polish on the footer, how it work | BLOCKED | 1 | 2 min | 00:57Z |  |
 | T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | QUEUED | 2 | 106 min | 00:48Z |  |
@@ -143,8 +144,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T118 (lease until 2026-11-22T07:18:11Z)
 - lane 2: T675 (lease until 2026-11-22T06:54:25Z)
 - lane 3: T803 (lease until 2026-11-22T07:24:45Z)
-- lane 5: T542 (lease until 2026-11-22T04:45:48Z)
 - lane 6: T828 (lease until 2026-11-22T07:21:18Z)
 
 ## Last usage reading
-- {"task": "T729", "at": "2026-11-22T04:19:22Z", "input_tokens": 52, "cache_creation_input_tokens": 81032, "cache_read_input_tokens": 1138038, "output_tokens": 10651}
+- {"task": "T542", "at": "2026-11-22T04:28:32Z", "cache_creation_input_tokens": 372812, "output_tokens": 109321, "input_tokens": 385, "cache_read_input_tokens": 21207333}
