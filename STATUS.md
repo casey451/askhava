@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T18:46:30Z by runner 294bda79664e (actions).
+Updated 2026-11-22T19:13:20Z by runner 294bda79664e (manual).
 
 **Idle since 17:36Z; 617 of 770 done; week 65% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-22T18:46:30Z by runner 294bda79664e (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** idle since 17:36Z (no task in progress)
 - **Week:** 65% used, 66.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:46Z, 0 min before this update
+- **Last run:** 18:46Z, 26 min before this update
 - **Keeper:** last ran 18:46Z, next wake 00:26Z
 
 ## Needs attention
@@ -86,7 +86,6 @@ Updated 2026-11-22T18:46:30Z by runner 294bda79664e (actions).
 | T690 | businesses and server: a sign-up waiting on "That number is  | done | 1 | 2 h 30 min | 19:27Z |  |
 | T791 | Tests and templates (harness): three Spanish stay-on texts r | done | 1 | 36 min | 19:21Z |  |
 | T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 1 | 4 min | 19:13Z |  |
-| T790 | catalog, licensing and tests (harness): the termite report f | done | 1 | 57 min | 19:07Z |  |
 
 ### Plan and harness merges on main
 - 17:04Z Plan: unblock T121/T832/T499/T514 (D-5552); pre-flight fixes job 24 (D-5551) (#1363)
