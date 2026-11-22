@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T05:51:56Z by runner 36b07635ccae (actions).
+Updated 2026-11-22T06:03:22Z by runner 36b07635ccae (actions).
 
 **Building: T118 in progress since 04:18Z; 602 of 767 done; week 53% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 602 of 767 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T118 claimed 04:18Z, lease until 07:18Z; lane 2: T827 claimed 04:50Z, lease until 07:50Z; lane 5: T829 claimed 05:44Z, lease until 08:44Z; lane 7: T810 claimed 05:29Z, lease until 08:29Z
+- **Lane:** lane 1: T118 claimed 04:18Z, lease until 07:18Z; lane 2: T827 claimed 04:50Z, lease until 07:50Z; lane 7: T810 claimed 05:29Z, lease until 08:29Z
 - **Week:** 53% used, 85.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:51Z, 0 min before this update
+- **Last run:** 05:52Z, 11 min before this update
 - **Keeper:** last ran 05:51Z, next wake 07:20Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Nit: runbook.md:101, :174, :177 exceed wrap width.
 SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (owner_portal ChangeBody, BridgeBody, OptOutBody, StripeBody, SafetyBody, SpanishBody, BusinessBody, ReleaseBody; owner_tools EvidenceBody; owner_help HelpForm; homeowner_portal PhotoPost) and unclassified raw parses (owner_tools audit_log RawQuery, homeowner_portal upload_fields Multipart and csrf_checked), none owned by T121. Also business_signup.rs Asked::from_; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T121 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T397: plan gap reported: PLAN GAP: outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per probed Owner row; past ~60 rows expires_at < created_at, violating portals.session CHECK (expires_at > created_at), so POST /owner/help/close as Owner returns 500. Marking the three /b/phones rows yes in docs/architecture.md section 13 turns td_sec_61_every_served_door_row_over_http red (reproduced by worker and by reviewer: exit 101, door_matrix.rs:1533). Smallest fix: a harness task that bases owner_jar sign-in times in the past (e.g. key.now - OWNER_IDLE_LIMIT) or spaces TO; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T397 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T675: plan gap reported: PLAN GAP: tests/integration/tests/intake_order_card.rs:285, tests/integration/tests/intake_refusals_wired.rs:399, tests/integration/tests/start_resumes_order.rs:321, app/server/tests/name_address_answer.rs:376. Four tests T675 does not own script replies from the trade questions straight to name-and-address; step 9 (photo ask, INT-044) now sits between, so they fail. Reviewer confirmed all four fail at the cited lines. Also the tree changes app/intake/src/api.rs, app/intake/src/lib.rs, app/server/src/lib.rs, which T675 does not own: 10 files against a budget of 7, 14 with the four tests. Nothi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T675 --plan-fix D-### --reason "..."` (D-2859)
+- BLOCKED T829: plan gap reported: PLAN GAP: tests/integration/tests/architecture_migrations.rs:791 (TD-SEC-10, not owned by T829) refuses the fix D-5411 prescribes for app/server/tests/door_matrix.rs:1180: plain sqlx::query is "SQL outside the query macros" (check_sql_forms :660/:677) and sqlx::query! naming `portals.` fails schema_refs/foreign() (:287/:264). Exemptions (:67, :76) cover migrations only. No portals::api helper clears owner_factor.totp_last_step (use_totp_step models.rs:470 is pub(crate), raise-only). Smoke failure: left ["app/server/tests/door_matrix.rs: SQL outside the query macros: `query`"]. Fix works otherw; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T829 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T121 (since 2026-11-22T01:45:41Z, no attempt used; a plan change fixes it): outside ownership: app/server/src/owner_portal.rs, app/server/src/owner_tools.rs, app/portals/src/owner_help.rs, app/server/src/homeowner_portal.rs
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T397 (since 2026-11-22T02:12:37Z, no attempt used; a plan change fixes it): outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per probed Owner row; past ~60 rows expires_at < created_at, violating portals.session CHECK (expires_at > created_at), so POST /owner/help/close as Owner returns 500. Marking the three /b/phones rows yes in docs/architecture.md section 13 turns td_sec_61_every_served_door_row_over_http red (reproduced by worker and by reviewer: exit 101, door_matrix.rs:1533). Smallest fix: a harness task that bases owner_jar sign-in times in the past (e.g. key.now - OWNER_IDLE_LIMIT) or spaces TOTP steps differently. Prompt forbids editing door_matrix.rs and forbids working around an unreachable route. Worker work is uncommitted in the tree.
@@ -29,6 +30,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T829 | server tests (harness): the door matrix's owner sign-ins nev | BLOCKED | 1 | 19 min | 06:03Z | PLAN GAP: tests/integration/tests/architecture_migrations.rs:791 (TD-SEC-10, not owned by T829) refuses the fix D-5411 p |
 | T828 | ci (harness): gitleaks scans each push's commit range, with  | MERGE_PENDING | 1 | 84 min | 05:45Z |  |
 | T616 | site: strong per-coding ETags with 304 revalidation, a one-y | MERGE_PENDING | 2 | 39 min | 05:32Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T803 | messaging (harness): an opted-out number gets no HELP reply; | MERGE_PENDING | 2 | 63 min | 05:27Z | Ci: failure; Checks: failure / Checks failed at step: Named mutants of the files this change touches (scripts/run_named_ |
@@ -140,8 +142,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T118 (lease until 2026-11-22T07:18:11Z)
 - lane 2: T827 (lease until 2026-11-22T07:50:07Z)
-- lane 5: T829 (lease until 2026-11-22T08:44:04Z)
 - lane 7: T810 (lease until 2026-11-22T08:29:15Z)
 
 ## Last usage reading
-- {"task": "T828", "at": "2026-11-22T05:45:23Z", "cache_creation_input_tokens": 88192, "cache_read_input_tokens": 1142607, "input_tokens": 70, "output_tokens": 20748}
+- {"task": "T829", "at": "2026-11-22T06:03:21Z", "cache_creation_input_tokens": 82289, "input_tokens": 71, "cache_read_input_tokens": 1359708, "output_tokens": 17309}
