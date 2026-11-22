@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T16:11:14Z by runner a116b287be6d (actions).
+Updated 2026-11-22T16:13:04Z by runner 9d1526396779 (actions).
 
 **Building: T675 in progress since 15:41Z; 615 of 770 done; week 62% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-22T16:11:14Z by runner a116b287be6d (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T675 claimed 15:41Z, lease until 18:41Z; lane 2: T122 claimed 14:55Z, lease until 17:55Z; lane 4: T725 claimed 14:53Z, lease until 17:53Z; lane 5: T831 claimed 14:25Z, lease until 17:25Z; lane 7: T590 claimed 14:41Z, lease until 17:41Z
 - **Week:** 62% used, 66.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:11Z, 0 min before this update
+- **Last run:** 16:11Z, 1 min before this update
 - **Keeper:** last ran 16:11Z, next wake 16:31Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ Updated 2026-11-22T16:11:14Z by runner a116b287be6d (actions).
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T832 (since 2026-11-22T11:35:50Z, no attempt used; a plan change fixes it): T832: dependency T828 is DONE but its owned file .gitleaksignore is not on main
 - OWNED GAP T828 (DONE, since 2026-11-22T08:18:31Z; a later task or plan change must add it): T828: .gitleaksignore missing on main
-- Strict plan check red: 33 problem(s) on tasks still to run (+491 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 33 problem(s) on tasks still to run (+492 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
