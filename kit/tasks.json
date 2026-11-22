@@ -34134,7 +34134,8 @@
     "T764",
     "T770",
     "T788",
-    "T828"
+    "T828",
+    "T834"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -35327,7 +35328,8 @@
     "T551",
     "T552",
     "T726",
-    "T828"
+    "T828",
+    "T834"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -35432,7 +35434,8 @@
     "T804",
     "T805",
     "T799",
-    "T815"
+    "T815",
+    "T834"
    ],
    "model": null,
    "effort": null,
@@ -54058,6 +54061,58 @@
    "branch": "claude/task/T833-prehandin-ally-test-ports",
    "prompt": "kit/prompts/T833.md",
    "acceptance": "`tests/test_prehandin.py` differs from `main` only by the port-holding helper, its use in `test_the_ally_step_fails_only_on_failed_tests_and_skips_what_it_cannot_judge` (the picked web port in place of 39871) and one added port-in-use case; every existing case and assertion is unchanged and passes with another process listening on 39890; `scripts/prehandin.sh` is unchanged."
+  },
+  {
+   "id": "T834",
+   "slug": "workflow-skips-and-concurrency",
+   "title": "ci (harness): Twin and Ally skip their build when nothing they test changed, and Ci, Twin and Ally cancel superseded branch runs",
+   "goal": "Plan change D-5554 (Fable's call under Casey's \"Have fable make the calls\", Nov 22): a one-off freeze exception Fable granted for throughput, because GitHub-hosted runners are the build's limit. On Nov 22 a lane job waited 2 hours for a runner (backup-runner run 45034055897: created 14:40Z, runner at 16:41Z), no task was claimed from 15:41Z to 17:13Z with lanes free, and about 92 workflow runs were queued or running. `twin.yml` and `a11y.yml` build on every head, plan-only heads included, while `ci.yml` already skips its compile steps per job when no code changed (D-489); none of the three has `concurrency`. (1) `.github/workflows/twin.yml` (job `Twin`) and `.github/workflows/a11y.yml` (job `Ally`) each get a first `changes` step in `ci.yml`'s D-489 style (the E2e job's `Does this change touch the app or the journeys?` step is the model): fetch `main`, diff `git merge-base origin/main HEAD` to `HEAD` with `--no-renames`, and gate every later build and test step on `steps.changes.outputs.run == 'true'`. It fails closed: any error (fetch, merge-base, diff) sets `run=true`, and it always sets `run=true` on `main`, on `schedule`, `workflow_call` and `workflow_dispatch` (the nightly calls both with the caller's event name, `nightly-main.yml`). The job itself always runs and reports success when it skips, printing why, so the required names `Ci`, `Twin` and `Ally` (`runner/verify.py:11`) always report on every head; a workflow-level `paths` filter or a job-level `if` is forbidden, because either leaves a required check unreported. `Ally` reuses the E2e job's file rule exactly (the same regex, `.github/workflows/(ci|a11y)\\.yml` included). `Twin` gets its own rule, derived from `twin.yml`'s steps and stated in a comment beside it: at least `twin/`, `app/`, `schemas/`, `stand_ins/`, `Cargo.toml`, `Cargo.lock`, `rust-toolchain.toml`, `.sqlx/`, `tests/contract/` and `.github/workflows/twin.yml`, plus every other path a `twin.yml` step builds, reads or runs. No proven-parent pass is added (`scripts/ci_proven.py` does not change); the upload step of a skipped run must not fail. (2) `concurrency` on all three workflows, with group `ci-${{ github.ref }}`, `twin-${{ github.ref }}` and `ally-${{ github.ref }}`: a literal per-workflow prefix, never `github.workflow`, which resolves to the caller under the nightly's `workflow_call`. `cancel-in-progress` is true only for a push to a ref other than `main` (`${{ github.event_name == 'push' && github.ref != 'refs/heads/main' }}`), so the nightly and `main` are never cancelled. (3) Trace, with `grep -n` and line-range reads rather than whole files, how `runner/` (grep `cancelled`: `runner/cycle.py` `FAILED`, `runner/github_env.py` `FAILED_CONCLUSIONS`, `runner/verify.py:115`) and `backup-runner.yml`'s gate treat a `cancelled` run on a superseded head (an update merge or a fix commit pushed while the old head still ran), including the merge train's proven-parent pass (D-4281) and a task's PR head check. A cancelled run must never be read as a failure that costs a task attempt, strikes a lane or fails a proof. If it would be, stop and report `PLAN GAP:` with the file and line; do not edit `runner/` or any file this task does not own. (4) Tests in `tests/test_ci_workflow.py`, add-only and in the style of its existing asserts on step names and order: each of `Twin` and `Ally` has the `changes` step first after checkout, fails closed, runs in full on `main`, `schedule`, `workflow_call` and `workflow_dispatch`, gates every build and test step, and has no workflow `paths` filter and no job-level `if`; `Ally`'s rule equals the E2e rule; `Twin`'s rule names each path above; each workflow's `concurrency` group starts with its literal prefix, never contains `github.workflow`, and cancels only non-main pushes. No existing assertion is weakened or removed. (5) Append a `docs/decisions.md` entry from the hand-off's `decision_ids`. Opus worker and Opus review (harness, `BUILD_BRIEF.md:70`).",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T832"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    ".github/workflows/twin.yml",
+    ".github/workflows/a11y.yml",
+    ".github/workflows/ci.yml",
+    "tests/test_ci_workflow.py"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "runner/verify.py",
+    ".github/workflows/nightly-main.yml"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-489",
+    "D-1087",
+    "D-4281",
+    "D-5554"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 160,
+    "context_pct": 18
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T834-workflow-skips-and-concurrency",
+   "prompt": "kit/prompts/T834.md",
+   "acceptance": "`Twin` and `Ally` each run a fail-closed `changes` step that skips their build on a branch head touching none of their inputs and still report success, run in full on `main`, `schedule`, `workflow_call` and `workflow_dispatch`, and have no `paths` filter or job-level `if`; `ci.yml`, `twin.yml` and `a11y.yml` each have `concurrency` with a literal `ci-`, `twin-` or `ally-` prefix on `github.ref`, cancelling only non-main pushes; `tests/test_ci_workflow.py` gains asserts for both and no existing assertion changes; the worker's report states how `runner/` and `backup-runner.yml` treat a cancelled run on a superseded head."
   }
  ]
 }
