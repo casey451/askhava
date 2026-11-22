@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T01:27:34Z by runner 21d99167398b (actions).
+Updated 2026-11-22T01:29:23Z by runner 4de98e6fb74e (actions).
 
 **Building: T691 in progress since 00:03Z; 598 of 752 done; week 45% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 598 of 752 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T691 claimed 00:03Z, lease until 03:03Z; lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 3: T542 claimed 22:52Z, lease until 04:23Z; lane 5: T397 claimed 22:35Z, lease until 01:35Z; lane 6: T117 claimed 00:49Z, lease until 03:49Z
+- **Lane:** lane 1: T691 claimed 00:03Z, lease until 03:03Z; lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 5: T397 claimed 22:35Z, lease until 01:35Z; lane 6: T117 claimed 00:49Z, lease until 03:49Z
 - **Week:** 45% used, 100.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:24Z, 2 min before this update
+- **Last run:** 01:27Z, 1 min before this update
 - **Keeper:** last ran 01:24Z, next wake 01:44Z
 
 ## Needs attention
@@ -17,11 +17,12 @@ Updated 2026-11-22T01:27:34Z by runner 21d99167398b (actions).
 - PLAN GAP T121 (since 2026-11-21T22:29:56Z, no attempt used; a plan change fixes it): T121: measures 46% of the context window, over its 45% limit
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 34 problem(s) on tasks still to run (+477 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 43 problem(s) on tasks still to run (+476 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T542 | portals and server: notice and backup address changes are re | QUEUED | 1 | 2 h 37 min | 01:29Z | Reviewer after the findings round still ended REVIEW-VERDICT: FINDINGS at head 4de98e6fb74e1e5394629d7a1abe0694167723a2: |
 | T725 | site: the home page shows the texting number with its consen | BLOCKED | 1 | 21 min | 01:24Z | PLAN GAP: tests/docs/test_required_lines.py:139 (WORD-013, docs/spec/wording.md:17) contradicts kit/prompts/T725.md:9 (S |
 | T609 | site: the D-4246 polish on the footer, how it works, the bus | BLOCKED | 1 | 2 min | 00:57Z | PLAN GAP: tests/e2e/site_pages.spec.ts:26-28 (owned by T102) requires exactly one footer h2 "Homeowners" and exactly fou |
 | T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | QUEUED | 2 | 106 min | 00:48Z | Reviewer after findings round still FINDINGS at 4f79a8b8c4195e68ccfba3a25eaab6d612560536: / 1. docs/runbook.md:139-142 a |
@@ -88,7 +89,7 @@ Updated 2026-11-22T01:27:34Z by runner 21d99167398b (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 598 of 752
+**Tasks merged (throughput only):** 597 of 739
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -133,9 +134,8 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T691 (lease until 2026-11-22T03:03:26Z)
 - lane 2: T118 (lease until 2026-11-22T03:46:46Z)
-- lane 3: T542 (lease until 2026-11-22T04:23:11Z)
 - lane 5: T397 (lease until 2026-11-22T01:35:47Z)
 - lane 6: T117 (lease until 2026-11-22T03:49:52Z)
 
 ## Last usage reading
-- {"task": "T725", "at": "2026-11-22T01:24:05Z", "cache_read_input_tokens": 5046278, "cache_creation_input_tokens": 143859, "input_tokens": 125, "output_tokens": 47300}
+- {"task": "T542", "at": "2026-11-22T01:29:15Z", "output_tokens": 124729, "cache_read_input_tokens": 21165632, "cache_creation_input_tokens": 460009, "input_tokens": 416}

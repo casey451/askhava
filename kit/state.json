@@ -80698,8 +80698,8 @@
     "T412",
     "T490"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "notice-address-changes",
    "type": "build",
    "stage": "5",
@@ -80712,10 +80712,33 @@
     5301,
     5302
    ],
-   "wip_claim": {
-    "attempt": 1,
-    "remote_sha": ""
-   }
+   "last_failure": "Reviewer after the findings round still ended REVIEW-VERDICT: FINDINGS at head 4de98e6fb74e1e5394629d7a1abe0694167723a2:\n1. app/server/tests/address_changes_route.rs:466-477 the \"no pending row\" check is vacuous (compares open with a second read of the same value); D-5302 overstates the limit: assert no businesses.notice_change_requested audit row via askhava_ops::api::export_audit/latest_audit (as business_portal_route.rs:471-476 does).\n2. app/server/tests/address_changes_route.rs:447-455 TD-SEC-71 says cross-site and wrong-token POSTs are refused and logged; test asserts only the 403, not the security event (see Events subscriber at business_portal_route.rs:479+).\n3. app/server/src/address_changes.rs:239 AddressForm derives Debug while holding email and code; drop the derive (R6).\nNote: prehandin --ally red on j2_keyboard.spec.ts:149 likely from reused DATABASE_URL sign-up rate limit, not T542.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 262,
+     "head_sha": "4de98e6fb74e1e5394629d7a1abe0694167723a2",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-21T22:52:12Z",
+     "ended_at": "2026-11-22T01:29:15Z",
+     "result": "QUEUED",
+     "usage": {
+      "worker": {
+       "tokens": 18287778,
+       "turns": 152
+      },
+      "reviewer": {
+       "tokens": 3463008,
+       "turns": 56
+      }
+     },
+     "wip_skipped": "PII scan: a commit message in 21d99167398b19ca15d194afa6d72778eae8afc0"
+    }
+   ]
   },
   {
    "id": "T544",
@@ -106638,12 +106661,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T725",
-   "at": "2026-11-22T01:24:05Z",
-   "cache_read_input_tokens": 5046278,
-   "cache_creation_input_tokens": 143859,
-   "input_tokens": 125,
-   "output_tokens": 47300
+   "task": "T542",
+   "at": "2026-11-22T01:29:15Z",
+   "output_tokens": 124729,
+   "cache_read_input_tokens": 21165632,
+   "cache_creation_input_tokens": 460009,
+   "input_tokens": 416
   },
   "source": "session_reading 2026-11-22T00:57:44Z (week)",
   "by_task": {
@@ -113769,7 +113792,17 @@
    },
    "T542": {
     "estimated_bytes": 487654,
-    "estimated_tokens": 1428570
+    "estimated_tokens": 1428570,
+    "usage_counting": "message_id",
+    "output_tokens": 124729,
+    "cache_read_input_tokens": 21165632,
+    "cache_creation_input_tokens": 460009,
+    "input_tokens": 416,
+    "worker_tokens": 18287778,
+    "worker_turns": 152,
+    "reviewer_tokens": 3463008,
+    "reviewer_turns": 56,
+    "last_model": "claude-opus-5-5"
    },
    "T800": {
     "estimated_bytes": 171016,
@@ -113817,11 +113850,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-21T20:57:01Z",
-    "tokens": 10802187
+    "tokens": 13503904
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 133337714
+    "tokens": 136039431
    }
   },
   "session_reading": {
@@ -113832,7 +113865,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T01:27:34Z",
+ "updated_at": "2026-11-22T01:29:23Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -113930,7 +113963,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "21d99167398b19ca15d194afa6d72778eae8afc0",
+ "runner_sha": "4de98e6fb74e1e5394629d7a1abe0694167723a2",
  "starter": "actions",
  "smoke_runs": [
   {
