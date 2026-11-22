@@ -1,0 +1,54 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT (SELECT count(*) FROM privacy.contact c WHERE c.oldest_key_version < $1 OR (c.phone IS NOT NULL AND ( EXISTS (SELECT 1 FROM privacy.contact_index i WHERE i.contact_id = c.id AND i.purpose = $4 AND i.key_version <> ALL($3::int4[])) OR EXISTS (SELECT 1 FROM unnest($3::int4[]) AS k(v) WHERE NOT EXISTS ( SELECT 1 FROM privacy.contact_index i WHERE i.contact_id = c.id AND i.purpose = $4 AND i.key_version = k.v))))) AS \"contacts!\", (SELECT count(*) FROM privacy.stated_name WHERE key_version < $1 OR index_version < $2) AS \"stated!\", (SELECT count(*) FROM privacy.staff_phone WHERE key_version < $1) AS \"staff!\", (SELECT count(*) FROM privacy.business_mailbox WHERE key_version < $1 OR id IN (SELECT mailbox_id FROM privacy.business_mailbox_index WHERE key_version < $2)) AS \"mailboxes!\", (SELECT count(*) FROM privacy.photo WHERE key_version < $1) AS \"photos!\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "contacts!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "stated!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 2,
+        "name": "staff!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 3,
+        "name": "mailboxes!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 4,
+        "name": "photos!",
+        "type_info": "Int8",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Int4",
+        "Int4Array",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "b4beb79a113446bfe01e2ee82359fee593bfce0cc44289d9c19873cd856a73f1"
+}
