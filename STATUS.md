@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T21:59:55Z by runner 21be2b3d8975 (actions).
+Updated 2026-11-22T23:07:11Z by runner 21be2b3d8975 (actions).
 
 **Building: T675 in progress since 20:30Z; 617 of 773 done; week 65% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-22T21:59:55Z by runner 21be2b3d8975 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T675 claimed 20:30Z, lease until 23:30Z; lane 2: T118 claimed 20:37Z, lease until 23:37Z; lane 3: T730 claimed 20:39Z, lease until 23:39Z; lane 4: T121 claimed 20:35Z, lease until 23:35Z; lane 5: T832 claimed 20:38Z, lease until 23:38Z; lane 6: T725 claimed 20:35Z, lease until 23:35Z; lane 7: T645 claimed 20:37Z, lease until 23:37Z
 - **Week:** 65% used, 56.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:59Z, 0 min before this update
-- **Keeper:** last ran 21:59Z, next wake 23:32Z
+- **Last run:** 23:07Z, 0 min before this update
+- **Keeper:** last ran 23:07Z, next wake 23:33Z
 
 ## Needs attention
 - BLOCKED T803: Worker made no change. All 83 named mutants are killed; the Checks job timed out (40 min limit) because the Rust build took ~26 min and mutants.toml changes trigger all 83 mutants (cut off after mutant 72). Needs a harness fix (raise Checks timeout-minutes or run only changed mutants) or a faster CI build. Smoke did not finish in the worker's polls.
@@ -75,9 +75,6 @@ Updated 2026-11-22T21:59:55Z by runner 21be2b3d8975 (actions).
 | T800 | Legal docs and tests (harness): the Twilio campaign submissi | done | 1 | 46 min | 00:39Z |  |
 | T608 | site and portals: the home page and the quote page in full V | done | 2 | 2 h 21 min | 23:38Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-21T |
 | T600 | intake, businesses, privacy and server: four worker handlers | done | 1 | 45 min | 23:15Z |  |
-| T798 | catalog: the photo asks' English wording loaded from the tra | done | 1 | 107 min | 23:03Z |  |
-| T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | QUEUED | 1 | 34 min | 22:56Z |  |
-| T794 | adapters and server: the Twilio media delete and the product | done | 1 | 49 min | 22:17Z |  |
 
 ### Plan and harness merges on main
 - 17:04Z Plan: unblock T121/T832/T499/T514 (D-5552); pre-flight fixes job 24 (D-5551) (#1363)
