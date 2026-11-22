@@ -87790,7 +87790,7 @@
     "T115",
     "T748"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "site-pages-polish",
    "type": "build",
@@ -87804,8 +87804,8 @@
     5345,
     5346
    ],
-   "reason": "plan gap reported: PLAN GAP: tests/e2e/site_pages.spec.ts:26-28 (owned by T102) requires exactly one footer h2 \"Homeowners\" and exactly four footer links (toEqual), but T609's goal (DESIGN_SPEC.md:117, D-4252(a)) requires a second footer column (For businesses, Espa\u00f1ol, Terms, Privacy, Accessibility), and the prompt says that test must pass unchanged and T609 does not own it. Reviewer confirmed at HEAD 907c2ff0ac1a: current footer has one h2 and four links, so adding the second column fails lines 26-28. Smallest plan change: logged change to site_pages.spec.ts:26-28 to allow both columns, or drop the second colu; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T609 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: tests/e2e/site_pages.spec.ts:26-28 (owned by T102) requires exactly one footer h2 \"Homeowners\" and exactly four footer links (toEqual), but T609's goal (DESIGN_SPEC.md:117, D-4252(a)) requires a second footer column (For businesses, Espa\u00f1ol, Terms, Privacy, Accessibility), and the prompt says that test must pass unchanged and T609 does not own it. Reviewer confirmed at HEAD 907c2ff0ac1a: current footer has one h2 and four links, so adding the second column fails lines 26-28. Smallest plan change: logged change to site_pages.spec.ts:26-28 to allow both columns, or drop the second column from T609.",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/e2e/site_pages.spec.ts:26-28 (owned by T102) requires exactly one footer h2 \"Homeowners\" and exactly four footer links (toEqual), but T609's goal (DESIGN_SPEC.md:117, D-4252(a)) requires a second footer column (For businesses, Espa\u00f1ol, Terms, Privacy, Accessibility), and the prompt says that test must pass unchanged and T609 does not own it. Reviewer confirmed at HEAD 907c2ff0ac1a: current footer has one h2 and four links, so adding the second column fails lines 26-28. Smallest plan change: logged change to site_pages.spec.ts:26-28 to allow both columns, or drop the second column from T609.\nre-queued after plan fix D-5386: D-5386: T609 is harness and owns site_pages.spec.ts; footer test checks both design columns, Get quotes link scoped (merged in #1317)",
    "history": [
     {
      "attempt": 1,
@@ -87829,6 +87829,21 @@
        "turns": 5
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-22T03:07:58Z",
+     "reason": "D-5386: T609 is harness and owns site_pages.spec.ts; footer test checks both design columns, Get quotes link scoped (merged in #1317)",
+     "by": "manual-16b201afc61d",
+     "was": "plan gap reported: PLAN GAP: tests/e2e/site_pages.spec.ts:26-28 (owned by T102) requires exactly one footer h2 \"Homeowners\" and exactly four footer links (toEqual), but T609's goal (DESIGN_SPEC.md:117, D-4252(a)) requires a second footer column (For businesses, Espa\u00f1ol, Terms, Privacy, Accessibility), and the prompt says that test must pass unchanged and T609 does not own it. Reviewer confirmed at HEAD 907c2ff0ac1a: current footer has one h2 and four links, so adding the second column fails lines 26-28. Smallest plan change: logged change to site_pages.spec.ts:26-28 to allow both columns, or drop the second colu; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T609 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-5386",
+     "plan_since": "2026-11-22T00:54:31Z",
+     "plan_base": "907c2ff0ac1a1c71034f623825d74f8d67c96d8e",
+     "plan_head": "de7e41db8c6036badb8f964414f63e16a837f1d7",
+     "plan_then": "e6503109e30511d595b1a825fb6f8906d256e6ff4b1618194819d64b20070065",
+     "plan_now": "7094f006bd6012c5033c01cd2d2f34fc4780b5186b537eb1160031839c34f2ce"
     }
    ]
   },
@@ -114551,7 +114566,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T03:07:49Z",
+ "updated_at": "2026-11-22T03:08:03Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -114649,8 +114664,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "59b85679e6d92d3c3c26be4054812e6b9736fe2d",
- "starter": "actions",
+ "runner_sha": "de7e41db8c6036badb8f964414f63e16a837f1d7",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "05b3bbbd22f383ce2a82165239edaeb48f02fba6",
