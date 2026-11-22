@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T15:15:51Z by runner 03fa94c2c0f1 (manual).
+Updated 2026-11-22T15:19:06Z by runner 03fa94c2c0f1 (actions).
 
 **Building: T122 in progress since 14:55Z; 614 of 770 done; week 60% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-22T15:15:51Z by runner 03fa94c2c0f1 (manual).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T122 claimed 14:55Z, lease until 17:55Z; lane 4: T725 claimed 14:53Z, lease until 17:53Z; lane 5: T831 claimed 14:25Z, lease until 17:25Z; lane 6: T729 claimed 14:37Z, lease until 17:37Z; lane 7: T590 claimed 14:41Z, lease until 17:41Z
 - **Week:** 60% used, 69.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:13Z, 2 min before this update
+- **Last run:** 15:16Z, 2 min before this update
 - **Keeper:** last ran 15:13Z, next wake 15:33Z
 
 ## Needs attention
@@ -90,7 +90,6 @@ Updated 2026-11-22T15:15:51Z by runner 03fa94c2c0f1 (manual).
 | T786 | server: crate guide trimmed to 5,500 bytes, the detail moved | done | 1 | 34 min | 16:33Z |  |
 | T655 | businesses: an unknown ROC license status warns at 24 hours, | done | 2 | 2 h 34 min | 16:05Z | model claude-opus-5-5 ran, task names claude-fable-5-2 |
 | T789 | Tests (harness): TD-INT-47's no-contact check ignores the ra | done | 1 | 27 min | 15:38Z |  |
-| T304 | server and portals: the owner refund review, the audit log v | done | 2 | 2 h 44 min | 15:18Z | PLAN GAP: app/portals/templates/owner_audit_log.html (owned by T205) and app/portals/templates/health.html (owned by T47 |
 
 ### Plan and harness merges on main
 - 12:43Z Plan: pre-flight goal fixes for T666, T778, T820, T524, T825, T831 (D-5526) (#1354)
