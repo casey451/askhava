@@ -191,7 +191,7 @@ pub use crate::unreachable_refund::{
 pub use crate::unreachable_steps::{
     EMAILED_NO_ACTION, EMAILED_QUESTION_TEMPLATE, EMAILED_YES_ACTION, NOTICE_QUEUED_ACTION,
     RELEASE_STEPS, RERUN_AFTER, Step, StepParts, UNREACHABLE_STEP_KIND, run_fraud_warning,
-    run_unreachable_step, schedule_steps, step_task,
+    run_unreachable_step, run_unreachable_step_in, schedule_steps, step_task,
 };
 
 /// The pure pick rules, for other crates and property tests.

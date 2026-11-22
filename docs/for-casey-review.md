@@ -2810,7 +2810,7 @@ Two runner fixes are queued first. The runner was counting tokens about 1.65 tim
 ## The unreachable-homeowner steps now run (D-3486 to D-3490, November 13)
 
 - After a business is given a homeowner's details, the worker now sends the "no call yet" reminders at 24 and 48 hours, returns a job whose business never called at 72 hours, asks an email-contact homeowner at 72 hours whether the business emailed her, and decides the automatic refund at 96 hours, retrying an hour later while the refund is still waiting on Stripe. The missed-call text waits for 8 a.m. unless the job is an emergency, and a number that can't be texted gets it by email.
-- For now these homeowner messages from the steps go in English: the step cannot read the language of her request yet (D-3489). Spanish conversations are off at launch, so nothing changes today; a follow-up should pass her language along before Spanish is switched on.
+- For now these homeowner messages from the steps go in English: the step cannot read the language of her request yet (D-3489). Spanish conversations are off at launch, so nothing changes today; a follow-up should pass her language along before Spanish is switched on. Done in T590 (D-5540): the missed-call text, its email copy and the who's-calling text now follow her request's language.
 
 ## Smaller crate guides: less to read for every AI session, fewer merge collisions (D-3474, November 13)
 
