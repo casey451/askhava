@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T04:34:35Z by runner 073da52ea9e9 (actions).
+Updated 2026-11-22T04:44:38Z by runner dfc4f31032dd (actions).
 
 **Building: T118 in progress since 04:18Z; 600 of 767 done; week 51% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 600 of 767 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T118 claimed 04:18Z, lease until 07:18Z; lane 2: T675 claimed 03:54Z, lease until 06:54Z; lane 3: T803 claimed 04:24Z, lease until 07:24Z; lane 6: T828 claimed 04:21Z, lease until 07:21Z
+- **Lane:** lane 1: T118 claimed 04:18Z, lease until 07:18Z; lane 3: T803 claimed 04:24Z, lease until 07:24Z; lane 6: T828 claimed 04:21Z, lease until 07:21Z
 - **Week:** 51% used, 89.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:34Z, 0 min before this update
+- **Last run:** 04:34Z, 9 min before this update
 - **Keeper:** last ran 04:34Z, next wake 06:56Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Nit: runbook.md:101, :174, :177 exceed wrap width.
 SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (owner_portal ChangeBody, BridgeBody, OptOutBody, StripeBody, SafetyBody, SpanishBody, BusinessBody, ReleaseBody; owner_tools EvidenceBody; owner_help HelpForm; homeowner_portal PhotoPost) and unclassified raw parses (owner_tools audit_log RawQuery, homeowner_portal upload_fields Multipart and csrf_checked), none owned by T121. Also business_signup.rs Asked::from_; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T121 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T397: plan gap reported: PLAN GAP: outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per probed Owner row; past ~60 rows expires_at < created_at, violating portals.session CHECK (expires_at > created_at), so POST /owner/help/close as Owner returns 500. Marking the three /b/phones rows yes in docs/architecture.md section 13 turns td_sec_61_every_served_door_row_over_http red (reproduced by worker and by reviewer: exit 101, door_matrix.rs:1533). Smallest fix: a harness task that bases owner_jar sign-in times in the past (e.g. key.now - OWNER_IDLE_LIMIT) or spaces TO; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T397 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T609: plan gap reported: PLAN GAP: tests/e2e/web_chat.spec.ts:123 (owned by T489) uses strict locator main.locator('[lang="es"]'); the footer's Espanol link, which D-4252 (a), D-5386 and DESIGN_SPEC:117 require to carry lang="es" hreflang="es", sits inside main (D-3994), so on /request the locator matches two elements (Spanish consent draft and footer link) and the test fails. T609 owns neither web_chat.spec.ts nor base.html (the only way to move the footer out of main), and its acceptance says web_chat.spec.ts passes unchanged. Reviewer confirmed. Smallest plan change: give T609 ownership of tests/e2e/web_chat.spec.t; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T609 --plan-fix D-### --reason "..."` (D-2859)
+- BLOCKED T675: plan gap reported: PLAN GAP: tests/integration/tests/intake_order_card.rs:285, tests/integration/tests/intake_refusals_wired.rs:399, tests/integration/tests/start_resumes_order.rs:321, app/server/tests/name_address_answer.rs:376. Four tests T675 does not own script replies from the trade questions straight to name-and-address; step 9 (photo ask, INT-044) now sits between, so they fail. Reviewer confirmed all four fail at the cited lines. Also the tree changes app/intake/src/api.rs, app/intake/src/lib.rs, app/server/src/lib.rs, which T675 does not own: 10 files against a budget of 7, 14 with the four tests. Nothi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T675 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T729: plan gap reported: PLAN GAP: tests/integration/tests/architecture_migrations.rs:288-294 (with :320-332) contradicts kit/prompts/T729.md:9 (D-4727 (1)). One migration 0215 must both create a privacy table and ALTER messaging.update_channel (add reverted_at); the protected migration test allows one module header per file and flags other-schema names, and CROSS_SCHEMA_CALLS covers only function calls. Fix: give T729 a second messaging-headed migration (0216_messaging_update_reverted.sql) or move reverted_at to T730. Related: the quote page needs a messaging reader for reverted_at (email.rs is read-only for T729). R; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T729 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T810: plan gap reported: PLAN GAP: outside ownership: app/server/tests/confirm_press_code.rs. TD-SEC-82 requires a direct portals.shared_inbox insert (never set_inbox_shared/record_step_up, D-5319), but TD-SEC-10 (tests/integration/tests/architecture_migrations.rs check_app :737, check_sql_forms :660-677, schema_refs :295) scans every .rs under app/: macro form fails "`portals.` names another module's schema", plain sqlx::query fails "SQL outside the query macros: `query`". Reviewer confirmed. Smallest plan change: T810 owns tests/integration/tests/confirm_press_code.rs (not scanned; confirm_terms.rs:238 does the plai; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T810 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T121 (since 2026-11-22T01:45:41Z, no attempt used; a plan change fixes it): outside ownership: app/server/src/owner_portal.rs, app/server/src/owner_tools.rs, app/portals/src/owner_help.rs, app/server/src/homeowner_portal.rs
@@ -27,11 +28,12 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 - PLAN GAP T397 (since 2026-11-22T02:12:37Z, no attempt used; a plan change fixes it): outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per probed Owner row; past ~60 rows expires_at < created_at, violating portals.session CHECK (expires_at > created_at), so POST /owner/help/close as Owner returns 500. Marking the three /b/phones rows yes in docs/architecture.md section 13 turns td_sec_61_every_served_door_row_over_http red (reproduced by worker and by reviewer: exit 101, door_matrix.rs:1533). Smallest fix: a harness task that bases owner_jar sign-in times in the past (e.g. key.now - OWNER_IDLE_LIMIT) or spaces TOTP steps differently. Prompt forbids editing door_matrix.rs and forbids working around an unreachable route. Worker work is uncommitted in the tree.
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T810 (since 2026-11-22T03:05:53Z, no attempt used; a plan change fixes it): outside ownership: app/server/tests/confirm_press_code.rs. TD-SEC-82 requires a direct portals.shared_inbox insert (never set_inbox_shared/record_step_up, D-5319), but TD-SEC-10 (tests/integration/tests/architecture_migrations.rs check_app :737, check_sql_forms :660-677, schema_refs :295) scans every .rs under app/: macro form fails "`portals.` names another module's schema", plain sqlx::query fails "SQL outside the query macros: `query`". Reviewer confirmed. Smallest plan change: T810 owns tests/integration/tests/confirm_press_code.rs (not scanned; confirm_terms.rs:238 does the plain insert there); update docs/test-design.md:939 and kit/tasks.json TD-SEC-82 paths and run command to `cargo test -p askhava-integration --test confirm_press_code`.
-- Strict plan check red: 29 problem(s) on tasks still to run (+477 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 33 problem(s) on tasks still to run (+477 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 2 | 50 min | 04:44Z | PLAN GAP: tests/integration/tests/intake_order_card.rs:285, tests/integration/tests/intake_refusals_wired.rs:399, tests/ |
 | T542 | portals and server: notice and backup address changes are re | MERGE_PENDING | 2 | 2 h 42 min | 04:28Z | Reviewer after the findings round still ended REVIEW-VERDICT: FINDINGS at head 4de98e6fb74e1e5394629d7a1abe0694167723a2: |
 | T729 | portals and privacy: the quote page offers updates by email  | BLOCKED | 1 | 2 min | 04:19Z | PLAN GAP: tests/integration/tests/architecture_migrations.rs:288-294 (with :320-332) contradicts kit/prompts/T729.md:9 ( |
 | T609 | site (harness): the D-4246 polish on the footer, how it work | BLOCKED | 2 | 13 min | 04:15Z | PLAN GAP: tests/e2e/web_chat.spec.ts:123 (owned by T489) uses strict locator main.locator('[lang="es"]'); the footer's E |
@@ -64,7 +66,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 | T707 | server: an emergency pick's address re-release waits while s | done | 3 | 97 min | 20:13Z | Reviewer after the findings round still ends REVIEW-VERDICT: FINDINGS (head 2f9bf610c3700bb46a4670ade27d67afda63591a). / |
 | T690 | businesses and server: a sign-up waiting on "That number is  | done | 1 | 2 h 30 min | 19:27Z |  |
 | T791 | Tests and templates (harness): three Spanish stay-on texts r | done | 1 | 36 min | 19:21Z |  |
-| T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 1 | 4 min | 19:13Z | PLAN GAP: no production PictureTextMedia / Twilio media DELETE exists (only the test fake at tests/integration/tests/int |
+| T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 1 | 4 min | 19:13Z |  |
 | T790 | catalog, licensing and tests (harness): the termite report f | done | 1 | 57 min | 19:07Z |  |
 | T608 | site and portals: the home page and the quote page in full V | check_failed | 1 | 2 h 46 min | 18:46Z |  |
 | T615 | site and server: a styled 404 page for unknown paths, the fa | done | 4 | 68 min | 18:19Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
@@ -89,8 +91,6 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 | T754 | portals and payments: a $0 Confirm after a PaymentIntent was | BLOCKED | 2 | 46 min | 06:41Z |  |
 | T755 | messaging: a sole opt-out word counts with any spacing ("STO | done | 1 | 66 min | 05:21Z |  |
 | T777 | businesses: a sign-in code is texted only to a line whose cu | done | 2 | 39 min | 05:05Z | PLAN GAP: outside ownership: app/server/tests/business_signin_route.rs / T777's approved_at filter in sign_in_lines fail |
-| T614 | site: the V6 header in base.html (links, the Menu in the pag | done | 3 | 53 min | 04:37Z | PLAN GAP: tests/integration/tests/quote_page.rs:172 (owner T052, protected) bans the word "summary" anywhere in the quot |
-| T691 | intake (harness): START into an open request resends the con | QUEUED | 1 | 27 min | 04:35Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -142,9 +142,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T118 (lease until 2026-11-22T07:18:11Z)
-- lane 2: T675 (lease until 2026-11-22T06:54:25Z)
 - lane 3: T803 (lease until 2026-11-22T07:24:45Z)
 - lane 6: T828 (lease until 2026-11-22T07:21:18Z)
 
 ## Last usage reading
-- {"task": "T542", "at": "2026-11-22T04:28:32Z", "cache_creation_input_tokens": 372812, "output_tokens": 109321, "input_tokens": 385, "cache_read_input_tokens": 21207333}
+- {"task": "T675", "at": "2026-11-22T04:44:37Z", "input_tokens": 227, "cache_creation_input_tokens": 258775, "cache_read_input_tokens": 18396897, "output_tokens": 111757}
