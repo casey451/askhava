@@ -9981,3 +9981,4 @@
 - 2026-11-22T15:19:24Z runner 03fa94c2c0f1 (actions): {}
 - 2026-11-22T15:19:46Z runner 03fa94c2c0f1 (actions): {}
 - 2026-11-22T15:38:51Z runner e8e6af81881f (actions): {"T397": "MERGE_PENDING -> DONE"}
+- 2026-11-22T15:41:44Z runner e8e6af81881f (actions): {"T675": "QUEUED -> IN_PROGRESS"}; T675 estimated 2.0M tokens (calibrated); week has 66.3M left (no five-hour budget, D-3056) after 5.7M still running in another lane (session_reading 2026-11-22T15:19:23Z (week)); claimed
