@@ -106,6 +106,7 @@ impl FromRef<Tools> for WebSecurity {
 /// A change form with its CSRF token; every field may be missing, so a bare CSRF post reaches the
 /// CSRF and owner checks (D-3878).
 #[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 struct ChangeBody {
     #[serde(default)]
     csrf: String,
@@ -119,6 +120,7 @@ struct ChangeBody {
 
 /// The bridge press with its CSRF token.
 #[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 struct BridgeBody {
     #[serde(default)]
     csrf: String,
@@ -130,6 +132,7 @@ struct BridgeBody {
 
 /// The opt-out form with its CSRF token. No `Debug`: it holds a phone number (PRIV-016).
 #[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 struct OptOutBody {
     #[serde(default)]
     csrf: String,
@@ -139,6 +142,7 @@ struct OptOutBody {
 
 /// The Stripe-answer form with its CSRF token.
 #[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 struct StripeBody {
     #[serde(default)]
     csrf: String,
@@ -176,6 +180,7 @@ impl CsrfField for StripeBody {
 
 /// The safety voice call form with its CSRF token (CALL-019).
 #[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 struct SafetyBody {
     #[serde(default)]
     csrf: String,
@@ -195,6 +200,7 @@ impl CsrfField for SafetyBody {
 
 /// The "Spanish conversations" form with its CSRF token (TXT-039, TXT-043).
 #[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 struct SpanishBody {
     #[serde(default)]
     csrf: String,
@@ -222,6 +228,7 @@ impl CsrfField for SpanishBody {
 
 /// The business texting form with its CSRF token (TXT-035, T527).
 #[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 struct BusinessBody {
     #[serde(default)]
     csrf: String,
@@ -247,6 +254,7 @@ impl CsrfField for BusinessBody {
 
 /// The release press with its CSRF token (D-3892).
 #[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 struct ReleaseBody {
     #[serde(default)]
     csrf: String,
@@ -689,5 +697,59 @@ async fn release_press(
         Ok(screen) => release_answer(&jar, screen, &form.job),
         Err(OwnerToolError::Database) => failed("owner release"),
         Err(OwnerToolError::Refused | OwnerToolError::NeedsFreshFactor) => owner_signed_out(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    //! SEC-010, D-5410: each owner form refuses a field its served page does not post.
+
+    use super::*;
+    use crate::owner_tools::tests::{check, parses};
+
+    /// SEC-010: the change, bridge, opt-out, Stripe, safety, Spanish, business texting and
+    /// release forms take their served names (`owner_home.html`, `owner_settings.html`,
+    /// `owner_release.html`) and refuse an unknown one.
+    #[test]
+    fn each_owner_form_refuses_an_unknown_field() {
+        check(&[
+            (parses::<ChangeBody>, &["csrf", "change", "target", "to"]),
+            (parses::<BridgeBody>, &["csrf", "alert", "press"]),
+            (parses::<OptOutBody>, &["csrf", "phone"]),
+            (
+                parses::<StripeBody>,
+                &["csrf", "answered_on", "reference", "allows"],
+            ),
+            (
+                parses::<SafetyBody>,
+                &["csrf", "to", "approved_on", "reference"],
+            ),
+            (
+                parses::<SpanishBody>,
+                &[
+                    "csrf",
+                    "to",
+                    "reviewed_on",
+                    "reviewer",
+                    "versions",
+                    "note_on",
+                    "note_reference",
+                    "sample",
+                ],
+            ),
+            (
+                parses::<BusinessBody>,
+                &[
+                    "csrf",
+                    "to",
+                    "answered_on",
+                    "reference",
+                    "answer",
+                    "allowed",
+                    "campaign_reference",
+                ],
+            ),
+            (parses::<ReleaseBody>, &["csrf", "press", "job"]),
+        ]);
     }
 }
