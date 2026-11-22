@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T09:57:29Z by runner 461fd3744b3d (actions).
+Updated 2026-11-22T09:57:44Z by runner 461fd3744b3d (actions).
 
 **Building: T675 in progress since 08:47Z; 607 of 767 done; week 56% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 607 of 767 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 4: T729 claimed 08:07Z, lease until 11:07Z; lane 5: T725 claimed 08:59Z, lease until 11:59Z; lane 7: T589 claimed 09:11Z, lease until 12:11Z
+- **Lane:** lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 4: T729 claimed 08:07Z, lease until 11:07Z; lane 7: T589 claimed 09:11Z, lease until 12:11Z
 - **Week:** 56% used, 78.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:55Z, 1 min before this update
+- **Last run:** 09:55Z, 2 min before this update
 - **Keeper:** last ran 09:55Z, next wake 10:15Z
 
 ## Needs attention
@@ -29,6 +29,7 @@ At 1280x900 the /request chat start screen textarea box spans y=784..914, partly
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T725 | site: the home page shows the texting number with its consen | MERGE_PENDING | 2 | 57 min | 09:57Z | PLAN GAP: tests/docs/test_required_lines.py:139 (WORD-013, docs/spec/wording.md:17) contradicts kit/prompts/T725.md:9 (S |
 | T610 | site: the D-4246 polish on the Spanish pages, the legal page | MERGE_PENDING | 1 | 39 min | 09:00Z |  |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | BLOCKED | 4 | 45 min | 08:54Z | PLAN GAP: outside ownership: app/site/templates/request.html, app/site/static/site.css / At 1280x900 the /request chat s |
 | T829 | server tests (harness): the door matrix's owner sign-ins nev | MERGE_PENDING | 2 | 48 min | 08:40Z | PLAN GAP: tests/integration/tests/architecture_migrations.rs:791 (TD-SEC-10, not owned by T829) refuses the fix D-5411 p |
@@ -56,7 +57,7 @@ At 1280x900 the /request chat start screen textarea box spans y=784..914, partly
 | T121 | Startup key checks, control router absent in live, supply-ch | BLOCKED | 1 | 15 min | 01:45Z | PLAN GAP: outside ownership: app/server/src/owner_portal.rs, app/server/src/owner_tools.rs, app/portals/src/owner_help.r |
 | T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | BLOCKED | 3 | 49 min | 01:39Z | Reviewer after findings round still FINDINGS at 4f79a8b8c4195e68ccfba3a25eaab6d612560536: / 1. docs/runbook.md:139-142 a |
 | T542 | portals and server: notice and backup address changes are re | QUEUED | 1 | 2 h 37 min | 01:29Z |  |
-| T725 | site: the home page shows the texting number with its consen | BLOCKED | 1 | 21 min | 01:24Z | PLAN GAP: tests/docs/test_required_lines.py:139 (WORD-013, docs/spec/wording.md:17) contradicts kit/prompts/T725.md:9 (S |
+| T725 | site: the home page shows the texting number with its consen | BLOCKED | 1 | 21 min | 01:24Z |  |
 | T609 | site (harness): the D-4246 polish on the footer, how it work | BLOCKED | 1 | 2 min | 00:57Z |  |
 | T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | QUEUED | 2 | 106 min | 00:48Z |  |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | QUEUED | 1 | 2 h 35 min | 00:44Z |  |
@@ -143,8 +144,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T675 (lease until 2026-11-22T11:47:43Z)
 - lane 4: T729 (lease until 2026-11-22T11:07:49Z)
-- lane 5: T725 (lease until 2026-11-22T11:59:45Z)
 - lane 7: T589 (lease until 2026-11-22T12:11:16Z)
 
 ## Last usage reading
-- {"task": "T610", "at": "2026-11-22T09:00:09Z", "cache_read_input_tokens": 2073383, "cache_creation_input_tokens": 107103, "input_tokens": 81, "output_tokens": 17151}
+- {"task": "T725", "at": "2026-11-22T09:57:27Z", "cache_creation_input_tokens": 176577, "input_tokens": 177, "cache_read_input_tokens": 7214421, "output_tokens": 51930}
