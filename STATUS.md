@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T11:38:53Z by runner 4ac8ae78a989 (actions).
+Updated 2026-11-22T11:39:23Z by runner dd295e06660e (actions).
 
 **Building: T729 in progress since 11:36Z; 607 of 769 done; week 57% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 607 of 769 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T729 claimed 11:36Z, lease until 14:36Z; lane 5: T589 claimed 10:36Z, lease until 13:36Z
-- **Week:** 57% used, 76.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:38Z, 0 min before this update
+- **Lane:** lane 3: T729 claimed 11:36Z, lease until 14:36Z; lane 5: T589 claimed 10:36Z, lease until 13:36Z; lane 6: T610 claimed 11:39Z, lease until 14:39Z
+- **Week:** 57% used, 76.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 11:39Z, 0 min before this update
 - **Keeper:** last ran 11:33Z, next wake 11:53Z
 
 ## Needs attention
@@ -55,7 +55,7 @@ assert 'skipped: not finished in 540 s (Ci runs Ally)' in '\n== Ally: pages chan
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T832 (since 2026-11-22T11:35:50Z, no attempt used; a plan change fixes it): T832: prompt kit/prompts/T832.md is missing; run scripts/gen_prompts.py; T832: branch claude/task/T832-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet; T832: dependency T828 is DONE but its owned file .gitleaksignore is not on main
 - OWNED GAP T828 (DONE, since 2026-11-22T08:18:31Z; a later task or plan change must add it): T828: .gitleaksignore missing on main
-- Strict plan check red: 38 problem(s) on tasks still to run (+489 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 33 problem(s) on tasks still to run (+486 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -162,7 +162,7 @@ assert 'skipped: not finished in 540 s (Ci runs Ally)' in '\n== Ally: pages chan
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-22T11:33:25Z (week)): week: 117.5M used, 76.5M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T05:18:52Z.
+- Pacing (session_reading 2026-11-22T11:33:25Z (week)): week: 117.4M used, 76.6M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T05:21:27Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -180,6 +180,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 3: T729 (lease until 2026-11-22T14:36:39Z)
 - lane 5: T589 (lease until 2026-11-22T13:36:51Z)
+- lane 6: T610 (lease until 2026-11-22T14:39:14Z)
 
 ## Last usage reading
 - {"task": "T675", "at": "2026-11-22T11:38:35Z", "cache_read_input_tokens": 29303272, "input_tokens": 444, "cache_creation_input_tokens": 499668, "output_tokens": 167399}
