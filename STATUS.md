@@ -1,24 +1,25 @@
 # Ask Hava build status
 
-Updated 2026-11-22T14:52:47Z by runner 03fa94c2c0f1 (actions).
+Updated 2026-11-22T14:53:47Z by runner a116b287be6d (actions).
 
 **Building: T397 in progress since 13:11Z; 614 of 770 done; week 59% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 614 of 770 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T397 claimed 13:11Z, lease until 16:11Z; lane 5: T831 claimed 14:25Z, lease until 17:25Z; lane 6: T729 claimed 14:37Z, lease until 17:37Z; lane 7: T590 claimed 14:41Z, lease until 17:41Z
-- **Week:** 59% used, 72.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:42Z, 10 min before this update
+- **Lane:** lane 1: T397 claimed 13:11Z, lease until 16:11Z; lane 4: T725 claimed 14:53Z, lease until 17:53Z; lane 5: T831 claimed 14:25Z, lease until 17:25Z; lane 6: T729 claimed 14:37Z, lease until 17:37Z; lane 7: T590 claimed 14:41Z, lease until 17:41Z
+- **Week:** 59% used, 71.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 14:52Z, 0 min before this update
 - **Keeper:** last ran 14:06Z, next wake 14:26Z
 
 ## Needs attention
 - BLOCKED T803: Worker made no change. All 83 named mutants are killed; the Checks job timed out (40 min limit) because the Rust build took ~26 min and mutants.toml changes trigger all 83 mutants (cut off after mutant 72). Needs a harness fix (raise Checks timeout-minutes or run only changed mutants) or a faster CI build. Smoke did not finish in the worker's polls.
 - PLAN GAP T121 (since 2026-11-22T10:24:41Z, no attempt used; a plan change fixes it): T121: dependency T828 is DONE but its owned file .gitleaksignore is not on main
+- PLAN GAP T122 (since 2026-11-22T14:53:24Z, no attempt used; a plan change fixes it): T122: dependency T117 is DONE but its owned file docs/runbook.md is not on main; T122: dependency T117 is DONE but its owned file tests/docs/test_runbook.py is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T832 (since 2026-11-22T11:35:50Z, no attempt used; a plan change fixes it): T832: dependency T828 is DONE but its owned file .gitleaksignore is not on main
 - OWNED GAP T828 (DONE, since 2026-11-22T08:18:31Z; a later task or plan change must add it): T828: .gitleaksignore missing on main
-- Strict plan check red: 34 problem(s) on tasks still to run (+492 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 33 problem(s) on tasks still to run (+491 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -127,7 +128,7 @@ Updated 2026-11-22T14:52:47Z by runner 03fa94c2c0f1 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-22T14:05:52Z (week)): week: 121.7M used, 72.3M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T04:48:58Z.
+- Pacing (session_reading 2026-11-22T14:05:52Z (week)): week: 122.9M used, 71.1M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T06:12:05Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -143,6 +144,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T397 (lease until 2026-11-22T16:11:59Z)
+- lane 4: T725 (lease until 2026-11-22T17:53:24Z)
 - lane 5: T831 (lease until 2026-11-22T17:25:48Z)
 - lane 6: T729 (lease until 2026-11-22T17:37:42Z)
 - lane 7: T590 (lease until 2026-11-22T17:41:54Z)
