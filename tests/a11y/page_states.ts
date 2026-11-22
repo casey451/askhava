@@ -355,7 +355,8 @@ const OPENED_SQL = `,
  * PaymentIntent and loads neither Stripe.js nor the page script; on the keyed binary, whose Stripe
  * settings serve the page. T496 (A11Y-002, D-3838): an ordinary $25 charged pick under the terms in
  * force, whose card section shows with the fixture's fake Stripe Element mounted; its `hides` is
- * `CARD_OFF_LINE`, so a page whose card section fell to that line fails (D-4950).
+ * `CARD_OFF_LINE`, so a page whose card section fell to that line fails (D-4950). T810 (SEC-027,
+ * D-5313): the same pick with the owner's inbox marked shared, so the page shows the code step.
  */
 const CONFIRM_STATES: readonly PageState[] = [
   [
@@ -365,6 +366,14 @@ const CONFIRM_STATES: readonly PageState[] = [
     confirmSql("CASE t.mode WHEN 'tiers' THEN 'flat' ELSE 'tiers' END", "fee_free", 0),
   ],
   ["confirm page, card section", "Confirm and pay", "Card payments can't be taken right now.", confirmSql("t.mode", "charged", 2500, OPENED_SQL)],
+  [
+    "confirm page, shared-inbox code step",
+    "Confirming needs a code sent to your phone",
+    "Card payments can't be taken right now.",
+    confirmSql("t.mode", "charged", 2500, `${OPENED_SQL},
+    sh AS (INSERT INTO portals.shared_inbox (member_id, business_id, shared, changed_at)
+      SELECT id, business_id, true, now() FROM m)`),
+  ],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: CONFIRM_ROUTE, name, shows, hides, sql, statusRegions: ["confirm-status"] }));
 
 const CANT_TAKE_ROUTE = "/b/picks/{pick}/cant-take";
