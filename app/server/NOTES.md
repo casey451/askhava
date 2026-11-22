@@ -341,6 +341,8 @@
 - [SEC-016 SEC-017 PRIV-016] (never 3) the dialed-status route logs each call once per CallSid with one `business_call` check (TD-CALL-16).
 - [SEC-002] (never 16) a bad setting exits 1 before anything is served or claimed.
 - [-] (never 22) a deploy never strands a task for a lease length.
+- [BIZ-033 BIZ-038 SEC-038 SEC-042 SEC-048] (task 397) `phone_approval` serves `GET /b/phones` and `POST /b/phones/approve`, `/reject` (line and `number_set_at` in the body): cross-site, CSRF, principal, owner, step-up (303 to `/b/step-up?return=%2Fb%2Fphones`), then `approve_phone`/`reject_phone`; a changed number or a taken one is the page again (409); anything else the one 404 (D-5293).
+- [BIZ-033 PRIV-016] (task 397) The waiting member's address is read with `read_business_mailbox` under `PhoneApproval` from `RouterParts::with_vault`'s vault, else the webhooks'; no vault, a removed member or a forgotten mailbox shows the fixed line. `no_store` is layered outside `refuse_cross_site`. Tests: `tests/phone_approval_route.rs` (TD-SEC-65).
 - [PRIV-024 PRIV-016] (task 830) `server rotate-keys` runs the four rotation batches to 0 through `rotate_keys::run_batches` (cap backlog / 100 + 2 passes) and prints `<batch>: N moved, M skipped`; `server retire-index-version <version>` retires an index version; both via `rotate_keys::run`, tested in `tests/rotate_keys_command.rs` (D-5412, D-5520).
 - [SEC-026 SEC-025] (never 21) D-3839: with one's own session Pause, Resume, Ask about a charge (D-3839) Approve (+ fresh step-up, T399), Away (T543) and Busy (T463) act, a Confirm link only by its own person's session or right Verify code (T457).
 - [BIZ-025 FEE-014] (never 30) `/b/billing` lists saved cards only through `saved_cards` (brand and last four).
