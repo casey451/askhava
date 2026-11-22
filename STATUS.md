@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T04:11:47Z by runner b3e4c6cdedb5 (actions).
+Updated 2026-11-22T04:15:38Z by runner dfc4f31032dd (actions).
 
 **Building: T675 in progress since 03:54Z; 600 of 767 done; week 50% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 600 of 767 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T675 claimed 03:54Z, lease until 06:54Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z; lane 6: T609 claimed 04:01Z, lease until 07:01Z
+- **Lane:** lane 2: T675 claimed 03:54Z, lease until 06:54Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z
 - **Week:** 50% used, 89.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:11Z, 0 min before this update
+- **Last run:** 04:11Z, 3 min before this update
 - **Keeper:** last ran 04:11Z, next wake 04:31Z
 
 ## Needs attention
@@ -19,17 +19,19 @@ Nit: runbook.md:101, :174, :177 exceed wrap width.
 - BLOCKED T121: plan gap reported: PLAN GAP: outside ownership: app/server/src/owner_portal.rs, app/server/src/owner_tools.rs, app/portals/src/owner_help.rs, app/server/src/homeowner_portal.rs
 SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (owner_portal ChangeBody, BridgeBody, OptOutBody, StripeBody, SafetyBody, SpanishBody, BusinessBody, ReleaseBody; owner_tools EvidenceBody; owner_help HelpForm; homeowner_portal PhotoPost) and unclassified raw parses (owner_tools audit_log RawQuery, homeowner_portal upload_fields Multipart and csrf_checked), none owned by T121. Also business_signup.rs Asked::from_; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T121 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T397: plan gap reported: PLAN GAP: outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per probed Owner row; past ~60 rows expires_at < created_at, violating portals.session CHECK (expires_at > created_at), so POST /owner/help/close as Owner returns 500. Marking the three /b/phones rows yes in docs/architecture.md section 13 turns td_sec_61_every_served_door_row_over_http red (reproduced by worker and by reviewer: exit 101, door_matrix.rs:1533). Smallest fix: a harness task that bases owner_jar sign-in times in the past (e.g. key.now - OWNER_IDLE_LIMIT) or spaces TO; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T397 --plan-fix D-### --reason "..."` (D-2859)
+- BLOCKED T609: plan gap reported: PLAN GAP: tests/e2e/web_chat.spec.ts:123 (owned by T489) uses strict locator main.locator('[lang="es"]'); the footer's Espanol link, which D-4252 (a), D-5386 and DESIGN_SPEC:117 require to carry lang="es" hreflang="es", sits inside main (D-3994), so on /request the locator matches two elements (Spanish consent draft and footer link) and the test fails. T609 owns neither web_chat.spec.ts nor base.html (the only way to move the footer out of main), and its acceptance says web_chat.spec.ts passes unchanged. Reviewer confirmed. Smallest plan change: give T609 ownership of tests/e2e/web_chat.spec.t; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T609 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T810: plan gap reported: PLAN GAP: outside ownership: app/server/tests/confirm_press_code.rs. TD-SEC-82 requires a direct portals.shared_inbox insert (never set_inbox_shared/record_step_up, D-5319), but TD-SEC-10 (tests/integration/tests/architecture_migrations.rs check_app :737, check_sql_forms :660-677, schema_refs :295) scans every .rs under app/: macro form fails "`portals.` names another module's schema", plain sqlx::query fails "SQL outside the query macros: `query`". Reviewer confirmed. Smallest plan change: T810 owns tests/integration/tests/confirm_press_code.rs (not scanned; confirm_terms.rs:238 does the plai; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T810 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T121 (since 2026-11-22T01:45:41Z, no attempt used; a plan change fixes it): outside ownership: app/server/src/owner_portal.rs, app/server/src/owner_tools.rs, app/portals/src/owner_help.rs, app/server/src/homeowner_portal.rs
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T397 (since 2026-11-22T02:12:37Z, no attempt used; a plan change fixes it): outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per probed Owner row; past ~60 rows expires_at < created_at, violating portals.session CHECK (expires_at > created_at), so POST /owner/help/close as Owner returns 500. Marking the three /b/phones rows yes in docs/architecture.md section 13 turns td_sec_61_every_served_door_row_over_http red (reproduced by worker and by reviewer: exit 101, door_matrix.rs:1533). Smallest fix: a harness task that bases owner_jar sign-in times in the past (e.g. key.now - OWNER_IDLE_LIMIT) or spaces TOTP steps differently. Prompt forbids editing door_matrix.rs and forbids working around an unreachable route. Worker work is uncommitted in the tree.
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T810 (since 2026-11-22T03:05:53Z, no attempt used; a plan change fixes it): outside ownership: app/server/tests/confirm_press_code.rs. TD-SEC-82 requires a direct portals.shared_inbox insert (never set_inbox_shared/record_step_up, D-5319), but TD-SEC-10 (tests/integration/tests/architecture_migrations.rs check_app :737, check_sql_forms :660-677, schema_refs :295) scans every .rs under app/: macro form fails "`portals.` names another module's schema", plain sqlx::query fails "SQL outside the query macros: `query`". Reviewer confirmed. Smallest plan change: T810 owns tests/integration/tests/confirm_press_code.rs (not scanned; confirm_terms.rs:238 does the plain insert there); update docs/test-design.md:939 and kit/tasks.json TD-SEC-82 paths and run command to `cargo test -p askhava-integration --test confirm_press_code`.
-- Strict plan check red: 32 problem(s) on tasks still to run (+478 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 29 problem(s) on tasks still to run (+477 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T609 | site (harness): the D-4246 polish on the footer, how it work | BLOCKED | 2 | 13 min | 04:15Z | PLAN GAP: tests/e2e/web_chat.spec.ts:123 (owned by T489) uses strict locator main.locator('[lang="es"]'); the footer's E |
 | T721 | businesses and portals: Casey counts a check-in PROBLEM repo | MERGE_PENDING | 1 | 76 min | 04:10Z |  |
 | T616 | site: strong per-coding ETags with 304 revalidation, a one-y | MERGE_PENDING | 1 | 96 min | 03:07Z |  |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | check_failed | 2 | 2 h 19 min | 03:06Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / ✓  120 [main] › tests/e2e |
@@ -43,7 +45,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 | T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | BLOCKED | 3 | 49 min | 01:39Z | Reviewer after findings round still FINDINGS at 4f79a8b8c4195e68ccfba3a25eaab6d612560536: / 1. docs/runbook.md:139-142 a |
 | T542 | portals and server: notice and backup address changes are re | QUEUED | 1 | 2 h 37 min | 01:29Z | Reviewer after the findings round still ended REVIEW-VERDICT: FINDINGS at head 4de98e6fb74e1e5394629d7a1abe0694167723a2: |
 | T725 | site: the home page shows the texting number with its consen | BLOCKED | 1 | 21 min | 01:24Z | PLAN GAP: tests/docs/test_required_lines.py:139 (WORD-013, docs/spec/wording.md:17) contradicts kit/prompts/T725.md:9 (S |
-| T609 | site (harness): the D-4246 polish on the footer, how it work | BLOCKED | 1 | 2 min | 00:57Z | PLAN GAP: tests/e2e/site_pages.spec.ts:26-28 (owned by T102) requires exactly one footer h2 "Homeowners" and exactly fou |
+| T609 | site (harness): the D-4246 polish on the footer, how it work | BLOCKED | 1 | 2 min | 00:57Z |  |
 | T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | QUEUED | 2 | 106 min | 00:48Z |  |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | QUEUED | 1 | 2 h 35 min | 00:44Z |  |
 | T800 | Legal docs and tests (harness): the Twilio campaign submissi | done | 1 | 46 min | 00:39Z |  |
@@ -88,7 +90,6 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 | T691 | intake (harness): START into an open request resends the con | QUEUED | 1 | 27 min | 04:35Z |  |
 | T304 | server and portals: the owner refund review, the audit log v | BLOCKED | 1 | 91 min | 04:20Z |  |
 | T457 | portals and server: the Confirm email link asks for a code w | done | 1 | 35 min | 04:16Z |  |
-| T781 | recovery: a failed or timed-out nightly export raises one al | done | 1 | 116 min | 04:14Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -96,7 +97,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 600 of 753
+**Tasks merged (throughput only):** 600 of 767
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -142,7 +143,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T675 (lease until 2026-11-22T06:54:25Z)
 - lane 5: T542 (lease until 2026-11-22T04:45:48Z)
-- lane 6: T609 (lease until 2026-11-22T07:01:34Z)
 
 ## Last usage reading
-- {"task": "T721", "at": "2026-11-22T04:10:55Z", "cache_creation_input_tokens": 220495, "input_tokens": 218, "output_tokens": 55078, "cache_read_input_tokens": 8022592}
+- {"task": "T609", "at": "2026-11-22T04:15:32Z", "cache_read_input_tokens": 3505754, "input_tokens": 105, "output_tokens": 27717, "cache_creation_input_tokens": 114035}

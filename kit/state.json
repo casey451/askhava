@@ -87849,8 +87849,8 @@
     "T115",
     "T748"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 1,
+   "status": "BLOCKED",
+   "attempts": 2,
    "slug": "site-pages-polish",
    "type": "build",
    "stage": "5",
@@ -87863,8 +87863,8 @@
     5345,
     5346
    ],
-   "reason": null,
-   "last_failure": "PLAN GAP: tests/e2e/site_pages.spec.ts:26-28 (owned by T102) requires exactly one footer h2 \"Homeowners\" and exactly four footer links (toEqual), but T609's goal (DESIGN_SPEC.md:117, D-4252(a)) requires a second footer column (For businesses, Espa\u00f1ol, Terms, Privacy, Accessibility), and the prompt says that test must pass unchanged and T609 does not own it. Reviewer confirmed at HEAD 907c2ff0ac1a: current footer has one h2 and four links, so adding the second column fails lines 26-28. Smallest plan change: logged change to site_pages.spec.ts:26-28 to allow both columns, or drop the second column from T609.\nre-queued after plan fix D-5386: D-5386: T609 is harness and owns site_pages.spec.ts; footer test checks both design columns, Get quotes link scoped (merged in #1317)",
+   "reason": "plan gap reported: PLAN GAP: tests/e2e/web_chat.spec.ts:123 (owned by T489) uses strict locator main.locator('[lang=\"es\"]'); the footer's Espanol link, which D-4252 (a), D-5386 and DESIGN_SPEC:117 require to carry lang=\"es\" hreflang=\"es\", sits inside main (D-3994), so on /request the locator matches two elements (Spanish consent draft and footer link) and the test fails. T609 owns neither web_chat.spec.ts nor base.html (the only way to move the footer out of main), and its acceptance says web_chat.spec.ts passes unchanged. Reviewer confirmed. Smallest plan change: give T609 ownership of tests/e2e/web_chat.spec.t; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T609 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: tests/e2e/web_chat.spec.ts:123 (owned by T489) uses strict locator main.locator('[lang=\"es\"]'); the footer's Espanol link, which D-4252 (a), D-5386 and DESIGN_SPEC:117 require to carry lang=\"es\" hreflang=\"es\", sits inside main (D-3994), so on /request the locator matches two elements (Spanish consent draft and footer link) and the test fails. T609 owns neither web_chat.spec.ts nor base.html (the only way to move the footer out of main), and its acceptance says web_chat.spec.ts passes unchanged. Reviewer confirmed. Smallest plan change: give T609 ownership of tests/e2e/web_chat.spec.ts and scope line 123 to e.g. main.locator('[lang=\"es\"]:not(footer *)'). Also for the next attempt: leave the aria-hidden arrow off the \"Send\" button on request.html (axe color-contrast incomplete on /request at 320, 768, 1280) and log it in docs/for-casey-review.md.",
    "history": [
     {
      "attempt": 1,
@@ -87888,6 +87888,29 @@
        "turns": 5
       }
      }
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 84,
+     "head_sha": "dfc4f31032dda9d428ca2272b8e57c969bc82814",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-22T04:01:34Z",
+     "ended_at": "2026-11-22T04:15:32Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 3498683,
+       "turns": 48
+      },
+      "reviewer": {
+       "tokens": 148928,
+       "turns": 6
+      }
+     }
     }
    ],
    "requeues": [
@@ -87904,11 +87927,7 @@
      "plan_then": "e6503109e30511d595b1a825fb6f8906d256e6ff4b1618194819d64b20070065",
      "plan_now": "7094f006bd6012c5033c01cd2d2f34fc4780b5186b537eb1160031839c34f2ce"
     }
-   ],
-   "wip_claim": {
-    "attempt": 2,
-    "remote_sha": ""
-   }
+   ]
   },
   {
    "id": "T610",
@@ -107625,12 +107644,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T721",
-   "at": "2026-11-22T04:10:55Z",
-   "cache_creation_input_tokens": 220495,
-   "input_tokens": 218,
-   "output_tokens": 55078,
-   "cache_read_input_tokens": 8022592
+   "task": "T609",
+   "at": "2026-11-22T04:15:32Z",
+   "cache_read_input_tokens": 3505754,
+   "input_tokens": 105,
+   "output_tokens": 27717,
+   "cache_creation_input_tokens": 114035
   },
   "source": "session_reading 2026-11-22T03:50:22Z (week)",
   "by_task": {
@@ -114806,14 +114825,14 @@
     "estimated_bytes": 540515,
     "estimated_tokens": 1574281,
     "usage_counting": "message_id",
-    "cache_creation_input_tokens": 102621,
-    "output_tokens": 11383,
-    "input_tokens": 50,
-    "cache_read_input_tokens": 1180126,
-    "worker_tokens": 1108178,
-    "worker_turns": 20,
-    "reviewer_tokens": 186002,
-    "reviewer_turns": 5,
+    "cache_creation_input_tokens": 216656,
+    "output_tokens": 39100,
+    "input_tokens": 155,
+    "cache_read_input_tokens": 4685880,
+    "worker_tokens": 4606861,
+    "worker_turns": 68,
+    "reviewer_tokens": 334930,
+    "reviewer_turns": 11,
     "last_model": "claude-opus-5-5"
    },
    "T725": {
@@ -114918,11 +114937,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-22T02:12:37Z",
-    "tokens": 8901798
+    "tokens": 9394230
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 146340400
+    "tokens": 146832832
    }
   },
   "session_reading": {
@@ -114933,7 +114952,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T04:11:47Z",
+ "updated_at": "2026-11-22T04:15:38Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -115031,7 +115050,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "b3e4c6cdedb591f75835d776403051752532f7cd",
+ "runner_sha": "dfc4f31032dda9d428ca2272b8e57c969bc82814",
  "starter": "actions",
  "smoke_runs": [
   {
