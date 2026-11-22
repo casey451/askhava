@@ -37,12 +37,13 @@
 use std::sync::Arc;
 
 use askama::Template;
-use askhava_core::api::{Clock, LinkToken};
+use askhava_core::api::{Clock, IdSecret, LinkToken};
 use askhava_intake::api::{close_from_page, paused_by_homeowner};
 use askhava_jobs::api::quote_token::resolve;
 use askhava_jobs::api::{JobStatus, current, job_number};
 use askhava_licensing::api::{CardLanguage, CardLine};
 use askhava_picks::api::accepted_pick;
+use askhava_privacy::api::Vault;
 use askhava_quotes::api::{
     AcceptedQuote, PageQuote, Price, QuotesError, accepted_quote, page_quotes, quoted_prices,
     shown_numbers,
@@ -63,6 +64,10 @@ use crate::pick_flow::tier_value;
 use crate::quote_cards::{Cards, quote_cards};
 use crate::security::{ButtonForm, CsrfForm, WebSecurity, no_store, refuse_cross_site};
 use crate::session::{csrf_token, ensure_pre_session};
+use crate::update_channel::{
+    Said, UPDATES_CONFIRM_ROUTE, UPDATES_ROUTE, UpdateKeys, Updates, confirm_query, post_confirm,
+    post_updates, updates_view,
+};
 
 /// PICK-011: how long a quote-page token keeps working after the job reaches a final status.
 pub const TOKEN_LIFE_AFTER_CLOSE: SignedDuration = SignedDuration::from_hours(30 * 24);
@@ -167,13 +172,14 @@ impl From<AcceptedQuote> for Accepted {
     }
 }
 
-/// The quote page's state: the pool, the clock the 30-day rule reads and the close form's CSRF
-/// refusal's event log (SEC-048).
+/// The quote page's state: the pool, the clock the 30-day rule reads, the close form's CSRF
+/// refusal's event log (SEC-048) and the update address's keys, if any (TXT-018, T729).
 #[derive(Clone)]
-struct QuotePage {
-    pool: PgPool,
-    clock: Arc<dyn Clock>,
+pub(crate) struct QuotePage {
+    pub(crate) pool: PgPool,
+    pub(crate) clock: Arc<dyn Clock>,
     security: WebSecurity,
+    pub(crate) keys: Option<Arc<UpdateKeys>>,
 }
 
 impl FromRef<QuotePage> for WebSecurity {
@@ -240,6 +246,16 @@ impl PageView {
     pub(crate) const fn just_closed(&self) -> bool {
         false
     }
+
+    /// The page alone has no update section; [`ShownPage`] adds it (TXT-018, T729).
+    pub(crate) const fn updates(&self) -> Option<&Updates> {
+        None
+    }
+
+    /// The page alone has no address error (A11Y-030, T729).
+    pub(crate) const fn update_error(&self) -> bool {
+        false
+    }
 }
 
 /// One package radio on a tiers quote's card (PICK-053, D-2332): the value the pick flow reads
@@ -282,7 +298,7 @@ pub(crate) async fn quote_packages(
 /// while the job's pick is `paid` or `free` (PICK-042, D-3078).
 #[derive(Template)]
 #[template(path = "quote_page.html")]
-struct ShownPage {
+pub(crate) struct ShownPage {
     page: PageView,
     accepted_quote: Option<Accepted>,
     /// Each tiers quote's packages by its number, read only while the job takes a pick.
@@ -297,6 +313,8 @@ struct ShownPage {
     close_to: Option<String>,
     /// The page answers the close button's `POST` for a job now final (JOB-019, T308).
     closed: bool,
+    /// The update choice while the job is live and has a homeowner (TXT-018, T729).
+    update_section: Option<Updates>,
 }
 
 impl ShownPage {
@@ -350,14 +368,38 @@ impl ShownPage {
     const fn just_closed(&self) -> bool {
         self.closed
     }
+
+    /// The update section, while the job is live (TXT-018, T729).
+    const fn updates(&self) -> Option<&Updates> {
+        self.update_section.as_ref()
+    }
+
+    /// A malformed address puts "Error: " in the title and the focused summary first in `<main>`
+    /// (A11Y-030, T729).
+    fn update_error(&self) -> bool {
+        self.update_section.as_ref().is_some_and(Updates::error)
+    }
 }
 
-/// What the request asks beyond the token: the CSRF token, `choose=<n>` (PICK-053) and the card
-/// language (`lang=es`, D-3645).
-struct Asked {
+/// What the request asks beyond the token: the CSRF token, `choose=<n>` (PICK-053), the card
+/// language (`lang=es`, D-3645) and what the update section says (`?confirm=`, T729).
+pub(crate) struct Asked {
     csrf: String,
     again: Option<usize>,
     language: CardLanguage,
+    pub(crate) said: Said,
+}
+
+impl Asked {
+    /// The page with `csrf` and nothing else asked.
+    pub(crate) fn plain(csrf: String) -> Self {
+        Self {
+            csrf,
+            again: None,
+            language: CardLanguage::English,
+            said: Said::default(),
+        }
+    }
 }
 
 /// D-3645: the page's query, `choose=<n>` and `lang=es` in any order; anything else is ignored.
@@ -384,27 +426,45 @@ impl std::ops::Deref for ShownPage {
 
 /// Why the page could not be built; logged once, with no value (rust-production R5).
 #[derive(Debug, thiserror::Error)]
-enum PageError {
+pub(crate) enum PageError {
     #[error("a quote-page read failed")]
     Read,
     #[error("the quote page's close failed")]
     Close,
+    #[error("the quote page's update choice failed")]
+    Update,
+}
+
+/// The quote page's router over `pool`, timed by `clock`, with no update keys:
+/// [`quote_page_routes_with`]`(pool, clock, None)`.
+pub fn quote_page_routes(pool: PgPool, clock: Arc<dyn Clock>) -> Router {
+    quote_page_routes_with(pool, clock, None)
 }
 
 /// The quote page's router over `pool`, timed by `clock` (PICK-008 to PICK-012, D-491): `GET
-/// /q/{token}` and the close button's `POST` [`CLOSE_ROUTE`] (JOB-019, SEC-042) behind the
-/// cross-site refusal (TD-PICK-05), `no-store` and `noindex` (PICK-010). `server::build_router`
-/// merges it.
-pub fn quote_page_routes(pool: PgPool, clock: Arc<dyn Clock>) -> Router {
+/// /q/{token}`, the close button's `POST` [`CLOSE_ROUTE`] (JOB-019, SEC-042) and the update
+/// choice's `POST`s [`UPDATES_ROUTE`] and [`UPDATES_CONFIRM_ROUTE`] (TXT-018, T729) behind the
+/// cross-site refusal (TD-PICK-05), `no-store` and `noindex` (PICK-010). `keys` (the vault and
+/// the ID secret) let the update choice store an address and confirm it; with `None` it stores
+/// nothing (D-5442). `server::build_router` merges it.
+pub fn quote_page_routes_with(
+    pool: PgPool,
+    clock: Arc<dyn Clock>,
+    keys: Option<(Vault, IdSecret)>,
+) -> Router {
     let security = WebSecurity::new(pool.clone(), Arc::clone(&clock));
+    let keys = keys.map(|(vault, secret)| Arc::new(UpdateKeys { vault, secret }));
     let state = QuotePage {
         pool,
         clock,
         security: security.clone(),
+        keys,
     };
     Router::new()
         .route(QUOTE_PAGE_ROUTE, get(show))
         .route(CLOSE_ROUTE, post(close))
+        .route(UPDATES_ROUTE, post(post_updates))
+        .route(UPDATES_CONFIRM_ROUTE, post(post_confirm))
         .with_state(state)
         .layer(from_fn(noindex))
         .layer(from_fn(no_store))
@@ -438,10 +498,15 @@ async fn show(
     };
     let csrf = csrf_token(&jar).unwrap_or_default();
     let (again, language) = page_query(query.as_deref());
+    let said = Said {
+        confirm: confirm_query(query.as_deref()),
+        ..Said::default()
+    };
     let asked = Asked {
         csrf,
         again,
         language,
+        said,
     };
     respond(jar, load(&page, &token, asked).await)
 }
@@ -459,11 +524,7 @@ async fn close(
     let Ok(token) = LinkToken::parse(&raw) else {
         return StatusCode::NOT_FOUND.into_response();
     };
-    let asked = Asked {
-        csrf: csrf_token(&jar).unwrap_or_default(),
-        again: None,
-        language: CardLanguage::English,
-    };
+    let asked = Asked::plain(csrf_token(&jar).unwrap_or_default());
     let shown = match close_job(&page, &token).await {
         Ok(true) => load(&page, &token, asked).await,
         Ok(false) => Ok(None),
@@ -493,7 +554,7 @@ async fn close_job(page: &QuotePage, token: &LinkToken) -> Result<bool, PageErro
 
 /// The job `token` opens at the clock's time, with its current status; `None` for an unknown,
 /// revoked or expired token (SEC-037, PICK-011).
-async fn open_job(
+pub(crate) async fn open_job(
     db: &mut sqlx::PgConnection,
     page: &QuotePage,
     token: &LinkToken,
@@ -510,7 +571,7 @@ async fn open_job(
 
 /// The built page with the pre-session cookie, a bare 404 for `None`, a logged 500 for an error
 /// (rust-production R5).
-fn respond(jar: CookieJar, shown: Result<Option<ShownPage>, PageError>) -> Response {
+pub(crate) fn respond(jar: CookieJar, shown: Result<Option<ShownPage>, PageError>) -> Response {
     let view = match shown {
         Ok(Some(view)) => view,
         Ok(None) => return StatusCode::NOT_FOUND.into_response(),
@@ -534,7 +595,7 @@ fn respond(jar: CookieJar, shown: Result<Option<ShownPage>, PageError>) -> Respo
 /// CON-028 line while a live job is paused by the homeowner; a tiers quote's packages and, for
 /// quote `again`, the "choose a package" error with them (PICK-053); each shown quote's card in
 /// the asked language (PICK-041, T393).
-async fn load(
+pub(crate) async fn load(
     page: &QuotePage,
     token: &LinkToken,
     asked: Asked,
@@ -563,6 +624,8 @@ async fn load(
         Vec::new()
     };
     let cards = quote_cards(&mut db, job, &quotes, asked.language).await;
+    let place = (page.keys.as_deref(), job, token, !is_final);
+    let update_section = updates_view(&mut db, place, asked.said).await?;
     let view = PageView {
         request,
         still_open,
@@ -581,6 +644,7 @@ async fn load(
         in_spanish: asked.language == CardLanguage::Spanish,
         close_to: (!is_final).then(|| format!("/q/{}/close", token.as_str())),
         closed: false,
+        update_section,
     }))
 }
 
