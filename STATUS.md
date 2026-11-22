@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-22T02:18:37Z by runner 6fa96edb3efe (actions).
+Updated 2026-11-22T02:18:56Z by runner 6fa96edb3efe (actions).
 
 **Building: T691 in progress since 00:03Z; 598 of 753 done; week 47% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 598 of 753 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T691 claimed 00:03Z, lease until 03:03Z; lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 3: T803 claimed 01:35Z, lease until 04:35Z; lane 4: T616 claimed 01:30Z, lease until 04:30Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z; lane 7: T759 claimed 01:50Z, lease until 04:50Z
-- **Week:** 47% used, 94.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T691 claimed 00:03Z, lease until 03:03Z; lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 3: T803 claimed 01:35Z, lease until 04:35Z; lane 4: T616 claimed 01:30Z, lease until 04:30Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z; lane 6: T810 claimed 02:18Z, lease until 05:18Z; lane 7: T759 claimed 01:50Z, lease until 04:50Z
+- **Week:** 47% used, 92.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 02:13Z, 5 min before this update
 - **Keeper:** last ran 02:13Z, next wake 02:33Z
 
@@ -124,7 +124,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-22T01:46:03Z (week)): week: 99.5M used, 94.5M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-06T14:08:09Z.
+- Pacing (session_reading 2026-11-22T02:13:02Z (week)): week: 101.3M used, 92.7M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-06T15:45:54Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -144,6 +144,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 3: T803 (lease until 2026-11-22T04:35:04Z)
 - lane 4: T616 (lease until 2026-11-22T04:30:46Z)
 - lane 5: T542 (lease until 2026-11-22T04:45:48Z)
+- lane 6: T810 (lease until 2026-11-22T05:18:33Z)
 - lane 7: T759 (lease until 2026-11-22T04:50:14Z)
 
 ## Last usage reading
