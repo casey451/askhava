@@ -15,11 +15,16 @@
   "3": null,
   "4": null,
   "5": null,
-  "6": null,
+  "6": {
+   "task": "T725",
+   "session": "actions-45066877778",
+   "expires": "2026-11-22T23:35:16Z",
+   "lane": "6"
+  },
   "7": null,
   "fix": null
  },
- "seq": 10001,
+ "seq": 10002,
  "runner_sha": "21be2b3d8975c3857eb2ea48ff28574d6a5af688",
  "starter": "actions"
 }
