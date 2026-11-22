@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T10:25:09Z by runner dd295e06660e (actions).
+Updated 2026-11-22T10:25:50Z by runner c07c4bd49dad (actions).
 
 **Building: T829 in progress since 10:24Z; 607 of 767 done; week 56% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 607 of 767 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T829 claimed 10:24Z, lease until 13:24Z; lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 3: T803 claimed 10:00Z, lease until 13:00Z; lane 4: T729 claimed 08:07Z, lease until 11:07Z
+- **Lane:** lane 1: T829 claimed 10:24Z, lease until 13:24Z; lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 4: T729 claimed 08:07Z, lease until 11:07Z
 - **Week:** 56% used, 76.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:20Z, 5 min before this update
+- **Last run:** 10:25Z, 0 min before this update
 - **Keeper:** last ran 10:19Z, next wake 10:39Z
 
 ## Needs attention
@@ -19,6 +19,7 @@ Nit: runbook.md:101, :174, :177 exceed wrap width.
 - BLOCKED T118: plan gap reported: PLAN GAP: outside ownership: app/site/templates/request.html, app/site/static/site.css
 At 1280x900 the /request chat start screen textarea box spans y=784..914, partly below the viewport; Chrome does not scroll a partly visible control into view, so tests/a11y/j3_keyboard.spec.ts:56 fails with "chat-words: outside the viewport" (via tests/e2e/j3.ts:303, step 5) under A11Y-005 (docs/spec/accessibility.md:9). Reproduced by the reviewer at cb4a620. T118 owns only j3_operator.spec.ts, j3_keyboard.spec.ts, j3.ts. Fix: a site task (T593/T609 area) lays out the start screen so the textarea is never p; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T118 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T397: plan gap reported: PLAN GAP: outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per probed Owner row; past ~60 rows expires_at < created_at, violating portals.session CHECK (expires_at > created_at), so POST /owner/help/close as Owner returns 500. Marking the three /b/phones rows yes in docs/architecture.md section 13 turns td_sec_61_every_served_door_row_over_http red (reproduced by worker and by reviewer: exit 101, door_matrix.rs:1533). Smallest fix: a harness task that bases owner_jar sign-in times in the past (e.g. key.now - OWNER_IDLE_LIMIT) or spaces TO; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T397 --plan-fix D-### --reason "..."` (D-2859)
+- BLOCKED T803: Worker made no change. All 83 named mutants are killed; the Checks job timed out (40 min limit) because the Rust build took ~26 min and mutants.toml changes trigger all 83 mutants (cut off after mutant 72). Needs a harness fix (raise Checks timeout-minutes or run only changed mutants) or a faster CI build. Smoke did not finish in the worker's polls.
 - PLAN GAP T118 (since 2026-11-22T08:54:42Z, no attempt used; a plan change fixes it): outside ownership: app/site/templates/request.html, app/site/static/site.css
 - PLAN GAP T121 (since 2026-11-22T10:24:41Z, no attempt used; a plan change fixes it): T121: dependency T828 is DONE but its owned file .gitleaksignore is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
@@ -30,6 +31,7 @@ At 1280x900 the /request chat start screen textarea box spans y=784..914, partly
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T803 | messaging (harness): an opted-out number gets no HELP reply; | BLOCKED | 3 | 25 min | 10:25Z | Ci: failure; Checks: cancelled / Checks failed at step: Named mutants of the files this change touches (scripts/run_name |
 | T589 | intake and portals: the pick review page is shown in her req | MERGE_PENDING | 1 | 53 min | 10:04Z |  |
 | T725 | site: the home page shows the texting number with its consen | MERGE_PENDING | 2 | 57 min | 09:57Z | PLAN GAP: tests/docs/test_required_lines.py:139 (WORD-013, docs/spec/wording.md:17) contradicts kit/prompts/T725.md:9 (S |
 | T610 | site: the D-4246 polish on the Spanish pages, the legal page | MERGE_PENDING | 1 | 39 min | 09:00Z |  |
@@ -42,7 +44,7 @@ At 1280x900 the /request chat start screen textarea box spans y=784..914, partly
 | T829 | server tests (harness): the door matrix's owner sign-ins nev | BLOCKED | 1 | 19 min | 06:03Z |  |
 | T828 | ci (harness): gitleaks scans each push's commit range, with  | done | 1 | 84 min | 05:45Z |  |
 | T616 | site: strong per-coding ETags with 304 revalidation, a one-y | done | 2 | 39 min | 05:32Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
-| T803 | messaging (harness): an opted-out number gets no HELP reply; | check_failed | 2 | 63 min | 05:27Z | Ci: failure; Checks: cancelled / Checks failed at step: Named mutants of the files this change touches (scripts/run_name |
+| T803 | messaging (harness): an opted-out number gets no HELP reply; | check_failed | 2 | 63 min | 05:27Z |  |
 | T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 2 | 50 min | 04:44Z | PLAN GAP: tests/integration/tests/intake_order_card.rs:285, tests/integration/tests/intake_refusals_wired.rs:399, tests/ |
 | T542 | portals and server: notice and backup address changes are re | done | 2 | 2 h 42 min | 04:28Z | Reviewer after the findings round still ended REVIEW-VERDICT: FINDINGS at head 4de98e6fb74e1e5394629d7a1abe0694167723a2: |
 | T729 | portals and privacy: the quote page offers updates by email  | BLOCKED | 1 | 2 min | 04:19Z | PLAN GAP: tests/integration/tests/architecture_migrations.rs:288-294 (with :320-332) contradicts kit/prompts/T729.md:9 ( |
@@ -144,8 +146,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T829 (lease until 2026-11-22T13:24:41Z)
 - lane 2: T675 (lease until 2026-11-22T11:47:43Z)
-- lane 3: T803 (lease until 2026-11-22T13:00:15Z)
 - lane 4: T729 (lease until 2026-11-22T11:07:49Z)
 
 ## Last usage reading
-- {"task": "T589", "at": "2026-11-22T10:04:35Z", "input_tokens": 113, "cache_creation_input_tokens": 130669, "cache_read_input_tokens": 3350333, "output_tokens": 28464}
+- {"task": "T803", "at": "2026-11-22T10:25:49Z", "input_tokens": 38, "cache_creation_input_tokens": 33303, "cache_read_input_tokens": 618101, "output_tokens": 6590}
