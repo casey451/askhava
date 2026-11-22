@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-22T03:10:30Z by runner b3e4c6cdedb5 (actions).
+Updated 2026-11-22T03:17:15Z by runner b3e4c6cdedb5 (actions).
 
 **Building: T542 in progress since 01:45Z; 599 of 763 done; week 49% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-22T03:10:30Z by runner b3e4c6cdedb5 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 5: T542 claimed 01:45Z, lease until 04:45Z; lane 7: T721 claimed 02:54Z, lease until 05:54Z
 - **Week:** 49% used, 91.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:10Z, 0 min before this update
+- **Last run:** 03:10Z, 6 min before this update
 - **Keeper:** last ran 03:10Z, next wake 03:30Z
 
 ## Needs attention
@@ -31,7 +31,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T616 | site: strong per-coding ETags with 304 revalidation, a one-y | MERGE_PENDING | 1 | 96 min | 03:07Z |  |
-| T118 | Journey J3 (operator) keyboard-only, with closing checks | MERGE_PENDING | 2 | 2 h 19 min | 03:06Z | Reviewer after fix round (head ee01dda321ae54d4c6af6a1e464281c92fbdcf1d) still FINDINGS: / 1. tests/e2e/j3_operator.spec |
+| T118 | Journey J3 (operator) keyboard-only, with closing checks | check_failed | 2 | 2 h 19 min | 03:06Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / ✓  120 [main] › tests/e2e |
 | T810 | portals and server: a shared-inbox Confirm press asks for it | BLOCKED | 2 | 2 min | 03:05Z | PLAN GAP: outside ownership: app/server/tests/confirm_press_code.rs. TD-SEC-82 requires a direct portals.shared_inbox in |
 | T810 | portals and server: a shared-inbox Confirm press asks for it | QUEUED | 1 | 39 min | 02:57Z |  |
 | T803 | messaging (harness): an opted-out number gets no HELP reply; | check_failed | 1 | 69 min | 02:44Z | Ci: failure; Checks: failure / Checks failed at step: Named mutants of the files this change touches (scripts/run_named_ |
