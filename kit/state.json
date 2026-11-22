@@ -100528,7 +100528,7 @@
     "T608",
     "T600"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "update-email-choice",
    "type": "build",
@@ -100542,8 +100542,8 @@
     5424,
     5425
    ],
-   "reason": "plan gap reported: PLAN GAP: tests/integration/tests/architecture_migrations.rs:288-294 (with :320-332) contradicts kit/prompts/T729.md:9 (D-4727 (1)). One migration 0215 must both create a privacy table and ALTER messaging.update_channel (add reverted_at); the protected migration test allows one module header per file and flags other-schema names, and CROSS_SCHEMA_CALLS covers only function calls. Fix: give T729 a second messaging-headed migration (0216_messaging_update_reverted.sql) or move reverted_at to T730. Related: the quote page needs a messaging reader for reverted_at (email.rs is read-only for T729). R; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T729 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: tests/integration/tests/architecture_migrations.rs:288-294 (with :320-332) contradicts kit/prompts/T729.md:9 (D-4727 (1)). One migration 0215 must both create a privacy table and ALTER messaging.update_channel (add reverted_at); the protected migration test allows one module header per file and flags other-schema names, and CROSS_SCHEMA_CALLS covers only function calls. Fix: give T729 a second messaging-headed migration (0216_messaging_update_reverted.sql) or move reverted_at to T730. Related: the quote page needs a messaging reader for reverted_at (email.rs is read-only for T729). Reviewer confirmed.",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/integration/tests/architecture_migrations.rs:288-294 (with :320-332) contradicts kit/prompts/T729.md:9 (D-4727 (1)). One migration 0215 must both create a privacy table and ALTER messaging.update_channel (add reverted_at); the protected migration test allows one module header per file and flags other-schema names, and CROSS_SCHEMA_CALLS covers only function calls. Fix: give T729 a second messaging-headed migration (0216_messaging_update_reverted.sql) or move reverted_at to T730. Related: the quote page needs a messaging reader for reverted_at (email.rs is read-only for T729). Reviewer confirmed.\nre-queued after plan fix D-5442: bounce on the privacy table, 0215 privacy-only, quote_page_routes_with keys (merged #1326)",
    "history": [
     {
      "attempt": 1,
@@ -100567,6 +100567,21 @@
        "turns": 5
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-22T04:57:42Z",
+     "reason": "bounce on the privacy table, 0215 privacy-only, quote_page_routes_with keys (merged #1326)",
+     "by": "manual-2088cb76d108",
+     "was": "plan gap reported: PLAN GAP: tests/integration/tests/architecture_migrations.rs:288-294 (with :320-332) contradicts kit/prompts/T729.md:9 (D-4727 (1)). One migration 0215 must both create a privacy table and ALTER messaging.update_channel (add reverted_at); the protected migration test allows one module header per file and flags other-schema names, and CROSS_SCHEMA_CALLS covers only function calls. Fix: give T729 a second messaging-headed migration (0216_messaging_update_reverted.sql) or move reverted_at to T730. Related: the quote page needs a messaging reader for reverted_at (email.rs is read-only for T729). R; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T729 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-5442",
+     "plan_since": "2026-11-22T04:16:39Z",
+     "plan_base": "073da52ea9e971e6df8a97a9aa7d4228831d613e",
+     "plan_head": "619c9afc042ce00c9e53aea938d722852430a864",
+     "plan_then": "1a5804b77678f776f08871cf7e11ff147744056a9b40727965ee41a6a00b3ba5",
+     "plan_now": "61c2c68064866f39d03b8e9569983bb9aae2d32ca6ff5791a16fa5d35427ff6e"
     }
    ]
   },
@@ -115262,7 +115277,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T04:57:26Z",
+ "updated_at": "2026-11-22T04:57:42Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
