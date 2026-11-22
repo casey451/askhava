@@ -626,6 +626,12 @@ const BUSINESS_STEP_UP_STATES: readonly PageState[] = [
   ["business step-up, send a code", "Send me a code", "That code didn't work", businessSql("")],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: BUSINESS_STEP_UP_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
+/** The notice and backup address page (T542; BIZ-040, BIZ-043, SEC-038): the owner signed in. */
+const ADDRESS_CHANGE_ROUTE = "/b/addresses";
+const ADDRESS_CHANGE_STATES: readonly PageState[] = [
+  ["notice and backup address forms", "Change where your job notices go", "There is a problem", businessSql("")],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: ADDRESS_CHANGE_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
 /** The homeowner sign-in form (T307, SEC-008): no seed, the plain path. */
 const HOMEOWNER_SIGNIN_ROUTE = "/h/sign-in";
 const HOMEOWNER_SIGNIN_STATES: readonly PageState[] = [
@@ -766,6 +772,7 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: HOMEOWNER_HOME_ROUTE, seed: homeownerSeed, states: HOMEOWNER_HOME_STATES },
   { route: PHOTO_UPLOAD_ROUTE, seed: photoUploadSeed, states: PHOTO_UPLOAD_STATES },
   { route: NOT_FOUND_ROUTE, seed: () => "/no-such-page", states: NOT_FOUND_STATES },
+  { route: ADDRESS_CHANGE_ROUTE, seed: portalSeed(false), states: ADDRESS_CHANGE_STATES },
 ];
 
 /** Every state of every page, in entry order. */

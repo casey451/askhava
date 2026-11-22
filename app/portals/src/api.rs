@@ -36,6 +36,11 @@ pub use crate::action_links::{
     OPEN_IN_BROWSER_LINE, UseBy, email_reply, fresh_code_needed, mint_action_link,
     open_action_link, session_may, use_action_link,
 };
+pub use crate::address_changes::{
+    ADDRESS_CHANGE_ROUTE, ADDRESS_CONFIRM_ROUTE, ADDRESS_REQUEST_ROUTE, AddressChangeError,
+    AddressCode, AddressKind, AddressScreen, BACKUP_REMOVE_ROUTE, address_change_page,
+    confirm_address_change, remove_backup_address, request_address_change,
+};
 pub use crate::business_actions::job_details_page_choice;
 pub use crate::business_actions::{
     AUTO_CONFIRM_ROUTE, AutoConfirmBox, AutoConfirmBoxError, JobPageLinks, auto_confirm_box,

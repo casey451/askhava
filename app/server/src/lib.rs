@@ -36,6 +36,7 @@ use tower_http::trace::TraceLayer;
 
 pub mod account_directory;
 pub mod action_links;
+pub mod address_changes;
 pub mod business_contacts;
 pub mod business_guarded_changes;
 pub mod business_portal;
@@ -154,6 +155,7 @@ struct BusinessParts {
     signin: Option<business_signin::ServedSignIn>,
     signup: Option<business_signup::ServedSignUp>,
     step_up: Option<askhava_portals::api::StepUpCodes>,
+    address: Option<address_changes::AddressParts>,
     vault: Option<Arc<Vault>>,
     confirm: Option<ConfirmSettings>,
     confirm_codes: Option<askhava_portals::api::PressCodes>,
@@ -183,6 +185,14 @@ impl RouterParts {
     #[must_use]
     pub fn with_step_up(mut self, codes: Option<askhava_portals::api::StepUpCodes>) -> Self {
         self.business.step_up = codes;
+        self
+    }
+
+    /// Adds the notice and backup address changes' vault, ID secret and code mailer (T542;
+    /// `address_changes::address_parts`); without it the page is served and a change answers 500.
+    #[must_use]
+    pub fn with_address_changes(mut self, parts: Option<address_changes::AddressParts>) -> Self {
+        self.business.address = parts;
         self
     }
 
@@ -393,7 +403,8 @@ impl ApprovalSecret for StripeApproval {
 /// route (T261) from the Stripe hooks, with the parts' Confirm settings, else none; the "Can't
 /// take it" page and button ([`cant_take_route`], T472), always; the business step-up page
 /// ([`business_step_up`], T364), always, sending codes only with its part, and the role, removal
-/// and monthly-limit changes behind it ([`business_guarded_changes`], T565), always; and the
+/// and monthly-limit changes behind it ([`business_guarded_changes`], T565), and the notice and
+/// backup address changes ([`address_changes`], T542, changing only with their part), always; and the
 /// owner's sign-in, step-up and sign-out routes ([`owner_signin`], T303) and home, settings and
 /// switches ([`owner_portal`], T310, the opt-out with the portal's vault) and refund review, audit
 /// log and health page ([`owner_tools`], T304, refunding only with the Stripe hooks and the
@@ -434,7 +445,8 @@ fn business_pages(
     let cant_take = cant_take_route::routes(pool.clone());
     let homeowner = homeowner_portal::routes(pool.clone(), webhooks, parts.homeowner, parts.photos);
     let step_up = business_step_up::routes(pool.clone(), parts.step_up)
-        .merge(business_guarded_changes::routes(pool.clone()));
+        .merge(business_guarded_changes::routes(pool.clone()))
+        .merge(address_changes::routes(pool.clone(), parts.address));
     let portal_parts = (parts.vault, parts.business_number);
     let portal = business_portal::served(pool, portal_parts, (webhooks, voice))
         .merge(confirm)
