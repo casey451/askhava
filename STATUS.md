@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-22T02:19:15Z by runner 87c67ab0e3e9 (actions).
+Updated 2026-11-22T02:19:28Z by runner 87c67ab0e3e9 (actions).
 
 **Building: T691 in progress since 00:03Z; 598 of 753 done; week 47% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 598 of 753 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T691 claimed 00:03Z, lease until 03:03Z; lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 3: T803 claimed 01:35Z, lease until 04:35Z; lane 4: T616 claimed 01:30Z, lease until 04:30Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z; lane 6: T810 claimed 02:18Z, lease until 05:18Z; lane 7: T759 claimed 01:50Z, lease until 04:50Z
+- **Lane:** lane 1: T691 claimed 00:03Z, lease until 03:03Z; lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 3: T803 claimed 01:35Z, lease until 04:35Z; lane 4: T616 claimed 01:30Z, lease until 04:30Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z; lane 6: T810 claimed 02:18Z, lease until 05:18Z
 - **Week:** 47% used, 92.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 02:19Z, 0 min before this update
 - **Keeper:** last ran 02:13Z, next wake 02:33Z
@@ -30,6 +30,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T759 | intake: "Close which?" expires on a worded reply that is not | MERGE_PENDING | 1 | 28 min | 02:19Z |  |
 | T397 | server and portals: the owner approves or declines a member- | BLOCKED | 1 | 27 min | 02:12Z | PLAN GAP: outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per p |
 | T121 | Startup key checks, control router absent in live, supply-ch | BLOCKED | 1 | 15 min | 01:45Z | PLAN GAP: outside ownership: app/server/src/owner_portal.rs, app/server/src/owner_tools.rs, app/portals/src/owner_help.r |
 | T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | BLOCKED | 3 | 49 min | 01:39Z | Reviewer after findings round still FINDINGS at 4f79a8b8c4195e68ccfba3a25eaab6d612560536: / 1. docs/runbook.md:139-142 a |
@@ -145,7 +146,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 4: T616 (lease until 2026-11-22T04:30:46Z)
 - lane 5: T542 (lease until 2026-11-22T04:45:48Z)
 - lane 6: T810 (lease until 2026-11-22T05:18:33Z)
-- lane 7: T759 (lease until 2026-11-22T04:50:14Z)
 
 ## Last usage reading
-- {"task": "T397", "at": "2026-11-22T02:12:37Z", "cache_creation_input_tokens": 179961, "input_tokens": 155, "cache_read_input_tokens": 8362221, "output_tokens": 57778}
+- {"task": "T759", "at": "2026-11-22T02:19:13Z", "cache_creation_input_tokens": 79509, "output_tokens": 16214, "cache_read_input_tokens": 1315243, "input_tokens": 67}
