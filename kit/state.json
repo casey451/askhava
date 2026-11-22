@@ -108168,7 +108168,7 @@
     "T766",
     "T767"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "door-matrix-owner-signin",
    "type": "harness",
@@ -108182,8 +108182,8 @@
     5463,
     5464
    ],
-   "reason": "plan gap reported: PLAN GAP: tests/integration/tests/architecture_migrations.rs:791 (TD-SEC-10, not owned by T829) refuses the fix D-5411 prescribes for app/server/tests/door_matrix.rs:1180: plain sqlx::query is \"SQL outside the query macros\" (check_sql_forms :660/:677) and sqlx::query! naming `portals.` fails schema_refs/foreign() (:287/:264). Exemptions (:67, :76) cover migrations only. No portals::api helper clears owner_factor.totp_last_step (use_totp_step models.rs:470 is pub(crate), raise-only). Smoke failure: left [\"app/server/tests/door_matrix.rs: SQL outside the query macros: `query`\"]. Fix works otherw; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T829 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: tests/integration/tests/architecture_migrations.rs:791 (TD-SEC-10, not owned by T829) refuses the fix D-5411 prescribes for app/server/tests/door_matrix.rs:1180: plain sqlx::query is \"SQL outside the query macros\" (check_sql_forms :660/:677) and sqlx::query! naming `portals.` fails schema_refs/foreign() (:287/:264). Exemptions (:67, :76) cover migrations only. No portals::api helper clears owner_factor.totp_last_step (use_totp_step models.rs:470 is pub(crate), raise-only). Smoke failure: left [\"app/server/tests/door_matrix.rs: SQL outside the query macros: `query`\"]. Fix works otherwise (door_matrix 13 passed). Plan fix options: portals api helper owned by a portals task; or architecture-test exemption via harness task; or D-5411 changed. Reviewer confirmed: PLAN-GAP: CONFIRMED.",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/integration/tests/architecture_migrations.rs:791 (TD-SEC-10, not owned by T829) refuses the fix D-5411 prescribes for app/server/tests/door_matrix.rs:1180: plain sqlx::query is \"SQL outside the query macros\" (check_sql_forms :660/:677) and sqlx::query! naming `portals.` fails schema_refs/foreign() (:287/:264). Exemptions (:67, :76) cover migrations only. No portals::api helper clears owner_factor.totp_last_step (use_totp_step models.rs:470 is pub(crate), raise-only). Smoke failure: left [\"app/server/tests/door_matrix.rs: SQL outside the query macros: `query`\"]. Fix works otherwise (door_matrix 13 passed). Plan fix options: portals api helper owned by a portals task; or architecture-test exemption via harness task; or D-5411 changed. Reviewer confirmed: PLAN-GAP: CONFIRMED.\nre-queued after plan fix D-5475: reuse the live owner jar; past TOTP steps from the wall clock; no SQL in door_matrix.rs (merged #1332)",
    "history": [
     {
      "attempt": 1,
@@ -108207,6 +108207,21 @@
        "turns": 12
       }
      }
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-22T06:26:00Z",
+     "reason": "reuse the live owner jar; past TOTP steps from the wall clock; no SQL in door_matrix.rs (merged #1332)",
+     "by": "manual-911d8fbbedec",
+     "was": "plan gap reported: PLAN GAP: tests/integration/tests/architecture_migrations.rs:791 (TD-SEC-10, not owned by T829) refuses the fix D-5411 prescribes for app/server/tests/door_matrix.rs:1180: plain sqlx::query is \"SQL outside the query macros\" (check_sql_forms :660/:677) and sqlx::query! naming `portals.` fails schema_refs/foreign() (:287/:264). Exemptions (:67, :76) cover migrations only. No portals::api helper clears owner_factor.totp_last_step (use_totp_step models.rs:470 is pub(crate), raise-only). Smoke failure: left [\"app/server/tests/door_matrix.rs: SQL outside the query macros: `query`\"]. Fix works otherw; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T829 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-5475",
+     "plan_since": "2026-11-22T05:44:04Z",
+     "plan_base": "36b07635ccae0fc99bc498f02eb6799ef4dbccce",
+     "plan_head": "a474f22e9cd50f3392df07221e7bf636b54539e1",
+     "plan_then": "33ff26a1c69b30ea56192f447c80968fff373c1e9ade956ff8299672dd219266",
+     "plan_now": "9436dd4298089f8188f328b33c4577edaf647182059d03e4a1525c8f888ce53b"
     }
    ]
   },
@@ -115676,7 +115691,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T06:19:33Z",
+ "updated_at": "2026-11-22T06:26:00Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -115774,8 +115789,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "36b07635ccae0fc99bc498f02eb6799ef4dbccce",
- "starter": "actions",
+ "runner_sha": "a474f22e9cd50f3392df07221e7bf636b54539e1",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "21d99167398b19ca15d194afa6d72778eae8afc0",
