@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-22T12:26:02Z by runner 3dca30dc4af5 (actions).
+Updated 2026-11-22T12:26:14Z by runner 3dca30dc4af5 (actions).
 
 **Building: T645 in progress since 11:44Z; 608 of 770 done; week 58% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 608 of 770 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T645 claimed 11:44Z, lease until 14:44Z; lane 2: T830 claimed 11:45Z, lease until 14:45Z; lane 3: T729 claimed 11:36Z, lease until 14:36Z; lane 4: T725 claimed 11:56Z, lease until 14:56Z
+- **Lane:** lane 1: T645 claimed 11:44Z, lease until 14:44Z; lane 2: T830 claimed 11:45Z, lease until 14:45Z; lane 4: T725 claimed 11:56Z, lease until 14:56Z
 - **Week:** 58% used, 73.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 12:22Z, 3 min before this update
 - **Keeper:** last ran 12:22Z, next wake 14:38Z
@@ -58,13 +58,14 @@ assert 'skipped: not finished in 540 s (Ci runs Ally)' in '\n== Ally: pages chan
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T729 | portals and privacy: the quote page offers updates by email  | MERGE_PENDING | 2 | 49 min | 12:26Z | merging main into the reviewed head conflicts in app/server/src/lib.rs, app/server/src/main.rs; a resync merges it in on |
 | T610 | site: the D-4246 polish on the Spanish pages, the legal page | MERGE_PENDING | 2 | 40 min | 12:19Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T589 | intake and portals: the pick review page is shown in her req | MERGE_PENDING | 2 | 87 min | 12:04Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
 | T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 3 | 2 h 50 min | 11:38Z | PLAN GAP: tests/integration/tests/intake_order_card.rs:285, tests/integration/tests/intake_refusals_wired.rs:399, tests/ |
 | T805 | messaging (harness): the toll-free fallback is refused after | MERGE_PENDING | 1 | 50 min | 11:32Z |  |
 | T829 | server tests (harness): the door matrix's owner sign-ins nev | done | 3 | 46 min | 11:10Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T725 | site: the home page shows the texting number with its consen | BLOCKED | 3 | 21 min | 10:52Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
-| T729 | portals and privacy: the quote page offers updates by email  | resync | 2 | 2 h 32 min | 10:40Z | merging main into the reviewed head conflicts in app/server/src/lib.rs, app/server/src/main.rs; a resync merges it in on |
+| T729 | portals and privacy: the quote page offers updates by email  | resync | 2 | 2 h 32 min | 10:40Z |  |
 | T803 | messaging (harness): an opted-out number gets no HELP reply; | BLOCKED | 3 | 25 min | 10:25Z | Ci: failure; Checks: cancelled / Checks failed at step: Named mutants of the files this change touches (scripts/run_name |
 | T589 | intake and portals: the pick review page is shown in her req | check_failed | 1 | 53 min | 10:04Z |  |
 | T725 | site: the home page shows the texting number with its consen | check_failed | 2 | 57 min | 09:57Z |  |
@@ -177,8 +178,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T645 (lease until 2026-11-22T14:44:36Z)
 - lane 2: T830 (lease until 2026-11-22T14:45:18Z)
-- lane 3: T729 (lease until 2026-11-22T14:36:39Z)
 - lane 4: T725 (lease until 2026-11-22T14:56:02Z)
 
 ## Last usage reading
-- {"task": "T610", "at": "2026-11-22T12:19:43Z", "cache_read_input_tokens": 1333282, "output_tokens": 12999, "input_tokens": 64, "cache_creation_input_tokens": 89191}
+- {"task": "T729", "at": "2026-11-22T12:26:01Z", "output_tokens": 14720, "input_tokens": 90, "cache_creation_input_tokens": 112820, "cache_read_input_tokens": 1995365}
