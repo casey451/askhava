@@ -3,7 +3,8 @@
     WORD-002, WORD-013, WORD-017, BIZ-030, REC-009, D-180, D-3880, D-4044), the twin of business.html
     with the same facts. All Spanish here is a draft marked for native-speaker review (WEB-019, D-180).
     Trade names stay in English (lang="en"). The sign-up link adds lang=es, which T488 serves in
-    Spanish (WEB-019). The footer is the Spanish one. -#}
+    Spanish (WEB-019). The footer is the Spanish one. As on the English page, the fee table and each
+    sample job card sit on paper cards, the fees in tabular figures (T610, D-4246, D-4326). -#}
 {% block lang %}es{% endblock %}
 {% block title %}Para negocios{% endblock %}
 {% block content %}
@@ -39,7 +40,7 @@
 </ul>
 
 <h2>Tarifas según el tamaño del trabajo</h2>
-<div role="region" tabindex="0" aria-label="Tarifas según el tamaño del trabajo">
+<div class="card fee-table" role="region" tabindex="0" aria-label="Tarifas según el tamaño del trabajo">
 <table>
 <caption>La tarifa de presentación para cada tamaño de trabajo</caption>
 <thead><tr><th scope="col">Su cotización</th><th scope="col">Tarifa de presentación</th></tr></thead>
@@ -56,7 +57,7 @@
 <h2>Tarjetas de trabajo de muestra</h2>
 <p>Estas tarjetas son inventadas para mostrarle lo que recibe. Hay una para cada oficio abierto.</p>
 {%- for card in facts.cards %}
-<section class="sample-card" aria-labelledby="muestra-{{ card.code }}">
+<section class="sample-card card" aria-labelledby="muestra-{{ card.code }}">
 <h3 id="muestra-{{ card.code }}" lang="en">{{ card.name }}</h3>
 <ul>
 <li>Trabajo: una solicitud de muestra, inventada para esta página</li>

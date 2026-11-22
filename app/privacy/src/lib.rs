@@ -21,6 +21,7 @@ mod purge;
 mod readback_reader;
 mod reader;
 mod released_reader;
+mod rotation_backlog;
 mod scrub;
 mod scrub_context;
 mod suppression_phone;
