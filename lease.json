@@ -1,55 +1,16 @@
 {
- "lease": {
-  "task": "T675",
-  "session": "actions-45063698092",
-  "expires": "2026-11-22T23:30:23Z"
- },
+ "lease": null,
  "leases": {
-  "1": {
-   "task": "T675",
-   "session": "actions-45063698092",
-   "expires": "2026-11-22T23:30:23Z",
-   "lane": "1"
-  },
-  "2": {
-   "task": "T118",
-   "session": "actions-45066864514",
-   "expires": "2026-11-22T23:37:44Z",
-   "lane": "2"
-  },
-  "3": {
-   "task": "T730",
-   "session": "actions-45066869876",
-   "expires": "2026-11-22T23:39:11Z",
-   "lane": "3"
-  },
-  "4": {
-   "task": "T121",
-   "session": "actions-45066872621",
-   "expires": "2026-11-22T23:35:53Z",
-   "lane": "4"
-  },
-  "5": {
-   "task": "T832",
-   "session": "actions-45066875381",
-   "expires": "2026-11-22T23:38:24Z",
-   "lane": "5"
-  },
-  "6": {
-   "task": "T725",
-   "session": "actions-45066877778",
-   "expires": "2026-11-22T23:35:16Z",
-   "lane": "6"
-  },
-  "7": {
-   "task": "T645",
-   "session": "actions-45066880248",
-   "expires": "2026-11-22T23:37:02Z",
-   "lane": "7"
-  },
+  "1": null,
+  "2": null,
+  "3": null,
+  "4": null,
+  "5": null,
+  "6": null,
+  "7": null,
   "fix": null
  },
- "seq": 10021,
+ "seq": 10022,
  "runner_sha": "bd3e4e9cdad1a2f89e518d825322af5b0372f74f",
- "starter": "manual"
+ "starter": "actions"
 }
