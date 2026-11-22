@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-22T13:54:31Z by runner 67aa79d6e7cb (actions).
+Updated 2026-11-22T13:54:42Z by runner 67aa79d6e7cb (actions).
 
 **Building: T397 in progress since 13:11Z; 610 of 770 done; week 58% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 610 of 770 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T397 claimed 13:11Z, lease until 16:11Z; lane 2: T117 claimed 13:20Z, lease until 16:20Z; lane 4: T833 claimed 12:59Z, lease until 15:59Z
+- **Lane:** lane 1: T397 claimed 13:11Z, lease until 16:11Z; lane 4: T833 claimed 12:59Z, lease until 15:59Z
 - **Week:** 58% used, 76.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:51Z, 3 min before this update
 - **Keeper:** last ran 13:06Z, next wake 13:26Z
@@ -54,6 +54,7 @@ assert 'skipped: not finished in 540 s (Ci runs Ally)' in '\n== Ally: pages chan
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | MERGE_PENDING | 4 | 33 min | 13:54Z | Reviewer after findings round still FINDINGS at 4f79a8b8c4195e68ccfba3a25eaab6d612560536: / 1. docs/runbook.md:139-142 a |
 | T830 | server: `server rotate-keys` and `server retire-index-versio | done | 1 | 61 min | 12:46Z |  |
 | T729 | portals and privacy: the quote page offers updates by email  | check_failed | 2 | 49 min | 12:26Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T610 | site: the D-4246 polish on the Spanish pages, the legal page | MERGE_PENDING | 2 | 40 min | 12:19Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
@@ -91,7 +92,7 @@ assert 'skipped: not finished in 540 s (Ci runs Ally)' in '\n== Ally: pages chan
 | T759 | intake: "Close which?" expires on a worded reply that is not | done | 1 | 28 min | 02:19Z |  |
 | T397 | server and portals: the owner approves or declines a member- | BLOCKED | 1 | 27 min | 02:12Z | PLAN GAP: outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per p |
 | T121 | Startup key checks, control router absent in live, supply-ch | BLOCKED | 1 | 15 min | 01:45Z | PLAN GAP: outside ownership: app/server/src/owner_portal.rs, app/server/src/owner_tools.rs, app/portals/src/owner_help.r |
-| T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | BLOCKED | 3 | 49 min | 01:39Z | Reviewer after findings round still FINDINGS at 4f79a8b8c4195e68ccfba3a25eaab6d612560536: / 1. docs/runbook.md:139-142 a |
+| T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | BLOCKED | 3 | 49 min | 01:39Z |  |
 | T542 | portals and server: notice and backup address changes are re | QUEUED | 1 | 2 h 37 min | 01:29Z |  |
 | T725 | site: the home page shows the texting number with its consen | BLOCKED | 1 | 21 min | 01:24Z |  |
 | T609 | site (harness): the D-4246 polish on the footer, how it work | BLOCKED | 1 | 2 min | 00:57Z |  |
@@ -173,8 +174,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T397 (lease until 2026-11-22T16:11:59Z)
-- lane 2: T117 (lease until 2026-11-22T16:20:59Z)
 - lane 4: T833 (lease until 2026-11-22T15:59:39Z)
 
 ## Last usage reading
-- {"task": "T830", "at": "2026-11-22T12:46:51Z", "cache_creation_input_tokens": 187509, "input_tokens": 179, "cache_read_input_tokens": 7287089, "output_tokens": 57297}
+- {"task": "T117", "at": "2026-11-22T13:54:30Z", "cache_creation_input_tokens": 124250, "output_tokens": 30358, "input_tokens": 117, "cache_read_input_tokens": 3527152}
