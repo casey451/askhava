@@ -9874,3 +9874,4 @@
 - 2026-11-22T11:33:26Z runner 190b8bc3aa0c (actions): {}
 - 2026-11-22T11:33:44Z runner dd295e06660e (actions): {}
 - 2026-11-22T11:36:00Z runner dd295e06660e (actions): {}
+- 2026-11-22T11:38:40Z runner dd295e06660e (actions): {"T729": "QUEUED -> IN_PROGRESS"}; T729 estimated 1.9M tokens (calibrated); week has 76.5M left (no five-hour budget, D-3056) after 3.5M still running in another lane (session_reading 2026-11-22T11:33:25Z (week)); claimed
