@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T05:21:33Z by runner 619c9afc042c (actions).
+Updated 2026-11-22T05:27:11Z by runner 96c2e2a50acf (actions).
 
-**Building: T118 in progress since 04:18Z; 600 of 767 done; week 52% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T118 in progress since 04:18Z; 601 of 767 done; week 52% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 600 of 767 build tasks (owner gates not counted)
+- **Tasks done:** 601 of 767 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T118 claimed 04:18Z, lease until 07:18Z; lane 2: T827 claimed 04:50Z, lease until 07:50Z; lane 3: T803 claimed 04:24Z, lease until 07:24Z; lane 4: T616 claimed 04:52Z, lease until 07:52Z; lane 6: T828 claimed 04:21Z, lease until 07:21Z
 - **Week:** 52% used, 87.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:21Z, 0 min before this update
+- **Last run:** 05:21Z, 5 min before this update
 - **Keeper:** last ran 05:21Z, next wake 07:20Z
 
 ## Needs attention
@@ -24,7 +24,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T397 (since 2026-11-22T02:12:37Z, no attempt used; a plan change fixes it): outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per probed Owner row; past ~60 rows expires_at < created_at, violating portals.session CHECK (expires_at > created_at), so POST /owner/help/close as Owner returns 500. Marking the three /b/phones rows yes in docs/architecture.md section 13 turns td_sec_61_every_served_door_row_over_http red (reproduced by worker and by reviewer: exit 101, door_matrix.rs:1533). Smallest fix: a harness task that bases owner_jar sign-in times in the past (e.g. key.now - OWNER_IDLE_LIMIT) or spaces TOTP steps differently. Prompt forbids editing door_matrix.rs and forbids working around an unreachable route. Worker work is uncommitted in the tree.
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 29 problem(s) on tasks still to run (+477 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 29 problem(s) on tasks still to run (+480 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -33,7 +33,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 | T542 | portals and server: notice and backup address changes are re | MERGE_PENDING | 2 | 2 h 42 min | 04:28Z | Reviewer after the findings round still ended REVIEW-VERDICT: FINDINGS at head 4de98e6fb74e1e5394629d7a1abe0694167723a2: |
 | T729 | portals and privacy: the quote page offers updates by email  | BLOCKED | 1 | 2 min | 04:19Z | PLAN GAP: tests/integration/tests/architecture_migrations.rs:288-294 (with :320-332) contradicts kit/prompts/T729.md:9 ( |
 | T609 | site (harness): the D-4246 polish on the footer, how it work | BLOCKED | 2 | 13 min | 04:15Z | PLAN GAP: tests/e2e/web_chat.spec.ts:123 (owned by T489) uses strict locator main.locator('[lang="es"]'); the footer's E |
-| T721 | businesses and portals: Casey counts a check-in PROBLEM repo | MERGE_PENDING | 1 | 76 min | 04:10Z |  |
+| T721 | businesses and portals: Casey counts a check-in PROBLEM repo | done | 1 | 76 min | 04:10Z |  |
 | T616 | site: strong per-coding ETags with 304 revalidation, a one-y | check_failed | 1 | 96 min | 03:07Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | check_failed | 2 | 2 h 19 min | 03:06Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / ✓  120 [main] › tests/e2e |
 | T810 | portals and server: a shared-inbox Confirm press asks for it | BLOCKED | 2 | 2 min | 03:05Z | PLAN GAP: outside ownership: app/server/tests/confirm_press_code.rs. TD-SEC-82 requires a direct portals.shared_inbox in |
@@ -85,7 +85,6 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 | T615 | site and server: a styled 404 page for unknown paths, the fa | check_failed | 1 | 55 min | 07:33Z |  |
 | T674 | server: the homeowner's photo upload page and the short-live | resync | 2 | 2 h 38 min | 07:19Z |  |
 | T754 | portals and payments: a $0 Confirm after a PaymentIntent was | BLOCKED | 2 | 46 min | 06:41Z |  |
-| T755 | messaging: a sole opt-out word counts with any spacing ("STO | done | 1 | 66 min | 05:21Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -93,7 +92,7 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 ## Progress (requirements verified)
 
 **Requirements verified:** 0 of 735 (0.0%) · partial 716 · unstarted 19
-**Tasks merged (throughput only):** 600 of 767
+**Tasks merged (throughput only):** 601 of 767
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -129,7 +128,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 243 of 339 done
+- stage 5: 244 of 339 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
