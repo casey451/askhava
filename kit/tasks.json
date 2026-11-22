@@ -53436,7 +53436,7 @@
    "id": "T824",
    "slug": "close-which-day",
    "title": "intake: \"Close which?\" expires 24 hours after it was asked",
-   "goal": "Plan change D-5400 (intake review job 16, finding I5, Fable: yes, for Casey under D-305; JOB-019, JOB-021; D-4777). T759 makes \"Close which?\" expire on a worded reply that is not a close answer (`close_which` = `dropped`), but a question left with no reply still waits for ever, so a lone \"ALL\" or number sent days later for another reason still closes jobs. In `app/intake/src/closing.rs`, a latest `close_which` = `asked` mark more than 24 hours older than the reply's `now` is no waiting question: the reply is read as it would be with no question asked (a lone \"ALL\" closes nothing), and nothing is written for the old mark. Tests in the new `tests/integration/tests/close_which_day.rs` (PostgreSQL, fake data only, manual clock): \"Close which?\", then \"ALL\" 24 hours and a minute later closes nothing; \"ALL\" 23 hours later still closes every open job; \"cancel\" alone still closes nothing; TD-JOB-05 (`tests/integration/tests/close_which.rs`) and T759's `tests/integration/tests/close_which_expiry.rs` pass unchanged. Opus worker and review. Update the `intake` notes and `docs/decisions.md`.",
+   "goal": "Plan change D-5400 (intake review job 16, finding I5, Fable: yes, for Casey under D-305; JOB-019, JOB-021; D-4777). T759 (DONE, D-5367: `closing::which_mark` writes `asked`, then `answered` or `dropped`) makes \"Close which?\" expire on a worded reply that is not a close answer (`close_which` = `dropped`), but a question left with no reply still waits for ever, so a lone \"ALL\" or number sent days later for another reason still closes jobs. T759 has no time limit (its `tests/integration/tests/close_which_expiry.rs` replies within minutes, so its cases hold unchanged). In `app/intake/src/closing.rs`, a latest `close_which` = `asked` mark more than 24 hours older than the reply's `now` is no waiting question: the reply is read as it would be with no question asked (a lone \"ALL\" closes nothing), and nothing is written for the old mark. Tests in the new `tests/integration/tests/close_which_day.rs` (PostgreSQL, fake data only, manual clock): \"Close which?\", then \"ALL\" 24 hours and a minute later closes nothing; \"ALL\" 23 hours later still closes every open job; \"cancel\" alone still closes nothing; TD-JOB-05 (`tests/integration/tests/close_which.rs`) and T759's `tests/integration/tests/close_which_expiry.rs` pass unchanged. Opus worker and review. Update the `intake` notes and `docs/decisions.md`.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -53469,7 +53469,8 @@
    "decisions": [
     "D-1203",
     "D-4777",
-    "D-5400"
+    "D-5400",
+    "D-5367"
    ],
    "cites": [],
    "budget": {
