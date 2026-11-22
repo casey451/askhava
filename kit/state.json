@@ -58075,8 +58075,8 @@
     "T412",
     "T536"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "phone-approval-page",
    "type": "build",
    "stage": "5",
@@ -58089,16 +58089,51 @@
     5296,
     5297
    ],
-   "wip_claim": {
-    "attempt": 1,
-    "remote_sha": ""
-   },
    "stale_leases": [
     {
      "task": "T397",
      "session": "actions-44957094146",
      "expires": "2026-11-22T01:35:47Z",
      "lane": "5"
+    }
+   ],
+   "reason": "plan gap reported: PLAN GAP: outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per probed Owner row; past ~60 rows expires_at < created_at, violating portals.session CHECK (expires_at > created_at), so POST /owner/help/close as Owner returns 500. Marking the three /b/phones rows yes in docs/architecture.md section 13 turns td_sec_61_every_served_door_row_over_http red (reproduced by worker and by reviewer: exit 101, door_matrix.rs:1533). Smallest fix: a harness task that bases owner_jar sign-in times in the past (e.g. key.now - OWNER_IDLE_LIMIT) or spaces TO; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T397 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per probed Owner row; past ~60 rows expires_at < created_at, violating portals.session CHECK (expires_at > created_at), so POST /owner/help/close as Owner returns 500. Marking the three /b/phones rows yes in docs/architecture.md section 13 turns td_sec_61_every_served_door_row_over_http red (reproduced by worker and by reviewer: exit 101, door_matrix.rs:1533). Smallest fix: a harness task that bases owner_jar sign-in times in the past (e.g. key.now - OWNER_IDLE_LIMIT) or spaces TOTP steps differently. Prompt forbids editing door_matrix.rs and forbids working around an unreachable route. Worker work is uncommitted in the tree.",
+   "plan_gap": {
+    "at": "2026-11-22T02:12:37Z",
+    "problems": [
+     "outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per probed Owner row; past ~60 rows expires_at < created_at, violating portals.session CHECK (expires_at > created_at), so POST /owner/help/close as Owner returns 500. Marking the three /b/phones rows yes in docs/architecture.md section 13 turns td_sec_61_every_served_door_row_over_http red (reproduced by worker and by reviewer: exit 101, door_matrix.rs:1533). Smallest fix: a harness task that bases owner_jar sign-in times in the past (e.g. key.now - OWNER_IDLE_LIMIT) or spaces TOTP steps differently. Prompt forbids editing door_matrix.rs and forbids working around an unreachable route. Worker work is uncommitted in the tree."
+    ],
+    "paths": [
+     "app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per probed Owner row; past ~60 rows expires_at < created_at",
+     "violating portals.session CHECK (expires_at > created_at)",
+     "so POST /owner/help/close as Owner returns 500. Marking the three /b/phones rows yes in docs/architecture.md section 13 turns td_sec_61_every_served_door_row_over_http red (reproduced by worker and by reviewer: exit 101",
+     "door_matrix.rs:1533). Smallest fix: a harness task that bases owner_jar sign-in times in the past (e.g. key.now - OWNER_IDLE_LIMIT) or spaces TOTP steps differently. Prompt forbids editing door_matrix.rs and forbids working around an unreachable route. Worker work is uncommitted in the tree."
+    ]
+   },
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 124,
+     "head_sha": "21d99167398b19ca15d194afa6d72778eae8afc0",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-22T01:45:02Z",
+     "ended_at": "2026-11-22T02:12:37Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 8415158,
+       "turns": 71
+      },
+      "reviewer": {
+       "tokens": 184957,
+       "turns": 8
+      }
+     }
     }
    ]
   },
@@ -106775,12 +106810,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T121",
-   "at": "2026-11-22T01:45:41Z",
-   "cache_creation_input_tokens": 190427,
-   "cache_read_input_tokens": 6425983,
-   "output_tokens": 81041,
-   "input_tokens": 151
+   "task": "T397",
+   "at": "2026-11-22T02:12:37Z",
+   "cache_creation_input_tokens": 179961,
+   "input_tokens": 155,
+   "cache_read_input_tokens": 8362221,
+   "output_tokens": 57778
   },
   "source": "session_reading 2026-11-22T01:46:03Z (week)",
   "by_task": {
@@ -113902,7 +113937,17 @@
    },
    "T397": {
     "estimated_bytes": 474728,
-    "estimated_tokens": 1388943
+    "estimated_tokens": 1388943,
+    "usage_counting": "message_id",
+    "cache_creation_input_tokens": 179961,
+    "input_tokens": 155,
+    "cache_read_input_tokens": 8362221,
+    "output_tokens": 57778,
+    "worker_tokens": 8415158,
+    "worker_turns": 71,
+    "reviewer_tokens": 184957,
+    "reviewer_turns": 8,
+    "last_model": "claude-opus-5-5"
    },
    "T542": {
     "estimated_bytes": 487654,
@@ -113989,12 +114034,12 @@
   },
   "windows": {
    "five_hour": {
-    "start": "2026-11-21T20:57:01Z",
-    "tokens": 14903075
+    "start": "2026-11-22T02:12:37Z",
+    "tokens": 1074116
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 137438602
+    "tokens": 138512718
    }
   },
   "session_reading": {
@@ -114005,7 +114050,7 @@
    }
   }
  },
- "updated_at": "2026-11-22T01:50:34Z",
+ "updated_at": "2026-11-22T02:12:38Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

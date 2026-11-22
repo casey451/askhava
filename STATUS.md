@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T01:50:34Z by runner 21d99167398b (actions).
+Updated 2026-11-22T02:12:38Z by runner 21d99167398b (actions).
 
-**Building: T691 in progress since 00:03Z; 598 of 752 done; week 46% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T691 in progress since 00:03Z; 598 of 753 done; week 46% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 598 of 752 build tasks (owner gates not counted)
+- **Tasks done:** 598 of 753 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T691 claimed 00:03Z, lease until 03:03Z; lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 3: T803 claimed 01:35Z, lease until 04:35Z; lane 4: T616 claimed 01:30Z, lease until 04:30Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z; lane 6: T397 claimed 01:45Z, lease until 04:45Z; lane 7: T759 claimed 01:50Z, lease until 04:50Z
+- **Lane:** lane 1: T691 claimed 00:03Z, lease until 03:03Z; lane 2: T118 claimed 00:46Z, lease until 03:46Z; lane 3: T803 claimed 01:35Z, lease until 04:35Z; lane 4: T616 claimed 01:30Z, lease until 04:30Z; lane 5: T542 claimed 01:45Z, lease until 04:45Z; lane 7: T759 claimed 01:50Z, lease until 04:50Z
 - **Week:** 46% used, 94.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:46Z, 3 min before this update
+- **Last run:** 01:50Z, 22 min before this update
 - **Keeper:** last ran 01:46Z, next wake 02:06Z
 
 ## Needs attention
@@ -18,16 +18,19 @@ Updated 2026-11-22T01:50:34Z by runner 21d99167398b (actions).
 Nit: runbook.md:101, :174, :177 exceed wrap width.
 - BLOCKED T121: plan gap reported: PLAN GAP: outside ownership: app/server/src/owner_portal.rs, app/server/src/owner_tools.rs, app/portals/src/owner_help.rs, app/server/src/homeowner_portal.rs
 SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (owner_portal ChangeBody, BridgeBody, OptOutBody, StripeBody, SafetyBody, SpanishBody, BusinessBody, ReleaseBody; owner_tools EvidenceBody; owner_help HelpForm; homeowner_portal PhotoPost) and unclassified raw parses (owner_tools audit_log RawQuery, homeowner_portal upload_fields Multipart and csrf_checked), none owned by T121. Also business_signup.rs Asked::from_; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T121 --plan-fix D-### --reason "..."` (D-2859)
+- BLOCKED T397: plan gap reported: PLAN GAP: outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per probed Owner row; past ~60 rows expires_at < created_at, violating portals.session CHECK (expires_at > created_at), so POST /owner/help/close as Owner returns 500. Marking the three /b/phones rows yes in docs/architecture.md section 13 turns td_sec_61_every_served_door_row_over_http red (reproduced by worker and by reviewer: exit 101, door_matrix.rs:1533). Smallest fix: a harness task that bases owner_jar sign-in times in the past (e.g. key.now - OWNER_IDLE_LIMIT) or spaces TO; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T397 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T609: plan gap reported: PLAN GAP: tests/e2e/site_pages.spec.ts:26-28 (owned by T102) requires exactly one footer h2 "Homeowners" and exactly four footer links (toEqual), but T609's goal (DESIGN_SPEC.md:117, D-4252(a)) requires a second footer column (For businesses, Español, Terms, Privacy, Accessibility), and the prompt says that test must pass unchanged and T609 does not own it. Reviewer confirmed at HEAD 907c2ff0ac1a: current footer has one h2 and four links, so adding the second column fails lines 26-28. Smallest plan change: logged change to site_pages.spec.ts:26-28 to allow both columns, or drop the second colu; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T609 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T725: plan gap reported: PLAN GAP: tests/docs/test_required_lines.py:139 (WORD-013, docs/spec/wording.md:17) contradicts kit/prompts/T725.md:9 (Spanish home page unchanged, shows neither). The consent line word for word in home.html contains "Reply STOP"; WORD-013 reads raw template text ignoring {% if %} and requires PARAR on es_home.html. Smoke fails: test_td_word_02_word_013_spanish_page_matches_its_english_page[es_home.html] assert ['PARAR'] == []. Task does not own es_home.html or the test. Reviewer confirmed. Smallest fix: harness plan change so WORD-013 exempts a STOP only inside the post-Gate C texting block, ; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T725 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T121 (since 2026-11-22T01:45:41Z, no attempt used; a plan change fixes it): outside ownership: app/server/src/owner_portal.rs, app/server/src/owner_tools.rs, app/portals/src/owner_help.rs, app/server/src/homeowner_portal.rs
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
+- PLAN GAP T397 (since 2026-11-22T02:12:37Z, no attempt used; a plan change fixes it): outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per probed Owner row; past ~60 rows expires_at < created_at, violating portals.session CHECK (expires_at > created_at), so POST /owner/help/close as Owner returns 500. Marking the three /b/phones rows yes in docs/architecture.md section 13 turns td_sec_61_every_served_door_row_over_http red (reproduced by worker and by reviewer: exit 101, door_matrix.rs:1533). Smallest fix: a harness task that bases owner_jar sign-in times in the past (e.g. key.now - OWNER_IDLE_LIMIT) or spaces TOTP steps differently. Prompt forbids editing door_matrix.rs and forbids working around an unreachable route. Worker work is uncommitted in the tree.
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 34 problem(s) on tasks still to run (+477 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 35 problem(s) on tasks still to run (+477 on DONE tasks); first: T397: stored context_pct 18% but it measures 26%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T397 | server and portals: the owner approves or declines a member- | BLOCKED | 1 | 27 min | 02:12Z | PLAN GAP: outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per p |
 | T121 | Startup key checks, control router absent in live, supply-ch | BLOCKED | 1 | 15 min | 01:45Z | PLAN GAP: outside ownership: app/server/src/owner_portal.rs, app/server/src/owner_tools.rs, app/portals/src/owner_help.r |
 | T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | BLOCKED | 3 | 49 min | 01:39Z | Reviewer after findings round still FINDINGS at 4f79a8b8c4195e68ccfba3a25eaab6d612560536: / 1. docs/runbook.md:139-142 a |
 | T542 | portals and server: notice and backup address changes are re | QUEUED | 1 | 2 h 37 min | 01:29Z | Reviewer after the findings round still ended REVIEW-VERDICT: FINDINGS at head 4de98e6fb74e1e5394629d7a1abe0694167723a2: |
@@ -86,9 +89,6 @@ SEC-010 scan (D-4258) fails on ten form structs without deny_unknown_fields (own
 | T457 | portals and server: the Confirm email link asks for a code w | resync | 1 | 70 min | 02:50Z |  |
 | T654 | licensing and quotes: every ROC list import runs each active | BLOCKED | 1 | 2 min | 02:42Z |  |
 | T774 | tests (harness): the quote page's no-AI-summary check leaves | done | 1 | 65 min | 02:38Z |  |
-| T777 | businesses: a sign-in code is texted only to a line whose cu | BLOCKED | 1 | 37 min | 02:09Z |  |
-| T769 | site: the business page's WEB-024 line follows the stored bu | done | 1 | 41 min | 01:56Z |  |
-| T580 | messaging: a failed, blocked or expired text reads as failed | done | 1 | 43 min | 01:53Z |  |
 
 ### Plan and harness merges on main
 - none
@@ -144,8 +144,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 3: T803 (lease until 2026-11-22T04:35:04Z)
 - lane 4: T616 (lease until 2026-11-22T04:30:46Z)
 - lane 5: T542 (lease until 2026-11-22T04:45:48Z)
-- lane 6: T397 (lease until 2026-11-22T04:45:02Z)
 - lane 7: T759 (lease until 2026-11-22T04:50:14Z)
 
 ## Last usage reading
-- {"task": "T121", "at": "2026-11-22T01:45:41Z", "cache_creation_input_tokens": 190427, "cache_read_input_tokens": 6425983, "output_tokens": 81041, "input_tokens": 151}
+- {"task": "T397", "at": "2026-11-22T02:12:37Z", "cache_creation_input_tokens": 179961, "input_tokens": 155, "cache_read_input_tokens": 8362221, "output_tokens": 57778}
