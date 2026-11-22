@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-22T09:09:33Z by runner dd295e06660e (actions).
+Updated 2026-11-22T09:11:35Z by runner dd295e06660e (actions).
 
 **Building: T675 in progress since 08:47Z; 607 of 767 done; week 55% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 607 of 767 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 4: T729 claimed 08:07Z, lease until 11:07Z; lane 5: T725 claimed 08:59Z, lease until 11:59Z
-- **Week:** 55% used, 78.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 09:06Z, 3 min before this update
+- **Lane:** lane 2: T675 claimed 08:47Z, lease until 11:47Z; lane 4: T729 claimed 08:07Z, lease until 11:07Z; lane 5: T725 claimed 08:59Z, lease until 11:59Z; lane 7: T589 claimed 09:11Z, lease until 12:11Z
+- **Week:** 55% used, 78.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 09:09Z, 1 min before this update
 - **Keeper:** last ran 09:06Z, next wake 11:10Z
 
 ## Needs attention
@@ -126,7 +126,7 @@ At 1280x900 the /request chat start screen textarea box spans y=784..914, partly
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-22T08:55:04Z (week)): week: 115.5M used, 78.5M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T03:11:38Z.
+- Pacing (session_reading 2026-11-22T09:05:50Z (week)): week: 115.6M used, 78.4M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T02:27:27Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -145,6 +145,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T675 (lease until 2026-11-22T11:47:43Z)
 - lane 4: T729 (lease until 2026-11-22T11:07:49Z)
 - lane 5: T725 (lease until 2026-11-22T11:59:45Z)
+- lane 7: T589 (lease until 2026-11-22T12:11:16Z)
 
 ## Last usage reading
 - {"task": "T610", "at": "2026-11-22T09:00:09Z", "cache_read_input_tokens": 2073383, "cache_creation_input_tokens": 107103, "input_tokens": 81, "output_tokens": 17151}
