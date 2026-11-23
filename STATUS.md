@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T08:28:25Z by runner 7cc3c7714192 (actions).
+Updated 2026-11-23T08:33:05Z by runner 7cc3c7714192 (actions).
 
-**Building: T646 in progress since 07:59Z; 627 of 775 done; week 73% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T646 in progress since 07:59Z; 628 of 775 done; week 73% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 627 of 775 build tasks (owner gates not counted)
+- **Tasks done:** 628 of 775 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T646 claimed 07:59Z, lease until 10:59Z; lane 3: T666 claimed 08:27Z, lease until 11:27Z; lane 5: T588 claimed 07:02Z, lease until 10:02Z
 - **Week:** 73% used, 44.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:27Z, 0 min before this update
+- **Last run:** 08:28Z, 4 min before this update
 - **Keeper:** last ran 08:27Z, next wake 08:47Z
 
 ## Needs attention
@@ -30,7 +30,7 @@ Evidence: last_quote_text (quote_text_sent.rs:45-52) reads only messaging.outbox
 | T716 | intake: the dispatcher's trade questions at step 5: "Which f | BLOCKED | 3 | 81 min | 08:17Z | PLAN GAP: outside ownership: app/intake/src/conversation.rs (purge_child, ~348-362), app/intake/src/models.rs (purge_req |
 | T835 | runner (harness): a cancelled run on a superseded head neith | done | 1 | 52 min | 07:24Z |  |
 | T716 | intake: the dispatcher's trade questions at step 5: "Which f | QUEUED | 2 | 2 h 6 min | 06:48Z |  |
-| T611 | portals: depth, type and press on the portal screens through | MERGE_PENDING | 1 | 2 h 20 min | 06:24Z |  |
+| T611 | portals: depth, type and press on the portal screens through | done | 1 | 2 h 20 min | 06:24Z |  |
 | T838 | portals, server and calls: the sign-in, quote-action and sig | done | 1 | 86 min | 06:07Z |  |
 | T834 | ci (harness): Twin and Ally skip their build when nothing th | done | 3 | 48 min | 05:51Z | After the fix round the reviewer (head f9e32434db512dbbf1f29deb2d94b5848d2e3874) still ends REVIEW-VERDICT: FINDINGS. Fi |
 | T803 | messaging (harness): an opted-out number gets no HELP reply; | done | 4 | 81 min | 05:08Z | Ci: failure; Checks: cancelled / Checks failed at step: Named mutants of the files this change touches (scripts/run_name |
@@ -82,7 +82,7 @@ Evidence: last_quote_text (quote_text_sent.rs:45-52) reads only messaging.outbox
 ## Progress (requirements verified)
 
 **Requirements verified:** 403 of 735 (54.8%) · partial 319 · unstarted 13
-**Tasks merged (throughput only):** 627 of 775
+**Tasks merged (throughput only):** 628 of 775
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -118,7 +118,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 270 of 347 done
+- stage 5: 271 of 347 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
