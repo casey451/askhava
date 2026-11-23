@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {#- The owner home (T108; OPS-001, OPS-003, OPS-035, FEE-007, CON-024, BIZ-027, CON-022; D-1843,
-    D-3744, D-3882, D-3890; T484: OPS-028, D-3753). Pushed alerts with the acknowledgement and,
+    D-3744, D-3882, D-3890; T484: OPS-028, D-3753; T712: JOB-016, D-4423, the problem reports link). Pushed alerts with the acknowledgement and,
     for a critical alert about a text, the bridge press, the pause switches, the fee
     mode, the homeowner line, the status banner, the weekly opt-out rates, the needs-review
     sign-ups and how long consent records are kept. IDs and code names only, never a contact
@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="/static/portals/forms.css">
 <h1>Owner home</h1>
 <p><a href="{{ routes[5] }}">Category settings</a></p>
+<p><a href="{{ crate::owner_complaint::OWNER_PROBLEM_REPORTS_ROUTE }}">Problem reports</a></p>
 <h2>Alerts sent to your phone</h2>
 {% if alerts.is_empty() %}<p id="no-alerts">No alert has been sent to your phone.</p>
 {% else %}<ul id="pushed-alerts">
