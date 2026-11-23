@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T01:17:07Z by runner 6cb391745e61 (actions).
+Updated 2026-11-23T01:17:38Z by runner 6cb391745e61 (actions).
 
 **Building: T837 in progress since 01:06Z; 618 of 774 done; week 69% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-23T01:17:07Z by runner 6cb391745e61 (actions).
 - **Lane:** lane 1: T837 claimed 01:06Z, lease until 04:06Z; lane 2: T645 claimed 23:51Z, lease until 02:51Z; lane 4: T712 claimed 00:09Z, lease until 03:09Z
 - **Week:** 69% used, 52.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 01:17Z, 0 min before this update
-- **Keeper:** last ran 01:11Z, next wake 02:54Z
+- **Keeper:** last ran 01:17Z, next wake 02:53Z
 
 ## Needs attention
 - BLOCKED T121: plan gap reported: PLAN GAP: outside ownership: app/portals/src/update_channel.rs
