@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T14:40:33Z by runner d615c36123e7 (actions).
+Updated 2026-11-23T14:45:47Z by runner ca32683e9893 (actions).
 
-**Building: T714 in progress since 14:21Z; 631 of 777 done; week 77% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T714 in progress since 14:21Z; 632 of 777 done; week 77% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 631 of 777 build tasks (owner gates not counted)
+- **Tasks done:** 632 of 777 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T714 claimed 14:21Z, lease until 17:21Z; lane 4: T222 claimed 14:30Z, lease until 17:30Z; lane 5: T121 claimed 14:15Z, lease until 17:15Z
 - **Week:** 77% used, 39.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:40Z, 0 min before this update
+- **Last run:** 14:40Z, 4 min before this update
 - **Keeper:** last ran 14:40Z, next wake 17:17Z
 
 ## Needs attention
@@ -36,7 +36,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T649 (since 2026-11-23T14:15:02Z, no attempt used; a plan change fixes it): T649: dependency T646 is DONE but its owned file app/server/tests/web_chat_client_ip.rs is not on main
 - PLAN GAP T836 (since 2026-11-23T07:59:33Z, no attempt used; a plan change fixes it): T836: kit/runner_log.jsonl is named by D-500, but no task owns it and it does not exist
-- Strict plan check red: 38 problem(s) on tasks still to run (+518 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 38 problem(s) on tasks still to run (+519 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -46,7 +46,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 | T646 | site and server: the web chat's new-request limit counts the | done | 3 | 99 min | 13:40Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T730 | messaging: a homeowner who chose email gets each quote updat | check_failed | 3 | 2 h 46 min | 13:19Z | PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs / Evidence: last_quote_text (quote_text_sent.rs:45-52) |
 | T714 | portals: a Confirm link sent by text is marked text-started  | BLOCKED | 3 | 36 min | 13:10Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
-| T653 | licensing and server (harness): a typed BTR number is stored | MERGE_PENDING | 2 | 65 min | 13:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
+| T653 | licensing and server (harness): a typed BTR number is stored | done | 2 | 65 min | 13:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
 | T714 | portals: a Confirm link sent by text is marked text-started  | check_failed | 2 | 47 min | 12:27Z |  |
 | T819 | portals: her feedback words are scrubbed before they are sto | check_failed | 1 | 54 min | 11:57Z |  |
 | T646 | site and server: the web chat's new-request limit counts the | check_failed | 2 | 54 min | 11:30Z |  |
@@ -95,14 +95,14 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 402 of 735 (54.7%) · partial 320 · unstarted 13
-**Tasks merged (throughput only):** 631 of 777
+**Requirements verified:** 404 of 735 (55.0%) · partial 318 · unstarted 13
+**Tasks merged (throughput only):** 632 of 777
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
 | accessibility | 25 | 10 | 0 | 35 |
 | ai | 7 | 19 | 3 | 29 |
-| businesses | 29 | 28 | 1 | 58 |
+| businesses | 31 | 26 | 1 | 58 |
 | calls | 17 | 8 | 0 | 25 |
 | consent | 17 | 18 | 0 | 35 |
 | fees | 27 | 25 | 0 | 52 |
@@ -132,7 +132,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 274 of 349 done
+- stage 5: 275 of 349 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
