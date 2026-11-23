@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T10:00:30Z by runner 4345220c6cce (actions).
+Updated 2026-11-23T10:06:24Z by runner 1c862770c97b (actions).
 
 **Building: T121 in progress since 08:33Z; 629 of 775 done; week 74% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-23T10:00:30Z by runner 4345220c6cce (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T121 claimed 08:33Z, lease until 11:33Z; lane 2: T714 claimed 09:25Z, lease until 12:25Z; lane 3: T666 claimed 08:27Z, lease until 11:27Z; lane 5: T653 claimed 09:21Z, lease until 12:21Z
 - **Week:** 74% used, 42.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:00Z, 0 min before this update
+- **Last run:** 10:00Z, 5 min before this update
 - **Keeper:** last ran 10:00Z, next wake 11:30Z
 
 ## Needs attention
@@ -20,7 +20,7 @@ Evidence: last_quote_text (quote_text_sent.rs:45-52) reads only messaging.outbox
 - PLAN GAP T716 (since 2026-11-23T08:17:23Z, no attempt used; a plan change fixes it): outside ownership: app/intake/src/conversation.rs (purge_child, ~348-362), app/intake/src/models.rs (purge_request). first_text (order_dispatch.rs:272) holds a short trade-naming first text's scrubbed words in quotes.job_description under the request's own ID (no job). If she then says "I'm 12" before the ZIP, stop_if_under_18 runs before order_dispatch, request_jobs is empty, purge_child purges nothing, purge_request deletes only code-only intake tables, so an under-13 sender's words survive INT-038/PRIV-008; the row also escapes the 3-year text purge (no job, no purge task). D-5400's "re-read the first inbox message" option is impossible: messaging.inbox stores no body (migrations/0043_messaging_inbox_delivery.sql:7, PRIV-002). Smallest plan change: purge_child also calls askhava_quotes::api::purge_job_text(tx, conversation), plus a test (two-word first text, then "I'm 12", leaves no job_description row) and a purge for an adult who never sends a ZIP; reword D-5581 and docs/for-casey-review.md. Confirmed by reviewer a1a2363fa41dcc7a8 at head 453a46fe0d47b68ba4e727ce1693faa9f1ef8d33. Separate accepted gap D-5582 (count/send disagreement for handyman+breaker) already logged.
 - PLAN GAP T730 (since 2026-11-23T08:25:48Z, no attempt used; a plan change fixes it): outside ownership: app/messaging/src/quote_text_sent.rs
 - PLAN GAP T836 (since 2026-11-23T07:59:33Z, no attempt used; a plan change fixes it): T836: kit/runner_log.jsonl is named by D-500, but no task owns it and it does not exist
-- Strict plan check red: 37 problem(s) on tasks still to run (+514 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 37 problem(s) on tasks still to run (+515 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -67,7 +67,6 @@ Evidence: last_quote_text (quote_text_sent.rs:45-52) reads only messaging.outbox
 | T725 | site: the home page shows the texting number with its consen | BLOCKED | 3 | 21 min | 10:52Z |  |
 | T729 | portals and privacy: the quote page offers updates by email  | resync | 2 | 2 h 32 min | 10:40Z |  |
 | T803 | messaging (harness): an opted-out number gets no HELP reply; | BLOCKED | 3 | 25 min | 10:25Z |  |
-| T589 | intake and portals: the pick review page is shown in her req | check_failed | 1 | 53 min | 10:04Z |  |
 
 ### Plan and harness merges on main
 - 07:11Z Plan: T716 owns cards_out.rs so the card send uses the counted pairs (D-5606) (#1382)
