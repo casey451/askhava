@@ -105081,7 +105081,7 @@
     "T684",
     "T580"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 3,
    "slug": "update-email-sends",
    "type": "build",
@@ -105108,7 +105108,7 @@
      "expires": "2026-11-23T06:34:29Z"
     }
    ],
-   "last_failure": "PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs\nEvidence: last_quote_text (quote_text_sent.rs:45-52) reads only messaging.outbox; with the Email choice T730 stores no text row (kit/prompts/T730.md:9), so intake previous() (quote_updates.rs:166-172) is None, notice() returns Notice::First (quotes/src/notify.rs:100-105) and later quote updates end as Nothing. T730 owns only update_emails.rs, email.rs, service.rs and update_email_sends.rs (T730.md:35-40); the file is owned by merged T582 only. Fix: add the file to T730 owns so last_quote_text also reads update emails in messaging.email_outbox, plus a test driving intake's update handler for Email-only and for a bounce-reset homeowner. Reviewer confirmed.\nre-queued after plan fix D-5617: T730 owns quote_text_sent.rs: last_quote_text counts update emails (not dropped), so Email-only gets quote_update",
+   "last_failure": "PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs\nEvidence: last_quote_text (quote_text_sent.rs:45-52) reads only messaging.outbox; with the Email choice T730 stores no text row (kit/prompts/T730.md:9), so intake previous() (quote_updates.rs:166-172) is None, notice() returns Notice::First (quotes/src/notify.rs:100-105) and later quote updates end as Nothing. T730 owns only update_emails.rs, email.rs, service.rs and update_email_sends.rs (T730.md:35-40); the file is owned by merged T582 only. Fix: add the file to T730 owns so last_quote_text also reads update emails in messaging.email_outbox, plus a test driving intake's update handler for Email-only and for a bounce-reset homeowner. Reviewer confirmed.\nre-queued after plan fix D-5617: T730 owns quote_text_sent.rs: last_quote_text counts update emails (not dropped), so Email-only gets quote_update\nre-queued after plan fix D-5640: T730 retry: CI failed only on RUSTSEC-2026-0594 (fixed by #1396); D-5639/D-5640 settle its scope (reader moved to T840; address-row subject; 3 update templates)",
    "history": [
     {
      "attempt": 1,
@@ -105222,7 +105222,7 @@
      }
     }
    ],
-   "reason": "Ci: failure; Checks: failure\nChecks failed at step: Rust dependency audit (cargo-audit, cargo-deny)\nWarning:   unmaintained\nTitle:     `basic-toml` is unmaintained\nDate:      2026-09-26\nID:        RUSTSEC-2026-0374\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0374\nCrate:     proc-macro-error2\nVersion:   2.0.1\nWarning:   unmaintained\nTitle:     proc-macro-error2 is unmaintained\nDate:      2026-06-07\nID:        RUSTSEC-2026-0173\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0173\nerror: 1 vulnerability found!\nwarning: 2 allowed warnings found\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
+   "reason": null,
    "requeues": [
     {
      "at": "2026-11-23T10:12:03Z",
@@ -105236,6 +105236,19 @@
      "plan_head": "ab7be9fe867a24e171709f0812b7247bc6442651",
      "plan_then": "9a5f237b28a2dac5a6ab7ae66c71792925176a9120067308099e10086d5620fb",
      "plan_now": "d344e3352e358875f085e41d18e626932482ab892a6990a4ea5f986fd191bd9d"
+    },
+    {
+     "at": "2026-11-23T16:44:36Z",
+     "reason": "T730 retry: CI failed only on RUSTSEC-2026-0594 (fixed by #1396); D-5639/D-5640 settle its scope (reader moved to T840; address-row subject; 3 update templates)",
+     "by": "manual-705893e8e3b5",
+     "was": "Ci: failure; Checks: failure\nChecks failed at step: Rust dependency audit (cargo-audit, cargo-deny)\nWarning:   unmaintained\nTitle:     `basic-toml` is unmaintained\nDate:      2026-09-26\nID:        RUSTSEC-2026-0374\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0374\nCrate:     proc-macro-error2\nVersion:   2.0.1\nWarning:   unmaintained\nTitle:     proc-macro-error2 is unmaintained\nDate:      2026-06-07\nID:        RUSTSEC-2026-0173\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0173\nerror: 1 vulnerability found!\nwarning: 2 allowed warnings found\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
+     "attempts": 3,
+     "plan_fix": "D-5640",
+     "plan_since": "2026-11-23T10:33:05Z",
+     "plan_base": "f27e05243e49a721f4e086497cd1853aa05db78f",
+     "plan_head": "7f19bc708773a493fc728016ccff46448a01c2e5",
+     "plan_then": "d344e3352e358875f085e41d18e626932482ab892a6990a4ea5f986fd191bd9d",
+     "plan_now": "e7e7cedf9b34a3e1bb8b598765f6304974f2c4c8bc03179f79527dd3897c25cc"
     }
    ],
    "reviewed_sha": "396166b8b1f3e2b586a6abbd52755a44aa78686d",
@@ -122776,7 +122789,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T16:17:09Z",
+ "updated_at": "2026-11-23T16:44:36Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -122874,8 +122887,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "6b70ed1394c19294cbeea1e2e8cb80e3f79c05c9",
- "starter": "actions",
+ "runner_sha": "7f19bc708773a493fc728016ccff46448a01c2e5",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "1c862770c97b70bb8043578ba714e62bf6807913",

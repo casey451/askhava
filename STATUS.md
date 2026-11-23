@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T16:17:09Z by runner 6b70ed1394c1 (actions).
+Updated 2026-11-23T16:44:36Z by runner 7f19bc708773 (manual).
 
 **Building: T222 in progress since 16:16Z; 634 of 777 done; week 78% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,34 +8,15 @@ Updated 2026-11-23T16:17:09Z by runner 6b70ed1394c1 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T222 claimed 16:16Z, lease until 19:16Z; lane 2: T121 claimed 15:11Z, lease until 18:11Z; lane 3: T745 claimed 14:48Z, lease until 17:48Z; lane 4: T649 claimed 15:45Z, lease until 18:45Z; lane 5: T782 claimed 15:18Z, lease until 18:18Z
 - **Week:** 78% used, 31.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:14Z, 2 min before this update
+- **Last run:** 16:17Z, 27 min before this update
 - **Keeper:** last ran 15:56Z, next wake 17:51Z
 
 ## Needs attention
-- BLOCKED T730: Ci: failure; Checks: failure
-Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny)
-Warning:   unmaintained
-Title:     `basic-toml` is unmaintained
-Date:      2026-09-26
-ID:        RUSTSEC-2026-0374
-URL:       https://rustsec.org/advisories/RUSTSEC-2026-0374
-Crate:     proc-macro-error2
-Version:   2.0.1
-Warning:   unmaintained
-Title:     proc-macro-error2 is unmaintained
-Date:      2026-06-07
-ID:        RUSTSEC-2026-0173
-URL:       https://rustsec.org/advisories/RUSTSEC-2026-0173
-error: 1 vulnerability found!
-warning: 2 allowed warnings found
-##[error]Process completed with exit code 1.
-Ci failed at step: All five jobs passed
-Checks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success
-##[error]Process completed with exit code 1.
+- CLAIMS STOPPED: nightly success on 21be2b3d8975, failures_since_green 0; no stage passed its exit test
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T836 (since 2026-11-23T07:59:33Z, no attempt used; a plan change fixes it): T836: kit/runner_log.jsonl is named by D-500, but no task owns it and it does not exist
-- Strict plan check red: 42 problem(s) on tasks still to run (+522 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 40 problem(s) on tasks still to run (+522 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -79,10 +60,9 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 | T675 | intake and server (harness): the dispatcher asks for photos  | done | 4 | 45 min | 00:33Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T121 | Startup key checks, control router absent in live, supply-ch | BLOCKED | 2 | 12 min | 00:03Z |  |
 | T675 | intake and server (harness): the dispatcher asks for photos  | resync | 4 | 81 min | 17:03Z |  |
-| T590 | calls, picks and server: the who's-calling and missed-call t | check_failed | 1 | 118 min | 16:40Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
-| T122 | docs/account-checklist.md: Part 1 test accounts, Part 2 busi | QUEUED | 1 | 88 min | 16:23Z | Reviewer after the findings round (head d65c4896894680459870359165740cf8b3a2bf57) still ended FINDINGS: / 1. tests/docs/ |
 
 ### Plan and harness merges on main
+- 16:44Z Plan: T840 update-email entry point and first-quote resend (D-5640); six-task pre-flight fixes (D-5646) (#1402)
 - 13:33Z Plan: Email-only quote updates and counts (T840), under-13 purge completeness (T839), T716 test precondition (D-5639) (#1399)
 - 10:11Z Plan: T716 purges held first-text words on an under-13 stop; T730 counts update emails (D-5617) (#1386)
 - 07:11Z Plan: T716 owns cards_out.rs so the card send uses the counted pairs (D-5606) (#1382)
@@ -92,31 +72,31 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 404 of 735 (55.0%) · partial 318 · unstarted 13
+**Requirements verified:** 1 of 735 (0.1%) · partial 721 · unstarted 13
 **Tasks merged (throughput only):** 634 of 777
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 25 | 10 | 0 | 35 |
-| ai | 7 | 19 | 3 | 29 |
-| businesses | 31 | 26 | 1 | 58 |
-| calls | 17 | 8 | 0 | 25 |
-| consent | 17 | 18 | 0 | 35 |
-| fees | 27 | 25 | 0 | 52 |
-| intake | 11 | 32 | 0 | 43 |
-| job-cards | 15 | 9 | 0 | 24 |
-| licensing | 36 | 12 | 0 | 48 |
-| lifecycle | 21 | 7 | 0 | 28 |
-| messaging | 25 | 20 | 0 | 45 |
-| ops-recovery | 17 | 31 | 6 | 54 |
-| privacy | 12 | 19 | 0 | 31 |
-| quiet-hours | 4 | 5 | 0 | 9 |
-| quotes-pick | 34 | 22 | 0 | 56 |
-| recurring | 10 | 1 | 0 | 11 |
-| security | 14 | 38 | 3 | 55 |
-| terms | 30 | 5 | 0 | 35 |
-| website | 22 | 8 | 0 | 30 |
-| wording | 29 | 3 | 0 | 32 |
+| accessibility | 0 | 35 | 0 | 35 |
+| ai | 0 | 26 | 3 | 29 |
+| businesses | 0 | 57 | 1 | 58 |
+| calls | 0 | 25 | 0 | 25 |
+| consent | 0 | 35 | 0 | 35 |
+| fees | 0 | 52 | 0 | 52 |
+| intake | 0 | 43 | 0 | 43 |
+| job-cards | 0 | 24 | 0 | 24 |
+| licensing | 0 | 48 | 0 | 48 |
+| lifecycle | 0 | 28 | 0 | 28 |
+| messaging | 0 | 45 | 0 | 45 |
+| ops-recovery | 1 | 47 | 6 | 54 |
+| privacy | 0 | 31 | 0 | 31 |
+| quiet-hours | 0 | 9 | 0 | 9 |
+| quotes-pick | 0 | 56 | 0 | 56 |
+| recurring | 0 | 11 | 0 | 11 |
+| security | 0 | 52 | 3 | 55 |
+| terms | 0 | 35 | 0 | 35 |
+| website | 0 | 30 | 0 | 30 |
+| wording | 0 | 32 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
