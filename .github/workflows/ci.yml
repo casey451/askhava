@@ -218,11 +218,12 @@ jobs:
           if [ "$EVENT_NAME" = "schedule" ] || [ "$EVENT_NAME" = "workflow_dispatch" ] || [ "$GITHUB_REF_NAME" = "main" ]; then
             echo "rust=true" >> "$GITHUB_OUTPUT"; echo "npm=true" >> "$GITHUB_OUTPUT"; exit 0
           fi
-          base="$(git merge-base origin/main HEAD)"
-          files="$(git diff --no-renames --name-only "$base" HEAD)"
+          # Fail closed (D-5554): a failed merge-base or diff sets both flags, never reads as "nothing changed".
           rust=false; npm=false
-          echo "$files" | grep -Eq '^(app/|tests/(integration|security|recovery|fixtures|mutation)/|scripts/run_named_mutants\.py|migrations/|docs/legal/|docs/catalog/|docs/architecture\.md|docs/copy/mail-app-steps\.md|schemas/|scripts/pii_scan\.py|scripts/bootstrap_roles\.sql|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
-          echo "$files" | grep -Eq '^(package(-lock)?\.json|tsconfig|eslint\.config|tests/(e2e|a11y)/|app/[^/]+/static/.*\.ts$)' && npm=true
+          if ! base="$(git merge-base origin/main HEAD)"; then rust=true; npm=true; fi
+          if ! git diff --no-renames --name-only "$base" HEAD > "$RUNNER_TEMP/changed-files.txt"; then rust=true; npm=true; fi
+          < "$RUNNER_TEMP/changed-files.txt" grep -Eq '^(app/|tests/(integration|security|recovery|fixtures|mutation)/|scripts/run_named_mutants\.py|migrations/|docs/legal/|docs/catalog/|docs/architecture\.md|docs/copy/mail-app-steps\.md|schemas/|scripts/pii_scan\.py|scripts/bootstrap_roles\.sql|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
+          < "$RUNNER_TEMP/changed-files.txt" grep -Eq '^(package(-lock)?\.json|tsconfig|eslint\.config|tests/(e2e|a11y)/|app/[^/]+/static/.*\.ts$|scripts/npm_audit\.py|\.github/workflows/ci\.yml)' && npm=true
           # Proven-parent pass (D-4281): a flag set true may go back to false only on an exact proven= line.
           proven() {
             line="$(python3 scripts/ci_proven.py --job "$1" --flag "$2" --step-script "$0" || true)"
@@ -423,14 +424,15 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           GH_TOKEN: ${{ github.token }}
         run: |
-          git fetch --no-tags --depth=200 "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}" main:refs/remotes/origin/main
+          # Fail closed (D-5554): a failed fetch, merge-base or diff sets the flag, never reads as "nothing changed".
+          rust=false
+          if ! git fetch --no-tags --depth=200 "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}" main:refs/remotes/origin/main; then rust=true; fi
           if [ "$EVENT_NAME" = "schedule" ] || [ "$EVENT_NAME" = "workflow_dispatch" ] || [ "$GITHUB_REF_NAME" = "main" ]; then
             echo "rust=true" >> "$GITHUB_OUTPUT"; exit 0
           fi
-          base="$(git merge-base origin/main HEAD)"
-          rust=false
-          git diff --no-renames --name-only "$base" HEAD \
-            | grep -Eq '^(app/|tests/(integration|security|recovery|fixtures|mutation)/|scripts/run_named_mutants\.py|migrations/|docs/legal/|docs/catalog/|docs/architecture\.md|docs/copy/mail-app-steps\.md|schemas/|scripts/pii_scan\.py|scripts/bootstrap_roles\.sql|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
+          if ! base="$(git merge-base origin/main HEAD)"; then rust=true; fi
+          if ! git diff --no-renames --name-only "$base" HEAD > "$RUNNER_TEMP/changed-files.txt"; then rust=true; fi
+          < "$RUNNER_TEMP/changed-files.txt" grep -Eq '^(app/|tests/(integration|security|recovery|fixtures|mutation)/|scripts/run_named_mutants\.py|migrations/|docs/legal/|docs/catalog/|docs/architecture\.md|docs/copy/mail-app-steps\.md|schemas/|scripts/pii_scan\.py|scripts/bootstrap_roles\.sql|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
           # Proven-parent pass (D-4281): a flag set true may go back to false only on an exact proven= line.
           proven() {
             line="$(python3 scripts/ci_proven.py --job "$1" --flag "$2" --step-script "$0" || true)"
@@ -595,14 +597,15 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           GH_TOKEN: ${{ github.token }}
         run: |
-          git fetch --no-tags --depth=200 "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}" main:refs/remotes/origin/main
+          # Fail closed (D-5554): a failed fetch, merge-base or diff sets the flag, never reads as "nothing changed".
+          rust=false
+          if ! git fetch --no-tags --depth=200 "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}" main:refs/remotes/origin/main; then rust=true; fi
           if [ "$EVENT_NAME" = "schedule" ] || [ "$EVENT_NAME" = "workflow_dispatch" ] || [ "$GITHUB_REF_NAME" = "main" ]; then
             echo "rust=true" >> "$GITHUB_OUTPUT"; exit 0
           fi
-          base="$(git merge-base origin/main HEAD)"
-          rust=false
-          git diff --no-renames --name-only "$base" HEAD \
-            | grep -Eq '^(app/|tests/(integration|security|recovery|fixtures|coverage_floor\.json)|scripts/coverage_floor\.py|migrations/|docs/legal/|docs/catalog/|docs/architecture\.md|docs/copy/mail-app-steps\.md|schemas/|scripts/pii_scan\.py|scripts/bootstrap_roles\.sql|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
+          if ! base="$(git merge-base origin/main HEAD)"; then rust=true; fi
+          if ! git diff --no-renames --name-only "$base" HEAD > "$RUNNER_TEMP/changed-files.txt"; then rust=true; fi
+          < "$RUNNER_TEMP/changed-files.txt" grep -Eq '^(app/|tests/(integration|security|recovery|fixtures|coverage_floor\.json)|scripts/coverage_floor\.py|migrations/|docs/legal/|docs/catalog/|docs/architecture\.md|docs/copy/mail-app-steps\.md|schemas/|scripts/pii_scan\.py|scripts/bootstrap_roles\.sql|stand_ins/|kit/layers\.json|kit/allowed_crates\.txt|Cargo\.(toml|lock)|rust-toolchain\.toml|clippy\.toml|deny\.toml|\.sqlx/|\.github/workflows/ci\.yml)' && rust=true
           # Proven-parent pass (D-4281): a flag set true may go back to false only on an exact proven= line.
           proven() {
             line="$(python3 scripts/ci_proven.py --job "$1" --flag "$2" --step-script "$0" || true)"
@@ -736,14 +739,15 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           GH_TOKEN: ${{ github.token }}
         run: |
-          git fetch --no-tags --depth=200 "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}" main:refs/remotes/origin/main
+          # Fail closed (D-5554): a failed fetch, merge-base or diff sets the flag, never reads as "nothing changed".
+          run=false
+          if ! git fetch --no-tags --depth=200 "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}" main:refs/remotes/origin/main; then run=true; fi
           if [ "$EVENT_NAME" = "schedule" ] || [ "$EVENT_NAME" = "workflow_dispatch" ] || [ "$GITHUB_REF_NAME" = "main" ]; then
             echo "run=true" >> "$GITHUB_OUTPUT"; exit 0
           fi
-          base="$(git merge-base origin/main HEAD)"
-          run=false
-          git diff --no-renames --name-only "$base" HEAD \
-            | grep -Eq '^(app/|migrations/|docs/legal/|docs/catalog/|docs/architecture\.md|docs/copy/mail-app-steps\.md|schemas/|stand_ins/|tests/(e2e|a11y|perf)/|perf/|package(-lock)?\.json|tsconfig|Cargo\.(toml|lock)|rust-toolchain\.toml|\.sqlx/|\.github/workflows/(ci|a11y)\.yml)' && run=true
+          if ! base="$(git merge-base origin/main HEAD)"; then run=true; fi
+          if ! git diff --no-renames --name-only "$base" HEAD > "$RUNNER_TEMP/changed-files.txt"; then run=true; fi
+          < "$RUNNER_TEMP/changed-files.txt" grep -Eq '^(app/|migrations/|docs/legal/|docs/catalog/|docs/architecture\.md|docs/copy/mail-app-steps\.md|schemas/|stand_ins/|tests/(e2e|a11y|perf)/|tests/security/(Cargo\.toml|tests/(perf_db_route|control_router_absent)\.rs)|perf/|package(-lock)?\.json|tsconfig|Cargo\.(toml|lock)|rust-toolchain\.toml|\.sqlx/|\.github/workflows/(ci|a11y)\.yml)' && run=true
           # Proven-parent pass (D-4281): a flag set true may go back to false only on an exact proven= line.
           proven() {
             line="$(python3 scripts/ci_proven.py --job "$1" --flag "$2" --step-script "$0" || true)"
