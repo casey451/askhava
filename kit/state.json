@@ -123625,7 +123625,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T21:31:32Z",
+ "updated_at": "2026-11-23T21:39:31Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -123724,7 +123724,7 @@
   ]
  },
  "runner_sha": "16e7a09eff4609585ce8948dfc0b0167f0b8461b",
- "starter": "actions",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "d615c36123e7e5533fd9513c3ef8752c6244cb96",
@@ -124014,7 +124014,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 5693,
+ "next_decision": 5694,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
@@ -125987,6 +125987,12 @@
    "at": "2026-11-23T20:34:25Z",
    "reason": "Casey approved (Nov 23, 'Approved'): harness task for smoke throughput: raise the pre-session smoke timeout and reuse a green smoke across plan/docs-only main merges; batched into PR #1412",
    "session": "manual-d9bd91d503cc"
+  },
+  {
+   "number": 5693,
+   "at": "2026-11-23T21:39:31Z",
+   "reason": "Crate guide trims by the D-4433 move method for businesses, payments, picks (D-5172 standing rule; PF-G); plus the PF-T prompt-template trim with the 19 verified fixes (Casey: do what you recommend)",
+   "session": "manual-f313d76b7875"
   }
  ],
  "lanes_fallback_history": [
