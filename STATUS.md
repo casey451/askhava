@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T11:09:43Z by runner f27e05243e49 (actions).
+Updated 2026-11-23T11:19:15Z by runner aee6b4a6a516 (actions).
 
 **Building: T819 in progress since 11:03Z; 630 of 775 done; week 74% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-23T11:09:43Z by runner f27e05243e49 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T819 claimed 11:03Z, lease until 14:03Z; lane 3: T646 claimed 10:36Z, lease until 13:36Z; lane 4: T730 claimed 10:33Z, lease until 13:33Z; lane 5: T653 claimed 09:21Z, lease until 12:21Z
 - **Week:** 74% used, 41.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:09Z, 0 min before this update
+- **Last run:** 11:10Z, 9 min before this update
 - **Keeper:** last ran 11:09Z, next wake 12:23Z
 
 ## Needs attention
@@ -35,7 +35,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T836 (since 2026-11-23T07:59:33Z, no attempt used; a plan change fixes it): T836: kit/runner_log.jsonl is named by D-500, but no task owns it and it does not exist
-- Strict plan check red: 36 problem(s) on tasks still to run (+516 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 38 problem(s) on tasks still to run (+515 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -81,7 +81,6 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 | T589 | intake and portals: the pick review page is shown in her req | done | 2 | 87 min | 12:04Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
 | T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 3 | 2 h 50 min | 11:38Z |  |
 | T805 | messaging (harness): the toll-free fallback is refused after | done | 1 | 50 min | 11:32Z |  |
-| T829 | server tests (harness): the door matrix's owner sign-ins nev | done | 3 | 46 min | 11:10Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 
 ### Plan and harness merges on main
 - 10:11Z Plan: T716 purges held first-text words on an under-13 stop; T730 counts update emails (D-5617) (#1386)
@@ -94,7 +93,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 402 of 735 (54.7%) · partial 320 · unstarted 13
+**Requirements verified:** 403 of 735 (54.8%) · partial 319 · unstarted 13
 **Tasks merged (throughput only):** 630 of 775
 
 | Area | Verified | Partial | Unstarted | Total |
@@ -109,7 +108,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 | job-cards | 15 | 9 | 0 | 24 |
 | licensing | 36 | 12 | 0 | 48 |
 | lifecycle | 21 | 7 | 0 | 28 |
-| messaging | 25 | 20 | 0 | 45 |
+| messaging | 26 | 19 | 0 | 45 |
 | ops-recovery | 17 | 31 | 6 | 54 |
 | privacy | 12 | 19 | 0 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
