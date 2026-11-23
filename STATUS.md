@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-23T11:00:57Z by runner 9e6584b530f3 (actions).
+Updated 2026-11-23T11:01:29Z by runner 9e6584b530f3 (actions).
 
-**Building: T714 in progress since 09:25Z; 630 of 775 done; week 74% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T646 in progress since 10:36Z; 630 of 775 done; week 74% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 630 of 775 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T714 claimed 09:25Z, lease until 12:25Z; lane 3: T646 claimed 10:36Z, lease until 13:36Z; lane 4: T730 claimed 10:33Z, lease until 13:33Z; lane 5: T653 claimed 09:21Z, lease until 12:21Z
+- **Lane:** lane 3: T646 claimed 10:36Z, lease until 13:36Z; lane 4: T730 claimed 10:33Z, lease until 13:33Z; lane 5: T653 claimed 09:21Z, lease until 12:21Z
 - **Week:** 74% used, 41.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 10:59Z, 1 min before this update
 - **Keeper:** last ran 10:59Z, next wake 11:19Z
@@ -41,6 +41,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T714 | portals: a Confirm link sent by text is marked text-started  | MERGE_PENDING | 1 | 95 min | 11:00Z |  |
 | T666 | jobs, quotes and server: GET /b/jobs/{j} serves the business | QUEUED | 1 | 2 h 1 min | 10:28Z | Reviewer after the findings round (head bf41c81b22bdbd874d7d53cb8ba64ca6bb0737cf): app/server/tests/job_page_route.rs (w |
 | T121 | Startup key checks, control router absent in live, supply-ch | check_failed | 3 | 103 min | 10:16Z | PLAN GAP: outside ownership: app/portals/src/update_channel.rs / T729 (owner) merged UpdatesForm/ConfirmForm without den |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | done | 5 | 82 min | 09:58Z | PLAN GAP: outside ownership: app/site/templates/request.html, app/site/static/site.css / At 1280x900 the /request chat s |
@@ -140,10 +141,9 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T714 (lease until 2026-11-23T12:25:09Z)
 - lane 3: T646 (lease until 2026-11-23T13:36:19Z)
 - lane 4: T730 (lease until 2026-11-23T13:33:05Z)
 - lane 5: T653 (lease until 2026-11-23T12:21:32Z)
 
 ## Last usage reading
-- {"task": "T666", "at": "2026-11-23T10:28:51Z", "input_tokens": 428, "output_tokens": 109784, "cache_creation_input_tokens": 418454, "cache_read_input_tokens": 20539110}
+- {"task": "T714", "at": "2026-11-23T11:00:54Z", "output_tokens": 57604, "cache_creation_input_tokens": 267401, "input_tokens": 216, "cache_read_input_tokens": 7367423}
