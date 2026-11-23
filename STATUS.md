@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T10:07:37Z by runner 1c862770c97b (actions).
+Updated 2026-11-23T10:11:43Z by runner ab7be9fe867a (manual).
 
 **Building: T121 in progress since 08:33Z; 629 of 775 done; week 74% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,19 +8,18 @@ Updated 2026-11-23T10:07:37Z by runner 1c862770c97b (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T121 claimed 08:33Z, lease until 11:33Z; lane 2: T714 claimed 09:25Z, lease until 12:25Z; lane 3: T666 claimed 08:27Z, lease until 11:27Z; lane 5: T653 claimed 09:21Z, lease until 12:21Z
 - **Week:** 74% used, 42.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:07Z, 0 min before this update
+- **Last run:** 10:08Z, 3 min before this update
 - **Keeper:** last ran 10:07Z, next wake 11:30Z
 
 ## Needs attention
-- BLOCKED T716: plan gap reported: PLAN GAP: outside ownership: app/intake/src/conversation.rs (purge_child, ~348-362), app/intake/src/models.rs (purge_request). first_text (order_dispatch.rs:272) holds a short trade-naming first text's scrubbed words in quotes.job_description under the request's own ID (no job). If she then says "I'm 12" before the ZIP, stop_if_under_18 runs before order_dispatch, request_jobs is empty, purge_child purges nothing, purge_request deletes only code-only intake tables, so an under-13 sender's words survive INT-038/PRIV-008; the row also escapes the 3-year text purge (no job, no purge task). D-5400; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T716 --plan-fix D-### --reason "..."` (D-2859)
+- CLAIMS STOPPED: nightly success on 21be2b3d8975, failures_since_green 0; no stage passed its exit test
 - BLOCKED T730: plan gap reported: PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs
 Evidence: last_quote_text (quote_text_sent.rs:45-52) reads only messaging.outbox; with the Email choice T730 stores no text row (kit/prompts/T730.md:9), so intake previous() (quote_updates.rs:166-172) is None, notice() returns Notice::First (quotes/src/notify.rs:100-105) and later quote updates end as Nothing. T730 owns only update_emails.rs, email.rs, service.rs and update_email_sends.rs (T730.md:35-40); the file is owned by merged T582 only. Fix: add the file to T730 owns so last_quote_text also reads update emails in messagin; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T730 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- PLAN GAP T716 (since 2026-11-23T08:17:23Z, no attempt used; a plan change fixes it): outside ownership: app/intake/src/conversation.rs (purge_child, ~348-362), app/intake/src/models.rs (purge_request). first_text (order_dispatch.rs:272) holds a short trade-naming first text's scrubbed words in quotes.job_description under the request's own ID (no job). If she then says "I'm 12" before the ZIP, stop_if_under_18 runs before order_dispatch, request_jobs is empty, purge_child purges nothing, purge_request deletes only code-only intake tables, so an under-13 sender's words survive INT-038/PRIV-008; the row also escapes the 3-year text purge (no job, no purge task). D-5400's "re-read the first inbox message" option is impossible: messaging.inbox stores no body (migrations/0043_messaging_inbox_delivery.sql:7, PRIV-002). Smallest plan change: purge_child also calls askhava_quotes::api::purge_job_text(tx, conversation), plus a test (two-word first text, then "I'm 12", leaves no job_description row) and a purge for an adult who never sends a ZIP; reword D-5581 and docs/for-casey-review.md. Confirmed by reviewer a1a2363fa41dcc7a8 at head 453a46fe0d47b68ba4e727ce1693faa9f1ef8d33. Separate accepted gap D-5582 (count/send disagreement for handyman+breaker) already logged.
 - PLAN GAP T730 (since 2026-11-23T08:25:48Z, no attempt used; a plan change fixes it): outside ownership: app/messaging/src/quote_text_sent.rs
 - PLAN GAP T836 (since 2026-11-23T07:59:33Z, no attempt used; a plan change fixes it): T836: kit/runner_log.jsonl is named by D-500, but no task owns it and it does not exist
-- Strict plan check red: 37 problem(s) on tasks still to run (+515 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 36 problem(s) on tasks still to run (+515 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -69,6 +68,7 @@ Evidence: last_quote_text (quote_text_sent.rs:45-52) reads only messaging.outbox
 | T803 | messaging (harness): an opted-out number gets no HELP reply; | BLOCKED | 3 | 25 min | 10:25Z |  |
 
 ### Plan and harness merges on main
+- 10:11Z Plan: T716 purges held first-text words on an under-13 stop; T730 counts update emails (D-5617) (#1386)
 - 07:11Z Plan: T716 owns cards_out.rs so the card send uses the counted pairs (D-5606) (#1382)
 - 04:05Z Plan: T121 split into T838 (D-5574); Grok G3 fixes for claimable tasks (D-5585) (#1370)
 - 00:07Z Plan: pre-flight fixes (D-5567); T837 keeper stage gate, job 32 and copy-flag fixes (D-5568) (#1368)
@@ -79,31 +79,31 @@ Evidence: last_quote_text (quote_text_sent.rs:45-52) reads only messaging.outbox
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 403 of 735 (54.8%) · partial 319 · unstarted 13
+**Requirements verified:** 1 of 735 (0.1%) · partial 721 · unstarted 13
 **Tasks merged (throughput only):** 629 of 775
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 25 | 10 | 0 | 35 |
-| ai | 7 | 19 | 3 | 29 |
-| businesses | 29 | 28 | 1 | 58 |
-| calls | 17 | 8 | 0 | 25 |
-| consent | 17 | 18 | 0 | 35 |
-| fees | 27 | 25 | 0 | 52 |
-| intake | 11 | 32 | 0 | 43 |
-| job-cards | 15 | 9 | 0 | 24 |
-| licensing | 36 | 12 | 0 | 48 |
-| lifecycle | 21 | 7 | 0 | 28 |
-| messaging | 26 | 19 | 0 | 45 |
-| ops-recovery | 17 | 31 | 6 | 54 |
-| privacy | 12 | 19 | 0 | 31 |
-| quiet-hours | 4 | 5 | 0 | 9 |
-| quotes-pick | 34 | 22 | 0 | 56 |
-| recurring | 10 | 1 | 0 | 11 |
-| security | 14 | 38 | 3 | 55 |
-| terms | 30 | 5 | 0 | 35 |
-| website | 22 | 8 | 0 | 30 |
-| wording | 29 | 3 | 0 | 32 |
+| accessibility | 0 | 35 | 0 | 35 |
+| ai | 0 | 26 | 3 | 29 |
+| businesses | 0 | 57 | 1 | 58 |
+| calls | 0 | 25 | 0 | 25 |
+| consent | 0 | 35 | 0 | 35 |
+| fees | 0 | 52 | 0 | 52 |
+| intake | 0 | 43 | 0 | 43 |
+| job-cards | 0 | 24 | 0 | 24 |
+| licensing | 0 | 48 | 0 | 48 |
+| lifecycle | 0 | 28 | 0 | 28 |
+| messaging | 0 | 45 | 0 | 45 |
+| ops-recovery | 1 | 47 | 6 | 54 |
+| privacy | 0 | 31 | 0 | 31 |
+| quiet-hours | 0 | 9 | 0 | 9 |
+| quotes-pick | 0 | 56 | 0 | 56 |
+| recurring | 0 | 11 | 0 | 11 |
+| security | 0 | 52 | 3 | 55 |
+| terms | 0 | 35 | 0 | 35 |
+| website | 0 | 30 | 0 | 30 |
+| wording | 0 | 32 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
