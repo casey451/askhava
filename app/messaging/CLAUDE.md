@@ -1,44 +1,44 @@
 # askhava-messaging: texts, emails and letters
 
 ## Purpose
-The layer-3 crate that sends and receives messages (`docs/architecture.md` section 3). T026 built the template registry (every text is a fixed English or Spanish template chosen by ID and language); T027 built quiet hours; T028 the outbox and the sender directory; T178 inbox dedupe and delivery statuses; T029 opt-outs and the one suppression list. T030 the HELP, INFO and AYUDA reply.
+The layer-3 crate that sends and receives messages (`docs/architecture.md` section 3).
 
 ## Never break
-- Every text begins `<short_name>:` from the brand file (today `Laftly:`) in both languages: `tests::template_registry::every_kind_has_both_languages_and_begins_ask_hava`. More: `(never 1)` in NOTES.md.
-- Spanish never reaches a person while the setting is off, except the `spanish_stays_on` texts: `tests::template_registry::spanish_only_while_the_setting_is_on_except_the_stay_on_texts`.
+- Every text begins `<short_name>:` from the brand file in both languages: `tests::template_registry::every_kind_has_both_languages_and_begins_ask_hava`. More: `(never 1)` in NOTES.md.
+- Spanish never reaches a person while the setting is off, except `spanish_stays_on` texts: `tests::template_registry::spanish_only_*`. More: `(never 2)` in NOTES.md.
 - Both consent texts stay GSM-7 and 2 segments: `tests::template_registry::recorded_segments_hold_and_the_consent_texts_are_gsm7`.
 - No emoji, shortener, off-domain link, promotion wording or "reply CANCEL": `tests/docs/test_template_scan.py`.
-- A new any-hour message kind is added only to `rules::night_exception` after QH-004 lists it; tests `tests::quiet_hours::td_qh_02_night_exceptions_sent` and `td_qh_02_cards_and_confirms_at_night`.
-- An area code outside the table is refused: `tests::quiet_hours::td_qh_01_unknown_area_code_never_texted`; More: `(never 6)` in NOTES.md.
+- A new any-hour message kind goes only in `rules::night_exception` after QH-004 lists it: `tests::quiet_hours::td_qh_02_*`. More: `(never 5)` in NOTES.md.
+- An area code outside the table is refused: `tests::quiet_hours::td_qh_01_unknown_area_code_never_texted`. More: `(never 6)` in NOTES.md.
 - Window edges and daylight saving: `tests::quiet_hours::td_qh_01_*`, `tests::prop_quiet_hours_props`.
-- A killed worker's row is never resent blind: one carrier call, `unknown` after 5 minutes, the email copy: `tests/integration/tests/outbox.rs::td_txt_04_a_killed_worker_never_resends_blind_and_the_row_is_unknown_after_five_minutes`. More: `(never 8)` in NOTES.md.
+- A killed worker's row is never resent blind: `tests/integration/tests/outbox.rs::td_txt_04_*`. More: `(never 8)` in NOTES.md.
 - No text to a past customer who has not written first: `td_txt_03_no_text_to_a_past_customer_who_has_not_written_first`.
 - No plaintext phone in the sender directory: `the_sender_directory_matches_linked_phones_only`.
 - A homeowner is re-checked at send, texted at her vault number, and a sent row keeps no body: `td_txt_03_a_homeowner_is_rechecked_and_texted_at_her_vault_number`.
 - A row goes only to its recipient kind; subject order does not change the key: `a_row_goes_only_to_its_recipient_kind_and_subject_order_is_one_text`.
-- The same inbound MessageSid three times is one inbox row: `tests/integration/tests/inbox.rs::td_txt_04_the_same_inbound_message_id_three_times_is_handled_once`.
+- One inbound MessageSid three times is one inbox row: `tests/integration/tests/inbox.rs::td_txt_04_*`. More: `(never 13)` in NOTES.md.
 - Each status is recorded once and never moves a text back: `td_txt_04_delivery_statuses_are_recorded`.
-- The app's word lists equal the provider's settings file: `tests::optout_words::td_con_20_word_lists_equal_the_provider_settings`.
-- "can stop by at 3", "stop sign is down", "please cancel my request" are not opt-outs: `tests::optout_words::td_con_04_a_word_in_another_sense_is_not_an_opt_out`.
-- Nothing but the confirmation within 5 minutes reaches a listed number, not even the HELP reply (D-5280): `tests::prop_optout_props::nothing_but_the_confirmation_until_start`, `tests/integration/tests/optout_flow.rs`.
+- The app's word lists equal the provider's settings file: `tests::optout_words::td_con_20_*`. More: `(never 15)` in NOTES.md.
+- An opt-out word in another sense is not an opt-out: `tests::optout_words::td_con_04_*`. More: `(never 16)` in NOTES.md.
+- Nothing but the confirmation within 5 minutes reaches a listed number: `tests/integration/tests/optout_flow.rs`. More: `(never 17)` in NOTES.md.
 - A 21610 refusal is never retried: `optout_flow.rs::td_con_05_a_21610_refusal_is_never_retried`.
-- Two opt-outs at once queue one confirmation, and an earlier listing's confirmation never goes: `optout_flow.rs::td_con_05_two_opt_outs_at_once_queue_one_confirmation`, `td_con_05_only_the_current_listings_confirmation_goes`.
-- No outbound text from any number but the audience's configured one; one audience never changes the other: `web_email_mode.rs::td_txt_08_every_outbound_text_uses_the_configured_number`, `td_txt_17_*`. More: `(never 20)` in NOTES.md.
-- No number in the message log, no body left at 30 days, log rows kept, opt-out evidence kept: `tests/integration/tests/message_log_retention.rs` (`td_txt_07_*`, `td_con_25_*`). More: `(never 21)` in NOTES.md.
-- The HELP reply holds the help email, askhava.com/help, the LIST line and the settings' times, and only the roaming line differs for Canada: `tests/integration/tests/help_start.rs`.
-- A mailbox code email's stored row holds `CODE_MARK`, never the code, and a repeat of one send is one email: `tests/integration/tests/signup_mail_paths.rs` (T468).
-- `check_webhook_silence` run again while webhooks stay silent raises no second alert: `tests/integration/tests/alert_dedupe.rs::td_ops_34_webhook_silence_alerts_once_while_silent` (T320).
-- `mark_replayed_sent` sends nothing, marks a row once, never a `blocked` or `expired` row, and never one SID on two rows: `tests/integration/tests/replay_helpers.rs` (T481).
-- CON-024: a repeat STOP is never counted again, STOP, START, STOP is, and 2.99% of homeowners never alerts while 3.00% alerts once per week: `tests/integration/tests/consent_records_alerts.rs` (T107).
-- `Notice::PickLapsed` names only the lapsed business and her quote-page link: no amount and no other business's contact (PICK-046): `tests/integration/tests/pick_lapsed_email.rs` (T446).
-- CON-022: no opt-out event a suppression row references and never a number's newest is purged, nothing goes before 1,827 days after the number's last message, and a temporary table cannot shadow the guard: `tests/integration/tests/consent_purge.rs` (`td_con_30_*`, T321).
-- No index key version is retired while a suppression row is held under it: `check_suppression_versions` refuses the start, naming versions only: `tests/integration/tests/suppression_key_versions.rs` (TD-PRIV-31, D-4418).
-- An opt-out of a number waits for the consent sweep's `still_unlisted` lock and the sweep's re-check waits for an open opt-out: `tests/integration/tests/optout_number_lock.rs` (TD-CON-37, T701).
-- An index key version's rows are removed only when every one has its active-version row, never the active version's, and no phone or digest reaches a log, error or audit row: `tests/integration/tests/suppression_rekey.rs` (T743, D-4748).
-- A queued email gets one provider call per lease (two workers, overlapping or not), a fresh lease is never retaken, and a marked, refused, given-up, expired or removed recipient's row is dropped unsent: `tests/integration/tests/email_due.rs` (T470, D-4327).
-- A business row is sent only from the business number, after `may_text` passed, with its number read once through `LinePhones` and kept nowhere; a refused, unlinked or unreadable phone expires it and a closed line reads nothing; a closed job's earlier rows expire except `CLOSE_TEXTS`: `tests/integration/tests/outbox_business_rows.rs` (T573).
-- `suppress_indexed` lists only by the digests given, inside the caller's transaction, through `record` (its number lock first); empty digests list nothing: `app/server/tests/web_chat_stops.rs` (TD-CON-36, D-4473).
-- Only `UPDATE_TEMPLATES` rows are ever emailed as updates, the 911, who's-calling, missed-call, reply and closed-job texts stay text, an `update.*` email goes only to the update address, and a hard bounce sets text: `tests/integration/tests/update_email_sends.rs` (TD-TXT-39, T730).
+- Two opt-outs at once queue one confirmation, and only the current listing's goes: `optout_flow.rs::td_con_05_*`. More: `(never 19)` in NOTES.md.
+- No outbound text from any number but the audience's configured one: `web_email_mode.rs::td_txt_08_*`, `td_txt_17_*`. More: `(never 20)` in NOTES.md.
+- No number in the message log and no body left at 30 days: `tests/integration/tests/message_log_retention.rs`. More: `(never 21)` in NOTES.md.
+- The HELP reply's contents: `tests/integration/tests/help_start.rs`. More: `(never 22)` in NOTES.md.
+- A mailbox code email's stored row never holds the code: `tests/integration/tests/signup_mail_paths.rs` (T468). More: `(never 23)` in NOTES.md.
+- A repeat `check_webhook_silence` raises no second alert: `tests/integration/tests/alert_dedupe.rs` (T320). More: `(never 24)` in NOTES.md.
+- `mark_replayed_sent` sends nothing and marks a row once: `tests/integration/tests/replay_helpers.rs` (T481). More: `(never 25)` in NOTES.md.
+- CON-024's opt-out counts and alert: `tests/integration/tests/consent_records_alerts.rs` (T107). More: `(never 26)` in NOTES.md.
+- `Notice::PickLapsed` names only the lapsed business and her quote page (PICK-046): `tests/integration/tests/pick_lapsed_email.rs` (T446). More: `(never 27)` in NOTES.md.
+- CON-022: no referenced or newest opt-out event is purged: `tests/integration/tests/consent_purge.rs` (T321). More: `(never 28)` in NOTES.md.
+- No index key version is retired while a suppression row is held under it: `tests/integration/tests/suppression_key_versions.rs`. More: `(never 29)` in NOTES.md.
+- An opt-out and the consent sweep's re-check wait for each other: `tests/integration/tests/optout_number_lock.rs` (T701). More: `(never 30)` in NOTES.md.
+- Rekeying removes only re-indexed rows and logs no phone or digest: `tests/integration/tests/suppression_rekey.rs` (T743). More: `(never 31)` in NOTES.md.
+- A queued email gets one provider call per lease: `tests/integration/tests/email_due.rs` (T470). More: `(never 32)` in NOTES.md.
+- A business row is sent only from the business number after `may_text`: `tests/integration/tests/outbox_business_rows.rs` (T573). More: `(never 33)` in NOTES.md.
+- `suppress_indexed` lists only by the digests given, in the caller's transaction: `app/server/tests/web_chat_stops.rs`. More: `(never 34)` in NOTES.md.
+- Only `UPDATE_TEMPLATES` rows are emailed as updates, only to the update address: `tests/integration/tests/update_email_sends.rs` (T730). More: `(never 35)` in NOTES.md.
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/messaging/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/messaging/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).

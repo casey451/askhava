@@ -178,7 +178,8 @@ pub use crate::templates::{
     Audience, Encoding, Language, Registry, Segments, TemplateError, Text, count_segments,
 };
 pub use crate::update_emails::{
-    TEXT_ONLY_UPDATES, UPDATE_EMAIL_PREFIX, UPDATE_TEMPLATES, queue_update_email, set_update_footer,
+    DATA_REQUEST_TEMPLATE, DataLinkKind, LinkEmail, TEXT_ONLY_UPDATES, UPDATE_EMAIL_PREFIX,
+    UPDATE_TEMPLATES, queue_data_request_link, queue_update_email, set_update_footer,
 };
 
 /// Renders template `id` for a person whose wanted language is `wanted`, filling each `{name}` from
