@@ -10428,3 +10428,4 @@
 - 2026-11-23T15:12:06Z runner ca32683e9893 (actions): {"T121": "IN_PROGRESS -> QUEUED"}
 - 2026-11-23T15:12:32Z runner ca32683e9893 (actions): {"T666": "MERGE_PENDING -> DONE"}
 - 2026-11-23T15:13:03Z runner ca32683e9893 (actions): {"T121": "QUEUED -> IN_PROGRESS"}; T121 estimated 1.3M tokens (calibrated); week has 36.3M left (no five-hour budget, D-3056) after 3.7M still running in another lane (session_reading 2026-11-23T14:52:09Z (week)); claimed
+- 2026-11-23T15:19:06Z runner 98e09a354256 (actions): {"T782": "QUEUED -> IN_PROGRESS"}; T782 estimated 1.5M tokens (calibrated); week has 35.1M left (no five-hour budget, D-3056) after 4.9M still running in another lane (session_reading 2026-11-23T14:52:09Z (week)); claimed
