@@ -112436,7 +112436,16 @@
    "wip_claim": {
     "attempt": 3,
     "remote_sha": ""
-   }
+   },
+   "reviewed_sha": "f8232c059a860d3c8ea47be3f9a6b6f197509638",
+   "review_lease": {
+    "task": "T834",
+    "session": "actions-45114848782",
+    "expires": "2026-11-23T08:03:30Z",
+    "lane": "2"
+   },
+   "branch": "claude/task/T834-workflow-skips-fail-closed",
+   "head_check_since": null
   },
   {
    "id": "T835",
@@ -120228,7 +120237,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T05:10:23Z",
+ "updated_at": "2026-11-23T05:51:32Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -120326,7 +120335,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "ff057c83296d2e44af57c4992190ea0ff9735ba8",
+ "runner_sha": "f8232c059a860d3c8ea47be3f9a6b6f197509638",
  "starter": "actions",
  "smoke_runs": [
   {

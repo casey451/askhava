@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T05:10:23Z by runner ff057c83296d (actions).
+Updated 2026-11-23T05:51:32Z by runner f8232c059a86 (actions).
 
 **Building: T716 in progress since 04:41Z; 623 of 775 done; week 71% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-23T05:10:23Z by runner ff057c83296d (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T716 claimed 04:41Z, lease until 07:41Z; lane 2: T834 claimed 05:03Z, lease until 08:03Z; lane 4: T611 claimed 04:04Z, lease until 07:04Z; lane 5: T838 claimed 04:41Z, lease until 07:41Z
 - **Week:** 71% used, 46.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:10Z, 0 min before this update
+- **Last run:** 05:10Z, 40 min before this update
 - **Keeper:** last ran 05:10Z, next wake 07:06Z
 
 ## Needs attention
@@ -60,9 +60,6 @@ Updated 2026-11-23T05:10:23Z by runner ff057c83296d (actions).
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | BLOCKED | 3 | 2 h 17 min | 06:35Z |  |
 | T827 | server and portals: the owner and homeowner forms refuse unk | done | 1 | 82 min | 06:12Z |  |
 | T829 | server tests (harness): the door matrix's owner sign-ins nev | BLOCKED | 1 | 19 min | 06:03Z |  |
-| T828 | ci (harness): gitleaks scans each push's commit range, with  | done | 1 | 84 min | 05:45Z |  |
-| T616 | site: strong per-coding ETags with 304 revalidation, a one-y | done | 2 | 39 min | 05:32Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
-| T803 | messaging (harness): an opted-out number gets no HELP reply; | check_failed | 2 | 63 min | 05:27Z |  |
 
 ### Plan and harness merges on main
 - 04:05Z Plan: T121 split into T838 (D-5574); Grok G3 fixes for claimable tasks (D-5585) (#1370)
@@ -75,7 +72,7 @@ Updated 2026-11-23T05:10:23Z by runner ff057c83296d (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 404 of 735 (55.0%) · partial 318 · unstarted 13
-**Tasks merged (throughput only):** 623 of 774
+**Tasks merged (throughput only):** 623 of 775
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
