@@ -24,9 +24,11 @@ use askhava_intake::api::rules::{Inbound, Settings as IntakeSettings};
 use askhava_intake::api::{Answer, TextIn, receive_text, record_answer};
 use askhava_jobs::api::{JobStatus, create as create_job, job_number, move_to, record_job_facts};
 use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
-use askhava_ops::api::Actor as AuditActor;
-use askhava_payments::api::{EntryKind, LedgerEntry, NewEntry, ledger_append, no_fee_release};
-use askhava_picks::api::{PagePick, Settled, page_pick, settle};
+use askhava_ops::api::{Actor as AuditActor, not_a_fit_counts};
+use askhava_payments::api::{
+    EntryKind, LedgerEntry, NewEntry, ledger_append, ledger_totals, no_fee_release,
+};
+use askhava_picks::api::{PagePick, Settled, accepted_pick, page_pick, settle};
 use askhava_portals::api::{
     CookieJar, PortalsError, SIGNIN_LINK_ROUTE, SIGNIN_ROUTE, SignIn, SignInAddress, SignInMail,
     csrf_token, ensure_pre_session, reasons, signin_post, signin_request,
@@ -698,28 +700,31 @@ async fn td_card_16_a_withdrawn_never_confirmed_quote_reads_as_withdrawn(pool: P
 }
 
 /// What a "Not a fit for us" answer must leave alone on `job` for `business` (PICK-057): the
-/// card holders (routing), its own quote's standing and the ledger's entries (fees).
+/// card holders and the accepted pick (routing), its own quote's standing and the job's ledger
+/// totals (fees).
 async fn routing_and_fees(pool: &PgPool, (job, business): (Uuid, Uuid)) -> String {
     let mut db = pool.acquire().await.expect("db");
     let holders = card_holders(&mut db, job).await.expect("holders");
-    let standing = quote_standing(&mut db, (job, business)).await;
-    let ledger: i64 = sqlx::query_scalar("SELECT count(*) FROM payments.ledger_entry")
-        .fetch_one(&mut *db)
+    let pick = accepted_pick(&mut db, job)
         .await
-        .expect("ledger");
-    format!("{holders:?} {:?} {ledger}", standing.expect("standing"))
+        .expect("pick")
+        .map(|p| p.pick);
+    let standing = quote_standing(&mut db, (job, business)).await;
+    let (from, to) = (Timestamp::UNIX_EPOCH, Timestamp::MAX);
+    let fees = ledger_totals(&mut db, &[job], from, to).await;
+    let standing = standing.expect("standing");
+    format!(
+        "{holders:?} {pick:?} {standing:?} {:?}",
+        fees.expect("fees")
+    )
 }
 
-/// The stored "Not a fit for us" reasons of `business` on `job` (OPS-039's input).
-async fn fit_answers(pool: &PgPool, (job, business): (Uuid, Uuid)) -> Vec<String> {
-    sqlx::query_scalar(
-        "SELECT reason FROM ops.not_a_fit_answer WHERE job_id = $1 AND business_id = $2",
-    )
-    .bind(job)
-    .bind(business)
-    .fetch_all(pool)
-    .await
-    .expect("answers")
+/// The month's stored "Not a fit for us" answers, as (reason code, count) (OPS-039's input).
+async fn fit_answers(pool: &PgPool) -> Vec<(&'static str, i64)> {
+    let mut db = pool.acquire().await.expect("db");
+    let counts = not_a_fit_counts(&mut db, Timestamp::now()).await;
+    let counts = counts.expect("counts").into_iter();
+    counts.map(|c| (c.reason.code(), c.count)).collect()
 }
 
 /// TD-CARD-16 (PICK-057, D-5387): the page offers "Not a fit for us" with its four one-tap
@@ -730,7 +735,7 @@ async fn fit_answers(pool: &PgPool, (job, business): (Uuid, Uuid)) -> Vec<String
 async fn td_card_16_the_page_offers_not_a_fit(pool: PgPool) {
     catalog(&pool).await;
     let (x, jar) = owner(&pool).await;
-    let (y, other) = owner(&pool).await;
+    let (_, other) = owner(&pool).await;
     let (job, number) = carded(&pool, &[x.business]).await;
     let app = app(&pool);
     let page = open(&app, &number.to_string(), &jar).await;
@@ -758,16 +763,13 @@ async fn td_card_16_the_page_offers_not_a_fit(pool: PgPool) {
         "{}",
         theirs.text
     );
-    assert!(fit_answers(&pool, (job, y.business)).await.is_empty());
+    assert!(fit_answers(&pool).await.is_empty());
     let thanks = answer(&app, tap(&jar)).await;
     assert_eq!(thanks.status, 200, "{}", thanks.text);
     assert!(thanks.text.contains("Thanks, got it"), "{}", thanks.text);
     let back = format!("id=\"back-to-job\" href=\"/b/jobs/{number}\"");
     assert!(thanks.text.contains(&back), "{}", thanks.text);
-    assert_eq!(
-        fit_answers(&pool, (job, x.business)).await,
-        [reasons()[1].0]
-    );
+    assert_eq!(fit_answers(&pool).await, [(reasons()[1].0, 1)]);
     assert_eq!(routing_and_fees(&pool, (job, x.business)).await, before);
     shows_none_of_her(&thanks.text);
 }
