@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO licensing.business_license (business_id, agency, license_number, verification) VALUES ($1, $2, $3, 'agency_record') RETURNING id",
+  "query": "INSERT INTO licensing.business_license (business_id, agency, license_number, verification) VALUES ($1, $2, $3, $4) RETURNING id",
   "describe": {
     "columns": [
       {
@@ -19,6 +19,7 @@
       "Left": [
         "Uuid",
         "Text",
+        "Text",
         "Text"
       ]
     },
@@ -26,5 +27,5 @@
       false
     ]
   },
-  "hash": "010e03e159bc63104ea6cae369925a0c765da17263eb1889d0feb1e52841f152"
+  "hash": "8feaa7b5b58dacd8aec481b019ac2fccc025456d8a8c38b97f2cda5d2031b79c"
 }

@@ -670,7 +670,24 @@ async fn td_biz_49_pest_and_agency_writers_and_no_record_value_stored(pool: PgPo
     let mut conn = pool.acquire().await.expect("connection");
     let parts = holder_for(&mut conn, business, HolderInputs::default()).await;
     let holder = parts.expect("holder").holder;
-    assert!(holder.agencies.contains(&Agency::HomeInspector), "LIC-015");
+    let typed = (Agency::HomeInspector, "HI-9999");
+    let again = askhava_licensing::api::record_typed_agency_number(
+        &mut conn,
+        business,
+        typed,
+        askhava_ops::api::Actor::System,
+    )
+    .await;
+    let stored = Some(askhava_licensing::api::HolderError::AlreadyRecorded);
+    assert_eq!(
+        again.err(),
+        stored,
+        "D-4310: the typed BTR number is stored"
+    );
+    assert!(
+        !holder.agencies.contains(&Agency::HomeInspector),
+        "LIC-015, D-4310"
+    );
     assert!(!holder.agencies.contains(&Agency::SeptageHauler), "LIC-016");
     let pest = holder.pest.expect("LIC-047: the attestation");
     assert_eq!(pest.number(), "PM-1234");

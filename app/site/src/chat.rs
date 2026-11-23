@@ -14,10 +14,10 @@
 //! a URL (D-4044). The code step is the composition's [`ChatKeys`] (T103's `send_code` and
 //! `check_code` over the vault and Verify, D-963, D-3144); without it (dev and `Ci`) the code step sends and stores nothing and
 //! says codes can't be sent right now, answering 200 (D-3744). A new request SEC-014's limit
-//! refuses opens nothing and the page says to try again later. The cross-site and CSRF checks are `server`'s layer, which hands the page its token as [`ChatCsrf`] (D-3882); [`carry`] takes the home request box's post (T593).
+//! refuses opens nothing and the page says to try again later. The cross-site and CSRF checks are `server`'s layer, which hands the page its token as [`ChatCsrf`] (D-3882) and a `POST` its client IP as [`ChatClientIp`] (SEC-040, D-4292); [`carry`] takes the home request box's post (T593).
 
 use std::future::Future;
-use std::net::{IpAddr, SocketAddr};
+use std::net::IpAddr;
 use std::sync::Arc;
 
 use askama::Template;
@@ -27,7 +27,7 @@ use askhava_intake::api::{
     ChatAnswer, ChatError, ChatIn, ChatSettings, Checked, chat_message, start_chat,
     web_chat_consent_text,
 };
-use axum::extract::{ConnectInfo, Query, State};
+use axum::extract::{Query, State};
 use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::get;
@@ -54,6 +54,13 @@ const MAX_SAID: usize = 20;
 /// extensions; the form posts it as `csrf`. No `Debug`, so it cannot reach a log (R6).
 #[derive(Clone)]
 pub struct ChatCsrf(pub String);
+
+/// SEC-014, SEC-040, D-4292: the client IP `server`'s chat layer read with
+/// `portals::api::security_event_client` (the edge's header, never the socket peer), put in a
+/// `POST`'s extensions only when it is not unspecified; [`post`] keys intake's new-request limit
+/// on it, and without it the limit gets no IP. No `Debug`, so it cannot reach a log (R6).
+#[derive(Clone, Copy)]
+pub struct ChatClientIp(pub IpAddr);
 
 /// AI-002, PRIV-001: the composition's scrubber (`privacy::api::scrub` with no vault name).
 pub type Scrub = fn(&str) -> String;
@@ -285,7 +292,7 @@ async fn page<C: ChatKeys>(
 async fn post<C: ChatKeys>(
     State(chat): State<Chat<C>>,
     csrf: Option<Extension<ChatCsrf>>,
-    client: Option<Extension<ConnectInfo<SocketAddr>>>,
+    client: Option<Extension<ChatClientIp>>,
     Form(form): Form<Posted>,
 ) -> Response {
     let turn = Turn::posted(&form, token(csrf));
@@ -293,7 +300,7 @@ async fn post<C: ChatKeys>(
     let (Some(mut turn), Ok(id)) = (turn, id) else {
         return StatusCode::BAD_REQUEST.into_response();
     };
-    let ip = client.map(|Extension(ConnectInfo(a))| a.ip());
+    let ip = client.map(|Extension(ChatClientIp(ip))| ip);
     let Ok(mut db) = chat.pool.acquire().await else {
         return chat.answer(turn, Ask::Message, Some(FAILED)).await;
     };
@@ -320,7 +327,7 @@ pub const WORDS_MAX_CHARS: usize = 1000;
 async fn carry<C: ChatKeys>(
     State(chat): State<Chat<C>>,
     csrf: Option<Extension<ChatCsrf>>,
-    client: Option<Extension<ConnectInfo<SocketAddr>>>,
+    client: Option<Extension<ChatClientIp>>,
     Form(form): Form<Posted>,
 ) -> Response {
     if form.chat.is_empty() && form.step.is_empty() {

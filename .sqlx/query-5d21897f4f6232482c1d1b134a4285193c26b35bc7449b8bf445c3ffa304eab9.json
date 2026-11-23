@@ -1,0 +1,36 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT confirmed, withdrawn_at IS NOT NULL AS \"withdrawn!\" FROM quotes.quote WHERE job_id = $1 AND business_id = $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "confirmed",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "quotes.quote",
+            "name": "confirmed"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "withdrawn!",
+        "type_info": "Bool",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      null
+    ]
+  },
+  "hash": "5d21897f4f6232482c1d1b134a4285193c26b35bc7449b8bf445c3ffa304eab9"
+}

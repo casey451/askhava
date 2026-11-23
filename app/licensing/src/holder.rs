@@ -2,10 +2,11 @@
 //! licenses (T374, D-2712; LIC-006, LIC-011, LIC-012, LIC-015, LIC-016, LIC-047, LIC-048).
 //!
 //! [`record_pest_attestation`] stores the LIC-047 attestation (`self_attested`) and
-//! [`record_agency_license`] an inspector, alarm or septage-hauler license (`agency_record`) in
-//! `licensing.business_license`, one row per business and agency (the unique index refuses a
-//! second), each with one audit row that names the agency as the field, never the number
-//! (PRIV-028). [`holder_for`] reads those rows, the Active classes on the latest ROC list for the
+//! [`record_agency_license`] an inspector, alarm or septage-hauler license read from the agency's
+//! own source (`agency_record`), and [`record_typed_agency_number`] a BTR number typed at sign-up
+//! (`typed_unchecked`, never counted as a license, D-4310) in `licensing.business_license`, one
+//! row per business and agency (the unique index refuses a second), each with one audit row that
+//! names the agency as the field, never the number (PRIV-028). [`holder_for`] reads those rows, the Active classes on the latest ROC list for the
 //! business's ROC license number (its latest daily check's number before the caller's, D-2744) and
 //! its city-list standing ([`city_standing`]) from the caller's names, and returns [`HolderParts`]:
 //! the [`Holder`] with `roc_covers` left false, set per job type by [`HolderParts::for_job`] through
@@ -110,8 +111,11 @@ pub async fn record_pest_attestation(
     finish(tx, Agency::PestManagement, id, actor).await
 }
 
-/// LIC-015, LIC-016, LIC-013: stores an inspector, alarm or septage-hauler license from the agency
-/// record (`agency_record`) with one audit row, in one transaction.
+/// LIC-015, LIC-016, LIC-013, CARD-015: stores an inspector, alarm or septage-hauler license
+/// number read from the agency's own source (`agency_record`) with one audit row, in one
+/// transaction. Sign-up never calls it: a number the business typed is
+/// [`record_typed_agency_number`]'s, since `recorded_at` would otherwise print as the LIC-034 check
+/// day (D-4310).
 ///
 /// # Errors
 ///
@@ -123,18 +127,53 @@ pub async fn record_agency_license(
     (agency, number): (Agency, &str),
     actor: Actor,
 ) -> Result<Uuid, HolderError> {
+    if agency == Agency::PestManagement {
+        return Err(HolderError::BadRecord);
+    }
+    insert_agency(conn, business, (agency, number, "agency_record"), actor).await
+}
+
+/// LIC-013, LIC-015, LIC-034, CARD-015, D-4310: stores a home-inspector or alarm-business (BTR)
+/// number the business typed at sign-up as `typed_unchecked`, trimmed, with one audit row naming
+/// the agency, never the number (PRIV-028). No BTR source checks it, so [`holder_for`] does not
+/// count it as an agency license and `card_facts` prints no check line for it.
+///
+/// # Errors
+///
+/// [`HolderError::BadRecord`] for the pest or septage-hauler agency or a blank or over-long
+/// number (nothing stored); `AlreadyRecorded`; `Audit`; `Database`.
+pub async fn record_typed_agency_number(
+    conn: &mut PgConnection,
+    business: Uuid,
+    (agency, number): (Agency, &str),
+    actor: Actor,
+) -> Result<Uuid, HolderError> {
+    if !matches!(agency, Agency::HomeInspector | Agency::AlarmBusiness) {
+        return Err(HolderError::BadRecord);
+    }
+    insert_agency(conn, business, (agency, number, "typed_unchecked"), actor).await
+}
+
+/// Inserts one non-pest agency row with `verification` and its audit row; a blank or over-long
+/// trimmed number is `BadRecord` (D-859).
+async fn insert_agency(
+    conn: &mut PgConnection,
+    business: Uuid,
+    (agency, number, verification): (Agency, &str, &str),
+    actor: Actor,
+) -> Result<Uuid, HolderError> {
     let number = number.trim();
-    let bad = number.is_empty() || number.chars().count() > MAX_AGENCY_NUMBER_LEN;
-    if agency == Agency::PestManagement || bad {
+    if number.is_empty() || number.chars().count() > MAX_AGENCY_NUMBER_LEN {
         return Err(HolderError::BadRecord);
     }
     let mut tx = conn.begin().await.map_err(|_| HolderError::Database)?;
     let id = sqlx::query_scalar!(
         "INSERT INTO licensing.business_license (business_id, agency, license_number, verification) \
-         VALUES ($1, $2, $3, 'agency_record') RETURNING id",
+         VALUES ($1, $2, $3, $4) RETURNING id",
         business,
         agency.code(),
         number,
+        verification,
     )
     .fetch_one(&mut *tx)
     .await
@@ -222,10 +261,12 @@ fn read_error(_: ImportError) -> HolderError {
     HolderError::Database
 }
 
-/// The business's `licensing.business_license` rows as a holder: agencies and pest attestation.
+/// The business's `licensing.business_license` rows as a holder: agencies and pest attestation. An
+/// agency counts only from an `agency_record` row; a `typed_unchecked` number gives none (D-4310).
 async fn read_rows(conn: &mut PgConnection, business: Uuid) -> Result<Holder, HolderError> {
     let rows = sqlx::query!(
         r#"SELECT agency, license_number, wood_destroying, weed_control,
+                  verification = 'agency_record' AS "checked!",
                   paused_at IS NOT NULL AS "paused!"
            FROM licensing.business_license WHERE business_id = $1"#,
         business,
@@ -240,7 +281,7 @@ async fn read_rows(conn: &mut PgConnection, business: Uuid) -> Result<Holder, Ho
             if agency == Agency::PestManagement {
                 let ticks = (row.wood_destroying, row.weed_control);
                 holder.pest = Some(attestation(&row.license_number, ticks, row.paused)?);
-            } else {
+            } else if row.checked {
                 holder.agencies.insert(agency);
             }
         }

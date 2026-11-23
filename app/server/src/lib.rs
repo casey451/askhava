@@ -57,6 +57,7 @@ pub mod homeowner_portal;
 pub mod inbound_retry;
 pub mod inbound_text;
 pub mod inbound_voice;
+pub mod job_page_route;
 pub mod liveness;
 pub mod no_handler_alert;
 pub mod offdb_stream;
@@ -415,7 +416,9 @@ impl ApprovalSecret for StripeApproval {
 /// The served business sign-in (T280) and sign-up (T302) routes, each only when its part is given,
 /// the business portal (T300) over `pool`, always (`business_portal::served`), and the Confirm
 /// route (T261) from the Stripe hooks, with the parts' Confirm settings, else none; the "Can't
-/// take it" page and button ([`cant_take_route`], T472), always; the business step-up page
+/// take it" page and button ([`cant_take_route`], T472), always; the business job page
+/// ([`job_page_route`], T666, with photo links only with the photo parts and the webhooks' ID
+/// secret), always; the business step-up page
 /// ([`business_step_up`], T364), always, sending codes only with its part, and the role, removal
 /// and monthly-limit changes behind it ([`business_guarded_changes`], T565), and the notice and
 /// backup address changes ([`address_changes`], T542, changing only with their part), and the
@@ -458,6 +461,8 @@ fn business_pages(
     ));
     let tools = owner_tools::routes(pool.clone(), stripe, &parts.confirm, parts.report);
     let cant_take = cant_take_route::routes(pool.clone());
+    let links = webhooks.filter(|_| parts.photos.is_some());
+    let job_page = job_page_route::routes(pool.clone(), links.map(|hooks| &hooks.id_secret));
     let homeowner = homeowner_portal::routes(pool.clone(), webhooks, parts.homeowner, parts.photos);
     let step_up = business_step_up::routes(pool.clone(), parts.step_up)
         .merge(business_guarded_changes::routes(pool.clone()))
@@ -471,6 +476,7 @@ fn business_pages(
     let portal = business_portal::served(pool, portal_parts, (webhooks, voice))
         .merge(confirm)
         .merge(cant_take)
+        .merge(job_page)
         .merge(step_up);
     (parts.signin)
         .map_or_else(Router::new, business_signin::ServedSignIn::into_router)
@@ -2561,6 +2567,30 @@ where
     let pairs: Vec<(String, String)> = pairs.into_iter().collect();
     let provider = email_provider::email_provider(settings, pairs.clone())?;
     Ok(provider.is_some() && vault_from(settings, pairs)?.is_some())
+}
+
+/// TXT-018, SEC-028 (T730): sets the update emails' footer postal line from the email provider's
+/// settings once the provider and the vault are both set, so a homeowner who chose email gets her
+/// updates by email; otherwise they stay text. Returns whether it was set.
+///
+/// # Errors
+///
+/// A bad email provider or vault setting, named, never its value.
+pub fn set_update_footer_from<I>(settings: &Settings, pairs: I) -> io::Result<bool>
+where
+    I: IntoIterator<Item = (String, String)>,
+{
+    let pairs: Vec<(String, String)> = pairs.into_iter().collect();
+    let Some(provider) = email_provider::email_provider(settings, pairs.clone())? else {
+        return Ok(false);
+    };
+    if vault_from(settings, pairs)?.is_none() {
+        return Ok(false);
+    }
+    let (postal, kind) = provider.postal();
+    let postal =
+        askhava_messaging::api::PostalAddress::new(postal, kind).map_err(io::Error::other)?;
+    Ok(askhava_messaging::api::set_update_footer(postal))
 }
 
 /// An account mailer over provider `p`'s client, email key, postal line and shared daily limit,
