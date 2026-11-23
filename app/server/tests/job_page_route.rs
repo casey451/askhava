@@ -29,7 +29,7 @@ use askhava_portals::api::{
     CookieJar, PortalsError, SIGNIN_LINK_ROUTE, SIGNIN_ROUTE, SignIn, SignInAddress, SignInMail,
     ensure_pre_session, signin_post, signin_request,
 };
-use askhava_privacy::api::{NewContact, Vault, store_contact};
+use askhava_privacy::api::{NewContact, PhotoSeal, Vault, clean, store_contact, store_photo};
 use askhava_quotes::api::{
     CardBusiness, CardFacts, CardJob, CardParts, DEFAULT_MIN_WORDS, Format, KeptCard, OfferTown,
     Place, Price, QuoteForm, QuoteRules, build_card, card_digest, keep_card, mark_card_sent,
@@ -318,19 +318,10 @@ async fn carded(pool: &PgPool, businesses: &[Uuid]) -> (Uuid, i64) {
     send_cards(&mut db, map, job, &matched(), &to, now)
         .await
         .expect("cards");
-    let photos = vec![Uuid::new_v4(), Uuid::new_v4()];
-    for photo in &photos {
-        sqlx::query!(
-            "INSERT INTO privacy.photo (id, job_id, key_version, storage_key, stored_at) \
-             VALUES ($1, $2, 1, $3, now())",
-            photo,
-            job,
-            format!("photos/{photo}")
-        )
-        .execute(&mut *db)
-        .await
-        .expect("photo row");
-    }
+    let photos = vec![
+        stored_photo(&mut db, job).await,
+        stored_photo(&mut db, job).await,
+    ];
     let parts = CardParts {
         category: "AC repair".to_owned(),
         town: "Lake Havasu City".to_owned(),
@@ -439,15 +430,109 @@ async fn open(app: &Router, j: &str, jar: &CookieJar) -> Reply {
     answer(app, request(&Method::GET, &path, jar, String::new())).await
 }
 
-/// The job page's security events so far (SEC-048).
-async fn events(pool: &PgPool) -> i64 {
-    let mut db = pool.acquire().await.expect("db");
-    sqlx::query_scalar!(
-        "SELECT count(*) AS \"n!\" FROM portals.security_event WHERE route = '/b/jobs/{j}'"
-    )
-    .fetch_one(&mut *db)
-    .await
-    .expect("events")
+/// The security events logged while it is the default subscriber, by kind (SEC-048).
+#[derive(Clone, Default)]
+struct Events(Arc<Mutex<Vec<String>>>);
+
+impl Events {
+    fn count(&self, kind: &str) -> usize {
+        let all = self.0.lock().unwrap_or_else(PoisonError::into_inner);
+        all.iter().filter(|k| *k == kind).count()
+    }
+}
+
+/// The fields of one log event.
+#[derive(Default)]
+struct Fields(Vec<(String, String)>);
+
+impl tracing::field::Visit for Fields {
+    fn record_str(&mut self, field: &tracing::field::Field, value: &str) {
+        self.0.push((field.name().to_owned(), value.to_owned()));
+    }
+
+    fn record_debug(&mut self, field: &tracing::field::Field, value: &dyn std::fmt::Debug) {
+        self.0.push((field.name().to_owned(), format!("{value:?}")));
+    }
+}
+
+impl tracing::Subscriber for Events {
+    fn enabled(&self, _: &tracing::Metadata<'_>) -> bool {
+        true
+    }
+
+    fn new_span(&self, _: &tracing::span::Attributes<'_>) -> tracing::span::Id {
+        tracing::span::Id::from_u64(1)
+    }
+
+    fn record(&self, _: &tracing::span::Id, _: &tracing::span::Record<'_>) {}
+
+    fn record_follows_from(&self, _: &tracing::span::Id, _: &tracing::span::Id) {}
+
+    fn event(&self, event: &tracing::Event<'_>) {
+        let mut fields = Fields::default();
+        event.record(&mut fields);
+        let get = |name: &str| {
+            fields
+                .0
+                .iter()
+                .find(|(n, _)| n == name)
+                .map(|(_, v)| v.clone())
+        };
+        if get("message").as_deref() == Some("security event") {
+            let kind = get("kind").unwrap_or_default();
+            let mut all = self.0.lock().unwrap_or_else(PoisonError::into_inner);
+            all.push(kind);
+        }
+    }
+
+    fn enter(&self, _: &tracing::span::Id) {}
+
+    fn exit(&self, _: &tracing::span::Id) {}
+}
+
+fn crc(bytes: &[u8]) -> u32 {
+    let mut crc = !0_u32;
+    for byte in bytes {
+        crc ^= u32::from(*byte);
+        for _ in 0..8 {
+            crc = (crc >> 1) ^ (0xEDB8_8320 & 0_u32.wrapping_sub(crc & 1));
+        }
+    }
+    !crc
+}
+
+/// A plain black 64 by 64 PNG with no metadata, made here.
+fn png() -> Vec<u8> {
+    let be = |n: usize| u32::try_from(n).expect("fits").to_be_bytes();
+    let (width, height) = (64, 64);
+    let raw = vec![0_u8; (width + 1) * height];
+    let len = u16::try_from(raw.len()).expect("one block");
+    let mut data = vec![0x78, 0x01, 1];
+    data.extend(len.to_le_bytes());
+    data.extend((!len).to_le_bytes());
+    data.extend(&raw);
+    data.extend(be(((raw.len() % 65_521) << 16) | 1));
+    let header = [&be(width)[..], &be(height)[..], &[8, 0, 0, 0, 0]].concat();
+    let mut out = b"\x89PNG\r\n\x1a\n".to_vec();
+    for (kind, body) in [(b"IHDR", header), (b"IDAT", data), (b"IEND", Vec::new())] {
+        let named = [&kind[..], &body[..]].concat();
+        out.extend(be(body.len()));
+        out.extend(&named);
+        out.extend(crc(&named).to_be_bytes());
+    }
+    out
+}
+
+/// A cleaned fake photo of `job`, sealed and stored through `privacy`: its ID.
+async fn stored_photo(db: &mut PgConnection, job: Uuid) -> Uuid {
+    let folder = std::env::temp_dir().join(format!("t666-{}", Uuid::new_v4()));
+    let storage = LocalStorage::new(&format!("file://{}", folder.display())).expect("storage");
+    let seal = PhotoSeal::new(&key(0x51).into()).expect("seal");
+    let clean_photo = clean(png()).await.expect("clean");
+    let secret = SecretString::from(ID_SECRET.to_owned());
+    let keys = (&seal, &storage, &secret);
+    let stored = store_photo(db, keys, job, &clean_photo, Timestamp::now()).await;
+    stored.expect("stored photo")
 }
 
 /// The page shows no homeowner name, phone or street (PRIV-006).
@@ -516,6 +601,8 @@ async fn td_card_16_the_one_not_found_answer(pool: PgPool) {
     let (_, other) = owner(&pool).await;
     let (job, number) = carded(&pool, &[x.business]).await;
     let app = app(&pool);
+    let events = Events::default();
+    let _guard = tracing::subscriber::set_default(events.clone());
     let unknown = open(&app, "9999999", &jar).await;
     assert_eq!((unknown.status, unknown.no_store), (404, true));
     let asked = [
@@ -527,10 +614,14 @@ async fn td_card_16_the_one_not_found_answer(pool: PgPool) {
         ("9999999".to_owned(), &jar),
     ];
     for (j, who) in asked {
-        let before = events(&pool).await;
+        let before = events.count("authz_denied");
         let reply = open(&app, &j, who).await;
         assert_eq!((reply.status, &reply.text), (404, &unknown.text), "{j}");
-        assert_eq!(events(&pool).await, before + 1, "one event for {j}");
+        assert_eq!(
+            events.count("authz_denied"),
+            before + 1,
+            "one event for {j}"
+        );
         shows_none_of_her(&reply.text);
     }
     let out = ensure_pre_session(CookieJar::new()).expect("jar");
