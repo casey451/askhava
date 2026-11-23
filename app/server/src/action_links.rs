@@ -447,9 +447,10 @@ fn quote_form(
 
 /// The quote form's posted fields (PICK-040, PICK-052, PICK-053, BIZ-049); every field optional,
 /// so a missing one is the form's own error, never a 4xx. No `Debug`: the note is her business's
-/// own words (rust-production R6).
+/// own words (rust-production R6). Any name the quote and settings forms on `ACTION_ROUTE` do not
+/// post is axum's own 4xx (SEC-010).
 #[derive(Default, serde::Deserialize)]
-#[serde(default)]
+#[serde(default, deny_unknown_fields)]
 struct Posted {
     csrf: String,
     trip_fee: String,
@@ -480,6 +481,15 @@ struct Posted {
     days: String,
     /// The Confirm link's code field; absent on the first press and on "Text me a code".
     code: Option<String>,
+    /// The quote form's hidden price format; the link's own job decides the format, so unread.
+    #[serde(rename = "format")]
+    _format: String,
+    /// The auto-confirm tick, posted beside the quote; unread here.
+    #[serde(rename = "auto_confirm")]
+    _auto_confirm: String,
+    /// The "Same as last time" button's value; unread here.
+    #[serde(rename = "same")]
+    _same: String,
 }
 
 impl CsrfField for Posted {
