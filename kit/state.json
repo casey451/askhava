@@ -112494,11 +112494,11 @@
      }
     }
    ],
-   "reviewed_sha": "534398d8a3289715014325e8a9be4f65d317b3c9",
+   "reviewed_sha": "b45e93fbbac95f56500375a21d725e1e0d272f26",
    "review_lease": {
     "task": "T819",
-    "session": "actions-45160876747",
-    "expires": "2026-11-23T14:03:21Z"
+    "session": "actions-45175094652",
+    "expires": "2026-11-23T15:37:47Z"
    },
    "branch": "claude/task/T819-feedback-scrubbed",
    "auto_merge": {
@@ -112506,7 +112506,6 @@
     "why": "auto-merge on #1394 (gh pr merge)",
     "head": "534398d8a3289715014325e8a9be4f65d317b3c9"
    },
-   "merge_turn_since": "2026-11-23T11:59:50Z",
    "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust dependency audit (cargo-audit, cargo-deny)\nWarning:   unmaintained\nTitle:     `basic-toml` is unmaintained\nDate:      2026-09-26\nID:        RUSTSEC-2026-0374\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0374\nCrate:     proc-macro-error2\nVersion:   2.0.1\nWarning:   unmaintained\nTitle:     proc-macro-error2 is unmaintained\nDate:      2026-06-07\nID:        RUSTSEC-2026-0173\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0173\nerror: 1 vulnerability found!\nwarning: 2 allowed warnings found\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
    "wip_claim": {
     "attempt": 2,
@@ -112514,7 +112513,19 @@
    },
    "runner_closed_prs": [
     1394
-   ]
+   ],
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "534398d8a3289715014325e8a9be4f65d317b3c9",
+     "to": "b45e93fbbac95f56500375a21d725e1e0d272f26",
+     "main": "f0dd474113d194356a2a0860e4225d364f92435f",
+     "how": "hand-in",
+     "at": "2026-11-23T13:45:55Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T820",
@@ -122120,7 +122131,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T13:42:19Z",
+ "updated_at": "2026-11-23T13:45:55Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -122218,7 +122229,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "f27e05243e49a721f4e086497cd1853aa05db78f",
+ "runner_sha": "534398d8a3289715014325e8a9be4f65d317b3c9",
  "starter": "actions",
  "smoke_runs": [
   {
