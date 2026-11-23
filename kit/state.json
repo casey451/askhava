@@ -103976,7 +103976,7 @@
     "T684",
     "T580"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 2,
    "slug": "update-email-sends",
    "type": "build",
@@ -104003,7 +104003,7 @@
      "expires": "2026-11-23T06:34:29Z"
     }
    ],
-   "last_failure": "PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs\nEvidence: last_quote_text (quote_text_sent.rs:45-52) reads only messaging.outbox; with the Email choice T730 stores no text row (kit/prompts/T730.md:9), so intake previous() (quote_updates.rs:166-172) is None, notice() returns Notice::First (quotes/src/notify.rs:100-105) and later quote updates end as Nothing. T730 owns only update_emails.rs, email.rs, service.rs and update_email_sends.rs (T730.md:35-40); the file is owned by merged T582 only. Fix: add the file to T730 owns so last_quote_text also reads update emails in messaging.email_outbox, plus a test driving intake's update handler for Email-only and for a bounce-reset homeowner. Reviewer confirmed.",
+   "last_failure": "PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs\nEvidence: last_quote_text (quote_text_sent.rs:45-52) reads only messaging.outbox; with the Email choice T730 stores no text row (kit/prompts/T730.md:9), so intake previous() (quote_updates.rs:166-172) is None, notice() returns Notice::First (quotes/src/notify.rs:100-105) and later quote updates end as Nothing. T730 owns only update_emails.rs, email.rs, service.rs and update_email_sends.rs (T730.md:35-40); the file is owned by merged T582 only. Fix: add the file to T730 owns so last_quote_text also reads update emails in messaging.email_outbox, plus a test driving intake's update handler for Email-only and for a bounce-reset homeowner. Reviewer confirmed.\nre-queued after plan fix D-5617: T730 owns quote_text_sent.rs: last_quote_text counts update emails (not dropped), so Email-only gets quote_update",
    "history": [
     {
      "attempt": 1,
@@ -104053,16 +104053,22 @@
      }
     }
    ],
-   "reason": "plan gap reported: PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs\nEvidence: last_quote_text (quote_text_sent.rs:45-52) reads only messaging.outbox; with the Email choice T730 stores no text row (kit/prompts/T730.md:9), so intake previous() (quote_updates.rs:166-172) is None, notice() returns Notice::First (quotes/src/notify.rs:100-105) and later quote updates end as Nothing. T730 owns only update_emails.rs, email.rs, service.rs and update_email_sends.rs (T730.md:35-40); the file is owned by merged T582 only. Fix: add the file to T730 owns so last_quote_text also reads update emails in messagin; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T730 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "plan_gap": {
-    "at": "2026-11-23T08:25:48Z",
-    "problems": [
-     "outside ownership: app/messaging/src/quote_text_sent.rs"
-    ],
-    "paths": [
-     "app/messaging/src/quote_text_sent.rs"
-    ]
-   }
+   "reason": null,
+   "requeues": [
+    {
+     "at": "2026-11-23T10:12:03Z",
+     "reason": "T730 owns quote_text_sent.rs: last_quote_text counts update emails (not dropped), so Email-only gets quote_update",
+     "by": "manual-1a9caab7da07",
+     "was": "plan gap reported: PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs\nEvidence: last_quote_text (quote_text_sent.rs:45-52) reads only messaging.outbox; with the Email choice T730 stores no text row (kit/prompts/T730.md:9), so intake previous() (quote_updates.rs:166-172) is None, notice() returns Notice::First (quotes/src/notify.rs:100-105) and later quote updates end as Nothing. T730 owns only update_emails.rs, email.rs, service.rs and update_email_sends.rs (T730.md:35-40); the file is owned by merged T582 only. Fix: add the file to T730 owns so last_quote_text also reads update emails in messagin; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T730 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 2,
+     "plan_fix": "D-5617",
+     "plan_since": "2026-11-23T08:23:15Z",
+     "plan_base": "7cc3c77141924bf04cad2b25df1eab54113735d6",
+     "plan_head": "ab7be9fe867a24e171709f0812b7247bc6442651",
+     "plan_then": "9a5f237b28a2dac5a6ab7ae66c71792925176a9120067308099e10086d5620fb",
+     "plan_now": "d344e3352e358875f085e41d18e626932482ab892a6990a4ea5f986fd191bd9d"
+    }
+   ]
   },
   {
    "id": "T731",
@@ -121301,7 +121307,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T10:11:43Z",
+ "updated_at": "2026-11-23T10:12:03Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

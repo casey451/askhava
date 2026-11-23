@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T10:11:43Z by runner ab7be9fe867a (manual).
+Updated 2026-11-23T10:12:03Z by runner ab7be9fe867a (manual).
 
 **Building: T121 in progress since 08:33Z; 629 of 775 done; week 74% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,16 +8,13 @@ Updated 2026-11-23T10:11:43Z by runner ab7be9fe867a (manual).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T121 claimed 08:33Z, lease until 11:33Z; lane 2: T714 claimed 09:25Z, lease until 12:25Z; lane 3: T666 claimed 08:27Z, lease until 11:27Z; lane 5: T653 claimed 09:21Z, lease until 12:21Z
 - **Week:** 74% used, 42.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:08Z, 3 min before this update
+- **Last run:** 10:11Z, 0 min before this update
 - **Keeper:** last ran 10:07Z, next wake 11:30Z
 
 ## Needs attention
 - CLAIMS STOPPED: nightly success on 21be2b3d8975, failures_since_green 0; no stage passed its exit test
-- BLOCKED T730: plan gap reported: PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs
-Evidence: last_quote_text (quote_text_sent.rs:45-52) reads only messaging.outbox; with the Email choice T730 stores no text row (kit/prompts/T730.md:9), so intake previous() (quote_updates.rs:166-172) is None, notice() returns Notice::First (quotes/src/notify.rs:100-105) and later quote updates end as Nothing. T730 owns only update_emails.rs, email.rs, service.rs and update_email_sends.rs (T730.md:35-40); the file is owned by merged T582 only. Fix: add the file to T730 owns so last_quote_text also reads update emails in messagin; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T730 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- PLAN GAP T730 (since 2026-11-23T08:25:48Z, no attempt used; a plan change fixes it): outside ownership: app/messaging/src/quote_text_sent.rs
 - PLAN GAP T836 (since 2026-11-23T07:59:33Z, no attempt used; a plan change fixes it): T836: kit/runner_log.jsonl is named by D-500, but no task owns it and it does not exist
 - Strict plan check red: 36 problem(s) on tasks still to run (+515 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
