@@ -33,8 +33,8 @@ pub use crate::action_links::confirm_link_code_page;
 pub use crate::action_links::confirm_link_session;
 pub use crate::action_links::{
     ACTION_ROUTE, ActionGrant, ActionKind, ActionLinkError, ActionTarget, EmailReply,
-    OPEN_IN_BROWSER_LINE, UseBy, email_reply, fresh_code_needed, mint_action_link,
-    open_action_link, session_may, use_action_link,
+    OPEN_IN_BROWSER_LINE, TEXT_CONFIRM_SESSION_LIFE, UseBy, email_reply, fresh_code_needed,
+    mint_action_link, mint_text_confirm_link, open_action_link, session_may, use_action_link,
 };
 pub use crate::address_changes::{
     ADDRESS_CHANGE_ROUTE, ADDRESS_CONFIRM_ROUTE, ADDRESS_REQUEST_ROUTE, AddressChangeError,
