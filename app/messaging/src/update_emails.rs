@@ -1,5 +1,5 @@
 //! Quote updates by email for a homeowner who chose it (TXT-018, SEC-028, CON-035, TXT-027,
-//! TXT-030; T730, D-4727, D-5340, D-5442, D-5533, D-5585, D-5617).
+//! TXT-030, TXT-034; T730, D-4727, D-5340, D-5442, D-5533, D-5585, D-5639, D-5640).
 //!
 //! [`route`] runs inside the shared `service::insert` that `enqueue` and `enqueue_exempt` both
 //! call, so an emergency job's update is routed too (D-5585). Only a homeowner row whose template
@@ -16,6 +16,8 @@
 //! without it every update stays text. The address itself is read only at send time through
 //! `privacy::api::read_update_address` ([`UPDATE_EMAIL_PREFIX`]). A hard bounce ([`bounced`])
 //! sets the channel back to text and marks the address bounced (D-5442).
+//! [`queue_update_email`] stores the same email alone, never a text, for T840 to call when a
+//! text gate (TXT-034's web-and-email mode among them) stops an update (D-5639, D-5640).
 
 use std::sync::OnceLock;
 
@@ -106,28 +108,61 @@ pub(crate) async fn route(
     text: &NewText<'_>,
     homeowner: bool,
 ) -> Result<Routed, OutboxError> {
-    let (Some(postal), true) = (FOOTER.get(), homeowner) else {
+    if !homeowner {
         return Ok(Routed::Text);
+    }
+    Ok(match emailed(db, secret, text).await? {
+        Some((UpdateChannel::Email, id, created)) => Routed::EmailOnly(id, created),
+        Some(_) => Routed::Both,
+        None => Routed::Text,
+    })
+}
+
+/// TXT-018, TXT-034, D-5639, D-5640: in the caller's transaction, stores only `text`'s update
+/// email (as the shared insert's routing does) when its template is in [`UPDATE_TEMPLATES`], its
+/// words name her quote page and her channel is `Email` or `Both` at this moment with an
+/// unbounced update address; returns its ID and whether this call stored it, else `None` and
+/// stores nothing. It never writes a `messaging.outbox` row, so no text can result: T840 calls it
+/// when a text gate stops an update. `text.recipient` is the homeowner's contact ID.
+///
+/// # Errors
+///
+/// [`OutboxError::Database`].
+pub async fn queue_update_email(
+    db: &mut PgConnection,
+    secret: &SecretString,
+    text: &NewText<'_>,
+) -> Result<Option<(Uuid, bool)>, OutboxError> {
+    let queued = emailed(db, secret, text).await?;
+    Ok(queued.map(|(_, id, created)| (id, created)))
+}
+
+/// TXT-018: queues `text`'s update email when every rule of [`route`] but the homeowner check
+/// holds, returning her channel, the email's ID and whether this call stored it.
+async fn emailed(
+    db: &mut PgConnection,
+    secret: &SecretString,
+    text: &NewText<'_>,
+) -> Result<Option<(UpdateChannel, Uuid, bool)>, OutboxError> {
+    let Some(postal) = FOOTER.get() else {
+        return Ok(None);
     };
     let Some(link) = quote_link(text.body).filter(|_| UPDATE_TEMPLATES.contains(&text.template_id))
     else {
-        return Ok(Routed::Text);
+        return Ok(None);
     };
     let channel = update_channel(db, text.recipient).await.map_err(db_err)?;
     if channel == UpdateChannel::Text {
-        return Ok(Routed::Text);
+        return Ok(None);
     }
     let status = update_status(db, text.recipient)
         .await
         .map_err(|_| OutboxError::Database)?;
     let Some(status) = status.filter(|s| !s.bounced) else {
-        return Ok(Routed::Text);
+        return Ok(None);
     };
     let (id, created) = queue_update(db, (secret, postal), (text, link), &status).await?;
-    Ok(match channel {
-        UpdateChannel::Email => Routed::EmailOnly(id, created),
-        _ => Routed::Both,
-    })
+    Ok(Some((channel, id, created)))
 }
 
 /// TXT-018, SEC-028, D-5340: queues `text`'s `update.<template>` email to her at the
@@ -180,7 +215,7 @@ fn language(text: &NewText<'_>) -> Language {
 }
 
 /// The transaction's time, the text row's `created_at`, so a `Both` pair is queued at one instant
-/// and the text wins the tie in `last_quote_text` (D-5617).
+/// (D-5562).
 async fn db_now(db: &mut PgConnection) -> Result<Timestamp, OutboxError> {
     let now = sqlx::query_scalar!(r#"SELECT now() AS "now!""#)
         .fetch_one(db)
