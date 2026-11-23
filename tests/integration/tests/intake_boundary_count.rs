@@ -386,11 +386,11 @@ async fn td_int_53_the_send_reaches_exactly_the_counted_businesses(mut db: Db) {
     .await
     .expect("licensed");
     set_app_role(&mut db).await.expect("SET ROLE askhava_app");
-    let chose = her(&mut db, "+19285550403").await;
+    let chose = her(&mut db, "+19285550163").await;
     let told = fit_request(&mut db, chose, (HANDYMAN_BREAKER, "door repair")).await;
     assert_eq!(told, COUNT_MANY_TEMPLATE);
     assert_eq!(card_sent(&mut db, chose, 3).await.len(), 2);
-    let both = her(&mut db, "+19285550413").await;
+    let both = her(&mut db, "+19285550164").await;
     assert_eq!(door_then_breaker(&mut db, both).await, COUNT_MANY_TEMPLATE);
     assert_eq!(handyman_breaker(&mut db).await, Coverage::Send(1));
     assert_eq!(card_sent(&mut db, both, 3).await, [licensed]);
@@ -406,7 +406,7 @@ async fn td_int_53_a_paused_pair_trade_counts_and_sends_to_nobody(mut db: Db) {
     let electrical = category(&mut db, "electrical").await.expect("read");
     let pause = Switch::Trade(electrical.expect("stored").id);
     let owner = Actor::Owner(Uuid::from_u128(0x0716_0ce0));
-    let contact = her(&mut db, "+19285550404").await;
+    let contact = her(&mut db, "+19285550165").await;
     assert_eq!(
         door_then_breaker(&mut db, contact).await,
         COUNT_ONE_TEMPLATE
