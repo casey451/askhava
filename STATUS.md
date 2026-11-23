@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T01:28:19Z by runner 9e70fa24c89d (actions).
+Updated 2026-11-23T01:31:25Z by runner 9e70fa24c89d (actions).
 
 **Building: T837 in progress since 01:06Z; 619 of 774 done; week 69% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 619 of 774 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T837 claimed 01:06Z, lease until 04:06Z; lane 2: T645 claimed 23:51Z, lease until 02:51Z; lane 4: T712 claimed 00:09Z, lease until 03:09Z
-- **Week:** 69% used, 52.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:21Z, 6 min before this update
+- **Lane:** lane 1: T837 claimed 01:06Z, lease until 04:06Z; lane 2: T645 claimed 23:51Z, lease until 02:51Z; lane 4: T712 claimed 00:09Z, lease until 03:09Z; lane 5: T716 claimed 01:31Z, lease until 04:31Z
+- **Week:** 69% used, 52.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 01:28Z, 2 min before this update
 - **Keeper:** last ran 01:21Z, next wake 02:54Z
 
 ## Needs attention
@@ -74,7 +74,6 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 | T397 | server and portals: the owner approves or declines a member- | BLOCKED | 1 | 27 min | 02:12Z |  |
 | T121 | Startup key checks, control router absent in live, supply-ch | BLOCKED | 1 | 15 min | 01:45Z |  |
 | T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | BLOCKED | 3 | 49 min | 01:39Z |  |
-| T542 | portals and server: notice and backup address changes are re | QUEUED | 1 | 2 h 37 min | 01:29Z |  |
 
 ### Plan and harness merges on main
 - 00:07Z Plan: pre-flight fixes (D-5567); T837 keeper stage gate, job 32 and copy-flag fixes (D-5568) (#1368)
@@ -114,7 +113,7 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-23T00:46:09Z (week)): week: 141.3M used, 52.7M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T18:28:02Z.
+- Pacing (session_reading 2026-11-23T01:20:31Z (week)): week: 141.9M used, 52.1M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T18:56:35Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -132,6 +131,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T837 (lease until 2026-11-23T04:06:00Z)
 - lane 2: T645 (lease until 2026-11-23T02:51:34Z)
 - lane 4: T712 (lease until 2026-11-23T03:09:54Z)
+- lane 5: T716 (lease until 2026-11-23T04:31:05Z)
 
 ## Last usage reading
 - {"task": "T832", "at": "2026-11-23T01:09:29Z", "output_tokens": 8389, "input_tokens": 56, "cache_creation_input_tokens": 61520, "cache_read_input_tokens": 670395}
