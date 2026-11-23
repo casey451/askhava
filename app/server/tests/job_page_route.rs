@@ -7,7 +7,9 @@
 //! own job's UUID is a 303 to its number's page; with her business's accepted pick a "Confirm and
 //! billing" member (also through a notice link's sign-in) gets a 303 to `/b/picks/{pick}` and a
 //! "Cards and quotes" member the page with the closed line; a withdrawn, never-confirmed quote
-//! offers "Send a new quote" (D-5619). People sign in through `portals`' emailed-link sign-in, as
+//! offers "Send a new quote" (D-5619). The page offers "Not a fit for us" with its four reasons,
+//! and a tap posted through T306's route is recorded, changes no routing or fee and links back to
+//! the page (PICK-057, T668, D-5387). People sign in through `portals`' emailed-link sign-in, as
 //! `cant_take_route.rs` does. Every name, phone, street, ID and key is fake.
 
 use std::collections::BTreeSet;
@@ -22,18 +24,20 @@ use askhava_intake::api::rules::{Inbound, Settings as IntakeSettings};
 use askhava_intake::api::{Answer, TextIn, receive_text, record_answer};
 use askhava_jobs::api::{JobStatus, create as create_job, job_number, move_to, record_job_facts};
 use askhava_licensing::api::{ClassMap, Holder, Job, LicenseKind};
-use askhava_ops::api::Actor as AuditActor;
-use askhava_payments::api::{EntryKind, LedgerEntry, NewEntry, ledger_append, no_fee_release};
-use askhava_picks::api::{PagePick, Settled, page_pick, settle};
+use askhava_ops::api::{Actor as AuditActor, not_a_fit_counts};
+use askhava_payments::api::{
+    EntryKind, LedgerEntry, NewEntry, ledger_append, ledger_totals, no_fee_release,
+};
+use askhava_picks::api::{PagePick, Settled, accepted_pick, page_pick, settle};
 use askhava_portals::api::{
     CookieJar, PortalsError, SIGNIN_LINK_ROUTE, SIGNIN_ROUTE, SignIn, SignInAddress, SignInMail,
-    ensure_pre_session, signin_post, signin_request,
+    csrf_token, ensure_pre_session, reasons, signin_post, signin_request,
 };
 use askhava_privacy::api::{NewContact, PhotoSeal, Vault, clean, store_contact, store_photo};
 use askhava_quotes::api::{
     CardBusiness, CardFacts, CardJob, CardParts, DEFAULT_MIN_WORDS, Format, KeptCard, OfferTown,
-    Place, Price, QuoteForm, QuoteRules, build_card, card_digest, keep_card, mark_card_sent,
-    parse_quote, send_cards, submit_quote, withdraw_quote,
+    Place, Price, QuoteForm, QuoteRules, build_card, card_digest, card_holders, keep_card,
+    mark_card_sent, parse_quote, quote_standing, send_cards, submit_quote, withdraw_quote,
 };
 use askhava_server::homeowner_portal::PhotoParts;
 use askhava_server::{RouterParts, build_router, webhooks};
@@ -693,4 +697,79 @@ async fn td_card_16_a_withdrawn_never_confirmed_quote_reads_as_withdrawn(pool: P
     assert!(page.text.contains("Send a new quote"), "{}", page.text);
     assert!(!page.text.contains("Withdraw your quote"));
     assert!(page.text.contains("Quotes so far: 0."));
+}
+
+/// What a "Not a fit for us" answer must leave alone on `job` for `business` (PICK-057): the
+/// card holders and the accepted pick (routing), its own quote's standing and the job's ledger
+/// totals (fees).
+async fn routing_and_fees(pool: &PgPool, (job, business): (Uuid, Uuid)) -> String {
+    let mut db = pool.acquire().await.expect("db");
+    let holders = card_holders(&mut db, job).await.expect("holders");
+    let pick = accepted_pick(&mut db, job)
+        .await
+        .expect("pick")
+        .map(|p| p.pick);
+    let standing = quote_standing(&mut db, (job, business)).await;
+    let (from, to) = (Timestamp::UNIX_EPOCH, Timestamp::MAX);
+    let fees = ledger_totals(&mut db, &[job], from, to).await;
+    let standing = standing.expect("standing");
+    format!(
+        "{holders:?} {pick:?} {standing:?} {:?}",
+        fees.expect("fees")
+    )
+}
+
+/// The month's stored "Not a fit for us" answers, as (reason code, count) (OPS-039's input).
+async fn fit_answers(pool: &PgPool) -> Vec<(&'static str, i64)> {
+    let mut db = pool.acquire().await.expect("db");
+    let counts = not_a_fit_counts(&mut db, Timestamp::now()).await;
+    let counts = counts.expect("counts").into_iter();
+    counts.map(|c| (c.reason.code(), c.count)).collect()
+}
+
+/// TD-CARD-16 (PICK-057, D-5387): the page offers "Not a fit for us" with its four one-tap
+/// reasons, posting to `/b/not-a-fit/<job>/job-page`; a tap is recorded, changes no routing or
+/// fee and its thanks page links back to `/b/jobs/<number>`; another business's tap on the same
+/// form is the not-found answer and records nothing.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_card_16_the_page_offers_not_a_fit(pool: PgPool) {
+    catalog(&pool).await;
+    let (x, jar) = owner(&pool).await;
+    let (_, other) = owner(&pool).await;
+    let (job, number) = carded(&pool, &[x.business]).await;
+    let app = app(&pool);
+    let page = open(&app, &number.to_string(), &jar).await;
+    assert_eq!(page.status, 200, "{}", page.text);
+    let action = format!("/b/not-a-fit/{job}/job-page");
+    assert!(
+        page.text.contains(&format!("action=\"{action}\"")),
+        "{}",
+        page.text
+    );
+    for (code, label) in reasons() {
+        assert!(page.text.contains(&format!("value=\"{code}\"")), "{code}");
+        assert!(page.text.contains(label), "{label}");
+    }
+    let before = routing_and_fees(&pool, (job, x.business)).await;
+    let tap = |who: &CookieJar| {
+        let csrf = csrf_token(who).expect("csrf");
+        let body = format!("csrf={csrf}&reason={}", reasons()[1].0);
+        request(&Method::POST, &action, who, body)
+    };
+    let theirs = answer(&app, tap(&other)).await;
+    assert_eq!(
+        (theirs.status, theirs.no_store),
+        (404, true),
+        "{}",
+        theirs.text
+    );
+    assert!(fit_answers(&pool).await.is_empty());
+    let thanks = answer(&app, tap(&jar)).await;
+    assert_eq!(thanks.status, 200, "{}", thanks.text);
+    assert!(thanks.text.contains("Thanks, got it"), "{}", thanks.text);
+    let back = format!("id=\"back-to-job\" href=\"/b/jobs/{number}\"");
+    assert!(thanks.text.contains(&back), "{}", thanks.text);
+    assert_eq!(fit_answers(&pool).await, [(reasons()[1].0, 1)]);
+    assert_eq!(routing_and_fees(&pool, (job, x.business)).await, before);
+    shows_none_of_her(&thanks.text);
 }
