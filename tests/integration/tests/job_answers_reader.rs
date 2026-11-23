@@ -2,21 +2,29 @@
 //! `intake::api::job_answers` reads each job's own trade-question answers, open or closed, never
 //! a contact answer; `intake.request_job` keeps every job a request opened after its close, so
 //! `jobs_of_contact` and the Confirm page's same-customer check see an INT-032 ALSO-reply job; a
-//! later job's purge deletes only its own `bank.<job hex>.` rows. Fake data only: every ID,
+//! later job's purge deletes only its own `bank.<job hex>.` rows, and the contact purge sees a
+//! hold on, and finds her as owner of, an ALSO-reply job after the close. Fake data only: every ID,
 //! contact and amount is made up, and no words are stored.
 
+use askhava_core::api::Claimed;
 use askhava_intake::api::{
     JobAnswer, JobStart, Opened, begin_job, close_from_page, job_answers, job_homeowner,
-    jobs_of_contact, purge_answers,
+    jobs_of_contact, purge_answers, run_purge_at,
 };
 use askhava_payments::api::{
     BusinessId, EntryKind, FeeJob, FeeMode, FeeQuote, JoinDates, LedgerEntry, NewEntry, PeriodJob,
     PickedFee, RecurringCap, Service, VisitTier, Waiver, WinCheck, fee_at_pick, ledger_append,
     waive_at_confirm,
 };
-use jiff::Timestamp;
+use askhava_privacy::api::{
+    HoldSource, NewContact, PURGE_KIND, Vault, place_hold, release_hold, store_contact,
+};
+use base64::Engine as _;
+use base64::engine::general_purpose::STANDARD;
+use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
 use secrecy::SecretString;
+use serde_json::json;
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
@@ -290,4 +298,73 @@ async fn a_later_jobs_purge_keeps_the_first_jobs_answers(pool: PgPool) {
         purge_answers(&mut db, second).await.expect("purge second"),
         0
     );
+}
+
+fn vault() -> Vault {
+    let key = |byte: u8| SecretString::from(format!("1:{}", STANDARD.encode([byte; 32])));
+    let url = SecretString::from("postgres://askhava_app@db.invalid:5432/askhava".to_owned());
+    Vault::new(&key(0x31), &key(0x41), &url).expect("vault keys")
+}
+
+/// A fake vault contact with a name and an email (no phone, so no consent rule keeps a field).
+async fn vault_contact(db: &mut PgConnection) -> Uuid {
+    let new = NewContact {
+        name: Some(SecretString::from("Zelda Canary".to_owned())),
+        phone: None,
+        email: Some(SecretString::from("zelda@example.com".to_owned())),
+        address: None,
+        onsite_contact: None,
+    };
+    store_contact(db, &vault(), &new).await.expect("contact")
+}
+
+/// Whether the contact's name and email are cleared.
+async fn cleared(db: &mut PgConnection, contact: Uuid) -> (bool, bool) {
+    sqlx::query_as("SELECT name IS NULL, email IS NULL FROM privacy.contact WHERE id = $1")
+        .bind(contact)
+        .fetch_one(&mut *db)
+        .await
+        .expect("contact row")
+}
+
+fn contact_stage(job: Uuid) -> Claimed {
+    Claimed {
+        id: 1,
+        kind: PURGE_KIND.to_owned(),
+        payload: json!({ "job": job, "stage": "contact" }),
+        attempts: 1,
+    }
+}
+
+/// PRIV-007, D-1839, D-5553: a dispute hold on the ALSO-reply job of her closed request keeps her
+/// contact when either job's contact stage runs 181 days after the close (the hold check reads her
+/// `intake.request_job` jobs); once the hold is released, the ALSO-reply job's own contact stage
+/// finds her as its owner and clears the contact.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn a_hold_on_an_also_reply_job_keeps_her_contact_past_180_days(pool: PgPool) {
+    let mut db = pool.acquire().await.expect("db");
+    let contact = vault_contact(&mut db).await;
+    let (_, first, also) = two_job_request(&mut db, contact).await;
+    close_from_page(&mut db, first, at(20))
+        .await
+        .expect("close");
+    close_from_page(&mut db, also, at(21)).await.expect("close");
+    let now = at(21) + SignedDuration::from_hours(24 * 181);
+    let dispute = Uuid::from_u128(0x0745_0d15);
+    place_hold(&mut db, HoldSource::Dispute, dispute, also, now)
+        .await
+        .expect("hold");
+    for job in [also, first] {
+        run_purge_at(pool.clone(), contact_stage(job), now)
+            .await
+            .expect("held purge");
+        assert_eq!(cleared(&mut db, contact).await, (false, false), "{job}");
+    }
+    release_hold(&mut db, HoldSource::Dispute, dispute, also, now)
+        .await
+        .expect("release");
+    run_purge_at(pool.clone(), contact_stage(also), now)
+        .await
+        .expect("purge");
+    assert_eq!(cleared(&mut db, contact).await, (true, true));
 }

@@ -17,7 +17,8 @@
 //! [`bank_turn`] is step 8 for `order_dispatch` (T672, D-4360): `BankRun` cannot be rebuilt from
 //! rows, so each text replays the job's stored `bank.<question ID>` answers (`bank.<job, 32
 //! hex>.<question ID>` for a request's later job, D-5553) AI-off, keyed on the question ID,
-//! hears the reply and stores its answer through [`answer_narrowing`]; [`answer_day`] stores the day after "By a certain day" (INT-030, D-4831).
+//! hears the reply and stores its answer through [`answer_narrowing`]; [`answer_day`] stores the
+//! day after "By a certain day" (INT-030, D-4831).
 //! No raw words are stored and none go into a log line.
 
 use askhava_ai::api::WriteSources;
