@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T03:15:52Z by runner 50d501397927 (actions).
+Updated 2026-11-23T03:19:47Z by runner bb8a0ca043ba (actions).
 
-**Building: T834 in progress since 01:58Z; 622 of 774 done; week 70% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T716 in progress since 01:31Z; 622 of 774 done; week 70% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 622 of 774 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 4: T834 claimed 01:58Z, lease until 04:58Z; lane 5: T716 claimed 01:31Z, lease until 04:31Z
+- **Lane:** lane 5: T716 claimed 01:31Z, lease until 04:31Z
 - **Week:** 70% used, 49.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:47Z, 28 min before this update
+- **Last run:** 03:15Z, 3 min before this update
 - **Keeper:** last ran 02:47Z, next wake 04:34Z
 
 ## Needs attention
@@ -18,11 +18,12 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T646 (since 2026-11-23T03:08:25Z, no attempt used; a plan change fixes it): T646: dependency T645 is DONE but its owned file migrations/0210_messaging_web_chat_optout.sql is not on main; T646: dependency T645 is DONE but its owned file migrations/0211_intake_web_chat_language.sql is not on main; T646: dependency T645 is DONE but its owned file app/server/tests/web_chat_stops.rs is not on main
-- Strict plan check red: 28 problem(s) on tasks still to run (+510 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 28 problem(s) on tasks still to run (+512 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T834 | ci (harness): Twin and Ally skip their build when nothing th | QUEUED | 1 | 81 min | 03:19Z | After the fix round the reviewer (head bb8a0ca043baae3c76c5646f5bcc328d948b31ba) still ends REVIEW-VERDICT: FINDINGS. Fi |
 | T712 | server and portals: the owner portal lists PROBLEM reports w | MERGE_PENDING | 1 | 39 min | 02:36Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T645 | intake and messaging: the web chat honours an opt-out word,  | done | 2 | 2 h 6 min | 01:58Z | PLAN GAP: app/site/src/chat.rs:340 (owned by T593, then T646 and T649; T593 is not merged yet) calls `chat_message(db, & |
 | T837 | runner (harness): the keeper judges work with the real stage | done | 1 | 41 min | 01:47Z |  |
@@ -123,8 +124,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 4: T834 (lease until 2026-11-23T04:58:11Z)
 - lane 5: T716 (lease until 2026-11-23T04:31:05Z)
 
 ## Last usage reading
-- {"task": "T712", "at": "2026-11-23T02:36:50Z", "cache_read_input_tokens": 972546, "output_tokens": 8917, "input_tokens": 60, "cache_creation_input_tokens": 64999}
+- {"task": "T834", "at": "2026-11-23T03:19:46Z", "output_tokens": 56572, "cache_creation_input_tokens": 243730, "cache_read_input_tokens": 5018423, "input_tokens": 220}
