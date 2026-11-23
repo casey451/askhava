@@ -10572,3 +10572,4 @@
 - 2026-11-23T23:06:46Z runner b61b2f004b67 (actions): {"T816": "MERGE_PENDING -> DONE"}
 - 2026-11-23T23:09:15Z runner b61b2f004b67 (actions): {"T738": "QUEUED -> IN_PROGRESS"}; T738 estimated 2.0M tokens (calibrated); week has 20.4M left (no five-hour budget, D-3056) after 3.6M still running in another lane (session_reading 2026-11-23T23:01:09Z (week)); claimed
 - 2026-11-23T23:09:42Z runner b61b2f004b67 (actions): {}
+- 2026-11-23T23:25:05Z runner 5543c4640c66 (manual): {"T836": "BLOCKED -> QUEUED"}

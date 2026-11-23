@@ -115817,7 +115817,7 @@
     "T835",
     "T762"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 1,
    "slug": "cancelled-gate-and-concurrency",
    "type": "harness",
@@ -115831,8 +115831,8 @@
     5680,
     5681
    ],
-   "reason": "plan gap reported: PLAN GAP: tests/test_runner_five_lanes.py:176 (test_no_workflow_a_hand_in_starts_cancels_another_lanes_run_when_five_hand_in_together, not owned by T836, from D-3043) asserts cancel-in-progress is exactly False for ci.yml, a11y.yml, twin.yml, governance.yml, auto-pr.yml. That contradicts D-5554 (2), which needs cancel-in-progress true for non-main pushes. smoke.sh fails: AssertionError: ci.yml (workflow) cancels in progress (1 failed, 5766 passed). Reviewer confirmed: T836 owns only backup-runner.yml, ci.yml, twin.yml, a11y.yml, tests/test_ci_workflow.py. Smallest fix: add tests/test_runner_fi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T836 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: tests/test_runner_five_lanes.py:176 (test_no_workflow_a_hand_in_starts_cancels_another_lanes_run_when_five_hand_in_together, not owned by T836, from D-3043) asserts cancel-in-progress is exactly False for ci.yml, a11y.yml, twin.yml, governance.yml, auto-pr.yml. That contradicts D-5554 (2), which needs cancel-in-progress true for non-main pushes. smoke.sh fails: AssertionError: ci.yml (workflow) cancels in progress (1 failed, 5766 passed). Reviewer confirmed: T836 owns only backup-runner.yml, ci.yml, twin.yml, a11y.yml, tests/test_ci_workflow.py. Smallest fix: add tests/test_runner_five_lanes.py to T836's owned paths, with a decisions.md note; for ci/twin/a11y it should accept the non-main-push expression, and for governance/auto-pr still require False. Work committed at 5f5d410a3, reviewer approved it.",
+   "reason": null,
+   "last_failure": "PLAN GAP: tests/test_runner_five_lanes.py:176 (test_no_workflow_a_hand_in_starts_cancels_another_lanes_run_when_five_hand_in_together, not owned by T836, from D-3043) asserts cancel-in-progress is exactly False for ci.yml, a11y.yml, twin.yml, governance.yml, auto-pr.yml. That contradicts D-5554 (2), which needs cancel-in-progress true for non-main pushes. smoke.sh fails: AssertionError: ci.yml (workflow) cancels in progress (1 failed, 5766 passed). Reviewer confirmed: T836 owns only backup-runner.yml, ci.yml, twin.yml, a11y.yml, tests/test_ci_workflow.py. Smallest fix: add tests/test_runner_five_lanes.py to T836's owned paths, with a decisions.md note; for ci/twin/a11y it should accept the non-main-push expression, and for governance/auto-pr still require False. Work committed at 5f5d410a3, reviewer approved it.\nre-queued after plan fix D-5682: D-5682 (#1412) gives T836 tests/test_runner_five_lanes.py and item (3a): its plan gap (the five-lanes test asserted cancel-in-progress False against D-5554 (2)) is fixed",
    "history": [
     {
      "attempt": 1,
@@ -115857,6 +115857,21 @@
       }
      },
      "wip_skipped": "5f5d410a307c changes .github"
+    }
+   ],
+   "requeues": [
+    {
+     "at": "2026-11-23T23:25:05Z",
+     "reason": "D-5682 (#1412) gives T836 tests/test_runner_five_lanes.py and item (3a): its plan gap (the five-lanes test asserted cancel-in-progress False against D-5554 (2)) is fixed",
+     "by": "manual-036daaf84009",
+     "was": "plan gap reported: PLAN GAP: tests/test_runner_five_lanes.py:176 (test_no_workflow_a_hand_in_starts_cancels_another_lanes_run_when_five_hand_in_together, not owned by T836, from D-3043) asserts cancel-in-progress is exactly False for ci.yml, a11y.yml, twin.yml, governance.yml, auto-pr.yml. That contradicts D-5554 (2), which needs cancel-in-progress true for non-main pushes. smoke.sh fails: AssertionError: ci.yml (workflow) cancels in progress (1 failed, 5766 passed). Reviewer confirmed: T836 owns only backup-runner.yml, ci.yml, twin.yml, a11y.yml, tests/test_ci_workflow.py. Smallest fix: add tests/test_runner_fi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T836 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 1,
+     "plan_fix": "D-5682",
+     "plan_since": "2026-11-23T20:28:47Z",
+     "plan_base": "025855b2736e0a3779190ca864ed2ccaa05a192b",
+     "plan_head": "5543c4640c665f147875117fa94bc9f32f136fcb",
+     "plan_then": "f3b704500810d810de32bc33608fc82c3f4382d3665912420f9b70500edea982",
+     "plan_now": "a0ede42810f216f6f6115a35b7f256093c3e3c67f5b2226427f8beced7bba171"
     }
    ]
   },
@@ -124053,7 +124068,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T23:09:42Z",
+ "updated_at": "2026-11-23T23:25:05Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -124151,8 +124166,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "b61b2f004b67071011a88896f236af7e8e8d7d23",
- "starter": "actions",
+ "runner_sha": "5543c4640c665f147875117fa94bc9f32f136fcb",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "98e09a354256ea3142410932fda4404d024e3177",
