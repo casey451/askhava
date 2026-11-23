@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T01:40:26Z by runner d07652f8b285 (actions).
+Updated 2026-11-23T01:40:56Z by runner d07652f8b285 (actions).
 
 **Building: T837 in progress since 01:06Z; 619 of 774 done; week 69% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 619 of 774 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T837 claimed 01:06Z, lease until 04:06Z; lane 2: T645 claimed 23:51Z, lease until 02:51Z; lane 4: T712 claimed 00:09Z, lease until 03:09Z; lane 5: T716 claimed 01:31Z, lease until 04:31Z
+- **Lane:** lane 1: T837 claimed 01:06Z, lease until 04:06Z; lane 2: T645 claimed 23:51Z, lease until 02:51Z; lane 5: T716 claimed 01:31Z, lease until 04:31Z
 - **Week:** 69% used, 52.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:31Z, 8 min before this update
+- **Last run:** 01:31Z, 9 min before this update
 - **Keeper:** last ran 01:21Z, next wake 02:54Z
 
 ## Needs attention
@@ -23,6 +23,7 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T712 | server and portals: the owner portal lists PROBLEM reports w | MERGE_PENDING | 1 | 90 min | 01:40Z |  |
 | T832 | ci (harness): the Checks job allows 60 minutes, so a full na | MERGE_PENDING | 1 | 79 min | 01:09Z |  |
 | T725 | site: the home page shows the texting number with its consen | done | 4 | 49 min | 00:39Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
 | T675 | intake and server (harness): the dispatcher asks for photos  | done | 4 | 45 min | 00:33Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -129,8 +130,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T837 (lease until 2026-11-23T04:06:00Z)
 - lane 2: T645 (lease until 2026-11-23T02:51:34Z)
-- lane 4: T712 (lease until 2026-11-23T03:09:54Z)
 - lane 5: T716 (lease until 2026-11-23T04:31:05Z)
 
 ## Last usage reading
-- {"task": "T832", "at": "2026-11-23T01:09:29Z", "output_tokens": 8389, "input_tokens": 56, "cache_creation_input_tokens": 61520, "cache_read_input_tokens": 670395}
+- {"task": "T712", "at": "2026-11-23T01:40:24Z", "cache_read_input_tokens": 11667178, "input_tokens": 205, "cache_creation_input_tokens": 228816, "output_tokens": 64146}
