@@ -10254,3 +10254,4 @@
 - 2026-11-23T08:20:17Z runner 8e4a3378787b (actions): {"T730": "IN_PROGRESS -> QUEUED"}
 - 2026-11-23T08:21:02Z runner 8e4a3378787b (actions): {}
 - 2026-11-23T08:21:50Z runner f1b796194778 (actions): {}
+- 2026-11-23T08:23:28Z runner 7cc3c7714192 (actions): {"T730": "QUEUED -> IN_PROGRESS"}; T730 estimated 1.6M tokens (calibrated); week has 44.9M left (no five-hour budget, D-3056) after 3.1M still running in another lane (session_reading 2026-11-23T08:21:01Z (week)); claimed
