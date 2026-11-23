@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO privacy.photo (id, job_id, key_version, storage_key, stored_at) VALUES ($1, $2, 1, $3, now())",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "031c0b6a08e1ad230e1d314d564366ac46c68881f8ba771fd457189da545a6db"
+}
