@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T05:53:04Z by runner 8871a83b785a (actions).
+Updated 2026-11-23T05:57:03Z by runner 8871a83b785a (actions).
 
-**Building: T716 in progress since 04:41Z; 623 of 775 done; week 71% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T716 in progress since 04:41Z; 624 of 775 done; week 71% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 623 of 775 build tasks (owner gates not counted)
+- **Tasks done:** 624 of 775 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T716 claimed 04:41Z, lease until 07:41Z; lane 4: T611 claimed 04:04Z, lease until 07:04Z; lane 5: T838 claimed 04:41Z, lease until 07:41Z
 - **Week:** 71% used, 46.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:52Z, 0 min before this update
+- **Last run:** 05:53Z, 3 min before this update
 - **Keeper:** last ran 05:53Z, next wake 07:06Z
 
 ## Needs attention
@@ -20,7 +20,7 @@ Updated 2026-11-23T05:53:04Z by runner 8871a83b785a (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T834 | ci (harness): Twin and Ally skip their build when nothing th | MERGE_PENDING | 3 | 48 min | 05:51Z | After the fix round the reviewer (head f9e32434db512dbbf1f29deb2d94b5848d2e3874) still ends REVIEW-VERDICT: FINDINGS. Fi |
-| T803 | messaging (harness): an opted-out number gets no HELP reply; | MERGE_PENDING | 4 | 81 min | 05:08Z | Ci: failure; Checks: cancelled / Checks failed at step: Named mutants of the files this change touches (scripts/run_name |
+| T803 | messaging (harness): an opted-out number gets no HELP reply; | done | 4 | 81 min | 05:08Z | Ci: failure; Checks: cancelled / Checks failed at step: Named mutants of the files this change touches (scripts/run_name |
 | T834 | ci (harness): Twin and Ally skip their build when nothing th | QUEUED | 2 | 85 min | 04:57Z |  |
 | T716 | intake: the dispatcher's trade questions at step 5: "Which f | check_failed | 1 | 117 min | 03:28Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T834 | ci (harness): Twin and Ally skip their build when nothing th | QUEUED | 1 | 81 min | 03:19Z |  |
@@ -73,7 +73,7 @@ Updated 2026-11-23T05:53:04Z by runner 8871a83b785a (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 404 of 735 (55.0%) · partial 318 · unstarted 13
-**Tasks merged (throughput only):** 623 of 775
+**Tasks merged (throughput only):** 624 of 775
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -109,7 +109,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 266 of 347 done
+- stage 5: 267 of 347 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
