@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T01:21:06Z by runner 6cb391745e61 (actions).
+Updated 2026-11-23T01:28:19Z by runner 9e70fa24c89d (actions).
 
-**Building: T837 in progress since 01:06Z; 618 of 774 done; week 69% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T837 in progress since 01:06Z; 619 of 774 done; week 69% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 618 of 774 build tasks (owner gates not counted)
+- **Tasks done:** 619 of 774 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T837 claimed 01:06Z, lease until 04:06Z; lane 2: T645 claimed 23:51Z, lease until 02:51Z; lane 4: T712 claimed 00:09Z, lease until 03:09Z
 - **Week:** 69% used, 52.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:20Z, 0 min before this update
+- **Last run:** 01:21Z, 6 min before this update
 - **Keeper:** last ran 01:21Z, next wake 02:54Z
 
 ## Needs attention
@@ -18,14 +18,14 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 - PLAN GAP T121 (since 2026-11-23T00:03:26Z, no attempt used; a plan change fixes it): outside ownership: app/portals/src/update_channel.rs
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 24 problem(s) on tasks still to run (+499 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 28 problem(s) on tasks still to run (+511 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T832 | ci (harness): the Checks job allows 60 minutes, so a full na | MERGE_PENDING | 1 | 79 min | 01:09Z |  |
 | T725 | site: the home page shows the texting number with its consen | done | 4 | 49 min | 00:39Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
-| T675 | intake and server (harness): the dispatcher asks for photos  | MERGE_PENDING | 4 | 45 min | 00:33Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T675 | intake and server (harness): the dispatcher asks for photos  | done | 4 | 45 min | 00:33Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T121 | Startup key checks, control router absent in live, supply-ch | BLOCKED | 2 | 12 min | 00:03Z | PLAN GAP: outside ownership: app/portals/src/update_channel.rs / T729 (owner) merged UpdatesForm/ConfirmForm without den |
 | T675 | intake and server (harness): the dispatcher asks for photos  | resync | 4 | 81 min | 17:03Z |  |
 | T590 | calls, picks and server: the who's-calling and missed-call t | check_failed | 1 | 118 min | 16:40Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
@@ -75,7 +75,6 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 | T121 | Startup key checks, control router absent in live, supply-ch | BLOCKED | 1 | 15 min | 01:45Z |  |
 | T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | BLOCKED | 3 | 49 min | 01:39Z |  |
 | T542 | portals and server: notice and backup address changes are re | QUEUED | 1 | 2 h 37 min | 01:29Z |  |
-| T725 | site: the home page shows the texting number with its consen | BLOCKED | 1 | 21 min | 01:24Z |  |
 
 ### Plan and harness merges on main
 - 00:07Z Plan: pre-flight fixes (D-5567); T837 keeper stage gate, job 32 and copy-flag fixes (D-5568) (#1368)
@@ -86,8 +85,8 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 403 of 735 (54.8%) · partial 319 · unstarted 13
-**Tasks merged (throughput only):** 618 of 774
+**Requirements verified:** 404 of 735 (55.0%) · partial 318 · unstarted 13
+**Tasks merged (throughput only):** 619 of 774
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -103,7 +102,7 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 | lifecycle | 21 | 7 | 0 | 28 |
 | messaging | 26 | 19 | 0 | 45 |
 | ops-recovery | 17 | 31 | 6 | 54 |
-| privacy | 11 | 20 | 0 | 31 |
+| privacy | 12 | 19 | 0 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
 | quotes-pick | 34 | 22 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
@@ -123,7 +122,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 261 of 346 done
+- stage 5: 262 of 346 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
