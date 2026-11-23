@@ -20,7 +20,7 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - Each status is recorded once and never moves a text back: `td_txt_04_delivery_statuses_are_recorded`.
 - The app's word lists equal the provider's settings file: `tests::optout_words::td_con_20_word_lists_equal_the_provider_settings`.
 - "can stop by at 3", "stop sign is down", "please cancel my request" are not opt-outs: `tests::optout_words::td_con_04_a_word_in_another_sense_is_not_an_opt_out`.
-- Nothing but the confirmation within 5 minutes and HELP reaches a listed number: `tests::prop_optout_props::nothing_but_confirmation_and_help_until_start`, `tests/integration/tests/optout_flow.rs`.
+- Nothing but the confirmation within 5 minutes reaches a listed number, not even the HELP reply (D-5280): `tests::prop_optout_props::nothing_but_the_confirmation_until_start`, `tests/integration/tests/optout_flow.rs`.
 - A 21610 refusal is never retried: `optout_flow.rs::td_con_05_a_21610_refusal_is_never_retried`.
 - Two opt-outs at once queue one confirmation, and an earlier listing's confirmation never goes: `optout_flow.rs::td_con_05_two_opt_outs_at_once_queue_one_confirmation`, `td_con_05_only_the_current_listings_confirmation_goes`.
 - No outbound text from any number but the audience's configured one; one audience never changes the other: `web_email_mode.rs::td_txt_08_every_outbound_text_uses_the_configured_number`, `td_txt_17_*`. More: `(never 20)` in NOTES.md.
@@ -37,6 +37,7 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - An index key version's rows are removed only when every one has its active-version row, never the active version's, and no phone or digest reaches a log, error or audit row: `tests/integration/tests/suppression_rekey.rs` (T743, D-4748).
 - A queued email gets one provider call per lease (two workers, overlapping or not), a fresh lease is never retaken, and a marked, refused, given-up, expired or removed recipient's row is dropped unsent: `tests/integration/tests/email_due.rs` (T470, D-4327).
 - A business row is sent only from the business number, after `may_text` passed, with its number read once through `LinePhones` and kept nowhere; a refused, unlinked or unreadable phone expires it and a closed line reads nothing; a closed job's earlier rows expire except `CLOSE_TEXTS`: `tests/integration/tests/outbox_business_rows.rs` (T573).
+- `suppress_indexed` lists only by the digests given, inside the caller's transaction, through `record` (its number lock first); empty digests list nothing: `app/server/tests/web_chat_stops.rs` (TD-CON-36, D-4473).
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/messaging/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/messaging/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).

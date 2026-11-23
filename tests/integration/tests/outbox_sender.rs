@@ -288,9 +288,10 @@ async fn td_qh_05_a_night_row_waits_for_eight_and_a_day_consent_text_goes_at_onc
     assert_eq!(status(&w, missed).await, "sent", "sent at 08:00");
 }
 
-/// TD-QH-05 (CON-013, CON-035): a suppressed number gets only the HELP reply.
+/// TD-QH-05 (CON-013, CON-035, D-5280): a suppressed number gets nothing but the confirmation, not
+/// even the HELP reply.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
-async fn td_qh_05_a_suppressed_number_gets_only_help(pool: PgPool) {
+async fn td_qh_05_a_suppressed_number_gets_no_help(pool: PgPool) {
     let carrier = fake(Mode::Accept);
     let w = world(&pool, carrier.clone(), az(15, 10, 0)).await;
     let mut db = w.app.acquire().await.expect("connection");
@@ -302,17 +303,17 @@ async fn td_qh_05_a_suppressed_number_gets_only_help(pool: PgPool) {
     let help = queue(&w, "help_reply", 3, az(15, 9, 59)).await;
     let quote = queue(&w, "first_quote", 4, az(15, 9, 59)).await;
     run_due(&w).await;
-    assert_eq!(status(&w, help).await, "sent");
+    assert_eq!(
+        status(&w, help).await,
+        "expired",
+        "D-5280: no HELP reply to a listed number"
+    );
     assert_eq!(
         status(&w, quote).await,
         "expired",
         "never sent to a listed number"
     );
-    assert_eq!(
-        carrier.calls(),
-        1,
-        "only the HELP reply reached the carrier"
-    );
+    assert_eq!(carrier.calls(), 0, "nothing reached the carrier");
 }
 
 /// TD-QH-05 (TXT-021, D-2188): a row queued while the line was suspended is expired, with one audit

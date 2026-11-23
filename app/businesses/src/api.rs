@@ -136,6 +136,9 @@ pub use crate::pest_identity::{PestIdentity, pest_identity, record_pest_match};
 pub use crate::phone_approval::{
     WaitingPhone, approve_phone, phone_standing, reject_phone, waiting_phones,
 };
+pub use crate::problem_complaint::{
+    Counted, PROBLEM_COUNTED_ACTION, PROBLEM_KINDS, count_problem, counted_jobs,
+};
 pub use crate::public_name::{PUBLIC_NAME_ALERT, public_names};
 pub use crate::record_resume::{
     RESUME_BATCH, RESUME_BATCH_KEY, RESUME_KIND, RESUME_LAG, RESUME_ONE_KIND, ResumeParts,
@@ -176,6 +179,7 @@ pub use crate::team::{
     add_member, add_owner, members, remove_member, set_roles, unlink_phone,
 };
 pub use crate::texting_switch::business_texting_on;
+pub use crate::texting_switch::homeowner_texting_number;
 
 /// SEC-038, D-480: whether `by`, a current member of `by.business`, passed a Verify code (to their
 /// verified phone, or email without a texting phone) no more than [`STEP_UP_LIFE`] before `now`;

@@ -6,9 +6,9 @@
 // its states and the seed function that stores one state with fake data and returns the path that
 // opens it. The checks (the route table, `NOT_PAGES`, the axe tags, which states run) live in
 // `fixtures.ts`, owner-only, so nothing here can narrow what is checked. Fake data only.
-import { createHash, randomBytes, randomUUID } from "node:crypto";
+import { createHash, createHmac, randomBytes, randomUUID } from "node:crypto";
 import { spawnSync } from "node:child_process";
-import { keyedUrl, seal } from "../e2e/keyed";
+import { keyedIdSecret, keyedUrl, seal } from "../e2e/keyed";
 
 /** One seeded state of a page. */
 export interface PageState {
@@ -82,6 +82,50 @@ const PAUSED = `,
 
 const QUOTE_ROUTE = "/q/{token}";
 
+/** The quote page opened from the first update email's `?confirm=` link, on the keyed binary. */
+const CONFIRM_LINK_STATE = "update address with its confirm link";
+
+/**
+ * T729 (TXT-018, D-5340, D-5442): a homeowner on an empty vault contact, her request's
+ * conversation, her update `channel` and her update address row `:row` with salt `:salt`, bounced
+ * at `bounced`. The address bytes are a stand-in: a GET reads only the row's state, never them.
+ */
+function updates(channel: string, bounced: string): string {
+  return `,
+    uc AS (INSERT INTO privacy.contact (id) VALUES (gen_random_uuid()) RETURNING id),
+    uh AS (INSERT INTO intake.homeowner (contact_id, created_at) SELECT id, now() FROM uc RETURNING id),
+    uv AS (INSERT INTO intake.conversation (homeowner_id, job_id, language, first_inbox_id,
+      consent_template, consent_sent_at, opened_at)
+      SELECT uh.id, j.id, 'en', gen_random_uuid(), 'consent', now(), now() FROM uh, j),
+    ul AS (INSERT INTO messaging.update_channel (recipient_id, channel, updated_at)
+      SELECT id, '${channel}', now() FROM uc),
+    ue AS (INSERT INTO privacy.update_email (id, contact_id, email, source, confirm_salt, stored_at, bounced_at)
+      SELECT ':row', id, decode('00', 'hex'), 'quote_page', decode(':salt', 'hex'), now(), ${bounced} FROM uc)`;
+}
+
+/** `core::ids::link_token` for `LinkKind::Action`: the keyed binary's ID secret (version 1) over the row and salt. */
+function confirmToken(row: string, salt: Buffer): string {
+  const mac = createHmac("sha256", keyedIdSecret().trim());
+  const version = Buffer.alloc(2);
+  version.writeUInt16BE(1);
+  mac.update(version);
+  for (const part of [Buffer.from("link.action", "utf8"), Buffer.from(row.replace(/-/g, ""), "hex"), salt]) {
+    const length = Buffer.alloc(8);
+    length.writeBigUInt64BE(BigInt(part.length));
+    mac.update(length).update(part);
+  }
+  return mac.digest("hex");
+}
+
+/** Seeds a quote page state; the confirm-link state opens on the keyed binary with its `?confirm=` token. */
+function quoteSeed(state: PageState): Seeded {
+  const row = randomUUID();
+  const salt = randomBytes(16);
+  const sql = state.sql.replace(":row", row).replace(":salt", salt.toString("hex"));
+  const path = tokenSeed({ ...state, sql });
+  return state.name === CONFIRM_LINK_STATE ? `${keyedUrl()}${path}?confirm=${confirmToken(row, salt)}` : path;
+}
+
 /** The quote page's states (T053, T246; docs/test-design.md section 6: empty, filled, after pick, ...). */
 const QUOTE_STATES: readonly PageState[] = [
   ["no quotes yet", "No quotes yet.", "Quote #1", quotePage("open", 0)],
@@ -96,6 +140,10 @@ const QUOTE_STATES: readonly PageState[] = [
   ["closed", "Quote #2 (no longer available)", "Pick #", quotePage("closed", 3)],
   // T608 (D-4252): a long list, so the 900 ms end-time check sees the capped stagger.
   ["eight quotes", "Pick #8", "Quote #9", quotePage("quotes_ready", 8)],
+  // T729 (TXT-018, TD-TXT-38, D-5340, D-5442): the update choice's GET states.
+  ["update address waiting", "We sent a confirm link to that email.", "Confirm this email", quotePage("open", 0, updates("email", "NULL"))],
+  [CONFIRM_LINK_STATE, "Confirm this email", "We sent a confirm link to that email.", quotePage("open", 0, updates("email", "NULL"))],
+  ["update email bounced", "Your email bounced, so updates go by text again.", "Get updates by text only", quotePage("open", 0, updates("text", "now()"))],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: QUOTE_ROUTE, name, shows, hides, sql, statusRegions: ["quote-status"] }));
 
 const FEEDBACK_ROUTE = "/f/{token}";
@@ -355,7 +403,8 @@ const OPENED_SQL = `,
  * PaymentIntent and loads neither Stripe.js nor the page script; on the keyed binary, whose Stripe
  * settings serve the page. T496 (A11Y-002, D-3838): an ordinary $25 charged pick under the terms in
  * force, whose card section shows with the fixture's fake Stripe Element mounted; its `hides` is
- * `CARD_OFF_LINE`, so a page whose card section fell to that line fails (D-4950).
+ * `CARD_OFF_LINE`, so a page whose card section fell to that line fails (D-4950). T810 (SEC-027,
+ * D-5313): the same pick with the owner's inbox marked shared, so the page shows the code step.
  */
 const CONFIRM_STATES: readonly PageState[] = [
   [
@@ -365,6 +414,14 @@ const CONFIRM_STATES: readonly PageState[] = [
     confirmSql("CASE t.mode WHEN 'tiers' THEN 'flat' ELSE 'tiers' END", "fee_free", 0),
   ],
   ["confirm page, card section", "Confirm and pay", "Card payments can't be taken right now.", confirmSql("t.mode", "charged", 2500, OPENED_SQL)],
+  [
+    "confirm page, shared-inbox code step",
+    "Confirming needs a code sent to your phone",
+    "Card payments can't be taken right now.",
+    confirmSql("t.mode", "charged", 2500, `${OPENED_SQL},
+    sh AS (INSERT INTO portals.shared_inbox (member_id, business_id, shared, changed_at)
+      SELECT id, business_id, true, now() FROM m)`),
+  ],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: CONFIRM_ROUTE, name, shows, hides, sql, statusRegions: ["confirm-status"] }));
 
 const CANT_TAKE_ROUTE = "/b/picks/{pick}/cant-take";
@@ -494,6 +551,25 @@ const OWNER_RELEASE_STATES: readonly PageState[] = [
   ["owner release button", "Re-send the release notice", "Nothing was sent", OWNER_SESSION_SQL],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: OWNER_RELEASE_ROUTE, name, shows, hides, sql, statusRegions: ["release-status"] }));
 
+const OWNER_PROBLEM_REPORTS_ROUTE = "/owner/problem-reports";
+
+/** The owner's PROBLEM reports (T712; JOB-016, D-4423): one fake report with its kind form. */
+const OWNER_PROBLEM_STATES: readonly PageState[] = [
+  [
+    "owner problem reports, one to count",
+    "Count as a complaint",
+    "No problem reports in the last 30 days.",
+    `; WITH j AS (INSERT INTO jobs.job (status, emergency, created_at, status_at, timer_from)
+      VALUES ('connected', false, now(), now(), now()) RETURNING id),
+    n AS (UPDATE jobs.job_number_next SET next = next + 1 RETURNING next - 1 AS n),
+    num AS (INSERT INTO jobs.job_number (number, job_id, issued_at) SELECT n.n, j.id, now() FROM n, j),
+    w AS (INSERT INTO privacy.message_body (inbox_id, job_id, words, safety, created_at)
+      SELECT ':pick'::uuid, j.id, 'Sample words: the tap still drips after the visit', false, now() FROM j)
+    INSERT INTO ops.alert (kind, severity, subject_kind, subject_id)
+      VALUES ('jobs.problem_report', 'normal', 'messaging.inbox', ':pick'::uuid)`,
+  ],
+].map(([name = "", shows = "", hides = "", extra = ""]) => ({ route: OWNER_PROBLEM_REPORTS_ROUTE, name, shows, hides, sql: OWNER_SESSION_SQL + extra, statusRegions: [] }));
+
 const OWNER_HELP_ROUTE = "/owner/help";
 
 /** The owner help page (T530; OPS-036): no open request, no refusal. */
@@ -617,6 +693,29 @@ const BUSINESS_STEP_UP_STATES: readonly PageState[] = [
   ["business step-up, send a code", "Send me a code", "That code didn't work", businessSql("")],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: BUSINESS_STEP_UP_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
+/** The notice and backup address page (T542; BIZ-040, BIZ-043, SEC-038): the owner signed in. */
+const ADDRESS_CHANGE_ROUTE = "/b/addresses";
+const ADDRESS_CHANGE_STATES: readonly PageState[] = [
+  ["notice and backup address forms", "Change where your job notices go", "There is a problem", businessSql("")],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: ADDRESS_CHANGE_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
+/**
+ * The owner's waiting-phones page (T397; BIZ-033, BIZ-038): the owner signed in, with no phone
+ * waiting and with one a fake team member linked (last 4 digits only; the unkeyed binary shows the
+ * fixed line in place of the member's address).
+ */
+const PHONES_ROUTE = "/b/phones";
+const WAITING_PHONE_SQL = `,
+    mm AS (INSERT INTO businesses.team_member (business_id, mailbox_id, is_owner, cards_and_quotes,
+      confirm_and_billing, added_at) SELECT business_id, gen_random_uuid(), false, true, true, now() FROM m
+      RETURNING id, business_id),
+    sp AS (INSERT INTO businesses.staff_phone (business_id, linked_by, linked_at, approved_at, number_set_at,
+      number_set_by, number_end) SELECT business_id, id, now(), NULL, now(), id, '0150' FROM mm)`;
+const PHONES_STATES: readonly PageState[] = [
+  ["phones to approve, none waiting", "No phones are waiting for you to approve.", "Phone number ending in", businessSql("")],
+  ["phones to approve, one waiting", "Phone number ending in 0150", "No phones are waiting", businessSql(WAITING_PHONE_SQL)],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: PHONES_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
 /** The homeowner sign-in form (T307, SEC-008): no seed, the plain path. */
 const HOMEOWNER_SIGNIN_ROUTE = "/h/sign-in";
 const HOMEOWNER_SIGNIN_STATES: readonly PageState[] = [
@@ -701,7 +800,7 @@ const NOT_FOUND_STATES: readonly PageState[] = [
 
 /** Every page's entry: its route, its states and its seed function. Append a new page's entry. */
 export const PAGE_ENTRIES: readonly PageEntry[] = [
-  { route: QUOTE_ROUTE, seed: tokenSeed, states: QUOTE_STATES },
+  { route: QUOTE_ROUTE, seed: quoteSeed, states: QUOTE_STATES },
   { route: FEEDBACK_ROUTE, seed: tokenSeed, states: FEEDBACK_STATES },
   { route: CHECK_IN_ROUTE, seed: checkInSeed, states: CHECK_IN_STATES },
   { route: SIGNIN_ROUTE, seed: (state) => state.route, states: SIGNIN_STATES },
@@ -749,6 +848,7 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: OWNER_SETTINGS_ROUTE, seed: portalSeed(false), states: OWNER_SETTINGS_STATES },
   { route: OWNER_RELEASE_ROUTE, seed: portalSeed(false), states: OWNER_RELEASE_STATES },
   { route: OWNER_HELP_ROUTE, seed: portalSeed(false), states: OWNER_HELP_STATES },
+  { route: OWNER_PROBLEM_REPORTS_ROUTE, seed: portalSeed(false), states: OWNER_PROBLEM_STATES },
   { route: OWNER_REFUND_ROUTE, seed: portalSeed(false), states: OWNER_TOOLS_STATES.filter((s) => s.route === OWNER_REFUND_ROUTE) },
   { route: OWNER_AUDIT_LOG_ROUTE, seed: portalSeed(false), states: OWNER_TOOLS_STATES.filter((s) => s.route === OWNER_AUDIT_LOG_ROUTE) },
   { route: OWNER_HEALTH_ROUTE, seed: portalSeed(false), states: OWNER_TOOLS_STATES.filter((s) => s.route === OWNER_HEALTH_ROUTE) },
@@ -757,6 +857,8 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: HOMEOWNER_HOME_ROUTE, seed: homeownerSeed, states: HOMEOWNER_HOME_STATES },
   { route: PHOTO_UPLOAD_ROUTE, seed: photoUploadSeed, states: PHOTO_UPLOAD_STATES },
   { route: NOT_FOUND_ROUTE, seed: () => "/no-such-page", states: NOT_FOUND_STATES },
+  { route: ADDRESS_CHANGE_ROUTE, seed: portalSeed(false), states: ADDRESS_CHANGE_STATES },
+  { route: PHONES_ROUTE, seed: portalSeed(false), states: PHONES_STATES },
 ];
 
 /** Every state of every page, in entry order. */

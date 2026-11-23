@@ -68,7 +68,7 @@ enum Turn {
 }
 
 impl Turn {
-    /// `None` for any query this route never sets.
+    /// SEC-010: `None` for any query this route never sets, an unknown or repeated key among them.
     fn parse(query: Option<&str>) -> Option<Self> {
         let Some(query) = query.filter(|q| !q.is_empty()) else {
             return Some(Self::First);
@@ -226,4 +226,28 @@ fn render(wait: PinWait, turn: Turn, reply: VoiceReply) -> String {
 /// A `text/xml` 200 with `body`.
 fn twiml(body: String) -> Response {
     ([(header::CONTENT_TYPE, "text/xml")], body).into_response()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn sec_010_parse_reads_the_queries_this_route_writes() {
+        assert!(Turn::parse(None) == Some(Turn::First));
+        assert!(Turn::parse(Some("try=1")) == Some(Turn::Try(1)));
+        assert!(Turn::parse(Some("confirm=2")) == Some(Turn::Confirm(2)));
+    }
+
+    #[test]
+    fn sec_010_parse_refuses_an_unknown_and_a_repeated_key() {
+        for planted in [
+            "try=1&extra=1",
+            "extra=1",
+            "try=1&try=1",
+            "confirm=1&confirm=2",
+        ] {
+            assert!(Turn::parse(Some(planted)).is_none(), "{planted}");
+        }
+    }
 }

@@ -2,8 +2,10 @@
 //!
 //! [`keyword`] says whether a text is only HELP, INFO or AYUDA ("I need help with my sink" is a
 //! request, not a keyword). [`reply_to_help`] queues the one reply for such a text at once, under
-//! the `help_reply` template ID that `rules::may_send_to` lets through to an opted-out number and
-//! that no quiet-hours check holds back, so it goes within 5 minutes at any hour. The body is
+//! the `help_reply` template ID that no quiet-hours check holds back, so it goes within 5 minutes
+//! at any hour. `rules::may_send_to` never lets it through to an opted-out number: Advanced
+//! Opt-Out would refuse it with 21610, so the sender expires it and the person gets help by
+//! the help page and the help email instead (CON-013, D-5280). The body is
 //! one of four registry texts: normal or owner-away (OPS-026), each with or without the roaming
 //! line for a Canadian number. The reply times come from [`HelpSettings`], never from the text.
 //! When the settings carry no away date, [`reply_to_help`] reads the owner's stored one through

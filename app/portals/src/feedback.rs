@@ -44,11 +44,14 @@ pub const FEEDBACK_ROUTE: &str = "/f/{token}";
 /// `ink` centre when ticked, so its edge is at least 3:1 against the page (A11Y-007, WEB-027).
 pub const FEEDBACK_CSS_ROUTE: &str = "/static/portals/feedback.css";
 
-/// The stylesheet [`FEEDBACK_CSS_ROUTE`] serves (same origin, so the CSP allows it, SEC-013).
+/// The stylesheet [`FEEDBACK_CSS_ROUTE`] serves (same origin, so the CSP allows it, SEC-013). Under
+/// forced colours the box goes back to the native control, so its check never vanishes with the
+/// fill (A11Y-007, DESIGN_SPEC section 6, D-4252, T611).
 const FEEDBACK_CSS: &str = "#feedback-share{appearance:none;width:24px;height:24px;margin:0 8px 0 0;\
 vertical-align:middle;border:2px solid #6e8077;border-radius:3px;background:#fff}\
 #feedback-share:checked{background:#1e2926;box-shadow:inset 0 0 0 4px #fff}\
-#feedback-body{display:block;width:100%;max-width:40rem;box-sizing:border-box}\n";
+#feedback-body{display:block;width:100%;max-width:40rem;box-sizing:border-box}\
+@media (forced-colors:active){#feedback-share{appearance:auto}}\n";
 
 /// The shared form stylesheet a page with native checkboxes or radios links before the site's own
 /// (T101): Chromium reports a native box's edge as 0px and its fill as transparent, so each box is
@@ -57,13 +60,16 @@ vertical-align:middle;border:2px solid #6e8077;border-radius:3px;background:#fff
 pub const FORMS_CSS_ROUTE: &str = "/static/portals/forms.css";
 
 /// The stylesheet [`FORMS_CSS_ROUTE`] serves (same origin, so the CSP allows it, SEC-013). No
-/// `outline` rule, so the browser's focus outline stays visible.
+/// `outline` rule, so the browser's focus outline stays visible. Under forced colours each box goes
+/// back to the native control (`appearance:auto`), so its check never vanishes with the fill
+/// (A11Y-007, DESIGN_SPEC section 6, D-4252, T611).
 const FORMS_CSS: &str = "input[type=checkbox],input[type=radio]{appearance:none;width:24px;\
 height:24px;margin:0 8px 0 0;vertical-align:middle;border:2px solid #6e8077;background:#fff}\
 input[type=checkbox]{border-radius:3px}input[type=radio]{border-radius:50%}\
 input[type=checkbox]:checked,input[type=radio]:checked{background:#1e2926;\
 box-shadow:inset 0 0 0 4px #fff}span[id$=\"-hint\"],span[id$=\"-error\"]{display:block}\
-button{min-height:24px}\n";
+button{min-height:24px}\
+@media (forced-colors:active){input[type=checkbox],input[type=radio]{appearance:auto}}\n";
 
 /// JOB-017, WORD-001: the share box's label, word for word, with the display name and the public
 /// domain from the brand file (D-1932, T294).
@@ -721,6 +727,20 @@ mod token_tests {
             let tokens = ["#feedback-", "#6e8077", "#1e2926", "#fff"];
             let left = tokens.iter().fold(css.to_owned(), |c, t| c.replace(t, ""));
             assert!(!left.contains('#'), "{css}");
+        }
+    }
+
+    /// D-4252 (A11Y-007): each stylesheet keeps D-3700's drawn box and hands it back to the native
+    /// control under forced colours, after the drawn rule so it wins there.
+    #[test]
+    fn portal_stylesheets_hand_boxes_back_under_forced_colours() {
+        for css in [FEEDBACK_CSS, FORMS_CSS] {
+            let drawn = css.find("appearance:none").expect("drawn box");
+            let native = css
+                .find("@media (forced-colors:active)")
+                .expect("forced-colours block");
+            assert!(drawn < native, "{css}");
+            assert!(css[native..].contains("appearance:auto"), "{css}");
         }
     }
 }

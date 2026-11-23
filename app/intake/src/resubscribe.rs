@@ -5,8 +5,15 @@
 //! she gets the consent text again before anything else, and "START" is never heard as an
 //! answer to the open question. [`restart_after_start`] queues the request's own consent text
 //! once more under the START inbox row, records it as sent (the CON-005 record and the
-//! `intake.consent_sent` audit row) and passes nothing on. With no open request it does nothing,
-//! and the caller's usual path opens a new request from the consent text.
+//! `intake.consent_sent` audit row), then, in the same transaction and under the same homeowner
+//! lock, hands the request to `order_dispatch::ask_open_again` (T691, D-4360), so her open
+//! question follows as its own text (CON-031): the ZIP question, "How soon?" or the shown card
+//! again; nothing while a 911 text waits for SAFE (INT-005) or when nothing is open, and nothing
+//! before the ZIP question was first asked (the INT-037 alarm path, D-5149). The re-ask
+//! queues the question's text only and writes no asked or answer row, so it is not counted as an
+//! ask (the ZIP step's one re-ask is kept) and no row carries the START inbox ID. A resent START
+//! delivery queues nothing more. With no open request it does nothing, and the caller's usual
+//! path opens a new request from the consent text.
 //!
 //! [`pause_on_repeat_cancel`] (D-3480) is the other half of an opt-out from a number already
 //! listed: a sole CANCEL or CANCELAR still pauses her live jobs and withdraws a waiting pick as
@@ -20,6 +27,7 @@ use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 
 use crate::models::{self, IntakeError};
+use crate::order_dispatch::ask_open_again;
 use crate::rules::{CONSENT_CALL_TEMPLATE, CONSENT_TEMPLATE, Settings, language_from_code};
 use crate::service::{OptOutJobs, TextIn, audit_action, live_jobs, sha256_hex, sole_cancel};
 
@@ -27,13 +35,15 @@ use crate::service::{OptOutJobs, TextIn, audit_action, live_jobs, sha256_hex, so
 /// `msg.contact` off the opt-out list, queues her open request's consent text again (the
 /// template and language the request was opened with) in one transaction under the homeowner
 /// lock, subject the request and the START inbox row (so a resent delivery queues nothing more),
-/// stores one consent record for that inbox row and the `intake.consent_sent` audit row. Answers
-/// the outbox row; `None` when she has no open request (nothing written). Never hears the text.
+/// stores one consent record for that inbox row and the `intake.consent_sent` audit row, then
+/// (CON-031, INT-043, INT-005, D-4360, T691) re-asks her open question through
+/// `order_dispatch::ask_open_again`, text only, no row written. Answers the consent text's outbox
+/// row; `None` when she has no open request (nothing written). Never hears the text.
 ///
 /// # Errors
 ///
-/// [`IntakeError::Template`], [`IntakeError::Outbox`], [`IntakeError::Audit`] or
-/// [`IntakeError::Database`]; nothing is kept on an error.
+/// [`IntakeError::Template`], [`IntakeError::Outbox`], [`IntakeError::Audit`],
+/// [`IntakeError::Database`] or `ask_open_again`'s; nothing is kept on an error.
 pub async fn restart_after_start(
     db: &mut PgConnection,
     secret: &SecretString,
@@ -74,9 +84,35 @@ pub async fn restart_after_start(
         models::record_consent(&mut tx, ids, &version, msg.received_at).await?;
         let actor = Actor::Homeowner(row.homeowner_id);
         audit_action(&mut tx, actor, "intake.consent_sent", id).await?;
+        if zip_reached(&mut tx, id).await? {
+            ask_open_again(&mut tx, secret, (msg, id), settings).await?;
+        }
     }
     tx.commit().await.map_err(|_| IntakeError::Database)?;
     Ok(Some(outbox))
+}
+
+/// INT-043, INT-037, TD-INT-51, D-5149: whether `conversation` has had its ZIP question asked
+/// (a `zip` asked row) or already holds a property, so `ask_open_again` re-asks a question it
+/// has already put to her. False on the smoke or CO alarm path before its INT-037 answer: there
+/// the re-ask would put the first ZIP question (and its `zip` row under the START inbox ID) ahead
+/// of the INT-037 answer, so START keeps the consent text alone.
+///
+/// # Errors
+///
+/// [`IntakeError::Database`].
+async fn zip_reached(tx: &mut PgConnection, conversation: Uuid) -> Result<bool, IntakeError> {
+    sqlx::query_scalar!(
+        r#"SELECT EXISTS (SELECT 1 FROM intake.intake_answer a
+             WHERE a.conversation_id = $1 AND a.question_id = 'zip')
+           OR EXISTS (SELECT 1 FROM intake.conversation c JOIN intake.property q
+             ON q.homeowner_id = c.homeowner_id AND q.created_at >= c.opened_at
+             WHERE c.id = $1) AS "reached!""#,
+        conversation
+    )
+    .fetch_one(tx)
+    .await
+    .map_err(|_| IntakeError::Database)
 }
 
 /// A sole-word CANCEL or CANCELAR from a number an earlier opt-out already listed (CON-029,

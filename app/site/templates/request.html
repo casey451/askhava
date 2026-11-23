@@ -6,11 +6,15 @@
     shows while `ai_on`. One question per page, the chat so far above it. `csrf` is the token
     server's chat layer sets; `message` is this form's PRIV-008 message ID (D-3189). The typed
     number goes back only in the code form's hidden field (D-4044). `words` is the home request
-    box's text carried into the chat box, escaped, never stored (T593). -#}
+    box's text carried into the chat box, escaped, never stored (T593). The form sits on a paper
+    card, a field in error takes aria-invalid and its 2 px alert border, her lines sit on `band` and
+    ours on `surface` (T609, D-4246, D-4252 (b)); "Send" has no arrow (docs/for-casey-review.md).
+    `chat-intro` and `chat-form` scope the start screen's compact spacing so the words box never
+    spans the fold at 900 px tall (T831, A11Y-005, D-5535). -#}
 {% block title %}{% if error %}Error: {% endif %}Get quotes{% endblock %}
 {% block content %}
 {%- let brand = askhava_core::api::brand().display_name() %}
-<h1>Tell us the job. We'll answer by text.</h1>
+<h1 class="chat-intro">Tell us the job. We'll answer by text.</h1>
 <h2>How we'll text you</h2>
 <div lang="es">
 <p><strong>Borrador en español, pendiente de revisión por un hablante nativo.</strong></p>
@@ -22,7 +26,7 @@
 <h2>Your chat with {{ brand }}</h2>
 <ol>
 {%- for s in turn.said %}
-<li>{% if s.ours %}{{ brand }}{% else %}You{% endif %}: {{ s.text }}</li>
+<li class="{% if s.ours %}said-ours{% else %}said-hers{% endif %}">{% if s.ours %}{{ brand }}{% else %}You{% endif %}: {{ s.text }}</li>
 {%- endfor %}
 </ol>
 {%- endif %}
@@ -32,7 +36,7 @@
 {%- if ai_on %}
 <p data-fixed="AI-026">An AI service helps word our questions.</p>
 {%- endif %}
-<form method="post" action="/request" novalidate>
+<form class="card form-card chat-form" method="post" action="/request" novalidate>
 <input type="hidden" name="csrf" value="{{ turn.csrf }}">
 <input type="hidden" name="chat" value="{{ turn.chat }}">
 <input type="hidden" name="message" value="{{ message }}">
@@ -43,20 +47,20 @@
 <input type="hidden" name="step" value="message">
 <p><label for="chat-words">What job do you need done?</label></p>
 <p id="chat-words-hint">Say what's wrong and where in the house. Leave out your name, phone and address.</p>
-<p><textarea id="chat-words" name="words" rows="4" maxlength="{{ crate::chat::WORDS_MAX_CHARS }}" aria-describedby="chat-words-hint{% if error %} chat-notice{% endif %}">{{ words }}</textarea></p>
-<p><button type="submit">Send</button></p>
+<p><textarea id="chat-words" name="words" rows="3" maxlength="{{ crate::chat::WORDS_MAX_CHARS }}" aria-describedby="chat-words-hint{% if error %} chat-notice{% endif %}"{% if error %} aria-invalid="true"{% endif %}>{{ words }}</textarea></p>
+<p><button class="button" type="submit">Send</button></p>
 {%- when Ask::Number %}
 <input type="hidden" name="step" value="number">
 <p><label for="chat-number">Your mobile number</label></p>
 <p id="chat-number-hint">We text a code to this number to check it's yours.</p>
-<p><input id="chat-number" name="number" type="tel" autocomplete="tel" aria-describedby="chat-number-hint{% if error %} chat-notice{% endif %}"></p>
+<p><input id="chat-number" name="number" type="tel" autocomplete="tel" aria-describedby="chat-number-hint{% if error %} chat-notice{% endif %}"{% if error %} aria-invalid="true"{% endif %}></p>
 <p><button type="submit">Text me a code</button></p>
 {%- when Ask::Code %}
 <input type="hidden" name="step" value="code">
 <input type="hidden" name="number" value="{{ turn.number }}">
 <p><label for="chat-code">The code we texted you</label></p>
 <p id="chat-code-hint">It's in the text we just sent.</p>
-<p><input id="chat-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" aria-describedby="chat-code-hint{% if error %} chat-notice{% endif %}"></p>
+<p><input id="chat-code" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" aria-describedby="chat-code-hint{% if error %} chat-notice{% endif %}"{% if error %} aria-invalid="true"{% endif %}></p>
 <p><button type="submit">Check the code</button></p>
 {%- endmatch %}
 </form>

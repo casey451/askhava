@@ -4,7 +4,8 @@
     of docs/legal/privacy-policy.md section 8 until the owner fills both before publishing;
     tests/docs/test_legal_pages.py keeps the two equal. AI-018's switched-off sentence shows while
     `ai_on` is false. The Spanish text is a draft for native-speaker review (TERMS-018); each Spanish
-    passage carries its own lang (A11Y-004). -#}
+    passage carries its own lang (A11Y-004). The keep and who-sees lists sit on paper cards as ruled
+    rows (T610, D-4246). -#}
 {% block lang %}{% if es %}es{% else %}en{% endif %}{% endblock %}
 {% block title %}{% if es %}Datos de negocios{% else %}Business data{% endif %}{% endblock %}
 {% block content %}
@@ -13,7 +14,7 @@
 <h1 lang="es">Datos de negocios</h1>
 <p lang="es">Esta página explica qué guarda {{ brand }} sobre los negocios y los teléfonos de su equipo, por cuánto tiempo y quién lo puede ver.</p>
 <h2 lang="es">Qué guardamos</h2>
-<ul>
+<ul class="card fact-list">
 <li lang="es">Los datos del negocio y de su licencia, tomados de registros públicos.</li>
 <li lang="es">Los nombres, correos electrónicos y teléfonos de los miembros de su equipo.</li>
 <li lang="es">El correo de avisos, donde llegan las solicitudes de trabajo y las elecciones.</li>
@@ -25,7 +26,7 @@
 <h2 lang="es">Por cuánto tiempo</h2>
 <p lang="es">Registros del negocio, teléfonos del equipo y registros de llamadas: <span lang="en" class="retention-days">[days, set before launch and shown on the business data page]</span></p>
 <h2 lang="es">Quién lo puede ver</h2>
-<ul>
+<ul class="card fact-list">
 <li lang="es">Usted y su equipo, en la página de su negocio.</li>
 <li lang="es">El dueño de {{ brand }}, para operar el servicio.</li>
 <li lang="es">Los propietarios ven el nombre de su negocio, su licencia y las cotizaciones que usted envía.</li>
@@ -49,7 +50,7 @@
 <h1>Business data</h1>
 <p>Here's what {{ brand }} keeps about your business and your team's phones, how long we keep it, and who sees it.</p>
 <h2>What we keep</h2>
-<ul>
+<ul class="card fact-list">
 <li>Business and license details from public records.</li>
 <li>Team members' names, emails and phone numbers.</li>
 <li>The email address where we send job requests and picks.</li>
@@ -61,7 +62,7 @@
 <h2>How long we keep it</h2>
 <p>Business records, team phones and call logs: <span class="retention-days">[days, set before launch and shown on the business data page]</span></p>
 <h2>Who can see it</h2>
-<ul>
+<ul class="card fact-list">
 <li>You and your team, on your business page.</li>
 <li>The {{ brand }} owner, to run the service.</li>
 <li>Homeowners see your business name, your license and the quotes you send.</li>
