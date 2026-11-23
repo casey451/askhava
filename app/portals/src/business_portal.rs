@@ -903,6 +903,7 @@ mod tests {
             business,
             owner: true,
             roles: (true, true),
+            session: Uuid::new_v4(),
         };
         let codes = |c: &[&str]| c.iter().map(|s| (*s).to_owned()).collect::<Vec<_>>();
         for bad in [codes(&["8am", "noon", "5pm"]), codes(&["9am"])] {
@@ -1117,6 +1118,7 @@ mod tests {
             business,
             owner: true,
             roles: (true, true),
+            session: Uuid::new_v4(),
         };
         (Acting { business, member }, me)
     }

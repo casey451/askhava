@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT substr(question_id, 6) AS \"id!\", choice AS \"choice!\"\n           FROM intake.intake_answer\n           WHERE conversation_id = $1 AND question_id LIKE 'bank.%' AND choice IS NOT NULL\n           ORDER BY answered_at, id",
+  "query": "SELECT substr(question_id, length($2) + 1) AS \"id!\", choice AS \"choice!\"\n           FROM intake.intake_answer\n           WHERE conversation_id = $1 AND starts_with(question_id, $2) AND choice IS NOT NULL\n             AND strpos(substr(question_id, length($2) + 1), '.') = 0\n           ORDER BY answered_at, id",
   "describe": {
     "columns": [
       {
@@ -23,7 +23,8 @@
     ],
     "parameters": {
       "Left": [
-        "Uuid"
+        "Uuid",
+        "Text"
       ]
     },
     "nullable": [
@@ -31,5 +32,5 @@
       true
     ]
   },
-  "hash": "407aaa919d49c70ca7c296ea92f7c9eed198f7997da8a373c65cb2e46ea95c79"
+  "hash": "1f853043c3af9fa5105603d8aab54559180396f89f669bd3fcd1ebc34217be58"
 }

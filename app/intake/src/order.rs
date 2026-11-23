@@ -15,9 +15,10 @@
 //! `answer_choice` can release the job (INT-029); [`spanish_line`] sends TXT-041's line once;
 //! [`ask_last_question`] asks step 11, the name and address, once per request (INT-027, D-3702).
 //! [`bank_turn`] is step 8 for `order_dispatch` (T672, D-4360): `BankRun` cannot be rebuilt from
-//! rows, so each text replays the request's stored `bank.<question ID>` answers AI-off, keyed on
-//! the question ID, hears the reply and stores its answer through [`answer_narrowing`];
-//! [`answer_day`] stores the day after "By a certain day" (INT-030, D-4831).
+//! rows, so each text replays the job's stored `bank.<question ID>` answers (`bank.<job, 32
+//! hex>.<question ID>` for a request's later job, D-5553) AI-off, keyed on the question ID,
+//! hears the reply and stores its answer through [`answer_narrowing`]; [`answer_day`] stores the
+//! day after "By a certain day" (INT-030, D-4831).
 //! No raw words are stored and none go into a log line.
 
 use askhava_ai::api::WriteSources;
@@ -471,17 +472,46 @@ pub(crate) enum BankTurn {
     Done,
 }
 
-/// The stored trade-question answers of `conversation` as (question ID, choice), oldest first.
-async fn bank_answers(
+/// D-5553: the question-ID prefix of `job`'s trade-question answers in request `conversation`:
+/// [`BANK`] for the request's first job (`conversation.job_id`, or none yet), `bank.<job, 32
+/// hex>.` for any later job (an INT-032 ALSO or SPLIT reply), so two jobs that both answer a
+/// question (`details`) keep their own answer.
+async fn bank_prefix(
     db: &mut PgConnection,
-    conversation: Uuid,
+    (conversation, job): (Uuid, Uuid),
+) -> Result<String, IntakeError> {
+    let first = sqlx::query_scalar!(
+        r#"SELECT (job_id IS NULL OR job_id = $2) AS "first!" FROM intake.conversation
+           WHERE id = $1"#,
+        conversation,
+        job
+    )
+    .fetch_optional(db)
+    .await
+    .map_err(|_| IntakeError::Database)?;
+    Ok(match first {
+        Some(false) => format!("{BANK}{}.", job.simple()),
+        _ => BANK.to_owned(),
+    })
+}
+
+/// CARD-023, INT-039, D-5553: the stored trade-question answers of `job` in request
+/// `conversation` as (question ID, choice), oldest first, the `bank.` or `bank.<job hex>.` prefix
+/// stripped (the first job's read leaves out every `bank.<hex>.` row). `job_answers` and
+/// [`bank_turn`]'s replay both read through here.
+pub(crate) async fn job_bank_answers(
+    db: &mut PgConnection,
+    (conversation, job): (Uuid, Uuid),
 ) -> Result<Vec<(String, String)>, IntakeError> {
+    let prefix = bank_prefix(db, (conversation, job)).await?;
     let rows = sqlx::query!(
-        r#"SELECT substr(question_id, 6) AS "id!", choice AS "choice!"
+        r#"SELECT substr(question_id, length($2) + 1) AS "id!", choice AS "choice!"
            FROM intake.intake_answer
-           WHERE conversation_id = $1 AND question_id LIKE 'bank.%' AND choice IS NOT NULL
+           WHERE conversation_id = $1 AND starts_with(question_id, $2) AND choice IS NOT NULL
+             AND strpos(substr(question_id, length($2) + 1), '.') = 0
            ORDER BY answered_at, id"#,
-        conversation
+        conversation,
+        prefix
     )
     .fetch_all(db)
     .await
@@ -520,7 +550,8 @@ fn replay(
 /// `category` (its set, with the remaining `candidates`; `emergency` asks only the questions
 /// marked for it, `spanish` the Spanish wording). The run is rebuilt by [`replay`]; with a `reply`
 /// the open question hears it and the answer (the option number, `not_sure` or `text`) is stored
-/// under `bank.<question ID>` through [`answer_narrowing`]; then the next question is returned.
+/// under `bank.<question ID>` (the request's first job) or `bank.<job, 32 hex>.<question ID>` (a
+/// later job, D-5553) through [`answer_narrowing`]; then the next question is returned.
 ///
 /// # Errors
 ///
@@ -535,7 +566,7 @@ pub(crate) async fn bank_turn(
     let Some(set) = bank.sets.get(category) else {
         return Ok(BankTurn::Done);
     };
-    let stored = bank_answers(db, conversation).await?;
+    let stored = job_bank_answers(db, (conversation, job)).await?;
     let kept = description(db, job).await;
     let words = kept.map_err(|_| IntakeError::Quotes)?;
     let words = words.map(|w| w.text()).unwrap_or_default();
@@ -576,8 +607,9 @@ fn turn(next: Next) -> BankTurn {
     }
 }
 
-/// INT-039, INT-012, CARD-007: stores the answer `given` to bank question `id` as its code (the
-/// option number, `not_sure` or `text`, never her words) through [`answer_narrowing`].
+/// INT-039, INT-012, CARD-007, D-5553: stores the answer `given` to bank question `id` of `job`
+/// as its code (the option number, `not_sure` or `text`, never her words), under the job's
+/// [`bank_prefix`], through [`answer_narrowing`].
 async fn store_given(
     db: &mut PgConnection,
     (conversation, job): (Uuid, Uuid),
@@ -591,7 +623,7 @@ async fn store_given(
     };
     let words = msg.inbound.words;
     let option = [(code.as_str(), words)];
-    let question = format!("{BANK}{id}");
+    let question = format!("{}{id}", bank_prefix(db, (conversation, job)).await?);
     let answer = Answer {
         conversation,
         question: &question,
@@ -601,4 +633,100 @@ async fn store_given(
     };
     answer_narrowing(db, &answer, (job, category, candidates)).await?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    //! D-5553 (CARD-023, INT-039): a request's later job stores and replays its trade-question
+    //! answers under `bank.<job, 32 hex>.<question ID>`, apart from the first job's. Fake data only.
+
+    use askhava_jobs::api::create;
+    use askhava_ops::api::Actor;
+    use jiff::Timestamp;
+    use sqlx::types::Uuid;
+    use sqlx::{PgConnection, PgPool};
+
+    use super::{BankTurn, bank_turn, job_bank_answers};
+    use crate::models::set_first_job;
+    use crate::rules::Inbound;
+    use crate::service::TextIn;
+
+    const PLUMBING: &str = "plumbing_repair";
+
+    async fn request_with_two_jobs(db: &mut PgConnection) -> (Uuid, Uuid, Uuid) {
+        let homeowner = sqlx::query_scalar!(
+            "INSERT INTO intake.homeowner (contact_id, created_at) VALUES ($1, now()) RETURNING id",
+            Uuid::from_u128(0x5553),
+        )
+        .fetch_one(&mut *db)
+        .await
+        .expect("homeowner");
+        let request = sqlx::query_scalar!(
+            "INSERT INTO intake.conversation (homeowner_id, language, first_inbox_id, \
+             consent_template, consent_sent_at, opened_at) VALUES ($1, 'en', gen_random_uuid(), \
+             'consent_first', now(), now()) RETURNING id",
+            homeowner,
+        )
+        .fetch_one(&mut *db)
+        .await
+        .expect("conversation");
+        let mut jobs = [Uuid::nil(); 2];
+        for job in &mut jobs {
+            let at = Timestamp::now();
+            *job = create(db, at, false, Actor::Homeowner(homeowner))
+                .await
+                .expect("job");
+            set_first_job(db, request, *job).await.expect("request job");
+        }
+        (request, jobs[0], jobs[1])
+    }
+
+    async fn ask(db: &mut PgConnection, ids: (Uuid, Uuid), reply: Option<&TextIn<'_>>) -> String {
+        let about = (PLUMBING, &[][..], (false, false));
+        match bank_turn(db, ids, about, reply).await.expect("turn") {
+            BankTurn::Ask(prompt) => prompt.id,
+            other => panic!("expected a question, got {other:?}"),
+        }
+    }
+
+    /// D-5553: the second job's reply is stored under its own prefix and replayed for it only.
+    #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+    async fn a_later_job_stores_and_replays_its_own_bank_answers(pool: PgPool) {
+        let mut db = pool.acquire().await.expect("db");
+        let (request, first, second) = request_with_two_jobs(&mut db).await;
+        let opening = ask(&mut db, (request, second), None).await;
+        let msg = TextIn {
+            inbox_id: Uuid::from_u128(0x1),
+            contact: Uuid::from_u128(0x5553),
+            inbound: Inbound {
+                words: "1",
+                opt_out: false,
+                help: false,
+                emergency: false,
+                ai_spanish: None,
+            },
+            received_at: Timestamp::now(),
+        };
+        let after = ask(&mut db, (request, second), Some(&msg)).await;
+        let stored = sqlx::query_scalar!(
+            "SELECT question_id FROM intake.intake_answer WHERE conversation_id = $1 \
+             AND question_id LIKE 'bank.%'",
+            request,
+        )
+        .fetch_all(&mut *db)
+        .await
+        .expect("rows");
+        assert_eq!(stored, [format!("bank.{}.{opening}", second.simple())]);
+        assert_ne!(after, opening);
+        assert_eq!(ask(&mut db, (request, second), None).await, after);
+        assert_eq!(ask(&mut db, (request, first), None).await, opening);
+        let own = job_bank_answers(&mut db, (request, second))
+            .await
+            .expect("read");
+        assert_eq!(own, [(opening, "1".to_owned())]);
+        let none = job_bank_answers(&mut db, (request, first))
+            .await
+            .expect("read");
+        assert!(none.is_empty());
+    }
 }
