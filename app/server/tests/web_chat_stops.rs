@@ -235,58 +235,74 @@ fn body(template: &str, language: Language, spanish_on: bool) -> String {
         .body
 }
 
-async fn count(pool: &PgPool, sql: &'static str, id: Uuid) -> i64 {
-    sqlx::query_scalar(sql)
-        .bind(id)
-        .fetch_one(pool)
-        .await
-        .expect("count")
+/// The one text value `v` of `sql` (one row), which reads other modules' tables, run through
+/// `query_to_xml` as `home_request_box.rs` does: `server` names no other schema in a query macro.
+async fn value(pool: &PgPool, sql: String) -> String {
+    let v = sqlx::query_scalar!(
+        r#"SELECT coalesce((xpath('/row/v/text()', query_to_xml($1::text, false, true, '')))[1]::text, '') AS "v!""#,
+        sql
+    )
+    .fetch_one(pool)
+    .await
+    .expect("value");
+    v.replace("&lt;", "<")
+        .replace("&gt;", ">")
+        .replace("&amp;", "&")
 }
 
-async fn total(pool: &PgPool, sql: &'static str) -> i64 {
-    sqlx::query_scalar(sql)
-        .fetch_one(pool)
-        .await
-        .expect("total")
+async fn count(pool: &PgPool, from: &str) -> i64 {
+    let v = value(pool, format!("SELECT count(*) AS v FROM {from}")).await;
+    v.parse().expect("a count")
 }
 
-const OUTBOX: &str = "SELECT count(*) FROM messaging.outbox";
+const OUTBOX: &str = "messaging.outbox";
 
 /// The session's listings: channel and `since` in seconds (CON-022).
 async fn listed(pool: &PgPool, key: &str) -> Vec<(String, i64)> {
-    sqlx::query_as(
-        "SELECT e.channel, extract(epoch FROM s.since)::bigint FROM intake.web_chat_session w \
+    let sql = format!(
+        "SELECT string_agg(e.channel || ' ' || extract(epoch FROM s.since)::bigint, ',') AS v \
+         FROM intake.web_chat_session w \
          JOIN privacy.contact_index i ON i.contact_id = w.contact_id \
          JOIN messaging.suppression s ON s.index_version = i.key_version AND s.digest = i.digest \
          JOIN messaging.optout_event e ON e.id = s.event_id \
-         WHERE w.key_digest = sha256(convert_to($1, 'UTF8'))",
-    )
-    .bind(key)
-    .fetch_all(pool)
-    .await
-    .expect("listings")
+         WHERE w.key_digest = sha256(convert_to('{key}', 'UTF8'))"
+    );
+    let v = value(pool, sql).await;
+    v.split(',')
+        .filter(|row| !row.is_empty())
+        .map(|row| {
+            let (channel, since) = row.split_once(' ').expect("a listing");
+            (channel.to_owned(), since.parse().expect("seconds"))
+        })
+        .collect()
 }
 
 /// The request's state: closed, its first job and its language.
-async fn request(pool: &PgPool, id: Uuid) -> (bool, Option<Uuid>, String) {
-    sqlx::query_as(
-        "SELECT closed_at IS NOT NULL, job_id, language FROM intake.conversation WHERE id = $1",
-    )
-    .bind(id)
-    .fetch_one(pool)
-    .await
-    .expect("request")
+async fn request(pool: &PgPool, id: Uuid) -> (bool, String, String) {
+    let sql = format!(
+        "SELECT (closed_at IS NOT NULL)::text || ' ' || coalesce(job_id::text, '-') || ' ' || \
+         language AS v FROM intake.conversation WHERE id = '{id}'"
+    );
+    let v = value(pool, sql).await;
+    let mut parts = v.split(' ').map(str::to_owned);
+    let mut next = || parts.next().expect("a request");
+    (next() == "true", next(), next())
 }
 
 /// The texts queued about request `id`: template and body.
 async fn texts(pool: &PgPool, id: Uuid) -> Vec<(String, String)> {
-    sqlx::query_as(
-        "SELECT template_id, body FROM messaging.outbox WHERE $1 = ANY(subject_ids) ORDER BY id",
-    )
-    .bind(id)
-    .fetch_all(pool)
-    .await
-    .expect("texts")
+    let sql = format!(
+        "SELECT string_agg(template_id || '~~' || body, '##' ORDER BY id) AS v \
+         FROM messaging.outbox WHERE '{id}' = ANY(subject_ids)"
+    );
+    let v = value(pool, sql).await;
+    v.split("##")
+        .filter(|row| !row.is_empty())
+        .map(|row| {
+            let (template, body) = row.split_once("~~").expect("a text");
+            (template.to_owned(), body.to_owned())
+        })
+        .collect()
 }
 
 /// TD-CON-36 (CON-008, CON-010, CON-035, CON-022): after the code "STOP", "cancel", "Stop texting
@@ -307,7 +323,7 @@ async fn td_con_36_an_opt_out_after_the_code_lists_the_number_at_once(pool: PgPo
         let (id, _) = chat
             .verify(&pool, &format!("+1928555010{n}"), settings(false))
             .await;
-        let (before, state) = (total(&pool, OUTBOX).await, request(&pool, id).await);
+        let (before, state) = (count(&pool, OUTBOX).await, request(&pool, id).await);
         let at = Timestamp::now().as_second();
         let page = chat.say(words).await;
         let language = if spanish { Language::Es } else { Language::En };
@@ -326,7 +342,7 @@ async fn td_con_36_an_opt_out_after_the_code_lists_the_number_at_once(pool: PgPo
                 "{words}: at once"
             );
         }
-        let after = total(&pool, OUTBOX).await;
+        let after = count(&pool, OUTBOX).await;
         assert_eq!(after, before, "{words}: no text queued");
         assert_eq!(
             request(&pool, id).await,
@@ -361,7 +377,7 @@ async fn td_con_36_before_the_code_age_and_stop_are_answered_on_the_page(pool: P
         vec![body(CONFIRMATION_TEMPLATE, Language::En, false)]
     );
     assert!(!asks_number(&page), "no number question after STOP");
-    let listings = total(&pool, "SELECT count(*) FROM messaging.suppression").await;
+    let listings = count(&pool, "messaging.suppression").await;
     assert_eq!(listings, 0, "nothing listed before the code");
     let page = open(&app, 3)
         .await
@@ -402,11 +418,7 @@ async fn td_con_36_an_under_18_age_after_the_code_closes_the_request(pool: PgPoo
         "the INT-038 text"
     );
     assert!(request(&pool, id).await.0, "the request closed");
-    let cards = total(
-        &pool,
-        "SELECT count(*) FROM messaging.outbox WHERE template_id LIKE '%card%'",
-    )
-    .await;
+    let cards = count(&pool, "messaging.outbox WHERE template_id LIKE '%card%'").await;
     assert_eq!(cards, 0, "no card");
 }
 
@@ -419,7 +431,7 @@ async fn td_con_36_an_under_13_age_deletes_the_request_data_and_the_session(pool
         .max_connections(2)
         .after_connect(|conn, _| {
             Box::pin(async move {
-                sqlx::query("SET ROLE askhava_app")
+                sqlx::query!("SET ROLE askhava_app")
                     .execute(conn)
                     .await
                     .map(|_| ())
@@ -438,12 +450,22 @@ async fn td_con_36_an_under_13_age_deletes_the_request_data_and_the_session(pool
         vec![body(UNDER_18_TEMPLATE, Language::En, false)]
     );
     assert!(request(&pool, id).await.0, "the request closed");
-    let sql = "SELECT count(*) FROM intake.consent_record WHERE conversation_id = $1";
-    assert_eq!(count(&pool, sql, id).await, 1, "the consent record kept");
-    let sql = "SELECT count(*) FROM intake.intake_answer WHERE conversation_id = $1";
-    assert_eq!(count(&pool, sql, id).await, 0, "its answers deleted");
-    let sql = "SELECT count(*) FROM intake.web_chat_session WHERE conversation_id = $1";
-    assert_eq!(count(&pool, sql, id).await, 0, "the session row deleted");
+    let of = |table: &str| format!("intake.{table} WHERE conversation_id = '{id}'");
+    assert_eq!(
+        count(&pool, &of("consent_record")).await,
+        1,
+        "the consent record kept"
+    );
+    assert_eq!(
+        count(&pool, &of("intake_answer")).await,
+        0,
+        "its answers deleted"
+    );
+    assert_eq!(
+        count(&pool, &of("web_chat_session")).await,
+        0,
+        "the session row deleted"
+    );
 }
 
 /// TD-CON-36 (TXT-002): with Spanish conversations on, a first message in Spanish makes the
