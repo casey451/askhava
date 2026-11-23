@@ -376,6 +376,23 @@ fn alias_of(code: &str, name: &str) -> Option<String> {
     })
 }
 
+/// `text` with each `type name = …;` alias of `code` replaced by its target, nested aliases too.
+fn unalias(code: &str, text: &str) -> String {
+    let mut out = text.to_owned();
+    for _ in 0..4 {
+        for at in word_at(code, "type") {
+            let name = ident_from(code, at + 4);
+            let Some(target) = alias_of(code, name).filter(|_| !name.is_empty()) else {
+                continue;
+            };
+            for j in word_at(&out, name).into_iter().rev() {
+                out.replace_range(j..j + name.len(), &target);
+            }
+        }
+    }
+    out
+}
+
 /// A `fn`: its name, parameter text and body span.
 type FnSig = (String, String, Option<(usize, usize)>);
 
@@ -408,19 +425,22 @@ fn site_of(code: &str, pos: usize) -> String {
         .unwrap_or_default()
 }
 
-/// The local names standing for each extractor: the bare name unless imported from outside
-/// `axum` (`CsrfForm` from anywhere), and each `use … as` rename.
-fn extractor_names(code: &str) -> Vec<(String, &'static str)> {
+/// A local name standing for an extractor, and whether its bare (unprefixed) form counts.
+type ExtName = (String, &'static str, bool);
+
+/// The local names standing for each extractor: the name itself (its bare form not counted when
+/// imported from outside `axum`, `CsrfForm` from anywhere; its `axum::` paths always are) and each
+/// `use … as` rename.
+fn extractor_names(code: &str) -> Vec<ExtName> {
     let imports = uses(code);
     let mut out = Vec::new();
     for ext in EXTRACTORS {
         let foreign = |(p, l): &(String, String)| l == ext && !p.starts_with("axum");
-        if ext == "CsrfForm" || !imports.iter().any(foreign) {
-            out.push((ext.to_owned(), ext));
-        }
+        let bare = ext == "CsrfForm" || !imports.iter().any(foreign);
+        out.push((ext.to_owned(), ext, bare));
         for (path, local) in &imports {
             if path.ends_with(&format!("::{ext}")) && local != ext {
-                out.push((local.clone(), ext));
+                out.push((local.clone(), ext, true));
             }
         }
     }
@@ -430,17 +450,19 @@ fn extractor_names(code: &str) -> Vec<(String, &'static str)> {
 /// Each `name<T>` (`name::<T>` when `turbofish`) in `text` under an allowed path: (at, extractor, T).
 fn generic_uses(
     text: &str,
-    names: &[(String, &'static str)],
+    names: &[ExtName],
     turbofish: bool,
 ) -> Vec<(usize, &'static str, String)> {
     let open = if turbofish { "::<" } else { "<" };
     let path_char = |c: char| c.is_alphanumeric() || c == '_' || c == ':';
     let mut out = Vec::new();
-    for (local, ext) in names {
+    for (local, ext, bare) in names {
         for at in word_at(text, local) {
             let from = text[..at].rfind(|c| !path_char(c)).map_or(0, |j| j + 1);
             let lt = at + local.len() + open.len() - 1;
-            if PREFIXES.contains(&&text[from..at]) && text[at + local.len()..].starts_with(open) {
+            let prefix = &text[from..at];
+            let counted = PREFIXES.contains(&prefix) && (*bare || !prefix.is_empty());
+            if counted && text[at + local.len()..].starts_with(open) {
                 out.push((
                     at,
                     *ext,
@@ -460,6 +482,7 @@ fn findings(world: &World) -> Vec<String> {
         let strict =
             |ext: &str, ty: &str| check_type(world, src, ty, ext == "Path", &mut BTreeSet::new());
         for (func, params, _) in fns(&src.code) {
+            let params = unalias(&src.code, &params);
             let forms = generic_uses(&params, &names, false).into_iter();
             let loose =
                 forms.filter_map(|(_, ext, ty)| strict(ext, &ty).err().map(|why| (ext, ty, why)));
@@ -616,6 +639,13 @@ fn find_item<'w>(world: &'w World, src: &Src, name: &str) -> Result<&'w Item, St
     Err(format!("no definition of `{name}`"))
 }
 
+/// Whether `attrs` hold a plain `#[serde(…deny_unknown_fields…)]`, not one under `cfg_attr`.
+fn denies_unknown(attrs: &str) -> bool {
+    attrs
+        .split("#[")
+        .any(|a| a.trim_start().starts_with("serde") && a.contains("deny_unknown_fields"))
+}
+
 /// Whether `item` refuses unknown fields, every nested workspace field type doing the same.
 fn item_passes(world: &World, item: &Item, seen: &mut BTreeSet<String>) -> Result<(), String> {
     let name = &item.name;
@@ -645,7 +675,7 @@ fn item_passes(world: &World, item: &Item, seen: &mut BTreeSet<String>) -> Resul
             ))
         };
     }
-    if !item.tuple && !item.attrs.contains("deny_unknown_fields") {
+    if !item.tuple && !denies_unknown(&item.attrs) {
         return Err(format!("`{name}` lacks deny_unknown_fields"));
     }
     let src = world
@@ -794,6 +824,12 @@ use serde_json::from_str; fn f(body: &str) { let _: Strict = from_str(body).unwr
 fn f(q: &str) { q.split('&'); }
 async fn f(r: Request) { axum::body::to_bytes(r.into_body(), 9).await; }
 #[derive(Deserialize)] #[serde(try_from = "Vec<(String, String)>")] struct T2 { a: String } async fn f(Form(x): Form<T2>) {}
+use std::path::Path; async fn f(x: axum::extract::Path<Loose>) {}
+use sqlx::types::Json; async fn f(x: axum::Json<Loose>) {}
+type In = axum::Form<Loose>; async fn f(x: In) {}
+#[derive(Deserialize)] enum E { A, B(String) } async fn f(Json(x): Json<E>) {}
+#[derive(Deserialize)] struct Tu(HashMap<String, String>); async fn f(Json(x): Json<Tu>) {}
+#[derive(Deserialize)] #[cfg_attr(test, serde(deny_unknown_fields))] struct C { a: String } async fn f(Form(x): Form<C>) {}
 "#;
 
 /// Must pass, planted beside `DEFS`: strict forms, positional paths and a return type.
@@ -805,6 +841,9 @@ async fn f(CsrfForm(x): CsrfForm<Strict>) {}
 async fn f(Path((a, b)): Path<(String, String)>) {}
 async fn f(Path(id): Path<Uuid>) {}
 fn f() -> Json<serde_json::Value> { g() }
+use sqlx::types::Json; fn f(x: Json<Loose>) {}
+#[derive(Deserialize)] struct Tu(Strict); async fn f(Json(x): Json<Tu>) {}
+type In = axum::Form<Strict>; async fn f(x: In) {}
 ";
 
 /// The findings for planted files `(rel under app/, code)`; the first file also holds `DEFS`.
@@ -909,7 +948,8 @@ fn td_sec_05_wrong_keys_and_accounts_stop_startup() {
     assert!(refused("live", &[(key, &live)]).is_none());
 }
 
-/// Each external `uses:` without a 40-character SHA and each `image:` without a digest in `text`.
+/// Each external `uses:` without a 40-character SHA and each `image:` or shorthand `container:`
+/// without a digest in `text`.
 fn unpinned(text: &str) -> Vec<String> {
     let hex = |s: &str, n: usize| {
         s.len() == n && s.bytes().all(|c| matches!(c, b'0'..=b'9' | b'a'..=b'f'))
@@ -918,7 +958,7 @@ fn unpinned(text: &str) -> Vec<String> {
     let sha = |v: &str| v.starts_with("./") || v.rsplit_once('@').is_some_and(|(_, r)| hex(r, 40));
     let mut bad = Vec::new();
     for line in text.lines().map(|l| l.trim().trim_start_matches("- ")) {
-        let Some((key @ ("uses" | "image"), value)) = line.split_once(':') else {
+        let Some((key @ ("uses" | "image" | "container"), value)) = line.split_once(':') else {
             continue;
         };
         let value = value
@@ -927,7 +967,10 @@ fn unpinned(text: &str) -> Vec<String> {
             .unwrap_or_default()
             .trim()
             .trim_matches(['"', '\'']);
-        let docker = key == "image" || value.starts_with("docker://");
+        if key == "container" && value.is_empty() {
+            continue;
+        }
+        let docker = key != "uses" || value.starts_with("docker://");
         if !(if docker { digest(value) } else { sha(value) }) {
             bad.push(line.to_owned());
         }
@@ -963,12 +1006,13 @@ fn td_sec_24_every_workflow_action_and_image_is_pinned() {
         "- uses: a/b@main",
         "image: postgres:16",
         "uses: docker://alpine:3",
+        "container: postgres:16",
     ] {
         assert_eq!(unpinned(bad).len(), 1, "{bad}");
     }
     let (sha, digest) = ("0123456789abcdef0123456789abcdef01234567", "a".repeat(64));
     let good = format!(
-        "- uses: a/b@{sha} # v4\nuses: ./.github/workflows/ci.yml\nimage: p:16@sha256:{digest}"
+        "- uses: a/b@{sha} # v4\nuses: ./.github/workflows/ci.yml\nimage: p:16@sha256:{digest}\ncontainer:\ncontainer: p@sha256:{digest}"
     );
     assert_eq!(unpinned(&good), Vec::<String>::new());
 }
