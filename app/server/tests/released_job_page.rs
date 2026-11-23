@@ -440,13 +440,14 @@ async fn a_job_without_a_number_is_the_failure_answer(pool: PgPool) {
 }
 
 /// SEC-019, D-5585: another business's pick and a "Cards and quotes"-only member on the pick are
-/// the one not-found answer, the same as an unknown pick.
+/// the one not-found answer, the same as an unknown pick, and nothing is read for them first: the
+/// pick's job has no number row, so a number read before the check would be the 500 answer.
 #[sqlx::test(migrator = "MIGRATOR")]
 async fn another_business_and_a_cards_member_get_the_one_not_found(pool: PgPool) {
     let x = owner(&pool, "owner@x.example").await;
     let y = owner(&pool, "owner@y.example").await;
     let quoter = cards_member(&pool, x.by).await;
-    let (pick, _) = released_job(&pool, x.by.business).await;
+    let pick = pick_without_a_number(&pool, x.by.business).await;
     let app = app(&pool);
     let unknown = get(&app, &format!("/b/picks/{}", Uuid::new_v4()), &x.jar).await;
     assert_eq!(unknown.status, 404);
