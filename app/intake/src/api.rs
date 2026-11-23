@@ -73,6 +73,7 @@ pub use crate::handlers::{
     queue_call_back, receive_help_email, run_help_request_opened, run_no_reply, run_no_reply_at,
     texting_window,
 };
+pub use crate::job_answers::{JobAnswer, job_answers};
 pub use crate::job_language::job_language;
 pub use crate::job_texts::run_job_text_at;
 pub use crate::job_texts::{
@@ -113,7 +114,7 @@ pub use crate::picture_text::{
     picture_payload, queue_picture_text, run_picture_text_at,
 };
 pub use crate::purge::{
-    REQUEST_PURGE_KIND, purge_answers, run_purge, run_purge_at, run_request_purge,
+    REQUEST_PURGE_KIND, jobs_of_contact, purge_answers, run_purge, run_purge_at, run_request_purge,
     run_request_purge_at, run_request_sweep, run_request_sweep_at, sweep_requests,
 };
 pub use crate::question_bank::{
@@ -185,27 +186,6 @@ pub mod rules {
         joins_open_job, language_code, language_from_code, number_named, opens_job, pick_option,
         plan, reads_spanish, shares_words, split_name_address, wanted_language,
     };
-}
-
-/// PRIV-011, PRIV-031: the jobs opened by requests of the homeowner whose vault contact is
-/// `contact`, so a delete in her portal clears only her own jobs' photos (T087, D-1939).
-///
-/// # Errors
-///
-/// [`IntakeError::Database`].
-pub async fn jobs_of_contact(
-    db: &mut sqlx::PgConnection,
-    contact: sqlx::types::Uuid,
-) -> Result<Vec<sqlx::types::Uuid>, IntakeError> {
-    sqlx::query_scalar!(
-        r#"SELECT DISTINCT c.job_id AS "job!" FROM intake.conversation c
-           JOIN intake.homeowner h ON h.id = c.homeowner_id
-           WHERE h.contact_id = $1 AND c.job_id IS NOT NULL"#,
-        contact,
-    )
-    .fetch_all(db)
-    .await
-    .map_err(|_| IntakeError::Database)
 }
 
 /// PRIV-011, D-3189: every request (open or closed) of the homeowner whose vault contact is
