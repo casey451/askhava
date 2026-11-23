@@ -53,7 +53,7 @@ use tower::ServiceExt;
 const HOST: &str = "askhava.test";
 const ID_SECRET: &str = "test-only-id-secret-not-a-real-key-0666";
 /// The fake homeowner's name, phone and street, which no job page may show (PRIV-006).
-const HER: [&str; 3] = ["Dana Fakename", "9285550142", "41 Fakeview Drive"];
+const HER: [&str; 3] = ["Dana Fakename", "9285550142", "41 Example Drive"];
 
 /// An answer: status, `Location`, whether it is `no-store`, its body and its cookies.
 struct Reply {
@@ -454,7 +454,7 @@ async fn events(pool: &PgPool) -> i64 {
 fn shows_none_of_her(text: &str) {
     for her in HER
         .iter()
-        .chain(&["928-555-0142", "(928) 555-0142", "Fakeview"])
+        .chain(&["928-555-0142", "(928) 555-0142", "Example Drive"])
     {
         assert!(!text.contains(her), "the page shows {her:?}");
     }
