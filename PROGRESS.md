@@ -10198,3 +10198,4 @@
 - 2026-11-23T05:03:39Z runner 8871a83b785a (actions): {"T834": "QUEUED -> IN_PROGRESS"}; T834 estimated 463k tokens (calibrated); week has 46.4M left (no five-hour budget, D-3056) after 5.6M still running in another lane (session_reading 2026-11-23T04:57:42Z (week)); claimed
 - 2026-11-23T05:04:03Z runner 8871a83b785a (actions): {}
 - 2026-11-23T05:08:37Z runner 98064f4afee3 (actions): {}
+- 2026-11-23T05:09:10Z runner 98064f4afee3 (actions): {"T803": "IN_PROGRESS -> MERGE_PENDING"}
