@@ -36,8 +36,8 @@ jobs:
   checks:
     name: "Checks"
     runs-on: ubuntu-24.04
-    # 40, not 25: a change to tests/mutation/mutants.toml or its script runs every named mutant (D-1285).
-    timeout-minutes: 40
+    # 60, not 40: a change to tests/mutation/mutants.toml or its script runs every named mutant (D-1285), after a cold build when the change reaches a base crate (D-5519).
+    timeout-minutes: 60
     # Postgres for the Rust integration tests (D-453), pinned by digest (SEC-021, SEC-045). Dependabot's
     # docker ecosystem opens a PR when the digest moves (.github/dependabot.yml, D-492).
     services:
