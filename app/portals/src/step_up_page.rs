@@ -20,11 +20,11 @@
 //! racing sends the loser reuses the winner's record and its one send (`portals.code_send`).
 //! A check reaches Verify only for a live unused record whose code was sent, reserves one of
 //! [`CODE_TRIES`] tries first, uses the record up at the fifth wrong one, and uses it for a right
-//! code in the same transaction as `record_step_up`, so a code confirms one step-up once.
+//! code in the same transaction as `record_session_step_up`, so a code confirms one step-up once.
 
 use askama::Template;
 use askhava_adapters::api::{CodeChannel, IdempotencyKey, VerifyAdapter};
-use askhava_businesses::api::{Acting, record_step_up};
+use askhava_businesses::api::{Acting, record_session_step_up};
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
 use secrecy::{ExposeSecret, SecretString};
@@ -345,8 +345,8 @@ async fn send_once(
 
 /// SEC-020, SEC-038, D-3744 (b) to (d): checks `code` for `who`'s live unused record whose code
 /// was sent (else no Verify call), after reserving one of [`CODE_TRIES`] tries; the fifth wrong try
-/// uses the record up; a right code uses it in the same transaction as `record_step_up`. The
-/// caller has passed the SEC-014 try limit.
+/// uses the record up; a right code uses it in the same transaction as `record_session_step_up`,
+/// bound to `who`'s session (D-5314). The caller has passed the SEC-014 try limit.
 ///
 /// # Errors
 ///
@@ -414,7 +414,8 @@ async fn verify_try(
     })
 }
 
-/// D-3744 (d): uses the record and records the step-up in one transaction, once.
+/// D-3744 (d), D-5314: uses the record and records the step-up, bound to `who`'s session, in one
+/// transaction, once.
 async fn confirm(
     pool: &PgPool,
     who: &BusinessPrincipal,
@@ -430,7 +431,7 @@ async fn confirm(
         business: who.business,
         member: who.member,
     };
-    record_step_up(&mut tx, by, now)
+    record_session_step_up(&mut tx, by, who.session, now)
         .await
         .map_err(|_| PortalsError::Database)?;
     db(tx.commit().await)?;
@@ -483,5 +484,44 @@ mod tests {
         assert!(wrong.contains("error-summary") && wrong.contains("aria-invalid"));
         let sent = business_step_up_page("t", S::Sent, &back).expect("page");
         assert!(sent.contains("one-time-code") && !sent.contains("error-summary"));
+    }
+}
+
+#[cfg(test)]
+mod confirm_tests {
+    //! A right code's step-up is stored with its session (SEC-038, D-5314).
+
+    use askhava_businesses::api::{add_owner, create, step_up_record};
+
+    use super::*;
+
+    /// SEC-038, D-5314: confirming the record stores the time and the principal's session.
+    #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+    async fn sec_038_a_right_code_stores_its_session(pool: PgPool) {
+        let now = Timestamp::from_second(1_790_000_000).expect("time");
+        let who = {
+            let mut db = pool.acquire().await.expect("conn");
+            let business = create(&mut db, false, now).await.expect("business");
+            let member = add_owner(&mut db, business, Uuid::from_u128(0xd1), now).await;
+            BusinessPrincipal {
+                member: member.expect("owner"),
+                business,
+                owner: true,
+                roles: (true, true),
+                session: Uuid::from_u128(0x5e55),
+            }
+        };
+        mint(&pool, &who, now).await.expect("mint");
+        let done = confirm(&pool, &who, bucket(now), now)
+            .await
+            .expect("confirm");
+        assert_eq!(done, BusinessStepUpScreen::Done);
+        let mut db = pool.acquire().await.expect("conn");
+        let by = Acting {
+            business: who.business,
+            member: who.member,
+        };
+        let stored = step_up_record(&mut db, by).await.expect("read");
+        assert_eq!(stored, (Some(now), Some(who.session)));
     }
 }
