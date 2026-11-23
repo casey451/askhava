@@ -101696,7 +101696,14 @@
    "update_waiting_since": null,
    "update_push_failures": null,
    "merge_turn_since": "2026-11-23T03:44:53Z",
-   "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)\ntest td_job_19_a_press_that_will_not_charge_keeps_the_confirm_window ... ok\ntest td_job_19_a_press_with_a_card_moves_the_job_and_a_retry_is_never_expired ... ok\ntest td_job_19_a_category_with_no_roc_class_needs_no_stored_check ... ok\ntest td_job_19_a_zero_press_moves_first_and_a_cancelled_job_ends_the_pick ... ok\ntest td_job_19_an_ineligible_first_press_is_refused_before_any_charge ... FAILED\nfailures:\n---- td_job_19_an_ineligible_first_press_is_refused_before_any_charge stdout ----\nthread 'td_job_19_an_ineligible_first_press_is_refused_before_any_charge' (39242) panicked at app/server/tests/confirm_press_moves.rs:382:10:\ncontact: PhoneTaken\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_job_19_an_ineligible_first_press_is_refused_before_any_charge\ntest result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.80s\nerror: test failed, to rerun pass `-p askhava-server --test confirm_press_moves`\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1."
+   "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)\ntest td_job_19_a_press_that_will_not_charge_keeps_the_confirm_window ... ok\ntest td_job_19_a_press_with_a_card_moves_the_job_and_a_retry_is_never_expired ... ok\ntest td_job_19_a_category_with_no_roc_class_needs_no_stored_check ... ok\ntest td_job_19_a_zero_press_moves_first_and_a_cancelled_job_ends_the_pick ... ok\ntest td_job_19_an_ineligible_first_press_is_refused_before_any_charge ... FAILED\nfailures:\n---- td_job_19_an_ineligible_first_press_is_refused_before_any_charge stdout ----\nthread 'td_job_19_an_ineligible_first_press_is_refused_before_any_charge' (39242) panicked at app/server/tests/confirm_press_moves.rs:382:10:\ncontact: PhoneTaken\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_job_19_an_ineligible_first_press_is_refused_before_any_charge\ntest result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.80s\nerror: test failed, to rerun pass `-p askhava-server --test confirm_press_moves`\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
+   "wip_claim": {
+    "attempt": 2,
+    "remote_sha": "46dfb4344ce0bf6c3832cd98f88a0a740dbb6980"
+   },
+   "runner_closed_prs": [
+    1377
+   ]
   },
   {
    "id": "T718",
@@ -120226,7 +120233,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T04:41:55Z",
+ "updated_at": "2026-11-23T04:42:20Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
