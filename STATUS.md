@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T04:04:47Z by runner 377208146bb5 (actions).
+Updated 2026-11-23T04:05:12Z by runner ff057c83296d (actions).
 
 **Building: T730 in progress since 03:34Z; 623 of 774 done; week 71% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -18,7 +18,7 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T737 (since 2026-11-23T04:04:01Z, no attempt used; a plan change fixes it): T737: dependency T712 is DONE but its owned file app/portals/templates/owner_problem_reports.html is not on main; T737: dependency T712 is DONE but its owned file app/server/tests/owner_problem_route.rs is not on main
-- Strict plan check red: 34 problem(s) on tasks still to run (+512 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 38 problem(s) on tasks still to run (+513 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
