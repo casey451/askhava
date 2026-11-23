@@ -66,6 +66,14 @@
 //! new request is counted in SEC-015's all-numbers limit only after the delivery committed,
 //! best-effort and never refused ([`count_emergency`], D-3613); a retry's run ([`rerun`]) does not
 //! count it.
+//!
+//! T675 (INT-044, SEC-041, D-4360, D-5251): a homeowner text with media (`NumMedia`,
+//! `MediaUrl<n>`) keeps only the media SIDs of URLs that are exactly Twilio media URLs of its own
+//! message ([`media`]; any other is refused and never fetched), marks itself a picture text of
+//! her open request (before `receive_raw_reply` when one was open, after it when the text opened
+//! it) and queues one `intake.picture_text` task whose payload is the inbox ID and the SIDs. No
+//! fetch or provider delete runs in the webhook's transaction; a retry's [`rerun`] reads no
+//! media, and a business phone's media is ignored.
 
 use std::sync::Arc;
 
@@ -80,10 +88,11 @@ use askhava_intake::api::rules::{
     Check, Inbound, Settings as IntakeSettings, check, safety_call_trigger, wanted_language,
 };
 use askhava_intake::api::{
-    Admission, Handled, IntakeError, LimitError, RawReply, Reply, SafetyCallAsk, TextIn,
-    admit_new_request, business_help, count_emergency_request, enqueue_safety_call, list_ask,
-    name_address_open, note_help, on_opt_out, open_request_jobs, pause_on_repeat_cancel,
-    reads_as_address, receive_raw_reply, restart_after_start,
+    Admission, Handled, IntakeError, LimitError, MAX_PICTURES, RawReply, Reply, SafetyCallAsk,
+    TextIn, admit_new_request, business_help, count_emergency_request, enqueue_safety_call,
+    list_ask, name_address_open, note_help, note_picture_text, on_opt_out, open_request_jobs,
+    pause_on_repeat_cancel, queue_picture_text, reads_as_address, receive_raw_reply,
+    restart_after_start,
 };
 use askhava_messaging::api::{
     APP_OPT_OUT_WORDS, Detected, EmergencyFacts, FollowUp, HelpSettings, InboundText, InboxError,
@@ -400,7 +409,8 @@ async fn text(
         body: field(hook, "Body").unwrap_or_default(),
         provider: ProviderKeyword::from_opt_out_type(field(hook, "OptOutType")),
     };
-    let done = handle(&h.ctx(), db, &fields, (inbox_id, now), Reach::All).await;
+    let media = media(hook);
+    let done = handle(&h.ctx(), db, (&fields, &media), (inbox_id, now), Reach::All).await;
     match &done {
         Err(Halt::Failed(step, _)) => {
             failure_alert(db, inbox_id, step).await?;
@@ -527,7 +537,7 @@ pub async fn rerun(
     fields: &Fields<'_>,
     (inbox_id, now, reach): (Uuid, Timestamp, Reach),
 ) -> Rerun {
-    match handle(ctx, db, fields, (inbox_id, now), reach).await {
+    match handle(ctx, db, (fields, &Media::default()), (inbox_id, now), reach).await {
         Err(Halt::Ends(STOPPED)) => Rerun::Stopped,
         Ok(_) | Err(Halt::Ends(_)) => Rerun::Done,
         Err(Halt::Failed(step, error)) => Rerun::Failed(step, error, true),
@@ -566,7 +576,7 @@ async fn failure_alert(db: &mut PgConnection, inbox_id: Uuid, step: &'static str
 async fn handle(
     ctx: &Ctx<'_>,
     db: &mut PgConnection,
-    fields: &Fields<'_>,
+    (fields, media): (&Fields<'_>, &Media),
     (inbox_id, now): (Uuid, Timestamp),
     reach: Reach,
 ) -> Step<After> {
@@ -607,7 +617,8 @@ async fn handle(
     if let Some(error) = unread {
         return Err(Halt::Failed("vault", error));
     }
-    intake(h, db, (&msg, &read, fields.body), (resubscribed, now)).await
+    let text = (&msg, &read, fields.body, media);
+    intake(h, db, text, (resubscribed, now)).await
 }
 
 /// CALL-019, CALL-022, CON-031, TXT-024, D-3134 (T407): `ctx` with `safety_call_on` read from the
@@ -736,7 +747,7 @@ async fn owner_paused(db: &mut PgConnection) -> Step<bool> {
 async fn intake(
     h: &Ctx<'_>,
     db: &mut PgConnection,
-    text: (&InboundText<'_>, &Read, &str),
+    text: (&InboundText<'_>, &Read, &str, &Media),
     at: (bool, Timestamp),
 ) -> Step<After> {
     let mut savepoint = db.begin().await.map_err(|_| Halt::Database)?;
@@ -760,7 +771,7 @@ async fn intake(
 async fn intake_steps(
     h: &Ctx<'_>,
     db: &mut PgConnection,
-    (msg, read, body): (&InboundText<'_>, &Read, &str),
+    (msg, read, body, media): (&InboundText<'_>, &Read, &str, &Media),
     (resubscribed, now): (bool, Timestamp),
 ) -> Step<After> {
     let inbound = Inbound {
@@ -799,15 +810,110 @@ async fn intake_steps(
         raw: &raw,
         vault: h.vault,
     };
-    let replied = receive_raw_reply(db, h.id_secret, (&reply, raw), (h.intake, names.as_slice()))
-        .await
-        .map_err(intake_halt)?;
+    let picture = (msg, media, now);
+    let heard = (&reply, raw, names.as_slice());
+    let replied = picture_reply(h, db, heard, (picture, open.is_some())).await?;
     let first = open.is_none() && msg.emergency && !resubscribed;
     Ok(if first && opened(&replied) {
         After::CountEmergency
     } else {
         After::Nothing
     })
+}
+
+/// `receive_raw_reply` with a picture text's marker before it (an open request) or after it (a
+/// request the text opened), and its `intake.picture_text` task queued after it (T675, D-5251).
+async fn picture_reply(
+    h: &Ctx<'_>,
+    db: &mut PgConnection,
+    (reply, raw, names): (&TextIn<'_>, RawReply<'_>, &[(Uuid, String)]),
+    (picture, was_open): ((&InboundText<'_>, &Media, Timestamp), bool),
+) -> Step<Reply> {
+    if was_open {
+        mark_picture(db, picture).await?;
+    }
+    let replied = receive_raw_reply(db, h.id_secret, (reply, raw), (h.intake, names))
+        .await
+        .map_err(intake_halt)?;
+    if !was_open {
+        mark_picture(db, picture).await?;
+    }
+    queue_picture(db, picture).await?;
+    Ok(replied)
+}
+
+/// A homeowner picture text's Twilio SIDs, read from the delivery (INT-044, SEC-041; T675).
+#[derive(Default)]
+struct Media {
+    /// The delivery's `MessageSid`.
+    message: String,
+    /// The media SIDs kept, at most `intake::api::MAX_PICTURES`.
+    sids: Vec<String>,
+}
+
+/// The `/2010-04-01/Accounts/` prefix of every media URL taken: Twilio's API host only (SEC-041).
+const TWILIO_MEDIA: &str = "https://api.twilio.com/2010-04-01/Accounts/";
+
+/// INT-044, SEC-041, D-5251 (T675): the first `NumMedia` `MediaUrl<n>` of a delivery, at most
+/// `MAX_PICTURES`, each kept as its media SID only when the URL is exactly a Twilio media URL of
+/// this message ([`media_sid`]); any other URL is refused here and never fetched. No URL is kept.
+fn media(hook: &VerifiedWebhook) -> Media {
+    let message = field(hook, "MessageSid").unwrap_or_default();
+    if !(is_sid(message, "MM") || is_sid(message, "SM")) {
+        return Media::default();
+    }
+    let count = field(hook, "NumMedia").and_then(|n| n.trim().parse::<usize>().ok());
+    let sids = (0..count.unwrap_or(0).min(MAX_PICTURES))
+        .filter_map(|n| field(hook, &format!("MediaUrl{n}")))
+        .filter_map(|url| media_sid(url, message))
+        .collect();
+    Media {
+        message: message.to_owned(),
+        sids,
+    }
+}
+
+/// The media SID of `url` when it is `https://api.twilio.com/2010-04-01/Accounts/{AC}/Messages/
+/// {message}/Media/{ME}` and nothing else (SEC-041, SEC-032).
+fn media_sid(url: &str, message: &str) -> Option<String> {
+    let rest = url.strip_prefix(TWILIO_MEDIA)?;
+    let (account, rest) = rest.split_once("/Messages/")?;
+    let (sent, sid) = rest.split_once("/Media/")?;
+    (is_sid(account, "AC") && sent == message && is_sid(sid, "ME")).then(|| sid.to_owned())
+}
+
+/// Whether `sid` is a Twilio SID: `prefix` and 32 hex digits.
+fn is_sid(sid: &str, prefix: &str) -> bool {
+    sid.len() == 34 && sid.starts_with(prefix) && sid.bytes().skip(2).all(|b| b.is_ascii_hexdigit())
+}
+
+/// INT-044 (T675, D-5251): marks a homeowner picture text in her open request
+/// (`intake::api::note_picture_text`), in the delivery's transaction, so its body never moves
+/// steps 9 and 10 on; nothing for a text with no media taken.
+async fn mark_picture(
+    db: &mut PgConnection,
+    (msg, media, now): (&InboundText<'_>, &Media, Timestamp),
+) -> Step<()> {
+    if media.sids.is_empty() {
+        return Ok(());
+    }
+    let marked = note_picture_text(db, msg.contact, msg.inbox_id, now).await;
+    marked.map(|_| ()).map_err(intake_halt)
+}
+
+/// INT-044 (T675, D-4360): queues the one `intake.picture_text` task of a homeowner picture text
+/// in the delivery's transaction (payload: the inbox ID and the Twilio SIDs only); the fetch and
+/// the provider delete run in that task, never here.
+async fn queue_picture(
+    db: &mut PgConnection,
+    (msg, media, now): (&InboundText<'_>, &Media, Timestamp),
+) -> Step<()> {
+    if media.sids.is_empty() {
+        return Ok(());
+    }
+    let sids: Vec<&str> = media.sids.iter().map(String::as_str).collect();
+    let queued = queue_picture_text(db, msg.inbox_id, (&media.message, &sids), now).await;
+    queued.map(|_| ()).map_err(intake_halt)
 }
 
 /// Whether `receive_raw_reply` handled the text in a request (D-3613).

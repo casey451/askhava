@@ -21,8 +21,8 @@ use askhava_intake::api::rules::{CONSENT_TEMPLATE, Inbound, NAME_ADDRESS_TEMPLAT
 use askhava_intake::api::{
     CARD_SHOWN_TEMPLATE, CARDS_APPROVED_KIND, CARDS_OUT_TEMPLATE, CHOICE_TEMPLATE,
     COUNT_MANY_TEMPLATE, CardsOutKeys, EMERGENCY_RELEASED_KIND, HOW_SOON_TEMPLATE, Handled,
-    RawReply, Reply, TRADE_QUESTION_TEMPLATE, TextIn, ZIP_QUESTION_TEMPLATE, receive_raw_reply,
-    run_cards_approved, run_emergency_released,
+    PHOTO_ASK_TEMPLATE, RawReply, Reply, TRADE_QUESTION_TEMPLATE, TextIn, ZIP_QUESTION_TEMPLATE,
+    receive_raw_reply, run_cards_approved, run_emergency_released,
 };
 use askhava_integration::set_app_role;
 use askhava_licensing::api::import_city_list;
@@ -192,7 +192,7 @@ async fn td_int_47_regular_from_the_first_text_to_cards_sent(pool: PgPool) {
     let (mut db, both, her) = setup(&pool).await;
     let mut texts = Vec::new();
     let words = [DOOR, "86403", "2", "door repair", "1", "not sure"];
-    let last = ["it sticks at the top", ANSWER];
+    let last = ["it sticks at the top", "no", ANSWER];
     for (minute, words) in (0..).zip(words.into_iter().chain(last)) {
         texts.extend(sent(&mut db, her, words, minute).await);
     }
@@ -205,6 +205,7 @@ async fn td_int_47_regular_from_the_first_text_to_cards_sent(pool: PgPool) {
         Q,
         Q,
         Q,
+        PHOTO_ASK_TEMPLATE,
         NAME_ADDRESS_TEMPLATE,
         CARD_SHOWN_TEMPLATE,
     ];
@@ -253,12 +254,14 @@ async fn td_int_47_urgent_emergency_card_goes_before_the_trade_questions(pool: P
     assert_eq!(count(&mut db, answers).await, 0);
     let mut rest = after;
     for minute in 4..12 {
-        if rest.last() == Some(&NAME_ADDRESS_TEMPLATE) {
+        if rest.last() == Some(&PHOTO_ASK_TEMPLATE) {
             break;
         }
         assert_eq!(rest, [Q], "steps 8 to 10 follow the card");
         rest = sent(&mut db, her, "1", minute).await;
     }
+    assert_eq!(rest.last(), Some(&PHOTO_ASK_TEMPLATE), "step 9");
+    let rest = sent(&mut db, her, "no", 13).await;
     assert_eq!(rest.last(), Some(&NAME_ADDRESS_TEMPLATE), "step 11");
     let stored = sent(&mut db, her, ANSWER, 15).await;
     assert!(!stored.contains(&CARD_SHOWN_TEMPLATE), "{stored:?}");

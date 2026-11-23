@@ -1,0 +1,24 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT split_part(question_id, '.', 2) AS \"trade!\" FROM intake.intake_answer\n           WHERE conversation_id = $1 AND question_id LIKE 'job.%' AND choice = $2\n           ORDER BY answered_at, id LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "trade!",
+        "type_info": "Text",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "4c7d2ecdffec1f6c848675ce021de6104e5ab87c9b21894716c9e766505e5481"
+}
