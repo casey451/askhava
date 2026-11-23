@@ -1,28 +1,28 @@
 # Ask Hava build status
 
-Updated 2026-11-23T10:30:21Z by runner 7cc3c7714192 (actions).
+Updated 2026-11-23T10:33:14Z by runner ab7be9fe867a (actions).
 
-**Building: T714 in progress since 09:25Z; 629 of 775 done; week 74% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T714 in progress since 09:25Z; 630 of 775 done; week 74% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 629 of 775 build tasks (owner gates not counted)
+- **Tasks done:** 630 of 775 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T714 claimed 09:25Z, lease until 12:25Z; lane 5: T653 claimed 09:21Z, lease until 12:21Z
 - **Week:** 74% used, 42.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:30Z, 0 min before this update
+- **Last run:** 10:30Z, 2 min before this update
 - **Keeper:** last ran 10:30Z, next wake 10:50Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T836 (since 2026-11-23T07:59:33Z, no attempt used; a plan change fixes it): T836: kit/runner_log.jsonl is named by D-500, but no task owns it and it does not exist
-- Strict plan check red: 37 problem(s) on tasks still to run (+514 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 36 problem(s) on tasks still to run (+515 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T666 | jobs, quotes and server: GET /b/jobs/{j} serves the business | QUEUED | 1 | 2 h 1 min | 10:28Z | Reviewer after the findings round (head bf41c81b22bdbd874d7d53cb8ba64ca6bb0737cf): app/server/tests/job_page_route.rs (w |
 | T121 | Startup key checks, control router absent in live, supply-ch | MERGE_PENDING | 3 | 103 min | 10:16Z | PLAN GAP: outside ownership: app/portals/src/update_channel.rs / T729 (owner) merged UpdatesForm/ConfirmForm without den |
-| T118 | Journey J3 (operator) keyboard-only, with closing checks | MERGE_PENDING | 5 | 82 min | 09:58Z | PLAN GAP: outside ownership: app/site/templates/request.html, app/site/static/site.css / At 1280x900 the /request chat s |
+| T118 | Journey J3 (operator) keyboard-only, with closing checks | done | 5 | 82 min | 09:58Z | PLAN GAP: outside ownership: app/site/templates/request.html, app/site/static/site.css / At 1280x900 the /request chat s |
 | T646 | site and server: the web chat's new-request limit counts the | check_failed | 1 | 59 min | 08:59Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T588 | portals and server: a refused business sign-up keeps every f | done | 1 | 101 min | 08:44Z |  |
 | T730 | messaging: a homeowner who chose email gets each quote updat | BLOCKED | 2 | 2 min | 08:25Z | PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs / Evidence: last_quote_text (quote_text_sent.rs:45-52) |
@@ -76,8 +76,8 @@ Updated 2026-11-23T10:30:21Z by runner 7cc3c7714192 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 403 of 735 (54.8%) · partial 319 · unstarted 13
-**Tasks merged (throughput only):** 629 of 775
+**Requirements verified:** 402 of 735 (54.7%) · partial 320 · unstarted 13
+**Tasks merged (throughput only):** 630 of 775
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -91,7 +91,7 @@ Updated 2026-11-23T10:30:21Z by runner 7cc3c7714192 (actions).
 | job-cards | 15 | 9 | 0 | 24 |
 | licensing | 36 | 12 | 0 | 48 |
 | lifecycle | 21 | 7 | 0 | 28 |
-| messaging | 26 | 19 | 0 | 45 |
+| messaging | 25 | 20 | 0 | 45 |
 | ops-recovery | 17 | 31 | 6 | 54 |
 | privacy | 12 | 19 | 0 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
@@ -113,7 +113,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 272 of 347 done
+- stage 5: 273 of 347 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
