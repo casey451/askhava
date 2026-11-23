@@ -1,20 +1,20 @@
 # Ask Hava build status
 
-Updated 2026-11-23T06:49:45Z by runner 8871a83b785a (actions).
+Updated 2026-11-23T06:55:53Z by runner f2d298a8c8e3 (actions).
 
-**Building: T835 in progress since 06:32Z; 625 of 775 done; week 72% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T716 in progress since 06:55Z; 625 of 775 done; week 72% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 625 of 775 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T835 claimed 06:32Z, lease until 09:32Z; lane 3: T730 claimed 06:00Z, lease until 09:00Z
-- **Week:** 72% used, 46.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:49Z, 0 min before this update
+- **Lane:** lane 1: T716 claimed 06:55Z, lease until 09:55Z; lane 2: T835 claimed 06:32Z, lease until 09:32Z; lane 3: T730 claimed 06:00Z, lease until 09:00Z
+- **Week:** 72% used, 47.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 06:50Z, 5 min before this update
 - **Keeper:** last ran 06:49Z, next wake 07:09Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 37 problem(s) on tasks still to run (+513 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 37 problem(s) on tasks still to run (+514 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -100,7 +100,7 @@ Updated 2026-11-23T06:49:45Z by runner 8871a83b785a (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-23T06:26:04Z (week)): week: 147.6M used, 46.4M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T21:45:55Z.
+- Pacing (session_reading 2026-11-23T06:49:05Z (week)): week: 146.6M used, 47.4M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T22:09:05Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -115,7 +115,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T716 (lease until 2026-11-23T09:55:38Z)
 - lane 2: T835 (lease until 2026-11-23T09:32:28Z)
 - lane 3: T730 (lease until 2026-11-23T09:00:46Z)
 
