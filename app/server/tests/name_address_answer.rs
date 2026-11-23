@@ -368,9 +368,10 @@ async fn td_int_42_a_regular_answer_lands_on_her_own_contact(pool: PgPool) {
     let (contact, request) = her_request(&pool, &[]).await;
     assert!(!open(&pool, contact).await, "not before a reply");
     text(&pool, &logs, 2, "the unit upstairs").await;
-    // D-4851: steps 6 to 8 come first: "How soon?" (2), then the four trade questions; the
-    // texts after them are numbered 30 and up, so the timeline runs forward.
-    for (n, words) in (20..).zip(["2", "1", "1", "1", "none"]) {
+    // D-4851: steps 6 to 8 come first: "How soon?" (2), then the four trade questions, then
+    // "no" to step 9's photo ask (D-5459); the texts after them are numbered 30 and up, so the
+    // timeline runs forward.
+    for (n, words) in (20..).zip(["2", "1", "1", "1", "none", "no"]) {
         text(&pool, &logs, n, words).await;
     }
     assert!(open(&pool, contact).await, "asked after the area check");
@@ -418,9 +419,10 @@ async fn td_int_42_a_street_is_no_hazard_and_no_number_asks_again(pool: PgPool) 
     let logs = Logs::default();
     let (contact, request) = her_request(&pool, &[]).await;
     text(&pool, &logs, 2, "the unit upstairs").await;
-    // D-4851: steps 6 to 8 come first: "How soon?" (2), then the four trade questions; the
-    // texts after them are numbered 30 and up, so the timeline runs forward.
-    for (n, words) in (20..).zip(["2", "1", "1", "1", "none"]) {
+    // D-4851: steps 6 to 8 come first: "How soon?" (2), then the four trade questions, then
+    // "no" to step 9's photo ask (D-5459); the texts after them are numbered 30 and up, so the
+    // timeline runs forward.
+    for (n, words) in (20..).zip(["2", "1", "1", "1", "none", "no"]) {
         text(&pool, &logs, n, words).await;
     }
     text(&pool, &logs, 30, "Testa on Sample Avenue").await;
@@ -669,9 +671,10 @@ async fn td_int_42_a_hazard_keeps_its_911_text_and_safe_asks_again(pool: PgPool)
     let logs = Logs::default();
     let (contact, request) = her_request(&pool, &[]).await;
     text(&pool, &logs, 2, "the unit upstairs").await;
-    // D-4851: steps 6 to 8 come first: "How soon?" (2), then the four trade questions; the
-    // texts after them are numbered 30 and up, so the timeline runs forward.
-    for (n, words) in (20..).zip(["2", "1", "1", "1", "none"]) {
+    // D-4851: steps 6 to 8 come first: "How soon?" (2), then the four trade questions, then
+    // "no" to step 9's photo ask (D-5459); the texts after them are numbered 30 and up, so the
+    // timeline runs forward.
+    for (n, words) in (20..).zip(["2", "1", "1", "1", "none", "no"]) {
         text(&pool, &logs, n, words).await;
     }
     text(&pool, &logs, 30, OUTLET).await;
