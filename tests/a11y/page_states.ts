@@ -341,8 +341,15 @@ const RELEASE_STATES: readonly PageState[] = [
     "We removed the homeowner's details",
     "Tip: on your first call",
     businessSql(`,
+    j AS (INSERT INTO jobs.job (status, emergency, created_at, status_at, timer_from)
+      VALUES ('connected', false, now(), now(), now()) RETURNING id),
+    n AS (UPDATE jobs.job_number_next SET next = next + 1 RETURNING next - 1 AS n),
+    num AS (INSERT INTO jobs.job_number (number, job_id, issued_at) SELECT n.n, j.id, now() FROM n, j),
     p AS (INSERT INTO picks.pick (id, job_id, business_id, quote_number, channel, status, picked_at)
-      SELECT ':pick', gen_random_uuid(), business_id, 1, 'page', 'free', now() FROM m RETURNING id, job_id, business_id),
+      SELECT ':pick', j.id, business_id, 1, 'page', 'free', now() FROM m, j RETURNING id, job_id, business_id),
+    fee AS (INSERT INTO payments.pick_fee (pick_id, business_id, job_id, mode, kind, amount_cents, terms_version, fixed_at)
+      SELECT p.id, p.business_id, p.job_id, t.mode, 'fee_free', 0, t.authorization_version, now()
+      FROM p, payments.fee_terms t),
     r AS (INSERT INTO picks.release (pick_id, job_id, business_id, basis, released_at, contact_id, mail_chosen)
       SELECT id, job_id, business_id, 'no_fee', now(), gen_random_uuid(), false FROM p)`),
   ],
