@@ -10403,3 +10403,4 @@
 - 2026-11-23T13:59:05Z runner 3e3b52bf8012 (actions): {}
 - 2026-11-23T13:59:45Z runner 3e3b52bf8012 (actions): {}
 - 2026-11-23T14:15:15Z runner f0dd474113d1 (actions): {"T646": "MERGE_PENDING -> DONE"}
+- 2026-11-23T14:15:52Z runner f0dd474113d1 (actions): {"T121": "QUEUED -> IN_PROGRESS"}; T121 estimated 1.3M tokens (calibrated); week has 40.0M left (no five-hour budget, D-3056) after 2.0M still running in another lane (session_reading 2026-11-23T13:59:05Z (week)); claimed

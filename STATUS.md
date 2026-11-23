@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-23T14:15:15Z by runner f0dd474113d1 (actions).
+Updated 2026-11-23T14:15:52Z by runner f0dd474113d1 (actions).
 
 **Building: T666 in progress since 13:17Z; 631 of 777 done; week 76% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 631 of 777 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T666 claimed 13:17Z, lease until 16:17Z
-- **Week:** 76% used, 39.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 2: T666 claimed 13:17Z, lease until 16:17Z; lane 5: T121 claimed 14:15Z, lease until 17:15Z
+- **Week:** 76% used, 40.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 14:00Z, 15 min before this update
 - **Keeper:** last ran 13:59Z, next wake 14:19Z
 
@@ -34,6 +34,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ##[error]Process completed with exit code 1.
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
+- PLAN GAP T649 (since 2026-11-23T14:15:02Z, no attempt used; a plan change fixes it): T649: dependency T646 is DONE but its owned file app/server/tests/web_chat_client_ip.rs is not on main
 - PLAN GAP T836 (since 2026-11-23T07:59:33Z, no attempt used; a plan change fixes it): T836: kit/runner_log.jsonl is named by D-500, but no task owns it and it does not exist
 - Strict plan check red: 36 problem(s) on tasks still to run (+516 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
@@ -122,7 +123,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-23T13:11:26Z (week)): week: 154.2M used, 39.8M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-08T00:20:25Z.
+- Pacing (session_reading 2026-11-23T13:59:05Z (week)): week: 154.0M used, 40.0M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-08T00:29:57Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -139,6 +140,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T666 (lease until 2026-11-23T16:17:52Z)
+- lane 5: T121 (lease until 2026-11-23T17:15:02Z)
 
 ## Last usage reading
 - {"task": "T819", "at": "2026-11-23T13:45:53Z", "cache_read_input_tokens": 1115914, "cache_creation_input_tokens": 86941, "output_tokens": 12004, "input_tokens": 74}
