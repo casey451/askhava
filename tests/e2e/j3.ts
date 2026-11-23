@@ -6,7 +6,7 @@
 // through owner_session.ts (D-3744). Owner sessions run on the system clock, so their age is moved
 // in the database (D-5282); the worker's app clock moves for safe mode, whose High alert is a seeded
 // `ops.vendor_errors` one at the app clock (D-5283). `restore` puts the shared state back. Fake data only.
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { expect, type APIRequestContext, type Locator, type Page } from "@playwright/test";
 import type { Control } from "./fixtures";
@@ -53,22 +53,30 @@ const STOP_PHONE = "+19285550157";
 const STRIPE_AUTH = { authorization: `Bearer sk_test_${"e2e".repeat(4)}` };
 const [MINUTE, HOUR] = [60, 3600];
 
+/** The owner session cookie's name (`tests/e2e/keyed.ts`, `portals::session`). */
+const SESSION_COOKIE = "__Host-askhava-session";
+
 /**
- * SEC-005, SEC-043 (D-5282): moves the owner sessions back by `minutes`: with `whole` their start
- * (the stored end then no later than 12 hours after it, as the server stores it), else their
- * last use and stored end. The web binaries time sessions by the system clock
- * (`app/server/src/lib.rs` passes `SystemClock` to the owner routes), so the app clock's advance
- * cannot age them.
+ * SEC-005, SEC-043 (D-5282, D-5286): moves back by `minutes` only the owner session the cookie in
+ * `page`'s context names (found by its SHA-256, as the server stores it): `idle` its last use,
+ * `start` its sign-in time, never its stored end, which the server writes on the next call. The
+ * web binaries time owner sessions by the system clock (`app/server/src/lib.rs` passes
+ * `SystemClock`), so the app clock's advance cannot age them. No cookie: nothing changes.
  */
-function ageOwnerSessions(minutes: number, whole: boolean): void {
+async function ageOwnerSession(page: Page, minutes: number, part: "idle" | "start"): Promise<void> {
+  const cookie = (await page.context().cookies()).find((c) => c.name === SESSION_COOKIE);
+  if (cookie === undefined) return;
+  const digest = createHash("sha256").update(cookie.value).digest("hex");
   const by = `interval '${String(minutes)} minutes'`;
-  if (whole) {
-    psql(`UPDATE portals.session SET created_at = created_at - ${by},
-      expires_at = LEAST(expires_at, created_at - ${by} + interval '12 hours') WHERE realm = 'owner'`);
-  } else {
-    psql(`UPDATE portals.owner_session SET last_seen_at = last_seen_at - ${by}`);
-    psql(`UPDATE portals.session SET expires_at = expires_at - ${by} WHERE realm = 'owner'`);
-  }
+  const session = `(SELECT id FROM portals.session WHERE token_sha256 = decode('${digest}', 'hex') AND realm = 'owner')`;
+  psql(part === "idle"
+    ? `UPDATE portals.owner_session SET last_seen_at = last_seen_at - ${by} WHERE session_id = ${session}`
+    : `UPDATE portals.session SET created_at = created_at - ${by} WHERE id = ${session}`);
+}
+
+/** SEC-005: the owner door's two answers to the kept session cookie, the server storing the 12-hour cap on the first. */
+async function ownerDoorTwice(page: Page): Promise<[number, number]> {
+  return [await ownerDoor(page), await ownerDoor(page)];
 }
 
 /** The status the owner door gives the kept session cookie in `page`'s context: 200 live, 401 gone. */
@@ -130,16 +138,27 @@ export async function begin(page: Page, control: Control, drive: Driver): Promis
   return { page, control, drive, auditFrom, textsFrom, emailsFrom, picks: [] };
 }
 
-/** J3 step 1 (SEC-005): idle past 30 minutes, then password and TOTP; a session over 12 hours is refused. */
+/** The owner sign-ins audited since the run began. */
+function signIns(j: J3): string {
+  return psql(`SELECT count(*) FROM ops.audit_log WHERE id >= ${String(j.auditFrom)} AND action = 'portals.owner_signed_in'`);
+}
+
+/**
+ * J3 step 1 (SEC-005): password and TOTP (a live session kept by an earlier spec is first idled
+ * past 30 minutes, so the run makes one password try here); a session over 12 hours is refused.
+ */
 export async function step1SignIn(j: J3): Promise<void> {
-  ageOwnerSessions(31, false);
   await signInOwner(j.page, keyedUrl());
+  if (signIns(j) === "0") {
+    await ageOwnerSession(j.page, 31, "idle");
+    await signInOwner(j.page, keyedUrl());
+  }
   await expect(j.page).toHaveURL(/\/owner\/step-up$/);
-  expect(psql(`SELECT count(*) FROM ops.audit_log WHERE id >= ${String(j.auditFrom)} AND action = 'portals.owner_signed_in'`)).toBe("1");
-  ageOwnerSessions(11 * 60 + 58, true);
-  expect(await ownerDoor(j.page), "an owner session 11 hours 58 minutes old").toBe(200);
-  ageOwnerSessions(3, true);
-  expect(await ownerDoor(j.page), "an owner session 12 hours 1 minute old").toBe(401);
+  expect(signIns(j)).toBe("1");
+  await ageOwnerSession(j.page, 11 * 60 + 50, "start");
+  expect(await ownerDoorTwice(j.page), "an owner session 11 hours 50 minutes old").toEqual([200, 200]);
+  await ageOwnerSession(j.page, 11, "start");
+  expect(await ownerDoorTwice(j.page), "an owner session 12 hours 1 minute old").toEqual([200, 401]);
   await signInOwner(j.page, keyedUrl());
   expect(await ownerDoor(j.page)).toBe(200);
 }
@@ -336,7 +355,7 @@ export async function step5SafeMode(j: J3): Promise<void> {
   const refused = seedPick();
   j.picks.push(refused);
   const confirm = await pressRefused(j, refused);
-  ageOwnerSessions(31, false);
+  await ageOwnerSession(j.page, 31, "idle");
   expect(await ownerDoor(j.page), "the owner session after 31 minutes idle").toBe(401);
   await signInOwner(j.page, keyedUrl());
   await acknowledge(j);
