@@ -26948,7 +26948,8 @@
     "T799",
     "T815",
     "T836",
-    "T837"
+    "T837",
+    "T843"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -58036,7 +58037,8 @@
     "T727",
     "T753",
     "T773",
-    "T835"
+    "T835",
+    "T843"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -77443,7 +77445,8 @@
     "T552",
     "T726",
     "T828",
-    "T836"
+    "T836",
+    "T843"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -116225,6 +116228,18 @@
    "slug": "j3-seedpick-license-fixture",
    "type": "harness",
    "stage": "5"
+  },
+  {
+   "id": "T843",
+   "deps": [
+    "T836",
+    "T837"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "plan-half-smoke",
+   "type": "harness",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -124068,7 +124083,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T23:25:05Z",
+ "updated_at": "2026-11-23T23:30:37Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -124167,7 +124182,7 @@
   ]
  },
  "runner_sha": "5543c4640c665f147875117fa94bc9f32f136fcb",
- "starter": "manual",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "98e09a354256ea3142410932fda4404d024e3177",
