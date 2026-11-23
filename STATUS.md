@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T04:10:32Z by runner 8871a83b785a (actions).
+Updated 2026-11-23T04:11:00Z by runner 8871a83b785a (actions).
 
 **Building: T730 in progress since 03:34Z; 623 of 775 done; week 71% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -66,7 +66,6 @@ Updated 2026-11-23T04:10:32Z by runner 8871a83b785a (actions).
 | T542 | portals and server: notice and backup address changes are re | done | 2 | 2 h 42 min | 04:28Z | Reviewer after the findings round still ended REVIEW-VERDICT: FINDINGS at head 4de98e6fb74e1e5394629d7a1abe0694167723a2: |
 | T729 | portals and privacy: the quote page offers updates by email  | BLOCKED | 1 | 2 min | 04:19Z |  |
 | T609 | site (harness): the D-4246 polish on the footer, how it work | BLOCKED | 2 | 13 min | 04:15Z |  |
-| T721 | businesses and portals: Casey counts a check-in PROBLEM repo | done | 1 | 76 min | 04:10Z |  |
 
 ### Plan and harness merges on main
 - 04:05Z Plan: T121 split into T838 (D-5574); Grok G3 fixes for claimable tasks (D-5585) (#1370)
