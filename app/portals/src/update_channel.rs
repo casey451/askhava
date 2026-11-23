@@ -173,9 +173,11 @@ pub(crate) fn confirm_query(query: Option<&str>) -> Option<LinkToken> {
         .find_map(|raw| LinkToken::parse(raw).ok())
 }
 
-/// The posted update choice. No `Debug`: it carries her typed address (PRIV-016). Unknown fields
-/// are ignored and every field may be missing, so a bare post shows the page again.
+/// The posted update choice. No `Debug`: it carries her typed address (PRIV-016). An unknown
+/// field is refused (SEC-010, D-5574) and every field may be missing, so a bare post shows the
+/// page again.
 #[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct UpdatesForm {
     #[serde(default)]
     csrf: String,
@@ -184,6 +186,9 @@ pub(crate) struct UpdatesForm {
     email: Option<String>,
     #[serde(default)]
     tries: String,
+    /// Read by nothing: `tests/security/tests/auth_matrix.rs` posts `quote=1` to every link route (D-5352).
+    #[serde(default, rename = "quote")]
+    _quote: String,
 }
 
 impl CsrfField for UpdatesForm {
@@ -192,13 +197,18 @@ impl CsrfField for UpdatesForm {
     }
 }
 
-/// The posted confirm form: its CSRF token and the confirm token (D-5340).
+/// The posted confirm form: its CSRF token and the confirm token (D-5340). An unknown field is
+/// refused (SEC-010, D-5574).
 #[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct ConfirmForm {
     #[serde(default)]
     csrf: String,
     #[serde(default)]
     confirm: String,
+    /// Read by nothing: `tests/security/tests/auth_matrix.rs` posts `quote=1` to every link route (D-5352).
+    #[serde(default, rename = "quote")]
+    _quote: String,
 }
 
 impl CsrfField for ConfirmForm {
@@ -395,4 +405,34 @@ async fn answer_confirm(
         note: done.then_some(CONFIRMED),
         ..Said::default()
     }))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{ConfirmForm, UpdatesForm};
+
+    /// The form `T` read from JSON, which applies the same `deny_unknown_fields` as a posted form.
+    fn parse<T: serde::de::DeserializeOwned>(body: &str) -> Option<T> {
+        serde_json::from_str(body).ok()
+    }
+
+    /// SEC-010, D-5574: the update form takes its own fields, a bare post, and refuses an unknown one.
+    #[test]
+    fn sec_010_updates_form_refuses_an_unknown_field() {
+        let form = parse::<UpdatesForm>(
+            r#"{"csrf":"c","choice":"email","email":"a@example.com","tries":"0"}"#,
+        );
+        assert!(form.is_some_and(|f| f.choice == "email" && f.email.is_some()));
+        assert!(parse::<UpdatesForm>("{}").is_some());
+        assert!(parse::<UpdatesForm>(r#"{"csrf":"c","choice":"email","extra":"1"}"#).is_none());
+    }
+
+    /// SEC-010, D-5574: the confirm form takes its own fields and refuses an unknown one.
+    #[test]
+    fn sec_010_confirm_form_refuses_an_unknown_field() {
+        assert!(
+            parse::<ConfirmForm>(r#"{"csrf":"c","confirm":"t"}"#).is_some_and(|f| f.confirm == "t")
+        );
+        assert!(parse::<ConfirmForm>(r#"{"csrf":"c","confirm":"t","extra":"1"}"#).is_none());
+    }
 }
