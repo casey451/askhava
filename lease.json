@@ -8,12 +8,7 @@
    "expires": "2026-11-23T22:03:04Z",
    "lane": "2"
   },
-  "3": {
-   "task": "T836",
-   "session": "actions-45250734853",
-   "expires": "2026-11-23T23:28:47Z",
-   "lane": "3"
-  },
+  "3": null,
   "4": null,
   "5": {
    "task": "T649",
@@ -25,7 +20,7 @@
   "7": null,
   "fix": null
  },
- "seq": 10463,
- "runner_sha": "025855b2736e0a3779190ca864ed2ccaa05a192b",
- "starter": "manual"
+ "seq": 10464,
+ "runner_sha": "5f5d410a307c8377c81c573f534a1e81ea6d0cf3",
+ "starter": "actions"
 }
