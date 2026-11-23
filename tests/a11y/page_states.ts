@@ -551,6 +551,25 @@ const OWNER_RELEASE_STATES: readonly PageState[] = [
   ["owner release button", "Re-send the release notice", "Nothing was sent", OWNER_SESSION_SQL],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: OWNER_RELEASE_ROUTE, name, shows, hides, sql, statusRegions: ["release-status"] }));
 
+const OWNER_PROBLEM_REPORTS_ROUTE = "/owner/problem-reports";
+
+/** The owner's PROBLEM reports (T712; JOB-016, D-4423): one fake report with its kind form. */
+const OWNER_PROBLEM_STATES: readonly PageState[] = [
+  [
+    "owner problem reports, one to count",
+    "Count as a complaint",
+    "No problem reports in the last 30 days.",
+    `; WITH j AS (INSERT INTO jobs.job (status, emergency, created_at, status_at, timer_from)
+      VALUES ('connected', false, now(), now(), now()) RETURNING id),
+    n AS (UPDATE jobs.job_number_next SET next = next + 1 RETURNING next - 1 AS n),
+    num AS (INSERT INTO jobs.job_number (number, job_id, issued_at) SELECT n.n, j.id, now() FROM n, j),
+    w AS (INSERT INTO privacy.message_body (inbox_id, job_id, words, safety, created_at)
+      SELECT ':pick'::uuid, j.id, 'Sample words: the tap still drips after the visit', false, now() FROM j)
+    INSERT INTO ops.alert (kind, severity, subject_kind, subject_id)
+      VALUES ('jobs.problem_report', 'normal', 'messaging.inbox', ':pick'::uuid)`,
+  ],
+].map(([name = "", shows = "", hides = "", extra = ""]) => ({ route: OWNER_PROBLEM_REPORTS_ROUTE, name, shows, hides, sql: OWNER_SESSION_SQL + extra, statusRegions: [] }));
+
 const OWNER_HELP_ROUTE = "/owner/help";
 
 /** The owner help page (T530; OPS-036): no open request, no refusal. */
@@ -829,6 +848,7 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: OWNER_SETTINGS_ROUTE, seed: portalSeed(false), states: OWNER_SETTINGS_STATES },
   { route: OWNER_RELEASE_ROUTE, seed: portalSeed(false), states: OWNER_RELEASE_STATES },
   { route: OWNER_HELP_ROUTE, seed: portalSeed(false), states: OWNER_HELP_STATES },
+  { route: OWNER_PROBLEM_REPORTS_ROUTE, seed: portalSeed(false), states: OWNER_PROBLEM_STATES },
   { route: OWNER_REFUND_ROUTE, seed: portalSeed(false), states: OWNER_TOOLS_STATES.filter((s) => s.route === OWNER_REFUND_ROUTE) },
   { route: OWNER_AUDIT_LOG_ROUTE, seed: portalSeed(false), states: OWNER_TOOLS_STATES.filter((s) => s.route === OWNER_AUDIT_LOG_ROUTE) },
   { route: OWNER_HEALTH_ROUTE, seed: portalSeed(false), states: OWNER_TOOLS_STATES.filter((s) => s.route === OWNER_HEALTH_ROUTE) },

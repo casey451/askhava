@@ -370,3 +370,4 @@
 - [SEC-012] (never 11) why no one-line route or constant: `auth_matrix.rs` would read it as a page route (D-5527).
 - [-] (never 29) why each new route's row lands in the same change: a route served with no row is not caught (TD-SEC-41, D-5527).
 - [-] (never 8) `install_crypto_provider()` runs first so sqlx and reqwest share the aws-lc-rs provider (D-481, D-488, D-5527).
+- [JOB-016 BIZ-012 SEC-006] (task 712) `owner_portal` serves `GET /owner/problem-reports` and `POST /owner/problem-complaint` (`ProblemBody`: csrf, alert, kind) behind `require_owner`, no fresh factor; the owner proof comes from `current_session` and `session_minter`; a count or `Already` is a 303 to the list, a refusal a 400 with the list and its line, `Database` a 500 (D-5569).
