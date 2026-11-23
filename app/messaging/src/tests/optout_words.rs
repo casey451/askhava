@@ -315,9 +315,9 @@ fn td_con_20_only_start_or_unstop_resubscribes() {
 }
 
 /// TD-CON-05, CON-009, CON-013: a listed number gets only the confirmation of its current listing,
-/// within 5 minutes, and the HELP reply.
+/// within 5 minutes, and never the HELP reply (D-5280).
 #[test]
-fn td_con_05_a_listed_number_gets_only_the_confirmation_and_help() {
+fn td_con_05_a_listed_number_gets_only_the_confirmation() {
     let since = Timestamp::from_second(1_793_000_000).expect("time");
     let at = |secs| since + SignedDuration::from_secs(secs);
     let event = Uuid::from_u128(0xe1);
@@ -334,5 +334,10 @@ fn td_con_05_a_listed_number_gets_only_the_confirmation_and_help() {
         !may_send_to(listed, CONFIRMATION_TEMPLATE, &earlier, at(1)),
         "an earlier listing's confirmation never goes"
     );
-    assert!(may_send_to(listed, HELP_TEMPLATE, &[], at(86_400)));
+    assert!(
+        !may_send_to(listed, HELP_TEMPLATE, &[], at(1)),
+        "D-5280: no HELP reply goes to a listed number"
+    );
+    assert!(!may_send_to(listed, HELP_TEMPLATE, &this, at(86_400)));
+    assert!(may_send_to(None, HELP_TEMPLATE, &[], since));
 }

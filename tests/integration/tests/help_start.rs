@@ -170,8 +170,8 @@ async fn td_con_07_help_info_ayuda_at_night(pool: PgPool) {
     );
 }
 
-/// TD-CON-07, CON-013, D-131, CON-015: the same reply from an opted-out number; its other texts
-/// are still refused; START lifts the listing.
+/// TD-CON-07, CON-013, CON-015, D-5280: an opted-out number's HELP gets no text (the provider
+/// would refuse it with 21610); its other texts are still refused; START lifts the listing.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_con_07_help_from_an_opted_out_number_and_start(pool: PgPool) {
     let (vault, carrier) = (vault(), FakeCarrier::default());
@@ -181,10 +181,30 @@ async fn td_con_07_help_from_an_opted_out_number_and_start(pool: PgPool) {
     on_inbound_text(&mut db, (&secret(), &vault), &stop, night())
         .await
         .expect("stop");
-    let body = answer((&mut db, &vault), &carrier, (her, ARIZONA), "AYUDA").await;
+    let to = To::Homeowner {
+        vault: &vault,
+        relation: Relation::OpenRequest,
+    };
+    let ayuda = inbound(her, ARIZONA, "AYUDA", ProviderKeyword::None);
+    on_inbound_text(&mut db, (&secret(), &vault), &ayuda, night())
+        .await
+        .expect("inbound");
+    let help = reply_to_help(&mut db, &secret(), &ayuda, &settings(2, None))
+        .await
+        .expect("reply")
+        .expect("the HELP reply is built; the send rule stops it");
+    let refused = send_checked(
+        &mut db,
+        (&secret(), &carrier, &vault),
+        help,
+        (to, FROM),
+        night(),
+    )
+    .await;
+    assert_eq!(refused.err(), Some(OutboxError::Suppressed));
     assert!(
-        body.expect("a reply")
-            .contains(&filled("{domain}/help", true))
+        carrier.sent.lock().expect("lock").is_empty(),
+        "D-5280: no HELP reply goes to an opted-out number"
     );
     let other = NewText {
         template_id: "first_quote",
