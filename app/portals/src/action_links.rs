@@ -19,13 +19,18 @@
 //! T457 (SEC-004, SEC-027, D-3675, D-3889): [`confirm_link_code_page`] is the Confirm link's code
 //! step (`confirm_link_code.html`), and [`confirm_link_session`] signs the link's own person in on
 //! that device once their code was right, in the transaction that uses the link.
+//! T714 (SEC-004, PICK-033, D-4425): [`mint_text_confirm_link`] makes the Confirm link sent by
+//! text, stored under `action-text:confirm:<object>:<token>` (a prefix no path can produce), so
+//! its grant is [`ActionGrant::text_started`] and [`confirm_link_session`] gives it
+//! [`TEXT_CONFIRM_SESSION_LIFE`]. Every reader first refuses a token that is not 64 lower-case
+//! hex characters, before anything is read or hashed.
 
 use askama::Template;
 use askhava_businesses::api::{Roles, members};
 use askhava_core::api::brand;
 use askhava_picks::api::{HoldAsk, hold_allowed};
 use axum_extra::extract::cookie::CookieJar;
-use jiff::Timestamp;
+use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
 use secrecy::SecretString;
 use sha2::{Digest, Sha256};
@@ -36,6 +41,10 @@ use crate::business_auth::{BUSINESS_SESSION_LIFE, BusinessPrincipal, LINK_LIFE};
 use crate::confirm_pay::CodeStep;
 use crate::models;
 use crate::session::{PortalsError, Realm, current_session, start_session};
+
+/// SEC-004, PICK-033, D-4425: a session started from a Confirm link sent by text lasts 30
+/// minutes, not [`BUSINESS_SESSION_LIFE`].
+pub const TEXT_CONFIRM_SESSION_LIFE: SignedDuration = SignedDuration::from_mins(30);
 
 /// The route every action link opens; `GET` shows the page, `POST` acts (not served yet, D-1955).
 pub const ACTION_ROUTE: &str = "/b/a/{kind}/{object}/{token}";
@@ -180,6 +189,7 @@ pub struct ActionGrant {
     member: Uuid,
     business: Uuid,
     issued_at: Timestamp,
+    text_started: bool,
 }
 
 impl ActionGrant {
@@ -200,6 +210,13 @@ impl ActionGrant {
     #[must_use]
     pub const fn issued_at(&self) -> Timestamp {
         self.issued_at
+    }
+
+    /// SEC-004, PICK-033, D-4425: whether the link was minted by [`mint_text_confirm_link`] (true
+    /// only when the token matched the text binding).
+    #[must_use]
+    pub const fn text_started(&self) -> bool {
+        self.text_started
     }
 
     /// SEC-025: a signed-in person may act through a link only when it was emailed to them.
@@ -237,8 +254,39 @@ fn hold_ok(kind: ActionKind, hold: Option<HoldAsk>, roles: Roles) -> Result<(), 
     hold_allowed(HoldAsk { by: roles, ..ask }).map_err(|_| ActionLinkError::NoHold)
 }
 
-fn binding(kind: ActionKind, object: Uuid, token: &str) -> String {
-    format!("action:{}:{object}:{token}", kind.slug())
+/// How a link was sent, which picks its stored binding's prefix (D-4425).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Sent {
+    /// By email: `action:<kind>:<object>:<token>`.
+    Email,
+    /// A Confirm link by text: `action-text:confirm:<object>:<token>`, a prefix no path makes.
+    Text,
+}
+
+fn binding(kind: ActionKind, object: Uuid, token: &str, sent: Sent) -> String {
+    let prefix = match sent {
+        Sent::Email => "action",
+        Sent::Text => "action-text",
+    };
+    format!("{prefix}:{}:{object}:{token}", kind.slug())
+}
+
+/// SEC-004, D-4425: the bindings a `kind` token may match, the email one first; only Confirm
+/// has a text one.
+const fn sends(kind: ActionKind) -> &'static [Sent] {
+    match kind {
+        ActionKind::Confirm => &[Sent::Email, Sent::Text],
+        _ => &[Sent::Email],
+    }
+}
+
+/// SEC-025, D-4425: a link token's shape, 64 lower-case hex characters (as sign-in links);
+/// anything else is refused before any read or hash.
+fn well_formed(token: &str) -> bool {
+    token.len() == 64
+        && token
+            .bytes()
+            .all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f'))
 }
 
 async fn current_roles(
@@ -268,7 +316,38 @@ pub async fn mint_action_link(
     db: &mut PgConnection,
     target: ActionTarget,
     hold: Option<HoldAsk>,
+    span: (Timestamp, Timestamp),
+) -> Result<SecretString, ActionLinkError> {
+    mint(db, target, hold, span, Sent::Email).await
+}
+
+/// SEC-004, PICK-033, D-4425: makes the Confirm link sent by text for `target`, working until
+/// `ends`, at the same `https://<domain>/b/a/confirm/<object>/<token>` as an emailed one, with
+/// [`mint_action_link`]'s member, role and time checks, stored under the text binding so its
+/// grant is [`ActionGrant::text_started`].
+///
+/// # Errors
+///
+/// [`ActionLinkError::NotAllowed`] for any kind but Confirm, a removed member or a role without
+/// Confirm, [`ActionLinkError::Ended`] when `ends` is not after `now`, or
+/// [`ActionLinkError::Store`].
+pub async fn mint_text_confirm_link(
+    db: &mut PgConnection,
+    target: ActionTarget,
+    span: (Timestamp, Timestamp),
+) -> Result<SecretString, ActionLinkError> {
+    if target.kind != ActionKind::Confirm {
+        return Err(ActionLinkError::NotAllowed);
+    }
+    mint(db, target, None, span, Sent::Text).await
+}
+
+async fn mint(
+    db: &mut PgConnection,
+    target: ActionTarget,
+    hold: Option<HoldAsk>,
     (now, ends): (Timestamp, Timestamp),
+    sent: Sent,
 ) -> Result<SecretString, ActionLinkError> {
     let Some((owner, roles)) = current_roles(db, target.member, target.business).await? else {
         return Err(ActionLinkError::NotAllowed);
@@ -284,7 +363,7 @@ pub async fn mint_action_link(
         .checked_sub(LINK_LIFE)
         .map_err(|_| PortalsError::BadLifetime)?;
     let token = models::new_link_token()?;
-    let stored = binding(target.kind, target.object, &token);
+    let stored = binding(target.kind, target.object, &token, sent);
     let who = (target.member, target.business);
     models::insert_link(db, &stored, who, (made, ends)).await?;
     let (kind, object) = (target.kind.slug(), target.object);
@@ -306,11 +385,15 @@ pub async fn open_action_link(
     token: &str,
     now: Timestamp,
 ) -> Result<(), ActionLinkError> {
-    if models::link_open(db, &binding(kind, object, token), now).await? {
-        Ok(())
-    } else {
-        Err(ActionLinkError::Ended)
+    if !well_formed(token) {
+        return Err(ActionLinkError::Ended);
     }
+    for &sent in sends(kind) {
+        if models::link_open(db, &binding(kind, object, token, sent), now).await? {
+            return Ok(());
+        }
+    }
+    Err(ActionLinkError::Ended)
 }
 
 /// SEC-026, OPS-037: the business of the unused, unexpired `kind` link `token` for `object` at
@@ -326,17 +409,25 @@ pub(crate) async fn action_link_business(
     token: &str,
     now: Timestamp,
 ) -> Result<Uuid, ActionLinkError> {
-    let hash = Sha256::digest(binding(kind, object, token).as_bytes()).to_vec();
-    let business = sqlx::query_scalar!(
-        "SELECT business_id FROM portals.login_link \
-         WHERE token_sha256 = $1 AND used_at IS NULL AND expires_at > $2",
-        hash,
-        now.to_sqlx(),
-    )
-    .fetch_optional(db)
-    .await
-    .map_err(|_| PortalsError::Database)?;
-    business.ok_or(ActionLinkError::Ended)
+    if !well_formed(token) {
+        return Err(ActionLinkError::Ended);
+    }
+    for &sent in sends(kind) {
+        let hash = Sha256::digest(binding(kind, object, token, sent).as_bytes()).to_vec();
+        let business = sqlx::query_scalar!(
+            "SELECT business_id FROM portals.login_link \
+             WHERE token_sha256 = $1 AND used_at IS NULL AND expires_at > $2",
+            hash,
+            now.to_sqlx(),
+        )
+        .fetch_optional(&mut *db)
+        .await
+        .map_err(|_| PortalsError::Database)?;
+        if let Some(business) = business {
+            return Ok(business);
+        }
+    }
+    Err(ActionLinkError::Ended)
 }
 
 /// SEC-025, SEC-026, PICK-043: uses the `kind` link `token` for `object` at `now` (the page's
@@ -359,16 +450,16 @@ pub async fn use_action_link(
     hold: Option<HoldAsk>,
     now: Timestamp,
 ) -> Result<ActionGrant, ActionLinkError> {
+    if !well_formed(token) {
+        return Err(ActionLinkError::Ended);
+    }
     hold_ok(kind, hold, Roles::BOTH)?;
-    let used = models::use_action_row(db, &binding(kind, object, token), now).await?;
-    let Some(models::UsedLink {
+    let (used, sent) = use_row(db, (kind, object), token, now).await?;
+    let models::UsedLink {
         member,
         business,
         created_at,
-    }) = used
-    else {
-        return Err(ActionLinkError::Ended);
-    };
+    } = used;
     let issued_at = created_at
         .checked_add(LINK_LIFE)
         .map_err(|_| PortalsError::BadLifetime)?;
@@ -377,9 +468,27 @@ pub async fn use_action_link(
             member,
             business,
             issued_at,
+            text_started: sent == Sent::Text,
         }),
         _ => Err(ActionLinkError::NotAllowed),
     }
+}
+
+/// SEC-026, D-4425: uses the row of the first binding `token` matches, each a single guarded
+/// update, so a token is used at most once; which binding it was says how the link was sent.
+async fn use_row(
+    db: &mut PgConnection,
+    (kind, object): (ActionKind, Uuid),
+    token: &str,
+    now: Timestamp,
+) -> Result<(models::UsedLink, Sent), ActionLinkError> {
+    for &sent in sends(kind) {
+        let stored = binding(kind, object, token, sent);
+        if let Some(used) = models::use_action_row(db, &stored, now).await? {
+            return Ok((used, sent));
+        }
+    }
+    Err(ActionLinkError::Ended)
 }
 
 /// SEC-004, SEC-027, BIZ-038, D-333: whether pressing `kind`'s button needs a fresh Verify code
@@ -393,8 +502,9 @@ pub const fn fresh_code_needed(kind: ActionKind, signed_in: bool, inbox_shared: 
 }
 
 /// SEC-004, BIZ-038, D-3675: signs the person a used Confirm link was emailed to in on this
-/// device, as `business_auth::start` does: a fresh business session of
-/// [`BUSINESS_SESSION_LIFE`] in `jar`, then its `portals.business_session` row. Call it only
+/// device, as `business_auth::start` does: a fresh business session in `jar`, of
+/// [`TEXT_CONFIRM_SESSION_LIFE`] for a text-started grant (PICK-033, D-4425) and
+/// [`BUSINESS_SESSION_LIFE`] otherwise, then its `portals.business_session` row. Call it only
 /// after that person's Verify code was right, in the transaction that used the link, so a
 /// failure leaves the link unused and nobody signed in.
 ///
@@ -408,7 +518,12 @@ pub async fn confirm_link_session(
     now: Timestamp,
 ) -> Result<CookieJar, PortalsError> {
     let login = (Realm::Business, grant.member);
-    let jar = start_session(tx, jar, login, BUSINESS_SESSION_LIFE, now).await?;
+    let life = if grant.text_started {
+        TEXT_CONFIRM_SESSION_LIFE
+    } else {
+        BUSINESS_SESSION_LIFE
+    };
+    let jar = start_session(tx, jar, login, life, now).await?;
     let session = current_session(tx, &jar, now).await?;
     let session = session.ok_or(PortalsError::Database)?;
     models::insert_business_session(tx, session.id(), grant.business).await?;
