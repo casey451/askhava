@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T14:25:10Z by runner 27e773fd53db (actions).
+Updated 2026-11-23T14:25:44Z by runner 27e773fd53db (actions).
 
 **Building: T714 in progress since 14:21Z; 631 of 777 done; week 76% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 631 of 777 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T714 claimed 14:21Z, lease until 17:21Z; lane 2: T666 claimed 13:17Z, lease until 16:17Z; lane 5: T121 claimed 14:15Z, lease until 17:15Z
+- **Lane:** lane 1: T714 claimed 14:21Z, lease until 17:21Z; lane 5: T121 claimed 14:15Z, lease until 17:15Z
 - **Week:** 76% used, 38.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:21Z, 3 min before this update
+- **Last run:** 14:21Z, 4 min before this update
 - **Keeper:** last ran 13:59Z, next wake 14:19Z
 
 ## Needs attention
@@ -41,6 +41,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T666 | jobs, quotes and server: GET /b/jobs/{j} serves the business | MERGE_PENDING | 2 | 67 min | 14:25Z | Reviewer after the findings round (head bf41c81b22bdbd874d7d53cb8ba64ca6bb0737cf): app/server/tests/job_page_route.rs (w |
 | T819 | portals: her feedback words are scrubbed before they are sto | check_failed | 2 | 68 min | 13:45Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T646 | site and server: the web chat's new-request limit counts the | done | 3 | 99 min | 13:40Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T730 | messaging: a homeowner who chose email gets each quote updat | check_failed | 3 | 2 h 46 min | 13:19Z | PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs / Evidence: last_quote_text (quote_text_sent.rs:45-52) |
@@ -51,7 +52,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 | T646 | site and server: the web chat's new-request limit counts the | check_failed | 2 | 54 min | 11:30Z |  |
 | T653 | licensing and server (harness): a typed BTR number is stored | check_failed | 1 | 117 min | 11:19Z |  |
 | T714 | portals: a Confirm link sent by text is marked text-started  | check_failed | 1 | 95 min | 11:00Z |  |
-| T666 | jobs, quotes and server: GET /b/jobs/{j} serves the business | QUEUED | 1 | 2 h 1 min | 10:28Z | Reviewer after the findings round (head bf41c81b22bdbd874d7d53cb8ba64ca6bb0737cf): app/server/tests/job_page_route.rs (w |
+| T666 | jobs, quotes and server: GET /b/jobs/{j} serves the business | QUEUED | 1 | 2 h 1 min | 10:28Z |  |
 | T121 | Startup key checks, control router absent in live, supply-ch | check_failed | 3 | 103 min | 10:16Z | PLAN GAP: outside ownership: app/portals/src/update_channel.rs / T729 (owner) merged UpdatesForm/ConfirmForm without den |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | done | 5 | 82 min | 09:58Z | PLAN GAP: outside ownership: app/site/templates/request.html, app/site/static/site.css / At 1280x900 the /request chat s |
 | T646 | site and server: the web chat's new-request limit counts the | check_failed | 1 | 59 min | 08:59Z |  |
@@ -139,8 +140,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T714 (lease until 2026-11-23T17:21:00Z)
-- lane 2: T666 (lease until 2026-11-23T16:17:52Z)
 - lane 5: T121 (lease until 2026-11-23T17:15:02Z)
 
 ## Last usage reading
-- {"task": "T819", "at": "2026-11-23T13:45:53Z", "cache_read_input_tokens": 1115914, "cache_creation_input_tokens": 86941, "output_tokens": 12004, "input_tokens": 74}
+- {"task": "T666", "at": "2026-11-23T14:25:08Z", "cache_creation_input_tokens": 241679, "output_tokens": 69099, "cache_read_input_tokens": 14813497, "input_tokens": 253}
