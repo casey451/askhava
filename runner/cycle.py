@@ -1074,16 +1074,21 @@ def _lane_outcome(state: State, tid: str, lane: str, result: str, now: datetime,
                   reread: Callable[[str], dict[str, str] | None] = lambda sha: None) -> State:
     """Strikes for the lane fall back (D-620), only for an attempt that ended: a task on the lane DONE
     clears them; a required check that failed on an update merge after the same check passed on the
-    reviewed head before it (main's change broke it, `_broken_by_main`, which reads a check that was
+    reviewed head before it (main's change broke it, `_earlier_of_failed`, which reads a check that was
     still running at the update again through `reread`), or an update merge that conflicted or could
     not be pushed for good, is a strike; any other failed check is the task's own and clears them. A
     merge still waiting never strikes, and neither does a failed check on a hand-in merge, which also leaves
-    the strikes as they are (`_unjudged_hand_in`, D-2798). Lane "1" and the "fix" lane never strike."""
+    the strikes as they are (`_unjudged_hand_in`, D-2798), nor one whose earlier results hold no `success`
+    and at least one `cancelled` (a run cancelled on a superseded head, D-5554). Lane "1" and the "fix"
+    lane never strike."""
     if lane in (st.LANE_ONE, st.FIX_LANE):
         return state
     if result == "check_failed" and _unjudged_hand_in(st.entry(state, tid)):
         return state  # no earlier round to tell main's change from the task's: neither strike nor clear (D-2798)
-    if result == "done" or (result == "check_failed" and not _broken_by_main(st.entry(state, tid), reread)):
+    earlier = _earlier_of_failed(st.entry(state, tid), reread) if result == "check_failed" else []
+    if "success" not in earlier and "cancelled" in earlier:
+        return state  # a cancelled earlier run judges nothing: neither strike nor clear (D-5554)
+    if result == "done" or (result == "check_failed" and "success" not in earlier):
         return lanes.clear_strikes(state, lane)
     if result in ("check_failed", "update_conflict", "update_push_failed"):
         why = str(st.entry(state, tid).get("last_failure") or st.entry(state, tid).get("reason") or result)
@@ -1102,19 +1107,19 @@ def _unjudged_hand_in(task: dict[str, Any]) -> bool:
 FAILED = ("failure", "cancelled", "timed_out")
 
 
-def _broken_by_main(task: dict[str, Any], reread: Callable[[str], dict[str, str] | None]) -> bool:
-    """Whether a check that failed on the attempt's last head had passed on the reviewed head the last
-    update merge started from: the failure came with main's change, not the task's own work (D-620).
-    A check that had not finished when the update was recorded is read again now (`reread`, the Env's
-    `checks_on` of that head), so it is judged on its final conclusion (D-630)."""
+def _earlier_of_failed(task: dict[str, Any], reread: Callable[[str], dict[str, str] | None]) -> list[str]:
+    """The conclusions, on the reviewed head the last update merge started from, of each check that failed
+    on the attempt's last head: a `success` among them means main's change broke it (D-620). A check that
+    had not finished when the update was recorded is read again now (`reread`, the Env's `checks_on` of
+    that head), so it is judged on its final conclusion (D-630); no update or history gives none."""
     updates, history = task.get("update_merges") or [], task.get("history") or []
     if not updates or not history:
-        return False
+        return []
     failed = {str(c.get("name")) for c in history[-1].get("checks") or [] if c.get("conclusion") in FAILED}
     before = dict(updates[-1].get("checks") or {})
     if any(before.get(name) in (None, "None") for name in failed) and updates[-1].get("from"):
         before.update({k: v for k, v in (reread(str(updates[-1]["from"])) or {}).items() if before.get(k) in (None, "None")})
-    return any(before.get(name) == "success" for name in failed)
+    return [str(before.get(name)) for name in sorted(failed)]
 
 
 def _earlier_pr(task: dict[str, Any], pr: dict[str, Any], env: Env) -> bool:
@@ -1241,9 +1246,9 @@ def _update_step(state: State, env: Env, tid: str, pr: dict[str, Any], now: date
 
 def _head_checks(pr: dict[str, Any]) -> dict[str, str]:
     """{check name: conclusion} of the required checks on the PR's head, kept with an update merge so a
-    later failure can be told apart from one main brought in (`_broken_by_main`, D-620)."""
+    later failure can be told apart from one main brought in (`_earlier_of_failed`, D-620)."""
     head = pr.get("head_sha")
-    # Only finished checks: one still running is left out, and _broken_by_main reads it again later (D-630).
+    # Only finished checks: one still running is left out, and _earlier_of_failed reads it again later (D-630).
     return {str(c.get("name")): str(c.get("conclusion")) for c in pr.get("checks", [])
             if c.get("sha") == head and c.get("name") in verify.REQUIRED_CHECKS and c.get("conclusion")}
 
