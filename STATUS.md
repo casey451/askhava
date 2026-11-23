@@ -1,25 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-23T22:53:44Z by runner a8036d7093a0 (actions).
+Updated 2026-11-23T22:53:59Z by runner fc0535320aef (actions).
 
 **Building: T737 in progress since 22:49Z; 640 of 778 done; week 85% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 640 of 778 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T737 claimed 22:49Z, lease until 01:49Z; lane 2: T716 claimed 22:02Z, lease until 01:02Z; lane 5: T649 claimed 20:33Z, lease until 23:33Z
+- **Lane:** lane 1: T737 claimed 22:49Z, lease until 01:49Z; lane 2: T716 claimed 22:02Z, lease until 01:02Z
 - **Week:** 85% used, 20.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:52Z, 0 min before this update
+- **Last run:** 22:53Z, 0 min before this update
 - **Keeper:** last ran 22:53Z, next wake 23:36Z
 
 ## Needs attention
 - BLOCKED T836: plan gap reported: PLAN GAP: tests/test_runner_five_lanes.py:176 (test_no_workflow_a_hand_in_starts_cancels_another_lanes_run_when_five_hand_in_together, not owned by T836, from D-3043) asserts cancel-in-progress is exactly False for ci.yml, a11y.yml, twin.yml, governance.yml, auto-pr.yml. That contradicts D-5554 (2), which needs cancel-in-progress true for non-main pushes. smoke.sh fails: AssertionError: ci.yml (workflow) cancels in progress (1 failed, 5766 passed). Reviewer confirmed: T836 owns only backup-runner.yml, ci.yml, twin.yml, a11y.yml, tests/test_ci_workflow.py. Smallest fix: add tests/test_runner_fi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T836 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 40 problem(s) on tasks still to run (+532 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 42 problem(s) on tasks still to run (+531 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T649 | intake, site and server: after the code, the web chat's name | MERGE_PENDING | 1 | 2 h 19 min | 22:52Z |  |
 | T819 | portals: her feedback words are scrubbed before they are sto | MERGE_PENDING | 3 | 85 min | 22:43Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T816 | messaging: the data-request confirm link goes by email to th | MERGE_PENDING | 1 | 112 min | 22:39Z |  |
 | T737 | portals, ai and server: the owner records the AI provider's  | check_failed | 1 | 65 min | 21:59Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
@@ -128,7 +129,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T737 (lease until 2026-11-24T01:49:24Z)
 - lane 2: T716 (lease until 2026-11-24T01:02:37Z)
-- lane 5: T649 (lease until 2026-11-23T23:33:44Z)
 
 ## Last usage reading
-- {"task": "T819", "at": "2026-11-23T22:43:23Z", "output_tokens": 12204, "cache_read_input_tokens": 1037595, "cache_creation_input_tokens": 82882, "input_tokens": 71}
+- {"task": "T649", "at": "2026-11-23T22:52:47Z", "output_tokens": 85056, "input_tokens": 258, "cache_creation_input_tokens": 256403, "cache_read_input_tokens": 17279929}
