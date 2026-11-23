@@ -43,6 +43,7 @@ mod business_numbers;
 mod capability_match;
 mod card_notices;
 mod card_pool;
+mod carded_job;
 mod cards;
 mod count_update;
 mod edit_withdraw;

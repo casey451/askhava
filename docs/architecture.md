@@ -641,7 +641,7 @@ Every HTTP route the `web` process serves or a queued task's goal says it will s
 | POST | /b/picks/{pick}/confirm/code | portals | yes |
 | GET | /b/picks/{pick}/cant-take | portals | yes |
 | POST | /b/picks/{pick}/cant-take | portals | yes |
-| GET | /b/jobs/{j} | portals | T666 |
+| GET | /b/jobs/{j} | portals | yes |
 | GET | /b/sign-in | portals | yes |
 | POST | /b/sign-in | portals | yes |
 | GET | /b/sign-in/{token} | portals | yes |

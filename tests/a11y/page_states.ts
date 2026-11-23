@@ -446,6 +446,38 @@ const CANT_TAKE_STATES: readonly PageState[] = [
   ],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: CANT_TAKE_ROUTE, name, shows, hides, sql, statusRegions: [] }));
 
+const JOB_PAGE_ROUTE = "/b/jobs/{j}";
+
+/**
+ * The business job page (T666; CARD-023, CARD-019, PICK-051, D-4349, D-5526): the signed-in owner
+ * on an open job whose card went to her business, with no quote yet. The seed opens the job's
+ * UUID, which answers 303 to its number's page, so the number need not be known here.
+ */
+const JOB_PAGE_STATES: readonly PageState[] = [
+  [
+    "job page, no quote yet",
+    "Sent to 1 business. Quotes so far: 0.",
+    "find that page",
+    businessSql(`,
+    j AS (INSERT INTO jobs.job (id, status, emergency, created_at, status_at, timer_from)
+      VALUES (':pick', 'open', false, now(), now(), now()) RETURNING id),
+    n AS (UPDATE jobs.job_number_next SET next = next + 1 RETURNING next - 1 AS n),
+    num AS (INSERT INTO jobs.job_number (number, job_id, issued_at) SELECT n.n, j.id, now() FROM n, j),
+    c AS (INSERT INTO quotes.job_card (job_id, business_id, handyman, sent_at)
+      SELECT j.id, m.business_id, false, now() FROM j, m),
+    t AS (SELECT 'AC repair in Lake Havasu City. The AC runs but the air from the vents stays warm.' AS words),
+    sc AS (INSERT INTO quotes.shown_card (request_id, job_id, digest, card_text, town, place, photo_ids,
+      category, candidates, emergency, recorded_at, sent_at)
+      SELECT gen_random_uuid(), j.id, left(encode(sha256(convert_to(t.words, 'UTF8')), 'hex'), 32), t.words,
+        'Lake Havasu City', 'house', '{}', 'hvac_repair', ARRAY['AC not cooling'], false, now(), now() FROM j, t)`),
+  ],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: JOB_PAGE_ROUTE, name, shows, hides, sql, statusRegions: [] }));
+
+/** Seeds a job page state and opens the job by its UUID (the seed's `:pick`), which redirects. */
+function jobPageSeed(state: PageState): Seeded {
+  return portalSeed(false)({ ...state, route: "/b/jobs/{pick}" });
+}
+
 const INBOX_ROUTE = "/b/signup/inbox";
 
 /**
@@ -813,6 +845,7 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: NOTICES_ROUTE, seed: portalSeed(true), states: NOTICES_STATES },
   { route: CONFIRM_ROUTE, seed: portalSeed(true), states: CONFIRM_STATES },
   { route: CANT_TAKE_ROUTE, seed: portalSeed(false), states: CANT_TAKE_STATES },
+  { route: JOB_PAGE_ROUTE, seed: jobPageSeed, states: JOB_PAGE_STATES },
   { route: INBOX_ROUTE, seed: portalSeed(false), states: INBOX_STATES },
   { route: CAPABILITY_ROUTE, seed: portalSeed(false), states: CAPABILITY_STATES },
   { route: "/", seed: (state) => state.route, states: SITE_PAGE_STATES.filter((s) => s.route === "/") },
