@@ -1,22 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-23T16:44:36Z by runner 7f19bc708773 (manual).
+Updated 2026-11-23T16:45:38Z by runner 9336ba855636 (actions).
 
 **Building: T222 in progress since 16:16Z; 634 of 777 done; week 78% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 634 of 777 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T222 claimed 16:16Z, lease until 19:16Z; lane 2: T121 claimed 15:11Z, lease until 18:11Z; lane 3: T745 claimed 14:48Z, lease until 17:48Z; lane 4: T649 claimed 15:45Z, lease until 18:45Z; lane 5: T782 claimed 15:18Z, lease until 18:18Z
+- **Lane:** lane 1: T222 claimed 16:16Z, lease until 19:16Z; lane 2: T121 claimed 15:11Z, lease until 18:11Z; lane 3: T745 claimed 14:48Z, lease until 17:48Z; lane 4: T649 claimed 15:45Z, lease until 18:45Z; lane 5: T782 claimed 15:18Z, lease until 19:45Z
 - **Week:** 78% used, 31.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:17Z, 27 min before this update
+- **Last run:** 16:44Z, 0 min before this update
 - **Keeper:** last ran 15:56Z, next wake 17:51Z
 
 ## Needs attention
-- CLAIMS STOPPED: nightly success on 21be2b3d8975, failures_since_green 0; no stage passed its exit test
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T836 (since 2026-11-23T07:59:33Z, no attempt used; a plan change fixes it): T836: kit/runner_log.jsonl is named by D-500, but no task owns it and it does not exist
-- Strict plan check red: 40 problem(s) on tasks still to run (+522 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 41 problem(s) on tasks still to run (+520 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -72,31 +71,31 @@ Updated 2026-11-23T16:44:36Z by runner 7f19bc708773 (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 1 of 735 (0.1%) · partial 721 · unstarted 13
+**Requirements verified:** 404 of 735 (55.0%) · partial 318 · unstarted 13
 **Tasks merged (throughput only):** 634 of 777
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 0 | 35 | 0 | 35 |
-| ai | 0 | 26 | 3 | 29 |
-| businesses | 0 | 57 | 1 | 58 |
-| calls | 0 | 25 | 0 | 25 |
-| consent | 0 | 35 | 0 | 35 |
-| fees | 0 | 52 | 0 | 52 |
-| intake | 0 | 43 | 0 | 43 |
-| job-cards | 0 | 24 | 0 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 0 | 45 | 0 | 45 |
-| ops-recovery | 1 | 47 | 6 | 54 |
-| privacy | 0 | 31 | 0 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 0 | 56 | 0 | 56 |
-| recurring | 0 | 11 | 0 | 11 |
-| security | 0 | 52 | 3 | 55 |
-| terms | 0 | 35 | 0 | 35 |
-| website | 0 | 30 | 0 | 30 |
-| wording | 0 | 32 | 0 | 32 |
+| accessibility | 25 | 10 | 0 | 35 |
+| ai | 7 | 19 | 3 | 29 |
+| businesses | 31 | 26 | 1 | 58 |
+| calls | 17 | 8 | 0 | 25 |
+| consent | 17 | 18 | 0 | 35 |
+| fees | 27 | 25 | 0 | 52 |
+| intake | 11 | 32 | 0 | 43 |
+| job-cards | 15 | 9 | 0 | 24 |
+| licensing | 36 | 12 | 0 | 48 |
+| lifecycle | 21 | 7 | 0 | 28 |
+| messaging | 25 | 20 | 0 | 45 |
+| ops-recovery | 17 | 31 | 6 | 54 |
+| privacy | 12 | 19 | 0 | 31 |
+| quiet-hours | 4 | 5 | 0 | 9 |
+| quotes-pick | 34 | 22 | 0 | 56 |
+| recurring | 10 | 1 | 0 | 11 |
+| security | 14 | 38 | 3 | 55 |
+| terms | 30 | 5 | 0 | 35 |
+| website | 22 | 8 | 0 | 30 |
+| wording | 29 | 3 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -120,7 +119,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T121 (lease until 2026-11-23T18:11:59Z)
 - lane 3: T745 (lease until 2026-11-23T17:48:35Z)
 - lane 4: T649 (lease until 2026-11-23T18:45:21Z)
-- lane 5: T782 (lease until 2026-11-23T18:18:54Z)
+- lane 5: T782 (lease until 2026-11-23T19:45:38Z)
 
 ## Last usage reading
 - {"task": "T714", "at": "2026-11-23T15:49:01Z", "output_tokens": 13101, "cache_read_input_tokens": 1286906, "cache_creation_input_tokens": 81936, "input_tokens": 85}
