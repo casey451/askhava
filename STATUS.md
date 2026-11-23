@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T01:49:17Z by runner 6cb391745e61 (actions).
+Updated 2026-11-23T01:52:20Z by runner 9e70fa24c89d (actions).
 
-**Building: T645 in progress since 23:51Z; 619 of 774 done; week 70% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T645 in progress since 23:51Z; 620 of 774 done; week 70% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 619 of 774 build tasks (owner gates not counted)
+- **Tasks done:** 620 of 774 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T645 claimed 23:51Z, lease until 02:51Z; lane 5: T716 claimed 01:31Z, lease until 04:31Z
 - **Week:** 70% used, 52.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:49Z, 0 min before this update
+- **Last run:** 01:49Z, 3 min before this update
 - **Keeper:** last ran 01:48Z, next wake 02:53Z
 
 ## Needs attention
@@ -18,14 +18,14 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 - PLAN GAP T121 (since 2026-11-23T00:03:26Z, no attempt used; a plan change fixes it): outside ownership: app/portals/src/update_channel.rs
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 24 problem(s) on tasks still to run (+499 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 28 problem(s) on tasks still to run (+511 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T837 | runner (harness): the keeper judges work with the real stage | MERGE_PENDING | 1 | 41 min | 01:47Z |  |
-| T712 | server and portals: the owner portal lists PROBLEM reports w | MERGE_PENDING | 1 | 90 min | 01:40Z |  |
-| T832 | ci (harness): the Checks job allows 60 minutes, so a full na | MERGE_PENDING | 1 | 79 min | 01:09Z |  |
+| T712 | server and portals: the owner portal lists PROBLEM reports w | resync | 1 | 90 min | 01:40Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T832 | ci (harness): the Checks job allows 60 minutes, so a full na | done | 1 | 79 min | 01:09Z |  |
 | T725 | site: the home page shows the texting number with its consen | done | 4 | 49 min | 00:39Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
 | T675 | intake and server (harness): the dispatcher asks for photos  | done | 4 | 45 min | 00:33Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T121 | Startup key checks, control router absent in live, supply-ch | BLOCKED | 2 | 12 min | 00:03Z | PLAN GAP: outside ownership: app/portals/src/update_channel.rs / T729 (owner) merged UpdatesForm/ConfirmForm without den |
@@ -85,7 +85,7 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 ## Progress (requirements verified)
 
 **Requirements verified:** 404 of 735 (55.0%) · partial 318 · unstarted 13
-**Tasks merged (throughput only):** 619 of 774
+**Tasks merged (throughput only):** 620 of 774
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -121,7 +121,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 262 of 346 done
+- stage 5: 263 of 346 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
