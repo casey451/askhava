@@ -63,7 +63,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from runner import model_window, review_proof, state as st, status, verify, wip
+from runner import keeper, model_window, review_proof, state as st, status, verify, wip
 from runner.cycle import DROP_MARKER, WorkerResult
 from runner.update_merge import UpdateMerge
 from runner.state import State
@@ -867,12 +867,13 @@ def _running(state: State) -> list[str]:
 class Board:
     """What the owner's dashboard reads beside the state (runner/status.py, D-1462): the task graph, the
     time of the last cycle-log line, the strict plan check's problem lines (empty when green or not run)
-    and recent plan and harness merges on `main` (subject lines)."""
+    and recent plan and harness merges on `main` (subject lines), and the `CLAIMS STOPPED` reason (D-5568)."""
 
     graph: tuple[dict[str, Any], ...] = ()
     last_run: datetime | None = None
     strict: tuple[str, ...] = ()
     merges: tuple[str, ...] = ()
+    stopped: str = ""
 
 
 def _redact(text: str) -> str:
@@ -896,7 +897,8 @@ def _day_sections(state: State, board: Board, now: datetime) -> list[str]:
 
 
 def _needs_attention(state: State, board: Board, now: datetime) -> list[str]:
-    lines = [line for line in _safe(lambda: _attention(state, now), "attention list") if line != "- nothing"]
+    lines = [f"- {board.stopped}"] if board.stopped else []
+    lines += [line for line in _safe(lambda: _attention(state, now), "attention list") if line != "- nothing"]
     lines += _safe(lambda: status.attention_extra(state, board.strict), "plan check flags")
     return lines or ["- nothing"]
 
@@ -1041,7 +1043,7 @@ class GitHubEnv:
         stamped.pop("leases", None)  # the lanes live in lease.json only, like the lease (D-515)
         pace = self.pacing_line(new) if self.pacing_line else ""
         status = render_status(stamped | {"lease": new.get("lease"), "leases": st.leases_of(new)}, self.progress_markdown(new), now, pace,
-                               self.board(now))
+                               self.board(now, new))
         writes = {STATE_FILE: json.dumps(stamped, indent=1) + "\n", "STATUS.md": status}
         progress = self._show(self.state_head, "PROGRESS.md") or "# Progress\n"
         line = f"- {st.iso(now)} runner {self.runner_sha[:12]} ({self.starter}): {json.dumps(state_diff(base, new)['tasks'])}"
@@ -1056,9 +1058,24 @@ class GitHubEnv:
             writes[f"outbox/{path.name}"] = path.read_text(encoding="utf-8")
         return writes, []
 
-    def board(self, now: datetime) -> Board:
+    def board(self, now: datetime, state: State | None = None) -> Board:
         """The dashboard's readings beside the state (D-1462); each one best effort, never raised."""
-        return Board(tuple(self.graph), self._last_run(), self.strict_check(), self._plan_merges(now))
+        stopped = self.claims_stopped(state, now) if state is not None else ""
+        return Board(tuple(self.graph), self._last_run(), self.strict_check(), self._plan_merges(now), stopped)
+
+    def claims_stopped(self, state: State, now: datetime) -> str:
+        """`keeper.claims_stopped` over this graph, the recorded nightly, main's head and git's ancestry answer,
+        so the keeper and STATUS.md judge with one gate (D-5568); '' without a graph or on any failure."""
+        if not self.graph:
+            return ""
+
+        def ancestor(older: str, newer: str) -> bool | None:
+            return {0: True, 1: False}.get(self._run(["git", "merge-base", "--is-ancestor", older, newer], None, self.root)[0])
+
+        try:
+            return keeper.claims_stopped(state, now, keeper.World(list(self.graph), self.read_nightly(), self.main_head(), ancestor))
+        except Exception:  # noqa: BLE001  # reason: a dashboard line never stops a state push (D-1462)
+            return ""
 
     def _last_run(self) -> datetime | None:
         """The time of the last kit/runner_log.jsonl line on the state branch (the last cycle that ended)."""
