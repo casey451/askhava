@@ -1,25 +1,29 @@
 # Ask Hava build status
 
-Updated 2026-11-22T23:51:44Z by runner bd3e4e9cdad1 (actions).
+Updated 2026-11-23T00:03:27Z by runner bd3e4e9cdad1 (actions).
 
 **Building: T725 in progress since 23:49Z; 617 of 773 done; week 65% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 617 of 773 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T725 claimed 23:49Z, lease until 02:49Z; lane 2: T645 claimed 23:51Z, lease until 02:51Z; lane 3: T832 claimed 23:50Z, lease until 02:50Z; lane 4: T121 claimed 23:50Z, lease until 02:50Z; lane 5: T675 claimed 23:48Z, lease until 02:48Z
+- **Lane:** lane 1: T725 claimed 23:49Z, lease until 02:49Z; lane 2: T645 claimed 23:51Z, lease until 02:51Z; lane 3: T832 claimed 23:50Z, lease until 02:50Z; lane 5: T675 claimed 23:48Z, lease until 02:48Z
 - **Week:** 65% used, 58.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:51Z, 0 min before this update
+- **Last run:** 23:52Z, 11 min before this update
 - **Keeper:** last ran 23:10Z, next wake 23:33Z
 
 ## Needs attention
+- BLOCKED T121: plan gap reported: PLAN GAP: outside ownership: app/portals/src/update_channel.rs
+T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and confirm_query ignores unknown keys; SEC-010 scan fails on them (F1 x2, F5 x1). Also: REFUSING_TRY_FROM lacks JobTypesForm (business_portal.rs), StepUpForm (business_step_up.rs), Posted<F> (address_changes.rs, business_guarded_changes.rs); CLASSIFIED lacks twilio_answer/vendor_error (adapters base.rs), run_help_notice, spanish_switch latest, photo_asks load; business_signup_route.rs posts roc_number/base_zip/radius/code names the templates lack, so per-route; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T121 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T803: Worker made no change. All 83 named mutants are killed; the Checks job timed out (40 min limit) because the Rust build took ~26 min and mutants.toml changes trigger all 83 mutants (cut off after mutant 72). Needs a harness fix (raise Checks timeout-minutes or run only changed mutants) or a faster CI build. Smoke did not finish in the worker's polls.
+- PLAN GAP T121 (since 2026-11-23T00:03:26Z, no attempt used; a plan change fixes it): outside ownership: app/portals/src/update_channel.rs
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 27 problem(s) on tasks still to run (+496 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 29 problem(s) on tasks still to run (+496 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T121 | Startup key checks, control router absent in live, supply-ch | BLOCKED | 2 | 12 min | 00:03Z | PLAN GAP: outside ownership: app/portals/src/update_channel.rs / T729 (owner) merged UpdatesForm/ConfirmForm without den |
 | T675 | intake and server (harness): the dispatcher asks for photos  | resync | 4 | 81 min | 17:03Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T590 | calls, picks and server: the who's-calling and missed-call t | check_failed | 1 | 118 min | 16:40Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T122 | docs/account-checklist.md: Part 1 test accounts, Part 2 busi | QUEUED | 1 | 88 min | 16:23Z | Reviewer after the findings round (head d65c4896894680459870359165740cf8b3a2bf57) still ended FINDINGS: / 1. tests/docs/ |
@@ -65,7 +69,7 @@ Updated 2026-11-22T23:51:44Z by runner bd3e4e9cdad1 (actions).
 | T691 | intake (harness): START into an open request resends the con | done | 2 | 2 h 16 min | 02:20Z | session ended without handing in |
 | T759 | intake: "Close which?" expires on a worded reply that is not | done | 1 | 28 min | 02:19Z |  |
 | T397 | server and portals: the owner approves or declines a member- | BLOCKED | 1 | 27 min | 02:12Z |  |
-| T121 | Startup key checks, control router absent in live, supply-ch | BLOCKED | 1 | 15 min | 01:45Z | PLAN GAP: outside ownership: app/server/src/owner_portal.rs, app/server/src/owner_tools.rs, app/portals/src/owner_help.r |
+| T121 | Startup key checks, control router absent in live, supply-ch | BLOCKED | 1 | 15 min | 01:45Z |  |
 | T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | BLOCKED | 3 | 49 min | 01:39Z |  |
 | T542 | portals and server: notice and backup address changes are re | QUEUED | 1 | 2 h 37 min | 01:29Z |  |
 | T725 | site: the home page shows the texting number with its consen | BLOCKED | 1 | 21 min | 01:24Z |  |
@@ -129,8 +133,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T725 (lease until 2026-11-23T02:49:30Z)
 - lane 2: T645 (lease until 2026-11-23T02:51:34Z)
 - lane 3: T832 (lease until 2026-11-23T02:50:02Z)
-- lane 4: T121 (lease until 2026-11-23T02:50:52Z)
 - lane 5: T675 (lease until 2026-11-23T02:48:28Z)
 
 ## Last usage reading
-- {"task": "T675", "at": "2026-11-22T17:03:10Z", "input_tokens": 393, "output_tokens": 151893, "cache_read_input_tokens": 35329205, "cache_creation_input_tokens": 396323}
+- {"task": "T121", "at": "2026-11-23T00:03:26Z", "output_tokens": 62893, "cache_read_input_tokens": 8443555, "cache_creation_input_tokens": 183622, "input_tokens": 192}
