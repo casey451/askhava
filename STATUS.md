@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T16:54:24Z by runner ca32683e9893 (actions).
+Updated 2026-11-23T16:56:34Z by runner 9336ba855636 (actions).
 
 **Building: T222 in progress since 16:16Z; 634 of 777 done; week 79% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,14 @@ Updated 2026-11-23T16:54:24Z by runner ca32683e9893 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T222 claimed 16:16Z, lease until 19:16Z; lane 3: T745 claimed 14:48Z, lease until 17:48Z; lane 4: T649 claimed 15:45Z, lease until 18:45Z; lane 5: T782 claimed 15:18Z, lease until 19:45Z
 - **Week:** 79% used, 31.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:54Z, 0 min before this update
+- **Last run:** 16:54Z, 1 min before this update
 - **Keeper:** last ran 16:54Z, next wake 17:51Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T836 (since 2026-11-23T07:59:33Z, no attempt used; a plan change fixes it): T836: kit/runner_log.jsonl is named by D-500, but no task owns it and it does not exist
-- Strict plan check red: 38 problem(s) on tasks still to run (+519 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 41 problem(s) on tasks still to run (+520 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
