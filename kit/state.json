@@ -101767,7 +101767,11 @@
    "last_failure": "Round 2 review of head ee718d9818e119e105327a88e6a124fedfc3978a: the round-1 licensing finding is fixed (with_licensed_others, test td_int_53_the_breaker_text_needs_the_electrical_license). Remaining finding (INT-017, more a plan gap than a worker bug): card_in (app/intake/src/order_dispatch.rs:1494) stores candidates from final_pairs, which now include electrical's \"breaker trips\" under category handyman with no trade per label. The real send, cards_out.rs:388 (card_pool_at then candidate_jobs), gives every label the handyman category; handyman licence kind is none (docs/catalog/categories.yaml:179) and \"breaker trips\" is not a handyman job type, so it is listed:false and licensing::rules::no_license refuses it for every business. Counterexample: \"handyman needed, my breaker keeps tripping\" + ZIP + reply \"door repair\" gets coverage_count_one, then the card goes to nobody. Fails safe, but count and send disagree. Fix needs the card or cards_out to carry each candidate's trade; D-5333 and D-5582 rule CardFacts, card_pool_at and cards_out.rs out of T716, so it needs a plan change or follow-up task, or a logged acceptance, before merge.",
    "runner_closed_prs": [
     1377
-   ]
+   ],
+   "wip_claim": {
+    "attempt": 3,
+    "remote_sha": "46dfb4344ce0bf6c3832cd98f88a0a740dbb6980"
+   }
   },
   {
    "id": "T718",
@@ -120578,7 +120582,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T06:55:53Z",
+ "updated_at": "2026-11-23T06:56:23Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
