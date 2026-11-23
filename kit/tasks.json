@@ -48675,7 +48675,8 @@
    "module": "intake",
    "deps": [
     "T675",
-    "T654"
+    "T654",
+    "T600"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
