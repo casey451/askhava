@@ -626,15 +626,28 @@ impl<'a> Posted<'a> {
         Some(self.get(name)).filter(|v| !v.trim().is_empty())
     }
 
-    /// D-2943: the typed names, numbers and links, kept on the form again.
-    fn fill(&self, entered: &mut Entered<'a>) {
-        entered.business_name = self.get("business_name");
-        entered.trade_name = self.get("trade_name");
-        entered.roc_number = self.get("roc_number");
-        entered.btr_number = self.get("btr_number");
-        entered.city_license_number = self.get("city_license_number");
-        entered.google_link = self.get("google_link");
-        entered.yelp_link = self.get("yelp_link");
+    /// D-2943, A11Y-012, CON-019, D-4052: what `FormAgain` shows: `channels`' choice and problem,
+    /// the typed names, numbers, links, email and text phone, the ticked `categories`, and the
+    /// pest attestation and E-SIGN box as ticked in this post alone.
+    fn entered<'b>(&self, channels: &ChannelPost, categories: &'b [&'b str]) -> Entered<'b>
+    where
+        'a: 'b,
+    {
+        Entered {
+            business_name: self.get("business_name"),
+            trade_name: self.get("trade_name"),
+            roc_number: self.get("roc_number"),
+            btr_number: self.get("btr_number"),
+            city_license_number: self.get("city_license_number"),
+            google_link: self.get("google_link"),
+            yelp_link: self.get("yelp_link"),
+            email: self.get("email"),
+            text_phone: self.get("text_phone"),
+            categories,
+            pest_license: self.get("pest_license") == "yes",
+            consent: self.get("consent") == "yes",
+            ..channels.entered()
+        }
     }
 }
 
@@ -664,8 +677,8 @@ impl Form {
     /// then `submit_signup`.
     async fn submit(&self, posted: &Posted<'_>, csrf: Asked<'_>, now: Timestamp) -> Response {
         let channels = ChannelPost::parse(posted.0, csrf.texting_on, (&self.secret, csrf.csrf));
-        let mut entered = channels.entered();
-        posted.fill(&mut entered);
+        let ticks = posted.all("category");
+        let mut entered = posted.entered(&channels, &ticks);
         let chosen = channels.consent_channels();
         let Some(chosen) = chosen.filter(|_| channels.problem().is_none()) else {
             return self.again(&entered, csrf).await;
