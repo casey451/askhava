@@ -542,7 +542,7 @@ async fn start_post(State(form): State<Arc<Form>>, request: Request) -> Response
     if !matches!(admitted, Ok(Admission::Admitted)) {
         return failure("sign-up limit");
     }
-    match same_site(&form.pool, request, SIGNUP_FORM_ROUTE, now).await {
+    match same_site(&form.pool, request, (SIGNUP_FORM_ROUTE, START_NAMES), now).await {
         Ok((fields, _)) => {
             let posted = Posted(&fields);
             let asked = form.switched_now(posted.asked()).await;
@@ -552,19 +552,19 @@ async fn start_post(State(form): State<Arc<Form>>, request: Request) -> Response
     }
 }
 
-/// SEC-042, SEC-048: the posted fields and the cookies of a same-site post to `route` whose `csrf`
-/// field is the request cookie's token; else the 403 with its `csrf_rejected` event ([`refuse`]),
-/// or a 400 for a body that is no form.
+/// SEC-010, SEC-042, SEC-048: the fields and cookies of a same-site post to `route` whose `csrf`
+/// is the cookie's token; else the 403 and `csrf_rejected` event ([`refuse`]), or a 400 for a body
+/// that is no form, holds a name outside `names` or repeats a single-value name.
 async fn same_site(
     pool: &PgPool,
     request: Request,
-    route: &'static str,
+    (route, names): (&'static str, &'static [&'static str]),
     now: Timestamp,
 ) -> Result<(Vec<(String, String)>, CookieJar), Box<Response>> {
     let ip = security_event_client(&request);
     let headers = request.headers().clone();
     let parsed = axum::Form::<Vec<(String, String)>>::from_request(request, &()).await;
-    let Ok(axum::Form(fields)) = parsed else {
+    let Some(fields) = parsed.ok().map(|f| f.0).filter(|f| strict_names(f, names)) else {
         return Err(Box::new(StatusCode::BAD_REQUEST.into_response()));
     };
     let jar = CookieJar::from_headers(&headers);
@@ -883,7 +883,7 @@ async fn identity_check(State(form): State<Arc<Form>>, request: Request) -> Resp
 /// [`Form::step`] for the sign-up the cookie names. No posted ID or license number is read.
 async fn step_post(form: Arc<Form>, request: Request, ask: Ask) -> Response {
     let now = Timestamp::now();
-    let (fields, jar) = match same_site(&form.pool, request, ask.path(), now).await {
+    let (fields, jar) = match same_site(&form.pool, request, ask.post(), now).await {
         Ok(posted) => posted,
         Err(refused) => return *refused,
     };
@@ -1067,7 +1067,7 @@ async fn email_resend(State(form): State<Arc<Form>>, request: Request) -> Respon
 async fn later_post(form: Arc<Form>, request: Request, later: Later) -> Response {
     let now = Timestamp::now();
     let ip = security_event_client(&request);
-    let (fields, jar) = match same_site(&form.pool, request, later.path(), now).await {
+    let (fields, jar) = match same_site(&form.pool, request, later.post(), now).await {
         Ok(posted) => posted,
         Err(refused) => return *refused,
     };
@@ -1585,9 +1585,136 @@ struct StepQuery {
 }
 
 /// The capability step's posted `(name, value)` pairs; `job_type` and `town` repeat (BIZ-049).
+/// A name outside `csrf` and the eight `CapabilityValues::from_pairs` reads, or another name
+/// given twice, is axum's own 4xx (SEC-010).
 #[derive(serde::Deserialize)]
-#[serde(transparent)]
+#[serde(try_from = "Vec<(String, String)>")]
 struct CapabilityForm(Vec<(String, String)>);
+
+/// SEC-010: `csrf` and the names `CapabilityValues::from_pairs` reads.
+const CAPABILITY_NAMES: [&str; 9] = [
+    "csrf",
+    "job_type",
+    "town",
+    "largest",
+    "largest_amount",
+    "recurring",
+    "after_hours",
+    "base_zip",
+    "radius",
+];
+
+impl TryFrom<Vec<(String, String)>> for CapabilityForm {
+    type Error = &'static str;
+
+    /// SEC-010: the pairs, when every name is a capability name and only `job_type` and `town`
+    /// repeat.
+    fn try_from(pairs: Vec<(String, String)>) -> Result<Self, Self::Error> {
+        if strict_names(&pairs, &CAPABILITY_NAMES) {
+            Ok(Self(pairs))
+        } else {
+            Err("an unknown or repeated capability field")
+        }
+    }
+}
+
+/// The names that may repeat in a sign-up post: the start form's ticks and the capability
+/// answers the service-area form carries (SEC-010).
+const MULTI_VALUE: [&str; 4] = ["category", "pest_category", "job_type", "town"];
+
+/// SEC-010: the names the start form (`business_signup.html`, `es_business_signup.html`) posts to
+/// [`SIGNUP_FORM_ROUTE`].
+const START_NAMES: &[&str] = &[
+    "csrf",
+    "lang",
+    "consent_channels",
+    "consent_seal",
+    "business_name",
+    "trade_name",
+    "roc_number",
+    "btr_number",
+    "city_license_number",
+    "google_link",
+    "yelp_link",
+    "email",
+    "notice_channel",
+    "text_phone",
+    "category",
+    "pest_license",
+    "pest_number",
+    "pest_category",
+    "consent",
+];
+
+/// SEC-010: [`CODE_SEND_ROUTE`]'s button posts `csrf` and `lang`; `code` is posted by
+/// `tests/business_signup_route.rs:783` and `roc_number` by `tests/business_signup_route.rs:850`.
+const CODE_SEND_NAMES: &[&str] = &["csrf", "lang", "code", "roc_number"];
+
+/// SEC-010: [`NUMBER_OLD_ROUTE`]'s and [`LETTER_ROUTE`]'s buttons post `csrf` and `lang`; `code`
+/// is posted by `tests/business_signup_route.rs:783`.
+const BUTTON_CODE_NAMES: &[&str] = &["csrf", "lang", "code"];
+
+/// SEC-010: the code form on [`IDENTITY_CHECK_ROUTE`] posts `csrf`, `lang` and `code`.
+const IDENTITY_CHECK_NAMES: &[&str] = &["csrf", "lang", "code"];
+
+/// SEC-010: the service-area form posts `csrf`, `lang`, `base_zip`, `radius` and the carried
+/// capability answers (`CapabilityValues::carried`); `code` is posted by
+/// `tests/business_signup_route.rs:1040`.
+const SERVICE_AREA_NAMES: &[&str] = &[
+    "csrf",
+    "lang",
+    "base_zip",
+    "radius",
+    "job_type",
+    "town",
+    "largest",
+    "largest_amount",
+    "recurring",
+    "after_hours",
+    "code",
+];
+
+/// SEC-010: the code form on [`EMAIL_CHECK_ROUTE`] posts `csrf`, `lang` and `code`; `base_zip` and
+/// `radius` are posted by `tests/business_signup_route.rs:1040`.
+const EMAIL_CHECK_NAMES: &[&str] = &["csrf", "lang", "code", "base_zip", "radius"];
+
+/// SEC-010: [`EMAIL_RESEND_ROUTE`]'s button posts `csrf` and `lang`; `base_zip`, `radius` and
+/// `code` are posted by `tests/business_signup_route.rs:1040`.
+const EMAIL_RESEND_NAMES: &[&str] = &["csrf", "lang", "base_zip", "radius", "code"];
+
+/// SEC-010: whether every name in `fields` is in `names` and no name outside [`MULTI_VALUE`]
+/// repeats.
+fn strict_names(fields: &[(String, String)], names: &[&str]) -> bool {
+    fields.iter().enumerate().all(|(i, (name, _))| {
+        let multi = MULTI_VALUE.contains(&name.as_str());
+        let once = multi || !fields[..i].iter().any(|(n, _)| n == name);
+        once && names.contains(&name.as_str())
+    })
+}
+
+impl Ask {
+    /// The step's route and the names it takes (SEC-010, SEC-048).
+    const fn post(self) -> (&'static str, &'static [&'static str]) {
+        let names = match self {
+            Self::Send => CODE_SEND_NAMES,
+            Self::Old | Self::Letter => BUTTON_CODE_NAMES,
+            Self::Check => IDENTITY_CHECK_NAMES,
+        };
+        (self.path(), names)
+    }
+}
+
+impl Later {
+    /// The step's route and the names it takes (SEC-010, SEC-048).
+    const fn post(self) -> (&'static str, &'static [&'static str]) {
+        let names = match self {
+            Self::Area => SERVICE_AREA_NAMES,
+            Self::Check => EMAIL_CHECK_NAMES,
+            Self::Resend => EMAIL_RESEND_NAMES,
+        };
+        (self.path(), names)
+    }
+}
 
 impl CsrfField for CapabilityForm {
     fn csrf(&self) -> &str {
@@ -1866,4 +1993,52 @@ pub async fn send_signup_code(
     let mailbox = signup_mailbox(db, business).await.map_err(|_| failed(()))?;
     let code = SecretString::from(code);
     mail.0.code(db, (mailbox, &code), now).await.map_err(failed)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn pairs(names: &[&str]) -> Vec<(String, String)> {
+        names
+            .iter()
+            .map(|n| ((*n).to_owned(), "1".to_owned()))
+            .collect()
+    }
+
+    #[test]
+    fn sec_010_same_site_names_refuse_an_unknown_name() {
+        let known = pairs(&["csrf", "lang", "code"]);
+        assert!(strict_names(&known, IDENTITY_CHECK_NAMES));
+        let planted = pairs(&["csrf", "code", "made_up"]);
+        assert!(!strict_names(&planted, IDENTITY_CHECK_NAMES));
+        let elsewhere = pairs(&["csrf", "business_name"]);
+        assert!(!strict_names(&elsewhere, SERVICE_AREA_NAMES));
+    }
+
+    #[test]
+    fn sec_010_same_site_names_refuse_a_repeated_single_value_name() {
+        let ticks = pairs(&[
+            "csrf",
+            "category",
+            "category",
+            "pest_category",
+            "pest_category",
+        ]);
+        assert!(strict_names(&ticks, START_NAMES));
+        let planted = pairs(&["csrf", "email", "email"]);
+        assert!(!strict_names(&planted, START_NAMES));
+        let twice = pairs(&["csrf", "csrf", "code"]);
+        assert!(!strict_names(&twice, IDENTITY_CHECK_NAMES));
+    }
+
+    #[test]
+    fn sec_010_capability_form_refuses_an_unknown_and_a_repeated_name() {
+        let good = pairs(&["csrf", "job_type", "job_type", "town", "town", "largest"]);
+        assert!(CapabilityForm::try_from(good).is_ok());
+        let unknown = pairs(&["csrf", "job_type", "made_up"]);
+        assert!(CapabilityForm::try_from(unknown).is_err());
+        let repeated = pairs(&["csrf", "largest", "largest"]);
+        assert!(CapabilityForm::try_from(repeated).is_err());
+    }
 }

@@ -296,10 +296,14 @@ impl SafetyCall {
         )
     }
 
-    /// Reads [`SafetyCall::query`] back; `None` for any other query.
+    /// SEC-010: reads [`SafetyCall::query`] back; `None` for any other query, an unknown, bare or
+    /// repeated key among them.
     #[must_use]
     pub fn from_query(query: &str) -> Option<Self> {
-        let parts: Vec<(&str, &str)> = query.split('&').filter_map(|p| p.split_once('=')).collect();
+        let parts: Vec<(&str, &str)> = query
+            .split('&')
+            .map(|p| p.split_once('='))
+            .collect::<Option<_>>()?;
         let [("alert", a), ("message", m), ("contact", c), ("arrived", t)] = parts.as_slice()
         else {
             return None;
@@ -693,4 +697,40 @@ pub fn owner_bridge_twiml(
          <Dial callerId=\"{from}\" record=\"do-not-record\"><Number>{to}</Number></Dial>\
          </Response>"
     )))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn written() -> String {
+        let call = SafetyCall {
+            contact: Uuid::from_u128(1),
+            message: Uuid::from_u128(2),
+            arrived_at: Timestamp::from_second(1_700_000_000).expect("time"),
+            alert: Uuid::from_u128(3),
+        };
+        call.query()
+    }
+
+    #[test]
+    fn sec_010_from_query_reads_back_only_its_own_query() {
+        let query = written();
+        let read = SafetyCall::from_query(&query).expect("own query");
+        assert_eq!(read.query(), query);
+    }
+
+    #[test]
+    fn sec_010_from_query_refuses_an_unknown_and_a_repeated_key() {
+        let query = written();
+        let alert = format!("alert={}", Uuid::from_u128(3));
+        for planted in [
+            format!("{query}&extra=1"),
+            format!("{query}&extra"),
+            format!("{query}&{alert}"),
+            query.replacen("message=", "made_up=", 1),
+        ] {
+            assert!(SafetyCall::from_query(&planted).is_none(), "{planted}");
+        }
+    }
 }
