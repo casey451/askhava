@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T06:01:20Z by runner 8871a83b785a (actions).
+Updated 2026-11-23T06:07:14Z by runner b81eb62890bd (actions).
 
 **Building: T716 in progress since 04:41Z; 624 of 775 done; week 72% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-23T06:01:20Z by runner 8871a83b785a (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T716 claimed 04:41Z, lease until 07:41Z; lane 3: T730 claimed 06:00Z, lease until 09:00Z; lane 4: T611 claimed 04:04Z, lease until 07:04Z; lane 5: T838 claimed 04:41Z, lease until 07:41Z
 - **Week:** 72% used, 45.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:01Z, 0 min before this update
+- **Last run:** 06:01Z, 5 min before this update
 - **Keeper:** last ran 06:00Z, next wake 06:20Z
 
 ## Needs attention
@@ -60,7 +60,6 @@ Updated 2026-11-23T06:01:20Z by runner 8871a83b785a (actions).
 | T810 | portals and server: a shared-inbox Confirm press asks for it | done | 3 | 76 min | 06:46Z | PLAN GAP: outside ownership: app/server/tests/confirm_press_code.rs. TD-SEC-82 requires a direct portals.shared_inbox in |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | BLOCKED | 3 | 2 h 17 min | 06:35Z |  |
 | T827 | server and portals: the owner and homeowner forms refuse unk | done | 1 | 82 min | 06:12Z |  |
-| T829 | server tests (harness): the door matrix's owner sign-ins nev | BLOCKED | 1 | 19 min | 06:03Z |  |
 
 ### Plan and harness merges on main
 - 04:05Z Plan: T121 split into T838 (D-5574); Grok G3 fixes for claimable tasks (D-5585) (#1370)
