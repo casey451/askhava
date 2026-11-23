@@ -101752,7 +101752,7 @@
     "T458",
     "T588"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 1,
    "slug": "text-confirm-link-session",
    "type": "build",
@@ -101834,6 +101834,29 @@
        "turns": 26
       }
      }
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 24,
+     "head_sha": "188d33da48fb05f16eac4a6fabed8263ae09cf41",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-23T11:39:44Z",
+     "ended_at": "2026-11-23T12:27:28Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 343764,
+       "turns": 11
+      },
+      "reviewer": {
+       "tokens": 452836,
+       "turns": 12
+      }
+     }
     }
    ],
    "reviewed_sha": "188d33da48fb05f16eac4a6fabed8263ae09cf41",
@@ -101846,18 +101869,13 @@
    "branch": "claude/task/T714-text-confirm-link-session",
    "auto_merge": {
     "enabled": true,
-    "why": "auto-merge on #1391 (gh pr merge)",
+    "why": "auto-merge on #1395 (gh pr merge)",
     "head": "188d33da48fb05f16eac4a6fabed8263ae09cf41"
    },
    "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust dependency audit (cargo-audit, cargo-deny)\nWarning:   unmaintained\nTitle:     `basic-toml` is unmaintained\nDate:      2026-09-26\nID:        RUSTSEC-2026-0374\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0374\nCrate:     proc-macro-error2\nVersion:   2.0.1\nWarning:   unmaintained\nTitle:     proc-macro-error2 is unmaintained\nDate:      2026-06-07\nID:        RUSTSEC-2026-0173\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0173\nerror: 1 vulnerability found!\nwarning: 2 allowed warnings found\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
-   "wip_claim": {
-    "attempt": 2,
-    "remote_sha": "188d33da48fb05f16eac4a6fabed8263ae09cf41"
-   },
    "runner_closed_prs": [
     1391
-   ],
-   "head_check_since": null
+   ]
   },
   {
    "id": "T705",
@@ -114164,12 +114182,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T819",
-   "at": "2026-11-23T11:57:55Z",
-   "cache_read_input_tokens": 1757005,
-   "input_tokens": 82,
-   "cache_creation_input_tokens": 88100,
-   "output_tokens": 22026
+   "task": "T714",
+   "at": "2026-11-23T12:27:28Z",
+   "input_tokens": 46,
+   "cache_creation_input_tokens": 70105,
+   "output_tokens": 8969,
+   "cache_read_input_tokens": 717480
   },
   "source": "session_reading 2026-11-23T11:59:02Z (week)",
   "by_task": {
@@ -121807,14 +121825,14 @@
     "estimated_bytes": 309075,
     "estimated_tokens": 906573,
     "usage_counting": "message_id",
-    "output_tokens": 57604,
-    "cache_creation_input_tokens": 267401,
-    "input_tokens": 216,
-    "cache_read_input_tokens": 7367423,
-    "worker_tokens": 6534676,
-    "worker_turns": 82,
-    "reviewer_tokens": 1157968,
-    "reviewer_turns": 26,
+    "output_tokens": 66573,
+    "cache_creation_input_tokens": 337506,
+    "input_tokens": 262,
+    "cache_read_input_tokens": 8084903,
+    "worker_tokens": 6878440,
+    "worker_turns": 93,
+    "reviewer_tokens": 1610804,
+    "reviewer_turns": 38,
     "last_model": "claude-opus-5-5"
    },
    "T819": {
@@ -121835,11 +121853,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-23T10:16:33Z",
-    "tokens": 6823528
+    "tokens": 6974396
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 204087706
+    "tokens": 204238574
    }
   },
   "session_reading": {
@@ -121850,7 +121868,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T12:27:29Z",
+ "updated_at": "2026-11-23T12:27:58Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

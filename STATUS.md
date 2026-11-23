@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-23T12:27:29Z by runner 188d33da48fb (actions).
+Updated 2026-11-23T12:27:58Z by runner 188d33da48fb (actions).
 
-**Building: T714 in progress since 11:39Z; 630 of 775 done; week 75% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T653 in progress since 11:56Z; 630 of 775 done; week 75% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 630 of 775 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T714 claimed 11:39Z, lease until 14:39Z; lane 3: T653 claimed 11:56Z, lease until 14:56Z; lane 4: T730 claimed 10:33Z, lease until 13:33Z; lane 5: T646 claimed 12:00Z, lease until 15:00Z
+- **Lane:** lane 3: T653 claimed 11:56Z, lease until 14:56Z; lane 4: T730 claimed 10:33Z, lease until 13:33Z; lane 5: T646 claimed 12:00Z, lease until 15:00Z
 - **Week:** 75% used, 39.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 12:07Z, 20 min before this update
 - **Keeper:** last ran 12:06Z, next wake 13:35Z
@@ -40,10 +40,11 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T714 | portals: a Confirm link sent by text is marked text-started  | MERGE_PENDING | 2 | 47 min | 12:27Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
 | T819 | portals: her feedback words are scrubbed before they are sto | MERGE_PENDING | 1 | 54 min | 11:57Z |  |
 | T646 | site and server: the web chat's new-request limit counts the | check_failed | 2 | 54 min | 11:30Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T653 | licensing and server (harness): a typed BTR number is stored | check_failed | 1 | 117 min | 11:19Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
-| T714 | portals: a Confirm link sent by text is marked text-started  | check_failed | 1 | 95 min | 11:00Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
+| T714 | portals: a Confirm link sent by text is marked text-started  | check_failed | 1 | 95 min | 11:00Z |  |
 | T666 | jobs, quotes and server: GET /b/jobs/{j} serves the business | QUEUED | 1 | 2 h 1 min | 10:28Z | Reviewer after the findings round (head bf41c81b22bdbd874d7d53cb8ba64ca6bb0737cf): app/server/tests/job_page_route.rs (w |
 | T121 | Startup key checks, control router absent in live, supply-ch | check_failed | 3 | 103 min | 10:16Z | PLAN GAP: outside ownership: app/portals/src/update_channel.rs / T729 (owner) merged UpdatesForm/ConfirmForm without den |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | done | 5 | 82 min | 09:58Z | PLAN GAP: outside ownership: app/site/templates/request.html, app/site/static/site.css / At 1280x900 the /request chat s |
@@ -135,10 +136,9 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 2: T714 (lease until 2026-11-23T14:39:44Z)
 - lane 3: T653 (lease until 2026-11-23T14:56:55Z)
 - lane 4: T730 (lease until 2026-11-23T13:33:05Z)
 - lane 5: T646 (lease until 2026-11-23T15:00:48Z)
 
 ## Last usage reading
-- {"task": "T819", "at": "2026-11-23T11:57:55Z", "cache_read_input_tokens": 1757005, "input_tokens": 82, "cache_creation_input_tokens": 88100, "output_tokens": 22026}
+- {"task": "T714", "at": "2026-11-23T12:27:28Z", "input_tokens": 46, "cache_creation_input_tokens": 70105, "output_tokens": 8969, "cache_read_input_tokens": 717480}
