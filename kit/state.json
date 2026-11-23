@@ -26049,7 +26049,9 @@
     "T488",
     "T586",
     "T827",
-    "T828"
+    "T828",
+    "T838",
+    "T729"
    ],
    "status": "QUEUED",
    "attempts": 2,
@@ -26513,7 +26515,8 @@
     "T823",
     "T824",
     "T826",
-    "T799"
+    "T799",
+    "T838"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -80290,7 +80293,8 @@
     "T824",
     "T826",
     "T832",
-    "T803"
+    "T803",
+    "T838"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -80494,7 +80498,8 @@
     "T824",
     "T826",
     "T832",
-    "T803"
+    "T803",
+    "T838"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -85520,7 +85525,7 @@
   {
    "id": "T588",
    "deps": [
-    "T121"
+    "T838"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -112548,6 +112553,25 @@
     "tests/test_claims_stopped.py",
     "tests/test_runner_keeper.py"
    ]
+  },
+  {
+   "id": "T838",
+   "deps": [
+    "T345",
+    "T473",
+    "T100",
+    "T458",
+    "T526",
+    "T488",
+    "T586",
+    "T827",
+    "T828"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "strict-route-forms",
+   "type": "build",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -120129,7 +120153,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T04:08:23Z",
+ "updated_at": "2026-11-23T04:10:32Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -120228,7 +120252,7 @@
   ]
  },
  "runner_sha": "8871a83b785adc2a8f05e669d722847287fee4d2",
- "starter": "manual",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "bd3e4e9cdad1a2f89e518d825322af5b0372f74f",
