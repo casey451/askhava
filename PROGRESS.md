@@ -10411,3 +10411,4 @@
 - 2026-11-23T14:25:44Z runner 27e773fd53db (actions): {"T666": "IN_PROGRESS -> MERGE_PENDING"}
 - 2026-11-23T14:26:20Z runner 27e773fd53db (actions): {}
 - 2026-11-23T14:27:04Z runner f27e05243e49 (actions): {}
+- 2026-11-23T14:31:02Z runner f0dd474113d1 (actions): {"T222": "QUEUED -> IN_PROGRESS"}; T222 estimated 1.2M tokens (calibrated); week has 39.8M left (no five-hour budget, D-3056) after 2.2M still running in another lane (session_reading 2026-11-23T14:26:19Z (week)); claimed
