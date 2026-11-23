@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T15:46:10Z by runner 98e09a354256 (actions).
+Updated 2026-11-23T15:47:18Z by runner 07d139ab685c (actions).
 
 **Building: T714 in progress since 14:21Z; 633 of 777 done; week 78% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 633 of 777 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T714 claimed 14:21Z, lease until 17:21Z; lane 2: T121 claimed 15:11Z, lease until 18:11Z; lane 3: T745 claimed 14:48Z, lease until 17:48Z; lane 4: T649 claimed 15:45Z, lease until 18:45Z; lane 5: T782 claimed 15:18Z, lease until 18:18Z
+- **Lane:** lane 1: T714 claimed 14:21Z, lease until 18:47Z; lane 2: T121 claimed 15:11Z, lease until 18:11Z; lane 3: T745 claimed 14:48Z, lease until 17:48Z; lane 4: T649 claimed 15:45Z, lease until 18:45Z; lane 5: T782 claimed 15:18Z, lease until 18:18Z
 - **Week:** 78% used, 32.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:40Z, 5 min before this update
+- **Last run:** 15:46Z, 1 min before this update
 - **Keeper:** last ran 15:39Z, next wake 15:59Z
 
 ## Needs attention
@@ -138,7 +138,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T714 (lease until 2026-11-23T17:21:00Z)
+- T714 (lease until 2026-11-23T18:47:18Z)
 - lane 2: T121 (lease until 2026-11-23T18:11:59Z)
 - lane 3: T745 (lease until 2026-11-23T17:48:35Z)
 - lane 4: T649 (lease until 2026-11-23T18:45:21Z)
