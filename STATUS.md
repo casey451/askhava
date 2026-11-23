@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-23T23:57:16Z by runner c885e3e908d7 (actions).
+Updated 2026-11-23T23:57:58Z by runner c885e3e908d7 (actions).
 
 **Building: T737 in progress since 22:49Z; 642 of 779 done; week 86% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 642 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T737 claimed 22:49Z, lease until 01:49Z; lane 2: T716 claimed 22:02Z, lease until 02:45Z; lane 3: T738 claimed 23:08Z, lease until 02:08Z
+- **Lane:** lane 1: T737 claimed 22:49Z, lease until 01:49Z; lane 3: T738 claimed 23:08Z, lease until 02:08Z
 - **Week:** 86% used, 20.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 23:57Z, 0 min before this update
 - **Keeper:** last ran 23:45Z, next wake 01:51Z
@@ -19,6 +19,7 @@ Updated 2026-11-23T23:57:16Z by runner c885e3e908d7 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T716 | intake: the dispatcher's trade questions at step 5: "Which f | MERGE_PENDING | 4 | 114 min | 23:57Z | PLAN GAP: outside ownership: app/intake/src/conversation.rs (purge_child, ~348-362), app/intake/src/models.rs (purge_req |
 | T649 | intake, site and server: after the code, the web chat's name | MERGE_PENDING | 1 | 2 h 19 min | 22:52Z |  |
 | T819 | portals: her feedback words are scrubbed before they are sto | done | 3 | 85 min | 22:43Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T816 | messaging: the data-request confirm link goes by email to th | done | 1 | 112 min | 22:39Z |  |
@@ -51,7 +52,7 @@ Updated 2026-11-23T23:57:16Z by runner c885e3e908d7 (actions).
 | T588 | portals and server: a refused business sign-up keeps every f | done | 1 | 101 min | 08:44Z |  |
 | T730 | messaging: a homeowner who chose email gets each quote updat | BLOCKED | 2 | 2 min | 08:25Z |  |
 | T730 | messaging: a homeowner who chose email gets each quote updat | QUEUED | 1 | 2 h 19 min | 08:20Z |  |
-| T716 | intake: the dispatcher's trade questions at step 5: "Which f | BLOCKED | 3 | 81 min | 08:17Z | PLAN GAP: outside ownership: app/intake/src/conversation.rs (purge_child, ~348-362), app/intake/src/models.rs (purge_req |
+| T716 | intake: the dispatcher's trade questions at step 5: "Which f | BLOCKED | 3 | 81 min | 08:17Z |  |
 | T835 | runner (harness): a cancelled run on a superseded head neith | done | 1 | 52 min | 07:24Z |  |
 | T716 | intake: the dispatcher's trade questions at step 5: "Which f | QUEUED | 2 | 2 h 6 min | 06:48Z |  |
 | T611 | portals: depth, type and press on the portal screens through | done | 1 | 2 h 20 min | 06:24Z |  |
@@ -128,8 +129,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T737 (lease until 2026-11-24T01:49:24Z)
-- lane 2: T716 (lease until 2026-11-24T02:45:04Z)
 - lane 3: T738 (lease until 2026-11-24T02:08:57Z)
 
 ## Last usage reading
-- {"task": "T649", "at": "2026-11-23T22:52:47Z", "output_tokens": 85056, "input_tokens": 258, "cache_creation_input_tokens": 256403, "cache_read_input_tokens": 17279929}
+- {"task": "T716", "at": "2026-11-23T23:57:13Z", "output_tokens": 70348, "cache_creation_input_tokens": 266863, "cache_read_input_tokens": 10821675, "input_tokens": 207}
