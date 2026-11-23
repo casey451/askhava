@@ -6,8 +6,8 @@
 //! latest daily check, the one `holder_for` reads, only when it showed Active (the number as
 //! checked, the Arizona day of that check and the original-issue year the ROC list gives), for an
 //! agency category its `business_license` row unless a homeowner's report paused it, as
-//! `holder_for` reads a paused row as reported wrong (the day it was recorded as the check day; a
-//! pest row is self-attested, so `licensed_lines` gives it no check line, LIC-047; D-3646). With
+//! `holder_for` reads a paused row as reported wrong, or it is a `typed_unchecked` BTR number nobody
+//! checked (D-4310) (the day it was recorded as the check day; a pest row is self-attested, so `licensed_lines` gives it no check line, LIC-047; D-3646). With
 //! none of these the card is a no-license card: whether the latest city list matches the business
 //! and the year of the matching entry, when it has one (LIC-038, D-3646). On an ROC category whose
 //! latest check exists and did not show Active (a lapse) the card makes no city-license claim
@@ -131,8 +131,13 @@ async fn roc_facts(
     }))
 }
 
-/// LIC-034, LIC-047, D-3646: the business's `agency` license row, its recorded day as the check
-/// day; the row carries no issue year. A row a homeowner's report paused gives none.
+/// LIC-034, LIC-047, CARD-015, WORD-003, D-3646, D-4310: the business's `agency` license row, its
+/// recorded day as the check day; the row carries no issue year. A row a homeowner's report paused
+/// gives none, and so does a `typed_unchecked` number (a BTR number typed at sign-up), which no one
+/// checked. The wording rule: a card says a license "showed Active ... when we checked on <date>"
+/// only from a stored check of that number against the agency's own source, <date> being that
+/// check's day, never the sign-up day; no "verified", "certified by" the brand or "vetted". A
+/// `pest_management` row stays `self_attested` and keeps LIC-047's line.
 async fn agency_facts(
     conn: &mut PgConnection,
     business: Uuid,
@@ -141,7 +146,7 @@ async fn agency_facts(
     let row = sqlx::query!(
         r#"SELECT license_number, recorded_at AS "recorded_at!: jiff_sqlx::Timestamp"
            FROM licensing.business_license WHERE business_id = $1 AND agency = $2
-                 AND paused_at IS NULL"#,
+                 AND paused_at IS NULL AND verification <> 'typed_unchecked'"#,
         business,
         agency.code(),
     )
