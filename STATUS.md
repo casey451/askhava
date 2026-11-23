@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T00:42:32Z by runner fbf6b9f5d0d8 (actions).
+Updated 2026-11-23T00:46:09Z by runner fbf6b9f5d0d8 (actions).
 
 **Building: T645 in progress since 23:51Z; 617 of 774 done; week 69% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-23T00:42:32Z by runner fbf6b9f5d0d8 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T645 claimed 23:51Z, lease until 02:51Z; lane 3: T832 claimed 23:50Z, lease until 02:50Z; lane 4: T712 claimed 00:09Z, lease until 03:09Z
 - **Week:** 69% used, 52.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:42Z, 0 min before this update
+- **Last run:** 00:46Z, 0 min before this update
 - **Keeper:** last ran 00:42Z, next wake 02:52Z
 
 ## Needs attention
@@ -78,7 +78,6 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 | T725 | site: the home page shows the texting number with its consen | BLOCKED | 1 | 21 min | 01:24Z |  |
 | T609 | site (harness): the D-4246 polish on the footer, how it work | BLOCKED | 1 | 2 min | 00:57Z |  |
 | T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | QUEUED | 2 | 106 min | 00:48Z |  |
-| T118 | Journey J3 (operator) keyboard-only, with closing checks | QUEUED | 1 | 2 h 35 min | 00:44Z |  |
 
 ### Plan and harness merges on main
 - 00:07Z Plan: pre-flight fixes (D-5567); T837 keeper stage gate, job 32 and copy-flag fixes (D-5568) (#1368)
