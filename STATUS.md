@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-23T17:54:05Z by runner f488639937aa (actions).
+Updated 2026-11-23T17:54:34Z by runner 0aedbd3769e8 (actions).
 
-**Building: T222 in progress since 16:16Z; 636 of 777 done; week 80% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T649 in progress since 15:45Z; 636 of 777 done; week 80% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 636 of 777 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T222 claimed 16:16Z, lease until 20:13Z; lane 4: T649 claimed 15:45Z, lease until 18:45Z
+- **Lane:** lane 4: T649 claimed 15:45Z, lease until 18:45Z
 - **Week:** 80% used, 31.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 17:51Z, 3 min before this update
 - **Keeper:** last ran 17:50Z, next wake 18:10Z
@@ -15,15 +15,16 @@ Updated 2026-11-23T17:54:05Z by runner f488639937aa (actions).
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T836 (since 2026-11-23T07:59:33Z, no attempt used; a plan change fixes it): T836: kit/runner_log.jsonl is named by D-500, but no task owns it and it does not exist
-- Strict plan check red: 40 problem(s) on tasks still to run (+523 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 42 problem(s) on tasks still to run (+522 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T222 | Journeys J1 and J2, the full variants: web chat, photos, que | QUEUED | 2 | 97 min | 17:54Z | Reviewer after the fix round still ended REVIEW-VERDICT: FINDINGS over 0aedbd3769e83a983d24d694c7abe05f8773a57a: / 1. do |
 | T782 | server: the released job's page shows its real job number | done | 1 | 97 min | 16:56Z |  |
 | T121 | Startup key checks, control router absent in live, supply-ch | done | 4 | 100 min | 16:52Z | PLAN GAP: outside ownership: app/portals/src/update_channel.rs / T729 (owner) merged UpdatesForm/ConfirmForm without den |
 | T714 | portals: a Confirm link sent by text is marked text-started  | done | 4 | 88 min | 15:49Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
-| T222 | Journeys J1 and J2, the full variants: web chat, photos, que | QUEUED | 1 | 67 min | 15:38Z | Reviewer after the fix round still ended REVIEW-VERDICT: FINDINGS over d606d4fe25f8dbb5cc8d2aa0c66478c5d81a2d2c: / 1. do |
+| T222 | Journeys J1 and J2, the full variants: web chat, photos, que | QUEUED | 1 | 67 min | 15:38Z |  |
 | T666 | jobs, quotes and server: GET /b/jobs/{j} serves the business | done | 2 | 67 min | 14:25Z | Reviewer after the findings round (head bf41c81b22bdbd874d7d53cb8ba64ca6bb0737cf): app/server/tests/job_page_route.rs (w |
 | T819 | portals: her feedback words are scrubbed before they are sto | check_failed | 2 | 68 min | 13:45Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T646 | site and server: the web chat's new-request limit counts the | done | 3 | 99 min | 13:40Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
@@ -115,8 +116,8 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T222 (lease until 2026-11-23T20:13:52Z)
+- nothing
 - lane 4: T649 (lease until 2026-11-23T18:45:21Z)
 
 ## Last usage reading
-- {"task": "T782", "at": "2026-11-23T16:56:32Z", "cache_read_input_tokens": 5304989, "cache_creation_input_tokens": 193560, "output_tokens": 42563, "input_tokens": 194}
+- {"task": "T222", "at": "2026-11-23T17:54:27Z", "output_tokens": 208324, "cache_read_input_tokens": 54231359, "cache_creation_input_tokens": 580741, "input_tokens": 742}
