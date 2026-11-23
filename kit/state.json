@@ -119122,7 +119122,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T00:10:57Z",
+ "updated_at": "2026-11-23T00:24:48Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -119221,7 +119221,7 @@
   ]
  },
  "runner_sha": "bd3e4e9cdad1a2f89e518d825322af5b0372f74f",
- "starter": "actions",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "1a1917eed4659785348905d19e7671b0b95d3b71",
@@ -119515,7 +119515,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 5574,
+ "next_decision": 5575,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
@@ -121404,6 +121404,12 @@
    "at": "2026-11-22T23:39:00Z",
    "reason": "T837 (Fable: keeper uses the real stage gate, STATUS CLAIMS STOPPED) + job 32 fixes (T803, T123) + copy flags (T719, T816, T379, T683, T687, T689)",
    "session": "manual-74ec029e998d"
+  },
+  {
+   "number": 5574,
+   "at": "2026-11-23T00:24:48Z",
+   "reason": "T121 plan gap (attempt 2): SEC-010 scan finds forms in files it does not own, budget ~1000 lines; split and ownership",
+   "session": "manual-3dc38d8794a6"
   }
  ],
  "lanes_fallback_history": [
