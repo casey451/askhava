@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-23T00:33:36Z by runner 9d8af0db8a9f (actions).
+Updated 2026-11-23T00:34:09Z by runner 9d8af0db8a9f (actions).
 
 **Building: T725 in progress since 23:49Z; 617 of 774 done; week 68% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 617 of 774 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T725 claimed 23:49Z, lease until 02:49Z; lane 2: T645 claimed 23:51Z, lease until 02:51Z; lane 3: T832 claimed 23:50Z, lease until 02:50Z; lane 4: T712 claimed 00:09Z, lease until 03:09Z; lane 5: T675 claimed 23:48Z, lease until 02:48Z
+- **Lane:** lane 1: T725 claimed 23:49Z, lease until 02:49Z; lane 2: T645 claimed 23:51Z, lease until 02:51Z; lane 3: T832 claimed 23:50Z, lease until 02:50Z; lane 4: T712 claimed 00:09Z, lease until 03:09Z
 - **Week:** 68% used, 52.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 00:25Z, 8 min before this update
 - **Keeper:** last ran 00:04Z, next wake 00:24Z
@@ -24,8 +24,9 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T675 | intake and server (harness): the dispatcher asks for photos  | MERGE_PENDING | 4 | 45 min | 00:33Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T121 | Startup key checks, control router absent in live, supply-ch | BLOCKED | 2 | 12 min | 00:03Z | PLAN GAP: outside ownership: app/portals/src/update_channel.rs / T729 (owner) merged UpdatesForm/ConfirmForm without den |
-| T675 | intake and server (harness): the dispatcher asks for photos  | resync | 4 | 81 min | 17:03Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T675 | intake and server (harness): the dispatcher asks for photos  | resync | 4 | 81 min | 17:03Z |  |
 | T590 | calls, picks and server: the who's-calling and missed-call t | check_failed | 1 | 118 min | 16:40Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T122 | docs/account-checklist.md: Part 1 test accounts, Part 2 busi | QUEUED | 1 | 88 min | 16:23Z | Reviewer after the findings round (head d65c4896894680459870359165740cf8b3a2bf57) still ended FINDINGS: / 1. tests/docs/ |
 | T725 | site: the home page shows the texting number with its consen | resync | 4 | 82 min | 16:15Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
@@ -136,7 +137,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T645 (lease until 2026-11-23T02:51:34Z)
 - lane 3: T832 (lease until 2026-11-23T02:50:02Z)
 - lane 4: T712 (lease until 2026-11-23T03:09:54Z)
-- lane 5: T675 (lease until 2026-11-23T02:48:28Z)
 
 ## Last usage reading
-- {"task": "T121", "at": "2026-11-23T00:03:26Z", "output_tokens": 62893, "cache_read_input_tokens": 8443555, "cache_creation_input_tokens": 183622, "input_tokens": 192}
+- {"task": "T675", "at": "2026-11-23T00:33:34Z", "input_tokens": 73, "cache_read_input_tokens": 1253461, "cache_creation_input_tokens": 89048, "output_tokens": 14750}
