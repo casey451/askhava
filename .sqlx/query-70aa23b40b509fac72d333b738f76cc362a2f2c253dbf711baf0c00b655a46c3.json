@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE businesses.team_member SET step_up_at = $3, step_up_session = $4 WHERE id = $2 AND business_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Timestamptz",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "70aa23b40b509fac72d333b738f76cc362a2f2c253dbf711baf0c00b655a46c3"
+}

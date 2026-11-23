@@ -209,7 +209,8 @@ pub async fn verified_by_link(
     db(q.execute(conn).await).map(|_| ())
 }
 
-/// SEC-038: records that `by` passed a Verify code to their verified phone or email at `at`.
+/// SEC-038: records that `by` passed a Verify code to their verified phone or email at `at`,
+/// bound to no session (`step_up_session` null, D-5314).
 ///
 /// # Errors
 /// [`EmailCheckError::Database`].
@@ -219,12 +220,56 @@ pub async fn record_step_up(
     at: Timestamp,
 ) -> Result<(), EmailCheckError> {
     let q = sqlx::query!(
-        "UPDATE businesses.team_member SET step_up_at = $3 WHERE id = $2 AND business_id = $1",
+        "UPDATE businesses.team_member SET step_up_at = $3, step_up_session = NULL \
+         WHERE id = $2 AND business_id = $1",
         by.business,
         by.member,
         at.to_sqlx() as _
     );
     db(q.execute(conn).await).map(|_| ())
+}
+
+/// SEC-038, D-5314: records that `by` passed a Verify code at `at` in the portal session
+/// `session` (its `portals.session` row ID), writing both columns in one statement.
+///
+/// # Errors
+/// [`EmailCheckError::Database`].
+pub async fn record_session_step_up(
+    conn: &mut PgConnection,
+    by: Acting,
+    session: Uuid,
+    at: Timestamp,
+) -> Result<(), EmailCheckError> {
+    let q = sqlx::query!(
+        "UPDATE businesses.team_member SET step_up_at = $3, step_up_session = $4 \
+         WHERE id = $2 AND business_id = $1",
+        by.business,
+        by.member,
+        at.to_sqlx() as _,
+        session
+    );
+    db(q.execute(conn).await).map(|_| ())
+}
+
+/// SEC-038, D-5314: `by`'s last step-up time and the portal session it was passed in (`None` for
+/// none, or a step-up bound to no session); `(None, None)` for a member not on `by.business`.
+///
+/// # Errors
+/// [`EmailCheckError::Database`].
+pub async fn step_up_record(
+    conn: &mut PgConnection,
+    by: Acting,
+) -> Result<(Option<Timestamp>, Option<Uuid>), EmailCheckError> {
+    let q = sqlx::query!(
+        "SELECT step_up_at, step_up_session FROM businesses.team_member \
+         WHERE id = $2 AND business_id = $1",
+        by.business,
+        by.member
+    );
+    let row = db(q.fetch_optional(conn).await)?;
+    Ok(row.map_or((None, None), |r| {
+        (r.step_up_at.map(|t| t.to_jiff()), r.step_up_session)
+    }))
 }
 
 /// SEC-024 (D-1850): writes the event's row on the member whose address changes (field
@@ -605,4 +650,49 @@ pub fn returned_line(address: &str) -> String {
          requests. Add or fix an email address.",
         brand().display_name()
     )
+}
+
+#[cfg(test)]
+mod tests {
+    //! The step-up's two columns (SEC-038, D-5314).
+
+    use super::*;
+
+    type Db = sqlx::pool::PoolConnection<sqlx::Postgres>;
+
+    /// SEC-038, D-5314: `record_session_step_up` writes the time and the session together, and
+    /// `record_step_up` writes its time and clears the session.
+    #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+    async fn sec_038_session_step_up_writes_both_and_plain_clears_the_session(mut db: Db) {
+        let at = Timestamp::from_second(1_790_000_000).expect("time");
+        let business = crate::service::create(&mut db, false, at).await;
+        let business = business.expect("business");
+        let member = crate::team::add_owner(&mut db, business, Uuid::from_u128(0xd1), at).await;
+        let by = Acting {
+            business,
+            member: member.expect("owner"),
+        };
+        let session = Uuid::from_u128(0x5e55);
+        let later = at.checked_add(SignedDuration::from_mins(1)).expect("time");
+        record_session_step_up(&mut db, by, session, at)
+            .await
+            .expect("record");
+        assert_eq!(
+            step_up_record(&mut db, by).await.expect("read"),
+            (Some(at), Some(session))
+        );
+        record_step_up(&mut db, by, later).await.expect("record");
+        assert_eq!(
+            step_up_record(&mut db, by).await.expect("read"),
+            (Some(later), None)
+        );
+        let stranger = Acting {
+            business: Uuid::from_u128(0xb2),
+            ..by
+        };
+        assert_eq!(
+            step_up_record(&mut db, stranger).await.expect("read"),
+            (None, None)
+        );
+    }
 }

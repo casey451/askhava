@@ -708,6 +708,7 @@ mod db_tests {
             business: Uuid::from_u128(0x5ca1_ab1e_0000_4000_8000_0000_0000_00b1),
             owner: true,
             roles: (true, true),
+            session: Uuid::new_v4(),
         };
         let key = SecretString::from("fake-key-for-tests".to_owned());
         let postal = ("PO Box 1234, Faketown, AZ 00000", MailboxKind::PoBox);

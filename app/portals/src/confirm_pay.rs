@@ -2222,6 +2222,7 @@ mod tests {
             business: Uuid::from_u128(business),
             owner,
             roles,
+            session: Uuid::new_v4(),
         }
     }
 
