@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO intake.conversation (homeowner_id, language, first_inbox_id, consent_template, consent_sent_at, opened_at) VALUES ($1, 'en', gen_random_uuid(), 'consent_first', now(), now()) RETURNING id",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "intake.conversation",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "4c410d2098811e9fa25dfc7b418ab63fabb6cecdeb3da9fb2222a1fb99a22a17"
+}
