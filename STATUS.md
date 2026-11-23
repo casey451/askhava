@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T22:39:33Z by runner 52a398b44e1e (actions).
+Updated 2026-11-23T22:40:13Z by runner 52a398b44e1e (actions).
 
 **Building: T716 in progress since 22:02Z; 640 of 778 done; week 85% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 640 of 778 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T716 claimed 22:02Z, lease until 01:02Z; lane 3: T816 claimed 20:47Z, lease until 23:47Z; lane 4: T819 claimed 21:17Z, lease until 00:17Z; lane 5: T649 claimed 20:33Z, lease until 23:33Z
+- **Lane:** lane 2: T716 claimed 22:02Z, lease until 01:02Z; lane 4: T819 claimed 21:17Z, lease until 00:17Z; lane 5: T649 claimed 20:33Z, lease until 23:33Z
 - **Week:** 85% used, 19.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:04Z, 35 min before this update
+- **Last run:** 22:04Z, 36 min before this update
 - **Keeper:** last ran 22:00Z, next wake 23:35Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Updated 2026-11-23T22:39:33Z by runner 52a398b44e1e (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T816 | messaging: the data-request confirm link goes by email to th | MERGE_PENDING | 1 | 112 min | 22:39Z |  |
 | T737 | portals, ai and server: the owner records the AI provider's  | MERGE_PENDING | 1 | 65 min | 21:59Z |  |
 | T745 | intake: a reader for a job's intake answers through `intake: | done | 1 | 2 h 19 min | 21:22Z |  |
 | T836 | ci and runner workflow (harness): the backup-runner gate ski | BLOCKED | 1 | 11 min | 20:40Z | PLAN GAP: tests/test_runner_five_lanes.py:176 (test_no_workflow_a_hand_in_starts_cancels_another_lanes_run_when_five_han |
@@ -126,9 +127,8 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T716 (lease until 2026-11-24T01:02:37Z)
-- lane 3: T816 (lease until 2026-11-23T23:47:02Z)
 - lane 4: T819 (lease until 2026-11-24T00:17:37Z)
 - lane 5: T649 (lease until 2026-11-23T23:33:44Z)
 
 ## Last usage reading
-- {"task": "T737", "at": "2026-11-23T21:59:03Z", "cache_read_input_tokens": 12082277, "input_tokens": 218, "output_tokens": 73432, "cache_creation_input_tokens": 253639}
+- {"task": "T816", "at": "2026-11-23T22:39:31Z", "cache_read_input_tokens": 5249423, "cache_creation_input_tokens": 149488, "input_tokens": 142, "output_tokens": 45304}
