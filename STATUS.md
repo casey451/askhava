@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T17:55:19Z by runner f488639937aa (actions).
+Updated 2026-11-23T17:56:02Z by runner 0aedbd3769e8 (actions).
 
 **Building: T649 in progress since 15:45Z; 636 of 777 done; week 80% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -17,7 +17,7 @@ Updated 2026-11-23T17:55:19Z by runner f488639937aa (actions).
 - PLAN GAP T688 (since 2026-11-23T17:55:08Z, no attempt used; a plan change fixes it): T688: dependency T121 is DONE but its owned file tests/security/tests/startup_and_supply.rs is not on main
 - PLAN GAP T812 (since 2026-11-23T17:55:08Z, no attempt used; a plan change fixes it): T812: dependency T121 is DONE but its owned file tests/security/tests/startup_and_supply.rs is not on main
 - PLAN GAP T836 (since 2026-11-23T07:59:33Z, no attempt used; a plan change fixes it): T836: kit/runner_log.jsonl is named by D-500, but no task owns it and it does not exist
-- Strict plan check red: 40 problem(s) on tasks still to run (+523 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 42 problem(s) on tasks still to run (+522 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
