@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T08:59:52Z by runner 5ee3d4ffb646 (actions).
+Updated 2026-11-23T09:00:23Z by runner 5ee3d4ffb646 (actions).
 
 **Building: T121 in progress since 08:33Z; 628 of 775 done; week 73% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-23T08:59:52Z by runner 5ee3d4ffb646 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T121 claimed 08:33Z, lease until 11:33Z; lane 3: T666 claimed 08:27Z, lease until 11:27Z; lane 4: T118 claimed 08:35Z, lease until 11:35Z
 - **Week:** 73% used, 41.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:46Z, 13 min before this update
+- **Last run:** 09:00Z, 0 min before this update
 - **Keeper:** last ran 08:45Z, next wake 11:01Z
 
 ## Needs attention
@@ -68,7 +68,6 @@ Evidence: last_quote_text (quote_text_sent.rs:45-52) reads only messaging.outbox
 | T803 | messaging (harness): an opted-out number gets no HELP reply; | BLOCKED | 3 | 25 min | 10:25Z |  |
 | T589 | intake and portals: the pick review page is shown in her req | check_failed | 1 | 53 min | 10:04Z |  |
 | T725 | site: the home page shows the texting number with its consen | check_failed | 2 | 57 min | 09:57Z |  |
-| T610 | site: the D-4246 polish on the Spanish pages, the legal page | check_failed | 1 | 39 min | 09:00Z |  |
 
 ### Plan and harness merges on main
 - 07:11Z Plan: T716 owns cards_out.rs so the card send uses the counted pairs (D-5606) (#1382)
