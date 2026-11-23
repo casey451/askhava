@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T01:57:41Z by runner a58d28db8543 (actions).
+Updated 2026-11-23T01:58:31Z by runner a58d28db8543 (actions).
 
 **Building: T645 in progress since 23:51Z; 620 of 774 done; week 70% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 620 of 774 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T645 claimed 23:51Z, lease until 02:51Z; lane 3: T712 claimed 01:56Z, lease until 04:56Z; lane 5: T716 claimed 01:31Z, lease until 04:31Z
-- **Week:** 70% used, 50.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:56Z, 1 min before this update
+- **Lane:** lane 2: T645 claimed 23:51Z, lease until 02:51Z; lane 3: T712 claimed 01:56Z, lease until 04:56Z; lane 4: T834 claimed 01:58Z, lease until 04:58Z; lane 5: T716 claimed 01:31Z, lease until 04:31Z
+- **Week:** 70% used, 49.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 01:57Z, 0 min before this update
 - **Keeper:** last ran 01:55Z, next wake 02:15Z
 
 ## Needs attention
@@ -113,7 +113,7 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-23T01:55:16Z (week)): week: 143.6M used, 50.4M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T18:42:24Z.
+- Pacing (session_reading 2026-11-23T01:55:16Z (week)): week: 145.0M used, 49.0M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T18:43:41Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -131,6 +131,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - nothing
 - lane 2: T645 (lease until 2026-11-23T02:51:34Z)
 - lane 3: T712 (lease until 2026-11-23T04:56:55Z)
+- lane 4: T834 (lease until 2026-11-23T04:58:11Z)
 - lane 5: T716 (lease until 2026-11-23T04:31:05Z)
 
 ## Last usage reading
