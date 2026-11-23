@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T13:59:45Z by runner 3e3b52bf8012 (actions).
+Updated 2026-11-23T14:15:15Z by runner f0dd474113d1 (actions).
 
-**Building: T666 in progress since 13:17Z; 630 of 777 done; week 76% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T666 in progress since 13:17Z; 631 of 777 done; week 76% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 630 of 777 build tasks (owner gates not counted)
+- **Tasks done:** 631 of 777 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T666 claimed 13:17Z, lease until 16:17Z
 - **Week:** 76% used, 39.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:59Z, 0 min before this update
+- **Last run:** 14:00Z, 15 min before this update
 - **Keeper:** last ran 13:59Z, next wake 14:19Z
 
 ## Needs attention
@@ -41,7 +41,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T819 | portals: her feedback words are scrubbed before they are sto | check_failed | 2 | 68 min | 13:45Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
-| T646 | site and server: the web chat's new-request limit counts the | MERGE_PENDING | 3 | 99 min | 13:40Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
+| T646 | site and server: the web chat's new-request limit counts the | done | 3 | 99 min | 13:40Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T730 | messaging: a homeowner who chose email gets each quote updat | check_failed | 3 | 2 h 46 min | 13:19Z | PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs / Evidence: last_quote_text (quote_text_sent.rs:45-52) |
 | T714 | portals: a Confirm link sent by text is marked text-started  | BLOCKED | 3 | 36 min | 13:10Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
 | T653 | licensing and server (harness): a typed BTR number is stored | MERGE_PENDING | 2 | 65 min | 13:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
@@ -82,7 +82,6 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 | T831 | site: the /request start screen's words box sits fully insid | done | 1 | 107 min | 16:13Z |  |
 | T729 | portals and privacy: the quote page offers updates by email  | done | 3 | 92 min | 16:10Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T397 | server and portals: the owner approves or declines a member- | done | 2 | 2 h 0 min | 15:12Z | PLAN GAP: outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per p |
-| T833 | pre-hand-in gate test (harness): the Ally-step test holds th | done | 1 | 65 min | 14:05Z |  |
 
 ### Plan and harness merges on main
 - 13:33Z Plan: Email-only quote updates and counts (T840), under-13 purge completeness (T839), T716 test precondition (D-5639) (#1399)
@@ -95,7 +94,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Progress (requirements verified)
 
 **Requirements verified:** 402 of 735 (54.7%) · partial 320 · unstarted 13
-**Tasks merged (throughput only):** 630 of 775
+**Tasks merged (throughput only):** 631 of 777
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -131,7 +130,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 273 of 349 done
+- stage 5: 274 of 349 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
