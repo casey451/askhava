@@ -7,7 +7,9 @@
 //! own job's UUID is a 303 to its number's page; with her business's accepted pick a "Confirm and
 //! billing" member (also through a notice link's sign-in) gets a 303 to `/b/picks/{pick}` and a
 //! "Cards and quotes" member the page with the closed line; a withdrawn, never-confirmed quote
-//! offers "Send a new quote" (D-5619). People sign in through `portals`' emailed-link sign-in, as
+//! offers "Send a new quote" (D-5619). The page offers "Not a fit for us" with its four reasons,
+//! and a tap posted through T306's route is recorded, changes no routing or fee and links back to
+//! the page (PICK-057, T668, D-5387). People sign in through `portals`' emailed-link sign-in, as
 //! `cant_take_route.rs` does. Every name, phone, street, ID and key is fake.
 
 use std::collections::BTreeSet;
@@ -27,13 +29,13 @@ use askhava_payments::api::{EntryKind, LedgerEntry, NewEntry, ledger_append, no_
 use askhava_picks::api::{PagePick, Settled, page_pick, settle};
 use askhava_portals::api::{
     CookieJar, PortalsError, SIGNIN_LINK_ROUTE, SIGNIN_ROUTE, SignIn, SignInAddress, SignInMail,
-    ensure_pre_session, signin_post, signin_request,
+    csrf_token, ensure_pre_session, reasons, signin_post, signin_request,
 };
 use askhava_privacy::api::{NewContact, PhotoSeal, Vault, clean, store_contact, store_photo};
 use askhava_quotes::api::{
     CardBusiness, CardFacts, CardJob, CardParts, DEFAULT_MIN_WORDS, Format, KeptCard, OfferTown,
-    Place, Price, QuoteForm, QuoteRules, build_card, card_digest, keep_card, mark_card_sent,
-    parse_quote, send_cards, submit_quote, withdraw_quote,
+    Place, Price, QuoteForm, QuoteRules, build_card, card_digest, card_holders, keep_card,
+    mark_card_sent, parse_quote, quote_standing, send_cards, submit_quote, withdraw_quote,
 };
 use askhava_server::homeowner_portal::PhotoParts;
 use askhava_server::{RouterParts, build_router, webhooks};
@@ -693,4 +695,79 @@ async fn td_card_16_a_withdrawn_never_confirmed_quote_reads_as_withdrawn(pool: P
     assert!(page.text.contains("Send a new quote"), "{}", page.text);
     assert!(!page.text.contains("Withdraw your quote"));
     assert!(page.text.contains("Quotes so far: 0."));
+}
+
+/// What a "Not a fit for us" answer must leave alone on `job` for `business` (PICK-057): the
+/// card holders (routing), its own quote's standing and the ledger's entries (fees).
+async fn routing_and_fees(pool: &PgPool, (job, business): (Uuid, Uuid)) -> String {
+    let mut db = pool.acquire().await.expect("db");
+    let holders = card_holders(&mut db, job).await.expect("holders");
+    let standing = quote_standing(&mut db, (job, business)).await;
+    let ledger: i64 = sqlx::query_scalar("SELECT count(*) FROM payments.ledger_entry")
+        .fetch_one(&mut *db)
+        .await
+        .expect("ledger");
+    format!("{holders:?} {:?} {ledger}", standing.expect("standing"))
+}
+
+/// The stored "Not a fit for us" reasons of `business` on `job` (OPS-039's input).
+async fn fit_answers(pool: &PgPool, (job, business): (Uuid, Uuid)) -> Vec<String> {
+    sqlx::query_scalar(
+        "SELECT reason FROM ops.not_a_fit_answer WHERE job_id = $1 AND business_id = $2",
+    )
+    .bind(job)
+    .bind(business)
+    .fetch_all(pool)
+    .await
+    .expect("answers")
+}
+
+/// TD-CARD-16 (PICK-057, D-5387): the page offers "Not a fit for us" with its four one-tap
+/// reasons, posting to `/b/not-a-fit/<job>/job-page`; a tap is recorded, changes no routing or
+/// fee and its thanks page links back to `/b/jobs/<number>`; another business's tap on the same
+/// form is the not-found answer and records nothing.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_card_16_the_page_offers_not_a_fit(pool: PgPool) {
+    catalog(&pool).await;
+    let (x, jar) = owner(&pool).await;
+    let (y, other) = owner(&pool).await;
+    let (job, number) = carded(&pool, &[x.business]).await;
+    let app = app(&pool);
+    let page = open(&app, &number.to_string(), &jar).await;
+    assert_eq!(page.status, 200, "{}", page.text);
+    let action = format!("/b/not-a-fit/{job}/job-page");
+    assert!(
+        page.text.contains(&format!("action=\"{action}\"")),
+        "{}",
+        page.text
+    );
+    for (code, label) in reasons() {
+        assert!(page.text.contains(&format!("value=\"{code}\"")), "{code}");
+        assert!(page.text.contains(label), "{label}");
+    }
+    let before = routing_and_fees(&pool, (job, x.business)).await;
+    let tap = |who: &CookieJar| {
+        let csrf = csrf_token(who).expect("csrf");
+        let body = format!("csrf={csrf}&reason={}", reasons()[1].0);
+        request(&Method::POST, &action, who, body)
+    };
+    let theirs = answer(&app, tap(&other)).await;
+    assert_eq!(
+        (theirs.status, theirs.no_store),
+        (404, true),
+        "{}",
+        theirs.text
+    );
+    assert!(fit_answers(&pool, (job, y.business)).await.is_empty());
+    let thanks = answer(&app, tap(&jar)).await;
+    assert_eq!(thanks.status, 200, "{}", thanks.text);
+    assert!(thanks.text.contains("Thanks, got it"), "{}", thanks.text);
+    let back = format!("id=\"back-to-job\" href=\"/b/jobs/{number}\"");
+    assert!(thanks.text.contains(&back), "{}", thanks.text);
+    assert_eq!(
+        fit_answers(&pool, (job, x.business)).await,
+        [reasons()[1].0]
+    );
+    assert_eq!(routing_and_fees(&pool, (job, x.business)).await, before);
+    shows_none_of_her(&thanks.text);
 }
