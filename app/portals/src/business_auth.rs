@@ -249,6 +249,7 @@ pub struct BusinessPrincipal {
     pub(crate) business: Uuid,
     pub(crate) owner: bool,
     pub(crate) roles: (bool, bool),
+    pub(crate) session: Uuid,
 }
 
 impl BusinessPrincipal {
@@ -256,6 +257,13 @@ impl BusinessPrincipal {
     #[must_use]
     pub fn member(&self) -> Uuid {
         self.member
+    }
+
+    /// The `portals.session` row ID this person is signed in with (SEC-038, D-5314): never the
+    /// cookie or its hash; a business session keeps its row ID while it lives.
+    #[must_use]
+    pub fn session(&self) -> Uuid {
+        self.session
     }
 
     /// The business signed in to.
@@ -323,6 +331,7 @@ pub async fn business_principal(
             business,
             owner: m.owner,
             roles: (m.roles.cards_and_quotes(), m.roles.confirm_and_billing()),
+            session: session.id(),
         }))
 }
 
@@ -1193,4 +1202,36 @@ async fn start(
     };
     tx.commit().await.map_err(|_| PortalsError::Database)?;
     Ok(Some((jar, unset)))
+}
+
+#[cfg(test)]
+mod session_tests {
+    //! The principal's session (SEC-038, D-5314).
+
+    use askhava_businesses::api::{add_owner, create};
+
+    use super::*;
+
+    /// SEC-038, D-5314: the principal carries the `portals.session` row ID of its cookie.
+    #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+    async fn sec_038_the_principal_session_is_the_cookie_row(pool: PgPool) {
+        let mut db = pool.acquire().await.expect("conn");
+        let now = Timestamp::from_second(1_790_000_000).expect("time");
+        let business = create(&mut db, false, now).await.expect("business");
+        let member = add_owner(&mut db, business, Uuid::from_u128(0xd1), now).await;
+        let member = member.expect("owner");
+        let life = SignedDuration::from_hours(1);
+        let login = (Realm::Business, member);
+        let jar = start_session(&mut db, CookieJar::new(), login, life, now).await;
+        let jar = jar.expect("session");
+        let row = current_session(&mut db, &jar, now).await.expect("read");
+        let row = row.expect("live").id();
+        models::insert_business_session(&mut db, row, business)
+            .await
+            .expect("business session");
+        let who = business_principal(&mut db, &jar, now).await.expect("read");
+        let who = who.expect("principal");
+        assert_eq!((who.member(), who.business()), (member, business));
+        assert_eq!(who.session(), row);
+    }
 }

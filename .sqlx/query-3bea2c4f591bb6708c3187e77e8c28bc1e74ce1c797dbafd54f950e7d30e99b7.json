@@ -1,0 +1,41 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT step_up_at, step_up_session FROM businesses.team_member WHERE id = $2 AND business_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "step_up_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "businesses.team_member",
+            "name": "step_up_at"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "step_up_session",
+        "type_info": "Uuid",
+        "origin": {
+          "Table": {
+            "table": "businesses.team_member",
+            "name": "step_up_session"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      true,
+      true
+    ]
+  },
+  "hash": "3bea2c4f591bb6708c3187e77e8c28bc1e74ce1c797dbafd54f950e7d30e99b7"
+}
