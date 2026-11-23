@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T11:40:34Z by runner f27e05243e49 (actions).
+Updated 2026-11-23T11:50:51Z by runner f27e05243e49 (actions).
 
 **Building: T819 in progress since 11:03Z; 630 of 775 done; week 74% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-23T11:40:34Z by runner f27e05243e49 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T819 claimed 11:03Z, lease until 14:03Z; lane 2: T714 claimed 11:39Z, lease until 14:39Z; lane 4: T730 claimed 10:33Z, lease until 13:33Z
 - **Week:** 74% used, 43.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:39Z, 0 min before this update
+- **Last run:** 11:40Z, 10 min before this update
 - **Keeper:** last ran 11:39Z, next wake 11:59Z
 
 ## Needs attention
@@ -40,8 +40,8 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T646 | site and server: the web chat's new-request limit counts the | MERGE_PENDING | 2 | 54 min | 11:30Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
-| T653 | licensing and server (harness): a typed BTR number is stored | MERGE_PENDING | 1 | 117 min | 11:19Z |  |
+| T646 | site and server: the web chat's new-request limit counts the | check_failed | 2 | 54 min | 11:30Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
+| T653 | licensing and server (harness): a typed BTR number is stored | check_failed | 1 | 117 min | 11:19Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
 | T714 | portals: a Confirm link sent by text is marked text-started  | check_failed | 1 | 95 min | 11:00Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
 | T666 | jobs, quotes and server: GET /b/jobs/{j} serves the business | QUEUED | 1 | 2 h 1 min | 10:28Z | Reviewer after the findings round (head bf41c81b22bdbd874d7d53cb8ba64ca6bb0737cf): app/server/tests/job_page_route.rs (w |
 | T121 | Startup key checks, control router absent in live, supply-ch | check_failed | 3 | 103 min | 10:16Z | PLAN GAP: outside ownership: app/portals/src/update_channel.rs / T729 (owner) merged UpdatesForm/ConfirmForm without den |
