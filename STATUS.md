@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T19:33:37Z by runner 0c7342d7b13f (actions).
+Updated 2026-11-23T19:37:12Z by runner 0c7342d7b13f (actions).
 
-**Building: T745 in progress since 19:03Z; 636 of 777 done; week 82% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T745 in progress since 19:03Z; 637 of 777 done; week 82% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 636 of 777 build tasks (owner gates not counted)
+- **Tasks done:** 637 of 777 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T745 claimed 19:03Z, lease until 22:03Z; lane 4: T668 claimed 19:10Z, lease until 22:10Z
 - **Week:** 82% used, 27.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:33Z, 0 min before this update
+- **Last run:** 19:34Z, 3 min before this update
 - **Keeper:** last ran 19:33Z, next wake 19:53Z
 
 ## Needs attention
@@ -21,7 +21,7 @@ Updated 2026-11-23T19:33:37Z by runner 0c7342d7b13f (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T812 | businesses and portals: a passed step-up records the session | MERGE_PENDING | 1 | 89 min | 19:31Z |  |
-| T730 | messaging: a homeowner who chose email gets each quote updat | MERGE_PENDING | 4 | 76 min | 19:13Z | PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs / Evidence: last_quote_text (quote_text_sent.rs:45-52) |
+| T730 | messaging: a homeowner who chose email gets each quote updat | done | 4 | 76 min | 19:13Z | PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs / Evidence: last_quote_text (quote_text_sent.rs:45-52) |
 | T222 | Journeys J1 and J2, the full variants: web chat, photos, que | QUEUED | 2 | 97 min | 17:54Z | Reviewer after the fix round still ended REVIEW-VERDICT: FINDINGS over 0aedbd3769e83a983d24d694c7abe05f8773a57a: / 1. do |
 | T782 | server: the released job's page shows its real job number | done | 1 | 97 min | 16:56Z |  |
 | T121 | Startup key checks, control router absent in live, supply-ch | done | 4 | 100 min | 16:52Z | PLAN GAP: outside ownership: app/portals/src/update_channel.rs / T729 (owner) merged UpdatesForm/ConfirmForm without den |
@@ -75,7 +75,7 @@ Updated 2026-11-23T19:33:37Z by runner 0c7342d7b13f (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 404 of 735 (55.0%) · partial 318 · unstarted 13
-**Tasks merged (throughput only):** 636 of 777
+**Tasks merged (throughput only):** 637 of 777
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -111,7 +111,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 279 of 349 done
+- stage 5: 280 of 349 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done

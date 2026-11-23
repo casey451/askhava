@@ -105207,7 +105207,7 @@
     "T684",
     "T580"
    ],
-   "status": "MERGE_PENDING",
+   "status": "DONE",
    "attempts": 3,
    "slug": "update-email-sends",
    "type": "build",
@@ -105352,13 +105352,70 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 62,
      "head_sha": "bb380dcebc3420cc4524e65e2acb8e963e39d338",
-     "pr": null,
-     "checks": null,
+     "pr": 1408,
+     "checks": [
+      {
+       "name": "backup lane 3",
+       "conclusion": null
+      },
+      {
+       "name": "keeper",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "gate",
+       "conclusion": "success"
+      },
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "success"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-23T17:56:52Z",
      "ended_at": "2026-11-23T19:13:19Z",
-     "result": "MERGE_PENDING",
+     "result": "done",
      "usage": {
       "worker": {
        "tokens": 2147131,
@@ -105416,7 +105473,26 @@
    "runner_closed_prs": [
     1398
    ],
-   "merge_turn_since": "2026-11-23T19:20:53Z"
+   "merge_turn_since": "2026-11-23T19:20:53Z",
+   "merged_sha": "52bc3014e343580c1cb14f3883ac7222cb692dc1",
+   "merged_at": "2026-11-23T19:36:37Z",
+   "files": [
+    ".sqlx/query-9930d7fd97a40d14df9fb2f1c54a64dc3562ad9e10dd564a972254cc0f2b03ab.json",
+    ".sqlx/query-f5288c3d7b69daf1834d2fb1691647340942f49c047bf9a5403f9955aef6f6ae.json",
+    "app/messaging/CLAUDE.md",
+    "app/messaging/NOTES.md",
+    "app/messaging/src/api.rs",
+    "app/messaging/src/email.rs",
+    "app/messaging/src/lib.rs",
+    "app/messaging/src/service.rs",
+    "app/messaging/src/update_emails.rs",
+    "app/server/src/bin/worker.rs",
+    "app/server/src/lib.rs",
+    "app/server/src/main.rs",
+    "docs/architecture.md",
+    "docs/decisions.md",
+    "tests/integration/tests/update_email_sends.rs"
+   ]
   },
   {
    "id": "T731",
@@ -113194,7 +113270,7 @@
      }
     }
    ],
-   "reviewed_sha": "c48dd64152226c582b1bd8fc532d42f8ce68d3ef",
+   "reviewed_sha": "f3f85242c6cfb25ab2d8bedae59f3f26db5bd249",
    "review_lease": {
     "task": "T812",
     "session": "actions-45232888590",
@@ -113205,7 +113281,22 @@
     "enabled": true,
     "why": "auto-merge on #1409 (gh pr merge)",
     "head": "c48dd64152226c582b1bd8fc532d42f8ce68d3ef"
-   }
+   },
+   "merge_turn_since": "2026-11-23T19:37:01Z",
+   "update_merges": [
+    {
+     "from": "c48dd64152226c582b1bd8fc532d42f8ce68d3ef",
+     "to": "f3f85242c6cfb25ab2d8bedae59f3f26db5bd249",
+     "main": "52bc3014e343580c1cb14f3883ac7222cb692dc1",
+     "how": "runner",
+     "checks": {
+      "Twin": "success"
+     },
+     "at": "2026-11-23T19:37:01Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T813",
@@ -123143,7 +123234,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T19:33:37Z",
+ "updated_at": "2026-11-23T19:37:12Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
