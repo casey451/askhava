@@ -177,6 +177,9 @@ pub use crate::suppression_versions::{SuppressionVersionsError, check_suppressio
 pub use crate::templates::{
     Audience, Encoding, Language, Registry, Segments, TemplateError, Text, count_segments,
 };
+pub use crate::update_emails::{
+    TEXT_ONLY_UPDATES, UPDATE_EMAIL_PREFIX, UPDATE_TEMPLATES, queue_update_email, set_update_footer,
+};
 
 /// Renders template `id` for a person whose wanted language is `wanted`, filling each `{name}` from
 /// `values`. Spanish is used only while `spanish_conversations_on` is true (TXT-039, the owner-portal
