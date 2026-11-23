@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T04:05:25Z by runner ff057c83296d (actions).
+Updated 2026-11-23T04:08:23Z by runner 8871a83b785a (manual).
 
 **Building: T730 in progress since 03:34Z; 623 of 775 done; week 71% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,17 +8,14 @@ Updated 2026-11-23T04:05:25Z by runner ff057c83296d (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T730 claimed 03:34Z, lease until 06:34Z; lane 2: T834 claimed 03:31Z, lease until 06:31Z; lane 3: T803 claimed 03:47Z, lease until 06:47Z; lane 4: T611 claimed 04:04Z, lease until 07:04Z
 - **Week:** 71% used, 48.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:05Z, 0 min before this update
+- **Last run:** 04:05Z, 2 min before this update
 - **Keeper:** last ran 04:05Z, next wake 06:34Z
 
 ## Needs attention
-- BLOCKED T121: plan gap reported: PLAN GAP: outside ownership: app/portals/src/update_channel.rs
-T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and confirm_query ignores unknown keys; SEC-010 scan fails on them (F1 x2, F5 x1). Also: REFUSING_TRY_FROM lacks JobTypesForm (business_portal.rs), StepUpForm (business_step_up.rs), Posted<F> (address_changes.rs, business_guarded_changes.rs); CLASSIFIED lacks twilio_answer/vendor_error (adapters base.rs), run_help_notice, spanish_switch latest, photo_asks load; business_signup_route.rs posts roc_number/base_zip/radius/code names the templates lack, so per-route; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T121 --plan-fix D-### --reason "..."` (D-2859)
-- PLAN GAP T121 (since 2026-11-23T00:03:26Z, no attempt used; a plan change fixes it): outside ownership: app/portals/src/update_channel.rs
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T737 (since 2026-11-23T04:04:01Z, no attempt used; a plan change fixes it): T737: dependency T712 is DONE but its owned file app/portals/templates/owner_problem_reports.html is not on main; T737: dependency T712 is DONE but its owned file app/server/tests/owner_problem_route.rs is not on main
-- Strict plan check red: 38 problem(s) on tasks still to run (+513 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 37 problem(s) on tasks still to run (+513 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -81,31 +78,31 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 404 of 735 (55.0%) · partial 318 · unstarted 13
-**Tasks merged (throughput only):** 623 of 774
+**Requirements verified:** 338 of 735 (46.0%) · partial 384 · unstarted 13
+**Tasks merged (throughput only):** 623 of 775
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 25 | 10 | 0 | 35 |
+| accessibility | 23 | 12 | 0 | 35 |
 | ai | 7 | 19 | 3 | 29 |
-| businesses | 29 | 28 | 1 | 58 |
-| calls | 17 | 8 | 0 | 25 |
-| consent | 17 | 18 | 0 | 35 |
-| fees | 27 | 25 | 0 | 52 |
+| businesses | 28 | 29 | 1 | 58 |
+| calls | 15 | 10 | 0 | 25 |
+| consent | 13 | 22 | 0 | 35 |
+| fees | 26 | 26 | 0 | 52 |
 | intake | 11 | 32 | 0 | 43 |
 | job-cards | 16 | 8 | 0 | 24 |
 | licensing | 36 | 12 | 0 | 48 |
-| lifecycle | 21 | 7 | 0 | 28 |
-| messaging | 26 | 19 | 0 | 45 |
-| ops-recovery | 17 | 31 | 6 | 54 |
+| lifecycle | 17 | 11 | 0 | 28 |
+| messaging | 24 | 21 | 0 | 45 |
+| ops-recovery | 16 | 32 | 6 | 54 |
 | privacy | 12 | 19 | 0 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
-| quotes-pick | 34 | 22 | 0 | 56 |
-| recurring | 10 | 1 | 0 | 11 |
+| quotes-pick | 28 | 28 | 0 | 56 |
+| recurring | 9 | 2 | 0 | 11 |
 | security | 14 | 38 | 3 | 55 |
-| terms | 30 | 5 | 0 | 35 |
-| website | 22 | 8 | 0 | 30 |
-| wording | 29 | 3 | 0 | 32 |
+| terms | 13 | 22 | 0 | 35 |
+| website | 12 | 18 | 0 | 30 |
+| wording | 14 | 18 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 

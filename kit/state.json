@@ -26051,7 +26051,7 @@
     "T827",
     "T828"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 2,
    "slug": "security-startup-supply",
    "type": "build",
@@ -26065,8 +26065,8 @@
     5355,
     5356
    ],
-   "reason": "plan gap reported: PLAN GAP: outside ownership: app/portals/src/update_channel.rs\nT729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and confirm_query ignores unknown keys; SEC-010 scan fails on them (F1 x2, F5 x1). Also: REFUSING_TRY_FROM lacks JobTypesForm (business_portal.rs), StepUpForm (business_step_up.rs), Posted<F> (address_changes.rs, business_guarded_changes.rs); CLASSIFIED lacks twilio_answer/vendor_error (adapters base.rs), run_help_notice, spanish_switch latest, photo_asks load; business_signup_route.rs posts roc_number/base_zip/radius/code names the templates lack, so per-route; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T121 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "last_failure": "PLAN GAP: outside ownership: app/portals/src/update_channel.rs\nT729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and confirm_query ignores unknown keys; SEC-010 scan fails on them (F1 x2, F5 x1). Also: REFUSING_TRY_FROM lacks JobTypesForm (business_portal.rs), StepUpForm (business_step_up.rs), Posted<F> (address_changes.rs, business_guarded_changes.rs); CLASSIFIED lacks twilio_answer/vendor_error (adapters base.rs), run_help_notice, spanish_switch latest, photo_asks load; business_signup_route.rs posts roc_number/base_zip/radius/code names the templates lack, so per-route name lists cannot be strictly template-closed; 550-line budget too small (~1000). Reviewer confirmed all three claims on main bd3e4e9cd.",
+   "reason": null,
+   "last_failure": "PLAN GAP: outside ownership: app/portals/src/update_channel.rs\nT729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and confirm_query ignores unknown keys; SEC-010 scan fails on them (F1 x2, F5 x1). Also: REFUSING_TRY_FROM lacks JobTypesForm (business_portal.rs), StepUpForm (business_step_up.rs), Posted<F> (address_changes.rs, business_guarded_changes.rs); CLASSIFIED lacks twilio_answer/vendor_error (adapters base.rs), run_help_notice, spanish_switch latest, photo_asks load; business_signup_route.rs posts roc_number/base_zip/radius/code names the templates lack, so per-route name lists cannot be strictly template-closed; 550-line budget too small (~1000). Reviewer confirmed all three claims on main bd3e4e9cd.\nre-queued after plan fix D-5574: split: T838 makes the source edits; tables and the sign-up name rule settled",
    "history": [
     {
      "attempt": 1,
@@ -26128,6 +26128,19 @@
      "plan_head": "23fcbe8c11d7e98a6b62b7774fd0a382bd408518",
      "plan_then": "9d43020edab4e84cdacc3f24a188da9daf7dbe252f7e55fc86dc1a1656141357",
      "plan_now": "4f100f935a6a89e3dcefa0141a2aac4382364c30fee8b6552cef06bf4febd0e4"
+    },
+    {
+     "at": "2026-11-23T04:08:22Z",
+     "reason": "split: T838 makes the source edits; tables and the sign-up name rule settled",
+     "by": "manual-31a4b0de98df",
+     "was": "plan gap reported: PLAN GAP: outside ownership: app/portals/src/update_channel.rs\nT729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and confirm_query ignores unknown keys; SEC-010 scan fails on them (F1 x2, F5 x1). Also: REFUSING_TRY_FROM lacks JobTypesForm (business_portal.rs), StepUpForm (business_step_up.rs), Posted<F> (address_changes.rs, business_guarded_changes.rs); CLASSIFIED lacks twilio_answer/vendor_error (adapters base.rs), run_help_notice, spanish_switch latest, photo_asks load; business_signup_route.rs posts roc_number/base_zip/radius/code names the templates lack, so per-route; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T121 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 2,
+     "plan_fix": "D-5574",
+     "plan_since": "2026-11-22T23:50:52Z",
+     "plan_base": "bd3e4e9cdad1a2f89e518d825322af5b0372f74f",
+     "plan_head": "8871a83b785adc2a8f05e669d722847287fee4d2",
+     "plan_then": "4f100f935a6a89e3dcefa0141a2aac4382364c30fee8b6552cef06bf4febd0e4",
+     "plan_now": "ee702f574db8c0f2bab0fc16e9cfaacd958e7c44e718f7133aaf119dc244ee71"
     }
    ],
    "stale_leases": [
@@ -26137,16 +26150,7 @@
      "expires": "2026-11-22T23:35:53Z",
      "lane": "4"
     }
-   ],
-   "plan_gap": {
-    "at": "2026-11-23T00:03:26Z",
-    "problems": [
-     "outside ownership: app/portals/src/update_channel.rs"
-    ],
-    "paths": [
-     "app/portals/src/update_channel.rs"
-    ]
-   }
+   ]
   },
   {
    "id": "T122",
@@ -120125,7 +120129,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T04:05:25Z",
+ "updated_at": "2026-11-23T04:08:23Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -120223,8 +120227,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "ff057c83296d2e44af57c4992190ea0ff9735ba8",
- "starter": "actions",
+ "runner_sha": "8871a83b785adc2a8f05e669d722847287fee4d2",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "bd3e4e9cdad1a2f89e518d825322af5b0372f74f",
