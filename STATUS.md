@@ -1,23 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-23T20:44:40Z by runner 0a7001d971f3 (actions).
+Updated 2026-11-23T20:47:12Z by runner 025855b2736e (actions).
 
 **Building: T745 in progress since 19:03Z; 637 of 778 done; week 83% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 637 of 778 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T745 claimed 19:03Z, lease until 22:03Z; lane 5: T649 claimed 20:33Z, lease until 23:33Z
-- **Week:** 83% used, 27.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:44Z, 0 min before this update
+- **Lane:** lane 2: T745 claimed 19:03Z, lease until 22:03Z; lane 3: T816 claimed 20:47Z, lease until 23:47Z; lane 5: T649 claimed 20:33Z, lease until 23:33Z
+- **Week:** 83% used, 24.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 20:45Z, 2 min before this update
 - **Keeper:** last ran 20:44Z, next wake 21:04Z
 
 ## Needs attention
 - BLOCKED T836: plan gap reported: PLAN GAP: tests/test_runner_five_lanes.py:176 (test_no_workflow_a_hand_in_starts_cancels_another_lanes_run_when_five_hand_in_together, not owned by T836, from D-3043) asserts cancel-in-progress is exactly False for ci.yml, a11y.yml, twin.yml, governance.yml, auto-pr.yml. That contradicts D-5554 (2), which needs cancel-in-progress true for non-main pushes. smoke.sh fails: AssertionError: ci.yml (workflow) cancels in progress (1 failed, 5766 passed). Reviewer confirmed: T836 owns only backup-runner.yml, ci.yml, twin.yml, a11y.yml, tests/test_ci_workflow.py. Smallest fix: add tests/test_runner_fi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T836 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- PLAN GAP T816 (since 2026-11-23T20:33:44Z, no attempt used; a plan change fixes it): T816: dependency T730 is DONE but its owned file app/messaging/src/update_emails.rs is not on main; T816: dependency T730 is DONE but its owned file tests/integration/tests/update_email_sends.rs is not on main
-- PLAN GAP T841 (since 2026-11-23T20:16:40Z, no attempt used; a plan change fixes it): T841: prompt kit/prompts/T841.md is missing; run scripts/gen_prompts.py; T841: branch claude/task/T841-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
-- Strict plan check red: 39 problem(s) on tasks still to run (+526 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 39 problem(s) on tasks still to run (+527 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -109,7 +107,7 @@ Updated 2026-11-23T20:44:40Z by runner 0a7001d971f3 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-23T20:10:00Z (week)): week: 166.2M used, 27.8M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-08T01:39:02Z.
+- Pacing (session_reading 2026-11-23T20:43:57Z (week)): week: 169.3M used, 24.7M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-08T03:02:41Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -126,6 +124,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T745 (lease until 2026-11-23T22:03:04Z)
+- lane 3: T816 (lease until 2026-11-23T23:47:02Z)
 - lane 5: T649 (lease until 2026-11-23T23:33:44Z)
 
 ## Last usage reading
