@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T22:55:02Z by runner 0c7342d7b13f (actions).
+Updated 2026-11-23T23:01:09Z by runner a8036d7093a0 (actions).
 
 **Building: T737 in progress since 22:49Z; 640 of 778 done; week 85% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,14 @@ Updated 2026-11-23T22:55:02Z by runner 0c7342d7b13f (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T737 claimed 22:49Z, lease until 01:49Z; lane 2: T716 claimed 22:02Z, lease until 01:02Z
 - **Week:** 85% used, 20.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:54Z, 0 min before this update
+- **Last run:** 23:01Z, 0 min before this update
 - **Keeper:** last ran 22:55Z, next wake 01:05Z
 
 ## Needs attention
 - BLOCKED T836: plan gap reported: PLAN GAP: tests/test_runner_five_lanes.py:176 (test_no_workflow_a_hand_in_starts_cancels_another_lanes_run_when_five_hand_in_together, not owned by T836, from D-3043) asserts cancel-in-progress is exactly False for ci.yml, a11y.yml, twin.yml, governance.yml, auto-pr.yml. That contradicts D-5554 (2), which needs cancel-in-progress true for non-main pushes. smoke.sh fails: AssertionError: ci.yml (workflow) cancels in progress (1 failed, 5766 passed). Reviewer confirmed: T836 owns only backup-runner.yml, ci.yml, twin.yml, a11y.yml, tests/test_ci_workflow.py. Smallest fix: add tests/test_runner_fi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T836 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 39 problem(s) on tasks still to run (+525 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 40 problem(s) on tasks still to run (+532 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -84,7 +84,7 @@ Updated 2026-11-23T22:55:02Z by runner 0c7342d7b13f (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 428 of 735 (58.2%) · partial 294 · unstarted 13
-**Tasks merged (throughput only):** 640 of 777
+**Tasks merged (throughput only):** 640 of 778
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
