@@ -97149,11 +97149,12 @@
     }
    ],
    "lane": "5",
-   "reviewed_sha": "d7ebff526219f678383fcf13c4fc9df5d95dbf65",
+   "reviewed_sha": "959c270aebf4710214ca83c3355ed3ec85f56cac",
    "review_lease": {
     "task": "T675",
-    "session": "actions-45039198139",
-    "expires": "2026-11-22T18:41:28Z"
+    "session": "actions-45084818789",
+    "expires": "2026-11-23T02:48:28Z",
+    "lane": "5"
    },
    "branch": "claude/task/T675-intake-order-photos",
    "auto_merge": {
@@ -97161,7 +97162,6 @@
     "why": "auto-merge on #1365 (gh pr merge)",
     "head": "d7ebff526219f678383fcf13c4fc9df5d95dbf65"
    },
-   "merge_turn_since": "2026-11-22T17:36:56Z",
    "runner_closed_prs": [
     1365
    ],
@@ -97185,8 +97185,6 @@
      "at": "2026-11-22T17:36:56Z"
     }
    ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
    "wip_claim": {
     "attempt": 4,
     "remote_sha": "d7ebff526219f678383fcf13c4fc9df5d95dbf65"
@@ -97197,7 +97195,19 @@
      "session": "actions-45063698092",
      "expires": "2026-11-22T23:30:23Z"
     }
-   ]
+   ],
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "889f9f373feb83af07ae86068058a42df99cb9bf",
+     "to": "959c270aebf4710214ca83c3355ed3ec85f56cac",
+     "main": "fbf6b9f5d0d83a3ea20266863061f63e3916dc66",
+     "how": "hand-in",
+     "at": "2026-11-23T00:33:36Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T676",
@@ -119122,7 +119132,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T00:24:48Z",
+ "updated_at": "2026-11-23T00:33:36Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -119220,8 +119230,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "bd3e4e9cdad1a2f89e518d825322af5b0372f74f",
- "starter": "manual",
+ "runner_sha": "9d8af0db8a9f59bc5d74f3f73b4d9c3a7e472620",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "1a1917eed4659785348905d19e7671b0b95d3b71",
