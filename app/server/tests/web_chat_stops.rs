@@ -5,7 +5,9 @@
 //! sender who states an age under 18 before and after the code (INT-038's reply; after the code
 //! its text queued as on the text path and the request closed; under 13 the request's data and
 //! the session row deleted, the consent record kept, on an app-role pool), and keeps the first
-//! message's language for the consent text and TXT-041's line. The page's turn has no code keys,
+//! message's language for the consent text and TXT-041's line. A contact with no phone digest
+//! left fails the opt-out turn and lists nothing, as `suppress_indexed` does for empty digests
+//! (D-4473). The page's turn has no code keys,
 //! so each verified session is seeded through `intake::api::check_code` with a fake code step
 //! (the owner pool). Fake data only: 555-01xx numbers and made-up job words.
 
@@ -14,14 +16,16 @@ use std::sync::Arc;
 
 use askhava_core::api::{Environment, MIGRATOR, ManualClock};
 use askhava_intake::api::rules::{
-    SAFETY_TEMPLATE, Settings as IntakeSettings, UNDER_18_TEMPLATE, consent_template,
+    Inbound, SAFETY_TEMPLATE, Settings as IntakeSettings, UNDER_18_TEMPLATE, consent_template,
 };
 use askhava_intake::api::{
-    ChatError, ChatSettings, Checked, CodeStep, SPANISH_NOT_YET_TEMPLATE, check_code, send_code,
-    start_chat,
+    ChatError, ChatIn, ChatSettings, Checked, CodeStep, SPANISH_NOT_YET_TEMPLATE, TextIn, ask_zip,
+    chat_message, check_code, send_code, start_chat,
 };
-use askhava_messaging::api::{CONFIRMATION_TEMPLATE, Language, render};
-use askhava_privacy::api::Vault;
+use askhava_messaging::api::{
+    CONFIRMATION_TEMPLATE, Language, OutboxError, RevokeChannel, render, suppress_indexed,
+};
+use askhava_privacy::api::{PhoneClear, Vault, clear_consent_phone, phone_digests};
 use askhava_server::inbound_text::Webhooks;
 use askhava_server::{RouterParts, build_router};
 use axum::Router;
@@ -277,6 +281,36 @@ async fn listed(pool: &PgPool, key: &str) -> Vec<(String, i64)> {
         .collect()
 }
 
+/// The vault contact of the chat session with key `key`.
+async fn contact_of(pool: &PgPool, key: &str) -> Uuid {
+    let sql = format!(
+        "SELECT contact_id::text AS v FROM intake.web_chat_session \
+         WHERE key_digest = sha256(convert_to('{key}', 'UTF8'))"
+    );
+    value(pool, sql).await.parse().expect("a contact")
+}
+
+/// Asks request `id` the ZIP question as the intake order does (INT-049), so it holds an answer
+/// row (its `zip` marker) before a stop.
+async fn asked_zip(pool: &PgPool, contact: Uuid, id: Uuid) {
+    let inbound = Inbound {
+        words: FIRST,
+        opt_out: false,
+        help: false,
+        emergency: false,
+        ai_spanish: None,
+    };
+    let msg = TextIn {
+        inbox_id: Uuid::new_v4(),
+        contact,
+        inbound,
+        received_at: Timestamp::now(),
+    };
+    let mut conn = pool.acquire().await.expect("connection");
+    let asked = ask_zip(&mut conn, &secret(), (&msg, id), settings(false)).await;
+    asked.expect("the ZIP question");
+}
+
 /// The request's state: closed, its first job and its language.
 async fn request(pool: &PgPool, id: Uuid) -> (bool, String, String) {
     let sql = format!(
@@ -357,6 +391,59 @@ async fn td_con_36_an_opt_out_after_the_code_lists_the_number_at_once(pool: PgPo
     assert!(ours(&page).is_empty(), "a normal message shows no opt-out");
     assert!(listed(&pool, &chat.key).await.is_empty(), "nothing listed");
     assert!(!request(&pool, id).await.0, "the request stays open");
+}
+
+/// TD-CON-36 (CON-035, D-4473): a verified session whose contact has no phone digest left (the
+/// consent sweep cleared the phone) fails the "STOP" turn with `ChatError::Vault` (the page shows
+/// its failure notice): no listing and no CON-009 words; and
+/// `suppress_indexed` refuses empty digests and lists nothing.
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_con_36_a_contact_with_no_digest_lists_nothing(pool: PgPool) {
+    let app = router(&pool, false);
+    let chat = open(&app, 1).await;
+    chat.say(FIRST).await;
+    chat.verify(&pool, "+19285550115", settings(false)).await;
+    let contact = contact_of(&pool, &chat.key).await;
+    let mut tx = pool.begin().await.expect("transaction");
+    let digests = phone_digests(&mut tx, contact).await.expect("digests");
+    assert!(!digests.is_empty(), "the contact has digests");
+    let cleared = clear_consent_phone(&mut tx, contact, &digests).await;
+    assert_eq!(cleared, Ok(PhoneClear::Cleared), "the phone cleared");
+    tx.commit().await.expect("commit");
+    let page = chat.say("STOP").await;
+    let confirm = body(CONFIRMATION_TEMPLATE, Language::En, false);
+    assert!(!page.contains(&confirm), "no CON-009 words");
+    assert!(ours(&page).is_empty(), "nothing shown as ours");
+    let mut conn = pool.acquire().await.expect("connection");
+    let msg = ChatIn {
+        message_id: Uuid::new_v4(),
+        words: "STOP",
+        received_at: Timestamp::now(),
+    };
+    let key = SecretString::from(chat.key.clone());
+    let turn = chat_message(&mut conn, &secret(), &key, &msg, settings(false)).await;
+    assert_eq!(turn, Err(ChatError::Vault), "the turn fails");
+    drop(conn);
+    assert_eq!(
+        count(&pool, "messaging.suppression").await,
+        0,
+        "nothing listed"
+    );
+    let mut tx = pool.begin().await.expect("transaction");
+    let how = (RevokeChannel::WebChat, "stop");
+    let refused = suppress_indexed(&mut tx, &[], how, Timestamp::now()).await;
+    assert_eq!(refused, Err(OutboxError::BadPhone), "empty digests refused");
+    tx.commit().await.expect("commit");
+    assert_eq!(
+        count(&pool, "messaging.suppression").await,
+        0,
+        "still nothing listed"
+    );
+    assert_eq!(
+        count(&pool, "messaging.optout_event").await,
+        0,
+        "no event logged"
+    );
 }
 
 /// TD-CON-36 (INT-038, INT-002, CON-008): before the code, an under-18 sender gets INT-038's reply
@@ -444,13 +531,21 @@ async fn td_con_36_an_under_13_age_deletes_the_request_data_and_the_session(pool
     let chat = open(&app, 1).await;
     chat.say(FIRST).await;
     let (id, _) = chat.verify(&pool, "+19285550113", settings(false)).await;
+    let of = |table: &str| format!("intake.{table} WHERE conversation_id = '{id}'");
+    let session = format!(
+        "intake.web_chat_session WHERE key_digest = sha256(convert_to('{}', 'UTF8'))",
+        chat.key
+    );
+    asked_zip(&pool, contact_of(&pool, &chat.key).await, id).await;
+    let answers = count(&pool, &of("intake_answer")).await;
+    assert!(answers > 0, "the request has answers before the stop");
+    assert_eq!(count(&pool, &session).await, 1, "the session row exists");
     let page = chat.say("I'm 11").await;
     assert_eq!(
         ours(&page),
         vec![body(UNDER_18_TEMPLATE, Language::En, false)]
     );
     assert!(request(&pool, id).await.0, "the request closed");
-    let of = |table: &str| format!("intake.{table} WHERE conversation_id = '{id}'");
     assert_eq!(
         count(&pool, &of("consent_record")).await,
         1,
@@ -461,11 +556,7 @@ async fn td_con_36_an_under_13_age_deletes_the_request_data_and_the_session(pool
         0,
         "its answers deleted"
     );
-    assert_eq!(
-        count(&pool, &of("web_chat_session")).await,
-        0,
-        "the session row deleted"
-    );
+    assert_eq!(count(&pool, &session).await, 0, "the session row deleted");
 }
 
 /// TD-CON-36 (TXT-002): with Spanish conversations on, a first message in Spanish makes the
