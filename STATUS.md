@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T22:43:29Z by runner c2db7cebfbd2 (actions).
+Updated 2026-11-23T22:44:12Z by runner c2db7cebfbd2 (actions).
 
 **Building: T716 in progress since 22:02Z; 640 of 778 done; week 85% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 640 of 778 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T716 claimed 22:02Z, lease until 01:02Z; lane 4: T819 claimed 21:17Z, lease until 00:17Z; lane 5: T649 claimed 20:33Z, lease until 23:33Z
+- **Lane:** lane 2: T716 claimed 22:02Z, lease until 01:02Z; lane 5: T649 claimed 20:33Z, lease until 23:33Z
 - **Week:** 85% used, 19.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:42Z, 0 min before this update
+- **Last run:** 22:42Z, 1 min before this update
 - **Keeper:** last ran 22:42Z, next wake 23:02Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Updated 2026-11-23T22:43:29Z by runner c2db7cebfbd2 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T819 | portals: her feedback words are scrubbed before they are sto | MERGE_PENDING | 3 | 85 min | 22:43Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T816 | messaging: the data-request confirm link goes by email to th | MERGE_PENDING | 1 | 112 min | 22:39Z |  |
 | T737 | portals, ai and server: the owner records the AI provider's  | check_failed | 1 | 65 min | 21:59Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T745 | intake: a reader for a job's intake answers through `intake: | done | 1 | 2 h 19 min | 21:22Z |  |
@@ -33,7 +34,7 @@ Updated 2026-11-23T22:43:29Z by runner c2db7cebfbd2 (actions).
 | T714 | portals: a Confirm link sent by text is marked text-started  | done | 4 | 88 min | 15:49Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
 | T222 | Journeys J1 and J2, the full variants: web chat, photos, que | QUEUED | 1 | 67 min | 15:38Z |  |
 | T666 | jobs, quotes and server: GET /b/jobs/{j} serves the business | done | 2 | 67 min | 14:25Z | Reviewer after the findings round (head bf41c81b22bdbd874d7d53cb8ba64ca6bb0737cf): app/server/tests/job_page_route.rs (w |
-| T819 | portals: her feedback words are scrubbed before they are sto | check_failed | 2 | 68 min | 13:45Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
+| T819 | portals: her feedback words are scrubbed before they are sto | check_failed | 2 | 68 min | 13:45Z |  |
 | T646 | site and server: the web chat's new-request limit counts the | done | 3 | 99 min | 13:40Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T730 | messaging: a homeowner who chose email gets each quote updat | check_failed | 3 | 2 h 46 min | 13:19Z |  |
 | T714 | portals: a Confirm link sent by text is marked text-started  | BLOCKED | 3 | 36 min | 13:10Z |  |
@@ -127,8 +128,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T716 (lease until 2026-11-24T01:02:37Z)
-- lane 4: T819 (lease until 2026-11-24T00:17:37Z)
 - lane 5: T649 (lease until 2026-11-23T23:33:44Z)
 
 ## Last usage reading
-- {"task": "T816", "at": "2026-11-23T22:39:31Z", "cache_read_input_tokens": 5249423, "cache_creation_input_tokens": 149488, "input_tokens": 142, "output_tokens": 45304}
+- {"task": "T819", "at": "2026-11-23T22:43:23Z", "output_tokens": 12204, "cache_read_input_tokens": 1037595, "cache_creation_input_tokens": 82882, "input_tokens": 71}
