@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T08:59:22Z by runner 5ee3d4ffb646 (actions).
+Updated 2026-11-23T08:59:52Z by runner 5ee3d4ffb646 (actions).
 
 **Building: T121 in progress since 08:33Z; 628 of 775 done; week 73% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 628 of 775 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T121 claimed 08:33Z, lease until 11:33Z; lane 2: T646 claimed 07:59Z, lease until 10:59Z; lane 3: T666 claimed 08:27Z, lease until 11:27Z; lane 4: T118 claimed 08:35Z, lease until 11:35Z
+- **Lane:** lane 1: T121 claimed 08:33Z, lease until 11:33Z; lane 3: T666 claimed 08:27Z, lease until 11:27Z; lane 4: T118 claimed 08:35Z, lease until 11:35Z
 - **Week:** 73% used, 41.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:46Z, 12 min before this update
+- **Last run:** 08:46Z, 13 min before this update
 - **Keeper:** last ran 08:45Z, next wake 11:01Z
 
 ## Needs attention
@@ -25,6 +25,7 @@ Evidence: last_quote_text (quote_text_sent.rs:45-52) reads only messaging.outbox
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T646 | site and server: the web chat's new-request limit counts the | MERGE_PENDING | 1 | 59 min | 08:59Z |  |
 | T588 | portals and server: a refused business sign-up keeps every f | MERGE_PENDING | 1 | 101 min | 08:44Z |  |
 | T730 | messaging: a homeowner who chose email gets each quote updat | BLOCKED | 2 | 2 min | 08:25Z | PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs / Evidence: last_quote_text (quote_text_sent.rs:45-52) |
 | T730 | messaging: a homeowner who chose email gets each quote updat | QUEUED | 1 | 2 h 19 min | 08:20Z |  |
@@ -125,9 +126,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T121 (lease until 2026-11-23T11:33:00Z)
-- lane 2: T646 (lease until 2026-11-23T10:59:33Z)
 - lane 3: T666 (lease until 2026-11-23T11:27:49Z)
 - lane 4: T118 (lease until 2026-11-23T11:35:54Z)
 
 ## Last usage reading
-- {"task": "T588", "at": "2026-11-23T08:44:03Z", "cache_creation_input_tokens": 164246, "output_tokens": 38565, "input_tokens": 153, "cache_read_input_tokens": 6623666}
+- {"task": "T646", "at": "2026-11-23T08:59:21Z", "cache_creation_input_tokens": 127061, "input_tokens": 148, "cache_read_input_tokens": 5311614, "output_tokens": 31096}
