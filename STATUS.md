@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T20:07:39Z by runner c5aa89f88583 (actions).
+Updated 2026-11-23T20:08:32Z by runner c5aa89f88583 (actions).
 
 **Building: T745 in progress since 19:03Z; 637 of 778 done; week 82% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 637 of 778 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T745 claimed 19:03Z, lease until 22:03Z; lane 4: T668 claimed 19:10Z, lease until 22:10Z
+- **Lane:** lane 2: T745 claimed 19:03Z, lease until 22:03Z
 - **Week:** 82% used, 27.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:37Z, 29 min before this update
+- **Last run:** 19:37Z, 30 min before this update
 - **Keeper:** last ran 19:33Z, next wake 19:53Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Updated 2026-11-23T20:07:39Z by runner c5aa89f88583 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T668 | server: the business job page at /b/jobs/{j} offers "Not a f | MERGE_PENDING | 1 | 56 min | 20:07Z |  |
 | T812 | businesses and portals: a passed step-up records the session | MERGE_PENDING | 1 | 89 min | 19:31Z |  |
 | T730 | messaging: a homeowner who chose email gets each quote updat | done | 4 | 76 min | 19:13Z | PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs / Evidence: last_quote_text (quote_text_sent.rs:45-52) |
 | T222 | Journeys J1 and J2, the full variants: web chat, photos, que | QUEUED | 2 | 97 min | 17:54Z | Reviewer after the fix round still ended REVIEW-VERDICT: FINDINGS over 0aedbd3769e83a983d24d694c7abe05f8773a57a: / 1. do |
@@ -121,7 +122,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T745 (lease until 2026-11-23T22:03:04Z)
-- lane 4: T668 (lease until 2026-11-23T22:10:43Z)
 
 ## Last usage reading
-- {"task": "T812", "at": "2026-11-23T19:31:39Z", "input_tokens": 173, "output_tokens": 40522, "cache_creation_input_tokens": 153502, "cache_read_input_tokens": 6480592}
+- {"task": "T668", "at": "2026-11-23T20:07:37Z", "cache_creation_input_tokens": 107312, "input_tokens": 92, "cache_read_input_tokens": 2722732, "output_tokens": 20074}
