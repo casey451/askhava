@@ -101564,8 +101564,8 @@
     "T675",
     "T654"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "intake-order-trade-questions",
    "type": "build",
    "stage": "5",
@@ -101584,13 +101584,58 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 251,
      "head_sha": "438e11dcee295e60cb451b2739b074892378f93b",
-     "pr": null,
-     "checks": null,
+     "pr": 1377,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "failure"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-23T01:31:05Z",
      "ended_at": "2026-11-23T03:28:55Z",
-     "result": "MERGE_PENDING",
+     "result": "check_failed",
      "usage": {
       "worker": {
        "tokens": 21665934,
@@ -101650,7 +101695,8 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-23T03:44:53Z"
+   "merge_turn_since": "2026-11-23T03:44:53Z",
+   "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)\ntest td_job_19_a_press_that_will_not_charge_keeps_the_confirm_window ... ok\ntest td_job_19_a_press_with_a_card_moves_the_job_and_a_retry_is_never_expired ... ok\ntest td_job_19_a_category_with_no_roc_class_needs_no_stored_check ... ok\ntest td_job_19_a_zero_press_moves_first_and_a_cancelled_job_ends_the_pick ... ok\ntest td_job_19_an_ineligible_first_press_is_refused_before_any_charge ... FAILED\nfailures:\n---- td_job_19_an_ineligible_first_press_is_refused_before_any_charge stdout ----\nthread 'td_job_19_an_ineligible_first_press_is_refused_before_any_charge' (39242) panicked at app/server/tests/confirm_press_moves.rs:382:10:\ncontact: PhoneTaken\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_job_19_an_ineligible_first_press_is_refused_before_any_charge\ntest result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.80s\nerror: test failed, to rerun pass `-p askhava-server --test confirm_press_moves`\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1."
   },
   {
    "id": "T718",
@@ -120170,7 +120216,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T04:34:26Z",
+ "updated_at": "2026-11-23T04:34:58Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -122531,7 +122577,7 @@
    ]
   },
   "5": {
-   "count": 0,
+   "count": 1,
    "last": [
     {
      "at": "2026-11-17T10:29:48Z",
@@ -122540,6 +122586,10 @@
     {
      "at": "2026-11-20T03:27:44Z",
      "why": "T663 check_failed: Ci: failure; Coverage: failure\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest backup::tests::td_priv_14_an_export_is_unreadable_without_the_offline_key ... ok\ntes"
+    },
+    {
+     "at": "2026-11-23T04:34:23Z",
+     "why": "T716 check_failed: Ci: failure; Checks: failure\nChecks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)\ntest td_job_19_a_press_that_will_not_charge_keeps_the_confirm_window ..."
     }
    ]
   },

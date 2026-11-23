@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T04:34:26Z by runner 8871a83b785a (actions).
+Updated 2026-11-23T04:34:58Z by runner 8871a83b785a (actions).
 
 **Building: T834 in progress since 03:31Z; 623 of 775 done; week 71% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -20,7 +20,7 @@ Updated 2026-11-23T04:34:26Z by runner 8871a83b785a (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
-| T716 | intake: the dispatcher's trade questions at step 5: "Which f | MERGE_PENDING | 1 | 117 min | 03:28Z |  |
+| T716 | intake: the dispatcher's trade questions at step 5: "Which f | check_failed | 1 | 117 min | 03:28Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T834 | ci (harness): Twin and Ally skip their build when nothing th | QUEUED | 1 | 81 min | 03:19Z | After the fix round the reviewer (head bb8a0ca043baae3c76c5646f5bcc328d948b31ba) still ends REVIEW-VERDICT: FINDINGS. Fi |
 | T712 | server and portals: the owner portal lists PROBLEM reports w | done | 1 | 39 min | 02:36Z |  |
 | T645 | intake and messaging: the web chat honours an opt-out word,  | done | 2 | 2 h 6 min | 01:58Z | PLAN GAP: app/site/src/chat.rs:340 (owned by T593, then T646 and T649; T593 is not merged yet) calls `chat_message(db, & |
