@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T00:04:04Z by runner bd3e4e9cdad1 (actions).
+Updated 2026-11-23T00:04:39Z by runner bd3e4e9cdad1 (actions).
 
 **Building: T725 in progress since 23:49Z; 617 of 773 done; week 68% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-23T00:04:04Z by runner bd3e4e9cdad1 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T725 claimed 23:49Z, lease until 02:49Z; lane 2: T645 claimed 23:51Z, lease until 02:51Z; lane 3: T832 claimed 23:50Z, lease until 02:50Z; lane 5: T675 claimed 23:48Z, lease until 02:48Z
 - **Week:** 68% used, 58.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:03Z, 0 min before this update
-- **Keeper:** last ran 23:10Z, next wake 23:33Z
+- **Last run:** 00:04Z, 0 min before this update
+- **Keeper:** last ran 00:04Z, next wake 00:24Z
 
 ## Needs attention
 - BLOCKED T121: plan gap reported: PLAN GAP: outside ownership: app/portals/src/update_channel.rs
@@ -18,7 +18,7 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 - PLAN GAP T121 (since 2026-11-23T00:03:26Z, no attempt used; a plan change fixes it): outside ownership: app/portals/src/update_channel.rs
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 29 problem(s) on tasks still to run (+496 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 27 problem(s) on tasks still to run (+496 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
