@@ -1015,5 +1015,5 @@ ol:has(> .said-ours, > .said-hers) { list-style: none; padding: 0; display: grid
   body:has(.quote-page, #pick-result) main :is(form, button, .button, .site-footer) { display: none !important; }
   body:has(.quote-page, #pick-result), body:has(.quote-page, #pick-result) * { color: var(--ink) !important; background: var(--surface) !important; box-shadow: none !important; }
   body:has(.quote-page, #pick-result) .card { break-inside: avoid; }
-  .quote .out a[href^="http"]::after { content: " (" attr(href) ")"; display: inline; width: auto; height: auto; margin: 0; border: 0; background: none; clip-path: none; }
+  .quote .out a[href*="://"]::after { content: " (" attr(href) ")"; display: inline; width: auto; height: auto; margin: 0; border: 0; background: none; clip-path: none; }
 }
