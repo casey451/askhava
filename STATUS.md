@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T04:57:43Z by runner f9e32434db51 (actions).
+Updated 2026-11-23T04:58:24Z by runner 50d501397927 (actions).
 
 **Building: T716 in progress since 04:41Z; 623 of 775 done; week 71% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,13 +8,13 @@ Updated 2026-11-23T04:57:43Z by runner f9e32434db51 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T716 claimed 04:41Z, lease until 07:41Z; lane 3: T803 claimed 03:47Z, lease until 06:47Z; lane 4: T611 claimed 04:04Z, lease until 07:04Z; lane 5: T838 claimed 04:41Z, lease until 07:41Z
 - **Week:** 71% used, 47.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:57Z, 0 min before this update
-- **Keeper:** last ran 04:36Z, next wake 04:56Z
+- **Last run:** 04:58Z, 0 min before this update
+- **Keeper:** last ran 04:58Z, next wake 05:18Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 35 problem(s) on tasks still to run (+513 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 28 problem(s) on tasks still to run (+510 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
