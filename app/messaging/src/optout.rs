@@ -64,6 +64,8 @@ pub enum RevokeChannel {
     Owner,
     /// The carrier refused a send with 21610 (CON-014).
     Carrier,
+    /// A message typed in the web chat once its phone code is verified (CON-035, D-4292).
+    WebChat,
 }
 
 impl RevokeChannel {
@@ -77,6 +79,7 @@ impl RevokeChannel {
             Self::Portal => "portal",
             Self::Owner => "owner",
             Self::Carrier => "carrier",
+            Self::WebChat => "web_chat",
         }
     }
 }
@@ -317,9 +320,31 @@ pub async fn suppress(
 ) -> Result<bool, OutboxError> {
     let digests = digests(vault, phone)?;
     let mut tx = db.begin().await.map_err(|_| OutboxError::Database)?;
-    let listed = models::listing(&mut tx, &digests).await?.is_some();
-    let (_, added) = record(&mut tx, &digests, (channel, how, None), now).await?;
+    let added = suppress_indexed(&mut tx, &digests, (channel, how), now).await?;
     tx.commit().await.map_err(|_| OutboxError::Database)?;
+    Ok(added)
+}
+
+/// [`suppress`] for a number known only by its blind-index `digests` (one per key version, as
+/// `privacy::api::phone_digests` gives them), inside the caller's transaction `tx`: no vault and
+/// no plaintext read. `record` takes the number's opt-out lock first (D-4418); returns whether the
+/// number was newly listed (CON-035, CON-022, D-4473). The web chat's entry (`web_chat`).
+///
+/// # Errors
+///
+/// [`OutboxError::BadPhone`] for empty `digests` (nothing is listed), or
+/// [`OutboxError::Database`].
+pub async fn suppress_indexed(
+    tx: &mut PgConnection,
+    digests: &[(u16, [u8; 32])],
+    (channel, how): (RevokeChannel, &str),
+    now: Timestamp,
+) -> Result<bool, OutboxError> {
+    if digests.is_empty() {
+        return Err(OutboxError::BadPhone);
+    }
+    let listed = models::listing(&mut *tx, digests).await?.is_some();
+    let (_, added) = record(tx, digests, (channel, how, None), now).await?;
     Ok(added && !listed)
 }
 

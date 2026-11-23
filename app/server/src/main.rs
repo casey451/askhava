@@ -17,7 +17,9 @@
 //! a password read from standard input, and prints the first authenticator's secret and the
 //! recovery codes once to the operator's own terminal (SEC-044, SEC-007, D-1918). `server replay`
 //! restores an operator's decrypted export into the fresh database and replays from the vendors'
-//! records (`askhava_server::replay_drill`; OPS-013, OPS-018, OPS-019, T206).
+//! records (`askhava_server::replay_drill`; OPS-013, OPS-018, OPS-019, T206). `server rotate-keys`
+//! runs the vault key rotation batches to 0 and `server retire-index-version <version>` retires an
+//! index key version (`askhava_server::rotate_keys`; PRIV-024, T830).
 
 use std::future::IntoFuture;
 use std::io;
@@ -39,6 +41,9 @@ async fn main() -> io::Result<()> {
     if std::env::args().nth(1).as_deref() == Some("replay") {
         let args: Vec<String> = std::env::args().skip(2).collect();
         return askhava_server::replay_drill(&settings, std::env::vars().collect(), &args).await;
+    }
+    if let Some("rotate-keys" | "retire-index-version") = std::env::args().nth(1).as_deref() {
+        return rotate_keys(&settings).await;
     }
     // The security-event cap and the SEC-040 client address, once per process (T319, D-3134).
     let client_ip = askhava_core::api::ClientIpPolicy::from_pairs(std::env::vars())
@@ -78,6 +83,20 @@ async fn main() -> io::Result<()> {
     }
 }
 
+/// `server rotate-keys` or `server retire-index-version <version>` over one app-role connection,
+/// before anything binds or serves; counts go to standard output (PRIV-024, T830, D-5412).
+async fn rotate_keys(settings: &askhava_core::api::Settings) -> io::Result<()> {
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    let pool = askhava_core::api::app_pool(settings).map_err(io::Error::other)?;
+    let mut conn = pool
+        .acquire()
+        .await
+        .map_err(|_| io::Error::other("the database could not be reached"))?;
+    let pairs = std::env::vars().collect();
+    let mut out = io::stdout();
+    askhava_server::rotate_keys::run(settings, pairs, &mut conn, &args, &mut out).await
+}
+
 /// The liveness limit (OPS-049) and the `/healthz` thresholds (OPS-007), read once at start
 /// (T106); a bad value stops start-up, naming its key.
 fn liveness_limit() -> io::Result<askhava_server::liveness::LivenessLimit> {
@@ -88,9 +107,10 @@ fn liveness_limit() -> io::Result<askhava_server::liveness::LivenessLimit> {
 
 /// `parts` with the served business sign-in, sign-up, portal `vault` (built and checked at start,
 /// D-4418) and Confirm settings from `settings` and the process environment (T280, T302, T300,
-/// T261), the step-up page's Verify part (T364), the homeowner sign-in's Verify part (T307), the web chat's code-step keys (T489) and the
+/// T261), the step-up page's Verify part (T364), the quote page's update keys (T729), the homeowner sign-in's Verify part (T307), the web chat's code-step keys (T489) and the
 /// site pages' settings (T102) with the business number for the business page's WEB-024 line
-/// (T769, D-4931); each errors as its own builder does, naming a key, never a value.
+/// (T769, D-4931) and the homeowner number with the Gate C launch date for the home pages' texting
+/// number (T725, WEB-017, D-4709); each errors as its own builder does, naming a key, never a value.
 fn business_parts(
     settings: &askhava_core::api::Settings,
     pool: &sqlx::PgPool,
@@ -115,7 +135,11 @@ fn business_parts(
     let link_codes = askhava_server::action_links::confirm_link_codes(settings, std::env::vars())?;
     let press_codes = askhava_server::action_links::confirm_link_codes(settings, std::env::vars())?;
     let number = askhava_server::business_number(settings.business_number())?;
-    let pages = askhava_site::api::SitePages::from_settings(settings);
+    let env: Vec<(String, String)> = std::env::vars().collect();
+    let texting = askhava_server::homeowner_number(settings, &env)?;
+    let pages = askhava_site::api::SitePages::from_settings(settings)
+        .with_homeowner_texting(texting, settings.launch_date());
+    let quote_keys = askhava_server::quote_page_keys(settings, std::env::vars())?;
     Ok(parts
         .with_sign_in(signin)
         .with_sign_up(signup)
@@ -128,6 +152,7 @@ fn business_parts(
         .with_confirm_part(confirm)
         .with_confirm_link_codes(link_codes)
         .with_confirm_codes(press_codes)
+        .with_quote_page_keys(quote_keys)
         .with_chat_codes(chat)
         .with_site_pages(pages.with_business_number(number))
         .with_environment(settings.environment())

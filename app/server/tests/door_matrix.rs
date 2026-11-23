@@ -1139,11 +1139,13 @@ async fn business_jar(pool: &PgPool, team: Team) -> CookieJar {
     CookieJar::from_headers(&headers)
 }
 
-/// The bootstrapped owner's authenticator secret, the probe's clock and its sign-ins so far.
+/// The bootstrapped owner's authenticator secret, the probe's clock, its sign-ins so far and the
+/// jar [`owner_again`] last handed out.
 struct OwnerKey {
     secret: Vec<u8>,
     now: Timestamp,
     signins: AtomicI64,
+    jar: Mutex<Option<CookieJar>>,
 }
 
 /// The one owner, bootstrapped at `now` through `bootstrap_owner` with a fake token and pass
@@ -1159,6 +1161,7 @@ async fn bootstrapped_owner(pool: &PgPool, now: Timestamp) -> OwnerKey {
         secret,
         now,
         signins,
+        jar: Mutex::default(),
     }
 }
 
@@ -1174,12 +1177,13 @@ fn totp_code(secret: &[u8], now: Timestamp) -> String {
     format!("{:06}", (word & 0x7fff_ffff) % 1_000_000)
 }
 
-/// A real owner session through `owner_sign_in` (SEC-005, SEC-043; D-3155, D-3744): the k-th
-/// sign-in is at the probe's clock plus k times 30 seconds with that step's code, because a
-/// TOTP step at or below the last one used is refused.
+/// A real owner session through `owner_sign_in` (SEC-005, SEC-043; D-3155, D-3744, D-5475): the
+/// k-th sign-in is at the wall clock minus 20 minutes plus k times 30 seconds with that step's
+/// code, so it starts before the request it serves, inside the 30-minute idle limit, and its TOTP
+/// step still rises (a step at or below the last one used is refused).
 async fn owner_jar(db: &mut PgConnection, key: &OwnerKey) -> CookieJar {
     let k = key.signins.fetch_add(1, Ordering::SeqCst);
-    let at = key.now + SignedDuration::from_secs(30 * k);
+    let at = Timestamp::now() - SignedDuration::from_mins(20) + SignedDuration::from_secs(30 * k);
     let code = totp_code(&key.secret, at);
     let auth = OwnerAuth::new("askhava.example", "https://askhava.example").expect("party");
     let factor = (OWNER_PASSWORD, SecondFactor::Totp(&code));
@@ -1456,11 +1460,54 @@ async fn probe_skipped_csrf(w: &World, events: &Events, template: &str) -> Resul
     judge_csrf(&reply, &events.of(id), template).map_err(|e| format!("POST {template}: {e}"))
 }
 
-/// The owner signed in again before each row it probes, so a sign-out row it probed ends only
-/// that session (D-3744).
+/// The owner's last jar while `owner_principal` still answers for it now, else a fresh sign-in
+/// ([`owner_jar`]), so a sign-out row it probed ends only that session (D-3744, D-5475).
 async fn owner_again(w: &World) -> CookieJar {
     let mut db = w.pool.acquire().await.expect("db");
-    owner_jar(&mut db, &w.owner).await
+    let kept = w.owner.jar.lock().ok().and_then(|jar| jar.clone());
+    if let Some(jar) = kept {
+        let live = owner_principal(&mut db, &jar, Timestamp::now()).await;
+        if live.expect("read").is_some() {
+            return jar;
+        }
+    }
+    let jar = owner_jar(&mut db, &w.owner).await;
+    *w.owner.jar.lock().unwrap_or_else(PoisonError::into_inner) = Some(jar.clone());
+    jar
+}
+
+/// TD-SEC-61 (SEC-043, D-5475): 80 sign-ins through [`owner_jar`] each pass `owner_principal`
+/// when used, so the step arithmetic holds well past any probe's count.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_61_eighty_owner_sign_ins_each_pass_when_used(pool: PgPool) {
+    let key = bootstrapped_owner(&pool, Timestamp::now()).await;
+    let mut db = pool.acquire().await.expect("db");
+    for k in 0..80 {
+        let jar = owner_jar(&mut db, &key).await;
+        let live = owner_principal(&mut db, &jar, Timestamp::now()).await;
+        assert!(live.expect("read").is_some(), "sign-in {k} is an owner");
+    }
+}
+
+/// TD-SEC-61 (SEC-043, D-3744, D-5475): [`owner_again`] hands out the same jar while it is live
+/// and a new live one after a probed sign-out.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_61_owner_again_signs_in_afresh_only_after_a_sign_out(pool: PgPool) {
+    let w = world(&pool).await;
+    let first = owner_again(&w).await;
+    let same = owner_again(&w).await;
+    let id = |jar: &CookieJar| {
+        jar.get(askhava_portals::api::SESSION_COOKIE)
+            .map(|c| c.value().to_owned())
+    };
+    assert_eq!(id(&first), id(&same), "a live jar is kept");
+    let out = (&Method::POST, "/owner/sign-out");
+    send(&w.app, out, &same, Site::Own, Uuid::new_v4()).await;
+    let fresh = owner_again(&w).await;
+    assert_ne!(id(&first), id(&fresh), "a signed-out jar is replaced");
+    let mut db = pool.acquire().await.expect("db");
+    let live = owner_principal(&mut db, &fresh, Timestamp::now()).await;
+    assert!(live.expect("read").is_some(), "the fresh jar is an owner");
 }
 
 /// A photo-link row by `who` (SEC-019, SEC-034, D-4880): [`UNISSUED`] as its `{token}` is

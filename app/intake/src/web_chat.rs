@@ -20,12 +20,25 @@
 //! opens only through [`check_code`] (D-4056). A number on the suppression list gets
 //! [`ChatError::OptedOut`] and no code (CON-013, D-4056). The page's consent text is the text the
 //! switch sends (D-4057). No number is logged, stored outside the vault or put in an error.
+//!
+//! T645 (INT-038, CON-008, CON-010, CON-022, CON-035, TXT-002, TXT-041, D-4292, D-4473): after
+//! the code an opt-out word or phrase lists the session's number by its stored blind-index digests
+//! (`privacy::api::phone_digests`, `messaging::api::suppress_indexed`, channel `web_chat`) and
+//! shows CON-009's words; nothing else runs. INT-038's stop runs on the pre-code screen (after the
+//! 911 check) and after `receive_text` (`conversation::stop_if_under_18`; under 13 the session row
+//! goes in the same transaction). The first message's language code is kept on the session and
+//! decides the consent text's language, and TXT-041's line, in [`check_code`].
 
 use std::net::IpAddr;
 
-use askhava_messaging::api::{Language, SendWindow, render, send_window};
+use askhava_messaging::api::{
+    CONFIRMATION_TEMPLATE, Detected, Language, RevokeChannel, SendWindow, detect_opt_out, render,
+    send_window, suppress_indexed,
+};
 use askhava_ops::api::Actor;
-use askhava_privacy::api::{NewContact, Vault, VaultError, find_by_phone, store_contact};
+use askhava_privacy::api::{
+    NewContact, Vault, VaultError, find_by_phone, phone_digests, store_contact,
+};
 use jiff::Timestamp;
 use jiff_sqlx::ToSqlx;
 use secrecy::{ExposeSecret, SecretString};
@@ -34,14 +47,16 @@ use sqlx::types::Uuid;
 use sqlx::{Connection, PgConnection};
 use thiserror::Error;
 
-use crate::conversation::{BUSINESS_SIGNUP_TEMPLATE, queue_text, shows_business_intent};
+use crate::conversation::{
+    BUSINESS_SIGNUP_TEMPLATE, queue_text, shows_business_intent, stop_if_under_18,
+};
 use crate::emergency::{Check, check};
 use crate::limits::{Admission, admit_new_request};
 use crate::models::{self, IntakeError};
-use crate::order::{Path, Step, keep_words, order};
+use crate::order::{Path, SPANISH_NOT_YET_TEMPLATE, Step, keep_words, order};
 use crate::rules::{
-    Inbound, SAFETY_TEMPLATE, Settings, consent_language, consent_template, language_code,
-    wanted_language,
+    AgeStop, Inbound, SAFETY_TEMPLATE, Settings, UNDER_18_TEMPLATE, age_stop, consent_language,
+    consent_template, language_code, language_from_code, wanted_language,
 };
 use crate::service::{Handled, Queued, TextIn, audit_action, consent_version, receive_text};
 
@@ -106,7 +121,9 @@ pub struct ChatIn<'a> {
 /// What [`chat_message`] did.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ChatAnswer {
-    /// Before the code: a text for the chat to show (`template`, rendered), nothing queued.
+    /// A text for the chat to show (`template`, rendered): before the code, with nothing queued;
+    /// at any time, an opt-out's CON-009 confirmation (on screen, never texted, CON-035); and
+    /// after the code, INT-038's reply, also queued as a text as on the text path (D-4292).
     Shown(&'static str, String),
     /// Before the code, nothing to show: the page asks for her mobile number.
     AskNumber,
@@ -147,6 +164,8 @@ struct Session {
     sent: bool,
     tries: i32,
     conversation: Option<Uuid>,
+    /// The first message's language code (`en` or `es`), never its words (PRIV-008, D-4292).
+    language: Option<String>,
 }
 
 /// CON-025, CON-026, D-4044, D-4057: the consent text the request page shows above the chat box,
@@ -219,7 +238,8 @@ fn digest(key: &SecretString) -> Vec<u8> {
 async fn session(db: &mut PgConnection, key: &SecretString) -> Result<Session, ChatError> {
     let row = sqlx::query!(
         "SELECT id, request_source, first_message_id, contact_id, wrong_tries, conversation_id, \
-         code_sent_at IS NOT NULL AS \"sent!\" FROM intake.web_chat_session WHERE key_digest = $1",
+         language, code_sent_at IS NOT NULL AS \"sent!\" FROM intake.web_chat_session \
+         WHERE key_digest = $1",
         digest(key)
     )
     .fetch_optional(db)
@@ -234,16 +254,20 @@ async fn session(db: &mut PgConnection, key: &SecretString) -> Result<Session, C
         sent: row.sent,
         tries: row.wrong_tries,
         conversation: row.conversation_id,
+        language: row.language,
     })
 }
 
-/// INT-002, INT-020, CON-025, AI-021, PRIV-008: one chat message. Before the code it is screened
-/// only ([`ChatAnswer::Shown`] or [`ChatAnswer::AskNumber`]); after it, it runs the text path
-/// and, in a request with a job, is kept under its message ID.
+/// INT-002, INT-020, INT-038, CON-008, CON-010, CON-025, CON-035, AI-021, PRIV-008, D-4292: one
+/// chat message. Before the code it is screened only ([`ChatAnswer::Shown`] or
+/// [`ChatAnswer::AskNumber`]) and its language code kept. After it, an opt-out word or phrase
+/// lists the session's number at once ([`ChatAnswer::Shown`] with CON-009's words, nothing texted,
+/// no job changed); any other message runs the text path and then INT-038's stop, in one
+/// transaction, and, in a request with a job, is kept under its message ID.
 ///
 /// # Errors
 ///
-/// [`ChatError::UnknownSession`], or the text path's errors.
+/// [`ChatError::UnknownSession`], [`ChatError::Vault`], or the text path's errors.
 pub async fn chat_message(
     db: &mut PgConnection,
     secret: &SecretString,
@@ -253,13 +277,33 @@ pub async fn chat_message(
 ) -> Result<ChatAnswer, ChatError> {
     let s = session(db, key).await?;
     let (Some(contact), Some(request)) = (s.contact, s.conversation) else {
-        first_message(db, s.id, msg.message_id).await?;
+        first_message(db, s.id, msg).await?;
         return screen(msg.words, settings).map_err(ChatError::from);
     };
+    if let Some(how) = detect_opt_out(msg.words) {
+        return opt_out(db, (contact, &s), how, msg.received_at).await;
+    }
     if models::open_conversation(db, contact).await? != Some(request) {
-        start_again(db, s.id, msg.message_id).await?;
+        start_again(db, s.id, msg).await?;
         return screen(msg.words, settings).map_err(ChatError::from);
     }
+    let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
+    let answer = text_turn(&mut tx, secret, (&s, contact, request), msg, settings).await?;
+    tx.commit().await.map_err(|_| IntakeError::Database)?;
+    Ok(answer)
+}
+
+/// After the code (INT-002, INT-038, PRIV-008, D-4142, D-4292): the text path, then INT-038's
+/// stop on the request it went on, as `replies::stop_after` does after the 911 screen. A stop
+/// shows INT-038's reply (its text queued by the stop); under 13 the session row goes too, in this
+/// transaction, so nothing of it remains. Otherwise, in a request with a job, the words are kept.
+async fn text_turn(
+    tx: &mut PgConnection,
+    secret: &SecretString,
+    (s, contact, request): (&Session, Uuid, Uuid),
+    msg: &ChatIn<'_>,
+    settings: Settings,
+) -> Result<ChatAnswer, ChatError> {
     let inbound = Inbound {
         words: msg.words,
         opt_out: false,
@@ -273,28 +317,100 @@ pub async fn chat_message(
         inbound,
         received_at: msg.received_at,
     };
-    let handled = receive_text(db, secret, &text, settings).await?;
-    if let Some(job) = models::conversation(db, request)
+    let handled = receive_text(tx, secret, &text, settings).await?;
+    let spanish_on = settings.spanish_conversations_on;
+    if let Some(conversation) = handled.conversation
+        && let Some((stop, _)) =
+            stop_if_under_18(tx, secret, &text, conversation, spanish_on).await?
+    {
+        if stop == AgeStop::Under13 {
+            forget_session(tx, s.id).await?;
+        }
+        let language = wanted_language(msg.words, None);
+        return shown(UNDER_18_TEMPLATE, language, spanish_on).map_err(ChatError::from);
+    }
+    if let Some(job) = models::conversation(tx, request)
         .await?
         .and_then(|c| c.job_id)
     {
         let words = (msg.words, msg.received_at);
-        keep_words(db, (request, job), msg.message_id, words).await?;
+        keep_words(tx, (request, job), msg.message_id, words).await?;
     }
     Ok(ChatAnswer::Texted(handled))
 }
 
+/// INT-038, PRIV-007, D-4726: an under-13 stop deletes the session row (its contact and language).
+async fn forget_session(tx: &mut PgConnection, id: Uuid) -> Result<(), IntakeError> {
+    sqlx::query!("DELETE FROM intake.web_chat_session WHERE id = $1", id)
+        .execute(tx)
+        .await
+        .map(|_| ())
+        .map_err(|_| IntakeError::Database)
+}
+
+/// CON-008, CON-010, CON-022, CON-035, D-4418, D-4473: an opt-out typed after the code lists the
+/// session contact's number by its stored blind-index digests (no vault, no plaintext read, no
+/// contact row lock) with channel `web_chat` at `now`, and answers CON-009's words on screen,
+/// never by text; no job or request changes (JOB-020). A contact with no digest lists nothing.
+async fn opt_out(
+    db: &mut PgConnection,
+    (contact, s): (Uuid, &Session),
+    how: Detected,
+    now: Timestamp,
+) -> Result<ChatAnswer, ChatError> {
+    let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
+    let digests = phone_digests(&mut tx, contact)
+        .await
+        .map_err(|_| ChatError::Vault)?;
+    if digests.is_empty() {
+        return Err(ChatError::Vault);
+    }
+    suppress_indexed(
+        &mut tx,
+        &digests,
+        (RevokeChannel::WebChat, &how.label()),
+        now,
+    )
+    .await
+    .map_err(|_| IntakeError::Outbox)?;
+    tx.commit().await.map_err(|_| IntakeError::Database)?;
+    let kept = s.language.as_deref().map(language_from_code);
+    confirmation(how, kept.unwrap_or(Language::En)).map_err(ChatError::from)
+}
+
+/// CON-009, CON-035: the opt-out confirmation's words for the page, in Spanish for a Spanish word
+/// or phrase or a Spanish chat.
+fn confirmation(how: Detected, language: Language) -> Result<ChatAnswer, IntakeError> {
+    let spanish = how.spanish() || language == Language::Es;
+    let language = if spanish { Language::Es } else { Language::En };
+    shown(CONFIRMATION_TEMPLATE, language, false)
+}
+
+/// `template` rendered in `language` (as the registry allows) for the chat to show.
+fn shown(
+    template: &'static str,
+    language: Language,
+    spanish_on: bool,
+) -> Result<ChatAnswer, IntakeError> {
+    let body = render(template, language, spanish_on, &[])
+        .map_err(|_| IntakeError::Template)?
+        .body;
+    Ok(ChatAnswer::Shown(template, body))
+}
+
 /// SEC-014, INT-047, CON-005, D-1951, D-4056: the session's request has closed, so the session
 /// goes back to before the code (no contact, no code, no tries, no request, `message` its first
-/// message): a new request opens only through [`check_code`], under the new-request limit, with
-/// the session's source and a `web_chat` consent record, never through the text path.
-async fn start_again(db: &mut PgConnection, id: Uuid, message: Uuid) -> Result<(), IntakeError> {
+/// message, its language code kept): a new request opens only through [`check_code`], under the
+/// new-request limit, with the session's source and a `web_chat` consent record, never through
+/// the text path.
+async fn start_again(db: &mut PgConnection, id: Uuid, msg: &ChatIn<'_>) -> Result<(), IntakeError> {
     sqlx::query!(
         "UPDATE intake.web_chat_session SET first_message_id = $2, contact_id = NULL, \
-         code_sent_at = NULL, wrong_tries = 0, verified_at = NULL, conversation_id = NULL \
-         WHERE id = $1",
+         code_sent_at = NULL, wrong_tries = 0, verified_at = NULL, conversation_id = NULL, \
+         language = $3 WHERE id = $1",
         id,
-        message
+        msg.message_id,
+        language_code(wanted_language(msg.words, None))
     )
     .execute(db)
     .await
@@ -302,34 +418,41 @@ async fn start_again(db: &mut PgConnection, id: Uuid, message: Uuid) -> Result<(
     .map_err(|_| IntakeError::Database)
 }
 
-/// The pre-code screen (INT-002, INT-004, INT-020): the stem match first, then the phrase list.
+/// The pre-code screen (INT-002, INT-004, INT-020, INT-038, CON-008, CON-010, D-4292): the stem
+/// match first, then an opt-out (CON-009's words, nothing listed: no number yet), a stated age
+/// under 18 (INT-038's reply), then the phrase list; only a message with none asks the number.
 fn screen(words: &str, settings: Settings) -> Result<ChatAnswer, IntakeError> {
-    let template = match check(words, false) {
-        Check::Match(_) => SAFETY_TEMPLATE,
-        Check::Clear | Check::BeepQuestion if shows_business_intent(words) => {
-            BUSINESS_SIGNUP_TEMPLATE
-        }
-        Check::Clear | Check::BeepQuestion => return Ok(ChatAnswer::AskNumber),
-    };
     let wanted = wanted_language(words, None);
-    let language = consent_language(wanted, settings.spanish_conversations_on);
-    let language = if template == SAFETY_TEMPLATE {
-        wanted
-    } else {
-        language
-    };
-    let body = render(template, language, settings.spanish_conversations_on, &[])
-        .map_err(|_| IntakeError::Template)?
-        .body;
-    Ok(ChatAnswer::Shown(template, body))
+    let spanish_on = settings.spanish_conversations_on;
+    if matches!(check(words, false), Check::Match(_)) {
+        return shown(SAFETY_TEMPLATE, wanted, spanish_on);
+    }
+    if let Some(how) = detect_opt_out(words) {
+        return confirmation(how, wanted);
+    }
+    if age_stop(words).is_some() {
+        return shown(UNDER_18_TEMPLATE, wanted, spanish_on);
+    }
+    if shows_business_intent(words) {
+        let language = consent_language(wanted, spanish_on);
+        return shown(BUSINESS_SIGNUP_TEMPLATE, language, spanish_on);
+    }
+    Ok(ChatAnswer::AskNumber)
 }
 
-async fn first_message(db: &mut PgConnection, id: Uuid, message: Uuid) -> Result<(), IntakeError> {
+/// PRIV-008, TXT-002, D-4292: the session's first message ID and its language code (never its
+/// words), both kept from the first message on.
+async fn first_message(
+    db: &mut PgConnection,
+    id: Uuid,
+    msg: &ChatIn<'_>,
+) -> Result<(), IntakeError> {
     sqlx::query!(
-        "UPDATE intake.web_chat_session SET first_message_id = COALESCE(first_message_id, $2) \
-         WHERE id = $1",
+        "UPDATE intake.web_chat_session SET first_message_id = COALESCE(first_message_id, $2), \
+         language = CASE WHEN first_message_id IS NULL THEN $3 ELSE language END WHERE id = $1",
         id,
-        message
+        msg.message_id,
+        language_code(wanted_language(msg.words, None))
     )
     .execute(db)
     .await
@@ -463,7 +586,11 @@ async fn wrong_try(db: &mut PgConnection, id: Uuid) -> Result<(), IntakeError> {
 
 /// The right code, in one transaction: SEC-014's limit first (a refusal opens nothing), then the
 /// request (or her open one, with no second consent text, CON-027), its source, the consent text
-/// and the consent record (channel `web_chat`, this session, the text's version; CON-005).
+/// and the consent record (channel `web_chat`, this session, the text's version; CON-005). The
+/// language is Spanish when the session's first message read as Spanish (TXT-002, D-4292), else
+/// the page's (D-4057, D-4468); with Spanish conversations off, a Spanish first message gets
+/// TXT-041's line right after the consent text, as `order::spanish_line` queues it (same subject,
+/// so once per request, TXT-011).
 async fn open_verified(
     tx: &mut PgConnection,
     secret: &SecretString,
@@ -480,7 +607,13 @@ async fn open_verified(
     }
     let settings = chat.settings;
     let template = consent_template(settings.safety_call_on);
-    let language = consent_language(chat.language, settings.spanish_conversations_on);
+    let first_spanish = s.language.as_deref() == Some("es");
+    let wanted = if first_spanish {
+        Language::Es
+    } else {
+        chat.language
+    };
+    let language = consent_language(wanted, settings.spanish_conversations_on);
     let homeowner = models::homeowner_for(tx, contact, now).await?;
     let first = (homeowner, s.first.unwrap_or(s.id));
     let names = (language_code(language), template);
@@ -492,7 +625,11 @@ async fn open_verified(
     };
     let text = (template, language);
     let spanish = settings.spanish_conversations_on;
-    let queued = queue_text(tx, secret, contact, text, &[id], spanish).await?;
+    let mut queued = vec![queue_text(tx, secret, contact, text, &[id], spanish).await?];
+    if !spanish && first_spanish {
+        let not_yet = (SPANISH_NOT_YET_TEMPLATE, Language::Es);
+        queued.push(queue_text(tx, secret, contact, not_yet, &[id], false).await?);
+    }
     let body = render(template, language, spanish, &[])
         .map_err(|_| IntakeError::Template)?
         .body;
@@ -500,7 +637,7 @@ async fn open_verified(
     record(tx, (homeowner, id, s), &version, now).await?;
     verified(tx, s.id, id, now).await?;
     audit_action(tx, Actor::Homeowner(homeowner), "intake.consent_sent", id).await?;
-    Ok(Checked::Verified(id, vec![queued]))
+    Ok(Checked::Verified(id, queued))
 }
 
 /// The request's INT-047 source and its CON-005 consent record (channel `web_chat`).

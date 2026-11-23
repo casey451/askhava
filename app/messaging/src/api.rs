@@ -111,7 +111,7 @@ pub use crate::open_cards_digest::{DigestFacts, MIN_LEFT, digest_goes, listable,
 pub use crate::optout::{
     FollowUp, InboundText, ListingKey, OPTOUT_FOLLOWUP_KIND, Outcome, RevokeChannel, listed_by,
     listing_key, on_inbound_text, queue_optout_followup, run_optout_followup, send_checked,
-    still_unlisted, suppress,
+    still_unlisted, suppress, suppress_indexed,
 };
 pub use crate::optout_email::{
     OPTOUT_CONFIRMATION_EMAIL, OPTOUT_WROTE_AGAIN_EMAIL, OptOutEmailSender, WROTE_AGAIN_ACTION,
@@ -169,6 +169,7 @@ pub use crate::spanish_switch::{
     turn_spanish_off, turn_spanish_on,
 };
 pub use crate::status::DeliveryStatus;
+pub use crate::suppression_backlog::suppression_backlog;
 pub use crate::suppression_rekey::{
     INDEX_VERSION_RETIRED_ACTION, RekeyError, rekey_suppression_batch, retire_index_version,
 };

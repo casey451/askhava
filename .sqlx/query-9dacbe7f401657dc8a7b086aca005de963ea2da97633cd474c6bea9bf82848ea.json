@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE privacy.update_email SET bounced_at = $2 WHERE id = $1 AND bounced_at IS NULL",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "9dacbe7f401657dc8a7b086aca005de963ea2da97633cd474c6bea9bf82848ea"
+}

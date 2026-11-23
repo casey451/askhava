@@ -202,6 +202,10 @@ pub use crate::owner_auth::{
 pub use crate::owner_complaint::{
     CountRefused, ProblemReport, count_problem_as_complaint, problem_reports,
 };
+pub use crate::owner_complaint::{
+    OWNER_PROBLEM_COMPLAINT_ROUTE, OWNER_PROBLEM_REPORTS_ROUTE, PROBLEM_KIND_CHOICES, PressRefused,
+    owner_problem_reports_page,
+};
 pub use crate::owner_help::{
     OWNER_HELP_CLOSE_ROUTE, OWNER_HELP_REPLY_ROUTE, OWNER_HELP_ROUTE, OWNER_REPLY_MAX,
     OWNER_REPLY_TEMPLATE, ReplyRefusal, owner_help_routes, reply_body, screen_reply,
@@ -230,6 +234,10 @@ pub use crate::owner_step_up_page::{
     OWNER_SIGN_OUT_ALL_ROUTE, OWNER_SIGN_OUT_ROUTE, OWNER_STEP_UP_ROUTE, StepUpScreen,
     owner_signed_out, owner_step_up_page,
 };
+pub use crate::phone_approval::{
+    APPROVE_PHONE_ROUTE, PHONES_ROUTE, PhonesNote, REJECT_PHONE_ROUTE, ShownPhone,
+    phone_approval_page, posted_phone,
+};
 pub use crate::photo_upload::{
     HEIC_ERROR, PHOTO_UPLOAD_ROUTE, REASK_ERROR, TOO_BIG_ERROR, TOO_MANY_PIXELS_ERROR,
     UploadScreen, photo_upload_page, upload_screen,
@@ -241,7 +249,7 @@ pub use crate::pick_flow::{
 pub use crate::quote_cards::CARD_FALLBACK_NAME;
 pub use crate::quote_page::{
     CLOSE_ROUTE, Numbered, QUOTE_PAGE_ROUTE, TOKEN_LIFE_AFTER_CLOSE, number_quotes,
-    quote_page_routes, token_expired,
+    quote_page_routes, quote_page_routes_with, token_expired,
 };
 pub use crate::receipts_page::{
     Basis, WHY_CHARGED_ROUTE, WhyCharged, why_charged_page, why_charged_page_without_basis,
@@ -276,3 +284,4 @@ pub use crate::step_up_page::{
     BusinessStepUpScreen, CODE_LIFE as STEP_UP_CODE_LIFE, ReturnPath, StepUpCodes,
     business_step_up_page, check_step_up_code, send_step_up_code,
 };
+pub use crate::update_channel::{UPDATES_CONFIRM_ROUTE, UPDATES_ROUTE};

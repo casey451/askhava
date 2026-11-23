@@ -83,10 +83,11 @@ use std::sync::Arc;
 
 use askama::Template;
 use askhava_adapters::api::VerifyAdapter;
+use askhava_businesses::api::public_names;
 use askhava_core::api::{ClientIpPolicy, Clock, LinkToken};
 use askhava_intake::api::{
-    Admission, JobHomeowner, TermsAcceptance, TermsChannel, job_homeowner, paused_by_homeowner,
-    paused_under_lock, record_terms_acceptance,
+    Admission, JobHomeowner, TermsAcceptance, TermsChannel, job_homeowner, job_language,
+    paused_by_homeowner, paused_under_lock, record_terms_acceptance,
 };
 use askhava_jobs::api::quote_token::resolve;
 use askhava_jobs::api::{JobStatus, current, job_number};
@@ -262,9 +263,8 @@ impl ReviewView {
         self.backup == Some(*n)
     }
 
-    /// The same view with the Terms line in `language` (PICK-016). Only tests call it until the
-    /// page reads the request's language (D-1236 item 5, D-1249).
-    #[cfg(test)]
+    /// The same view with the Terms line and the share box in `language` (PICK-016, PICK-049);
+    /// [`review_view`] gives it the request's language (D-4052 item B42).
     #[must_use]
     pub(crate) fn in_language(mut self, language: PageLanguage) -> Self {
         self.terms = language.terms();
@@ -272,9 +272,8 @@ impl ReviewView {
         self
     }
 
-    /// The same view naming `business` in the share box (PICK-049). Only tests call it until the
-    /// page reads business names (D-3032).
-    #[cfg(test)]
+    /// The same view naming `business` in the share box (PICK-049, D-3032); [`review_view`]
+    /// gives it the business's public name (D-4052 item B42).
     #[must_use]
     pub(crate) fn for_business(mut self, business: &str) -> Self {
         self.business = Some(business.to_owned());
@@ -466,9 +465,8 @@ async fn review<V>(
     };
     let csrf = csrf_token(&jar).unwrap_or_default();
     let cookie = tier.map(|t| tier_cookie(&raw, form.quote, &t));
-    let mut view = ReviewView::review(request, form.quote, raw, csrf);
+    let mut view = review_view(&flow, (job, request, &bound), form.quote, (raw, csrf)).await;
     view.others = others;
-    view.bound = bound.business.to_string();
     match cookie {
         Some(cookie) => (jar.add(cookie), render(view)).into_response(),
         None => render(view),
@@ -493,27 +491,19 @@ where
     let found = pickable(&flow, &raw, &form).await;
     if let (
         Ok(Pickable::Open {
+            job,
             request,
             bound,
             backups,
-            ..
         }),
         false,
     ) = (&found, form.share == "yes")
     {
-        return render(refused((*request, bound), &form, backups, (raw, csrf)));
+        let view = review_view(&flow, (*job, *request, bound), form.quote, (raw, csrf)).await;
+        return render(refused(view, &form, backups));
     }
     let Some(keys) = flow.keys.clone() else {
-        return match found {
-            Ok(Pickable::Open { request, bound, .. }) => {
-                let mut view = ReviewView::review(request, form.quote, raw, csrf);
-                view.not_open = true;
-                view.bound = bound.business.to_string();
-                render(view)
-            }
-            Ok(Pickable::Confirmed { .. } | Pickable::No) => back(&raw, form.quote),
-            Err(status) => status.into_response(),
-        };
+        return without_keys(&flow, found, form.quote, (raw, csrf)).await;
     };
     let (job, request, bound, backups) = match found {
         Ok(Pickable::Open {
@@ -537,6 +527,31 @@ where
     let mut view = CodeView::arrival(request, form.quote, raw, csrf);
     view.bound = bound.business.to_string();
     started(&flow, (&keys, ip), (job, bound, tiered), view).await
+}
+
+/// The final Pick of quote `quote` without Verify keys: the review again, in the request's
+/// language, under "Nothing was picked" (D-1248, D-1251, D-4052 item B42); a quote that can't be
+/// picked goes back to the quote page, a bad link is its bare status.
+async fn without_keys<V>(
+    flow: &PickFlow<V>,
+    found: Result<Pickable, StatusCode>,
+    quote: usize,
+    link: (String, String),
+) -> Response {
+    match found {
+        Ok(Pickable::Open {
+            job,
+            request,
+            bound,
+            ..
+        }) => {
+            let mut view = review_view(flow, (job, request, &bound), quote, link).await;
+            view.not_open = true;
+            render(view)
+        }
+        Ok(Pickable::Confirmed { .. } | Pickable::No) => back(&link.0, quote),
+        Err(status) => status.into_response(),
+    }
 }
 
 /// The final Pick's checks before a code: the package she chose, when the quote has packages
@@ -653,15 +668,48 @@ impl NoTier {
     }
 }
 
-/// PICK-049, A11Y-011, A11Y-012, D-3032: the review shown again after a final Pick with the share
-/// box unticked: nothing sent or stored, the posted backup kept, the box unticked with its error.
-fn refused(
-    (request, bound): (i64, &Bound),
-    form: &PickForm,
-    backups: &[(usize, usize)],
+/// PICK-016, PICK-049, TXT-039, CON-026, D-4052 (B42): the review step for quote `quote` of
+/// job `job` (request number `request`) bound to `bound`, behind link and CSRF token `link`, in
+/// the request's language (`intake::api::job_language`) and naming the business's public name in
+/// the share box; a failed read keeps the English page with the generic wording, never an error.
+async fn review_view<V>(
+    flow: &PickFlow<V>,
+    (job, request, bound): (Uuid, i64, &Bound),
+    quote: usize,
     link: (String, String),
 ) -> ReviewView {
-    let mut view = ReviewView::review(request, form.quote, link.0, link.1);
+    let mut view = ReviewView::review(request, quote, link.0, link.1);
+    view.bound = bound.business.to_string();
+    let Some((language, name)) = review_reads(flow, job, bound.business).await else {
+        return view;
+    };
+    if language == Language::Es {
+        view = view.in_language(PageLanguage::Es);
+    }
+    match name {
+        Some(name) => view.for_business(&name),
+        None => view,
+    }
+}
+
+/// The review step's reads for job `job` and business `business`: the request's language and the
+/// business's public name (`None` when it has none that passes the screen); `None` when a read
+/// fails (D-4052 item B42).
+async fn review_reads<V>(
+    flow: &PickFlow<V>,
+    job: Uuid,
+    business: Uuid,
+) -> Option<(Language, Option<String>)> {
+    let mut db = flow.pool.acquire().await.ok()?;
+    let language = job_language(&mut db, job).await.ok()?;
+    let names = public_names(&mut db, &[business]).await.ok()?;
+    Some((language, names.into_iter().next().map(|(_, name)| name)))
+}
+
+/// PICK-049, A11Y-011, A11Y-012, D-3032: `view`, the review shown again after a final Pick with
+/// the share box unticked: nothing sent or stored, the posted backup kept, the box unticked with
+/// its error.
+fn refused(mut view: ReviewView, form: &PickForm, backups: &[(usize, usize)]) -> ReviewView {
     let others = numbers(backups);
     view.backup = form
         .backup
@@ -670,7 +718,6 @@ fn refused(
         .ok()
         .filter(|n| others.contains(n));
     view.others = others;
-    view.bound = bound.business.to_string();
     view.share_error = true;
     view
 }

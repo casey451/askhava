@@ -412,7 +412,7 @@ pub async fn latest_check_allows_card(
     )
     .fetch_optional(&mut *conn)
     .await)?;
-    Ok(latest.is_some_and(|r| r.status == "active" && r.fresh))
+    Ok(latest.is_some_and(|r| r.fresh && r.status == "active"))
 }
 
 /// Matches one business's own names on the latest city list (LIC-010, LIC-011); `Pending` before

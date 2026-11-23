@@ -24,8 +24,8 @@ use askhava_intake::api::rules::{
 };
 use askhava_intake::api::{
     CHOICE_TEMPLATE, COUNT_MANY_TEMPLATE, EMERGENCY_RELEASED_KIND, HOW_SOON_TEMPLATE, Handled,
-    NEEDED_BY_TEMPLATE, NIGHT_MANY_TEMPLATE, NIGHT_NONE_TEMPLATE, RawReply, Reply,
-    SPANISH_NOT_YET_TEMPLATE, TRADE_QUESTION_TEMPLATE, TextIn, ZIP_QUESTION_TEMPLATE,
+    NEEDED_BY_TEMPLATE, NIGHT_MANY_TEMPLATE, NIGHT_NONE_TEMPLATE, PHOTO_ASK_TEMPLATE, RawReply,
+    Reply, SPANISH_NOT_YET_TEMPLATE, TRADE_QUESTION_TEMPLATE, TextIn, ZIP_QUESTION_TEMPLATE,
     receive_raw_reply,
 };
 use askhava_integration::set_app_role;
@@ -414,8 +414,9 @@ async fn td_int_46_at_night_with_no_business_no_choice_is_offered(mut db: Db) {
 }
 
 /// TD-INT-46 (INT-029, INT-039): an Emergency choice stored before the ZIP releases the job when
-/// the ZIP comes in, once. The handyman set has no question marked for emergency jobs, so the
-/// name-and-address question follows the coverage line, with no "How soon?" and no choice.
+/// the ZIP comes in, once. The handyman set has no question marked for emergency jobs, so step
+/// 9's photo ask follows the coverage line (after the card, INT-029), with no "How soon?" and no
+/// choice; "no" then gets the name-and-address question (D-5459).
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_int_46_the_zip_after_an_emergency_choice_releases_the_job(mut db: Db) {
     setup(&mut db, false).await;
@@ -425,10 +426,12 @@ async fn td_int_46_the_zip_after_an_emergency_choice_releases_the_job(mut db: Db
     plant(&mut db, id, ("emergency_choice", "emergency"), 1).await;
     assert_eq!(released(&mut db).await, 0, "no ZIP yet");
     let zip = sent(&mut db, 0x0555_0409, HOME_ZIP, 2).await;
-    let texts = [COUNT_MANY_TEMPLATE, NAME_ADDRESS_TEMPLATE];
+    let texts = [COUNT_MANY_TEMPLATE, PHOTO_ASK_TEMPLATE];
     assert_eq!(zip, texts, "every text, in order");
     assert_eq!(released(&mut db).await, 1);
-    let next = sent(&mut db, 0x0555_0409, "1", 3).await;
+    let photos = sent(&mut db, 0x0555_0409, "no", 3).await;
+    assert_eq!(photos, [NAME_ADDRESS_TEMPLATE], "step 11 after step 9");
+    let next = sent(&mut db, 0x0555_0409, "1", 4).await;
     assert_eq!(
         next,
         [NAME_ADDRESS_TEMPLATE],

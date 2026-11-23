@@ -35,6 +35,7 @@ use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
 use crate::models::{HoldSource, VaultError};
+use crate::update_email::forget_update_address;
 
 /// The PRIV-011 sentence "Delete my data" confirms with (D-214).
 pub const DELETE_CONFIRMATION: &str = "We keep your phone number, locked, for 5 years only as proof of your texting permission and opt-out.";
@@ -378,7 +379,8 @@ async fn alert_if_last(
 }
 
 /// PRIV-007, D-079: clears contact `id`'s name, email, address and on-site contact, its email
-/// index and every name she stated in a text (`privacy.stated_name`, AI-020, D-1752), keeps the
+/// index, every name she stated in a text (`privacy.stated_name`, AI-020, D-1752) and her
+/// quote-page update address (`privacy.update_email`, TXT-018, D-4727), keeps the
 /// sealed phone and its homeowner-phone index, and audits it once (`contact_purged`); true when
 /// anything was left to clear. Inside the caller's transaction it runs as a savepoint, so the
 /// retention purge decides and clears in one transaction (D-1839); its `UPDATE` takes the contact
@@ -405,12 +407,7 @@ pub async fn purge_contact(db: &mut PgConnection, id: Uuid) -> Result<bool, Vaul
     .execute(&mut *tx)
     .await
     .map_err(db_err)?;
-    let stated = sqlx::query!("DELETE FROM privacy.stated_name WHERE contact_id = $1", id)
-        .execute(&mut *tx)
-        .await
-        .map_err(db_err)?
-        .rows_affected();
-    let cleared = cleared + stated;
+    let cleared = cleared + forget_said(&mut tx, id).await?;
     if cleared > 0 {
         let entry = AuditEntry {
             actor: Actor::System,
@@ -425,6 +422,21 @@ pub async fn purge_contact(db: &mut PgConnection, id: Uuid) -> Result<bool, Vaul
     }
     tx.commit().await.map_err(db_err)?;
     Ok(cleared > 0)
+}
+
+/// PRIV-007, AI-020, D-1752, D-4727: deletes contact `id`'s stated names and her quote-page update
+/// address (`privacy.update_email`, TXT-018), which the contact row's nulled fields would never
+/// cascade to; how many rows went.
+///
+/// # Errors
+/// [`VaultError::Database`].
+async fn forget_said(db: &mut PgConnection, id: Uuid) -> Result<u64, VaultError> {
+    let stated = sqlx::query!("DELETE FROM privacy.stated_name WHERE contact_id = $1", id)
+        .execute(&mut *db)
+        .await
+        .map_err(db_err)?
+        .rows_affected();
+    Ok(stated + forget_update_address(db, id).await?)
 }
 
 /// PRIV-011, D-214: "Delete my data" for contact `id` and the jobs the caller found for it: the
