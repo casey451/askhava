@@ -1,21 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-23T17:04:52Z by runner 7f19bc708773 (actions).
+Updated 2026-11-23T17:13:52Z by runner 4ad59087c0d9 (actions).
 
 **Building: T222 in progress since 16:16Z; 634 of 777 done; week 79% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 634 of 777 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T222 claimed 16:16Z, lease until 19:16Z; lane 3: T745 claimed 14:48Z, lease until 17:48Z; lane 4: T649 claimed 15:45Z, lease until 18:45Z
+- **Lane:** lane 1: T222 claimed 16:16Z, lease until 20:13Z; lane 3: T745 claimed 14:48Z, lease until 17:48Z; lane 4: T649 claimed 15:45Z, lease until 18:45Z
 - **Week:** 79% used, 31.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:04Z, 0 min before this update
+- **Last run:** 17:05Z, 8 min before this update
 - **Keeper:** last ran 17:04Z, next wake 17:50Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T836 (since 2026-11-23T07:59:33Z, no attempt used; a plan change fixes it): T836: kit/runner_log.jsonl is named by D-500, but no task owns it and it does not exist
-- Strict plan check red: 40 problem(s) on tasks still to run (+522 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 42 problem(s) on tasks still to run (+522 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -115,7 +115,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T222 (lease until 2026-11-23T19:16:29Z)
+- T222 (lease until 2026-11-23T20:13:52Z)
 - lane 3: T745 (lease until 2026-11-23T17:48:35Z)
 - lane 4: T649 (lease until 2026-11-23T18:45:21Z)
 
