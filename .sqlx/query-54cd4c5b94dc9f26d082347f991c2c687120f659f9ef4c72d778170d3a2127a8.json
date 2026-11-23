@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE intake.web_chat_session SET first_message_id = COALESCE(first_message_id, $2), language = CASE WHEN first_message_id IS NULL THEN $3 ELSE language END WHERE id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "54cd4c5b94dc9f26d082347f991c2c687120f659f9ef4c72d778170d3a2127a8"
+}

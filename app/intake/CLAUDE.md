@@ -28,6 +28,7 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - INT-032 corrections (D-4441, D-4778): `two_jobs` right after the first ZIP question only (after SAFE or the INT-037 answer on those paths); Guarded by `tests/integration/tests/intake_order_two_jobs_rules.rs`. More: `(never 22)` in NOTES.md.
 - CON-022: the consent sweep clears a vault phone only after `still_unlisted`, its transaction's first statement, answered true for a due number; a listed number keeps its phone through a rotation, a held contact row deletes nothing, and a keyless contact waits in `intake.consent_phone_wait`: `tests/integration/tests/consent_purge.rs` (`td_con_30_*`, T563).
 - Step 12 (D-5039): no business gets a card before SEND or the timer; no card review on the emergency path: `tests/integration/tests/intake_order_flow.rs` (TD-INT-47).
+- Web chat after the code (T645, D-4292): an opt-out word or phrase lists the number (`web_chat`), texts nothing and changes no job; INT-038 stops the chat before and after the code, and under 13 the session row goes with the purge: `app/server/tests/web_chat_stops.rs` (TD-CON-36).
 
 ## Detail
 Everything else about this crate (what it owns, the code behind each requirement ID, change recipes, the tests that guard it, decisions and history) is in `app/intake/NOTES.md`, one entry per line, each starting with its requirement IDs. Grep it by requirement ID, file or word (`grep -n 'FEE-039' app/intake/NOTES.md`); never read it whole. Add your own entries at its end, one line each (`docs/code-docs.md` section 2).
