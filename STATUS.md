@@ -1,21 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-23T17:54:34Z by runner 0aedbd3769e8 (actions).
+Updated 2026-11-23T17:55:19Z by runner f488639937aa (actions).
 
 **Building: T649 in progress since 15:45Z; 636 of 777 done; week 80% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 636 of 777 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 4: T649 claimed 15:45Z, lease until 18:45Z
-- **Week:** 80% used, 31.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:51Z, 3 min before this update
+- **Lane:** lane 4: T649 claimed 15:45Z, lease until 18:45Z; lane 5: T745 claimed 17:55Z, lease until 20:55Z
+- **Week:** 80% used, 32.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 17:55Z, 0 min before this update
 - **Keeper:** last ran 17:50Z, next wake 18:10Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
+- PLAN GAP T688 (since 2026-11-23T17:55:08Z, no attempt used; a plan change fixes it): T688: dependency T121 is DONE but its owned file tests/security/tests/startup_and_supply.rs is not on main
+- PLAN GAP T812 (since 2026-11-23T17:55:08Z, no attempt used; a plan change fixes it): T812: dependency T121 is DONE but its owned file tests/security/tests/startup_and_supply.rs is not on main
 - PLAN GAP T836 (since 2026-11-23T07:59:33Z, no attempt used; a plan change fixes it): T836: kit/runner_log.jsonl is named by D-500, but no task owns it and it does not exist
-- Strict plan check red: 42 problem(s) on tasks still to run (+522 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 40 problem(s) on tasks still to run (+523 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -101,7 +103,7 @@ Updated 2026-11-23T17:54:34Z by runner 0aedbd3769e8 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-23T15:55:51Z (week)): week: 162.1M used, 31.9M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-08T00:34:04Z.
+- Pacing (session_reading 2026-11-23T17:49:29Z (week)): week: 161.8M used, 32.2M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-08T00:04:20Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -118,6 +120,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 4: T649 (lease until 2026-11-23T18:45:21Z)
+- lane 5: T745 (lease until 2026-11-23T20:55:08Z)
 
 ## Last usage reading
 - {"task": "T222", "at": "2026-11-23T17:54:27Z", "output_tokens": 208324, "cache_read_input_tokens": 54231359, "cache_creation_input_tokens": 580741, "input_tokens": 742}
