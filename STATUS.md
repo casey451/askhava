@@ -1,26 +1,27 @@
 # Ask Hava build status
 
-Updated 2026-11-23T04:42:20Z by runner 8871a83b785a (actions).
+Updated 2026-11-23T04:57:03Z by runner f9e32434db51 (actions).
 
 **Building: T716 in progress since 04:41Z; 623 of 775 done; week 71% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 623 of 775 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T716 claimed 04:41Z, lease until 07:41Z; lane 2: T834 claimed 03:31Z, lease until 06:31Z; lane 3: T803 claimed 03:47Z, lease until 06:47Z; lane 4: T611 claimed 04:04Z, lease until 07:04Z; lane 5: T838 claimed 04:41Z, lease until 07:41Z
+- **Lane:** lane 1: T716 claimed 04:41Z, lease until 07:41Z; lane 3: T803 claimed 03:47Z, lease until 06:47Z; lane 4: T611 claimed 04:04Z, lease until 07:04Z; lane 5: T838 claimed 04:41Z, lease until 07:41Z
 - **Week:** 71% used, 47.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:41Z, 0 min before this update
+- **Last run:** 04:42Z, 14 min before this update
 - **Keeper:** last ran 04:36Z, next wake 04:56Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 37 problem(s) on tasks still to run (+513 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 35 problem(s) on tasks still to run (+513 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T834 | ci (harness): Twin and Ally skip their build when nothing th | QUEUED | 2 | 85 min | 04:57Z | After the fix round the reviewer (head f9e32434db512dbbf1f29deb2d94b5848d2e3874) still ends REVIEW-VERDICT: FINDINGS. Fi |
 | T716 | intake: the dispatcher's trade questions at step 5: "Which f | check_failed | 1 | 117 min | 03:28Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
-| T834 | ci (harness): Twin and Ally skip their build when nothing th | QUEUED | 1 | 81 min | 03:19Z | After the fix round the reviewer (head bb8a0ca043baae3c76c5646f5bcc328d948b31ba) still ends REVIEW-VERDICT: FINDINGS. Fi |
+| T834 | ci (harness): Twin and Ally skip their build when nothing th | QUEUED | 1 | 81 min | 03:19Z |  |
 | T712 | server and portals: the owner portal lists PROBLEM reports w | done | 1 | 39 min | 02:36Z |  |
 | T645 | intake and messaging: the web chat honours an opt-out word,  | done | 2 | 2 h 6 min | 01:58Z | PLAN GAP: app/site/src/chat.rs:340 (owned by T593, then T646 and T649; T593 is not merged yet) calls `chat_message(db, & |
 | T837 | runner (harness): the keeper judges work with the real stage | done | 1 | 41 min | 01:47Z |  |
@@ -61,7 +62,6 @@ Updated 2026-11-23T04:42:20Z by runner 8871a83b785a (actions).
 | T828 | ci (harness): gitleaks scans each push's commit range, with  | done | 1 | 84 min | 05:45Z |  |
 | T616 | site: strong per-coding ETags with 304 revalidation, a one-y | done | 2 | 39 min | 05:32Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T803 | messaging (harness): an opted-out number gets no HELP reply; | check_failed | 2 | 63 min | 05:27Z |  |
-| T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 2 | 50 min | 04:44Z |  |
 
 ### Plan and harness merges on main
 - 04:05Z Plan: T121 split into T838 (D-5574); Grok G3 fixes for claimable tasks (D-5585) (#1370)
@@ -74,7 +74,7 @@ Updated 2026-11-23T04:42:20Z by runner 8871a83b785a (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 404 of 735 (55.0%) · partial 318 · unstarted 13
-**Tasks merged (throughput only):** 623 of 775
+**Tasks merged (throughput only):** 623 of 774
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -118,10 +118,9 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T716 (lease until 2026-11-23T07:41:43Z)
-- lane 2: T834 (lease until 2026-11-23T06:31:26Z)
 - lane 3: T803 (lease until 2026-11-23T06:47:06Z)
 - lane 4: T611 (lease until 2026-11-23T07:04:01Z)
 - lane 5: T838 (lease until 2026-11-23T07:41:03Z)
 
 ## Last usage reading
-- {"task": "T716", "at": "2026-11-23T03:28:55Z", "input_tokens": 411, "cache_creation_input_tokens": 444518, "output_tokens": 147426, "cache_read_input_tokens": 24919743}
+- {"task": "T834", "at": "2026-11-23T04:57:02Z", "cache_creation_input_tokens": 285939, "cache_read_input_tokens": 8799761, "output_tokens": 84185, "input_tokens": 264}
