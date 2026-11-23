@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T05:51:32Z by runner f8232c059a86 (actions).
+Updated 2026-11-23T05:52:02Z by runner f8232c059a86 (actions).
 
 **Building: T716 in progress since 04:41Z; 623 of 775 done; week 71% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 623 of 775 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T716 claimed 04:41Z, lease until 07:41Z; lane 2: T834 claimed 05:03Z, lease until 08:03Z; lane 4: T611 claimed 04:04Z, lease until 07:04Z; lane 5: T838 claimed 04:41Z, lease until 07:41Z
+- **Lane:** lane 1: T716 claimed 04:41Z, lease until 07:41Z; lane 4: T611 claimed 04:04Z, lease until 07:04Z; lane 5: T838 claimed 04:41Z, lease until 07:41Z
 - **Week:** 71% used, 46.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:10Z, 40 min before this update
+- **Last run:** 05:10Z, 41 min before this update
 - **Keeper:** last ran 05:10Z, next wake 07:06Z
 
 ## Needs attention
@@ -19,8 +19,9 @@ Updated 2026-11-23T05:51:32Z by runner f8232c059a86 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T834 | ci (harness): Twin and Ally skip their build when nothing th | MERGE_PENDING | 3 | 48 min | 05:51Z | After the fix round the reviewer (head f9e32434db512dbbf1f29deb2d94b5848d2e3874) still ends REVIEW-VERDICT: FINDINGS. Fi |
 | T803 | messaging (harness): an opted-out number gets no HELP reply; | MERGE_PENDING | 4 | 81 min | 05:08Z | Ci: failure; Checks: cancelled / Checks failed at step: Named mutants of the files this change touches (scripts/run_name |
-| T834 | ci (harness): Twin and Ally skip their build when nothing th | QUEUED | 2 | 85 min | 04:57Z | After the fix round the reviewer (head f9e32434db512dbbf1f29deb2d94b5848d2e3874) still ends REVIEW-VERDICT: FINDINGS. Fi |
+| T834 | ci (harness): Twin and Ally skip their build when nothing th | QUEUED | 2 | 85 min | 04:57Z |  |
 | T716 | intake: the dispatcher's trade questions at step 5: "Which f | check_failed | 1 | 117 min | 03:28Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T834 | ci (harness): Twin and Ally skip their build when nothing th | QUEUED | 1 | 81 min | 03:19Z |  |
 | T712 | server and portals: the owner portal lists PROBLEM reports w | done | 1 | 39 min | 02:36Z |  |
@@ -116,9 +117,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T716 (lease until 2026-11-23T07:41:43Z)
-- lane 2: T834 (lease until 2026-11-23T08:03:30Z)
 - lane 4: T611 (lease until 2026-11-23T07:04:01Z)
 - lane 5: T838 (lease until 2026-11-23T07:41:03Z)
 
 ## Last usage reading
-- {"task": "T803", "at": "2026-11-23T05:08:35Z", "input_tokens": 62, "cache_creation_input_tokens": 80935, "output_tokens": 11060, "cache_read_input_tokens": 1231872}
+- {"task": "T834", "at": "2026-11-23T05:51:32Z", "cache_read_input_tokens": 3897269, "output_tokens": 38820, "input_tokens": 119, "cache_creation_input_tokens": 138573}
