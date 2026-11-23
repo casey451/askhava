@@ -1,27 +1,30 @@
 # Ask Hava build status
 
-Updated 2026-11-23T08:00:34Z by runner e172ee5e2756 (actions).
+Updated 2026-11-23T08:17:24Z by runner 453a46fe0d47 (actions).
 
-**Building: T716 in progress since 06:55Z; 627 of 775 done; week 72% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T646 in progress since 07:59Z; 627 of 775 done; week 72% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 627 of 775 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T716 claimed 06:55Z, lease until 09:55Z; lane 2: T646 claimed 07:59Z, lease until 10:59Z; lane 3: T730 claimed 06:00Z, lease until 09:00Z; lane 5: T588 claimed 07:02Z, lease until 10:02Z
+- **Lane:** lane 2: T646 claimed 07:59Z, lease until 10:59Z; lane 3: T730 claimed 06:00Z, lease until 09:00Z; lane 5: T588 claimed 07:02Z, lease until 10:02Z
 - **Week:** 72% used, 44.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:53Z, 7 min before this update
+- **Last run:** 08:00Z, 16 min before this update
 - **Keeper:** last ran 07:53Z, next wake 09:03Z
 
 ## Needs attention
+- BLOCKED T716: plan gap reported: PLAN GAP: outside ownership: app/intake/src/conversation.rs (purge_child, ~348-362), app/intake/src/models.rs (purge_request). first_text (order_dispatch.rs:272) holds a short trade-naming first text's scrubbed words in quotes.job_description under the request's own ID (no job). If she then says "I'm 12" before the ZIP, stop_if_under_18 runs before order_dispatch, request_jobs is empty, purge_child purges nothing, purge_request deletes only code-only intake tables, so an under-13 sender's words survive INT-038/PRIV-008; the row also escapes the 3-year text purge (no job, no purge task). D-5400; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T716 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
+- PLAN GAP T716 (since 2026-11-23T08:17:23Z, no attempt used; a plan change fixes it): outside ownership: app/intake/src/conversation.rs (purge_child, ~348-362), app/intake/src/models.rs (purge_request). first_text (order_dispatch.rs:272) holds a short trade-naming first text's scrubbed words in quotes.job_description under the request's own ID (no job). If she then says "I'm 12" before the ZIP, stop_if_under_18 runs before order_dispatch, request_jobs is empty, purge_child purges nothing, purge_request deletes only code-only intake tables, so an under-13 sender's words survive INT-038/PRIV-008; the row also escapes the 3-year text purge (no job, no purge task). D-5400's "re-read the first inbox message" option is impossible: messaging.inbox stores no body (migrations/0043_messaging_inbox_delivery.sql:7, PRIV-002). Smallest plan change: purge_child also calls askhava_quotes::api::purge_job_text(tx, conversation), plus a test (two-word first text, then "I'm 12", leaves no job_description row) and a purge for an adult who never sends a ZIP; reword D-5581 and docs/for-casey-review.md. Confirmed by reviewer a1a2363fa41dcc7a8 at head 453a46fe0d47b68ba4e727ce1693faa9f1ef8d33. Separate accepted gap D-5582 (count/send disagreement for handyman+breaker) already logged.
 - PLAN GAP T836 (since 2026-11-23T07:59:33Z, no attempt used; a plan change fixes it): T836: kit/runner_log.jsonl is named by D-500, but no task owns it and it does not exist
-- Strict plan check red: 37 problem(s) on tasks still to run (+514 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 43 problem(s) on tasks still to run (+516 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T716 | intake: the dispatcher's trade questions at step 5: "Which f | BLOCKED | 3 | 81 min | 08:17Z | PLAN GAP: outside ownership: app/intake/src/conversation.rs (purge_child, ~348-362), app/intake/src/models.rs (purge_req |
 | T835 | runner (harness): a cancelled run on a superseded head neith | done | 1 | 52 min | 07:24Z |  |
-| T716 | intake: the dispatcher's trade questions at step 5: "Which f | QUEUED | 2 | 2 h 6 min | 06:48Z | Round 2 review of head ee718d9818e119e105327a88e6a124fedfc3978a: the round-1 licensing finding is fixed (with_licensed_o |
+| T716 | intake: the dispatcher's trade questions at step 5: "Which f | QUEUED | 2 | 2 h 6 min | 06:48Z |  |
 | T611 | portals: depth, type and press on the portal screens through | MERGE_PENDING | 1 | 2 h 20 min | 06:24Z |  |
 | T838 | portals, server and calls: the sign-in, quote-action and sig | done | 1 | 86 min | 06:07Z |  |
 | T834 | ci (harness): Twin and Ally skip their build when nothing th | done | 3 | 48 min | 05:51Z | After the fix round the reviewer (head f9e32434db512dbbf1f29deb2d94b5848d2e3874) still ends REVIEW-VERDICT: FINDINGS. Fi |
@@ -73,7 +76,7 @@ Updated 2026-11-23T08:00:34Z by runner e172ee5e2756 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 403 of 735 (54.8%) · partial 319 · unstarted 13
+**Requirements verified:** 404 of 735 (55.0%) · partial 318 · unstarted 13
 **Tasks merged (throughput only):** 627 of 775
 
 | Area | Verified | Partial | Unstarted | Total |
@@ -85,7 +88,7 @@ Updated 2026-11-23T08:00:34Z by runner e172ee5e2756 (actions).
 | consent | 17 | 18 | 0 | 35 |
 | fees | 27 | 25 | 0 | 52 |
 | intake | 11 | 32 | 0 | 43 |
-| job-cards | 15 | 9 | 0 | 24 |
+| job-cards | 16 | 8 | 0 | 24 |
 | licensing | 36 | 12 | 0 | 48 |
 | lifecycle | 21 | 7 | 0 | 28 |
 | messaging | 26 | 19 | 0 | 45 |
@@ -117,10 +120,10 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T716 (lease until 2026-11-23T09:55:38Z)
+- nothing
 - lane 2: T646 (lease until 2026-11-23T10:59:33Z)
 - lane 3: T730 (lease until 2026-11-23T09:00:46Z)
 - lane 5: T588 (lease until 2026-11-23T10:02:05Z)
 
 ## Last usage reading
-- {"task": "T835", "at": "2026-11-23T07:24:34Z", "cache_read_input_tokens": 1257310, "output_tokens": 19270, "input_tokens": 84, "cache_creation_input_tokens": 95436}
+- {"task": "T716", "at": "2026-11-23T08:17:23Z", "cache_creation_input_tokens": 180376, "input_tokens": 177, "cache_read_input_tokens": 3369562, "output_tokens": 29706}

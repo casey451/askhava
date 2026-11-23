@@ -101661,8 +101661,8 @@
     "T654",
     "T600"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 2,
+   "status": "BLOCKED",
+   "attempts": 3,
    "slug": "intake-order-trade-questions",
    "type": "build",
    "stage": "5",
@@ -101766,6 +101766,29 @@
        "turns": 74
       }
      }
+    },
+    {
+     "attempt": 3,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 62,
+     "head_sha": "453a46fe0d47b68ba4e727ce1693faa9f1ef8d33",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-23T06:55:38Z",
+     "ended_at": "2026-11-23T08:17:23Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 1542483,
+       "turns": 42
+      },
+      "reviewer": {
+       "tokens": 2037338,
+       "turns": 46
+      }
+     }
     }
    ],
    "reviewed_sha": "46dfb4344ce0bf6c3832cd98f88a0a740dbb6980",
@@ -101816,13 +101839,32 @@
    "update_waiting_since": null,
    "update_push_failures": null,
    "merge_turn_since": "2026-11-23T03:44:53Z",
-   "last_failure": "Round 2 review of head ee718d9818e119e105327a88e6a124fedfc3978a: the round-1 licensing finding is fixed (with_licensed_others, test td_int_53_the_breaker_text_needs_the_electrical_license). Remaining finding (INT-017, more a plan gap than a worker bug): card_in (app/intake/src/order_dispatch.rs:1494) stores candidates from final_pairs, which now include electrical's \"breaker trips\" under category handyman with no trade per label. The real send, cards_out.rs:388 (card_pool_at then candidate_jobs), gives every label the handyman category; handyman licence kind is none (docs/catalog/categories.yaml:179) and \"breaker trips\" is not a handyman job type, so it is listed:false and licensing::rules::no_license refuses it for every business. Counterexample: \"handyman needed, my breaker keeps tripping\" + ZIP + reply \"door repair\" gets coverage_count_one, then the card goes to nobody. Fails safe, but count and send disagree. Fix needs the card or cards_out to carry each candidate's trade; D-5333 and D-5582 rule CardFacts, card_pool_at and cards_out.rs out of T716, so it needs a plan change or follow-up task, or a logged acceptance, before merge.",
+   "last_failure": "PLAN GAP: outside ownership: app/intake/src/conversation.rs (purge_child, ~348-362), app/intake/src/models.rs (purge_request). first_text (order_dispatch.rs:272) holds a short trade-naming first text's scrubbed words in quotes.job_description under the request's own ID (no job). If she then says \"I'm 12\" before the ZIP, stop_if_under_18 runs before order_dispatch, request_jobs is empty, purge_child purges nothing, purge_request deletes only code-only intake tables, so an under-13 sender's words survive INT-038/PRIV-008; the row also escapes the 3-year text purge (no job, no purge task). D-5400's \"re-read the first inbox message\" option is impossible: messaging.inbox stores no body (migrations/0043_messaging_inbox_delivery.sql:7, PRIV-002). Smallest plan change: purge_child also calls askhava_quotes::api::purge_job_text(tx, conversation), plus a test (two-word first text, then \"I'm 12\", leaves no job_description row) and a purge for an adult who never sends a ZIP; reword D-5581 and docs/for-casey-review.md. Confirmed by reviewer a1a2363fa41dcc7a8 at head 453a46fe0d47b68ba4e727ce1693faa9f1ef8d33. Separate accepted gap D-5582 (count/send disagreement for handyman+breaker) already logged.",
    "runner_closed_prs": [
     1377
    ],
-   "wip_claim": {
-    "attempt": 3,
-    "remote_sha": "46dfb4344ce0bf6c3832cd98f88a0a740dbb6980"
+   "reason": "plan gap reported: PLAN GAP: outside ownership: app/intake/src/conversation.rs (purge_child, ~348-362), app/intake/src/models.rs (purge_request). first_text (order_dispatch.rs:272) holds a short trade-naming first text's scrubbed words in quotes.job_description under the request's own ID (no job). If she then says \"I'm 12\" before the ZIP, stop_if_under_18 runs before order_dispatch, request_jobs is empty, purge_child purges nothing, purge_request deletes only code-only intake tables, so an under-13 sender's words survive INT-038/PRIV-008; the row also escapes the 3-year text purge (no job, no purge task). D-5400; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T716 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "plan_gap": {
+    "at": "2026-11-23T08:17:23Z",
+    "problems": [
+     "outside ownership: app/intake/src/conversation.rs (purge_child, ~348-362), app/intake/src/models.rs (purge_request). first_text (order_dispatch.rs:272) holds a short trade-naming first text's scrubbed words in quotes.job_description under the request's own ID (no job). If she then says \"I'm 12\" before the ZIP, stop_if_under_18 runs before order_dispatch, request_jobs is empty, purge_child purges nothing, purge_request deletes only code-only intake tables, so an under-13 sender's words survive INT-038/PRIV-008; the row also escapes the 3-year text purge (no job, no purge task). D-5400's \"re-read the first inbox message\" option is impossible: messaging.inbox stores no body (migrations/0043_messaging_inbox_delivery.sql:7, PRIV-002). Smallest plan change: purge_child also calls askhava_quotes::api::purge_job_text(tx, conversation), plus a test (two-word first text, then \"I'm 12\", leaves no job_description row) and a purge for an adult who never sends a ZIP; reword D-5581 and docs/for-casey-review.md. Confirmed by reviewer a1a2363fa41dcc7a8 at head 453a46fe0d47b68ba4e727ce1693faa9f1ef8d33. Separate accepted gap D-5582 (count/send disagreement for handyman+breaker) already logged."
+    ],
+    "paths": [
+     "app/intake/src/conversation.rs (purge_child",
+     "~348-362)",
+     "app/intake/src/models.rs (purge_request). first_text (order_dispatch.rs:272) holds a short trade-naming first text's scrubbed words in quotes.job_description under the request's own ID (no job). If she then says \"I'm 12\" before the ZIP",
+     "stop_if_under_18 runs before order_dispatch",
+     "request_jobs is empty",
+     "purge_child purges nothing",
+     "purge_request deletes only code-only intake tables",
+     "so an under-13 sender's words survive INT-038/PRIV-008; the row also escapes the 3-year text purge (no job",
+     "no purge task). D-5400's \"re-read the first inbox message\" option is impossible: messaging.inbox stores no body (migrations/0043_messaging_inbox_delivery.sql:7",
+     "PRIV-002). Smallest plan change: purge_child also calls askhava_quotes::api::purge_job_text(tx",
+     "conversation)",
+     "plus a test (two-word first text",
+     "then \"I'm 12\"",
+     "leaves no job_description row) and a purge for an adult who never sends a ZIP; reword D-5581 and docs/for-casey-review.md. Confirmed by reviewer a1a2363fa41dcc7a8 at head 453a46fe0d47b68ba4e727ce1693faa9f1ef8d33. Separate accepted gap D-5582 (count/send disagreement for handyman+breaker) already logged."
+    ]
    }
   },
   {
@@ -113241,12 +113283,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T835",
-   "at": "2026-11-23T07:24:34Z",
-   "cache_read_input_tokens": 1257310,
-   "output_tokens": 19270,
-   "input_tokens": 84,
-   "cache_creation_input_tokens": 95436
+   "task": "T716",
+   "at": "2026-11-23T08:17:23Z",
+   "cache_creation_input_tokens": 180376,
+   "input_tokens": 177,
+   "cache_read_input_tokens": 3369562,
+   "output_tokens": 29706
   },
   "source": "session_reading 2026-11-23T07:52:19Z (week)",
   "by_task": {
@@ -120748,14 +120790,14 @@
     "estimated_bytes": 667582,
     "estimated_tokens": 1959769,
     "usage_counting": "message_id",
-    "input_tokens": 697,
-    "cache_creation_input_tokens": 691790,
-    "output_tokens": 200624,
-    "cache_read_input_tokens": 32137298,
-    "worker_tokens": 25092626,
-    "worker_turns": 215,
-    "reviewer_tokens": 7937783,
-    "reviewer_turns": 136,
+    "input_tokens": 874,
+    "cache_creation_input_tokens": 872166,
+    "output_tokens": 230330,
+    "cache_read_input_tokens": 35506860,
+    "worker_tokens": 26635109,
+    "worker_turns": 257,
+    "reviewer_tokens": 9975121,
+    "reviewer_turns": 182,
     "last_model": "claude-opus-5-5"
    },
    "T834": {
@@ -120826,11 +120868,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-23T05:08:35Z",
-    "tokens": 4401135
+    "tokens": 4948350
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 192213019
+    "tokens": 192760234
    }
   },
   "session_reading": {
@@ -120841,7 +120883,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T08:00:34Z",
+ "updated_at": "2026-11-23T08:17:24Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -120939,7 +120981,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "e172ee5e2756b6665bc7d2ead2552039a007865b",
+ "runner_sha": "453a46fe0d47b68ba4e727ce1693faa9f1ef8d33",
  "starter": "actions",
  "smoke_runs": [
   {
