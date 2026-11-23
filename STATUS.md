@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T19:14:28Z by runner bb380dcebc34 (actions).
+Updated 2026-11-23T19:15:08Z by runner 0c7342d7b13f (actions).
 
 **Building: T812 in progress since 18:01Z; 636 of 777 done; week 82% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,13 +9,13 @@ Updated 2026-11-23T19:14:28Z by runner bb380dcebc34 (actions).
 - **Lane:** lane 1: T812 claimed 18:01Z, lease until 21:01Z; lane 2: T745 claimed 19:03Z, lease until 22:03Z; lane 4: T668 claimed 19:10Z, lease until 22:10Z
 - **Week:** 82% used, 27.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 19:14Z, 0 min before this update
-- **Keeper:** last ran 19:03Z, next wake 19:23Z
+- **Keeper:** last ran 19:15Z, next wake 19:35Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T836 (since 2026-11-23T07:59:33Z, no attempt used; a plan change fixes it): T836: kit/runner_log.jsonl is named by D-500, but no task owns it and it does not exist
-- Strict plan check red: 42 problem(s) on tasks still to run (+525 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 40 problem(s) on tasks still to run (+524 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
