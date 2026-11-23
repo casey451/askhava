@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-23T03:28:58Z by runner 438e11dcee29 (actions).
+Updated 2026-11-23T03:29:31Z by runner 438e11dcee29 (actions).
 
-**Building: T716 in progress since 01:31Z; 622 of 774 done; week 71% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Idle since 03:28Z; 622 of 774 done; week 71% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 622 of 774 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 5: T716 claimed 01:31Z, lease until 04:31Z
+- **Lane:** idle since 03:28Z (no task in progress)
 - **Week:** 71% used, 49.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 03:26Z, 2 min before this update
 - **Keeper:** last ran 03:24Z, next wake 03:44Z
@@ -23,6 +23,7 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T716 | intake: the dispatcher's trade questions at step 5: "Which f | MERGE_PENDING | 1 | 117 min | 03:28Z |  |
 | T834 | ci (harness): Twin and Ally skip their build when nothing th | QUEUED | 1 | 81 min | 03:19Z | After the fix round the reviewer (head bb8a0ca043baae3c76c5646f5bcc328d948b31ba) still ends REVIEW-VERDICT: FINDINGS. Fi |
 | T712 | server and portals: the owner portal lists PROBLEM reports w | MERGE_PENDING | 1 | 39 min | 02:36Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T645 | intake and messaging: the web chat honours an opt-out word,  | done | 2 | 2 h 6 min | 01:58Z | PLAN GAP: app/site/src/chat.rs:340 (owned by T593, then T646 and T649; T593 is not merged yet) calls `chat_message(db, & |
@@ -124,7 +125,6 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 5: T716 (lease until 2026-11-23T04:31:05Z)
 
 ## Last usage reading
-- {"task": "T834", "at": "2026-11-23T03:19:46Z", "output_tokens": 56572, "cache_creation_input_tokens": 243730, "cache_read_input_tokens": 5018423, "input_tokens": 220}
+- {"task": "T716", "at": "2026-11-23T03:28:55Z", "input_tokens": 411, "cache_creation_input_tokens": 444518, "output_tokens": 147426, "cache_read_input_tokens": 24919743}
