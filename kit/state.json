@@ -100707,12 +100707,12 @@
      }
     }
    ],
-   "reviewed_sha": "d07652f8b285be2db3525c2d42c4be574af33a82",
+   "reviewed_sha": "24e634dc702d82a43dd18f4adea3cfe6ae57ad5b",
    "review_lease": {
     "task": "T712",
-    "session": "actions-45086568503",
-    "expires": "2026-11-23T03:09:54Z",
-    "lane": "4"
+    "session": "actions-45096669074",
+    "expires": "2026-11-23T04:56:55Z",
+    "lane": "3"
    },
    "branch": "claude/task/T712-owner-problem-reports-page",
    "auto_merge": {
@@ -100720,7 +100720,6 @@
     "why": "auto-merge on #1373 (gh pr merge)",
     "head": "d07652f8b285be2db3525c2d42c4be574af33a82"
    },
-   "merge_turn_since": "2026-11-23T01:52:04Z",
    "runner_closed_prs": [
     1373
    ],
@@ -100745,12 +100744,22 @@
     }
    ],
    "last_failure": "merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891)",
-   "update_waiting_since": null,
-   "update_push_failures": null,
    "wip_claim": {
     "attempt": 1,
     "remote_sha": "d07652f8b285be2db3525c2d42c4be574af33a82"
-   }
+   },
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "ea33aacc8648fd12cb71e71035f6a98824debfec",
+     "to": "24e634dc702d82a43dd18f4adea3cfe6ae57ad5b",
+     "main": "50d5013979270bbd1495718f920c2f8066d44d91",
+     "how": "hand-in",
+     "at": "2026-11-23T02:36:52Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T713",
@@ -119805,7 +119814,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T02:25:10Z",
+ "updated_at": "2026-11-23T02:36:52Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -119903,7 +119912,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "50d5013979270bbd1495718f920c2f8066d44d91",
+ "runner_sha": "53057cbb7a0378f7ecbb9417fa1ea605981dd9ba",
  "starter": "actions",
  "smoke_runs": [
   {
