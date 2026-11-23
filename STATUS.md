@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T13:33:43Z by runner f0dd474113d1 (manual).
+Updated 2026-11-23T13:34:04Z by runner f0dd474113d1 (manual).
 
 **Building: T819 in progress since 12:37Z; 630 of 777 done; week 76% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,12 +8,11 @@ Updated 2026-11-23T13:33:43Z by runner f0dd474113d1 (manual).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T819 claimed 12:37Z, lease until 15:37Z; lane 2: T666 claimed 13:17Z, lease until 16:17Z; lane 5: T646 claimed 12:00Z, lease until 15:00Z
 - **Week:** 76% used, 39.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:29Z, 4 min before this update
+- **Last run:** 13:33Z, 0 min before this update
 - **Keeper:** last ran 13:29Z, next wake 15:03Z
 
 ## Needs attention
 - CLAIMS STOPPED: nightly success on 21be2b3d8975, failures_since_green 0; no stage passed its exit test
-- BLOCKED T714: Worker made no commits: start smoke test did not finish within the 30-minute background limit (312 suites ok, no failures seen, partial). Previous CI failure is cargo-audit RUSTSEC-2026-0594 (cookie 0.18.2, fixed in 0.18.3), which fails every branch; the fix is PR #1396 (Cargo.lock cookie bump, D-5638), not yet on main. Retry after #1396 merges.
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T836 (since 2026-11-23T07:59:33Z, no attempt used; a plan change fixes it): T836: kit/runner_log.jsonl is named by D-500, but no task owns it and it does not exist

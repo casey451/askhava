@@ -101792,7 +101792,7 @@
     "T458",
     "T588"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 3,
    "slug": "text-confirm-link-session",
    "type": "build",
@@ -101992,12 +101992,27 @@
     "why": "auto-merge on #1395 (gh pr merge)",
     "head": "188d33da48fb05f16eac4a6fabed8263ae09cf41"
    },
-   "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust dependency audit (cargo-audit, cargo-deny)\nWarning:   unmaintained\nTitle:     `basic-toml` is unmaintained\nDate:      2026-09-26\nID:        RUSTSEC-2026-0374\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0374\nCrate:     proc-macro-error2\nVersion:   2.0.1\nWarning:   unmaintained\nTitle:     proc-macro-error2 is unmaintained\nDate:      2026-06-07\nID:        RUSTSEC-2026-0173\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0173\nerror: 1 vulnerability found!\nwarning: 2 allowed warnings found\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
+   "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust dependency audit (cargo-audit, cargo-deny)\nWarning:   unmaintained\nTitle:     `basic-toml` is unmaintained\nDate:      2026-09-26\nID:        RUSTSEC-2026-0374\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0374\nCrate:     proc-macro-error2\nVersion:   2.0.1\nWarning:   unmaintained\nTitle:     proc-macro-error2 is unmaintained\nDate:      2026-06-07\nID:        RUSTSEC-2026-0173\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0173\nerror: 1 vulnerability found!\nwarning: 2 allowed warnings found\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.\nre-queued after plan fix D-5638: RUSTSEC-2026-0594 (cookie 0.18.2) failed the dependency audit on every Rust change; fixed on main by #1396 (cookie 0.18.3); attempts lost to it, D-677 pattern",
    "runner_closed_prs": [
     1391,
     1395
    ],
-   "reason": "Worker made no commits: start smoke test did not finish within the 30-minute background limit (312 suites ok, no failures seen, partial). Previous CI failure is cargo-audit RUSTSEC-2026-0594 (cookie 0.18.2, fixed in 0.18.3), which fails every branch; the fix is PR #1396 (Cargo.lock cookie bump, D-5638), not yet on main. Retry after #1396 merges."
+   "reason": null,
+   "requeues": [
+    {
+     "at": "2026-11-23T13:34:04Z",
+     "reason": "RUSTSEC-2026-0594 (cookie 0.18.2) failed the dependency audit on every Rust change; fixed on main by #1396 (cookie 0.18.3); attempts lost to it, D-677 pattern",
+     "by": "manual-e6cda139f4db",
+     "was": "Worker made no commits: start smoke test did not finish within the 30-minute background limit (312 suites ok, no failures seen, partial). Previous CI failure is cargo-audit RUSTSEC-2026-0594 (cookie 0.18.2, fixed in 0.18.3), which fails every branch; the fix is PR #1396 (Cargo.lock cookie bump, D-5638), not yet on main. Retry after #1396 merges.",
+     "attempts": 3,
+     "plan_fix": "D-5638",
+     "plan_since": "2026-11-23T12:34:05Z",
+     "plan_base": "f27e05243e49a721f4e086497cd1853aa05db78f",
+     "plan_head": "f0dd474113d194356a2a0860e4225d364f92435f",
+     "plan_then": "2ce69cbf4c1a2e0c21ff006bb8240e2ba8ecd684dd8bcc5f528868bf84fcea72",
+     "plan_now": "d8824b8c269c1f91c150a9366398244e65ed2fb67ef8766bb1e848daa801e3c9"
+    }
+   ]
   },
   {
    "id": "T705",
@@ -122075,7 +122090,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T13:33:43Z",
+ "updated_at": "2026-11-23T13:34:04Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
