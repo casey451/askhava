@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-23T11:30:42Z by runner f93d0581a8d9 (actions).
+Updated 2026-11-23T11:31:14Z by runner f93d0581a8d9 (actions).
 
 **Building: T819 in progress since 11:03Z; 630 of 775 done; week 74% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 630 of 775 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T819 claimed 11:03Z, lease until 14:03Z; lane 3: T646 claimed 10:36Z, lease until 13:36Z; lane 4: T730 claimed 10:33Z, lease until 13:33Z
+- **Lane:** lane 1: T819 claimed 11:03Z, lease until 14:03Z; lane 4: T730 claimed 10:33Z, lease until 13:33Z
 - **Week:** 74% used, 41.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:27Z, 3 min before this update
 - **Keeper:** last ran 11:27Z, next wake 13:35Z
@@ -40,12 +40,13 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T646 | site and server: the web chat's new-request limit counts the | MERGE_PENDING | 2 | 54 min | 11:30Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T653 | licensing and server (harness): a typed BTR number is stored | MERGE_PENDING | 1 | 117 min | 11:19Z |  |
 | T714 | portals: a Confirm link sent by text is marked text-started  | MERGE_PENDING | 1 | 95 min | 11:00Z |  |
 | T666 | jobs, quotes and server: GET /b/jobs/{j} serves the business | QUEUED | 1 | 2 h 1 min | 10:28Z | Reviewer after the findings round (head bf41c81b22bdbd874d7d53cb8ba64ca6bb0737cf): app/server/tests/job_page_route.rs (w |
 | T121 | Startup key checks, control router absent in live, supply-ch | check_failed | 3 | 103 min | 10:16Z | PLAN GAP: outside ownership: app/portals/src/update_channel.rs / T729 (owner) merged UpdatesForm/ConfirmForm without den |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | done | 5 | 82 min | 09:58Z | PLAN GAP: outside ownership: app/site/templates/request.html, app/site/static/site.css / At 1280x900 the /request chat s |
-| T646 | site and server: the web chat's new-request limit counts the | check_failed | 1 | 59 min | 08:59Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
+| T646 | site and server: the web chat's new-request limit counts the | check_failed | 1 | 59 min | 08:59Z |  |
 | T588 | portals and server: a refused business sign-up keeps every f | done | 1 | 101 min | 08:44Z |  |
 | T730 | messaging: a homeowner who chose email gets each quote updat | BLOCKED | 2 | 2 min | 08:25Z | PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs / Evidence: last_quote_text (quote_text_sent.rs:45-52) |
 | T730 | messaging: a homeowner who chose email gets each quote updat | QUEUED | 1 | 2 h 19 min | 08:20Z |  |
@@ -138,8 +139,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T819 (lease until 2026-11-23T14:03:21Z)
-- lane 3: T646 (lease until 2026-11-23T13:36:19Z)
 - lane 4: T730 (lease until 2026-11-23T13:33:05Z)
 
 ## Last usage reading
-- {"task": "T653", "at": "2026-11-23T11:19:13Z", "cache_read_input_tokens": 8485309, "cache_creation_input_tokens": 184341, "output_tokens": 41917, "input_tokens": 198}
+- {"task": "T646", "at": "2026-11-23T11:30:41Z", "output_tokens": 9073, "cache_creation_input_tokens": 64867, "input_tokens": 50, "cache_read_input_tokens": 790522}
