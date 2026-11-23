@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T17:04:13Z by runner 7f19bc708773 (actions).
+Updated 2026-11-23T17:04:52Z by runner 7f19bc708773 (actions).
 
 **Building: T222 in progress since 16:16Z; 634 of 777 done; week 79% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -9,7 +9,7 @@ Updated 2026-11-23T17:04:13Z by runner 7f19bc708773 (actions).
 - **Lane:** lane 1: T222 claimed 16:16Z, lease until 19:16Z; lane 3: T745 claimed 14:48Z, lease until 17:48Z; lane 4: T649 claimed 15:45Z, lease until 18:45Z
 - **Week:** 79% used, 31.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 17:04Z, 0 min before this update
-- **Keeper:** last ran 17:01Z, next wake 17:50Z
+- **Keeper:** last ran 17:04Z, next wake 17:50Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
@@ -68,7 +68,6 @@ Updated 2026-11-23T17:04:13Z by runner 7f19bc708773 (actions).
 - 07:11Z Plan: T716 owns cards_out.rs so the card send uses the counted pairs (D-5606) (#1382)
 - 04:05Z Plan: T121 split into T838 (D-5574); Grok G3 fixes for claimable tasks (D-5585) (#1370)
 - 00:07Z Plan: pre-flight fixes (D-5567); T837 keeper stage gate, job 32 and copy-flag fixes (D-5568) (#1368)
-- 17:04Z Plan: unblock T121/T832/T499/T514 (D-5552); pre-flight fixes job 24 (D-5551) (#1363)
 
 ## Progress (requirements verified)
 
