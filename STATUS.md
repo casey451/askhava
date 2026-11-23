@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T04:25:58Z by runner 8871a83b785a (actions).
+Updated 2026-11-23T04:34:26Z by runner 8871a83b785a (actions).
 
-**Building: T730 in progress since 03:34Z; 623 of 775 done; week 71% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T834 in progress since 03:31Z; 623 of 775 done; week 71% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 623 of 775 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T730 claimed 03:34Z, lease until 06:34Z; lane 2: T834 claimed 03:31Z, lease until 06:31Z; lane 3: T803 claimed 03:47Z, lease until 06:47Z; lane 4: T611 claimed 04:04Z, lease until 07:04Z
+- **Lane:** lane 2: T834 claimed 03:31Z, lease until 06:31Z; lane 3: T803 claimed 03:47Z, lease until 06:47Z; lane 4: T611 claimed 04:04Z, lease until 07:04Z
 - **Week:** 71% used, 48.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:25Z, 0 min before this update
+- **Last run:** 04:26Z, 8 min before this update
 - **Keeper:** last ran 04:25Z, next wake 06:33Z
 
 ## Needs attention
@@ -63,7 +63,6 @@ Updated 2026-11-23T04:25:58Z by runner 8871a83b785a (actions).
 | T616 | site: strong per-coding ETags with 304 revalidation, a one-y | done | 2 | 39 min | 05:32Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T803 | messaging (harness): an opted-out number gets no HELP reply; | check_failed | 2 | 63 min | 05:27Z |  |
 | T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 2 | 50 min | 04:44Z |  |
-| T542 | portals and server: notice and backup address changes are re | done | 2 | 2 h 42 min | 04:28Z | Reviewer after the findings round still ended REVIEW-VERDICT: FINDINGS at head 4de98e6fb74e1e5394629d7a1abe0694167723a2: |
 
 ### Plan and harness merges on main
 - 04:05Z Plan: T121 split into T838 (D-5574); Grok G3 fixes for claimable tasks (D-5585) (#1370)
@@ -119,7 +118,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T730 (lease until 2026-11-23T06:34:29Z)
+- nothing
 - lane 2: T834 (lease until 2026-11-23T06:31:26Z)
 - lane 3: T803 (lease until 2026-11-23T06:47:06Z)
 - lane 4: T611 (lease until 2026-11-23T07:04:01Z)
