@@ -93687,12 +93687,12 @@
      }
     }
    ],
-   "reviewed_sha": "8077522ed526e9a792f9d866a41b567397ccec49",
+   "reviewed_sha": "f93d0581a8d9793750af20e22a88c48c7c4d8a58",
    "review_lease": {
     "task": "T646",
-    "session": "actions-45124822215",
-    "expires": "2026-11-23T10:59:33Z",
-    "lane": "2"
+    "session": "actions-45156556312",
+    "expires": "2026-11-23T13:36:19Z",
+    "lane": "3"
    },
    "branch": "claude/task/T646-web-chat-client-ip",
    "auto_merge": {
@@ -93700,17 +93700,6 @@
     "why": "auto-merge on #1388 (gh pr merge)",
     "head": "8077522ed526e9a792f9d866a41b567397ccec49"
    },
-   "update_merges": [
-    {
-     "from": "5ee3d4ffb6468b066fa8dbadaa31f79acc1cf19d",
-     "to": "8077522ed526e9a792f9d866a41b567397ccec49",
-     "main": "4345220c6cce1517db8134e247aecd34d4713df3",
-     "how": "hand-in",
-     "at": "2026-11-23T08:59:22Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
    "last_failure": "Ally: failure\nAlly failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)\n      87 |   await page.keyboard.press(\"Tab\");\n      88 |   const at = await where(page);\n    > 89 |   expect(at.index, `Tab from \"${before.name}\" reaches the next control in source order`).toBe(before.next);\n         |                                                                                          ^\n      90 |   expect(at.problems).toEqual([]);\n      91 |   return at;\n      92 | }\n        at tab (/home/runner/work/askhava/askhava/tests/a11y/j1_keyboard.spec.ts:89:90)\n        at tabTo (/home/runner/work/askhava/askhava/tests/a11y/j1_keyboard.spec.ts:97:20)\n        at /home/runner/work/askhava/askhava/tests/a11y/j1_keyboard.spec.ts:163:5\n    Error Context: test-results/a11y/j1_keyboard-A11Y-005-A11Y--7db42--Pick-code-step-axe-on-each-main/error-context.md\n  1 failed\n    [main] \u203a tests/a11y/j1_keyboard.spec.ts:150:3 \u203a A11Y-005 A11Y-021 J1 steps 5 and 6 keyboard-only at 768 px: quote page, Pick #2, Go back, Pick #2 again, final Pick, code step; axe on each \n  1314 passed (7.8m)\n##[error]Process completed with exit code 1.",
    "wip_claim": {
     "attempt": 2,
@@ -93718,7 +93707,8 @@
    },
    "runner_closed_prs": [
     1388
-   ]
+   ],
+   "head_check_since": null
   },
   {
    "id": "T650",
@@ -121656,7 +121646,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T11:27:16Z",
+ "updated_at": "2026-11-23T11:30:42Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -121754,7 +121744,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "f27e05243e49a721f4e086497cd1853aa05db78f",
+ "runner_sha": "f93d0581a8d9793750af20e22a88c48c7c4d8a58",
  "starter": "actions",
  "smoke_runs": [
   {
