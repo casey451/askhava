@@ -21599,8 +21599,8 @@
     "T664",
     "T675"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "journeys-full-variants",
    "type": "build",
    "stage": "5",
@@ -21613,10 +21613,33 @@
     5644,
     5645
    ],
-   "wip_claim": {
-    "attempt": 1,
-    "remote_sha": ""
-   }
+   "last_failure": "Reviewer after the fix round still ended REVIEW-VERDICT: FINDINGS over d606d4fe25f8dbb5cc8d2aa0c66478c5d81a2d2c:\n1. docs/decisions.md D-5641: \"ran out of room\" is untrue (317 of 600 lines); photo page, review-links page, PICK-026 notice, PICK-022/023 release contents, TD-PRIV-02 sentinel scan, ledger-to-stripe-mock match are buildable.\n2. tests/e2e/j2_full.spec.ts:9 header says review-link form has no served page (false).\n3. tests/e2e/j1_full.spec.ts:9 header reason for missing photo step disagrees with D-5641.\n4. tests/e2e/j1_full.spec.ts:106 (also :74, j2_full.spec.ts:21,:46) titles claim PICK-022/TD-PRIV-02/PICK-053 not asserted.\n5. tests/e2e/j1_full.spec.ts:124 audit check passes when both lists empty; assert moves non-empty.\n6. Commit d606d4fe2 cites D-5642 but no such entry exists.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-sonnet-5-5",
+     "model_evidence_count": 385,
+     "head_sha": "d606d4fe25f8dbb5cc8d2aa0c66478c5d81a2d2c",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-23T14:30:41Z",
+     "ended_at": "2026-11-23T15:38:11Z",
+     "result": "QUEUED",
+     "usage": {
+      "worker": {
+       "tokens": 31300328,
+       "turns": 219
+      },
+      "reviewer": {
+       "tokens": 1058181,
+       "turns": 25
+      }
+     },
+     "wip_skipped": "PII scan: a commit message in 98e09a354256ea3142410932fda4404d024e3177"
+    }
+   ]
   },
   {
    "id": "T104",
@@ -114925,12 +114948,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T666",
-   "at": "2026-11-23T14:25:08Z",
-   "cache_creation_input_tokens": 241679,
-   "output_tokens": 69099,
-   "cache_read_input_tokens": 14813497,
-   "input_tokens": 253
+   "task": "T222",
+   "at": "2026-11-23T15:38:11Z",
+   "cache_creation_input_tokens": 385001,
+   "cache_read_input_tokens": 31856537,
+   "input_tokens": 463,
+   "output_tokens": 116508
   },
   "source": "session_reading 2026-11-23T14:52:09Z (week)",
   "by_task": {
@@ -122594,7 +122617,17 @@
    },
    "T222": {
     "estimated_bytes": 1038178,
-    "estimated_tokens": 1212708
+    "estimated_tokens": 1212708,
+    "usage_counting": "message_id",
+    "cache_creation_input_tokens": 385001,
+    "cache_read_input_tokens": 31856537,
+    "input_tokens": 463,
+    "output_tokens": 116508,
+    "worker_tokens": 31300328,
+    "worker_turns": 219,
+    "reviewer_tokens": 1058181,
+    "reviewer_turns": 25,
+    "last_model": "claude-sonnet-5-5"
    },
    "T745": {
     "estimated_bytes": 532536,
@@ -122607,12 +122640,12 @@
   },
   "windows": {
    "five_hour": {
-    "start": "2026-11-23T10:16:33Z",
-    "tokens": 11984365
+    "start": "2026-11-23T15:38:11Z",
+    "tokens": 3687625
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 209248543
+    "tokens": 212936168
    }
   },
   "session_reading": {
@@ -122623,7 +122656,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T15:28:56Z",
+ "updated_at": "2026-11-23T15:38:17Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -122721,8 +122754,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "ca32683e9893ffe5617a557cbca3706feb319a51",
- "starter": "manual",
+ "runner_sha": "d606d4fe25f8dbb5cc8d2aa0c66478c5d81a2d2c",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "4345220c6cce1517db8134e247aecd34d4713df3",

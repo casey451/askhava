@@ -1,18 +1,17 @@
 # Ask Hava build status
 
-Updated 2026-11-23T15:28:56Z by runner ca32683e9893 (manual).
+Updated 2026-11-23T15:38:17Z by runner d606d4fe25f8 (actions).
 
 **Building: T714 in progress since 14:21Z; 633 of 777 done; week 77% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 633 of 777 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T714 claimed 14:21Z, lease until 17:21Z; lane 2: T121 claimed 15:11Z, lease until 18:11Z; lane 3: T745 claimed 14:48Z, lease until 17:48Z; lane 4: T222 claimed 14:30Z, lease until 17:30Z; lane 5: T782 claimed 15:18Z, lease until 18:18Z
+- **Lane:** lane 1: T714 claimed 14:21Z, lease until 17:21Z; lane 2: T121 claimed 15:11Z, lease until 18:11Z; lane 3: T745 claimed 14:48Z, lease until 17:48Z; lane 5: T782 claimed 15:18Z, lease until 18:18Z
 - **Week:** 77% used, 35.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:19Z, 9 min before this update
+- **Last run:** 15:29Z, 9 min before this update
 - **Keeper:** last ran 14:52Z, next wake 17:17Z
 
 ## Needs attention
-- CLAIMS STOPPED: nightly success on 21be2b3d8975, failures_since_green 0; no stage passed its exit test
 - BLOCKED T730: Ci: failure; Checks: failure
 Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny)
 Warning:   unmaintained
@@ -36,11 +35,12 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T836 (since 2026-11-23T07:59:33Z, no attempt used; a plan change fixes it): T836: kit/runner_log.jsonl is named by D-500, but no task owns it and it does not exist
-- Strict plan check red: 38 problem(s) on tasks still to run (+519 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 38 problem(s) on tasks still to run (+518 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T222 | Journeys J1 and J2, the full variants: web chat, photos, que | QUEUED | 1 | 67 min | 15:38Z | Reviewer after the fix round still ended REVIEW-VERDICT: FINDINGS over d606d4fe25f8dbb5cc8d2aa0c66478c5d81a2d2c: / 1. do |
 | T666 | jobs, quotes and server: GET /b/jobs/{j} serves the business | done | 2 | 67 min | 14:25Z | Reviewer after the findings round (head bf41c81b22bdbd874d7d53cb8ba64ca6bb0737cf): app/server/tests/job_page_route.rs (w |
 | T819 | portals: her feedback words are scrubbed before they are sto | check_failed | 2 | 68 min | 13:45Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T646 | site and server: the web chat's new-request limit counts the | done | 3 | 99 min | 13:40Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
@@ -94,31 +94,31 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 1 of 735 (0.1%) · partial 721 · unstarted 13
+**Requirements verified:** 404 of 735 (55.0%) · partial 318 · unstarted 13
 **Tasks merged (throughput only):** 633 of 777
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 0 | 35 | 0 | 35 |
-| ai | 0 | 26 | 3 | 29 |
-| businesses | 0 | 57 | 1 | 58 |
-| calls | 0 | 25 | 0 | 25 |
-| consent | 0 | 35 | 0 | 35 |
-| fees | 0 | 52 | 0 | 52 |
-| intake | 0 | 43 | 0 | 43 |
-| job-cards | 0 | 24 | 0 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 0 | 45 | 0 | 45 |
-| ops-recovery | 1 | 47 | 6 | 54 |
-| privacy | 0 | 31 | 0 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 0 | 56 | 0 | 56 |
-| recurring | 0 | 11 | 0 | 11 |
-| security | 0 | 52 | 3 | 55 |
-| terms | 0 | 35 | 0 | 35 |
-| website | 0 | 30 | 0 | 30 |
-| wording | 0 | 32 | 0 | 32 |
+| accessibility | 25 | 10 | 0 | 35 |
+| ai | 7 | 19 | 3 | 29 |
+| businesses | 31 | 26 | 1 | 58 |
+| calls | 17 | 8 | 0 | 25 |
+| consent | 17 | 18 | 0 | 35 |
+| fees | 27 | 25 | 0 | 52 |
+| intake | 11 | 32 | 0 | 43 |
+| job-cards | 15 | 9 | 0 | 24 |
+| licensing | 36 | 12 | 0 | 48 |
+| lifecycle | 21 | 7 | 0 | 28 |
+| messaging | 25 | 20 | 0 | 45 |
+| ops-recovery | 17 | 31 | 6 | 54 |
+| privacy | 12 | 19 | 0 | 31 |
+| quiet-hours | 4 | 5 | 0 | 9 |
+| quotes-pick | 34 | 22 | 0 | 56 |
+| recurring | 10 | 1 | 0 | 11 |
+| security | 14 | 38 | 3 | 55 |
+| terms | 30 | 5 | 0 | 35 |
+| website | 22 | 8 | 0 | 30 |
+| wording | 29 | 3 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -141,8 +141,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T714 (lease until 2026-11-23T17:21:00Z)
 - lane 2: T121 (lease until 2026-11-23T18:11:59Z)
 - lane 3: T745 (lease until 2026-11-23T17:48:35Z)
-- lane 4: T222 (lease until 2026-11-23T17:30:41Z)
 - lane 5: T782 (lease until 2026-11-23T18:18:54Z)
 
 ## Last usage reading
-- {"task": "T666", "at": "2026-11-23T14:25:08Z", "cache_creation_input_tokens": 241679, "output_tokens": 69099, "cache_read_input_tokens": 14813497, "input_tokens": 253}
+- {"task": "T222", "at": "2026-11-23T15:38:11Z", "cache_creation_input_tokens": 385001, "cache_read_input_tokens": 31856537, "input_tokens": 463, "output_tokens": 116508}
