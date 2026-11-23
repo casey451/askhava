@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T16:56:34Z by runner 9336ba855636 (actions).
+Updated 2026-11-23T16:57:05Z by runner 9336ba855636 (actions).
 
 **Building: T222 in progress since 16:16Z; 634 of 777 done; week 79% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 634 of 777 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T222 claimed 16:16Z, lease until 19:16Z; lane 3: T745 claimed 14:48Z, lease until 17:48Z; lane 4: T649 claimed 15:45Z, lease until 18:45Z; lane 5: T782 claimed 15:18Z, lease until 19:45Z
+- **Lane:** lane 1: T222 claimed 16:16Z, lease until 19:16Z; lane 3: T745 claimed 14:48Z, lease until 17:48Z; lane 4: T649 claimed 15:45Z, lease until 18:45Z
 - **Week:** 79% used, 31.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 16:54Z, 1 min before this update
+- **Last run:** 16:54Z, 2 min before this update
 - **Keeper:** last ran 16:54Z, next wake 17:51Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Updated 2026-11-23T16:56:34Z by runner 9336ba855636 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T782 | server: the released job's page shows its real job number | MERGE_PENDING | 1 | 97 min | 16:56Z |  |
 | T121 | Startup key checks, control router absent in live, supply-ch | MERGE_PENDING | 4 | 100 min | 16:52Z | PLAN GAP: outside ownership: app/portals/src/update_channel.rs / T729 (owner) merged UpdatesForm/ConfirmForm without den |
 | T714 | portals: a Confirm link sent by text is marked text-started  | done | 4 | 88 min | 15:49Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
 | T222 | Journeys J1 and J2, the full variants: web chat, photos, que | QUEUED | 1 | 67 min | 15:38Z | Reviewer after the fix round still ended REVIEW-VERDICT: FINDINGS over d606d4fe25f8dbb5cc8d2aa0c66478c5d81a2d2c: / 1. do |
@@ -119,7 +120,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - T222 (lease until 2026-11-23T19:16:29Z)
 - lane 3: T745 (lease until 2026-11-23T17:48:35Z)
 - lane 4: T649 (lease until 2026-11-23T18:45:21Z)
-- lane 5: T782 (lease until 2026-11-23T19:45:38Z)
 
 ## Last usage reading
-- {"task": "T121", "at": "2026-11-23T16:52:33Z", "input_tokens": 95, "output_tokens": 25688, "cache_creation_input_tokens": 157089, "cache_read_input_tokens": 2005714}
+- {"task": "T782", "at": "2026-11-23T16:56:32Z", "cache_read_input_tokens": 5304989, "cache_creation_input_tokens": 193560, "output_tokens": 42563, "input_tokens": 194}
