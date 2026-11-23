@@ -105817,7 +105817,14 @@
    "update_waiting_since": null,
    "update_push_failures": null,
    "merge_turn_since": "2026-11-23T22:02:37Z",
-   "last_failure": "Ally: failure\nAlly failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)\n      79 |       expect((await axeScan(page, [\"color-contrast\", \"link-in-text-block\"])).violations).toEqual([]);\n    > 80 |       expect(await page.evaluate(edgeProblems)).toEqual([]);\n         |                                                 ^\n      81 |     });\n      82 |   }\n      83 | }\n        at /home/runner/work/askhava/askhava/tests/a11y/targets_contrast.spec.ts:80:49\n    Error Context: test-results/a11y/targets_contrast-A11Y-006--e25b3--nothing-recorded-at-1280px-main/error-context.md\n  3 failed\n    [main] \u203a tests/a11y/targets_contrast.spec.ts:76:5 \u203a A11Y-006 A11Y-007: targets and contrast on /owner/ai (owner ai switch, nothing recorded) at 320px \n    [main] \u203a tests/a11y/targets_contrast.spec.ts:76:5 \u203a A11Y-006 A11Y-007: targets and contrast on /owner/ai (owner ai switch, nothing recorded) at 768px \n    [main] \u203a tests/a11y/targets_contrast.spec.ts:76:5 \u203a A11Y-006 A11Y-007: targets and contrast on /owner/ai (owner ai switch, nothing recorded) at 1280px \n  1 did not run\n  1344 passed (7.7m)\n##[error]Process completed with exit code 1."
+   "last_failure": "Ally: failure\nAlly failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing)\n      79 |       expect((await axeScan(page, [\"color-contrast\", \"link-in-text-block\"])).violations).toEqual([]);\n    > 80 |       expect(await page.evaluate(edgeProblems)).toEqual([]);\n         |                                                 ^\n      81 |     });\n      82 |   }\n      83 | }\n        at /home/runner/work/askhava/askhava/tests/a11y/targets_contrast.spec.ts:80:49\n    Error Context: test-results/a11y/targets_contrast-A11Y-006--e25b3--nothing-recorded-at-1280px-main/error-context.md\n  3 failed\n    [main] \u203a tests/a11y/targets_contrast.spec.ts:76:5 \u203a A11Y-006 A11Y-007: targets and contrast on /owner/ai (owner ai switch, nothing recorded) at 320px \n    [main] \u203a tests/a11y/targets_contrast.spec.ts:76:5 \u203a A11Y-006 A11Y-007: targets and contrast on /owner/ai (owner ai switch, nothing recorded) at 768px \n    [main] \u203a tests/a11y/targets_contrast.spec.ts:76:5 \u203a A11Y-006 A11Y-007: targets and contrast on /owner/ai (owner ai switch, nothing recorded) at 1280px \n  1 did not run\n  1344 passed (7.7m)\n##[error]Process completed with exit code 1.",
+   "wip_claim": {
+    "attempt": 2,
+    "remote_sha": "b0139c2e2cc518dd5905e8263e6fd6ec8df883bc"
+   },
+   "runner_closed_prs": [
+    1415
+   ]
   },
   {
    "id": "T738",
@@ -123894,7 +123901,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T22:49:38Z",
+ "updated_at": "2026-11-23T22:49:46Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
