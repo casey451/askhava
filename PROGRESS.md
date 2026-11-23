@@ -10518,3 +10518,4 @@
 - 2026-11-23T20:33:01Z runner 52bc3014e343 (actions): {}
 - 2026-11-23T20:33:56Z runner 0c7342d7b13f (actions): {"T649": "QUEUED -> IN_PROGRESS"}; T649 estimated 1.8M tokens (calibrated); week has 27.8M left (no five-hour budget, D-3056) after 2.2M still running in another lane (session_reading 2026-11-23T20:10:00Z (week)); claimed
 - 2026-11-23T20:34:35Z runner 025855b2736e (manual): {}
+- 2026-11-23T20:40:10Z runner 5f5d410a307c (actions): {"T836": "IN_PROGRESS -> BLOCKED"}

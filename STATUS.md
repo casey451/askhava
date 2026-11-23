@@ -1,27 +1,28 @@
 # Ask Hava build status
 
-Updated 2026-11-23T20:34:35Z by runner 025855b2736e (manual).
+Updated 2026-11-23T20:40:10Z by runner 5f5d410a307c (actions).
 
 **Building: T745 in progress since 19:03Z; 637 of 778 done; week 82% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 637 of 778 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T745 claimed 19:03Z, lease until 22:03Z; lane 3: T836 claimed 20:28Z, lease until 23:28Z; lane 5: T649 claimed 20:33Z, lease until 23:33Z
+- **Lane:** lane 2: T745 claimed 19:03Z, lease until 22:03Z; lane 5: T649 claimed 20:33Z, lease until 23:33Z
 - **Week:** 82% used, 27.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:34Z, 0 min before this update
+- **Last run:** 20:34Z, 5 min before this update
 - **Keeper:** last ran 20:10Z, next wake 20:30Z
 
 ## Needs attention
-- CLAIMS STOPPED: nightly success on 21be2b3d8975, failures_since_green 0; no stage passed its exit test
+- BLOCKED T836: plan gap reported: PLAN GAP: tests/test_runner_five_lanes.py:176 (test_no_workflow_a_hand_in_starts_cancels_another_lanes_run_when_five_hand_in_together, not owned by T836, from D-3043) asserts cancel-in-progress is exactly False for ci.yml, a11y.yml, twin.yml, governance.yml, auto-pr.yml. That contradicts D-5554 (2), which needs cancel-in-progress true for non-main pushes. smoke.sh fails: AssertionError: ci.yml (workflow) cancels in progress (1 failed, 5766 passed). Reviewer confirmed: T836 owns only backup-runner.yml, ci.yml, twin.yml, a11y.yml, tests/test_ci_workflow.py. Smallest fix: add tests/test_runner_fi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T836 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T816 (since 2026-11-23T20:33:44Z, no attempt used; a plan change fixes it): T816: dependency T730 is DONE but its owned file app/messaging/src/update_emails.rs is not on main; T816: dependency T730 is DONE but its owned file tests/integration/tests/update_email_sends.rs is not on main
 - PLAN GAP T841 (since 2026-11-23T20:16:40Z, no attempt used; a plan change fixes it): T841: prompt kit/prompts/T841.md is missing; run scripts/gen_prompts.py; T841: branch claude/task/T841-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
-- Strict plan check red: 39 problem(s) on tasks still to run (+527 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 39 problem(s) on tasks still to run (+528 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T836 | ci and runner workflow (harness): the backup-runner gate ski | BLOCKED | 1 | 11 min | 20:40Z | PLAN GAP: tests/test_runner_five_lanes.py:176 (test_no_workflow_a_hand_in_starts_cancels_another_lanes_run_when_five_han |
 | T668 | server: the business job page at /b/jobs/{j} offers "Not a f | MERGE_PENDING | 1 | 56 min | 20:07Z |  |
 | T812 | businesses and portals: a passed step-up records the session | MERGE_PENDING | 1 | 89 min | 19:31Z |  |
 | T730 | messaging: a homeowner who chose email gets each quote updat | done | 4 | 76 min | 19:13Z | PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs / Evidence: last_quote_text (quote_text_sent.rs:45-52) |
@@ -79,31 +80,31 @@ Updated 2026-11-23T20:34:35Z by runner 025855b2736e (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 1 of 735 (0.1%) · partial 721 · unstarted 13
+**Requirements verified:** 404 of 735 (55.0%) · partial 318 · unstarted 13
 **Tasks merged (throughput only):** 637 of 778
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 0 | 35 | 0 | 35 |
-| ai | 0 | 26 | 3 | 29 |
-| businesses | 0 | 57 | 1 | 58 |
-| calls | 0 | 25 | 0 | 25 |
-| consent | 0 | 35 | 0 | 35 |
-| fees | 0 | 52 | 0 | 52 |
-| intake | 0 | 43 | 0 | 43 |
-| job-cards | 0 | 24 | 0 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 0 | 45 | 0 | 45 |
-| ops-recovery | 1 | 47 | 6 | 54 |
-| privacy | 0 | 31 | 0 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 0 | 56 | 0 | 56 |
-| recurring | 0 | 11 | 0 | 11 |
-| security | 0 | 52 | 3 | 55 |
-| terms | 0 | 35 | 0 | 35 |
-| website | 0 | 30 | 0 | 30 |
-| wording | 0 | 32 | 0 | 32 |
+| accessibility | 25 | 10 | 0 | 35 |
+| ai | 7 | 19 | 3 | 29 |
+| businesses | 31 | 26 | 1 | 58 |
+| calls | 17 | 8 | 0 | 25 |
+| consent | 17 | 18 | 0 | 35 |
+| fees | 27 | 25 | 0 | 52 |
+| intake | 11 | 32 | 0 | 43 |
+| job-cards | 15 | 9 | 0 | 24 |
+| licensing | 36 | 12 | 0 | 48 |
+| lifecycle | 21 | 7 | 0 | 28 |
+| messaging | 25 | 20 | 0 | 45 |
+| ops-recovery | 17 | 31 | 6 | 54 |
+| privacy | 12 | 19 | 0 | 31 |
+| quiet-hours | 4 | 5 | 0 | 9 |
+| quotes-pick | 34 | 22 | 0 | 56 |
+| recurring | 10 | 1 | 0 | 11 |
+| security | 14 | 38 | 3 | 55 |
+| terms | 30 | 5 | 0 | 35 |
+| website | 22 | 8 | 0 | 30 |
+| wording | 29 | 3 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -125,8 +126,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T745 (lease until 2026-11-23T22:03:04Z)
-- lane 3: T836 (lease until 2026-11-23T23:28:47Z)
 - lane 5: T649 (lease until 2026-11-23T23:33:44Z)
 
 ## Last usage reading
-- {"task": "T668", "at": "2026-11-23T20:07:37Z", "cache_creation_input_tokens": 107312, "input_tokens": 92, "cache_read_input_tokens": 2722732, "output_tokens": 20074}
+- {"task": "T836", "at": "2026-11-23T20:40:09Z", "output_tokens": 10842, "cache_creation_input_tokens": 61367, "input_tokens": 50, "cache_read_input_tokens": 801614}

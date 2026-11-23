@@ -115197,8 +115197,8 @@
     "T835",
     "T762"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "cancelled-gate-and-concurrency",
    "type": "harness",
    "stage": "5",
@@ -115211,10 +115211,34 @@
     5680,
     5681
    ],
-   "wip_claim": {
-    "attempt": 1,
-    "remote_sha": ""
-   }
+   "reason": "plan gap reported: PLAN GAP: tests/test_runner_five_lanes.py:176 (test_no_workflow_a_hand_in_starts_cancels_another_lanes_run_when_five_hand_in_together, not owned by T836, from D-3043) asserts cancel-in-progress is exactly False for ci.yml, a11y.yml, twin.yml, governance.yml, auto-pr.yml. That contradicts D-5554 (2), which needs cancel-in-progress true for non-main pushes. smoke.sh fails: AssertionError: ci.yml (workflow) cancels in progress (1 failed, 5766 passed). Reviewer confirmed: T836 owns only backup-runner.yml, ci.yml, twin.yml, a11y.yml, tests/test_ci_workflow.py. Smallest fix: add tests/test_runner_fi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T836 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: tests/test_runner_five_lanes.py:176 (test_no_workflow_a_hand_in_starts_cancels_another_lanes_run_when_five_hand_in_together, not owned by T836, from D-3043) asserts cancel-in-progress is exactly False for ci.yml, a11y.yml, twin.yml, governance.yml, auto-pr.yml. That contradicts D-5554 (2), which needs cancel-in-progress true for non-main pushes. smoke.sh fails: AssertionError: ci.yml (workflow) cancels in progress (1 failed, 5766 passed). Reviewer confirmed: T836 owns only backup-runner.yml, ci.yml, twin.yml, a11y.yml, tests/test_ci_workflow.py. Smallest fix: add tests/test_runner_five_lanes.py to T836's owned paths, with a decisions.md note; for ci/twin/a11y it should accept the non-main-push expression, and for governance/auto-pr still require False. Work committed at 5f5d410a3, reviewer approved it.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 31,
+     "head_sha": "5f5d410a307c8377c81c573f534a1e81ea6d0cf3",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-23T20:28:47Z",
+     "ended_at": "2026-11-23T20:40:09Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 696221,
+       "turns": 19
+      },
+      "reviewer": {
+       "tokens": 177652,
+       "turns": 7
+      }
+     },
+     "wip_skipped": "5f5d410a307c changes .github"
+    }
+   ]
   },
   {
    "id": "T837",
@@ -115600,12 +115624,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T668",
-   "at": "2026-11-23T20:07:37Z",
-   "cache_creation_input_tokens": 107312,
-   "input_tokens": 92,
-   "cache_read_input_tokens": 2722732,
-   "output_tokens": 20074
+   "task": "T836",
+   "at": "2026-11-23T20:40:09Z",
+   "output_tokens": 10842,
+   "cache_creation_input_tokens": 61367,
+   "input_tokens": 50,
+   "cache_read_input_tokens": 801614
   },
   "source": "session_reading 2026-11-23T20:10:00Z (week)",
   "by_task": {
@@ -123333,17 +123357,27 @@
    },
    "T836": {
     "estimated_bytes": 210332,
-    "estimated_tokens": 617455
+    "estimated_tokens": 617455,
+    "usage_counting": "message_id",
+    "output_tokens": 10842,
+    "cache_creation_input_tokens": 61367,
+    "input_tokens": 50,
+    "cache_read_input_tokens": 801614,
+    "worker_tokens": 696221,
+    "worker_turns": 19,
+    "reviewer_tokens": 177652,
+    "reviewer_turns": 7,
+    "last_model": "claude-opus-5-5"
    }
   },
   "windows": {
    "five_hour": {
-    "start": "2026-11-23T15:38:11Z",
-    "tokens": 13086633
+    "start": "2026-11-23T20:40:09Z",
+    "tokens": 152420
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 222335176
+    "tokens": 222487596
    }
   },
   "session_reading": {
@@ -123354,7 +123388,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T20:34:35Z",
+ "updated_at": "2026-11-23T20:40:10Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -123452,8 +123486,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "025855b2736e0a3779190ca864ed2ccaa05a192b",
- "starter": "manual",
+ "runner_sha": "5f5d410a307c8377c81c573f534a1e81ea6d0cf3",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "f27e05243e49a721f4e086497cd1853aa05db78f",
