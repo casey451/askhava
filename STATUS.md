@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T19:37:12Z by runner 0c7342d7b13f (actions).
+Updated 2026-11-23T20:07:39Z by runner c5aa89f88583 (actions).
 
-**Building: T745 in progress since 19:03Z; 637 of 777 done; week 82% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T745 in progress since 19:03Z; 637 of 778 done; week 82% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 637 of 777 build tasks (owner gates not counted)
+- **Tasks done:** 637 of 778 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T745 claimed 19:03Z, lease until 22:03Z; lane 4: T668 claimed 19:10Z, lease until 22:10Z
 - **Week:** 82% used, 27.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:34Z, 3 min before this update
+- **Last run:** 19:37Z, 29 min before this update
 - **Keeper:** last ran 19:33Z, next wake 19:53Z
 
 ## Needs attention
@@ -65,6 +65,7 @@ Updated 2026-11-23T19:37:12Z by runner 0c7342d7b13f (actions).
 | T121 | Startup key checks, control router absent in live, supply-ch | BLOCKED | 2 | 12 min | 00:03Z |  |
 
 ### Plan and harness merges on main
+- 19:49Z Plan: pre-flight fixes for ten claimable tasks, J3 licence fixture T841 (D-5657); baseline audit gate deferred (D-5663); outside pre-flight fixes T744/T6
 - 16:44Z Plan: T840 update-email entry point and first-quote resend (D-5640); six-task pre-flight fixes (D-5646) (#1402)
 - 13:33Z Plan: Email-only quote updates and counts (T840), under-13 purge completeness (T839), T716 test precondition (D-5639) (#1399)
 - 10:11Z Plan: T716 purges held first-text words on an under-13 stop; T730 counts update emails (D-5617) (#1386)
