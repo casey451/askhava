@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{#- The owner's PROBLEM reports (T712; JOB-016, BIZ-012, SEC-006, PRIV-006, A11Y-011, A11Y-012,
+    A11Y-030; D-3890, D-4423). Newest first: job number, when it came in, the safety mark and the
+    kept, scrubbed words; never a homeowner contact. An uncounted report has one form (CSRF token,
+    alert ID, a kind with none preselected); a counted one has no form. A refusal puts "Error: " in
+    the title and a focused summary first, linked to the row's choices. Forms post with novalidate
+    and no required attribute. -#}
+{% block title %}{% if error.is_some() %}Error: {% endif %}Problem reports{% endblock %}
+{% block main %}{% if let Some((line, anchor)) = error %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>Nothing was counted</h2>
+<p><a href="{{ anchor }}">{{ line }}</a></p>
+</div>
+{% endif %}<link rel="stylesheet" href="/static/portals/forms.css">
+<h1>Problem reports</h1>
+<p>These are the problems homeowners told us about in their check-in reply after a job. A report doesn't count against a business unless you count it.</p>
+<p>Counting one adds one complaint for the business on that job. A job can only be counted once.</p>
+{% if rows.is_empty() %}<p id="problem-reports">No problem reports in the last 30 days.</p>
+{% else %}<ul id="problem-reports">
+{% for r in rows %}<li>
+<h2>Job {{ r.number }}</h2>
+<p>Came in {{ r.came_in }}.{% if r.safety %} <strong>Safety word</strong>{% endif %}</p>
+<p>What they wrote: {{ r.words }}</p>
+{% if r.counted %}<p>Counted as a complaint</p>
+{% else %}<form method="post" action="{{ route }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="alert" value="{{ r.alert }}">
+<fieldset><legend>What kind of complaint is job {{ r.number }}?</legend>
+{% for (value, label) in kinds %}<p><input type="radio" id="kind-{{ r.alert }}-{{ value }}" name="kind" value="{{ value }}"{% if r.kept == **value %} checked{% endif %}> <label for="kind-{{ r.alert }}-{{ value }}">{{ label }}</label></p>
+{% endfor %}</fieldset>
+<p><button type="submit">Count as a complaint</button></p>
+</form>{% endif %}</li>
+{% endfor %}</ul>
+{% endif %}
+<p><a href="{{ crate::owner_portal::OWNER_HOME_ROUTE }}">Back to owner home</a></p>
+{% endblock %}
