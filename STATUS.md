@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T00:09:59Z by runner bd3e4e9cdad1 (actions).
+Updated 2026-11-23T00:10:34Z by runner bd3e4e9cdad1 (actions).
 
 **Building: T725 in progress since 23:49Z; 617 of 774 done; week 68% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 617 of 774 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T725 claimed 23:49Z, lease until 02:49Z; lane 2: T645 claimed 23:51Z, lease until 02:51Z; lane 3: T832 claimed 23:50Z, lease until 02:50Z; lane 5: T675 claimed 23:48Z, lease until 02:48Z
-- **Week:** 68% used, 58.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:05Z, 4 min before this update
+- **Lane:** lane 1: T725 claimed 23:49Z, lease until 02:49Z; lane 2: T645 claimed 23:51Z, lease until 02:51Z; lane 3: T832 claimed 23:50Z, lease until 02:50Z; lane 4: T712 claimed 00:09Z, lease until 03:09Z; lane 5: T675 claimed 23:48Z, lease until 02:48Z
+- **Week:** 68% used, 52.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 00:05Z, 5 min before this update
 - **Keeper:** last ran 00:04Z, next wake 00:24Z
 
 ## Needs attention
@@ -18,6 +18,7 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 - PLAN GAP T121 (since 2026-11-23T00:03:26Z, no attempt used; a plan change fixes it): outside ownership: app/portals/src/update_channel.rs
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
+- PLAN GAP T837 (since 2026-11-23T00:09:54Z, no attempt used; a plan change fixes it): T837: prompt kit/prompts/T837.md is missing; run scripts/gen_prompts.py; T837: branch claude/task/T837-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
 - Strict plan check red: 27 problem(s) on tasks still to run (+496 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
@@ -116,7 +117,7 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-22T18:46:13Z (week)): week: 135.8M used, 58.2M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T16:38:24Z.
+- Pacing (session_reading 2026-11-23T00:04:03Z (week)): week: 141.6M used, 52.4M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T17:38:21Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -134,6 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T725 (lease until 2026-11-23T02:49:30Z)
 - lane 2: T645 (lease until 2026-11-23T02:51:34Z)
 - lane 3: T832 (lease until 2026-11-23T02:50:02Z)
+- lane 4: T712 (lease until 2026-11-23T03:09:54Z)
 - lane 5: T675 (lease until 2026-11-23T02:48:28Z)
 
 ## Last usage reading

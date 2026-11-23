@@ -10086,3 +10086,4 @@
 - 2026-11-23T00:04:04Z runner bd3e4e9cdad1 (actions): {}
 - 2026-11-23T00:04:39Z runner bd3e4e9cdad1 (actions): {}
 - 2026-11-23T00:09:59Z runner bd3e4e9cdad1 (actions): {"T837": "None -> QUEUED"}
+- 2026-11-23T00:10:34Z runner bd3e4e9cdad1 (actions): {"T712": "QUEUED -> IN_PROGRESS"}; T712 estimated 1.4M tokens (calibrated); week has 52.4M left (no five-hour budget, D-3056) after 5.6M still running in another lane (session_reading 2026-11-23T00:04:03Z (week)); claimed
