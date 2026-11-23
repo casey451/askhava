@@ -109,6 +109,7 @@ use sqlx::{PgConnection, PgPool};
 
 use crate::inbound_text::Webhooks;
 use crate::inbound_voice::VoiceHooks;
+use crate::job_page_route::{JOB_PAGE_ROUTE, JOB_PAGE_TOKEN};
 
 /// BIZ-045, D-3112: the job page's notice log, under the caller's own pick (the pick gives the job
 /// and its number, since the door probe fills `{pick}` and no `{job}`).
@@ -1275,11 +1276,17 @@ impl CsrfField for FitForm {
     }
 }
 
-/// PICK-057: the page after a tap on `job` (number `number`), linking back to its Quote link page.
+/// PICK-057, D-5387: the page after a tap on `job` (number `number`), linking back to the business
+/// job page when `token` is [`JOB_PAGE_TOKEN`] (the tap came from there), else to its Quote link
+/// page.
 fn fit_page(state: NotAFitState<'_>, number: i64, (job, token): (Uuid, &str)) -> Response {
-    let back = (ACTION_ROUTE.replace("{kind}", ActionKind::Quote.slug()))
-        .replace("{object}", &job.to_string())
-        .replace("{token}", token);
+    let back = if token == JOB_PAGE_TOKEN {
+        JOB_PAGE_ROUTE.replace("{j}", &number.to_string())
+    } else {
+        (ACTION_ROUTE.replace("{kind}", ActionKind::Quote.slug()))
+            .replace("{object}", &job.to_string())
+            .replace("{token}", token)
+    };
     let status = match state {
         NotAFitState::Refused(_) => StatusCode::UNPROCESSABLE_ENTITY,
         NotAFitState::Saved(_) | NotAFitState::AlreadyAnswered => StatusCode::OK,
