@@ -202,6 +202,10 @@ pub use crate::owner_auth::{
 pub use crate::owner_complaint::{
     CountRefused, ProblemReport, count_problem_as_complaint, problem_reports,
 };
+pub use crate::owner_complaint::{
+    OWNER_PROBLEM_COMPLAINT_ROUTE, OWNER_PROBLEM_REPORTS_ROUTE, PROBLEM_KIND_CHOICES, PressRefused,
+    owner_problem_reports_page,
+};
 pub use crate::owner_help::{
     OWNER_HELP_CLOSE_ROUTE, OWNER_HELP_REPLY_ROUTE, OWNER_HELP_ROUTE, OWNER_REPLY_MAX,
     OWNER_REPLY_TEMPLATE, ReplyRefusal, owner_help_routes, reply_body, screen_reply,

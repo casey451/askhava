@@ -6,22 +6,46 @@
 //! settled pick (`picks::api::settled_pick`, so a no-show pick still names its business) and runs
 //! `businesses::api::count_problem`, which records at most one complaint per job. [`problem_reports`]
 //! lists the PROBLEM alerts raised in the last 30 days with job number, kept words, safety mark and
-//! whether the job is counted; no homeowner contact field (PRIV-006). Neither sends a text nor
-//! serves a page (T712 serves the page, T713 the homeowner's BIZ-011 text).
+//! whether the job is counted; no homeowner contact field (PRIV-006). Neither sends a text.
+//!
+//! T712 (D-4423, D-3890): [`owner_problem_reports_page`] renders `owner_problem_reports.html` from
+//! those rows: each uncounted one has a form posting the CSRF token, the alert ID and a kind
+//! picked from [`PROBLEM_KIND_CHOICES`] (none preselected, no `required`, A11Y-030) to
+//! [`OWNER_PROBLEM_COMPLAINT_ROUTE`]; a counted one says so and has no form. A refusal shows the
+//! list again with "Error: " in the title and a focused summary linking to the row's choices.
+//! `server`'s `owner_portal` serves both fixed paths behind the owner session.
 
 use std::fmt;
 
+use askama::Template;
 use askhava_businesses::api::{ComplaintError, Counted, count_problem, counted_jobs};
 use askhava_jobs::api::{PROBLEM_ALERT, PROBLEM_SAFETY_ALERT, job_number};
 use askhava_ops::api::{AlertSubject, DigestAlert, alert_subject, digest_alerts};
 use askhava_picks::api::settled_pick;
 use askhava_privacy::api::{OwnerSessionProof, WORDS_KEPT_FOR, problem_words};
-use jiff::Timestamp;
+use jiff::{Timestamp, tz};
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
 /// The alert subject a PROBLEM alert names: the inbound text row.
 const INBOX: &str = "messaging.inbox";
+
+/// JOB-016, D-4423: the owner's list of PROBLEM reports (`GET`); a fixed path (D-3890).
+pub const OWNER_PROBLEM_REPORTS_ROUTE: &str = "/owner/problem-reports";
+
+/// JOB-016, SEC-006, D-3890: the "Count as a complaint" press (`POST`); the alert ID and kind
+/// travel in the form body.
+pub const OWNER_PROBLEM_COMPLAINT_ROUTE: &str = "/owner/problem-complaint";
+
+/// JOB-016, D-4423: each complaint kind's stored value (`businesses::api::PROBLEM_KINDS`) and the
+/// label the page shows, in the page's order.
+pub const PROBLEM_KIND_CHOICES: [(&str, &str); 5] = [
+    ("no_show", "No-show"),
+    ("conduct", "Conduct"),
+    ("work_or_price", "Work or price"),
+    ("safety", "Safety"),
+    ("other", "Other"),
+];
 
 /// Why counting a PROBLEM report failed. No variant carries a value (rust brain R5, R6).
 #[derive(Debug, Clone, Copy, thiserror::Error, PartialEq, Eq)]
@@ -182,4 +206,165 @@ async fn report(
         counted: false,
     };
     Ok(Some((kept.job, row)))
+}
+
+/// A press the page refused: why, the alert ID it named (when it was one) and the kind as posted,
+/// kept checked on the row (A11Y-012).
+#[derive(Debug, Clone, Copy)]
+pub struct PressRefused<'a> {
+    /// Why nothing was counted; never [`CountRefused::Database`], which is a 500.
+    pub why: CountRefused,
+    /// The alert ID the form named, when it parsed.
+    pub alert: Option<Uuid>,
+    /// The kind as posted.
+    pub kind: &'a str,
+}
+
+/// One listed report as the template shows it: IDs, an Arizona time and the scrubbed words only.
+struct ReportRow {
+    alert: String,
+    number: i64,
+    came_in: String,
+    words: String,
+    safety: bool,
+    counted: bool,
+    kept: String,
+}
+
+#[derive(Template)]
+#[template(path = "owner_problem_reports.html")]
+struct ReportsView<'a> {
+    csrf: &'a str,
+    route: &'static str,
+    kinds: [(&'static str, &'static str); 5],
+    rows: Vec<ReportRow>,
+    error: Option<(&'static str, String)>,
+}
+
+/// The line a refusal shows (A11Y-011); nothing was counted for any of them.
+fn refusal_line(why: CountRefused) -> &'static str {
+    match why {
+        CountRefused::BadKind => "Choose what kind of complaint this is.",
+        CountRefused::NoBusiness => {
+            "This job doesn't have a confirmed pick yet, so there's no one to count it against."
+        }
+        CountRefused::WordsGone => {
+            "We delete what homeowners write after 30 days, so this one can't be counted now."
+        }
+        CountRefused::NotProblem | CountRefused::Database => "We couldn't find that report.",
+    }
+}
+
+/// JOB-016, SEC-006, PRIV-006, A11Y-011, A11Y-012, A11Y-030, D-4423: the problem reports page for
+/// `reports` (newest first, as [`problem_reports`] lists them) with `refused`'s summary, linked to
+/// the refused row's first choice when that row is listed. No homeowner contact is shown.
+///
+/// # Errors
+/// The template's render error.
+pub fn owner_problem_reports_page(
+    csrf: &str,
+    reports: &[ProblemReport],
+    refused: Option<PressRefused<'_>>,
+) -> askama::Result<String> {
+    let refused_alert = refused.and_then(|r| r.alert);
+    let rows: Vec<ReportRow> = reports
+        .iter()
+        .map(|r| ReportRow {
+            alert: r.alert.to_string(),
+            number: r.number,
+            came_in: arizona(r.raised_at),
+            words: r.words.clone(),
+            safety: r.safety,
+            counted: r.counted,
+            kept: match refused {
+                Some(p) if refused_alert == Some(r.alert) => p.kind.to_owned(),
+                _ => String::new(),
+            },
+        })
+        .collect();
+    let error = refused.map(|p| {
+        let open = p
+            .alert
+            .filter(|a| reports.iter().any(|r| r.alert == *a && !r.counted));
+        let anchor = open.map_or_else(
+            || "#problem-reports".to_owned(),
+            |a| format!("#kind-{a}-{}", PROBLEM_KIND_CHOICES[0].0),
+        );
+        (refusal_line(p.why), anchor)
+    });
+    ReportsView {
+        csrf,
+        route: OWNER_PROBLEM_COMPLAINT_ROUTE,
+        kinds: PROBLEM_KIND_CHOICES,
+        rows,
+        error,
+    }
+    .render()
+}
+
+/// `at` in Arizona time (MST all year), as the owner pages show times.
+fn arizona(at: Timestamp) -> String {
+    at.to_zoned(tz::TimeZone::fixed(tz::offset(-7)))
+        .strftime("%b %-d, %-I:%M %p")
+        .to_string()
+}
+
+#[cfg(test)]
+mod page_tests {
+    //! JOB-016, PRIV-006, A11Y-030: the page's rows, form and refusal summary.
+
+    use super::*;
+
+    fn report(counted: bool) -> ProblemReport {
+        ProblemReport {
+            alert: Uuid::from_u128(0x712),
+            raised_at: Timestamp::UNIX_EPOCH,
+            number: 1042,
+            words: "the sample tap still drips".to_owned(),
+            safety: true,
+            counted,
+        }
+    }
+
+    /// JOB-016: an uncounted report has the form with every kind, none checked; a counted one
+    /// says so with no form; an empty list says there are none.
+    #[test]
+    fn rows_show_the_form_only_while_uncounted() {
+        let open = owner_problem_reports_page("t", &[report(false)], None).expect("page");
+        assert!(open.contains("Count as a complaint</button>"));
+        assert!(open.contains("Safety word"));
+        assert!(!open.contains(" checked>"), "no kind preselected");
+        for (_, label) in PROBLEM_KIND_CHOICES {
+            assert!(open.contains(label), "{label}");
+        }
+        let done = owner_problem_reports_page("t", &[report(true)], None).expect("page");
+        assert!(done.contains("Counted as a complaint"));
+        assert!(!done.contains("<form"));
+        let none = owner_problem_reports_page("t", &[], None).expect("page");
+        assert!(none.contains("No problem reports in the last 30 days."));
+    }
+
+    /// A11Y-011, A11Y-012, A11Y-030: a refusal titles the page "Error: ", links its line to the
+    /// row's first choice and keeps the posted kind checked.
+    #[test]
+    fn a_refusal_links_to_the_row_and_keeps_the_kind() {
+        let refused = PressRefused {
+            why: CountRefused::NoBusiness,
+            alert: Some(Uuid::from_u128(0x712)),
+            kind: "conduct",
+        };
+        let page = owner_problem_reports_page("t", &[report(false)], Some(refused)).expect("page");
+        assert!(page.contains("<title>Error: "));
+        assert!(page.contains(&format!(
+            "href=\"#kind-{}-no_show\"",
+            Uuid::from_u128(0x712)
+        )));
+        assert!(page.contains(r#"value="conduct" checked"#));
+        let gone = PressRefused {
+            alert: None,
+            ..refused
+        };
+        let page = owner_problem_reports_page("t", &[], Some(gone)).expect("page");
+        assert!(page.contains(r##"href="#problem-reports""##));
+    }
 }
