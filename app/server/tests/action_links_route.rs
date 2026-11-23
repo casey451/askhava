@@ -71,7 +71,8 @@ use askhava_portals::api::{
     use_action_link,
 };
 use askhava_portals::api::{
-    CodeAddress, CodeFuture, CodeSent, CodeTo, ConfirmCodes, business_principal, set_inbox_shared,
+    CodeAddress, CodeFuture, CodeSent, CodeTo, ConfirmCodes, SESSION_COOKIE, business_principal,
+    set_inbox_shared,
 };
 use askhava_privacy::api::Vault;
 use askhava_quotes::api::{
@@ -1671,4 +1672,67 @@ async fn td_sec_80_only_confirm_is_minted_by_text(pool: PgPool) {
             assert_eq!(minted, Err(ActionLinkError::NotAllowed));
         }
     }
+}
+
+/// TD-SEC-80: `member` (signed in as `jar`) marks their inbox shared after a fresh step-up.
+async fn share_inbox(w: &World, member: Uuid, jar: &CookieJar) {
+    let (mut db, now) = (w.pool.acquire().await.expect("db"), Timestamp::now());
+    let by = Acting {
+        business: w.team.business,
+        member,
+    };
+    record_step_up(&mut db, by, now).await.expect("step-up");
+    let who = business_principal(&mut db, jar, now).await;
+    let who = who.expect("read").expect("signed in");
+    let phone = CodeTo::Phone(SecretString::from("+19285550142"));
+    let shared = set_inbox_shared(&mut db, &who, (true, &phone), now).await;
+    shared.expect("shared");
+}
+
+/// TD-SEC-80: the text-minted Confirm link of `member` for a new pick: its path.
+async fn text_link_for(w: &World, member: Uuid) -> String {
+    let mut db = w.pool.acquire().await.expect("db");
+    let now = Timestamp::now();
+    let target = ActionTarget {
+        kind: ActionKind::Confirm,
+        object: Uuid::new_v4(),
+        member,
+        business: w.team.business,
+    };
+    let span = (now, now + SignedDuration::from_hours(2));
+    let link = mint_text_confirm_link(&mut db, target, span).await;
+    path_of(link.expect("minted").expose_secret())
+}
+
+/// Whether `jar` is `member`'s business session at `at`, read as the Confirm page reads it.
+async fn held_at(w: &World, jar: &CookieJar, member: Uuid, at: Timestamp) -> bool {
+    let mut db = w.pool.acquire().await.expect("db");
+    let who = business_principal(&mut db, jar, at).await.expect("read");
+    who.is_some_and(|p| p.member() == member)
+}
+
+/// TD-SEC-80, SEC-004, SEC-027, D-4425, D-5630: a person signed in with a 30-day session and
+/// "This inbox is shared" on passes a text-minted, then an emailed, Confirm link with the right
+/// code: each link is used, no new session cookie is set, and the session they held is kept as
+/// it was, still live at 29 days, never shortened to 30 minutes or started again.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_80_a_shared_inbox_code_keeps_the_live_session(pool: PgPool) {
+    let (w, sends) = coded(&pool, true).await;
+    let (member, jar) = signed_in(&w).await;
+    share_inbox(&w, member, &jar).await;
+    let emailed = live_for(&w, (ActionKind::Confirm, Uuid::new_v4()), member).await;
+    for path in [text_link_for(&w, member).await, emailed] {
+        let asked = act(&w, &path, Site::Own, &jar).await;
+        assert_eq!(asked.status, 200, "a shared inbox asks for the code");
+        let (status, _, set) = landed(&w, &path, &format!("&code={RIGHT_CODE}"), &jar).await;
+        assert_eq!(status, 303, "the right code goes on to the Confirm page");
+        assert!(!unused(&w, &path).await, "the right code used the link");
+        assert!(set.get(SESSION_COOKIE).is_none(), "no new session cookie");
+    }
+    assert_eq!(sends.load(Ordering::SeqCst), 2, "one code per link");
+    let later = Timestamp::now() + SignedDuration::from_hours(29 * 24);
+    assert!(
+        held_at(&w, &jar, member, later).await,
+        "the session is kept"
+    );
 }

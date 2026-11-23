@@ -37,7 +37,9 @@ use sha2::{Digest, Sha256};
 use sqlx::PgConnection;
 use sqlx::types::Uuid;
 
-use crate::business_auth::{BUSINESS_SESSION_LIFE, BusinessPrincipal, LINK_LIFE};
+use crate::business_auth::{
+    BUSINESS_SESSION_LIFE, BusinessPrincipal, LINK_LIFE, business_principal,
+};
 use crate::confirm_pay::CodeStep;
 use crate::models;
 use crate::session::{PortalsError, Realm, current_session, start_session};
@@ -504,7 +506,9 @@ pub const fn fresh_code_needed(kind: ActionKind, signed_in: bool, inbox_shared: 
 /// SEC-004, BIZ-038, D-3675: signs the person a used Confirm link was emailed to in on this
 /// device, as `business_auth::start` does: a fresh business session in `jar`, of
 /// [`TEXT_CONFIRM_SESSION_LIFE`] for a text-started grant (PICK-033, D-4425) and
-/// [`BUSINESS_SESSION_LIFE`] otherwise, then its `portals.business_session` row. Call it only
+/// [`BUSINESS_SESSION_LIFE`] otherwise, then its `portals.business_session` row. A live session
+/// `jar` already holds for the grant's own person (signed in, inbox marked shared) is kept as
+/// it is, never shortened or lengthened, and `jar` comes back unchanged (D-5630). Call it only
 /// after that person's Verify code was right, in the transaction that used the link, so a
 /// failure leaves the link unused and nobody signed in.
 ///
@@ -517,6 +521,10 @@ pub async fn confirm_link_session(
     grant: &ActionGrant,
     now: Timestamp,
 ) -> Result<CookieJar, PortalsError> {
+    let held = business_principal(tx, &jar, now).await?;
+    if held.is_some_and(|p| grant.same_person(&p)) {
+        return Ok(jar);
+    }
     let login = (Realm::Business, grant.member);
     let life = if grant.text_started {
         TEXT_CONFIRM_SESSION_LIFE
