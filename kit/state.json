@@ -101839,8 +101839,8 @@
    "reviewed_sha": "188d33da48fb05f16eac4a6fabed8263ae09cf41",
    "review_lease": {
     "task": "T714",
-    "session": "actions-45146020517",
-    "expires": "2026-11-23T12:25:09Z",
+    "session": "actions-45166251073",
+    "expires": "2026-11-23T14:39:44Z",
     "lane": "2"
    },
    "branch": "claude/task/T714-text-confirm-link-session",
@@ -101849,18 +101849,6 @@
     "why": "auto-merge on #1391 (gh pr merge)",
     "head": "188d33da48fb05f16eac4a6fabed8263ae09cf41"
    },
-   "update_merges": [
-    {
-     "from": "9e6584b530f30a5d2283a37b981b7adeb28ff3c3",
-     "to": "188d33da48fb05f16eac4a6fabed8263ae09cf41",
-     "main": "f27e05243e49a721f4e086497cd1853aa05db78f",
-     "how": "hand-in",
-     "at": "2026-11-23T11:00:57Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
-   "merge_turn_since": "2026-11-23T11:03:21Z",
    "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust dependency audit (cargo-audit, cargo-deny)\nWarning:   unmaintained\nTitle:     `basic-toml` is unmaintained\nDate:      2026-09-26\nID:        RUSTSEC-2026-0374\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0374\nCrate:     proc-macro-error2\nVersion:   2.0.1\nWarning:   unmaintained\nTitle:     proc-macro-error2 is unmaintained\nDate:      2026-06-07\nID:        RUSTSEC-2026-0173\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0173\nerror: 1 vulnerability found!\nwarning: 2 allowed warnings found\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
    "wip_claim": {
     "attempt": 2,
@@ -101868,7 +101856,8 @@
    },
    "runner_closed_prs": [
     1391
-   ]
+   ],
+   "head_check_since": null
   },
   {
    "id": "T705",
@@ -121861,7 +121850,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T12:06:49Z",
+ "updated_at": "2026-11-23T12:27:29Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -121959,7 +121948,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "f27e05243e49a721f4e086497cd1853aa05db78f",
+ "runner_sha": "188d33da48fb05f16eac4a6fabed8263ae09cf41",
  "starter": "actions",
  "smoke_runs": [
   {

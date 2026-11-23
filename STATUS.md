@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T12:06:49Z by runner f27e05243e49 (actions).
+Updated 2026-11-23T12:27:29Z by runner 188d33da48fb (actions).
 
 **Building: T714 in progress since 11:39Z; 630 of 775 done; week 75% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-23T12:06:49Z by runner f27e05243e49 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T714 claimed 11:39Z, lease until 14:39Z; lane 3: T653 claimed 11:56Z, lease until 14:56Z; lane 4: T730 claimed 10:33Z, lease until 13:33Z; lane 5: T646 claimed 12:00Z, lease until 15:00Z
 - **Week:** 75% used, 39.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:06Z, 0 min before this update
+- **Last run:** 12:07Z, 20 min before this update
 - **Keeper:** last ran 12:06Z, next wake 13:35Z
 
 ## Needs attention
@@ -35,7 +35,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T836 (since 2026-11-23T07:59:33Z, no attempt used; a plan change fixes it): T836: kit/runner_log.jsonl is named by D-500, but no task owns it and it does not exist
-- Strict plan check red: 36 problem(s) on tasks still to run (+516 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 39 problem(s) on tasks still to run (+517 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -79,8 +79,6 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 | T833 | pre-hand-in gate test (harness): the Ally-step test holds th | done | 1 | 65 min | 14:05Z |  |
 | T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | done | 4 | 33 min | 13:54Z | Reviewer after findings round still FINDINGS at 4f79a8b8c4195e68ccfba3a25eaab6d612560536: / 1. docs/runbook.md:139-142 a |
 | T830 | server: `server rotate-keys` and `server retire-index-versio | done | 1 | 61 min | 12:46Z |  |
-| T729 | portals and privacy: the quote page offers updates by email  | check_failed | 2 | 49 min | 12:26Z |  |
-| T610 | site: the D-4246 polish on the Spanish pages, the legal page | done | 2 | 40 min | 12:19Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 
 ### Plan and harness merges on main
 - 10:11Z Plan: T716 purges held first-text words on an under-13 stop; T730 counts update emails (D-5617) (#1386)
