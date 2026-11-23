@@ -1,0 +1,38 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT substr(a.question_id, 10) AS \"trade!\", a.choice AS \"choice!\"\n           FROM intake.intake_answer a WHERE a.conversation_id = $1 AND a.choice IS NOT NULL\n             AND starts_with(a.question_id, $2)\n             AND a.answered_at = (SELECT max(b.answered_at) FROM intake.intake_answer b\n               WHERE b.conversation_id = $1 AND starts_with(b.question_id, $2))\n             AND NOT EXISTS (SELECT 1 FROM intake.intake_answer r WHERE r.conversation_id = $1\n               AND r.question_id = $3 AND r.choice = substr(a.question_id, 10) AND r.choice <> $4)\n           ORDER BY a.question_id, a.choice",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "trade!",
+        "type_info": "Text",
+        "origin": "Expression"
+      },
+      {
+        "ordinal": 1,
+        "name": "choice!",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "intake.intake_answer",
+            "name": "choice"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      null,
+      true
+    ]
+  },
+  "hash": "8be8b6b10d1fb1001849a06fb7ff0dffaf6396c8352d27a12a1227eae892fa81"
+}
