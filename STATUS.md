@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T06:59:16Z by runner 01ef41068520 (actions).
+Updated 2026-11-23T07:02:30Z by runner 01ef41068520 (actions).
 
 **Building: T716 in progress since 06:55Z; 626 of 775 done; week 72% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 626 of 775 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T716 claimed 06:55Z, lease until 09:55Z; lane 2: T835 claimed 06:32Z, lease until 09:32Z; lane 3: T730 claimed 06:00Z, lease until 09:00Z
-- **Week:** 72% used, 47.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:56Z, 2 min before this update
+- **Lane:** lane 1: T716 claimed 06:55Z, lease until 09:55Z; lane 2: T835 claimed 06:32Z, lease until 09:32Z; lane 3: T730 claimed 06:00Z, lease until 09:00Z; lane 5: T588 claimed 07:02Z, lease until 10:02Z
+- **Week:** 72% used, 45.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 06:59Z, 2 min before this update
 - **Keeper:** last ran 06:49Z, next wake 07:09Z
 
 ## Needs attention
@@ -100,7 +100,7 @@ Updated 2026-11-23T06:59:16Z by runner 01ef41068520 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-23T06:49:05Z (week)): week: 146.6M used, 47.4M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T22:09:05Z.
+- Pacing (session_reading 2026-11-23T06:49:05Z (week)): week: 148.5M used, 45.5M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T22:04:16Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -118,6 +118,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T716 (lease until 2026-11-23T09:55:38Z)
 - lane 2: T835 (lease until 2026-11-23T09:32:28Z)
 - lane 3: T730 (lease until 2026-11-23T09:00:46Z)
+- lane 5: T588 (lease until 2026-11-23T10:02:05Z)
 
 ## Last usage reading
 - {"task": "T716", "at": "2026-11-23T06:48:28Z", "input_tokens": 286, "cache_creation_input_tokens": 247272, "cache_read_input_tokens": 7217555, "output_tokens": 53198}
