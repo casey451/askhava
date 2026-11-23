@@ -52887,14 +52887,15 @@
     "WEB-023"
    ],
    "decisions": [
-    "D-5281"
+    "D-5281",
+    "D-5585"
    ],
    "budget": {
     "files": 4,
     "lines": 40,
     "context_pct": 17
    },
-   "acceptance": "`cargo test -p askhava-site`, the e2e `site_help_pages` spec and Ally pass; the page shows the new line and no other text changes.",
+   "acceptance": "`cargo test -p askhava-site`, the e2e `site_help_pages` spec and Ally pass; the page shows the new heading and line in place of the old heading and line, and no other text changes (Grok systemic check, D-5585).",
    "branch": "claude/task/T802-coverage-us-numbers",
    "prompt": "kit/prompts/T802.md"
   },
