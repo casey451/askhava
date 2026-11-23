@@ -18,6 +18,9 @@
 //! sets the channel back to text and marks the address bounced (D-5442).
 //! [`queue_update_email`] stores the same email alone, never a text, for T840 to call when a
 //! text gate (TXT-034's web-and-email mode among them) stops an update (D-5639, D-5640).
+//! [`queue_data_request_link`] stores PRIV-031's single-use delete-or-copy confirm link for
+//! `portals` (T804) as a [`DATA_REQUEST_TEMPLATE`] email, only while her update address is
+//! confirmed; `email.rs` checks it again at send (T816, D-5339, D-5340, D-5670).
 
 use std::sync::OnceLock;
 
@@ -70,6 +73,27 @@ pub const TEXT_ONLY_UPDATES: [&str; 22] = [
 
 /// The template prefix of an update email: `update.<text template>` (TXT-018).
 pub const UPDATE_EMAIL_PREFIX: &str = "update.";
+
+/// PRIV-031, D-5339: the data-request link email's template ID; not an update template.
+pub const DATA_REQUEST_TEMPLATE: &str = "data_request_link";
+
+/// PRIV-031: which of her requests a data-request link confirms (`messaging` may not name `portals`').
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DataLinkKind {
+    /// A copy of her data.
+    Copy,
+    /// Deleting her data.
+    Delete,
+}
+
+/// What [`queue_data_request_link`] did.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LinkEmail {
+    /// She has no update address or it is unconfirmed: nothing was stored.
+    NoConfirmedAddress,
+    /// The email is stored (or was already, for a repeat): its row ID.
+    Queued(Uuid),
+}
 
 /// The homeowner portal, the footer's SEC-028 "Manage email notices" link.
 const MANAGE: OnDomain = OnDomain("/h");
@@ -288,4 +312,43 @@ pub(crate) async fn bounced(
 /// address (TXT-018, PICK-029).
 pub(crate) fn is_update_email(template: &str) -> bool {
     template.starts_with(UPDATE_EMAIL_PREFIX)
+}
+
+/// PRIV-031, TXT-018, SEC-028, CON-035, D-5339: in the caller's transaction, stores one
+/// [`DATA_REQUEST_TEMPLATE`] email to homeowner `contact` in `language` holding `link`, keyed on
+/// the template, `contact` and `request` (a repeat stores nothing), only when her update address
+/// is stored and confirmed; else [`LinkEmail::NoConfirmedAddress`] and nothing is stored. Only the
+/// address state is read here, with no plaintext; the address opens at send (`email.rs`).
+///
+/// # Errors
+///
+/// [`EmailError::Database`] or [`EmailError::Template`].
+pub async fn queue_data_request_link(
+    db: &mut PgConnection,
+    (secret, postal): (&SecretString, &PostalAddress),
+    (contact, language): (Uuid, Language),
+    (kind, request, link): (DataLinkKind, Uuid, &str),
+    now: Timestamp,
+) -> Result<LinkEmail, EmailError> {
+    let status = update_status(db, contact)
+        .await
+        .map_err(|_| EmailError::Database)?;
+    if !status.is_some_and(|s| s.confirmed) {
+        return Ok(LinkEmail::NoConfirmedAddress);
+    }
+    let email = NewEmail {
+        template_id: DATA_REQUEST_TEMPLATE,
+        subject: &[request],
+        class: EmailClass::Notice,
+        notice: Notice::DataRequestLink { kind, link },
+    };
+    let manage = MANAGE.to_string();
+    let to = Recipient {
+        id: contact,
+        audience: Audience::Homeowner,
+        language,
+        manage_url: &manage,
+    };
+    let (id, _) = queue_email(db, (secret, postal), &to, &email, now).await?;
+    Ok(LinkEmail::Queued(id))
 }
