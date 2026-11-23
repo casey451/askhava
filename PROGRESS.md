@@ -10338,3 +10338,4 @@
 - 2026-11-23T11:34:13Z runner f27e05243e49 (actions): {}
 - 2026-11-23T11:38:18Z runner f27e05243e49 (actions): {}
 - 2026-11-23T11:39:11Z runner f27e05243e49 (actions): {}
+- 2026-11-23T11:40:26Z runner f27e05243e49 (actions): {"T714": "QUEUED -> IN_PROGRESS"}; T714 estimated 907k tokens (calibrated); week has 43.1M left (no five-hour budget, D-3056) after 2.9M still running in another lane (session_reading 2026-11-23T11:38:17Z (week)); claimed
