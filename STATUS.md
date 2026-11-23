@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-23T09:58:51Z by runner c1ebf68942bf (actions).
+Updated 2026-11-23T09:59:22Z by runner c1ebf68942bf (actions).
 
 **Building: T121 in progress since 08:33Z; 629 of 775 done; week 73% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 629 of 775 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T121 claimed 08:33Z, lease until 11:33Z; lane 2: T714 claimed 09:25Z, lease until 12:25Z; lane 3: T666 claimed 08:27Z, lease until 11:27Z; lane 4: T118 claimed 08:35Z, lease until 11:35Z; lane 5: T653 claimed 09:21Z, lease until 12:21Z
+- **Lane:** lane 1: T121 claimed 08:33Z, lease until 11:33Z; lane 2: T714 claimed 09:25Z, lease until 12:25Z; lane 3: T666 claimed 08:27Z, lease until 11:27Z; lane 5: T653 claimed 09:21Z, lease until 12:21Z
 - **Week:** 73% used, 42.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 09:25Z, 33 min before this update
 - **Keeper:** last ran 09:08Z, next wake 11:30Z
@@ -25,6 +25,7 @@ Evidence: last_quote_text (quote_text_sent.rs:45-52) reads only messaging.outbox
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T118 | Journey J3 (operator) keyboard-only, with closing checks | MERGE_PENDING | 5 | 82 min | 09:58Z | PLAN GAP: outside ownership: app/site/templates/request.html, app/site/static/site.css / At 1280x900 the /request chat s |
 | T646 | site and server: the web chat's new-request limit counts the | check_failed | 1 | 59 min | 08:59Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T588 | portals and server: a refused business sign-up keeps every f | done | 1 | 101 min | 08:44Z |  |
 | T730 | messaging: a homeowner who chose email gets each quote updat | BLOCKED | 2 | 2 min | 08:25Z | PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs / Evidence: last_quote_text (quote_text_sent.rs:45-52) |
@@ -126,8 +127,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T121 (lease until 2026-11-23T11:33:00Z)
 - lane 2: T714 (lease until 2026-11-23T12:25:09Z)
 - lane 3: T666 (lease until 2026-11-23T11:27:49Z)
-- lane 4: T118 (lease until 2026-11-23T11:35:54Z)
 - lane 5: T653 (lease until 2026-11-23T12:21:32Z)
 
 ## Last usage reading
-- {"task": "T646", "at": "2026-11-23T08:59:21Z", "cache_creation_input_tokens": 127061, "input_tokens": 148, "cache_read_input_tokens": 5311614, "output_tokens": 31096}
+- {"task": "T118", "at": "2026-11-23T09:58:50Z", "cache_creation_input_tokens": 119231, "output_tokens": 25404, "cache_read_input_tokens": 3843146, "input_tokens": 143}
