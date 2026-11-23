@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T20:43:58Z by runner 0a7001d971f3 (actions).
+Updated 2026-11-23T20:44:40Z by runner 0a7001d971f3 (actions).
 
 **Building: T745 in progress since 19:03Z; 637 of 778 done; week 83% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-23T20:43:58Z by runner 0a7001d971f3 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T745 claimed 19:03Z, lease until 22:03Z; lane 5: T649 claimed 20:33Z, lease until 23:33Z
 - **Week:** 83% used, 27.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:43Z, 0 min before this update
-- **Keeper:** last ran 20:41Z, next wake 21:01Z
+- **Last run:** 20:44Z, 0 min before this update
+- **Keeper:** last ran 20:44Z, next wake 21:04Z
 
 ## Needs attention
 - BLOCKED T836: plan gap reported: PLAN GAP: tests/test_runner_five_lanes.py:176 (test_no_workflow_a_hand_in_starts_cancels_another_lanes_run_when_five_hand_in_together, not owned by T836, from D-3043) asserts cancel-in-progress is exactly False for ci.yml, a11y.yml, twin.yml, governance.yml, auto-pr.yml. That contradicts D-5554 (2), which needs cancel-in-progress true for non-main pushes. smoke.sh fails: AssertionError: ci.yml (workflow) cancels in progress (1 failed, 5766 passed). Reviewer confirmed: T836 owns only backup-runner.yml, ci.yml, twin.yml, a11y.yml, tests/test_ci_workflow.py. Smallest fix: add tests/test_runner_fi; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T836 --plan-fix D-### --reason "..."` (D-2859)
