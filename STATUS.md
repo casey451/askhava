@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T19:13:20Z by runner bb380dcebc34 (actions).
+Updated 2026-11-23T19:13:51Z by runner bb380dcebc34 (actions).
 
 **Building: T812 in progress since 18:01Z; 636 of 777 done; week 81% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 636 of 777 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T812 claimed 18:01Z, lease until 21:01Z; lane 2: T745 claimed 19:03Z, lease until 22:03Z; lane 3: T730 claimed 17:56Z, lease until 20:56Z; lane 4: T668 claimed 19:10Z, lease until 22:10Z
+- **Lane:** lane 1: T812 claimed 18:01Z, lease until 21:01Z; lane 2: T745 claimed 19:03Z, lease until 22:03Z; lane 4: T668 claimed 19:10Z, lease until 22:10Z
 - **Week:** 81% used, 27.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:11Z, 1 min before this update
+- **Last run:** 19:11Z, 2 min before this update
 - **Keeper:** last ran 19:03Z, next wake 19:23Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Updated 2026-11-23T19:13:20Z by runner bb380dcebc34 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T730 | messaging: a homeowner who chose email gets each quote updat | MERGE_PENDING | 4 | 76 min | 19:13Z | PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs / Evidence: last_quote_text (quote_text_sent.rs:45-52) |
 | T222 | Journeys J1 and J2, the full variants: web chat, photos, que | QUEUED | 2 | 97 min | 17:54Z | Reviewer after the fix round still ended REVIEW-VERDICT: FINDINGS over 0aedbd3769e83a983d24d694c7abe05f8773a57a: / 1. do |
 | T782 | server: the released job's page shows its real job number | done | 1 | 97 min | 16:56Z |  |
 | T121 | Startup key checks, control router absent in live, supply-ch | done | 4 | 100 min | 16:52Z | PLAN GAP: outside ownership: app/portals/src/update_channel.rs / T729 (owner) merged UpdatesForm/ConfirmForm without den |
@@ -28,7 +29,7 @@ Updated 2026-11-23T19:13:20Z by runner bb380dcebc34 (actions).
 | T666 | jobs, quotes and server: GET /b/jobs/{j} serves the business | done | 2 | 67 min | 14:25Z | Reviewer after the findings round (head bf41c81b22bdbd874d7d53cb8ba64ca6bb0737cf): app/server/tests/job_page_route.rs (w |
 | T819 | portals: her feedback words are scrubbed before they are sto | check_failed | 2 | 68 min | 13:45Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T646 | site and server: the web chat's new-request limit counts the | done | 3 | 99 min | 13:40Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
-| T730 | messaging: a homeowner who chose email gets each quote updat | check_failed | 3 | 2 h 46 min | 13:19Z | PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs / Evidence: last_quote_text (quote_text_sent.rs:45-52) |
+| T730 | messaging: a homeowner who chose email gets each quote updat | check_failed | 3 | 2 h 46 min | 13:19Z |  |
 | T714 | portals: a Confirm link sent by text is marked text-started  | BLOCKED | 3 | 36 min | 13:10Z |  |
 | T653 | licensing and server (harness): a typed BTR number is stored | done | 2 | 65 min | 13:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
 | T714 | portals: a Confirm link sent by text is marked text-started  | check_failed | 2 | 47 min | 12:27Z |  |
@@ -118,8 +119,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T812 (lease until 2026-11-23T21:01:47Z)
 - lane 2: T745 (lease until 2026-11-23T22:03:04Z)
-- lane 3: T730 (lease until 2026-11-23T20:56:52Z)
 - lane 4: T668 (lease until 2026-11-23T22:10:43Z)
 
 ## Last usage reading
-- {"task": "T222", "at": "2026-11-23T17:54:27Z", "output_tokens": 208324, "cache_read_input_tokens": 54231359, "cache_creation_input_tokens": 580741, "input_tokens": 742}
+- {"task": "T730", "at": "2026-11-23T19:13:19Z", "cache_creation_input_tokens": 157841, "cache_read_input_tokens": 3841263, "output_tokens": 27876, "input_tokens": 146}
