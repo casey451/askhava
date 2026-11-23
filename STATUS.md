@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-23T11:03:25Z by runner f27e05243e49 (actions).
+Updated 2026-11-23T11:03:59Z by runner f27e05243e49 (actions).
 
-**Building: T646 in progress since 10:36Z; 630 of 775 done; week 74% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T819 in progress since 11:03Z; 630 of 775 done; week 74% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 630 of 775 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T646 claimed 10:36Z, lease until 13:36Z; lane 4: T730 claimed 10:33Z, lease until 13:33Z; lane 5: T653 claimed 09:21Z, lease until 12:21Z
-- **Week:** 74% used, 41.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T819 claimed 11:03Z, lease until 14:03Z; lane 3: T646 claimed 10:36Z, lease until 13:36Z; lane 4: T730 claimed 10:33Z, lease until 13:33Z; lane 5: T653 claimed 09:21Z, lease until 12:21Z
+- **Week:** 74% used, 41.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:03Z, 0 min before this update
 - **Keeper:** last ran 11:02Z, next wake 11:22Z
 
@@ -32,7 +32,6 @@ URL:       https://rustsec.org/advisories/RUSTSEC-2026-0173
 Ci failed at step: All five jobs passed
 Checks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success
 ##[error]Process completed with exit code 1.
-- PLAN GAP T119 (since 2026-11-23T10:33:05Z, no attempt used; a plan change fixes it): T119: dependency T118 is DONE but its owned file tests/e2e/j3_operator.spec.ts is not on main; T119: dependency T118 is DONE but its owned file tests/a11y/j3_keyboard.spec.ts is not on main; T119: dependency T118 is DONE but its owned file tests/e2e/j3.ts is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T836 (since 2026-11-23T07:59:33Z, no attempt used; a plan change fixes it): T836: kit/runner_log.jsonl is named by D-500, but no task owns it and it does not exist
@@ -125,7 +124,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-23T10:29:37Z (week)): week: 152.5M used, 41.5M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T21:26:41Z.
+- Pacing (session_reading 2026-11-23T11:02:07Z (week)): week: 152.8M used, 41.2M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T22:05:54Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -140,7 +139,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T819 (lease until 2026-11-23T14:03:21Z)
 - lane 3: T646 (lease until 2026-11-23T13:36:19Z)
 - lane 4: T730 (lease until 2026-11-23T13:33:05Z)
 - lane 5: T653 (lease until 2026-11-23T12:21:32Z)

@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "phase": "kit",
- "current": "T646",
+ "current": "T819",
  "backup_runner": "on",
  "ruleset_verified": true,
  "lease": null,
@@ -26117,15 +26117,7 @@
    "attempts": 0,
    "slug": "e2e-j4-outage",
    "type": "build",
-   "stage": "5",
-   "plan_gap": {
-    "at": "2026-11-23T10:33:05Z",
-    "problems": [
-     "T119: dependency T118 is DONE but its owned file tests/e2e/j3_operator.spec.ts is not on main",
-     "T119: dependency T118 is DONE but its owned file tests/a11y/j3_keyboard.spec.ts is not on main",
-     "T119: dependency T118 is DONE but its owned file tests/e2e/j3.ts is not on main"
-    ]
-   }
+   "stage": "5"
   },
   {
    "id": "T120",
@@ -112007,11 +111999,19 @@
    "deps": [
     "T611"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 0,
    "slug": "feedback-scrubbed",
    "type": "build",
-   "stage": "5"
+   "stage": "5",
+   "attempt_started_at": "2026-11-23T11:03:21Z",
+   "decision_ids": [
+    5633,
+    5634,
+    5635,
+    5636,
+    5637
+   ]
   },
   {
    "id": "T820",
@@ -113938,7 +113938,7 @@
    "input_tokens": 216,
    "cache_read_input_tokens": 7367423
   },
-  "source": "session_reading 2026-11-23T10:29:37Z (week)",
+  "source": "session_reading 2026-11-23T11:02:07Z (week)",
   "by_task": {
    "FIX-MAIN": {
     "estimated_bytes": 3756447,
@@ -121573,6 +121573,10 @@
     "reviewer_tokens": 1157968,
     "reviewer_turns": 26,
     "last_model": "claude-opus-5-5"
+   },
+   "T819": {
+    "estimated_bytes": 425795,
+    "estimated_tokens": 1248934
    }
   },
   "windows": {
@@ -121593,7 +121597,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T11:03:25Z",
+ "updated_at": "2026-11-23T11:03:59Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -121694,13 +121698,6 @@
  "runner_sha": "f27e05243e49a721f4e086497cd1853aa05db78f",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "377208146bb5e71e10a9b05ce5928f3055f573d2",
-   "ok": true,
-   "at": "2026-11-23T03:34:29Z",
-   "why": "start routine (reused 2026-11-23T03:31:26Z)",
-   "reused": "2026-11-23T03:31:26Z"
-  },
   {
    "sha": "ff057c83296d2e44af57c4992190ea0ff9735ba8",
    "ok": true,
@@ -121851,24 +121848,32 @@
    "why": "start routine (ancestry reuse of e172ee5e2756, 2026-11-23T07:59:08Z)",
    "reused": "2026-11-23T07:59:08Z",
    "base": "e172ee5e2756b6665bc7d2ead2552039a007865b"
+  },
+  {
+   "sha": "f27e05243e49a721f4e086497cd1853aa05db78f",
+   "ok": true,
+   "at": "2026-11-23T11:03:21Z",
+   "why": "start routine (ancestry reuse of e172ee5e2756, 2026-11-23T07:59:08Z)",
+   "reused": "2026-11-23T07:59:08Z",
+   "base": "e172ee5e2756b6665bc7d2ead2552039a007865b"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T646 estimated 1.3M tokens (calibrated); week has 41.5M left (no five-hour budget, D-3056) after 4.5M still running in another lane (session_reading 2026-11-23T10:29:37Z (week)); claimed",
-  "at": "2026-11-23T10:36:19Z",
+  "last": "T819 estimated 1.2M tokens (calibrated); week has 41.2M left (no five-hour budget, D-3056) after 4.8M still running in another lane (session_reading 2026-11-23T11:02:07Z (week)); claimed",
+  "at": "2026-11-23T11:03:21Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
    "week": {
-    "used": 152483740,
+    "used": 152846835,
     "budget": 194000000,
-    "left": 41516260,
+    "left": 41153165,
     "resets_at": "2026-11-26T17:00:00Z"
    }
   },
-  "remaining_estimate": 400516848,
-  "projected_finish": "2026-12-07T21:26:41Z"
+  "remaining_estimate": 400751515,
+  "projected_finish": "2026-12-07T22:05:54Z"
  },
  "main_red_history": [
   {
@@ -121986,7 +121991,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 5633,
+ "next_decision": 5638,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
