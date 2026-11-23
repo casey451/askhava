@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T20:17:16Z by runner 0c7342d7b13f (actions).
+Updated 2026-11-23T20:20:56Z by runner 52bc3014e343 (actions).
 
 **Building: T745 in progress since 19:03Z; 637 of 778 done; week 82% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,15 +8,14 @@ Updated 2026-11-23T20:17:16Z by runner 0c7342d7b13f (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T745 claimed 19:03Z, lease until 22:03Z
 - **Week:** 82% used, 27.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:13Z, 3 min before this update
+- **Last run:** 20:17Z, 3 min before this update
 - **Keeper:** last ran 20:10Z, next wake 20:30Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- PLAN GAP T816 (since 2026-11-23T20:16:40Z, no attempt used; a plan change fixes it): T816: dependency T730 is DONE but its owned file app/messaging/src/update_emails.rs is not on main; T816: dependency T730 is DONE but its owned file tests/integration/tests/update_email_sends.rs is not on main
 - PLAN GAP T841 (since 2026-11-23T20:16:40Z, no attempt used; a plan change fixes it): T841: prompt kit/prompts/T841.md is missing; run scripts/gen_prompts.py; T841: branch claude/task/T841-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
-- Strict plan check red: 40 problem(s) on tasks still to run (+524 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 41 problem(s) on tasks still to run (+526 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
