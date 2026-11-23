@@ -21,7 +21,9 @@
    .arrow, the primary button's aria-hidden arrow; .cur, the price's raised dollar sign;
    .words-panel; .rise, the quote page's first-render cards); metric-matched local() fallbacks;
    and all motion in one prefers-reduced-motion: no-preference block. Limits checked by
-   tests/e2e/site_polish.spec.ts: 60 KB, 25 KB gzipped, transform-only keyframes, no gradient. */
+   tests/e2e/site_polish.spec.ts: 60 KB, 25 KB gzipped, transform-only keyframes, no gradient.
+   T611 (WEB-027, WEB-029, WEB-030, D-4246, D-4252, D-5591): the portal screens' paper, type and
+   ruled rows on the markup they already have, and the printed quote page and pick receipt. */
 @font-face {
   font-family: "Gelasio";
   font-style: normal;
@@ -934,6 +936,30 @@ ol:has(> .said-ours, > .said-hers) { list-style: none; padding: 0; display: grid
   }
 }
 
+/* Portal screens (T611; WEB-027, WEB-029, DESIGN_SPEC sections 3, 4 and 8, D-4246, D-4252, D-5591):
+   a business, homeowner or owner page extends base.html without site_layout's footer, so a `main`
+   with no `.site-footer` is a portal screen. No template changes: the working area's forms that
+   hold a field, its top-level sections, fact lists and labeled table regions are paper cards (20 px,
+   paper-shadow beside the 1 px line border forced colours keeps); a fieldset is a 12 px inner box;
+   tables are ruled rows; every figure is tabular; a fact list's label takes the small-label weight
+   and tracking without capitals (portal text is read back through innerText, e.g.
+   tests/e2e/pick_flow.spec.ts); the press is the button rule in the motion block. Each rule sits in
+   :where(), so the quote page's own T608 rules still win; none matches a `.rise` card, and there
+   is no entrance motion, lift or arrow here. */
+:where(main:not(:has(.site-footer))) { font-variant-numeric: tabular-nums; }
+:where(main:not(:has(.site-footer)) > :is(form:has(input:not([type="hidden"]), textarea, select), section:not(.card, .night), dl, [role="region"][tabindex="0"]):not(.rise)) { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 20px; margin-block: 0 24px; box-shadow: var(--paper-shadow); box-sizing: border-box; }
+:where(main:not(:has(.site-footer)) > :is(form, section, dl):not(.rise)) { max-width: 640px; }
+:where(main:not(:has(.site-footer)) > [role="region"][tabindex="0"]) { padding: 0; }
+:where(main:not(:has(.site-footer)) > :is(form, section, dl)) > :first-child { margin-top: 0; }
+:where(main:not(:has(.site-footer)) > :is(form, section, dl)) > :last-child { margin-bottom: 0; }
+:where(main:not(:has(.site-footer)) fieldset) { margin: 0 0 16px; padding: 12px 16px; border: 1px solid var(--line); border-radius: var(--radius-inner); min-inline-size: 0; }
+:where(main:not(:has(.site-footer)) table) { width: 100%; border-collapse: collapse; }
+:where(main:not(:has(.site-footer)) caption) { text-align: left; padding: 12px 16px; font-weight: 700; }
+:where(main:not(:has(.site-footer)) :is(th, td)) { text-align: left; vertical-align: top; padding: 10px 16px; border-top: 1px solid var(--line); }
+:where(main:not(:has(.site-footer)) dt) { font-weight: 600; letter-spacing: 0.05em; }
+:where(main:not(:has(.site-footer)) dd) { margin: 0 0 12px; }
+:where(main:not(:has(.site-footer)) dd + dt) { padding-top: 12px; border-top: 1px solid var(--line); }
+
 /* A card whose whole area is one link takes paper-lift on hover; a reading card never does (D-4246). */
 @media (hover: hover) {
   a.card:hover { box-shadow: var(--paper-lift); }
@@ -978,4 +1004,16 @@ ol:has(> .said-ours, > .said-hers) { list-style: none; padding: 0; display: grid
    so its check never vanishes with the fill (DESIGN_SPEC section 6, D-4252). */
 @media (forced-colors: active) {
   input[type="checkbox"], input[type="radio"] { appearance: auto; }
+}
+
+/* Printed (DESIGN_SPEC :118, D-4252, T611): the quote page (`.quote-page`) and the pick receipt
+   (`#pick-result`) drop the header and its Menu, buttons, forms and footer links and every shadow;
+   text is ink on white, each card keeps its 1 px line border and is never split, and inside a quote
+   card each outside link (ROC, Google, Yelp) prints its own address after it in place of the mark. */
+@media print {
+  body:has(.quote-page, #pick-result) > :is(header, div:has(> .skip-link)),
+  body:has(.quote-page, #pick-result) main :is(form, button, .button, .site-footer) { display: none !important; }
+  body:has(.quote-page, #pick-result), body:has(.quote-page, #pick-result) * { color: var(--ink) !important; background: var(--surface) !important; box-shadow: none !important; }
+  body:has(.quote-page, #pick-result) .card { break-inside: avoid; }
+  .quote .out a[href^="http"]::after { content: " (" attr(href) ")"; display: inline; width: auto; height: auto; margin: 0; border: 0; background: none; clip-path: none; }
 }
