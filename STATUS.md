@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T00:04:39Z by runner bd3e4e9cdad1 (actions).
+Updated 2026-11-23T00:09:59Z by runner bd3e4e9cdad1 (actions).
 
-**Building: T725 in progress since 23:49Z; 617 of 773 done; week 68% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T725 in progress since 23:49Z; 617 of 774 done; week 68% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 617 of 773 build tasks (owner gates not counted)
+- **Tasks done:** 617 of 774 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T725 claimed 23:49Z, lease until 02:49Z; lane 2: T645 claimed 23:51Z, lease until 02:51Z; lane 3: T832 claimed 23:50Z, lease until 02:50Z; lane 5: T675 claimed 23:48Z, lease until 02:48Z
 - **Week:** 68% used, 58.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:04Z, 0 min before this update
+- **Last run:** 00:05Z, 4 min before this update
 - **Keeper:** last ran 00:04Z, next wake 00:24Z
 
 ## Needs attention
@@ -79,6 +79,7 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 | T800 | Legal docs and tests (harness): the Twilio campaign submissi | done | 1 | 46 min | 00:39Z |  |
 
 ### Plan and harness merges on main
+- 00:07Z Plan: pre-flight fixes (D-5567); T837 keeper stage gate, job 32 and copy-flag fixes (D-5568) (#1368)
 - 17:04Z Plan: unblock T121/T832/T499/T514 (D-5552); pre-flight fixes job 24 (D-5551) (#1363)
 - 12:43Z Plan: pre-flight goal fixes for T666, T778, T820, T524, T825, T831 (D-5526) (#1354)
 - 11:22Z Plan: unblock T725 (D-5518) and T803 via T832 Checks timeout 60 min (D-5519) (#1347)
@@ -123,7 +124,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 260 of 345 done
+- stage 5: 260 of 346 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
