@@ -10658,7 +10658,8 @@
     "T745",
     "T747",
     "T759",
-    "T824"
+    "T824",
+    "T839"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -31839,7 +31840,8 @@
     "D-3891",
     "D-4258",
     "D-5410",
-    "D-5574"
+    "D-5574",
+    "D-5638"
    ],
    "cites": [],
    "budget": {
@@ -33014,7 +33016,9 @@
     "T826",
     "T832",
     "T803",
-    "T838"
+    "T838",
+    "T839",
+    "T840"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -33262,7 +33266,9 @@
     "T826",
     "T832",
     "T803",
-    "T838"
+    "T838",
+    "T839",
+    "T840"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -34070,7 +34076,9 @@
     "T824",
     "T826",
     "T799",
-    "T838"
+    "T838",
+    "T839",
+    "T840"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -48374,7 +48382,8 @@
    "decisions": [
     "D-366",
     "D-477",
-    "D-4425"
+    "D-4425",
+    "D-5638"
    ],
    "cites": [],
    "budget": {
@@ -48748,7 +48757,8 @@
     "D-5400",
     "D-5550",
     "D-5606",
-    "D-5617"
+    "D-5617",
+    "D-5639"
    ],
    "cites": [],
    "budget": {
@@ -48763,8 +48773,127 @@
    ],
    "branch": "claude/task/T716-intake-order-trade-questions",
    "prompt": "kit/prompts/T716.md",
-   "acceptance": "TD-INT-53 passes against PostgreSQL; \"Which fits best?\" is asked only when the candidates call for it and at most twice; a request whose words name no trade is asked once, asked once more, then waits, and is never called uncovered for want of a trade; no reply to either question is kept as words; `which_fits` and `trade_ask` pass `check_copy.py` and `check_ai_smell.py` and are in `NOT_UPDATE_TEXTS`; a licensed-only job type of the first text survives read-back; `matching.rs` gains only `stored_job_types_of` and D-5215's keyword phrases and trade-only rules, exactly as listed; `routing.rs` and `service.rs` are unchanged; `conversation.rs` changes only in `purge_child`; the earlier intake order tests pass unchanged. `tests/integration/tests/intake_boundary_count.rs` passes: a business without the boundary licence is never counted; a job opened on the ZIP's turn keeps the first text's scrubbed words as its description, and `intake_order_corrections.rs` changes only at line 417 and its doc comment, line 428 (now only `trade_ask`) and its doc comment at `:420` to `:421`, the module comment at `:8` to `:9`, and its `intake::api` import. In `intake_boundary_count.rs` (D-5606): \"handyman needed, my breaker keeps tripping\" + ZIP + \"door repair\": the businesses that get the card are exactly those counted; an unlicensed handyman gets none. With the electrical trade paused (an owner pause switch), the same request counts and sends to nobody for the electrical pair. A two-word trade-naming first text, then \"I'm 12\" before the ZIP, leaves no `quotes.job_description` row for the request; the consent record stays (D-5617).",
+   "acceptance": "TD-INT-53 passes against PostgreSQL; \"Which fits best?\" is asked only when the candidates call for it and at most twice; a request whose words name no trade is asked once, asked once more, then waits, and is never called uncovered for want of a trade; no reply to either question is kept as words; `which_fits` and `trade_ask` pass `check_copy.py` and `check_ai_smell.py` and are in `NOT_UPDATE_TEXTS`; a licensed-only job type of the first text survives read-back; `matching.rs` gains only `stored_job_types_of` and D-5215's keyword phrases and trade-only rules, exactly as listed; `routing.rs` and `service.rs` are unchanged; `conversation.rs` changes only in `purge_child`; the earlier intake order tests pass unchanged. `tests/integration/tests/intake_boundary_count.rs` passes: a business without the boundary licence is never counted; a job opened on the ZIP's turn keeps the first text's scrubbed words as its description, and `intake_order_corrections.rs` changes only at line 417 and its doc comment, line 428 (now only `trade_ask`) and its doc comment at `:420` to `:421`, the module comment at `:8` to `:9`, and its `intake::api` import. In `intake_boundary_count.rs` (D-5606): \"handyman needed, my breaker keeps tripping\" + ZIP + \"door repair\": the businesses that get the card are exactly those counted; an unlicensed handyman gets none. With the electrical trade paused (an owner pause switch), the same request counts and sends to nobody for the electrical pair. A two-word trade-naming first text leaves one `quotes.job_description` row under the request's own ID (asserted first); then \"I'm 12\" before the ZIP leaves none; the consent record stays (D-5617, D-5639).",
    "copy": true
+  },
+  {
+   "id": "T839",
+   "slug": "under-13-purge-complete",
+   "title": "intake, privacy and messaging: an under-13 purge also deletes her kept problem words and queues the provider body deletes at once",
+   "goal": "Plan change D-5639 (freeze exception: privacy; INT-038, PRIV-008, PRIV-027; D-5617). `purge_child` (`app/intake/src/conversation.rs`) deletes the request's jobs' photos and text and, after T716 (D-5617), the words held under the request's own ID, but not the `privacy.message_body` rows (a day-3 PROBLEM reply's scrubbed words, keyed by job, `app/privacy/src/message_body.rs`), and her inbound bodies stay at Twilio until the day-31 delete (`app/messaging/src/purge.rs`, PRIV-027). (1) Kept words: for each of the request's jobs, and for each help request she asked (`ops::api::help_requests_of_homeowner(conn, contact)`, T757; help words with no job are kept under the help request's own ID, `open_help`, `app/intake/src/handlers.rs`), `purge_child` deletes the `privacy.message_body` rows through the delete by job T757 adds to `message_body.rs` (re-exported through the shared `privacy::api` if T757 did not; this task adds only that export or a thin `pub` wrapper there). (2) Provider bodies: `purge.rs` gains `pub async fn queue_contact_body_deletes_now(db: &mut PgConnection, contact: Uuid, now: Timestamp) -> Result<u64, OutboxError>`, exported through the shared `messaging::api`: one `DELETE_KIND` task, due at `now`, with the same dedupe key and `max_attempts` as `queue_body_deletes` (so the day-31 scan adds none), for the `message_sid` of every inbound text from the contact (`messaging.inbox_contact`, `migrations/0195_messaging_consent_purge.sql:23`: the \"I'm 12\" text itself, the PROBLEM reply, CANCEL, text-pick, help and free texts among them) and the `provider_sid` of every outbound text to it that still has one (`messaging.outbox` by `recipient_id`, `migrations/0042_messaging_outbox.sql:31`), both readable by the app role as `queue_body_deletes` reads them. (3) `purge_child`'s jobs loop also calls (1) for each job, then (1) for her help requests and, before `purge_contact`, (2) with the sender's contact, in the same transaction, so a failure keeps nothing. Nothing else in `conversation.rs` changes. Tests in the new `tests/integration/tests/under_13_purge_complete.rs` (PostgreSQL, fake data and 555 numbers only): a day-3 check-in PROBLEM reply is kept as a `privacy.message_body` row; the sender then says she is 12: no `message_body` row is left for the job or for a help request she opened without a job, and a `messaging.body_delete` task due at the purge time exists for each of her inbound SIDs (the PROBLEM reply's and the \"I'm 12\" text's among them) and each outbound SID sent to her; the consent record stays. Every existing purge, intake and privacy test passes unchanged. Update `app/intake/CLAUDE.md`, the privacy and messaging notes and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T716",
+    "T757"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy"
+   ],
+   "owns": [
+    "app/intake/src/conversation.rs",
+    "app/privacy/src/message_body.rs",
+    "app/messaging/src/purge.rs",
+    "tests/integration/tests/under_13_purge_complete.rs"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/spec/intake.md",
+    "docs/spec/privacy.md",
+    "app/ops/src/help_request_keys.rs"
+   ],
+   "requirements": [
+    "INT-038",
+    "PRIV-008",
+    "PRIV-027"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-5617",
+    "D-5639"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 320,
+    "context_pct": 9
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T839-under-13-purge-complete",
+   "prompt": "kit/prompts/T839.md",
+   "acceptance": "`tests/integration/tests/under_13_purge_complete.rs` passes against PostgreSQL: after a day-3 PROBLEM reply, an under-13 purge leaves no `privacy.message_body` row for the request's jobs or her help requests, and a queued `messaging.body_delete` task due at once for each of her inbound SIDs (the \"I'm 12\" text's among them) and each outbound SID sent to her; the consent record stays; `conversation.rs` changes only in `purge_child`; every existing purge, intake and privacy test passes unchanged."
+  },
+  {
+   "id": "T840",
+   "slug": "update-email-counts",
+   "title": "intake and messaging: quote updates reach Email and web-and-email homeowners, and the count told is the count of the update last sent",
+   "goal": "Plan change D-5639 (with D-5617's reader rules, moved here from T730; two outside reviews of D-5617, each finding checked on main f27e052; Casey's go, Nov 23, 2026; TXT-017, TXT-018, TXT-021, TXT-034, CON-035). After T730 an Email homeowner's update is stored as an update email only, but nothing reads it back and the text gates stop it first. (1) Reader (D-5617): `last_quote_text` (`app/messaging/src/quote_text_sent.rs`, T582's, DONE) also reads `messaging.email_outbox` rows for the same recipient and job (`recipient_id`, `subject_ids`) whose `template_id` is `update.first_quote` or `update.quote_update` (T730's names); an email row with status `dropped`, and one whose update email hard-bounced, is skipped and not counted as told, as the text side skips `blocked`, `failed` and `expired`, so after the reset to Text the next `quote_update` evaluation sends the current count by text, under the text gates; newer is measured by queue time, a text's `created_at` against an email's `queued_at`, and on a tie (Both: text and email queued in one transaction) the text row wins; the result is returned under the text template ID; an email row's `at` is its earliest `email.delivered` event time in `messaging.email_event` (joined by `provider_id`), else `sent_at`, else `queued_at` (TXT-017's 3 hours run from the previous update's delivery; a text's `at` stays delivered, else sent, else created). Update the `QuoteTextSent.id` doc comment, which then may hold an email row's ID. (2) Count: `QuoteTextSent` gains the quoted count, read from the selected row's `subject_ids` (`[job, Uuid(quoted)]`, as `quote_updates::send` writes it; a `first_quote` row carries only `[job]`, so its count is 1; any other row with no count in its `subject_ids`, such as those `tests/integration/tests/quote_count_event.rs` (T582's) writes, falls back to the existing `quote_told` answer and never fails, and that file passes unedited), and `previous()` (`app/intake/src/quote_updates.rs`) uses it in place of the `quote_told.<job>` answer, which is written at queue time, so a dropped, failed or expired newer update suppressed the next one; texts and emails alike. (3) Gates (through T730's `messaging::api::queue_update_email`; its `None` means the update is `Skipped`, never a fall back to `enqueue`): `quote_update_step` stops on no texting consent (`may_text`), `NotTextable` and `OptedOut` before any routing, and the `app/intake/src/job_texts.rs` path that sends `first_quote` and the closing updates has the same gate. Only for a template in T730's `UPDATE_TEMPLATES`: when the update channel is Email (web-and-email mode with no texting consent included, TXT-034), both paths skip the text gates and text quiet hours and call `queue_update_email` in the same transaction, so no text row is ever created; when the channel is Both and a text gate fails (no consent, `OptedOut`, `NotTextable`) the update goes by `queue_update_email` as email only; during text quiet hours a Both homeowner's whole update is held as today, email and text going together when the window opens; Text keeps every gate. Every other `job_texts` template keeps every text gate unchanged. STOP stops texts only (CON-035); the update email's unsubscribe link is the email off switch. (4) First quote: a bounced or dropped `update.first_quote` email does not count as told, so `previous()` is `None` and the next count event takes `notify::notice`'s `Notice::First` (`app/quotes/src/notify.rs`) and `first_held` (`quote_update_step`, `app/intake/src/quote_updates.rs`); after the reset to Text that first-quote notice goes by text through `job_texts.rs`, under the text gates, and this task makes sure nothing in its files marks the first quote as already told. (5) `quote_text_sent.rs` may already hold D-5617's reader from T730's attempt branch (a bounced email counted as told, an email's time `sent_at` else `queued_at`); this task replaces those rules with the ones above. Tests in the new `tests/integration/tests/update_email_counts.rs` (PostgreSQL and the email stand-in, fake data and 555 numbers only). Update the intake and messaging notes and `docs/decisions.md`.",
+   "type": "build",
+   "phase": 1,
+   "stage": "5",
+   "module": "intake",
+   "deps": [
+    "T730",
+    "T582",
+    "T583",
+    "T708"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "high",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "privacy",
+    "compliance"
+   ],
+   "owns": [
+    "app/messaging/src/quote_text_sent.rs",
+    "app/intake/src/quote_updates.rs",
+    "app/intake/src/job_texts.rs",
+    "tests/integration/tests/update_email_counts.rs"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "docs/spec/messaging.md",
+    "docs/spec/consent.md",
+    "app/messaging/src/update_emails.rs",
+    "app/messaging/src/api.rs"
+   ],
+   "requirements": [
+    "TXT-017",
+    "TXT-018",
+    "TXT-021",
+    "TXT-034",
+    "CON-035"
+   ],
+   "tests": [],
+   "decisions": [
+    "D-5533",
+    "D-5617",
+    "D-5639"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 4,
+    "lines": 560,
+    "context_pct": 10
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T840-update-email-counts",
+   "prompt": "kit/prompts/T840.md",
+   "acceptance": "`tests/integration/tests/update_email_counts.rs` passes against PostgreSQL and the email stand-in: through `intake::quote_update_step`, an Email-only homeowner's second quote stores an `update.quote_update` email and no text row; after a hard bounce and the reset to Text the current count goes by text; a web-and-email homeowner with no texting consent gets the update email and no text row; an Email-only homeowner after STOP gets the email and no text; a Both homeowner after STOP gets the email and no text; a sent 2-quote update followed by a dropped 3-quote update: the next evaluation sends 3; a bounced `update.first_quote` email, then the reset to Text: the first-quote notice goes by text; during text quiet hours a Both homeowner's update is held whole; a non-update `job_texts` template to a homeowner with no texting consent sends nothing; T582's tests (`quote_count_event.rs` among them) and every intake and messaging test pass unchanged."
   },
   {
    "id": "T723",
@@ -49382,7 +49511,7 @@
    "id": "T730",
    "slug": "update-email-sends",
    "title": "messaging: a homeowner who chose email gets each quote update by email, the first with the confirm link, and a hard bounce puts her back on text",
-   "goal": "Plan change D-4727 (B, second of two; TXT-018, SEC-028, CON-035, TXT-027, TXT-030; D-422, D-460). After T729 stores her choice nothing reads it. (1) New `app/messaging/src/update_emails.rs` and a hook in the shared `insert` that `messaging::enqueue` and `enqueue_exempt` both call (`app/messaging/src/service.rs:208`, D-5585): for a homeowner recipient whose template is in `UPDATE_TEMPLATES` and whose `update_channel` is `Email` or `Both`, an update email is stored with `queue_email` beside the text in the same transaction, and for `Email` the text row is not queued; for `Both` both. The update templates are `quotes::api::UPDATE_TEXTS` (`app/quotes/src/update_texts.rs:82`) less the ones TXT-018 keeps on text (D-5533); `messaging` may not call `quotes` (`kit/layers.json`), so `update_emails.rs` holds two lists: `UPDATE_TEMPLATES`, the 7 proactive updates that may go by email (`first_quote`, `quote_update`, `all_quotes_in`, `closed_no_quotes`, `closed_no_pick`, `closed_no_quote_left`, `unreachable_closed`), and `TEXT_ONLY_UPDATES`, the 18 that stay text with email only (the direct replies to her own texts `quote_list`, `quote_list_end`, `text_pick_package`, `text_pick_terms`, `text_pick_which`, `text_pick_done`, `check_in_more` and `feedback_request`; TXT-027's `whos_calling` and `whos_calling_email`; the four that ask for an answer only a text gives, `check_in_day3`, `check_in_day14`, `no_quotes_yet` and `emailed_question`; and `request_out`, `request_out_held`, `request_out_today` and `request_out_slow`, since TXT-032's words promise a text). A test in the new test file asserts the two lists are disjoint, their union equals `UPDATE_TEXTS`' IDs, and neither holds the 911 text (`emergency_911`) or the missed-call text (TXT-030, `caller_missed`). Never by email instead of text: the 911 text, any code, the who's-calling text (TXT-027), the missed-call text (TXT-030) and direct replies to her own texts (TXT-018's list); the hook emails no template outside `UPDATE_TEMPLATES`; TXT-014's failed-text email (`app/messaging/src/retries.rs:36`) is unchanged. (2) `app/messaging/src/email.rs` gains `Notice::Update` (the update's rendered words, her quote page link that every update carries, SEC-028's footer and an unsubscribe link feeding the one suppression list, CON-035) in English and Spanish; while the T729 address is unconfirmed each update email also carries \"Confirm this email\", the single-use confirm link T729 defines (D-5340: her quote page with the confirm token rebuilt from the stored salt), and nothing but PRIV-031's confirm link (T816) is ever sent to it besides the updates. The address is read only through T729's grant. (3) A hard bounce on an update email (the provider webhook path already in `email.rs` that sets `email.bounced`) sets `update_channel` back to `Text` and calls T729's `privacy::api::mark_update_bounced` (D-5442; no messaging column), so later updates go by text and the quote page shows its note. Tests in the new `tests/integration/tests/update_email_sends.rs` (TD-TXT-39), which also drive T729's quote-page choice to email end to end in PostgreSQL (T222's journey does not assert TXT-018's email option and no longer waits for this task, Opus R1 finding 2), PostgreSQL and the email stand-in, fake data only. Update `app/messaging/NOTES.md` and `docs/decisions.md`. After T729, T684 (the queued owner of `email.rs` before T685, which now follows this task) and T580 (the last queued owner of `service.rs`). Plan change D-5585 (Grok pre-flight G3, checked on main): emergency-job quote updates are queued through `messaging::api::enqueue_exempt` (`app/intake/src/quote_updates.rs:293`, `app/intake/src/job_texts.rs:544`), which calls the shared `insert` (`app/messaging/src/service.rs:208`) without passing through `enqueue`, so the email-or-text routing goes in `insert` (or a function both `enqueue` and `enqueue_exempt` call), keeping the text's quiet-hour exemption when text is chosen; TD-TXT-39's test adds an emergency job's `first_quote` with the email choice: the email is stored and no text row. When the email choice withholds the text row, `insert` returns the stored update email's ID with `created` true only when `queue_email` stored a new row under its unique key, so the callers that write `insert_plain` on `created` (`app/intake/src/job_texts.rs:547` to `:554`, `app/intake/src/quote_updates.rs:296` to `:303`) behave as for a queued text. Plan change D-5617 (the review of an earlier attempt; TXT-017, TXT-018): with Email only no text row is stored, and `last_quote_text` (`app/messaging/src/quote_text_sent.rs`, T582's, DONE) reads only `messaging.outbox`, so `intake::quote_update_step` finds no previous quote text, takes the first-quote path and sends nothing. `last_quote_text` also reads `messaging.email_outbox` rows for the same recipient and job (`recipient_id`, `subject_ids`) whose template is the update email of `first_quote` or `quote_update`; an email row with status `dropped` is skipped (never sent, as the text side skips `blocked`, `failed` and `expired`); newer is measured by queue time, a text's `created_at` against an email's `queued_at` (not `sent_at`), and on a tie (Both: text and email queued in one transaction) the text row wins; the newer of text and email wins, returned under the text template ID, and an email row's returned `at` is its `sent_at`, else its `queued_at` (TXT-017's 3 hours run from the previous update's delivery; a text's `at` stays delivered, else sent, else created); update the `QuoteTextSent.id` doc comment, which then may hold an email row's ID. A bounced update email still counts as told, so after the reset to Text the next `quote_update` goes by text.",
+   "goal": "Plan change D-4727 (B, second of two; TXT-018, SEC-028, CON-035, TXT-027, TXT-030; D-422, D-460). After T729 stores her choice nothing reads it. (1) New `app/messaging/src/update_emails.rs` and a hook in the shared `insert` that `messaging::enqueue` and `enqueue_exempt` both call (`app/messaging/src/service.rs:208`, D-5585): for a homeowner recipient whose template is in `UPDATE_TEMPLATES` and whose `update_channel` is `Email` or `Both`, an update email is stored with `queue_email` beside the text in the same transaction, and for `Email` the text row is not queued; for `Both` both. The update templates are `quotes::api::UPDATE_TEXTS` (`app/quotes/src/update_texts.rs:82`) less the ones TXT-018 keeps on text (D-5533); `messaging` may not call `quotes` (`kit/layers.json`), so `update_emails.rs` holds two lists: `UPDATE_TEMPLATES`, the 7 proactive updates that may go by email (`first_quote`, `quote_update`, `all_quotes_in`, `closed_no_quotes`, `closed_no_pick`, `closed_no_quote_left`, `unreachable_closed`), and `TEXT_ONLY_UPDATES`, the 18 that stay text with email only (the direct replies to her own texts `quote_list`, `quote_list_end`, `text_pick_package`, `text_pick_terms`, `text_pick_which`, `text_pick_done`, `check_in_more` and `feedback_request`; TXT-027's `whos_calling` and `whos_calling_email`; the four that ask for an answer only a text gives, `check_in_day3`, `check_in_day14`, `no_quotes_yet` and `emailed_question`; and `request_out`, `request_out_held`, `request_out_today` and `request_out_slow`, since TXT-032's words promise a text). A test in the new test file asserts the two lists are disjoint, their union equals `UPDATE_TEXTS`' IDs, and neither holds the 911 text (`emergency_911`) or the missed-call text (TXT-030, `caller_missed`). Never by email instead of text: the 911 text, any code, the who's-calling text (TXT-027), the missed-call text (TXT-030) and direct replies to her own texts (TXT-018's list); the hook emails no template outside `UPDATE_TEMPLATES`; TXT-014's failed-text email (`app/messaging/src/retries.rs:36`) is unchanged. (2) `app/messaging/src/email.rs` gains `Notice::Update` (the update's rendered words, her quote page link that every update carries, SEC-028's footer and an unsubscribe link feeding the one suppression list, CON-035) in English and Spanish; while the T729 address is unconfirmed each update email also carries \"Confirm this email\", the single-use confirm link T729 defines (D-5340: her quote page with the confirm token rebuilt from the stored salt), and nothing but PRIV-031's confirm link (T816) is ever sent to it besides the updates. The address is read only through T729's grant. (3) A hard bounce on an update email (the provider webhook path already in `email.rs` that sets `email.bounced`) sets `update_channel` back to `Text` and calls T729's `privacy::api::mark_update_bounced` (D-5442; no messaging column), so later updates go by text and the quote page shows its note. Tests in the new `tests/integration/tests/update_email_sends.rs` (TD-TXT-39), which also drive T729's quote-page choice to email end to end in PostgreSQL (T222's journey does not assert TXT-018's email option and no longer waits for this task, Opus R1 finding 2), PostgreSQL and the email stand-in, fake data only. Update `app/messaging/NOTES.md` and `docs/decisions.md`. After T729, T684 (the queued owner of `email.rs` before T685, which now follows this task) and T580 (the last queued owner of `service.rs`). Plan change D-5585 (Grok pre-flight G3, checked on main): emergency-job quote updates are queued through `messaging::api::enqueue_exempt` (`app/intake/src/quote_updates.rs:293`, `app/intake/src/job_texts.rs:544`), which calls the shared `insert` (`app/messaging/src/service.rs:208`) without passing through `enqueue`, so the email-or-text routing goes in `insert` (or a function both `enqueue` and `enqueue_exempt` call), keeping the text's quiet-hour exemption when text is chosen; TD-TXT-39's test adds an emergency job's `first_quote` with the email choice: the email is stored and no text row. When the email choice withholds the text row, `insert` returns the stored update email's ID with `created` true only when `queue_email` stored a new row under its unique key, so the callers that write `insert_plain` on `created` (`app/intake/src/job_texts.rs:547` to `:554`, `app/intake/src/quote_updates.rs:296` to `:303`) behave as for a queued text. Plan change D-5639 (two outside reviews of D-5617, checked on main f27e052; Casey's go, Nov 23, 2026; TXT-018, TXT-034, CON-035): the reader and counting rules D-5617 gave this task, and D-5639's gate changes, are T840's, which follows this task. This task also: (d) stores each update email with `template_id` `update.<text template>` (`update.first_quote`, `update.quote_update`, and so for every `UPDATE_TEMPLATES` entry) and `subject_ids` the text's subject unchanged; (f) adds, in `app/messaging/src/update_emails.rs`, re-exported through the shared `messaging::api`, `pub async fn queue_update_email(db: &mut PgConnection, secret: &SecretString, text: &NewText<'_>) -> Result<Option<Uuid>, OutboxError>` (the shape of `enqueue`; `NewText` carries the recipient, the text template ID, the `subject_ids` and the rendered words the email needs), which T840 calls when a text gate would stop an `UPDATE_TEMPLATES` update: in the caller's transaction it reads the homeowner's update channel and returns `None`, storing nothing, unless that channel is `Email` or `Both` at that moment (or the template is not in `UPDATE_TEMPLATES`); otherwise it stores only the update email through `queue_email` as `insert`'s hook does and returns its ID; it never calls `enqueue` or writes a `messaging.outbox` row, so no text can result. Its tests are in `update_email_sends.rs`: the function stores the email and no text row for Email and for Both, and refuses for Text. If this task retries after D-5639, any change to `app/messaging/src/quote_text_sent.rs` on its earlier attempt branch (D-5617's reader) is taken back out: T840 owns that file now.",
    "type": "build",
    "phase": 1,
    "stage": "5",
@@ -49390,8 +49519,7 @@
    "deps": [
     "T729",
     "T684",
-    "T580",
-    "T582"
+    "T580"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -49404,8 +49532,7 @@
     "app/messaging/src/update_emails.rs",
     "app/messaging/src/email.rs",
     "app/messaging/src/service.rs",
-    "tests/integration/tests/update_email_sends.rs",
-    "app/messaging/src/quote_text_sent.rs"
+    "tests/integration/tests/update_email_sends.rs"
    ],
    "reads": [
     "docs/architecture.md",
@@ -49423,7 +49550,7 @@
     "CON-035",
     "TXT-027",
     "TXT-030",
-    "TXT-017"
+    "TXT-034"
    ],
    "tests": [
     "TD-TXT-39"
@@ -49436,12 +49563,12 @@
     "D-5442",
     "D-5533",
     "D-5585",
-    "D-5617"
+    "D-5639"
    ],
    "cites": [],
    "budget": {
-    "files": 5,
-    "lines": 580,
+    "files": 4,
+    "lines": 560,
     "context_pct": 28
    },
    "checks": [
@@ -49451,7 +49578,7 @@
    ],
    "branch": "claude/task/T730-update-email-sends",
    "prompt": "kit/prompts/T730.md",
-   "acceptance": "TD-TXT-39 passes against PostgreSQL and the email stand-in; the list test fails if `UPDATE_TEMPLATES` and `TEXT_ONLY_UPDATES` overlap or their union differs from `UPDATE_TEXTS`' IDs; a code, the 911 text, TXT-027/TXT-030 and a `TEXT_ONLY_UPDATES` reply still go by text with email only; every messaging and email test passes unchanged. A test drives `intake::quote_update_step` for an Email-only homeowner: the second quote stores a `quote_update` email and no text row; after a hard bounce the next update is a text; T582's tests pass unchanged (D-5617)."
+   "acceptance": "TD-TXT-39 passes against PostgreSQL and the email stand-in; the list test fails if `UPDATE_TEMPLATES` and `TEXT_ONLY_UPDATES` overlap or their union differs from `UPDATE_TEXTS`' IDs; a code, the 911 text, TXT-027/TXT-030 and a `TEXT_ONLY_UPDATES` reply still go by text with email only; every messaging and email test passes unchanged. The update email's `template_id` is `update.quote_update` for a `quote_update` (D-5639); the email-only queue function stores no `messaging.outbox` row and refuses for a Text homeowner."
   },
   {
    "id": "T731",
