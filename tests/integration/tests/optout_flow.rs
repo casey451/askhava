@@ -6,7 +6,7 @@
 //! provider's START (`OptOutType=START`); that "yes" and an unmatched "Start." re-subscribe nothing;
 //! that two opt-outs at once and an earlier listing never add a second confirmation; that the app queues exactly one bare CON-009 confirmation,
 //! only for words the provider did not answer, which goes within 5 minutes and never later; that
-//! the HELP reply still goes; that a later message sends nothing and an emergency in it raises a
+//! not even the HELP reply goes (D-5280); that a later message sends nothing and an emergency in it raises a
 //! critical alert; that a 21610 refusal blocks the row and is never retried; and that while
 //! texting is paused an opt-out is recorded at once and never confirmed by a later text. The
 //! provider's own replies are the fake Twilio's (T167). All numbers and data are fake.
@@ -205,10 +205,11 @@ async fn td_con_20_stop_lists_the_number_and_nothing_goes_until_start(pool: PgPo
 }
 
 /// TD-CON-05, CON-009, CON-013, CON-016, CON-017: a word the provider does not answer gets
-/// exactly one bare CON-009 confirmation from the app within 5 minutes; afterwards only the HELP
-/// reply goes; a later message sends nothing and an emergency in it raises a critical alert.
+/// exactly one bare CON-009 confirmation from the app within 5 minutes; afterwards nothing goes,
+/// not even the HELP reply (D-5280); a later message sends nothing and an emergency in it raises a
+/// critical alert.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
-async fn td_con_05_one_confirmation_then_only_help_until_start(pool: PgPool) {
+async fn td_con_05_one_confirmation_then_nothing_until_start(pool: PgPool) {
     let (vault, carrier) = (vault(), FakeCarrier::default());
     let mut db = pool.acquire().await.expect("connection");
     let phone = "+19285550143";
@@ -236,12 +237,8 @@ async fn td_con_05_one_confirmation_then_only_help_until_start(pool: PgPool) {
         "one bare confirmation"
     );
     let help = queue(&mut db, her, "help_reply", 2).await;
-    assert!(
-        try_send(&mut db, (&carrier, &vault), help, 3_600)
-            .await
-            .expect("help")
-            .is_some()
-    );
+    let no_help = try_send(&mut db, (&carrier, &vault), help, 3_600).await;
+    assert_eq!(no_help.err(), Some(OutboxError::Suppressed), "D-5280");
     let other = queue(&mut db, her, "first_quote", 3).await;
     let refused = try_send(&mut db, (&carrier, &vault), other, 3_600).await;
     assert_eq!(refused.err(), Some(OutboxError::Suppressed));
@@ -258,11 +255,7 @@ async fn td_con_05_one_confirmation_then_only_help_until_start(pool: PgPool) {
     };
     let critical = "SELECT count(*) FROM ops.alert WHERE severity = 'critical'";
     assert_eq!(count(&pool, critical).await, 2);
-    assert_eq!(
-        carrier.calls(),
-        2,
-        "no text but the confirmation and the HELP reply"
-    );
+    assert_eq!(carrier.calls(), 1, "no text but the confirmation (D-5280)");
     let punctuated = inbound(her, phone, "Start.", ProviderKeyword::None);
     assert_eq!(
         on(&mut db, &vault, &punctuated, 3_750).await,
