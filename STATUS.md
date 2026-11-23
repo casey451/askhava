@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T07:26:10Z by runner f2d298a8c8e3 (actions).
+Updated 2026-11-23T07:51:24Z by runner e172ee5e2756 (actions).
 
 **Building: T716 in progress since 06:55Z; 626 of 775 done; week 72% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-23T07:26:10Z by runner f2d298a8c8e3 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T716 claimed 06:55Z, lease until 09:55Z; lane 3: T730 claimed 06:00Z, lease until 09:00Z; lane 5: T588 claimed 07:02Z, lease until 10:02Z
 - **Week:** 72% used, 45.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 07:26Z, 0 min before this update
+- **Last run:** 07:26Z, 24 min before this update
 - **Keeper:** last ran 07:26Z, next wake 09:03Z
 
 ## Needs attention
@@ -72,7 +72,7 @@ Updated 2026-11-23T07:26:10Z by runner f2d298a8c8e3 (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 404 of 735 (55.0%) · partial 318 · unstarted 13
+**Requirements verified:** 403 of 735 (54.8%) · partial 319 · unstarted 13
 **Tasks merged (throughput only):** 626 of 775
 
 | Area | Verified | Partial | Unstarted | Total |
@@ -84,7 +84,7 @@ Updated 2026-11-23T07:26:10Z by runner f2d298a8c8e3 (actions).
 | consent | 17 | 18 | 0 | 35 |
 | fees | 27 | 25 | 0 | 52 |
 | intake | 11 | 32 | 0 | 43 |
-| job-cards | 16 | 8 | 0 | 24 |
+| job-cards | 15 | 9 | 0 | 24 |
 | licensing | 36 | 12 | 0 | 48 |
 | lifecycle | 21 | 7 | 0 | 28 |
 | messaging | 26 | 19 | 0 | 45 |
