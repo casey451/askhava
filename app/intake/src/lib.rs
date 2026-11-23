@@ -50,6 +50,7 @@ mod opted_out_live;
 mod order;
 mod order_dispatch;
 mod photos;
+mod picture_text;
 mod purge;
 mod question_bank;
 mod quote_updates;

@@ -147,7 +147,8 @@ async fn walk(db: &mut PgConnection, her: Uuid, steps: &[&str], minute: i64) -> 
     templates
 }
 
-/// `first`, the ZIP, "In the next few days", `options` option answers and her name and address:
+/// `first`, the ZIP, "In the next few days", `options` option answers, "no" to step 9's photo ask
+/// (D-5459) and her name and address:
 /// the templates of every text the walk got.
 async fn to_card(
     db: &mut PgConnection,
@@ -157,7 +158,7 @@ async fn to_card(
 ) -> Vec<&'static str> {
     let mut steps = vec![first, "86403", "2"];
     steps.extend(std::iter::repeat_n("1", options));
-    steps.push(ANSWER);
+    steps.extend(["no", ANSWER]);
     walk(db, her, &steps, 0).await
 }
 
