@@ -3,7 +3,8 @@
     switch still needs in plain words, the provider-terms and policy-version forms and the switch.
     After a refusal the title starts "Error: ", a focused summary comes first in <main> with each
     message linked to its field, and every typed value is kept. Forms post with novalidate and no
-    required attribute. -#}
+    required attribute. The two ticks are native checkboxes, so forms.css comes first in <main>
+    after any error summary (A11Y-007). -#}
 {% macro text(id, label, hint, value, mode) %}<p><label for="{{ id }}">{{ label }}</label></p>
 <p id="{{ id }}-hint">{{ hint }}</p>
 {% if let Some(why) = self.err(id) %}<p id="{{ id }}-error">Error: {{ why }}</p>
@@ -17,7 +18,8 @@
 <h2>Nothing was changed. Fix the items below.</h2>
 <ul>{% for (field, why) in shown.errors %}<li><a href="#{{ field }}">{{ why }}</a></li>{% endfor %}</ul>
 </div>
-{% endif %}<h1>AI on scrubbed text</h1>
+{% endif %}<link rel="stylesheet" href="/static/portals/forms.css">
+<h1>AI on scrubbed text</h1>
 <div id="ai-status" role="status" aria-live="polite">{% if let Some(done) = shown.done %}<p>{{ done }}</p>{% endif %}</div>
 <p>The switch is {% if on %}on{% else %}off{% endif %}. While it's on, the AI sees request text only after our software removes names, phone numbers, emails and street numbers.</p>
 <p>To change anything here, you need a code from your authenticator app entered in the last 5 minutes. If it's been longer, <a href="{{ routes[3] }}">enter a new code</a> first.</p>
