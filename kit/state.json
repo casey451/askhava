@@ -113416,7 +113416,14 @@
    "attempts": 0,
    "slug": "data-request-link-email",
    "type": "build",
-   "stage": "5"
+   "stage": "5",
+   "plan_gap": {
+    "at": "2026-11-23T20:16:40Z",
+    "problems": [
+     "T816: dependency T730 is DONE but its owned file app/messaging/src/update_emails.rs is not on main",
+     "T816: dependency T730 is DONE but its owned file tests/integration/tests/update_email_sends.rs is not on main"
+    ]
+   }
   },
   {
    "id": "T817",
@@ -115194,13 +115201,7 @@
    "attempts": 0,
    "slug": "cancelled-gate-and-concurrency",
    "type": "harness",
-   "stage": "5",
-   "plan_gap": {
-    "at": "2026-11-23T07:59:33Z",
-    "problems": [
-     "T836: kit/runner_log.jsonl is named by D-500, but no task owns it and it does not exist"
-    ]
-   }
+   "stage": "5"
   },
   {
    "id": "T837",
@@ -115551,7 +115552,14 @@
    "attempts": 0,
    "slug": "j3-seedpick-license-fixture",
    "type": "harness",
-   "stage": "5"
+   "stage": "5",
+   "plan_gap": {
+    "at": "2026-11-23T20:16:40Z",
+    "problems": [
+     "T841: prompt kit/prompts/T841.md is missing; run scripts/gen_prompts.py",
+     "T841: branch claude/task/T841-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet"
+    ]
+   }
   }
  ],
  "owner_waits": [],
@@ -123329,7 +123337,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T20:16:58Z",
+ "updated_at": "2026-11-23T20:17:16Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
