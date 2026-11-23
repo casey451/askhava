@@ -109966,7 +109966,7 @@
     "T603",
     "T832"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 3,
    "slug": "no-help-after-stop",
    "type": "harness",
@@ -110150,7 +110150,7 @@
     "why": "auto-merge on #1327 (gh pr merge)",
     "head": "88db55bfe35d03ce1d5c1076d73c570dcb35a7a5"
    },
-   "last_failure": "Ci: failure; Checks: cancelled\nChecks failed at step: Named mutants of the files this change touches (scripts/run_named_mutants.py, D-481)\nkilled      4.5s  Consent and opt-out | opt-out word removed: opt out\nkilled      4.4s  Consent and opt-out | sole-word match -> contains-word (\"can stop by at 3\" opts out)\nkilled      4.3s  Consent and opt-out | send rule skips the opt-out check\nkilled      4.3s  Consent and opt-out | HELP reply let through to an opted-out number (D-5280)\nkilled     25.4s  Consent and opt-out | send path skips the opt-out check\nkilled     26.0s  Consent and opt-out | a second opt-out confirmation\nkilled     26.4s  Consent and opt-out | a 21610 failure retried\nkilled     21.6s  Consent and opt-out | a non-consent text first: the consent text dropped\nkilled     11.3s  Consent and opt-out | the consent text sent twice for one request\nkilled     10.3s  Consent and opt-out | STOP answered with the consent text\nkilled     10.3s  Consent and opt-out | bare HELP answered with the consent text\nkilled      9.2s  Consent and opt-out | an opt-out closing a job (D-005)\nkilled      9.6s  Consent and opt-out | bare \"cancel\" closing a job\nkilled      7.0s  Consent and opt-out | a sole-word CANCEL with a live job not pausing the job\n##[error]The operation was canceled.\nCi failed at step: All five jobs passed\nChecks: cancelled, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
+   "last_failure": "Ci: failure; Checks: cancelled\nChecks failed at step: Named mutants of the files this change touches (scripts/run_named_mutants.py, D-481)\nkilled      4.5s  Consent and opt-out | opt-out word removed: opt out\nkilled      4.4s  Consent and opt-out | sole-word match -> contains-word (\"can stop by at 3\" opts out)\nkilled      4.3s  Consent and opt-out | send rule skips the opt-out check\nkilled      4.3s  Consent and opt-out | HELP reply let through to an opted-out number (D-5280)\nkilled     25.4s  Consent and opt-out | send path skips the opt-out check\nkilled     26.0s  Consent and opt-out | a second opt-out confirmation\nkilled     26.4s  Consent and opt-out | a 21610 failure retried\nkilled     21.6s  Consent and opt-out | a non-consent text first: the consent text dropped\nkilled     11.3s  Consent and opt-out | the consent text sent twice for one request\nkilled     10.3s  Consent and opt-out | STOP answered with the consent text\nkilled     10.3s  Consent and opt-out | bare HELP answered with the consent text\nkilled      9.2s  Consent and opt-out | an opt-out closing a job (D-005)\nkilled      9.6s  Consent and opt-out | bare \"cancel\" closing a job\nkilled      7.0s  Consent and opt-out | a sole-word CANCEL with a live job not pausing the job\n##[error]The operation was canceled.\nCi failed at step: All five jobs passed\nChecks: cancelled, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.\nre-queued after plan fix D-5519: T832 (DONE) raised the Checks limit to 60 minutes; every named mutant was already killed",
    "runner_closed_prs": [
     1316,
     1327
@@ -110214,7 +110214,22 @@
    "update_waiting_since": null,
    "update_push_failures": null,
    "merge_turn_since": "2026-11-22T09:09:17Z",
-   "reason": "Worker made no change. All 83 named mutants are killed; the Checks job timed out (40 min limit) because the Rust build took ~26 min and mutants.toml changes trigger all 83 mutants (cut off after mutant 72). Needs a harness fix (raise Checks timeout-minutes or run only changed mutants) or a faster CI build. Smoke did not finish in the worker's polls."
+   "reason": null,
+   "requeues": [
+    {
+     "at": "2026-11-23T02:06:19Z",
+     "reason": "T832 (DONE) raised the Checks limit to 60 minutes; every named mutant was already killed",
+     "by": "manual-0683cc7d511f",
+     "was": "Worker made no change. All 83 named mutants are killed; the Checks job timed out (40 min limit) because the Rust build took ~26 min and mutants.toml changes trigger all 83 mutants (cut off after mutant 72). Needs a harness fix (raise Checks timeout-minutes or run only changed mutants) or a faster CI build. Smoke did not finish in the worker's polls.",
+     "attempts": 3,
+     "plan_fix": "D-5519",
+     "plan_since": "2026-11-22T10:00:15Z",
+     "plan_base": "dd295e06660e0308300490a7b00829730b7a7197",
+     "plan_head": "a58d28db85432b6480059730e30b0a7a8c9df9d9",
+     "plan_then": "dc5039294aa7ae60476c1eb7439081b03bd9a1bee45e84aec0b6f962023afb37",
+     "plan_now": "f7466a750399ca896adaeb737d2c548e5bef396854fa38f03cb1ea817f921783"
+    }
+   ]
   },
   {
    "id": "T804",
@@ -119710,7 +119725,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T02:06:03Z",
+ "updated_at": "2026-11-23T02:06:19Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -119809,7 +119824,7 @@
   ]
  },
  "runner_sha": "a58d28db85432b6480059730e30b0a7a8c9df9d9",
- "starter": "actions",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "e8e6af81881faac745ba7c2afc562cc22d1042ff",
