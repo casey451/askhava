@@ -103656,8 +103656,8 @@
     "T684",
     "T580"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 1,
+   "status": "BLOCKED",
+   "attempts": 2,
    "slug": "update-email-sends",
    "type": "build",
    "stage": "5",
@@ -103683,7 +103683,7 @@
      "expires": "2026-11-23T06:34:29Z"
     }
    ],
-   "last_failure": "Reviewer after the findings round still ends FINDINGS on head 8e4a3378787b5b84e572879568168ace60d591a4.\nFinding (correctness, TXT-017/TXT-018): a homeowner on Email-only never gets a quote_update, by email or text. update_emails.rs:136 route returns the email ID and stores no text row; quote_text_sent.rs:51 last_quote_text reads only messaging.outbox rows for first_quote/quote_update, so intake quote_updates.rs:134 previous() is None, quotes::notify::notice returns Notice::First, quote_updates.rs:143 retries via first_held then gives up with Nothing. Same after a hard bounce resets to Text. Tests call enqueue directly (update_email_sends.rs:385) and never drive the intake handler. Suggested fix: last_quote_text also considers update.first_quote and update.quote_update rows in email_outbox (quote_text_sent.rs is not on T730's file list: needs a decision entry or plan note); add a test driving the intake update handler with Email-only.\nEarlier finding (unsubscribe link) was fixed and accepted (D-5564).",
+   "last_failure": "PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs\nEvidence: last_quote_text (quote_text_sent.rs:45-52) reads only messaging.outbox; with the Email choice T730 stores no text row (kit/prompts/T730.md:9), so intake previous() (quote_updates.rs:166-172) is None, notice() returns Notice::First (quotes/src/notify.rs:100-105) and later quote updates end as Nothing. T730 owns only update_emails.rs, email.rs, service.rs and update_email_sends.rs (T730.md:35-40); the file is owned by merged T582 only. Fix: add the file to T730 owns so last_quote_text also reads update emails in messaging.email_outbox, plus a test driving intake's update handler for Email-only and for a bounce-reset homeowner. Reviewer confirmed.",
    "history": [
     {
      "attempt": 1,
@@ -103708,11 +103708,40 @@
       }
      },
      "wip_skipped": "8e4a3378787b changes .github"
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 21,
+     "head_sha": "7cc3c77141924bf04cad2b25df1eab54113735d6",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-23T08:23:15Z",
+     "ended_at": "2026-11-23T08:25:48Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 463878,
+       "turns": 12
+      },
+      "reviewer": {
+       "tokens": 203431,
+       "turns": 8
+      }
+     }
     }
    ],
-   "wip_claim": {
-    "attempt": 2,
-    "remote_sha": ""
+   "reason": "plan gap reported: PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs\nEvidence: last_quote_text (quote_text_sent.rs:45-52) reads only messaging.outbox; with the Email choice T730 stores no text row (kit/prompts/T730.md:9), so intake previous() (quote_updates.rs:166-172) is None, notice() returns Notice::First (quotes/src/notify.rs:100-105) and later quote updates end as Nothing. T730 owns only update_emails.rs, email.rs, service.rs and update_email_sends.rs (T730.md:35-40); the file is owned by merged T582 only. Fix: add the file to T730 owns so last_quote_text also reads update emails in messagin; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T730 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "plan_gap": {
+    "at": "2026-11-23T08:25:48Z",
+    "problems": [
+     "outside ownership: app/messaging/src/quote_text_sent.rs"
+    ],
+    "paths": [
+     "app/messaging/src/quote_text_sent.rs"
+    ]
    }
   },
   {
@@ -113311,11 +113340,11 @@
  "usage": {
   "last_reading": {
    "task": "T730",
-   "at": "2026-11-23T08:20:16Z",
-   "output_tokens": 96919,
-   "cache_creation_input_tokens": 348887,
-   "cache_read_input_tokens": 18426256,
-   "input_tokens": 379
+   "at": "2026-11-23T08:25:48Z",
+   "input_tokens": 39,
+   "cache_creation_input_tokens": 62681,
+   "cache_read_input_tokens": 595625,
+   "output_tokens": 8964
   },
   "source": "session_reading 2026-11-23T08:21:01Z (week)",
   "by_task": {
@@ -120785,14 +120814,14 @@
     "estimated_bytes": 555730,
     "estimated_tokens": 1631414,
     "usage_counting": "message_id",
-    "output_tokens": 96919,
-    "cache_creation_input_tokens": 348887,
-    "cache_read_input_tokens": 18426256,
-    "input_tokens": 379,
-    "worker_tokens": 16708267,
-    "worker_turns": 150,
-    "reviewer_tokens": 2164174,
-    "reviewer_turns": 45,
+    "output_tokens": 105883,
+    "cache_creation_input_tokens": 411568,
+    "cache_read_input_tokens": 19021881,
+    "input_tokens": 418,
+    "worker_tokens": 17172145,
+    "worker_turns": 162,
+    "reviewer_tokens": 2367605,
+    "reviewer_turns": 53,
     "last_model": "claude-opus-5-5"
    },
    "T712": {
@@ -120905,11 +120934,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-23T05:08:35Z",
-    "tokens": 7237160
+    "tokens": 7368406
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 195049044
+    "tokens": 195180290
    }
   },
   "session_reading": {
@@ -120920,7 +120949,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T08:25:22Z",
+ "updated_at": "2026-11-23T08:25:49Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -121018,7 +121047,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "e172ee5e2756b6665bc7d2ead2552039a007865b",
+ "runner_sha": "7cc3c77141924bf04cad2b25df1eab54113735d6",
  "starter": "actions",
  "smoke_runs": [
   {
