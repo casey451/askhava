@@ -10367,3 +10367,4 @@
 - 2026-11-23T12:38:01Z runner f27e05243e49 (actions): {"T819": "QUEUED -> IN_PROGRESS"}; T819 estimated 1.2M tokens (calibrated); week has 38.2M left (no five-hour budget, D-3056) after 5.8M still running in another lane (session_reading 2026-11-23T12:31:27Z (week)); claimed
 - 2026-11-23T12:38:29Z runner f27e05243e49 (actions): {}
 - 2026-11-23T13:02:08Z runner fbf1b5f1c950 (actions): {}
+- 2026-11-23T13:02:48Z runner fbf1b5f1c950 (actions): {"T653": "IN_PROGRESS -> MERGE_PENDING"}
