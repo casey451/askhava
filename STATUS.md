@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-23T16:52:35Z by runner ac2ec05e9632 (actions).
+Updated 2026-11-23T16:53:07Z by runner ac2ec05e9632 (actions).
 
 **Building: T222 in progress since 16:16Z; 634 of 777 done; week 78% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 634 of 777 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T222 claimed 16:16Z, lease until 19:16Z; lane 2: T121 claimed 15:11Z, lease until 18:11Z; lane 3: T745 claimed 14:48Z, lease until 17:48Z; lane 4: T649 claimed 15:45Z, lease until 18:45Z; lane 5: T782 claimed 15:18Z, lease until 19:45Z
+- **Lane:** lane 1: T222 claimed 16:16Z, lease until 19:16Z; lane 3: T745 claimed 14:48Z, lease until 17:48Z; lane 4: T649 claimed 15:45Z, lease until 18:45Z; lane 5: T782 claimed 15:18Z, lease until 19:45Z
 - **Week:** 78% used, 31.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 16:46Z, 6 min before this update
 - **Keeper:** last ran 15:56Z, next wake 17:51Z
@@ -20,6 +20,7 @@ Updated 2026-11-23T16:52:35Z by runner ac2ec05e9632 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T121 | Startup key checks, control router absent in live, supply-ch | MERGE_PENDING | 4 | 100 min | 16:52Z | PLAN GAP: outside ownership: app/portals/src/update_channel.rs / T729 (owner) merged UpdatesForm/ConfirmForm without den |
 | T714 | portals: a Confirm link sent by text is marked text-started  | done | 4 | 88 min | 15:49Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
 | T222 | Journeys J1 and J2, the full variants: web chat, photos, que | QUEUED | 1 | 67 min | 15:38Z | Reviewer after the fix round still ended REVIEW-VERDICT: FINDINGS over d606d4fe25f8dbb5cc8d2aa0c66478c5d81a2d2c: / 1. do |
 | T666 | jobs, quotes and server: GET /b/jobs/{j} serves the business | done | 2 | 67 min | 14:25Z | Reviewer after the findings round (head bf41c81b22bdbd874d7d53cb8ba64ca6bb0737cf): app/server/tests/job_page_route.rs (w |
@@ -34,7 +35,7 @@ Updated 2026-11-23T16:52:35Z by runner ac2ec05e9632 (actions).
 | T653 | licensing and server (harness): a typed BTR number is stored | check_failed | 1 | 117 min | 11:19Z |  |
 | T714 | portals: a Confirm link sent by text is marked text-started  | check_failed | 1 | 95 min | 11:00Z |  |
 | T666 | jobs, quotes and server: GET /b/jobs/{j} serves the business | QUEUED | 1 | 2 h 1 min | 10:28Z |  |
-| T121 | Startup key checks, control router absent in live, supply-ch | check_failed | 3 | 103 min | 10:16Z | PLAN GAP: outside ownership: app/portals/src/update_channel.rs / T729 (owner) merged UpdatesForm/ConfirmForm without den |
+| T121 | Startup key checks, control router absent in live, supply-ch | check_failed | 3 | 103 min | 10:16Z |  |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | done | 5 | 82 min | 09:58Z | PLAN GAP: outside ownership: app/site/templates/request.html, app/site/static/site.css / At 1280x900 the /request chat s |
 | T646 | site and server: the web chat's new-request limit counts the | check_failed | 1 | 59 min | 08:59Z |  |
 | T588 | portals and server: a refused business sign-up keeps every f | done | 1 | 101 min | 08:44Z |  |
@@ -116,10 +117,9 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T222 (lease until 2026-11-23T19:16:29Z)
-- lane 2: T121 (lease until 2026-11-23T18:11:59Z)
 - lane 3: T745 (lease until 2026-11-23T17:48:35Z)
 - lane 4: T649 (lease until 2026-11-23T18:45:21Z)
 - lane 5: T782 (lease until 2026-11-23T19:45:38Z)
 
 ## Last usage reading
-- {"task": "T714", "at": "2026-11-23T15:49:01Z", "output_tokens": 13101, "cache_read_input_tokens": 1286906, "cache_creation_input_tokens": 81936, "input_tokens": 85}
+- {"task": "T121", "at": "2026-11-23T16:52:33Z", "input_tokens": 95, "output_tokens": 25688, "cache_creation_input_tokens": 157089, "cache_read_input_tokens": 2005714}
