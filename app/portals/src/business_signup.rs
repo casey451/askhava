@@ -58,8 +58,14 @@
 //! rendered through `to_spanish` and `EsSignupView` over `templates/es_business_signup.html`, the
 //! same fields in Spanish (a draft for native-speaker review); the consent wording stays
 //! `consent_box`'s, since that is what the consent record stores ([`es_words`]).
+//!
+//! T588 (A11Y-012, CON-019, D-4052): a refused post comes back with the email, the text phone and
+//! the ticked categories bound in [`Entered`]; the pest attestation and the E-SIGN box show ticked
+//! again only when ticked in that same post, never on a fresh form, from anything stored, or under
+//! [`CONSENT_AGAIN`]. A fresh form's tags are unchanged.
 
 use std::collections::BTreeSet;
+use std::fmt;
 use std::ops::Deref;
 
 use askama::Template;
@@ -387,11 +393,12 @@ pub async fn signup_can_finish(
     Ok(has_towns && service_area(db, business).await?.is_some())
 }
 
-/// What the business typed into the form's name, license and link fields, shown again with the
-/// reason when one is refused (BIZ-022, BIZ-052, LIC-011, D-2943, D-2954). The fields post as
+/// What the business typed into the form, shown again with the reason when one field is refused
+/// (BIZ-022, BIZ-052, LIC-011, A11Y-012, D-2943, D-2954, D-4052). The fields post as
 /// `business_name`, `trade_name`, `roc_number`, `btr_number`, `city_license_number`,
-/// `google_link` and `yelp_link`; the server checks them, so none carries `required`.
-#[derive(Debug, Clone, Copy, Default)]
+/// `google_link`, `yelp_link`, `email`, `text_phone`, `category`, `pest_license` and `consent`;
+/// the server checks them, so none carries `required`. Its `Debug` never shows the email or phone.
+#[derive(Clone, Copy, Default)]
 pub struct Entered<'a> {
     /// The business name (required by the server, D-2943).
     pub business_name: &'a str,
@@ -414,6 +421,29 @@ pub struct Entered<'a> {
     pub text_chosen: bool,
     /// The notice choice as posted, kept on the form again (BIZ-036, A11Y-012).
     pub notice: NoticeChoice,
+    /// The email as posted, shown again as the field's value (A11Y-012). Never log it.
+    pub email: &'a str,
+    /// The text phone as posted, shown again as the field's value (A11Y-012). Never log it.
+    pub text_phone: &'a str,
+    /// The category codes ticked in this post, ticked again (A11Y-012).
+    pub categories: &'a [&'a str],
+    /// The pest attestation was ticked in this post (LIC-047); never set from anything stored.
+    pub pest_license: bool,
+    /// The E-SIGN box was ticked in this post (CON-019); never set from anything stored.
+    pub consent: bool,
+}
+
+impl fmt::Debug for Entered<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Entered")
+            .field("problem", &self.problem)
+            .field("text_chosen", &self.text_chosen)
+            .field("notice", &self.notice)
+            .field("categories", &self.categories)
+            .field("pest_license", &self.pest_license)
+            .field("consent", &self.consent)
+            .finish_non_exhaustive()
+    }
 }
 
 impl Entered<'_> {
@@ -783,6 +813,19 @@ impl SignupView<'_> {
         let missing = |r: &str| r == TEXT_PHONE_MISSING || es_words(TEXT_PHONE_MISSING) == Some(r);
         let shown = |r: &&str| self.texting_on && missing(r);
         self.entered.problem.map(|(_, r)| r).filter(shown)
+    }
+
+    /// A11Y-012, CON-019, D-4052: a box (the pest attestation or the E-SIGN box) ticked again
+    /// only when ticked in this same post, and never when [`CONSENT_AGAIN`] says its wording
+    /// changed.
+    fn ticked_again(&self, ticked: bool) -> bool {
+        let again = |r: &str| r == CONSENT_AGAIN || es_words(CONSENT_AGAIN) == Some(r);
+        ticked && !self.entered.problem.is_some_and(|(_, r)| again(r))
+    }
+
+    /// A11Y-012: the category `code` was ticked in this post.
+    fn category_ticked(&self, code: &str) -> bool {
+        self.entered.categories.contains(&code)
     }
 
     /// A11Y-030: the summary link's target, the field the message sits beside.

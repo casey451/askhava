@@ -6,7 +6,10 @@
     `businesses::api::consent_box` gives it, in English, since that is the text the consent record
     stores (CON-019); a Spanish line above it says so. Trade names stay as the catalog writes them
     (lang="en"). Business statement: "no es contratista" (WORD-002). forms.css comes first in `main`
-    so the native checkboxes keep their edge (A11Y-007, D-3700). -#}
+    so the native checkboxes keep their edge (A11Y-007, D-3700). T588 (A11Y-012, CON-019, D-4052):
+    a refused post keeps the email, text phone and ticked categories; the pest attestation and the
+    consent box show ticked only when ticked in that same post, never on a fresh form, from
+    anything stored, or when the shown wording changed (CONSENT_AGAIN). -#}
 {% block lang %}es{% endblock %}
 {% block title %}{{ title }}{% endblock %}
 {% block main %}
@@ -66,7 +69,7 @@
 {% if let Some(reason) = error_for("yelp_link") %}<span id="yelp-link-error" class="error">{{ reason }}</span>{% endif %}</p>
 </fieldset>
 <p><label for="email">Correo electrónico para solicitudes de trabajo y para saber cuándo lo eligen</label>
-<input type="email" id="email" name="email" autocomplete="email"></p>
+<input type="email" id="email" name="email" autocomplete="email"{% if !entered.email.is_empty() %} value="{{ entered.email }}"{% endif %}></p>
 {% if texting_on %}<fieldset id="notice-choice"><legend>¿Cómo quiere recibir las solicitudes de trabajo y saber cuándo un propietario lo elige?</legend>
 {% for (value, label, on) in choices %}<p><input type="radio" id="notice-{{ value }}" name="notice_channel" value="{{ value }}"{% if *on %} checked{% endif %}>
 <label for="notice-{{ value }}">{{ label }}</label></p>
@@ -74,13 +77,13 @@
 <p><label for="text-phone">Número de celular, solo para mensajes de trabajo</label>
 <span id="text-phone-hint">Llénelo si eligió mensajes de texto o los dos.</span>
 {% if let Some(m) = phone_error() %}<span id="text-phone-error" class="error">Error: {{ m }}</span>{% endif %}
-<input type="tel" id="text-phone" name="text_phone" autocomplete="tel" aria-describedby="text-phone-hint{% if phone_error().is_some() %} text-phone-error{% endif %}"{% if phone_error().is_some() %} aria-invalid="true"{% endif %}></p>
+<input type="tel" id="text-phone" name="text_phone" autocomplete="tel" aria-describedby="text-phone-hint{% if phone_error().is_some() %} text-phone-error{% endif %}"{% if phone_error().is_some() %} aria-invalid="true"{% endif %}{% if !entered.text_phone.is_empty() %} value="{{ entered.text_phone }}"{% endif %}></p>
 {% endif %}<fieldset id="categories"><legend>¿Qué tipo de trabajo hace?</legend>
-{% for (code, name, label) in categories %}<p><input type="checkbox" id="cat-{{ code }}" name="category" value="{{ code }}">
+{% for (code, name, label) in categories %}<p><input type="checkbox" id="cat-{{ code }}" name="category" value="{{ code }}"{% if category_ticked(code) %} checked{% endif %}>
 <label for="cat-{{ code }}"><span lang="en">{{ name }}</span> ({{ label }})</label></p>
 {% endfor %}</fieldset>
 {% if pest %}<fieldset id="pest-attestation"><legend>Licencia de control de plagas</legend>
-<p><input type="checkbox" id="pest-license" name="pest_license" value="yes">
+<p><input type="checkbox" id="pest-license" name="pest_license" value="yes"{% if ticked_again(*entered.pest_license) %} checked{% endif %}>
 <label for="pest-license">{{ pest_attestation }}</label></p>
 <p><label for="pest-number">Número de licencia</label>
 <input type="text" id="pest-number" name="pest_number"></p>
@@ -100,7 +103,7 @@
 <fieldset id="consent-box"><legend>Cómo recibe las solicitudes de trabajo y los avisos</legend>
 <p id="consent-note">El acuerdo de abajo está en inglés porque es el texto exacto que guardamos con su registro. En español dice: Acepta recibir de {{ askhava_core::api::brand().es().display_name() }} los avisos de trabajo y de su cuenta por correo electrónico, en la dirección de arriba, en lugar de en papel.{% if consent_channels.contains("text") %} Acepta recibir de {{ askhava_core::api::brand().es().display_name() }} textos con solicitudes de trabajo en el número de teléfono de arriba. La frecuencia de los mensajes varía. Pueden aplicarse tarifas de mensajes y datos. Para dejar de recibir textos, responda PARAR; para pedir ayuda, responda AYUDA.{% endif %} {{ askhava_core::api::brand().es().display_name() }} nunca le hace llamadas grabadas ni automáticas. Puede cambiar esto cuando quiera en su portal.</p>
 {% if let Some(reason) = error_for("consent") %}<p id="consent-error" class="error">Error: {{ reason }}</p>{% endif %}
-<p><input type="checkbox" id="consent" name="consent" value="yes" aria-describedby="consent-note{% if error_for("consent").is_some() %} consent-error{% endif %}"{% if error_for("consent").is_some() %} aria-invalid="true"{% endif %}>
+<p><input type="checkbox" id="consent" name="consent" value="yes" aria-describedby="consent-note{% if error_for("consent").is_some() %} consent-error{% endif %}"{% if error_for("consent").is_some() %} aria-invalid="true"{% endif %}{% if ticked_again(*entered.consent) %} checked{% endif %}>
 <label for="consent" lang="en">{{ consent }}</label></p>
 </fieldset>
 <p id="terms-link"><a href="/terms/business" hreflang="en">Lea los términos para negocios (en inglés)</a></p>

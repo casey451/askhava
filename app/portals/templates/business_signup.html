@@ -11,8 +11,10 @@
     (BIZ-058, BIZ-049, A11Y-010 to A11Y-013, D-3116): the service-area screen asks the base ZIP and
     the radius beside towns served; a refusal keeps both values, opens the title with "Error: ",
     focuses a summary of links and repeats each message by its field. T268 (CON-019, PICK-049,
-    D-1715): the E-SIGN consent box before the Terms link, never rendered checked; a post without
-    the tick comes back with the `consent` problem in the summary and by the box. T450 (BIZ-036,
+    D-1715): the E-SIGN consent box before the Terms link; T588 (A11Y-012, D-4052): it and the pest
+    attestation show checked only when ticked in that same post, never on a fresh form, from
+    anything stored, or when the shown wording changed (CONSENT_AGAIN), and a refused post keeps the
+    email, text phone and ticked categories; a post without the tick comes back with the `consent` problem in the summary and by the box. T450 (BIZ-036,
     BIZ-040, BIZ-042, CON-019, TXT-035, A11Y-030, D-3602): every form posts to a route constant;
     while texting is on, the email, text or both choice (email preselected) and the text phone
     field, always rendered, never shown or hidden by script, its error beside it; the box after
@@ -74,7 +76,7 @@
 {% if let Some(reason) = error_for("yelp_link") %}<span id="yelp-link-error" class="error">{{ reason }}</span>{% endif %}</p>
 </fieldset>
 <p><label for="email">Email for job requests and picks</label>
-<input type="email" id="email" name="email" autocomplete="email"></p>
+<input type="email" id="email" name="email" autocomplete="email"{% if !entered.email.is_empty() %} value="{{ entered.email }}"{% endif %}></p>
 {% if texting_on %}<fieldset id="notice-choice"><legend>How do you want to get job requests, and hear when a homeowner picks you?</legend>
 {% for (value, label, on) in choices %}<p><input type="radio" id="notice-{{ value }}" name="notice_channel" value="{{ value }}"{% if *on %} checked{% endif %}>
 <label for="notice-{{ value }}">{{ label }}</label></p>
@@ -82,13 +84,13 @@
 <p><label for="text-phone">Mobile number, used only for job texts</label>
 <span id="text-phone-hint">Fill this in if you chose text or both.</span>
 {% if let Some(m) = phone_error() %}<span id="text-phone-error" class="error">Error: {{ m }}</span>{% endif %}
-<input type="tel" id="text-phone" name="text_phone" autocomplete="tel" aria-describedby="text-phone-hint{% if phone_error().is_some() %} text-phone-error{% endif %}"{% if phone_error().is_some() %} aria-invalid="true"{% endif %}></p>
+<input type="tel" id="text-phone" name="text_phone" autocomplete="tel" aria-describedby="text-phone-hint{% if phone_error().is_some() %} text-phone-error{% endif %}"{% if phone_error().is_some() %} aria-invalid="true"{% endif %}{% if !entered.text_phone.is_empty() %} value="{{ entered.text_phone }}"{% endif %}></p>
 {% endif %}<fieldset id="categories"><legend>What work do you do?</legend>
-{% for (code, name, label) in categories %}<p><input type="checkbox" id="cat-{{ code }}" name="category" value="{{ code }}">
+{% for (code, name, label) in categories %}<p><input type="checkbox" id="cat-{{ code }}" name="category" value="{{ code }}"{% if category_ticked(code) %} checked{% endif %}>
 <label for="cat-{{ code }}">{{ name }} ({{ label }})</label></p>
 {% endfor %}</fieldset>
 {% if pest %}<fieldset id="pest-attestation"><legend>Pest control license</legend>
-<p><input type="checkbox" id="pest-license" name="pest_license" value="yes">
+<p><input type="checkbox" id="pest-license" name="pest_license" value="yes"{% if ticked_again(*entered.pest_license) %} checked{% endif %}>
 <label for="pest-license">{{ pest_attestation }}</label></p>
 <p><label for="pest-number">License number</label>
 <input type="text" id="pest-number" name="pest_number"></p>
@@ -106,7 +108,7 @@
 </section>
 <fieldset id="consent-box"><legend>Getting job requests and notices</legend>
 {% if let Some(reason) = error_for("consent") %}<p id="consent-error" class="error">Error: {{ reason }}</p>{% endif %}
-<p><input type="checkbox" id="consent" name="consent" value="yes"{% if error_for("consent").is_some() %} aria-invalid="true" aria-describedby="consent-error"{% endif %}>
+<p><input type="checkbox" id="consent" name="consent" value="yes"{% if error_for("consent").is_some() %} aria-invalid="true" aria-describedby="consent-error"{% endif %}{% if ticked_again(*entered.consent) %} checked{% endif %}>
 <label for="consent">{{ consent }}</label></p>
 </fieldset>
 <p id="terms-link"><a href="/terms/business">Read the business terms</a></p>
