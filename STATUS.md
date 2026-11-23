@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T08:25:49Z by runner 7cc3c7714192 (actions).
+Updated 2026-11-23T08:26:47Z by runner e172ee5e2756 (actions).
 
 **Building: T646 in progress since 07:59Z; 627 of 775 done; week 73% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-23T08:25:49Z by runner 7cc3c7714192 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T646 claimed 07:59Z, lease until 10:59Z; lane 5: T588 claimed 07:02Z, lease until 10:02Z
 - **Week:** 73% used, 44.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:25Z, 0 min before this update
-- **Keeper:** last ran 08:21Z, next wake 08:41Z
+- **Last run:** 08:26Z, 0 min before this update
+- **Keeper:** last ran 08:26Z, next wake 08:46Z
 
 ## Needs attention
 - BLOCKED T716: plan gap reported: PLAN GAP: outside ownership: app/intake/src/conversation.rs (purge_child, ~348-362), app/intake/src/models.rs (purge_request). first_text (order_dispatch.rs:272) holds a short trade-naming first text's scrubbed words in quotes.job_description under the request's own ID (no job). If she then says "I'm 12" before the ZIP, stop_if_under_18 runs before order_dispatch, request_jobs is empty, purge_child purges nothing, purge_request deletes only code-only intake tables, so an under-13 sender's words survive INT-038/PRIV-008; the row also escapes the 3-year text purge (no job, no purge task). D-5400; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T716 --plan-fix D-### --reason "..."` (D-2859)
