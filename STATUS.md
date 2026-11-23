@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-23T06:24:43Z by runner 5a1d83f59933 (actions).
+Updated 2026-11-23T06:25:19Z by runner 5a1d83f59933 (actions).
 
 **Building: T716 in progress since 04:41Z; 624 of 775 done; week 72% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 624 of 775 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T716 claimed 04:41Z, lease until 07:41Z; lane 3: T730 claimed 06:00Z, lease until 09:00Z; lane 4: T611 claimed 04:04Z, lease until 07:04Z
+- **Lane:** lane 1: T716 claimed 04:41Z, lease until 07:41Z; lane 3: T730 claimed 06:00Z, lease until 09:00Z
 - **Week:** 72% used, 45.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 06:14Z, 10 min before this update
 - **Keeper:** last ran 06:14Z, next wake 07:06Z
@@ -19,6 +19,7 @@ Updated 2026-11-23T06:24:43Z by runner 5a1d83f59933 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T611 | portals: depth, type and press on the portal screens through | MERGE_PENDING | 1 | 2 h 20 min | 06:24Z |  |
 | T838 | portals, server and calls: the sign-in, quote-action and sig | MERGE_PENDING | 1 | 86 min | 06:07Z |  |
 | T834 | ci (harness): Twin and Ally skip their build when nothing th | MERGE_PENDING | 3 | 48 min | 05:51Z | After the fix round the reviewer (head f9e32434db512dbbf1f29deb2d94b5848d2e3874) still ends REVIEW-VERDICT: FINDINGS. Fi |
 | T803 | messaging (harness): an opted-out number gets no HELP reply; | done | 4 | 81 min | 05:08Z | Ci: failure; Checks: cancelled / Checks failed at step: Named mutants of the files this change touches (scripts/run_name |
@@ -117,7 +118,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T716 (lease until 2026-11-23T07:41:43Z)
 - lane 3: T730 (lease until 2026-11-23T09:00:46Z)
-- lane 4: T611 (lease until 2026-11-23T07:04:01Z)
 
 ## Last usage reading
-- {"task": "T838", "at": "2026-11-23T06:07:12Z", "cache_creation_input_tokens": 226250, "cache_read_input_tokens": 14517341, "input_tokens": 300, "output_tokens": 65870}
+- {"task": "T611", "at": "2026-11-23T06:24:41Z", "input_tokens": 168, "cache_read_input_tokens": 4160705, "output_tokens": 38368, "cache_creation_input_tokens": 156861}
