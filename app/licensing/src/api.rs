@@ -32,8 +32,9 @@
 //! [`ClassMap::opening`] and [`request_intake`] honor `launch_open` (LIC-046).
 //!
 //! The holder (T374, D-2712): [`record_pest_attestation`] and [`record_agency_license`] store a
-//! business's other-agency licenses at sign-up (LIC-047, LIC-015, LIC-016); [`holder_for`] reads
-//! them with its ROC classes and city-list standing into [`HolderParts`] (LIC-006, LIC-011).
+//! business's other-agency licenses (LIC-047, LIC-015, LIC-016), and
+//! [`record_typed_agency_number`] a BTR number typed at sign-up, unchecked (D-4310); [`holder_for`]
+//! reads them with its ROC classes and city-list standing into [`HolderParts`] (LIC-006, LIC-011).
 //!
 //! The pest report (T389, D-3055): [`report_pest_license_wrong`] pauses a pest business's pest
 //! jobs on a homeowner's wrong-license report and raises [`PEST_LICENSE_REPORTED_ALERT`];
@@ -79,7 +80,7 @@ pub use crate::handyman::{
 };
 pub use crate::holder::{
     HolderError, HolderInputs, HolderParts, holder_for, record_agency_license,
-    record_pest_attestation,
+    record_pest_attestation, record_typed_agency_number,
 };
 pub use crate::imports::{
     CITY_HEADER, CityRow, ImportError, ParsedList, ROC_HEADER, RocRow, RocStatus,
