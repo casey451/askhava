@@ -626,28 +626,15 @@ impl<'a> Posted<'a> {
         Some(self.get(name)).filter(|v| !v.trim().is_empty())
     }
 
-    /// D-2943, A11Y-012, CON-019, D-4052: what `FormAgain` shows: `channels`' choice and problem,
-    /// the typed names, numbers, links, email and text phone, the ticked `categories`, and the
-    /// pest attestation and E-SIGN box as ticked in this post alone.
-    fn entered<'b>(&self, channels: &ChannelPost, categories: &'b [&'b str]) -> Entered<'b>
-    where
-        'a: 'b,
-    {
-        Entered {
-            business_name: self.get("business_name"),
-            trade_name: self.get("trade_name"),
-            roc_number: self.get("roc_number"),
-            btr_number: self.get("btr_number"),
-            city_license_number: self.get("city_license_number"),
-            google_link: self.get("google_link"),
-            yelp_link: self.get("yelp_link"),
-            email: self.get("email"),
-            text_phone: self.get("text_phone"),
-            categories,
-            pest_license: self.get("pest_license") == "yes",
-            consent: self.get("consent") == "yes",
-            ..channels.entered()
-        }
+    /// D-2943: the typed names, numbers and links, kept on the form again.
+    fn fill(&self, entered: &mut Entered<'a>) {
+        entered.business_name = self.get("business_name");
+        entered.trade_name = self.get("trade_name");
+        entered.roc_number = self.get("roc_number");
+        entered.btr_number = self.get("btr_number");
+        entered.city_license_number = self.get("city_license_number");
+        entered.google_link = self.get("google_link");
+        entered.yelp_link = self.get("yelp_link");
     }
 }
 
@@ -677,8 +664,9 @@ impl Form {
     /// then `submit_signup`.
     async fn submit(&self, posted: &Posted<'_>, csrf: Asked<'_>, now: Timestamp) -> Response {
         let channels = ChannelPost::parse(posted.0, csrf.texting_on, (&self.secret, csrf.csrf));
-        let ticks = posted.all("category");
-        let mut entered = posted.entered(&channels, &ticks);
+        let (mut entered, ticks) = (channels.entered(), posted.all("category"));
+        posted.fill(&mut entered);
+        posted.keep(&mut entered, &ticks);
         let chosen = channels.consent_channels();
         let Some(chosen) = chosen.filter(|_| channels.problem().is_none()) else {
             return self.again(&entered, csrf).await;
@@ -689,8 +677,7 @@ impl Form {
             entered.problem = Some((name_field(refused), reason.as_str()));
             return self.again(&entered, csrf).await;
         }
-        let ticked = posted.get("consent") == "yes";
-        if !ticked {
+        if !entered.consent {
             return self.refused(&SignupRefusal::NoConsent, entered, csrf).await;
         }
         let (Some((vault, directory)), Ok(map)) = (&self.start.vault, ClassMap::shipped()) else {
@@ -706,7 +693,7 @@ impl Form {
         };
         form.mailbox_id = mailbox_id;
         let consent = SignupConsent {
-            ticked,
+            ticked: entered.consent,
             channels: &chosen,
             text_phone: channels.text_phone.as_ref().map(|p| (directory, p)),
         };
@@ -1366,6 +1353,22 @@ fn checked_form(
     };
     waitlisted(map, &form).map_err(SignupRefusal::Signup)?;
     Ok(form)
+}
+
+impl<'a> Posted<'a> {
+    /// A11Y-012, CON-019, D-4052: the typed email and text phone, the ticked `categories`, and the
+    /// pest attestation and E-SIGN box as ticked in this post alone (never from anything stored),
+    /// kept on the form again; placed here so the lines other prompts cite do not move.
+    fn keep<'b>(&self, entered: &mut Entered<'b>, categories: &'b [&'b str])
+    where
+        'a: 'b,
+    {
+        entered.email = self.get("email");
+        entered.text_phone = self.get("text_phone");
+        entered.categories = categories;
+        entered.pest_license = self.get("pest_license") == "yes";
+        entered.consent = self.get("consent") == "yes";
+    }
 }
 
 /// D-2943: the field a refused name is shown beside.
