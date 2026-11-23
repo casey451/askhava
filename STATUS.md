@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T10:37:01Z by runner ab7be9fe867a (actions).
+Updated 2026-11-23T10:57:51Z by runner f27e05243e49 (actions).
 
 **Building: T714 in progress since 09:25Z; 630 of 775 done; week 74% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,21 +8,41 @@ Updated 2026-11-23T10:37:01Z by runner ab7be9fe867a (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T714 claimed 09:25Z, lease until 12:25Z; lane 3: T646 claimed 10:36Z, lease until 13:36Z; lane 4: T730 claimed 10:33Z, lease until 13:33Z; lane 5: T653 claimed 09:21Z, lease until 12:21Z
 - **Week:** 74% used, 41.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:34Z, 2 min before this update
+- **Last run:** 10:37Z, 20 min before this update
 - **Keeper:** last ran 10:30Z, next wake 10:50Z
 
 ## Needs attention
+- BLOCKED T121: Ci: failure; Checks: failure
+Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny)
+Crate:     basic-toml
+Version:   0.1.10
+Warning:   unmaintained
+Title:     `basic-toml` is unmaintained
+Date:      2026-09-26
+ID:        RUSTSEC-2026-0374
+URL:       https://rustsec.org/advisories/RUSTSEC-2026-0374
+Crate:     proc-macro-error2
+Version:   2.0.1
+Warning:   unmaintained
+Title:     proc-macro-error2 is unmaintained
+Date:      2026-06-07
+ID:        RUSTSEC-2026-0173
+URL:       https://rustsec.org/advisories/RUSTSEC-2026-0173
+##[error]Process completed with exit code 1.
+Ci failed at step: All five jobs passed
+Checks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success
+##[error]Process completed with exit code 1.
 - PLAN GAP T119 (since 2026-11-23T10:33:05Z, no attempt used; a plan change fixes it): T119: dependency T118 is DONE but its owned file tests/e2e/j3_operator.spec.ts is not on main; T119: dependency T118 is DONE but its owned file tests/a11y/j3_keyboard.spec.ts is not on main; T119: dependency T118 is DONE but its owned file tests/e2e/j3.ts is not on main
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T836 (since 2026-11-23T07:59:33Z, no attempt used; a plan change fixes it): T836: kit/runner_log.jsonl is named by D-500, but no task owns it and it does not exist
-- Strict plan check red: 36 problem(s) on tasks still to run (+515 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 36 problem(s) on tasks still to run (+516 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T666 | jobs, quotes and server: GET /b/jobs/{j} serves the business | QUEUED | 1 | 2 h 1 min | 10:28Z | Reviewer after the findings round (head bf41c81b22bdbd874d7d53cb8ba64ca6bb0737cf): app/server/tests/job_page_route.rs (w |
-| T121 | Startup key checks, control router absent in live, supply-ch | MERGE_PENDING | 3 | 103 min | 10:16Z | PLAN GAP: outside ownership: app/portals/src/update_channel.rs / T729 (owner) merged UpdatesForm/ConfirmForm without den |
+| T121 | Startup key checks, control router absent in live, supply-ch | check_failed | 3 | 103 min | 10:16Z | PLAN GAP: outside ownership: app/portals/src/update_channel.rs / T729 (owner) merged UpdatesForm/ConfirmForm without den |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | done | 5 | 82 min | 09:58Z | PLAN GAP: outside ownership: app/site/templates/request.html, app/site/static/site.css / At 1280x900 the /request chat s |
 | T646 | site and server: the web chat's new-request limit counts the | check_failed | 1 | 59 min | 08:59Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T588 | portals and server: a refused business sign-up keeps every f | done | 1 | 101 min | 08:44Z |  |
@@ -62,8 +82,6 @@ Updated 2026-11-23T10:37:01Z by runner ab7be9fe867a (actions).
 | T675 | intake and server (harness): the dispatcher asks for photos  | BLOCKED | 3 | 2 h 50 min | 11:38Z |  |
 | T805 | messaging (harness): the toll-free fallback is refused after | done | 1 | 50 min | 11:32Z |  |
 | T829 | server tests (harness): the door matrix's owner sign-ins nev | done | 3 | 46 min | 11:10Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
-| T725 | site: the home page shows the texting number with its consen | BLOCKED | 3 | 21 min | 10:52Z |  |
-| T729 | portals and privacy: the quote page offers updates by email  | resync | 2 | 2 h 32 min | 10:40Z |  |
 
 ### Plan and harness merges on main
 - 10:11Z Plan: T716 purges held first-text words on an under-13 stop; T730 counts update emails (D-5617) (#1386)

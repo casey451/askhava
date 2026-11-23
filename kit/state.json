@@ -26158,8 +26158,8 @@
     "T838",
     "T729"
    ],
-   "status": "MERGE_PENDING",
-   "attempts": 2,
+   "status": "BLOCKED",
+   "attempts": 3,
    "slug": "security-startup-supply",
    "type": "build",
    "stage": "5",
@@ -26172,7 +26172,7 @@
     5355,
     5356
    ],
-   "reason": null,
+   "reason": "Ci: failure; Checks: failure\nChecks failed at step: Rust dependency audit (cargo-audit, cargo-deny)\nCrate:     basic-toml\nVersion:   0.1.10\nWarning:   unmaintained\nTitle:     `basic-toml` is unmaintained\nDate:      2026-09-26\nID:        RUSTSEC-2026-0374\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0374\nCrate:     proc-macro-error2\nVersion:   2.0.1\nWarning:   unmaintained\nTitle:     proc-macro-error2 is unmaintained\nDate:      2026-06-07\nID:        RUSTSEC-2026-0173\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0173\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
    "last_failure": "PLAN GAP: outside ownership: app/portals/src/update_channel.rs\nT729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and confirm_query ignores unknown keys; SEC-010 scan fails on them (F1 x2, F5 x1). Also: REFUSING_TRY_FROM lacks JobTypesForm (business_portal.rs), StepUpForm (business_step_up.rs), Posted<F> (address_changes.rs, business_guarded_changes.rs); CLASSIFIED lacks twilio_answer/vendor_error (adapters base.rs), run_help_notice, spanish_switch latest, photo_asks load; business_signup_route.rs posts roc_number/base_zip/radius/code names the templates lack, so per-route name lists cannot be strictly template-closed; 550-line budget too small (~1000). Reviewer confirmed all three claims on main bd3e4e9cd.\nre-queued after plan fix D-5574: split: T838 makes the source edits; tables and the sign-up name rule settled",
    "history": [
     {
@@ -26226,13 +26226,58 @@
      "model": "claude-opus-5-5",
      "model_evidence_count": 158,
      "head_sha": "29756bfdc3496385fc79ca35e944f662b39051c7",
-     "pr": null,
-     "checks": null,
+     "pr": 1390,
+     "checks": [
+      {
+       "name": "Governance",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ci",
+       "conclusion": "failure"
+      },
+      {
+       "name": "CodeRabbit",
+       "conclusion": "skipped"
+      },
+      {
+       "name": "auto-pr",
+       "conclusion": "success"
+      },
+      {
+       "name": "Checks",
+       "conclusion": "failure"
+      },
+      {
+       "name": "Python",
+       "conclusion": "success"
+      },
+      {
+       "name": "E2e",
+       "conclusion": "success"
+      },
+      {
+       "name": "Coverage",
+       "conclusion": "success"
+      },
+      {
+       "name": "Ally",
+       "conclusion": "success"
+      },
+      {
+       "name": "Lint and slow tests",
+       "conclusion": "success"
+      },
+      {
+       "name": "Twin",
+       "conclusion": "success"
+      }
+     ],
      "reviewer_model": "claude-opus-5-5",
      "path_check_ok": true,
      "started_at": "2026-11-23T08:33:00Z",
      "ended_at": "2026-11-23T10:16:33Z",
-     "result": "MERGE_PENDING",
+     "result": "check_failed",
      "usage": {
       "worker": {
        "tokens": 9305413,
@@ -121492,7 +121537,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T10:37:01Z",
+ "updated_at": "2026-11-23T10:57:51Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -121590,7 +121635,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "ab7be9fe867a24e171709f0812b7247bc6442651",
+ "runner_sha": "f27e05243e49a721f4e086497cd1853aa05db78f",
  "starter": "actions",
  "smoke_runs": [
   {
