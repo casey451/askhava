@@ -38,6 +38,13 @@
 //! An Emergency choice stored before her town is released when the ZIP comes in ([`zip_answer`]).
 //! TXT-041's Spanish line follows the first reply ([`first_text`]).
 //!
+//! Steps 9 and 10 (T675, D-4360, D-5251): when the trade questions are done, [`questions`] hands
+//! the turn to `photos::photo_steps` (the photo ask, her YES or REMOVE for each stored photo, the
+//! look questions of a `design: true` category), which calls step 11 once they end. A picture
+//! text (its `photo_pending` marker, written by the inbound route) never moves them on; the
+//! `intake.picture_text` task's photo step does (`picture_text.rs`). Her card carries only the
+//! photos she confirmed (`photos::confirmed_photos`, INT-044, CARD-013).
+//!
 //! INT-032's two jobs (T711, D-4439, corrected by T717, D-4441): a first text whose two
 //! `trade_reading` rows opened the first trade's job gets the `two_jobs` text once, right after
 //! the first ZIP question in the same turn ([`ask_first_zip`]): at the first text on the clear
@@ -93,9 +100,10 @@ use crate::handlers::{queue_body, schedule_no_reply};
 use crate::matching::{Reading, candidates, keyword_reading, starts_second, trade_label};
 use crate::models::{self, IntakeError};
 use crate::order::{
-    BankTurn, CardIn, NEEDED_BY, TRADE_QUESTION_TEMPLATE, answer_day, ask_last_question, bank_turn,
-    choose_with_card, keep_words, show_built_card, spanish_line,
+    BankTurn, CardIn, NEEDED_BY, TRADE_QUESTION_TEMPLATE, answer_day, bank_turn, choose_with_card,
+    keep_words, show_built_card, spanish_line,
 };
+use crate::photos::{PhotoJob, confirmed_photos, photo_steps};
 use crate::question_bank::starts_now;
 use crate::refusal_inputs::move_states;
 use crate::replies::quote_link;
@@ -1080,7 +1088,7 @@ async fn card_in(
         answers: Vec::new(),
         timing: Some(timing),
         danger: danger(tx, conversation).await?,
-        photos: Vec::new(),
+        photos: confirmed_photos(tx, job).await?,
         concept: None,
     };
     Ok(Some(CardIn {
@@ -1110,11 +1118,13 @@ async fn danger(tx: &mut PgConnection, conversation: Uuid) -> Result<Option<Dang
     }))
 }
 
-/// INT-039, INT-029, INT-004, INT-027: step 8 for the request's first job, through
-/// `order::bank_turn` (`hear`: this text answers the open question). Nothing while a job chosen as
-/// an emergency is not released (`question_bank::starts_now`). The next question goes as
+/// INT-039, INT-029, INT-004, INT-027, INT-044, INT-045: step 8 for the request's first job,
+/// through `order::bank_turn` (`hear`: this text answers the open question). Nothing while a job
+/// chosen as an emergency is not released (`question_bank::starts_now`). The next question goes as
 /// [`TRADE_QUESTION_TEMPLATE`]; a gas or burning smell answer holds the order ([`hold_911`]); when
-/// the set is done, step 11 (`order::ask_last_question`, once per request).
+/// the set is done, steps 9 and 10 (`photos::photo_steps`: the photo ask, her answers to shown
+/// photos, the look questions of a design category) and then step 11 (`order::ask_last_question`,
+/// once per request; T675, D-4360).
 async fn questions(
     tx: &mut PgConnection,
     secret: &SecretString,
@@ -1144,10 +1154,14 @@ async fn questions(
             vec![queue_body(tx, secret, to, &subject, &prompt.render()).await?]
         }
         BankTurn::Safety(kind) => vec![hold_911(tx, secret, request, kind).await?],
-        BankTurn::Done => ask_last_question(tx, secret, request, spanish_on)
-            .await?
-            .into_iter()
-            .collect(),
+        BankTurn::Done => {
+            let about = PhotoJob {
+                trade,
+                job,
+                spanish_on,
+            };
+            photo_steps(tx, secret, request, about, hear).await?
+        }
     })
 }
 
