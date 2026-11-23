@@ -15,6 +15,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
+import pytest
 import yaml
 
 from runner import __main__ as entry, keeper as kp, state as st
@@ -22,6 +23,12 @@ from runner import __main__ as entry, keeper as kp, state as st
 ROOT = Path(__file__).resolve().parent.parent
 WORKFLOW = ROOT / ".github" / "workflows" / "backup-runner.yml"
 NOW = datetime(2026, 11, 2, 12, 0, tzinfo=timezone.utc)
+
+
+@pytest.fixture(autouse=True)
+def _no_remote_world(monkeypatch: Any) -> None:
+    """No test here reaches GitHub: without GITHUB_REPOSITORY `remote_world` builds no gate (D-5568)."""
+    monkeypatch.delenv("GITHUB_REPOSITORY", raising=False)
 
 
 def at(minutes: float) -> str:
@@ -761,3 +768,20 @@ def test_the_keeper_step_dispatches_one_run_per_free_lane_and_the_backup_job_nam
     wake = flow["jobs"]["keeper"]["steps"][-1]["run"]
     assert '--jobs "$jobs" --log "$RUNNER_TEMP/keeper_log.jsonl"' in wake and "actions/runs/${id}/jobs" in wake
     assert 'for n in $lanes; do gh workflow run backup-runner.yml --ref main --repo "$GITHUB_REPOSITORY" -f lane="$n"; done' in wake
+
+
+def test_the_real_arm_and_wake_paths_build_the_stage_gate(monkeypatch: Any, tmp_path: Path, capsys: Any) -> None:
+    """D-5568: `main` reads main's head, graph and kit/nightly.json through `gh api` and judges with the gate."""
+    graph = [{"id": "T100", "deps": [], "type": "cleanup", "stage": "1"}, {"id": "T900", "deps": [], "type": "build", "stage": "2"}]
+    files = {"commits/main": "d" * 40, f"contents/kit/tasks.json?ref={'d' * 40}": json.dumps({"tasks": graph}),
+             "contents/kit/nightly.json?ref=claude/kit-state": json.dumps({"conclusion": "failure", "sha": "c" * 40, "failures_since_green": 2})}
+    asked: list[str] = []
+    monkeypatch.setenv("GITHUB_REPOSITORY", "fake-owner/fake-repo")
+    monkeypatch.setattr(kp, "_gh", lambda path, _jq="": asked.append(path) or files.get(path.removeprefix("repos/fake-owner/fake-repo/")))
+    tasks = [{"id": "T100", "status": "DONE", "deps": [], "type": "cleanup", "stage": "1"}, {"id": "T900", "status": "QUEUED", "deps": [], "stage": "2"}]
+    (tmp_path / "s.json").write_text(json.dumps(state(tasks=tasks)))
+    (tmp_path / "r.json").write_text("[]")
+    assert kp.main(["arm", "--state", str(tmp_path / "s.json")], now=NOW) == 0
+    assert capsys.readouterr().out.startswith("wake_after=340\nwhy=nothing to claim")
+    assert kp.main(["wake", "--state", str(tmp_path / "s.json"), "--runs", str(tmp_path / "r.json")], now=NOW) == 0
+    assert capsys.readouterr().out.startswith("action=rearm\nwake_after=340\n") and len(asked) == 6

@@ -17,6 +17,9 @@ itself with `wake_after` (minutes); that run's `keeper` job sleeps, then decides
 - free lanes (D-4281): while a lane has no task in flight and `cycle.refill_lanes` (the chain step's own rule)
   names it, and the last cycle result is not a REFILL_STOP one, the keeper sleeps IDLE_MINUTES even while
   leases are live and wakes into `go` with the lanes to start, less the lanes live runs already serve.
+- the stage gate (D-5568): "work" and the free lanes are judged with the cycle's own stage gate (`stage_gate`),
+  built from `remote_world` (main's head and task graph, kit/nightly.json, ancestry, all through `gh api`), so a
+  twice-red nightly that stops every claim starts no empty lane jobs; any doubt judges without it, as before.
 
 The keeper holds no lock: the backup concurrency group and the lease stay the only locks on a cycle.
 Standard library only; the workflow calls `python3 -m runner.keeper arm|wake|clamp`.
@@ -25,16 +28,20 @@ Standard library only; the workflow calls `python3 -m runner.keeper arm|wake|cla
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import json
 import math
+import os
 import re
+import subprocess
 import sys
 import tempfile
+from collections.abc import Callable
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-from runner import cycle, lanes as lane_policy, model_window, state as st
+from runner import cycle, lanes as lane_policy, model_window, proof, state as st
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -59,6 +66,105 @@ FREE = "free lanes: "  # the start of `wake_after`'s why on the free-lane path
 LANE_JOB = re.compile(r"backup lane (\d+)")  # the backup job's name, `backup lane <n>` (D-4281)
 
 Doc = dict[str, Any]
+Ancestor = Callable[[str, str], "bool | None"]
+
+
+@dataclasses.dataclass(frozen=True)
+class World:
+    """What the stage gate is built from (D-5568): main's task graph at `head`, kit/nightly.json as recorded
+    (None when missing or unreadable), main's head and an ancestry check (None when it cannot answer)."""
+
+    graph: list[Doc]
+    nightly: Doc | None
+    head: str
+    ancestor: Ancestor
+    proof_stages: frozenset[str] = frozenset(proof.MACHINE_PROOFS)
+
+
+def stage_gate(state: Doc, world: World | None) -> set[str] | None:
+    """The stages whose exit test passes, built as runner/__main__.py `build`'s `gate` builds them (D-486,
+    D-3795), or None, judge without the gate (D-5568): no world, nightly, head or graph, an ancestry question
+    that got no answer (a shallow checkout, a failed call), or anything raising."""
+    if world is None or not isinstance(world.nightly, dict) or not world.head or not world.graph:
+        return None
+    doubts: list[tuple[str, str]] = []
+
+    def asked(older: str, newer: str) -> bool | None:
+        answer = world.ancestor(older, newer)
+        if answer is None:
+            doubts.append((older, newer))
+        return answer
+
+    try:
+        if str(ROOT / "scripts") not in sys.path:
+            sys.path.insert(0, str(ROOT / "scripts"))
+        import stage_exit  # here: runner/__main__.py imports this module before it puts scripts/ on the path
+
+        nightly = stage_exit.gate_nightly(world.nightly, world.head, asked)
+        passed = set(stage_exit.passed_stages(world.graph, state, nightly, {}, asked))
+    except Exception:  # noqa: BLE001  # reason: a gate this cannot build leaves today's ungated keeper (D-5568)
+        return None
+    return None if doubts else passed
+
+
+def _gh(path: str, jq: str = "") -> str | None:
+    """`gh api <path>` (a file's raw body without `jq`), None on any failure; GH_TOKEN comes from the step."""
+    cmd = ["gh", "api", path, *(["--jq", jq] if jq else ["-H", "Accept: application/vnd.github.raw"])]
+    try:
+        done = subprocess.run(cmd, capture_output=True, text=True, timeout=60, check=False)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return done.stdout if done.returncode == 0 else None
+
+
+def remote_world(repo: str | None = None, gh: Callable[[str, str], str | None] | None = None) -> World | None:
+    """The World from GitHub (D-5568): main's head now, kit/tasks.json at that head, kit/nightly.json on
+    claude/kit-state and ancestry from the compare API, since the keeper job's checkout is shallow, may be hours
+    old and holds no credentials. None (no gate) without GITHUB_REPOSITORY, a head or a readable graph."""
+    repo, call = repo if repo is not None else os.environ.get("GITHUB_REPOSITORY", ""), gh or _gh
+    head = (call(f"repos/{repo}/commits/main", ".sha") or "").strip() if repo else ""
+    try:
+        graph = json.loads(call(f"repos/{repo}/contents/kit/tasks.json?ref={head}", "") or "")["tasks"] if head else []
+        nightly = json.loads(call(f"repos/{repo}/contents/kit/nightly.json?ref=claude/kit-state", "") or "null")
+    except (KeyError, TypeError, ValueError):
+        return None
+    answers: dict[tuple[str, str], bool | None] = {}
+
+    def ancestor(older: str, newer: str) -> bool | None:
+        if (older, newer) not in answers:
+            status = (call(f"repos/{repo}/compare/{older}...{newer}", ".status") or "").strip()
+            answers[(older, newer)] = {"ahead": True, "identical": True, "behind": False, "diverged": False}.get(status)
+        return answers[(older, newer)]
+
+    return World(graph, nightly if isinstance(nightly, dict) else None, head, ancestor) if graph else None
+
+
+def claims_stopped(state: Doc, now: datetime, world: World | None) -> str:
+    """`CLAIMS STOPPED: <reason>` for STATUS.md when eligibility with the stage gate is empty while without it it
+    is not, and no stage proof is due (`_proof_due`); '' otherwise or when the gate cannot be built (D-5568)."""
+    tasks = state.get("tasks") if isinstance(state.get("tasks"), list) else []
+    full = dict(state, tasks=tasks)
+    passed = stage_gate(full, world)
+    if world is None or passed is None or _proof_due(tasks, world):
+        return ""
+    try:
+        if st.eligible(full, now, passed, world.proof_stages) or not st.eligible(full, now):
+            return ""
+    except (KeyError, TypeError, ValueError):
+        return ""
+    run = world.nightly or {}
+    color = "red" if run.get("conclusion") == "failure" else str(run.get("conclusion"))
+    stages = (f"stages {', '.join(sorted(passed, key=lambda s: int(s) if s.isdigit() else 0))} passed but not the "
+              "one before each eligible task" if passed else "no stage passed its exit test")
+    return (f"CLAIMS STOPPED: nightly {color} on {str(run.get('sha', ''))[:12]}, failures_since_green "
+            f"{run.get('failures_since_green', 0)}; {stages}")
+
+
+def _proof_due(tasks: list[Any], world: World) -> bool:
+    """A cleanup task waits for its stage's proof (in `proof_stages`) and the raw nightly is green, so the
+    cycle can record it (runner/proof.py records a proof only from a green nightly; D-551, D-5568)."""
+    green = (world.nightly or {}).get("conclusion") == "success"
+    return green and any(isinstance(t, dict) and st.awaits_proof(t) and str(t.get("stage")) in world.proof_stages for t in tasks)
 
 
 def blocker(state: Doc) -> str:
@@ -91,11 +197,12 @@ def _merged(state: Doc, lease_doc: Doc) -> Doc:
     return merged
 
 
-def refill_config(root: Path = ROOT) -> cycle.Config | None:
+def refill_config(root: Path = ROOT, world: World | None = None) -> cycle.Config | None:
     """The Config `cycle.refill_lanes` judges with, built read-only from this checkout's kit/tasks.json and
     kit/runner.json as runner/__main__.py `build` builds it (D-4281), or None (no free-lane path) when it cannot be.
-    Two parts are lighter, both fail safe: no stage gate (eligibility then is a superset, as `has_work`'s) and a
-    plan-health check that refuses every task a claim already marked `plan_gap` (D-3812)."""
+    Its stage gate is `stage_gate` over `world`, which judges without the gate (a superset) whenever it cannot
+    be built (D-5568); its plan-health check, lighter and fail safe, refuses every task a claim already marked
+    `plan_gap` (D-3812)."""
     try:
         from runner import __main__ as entry  # here, not at the top: runner/__main__.py imports this module
         kit = json.loads((root / "kit" / "tasks.json").read_text(encoding="utf-8"))
@@ -107,7 +214,8 @@ def refill_config(root: Path = ROOT) -> cycle.Config | None:
                             claim_first=entry.claim_first(settings), order=entry.claim_order_setting(settings),
                             prefer_disjoint_crates=entry.prefer_disjoint_crates(settings),
                             exclusive_crates=entry.exclusive_crates(settings), crate_cap=entry.crate_cap(settings),
-                            crate_full=entry.crate_doc_full(root))
+                            crate_full=entry.crate_doc_full(root),
+                            stage_gate=(lambda state: stage_gate(state, world)) if world is not None else None)
     except Exception:  # noqa: BLE001  # reason: a kit this cannot read leaves today's keeper (D-4281)
         return None
 
@@ -155,7 +263,7 @@ def _minutes(delta: timedelta, margin: int) -> int:
 
 def wake_after(
     state: Doc, lease_doc: Doc, now: datetime, last: str = "", to_limit: bool | None = None, ended: bool | None = None,
-    cfg: cycle.Config | None = None,
+    cfg: cycle.Config | None = None, world: World | None = None,
 ) -> tuple[int | None, str]:
     """(minutes, why) for the next keeper, or (None, why) when none may run (D-1451).
 
@@ -170,7 +278,8 @@ def wake_after(
     once that window is recorded ended at the limit (`ended`, default from kit-state's `model_window_ended`),
     the week stop and the pacer's wait last no longer than the session reading's READING_HOURS expiry: a cycle
     then starts, refreshes the reading and claims once Casey has reset the week (D-2225). With `cfg`, free slots
-    (`free_slots`) and a `last` that `short_ok` allows give IDLE_MINUTES before the lease branch (D-4281)."""
+    (`free_slots`) and a `last` that `short_ok` allows give IDLE_MINUTES before the lease branch (D-4281).
+    `world` gives `has_work` the real stage gate (D-5568)."""
     if state.get("unreadable") or lease_doc.get("unreadable"):
         return IDLE_MINUTES, "claude/kit-state or claude/lease could not be read: look again"
     why = blocker(state)
@@ -191,7 +300,7 @@ def wake_after(
         return _minutes(until - now, RESET_MARGIN), f"the pacer waits until {st.iso(until)}"
     if reset is not None:
         return _minutes(reset - now, RESET_MARGIN), f"the week stopped at its limit; it resets {st.iso(reset)}"
-    if has_work(state, now) and last not in NOTHING_CLAIMED:
+    if has_work(state, now, world) and last not in NOTHING_CLAIMED:
         return IDLE_MINUTES, "idle"
     retry = next_retry(state, now)
     if retry is not None:
@@ -247,14 +356,19 @@ def week_stop(state: Doc, now: datetime, to_limit: bool = False, expire: bool | 
     return until if used >= (LIMIT if to_limit else WEEK_STOP) and until > now else None
 
 
-def has_work(state: Doc, now: datetime) -> bool:
-    """A task a cycle could act on now: one eligible (stage exits not checked, so a superset), one
-    MERGE_PENDING whose merge a cycle resolves, or FIX-MAIN while main is red."""
+def has_work(state: Doc, now: datetime, world: World | None = None) -> bool:
+    """A task a cycle could act on now: one MERGE_PENDING whose merge a cycle resolves, FIX-MAIN while main is
+    red, or one eligible under the cycle's stage gate (`stage_gate` over `world`), or a stage proof the cycle
+    can record (`_proof_due`); without a gate (no `world`, or a doubt) eligibility without it, a superset (D-5568)."""
     tasks = state.get("tasks") if isinstance(state.get("tasks"), list) else []
     if any(isinstance(t, dict) and t.get("status") == st.MERGE_PENDING for t in tasks):
         return True
+    full = dict(state, tasks=tasks)
+    passed = None if state.get("main_red") else stage_gate(full, world)
     try:
-        return bool(st.eligible(dict(state, tasks=tasks), now))
+        if world is None or passed is None:
+            return bool(st.eligible(full, now))
+        return bool(st.eligible(full, now, passed, world.proof_stages)) or _proof_due(tasks, world)
     except (KeyError, TypeError, ValueError):
         return True  # a state this cannot read: let a cycle look
 
@@ -304,7 +418,7 @@ def start_lanes(state: Doc, lease_doc: Doc, now: datetime, cfg: cycle.Config | N
 
 def decide(
     state: Doc, lease_doc: Doc, runs: list[Doc] | None, own_id: str, now: datetime, last: str = UNREAD,
-    jobs: list[Doc] | None = None, cfg: cycle.Config | None = None,
+    jobs: list[Doc] | None = None, cfg: cycle.Config | None = None, world: World | None = None,
 ) -> tuple[str, int | None, str, list[str]]:
     """`on_wake`'s answer plus the lanes a `go` starts ([]: one ordinary dispatch). With the live runs' jobs read
     (`jobs`, else today's answer) and `wake_after` on the free-lane path for `last`, `go` with `start_lanes`
@@ -315,27 +429,27 @@ def decide(
     if runs is None:
         return "stop", None, "the run list could not be read; the hourly tick is the backstop", []
     live = live_runs(runs, own_id)
-    short = wake_after(state, lease_doc, now, last, cfg=cfg)[1] if jobs is not None else ""
+    short = wake_after(state, lease_doc, now, last, cfg=cfg, world=world)[1] if jobs is not None else ""
     lanes = start_lanes(state, lease_doc, now, cfg, live, jobs or []) if short.startswith(FREE) else []
     if lanes:
         return "go", None, f"{short}: start lanes {' '.join(lanes)}", lanes
-    return (*on_wake(state, lease_doc, runs, own_id, now), [])
+    return (*on_wake(state, lease_doc, runs, own_id, now, world=world), [])
 
 
 def on_wake(
     state: Doc, lease_doc: Doc, runs: list[Doc] | None, own_id: str, now: datetime, last: str = UNREAD,
-    jobs: list[Doc] | None = None, cfg: cycle.Config | None = None,
+    jobs: list[Doc] | None = None, cfg: cycle.Config | None = None, world: World | None = None,
 ) -> tuple[str, int | None, str]:
     """("stop" | "rearm" | "go", minutes for a rearm, why) when a keeper wakes (D-1451); with `cfg`, `jobs` and
-    a `last` that allows it, `go` on free lanes as `decide` says (D-4281)."""
+    a `last` that allows it, `go` on free lanes as `decide` says (D-4281); `world` as `wake_after` (D-5568)."""
     if cfg is not None:
-        return decide(state, lease_doc, runs, own_id, now, last, jobs, cfg)[:3]
+        return decide(state, lease_doc, runs, own_id, now, last, jobs, cfg, world)[:3]
     why = blocker(state) if not state.get("unreadable") else ""
     if why:
         return "stop", None, why
     if runs is None:
         return "stop", None, "the run list could not be read; the hourly tick is the backstop"
-    minutes, why = wake_after(state, lease_doc, now)
+    minutes, why = wake_after(state, lease_doc, now, world=world)
     live = live_runs(runs, own_id)
     if live:
         # Never a cycle beside a live run; sleep again instead of stopping, because a run whose gate starts
@@ -426,15 +540,16 @@ def main(argv: list[str] | None = None, now: datetime | None = None) -> int:
     state = _load(args.state, {}) if args.state else {}
     lease = _load(args.lease, {}) if args.lease else {}
     state, lease = (state if isinstance(state, dict) else {}), (lease if isinstance(lease, dict) else {})
-    cfg = refill_config()
+    world = remote_world()  # the real stage gate (D-5568); None judges as before
+    cfg = refill_config(world=world)
     if args.command == "arm":
-        minutes, why = wake_after(state, lease, moment, _last(args.log, args.session, args.since), cfg=cfg)
+        minutes, why = wake_after(state, lease, moment, _last(args.log, args.session, args.since), cfg=cfg, world=world)
         _out(wake_after=minutes, why=why)
         return 0
     runs = _load(args.runs, None) if args.runs else None
     jobs = _load(args.jobs, None) if args.jobs else None
     action, minutes, why, lanes = decide(state, lease, runs if isinstance(runs, list) else None, args.run_id, moment,
-                                         _last(args.log, "", ""), jobs if isinstance(jobs, list) else None, cfg)
+                                         _last(args.log, "", ""), jobs if isinstance(jobs, list) else None, cfg, world)
     _out(action=action, wake_after=minutes, why=why, lanes=" ".join(lanes))
     return 0
 
