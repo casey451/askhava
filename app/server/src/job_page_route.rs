@@ -15,7 +15,10 @@
 //! (answers and later details empty until T745 and T746, D-4748), the current number sent and
 //! quotes so far, the card photos and concept image through fresh short-lived `/photos/<token>`
 //! links when the photo keys are configured (PRIV-014, PRIV-028), and the business's own quote
-//! controls from `quotes::api::quote_standing` (closed once the job has an accepted pick). The
+//! controls from `quotes::api::quote_standing` (closed once the job has an accepted pick), and
+//! PICK-057's "Not a fit for us" with its four one-tap reasons (T668, D-5387), posting to T306's
+//! `NOT_A_FIT_ROUTE` with `{token}` filled by [`JOB_PAGE_TOKEN`] (that route authorises by the
+//! session and the card and never reads `{token}`; its thanks page then links back here). The
 //! page never holds a homeowner contact detail (PRIV-006). Every response is `no-store` (SEC-034).
 
 use std::net::IpAddr;
@@ -26,9 +29,10 @@ use askhava_jobs::api::job_number;
 use askhava_picks::api::accepted_pick;
 use askhava_portals::api::{
     BUSINESS_HOME_ROUTE, BusinessPrincipal, CookieJar, JOB_RELEASE_ROUTE, JobPageLinks, Need,
-    OwnQuote, QuoteControls, SESSION_COOKIE, SecurityEvent, SecurityEventKind, WebSecurity,
-    admit_security_event, business_principal, csrf_token, job_details_page_with_quote, no_store,
-    record_security_event, refuse_cross_site, security_event_client, signed_out,
+    NotAFitChoice, OwnQuote, QuoteControls, SESSION_COOKIE, SecurityEvent, SecurityEventKind,
+    WebSecurity, admit_security_event, business_principal, csrf_token, job_details_page_choice,
+    no_store, not_a_fit_action, record_security_event, refuse_cross_site, security_event_client,
+    signed_out,
 };
 use askhava_privacy::api::{issue_link, photo_path};
 use askhava_quotes::api::{
@@ -49,6 +53,11 @@ use sqlx::{PgConnection, PgPool};
 
 /// CARD-023, BIZ-038: the business job page of one job, by its number (or its UUID, D-5526).
 pub const JOB_PAGE_ROUTE: &str = "/b/jobs/{j}";
+
+/// PICK-057, D-5387: the `{token}` this page's "Not a fit for us" form fills into
+/// `NOT_A_FIT_ROUTE`. It is not hex, so it can never be a real Quote-link token; the `POST` route
+/// never reads it, and its thanks page links back to [`JOB_PAGE_ROUTE`] when it sees it.
+pub(crate) const JOB_PAGE_TOKEN: &str = "job-page";
 
 /// The route's state: the photo link secret only when the photo keys are configured.
 #[derive(Clone)]
@@ -304,7 +313,7 @@ async fn shown(
         own_quote(standing)
     };
     let links = photo_links(served, db, &page).await;
-    Ok(Some(render(&page, number, &links, (state, csrf))?))
+    Ok(Some(render(&page, (job, number), &links, (state, csrf))?))
 }
 
 /// PICK-051: the portal's controls state for a [`QuoteStanding`].
@@ -342,12 +351,13 @@ async fn photo_links(
     (photos, concept.map(|t| photo_path(&t)))
 }
 
-/// CARD-023, CARD-019, PICK-051, D-5618: the page with the business's quote controls; the change
-/// link is the page itself until a signed-in quote form is served, and the withdraw form posts to
+/// CARD-023, CARD-019, PICK-051, PICK-057, D-5618, D-5387: the page with the business's quote
+/// controls and "Not a fit for us" bound to `job` and [`JOB_PAGE_TOKEN`]; the change link is the
+/// page itself until a signed-in quote form is served, and the withdraw form posts to
 /// `/b/jobs/<number>/withdraw` (T732).
 fn render(
     page: &JobPage,
-    number: i64,
+    (job, number): (Uuid, i64),
     (photos, concept): &(Vec<String>, Option<String>),
     (state, csrf): (OwnQuote, &str),
 ) -> Result<Response, &'static str> {
@@ -365,6 +375,12 @@ fn render(
         withdraw_action: &withdraw,
         csrf,
     };
-    let html = job_details_page_with_quote(page, &links, controls).map_err(|_| "render")?;
+    let action = not_a_fit_action(job, JOB_PAGE_TOKEN);
+    let choice = NotAFitChoice {
+        action: &action,
+        csrf,
+    };
+    let html =
+        job_details_page_choice(page, &links, Some(controls), choice).map_err(|_| "render")?;
     Ok(Html(html).into_response())
 }

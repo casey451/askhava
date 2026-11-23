@@ -15,6 +15,8 @@
 //! vault read or the TXT-009 check. A send refused before the claim (TXT-009, wrong kind) leaves
 //! the row `queued`; a failed vault read puts it back to `queued`. [`delivery_status`] gives a
 //! text's status from its row and the status callbacks recorded for its provider SID (TXT-013).
+//! A homeowner's quote update goes by email instead of, or beside, the text when she chose it
+//! (TXT-018, `update_emails`), routed in the one insert both enqueues share (D-5585).
 
 use askhava_adapters::api::{AdapterError, IdempotencyKey, SentText, SmsAdapter};
 use askhava_privacy::api::{
@@ -27,6 +29,7 @@ use sqlx::{Connection, PgConnection};
 
 use crate::models::{self, OutboxError, QuietExempt};
 use crate::status::DeliveryStatus;
+use crate::update_emails::{self, Routed};
 
 /// The action name every text's idempotency key is derived under (SEC-018).
 pub const SEND_ACTION: &str = "sms.send";
@@ -204,7 +207,10 @@ pub async fn enqueue_exempt(
 /// How long a direct reply may go outside the window after the person's own text (QH-004).
 const REPLY_MINUTES: i64 = 15;
 
-/// TXT-009, TXT-011: the shared insert of [`enqueue`] and [`enqueue_exempt`].
+/// TXT-009, TXT-011, TXT-018, D-5585: the shared insert of [`enqueue`] and [`enqueue_exempt`].
+/// A homeowner's update she chose to get by email is queued as an email first, in the same
+/// transaction (`update_emails::route`); with `Email` only no text row is stored and the email's
+/// ID is returned, `true` only when this call stored it; with `Both` the text is stored too.
 async fn insert(
     db: &mut PgConnection,
     secret: &SecretString,
@@ -213,6 +219,11 @@ async fn insert(
 ) -> Result<(Uuid, bool), OutboxError> {
     if !may_text(text.relation) {
         return Err(OutboxError::PastCustomer);
+    }
+    let homeowner = text.relation.kind() == KIND_HOMEOWNER;
+    let routed = update_emails::route(&mut *db, secret, text, homeowner).await?;
+    if let Routed::EmailOnly(id, created) = routed {
+        return Ok((id, created));
     }
     let ids = (text.template_id, text.recipient, text.subject);
     let key = text_key(secret, ids);
