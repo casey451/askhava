@@ -949,7 +949,9 @@ fn td_sec_05_wrong_keys_and_accounts_stop_startup() {
 }
 
 /// Each external `uses:` without a 40-character SHA and each `image:` or shorthand `container:`
-/// without a digest in `text`.
+/// without a digest in `text`. Each line is cut at `{` and `,` so a flow-style mapping
+/// (`steps: [{uses: a/b@v1}]`) is read key by key, and any run of dashes and spaces before a key
+/// (`-   uses:`) is dropped.
 fn unpinned(text: &str) -> Vec<String> {
     let hex = |s: &str, n: usize| {
         s.len() == n && s.bytes().all(|c| matches!(c, b'0'..=b'9' | b'a'..=b'f'))
@@ -957,7 +959,8 @@ fn unpinned(text: &str) -> Vec<String> {
     let digest = |v: &str| v.rsplit_once("@sha256:").is_some_and(|(_, h)| hex(h, 64));
     let sha = |v: &str| v.starts_with("./") || v.rsplit_once('@').is_some_and(|(_, r)| hex(r, 40));
     let mut bad = Vec::new();
-    for line in text.lines().map(|l| l.trim().trim_start_matches("- ")) {
+    let parts = text.lines().flat_map(|l| l.split(['{', ',']));
+    for line in parts.map(|l| l.trim().trim_start_matches(['-', ' ', '[']).trim_start()) {
         let Some((key @ ("uses" | "image" | "container"), value)) = line.split_once(':') else {
             continue;
         };
@@ -966,6 +969,7 @@ fn unpinned(text: &str) -> Vec<String> {
             .next()
             .unwrap_or_default()
             .trim()
+            .trim_end_matches(['}', ']', ' '])
             .trim_matches(['"', '\'']);
         if key == "container" && value.is_empty() {
             continue;
@@ -1004,6 +1008,10 @@ fn td_sec_24_every_workflow_action_and_image_is_pinned() {
     for bad in [
         "uses: actions/checkout@v4",
         "- uses: a/b@main",
+        "-   uses: a/b@v4",
+        "steps: [{uses: a/b@v1}]",
+        "steps: [{name: x, uses: a/b@v1}]",
+        "- {uses: \"a/b@v1\"}",
         "image: postgres:16",
         "uses: docker://alpine:3",
         "container: postgres:16",
@@ -1012,7 +1020,7 @@ fn td_sec_24_every_workflow_action_and_image_is_pinned() {
     }
     let (sha, digest) = ("0123456789abcdef0123456789abcdef01234567", "a".repeat(64));
     let good = format!(
-        "- uses: a/b@{sha} # v4\nuses: ./.github/workflows/ci.yml\nimage: p:16@sha256:{digest}\ncontainer:\ncontainer: p@sha256:{digest}"
+        "- uses: a/b@{sha} # v4\nuses: ./.github/workflows/ci.yml\nimage: p:16@sha256:{digest}\ncontainer:\ncontainer: p@sha256:{digest}\nsteps: [{{uses: a/b@{sha}}}, {{uses: ./x}}]\n-   uses: a/b@{sha}"
     );
     assert_eq!(unpinned(&good), Vec::<String>::new());
 }
