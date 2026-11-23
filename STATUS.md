@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T23:46:00Z by runner 5543c4640c66 (actions).
+Updated 2026-11-23T23:56:39Z by runner 3bdc24aca9ac (actions).
 
-**Building: T737 in progress since 22:49Z; 641 of 779 done; week 86% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T737 in progress since 22:49Z; 642 of 779 done; week 86% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 641 of 779 build tasks (owner gates not counted)
+- **Tasks done:** 642 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T737 claimed 22:49Z, lease until 01:49Z; lane 2: T716 claimed 22:02Z, lease until 02:45Z; lane 3: T738 claimed 23:08Z, lease until 02:08Z
 - **Week:** 86% used, 20.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 23:45Z, 0 min before this update
+- **Last run:** 23:46Z, 10 min before this update
 - **Keeper:** last ran 23:45Z, next wake 01:51Z
 
 ## Needs attention
@@ -20,7 +20,7 @@ Updated 2026-11-23T23:46:00Z by runner 5543c4640c66 (actions).
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T649 | intake, site and server: after the code, the web chat's name | MERGE_PENDING | 1 | 2 h 19 min | 22:52Z |  |
-| T819 | portals: her feedback words are scrubbed before they are sto | MERGE_PENDING | 3 | 85 min | 22:43Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
+| T819 | portals: her feedback words are scrubbed before they are sto | done | 3 | 85 min | 22:43Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T816 | messaging: the data-request confirm link goes by email to th | done | 1 | 112 min | 22:39Z |  |
 | T737 | portals, ai and server: the owner records the AI provider's  | check_failed | 1 | 65 min | 21:59Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T745 | intake: a reader for a job's intake answers through `intake: | done | 1 | 2 h 19 min | 21:22Z |  |
@@ -84,7 +84,7 @@ Updated 2026-11-23T23:46:00Z by runner 5543c4640c66 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 428 of 735 (58.2%) · partial 294 · unstarted 13
-**Tasks merged (throughput only):** 641 of 779
+**Tasks merged (throughput only):** 642 of 779
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -120,7 +120,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 284 of 351 done
+- stage 5: 285 of 351 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
