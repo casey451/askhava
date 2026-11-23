@@ -969,7 +969,9 @@ async fn fit_turn(
         return Ok(Fit::Go(found.job_types));
     };
     if mark == CHOSEN {
-        write_pairs(tx, conversation, &kept.job_types, at).await?;
+        let mut set = kept.job_types.clone();
+        set.extend(other_job_pairs(tx, conversation, trade).await?);
+        write_pairs(tx, conversation, &set, at).await?;
     }
     models::insert_plain(tx, conversation, (WHICH_FITS, mark), at).await?;
     Ok(Fit::Go(kept.job_types))
@@ -1031,19 +1033,33 @@ async fn stored_pairs(
     conversation: Uuid,
     trade: &str,
 ) -> Result<Vec<(String, String)>, IntakeError> {
+    newest_set(tx, conversation, trade, false).await
+}
+
+/// D-4602: the newest stored set's pairs, folded back to labels as [`stored_pairs`] says; with
+/// `other` false those that are not of the request's other `trade_reading` trade (`trade`'s job),
+/// with `other` true only those that are (the other job's).
+async fn newest_set(
+    tx: &mut PgConnection,
+    conversation: Uuid,
+    trade: &str,
+    other: bool,
+) -> Result<Vec<(String, String)>, IntakeError> {
     let rows = sqlx::query!(
         r#"SELECT substr(a.question_id, 10) AS "trade!", a.choice AS "choice!"
            FROM intake.intake_answer a WHERE a.conversation_id = $1 AND a.choice IS NOT NULL
              AND starts_with(a.question_id, $2)
              AND a.answered_at = (SELECT max(b.answered_at) FROM intake.intake_answer b
                WHERE b.conversation_id = $1 AND starts_with(b.question_id, $2))
-             AND NOT EXISTS (SELECT 1 FROM intake.intake_answer r WHERE r.conversation_id = $1
+             AND EXISTS (SELECT 1 FROM intake.intake_answer r WHERE r.conversation_id = $1
                AND r.question_id = $3 AND r.choice = substr(a.question_id, 10) AND r.choice <> $4)
+               = $5
            ORDER BY a.question_id, a.choice"#,
         conversation,
         JOB_TYPE,
         TRADE_READING,
-        trade
+        trade,
+        other
     )
     .fetch_all(tx)
     .await
@@ -1056,6 +1072,18 @@ async fn stored_pairs(
             Some((r.trade, label.to_owned()))
         })
         .collect())
+}
+
+/// D-4602, INT-032: the newest stored set's pairs of the request's other `trade_reading` trade,
+/// its own ALSO or SPLIT job; "Which fits best?" for `trade`'s job writes them again with the
+/// chosen pair, so the other job keeps its job type, candidates and license check (CARD-001,
+/// LIC-043).
+async fn other_job_pairs(
+    tx: &mut PgConnection,
+    conversation: Uuid,
+    trade: &str,
+) -> Result<Vec<(String, String)>, IntakeError> {
+    newest_set(tx, conversation, trade, true).await
 }
 
 /// D-4602, D-105, D-102: `trade`'s candidates rebuilt from stored `pairs` by

@@ -322,3 +322,29 @@ async fn td_int_53_a_licensed_only_job_type_survives_read_back(mut db: Db) {
     let got = sent(&mut db, 0x0555_0309, HOME_ZIP, 1).await;
     assert_eq!(got.first(), Some(&COUNT_ONE_TEMPLATE), "{got:?}");
 }
+
+/// The newest stored set's `job_type.electrical` choices in request `$1` (D-4602).
+const ELECTRICAL_PAIRS: &str = "SELECT count(*) FROM intake.intake_answer a \
+    WHERE a.conversation_id = $1 AND a.question_id = 'job_type.electrical' \
+    AND a.choice = 'outlet_repair' AND a.answered_at = (SELECT max(b.answered_at) \
+    FROM intake.intake_answer b WHERE b.conversation_id = $1 \
+    AND starts_with(b.question_id, 'job_type.'))";
+
+/// TD-INT-53 (INT-014, INT-032, CARD-001, LIC-043): with two trades in the first text and ALSO,
+/// choosing in "Which fits best?" for the handyman job keeps the electrical job's stored pair
+/// ("outlet repair", never `electrical_other`) in the newest set its own job reads back.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_int_53_a_choice_keeps_the_other_jobs_pairs(mut db: Db) {
+    setup(&mut db, &TWO_HANDYMEN).await;
+    let contact = 0x0555_0310;
+    let first = "I need a handyman and an outlet in the kitchen is dead";
+    sent(&mut db, contact, first, 0).await;
+    sent(&mut db, contact, "ALSO", 1).await;
+    let asked = sent(&mut db, contact, HOME_ZIP, 2).await;
+    assert!(asked.contains(&WHICH_FITS_TEMPLATE), "{asked:?}");
+    let id = request(&mut db, contact).await;
+    assert_eq!(count(&mut db, ELECTRICAL_PAIRS, id).await, 1, "before");
+    let got = sent(&mut db, contact, "1", 3).await;
+    assert!(!got.contains(&WHICH_FITS_TEMPLATE), "{got:?}");
+    assert_eq!(count(&mut db, ELECTRICAL_PAIRS, id).await, 1, "kept");
+}
