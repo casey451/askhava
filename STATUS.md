@@ -1,37 +1,18 @@
 # Ask Hava build status
 
-Updated 2026-11-23T13:29:08Z by runner f27e05243e49 (actions).
+Updated 2026-11-23T13:33:43Z by runner f0dd474113d1 (manual).
 
-**Building: T819 in progress since 12:37Z; 630 of 775 done; week 76% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T819 in progress since 12:37Z; 630 of 777 done; week 76% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 630 of 775 build tasks (owner gates not counted)
+- **Tasks done:** 630 of 777 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T819 claimed 12:37Z, lease until 15:37Z; lane 2: T666 claimed 13:17Z, lease until 16:17Z; lane 5: T646 claimed 12:00Z, lease until 15:00Z
 - **Week:** 76% used, 39.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:28Z, 0 min before this update
+- **Last run:** 13:29Z, 4 min before this update
 - **Keeper:** last ran 13:29Z, next wake 15:03Z
 
 ## Needs attention
-- BLOCKED T121: Ci: failure; Checks: failure
-Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny)
-Crate:     basic-toml
-Version:   0.1.10
-Warning:   unmaintained
-Title:     `basic-toml` is unmaintained
-Date:      2026-09-26
-ID:        RUSTSEC-2026-0374
-URL:       https://rustsec.org/advisories/RUSTSEC-2026-0374
-Crate:     proc-macro-error2
-Version:   2.0.1
-Warning:   unmaintained
-Title:     proc-macro-error2 is unmaintained
-Date:      2026-06-07
-ID:        RUSTSEC-2026-0173
-URL:       https://rustsec.org/advisories/RUSTSEC-2026-0173
-##[error]Process completed with exit code 1.
-Ci failed at step: All five jobs passed
-Checks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success
-##[error]Process completed with exit code 1.
+- CLAIMS STOPPED: nightly success on 21be2b3d8975, failures_since_green 0; no stage passed its exit test
 - BLOCKED T714: Worker made no commits: start smoke test did not finish within the 30-minute background limit (312 suites ok, no failures seen, partial). Previous CI failure is cargo-audit RUSTSEC-2026-0594 (cookie 0.18.2, fixed in 0.18.3), which fails every branch; the fix is PR #1396 (Cargo.lock cookie bump, D-5638), not yet on main. Retry after #1396 merges.
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
@@ -85,6 +66,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 | T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | done | 4 | 33 min | 13:54Z | Reviewer after findings round still FINDINGS at 4f79a8b8c4195e68ccfba3a25eaab6d612560536: / 1. docs/runbook.md:139-142 a |
 
 ### Plan and harness merges on main
+- 13:33Z Plan: Email-only quote updates and counts (T840), under-13 purge completeness (T839), T716 test precondition (D-5639) (#1399)
 - 10:11Z Plan: T716 purges held first-text words on an under-13 stop; T730 counts update emails (D-5617) (#1386)
 - 07:11Z Plan: T716 owns cards_out.rs so the card send uses the counted pairs (D-5606) (#1382)
 - 04:05Z Plan: T121 split into T838 (D-5574); Grok G3 fixes for claimable tasks (D-5585) (#1370)
@@ -93,31 +75,31 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 402 of 735 (54.7%) · partial 320 · unstarted 13
-**Tasks merged (throughput only):** 630 of 775
+**Requirements verified:** 1 of 735 (0.1%) · partial 721 · unstarted 13
+**Tasks merged (throughput only):** 630 of 777
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 25 | 10 | 0 | 35 |
-| ai | 7 | 19 | 3 | 29 |
-| businesses | 29 | 28 | 1 | 58 |
-| calls | 17 | 8 | 0 | 25 |
-| consent | 17 | 18 | 0 | 35 |
-| fees | 27 | 25 | 0 | 52 |
-| intake | 11 | 32 | 0 | 43 |
-| job-cards | 15 | 9 | 0 | 24 |
-| licensing | 36 | 12 | 0 | 48 |
-| lifecycle | 21 | 7 | 0 | 28 |
-| messaging | 25 | 20 | 0 | 45 |
-| ops-recovery | 17 | 31 | 6 | 54 |
-| privacy | 12 | 19 | 0 | 31 |
-| quiet-hours | 4 | 5 | 0 | 9 |
-| quotes-pick | 34 | 22 | 0 | 56 |
-| recurring | 10 | 1 | 0 | 11 |
-| security | 14 | 38 | 3 | 55 |
-| terms | 30 | 5 | 0 | 35 |
-| website | 22 | 8 | 0 | 30 |
-| wording | 29 | 3 | 0 | 32 |
+| accessibility | 0 | 35 | 0 | 35 |
+| ai | 0 | 26 | 3 | 29 |
+| businesses | 0 | 57 | 1 | 58 |
+| calls | 0 | 25 | 0 | 25 |
+| consent | 0 | 35 | 0 | 35 |
+| fees | 0 | 52 | 0 | 52 |
+| intake | 0 | 43 | 0 | 43 |
+| job-cards | 0 | 24 | 0 | 24 |
+| licensing | 0 | 48 | 0 | 48 |
+| lifecycle | 0 | 28 | 0 | 28 |
+| messaging | 0 | 45 | 0 | 45 |
+| ops-recovery | 1 | 47 | 6 | 54 |
+| privacy | 0 | 31 | 0 | 31 |
+| quiet-hours | 0 | 9 | 0 | 9 |
+| quotes-pick | 0 | 56 | 0 | 56 |
+| recurring | 0 | 11 | 0 | 11 |
+| security | 0 | 52 | 3 | 55 |
+| terms | 0 | 35 | 0 | 35 |
+| website | 0 | 30 | 0 | 30 |
+| wording | 0 | 32 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 

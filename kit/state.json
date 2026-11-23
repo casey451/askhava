@@ -26150,7 +26150,7 @@
     "T838",
     "T729"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 3,
    "slug": "security-startup-supply",
    "type": "build",
@@ -26164,8 +26164,8 @@
     5355,
     5356
    ],
-   "reason": "Ci: failure; Checks: failure\nChecks failed at step: Rust dependency audit (cargo-audit, cargo-deny)\nCrate:     basic-toml\nVersion:   0.1.10\nWarning:   unmaintained\nTitle:     `basic-toml` is unmaintained\nDate:      2026-09-26\nID:        RUSTSEC-2026-0374\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0374\nCrate:     proc-macro-error2\nVersion:   2.0.1\nWarning:   unmaintained\nTitle:     proc-macro-error2 is unmaintained\nDate:      2026-06-07\nID:        RUSTSEC-2026-0173\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0173\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
-   "last_failure": "PLAN GAP: outside ownership: app/portals/src/update_channel.rs\nT729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and confirm_query ignores unknown keys; SEC-010 scan fails on them (F1 x2, F5 x1). Also: REFUSING_TRY_FROM lacks JobTypesForm (business_portal.rs), StepUpForm (business_step_up.rs), Posted<F> (address_changes.rs, business_guarded_changes.rs); CLASSIFIED lacks twilio_answer/vendor_error (adapters base.rs), run_help_notice, spanish_switch latest, photo_asks load; business_signup_route.rs posts roc_number/base_zip/radius/code names the templates lack, so per-route name lists cannot be strictly template-closed; 550-line budget too small (~1000). Reviewer confirmed all three claims on main bd3e4e9cd.\nre-queued after plan fix D-5574: split: T838 makes the source edits; tables and the sign-up name rule settled",
+   "reason": null,
+   "last_failure": "PLAN GAP: outside ownership: app/portals/src/update_channel.rs\nT729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and confirm_query ignores unknown keys; SEC-010 scan fails on them (F1 x2, F5 x1). Also: REFUSING_TRY_FROM lacks JobTypesForm (business_portal.rs), StepUpForm (business_step_up.rs), Posted<F> (address_changes.rs, business_guarded_changes.rs); CLASSIFIED lacks twilio_answer/vendor_error (adapters base.rs), run_help_notice, spanish_switch latest, photo_asks load; business_signup_route.rs posts roc_number/base_zip/radius/code names the templates lack, so per-route name lists cannot be strictly template-closed; 550-line budget too small (~1000). Reviewer confirmed all three claims on main bd3e4e9cd.\nre-queued after plan fix D-5574: split: T838 makes the source edits; tables and the sign-up name rule settled\nre-queued after plan fix D-5638: RUSTSEC-2026-0594 (cookie 0.18.2) failed the dependency audit on every Rust change; fixed on main by #1396 (cookie 0.18.3); attempts lost to it, D-677 pattern",
    "history": [
     {
      "attempt": 1,
@@ -26308,6 +26308,19 @@
      "plan_head": "8871a83b785adc2a8f05e669d722847287fee4d2",
      "plan_then": "4f100f935a6a89e3dcefa0141a2aac4382364c30fee8b6552cef06bf4febd0e4",
      "plan_now": "ee702f574db8c0f2bab0fc16e9cfaacd958e7c44e718f7133aaf119dc244ee71"
+    },
+    {
+     "at": "2026-11-23T13:33:43Z",
+     "reason": "RUSTSEC-2026-0594 (cookie 0.18.2) failed the dependency audit on every Rust change; fixed on main by #1396 (cookie 0.18.3); attempts lost to it, D-677 pattern",
+     "by": "manual-4a42653c1898",
+     "was": "Ci: failure; Checks: failure\nChecks failed at step: Rust dependency audit (cargo-audit, cargo-deny)\nCrate:     basic-toml\nVersion:   0.1.10\nWarning:   unmaintained\nTitle:     `basic-toml` is unmaintained\nDate:      2026-09-26\nID:        RUSTSEC-2026-0374\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0374\nCrate:     proc-macro-error2\nVersion:   2.0.1\nWarning:   unmaintained\nTitle:     proc-macro-error2 is unmaintained\nDate:      2026-06-07\nID:        RUSTSEC-2026-0173\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0173\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
+     "attempts": 3,
+     "plan_fix": "D-5638",
+     "plan_since": "2026-11-23T08:33:00Z",
+     "plan_base": "4345220c6cce1517db8134e247aecd34d4713df3",
+     "plan_head": "f0dd474113d194356a2a0860e4225d364f92435f",
+     "plan_then": "ee702f574db8c0f2bab0fc16e9cfaacd958e7c44e718f7133aaf119dc244ee71",
+     "plan_now": "b960a7fa7851a3018365b1fc1b549636fa36098c2ddee98f9f63969b5fa3eb94"
     }
    ],
    "stale_leases": [
@@ -122062,7 +122075,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T13:29:08Z",
+ "updated_at": "2026-11-23T13:33:43Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -122160,8 +122173,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "f27e05243e49a721f4e086497cd1853aa05db78f",
- "starter": "actions",
+ "runner_sha": "f0dd474113d194356a2a0860e4225d364f92435f",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "f2d298a8c8e3f393ea7a2af6bb0a706b65f85db6",
