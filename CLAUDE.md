@@ -1,64 +1,58 @@
 # CLAUDE.md — Laftly session rules
 
-Short rules loaded into every session. The full rules live elsewhere; read them, don't guess.
+One line per rule; read the cited line, don't guess. `B:n` = `BUILD_BRIEF.md:n`; `C:n` = `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:n`.
 
 ## Read first
 
-1. **`BUILD_BRIEF.md`** — how to build (stack, runner, security, accessibility, testing, quality, stop points). Read §2 and §7 at the start of every runner cycle (`BUILD_BRIEF.md:238`).
-2. **`docs/constitution.md`** — every guardrail, gate and decision, each cited to its source line.
-3. **`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md`** — what to build. It beats every other source (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:7`).
-4. **`docs/sources.md`** — order of authority, the sources fingerprint and the superseded-rules list (its conflict line now states the decide-and-log rule, D-479).
-5. **`docs/governance.md`** — who may change which layer of the blueprint, what a machine enforces, the red-`main` protocol, how progress is measured (D-479). **`docs/ai-operating-manual.md`** — the start routine and rules for every kind of session.
-6. Your task prompt `kit/prompts/T###.md` and only the files it lists (`BUILD_BRIEF.md:245`).
+1. `BUILD_BRIEF.md`: how to build; §2 and §7 at the start of every runner cycle (B:238).
+2. `docs/constitution.md`: every guardrail, gate and decision, sourced.
+3. The changes file `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md`: what to build; beats every source (C:7).
+4. `docs/sources.md` (authority, superseded rules, conflicts) and `docs/governance.md` (who changes what, checks, red `main`, progress) (D-479); `docs/ai-operating-manual.md`: start routine per session kind.
+5. Your `kit/prompts/T###.md` and only the files it lists (B:245).
 
 ## Order of authority
 
-- `BUILD_BRIEF.md` decides **how**; the changes file decides **what** (`BUILD_BRIEF.md:7`).
-- Then the v9.3 blueprint, then the twin, then everything else (`docs/sources.md:30`–`docs/sources.md:32`).
-- If the brief and the changes file conflict: changes file wins on what, brief wins on how; decide, log both lines and the choice in `docs/decisions.md`, don't stop (`BUILD_BRIEF.md:539`).
-- Never build a superseded value (`docs/sources.md:34`–`docs/sources.md:53`): no 2-month recurring rule (it's **4 months**), no $45/$59/$149 fees (it's **$25 / $75 / $199**), no "Havasu Home Quotes" or "Ask Hava" brand (it's **Laftly**, Laftly LLC, laftly.com; D-3347), no directory, no 4-per-trade cap.
+- Brief decides **how**, changes file **what** (B:7); then v9.3 blueprint, twin, the rest (`docs/sources.md:30-32`). Conflict: decide, log both lines and the choice in `docs/decisions.md`, don't stop (B:539).
+- No superseded value (`docs/sources.md:34-53`): recurring **4 months** (not 2); fees **$25 / $75 / $199** (not $45/$59/$149); brand **Laftly**, Laftly LLC, laftly.com (not "Havasu Home Quotes" or "Ask Hava"; D-3347); no directory; no 4-per-trade cap.
 
 ## Rules that can't bend (BUILD_BRIEF.md §2)
 
-1. No sign-ups, purchases, outreach, publishing, live messages, live charges or production deploys without Casey's explicit go. Never create accounts or accept terms for him (`BUILD_BRIEF.md:61`).
-2. Never paste, print, log, commit or store secrets. No keys in chat, code, this file or plain env vars (`BUILD_BRIEF.md:62`; `sources/02_build_plan/Build_Plan.md:165`).
-3. Never put homeowner names, phones, addresses or photos into an AI tool that keeps data. **Fake data only** in code, tests, fixtures, logs and screenshots (`BUILD_BRIEF.md:66`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:263`).
-4. Don't claim something was tested unless a tool run in this repo shows it (`BUILD_BRIEF.md:57`).
-5. Never use the live Railway project, live keys or live phone numbers before Gate C (`BUILD_BRIEF.md:68`).
-6. Never weaken a test to make it pass; a wrong test changes only via a spec change logged in `docs/decisions.md` (`BUILD_BRIEF.md:69`).
-7. Protected paths (`.github/`, `.claude/`, `runner/`, `stand_ins/`, `sources/`, `kit/layers.json`, `kit/allowed_crates.txt`, tests you don't own) change only in a `harness` task with an Opus review (`BUILD_BRIEF.md:70`).
-8. The locked blueprint (the brief, this file, the constitution, the spec, the test design, the threat model, the task graph, the scripts, `docs/architecture.md` sections 3 to 6) is fingerprinted in `kit/plan.lock`; `Ci` and the `Governance` check fail any change without a lock rewrite and a `docs/decisions.md` entry, and a task branch may change only the locked file its task owns (`docs/governance.md` section 1, D-479). If the plan is wrong, say so in your report; never edit it to make a task pass.
+1. No sign-ups, purchases, outreach, publishing, live messages or charges, production deploys without Casey's explicit go; never create accounts or accept terms for him (B:61).
+2. Never paste, print, log, commit or store secrets (chat, code, this file, plain env vars) (B:62; `sources/02_build_plan/Build_Plan.md:165`).
+3. No homeowner names, phones, addresses or photos in an AI tool that keeps data; **fake data only** in code, tests, fixtures, logs, screenshots (B:66; C:263).
+4. Claim tested only when a tool run in this repo shows it (B:57).
+5. No live Railway project, keys or phone numbers before Gate C (B:68).
+6. Never weaken a test to pass; a wrong test changes only by a spec change logged in `docs/decisions.md` (B:69).
+7. Protected paths (`.github/`, `.claude/`, `runner/`, `stand_ins/`, `sources/`, `kit/layers.json`, `kit/allowed_crates.txt`, tests you don't own): only a `harness` task with Opus review (B:70).
+8. The locked blueprint (this file too; `docs/governance.md` section 1) is fingerprinted in `kit/plan.lock`: changing it needs a lock rewrite and a `docs/decisions.md` entry or `Ci` and `Governance` fail; a task branch changes only the locked file it owns (D-479). Plan wrong: say so in your report, never edit it to pass.
 
 ## Working rules
 
-- Work only on your task branch `claude/task/T###-<slug>`, created from the latest `main`; on a retry, the branch the runner prepared (the earlier attempt's pushed branch with `main` merged in, or a fresh `-a<n>` one): switch to it, never recreate, reset or rebase it (`BUILD_BRIEF.md:246`).
-- Touch only the files your task owns. Small PRs (`BUILD_BRIEF.md:485`).
-- Workers never touch `claude/kit-state`; only the runner writes state (`BUILD_BRIEF.md:223`).
-- Never push to `main`, never force-push, never rebase-and-force-push (`BUILD_BRIEF.md:224`, `BUILD_BRIEF.md:303`).
-- Only the runner marks a task done, from `Ci`, `Twin`, `Ally` green on the merged commit (`BUILD_BRIEF.md:261`–`BUILD_BRIEF.md:263`).
-- If `main` is red, the only task is "fix main"; revert, don't patch over (`BUILD_BRIEF.md:240`, `BUILD_BRIEF.md:490`).
-- Usage limit hit: wait for the reset; never pay per use (`BUILD_BRIEF.md:509`).
-- Casey's answers come only from `owner` GitHub issues via `inbox/`; to ask him anything, the runner writes `outbox/` (`BUILD_BRIEF.md:228`–`BUILD_BRIEF.md:232`).
+- Only on `claude/task/T###-<slug>` from latest `main`; on a retry, switch to the branch the runner prepared, never recreate, reset or rebase it (B:246).
+- Touch only your task's files; small PRs (B:485). Never touch `claude/kit-state`; only the runner writes state (B:223).
+- Never push to `main`, force-push or rebase-and-force-push (B:224, B:303).
+- Only the runner marks done, on `Ci`, `Twin`, `Ally` green on the merged commit (B:261-263).
+- Red `main`: the only task is "fix main"; revert, don't patch over (B:240, B:490).
+- Usage limit: wait for the reset; never pay per use (B:509).
+- Casey answers only in `owner` issues via `inbox/`; to ask him, the runner writes `outbox/` (B:228-232).
 
 ## Quality (BUILD_BRIEF.md §12)
 
-- Rust (Axum, Askama pages, SQLx), PostgreSQL 16, Cargo workspace with one crate per module and a committed `Cargo.lock`; TypeScript only for small browser extras; Python only for tooling, stand-ins and the twin (D-453). The stack is decided (`BUILD_BRIEF.md:101`). New libraries need a `docs/decisions.md` entry with purpose, license and cargo-audit result, and must pass cargo-deny (`BUILD_BRIEF.md:122`).
-- Functions under 50 lines; clippy with warnings denied and `cargo fmt --check` clean; `unsafe_code` forbidden; no `#[allow(...)]` without a reason (`BUILD_BRIEF.md:486`–`BUILD_BRIEF.md:487`).
-- No commented-out code, TODOs or unused code on `main` (`BUILD_BRIEF.md:488`).
-- Update `docs/architecture.md` and `docs/decisions.md` in the same PR as the change (`BUILD_BRIEF.md:489`).
-- Document for the next AI session, which knows nothing: follow `docs/code-docs.md` (crate `CLAUDE.md`, `//!` and `///` comments, requirement IDs on rule code); `scripts/check_code_docs.py` fails the build on a gap (D-473).
-- Coverage never drops; money, privacy and licensing code at or above 95% branch coverage (`BUILD_BRIEF.md:481`).
-- This file stays under 200 lines (`BUILD_BRIEF.md:491`).
+- Stack fixed (B:101): Rust (Axum, Askama, SQLx), PostgreSQL 16, a crate per module, committed `Cargo.lock`; TypeScript only for small browser extras, Python only for tooling, stand-ins, twin (D-453). New library: `docs/decisions.md` entry (purpose, license, cargo-audit) and cargo-deny pass (B:122).
+- Functions under 50 lines; clippy warnings denied; `cargo fmt --check` clean; `unsafe_code` forbidden; `#[allow(...)]` only with a reason (B:486-487); no commented-out code, TODOs or unused code on `main` (B:488).
+- Update `docs/architecture.md` and `docs/decisions.md` in the same PR (B:489).
+- Document for the next session per `docs/code-docs.md` (crate `CLAUDE.md`, `//!`, `///`, requirement IDs on rule code); `scripts/check_code_docs.py` fails a gap (D-473).
+- Coverage never drops; money, privacy, licensing code at least 95% branch (B:481).
+- This file stays under 200 lines (B:491).
 
 ## Product rules most likely to be broken (details in docs/constitution.md)
 
-- AI sees only scrubbed text through the Claude API (zero retention once signed; before that only under AI-008's switch, D-412), returns schema-validated fields, has no tools, adds no claims. Stand-in AI during the build (`BUILD_BRIEF.md:343`–`BUILD_BRIEF.md:344`; `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:262`).
-- No homeowner contact detail leaves the vault except on a confirmed, paid pick; the homeowner's phone is never shared (`BUILD_BRIEF.md:151`; `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:225`).
-- Texting: full consent text first on every path; a text that is only an opt-out word (English or Spanish, incl. "cancel") opts out of all texts; "cancel" alone never closes a job; quiet hours 8 a.m.–8 p.m. in the stricter of Arizona and area-code time; every text kind has a Spanish template (`sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:113`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:158`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:159`, `sources/01_spec/Changes_Since_v9.3_AUTHORITATIVE.md:184`; `BUILD_BRIEF.md:416`).
-- Wording: "introduction fee by job size," never "commission"; never "vetted," "best" or rankings; "Laftly is not a contractor and does not perform, bid on or supervise work" (`BUILD_BRIEF.md:453`–`BUILD_BRIEF.md:455`).
-- Accessibility: WCAG 2.2 AA; any axe-core violation fails `Ally` (`BUILD_BRIEF.md:424`).
-- Security: OWASP ASVS L2; gitleaks and the PII scanner fail the build on any hit (`BUILD_BRIEF.md:298`).
+- AI sees only scrubbed text via the Claude API (zero retention once signed; before, only under AI-008's switch, D-412); schema-validated fields, no tools, no added claims; stand-in AI during the build (B:343-344; C:262).
+- No homeowner contact detail leaves the vault except on a confirmed, paid pick, and never the homeowner's phone (B:151; `sources/01_spec/Havasu_Home_Quotes_Technical_Blueprint_v9.3.md:225`).
+- Texts: full consent text first on every path; a text that is only an opt-out word (English or Spanish, incl. "cancel") stops all texts; "cancel" alone never closes a job; quiet hours 8 a.m.–8 p.m. in the stricter of Arizona and area-code time; a Spanish template per text kind (C:113, C:158, C:159, C:184; B:416).
+- Wording: "introduction fee by job size," never "commission"; never "vetted," "best" or rankings; "Laftly is not a contractor and does not perform, bid on or supervise work" (B:453-455).
+- WCAG 2.2 AA, any axe-core violation fails `Ally` (B:424). OWASP ASVS L2; gitleaks and the PII scanner fail the build on any hit (B:298).
 
 ## When Claude stops and asks Casey (BUILD_BRIEF.md §16)
 
-Only at: a hands-on task only a human can do; the account checkpoint; real texts to Casey's own phone in Phase 2; the go for the laftly.com page (Stage 0.5); Gate C and the first live charge; the war-games go (T243, D-1473) (`BUILD_BRIEF.md:546`–`BUILD_BRIEF.md:552`). Gate B is Casey's own click-through after "Finished". Everything else Claude decides and logs in `docs/decisions.md` and `docs/for-casey-review.md` (`BUILD_BRIEF.md:542`).
+Only at (B:546-552): a hands-on task only a human can do; the account checkpoint; real texts to Casey's own phone in Phase 2; the laftly.com page go (Stage 0.5); Gate C and the first live charge; the war-games go (T243, D-1473). Gate B is Casey's click-through after "Finished". All else Claude decides and logs in `docs/decisions.md` and `docs/for-casey-review.md` (B:542).
