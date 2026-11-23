@@ -1,25 +1,26 @@
 # Ask Hava build status
 
-Updated 2026-11-23T10:25:13Z by runner ab7be9fe867a (actions).
+Updated 2026-11-23T10:28:58Z by runner bf41c81b22bd (actions).
 
 **Building: T714 in progress since 09:25Z; 629 of 775 done; week 74% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 629 of 775 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T714 claimed 09:25Z, lease until 12:25Z; lane 3: T666 claimed 08:27Z, lease until 11:27Z; lane 5: T653 claimed 09:21Z, lease until 12:21Z
+- **Lane:** lane 2: T714 claimed 09:25Z, lease until 12:25Z; lane 5: T653 claimed 09:21Z, lease until 12:21Z
 - **Week:** 74% used, 42.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:25Z, 0 min before this update
+- **Last run:** 10:25Z, 3 min before this update
 - **Keeper:** last ran 10:25Z, next wake 11:30Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T836 (since 2026-11-23T07:59:33Z, no attempt used; a plan change fixes it): T836: kit/runner_log.jsonl is named by D-500, but no task owns it and it does not exist
-- Strict plan check red: 36 problem(s) on tasks still to run (+515 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 41 problem(s) on tasks still to run (+515 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T666 | jobs, quotes and server: GET /b/jobs/{j} serves the business | QUEUED | 1 | 2 h 1 min | 10:28Z | Reviewer after the findings round (head bf41c81b22bdbd874d7d53cb8ba64ca6bb0737cf): app/server/tests/job_page_route.rs (w |
 | T121 | Startup key checks, control router absent in live, supply-ch | MERGE_PENDING | 3 | 103 min | 10:16Z | PLAN GAP: outside ownership: app/portals/src/update_channel.rs / T729 (owner) merged UpdatesForm/ConfirmForm without den |
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | MERGE_PENDING | 5 | 82 min | 09:58Z | PLAN GAP: outside ownership: app/site/templates/request.html, app/site/static/site.css / At 1280x900 the /request chat s |
 | T646 | site and server: the web chat's new-request limit counts the | check_failed | 1 | 59 min | 08:59Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
@@ -62,7 +63,6 @@ Updated 2026-11-23T10:25:13Z by runner ab7be9fe867a (actions).
 | T829 | server tests (harness): the door matrix's owner sign-ins nev | done | 3 | 46 min | 11:10Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T725 | site: the home page shows the texting number with its consen | BLOCKED | 3 | 21 min | 10:52Z |  |
 | T729 | portals and privacy: the quote page offers updates by email  | resync | 2 | 2 h 32 min | 10:40Z |  |
-| T803 | messaging (harness): an opted-out number gets no HELP reply; | BLOCKED | 3 | 25 min | 10:25Z |  |
 
 ### Plan and harness merges on main
 - 10:11Z Plan: T716 purges held first-text words on an under-13 stop; T730 counts update emails (D-5617) (#1386)
@@ -76,7 +76,7 @@ Updated 2026-11-23T10:25:13Z by runner ab7be9fe867a (actions).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 402 of 735 (54.7%) · partial 320 · unstarted 13
+**Requirements verified:** 403 of 735 (54.8%) · partial 319 · unstarted 13
 **Tasks merged (throughput only):** 629 of 775
 
 | Area | Verified | Partial | Unstarted | Total |
@@ -91,7 +91,7 @@ Updated 2026-11-23T10:25:13Z by runner ab7be9fe867a (actions).
 | job-cards | 15 | 9 | 0 | 24 |
 | licensing | 36 | 12 | 0 | 48 |
 | lifecycle | 21 | 7 | 0 | 28 |
-| messaging | 25 | 20 | 0 | 45 |
+| messaging | 26 | 19 | 0 | 45 |
 | ops-recovery | 17 | 31 | 6 | 54 |
 | privacy | 12 | 19 | 0 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
@@ -122,8 +122,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T714 (lease until 2026-11-23T12:25:09Z)
-- lane 3: T666 (lease until 2026-11-23T11:27:49Z)
 - lane 5: T653 (lease until 2026-11-23T12:21:32Z)
 
 ## Last usage reading
-- {"task": "T121", "at": "2026-11-23T10:16:33Z", "cache_read_input_tokens": 11905576, "output_tokens": 141108, "input_tokens": 279, "cache_creation_input_tokens": 333108}
+- {"task": "T666", "at": "2026-11-23T10:28:51Z", "input_tokens": 428, "output_tokens": 109784, "cache_creation_input_tokens": 418454, "cache_read_input_tokens": 20539110}
