@@ -610,6 +610,34 @@ def test_drill_a_check_broken_by_mains_change_after_an_update_is_a_strike(tmp_pa
     assert env.store["lane_strikes"]["2"]["count"] == 1
 
 
+def _cancelled_before(before: dict[str, str], failed: tuple[str, ...] = ("Ci",)) -> st.State:
+    """T002 on lane 2 with one strike, its last head's `failed` checks red after an update from `before`."""
+    history = [{"attempt": 1, "checks": [{"name": n, "conclusion": "failure"} for n in failed]}]
+    update = {"from": "h-t002", "to": "m", "how": "runner", "at": "x", "checks": before}
+    return lanes.strike(st.with_task(st.new_state(), "T002", lane="2", last_failure="Ci: failure", history=history,
+                                     update_merges=[update]), "2", "earlier", NOW)
+
+
+def test_drill_a_stored_cancelled_earlier_result_neither_strikes_nor_clears() -> None:
+    s = _cancelled_before({"Ci": "cancelled", "Twin": "success"})  # a run cancelled on a superseded head (D-5554)
+    assert cycle._lane_outcome(s, "T002", "2", "check_failed", NOW) is s
+    assert s["lane_strikes"]["2"]["count"] == 1
+
+
+def test_drill_a_cancelled_earlier_result_read_again_neither_strikes_nor_clears() -> None:
+    s = _cancelled_before({"Twin": "success"})  # Ci still running at the update, cancelled since (D-630)
+    out = cycle._lane_outcome(s, "T002", "2", "check_failed", NOW, lambda sha: {"Ci": "cancelled"} if sha == "h-t002" else None)
+    assert out is s and out["lane_strikes"]["2"]["count"] == 1
+
+
+def test_drill_a_failed_check_that_passed_earlier_still_strikes_beside_a_cancelled_one() -> None:
+    s = _cancelled_before({"Ci": "success", "Twin": "cancelled"}, failed=("Ci", "Twin"))
+    assert cycle._lane_outcome(s, "T002", "2", "check_failed", NOW)["lane_strikes"]["2"]["count"] == 2
+    read_again = _cancelled_before({"Ci": "success"}, failed=("Ci", "Twin"))
+    out = cycle._lane_outcome(read_again, "T002", "2", "check_failed", NOW, lambda sha: {"Twin": "cancelled"})
+    assert out["lane_strikes"]["2"]["count"] == 2
+
+
 def test_status_names_every_lanes_lease_and_a_fall_back() -> None:
     from runner.github_env import render_status
 
