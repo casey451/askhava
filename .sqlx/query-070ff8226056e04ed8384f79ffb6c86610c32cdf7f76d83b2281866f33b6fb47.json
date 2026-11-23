@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id, request_source, first_message_id, contact_id, wrong_tries, conversation_id, code_sent_at IS NOT NULL AS \"sent!\" FROM intake.web_chat_session WHERE key_digest = $1",
+  "query": "SELECT id, request_source, first_message_id, contact_id, wrong_tries, conversation_id, language, code_sent_at IS NOT NULL AS \"sent!\" FROM intake.web_chat_session WHERE key_digest = $1",
   "describe": {
     "columns": [
       {
@@ -71,6 +71,17 @@
       },
       {
         "ordinal": 6,
+        "name": "language",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "intake.web_chat_session",
+            "name": "language"
+          }
+        }
+      },
+      {
+        "ordinal": 7,
         "name": "sent!",
         "type_info": "Bool",
         "origin": "Expression"
@@ -88,8 +99,9 @@
       true,
       false,
       true,
+      true,
       null
     ]
   },
-  "hash": "ae9ee79cbd95e288629ad13f2caa56b06748ecdaaca4216506107776c6b8e06b"
+  "hash": "070ff8226056e04ed8384f79ffb6c86610c32cdf7f76d83b2281866f33b6fb47"
 }
