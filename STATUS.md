@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T06:33:57Z by runner f2d298a8c8e3 (actions).
+Updated 2026-11-23T06:47:15Z by runner f2d298a8c8e3 (actions).
 
 **Building: T716 in progress since 04:41Z; 625 of 775 done; week 72% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-23T06:33:57Z by runner f2d298a8c8e3 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T716 claimed 04:41Z, lease until 07:41Z; lane 2: T835 claimed 06:32Z, lease until 09:32Z; lane 3: T730 claimed 06:00Z, lease until 09:00Z
 - **Week:** 72% used, 46.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:33Z, 0 min before this update
+- **Last run:** 06:47Z, 0 min before this update
 - **Keeper:** last ran 06:33Z, next wake 07:43Z
 
 ## Needs attention
@@ -59,8 +59,6 @@ Updated 2026-11-23T06:33:57Z by runner f2d298a8c8e3 (actions).
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | BLOCKED | 4 | 45 min | 08:54Z | PLAN GAP: outside ownership: app/site/templates/request.html, app/site/static/site.css / At 1280x900 the /request chat s |
 | T829 | server tests (harness): the door matrix's owner sign-ins nev | check_failed | 2 | 48 min | 08:40Z |  |
 | T609 | site (harness): the D-4246 polish on the footer, how it work | done | 3 | 65 min | 07:14Z | PLAN GAP: tests/e2e/web_chat.spec.ts:123 (owned by T489) uses strict locator main.locator('[lang="es"]'); the footer's E |
-| T810 | portals and server: a shared-inbox Confirm press asks for it | done | 3 | 76 min | 06:46Z | PLAN GAP: outside ownership: app/server/tests/confirm_press_code.rs. TD-SEC-82 requires a direct portals.shared_inbox in |
-| T118 | Journey J3 (operator) keyboard-only, with closing checks | BLOCKED | 3 | 2 h 17 min | 06:35Z |  |
 
 ### Plan and harness merges on main
 - 04:05Z Plan: T121 split into T838 (D-5574); Grok G3 fixes for claimable tasks (D-5585) (#1370)
