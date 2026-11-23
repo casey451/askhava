@@ -7,7 +7,7 @@
 //! and the router's 404 fallback (WEB-027, WEB-007, T615).
 
 pub use crate::chat::WORDS_MAX_CHARS;
-pub use crate::chat::{ChatCsrf, ChatKeys, REQUEST_PATH, chat_routes};
+pub use crate::chat::{ChatClientIp, ChatCsrf, ChatKeys, REQUEST_PATH, chat_routes};
 pub use crate::legal_pages::{
     BUSINESS_DATA_PATH, ES_BUSINESS_DATA_PATH, ES_YOUR_DATA_PATH, LegalDoc, PRIVACY_PATH,
     SMS_TERMS_PATH, TERMS_PATH, YOUR_DATA_PATH, accessibility_statement, legal_routes,
