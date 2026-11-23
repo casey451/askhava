@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT DISTINCT j.job AS \"job!\" FROM intake.homeowner h\n           JOIN intake.conversation c ON c.homeowner_id = h.id\n           CROSS JOIN LATERAL (SELECT c.job_id AS job UNION SELECT r.job_id FROM intake.request_job r\n             WHERE r.conversation_id = c.id) j\n           WHERE h.contact_id = $1 AND j.job IS NOT NULL",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "job!",
+        "type_info": "Uuid",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "16cf0b3a6049d3486e7df78b6293c1cc19eee76a6cea044b5ee49b890e009cf0"
+}

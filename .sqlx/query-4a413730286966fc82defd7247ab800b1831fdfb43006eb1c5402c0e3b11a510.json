@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO intake.request_job (conversation_id, job_id, opened_at) SELECT $1, $2, COALESCE((SELECT max(answered_at) FROM intake.intake_answer WHERE conversation_id = $1 AND question_id LIKE 'job.%' AND choice = $3), now()) ON CONFLICT (conversation_id, job_id) DO NOTHING",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "4a413730286966fc82defd7247ab800b1831fdfb43006eb1c5402c0e3b11a510"
+}

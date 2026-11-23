@@ -29,6 +29,7 @@ The layer-7 crate that turns a homeowner's inbound text into a request (`docs/ar
 - CON-022: the consent sweep clears a vault phone only after `still_unlisted`, its transaction's first statement, answered true for a due number; a listed number keeps its phone through a rotation, a held contact row deletes nothing, and a keyless contact waits in `intake.consent_phone_wait`: `tests/integration/tests/consent_purge.rs` (`td_con_30_*`, T563).
 - Photos (D-4360, D-5241): no Twilio fetch or delete in the webhook's transaction; a provider delete only after the store committed; a picture text never moves step 9 on; no photo on a card without its `photo_ok` row: `tests/integration/tests/intake_order_photos.rs` (TD-INT-49).
 - Step 12 (D-5039): no business gets a card before SEND or the timer; no card review on the emergency path: `tests/integration/tests/intake_order_flow.rs` (TD-INT-47).
+- `job_answers` never returns a contact answer and reads only its own job's; a close keeps every job in `jobs_of_contact`: `tests/integration/tests/job_answers_reader.rs` (T745).
 - Web chat after the code (T645, D-4292): an opt-out word or phrase lists the number (`web_chat`), texts nothing and changes no job; INT-038 stops the chat before and after the code, and under 13 the session row goes with the purge: `app/server/tests/web_chat_stops.rs` (TD-CON-36).
 
 ## Detail
