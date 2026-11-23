@@ -1,7 +1,7 @@
 {
  "schema": 1,
  "phase": "kit",
- "current": "T730",
+ "current": "T666",
  "backup_runner": "on",
  "ruleset_verified": true,
  "lease": null,
@@ -95725,11 +95725,20 @@
     "T665",
     "T540"
    ],
-   "status": "QUEUED",
+   "status": "IN_PROGRESS",
    "attempts": 0,
    "slug": "business-job-page-route",
    "type": "build",
-   "stage": "5"
+   "stage": "5",
+   "attempt_started_at": "2026-11-23T08:27:49Z",
+   "lane": "3",
+   "decision_ids": [
+    5618,
+    5619,
+    5620,
+    5621,
+    5622
+   ]
   },
   {
    "id": "T667",
@@ -113346,7 +113355,7 @@
    "cache_read_input_tokens": 595625,
    "output_tokens": 8964
   },
-  "source": "session_reading 2026-11-23T08:21:01Z (week)",
+  "source": "session_reading 2026-11-23T08:26:25Z (week)",
   "by_task": {
    "FIX-MAIN": {
     "estimated_bytes": 3756447,
@@ -120929,6 +120938,10 @@
    "T646": {
     "estimated_bytes": 432283,
     "estimated_tokens": 1269020
+   },
+   "T666": {
+    "estimated_bytes": 670884,
+    "estimated_tokens": 1969463
    }
   },
   "windows": {
@@ -120949,7 +120962,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T08:27:22Z",
+ "updated_at": "2026-11-23T08:28:00Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -121050,14 +121063,6 @@
  "runner_sha": "7cc3c77141924bf04cad2b25df1eab54113735d6",
  "starter": "actions",
  "smoke_runs": [
-  {
-   "sha": "6cb391745e612709c96305b230b8cd3d5cb0f82b",
-   "ok": true,
-   "at": "2026-11-23T01:06:00Z",
-   "why": "start routine (ancestry reuse of 21be2b3d8975, 2026-11-22T20:30:23Z)",
-   "reused": "2026-11-22T20:30:23Z",
-   "base": "21be2b3d8975c3857eb2ea48ff28574d6a5af688"
-  },
   {
    "sha": "9e70fa24c89d47343f100afe18e8bcf17a204a33",
    "ok": true,
@@ -121204,12 +121209,20 @@
    "why": "start routine (ancestry reuse of e172ee5e2756, 2026-11-23T07:59:08Z)",
    "reused": "2026-11-23T07:59:08Z",
    "base": "e172ee5e2756b6665bc7d2ead2552039a007865b"
+  },
+  {
+   "sha": "7cc3c77141924bf04cad2b25df1eab54113735d6",
+   "ok": true,
+   "at": "2026-11-23T08:27:49Z",
+   "why": "start routine (ancestry reuse of e172ee5e2756, 2026-11-23T07:59:08Z)",
+   "reused": "2026-11-23T07:59:08Z",
+   "base": "e172ee5e2756b6665bc7d2ead2552039a007865b"
   }
  ],
  "main_red": null,
  "pacing": {
-  "last": "T730 estimated 1.6M tokens (calibrated); week has 44.9M left (no five-hour budget, D-3056) after 3.1M still running in another lane (session_reading 2026-11-23T08:21:01Z (week)); claimed",
-  "at": "2026-11-23T08:23:15Z",
+  "last": "T666 estimated 2.0M tokens (calibrated); week has 44.9M left (no five-hour budget, D-3056) after 3.1M still running in another lane (session_reading 2026-11-23T08:26:25Z (week)); claimed",
+  "at": "2026-11-23T08:27:49Z",
   "decision": "claim",
   "waiting_until": null,
   "standing": {
@@ -121221,7 +121234,7 @@
    }
   },
   "remaining_estimate": 404244230,
-  "projected_finish": "2026-12-07T22:27:17Z"
+  "projected_finish": "2026-12-07T22:31:51Z"
  },
  "main_red_history": [
   {
@@ -121339,7 +121352,7 @@
    "why": "smoke red while Ci, Twin and Ally were green on the head"
   }
  ],
- "next_decision": 5618,
+ "next_decision": 5623,
  "stage_proofs": {
   "1": {
    "evidence": "Recorded by the runner (D-551): nightly-main green (Ci, Twin, Ally) on main 5d45d8ef0bee8d8e290462e58aa81c580bf57c1e, which contains every stage-1 merge (T002 739f29a31cec, T003 7161be09784c, T004 36b13e66ddf4, T172 189cfe54c716, T005 f55fa02095c0, T006 1e9c2dbb261b, T007 d57693ea8e79, T008 d57693ea8e79, T170 1cdbd960f712, T154 b4f7265f01d2, T167 5d45d8ef0bee); the exit row's tests ran in it (tests/twin/test_gate.py, tests/test_check_catalog.py, tests/test_matching_examples.py, tests/contract/test_stand_in_server.py); every requirement owned only by tasks of stage 1 or earlier is verified (OPS-053).",
