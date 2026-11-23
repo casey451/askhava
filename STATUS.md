@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-23T13:40:09Z by runner 8fcdd58eb860 (actions).
+Updated 2026-11-23T13:40:50Z by runner 8fcdd58eb860 (actions).
 
 **Building: T819 in progress since 12:37Z; 630 of 777 done; week 76% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 630 of 777 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T819 claimed 12:37Z, lease until 15:37Z; lane 2: T666 claimed 13:17Z, lease until 16:17Z; lane 5: T646 claimed 12:00Z, lease until 16:36Z
+- **Lane:** lane 1: T819 claimed 12:37Z, lease until 15:37Z; lane 2: T666 claimed 13:17Z, lease until 16:17Z
 - **Week:** 76% used, 39.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:37Z, 3 min before this update
 - **Keeper:** last ran 13:29Z, next wake 15:03Z
@@ -20,12 +20,13 @@ Updated 2026-11-23T13:40:09Z by runner 8fcdd58eb860 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T646 | site and server: the web chat's new-request limit counts the | MERGE_PENDING | 3 | 99 min | 13:40Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T730 | messaging: a homeowner who chose email gets each quote updat | MERGE_PENDING | 3 | 2 h 46 min | 13:19Z | PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs / Evidence: last_quote_text (quote_text_sent.rs:45-52) |
 | T714 | portals: a Confirm link sent by text is marked text-started  | BLOCKED | 3 | 36 min | 13:10Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
 | T653 | licensing and server (harness): a typed BTR number is stored | MERGE_PENDING | 2 | 65 min | 13:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
 | T714 | portals: a Confirm link sent by text is marked text-started  | check_failed | 2 | 47 min | 12:27Z |  |
 | T819 | portals: her feedback words are scrubbed before they are sto | check_failed | 1 | 54 min | 11:57Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
-| T646 | site and server: the web chat's new-request limit counts the | check_failed | 2 | 54 min | 11:30Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
+| T646 | site and server: the web chat's new-request limit counts the | check_failed | 2 | 54 min | 11:30Z |  |
 | T653 | licensing and server (harness): a typed BTR number is stored | check_failed | 1 | 117 min | 11:19Z |  |
 | T714 | portals: a Confirm link sent by text is marked text-started  | check_failed | 1 | 95 min | 11:00Z |  |
 | T666 | jobs, quotes and server: GET /b/jobs/{j} serves the business | QUEUED | 1 | 2 h 1 min | 10:28Z | Reviewer after the findings round (head bf41c81b22bdbd874d7d53cb8ba64ca6bb0737cf): app/server/tests/job_page_route.rs (w |
@@ -119,7 +120,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T819 (lease until 2026-11-23T15:37:47Z)
 - lane 2: T666 (lease until 2026-11-23T16:17:52Z)
-- lane 5: T646 (lease until 2026-11-23T16:36:16Z)
 
 ## Last usage reading
-- {"task": "T730", "at": "2026-11-23T13:19:52Z", "cache_creation_input_tokens": 419366, "cache_read_input_tokens": 18708390, "output_tokens": 100072, "input_tokens": 393}
+- {"task": "T646", "at": "2026-11-23T13:40:06Z", "cache_read_input_tokens": 1950084, "input_tokens": 116, "cache_creation_input_tokens": 93354, "output_tokens": 15672}
