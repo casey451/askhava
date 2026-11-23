@@ -42,7 +42,7 @@
   "docs/spec/wording.md": "16b2d9cf21d3f51d5cba83adf512ad591255adafa83da6eefb1bd0276e786f85",
   "docs/test-design.md": "f319df90f0572ea9e10130db74a9e501f94e3f1de5d8c418b99e4c156d368985",
   "docs/threat-model.md": "ee81538162787542bd0a4e8b969776e4d7410630a3900e51f943d853620247af",
-  "kit/prompts/TEMPLATE.md": "be88992636b5369609d1a01becdbd2cc69e6305ed8bb48e4f72bac585821f3c7",
+  "kit/prompts/TEMPLATE.md": "38fea9d172a405e30e5a02240d3fa8f51e97ae36cb82a0108969a2ba6f28b2d0",
   "kit/runner.json": "f62a45ad0fe99425318cb73a83f2a515e3c91404803734213207068dd938d5b0",
   "kit/sources.sha256": "853b7f37d6e04259ad9d7b64e16e6cb0111ee4499e37af46aeb3183748c7f335",
   "kit/tasks.json": "ac643c6f54770b2957e0b0f088b2a362d643ed732d441a1419c3db394f6104b0",
