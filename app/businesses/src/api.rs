@@ -179,6 +179,7 @@ pub use crate::team::{
     add_member, add_owner, members, remove_member, set_roles, unlink_phone,
 };
 pub use crate::texting_switch::business_texting_on;
+pub use crate::texting_switch::homeowner_texting_number;
 
 /// SEC-038, D-480: whether `by`, a current member of `by.business`, passed a Verify code (to their
 /// verified phone, or email without a texting phone) no more than [`STEP_UP_LIFE`] before `now`;
