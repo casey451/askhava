@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T17:01:46Z by runner 7f19bc708773 (actions).
+Updated 2026-11-23T17:04:13Z by runner 7f19bc708773 (actions).
 
 **Building: T222 in progress since 16:16Z; 634 of 777 done; week 79% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-23T17:01:46Z by runner 7f19bc708773 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T222 claimed 16:16Z, lease until 19:16Z; lane 3: T745 claimed 14:48Z, lease until 17:48Z; lane 4: T649 claimed 15:45Z, lease until 18:45Z
 - **Week:** 79% used, 31.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:01Z, 0 min before this update
+- **Last run:** 17:04Z, 0 min before this update
 - **Keeper:** last ran 17:01Z, next wake 17:50Z
 
 ## Needs attention
@@ -60,7 +60,6 @@ Updated 2026-11-23T17:01:46Z by runner 7f19bc708773 (actions).
 | T725 | site: the home page shows the texting number with its consen | done | 4 | 49 min | 00:39Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
 | T675 | intake and server (harness): the dispatcher asks for photos  | done | 4 | 45 min | 00:33Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T121 | Startup key checks, control router absent in live, supply-ch | BLOCKED | 2 | 12 min | 00:03Z |  |
-| T675 | intake and server (harness): the dispatcher asks for photos  | resync | 4 | 81 min | 17:03Z |  |
 
 ### Plan and harness merges on main
 - 16:44Z Plan: T840 update-email entry point and first-quote resend (D-5640); six-task pre-flight fixes (D-5646) (#1402)
