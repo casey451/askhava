@@ -11,7 +11,8 @@
 //! same-site `POST` whose `csrf` field is not the cookie's token is a 403 and one `csrf_rejected`
 //! security event. Only a `POST` is checked, so other methods reach the router as they are. Every
 //! request gets a pre-session cookie (`ensure_pre_session`) and the page its token as
-//! `site::api::ChatCsrf`. The typed number is never logged, stored here or put in an error.
+//! `site::api::ChatCsrf`; a passing `POST` gets the client IP `security_event_client` reads as
+//! `site::api::ChatClientIp` for intake's new-request limit (SEC-014, SEC-040, D-4292). The typed number is never logged, stored here or put in an error.
 //! [`home_guard`] gives the three home paths the same cookie and token for the home request box,
 //! which posts to `/request`, and marks them `no-store` (T593, D-4098).
 
@@ -31,7 +32,7 @@ use askhava_portals::api::{
 };
 use askhava_privacy::api::{CommonWords, Known, NameMemory, Vault, scrub};
 use askhava_site::api::{
-    ChatCsrf, ChatKeys, HOME_PATH, OLD_CATEGORIES_PATH, OLD_EVENTS_PATH, REQUEST_PATH,
+    ChatClientIp, ChatCsrf, ChatKeys, HOME_PATH, OLD_CATEGORIES_PATH, OLD_EVENTS_PATH, REQUEST_PATH,
 };
 use axum::Router;
 use axum::body::{Body, to_bytes};
@@ -162,7 +163,9 @@ pub fn guard(chat: Router, pool: PgPool) -> Router {
 }
 
 /// SEC-042, SEC-048: a `POST` whose `csrf` field is not the cookie's token is a 403 with one
-/// `csrf_rejected` event; every request passes on with a pre-session cookie and its token.
+/// `csrf_rejected` event; every request passes on with a pre-session cookie and its token, and a
+/// passing `POST` with its client IP as `site::api::ChatClientIp` (SEC-014, SEC-040, D-4292),
+/// unless that IP is unspecified (no peer and no edge header), so such posts share no bucket.
 async fn check_token(State(pool): State<PgPool>, request: Request, next: Next) -> Response {
     let jar = CookieJar::from_headers(request.headers());
     let mut request = request;
@@ -176,6 +179,9 @@ async fn check_token(State(pool): State<PgPool>, request: Request, next: Next) -
             return refuse(&pool, ip, &parts.headers).await;
         }
         request = Request::from_parts(parts, Body::from(bytes));
+        if !ip.is_unspecified() {
+            request.extensions_mut().insert(ChatClientIp(ip));
+        }
     }
     with_token(jar, request, next).await
 }
