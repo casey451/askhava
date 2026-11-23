@@ -26729,7 +26729,9 @@
     "T824",
     "T826",
     "T799",
-    "T838"
+    "T838",
+    "T839",
+    "T840"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -80507,7 +80509,9 @@
     "T826",
     "T832",
     "T803",
-    "T838"
+    "T838",
+    "T839",
+    "T840"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -80712,7 +80716,9 @@
     "T826",
     "T832",
     "T803",
-    "T838"
+    "T838",
+    "T839",
+    "T840"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -100268,7 +100274,8 @@
     "T745",
     "T747",
     "T759",
-    "T824"
+    "T824",
+    "T839"
    ],
    "status": "QUEUED",
    "attempts": 0,
@@ -104607,8 +104614,7 @@
    "deps": [
     "T729",
     "T684",
-    "T580",
-    "T582"
+    "T580"
    ],
    "status": "MERGE_PENDING",
    "attempts": 2,
@@ -114436,6 +114442,32 @@
     "app/server/tests/route_forms_unknown_field.rs",
     "docs/decisions.md"
    ]
+  },
+  {
+   "id": "T839",
+   "deps": [
+    "T716",
+    "T757"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "under-13-purge-complete",
+   "type": "build",
+   "stage": "5"
+  },
+  {
+   "id": "T840",
+   "deps": [
+    "T730",
+    "T582",
+    "T583",
+    "T708"
+   ],
+   "status": "QUEUED",
+   "attempts": 0,
+   "slug": "update-email-counts",
+   "type": "build",
+   "stage": "5"
   }
  ],
  "owner_waits": [],
@@ -122149,7 +122181,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T13:49:11Z",
+ "updated_at": "2026-11-23T13:57:52Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -122247,8 +122279,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "f0dd474113d194356a2a0860e4225d364f92435f",
- "starter": "manual",
+ "runner_sha": "3e3b52bf80120fa3efce34744fd9cb8a516f936f",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "f2d298a8c8e3f393ea7a2af6bb0a706b65f85db6",

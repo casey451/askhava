@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T13:49:11Z by runner f0dd474113d1 (manual).
+Updated 2026-11-23T13:57:52Z by runner 3e3b52bf8012 (actions).
 
 **Building: T666 in progress since 13:17Z; 630 of 777 done; week 76% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,11 +8,10 @@ Updated 2026-11-23T13:49:11Z by runner f0dd474113d1 (manual).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T666 claimed 13:17Z, lease until 16:17Z
 - **Week:** 76% used, 39.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:48Z, 1 min before this update
+- **Last run:** 13:49Z, 8 min before this update
 - **Keeper:** last ran 13:47Z, next wake 16:20Z
 
 ## Needs attention
-- CLAIMS STOPPED: nightly success on 21be2b3d8975, failures_since_green 0; no stage passed its exit test
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T836 (since 2026-11-23T07:59:33Z, no attempt used; a plan change fixes it): T836: kit/runner_log.jsonl is named by D-500, but no task owns it and it does not exist
@@ -64,7 +63,6 @@ Updated 2026-11-23T13:49:11Z by runner f0dd474113d1 (manual).
 | T729 | portals and privacy: the quote page offers updates by email  | done | 3 | 92 min | 16:10Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T397 | server and portals: the owner approves or declines a member- | done | 2 | 2 h 0 min | 15:12Z | PLAN GAP: outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per p |
 | T833 | pre-hand-in gate test (harness): the Ally-step test holds th | done | 1 | 65 min | 14:05Z |  |
-| T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | done | 4 | 33 min | 13:54Z | Reviewer after findings round still FINDINGS at 4f79a8b8c4195e68ccfba3a25eaab6d612560536: / 1. docs/runbook.md:139-142 a |
 
 ### Plan and harness merges on main
 - 13:33Z Plan: Email-only quote updates and counts (T840), under-13 purge completeness (T839), T716 test precondition (D-5639) (#1399)
@@ -76,31 +74,31 @@ Updated 2026-11-23T13:49:11Z by runner f0dd474113d1 (manual).
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 1 of 735 (0.1%) · partial 721 · unstarted 13
-**Tasks merged (throughput only):** 630 of 777
+**Requirements verified:** 402 of 735 (54.7%) · partial 320 · unstarted 13
+**Tasks merged (throughput only):** 630 of 775
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 0 | 35 | 0 | 35 |
-| ai | 0 | 26 | 3 | 29 |
-| businesses | 0 | 57 | 1 | 58 |
-| calls | 0 | 25 | 0 | 25 |
-| consent | 0 | 35 | 0 | 35 |
-| fees | 0 | 52 | 0 | 52 |
-| intake | 0 | 43 | 0 | 43 |
-| job-cards | 0 | 24 | 0 | 24 |
-| licensing | 0 | 48 | 0 | 48 |
-| lifecycle | 0 | 28 | 0 | 28 |
-| messaging | 0 | 45 | 0 | 45 |
-| ops-recovery | 1 | 47 | 6 | 54 |
-| privacy | 0 | 31 | 0 | 31 |
-| quiet-hours | 0 | 9 | 0 | 9 |
-| quotes-pick | 0 | 56 | 0 | 56 |
-| recurring | 0 | 11 | 0 | 11 |
-| security | 0 | 52 | 3 | 55 |
-| terms | 0 | 35 | 0 | 35 |
-| website | 0 | 30 | 0 | 30 |
-| wording | 0 | 32 | 0 | 32 |
+| accessibility | 25 | 10 | 0 | 35 |
+| ai | 7 | 19 | 3 | 29 |
+| businesses | 29 | 28 | 1 | 58 |
+| calls | 17 | 8 | 0 | 25 |
+| consent | 17 | 18 | 0 | 35 |
+| fees | 27 | 25 | 0 | 52 |
+| intake | 11 | 32 | 0 | 43 |
+| job-cards | 15 | 9 | 0 | 24 |
+| licensing | 36 | 12 | 0 | 48 |
+| lifecycle | 21 | 7 | 0 | 28 |
+| messaging | 25 | 20 | 0 | 45 |
+| ops-recovery | 17 | 31 | 6 | 54 |
+| privacy | 12 | 19 | 0 | 31 |
+| quiet-hours | 4 | 5 | 0 | 9 |
+| quotes-pick | 34 | 22 | 0 | 56 |
+| recurring | 10 | 1 | 0 | 11 |
+| security | 14 | 38 | 3 | 55 |
+| terms | 30 | 5 | 0 | 35 |
+| website | 22 | 8 | 0 | 30 |
+| wording | 29 | 3 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
@@ -113,7 +111,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 273 of 347 done
+- stage 5: 273 of 349 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
