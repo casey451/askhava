@@ -20,7 +20,7 @@ The layer-3 crate that sends and receives messages (`docs/architecture.md` secti
 - Each status is recorded once and never moves a text back: `td_txt_04_delivery_statuses_are_recorded`.
 - The app's word lists equal the provider's settings file: `tests::optout_words::td_con_20_word_lists_equal_the_provider_settings`.
 - "can stop by at 3", "stop sign is down", "please cancel my request" are not opt-outs: `tests::optout_words::td_con_04_a_word_in_another_sense_is_not_an_opt_out`.
-- Nothing but the confirmation within 5 minutes and HELP reaches a listed number: `tests::prop_optout_props::nothing_but_confirmation_and_help_until_start`, `tests/integration/tests/optout_flow.rs`.
+- Nothing but the confirmation within 5 minutes reaches a listed number, not even the HELP reply (D-5280): `tests::prop_optout_props::nothing_but_the_confirmation_until_start`, `tests/integration/tests/optout_flow.rs`.
 - A 21610 refusal is never retried: `optout_flow.rs::td_con_05_a_21610_refusal_is_never_retried`.
 - Two opt-outs at once queue one confirmation, and an earlier listing's confirmation never goes: `optout_flow.rs::td_con_05_two_opt_outs_at_once_queue_one_confirmation`, `td_con_05_only_the_current_listings_confirmation_goes`.
 - No outbound text from any number but the audience's configured one; one audience never changes the other: `web_email_mode.rs::td_txt_08_every_outbound_text_uses_the_configured_number`, `td_txt_17_*`. More: `(never 20)` in NOTES.md.

@@ -298,8 +298,9 @@ class App:
         return a
 
     # ------------------------------------------------------------------ outbound texting (all goes through here)
-    def text(self, phone, body, kind, ref=None, conversational=False, media=None, tries=1, after_stop=False):
-        """Every outbound text. `after_stop` is set only for the HELP reply, which an opted-out number still gets (CON-018, D-131)."""
+    def text(self, phone, body, kind, ref=None, conversational=False, media=None, tries=1):
+        """Every outbound text. Nothing but the opt-out confirmation goes to an opted-out number, not even the HELP reply
+        (CON-013, CON-018, D-5280: the provider's Advanced Opt-Out refuses it with 21610)."""
         H = self.fx("hardening")
         if self.replaying and self.replay_sent is not None and self.replay_sent.get((phone, kind, ref), 0) > 0:
             self.replay_sent[(phone, kind, ref)] -= 1                     # already sent before the restore: don't send twice
@@ -315,9 +316,8 @@ class App:
             if self.sim.now - self.last_inbound.get(phone, -1e9) > 15:
                 conversational = False
         if phone in self.stopped and kind not in ("stop_confirm",):
-            if not after_stop:
-                self.log("text_suppressed_stop", phone=phone, kind=kind)
-                return None
+            self.log("text_suppressed_stop", phone=phone, kind=kind)
+            return None
         if self.paused["texting"] and kind not in ("safety",):
             self.log("text_suppressed_pause", kind=kind)
             hid = self.phone_to_ho.get(phone)
@@ -406,7 +406,7 @@ class App:
             self.optout_natural.discard(frm) if hasattr(self, "optout_natural") else None
             return
         if self.fx("v93") and up in ("HELP", "INFO"):
-            self.text(frm, self.help_text(), "help", None, conversational=True, after_stop=True)
+            self.text(frm, self.help_text(), "help", None, conversational=True)
             return
         if self.fx("v93") and NATURAL_OPTOUT.search(b):
             # FCC: people may revoke consent by any reasonable means, not only the exact keywords
