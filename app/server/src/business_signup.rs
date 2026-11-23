@@ -93,7 +93,7 @@ use askhava_core::api::{
 use askhava_intake::api::{Admission, Key, Limit, admit};
 use askhava_licensing::api::{
     Agency, CityRecord, ClassMap, DailyCheck, ImportError, PestAttestation, check_license,
-    record_agency_license, record_pest_attestation,
+    record_pest_attestation, record_typed_agency_number,
 };
 use askhava_messaging::api::{MailboxCodeSender, SendingNumber};
 use askhava_ops::api::Actor;
@@ -1282,7 +1282,7 @@ fn not_now(why: &'static str) -> Response {
 
 /// D-2943, D-2711, D-2712, LIC-015, LIC-016, LIC-047: the screened names, a pest business's
 /// complete attestation, the `btr_number` for a home-inspection or alarm category (the BTR's
-/// licenses; never for septic pumping, whose ADEQ license the form has no field for, D-3726) and
+/// licenses, stored `typed_unchecked` until a BTR source checks it, LIC-034, D-4310; never for septic pumping, whose ADEQ license the form has no field for, D-3726) and
 /// the ROC number bound once by `check_license` (its result, or none before any ROC list or with
 /// no number). An incomplete attestation or a blank agency number records nothing for that agency.
 async fn licenses(
@@ -1314,7 +1314,7 @@ async fn licenses(
     let agencies: Vec<Agency> = agencies.filter(btr).collect();
     if let Some(number) = posted.given("btr_number") {
         for agency in agencies {
-            let recorded = record_agency_license(db, business, (agency, number), actor).await;
+            let recorded = record_typed_agency_number(db, business, (agency, number), actor).await;
             recorded.map_err(|_| ())?;
         }
     }
