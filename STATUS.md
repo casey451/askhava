@@ -1,27 +1,27 @@
 # Ask Hava build status
 
-Updated 2026-11-23T06:26:42Z by runner 377208146bb5 (actions).
+Updated 2026-11-23T06:30:15Z by runner f2d298a8c8e3 (actions).
 
-**Building: T716 in progress since 04:41Z; 624 of 775 done; week 72% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T716 in progress since 04:41Z; 625 of 775 done; week 72% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 624 of 775 build tasks (owner gates not counted)
+- **Tasks done:** 625 of 775 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T716 claimed 04:41Z, lease until 07:41Z; lane 3: T730 claimed 06:00Z, lease until 09:00Z
 - **Week:** 72% used, 45.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 06:26Z, 0 min before this update
+- **Last run:** 06:27Z, 3 min before this update
 - **Keeper:** last ran 06:26Z, next wake 07:44Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 34 problem(s) on tasks still to run (+512 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 37 problem(s) on tasks still to run (+514 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T611 | portals: depth, type and press on the portal screens through | MERGE_PENDING | 1 | 2 h 20 min | 06:24Z |  |
 | T838 | portals, server and calls: the sign-in, quote-action and sig | MERGE_PENDING | 1 | 86 min | 06:07Z |  |
-| T834 | ci (harness): Twin and Ally skip their build when nothing th | MERGE_PENDING | 3 | 48 min | 05:51Z | After the fix round the reviewer (head f9e32434db512dbbf1f29deb2d94b5848d2e3874) still ends REVIEW-VERDICT: FINDINGS. Fi |
+| T834 | ci (harness): Twin and Ally skip their build when nothing th | done | 3 | 48 min | 05:51Z | After the fix round the reviewer (head f9e32434db512dbbf1f29deb2d94b5848d2e3874) still ends REVIEW-VERDICT: FINDINGS. Fi |
 | T803 | messaging (harness): an opted-out number gets no HELP reply; | done | 4 | 81 min | 05:08Z | Ci: failure; Checks: cancelled / Checks failed at step: Named mutants of the files this change touches (scripts/run_name |
 | T834 | ci (harness): Twin and Ally skip their build when nothing th | QUEUED | 2 | 85 min | 04:57Z |  |
 | T716 | intake: the dispatcher's trade questions at step 5: "Which f | check_failed | 1 | 117 min | 03:28Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
@@ -73,7 +73,7 @@ Updated 2026-11-23T06:26:42Z by runner 377208146bb5 (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 404 of 735 (55.0%) · partial 318 · unstarted 13
-**Tasks merged (throughput only):** 624 of 774
+**Tasks merged (throughput only):** 625 of 775
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -109,7 +109,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 267 of 347 done
+- stage 5: 268 of 347 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
