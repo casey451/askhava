@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T01:31:50Z by runner 9e70fa24c89d (actions).
+Updated 2026-11-23T01:40:26Z by runner d07652f8b285 (actions).
 
 **Building: T837 in progress since 01:06Z; 619 of 774 done; week 69% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-23T01:31:50Z by runner 9e70fa24c89d (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T837 claimed 01:06Z, lease until 04:06Z; lane 2: T645 claimed 23:51Z, lease until 02:51Z; lane 4: T712 claimed 00:09Z, lease until 03:09Z; lane 5: T716 claimed 01:31Z, lease until 04:31Z
 - **Week:** 69% used, 52.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:28Z, 3 min before this update
+- **Last run:** 01:31Z, 8 min before this update
 - **Keeper:** last ran 01:21Z, next wake 02:54Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 - PLAN GAP T121 (since 2026-11-23T00:03:26Z, no attempt used; a plan change fixes it): outside ownership: app/portals/src/update_channel.rs
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 28 problem(s) on tasks still to run (+511 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 25 problem(s) on tasks still to run (+498 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -73,7 +73,6 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 | T759 | intake: "Close which?" expires on a worded reply that is not | done | 1 | 28 min | 02:19Z |  |
 | T397 | server and portals: the owner approves or declines a member- | BLOCKED | 1 | 27 min | 02:12Z |  |
 | T121 | Startup key checks, control router absent in live, supply-ch | BLOCKED | 1 | 15 min | 01:45Z |  |
-| T117 | docs/runbook.md: outages, safe mode, refunds, disputes, comp | BLOCKED | 3 | 49 min | 01:39Z |  |
 
 ### Plan and harness merges on main
 - 00:07Z Plan: pre-flight fixes (D-5567); T837 keeper stage gate, job 32 and copy-flag fixes (D-5568) (#1368)
