@@ -673,8 +673,9 @@ fn with_next(token: &str, next: Option<i64>) -> String {
     next.map_or_else(|| token.to_owned(), |job| format!("{token}?job={job}"))
 }
 
-/// The sign-in form's fields.
+/// The sign-in form's fields; any other field name is axum's own 4xx (SEC-010).
 #[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct AddressForm {
     #[serde(default)]
     csrf: String,
@@ -814,8 +815,10 @@ pub async fn signin_open<M: SignInMail>(
     }
 }
 
-/// The link button's fields: the code, empty until the new-device code step (SEC-004).
+/// The link button's fields: the code, empty until the new-device code step (SEC-004); any
+/// other field name is axum's own 4xx (SEC-010).
 #[derive(serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct CodeForm {
     #[serde(default)]
     csrf: String,
