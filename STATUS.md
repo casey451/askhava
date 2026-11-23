@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T06:00:02Z by runner 8871a83b785a (actions).
+Updated 2026-11-23T06:00:59Z by runner f1b796194778 (actions).
 
 **Building: T716 in progress since 04:41Z; 624 of 775 done; week 72% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 624 of 775 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T716 claimed 04:41Z, lease until 07:41Z; lane 4: T611 claimed 04:04Z, lease until 07:04Z; lane 5: T838 claimed 04:41Z, lease until 07:41Z
-- **Week:** 72% used, 46.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:59Z, 0 min before this update
+- **Lane:** lane 1: T716 claimed 04:41Z, lease until 07:41Z; lane 3: T730 claimed 06:00Z, lease until 09:00Z; lane 4: T611 claimed 04:04Z, lease until 07:04Z; lane 5: T838 claimed 04:41Z, lease until 07:41Z
+- **Week:** 72% used, 45.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 06:00Z, 0 min before this update
 - **Keeper:** last ran 05:53Z, next wake 07:06Z
 
 ## Needs attention
@@ -101,7 +101,7 @@ Updated 2026-11-23T06:00:02Z by runner 8871a83b785a (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-23T04:57:42Z (week)): week: 147.6M used, 46.4M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T20:56:01Z.
+- Pacing (session_reading 2026-11-23T06:00:02Z (week)): week: 148.4M used, 45.6M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T21:18:35Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -117,6 +117,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T716 (lease until 2026-11-23T07:41:43Z)
+- lane 3: T730 (lease until 2026-11-23T09:00:46Z)
 - lane 4: T611 (lease until 2026-11-23T07:04:01Z)
 - lane 5: T838 (lease until 2026-11-23T07:41:03Z)
 
