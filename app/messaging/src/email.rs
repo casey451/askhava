@@ -14,7 +14,8 @@
 //! alert, and 24 hours of sends with no webhook raises another (SEC-050, SEC-051). The
 //! homeowner's update channel (TXT-018) is read and written here too; an update email
 //! (`Notice::Update`, `update_emails`) goes to her quote-page update address, and its hard
-//! bounce sets the channel back to text (D-5442).
+//! bounce sets the channel back to text (D-5442). PRIV-031's data-request link
+//! (`Notice::DataRequestLink`, T816) goes only to that address while it is confirmed (D-5340).
 
 use std::fmt;
 
@@ -33,7 +34,7 @@ use sqlx::{Connection, PgConnection};
 use crate::models::{self, EmailError, EmailLog};
 use crate::rules::CONFIRMATION_TEMPLATE;
 use crate::templates::{Audience, Language, Registry};
-use crate::update_emails::{bounced, is_update_email};
+use crate::update_emails::{DATA_REQUEST_TEMPLATE, DataLinkKind, bounced, is_update_email};
 
 /// The From of every email: `"<email_from_name>" <<email_from_address>>` from the brand file
 /// (SEC-025, D-1932). It displays, so `format!("{FROM}")` and `FROM.to_string()` read it.
@@ -188,6 +189,14 @@ pub enum Notice<'a> {
         /// Her quote page with T729's confirm token, only while the address is unconfirmed.
         confirm_link: Option<&'a str>,
     },
+    /// PRIV-031, TXT-018, SEC-028, D-5339: the single-use link that confirms her own delete or
+    /// copy request, sent only to her confirmed update address; it carries no code.
+    DataRequestLink {
+        /// Which request the link confirms.
+        kind: DataLinkKind,
+        /// The absolute single-use link `portals` built.
+        link: &'a str,
+    },
 }
 
 /// Who an email goes to: the opaque ID (a vault contact or a business address), the audience the
@@ -314,7 +323,36 @@ fn notice_lines(notice: Notice<'_>, to: &Recipient<'_>) -> Result<(String, Strin
             quote_link,
             confirm_link,
         } => update_lines(words, (quote_link, confirm_link), to),
+        Notice::DataRequestLink { kind, link } => data_request_lines(kind, link, to.language),
     })
+}
+
+/// PRIV-031, TXT-018, TXT-003, D-5339: the subject and lines of the data-request link email:
+/// which request, the link, that it works once and runs out in 15 minutes, that she can ignore
+/// it if she did not ask and that nothing happens unless it is opened. The Spanish lines are drafts for native-speaker review (TXT-003).
+fn data_request_lines(kind: DataLinkKind, link: &str, language: Language) -> (String, String) {
+    let which = match (language, kind) {
+        (Language::En, DataLinkKind::Copy) => "You asked for a copy of your data.",
+        (Language::En, DataLinkKind::Delete) => "You asked us to delete your data.",
+        (Language::Es, DataLinkKind::Copy) => "Usted pidió una copia de sus datos.",
+        (Language::Es, DataLinkKind::Delete) => "Usted nos pidió borrar sus datos.",
+    };
+    let (subject, open, once) = match language {
+        Language::En => (
+            "Confirm your data request",
+            "To confirm, open this link:",
+            "The link works once and runs out in 15 minutes. If you didn't ask, just ignore this email. Nothing happens unless the link is opened.",
+        ),
+        Language::Es => (
+            "Confirme su solicitud de datos",
+            "Para confirmar, abra este enlace:",
+            "El enlace sirve una sola vez y vence en 15 minutos. Si no lo pidió, puede ignorar este correo. No pasará nada si no se abre el enlace.",
+        ),
+    };
+    (
+        subject.to_owned(),
+        format!("{which} {open}\n{link}\n{once}"),
+    )
 }
 
 /// TXT-018, SEC-028, CON-035, D-5340: the subject and lines of an update email: her words, her
@@ -443,7 +481,9 @@ pub fn render(
         Language::Es => "es",
     };
     let lines = match notice {
-        Notice::OpenCards { .. } | Notice::Update { .. } => message.lines().collect(),
+        Notice::OpenCards { .. } | Notice::Update { .. } | Notice::DataRequestLink { .. } => {
+            message.lines().collect()
+        }
         _ => vec![message.as_str()],
     };
     let layout = Layout {
@@ -717,7 +757,8 @@ async fn waiting_or_sent(
 /// The address to send to: a homeowner's from the vault (PRIV-004), her quote-page update
 /// address for an update email and never for anything else (TXT-018, PICK-029; a bounced one, or
 /// one whose row is not in the email's subject IDs because she replaced the address, is none and
-/// the email is dropped), a business's as given.
+/// the email is dropped), PRIV-031's data-request link only to that address while confirmed
+/// (D-5340, D-5670; a new address clears `confirmed_at`), a business's as given.
 async fn email_address(
     db: &mut PgConnection,
     to: EmailTo<'_>,
@@ -725,6 +766,14 @@ async fn email_address(
 ) -> Result<SecretString, EmailError> {
     match to {
         EmailTo::Business(address) => Ok(SecretString::from(address.to_owned())),
+        EmailTo::Homeowner(vault) if claim.template_id == DATA_REQUEST_TEMPLATE => {
+            read_update_address(db, vault, claim.recipient)
+                .await
+                .map_err(|_| EmailError::NoAddress)?
+                .filter(|u| u.status.confirmed)
+                .map(|u| u.address)
+                .ok_or(EmailError::NoAddress)
+        }
         EmailTo::Homeowner(vault) if is_update_email(&claim.template_id) => {
             read_update_address(db, vault, claim.recipient)
                 .await

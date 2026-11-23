@@ -2,7 +2,8 @@
 //! homeowner contact (contact stage, 180 days after close) and deletes the job's intake answers
 //! (text stage, 3 years after close) (PRIV-007, PRIV-008, D-013, D-491).
 //!
-//! `intake` knows which homeowner a job belongs to (`intake.conversation.job_id`), so it is the one
+//! `intake` knows which homeowner a job belongs to (`intake.conversation.job_id`, and
+//! `intake.request_job` for every job a request opened, D-5553), so it is the one
 //! that calls `privacy::api::purge_contact`, which keeps the phone with its consent records
 //! (D-079). The contact belongs to the homeowner, not the job, so it stays while another request
 //! of hers is live (open, or closed less than 180 days ago; an open request with no job counts as
@@ -90,7 +91,8 @@ async fn owner_of(db: &mut PgConnection, target: Target) -> Result<Option<Owner>
     let row = sqlx::query!(
         "SELECT h.id, h.contact_id FROM intake.conversation c \
          JOIN intake.homeowner h ON h.id = c.homeowner_id \
-         WHERE (c.job_id = $1 OR (c.id = $2 AND c.job_id IS NULL)) LIMIT 1",
+         WHERE (c.job_id = $1 OR (c.id = $2 AND c.job_id IS NULL) OR EXISTS (SELECT 1 \
+         FROM intake.request_job r WHERE r.conversation_id = c.id AND r.job_id = $1)) LIMIT 1",
         job,
         request,
     )
@@ -113,7 +115,9 @@ struct Standing {
 
 /// PRIV-007: in one statement, whether a request of `homeowner` other than `job`'s is live at
 /// `cutoff` (now less 180 days: closed after it, open with a job, or open with no job and answered
-/// after it), and all of her jobs.
+/// after it), and all of her jobs. A request's jobs are its `conversation.job_id` and its
+/// `intake.request_job` rows (D-5553), so a later (INT-032) job counts as hers and its request as
+/// its own.
 async fn standing(
     db: &mut PgConnection,
     homeowner: Uuid,
@@ -122,12 +126,16 @@ async fn standing(
 ) -> Result<Standing, HandlerError> {
     let row = sqlx::query!(
         r#"SELECT EXISTS (SELECT 1 FROM intake.conversation o WHERE o.homeowner_id = $1
-           AND ($2::uuid IS NULL OR o.job_id IS DISTINCT FROM $2)
+           AND ($2::uuid IS NULL OR (o.job_id IS DISTINCT FROM $2 AND NOT EXISTS (SELECT 1
+             FROM intake.request_job r WHERE r.conversation_id = o.id AND r.job_id = $2)))
            AND (o.closed_at > $3 OR (o.closed_at IS NULL AND (o.job_id IS NOT NULL
              OR GREATEST(o.opened_at, (SELECT max(a.answered_at) FROM intake.intake_answer a
                WHERE a.conversation_id = o.id)) > $3)))) AS "live!",
-           ARRAY(SELECT DISTINCT c.job_id FROM intake.conversation c
-             WHERE c.homeowner_id = $1 AND c.job_id IS NOT NULL) AS "jobs!""#,
+           ARRAY(SELECT c.job_id FROM intake.conversation c
+             WHERE c.homeowner_id = $1 AND c.job_id IS NOT NULL
+             UNION SELECT r.job_id FROM intake.request_job r
+             JOIN intake.conversation c ON c.id = r.conversation_id
+             WHERE c.homeowner_id = $1) AS "jobs!""#,
         homeowner,
         job,
         cutoff.to_sqlx() as _,
@@ -254,20 +262,52 @@ async fn purge_or_wait(
     enqueue(db, &again).await.map(|_| ()).map_err(|_| DB_FAILED)
 }
 
-/// PRIV-008: deletes the intake answers of `job`'s requests; returns how many went.
+/// PRIV-008, D-5553: deletes the intake answers `job` owns; returns how many went. For the first
+/// job of a request (`conversation.job_id`) that is every answer of the request, its later jobs'
+/// included; for a later job (`intake.request_job` only) its own `bank.<job, 32 hex>.` rows, so
+/// the first job's answers stay until its own purge.
 ///
 /// # Errors
 /// [`DB_FAILED`] on a database failure.
 pub async fn purge_answers(db: &mut PgConnection, job: Uuid) -> Result<u64, HandlerError> {
     let gone = sqlx::query!(
-        "DELETE FROM intake.intake_answer WHERE conversation_id IN \
-         (SELECT id FROM intake.conversation WHERE job_id = $1)",
+        "DELETE FROM intake.intake_answer a WHERE a.conversation_id IN \
+         (SELECT id FROM intake.conversation WHERE job_id = $1) \
+         OR (starts_with(a.question_id, $2) AND a.conversation_id IN \
+         (SELECT conversation_id FROM intake.request_job WHERE job_id = $1))",
         job,
+        format!("bank.{}.", job.simple()),
     )
     .execute(db)
     .await
     .map_err(|_| DB_FAILED)?;
     Ok(gone.rows_affected())
+}
+
+/// PRIV-011, PRIV-031, FEE-013, D-1939, D-5553: the jobs opened by requests (open or closed) of
+/// the homeowner whose vault contact is `contact`: each request's `conversation.job_id` and its
+/// `intake.request_job` rows, so a delete in her portal clears only her own jobs' photos (T087)
+/// and the Confirm page's same-customer check sees an INT-032 ALSO-reply job after its request
+/// closed (D-3719).
+///
+/// # Errors
+///
+/// [`IntakeError::Database`](crate::models::IntakeError::Database).
+pub async fn jobs_of_contact(
+    db: &mut PgConnection,
+    contact: Uuid,
+) -> Result<Vec<Uuid>, crate::models::IntakeError> {
+    sqlx::query_scalar!(
+        r#"SELECT DISTINCT j.job AS "job!" FROM intake.homeowner h
+           JOIN intake.conversation c ON c.homeowner_id = h.id
+           CROSS JOIN LATERAL (SELECT c.job_id AS job UNION SELECT r.job_id FROM intake.request_job r
+             WHERE r.conversation_id = c.id) j
+           WHERE h.contact_id = $1 AND j.job IS NOT NULL"#,
+        contact,
+    )
+    .fetch_all(db)
+    .await
+    .map_err(|_| crate::models::IntakeError::Database)
 }
 
 /// The [`PURGE_KIND`](askhava_privacy::api::PURGE_KIND) handler at the wall clock: [`run_purge_at`].

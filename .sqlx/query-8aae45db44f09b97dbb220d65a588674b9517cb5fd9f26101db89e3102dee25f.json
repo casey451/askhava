@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT question_id FROM intake.intake_answer WHERE conversation_id = $1 AND question_id LIKE 'bank.%'",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "question_id",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "intake.intake_answer",
+            "name": "question_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "8aae45db44f09b97dbb220d65a588674b9517cb5fd9f26101db89e3102dee25f"
+}
