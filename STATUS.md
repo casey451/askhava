@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-23T11:58:17Z by runner 534398d8a328 (actions).
+Updated 2026-11-23T11:58:29Z by runner 534398d8a328 (actions).
 
-**Building: T819 in progress since 11:03Z; 630 of 775 done; week 74% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T714 in progress since 11:39Z; 630 of 775 done; week 74% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 630 of 775 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T819 claimed 11:03Z, lease until 14:03Z; lane 2: T714 claimed 11:39Z, lease until 14:39Z; lane 3: T653 claimed 11:56Z, lease until 14:56Z; lane 4: T730 claimed 10:33Z, lease until 13:33Z
+- **Lane:** lane 2: T714 claimed 11:39Z, lease until 14:39Z; lane 3: T653 claimed 11:56Z, lease until 14:56Z; lane 4: T730 claimed 10:33Z, lease until 13:33Z
 - **Week:** 74% used, 42.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 11:57Z, 0 min before this update
 - **Keeper:** last ran 11:52Z, next wake 12:12Z
@@ -40,6 +40,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T819 | portals: her feedback words are scrubbed before they are sto | MERGE_PENDING | 1 | 54 min | 11:57Z |  |
 | T646 | site and server: the web chat's new-request limit counts the | check_failed | 2 | 54 min | 11:30Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T653 | licensing and server (harness): a typed BTR number is stored | check_failed | 1 | 117 min | 11:19Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
 | T714 | portals: a Confirm link sent by text is marked text-started  | check_failed | 1 | 95 min | 11:00Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
@@ -136,10 +137,10 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T819 (lease until 2026-11-23T14:03:21Z)
+- nothing
 - lane 2: T714 (lease until 2026-11-23T14:39:44Z)
 - lane 3: T653 (lease until 2026-11-23T14:56:55Z)
 - lane 4: T730 (lease until 2026-11-23T13:33:05Z)
 
 ## Last usage reading
-- {"task": "T646", "at": "2026-11-23T11:30:41Z", "output_tokens": 9073, "cache_creation_input_tokens": 64867, "input_tokens": 50, "cache_read_input_tokens": 790522}
+- {"task": "T819", "at": "2026-11-23T11:57:55Z", "cache_read_input_tokens": 1757005, "input_tokens": 82, "cache_creation_input_tokens": 88100, "output_tokens": 22026}
