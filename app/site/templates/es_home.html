@@ -4,7 +4,10 @@
     a draft marked for native-speaker review (WORD-002, D-180). The fee amounts come from the fee tiers
     (`payments::api::Tier`). The home page's numbers stay on the English page. The footer is the
     Spanish one. T608 (WEB-027, D-4246, D-4252): the English home's section classes on the same
-    words, the kicker in the small-label style and no italic accent. -#}
+    words, the kicker in the small-label style and no italic accent. T725 (WEB-017, WORD-013,
+    TXT-003, D-5402): only while `texting` holds the homeowner number does the chat line give way
+    to the number and its Spanish consent line (a draft, with PARAR), together; otherwise the page
+    is as before. -#}
 {% block lang %}es{% endblock %}
 {% block title %}Cotizaciones locales para casas en Havasu{% endblock %}
 {% block content %}
@@ -15,7 +18,12 @@
 <p>Díganos qué necesita y nosotros preguntamos por usted. Los negocios de Havasu que hacen ese trabajo envían sus cotizaciones, y usted las ve en una sola página. Elija una, o ninguna.</p>
 <p><a href="/request">Pida cotizaciones</a></p>
 <p><a href="/es/how-it-works">Vea cómo funciona</a></p>
+{%- if let Some(number) = texting %}
+<p>Mande un mensaje de texto a {{ brand }} al <strong>{{ number }}</strong> para pedir cotizaciones. Este número solo recibe textos, no llamadas.</p>
+<p>Enviar un texto a {{ brand }} es su permiso para recibir textos automáticos sobre su solicitud. Pueden aplicar cargos por mensajes y datos. Responda PARAR para dejar de recibir textos. <a href="/sms-terms">Términos</a> y <a href="/privacy">Privacidad</a>.</p>
+{%- else %}
 <p>Empiece en el chat de este sitio. No necesita enviar textos ni llamar.</p>
+{%- endif %}
 <p>Es gratis para usted. El negocio que usted elija le paga a {{ brand }} una tarifa de presentación fija según el tamaño del trabajo: ${{ fees.small }}, ${{ fees.medium }} o ${{ fees.large }}.</p>
 </section>
 
