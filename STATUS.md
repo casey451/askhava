@@ -1,13 +1,13 @@
 # Ask Hava build status
 
-Updated 2026-11-23T15:12:32Z by runner ca32683e9893 (actions).
+Updated 2026-11-23T15:13:03Z by runner ca32683e9893 (actions).
 
 **Building: T714 in progress since 14:21Z; 633 of 777 done; week 77% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 633 of 777 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T714 claimed 14:21Z, lease until 17:21Z; lane 3: T745 claimed 14:48Z, lease until 17:48Z; lane 4: T222 claimed 14:30Z, lease until 17:30Z
-- **Week:** 77% used, 36.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Lane:** lane 1: T714 claimed 14:21Z, lease until 17:21Z; lane 2: T121 claimed 15:11Z, lease until 18:11Z; lane 3: T745 claimed 14:48Z, lease until 17:48Z; lane 4: T222 claimed 14:30Z, lease until 17:30Z
+- **Week:** 77% used, 36.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 14:53Z, 19 min before this update
 - **Keeper:** last ran 14:52Z, next wake 17:17Z
 
@@ -82,7 +82,6 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 | T725 | site: the home page shows the texting number with its consen | resync | 4 | 82 min | 16:15Z |  |
 | T831 | site: the /request start screen's words box sits fully insid | done | 1 | 107 min | 16:13Z |  |
 | T729 | portals and privacy: the quote page offers updates by email  | done | 3 | 92 min | 16:10Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
-| T397 | server and portals: the owner approves or declines a member- | done | 2 | 2 h 0 min | 15:12Z | PLAN GAP: outside ownership: app/server/tests/door_matrix.rs:1182. owner_jar signs the owner in at key.now + 30s*k per p |
 
 ### Plan and harness merges on main
 - 13:33Z Plan: Email-only quote updates and counts (T840), under-13 purge completeness (T839), T716 test precondition (D-5639) (#1399)
@@ -123,7 +122,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-23T14:39:53Z (week)): week: 157.4M used, 36.6M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T23:24:20Z.
+- Pacing (session_reading 2026-11-23T14:52:09Z (week)): week: 157.7M used, 36.3M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T22:31:12Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -139,6 +138,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T714 (lease until 2026-11-23T17:21:00Z)
+- lane 2: T121 (lease until 2026-11-23T18:11:59Z)
 - lane 3: T745 (lease until 2026-11-23T17:48:35Z)
 - lane 4: T222 (lease until 2026-11-23T17:30:41Z)
 
