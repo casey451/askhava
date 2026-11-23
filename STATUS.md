@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T03:36:52Z by runner 377208146bb5 (actions).
+Updated 2026-11-23T03:45:02Z by runner ff057c83296d (actions).
 
-**Building: T730 in progress since 03:34Z; 622 of 774 done; week 71% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T730 in progress since 03:34Z; 623 of 774 done; week 71% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 622 of 774 build tasks (owner gates not counted)
+- **Tasks done:** 623 of 774 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T730 claimed 03:34Z, lease until 06:34Z; lane 2: T834 claimed 03:31Z, lease until 06:31Z
 - **Week:** 71% used, 51.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:36Z, 0 min before this update
+- **Last run:** 03:37Z, 7 min before this update
 - **Keeper:** last ran 03:36Z, next wake 03:56Z
 
 ## Needs attention
@@ -18,14 +18,14 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T646 (since 2026-11-23T03:08:25Z, no attempt used; a plan change fixes it): T646: dependency T645 is DONE but its owned file migrations/0210_messaging_web_chat_optout.sql is not on main; T646: dependency T645 is DONE but its owned file migrations/0211_intake_web_chat_language.sql is not on main; T646: dependency T645 is DONE but its owned file app/server/tests/web_chat_stops.rs is not on main
-- Strict plan check red: 34 problem(s) on tasks still to run (+512 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 38 problem(s) on tasks still to run (+513 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
 | T716 | intake: the dispatcher's trade questions at step 5: "Which f | MERGE_PENDING | 1 | 117 min | 03:28Z |  |
 | T834 | ci (harness): Twin and Ally skip their build when nothing th | QUEUED | 1 | 81 min | 03:19Z | After the fix round the reviewer (head bb8a0ca043baae3c76c5646f5bcc328d948b31ba) still ends REVIEW-VERDICT: FINDINGS. Fi |
-| T712 | server and portals: the owner portal lists PROBLEM reports w | MERGE_PENDING | 1 | 39 min | 02:36Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T712 | server and portals: the owner portal lists PROBLEM reports w | done | 1 | 39 min | 02:36Z |  |
 | T645 | intake and messaging: the web chat honours an opt-out word,  | done | 2 | 2 h 6 min | 01:58Z | PLAN GAP: app/site/src/chat.rs:340 (owned by T593, then T646 and T649; T593 is not merged yet) calls `chat_message(db, & |
 | T837 | runner (harness): the keeper judges work with the real stage | done | 1 | 41 min | 01:47Z |  |
 | T712 | server and portals: the owner portal lists PROBLEM reports w | resync | 1 | 90 min | 01:40Z |  |
@@ -81,7 +81,7 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 ## Progress (requirements verified)
 
 **Requirements verified:** 404 of 735 (55.0%) · partial 318 · unstarted 13
-**Tasks merged (throughput only):** 622 of 774
+**Tasks merged (throughput only):** 623 of 774
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -117,7 +117,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 265 of 346 done
+- stage 5: 266 of 346 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
