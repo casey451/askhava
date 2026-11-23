@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T11:04:19Z by runner f27e05243e49 (actions).
+Updated 2026-11-23T11:09:06Z by runner f27e05243e49 (actions).
 
 **Building: T819 in progress since 11:03Z; 630 of 775 done; week 74% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-23T11:04:19Z by runner f27e05243e49 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T819 claimed 11:03Z, lease until 14:03Z; lane 3: T646 claimed 10:36Z, lease until 13:36Z; lane 4: T730 claimed 10:33Z, lease until 13:33Z; lane 5: T653 claimed 09:21Z, lease until 12:21Z
 - **Week:** 74% used, 41.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:03Z, 1 min before this update
+- **Last run:** 11:08Z, 0 min before this update
 - **Keeper:** last ran 11:02Z, next wake 11:22Z
 
 ## Needs attention
@@ -91,7 +91,6 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 - 17:04Z Plan: unblock T121/T832/T499/T514 (D-5552); pre-flight fixes job 24 (D-5551) (#1363)
 - 12:43Z Plan: pre-flight goal fixes for T666, T778, T820, T524, T825, T831 (D-5526) (#1354)
 - 11:22Z Plan: unblock T725 (D-5518) and T803 via T832 Checks timeout 60 min (D-5519) (#1347)
-- 11:05Z Plan: T831 fits the /request words box in the first screen; T118 depends on it (A11Y-005, D-5502) (#1343)
 
 ## Progress (requirements verified)
 
