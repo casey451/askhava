@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T12:01:18Z by runner f27e05243e49 (actions).
+Updated 2026-11-23T12:06:05Z by runner f27e05243e49 (actions).
 
 **Building: T714 in progress since 11:39Z; 630 of 775 done; week 75% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-23T12:01:18Z by runner f27e05243e49 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T714 claimed 11:39Z, lease until 14:39Z; lane 3: T653 claimed 11:56Z, lease until 14:56Z; lane 4: T730 claimed 10:33Z, lease until 13:33Z; lane 5: T646 claimed 12:00Z, lease until 15:00Z
 - **Week:** 75% used, 39.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:00Z, 1 min before this update
+- **Last run:** 12:05Z, 0 min before this update
 - **Keeper:** last ran 11:59Z, next wake 12:19Z
 
 ## Needs attention
@@ -81,7 +81,6 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 | T830 | server: `server rotate-keys` and `server retire-index-versio | done | 1 | 61 min | 12:46Z |  |
 | T729 | portals and privacy: the quote page offers updates by email  | check_failed | 2 | 49 min | 12:26Z |  |
 | T610 | site: the D-4246 polish on the Spanish pages, the legal page | done | 2 | 40 min | 12:19Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
-| T589 | intake and portals: the pick review page is shown in her req | done | 2 | 87 min | 12:04Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
 
 ### Plan and harness merges on main
 - 10:11Z Plan: T716 purges held first-text words on an under-13 stop; T730 counts update emails (D-5617) (#1386)
