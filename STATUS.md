@@ -1,15 +1,15 @@
 # Ask Hava build status
 
-Updated 2026-11-23T04:05:12Z by runner ff057c83296d (actions).
+Updated 2026-11-23T04:05:25Z by runner ff057c83296d (actions).
 
-**Building: T730 in progress since 03:34Z; 623 of 774 done; week 71% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T730 in progress since 03:34Z; 623 of 775 done; week 71% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 623 of 774 build tasks (owner gates not counted)
+- **Tasks done:** 623 of 775 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T730 claimed 03:34Z, lease until 06:34Z; lane 2: T834 claimed 03:31Z, lease until 06:31Z; lane 3: T803 claimed 03:47Z, lease until 06:47Z; lane 4: T611 claimed 04:04Z, lease until 07:04Z
 - **Week:** 71% used, 48.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:04Z, 0 min before this update
-- **Keeper:** last ran 03:36Z, next wake 03:56Z
+- **Last run:** 04:05Z, 0 min before this update
+- **Keeper:** last ran 04:05Z, next wake 06:34Z
 
 ## Needs attention
 - BLOCKED T121: plan gap reported: PLAN GAP: outside ownership: app/portals/src/update_channel.rs
@@ -72,6 +72,7 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 | T721 | businesses and portals: Casey counts a check-in PROBLEM repo | done | 1 | 76 min | 04:10Z |  |
 
 ### Plan and harness merges on main
+- 04:05Z Plan: T121 split into T838 (D-5574); Grok G3 fixes for claimable tasks (D-5585) (#1370)
 - 00:07Z Plan: pre-flight fixes (D-5567); T837 keeper stage gate, job 32 and copy-flag fixes (D-5568) (#1368)
 - 17:04Z Plan: unblock T121/T832/T499/T514 (D-5552); pre-flight fixes job 24 (D-5551) (#1363)
 - 12:43Z Plan: pre-flight goal fixes for T666, T778, T820, T524, T825, T831 (D-5526) (#1354)
