@@ -307,7 +307,7 @@ async fn td_int_51_start_on_the_alarm_path_gets_only_the_consent_text(pool: PgPo
 async fn td_int_51_start_with_a_shown_card_shows_it_again(pool: PgPool) {
     business(&pool).await;
     let words = [DOOR, "86403", "2", "door repair", "1", "not sure"];
-    let last = ["it sticks at the top", "Testa 12 Sample Ave"];
+    let last = ["it sticks at the top", "no", "Testa 12 Sample Ave"];
     let all: Vec<&str> = words.into_iter().chain(last).collect();
     let (start, _) = stop_start(&pool, &all).await;
     replay(&pool, start).await;

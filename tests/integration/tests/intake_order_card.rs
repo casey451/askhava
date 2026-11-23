@@ -127,7 +127,7 @@ async fn setup(db: &mut PgConnection) {
 }
 
 /// A new fake homeowner (555 number `n`) texts `first`, then answers steps 4 to 11 in minutes 1
-/// to 7; returns her contact and the one text her name-and-address answer got, with its body.
+/// to 8 ("no" to step 9's photo ask, D-5459); returns her contact and the one text her name-and-address answer got, with its body.
 async fn to_card(db: &mut PgConnection, n: u32, first: &str) -> (Uuid, &'static str, String) {
     let new = NewContact {
         name: None,
@@ -138,10 +138,11 @@ async fn to_card(db: &mut PgConnection, n: u32, first: &str) -> (Uuid, &'static 
     };
     let her = store_contact(db, &vault(), &new).await.expect("contact");
     let steps = [first, "86403", "2", "door repair", "1", "not sure"];
-    for (minute, words) in (0..).zip(steps.into_iter().chain(["it sticks at the top"])) {
+    let last = ["it sticks at the top", "no"];
+    for (minute, words) in (0..).zip(steps.into_iter().chain(last)) {
         sent(db, her, words, minute).await;
     }
-    let (template, body) = one(db, her, ANSWER, 7).await;
+    let (template, body) = one(db, her, ANSWER, 8).await;
     (her, template, body)
 }
 
@@ -197,17 +198,17 @@ async fn td_int_47_the_card_is_shown_edited_and_shown_again(mut db: Db) {
     let tail = "It goes out in 30 minutes. Reply EDIT to change it, or SEND to send it now.";
     assert!(body.ends_with(tail), "{body}");
     assert!(!CONTACT.iter().any(|c| body.contains(c)), "{body}");
-    assert!(sent(&mut db, her, "what is this", 8).await.is_empty());
-    for (minute, word) in [(9, "edit"), (11, "CAMBIAR")] {
+    assert!(sent(&mut db, her, "what is this", 9).await.is_empty());
+    for (minute, word) in [(10, "edit"), (12, "CAMBIAR")] {
         assert_eq!(one(&mut db, her, word, minute).await.0, CARD_EDIT_TEMPLATE);
         let (again, new) = one(&mut db, her, "the top hinge is loose too", minute + 1).await;
         assert_eq!(again, CARD_SHOWN_TEMPLATE, "{word}");
         assert!(new.contains("door is sticking badly") && new.contains("top hinge is loose"));
         assert!(!CONTACT.iter().any(|c| new.contains(c)), "{new}");
     }
-    let alarm = one(&mut db, her, "now I smell gas in the kitchen", 13).await;
+    let alarm = one(&mut db, her, "now I smell gas in the kitchen", 14).await;
     assert_eq!(alarm.0, SAFETY_TEMPLATE);
-    assert_eq!(one(&mut db, her, "SAFE", 14).await.0, CARD_SHOWN_TEMPLATE);
+    assert_eq!(one(&mut db, her, "SAFE", 15).await.0, CARD_SHOWN_TEMPLATE);
     assert_eq!(tasks(&mut db, CARDS_APPROVED_KIND).await, 0, "not sent yet");
 }
 
@@ -219,8 +220,11 @@ async fn td_int_47_send_ok_yes_and_enviar_approve_at_once(mut db: Db) {
         let (her, template, _) = to_card(&mut db, 190 + n, DOOR).await;
         assert_eq!(template, CARD_SHOWN_TEMPLATE);
         assert_eq!(tasks(&mut db, CARDS_APPROVED_KIND).await, i64::from(n) - 1);
-        assert!(sent(&mut db, her, word, 8).await.is_empty(), "{word}");
-        assert!(sent(&mut db, her, word, 9).await.is_empty(), "{word} again");
+        assert!(sent(&mut db, her, word, 9).await.is_empty(), "{word}");
+        assert!(
+            sent(&mut db, her, word, 10).await.is_empty(),
+            "{word} again"
+        );
         assert_eq!(
             tasks(&mut db, CARDS_APPROVED_KIND).await,
             i64::from(n),
@@ -310,17 +314,18 @@ async fn td_int_47_safe_shows_a_card_held_by_a_911_text(mut db: Db) {
     };
     let her = store_contact(&mut db, &vault(), &new).await.expect("her");
     let steps = [DOOR, "86403", "2", "door repair", "1", "not sure"];
-    for (minute, words) in (0..).zip(steps.into_iter().chain(["it sticks at the top"])) {
+    let last = ["it sticks at the top", "no"];
+    for (minute, words) in (0..).zip(steps.into_iter().chain(last)) {
         sent(&mut db, her, words, minute).await;
     }
-    let alarm = one(&mut db, her, "now I smell gas in the kitchen", 7).await;
+    let alarm = one(&mut db, her, "now I smell gas in the kitchen", 8).await;
     assert_eq!(alarm.0, SAFETY_TEMPLATE);
-    assert!(sent(&mut db, her, ANSWER, 8).await.is_empty(), "held");
+    assert!(sent(&mut db, her, ANSWER, 9).await.is_empty(), "held");
     assert_eq!(tasks(&mut db, CARD_TIMER_KIND).await, 0, "no card yet");
-    let (template, body) = one(&mut db, her, "SAFE", 9).await;
+    let (template, body) = one(&mut db, her, "SAFE", 10).await;
     assert_eq!(template, CARD_SHOWN_TEMPLATE);
     assert!(!CONTACT.iter().any(|c| body.contains(c)), "{body}");
     assert_eq!(tasks(&mut db, CARD_TIMER_KIND).await, 1, "its wait runs");
-    assert!(sent(&mut db, her, "SEND", 10).await.is_empty());
+    assert!(sent(&mut db, her, "SEND", 11).await.is_empty());
     assert_eq!(tasks(&mut db, CARDS_APPROVED_KIND).await, 1, "sent on SEND");
 }
