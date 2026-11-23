@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-23T13:19:54Z by runner 396166b8b1f3 (actions).
+Updated 2026-11-23T13:20:31Z by runner 396166b8b1f3 (actions).
 
 **Building: T819 in progress since 12:37Z; 630 of 775 done; week 75% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 630 of 775 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T819 claimed 12:37Z, lease until 15:37Z; lane 2: T666 claimed 13:17Z, lease until 16:17Z; lane 4: T730 claimed 10:33Z, lease until 13:33Z; lane 5: T646 claimed 12:00Z, lease until 15:00Z
+- **Lane:** lane 1: T819 claimed 12:37Z, lease until 15:37Z; lane 2: T666 claimed 13:17Z, lease until 16:17Z; lane 5: T646 claimed 12:00Z, lease until 15:00Z
 - **Week:** 75% used, 39.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:18Z, 1 min before this update
 - **Keeper:** last ran 13:12Z, next wake 13:32Z
@@ -41,6 +41,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T730 | messaging: a homeowner who chose email gets each quote updat | MERGE_PENDING | 3 | 2 h 46 min | 13:19Z | PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs / Evidence: last_quote_text (quote_text_sent.rs:45-52) |
 | T714 | portals: a Confirm link sent by text is marked text-started  | BLOCKED | 3 | 36 min | 13:10Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
 | T653 | licensing and server (harness): a typed BTR number is stored | MERGE_PENDING | 2 | 65 min | 13:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
 | T714 | portals: a Confirm link sent by text is marked text-started  | check_failed | 2 | 47 min | 12:27Z |  |
@@ -53,7 +54,7 @@ Checks: failure, Lint and slow tests: success, Python: success, Coverage: succes
 | T118 | Journey J3 (operator) keyboard-only, with closing checks | done | 5 | 82 min | 09:58Z | PLAN GAP: outside ownership: app/site/templates/request.html, app/site/static/site.css / At 1280x900 the /request chat s |
 | T646 | site and server: the web chat's new-request limit counts the | check_failed | 1 | 59 min | 08:59Z |  |
 | T588 | portals and server: a refused business sign-up keeps every f | done | 1 | 101 min | 08:44Z |  |
-| T730 | messaging: a homeowner who chose email gets each quote updat | BLOCKED | 2 | 2 min | 08:25Z | PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs / Evidence: last_quote_text (quote_text_sent.rs:45-52) |
+| T730 | messaging: a homeowner who chose email gets each quote updat | BLOCKED | 2 | 2 min | 08:25Z |  |
 | T730 | messaging: a homeowner who chose email gets each quote updat | QUEUED | 1 | 2 h 19 min | 08:20Z |  |
 | T716 | intake: the dispatcher's trade questions at step 5: "Which f | BLOCKED | 3 | 81 min | 08:17Z | PLAN GAP: outside ownership: app/intake/src/conversation.rs (purge_child, ~348-362), app/intake/src/models.rs (purge_req |
 | T835 | runner (harness): a cancelled run on a superseded head neith | done | 1 | 52 min | 07:24Z |  |
@@ -138,8 +139,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T819 (lease until 2026-11-23T15:37:47Z)
 - lane 2: T666 (lease until 2026-11-23T16:17:52Z)
-- lane 4: T730 (lease until 2026-11-23T13:33:05Z)
 - lane 5: T646 (lease until 2026-11-23T15:00:48Z)
 
 ## Last usage reading
-- {"task": "T714", "at": "2026-11-23T13:10:48Z", "input_tokens": 27, "output_tokens": 4743, "cache_read_input_tokens": 415252, "cache_creation_input_tokens": 27147}
+- {"task": "T730", "at": "2026-11-23T13:19:52Z", "cache_creation_input_tokens": 419366, "cache_read_input_tokens": 18708390, "output_tokens": 100072, "input_tokens": 393}

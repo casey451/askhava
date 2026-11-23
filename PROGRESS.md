@@ -10380,3 +10380,4 @@
 - 2026-11-23T13:18:10Z runner f27e05243e49 (actions): {"T666": "QUEUED -> IN_PROGRESS"}; T666 estimated 2.0M tokens (calibrated); week has 39.8M left (no five-hour budget, D-3056) after 4.2M still running in another lane (session_reading 2026-11-23T13:11:26Z (week)); claimed
 - 2026-11-23T13:18:37Z runner f27e05243e49 (actions): {}
 - 2026-11-23T13:19:54Z runner 396166b8b1f3 (actions): {}
+- 2026-11-23T13:20:31Z runner 396166b8b1f3 (actions): {"T730": "IN_PROGRESS -> MERGE_PENDING"}
