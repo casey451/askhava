@@ -3,9 +3,10 @@
 //!
 //! [`route`] runs inside the shared `service::insert` that `enqueue` and `enqueue_exempt` both
 //! call, so an emergency job's update is routed too (D-5585). Only a homeowner row whose template
-//! is in [`UPDATE_TEMPLATES`] is ever emailed; [`TEXT_ONLY_UPDATES`] (direct replies to her own
-//! texts, the who's-calling texts, the texts that ask for a text answer, the request-out texts)
-//! and every other template (the 911 text, codes, the missed-call text) stay text only. With
+//! is in [`UPDATE_TEMPLATES`] and whose words name her quote page (its "Get updates by text only"
+//! is the email's stop control) is ever emailed; [`TEXT_ONLY_UPDATES`] (direct replies to her own
+//! texts, the who's-calling texts, the texts that ask for a text answer, the request-out texts,
+//! the closed-job texts) and every other template (the 911 text, codes, the missed-call text) stay text only. With
 //! `Email` or `Both` and a stored, unbounced update address, the update's rendered words are
 //! queued as an `update.<template>` email in the caller's transaction, its subject IDs the text's
 //! plus the address row (a new address is a new email, and a bounce finds its row); with `Email`
@@ -34,20 +35,13 @@ use crate::service::NewText;
 use crate::templates::{Audience, Language};
 
 /// TXT-018, D-5533: the proactive quote updates that go by email when she chose it.
-pub const UPDATE_TEMPLATES: [&str; 7] = [
-    "first_quote",
-    "quote_update",
-    "all_quotes_in",
-    "closed_no_quotes",
-    "closed_no_pick",
-    "closed_no_quote_left",
-    "unreachable_closed",
-];
+pub const UPDATE_TEMPLATES: [&str; 3] = ["first_quote", "quote_update", "all_quotes_in"];
 
 /// TXT-018, TXT-027, D-5533: the update texts that stay text whatever she chose: direct replies
 /// to her own texts, the who's-calling texts, texts that ask for a text answer and the
-/// request-out texts, whose words promise a text (TXT-032).
-pub const TEXT_ONLY_UPDATES: [&str; 18] = [
+/// request-out texts, whose words promise a text (TXT-032), and the closed-job texts, which name
+/// no quote page and so no way to stop update emails (SEC-028, CON-035, D-5562).
+pub const TEXT_ONLY_UPDATES: [&str; 22] = [
     "quote_list",
     "quote_list_end",
     "text_pick_package",
@@ -66,12 +60,16 @@ pub const TEXT_ONLY_UPDATES: [&str; 18] = [
     "request_out_held",
     "request_out_today",
     "request_out_slow",
+    "closed_no_quotes",
+    "closed_no_pick",
+    "closed_no_quote_left",
+    "unreachable_closed",
 ];
 
 /// The template prefix of an update email: `update.<text template>` (TXT-018).
 pub const UPDATE_EMAIL_PREFIX: &str = "update.";
 
-/// The homeowner portal, the SEC-028 "Manage email notices" link.
+/// The homeowner portal, the footer's SEC-028 "Manage email notices" link.
 const MANAGE: OnDomain = OnDomain("/h");
 
 /// The footer postal line set at start (SEC-028).
@@ -96,7 +94,8 @@ pub(crate) enum Routed {
 
 /// TXT-018, TXT-027, TXT-030, D-5585: queues `text`'s update email in the caller's transaction
 /// when `homeowner` is true, its template is in [`UPDATE_TEMPLATES`], her channel is `Email` or
-/// `Both` and her update address is stored and not bounced; says whether the text still goes.
+/// `Both`, its words name her quote page (the stop control, SEC-028) and her update address is
+/// stored and not bounced; says whether the text still goes.
 ///
 /// # Errors
 ///
@@ -110,9 +109,10 @@ pub(crate) async fn route(
     let (Some(postal), true) = (FOOTER.get(), homeowner) else {
         return Ok(Routed::Text);
     };
-    if !UPDATE_TEMPLATES.contains(&text.template_id) {
+    let Some(link) = quote_link(text.body).filter(|_| UPDATE_TEMPLATES.contains(&text.template_id))
+    else {
         return Ok(Routed::Text);
-    }
+    };
     let channel = update_channel(db, text.recipient).await.map_err(db_err)?;
     if channel == UpdateChannel::Text {
         return Ok(Routed::Text);
@@ -123,7 +123,7 @@ pub(crate) async fn route(
     let Some(status) = status.filter(|s| !s.bounced) else {
         return Ok(Routed::Text);
     };
-    let (id, created) = queue_update(db, (secret, postal), text, &status).await?;
+    let (id, created) = queue_update(db, (secret, postal), (text, link), &status).await?;
     Ok(match channel {
         UpdateChannel::Email => Routed::EmailOnly(id, created),
         _ => Routed::Both,
@@ -136,13 +136,13 @@ pub(crate) async fn route(
 async fn queue_update(
     db: &mut PgConnection,
     (secret, postal): (&SecretString, &PostalAddress),
-    text: &NewText<'_>,
+    (text, link): (&NewText<'_>, &str),
     status: &UpdateStatus,
 ) -> Result<(Uuid, bool), OutboxError> {
-    let link = quote_link(text.body);
-    let confirm = match (link, status.confirmed) {
-        (Some(link), false) => Some(confirm_link(secret, link, status)?),
-        _ => None,
+    let confirm = if status.confirmed {
+        None
+    } else {
+        Some(confirm_link(secret, link, status)?)
     };
     let template = format!("{UPDATE_EMAIL_PREFIX}{}", text.template_id);
     let mut subject = text.subject.to_vec();

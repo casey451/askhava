@@ -182,8 +182,9 @@ pub enum Notice<'a> {
     Update {
         /// The update text's words as rendered.
         words: &'a str,
-        /// Her quote page, when the update names it; else the footer's portal link stands in.
-        quote_link: Option<&'a str>,
+        /// Her quote page, which holds the "Get updates by text only" control (an update naming
+        /// no quote page is never emailed, D-5562).
+        quote_link: &'a str,
         /// Her quote page with T729's confirm token, only while the address is unconfirmed.
         confirm_link: Option<&'a str>,
     },
@@ -318,23 +319,20 @@ fn notice_lines(notice: Notice<'_>, to: &Recipient<'_>) -> Result<(String, Strin
 
 /// TXT-018, SEC-028, CON-035, D-5340: the subject and lines of an update email: her words, her
 /// quote page, the confirm link while unconfirmed, then how to stop update emails on her quote
-/// page (or the portal when the update names no page), one list of who gets what.
+/// page, whose "Get updates by text only" sets the one channel.
 fn update_lines(
     words: &str,
-    (page, confirm): (Option<&str>, Option<&str>),
+    (page, confirm): (&str, Option<&str>),
     to: &Recipient<'_>,
 ) -> (String, String) {
     let short = short_name(to.language);
-    let stop = page.unwrap_or(to.manage_url);
     let es = to.language == Language::Es;
     let mut lines = vec![words.to_owned()];
-    if let Some(page) = page {
-        lines.push(if es {
-            format!("Su página de cotizaciones: {page}")
-        } else {
-            format!("Your quote page: {page}")
-        });
-    }
+    lines.push(if es {
+        format!("Su página de cotizaciones: {page}")
+    } else {
+        format!("Your quote page: {page}")
+    });
     if let Some(confirm) = confirm {
         lines.push(if es {
             format!("Confirme este correo: {confirm}")
@@ -343,9 +341,9 @@ fn update_lines(
         });
     }
     lines.push(if es {
-        format!("Para dejar de recibir estos correos, elija recibir avisos solo por texto: {stop}")
+        format!("Para dejar de recibir estos correos, elija recibir avisos solo por texto: {page}")
     } else {
-        format!("To stop update emails, choose updates by text only: {stop}")
+        format!("To stop update emails, choose updates by text only: {page}")
     });
     let subject = if es {
         format!("{short}: Actualización de su solicitud")
@@ -602,7 +600,7 @@ pub async fn send_email(
     let Some(claim) = models::claim_email(db, id, (send_kind(to), hold), now).await? else {
         return waiting_or_sent(db, id, (limit, sent_today), now).await;
     };
-    let address = email_address(db, to, (claim.recipient, &claim.template_id)).await?;
+    let address = email_address(db, to, &claim).await?;
     let key = email_key(
         secret,
         (&claim.template_id, claim.recipient, &claim.subject),
@@ -717,24 +715,25 @@ async fn waiting_or_sent(
 }
 
 /// The address to send to: a homeowner's from the vault (PRIV-004), her quote-page update
-/// address for an update email and never for anything else (TXT-018, PICK-029; a bounced one is
-/// none), a business's as given.
+/// address for an update email and never for anything else (TXT-018, PICK-029; a bounced one, or
+/// one whose row is not in the email's subject IDs because she replaced the address, is none and
+/// the email is dropped), a business's as given.
 async fn email_address(
     db: &mut PgConnection,
     to: EmailTo<'_>,
-    (recipient, template): (Uuid, &str),
+    claim: &models::ClaimedEmail,
 ) -> Result<SecretString, EmailError> {
     match to {
         EmailTo::Business(address) => Ok(SecretString::from(address.to_owned())),
-        EmailTo::Homeowner(vault) if is_update_email(template) => {
-            read_update_address(db, vault, recipient)
+        EmailTo::Homeowner(vault) if is_update_email(&claim.template_id) => {
+            read_update_address(db, vault, claim.recipient)
                 .await
                 .map_err(|_| EmailError::NoAddress)?
-                .filter(|u| !u.status.bounced)
+                .filter(|u| !u.status.bounced && claim.subject.contains(&u.status.row))
                 .map(|u| u.address)
                 .ok_or(EmailError::NoAddress)
         }
-        EmailTo::Homeowner(vault) => homeowner_email(db, vault, recipient)
+        EmailTo::Homeowner(vault) => homeowner_email(db, vault, claim.recipient)
             .await?
             .ok_or(EmailError::NoAddress),
     }

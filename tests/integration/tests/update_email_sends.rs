@@ -7,10 +7,13 @@
 //! then a `first_quote` update queues one update email (her quote page, the SEC-028 footer, how
 //! to stop them and, while unconfirmed, the "Confirm this email" link that opens the page's
 //! confirm button) and no text; with both a text and an email; with text a text only; the 911
-//! text, the who's-calling and missed-call texts, a direct reply and a text asking for a text
-//! answer stay text; an emergency job's `first_quote` is an email only; a hard bounce sets text
-//! and marks the address, and the next update is a text; `intake::quote_update_step` tells an
-//! email-only homeowner her second quote by email, and after a bounce by text.
+//! text, the who's-calling and missed-call texts, a direct reply, a text asking for a text
+//! answer and a closed-job text stay text; the Spanish wording; an emergency job's `first_quote`
+//! is an email only; a hard bounce sets text and marks the address, and the next update is a
+//! text; an email queued for a replaced address is never sent and its bounce changes nothing;
+//! `last_quote_text` takes the text on a tie and skips a dropped email;
+//! `intake::quote_update_step` tells an email-only homeowner her second quote by email, and
+//! after a bounce by text.
 
 use std::sync::{Arc, Mutex};
 
@@ -27,9 +30,10 @@ use askhava_intake::api::{
 use askhava_jobs::api::quote_token::issue;
 use askhava_jobs::api::{JobStatus, first_quote, job_number, move_to};
 use askhava_messaging::api::{
-    DailyLimit, EmailEvent, EmailSent, EmailTo, Exemption, MailboxKind, NewText, PostalAddress,
-    Relation, TEXT_ONLY_UPDATES, UPDATE_TEMPLATES, UpdateChannel, enqueue, enqueue_exempt,
-    receive_email_event, send_email, set_update_channel, set_update_footer, update_channel,
+    DailyLimit, EmailError, EmailEvent, EmailSent, EmailTo, Exemption, Language, MailboxKind,
+    NewText, PostalAddress, Registry, Relation, TEXT_ONLY_UPDATES, UPDATE_TEMPLATES, UpdateChannel,
+    enqueue, enqueue_exempt, last_quote_text, receive_email_event, send_email, set_update_channel,
+    set_update_footer, update_channel,
 };
 use askhava_ops::api::Actor;
 use askhava_portals::api::{UPDATES_ROUTE, quote_page_routes_with};
@@ -269,6 +273,20 @@ impl EmailAdapter for Rec {
 /// Sends email row `id` through the stand-in at `now`, its queue time set to a minute before
 /// (the database's clock queued it); the provider ID.
 async fn send(db: &mut PgConnection, mail: &Rec, id: Uuid, now: Timestamp) -> String {
+    let sent = try_send(db, mail, id, now).await;
+    let Ok(EmailSent::Sent(provider)) = sent else {
+        panic!("sent: {sent:?}");
+    };
+    provider
+}
+
+/// [`send`]'s outcome as `send_email` gives it.
+async fn try_send(
+    db: &mut PgConnection,
+    mail: &Rec,
+    id: Uuid,
+    now: Timestamp,
+) -> Result<EmailSent, EmailError> {
     let queued = now - SignedDuration::from_mins(1);
     sqlx::query("UPDATE messaging.email_outbox SET queued_at = $1, not_before = $1 WHERE id = $2")
         .bind(queued.to_sqlx())
@@ -278,18 +296,8 @@ async fn send(db: &mut PgConnection, mail: &Rec, id: Uuid, now: Timestamp) -> St
         .expect("fixture: the email's queue time");
     let limit = DailyLimit::new(100, 90).expect("limit");
     let vault = vault();
-    let sent = send_email(
-        db,
-        (&key(), mail, limit),
-        id,
-        EmailTo::Homeowner(&vault),
-        now,
-    )
-    .await;
-    let Ok(EmailSent::Sent(provider)) = sent else {
-        panic!("sent: {sent:?}");
-    };
-    provider
+    let to = EmailTo::Homeowner(&vault);
+    send_email(db, (&key(), mail, limit), id, to, now).await
 }
 
 /// A Svix-signed Resend `email.bounced` event for `provider`, checked at `now`.
@@ -404,9 +412,9 @@ async fn td_txt_39_both_is_a_text_and_an_email_and_text_is_a_text(pool: PgPool) 
     assert!(emails(&pool, text_only).await.is_empty());
 }
 
-/// TXT-018, TXT-027, TXT-030, PICK-029: with email only, the 911 text, the who's-calling and
-/// missed-call texts, a direct reply (`quote_list`) and a text asking for a text answer
-/// (`check_in_day3`) go by text and no email is stored; the code path's contact email (PICK-029)
+/// TXT-018, TXT-027, TXT-030, PICK-029, D-5562: with email only, the 911 text, the who's-calling
+/// and missed-call texts, a direct reply (`quote_list`), a text asking for a text answer
+/// (`check_in_day3`) and a closed-job text (`closed_no_pick`) go by text and no email is stored; the code path's contact email (PICK-029)
 /// never holds her update address.
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
 async fn td_txt_39_safety_codes_and_replies_stay_text(pool: PgPool) {
@@ -420,6 +428,7 @@ async fn td_txt_39_safety_codes_and_replies_stay_text(pool: PgPool) {
         "caller_missed",
         "quote_list",
         "check_in_day3",
+        "closed_no_pick",
     ];
     for template in kinds {
         update(
@@ -568,4 +577,96 @@ async fn td_txt_39_quote_update_step_emails_then_texts_after_a_bounce(pool: PgPo
         "a text after the bounce"
     );
     assert_eq!(emails(&pool, contact).await.len(), 2);
+}
+
+/// TXT-018, TXT-039, SEC-028: a Spanish `first_quote` is a Spanish update email.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_txt_39_a_spanish_update_is_a_spanish_email(pool: PgPool) {
+    footer();
+    let mut db = pool.acquire().await.expect("db");
+    let (token, contact, job) = open_job(&mut db, 8).await;
+    choose(&pool, &token, "email").await;
+    let registry = Registry::embedded().expect("registry");
+    let (es, _) = registry.template("first_quote", Language::Es).expect("es");
+    let mut words = es.replace("{link}", &page(&token));
+    for name in ["{brand_short}", "{brand}", "{job}", "{domain}"] {
+        words = words.replace(name, "X");
+    }
+    update(&mut db, (contact, "first_quote", &[job]), &words).await;
+    let plain = &emails(&pool, contact).await[0].2;
+    let page = page(&token);
+    assert!(plain.contains(&words), "{plain}");
+    assert!(plain.contains(&format!("Su página de cotizaciones: {page}")));
+    assert!(plain.contains(&format!("Confirme este correo: {page}?confirm=")));
+    assert!(plain.contains(&format!(
+        "Para dejar de recibir estos correos, elija recibir avisos solo por texto: {page}"
+    )));
+    assert!(!plain.contains("To stop update emails"), "{plain}");
+}
+
+/// D-5442, D-5562: once she replaces her address, an email queued for the old one is never sent
+/// (to either), and a bounce of the old one's email leaves her channel and new address alone.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_txt_39_a_replaced_address_drops_its_emails_and_bounces(pool: PgPool) {
+    footer();
+    let mut db = pool.acquire().await.expect("db");
+    let (token, contact, job) = open_job(&mut db, 9).await;
+    choose(&pool, &token, "email").await;
+    let first = body("first_quote", &token);
+    let (sent, _) = update(&mut db, (contact, "first_quote", &[job]), &first).await;
+    let later = body("quote_update", &token);
+    let (held, _) = update(&mut db, (contact, "quote_update", &[job]), &later).await;
+    let mail = Rec::default();
+    let provider = send(&mut db, &mail, sent, at(120)).await;
+    let fixed = UpdateAddress::parse("pat.fixed@mail.test").expect("address");
+    store_update_address(&mut db, &vault(), contact, &fixed, at(150))
+        .await
+        .expect("replaced");
+    let dropped = try_send(&mut db, &mail, held, at(160)).await;
+    assert_eq!(dropped, Err(EmailError::NoAddress));
+    assert_eq!(mail.0.lock().expect("lock").len(), 1, "one send only");
+    let hook = bounce(&provider, at(180));
+    receive_email_event(&mut db, &hook, at(180))
+        .await
+        .expect("bounce");
+    assert_eq!(
+        update_channel(&mut db, contact).await,
+        Ok(UpdateChannel::Email)
+    );
+    assert!(!status(&mut db, contact).await.bounced);
+}
+
+/// D-5617, TXT-017: with both, the text and the email are queued at one instant and the text
+/// wins the tie in `last_quote_text`; the email counts once the text is not sent, and a dropped
+/// email never does.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_txt_39_last_quote_text_takes_the_text_on_a_tie_and_skips_dropped(pool: PgPool) {
+    footer();
+    let mut db = pool.acquire().await.expect("db");
+    let (token, contact, job) = open_job(&mut db, 10).await;
+    choose(&pool, &token, "both").await;
+    let mut tx = sqlx::Connection::begin(&mut *db).await.expect("tx");
+    let words = body("first_quote", &token);
+    let (text, _) = update(&mut tx, (contact, "first_quote", &[job]), &words).await;
+    tx.commit().await.expect("commit");
+    let last = last_quote_text(&mut db, contact, job).await.expect("last");
+    assert_eq!(
+        last.map(|l| (l.id, l.template_id)),
+        Some((text, "first_quote".to_owned()))
+    );
+    let email = emails(&pool, contact).await[0].0;
+    let fixtures = [
+        "UPDATE messaging.outbox SET status = 'expired' WHERE recipient_id = $1",
+        "UPDATE messaging.email_outbox SET status = 'dropped', subject = NULL, html = NULL, \
+         plain = NULL WHERE recipient_id = $1",
+    ];
+    for (fixture, want) in fixtures.into_iter().zip([Some(email), None]) {
+        sqlx::query(fixture)
+            .bind(contact)
+            .execute(&mut *db)
+            .await
+            .expect("fixture: the row's status");
+        let last = last_quote_text(&mut db, contact, job).await.expect("last");
+        assert_eq!(last.map(|l| l.id), want, "{fixture}");
+    }
 }
