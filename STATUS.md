@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T03:24:34Z by runner 50d501397927 (actions).
+Updated 2026-11-23T03:28:58Z by runner 438e11dcee29 (actions).
 
 **Building: T716 in progress since 01:31Z; 622 of 774 done; week 71% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-23T03:24:34Z by runner 50d501397927 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 5: T716 claimed 01:31Z, lease until 04:31Z
 - **Week:** 71% used, 49.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:24Z, 0 min before this update
+- **Last run:** 03:26Z, 2 min before this update
 - **Keeper:** last ran 03:24Z, next wake 03:44Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T646 (since 2026-11-23T03:08:25Z, no attempt used; a plan change fixes it): T646: dependency T645 is DONE but its owned file migrations/0210_messaging_web_chat_optout.sql is not on main; T646: dependency T645 is DONE but its owned file migrations/0211_intake_web_chat_language.sql is not on main; T646: dependency T645 is DONE but its owned file app/server/tests/web_chat_stops.rs is not on main
-- Strict plan check red: 28 problem(s) on tasks still to run (+510 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 37 problem(s) on tasks still to run (+513 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
