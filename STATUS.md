@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T20:47:41Z by runner 025855b2736e (actions).
+Updated 2026-11-23T20:52:01Z by runner 59eb0890b94b (actions).
 
-**Building: T745 in progress since 19:03Z; 637 of 778 done; week 83% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T745 in progress since 19:03Z; 638 of 778 done; week 83% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 637 of 778 build tasks (owner gates not counted)
+- **Tasks done:** 638 of 778 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T745 claimed 19:03Z, lease until 22:03Z; lane 3: T816 claimed 20:47Z, lease until 23:47Z; lane 5: T649 claimed 20:33Z, lease until 23:33Z
 - **Week:** 83% used, 24.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:45Z, 2 min before this update
+- **Last run:** 20:47Z, 4 min before this update
 - **Keeper:** last ran 20:44Z, next wake 21:04Z
 
 ## Needs attention
@@ -22,7 +22,7 @@ Updated 2026-11-23T20:47:41Z by runner 025855b2736e (actions).
 |---|---|---|---|---|---|---|
 | T836 | ci and runner workflow (harness): the backup-runner gate ski | BLOCKED | 1 | 11 min | 20:40Z | PLAN GAP: tests/test_runner_five_lanes.py:176 (test_no_workflow_a_hand_in_starts_cancels_another_lanes_run_when_five_han |
 | T668 | server: the business job page at /b/jobs/{j} offers "Not a f | MERGE_PENDING | 1 | 56 min | 20:07Z |  |
-| T812 | businesses and portals: a passed step-up records the session | MERGE_PENDING | 1 | 89 min | 19:31Z |  |
+| T812 | businesses and portals: a passed step-up records the session | done | 1 | 89 min | 19:31Z |  |
 | T730 | messaging: a homeowner who chose email gets each quote updat | done | 4 | 76 min | 19:13Z | PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs / Evidence: last_quote_text (quote_text_sent.rs:45-52) |
 | T222 | Journeys J1 and J2, the full variants: web chat, photos, que | QUEUED | 2 | 97 min | 17:54Z | Reviewer after the fix round still ended REVIEW-VERDICT: FINDINGS over 0aedbd3769e83a983d24d694c7abe05f8773a57a: / 1. do |
 | T782 | server: the released job's page shows its real job number | done | 1 | 97 min | 16:56Z |  |
@@ -79,7 +79,7 @@ Updated 2026-11-23T20:47:41Z by runner 025855b2736e (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 404 of 735 (55.0%) · partial 318 · unstarted 13
-**Tasks merged (throughput only):** 637 of 778
+**Tasks merged (throughput only):** 638 of 778
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -115,7 +115,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 280 of 350 done
+- stage 5: 281 of 350 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
