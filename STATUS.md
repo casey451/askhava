@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T03:45:02Z by runner ff057c83296d (actions).
+Updated 2026-11-23T03:47:19Z by runner ff057c83296d (actions).
 
 **Building: T730 in progress since 03:34Z; 623 of 774 done; week 71% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 623 of 774 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T730 claimed 03:34Z, lease until 06:34Z; lane 2: T834 claimed 03:31Z, lease until 06:31Z
-- **Week:** 71% used, 51.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:37Z, 7 min before this update
+- **Lane:** lane 1: T730 claimed 03:34Z, lease until 06:34Z; lane 2: T834 claimed 03:31Z, lease until 06:31Z; lane 3: T803 claimed 03:47Z, lease until 06:47Z
+- **Week:** 71% used, 49.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 03:45Z, 1 min before this update
 - **Keeper:** last ran 03:36Z, next wake 03:56Z
 
 ## Needs attention
@@ -17,7 +17,6 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 - PLAN GAP T121 (since 2026-11-23T00:03:26Z, no attempt used; a plan change fixes it): outside ownership: app/portals/src/update_channel.rs
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- PLAN GAP T646 (since 2026-11-23T03:08:25Z, no attempt used; a plan change fixes it): T646: dependency T645 is DONE but its owned file migrations/0210_messaging_web_chat_optout.sql is not on main; T646: dependency T645 is DONE but its owned file migrations/0211_intake_web_chat_language.sql is not on main; T646: dependency T645 is DONE but its owned file app/server/tests/web_chat_stops.rs is not on main
 - Strict plan check red: 38 problem(s) on tasks still to run (+513 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
@@ -109,7 +108,7 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-23T03:30:08Z (week)): week: 142.5M used, 51.5M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T18:27:16Z.
+- Pacing (session_reading 2026-11-23T03:36:16Z (week)): week: 144.1M used, 49.9M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T19:25:21Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -126,6 +125,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T730 (lease until 2026-11-23T06:34:29Z)
 - lane 2: T834 (lease until 2026-11-23T06:31:26Z)
+- lane 3: T803 (lease until 2026-11-23T06:47:06Z)
 
 ## Last usage reading
 - {"task": "T716", "at": "2026-11-23T03:28:55Z", "input_tokens": 411, "cache_creation_input_tokens": 444518, "output_tokens": 147426, "cache_read_input_tokens": 24919743}
