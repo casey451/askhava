@@ -58,6 +58,7 @@ async fn main() -> io::Result<()> {
     // Nothing is served under a key set missing a held index version (D-4418, D-4473).
     let vault = askhava_server::business_portal::vault_from_settings(&settings, std::env::vars())?;
     askhava_server::check_index_keys(&pool, vault.as_ref()).await?;
+    askhava_server::set_update_footer_from(&settings, std::env::vars())?;
     askhava_server::catalog_start::store_catalog(&pool).await?;
     let control =
         TestControl::from_settings(&settings, std::env::vars()).map_err(io::Error::other)?;

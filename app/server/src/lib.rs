@@ -2563,6 +2563,30 @@ where
     Ok(provider.is_some() && vault_from(settings, pairs)?.is_some())
 }
 
+/// TXT-018, SEC-028 (T730): sets the update emails' footer postal line from the email provider's
+/// settings once the provider and the vault are both set, so a homeowner who chose email gets her
+/// updates by email; otherwise they stay text. Returns whether it was set.
+///
+/// # Errors
+///
+/// A bad email provider or vault setting, named, never its value.
+pub fn set_update_footer_from<I>(settings: &Settings, pairs: I) -> io::Result<bool>
+where
+    I: IntoIterator<Item = (String, String)>,
+{
+    let pairs: Vec<(String, String)> = pairs.into_iter().collect();
+    let Some(provider) = email_provider::email_provider(settings, pairs.clone())? else {
+        return Ok(false);
+    };
+    if vault_from(settings, pairs)?.is_none() {
+        return Ok(false);
+    }
+    let (postal, kind) = provider.postal();
+    let postal =
+        askhava_messaging::api::PostalAddress::new(postal, kind).map_err(io::Error::other)?;
+    Ok(askhava_messaging::api::set_update_footer(postal))
+}
+
 /// An account mailer over provider `p`'s client, email key, postal line and shared daily limit,
 /// reading addresses through `directory` (SEC-025, OPS-038, T490).
 fn account_mailer<D>(

@@ -12,7 +12,9 @@
 //! never calls the provider itself: it asks `messaging` through a `core.task` event (D-491).
 //! Verified email-provider webhooks are stored once in event-time order, a complaint raises an
 //! alert, and 24 hours of sends with no webhook raises another (SEC-050, SEC-051). The
-//! homeowner's update channel (TXT-018) is read and written here too.
+//! homeowner's update channel (TXT-018) is read and written here too; an update email
+//! (`Notice::Update`, `update_emails`) goes to her quote-page update address, and its hard
+//! bounce sets the channel back to text (D-5442).
 
 use std::fmt;
 
@@ -22,7 +24,7 @@ use askhava_adapters::api::{
 };
 use askhava_core::api::brand;
 use askhava_ops::api::{NewAlert, Severity, raise_alert, raise_kind_once};
-use askhava_privacy::api::{Field, Purpose, Reader, Vault, read_contact};
+use askhava_privacy::api::{Field, Purpose, Reader, Vault, read_contact, read_update_address};
 use jiff::{SignedDuration, Timestamp};
 use secrecy::{ExposeSecret, SecretString};
 use sqlx::types::Uuid;
@@ -31,6 +33,7 @@ use sqlx::{Connection, PgConnection};
 use crate::models::{self, EmailError, EmailLog};
 use crate::rules::CONFIRMATION_TEMPLATE;
 use crate::templates::{Audience, Language, Registry};
+use crate::update_emails::{bounced, is_update_email};
 
 /// The From of every email: `"<email_from_name>" <<email_from_address>>` from the brand file
 /// (SEC-025, D-1932). It displays, so `format!("{FROM}")` and `FROM.to_string()` read it.
@@ -173,6 +176,17 @@ pub enum Notice<'a> {
         /// Its lines: each waiting pick, then each open card (trade, town, end, Quote link).
         lines: &'a [String],
     },
+    /// TXT-018, SEC-028, CON-035, D-5340: a quote update she chose to get by email: the text's
+    /// rendered words, her quote page, and while her update address is unconfirmed its single-use
+    /// "Confirm this email" link; a line saying how to stop update emails follows.
+    Update {
+        /// The update text's words as rendered.
+        words: &'a str,
+        /// Her quote page, when the update names it; else the footer's portal link stands in.
+        quote_link: Option<&'a str>,
+        /// Her quote page with T729's confirm token, only while the address is unconfirmed.
+        confirm_link: Option<&'a str>,
+    },
 }
 
 /// Who an email goes to: the opaque ID (a vault contact or a business address), the audience the
@@ -294,7 +308,51 @@ fn notice_lines(notice: Notice<'_>, to: &Recipient<'_>) -> Result<(String, Strin
             subject.to_owned(),
             format!("{}\n{}", lines.join("\n"), browser_line(to.language)),
         ),
+        Notice::Update {
+            words,
+            quote_link,
+            confirm_link,
+        } => update_lines(words, (quote_link, confirm_link), to),
     })
+}
+
+/// TXT-018, SEC-028, CON-035, D-5340: the subject and lines of an update email: her words, her
+/// quote page, the confirm link while unconfirmed, then how to stop update emails on her quote
+/// page (or the portal when the update names no page), one list of who gets what.
+fn update_lines(
+    words: &str,
+    (page, confirm): (Option<&str>, Option<&str>),
+    to: &Recipient<'_>,
+) -> (String, String) {
+    let short = short_name(to.language);
+    let stop = page.unwrap_or(to.manage_url);
+    let es = to.language == Language::Es;
+    let mut lines = vec![words.to_owned()];
+    if let Some(page) = page {
+        lines.push(if es {
+            format!("Su página de cotizaciones: {page}")
+        } else {
+            format!("Your quote page: {page}")
+        });
+    }
+    if let Some(confirm) = confirm {
+        lines.push(if es {
+            format!("Confirme este correo: {confirm}")
+        } else {
+            format!("Confirm this email: {confirm}")
+        });
+    }
+    lines.push(if es {
+        format!("Para dejar de recibir estos correos, elija recibir avisos solo por texto: {stop}")
+    } else {
+        format!("To stop update emails, choose updates by text only: {stop}")
+    });
+    let subject = if es {
+        format!("{short}: Actualización de su solicitud")
+    } else {
+        format!("{short}: An update on your request")
+    };
+    (subject, lines.join("\n"))
 }
 
 /// BIZ-038: the line every email with action links carries, in the person's language.
@@ -387,7 +445,7 @@ pub fn render(
         Language::Es => "es",
     };
     let lines = match notice {
-        Notice::OpenCards { .. } => message.lines().collect(),
+        Notice::OpenCards { .. } | Notice::Update { .. } => message.lines().collect(),
         _ => vec![message.as_str()],
     };
     let layout = Layout {
@@ -544,7 +602,7 @@ pub async fn send_email(
     let Some(claim) = models::claim_email(db, id, (send_kind(to), hold), now).await? else {
         return waiting_or_sent(db, id, (limit, sent_today), now).await;
     };
-    let address = email_address(db, to, claim.recipient).await?;
+    let address = email_address(db, to, (claim.recipient, &claim.template_id)).await?;
     let key = email_key(
         secret,
         (&claim.template_id, claim.recipient, &claim.subject),
@@ -658,14 +716,24 @@ async fn waiting_or_sent(
     Err(EmailError::RecipientKind)
 }
 
-/// The address to send to: a homeowner's from the vault (PRIV-004), a business's as given.
+/// The address to send to: a homeowner's from the vault (PRIV-004), her quote-page update
+/// address for an update email and never for anything else (TXT-018, PICK-029; a bounced one is
+/// none), a business's as given.
 async fn email_address(
     db: &mut PgConnection,
     to: EmailTo<'_>,
-    recipient: Uuid,
+    (recipient, template): (Uuid, &str),
 ) -> Result<SecretString, EmailError> {
     match to {
         EmailTo::Business(address) => Ok(SecretString::from(address.to_owned())),
+        EmailTo::Homeowner(vault) if is_update_email(template) => {
+            read_update_address(db, vault, recipient)
+                .await
+                .map_err(|_| EmailError::NoAddress)?
+                .filter(|u| !u.status.bounced)
+                .map(|u| u.address)
+                .ok_or(EmailError::NoAddress)
+        }
         EmailTo::Homeowner(vault) => homeowner_email(db, vault, recipient)
             .await?
             .ok_or(EmailError::NoAddress),
@@ -796,6 +864,8 @@ struct ResendData {
 /// An event whose type is not `email.*` is [`EmailEvent::Ignored`] before anything is written, so
 /// the table's checks never turn a valid provider event into a 500 sent again forever. The
 /// signature, constant-time comparison and 5-minute tolerance are `adapters`' (T018).
+/// An `email.bounced` event on an update email to her current update address sets her channel
+/// back to text and marks the address bounced in the same transaction (TXT-018, D-5442).
 ///
 /// # Errors
 ///
@@ -832,6 +902,9 @@ pub async fn receive_email_event(
         raise_alert(&mut tx, &alert)
             .await
             .map_err(|_| EmailError::Database)?;
+    }
+    if let (Some(email), "email.bounced") = (about, event.kind.as_str()) {
+        bounced(&mut tx, email, now).await?;
     }
     tx.commit().await.map_err(|_| EmailError::Database)?;
     Ok(EmailEvent::Recorded)
