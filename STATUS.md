@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-23T08:19:02Z by runner f2d298a8c8e3 (actions).
+Updated 2026-11-23T08:20:17Z by runner 8e4a3378787b (actions).
 
 **Building: T646 in progress since 07:59Z; 627 of 775 done; week 73% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 627 of 775 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T646 claimed 07:59Z, lease until 10:59Z; lane 3: T730 claimed 06:00Z, lease until 09:00Z; lane 5: T588 claimed 07:02Z, lease until 10:02Z
+- **Lane:** lane 2: T646 claimed 07:59Z, lease until 10:59Z; lane 5: T588 claimed 07:02Z, lease until 10:02Z
 - **Week:** 73% used, 44.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:18Z, 0 min before this update
+- **Last run:** 08:19Z, 0 min before this update
 - **Keeper:** last ran 08:19Z, next wake 08:39Z
 
 ## Needs attention
@@ -17,11 +17,12 @@ Updated 2026-11-23T08:19:02Z by runner f2d298a8c8e3 (actions).
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T716 (since 2026-11-23T08:17:23Z, no attempt used; a plan change fixes it): outside ownership: app/intake/src/conversation.rs (purge_child, ~348-362), app/intake/src/models.rs (purge_request). first_text (order_dispatch.rs:272) holds a short trade-naming first text's scrubbed words in quotes.job_description under the request's own ID (no job). If she then says "I'm 12" before the ZIP, stop_if_under_18 runs before order_dispatch, request_jobs is empty, purge_child purges nothing, purge_request deletes only code-only intake tables, so an under-13 sender's words survive INT-038/PRIV-008; the row also escapes the 3-year text purge (no job, no purge task). D-5400's "re-read the first inbox message" option is impossible: messaging.inbox stores no body (migrations/0043_messaging_inbox_delivery.sql:7, PRIV-002). Smallest plan change: purge_child also calls askhava_quotes::api::purge_job_text(tx, conversation), plus a test (two-word first text, then "I'm 12", leaves no job_description row) and a purge for an adult who never sends a ZIP; reword D-5581 and docs/for-casey-review.md. Confirmed by reviewer a1a2363fa41dcc7a8 at head 453a46fe0d47b68ba4e727ce1693faa9f1ef8d33. Separate accepted gap D-5582 (count/send disagreement for handyman+breaker) already logged.
 - PLAN GAP T836 (since 2026-11-23T07:59:33Z, no attempt used; a plan change fixes it): T836: kit/runner_log.jsonl is named by D-500, but no task owns it and it does not exist
-- Strict plan check red: 37 problem(s) on tasks still to run (+514 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 37 problem(s) on tasks still to run (+515 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T730 | messaging: a homeowner who chose email gets each quote updat | QUEUED | 1 | 2 h 19 min | 08:20Z | Reviewer after the findings round still ends FINDINGS on head 8e4a3378787b5b84e572879568168ace60d591a4. / Finding (corre |
 | T716 | intake: the dispatcher's trade questions at step 5: "Which f | BLOCKED | 3 | 81 min | 08:17Z | PLAN GAP: outside ownership: app/intake/src/conversation.rs (purge_child, ~348-362), app/intake/src/models.rs (purge_req |
 | T835 | runner (harness): a cancelled run on a superseded head neith | done | 1 | 52 min | 07:24Z |  |
 | T716 | intake: the dispatcher's trade questions at step 5: "Which f | QUEUED | 2 | 2 h 6 min | 06:48Z |  |
@@ -122,8 +123,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T646 (lease until 2026-11-23T10:59:33Z)
-- lane 3: T730 (lease until 2026-11-23T09:00:46Z)
 - lane 5: T588 (lease until 2026-11-23T10:02:05Z)
 
 ## Last usage reading
-- {"task": "T716", "at": "2026-11-23T08:17:23Z", "cache_creation_input_tokens": 180376, "input_tokens": 177, "cache_read_input_tokens": 3369562, "output_tokens": 29706}
+- {"task": "T730", "at": "2026-11-23T08:20:16Z", "output_tokens": 96919, "cache_creation_input_tokens": 348887, "cache_read_input_tokens": 18426256, "input_tokens": 379}

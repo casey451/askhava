@@ -103656,8 +103656,8 @@
     "T684",
     "T580"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "update-email-sends",
    "type": "build",
    "stage": "5",
@@ -103670,10 +103670,6 @@
     5565,
     5566
    ],
-   "wip_claim": {
-    "attempt": 1,
-    "remote_sha": ""
-   },
    "stale_leases": [
     {
      "task": "T730",
@@ -103685,6 +103681,33 @@
      "task": "T730",
      "session": "actions-45102154919",
      "expires": "2026-11-23T06:34:29Z"
+    }
+   ],
+   "last_failure": "Reviewer after the findings round still ends FINDINGS on head 8e4a3378787b5b84e572879568168ace60d591a4.\nFinding (correctness, TXT-017/TXT-018): a homeowner on Email-only never gets a quote_update, by email or text. update_emails.rs:136 route returns the email ID and stores no text row; quote_text_sent.rs:51 last_quote_text reads only messaging.outbox rows for first_quote/quote_update, so intake quote_updates.rs:134 previous() is None, quotes::notify::notice returns Notice::First, quote_updates.rs:143 retries via first_held then gives up with Nothing. Same after a hard bounce resets to Text. Tests call enqueue directly (update_email_sends.rs:385) and never drive the intake handler. Suggested fix: last_quote_text also considers update.first_quote and update.quote_update rows in email_outbox (quote_text_sent.rs is not on T730's file list: needs a decision entry or plan note); add a test driving the intake update handler with Email-only.\nEarlier finding (unsubscribe link) was fixed and accepted (D-5564).",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 250,
+     "head_sha": "8e4a3378787b5b84e572879568168ace60d591a4",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-23T06:00:46Z",
+     "ended_at": "2026-11-23T08:20:16Z",
+     "result": "QUEUED",
+     "usage": {
+      "worker": {
+       "tokens": 16708267,
+       "turns": 150
+      },
+      "reviewer": {
+       "tokens": 2164174,
+       "turns": 45
+      }
+     },
+     "wip_skipped": "8e4a3378787b changes .github"
     }
    ]
   },
@@ -113283,12 +113306,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T716",
-   "at": "2026-11-23T08:17:23Z",
-   "cache_creation_input_tokens": 180376,
-   "input_tokens": 177,
-   "cache_read_input_tokens": 3369562,
-   "output_tokens": 29706
+   "task": "T730",
+   "at": "2026-11-23T08:20:16Z",
+   "output_tokens": 96919,
+   "cache_creation_input_tokens": 348887,
+   "cache_read_input_tokens": 18426256,
+   "input_tokens": 379
   },
   "source": "session_reading 2026-11-23T07:52:19Z (week)",
   "by_task": {
@@ -120756,7 +120779,17 @@
    },
    "T730": {
     "estimated_bytes": 555540,
-    "estimated_tokens": 1629500
+    "estimated_tokens": 1629500,
+    "usage_counting": "message_id",
+    "output_tokens": 96919,
+    "cache_creation_input_tokens": 348887,
+    "cache_read_input_tokens": 18426256,
+    "input_tokens": 379,
+    "worker_tokens": 16708267,
+    "worker_turns": 150,
+    "reviewer_tokens": 2164174,
+    "reviewer_turns": 45,
+    "last_model": "claude-opus-5-5"
    },
    "T712": {
     "estimated_bytes": 474594,
@@ -120868,11 +120901,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-23T05:08:35Z",
-    "tokens": 4948350
+    "tokens": 7237160
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 192760234
+    "tokens": 195049044
    }
   },
   "session_reading": {
@@ -120883,7 +120916,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T08:19:02Z",
+ "updated_at": "2026-11-23T08:20:17Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -120981,7 +121014,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "f2d298a8c8e3f393ea7a2af6bb0a706b65f85db6",
+ "runner_sha": "8e4a3378787b5b84e572879568168ace60d591a4",
  "starter": "actions",
  "smoke_runs": [
   {
