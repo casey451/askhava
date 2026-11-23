@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-23T02:36:52Z by runner 53057cbb7a03 (actions).
+Updated 2026-11-23T02:37:25Z by runner 53057cbb7a03 (actions).
 
-**Building: T712 in progress since 01:56Z; 621 of 774 done; week 70% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T834 in progress since 01:58Z; 621 of 774 done; week 70% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 621 of 774 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 3: T712 claimed 01:56Z, lease until 04:56Z; lane 4: T834 claimed 01:58Z, lease until 04:58Z; lane 5: T716 claimed 01:31Z, lease until 04:31Z
+- **Lane:** lane 4: T834 claimed 01:58Z, lease until 04:58Z; lane 5: T716 claimed 01:31Z, lease until 04:31Z
 - **Week:** 70% used, 49.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 02:25Z, 11 min before this update
 - **Keeper:** last ran 02:07Z, next wake 04:34Z
@@ -22,9 +22,10 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T712 | server and portals: the owner portal lists PROBLEM reports w | MERGE_PENDING | 1 | 39 min | 02:36Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
 | T645 | intake and messaging: the web chat honours an opt-out word,  | MERGE_PENDING | 2 | 2 h 6 min | 01:58Z | PLAN GAP: app/site/src/chat.rs:340 (owned by T593, then T646 and T649; T593 is not merged yet) calls `chat_message(db, & |
 | T837 | runner (harness): the keeper judges work with the real stage | done | 1 | 41 min | 01:47Z |  |
-| T712 | server and portals: the owner portal lists PROBLEM reports w | resync | 1 | 90 min | 01:40Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
+| T712 | server and portals: the owner portal lists PROBLEM reports w | resync | 1 | 90 min | 01:40Z |  |
 | T832 | ci (harness): the Checks job allows 60 minutes, so a full na | done | 1 | 79 min | 01:09Z |  |
 | T725 | site: the home page shows the texting number with its consen | done | 4 | 49 min | 00:39Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
 | T675 | intake and server (harness): the dispatcher asks for photos  | done | 4 | 45 min | 00:33Z | merging main into the reviewed head conflicts in app/server/CLAUDE.md; a resync merges it in on this attempt (D-891) |
@@ -126,9 +127,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - nothing
-- lane 3: T712 (lease until 2026-11-23T04:56:55Z)
 - lane 4: T834 (lease until 2026-11-23T04:58:11Z)
 - lane 5: T716 (lease until 2026-11-23T04:31:05Z)
 
 ## Last usage reading
-- {"task": "T645", "at": "2026-11-23T01:58:27Z", "input_tokens": 418, "output_tokens": 107161, "cache_creation_input_tokens": 387932, "cache_read_input_tokens": 20797216}
+- {"task": "T712", "at": "2026-11-23T02:36:50Z", "cache_read_input_tokens": 972546, "output_tokens": 8917, "input_tokens": 60, "cache_creation_input_tokens": 64999}
