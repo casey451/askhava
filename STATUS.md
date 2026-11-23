@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T13:59:05Z by runner 3e3b52bf8012 (actions).
+Updated 2026-11-23T13:59:45Z by runner 3e3b52bf8012 (actions).
 
 **Building: T666 in progress since 13:17Z; 630 of 777 done; week 76% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,8 +8,8 @@ Updated 2026-11-23T13:59:05Z by runner 3e3b52bf8012 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T666 claimed 13:17Z, lease until 16:17Z
 - **Week:** 76% used, 39.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:58Z, 0 min before this update
-- **Keeper:** last ran 13:47Z, next wake 16:20Z
+- **Last run:** 13:59Z, 0 min before this update
+- **Keeper:** last ran 13:59Z, next wake 14:19Z
 
 ## Needs attention
 - BLOCKED T730: Ci: failure; Checks: failure
