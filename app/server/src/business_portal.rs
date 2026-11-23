@@ -18,7 +18,8 @@
 //! `picks::api::pick_numbers` and `jobs::api::finished_counts` (T451); billing from the same
 //! statement and `payments::api::saved_cards` (brand and last four only, FEE-014), with no fee
 //! limit shown (no `api` reads it yet, D-3618, D-3664); the released job's page through `picks::api::released_view` with the session
-//! proof from [`crate::session_minter`] on every load (D-1739); the notice addresses opened from the
+//! proof from [`crate::session_minter`] on every load (D-1739), with the pick's job number from
+//! `jobs::api::job_number` after a "Confirm and billing" check on its `pick_fee` (T782); the notice addresses opened from the
 //! vault here (D-1848, D-3664). Business texting is off (TXT-035), so the channel is email.
 //!
 //! T483 (OPS-026, BIZ-052; D-207, D-3753, D-3890): the home also shows the owner's away date
@@ -560,8 +561,10 @@ async fn save_links(
 /// `GET` [`JOB_RELEASE_ROUTE`] (PICK-022 to PICK-024, BIZ-013, D-1739): the released job's page,
 /// read through `released_view` with `who`'s session proof on every load; another business's
 /// pick, a member without "Confirm and billing" and an unknown or malformed ID are the one
-/// not-found answer, with nothing read from the vault (`released_view` checks first). No `api`
-/// reads a pick's job number or call log yet, so the page shows job 0 and no calls (D-3664).
+/// not-found answer, with nothing read from the vault: [`released_number`] checks the pick's
+/// business and role before reading the job number, and `released_view` checks again. The page
+/// shows the real job number; a number that does not read back is the failure answer, never job
+/// 0. The call log stays empty until after launch (BIZ-035, D-5162).
 async fn job_page(
     State(portal): State<Portal>,
     Extension(site): Extension<Site>,
@@ -575,11 +578,16 @@ async fn job_page(
     let Ok(pick) = Uuid::try_parse(&pick) else {
         return denied(&portal, &site, &who).await;
     };
+    let job_number = match released_number(&portal, &who, pick).await {
+        Ok(Some(number)) => number,
+        Ok(None) => return denied(&portal, &site, &who).await,
+        Err(what) => return failed(what),
+    };
     let Some(vault) = portal.vault.get() else {
         return failed("no vault");
     };
     let facts = JobFacts {
-        job_number: 0,
+        job_number,
         pick,
         calls: &[],
     };
@@ -589,6 +597,26 @@ async fn job_page(
         Ok(None) => denied(&portal, &site, &who).await,
         Err(_) => failed("job release page"),
     }
+}
+
+/// PICK-024, BIZ-013, SEC-019 (D-5081, D-5585): the job number of `pick` when it is a pick of a
+/// business `who` may act for with "Confirm and billing" (or as its owner), read through
+/// `own_pick_job`'s `pick_fee` read; `None` for another business's pick, a cards-only member or an
+/// unknown pick, with no job or number read. A number that does not read back is an error.
+async fn released_number(
+    portal: &Portal,
+    who: &BusinessPrincipal,
+    pick: Uuid,
+) -> Result<Option<i64>, &'static str> {
+    let Ok(mut db) = portal.pool.acquire().await else {
+        return Err("connection");
+    };
+    let fee = pick_fee(&mut db, pick).await.map_err(|_| "pick fee")?;
+    let Some(fee) = fee.filter(|f| who.may(f.business.0, Need::ConfirmAndBilling)) else {
+        return Ok(None);
+    };
+    let number = job_number(&mut db, fee.job).await;
+    number.map(Some).map_err(|_| "job number")
 }
 
 /// `who` with the "Confirm and billing" role (or the owner) and this month's statement, else the
