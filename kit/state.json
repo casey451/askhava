@@ -101760,8 +101760,8 @@
     "T458",
     "T588"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 2,
+   "status": "BLOCKED",
+   "attempts": 3,
    "slug": "text-confirm-link-session",
    "type": "build",
    "stage": "5",
@@ -101922,6 +101922,29 @@
        "turns": 12
       }
      }
+    },
+    {
+     "attempt": 3,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 28,
+     "head_sha": "188d33da48fb05f16eac4a6fabed8263ae09cf41",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-23T12:34:05Z",
+     "ended_at": "2026-11-23T13:10:48Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 447169,
+       "turns": 14
+      },
+      "reviewer": {
+       "tokens": 0,
+       "turns": 0
+      }
+     }
     }
    ],
    "reviewed_sha": "188d33da48fb05f16eac4a6fabed8263ae09cf41",
@@ -101942,10 +101965,7 @@
     1391,
     1395
    ],
-   "wip_claim": {
-    "attempt": 3,
-    "remote_sha": "188d33da48fb05f16eac4a6fabed8263ae09cf41"
-   }
+   "reason": "Worker made no commits: start smoke test did not finish within the 30-minute background limit (312 suites ok, no failures seen, partial). Previous CI failure is cargo-audit RUSTSEC-2026-0594 (cookie 0.18.2, fixed in 0.18.3), which fails every branch; the fix is PR #1396 (Cargo.lock cookie bump, D-5638), not yet on main. Retry after #1396 merges."
   },
   {
    "id": "T705",
@@ -114305,12 +114325,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T653",
-   "at": "2026-11-23T13:02:07Z",
-   "cache_creation_input_tokens": 90869,
-   "cache_read_input_tokens": 1348008,
-   "input_tokens": 65,
-   "output_tokens": 12983
+   "task": "T714",
+   "at": "2026-11-23T13:10:48Z",
+   "input_tokens": 27,
+   "output_tokens": 4743,
+   "cache_read_input_tokens": 415252,
+   "cache_creation_input_tokens": 27147
   },
   "source": "session_reading 2026-11-23T12:31:27Z (week)",
   "by_task": {
@@ -121948,12 +121968,12 @@
     "estimated_bytes": 309075,
     "estimated_tokens": 906573,
     "usage_counting": "message_id",
-    "output_tokens": 66573,
-    "cache_creation_input_tokens": 337506,
-    "input_tokens": 262,
-    "cache_read_input_tokens": 8084903,
-    "worker_tokens": 6878440,
-    "worker_turns": 93,
+    "output_tokens": 71316,
+    "cache_creation_input_tokens": 364653,
+    "input_tokens": 289,
+    "cache_read_input_tokens": 8500155,
+    "worker_tokens": 7325609,
+    "worker_turns": 107,
     "reviewer_tokens": 1610804,
     "reviewer_turns": 38,
     "last_model": "claude-opus-5-5"
@@ -121976,11 +121996,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-23T10:16:33Z",
-    "tokens": 7213113
+    "tokens": 7286555
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 204477291
+    "tokens": 204550733
    }
   },
   "session_reading": {
@@ -121991,7 +122011,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T13:10:36Z",
+ "updated_at": "2026-11-23T13:10:49Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -122089,7 +122109,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "f27e05243e49a721f4e086497cd1853aa05db78f",
+ "runner_sha": "188d33da48fb05f16eac4a6fabed8263ae09cf41",
  "starter": "actions",
  "smoke_runs": [
   {

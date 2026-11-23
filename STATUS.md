@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-23T13:10:36Z by runner f27e05243e49 (actions).
+Updated 2026-11-23T13:10:49Z by runner 188d33da48fb (actions).
 
 **Building: T819 in progress since 12:37Z; 630 of 775 done; week 75% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 630 of 775 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T819 claimed 12:37Z, lease until 15:37Z; lane 2: T714 claimed 12:34Z, lease until 15:34Z; lane 4: T730 claimed 10:33Z, lease until 13:33Z; lane 5: T646 claimed 12:00Z, lease until 15:00Z
+- **Lane:** lane 1: T819 claimed 12:37Z, lease until 15:37Z; lane 4: T730 claimed 10:33Z, lease until 13:33Z; lane 5: T646 claimed 12:00Z, lease until 15:00Z
 - **Week:** 75% used, 38.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:10Z, 0 min before this update
 - **Keeper:** last ran 13:04Z, next wake 13:35Z
@@ -32,16 +32,18 @@ URL:       https://rustsec.org/advisories/RUSTSEC-2026-0173
 Ci failed at step: All five jobs passed
 Checks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success
 ##[error]Process completed with exit code 1.
+- BLOCKED T714: Worker made no commits: start smoke test did not finish within the 30-minute background limit (312 suites ok, no failures seen, partial). Previous CI failure is cargo-audit RUSTSEC-2026-0594 (cookie 0.18.2, fixed in 0.18.3), which fails every branch; the fix is PR #1396 (Cargo.lock cookie bump, D-5638), not yet on main. Retry after #1396 merges.
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T836 (since 2026-11-23T07:59:33Z, no attempt used; a plan change fixes it): T836: kit/runner_log.jsonl is named by D-500, but no task owns it and it does not exist
-- Strict plan check red: 36 problem(s) on tasks still to run (+516 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 39 problem(s) on tasks still to run (+517 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T714 | portals: a Confirm link sent by text is marked text-started  | BLOCKED | 3 | 36 min | 13:10Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
 | T653 | licensing and server (harness): a typed BTR number is stored | MERGE_PENDING | 2 | 65 min | 13:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
-| T714 | portals: a Confirm link sent by text is marked text-started  | check_failed | 2 | 47 min | 12:27Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
+| T714 | portals: a Confirm link sent by text is marked text-started  | check_failed | 2 | 47 min | 12:27Z |  |
 | T819 | portals: her feedback words are scrubbed before they are sto | check_failed | 1 | 54 min | 11:57Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
 | T646 | site and server: the web chat's new-request limit counts the | check_failed | 2 | 54 min | 11:30Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T653 | licensing and server (harness): a typed BTR number is stored | check_failed | 1 | 117 min | 11:19Z |  |
@@ -135,9 +137,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T819 (lease until 2026-11-23T15:37:47Z)
-- lane 2: T714 (lease until 2026-11-23T15:34:05Z)
 - lane 4: T730 (lease until 2026-11-23T13:33:05Z)
 - lane 5: T646 (lease until 2026-11-23T15:00:48Z)
 
 ## Last usage reading
-- {"task": "T653", "at": "2026-11-23T13:02:07Z", "cache_creation_input_tokens": 90869, "cache_read_input_tokens": 1348008, "input_tokens": 65, "output_tokens": 12983}
+- {"task": "T714", "at": "2026-11-23T13:10:48Z", "input_tokens": 27, "output_tokens": 4743, "cache_read_input_tokens": 415252, "cache_creation_input_tokens": 27147}
