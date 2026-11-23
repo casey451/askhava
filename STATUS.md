@@ -1,21 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-23T19:04:09Z by runner 98e09a354256 (actions).
+Updated 2026-11-23T19:10:51Z by runner 0c7342d7b13f (actions).
 
 **Building: T812 in progress since 18:01Z; 636 of 777 done; week 81% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 636 of 777 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T812 claimed 18:01Z, lease until 21:01Z; lane 2: T745 claimed 19:03Z, lease until 22:03Z; lane 3: T730 claimed 17:56Z, lease until 20:56Z
-- **Week:** 81% used, 29.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:04Z, 0 min before this update
+- **Lane:** lane 1: T812 claimed 18:01Z, lease until 21:01Z; lane 2: T745 claimed 19:03Z, lease until 22:03Z; lane 3: T730 claimed 17:56Z, lease until 20:56Z; lane 4: T668 claimed 19:10Z, lease until 22:10Z
+- **Week:** 81% used, 27.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 19:04Z, 6 min before this update
 - **Keeper:** last ran 19:03Z, next wake 19:23Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T836 (since 2026-11-23T07:59:33Z, no attempt used; a plan change fixes it): T836: kit/runner_log.jsonl is named by D-500, but no task owns it and it does not exist
-- Strict plan check red: 40 problem(s) on tasks still to run (+520 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 40 problem(s) on tasks still to run (+524 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -101,7 +101,7 @@ Updated 2026-11-23T19:04:09Z by runner 98e09a354256 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-23T19:02:07Z (week)): week: 164.6M used, 29.4M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-08T01:33:26Z.
+- Pacing (session_reading 2026-11-23T19:02:07Z (week)): week: 166.2M used, 27.8M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-08T01:41:04Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -119,6 +119,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T812 (lease until 2026-11-23T21:01:47Z)
 - lane 2: T745 (lease until 2026-11-23T22:03:04Z)
 - lane 3: T730 (lease until 2026-11-23T20:56:52Z)
+- lane 4: T668 (lease until 2026-11-23T22:10:43Z)
 
 ## Last usage reading
 - {"task": "T222", "at": "2026-11-23T17:54:27Z", "output_tokens": 208324, "cache_read_input_tokens": 54231359, "cache_creation_input_tokens": 580741, "input_tokens": 742}
