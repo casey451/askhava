@@ -10280,3 +10280,4 @@
 - 2026-11-23T09:07:40Z runner 4345220c6cce (actions): {}
 - 2026-11-23T09:08:24Z runner 4345220c6cce (actions): {}
 - 2026-11-23T09:19:14Z runner 1c862770c97b (actions): {"T588": "MERGE_PENDING -> DONE", "T646": "MERGE_PENDING -> QUEUED"}
+- 2026-11-23T09:21:48Z runner 1c862770c97b (actions): {"T653": "QUEUED -> IN_PROGRESS"}; T653 estimated 1.9M tokens (calibrated); week has 44.3M left (no five-hour budget, D-3056) after 3.7M still running in another lane (session_reading 2026-11-23T09:07:39Z (week)); claimed
