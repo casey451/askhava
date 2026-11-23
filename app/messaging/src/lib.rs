@@ -64,6 +64,7 @@ mod suppression_backlog;
 mod suppression_rekey;
 mod suppression_versions;
 mod templates;
+mod update_emails;
 
 #[cfg(test)]
 mod tests;
