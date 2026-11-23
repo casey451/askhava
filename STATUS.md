@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-23T01:11:22Z by runner bd3e4e9cdad1 (actions).
+Updated 2026-11-23T01:17:07Z by runner 6cb391745e61 (actions).
 
 **Building: T837 in progress since 01:06Z; 618 of 774 done; week 69% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-23T01:11:22Z by runner bd3e4e9cdad1 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T837 claimed 01:06Z, lease until 04:06Z; lane 2: T645 claimed 23:51Z, lease until 02:51Z; lane 4: T712 claimed 00:09Z, lease until 03:09Z
 - **Week:** 69% used, 52.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:11Z, 0 min before this update
+- **Last run:** 01:17Z, 0 min before this update
 - **Keeper:** last ran 01:11Z, next wake 02:54Z
 
 ## Needs attention
@@ -18,7 +18,7 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 - PLAN GAP T121 (since 2026-11-23T00:03:26Z, no attempt used; a plan change fixes it): outside ownership: app/portals/src/update_channel.rs
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
-- Strict plan check red: 27 problem(s) on tasks still to run (+496 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
+- Strict plan check red: 24 problem(s) on tasks still to run (+499 on DONE tasks); first: T624: stored context_pct 12% but it measures 18%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -87,7 +87,7 @@ T729 (owner) merged UpdatesForm/ConfirmForm without deny_unknown_fields and conf
 ## Progress (requirements verified)
 
 **Requirements verified:** 403 of 735 (54.8%) · partial 319 · unstarted 13
-**Tasks merged (throughput only):** 618 of 773
+**Tasks merged (throughput only):** 618 of 774
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
