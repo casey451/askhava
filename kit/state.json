@@ -101931,8 +101931,13 @@
    },
    "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust dependency audit (cargo-audit, cargo-deny)\nWarning:   unmaintained\nTitle:     `basic-toml` is unmaintained\nDate:      2026-09-26\nID:        RUSTSEC-2026-0374\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0374\nCrate:     proc-macro-error2\nVersion:   2.0.1\nWarning:   unmaintained\nTitle:     proc-macro-error2 is unmaintained\nDate:      2026-06-07\nID:        RUSTSEC-2026-0173\nURL:       https://rustsec.org/advisories/RUSTSEC-2026-0173\nerror: 1 vulnerability found!\nwarning: 2 allowed warnings found\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
    "runner_closed_prs": [
-    1391
-   ]
+    1391,
+    1395
+   ],
+   "wip_claim": {
+    "attempt": 3,
+    "remote_sha": "188d33da48fb05f16eac4a6fabed8263ae09cf41"
+   }
   },
   {
    "id": "T705",
@@ -121971,7 +121976,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T12:34:20Z",
+ "updated_at": "2026-11-23T12:34:49Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
