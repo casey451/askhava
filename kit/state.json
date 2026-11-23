@@ -101609,8 +101609,8 @@
     "T675",
     "T654"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 1,
+   "status": "QUEUED",
+   "attempts": 2,
    "slug": "intake-order-trade-questions",
    "type": "build",
    "stage": "5",
@@ -101691,6 +101691,29 @@
        "turns": 62
       }
      }
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 105,
+     "head_sha": "ee718d9818e119e105327a88e6a124fedfc3978a",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-23T04:41:43Z",
+     "ended_at": "2026-11-23T06:48:28Z",
+     "result": "QUEUED",
+     "usage": {
+      "worker": {
+       "tokens": 3426692,
+       "turns": 67
+      },
+      "reviewer": {
+       "tokens": 4091619,
+       "turns": 74
+      }
+     }
     }
    ],
    "reviewed_sha": "46dfb4344ce0bf6c3832cd98f88a0a740dbb6980",
@@ -101741,11 +101764,7 @@
    "update_waiting_since": null,
    "update_push_failures": null,
    "merge_turn_since": "2026-11-23T03:44:53Z",
-   "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)\ntest td_job_19_a_press_that_will_not_charge_keeps_the_confirm_window ... ok\ntest td_job_19_a_press_with_a_card_moves_the_job_and_a_retry_is_never_expired ... ok\ntest td_job_19_a_category_with_no_roc_class_needs_no_stored_check ... ok\ntest td_job_19_a_zero_press_moves_first_and_a_cancelled_job_ends_the_pick ... ok\ntest td_job_19_an_ineligible_first_press_is_refused_before_any_charge ... FAILED\nfailures:\n---- td_job_19_an_ineligible_first_press_is_refused_before_any_charge stdout ----\nthread 'td_job_19_an_ineligible_first_press_is_refused_before_any_charge' (39242) panicked at app/server/tests/confirm_press_moves.rs:382:10:\ncontact: PhoneTaken\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_job_19_an_ineligible_first_press_is_refused_before_any_charge\ntest result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.80s\nerror: test failed, to rerun pass `-p askhava-server --test confirm_press_moves`\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
-   "wip_claim": {
-    "attempt": 2,
-    "remote_sha": "46dfb4344ce0bf6c3832cd98f88a0a740dbb6980"
-   },
+   "last_failure": "Round 2 review of head ee718d9818e119e105327a88e6a124fedfc3978a: the round-1 licensing finding is fixed (with_licensed_others, test td_int_53_the_breaker_text_needs_the_electrical_license). Remaining finding (INT-017, more a plan gap than a worker bug): card_in (app/intake/src/order_dispatch.rs:1494) stores candidates from final_pairs, which now include electrical's \"breaker trips\" under category handyman with no trade per label. The real send, cards_out.rs:388 (card_pool_at then candidate_jobs), gives every label the handyman category; handyman licence kind is none (docs/catalog/categories.yaml:179) and \"breaker trips\" is not a handyman job type, so it is listed:false and licensing::rules::no_license refuses it for every business. Counterexample: \"handyman needed, my breaker keeps tripping\" + ZIP + reply \"door repair\" gets coverage_count_one, then the card goes to nobody. Fails safe, but count and send disagree. Fix needs the card or cards_out to carry each candidate's trade; D-5333 and D-5582 rule CardFacts, card_pool_at and cards_out.rs out of T716, so it needs a plan change or follow-up task, or a logged acceptance, before merge.",
    "runner_closed_prs": [
     1377
    ]
@@ -112977,12 +112996,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T611",
-   "at": "2026-11-23T06:24:41Z",
-   "input_tokens": 168,
-   "cache_read_input_tokens": 4160705,
-   "output_tokens": 38368,
-   "cache_creation_input_tokens": 156861
+   "task": "T716",
+   "at": "2026-11-23T06:48:28Z",
+   "input_tokens": 286,
+   "cache_creation_input_tokens": 247272,
+   "cache_read_input_tokens": 7217555,
+   "output_tokens": 53198
   },
   "source": "session_reading 2026-11-23T06:26:04Z (week)",
   "by_task": {
@@ -120484,14 +120503,14 @@
     "estimated_bytes": 667524,
     "estimated_tokens": 1955494,
     "usage_counting": "message_id",
-    "input_tokens": 411,
-    "cache_creation_input_tokens": 444518,
-    "output_tokens": 147426,
-    "cache_read_input_tokens": 24919743,
-    "worker_tokens": 21665934,
-    "worker_turns": 148,
-    "reviewer_tokens": 3846164,
-    "reviewer_turns": 62,
+    "input_tokens": 697,
+    "cache_creation_input_tokens": 691790,
+    "output_tokens": 200624,
+    "cache_read_input_tokens": 32137298,
+    "worker_tokens": 25092626,
+    "worker_turns": 215,
+    "reviewer_tokens": 7937783,
+    "reviewer_turns": 136,
     "last_model": "claude-opus-5-5"
    },
    "T834": {
@@ -120544,11 +120563,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-23T05:08:35Z",
-    "tokens": 3138103
+    "tokens": 4160614
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 190949987
+    "tokens": 191972498
    }
   },
   "session_reading": {
@@ -120559,7 +120578,7 @@
    }
   }
  },
- "updated_at": "2026-11-23T06:47:47Z",
+ "updated_at": "2026-11-23T06:48:28Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -120657,7 +120676,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "f2d298a8c8e3f393ea7a2af6bb0a706b65f85db6",
+ "runner_sha": "ee718d9818e119e105327a88e6a124fedfc3978a",
  "starter": "actions",
  "smoke_runs": [
   {
