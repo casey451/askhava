@@ -31,6 +31,11 @@
 //! [`SitePages::with_business_number`]; no number or a failed read shows the switch-off line (T769,
 //! D-4931).
 //!
+//! The home page and the Spanish home show the homeowner texting number, each with its consent line
+//! directly after it, only while `businesses::api::homeowner_texting_number` answers one for the
+//! number and Gate C launch date set by [`SitePages::with_homeowner_texting`] (T725, WEB-017,
+//! CON-005, D-4709, D-5279, D-5402); otherwise, or on a failed read, neither page changes.
+//!
 //! [`page_routes`] also serves the accessibility statement at `/accessibility` (T115, A11Y-020,
 //! D-3155): `docs/legal/accessibility-statement.md`, rendered once by
 //! `legal_pages::accessibility_statement` when the router is built, never a third copy.
@@ -40,7 +45,7 @@ use std::sync::{Arc, Mutex, PoisonError};
 use std::time::{Duration, Instant};
 
 use askama::Template;
-use askhava_businesses::api::{business_texting_on, trade_count};
+use askhava_businesses::api::{business_texting_on, homeowner_texting_number, trade_count};
 use askhava_catalog::api::{CategoryListing, category_list};
 use askhava_core::api::{Environment, Settings, arizona_time, brand};
 use askhava_payments::api::Tier;
@@ -48,7 +53,7 @@ use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::get;
 use axum::{Extension, Router};
-use jiff::SignedDuration;
+use jiff::{SignedDuration, Timestamp};
 use sqlx::{PgConnection, PgPool};
 use uuid::Uuid;
 
@@ -145,20 +150,20 @@ impl CityGuide {
     }
 }
 
-/// TXT-035, WEB-024, D-4931: the configured business sending number, held type-erased because
-/// `site` may not name `messaging`'s `SendingNumber` (`kit/layers.json`); the business page hands
-/// it back to `businesses::api::business_texting_on`, which fixes its type. Equal only to itself.
+/// TXT-035, WEB-024, WEB-017, D-4931, D-4709: a configured sending number (business or homeowner),
+/// held type-erased because `site` may not name `messaging`'s `SendingNumber` (`kit/layers.json`);
+/// the pages hand it back to `businesses::api`'s readers, which fix its type. Equal only to itself.
 #[derive(Clone, Default)]
-struct BusinessNumber(Option<Arc<dyn Any + Send + Sync>>);
+struct HeldNumber(Option<Arc<dyn Any + Send + Sync>>);
 
-impl std::fmt::Debug for BusinessNumber {
+impl std::fmt::Debug for HeldNumber {
     /// Whether a number is set, never the number.
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(if self.0.is_some() { "set" } else { "unset" })
     }
 }
 
-impl PartialEq for BusinessNumber {
+impl PartialEq for HeldNumber {
     /// Both unset, or the same held number.
     fn eq(&self, other: &Self) -> bool {
         match (&self.0, &other.0) {
@@ -168,15 +173,18 @@ impl PartialEq for BusinessNumber {
     }
 }
 
-impl Eq for BusinessNumber {}
+impl Eq for HeldNumber {}
 
-/// The site pages' settings: WEB-028's threshold, the "Who runs" facts and the business number.
+/// The site pages' settings: WEB-028's threshold, the "Who runs" facts, the business number and
+/// the homeowner number with the Gate C launch date.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SitePages {
     min_jobs: u32,
     who: WhoRuns,
     guide: CityGuide,
-    business: BusinessNumber,
+    business: HeldNumber,
+    homeowner: HeldNumber,
+    launch: Option<Timestamp>,
 }
 
 impl Default for SitePages {
@@ -186,7 +194,9 @@ impl Default for SitePages {
             min_jobs: 50,
             who: WhoRuns::default(),
             guide: CityGuide::default(),
-            business: BusinessNumber::default(),
+            business: HeldNumber::default(),
+            homeowner: HeldNumber::default(),
+            launch: None,
         }
     }
 }
@@ -199,7 +209,9 @@ impl SitePages {
             min_jobs: settings.home_numbers_min_jobs(),
             who: WhoRuns::from_settings(settings),
             guide: CityGuide::from_settings(settings),
-            business: BusinessNumber::default(),
+            business: HeldNumber::default(),
+            homeowner: HeldNumber::default(),
+            launch: None,
         }
     }
 
@@ -210,7 +222,21 @@ impl SitePages {
     #[must_use]
     pub fn with_business_number<N: Any + Send + Sync>(mut self, number: Option<N>) -> Self {
         let held = number.map(|n| Arc::new(n) as Arc<dyn Any + Send + Sync>);
-        self.business = BusinessNumber(held);
+        self.business = HeldNumber(held);
+        self
+    }
+
+    /// WEB-017, CON-005, D-4709: these pages with the configured homeowner sending number
+    /// (`ASKHAVA_HOMEOWNER_NUMBER`, a `messaging::api::SendingNumber`) and the Gate C launch instant
+    /// (`ASKHAVA_LAUNCH_DATE`). `None`, or a number of any other type, shows no texting number.
+    #[must_use]
+    pub fn with_homeowner_texting<N: Any + Send + Sync>(
+        mut self,
+        number: Option<N>,
+        launch: Option<Timestamp>,
+    ) -> Self {
+        let held = number.map(|n| Arc::new(n) as Arc<dyn Any + Send + Sync>);
+        (self.homeowner, self.launch) = (HeldNumber(held), launch);
         self
     }
 }
@@ -223,6 +249,20 @@ pub(crate) struct Shown {
     per_request: String,
     range: String,
     trades: String,
+}
+
+#[cfg(test)]
+impl Shown {
+    /// Fake numbers for the crate's page tests (no database).
+    pub(crate) fn fake() -> Self {
+        Self {
+            requests: 64,
+            wait: Some("3 hours".to_owned()),
+            per_request: "2.5".to_owned(),
+            range: "Mar 1, 2027 to Apr 1, 2027".to_owned(),
+            trades: "4 trades".to_owned(),
+        }
+    }
 }
 
 /// WEB-028, D-4098: how long the served home page keeps its numbers. Not a spec value (so not a
@@ -336,6 +376,7 @@ struct HomePage {
     market: HomeMarket,
     csrf: String,
     words_max: usize,
+    texting: Option<String>,
 }
 
 #[derive(Template)]
@@ -393,6 +434,7 @@ struct EsHomePage {
     banner_shown: bool,
     who: WhoRuns,
     fees: Fees,
+    texting: Option<String>,
 }
 
 /// WEB-020: a switched-on trade's fake sample card; `guide` for a no-license trade.
@@ -595,19 +637,7 @@ fn business_routes(state: &Arc<(PgPool, SitePages)>) -> Router {
     };
     let es_home = {
         let state = Arc::clone(state);
-        move || async move {
-            let (pool, pages) = (&state.0, &state.1);
-            let (who, fees) = (pages.who.clone(), Fees::from_tiers());
-            let banner_shown = banner_shown(pool).await;
-            respond(
-                EsHomePage {
-                    banner_shown,
-                    who,
-                    fees,
-                }
-                .render(),
-            )
-        }
+        move || async move { respond(es_home_html(&state.0, &state.1).await) }
     };
     let help = {
         let pool = state.0.clone();
@@ -621,6 +651,37 @@ fn business_routes(state: &Arc<(PgPool, SitePages)>) -> Router {
         .route(BUSINESS_PATH, get(page(false)))
         .route(ES_BUSINESS_PATH, get(page(true)))
         .route(BUSINESS_HELP_PATH, get(help))
+}
+
+/// WEB-002, WEB-017, WORD-013, D-5402: the Spanish home page, with the texting number and its
+/// Spanish consent line only while [`homeowner_texting`] answers one; no pooled connection shows
+/// neither.
+async fn es_home_html(pool: &PgPool, pages: &SitePages) -> Result<String, askama::Error> {
+    let texting = match pool.acquire().await {
+        Ok(mut db) => homeowner_texting(&mut db, pages).await,
+        Err(_) => None,
+    };
+    es_home_page(pages, banner_shown(pool).await, texting)
+}
+
+/// The Spanish home page with its banner and texting number decided; no database. `pub(crate)`
+/// for the crate's page checks.
+///
+/// # Errors
+///
+/// The template's error.
+pub(crate) fn es_home_page(
+    pages: &SitePages,
+    banner_shown: bool,
+    texting: Option<String>,
+) -> Result<String, askama::Error> {
+    EsHomePage {
+        banner_shown,
+        who: pages.who.clone(),
+        fees: Fees::from_tiers(),
+        texting,
+    }
+    .render()
 }
 
 /// WEB-018 to WEB-021, WEB-024: the business page, in Spanish when `spanish` (WEB-019). Its
@@ -738,9 +799,10 @@ async fn home_read(
 ) -> Result<String, askama::Error> {
     let Ok(mut db) = pool.acquire().await else {
         tracing::warn!("home page database read failed; the page shows no banner and no numbers");
-        return home_page(pages, false, None, csrf);
+        return home_page(pages, false, None, (None, csrf));
     };
     let banner_shown = banner_shown_on(&mut db).await;
+    let texting = homeowner_texting(&mut db, pages).await;
     let numbers = match cache.and_then(HomeNumbersCache::fresh) {
         Some(kept) => kept,
         None => {
@@ -751,12 +813,39 @@ async fn home_read(
             read.flatten()
         }
     };
-    home_page(pages, banner_shown, numbers, csrf)
+    home_page(pages, banner_shown, numbers, (texting, csrf))
 }
 
-/// The home page with its banner, numbers and request-box token `csrf` decided, its market names
-/// read from `markets.yaml` (D-1515, D-4098, D-4669); no database. `pub(crate)` for the crate's
-/// copy checks.
+/// WEB-017, CON-005, D-4709: the homeowner texting number as the home pages show it, from
+/// `businesses::api::homeowner_texting_number` at the current instant; `None` before Gate C, with
+/// texting off or paused, or on a failed read (one warning, never the number).
+async fn homeowner_texting(db: &mut PgConnection, pages: &SitePages) -> Option<String> {
+    let number = pages
+        .homeowner
+        .0
+        .as_deref()
+        .and_then(|n| n.downcast_ref().cloned());
+    let read = homeowner_texting_number(db, (number, pages.launch), Timestamp::now()).await;
+    let shown = read.unwrap_or_else(|_| {
+        tracing::warn!("homeowner texting read failed; the home pages show no texting number");
+        None
+    });
+    shown.map(|number| shown_number(&number))
+}
+
+/// WEB-017: a configured `+1` and ten-digit number as "(928) 555-0100"; any other form as given.
+pub(crate) fn shown_number(number: &str) -> String {
+    match number.strip_prefix("+1") {
+        Some(d) if d.len() == 10 && d.is_ascii() => {
+            format!("({}) {}-{}", &d[..3], &d[3..6], &d[6..])
+        }
+        _ => number.to_owned(),
+    }
+}
+
+/// The home page with its banner, numbers, texting number (`texting`, shown with its consent line,
+/// WEB-017, D-4709) and request-box token `csrf` decided, its market names read from
+/// `markets.yaml` (D-1515, D-4098, D-4669); no database. `pub(crate)` for the crate's copy checks.
 ///
 /// # Errors
 ///
@@ -765,7 +854,7 @@ pub(crate) fn home_page(
     pages: &SitePages,
     banner_shown: bool,
     numbers: Option<Shown>,
-    csrf: String,
+    (texting, csrf): (Option<String>, String),
 ) -> Result<String, askama::Error> {
     let market = home_market().map_err(|e| askama::Error::Custom(Box::new(e)))?;
     HomePage {
@@ -776,6 +865,7 @@ pub(crate) fn home_page(
         market,
         csrf,
         words_max: WORDS_MAX_CHARS,
+        texting,
     }
     .render()
 }
@@ -858,7 +948,7 @@ mod tests {
             who,
             ..SitePages::default()
         };
-        home_page(&pages, false, None, "fake-token".to_owned()).expect("renders")
+        home_page(&pages, false, None, (None, "fake-token".to_owned())).expect("renders")
     }
 
     /// D-1515, INT-048, T593: the home page reads the one market `markets.yaml` lists, so a second
@@ -1314,6 +1404,7 @@ mod tests {
             banner_shown: false,
             who: WhoRuns::default(),
             fees: Fees::from_tiers(),
+            texting: None,
         }
         .render()
         .expect("es");

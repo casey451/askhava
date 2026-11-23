@@ -13,7 +13,11 @@
     same words. The headline's one italic accent is a span on words it already has; the kicker's
     capitals and the steps' numbers are CSS alone; the hero photo is never lazy; nothing here
     carries `rise`. "Get quotes" keeps its bare markup and no arrow, since a test reads that
-    markup (`app/site/src/pages.rs`). From 1024 px the "Who runs" facts sit as one ruled row. -#}
+    markup (`app/site/src/pages.rs`). From 1024 px the "Who runs" facts sit as one ruled row.
+    T725 (WEB-017, CON-005, D-4709, D-5279): only while `texting` holds the homeowner number (from
+    Gate C, texting live) does the hero show it in place of the request box, the consent line
+    word for word directly after it in the same block, and the steps' start line point to it;
+    otherwise the page is as before. -#}
 {% block title %}Local quotes for {{ market.short_name }} homes{% endblock %}
 {% block content %}
 <div class="hero">
@@ -25,6 +29,13 @@
 <p class="kicker">{{ market.name }}, {{ market.state_name }}</p>
 <h1 class="display">Get local quotes <span class="accent">without giving out</span> your number.</h1>
 <p class="lede">Tell us what needs doing. We'll ask {{ market.short_name }} businesses that do that work and show you their quotes on one page.</p>
+{%- if let Some(number) = texting %}
+<div class="request-box">
+<p>Text {{ askhava_core::api::brand().display_name() }} at <strong>{{ number }}</strong> to get quotes. That number is text-only.</p>
+<p class="hint">Texting {{ askhava_core::api::brand().display_name() }} is your OK to get automated texts about your own request. Msg &amp; data rates may apply. Reply STOP to opt out. <a href="/sms-terms">Terms</a> and <a href="/privacy">Privacy</a>.</p>
+<p class="cost">Free for you. The business you pick pays {{ askhava_core::api::brand().display_name() }} a set introduction fee.</p>
+</div>
+{%- else %}
 <form class="request-box" method="post" action="/request" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
 <label for="job">What needs doing?</label>
@@ -33,6 +44,7 @@
 <button type="submit">Get quotes</button>
 <p class="cost">Free for you. The business you pick pays {{ askhava_core::api::brand().display_name() }} a set introduction fee.</p>
 </form>
+{%- endif %}
 <p class="more"><a href="/how-it-works">See how it works</a></p>
 </div>
 </div>
@@ -47,7 +59,11 @@
 <section class="section">
 <div class="section-head">
 <h2 class="section-title">How it works</h2>
+{%- if texting.is_some() %}
+<p class="soft">Start by texting {{ askhava_core::api::brand().display_name() }}. You don't need to know which trade to ask for.</p>
+{%- else %}
 <p class="soft">Start in the chat on this site. You don't need to know which trade to ask for.</p>
+{%- endif %}
 </div>
 <ol class="steps">
 <li><div>
