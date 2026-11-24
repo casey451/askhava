@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T03:35:43Z by runner 1dd6709e4854 (actions).
+Updated 2026-11-24T03:36:17Z by runner 1dd6709e4854 (actions).
 
-**Building: T524 in progress since 01:11Z; 648 of 779 done; week 88% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T757 in progress since 03:10Z; 648 of 779 done; week 88% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 648 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T524 claimed 01:11Z, lease until 04:11Z; lane 2: T757 claimed 03:10Z, lease until 06:10Z; lane 4: T676 claimed 02:45Z, lease until 05:45Z; lane 5: T544 claimed 03:08Z, lease until 06:08Z
+- **Lane:** lane 2: T757 claimed 03:10Z, lease until 06:10Z; lane 4: T676 claimed 02:45Z, lease until 05:45Z; lane 5: T544 claimed 03:08Z, lease until 06:08Z
 - **Week:** 88% used, 14.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 03:31Z, 4 min before this update
+- **Last run:** 03:31Z, 5 min before this update
 - **Keeper:** last ran 03:01Z, next wake 03:21Z
 
 ## Needs attention
@@ -30,6 +30,7 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T524 | portals and server: the weekly digest and the owner-portal f | MERGE_PENDING | 1 | 2 h 24 min | 03:35Z |  |
 | T222 | Journeys J1 and J2, the full variants: web chat, photos, que | BLOCKED | 3 | 2 h 22 min | 03:00Z | Reviewer after the fix round still ended REVIEW-VERDICT: FINDINGS over 0aedbd3769e83a983d24d694c7abe05f8773a57a: / 1. do |
 | T649 | intake, site and server: after the code, the web chat's name | done | 2 | 62 min | 02:40Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T119 | Journey J4 (vendor outage), with closing checks | BLOCKED | 1 | 36 min | 02:36Z | PLAN GAP: outside ownership: tests/e2e/webserver.ts / keyedEnv (webserver.ts:143-177) sets no ASKHAVA_HOMEOWNER_NUMBER;  |
@@ -135,10 +136,10 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T524 (lease until 2026-11-24T04:11:37Z)
+- nothing
 - lane 2: T757 (lease until 2026-11-24T06:10:31Z)
 - lane 4: T676 (lease until 2026-11-24T05:45:51Z)
 - lane 5: T544 (lease until 2026-11-24T06:08:02Z)
 
 ## Last usage reading
-- {"task": "T222", "at": "2026-11-24T03:00:03Z", "input_tokens": 470, "cache_creation_input_tokens": 388920, "output_tokens": 140670, "cache_read_input_tokens": 48341232}
+- {"task": "T524", "at": "2026-11-24T03:35:41Z", "input_tokens": 382, "output_tokens": 126597, "cache_read_input_tokens": 18619791, "cache_creation_input_tokens": 457848}
