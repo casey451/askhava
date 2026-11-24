@@ -92186,11 +92186,12 @@
      "resync": true
     }
    ],
-   "reviewed_sha": "e3fe1a858ec61cfea25d42fc2cae26179b8294ae",
+   "reviewed_sha": "7308435f9b30eb53a7e4d8f4fae07609fa4ff653",
    "review_lease": {
     "task": "T624",
-    "session": "actions-44350652740",
-    "expires": "2026-11-18T20:41:09Z"
+    "session": "actions-45375146631",
+    "expires": "2026-11-24T15:09:45Z",
+    "lane": "5"
    },
    "branch": "claude/task/T624-health-check-alert-a2",
    "auto_merge": {
@@ -92213,34 +92214,11 @@
     }
    ],
    "last_failure": "Ci: failure; Python: failure\nPython failed at step: Unit, contract and drill tests (pytest)\nT705: about 21877 tokens, 11% of the window\nT711: about 54466 tokens, 28% of the window\nT715: about 55680 tokens, 28% of the window\nT717: about 50274 tokens, 26% of the window\nT716: about 39820 tokens, 20% of the window\nT718: about 64046 tokens, 33% of the window\nT719: about 66789 tokens, 34% of the window\nERROR T702: stale, differs from the template output\nchecked 662 prompts, 1 problems\n=========================== short test summary info ============================\nFAILED tests/test_gen_prompts.py::test_real_prompts_are_current - AssertionError: assert 1 == 0\n +  where 1 = <function main at 0x7ccbfd0b6340>(['--root', '/home/runner/work/askhava/askhava', '--check'])\n +    where <function main at 0x7ccbfd0b6340> = gp.main\n1 failed, 4027 passed, 11 skipped in 223.80s (0:03:43)\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: failure, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
-   "update_merges": [
-    {
-     "from": "f9ac2e6c67c71aa9ee3ab1d490c5fba9bc4292ed",
-     "to": "2b894d8f481196f01fe6282267127912fd05f3fc",
-     "main": "da3e803af8d39c48c8ade3d2f1cf633fc1ffa715",
-     "how": "hand-in",
-     "at": "2026-11-18T18:26:16Z"
-    },
-    {
-     "from": "2b894d8f481196f01fe6282267127912fd05f3fc",
-     "to": "e3fe1a858ec61cfea25d42fc2cae26179b8294ae",
-     "main": "3047ec5266bbc4fe22801f9b96e0c82da0e9c95c",
-     "how": "runner",
-     "checks": {
-      "Ci": "success",
-      "Ally": "success",
-      "Twin": "success"
-     },
-     "at": "2026-11-18T19:14:09Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
-   "merge_turn_since": "2026-11-18T19:14:09Z",
    "wip_claim": {
     "attempt": 2,
     "remote_sha": ""
-   }
+   },
+   "head_check_since": null
   },
   {
    "id": "T619",
@@ -127142,7 +127120,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T12:11:58Z",
+ "updated_at": "2026-11-24T12:13:04Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -127240,8 +127218,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "16fd7ee8aae9465dcb7bf75fd20984021425b001",
- "starter": "manual",
+ "runner_sha": "7308435f9b30eb53a7e4d8f4fae07609fa4ff653",
+ "starter": "actions",
  "smoke_runs": [
   {
    "sha": "5bde4ee54e11a945f38b1d4a9ef34a5282047bc5",
