@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-24T12:40:50Z by runner 16fd7ee8aae9 (actions).
+Updated 2026-11-24T13:12:20Z by runner 26e9bbe3e395 (manual).
 
 **Building: T733 in progress since 11:58Z; 659 of 780 done; week 92% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-24T12:40:50Z by runner 16fd7ee8aae9 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T733 claimed 11:58Z, lease until 14:58Z; lane 4: T410 claimed 11:51Z, lease until 14:51Z
 - **Week:** 92% used, 5.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 12:40Z, 0 min before this update
+- **Last run:** 12:41Z, 31 min before this update
 - **Keeper:** last ran 12:40Z, next wake 13:00Z
 
 ## Needs attention
@@ -18,15 +18,12 @@ Updated 2026-11-24T12:40:50Z by runner 16fd7ee8aae9 (actions).
 3. Worker's PLAN GAP (day-3 DONE / masked call) REFUTED by reviewer: app/server/src/main.rs and lib.rs are shared paths T222 may edit, and a masked-call driver can live in owned tests/e2e/j1_full.ts. Only the 600-line budget is a real limit, which the worker did not argue. D-5642 guesses at the cause.
 4. tests/e2e/j2_full.ts:4 cites D-5643, which does not exist in docs/decisions.md.
 Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and prehandin.sh green.
-- BLOCKED T305: plan gap reported: PLAN GAP: outside ownership: app/portals/templates/scorecard.html, app/portals/templates/intake_report.html, app/portals/templates/money_view.html
-Owners T158 (scorecard.html) and T434 (intake_report.html, money_view.html); T305 owns none. Ally A11Y-008/009 fails once T305 serves these pages: bare tables not in a labelled focusable region (scorecard.html:17, money_view.html:33, intake_report.html:21; pattern business_billing.html:16) and label/hint/input on one line (intake_report.html:8-11, money_view.html:8-11 and :48-61, scorecard.html:48-52; pattern address_change.html:25-28). Reviewer con; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T305 --plan-fix D-### --reason "..."` (D-2859)
 - BLOCKED T801: plan gap reported: PLAN GAP: app/server/tests/web_chat_stops.rs:572 and :592 (owned by T645) assert a consent text queued to a chat-verified number that never texted in; fixing review finding (web_chat consent must never permit a text, CON-005/CON-025) requires changing them. Also app/server/tests/web_chat_after_code.rs:46,:319,:368 (T649) for the "We'll answer by text" wording. Smallest plan change: let T801 own web_chat_stops.rs (and web_chat_after_code.rs). Prepared fix patch at /tmp/T801-fix-round.patch. Reviewer confirmed the gap for web_chat_stops.rs. Proof: cargo test --workspace --exclude askhava-integra; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T801 --plan-fix D-### --reason "..."` (D-2859)
-- PLAN GAP T305 (since 2026-11-24T11:41:52Z, no attempt used; a plan change fixes it): outside ownership: app/portals/templates/scorecard.html, app/portals/templates/intake_report.html, app/portals/templates/money_view.html
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 57 problem(s) on tasks still to run (+555 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 60 problem(s) on tasks still to run (+558 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -77,10 +74,9 @@ Owners T158 (scorecard.html) and T434 (intake_report.html, money_view.html); T30
 | T819 | portals: her feedback words are scrubbed before they are sto | check_failed | 2 | 68 min | 13:45Z |  |
 | T646 | site and server: the web chat's new-request limit counts the | done | 3 | 99 min | 13:40Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Crate:     basic |
 | T730 | messaging: a homeowner who chose email gets each quote updat | check_failed | 3 | 2 h 46 min | 13:19Z |  |
-| T714 | portals: a Confirm link sent by text is marked text-started  | BLOCKED | 3 | 36 min | 13:10Z |  |
-| T653 | licensing and server (harness): a typed BTR number is stored | done | 2 | 65 min | 13:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
 
 ### Plan and harness merges on main
+- 13:12Z Plan: T305 owns its three owner-report templates for Ally; PF-T801 review filed (D-5792) (#1446)
 - 07:37Z Plan: per-turn token trims, PF-P1d pre-flight fixes, J1 keyboard flake task T846, T119 unblock, hand-offs (D-5693, D-5709, D-5715, D-5716) (#1419)
 - 23:24Z Plan: token efficiency and phase-2 pre-flight (D-5676); smoke throughput harness task T843, T836 unblocked (D-5682) (#1412)
 - 20:12Z Plan: outside pre-flight fixes for 22 queued tasks, template a11y line, four test-design rows (D-5670) (#1410)

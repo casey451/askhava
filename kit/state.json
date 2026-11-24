@@ -42841,7 +42841,7 @@
     "T348",
     "T530"
    ],
-   "status": "BLOCKED",
+   "status": "QUEUED",
    "attempts": 2,
    "slug": "owner-reports-served",
    "type": "build",
@@ -42983,22 +42983,26 @@
    "update_waiting_since": null,
    "update_push_failures": null,
    "merge_turn_since": "2026-11-24T10:35:22Z",
-   "last_failure": "PLAN GAP: outside ownership: app/portals/templates/scorecard.html, app/portals/templates/intake_report.html, app/portals/templates/money_view.html\nOwners T158 (scorecard.html) and T434 (intake_report.html, money_view.html); T305 owns none. Ally A11Y-008/009 fails once T305 serves these pages: bare tables not in a labelled focusable region (scorecard.html:17, money_view.html:33, intake_report.html:21; pattern business_billing.html:16) and label/hint/input on one line (intake_report.html:8-11, money_view.html:8-11 and :48-61, scorecard.html:48-52; pattern address_change.html:25-28). Reviewer confirmed; page_states.ts cannot fix it. Smallest plan change: T305 (or a small fix task) also owns these three templates.",
+   "last_failure": "PLAN GAP: outside ownership: app/portals/templates/scorecard.html, app/portals/templates/intake_report.html, app/portals/templates/money_view.html\nOwners T158 (scorecard.html) and T434 (intake_report.html, money_view.html); T305 owns none. Ally A11Y-008/009 fails once T305 serves these pages: bare tables not in a labelled focusable region (scorecard.html:17, money_view.html:33, intake_report.html:21; pattern business_billing.html:16) and label/hint/input on one line (intake_report.html:8-11, money_view.html:8-11 and :48-61, scorecard.html:48-52; pattern address_change.html:25-28). Reviewer confirmed; page_states.ts cannot fix it. Smallest plan change: T305 (or a small fix task) also owns these three templates.\nre-queued after plan fix D-5792: D-5792 merged (#1446, 26e9bbe3): T305 owns its three owner-report templates for A11Y-008/009/028 (overseer)",
    "runner_closed_prs": [
     1439
    ],
-   "reason": "plan gap reported: PLAN GAP: outside ownership: app/portals/templates/scorecard.html, app/portals/templates/intake_report.html, app/portals/templates/money_view.html\nOwners T158 (scorecard.html) and T434 (intake_report.html, money_view.html); T305 owns none. Ally A11Y-008/009 fails once T305 serves these pages: bare tables not in a labelled focusable region (scorecard.html:17, money_view.html:33, intake_report.html:21; pattern business_billing.html:16) and label/hint/input on one line (intake_report.html:8-11, money_view.html:8-11 and :48-61, scorecard.html:48-52; pattern address_change.html:25-28). Reviewer con; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T305 --plan-fix D-### --reason \"...\"` (D-2859)",
-   "plan_gap": {
-    "at": "2026-11-24T11:41:52Z",
-    "problems": [
-     "outside ownership: app/portals/templates/scorecard.html, app/portals/templates/intake_report.html, app/portals/templates/money_view.html"
-    ],
-    "paths": [
-     "app/portals/templates/scorecard.html",
-     "app/portals/templates/intake_report.html",
-     "app/portals/templates/money_view.html"
-    ]
-   }
+   "reason": null,
+   "requeues": [
+    {
+     "at": "2026-11-24T13:12:20Z",
+     "reason": "D-5792 merged (#1446, 26e9bbe3): T305 owns its three owner-report templates for A11Y-008/009/028 (overseer)",
+     "by": "manual-20106a2562f0",
+     "was": "plan gap reported: PLAN GAP: outside ownership: app/portals/templates/scorecard.html, app/portals/templates/intake_report.html, app/portals/templates/money_view.html\nOwners T158 (scorecard.html) and T434 (intake_report.html, money_view.html); T305 owns none. Ally A11Y-008/009 fails once T305 serves these pages: bare tables not in a labelled focusable region (scorecard.html:17, money_view.html:33, intake_report.html:21; pattern business_billing.html:16) and label/hint/input on one line (intake_report.html:8-11, money_view.html:8-11 and :48-61, scorecard.html:48-52; pattern address_change.html:25-28). Reviewer con; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T305 --plan-fix D-### --reason \"...\"` (D-2859)",
+     "attempts": 2,
+     "plan_fix": "D-5792",
+     "plan_since": "2026-11-24T11:07:32Z",
+     "plan_base": "16fd7ee8aae9465dcb7bf75fd20984021425b001",
+     "plan_head": "26e9bbe3e395a388f1249387f6e477ed18e58935",
+     "plan_then": "f1beb5f8b4b826e1cb4b8cdf9ab0dfd2721c4bc027236243f75618ae36564183",
+     "plan_now": "c4b52fc0cf6bc4af7b46fe3453cb7496e5bbce46ef7ba5dc799a067ed65dabb7"
+    }
+   ]
   },
   {
    "id": "T306",
@@ -127339,7 +127343,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T12:40:50Z",
+ "updated_at": "2026-11-24T13:12:20Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -127437,8 +127441,8 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "16fd7ee8aae9465dcb7bf75fd20984021425b001",
- "starter": "actions",
+ "runner_sha": "26e9bbe3e395a388f1249387f6e477ed18e58935",
+ "starter": "manual",
  "smoke_runs": [
   {
    "sha": "5bde4ee54e11a945f38b1d4a9ef34a5282047bc5",
