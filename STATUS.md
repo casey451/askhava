@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T22:42:02Z by runner 7f1ca1d636bc (actions).
+Updated 2026-11-24T22:45:54Z by runner 5ba412147c84 (actions).
 
 **Building: T826 in progress since 20:27Z; 670 of 781 done; week 96% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 670 of 781 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T826 claimed 20:27Z, lease until 23:27Z
+- **Lane:** lane 1: T826 claimed 20:27Z, lease until 01:45Z
 - **Week:** 96% used, 0.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:37Z, 4 min before this update
+- **Last run:** 22:42Z, 3 min before this update
 - **Keeper:** last ran 22:36Z, next wake 23:29Z
 
 ## Needs attention
@@ -25,7 +25,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
 - PLAN GAP T847 (since 2026-11-24T22:18:58Z, no attempt used; a plan change fixes it): T847: prompt kit/prompts/T847.md is missing; run scripts/gen_prompts.py; T847: branch claude/task/T847-plan-health is named by its requirements, tests or reads, but neither it nor a dependency owns it and it does not exist yet
-- Strict plan check red: 64 problem(s) on tasks still to run (+575 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 64 problem(s) on tasks still to run (+574 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -78,7 +78,6 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 | T738 | portals and server: owner settings refusals show an accessib | done | 1 | 85 min | 00:34Z |  |
 | T716 | intake: the dispatcher's trade questions at step 5: "Which f | done | 4 | 114 min | 23:57Z | PLAN GAP: outside ownership: app/intake/src/conversation.rs (purge_child, ~348-362), app/intake/src/models.rs (purge_req |
 | T649 | intake, site and server: after the code, the web chat's name | check_failed | 1 | 2 h 19 min | 22:52Z |  |
-| T819 | portals: her feedback words are scrubbed before they are sto | done | 3 | 85 min | 22:43Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: harness task T847 for the J3 step-5 race (D-5809); Sonnet for T612 (D-5810); hand-off, ChatGPT queue and plan drafts (#1458)
@@ -133,7 +132,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T826 (lease until 2026-11-24T23:27:00Z)
+- T826 (lease until 2026-11-25T01:45:54Z)
 
 ## Last usage reading
 - {"task": "T815", "at": "2026-11-24T21:22:17Z", "cache_creation_input_tokens": 98140, "input_tokens": 78, "cache_read_input_tokens": 1176457, "output_tokens": 10324}
