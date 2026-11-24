@@ -92041,7 +92041,7 @@
     "T204",
     "T366"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 1,
    "slug": "health-check-alert",
    "type": "build",
@@ -92184,6 +92184,29 @@
       }
      },
      "resync": true
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 65,
+     "head_sha": "7308435f9b30eb53a7e4d8f4fae07609fa4ff653",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-24T10:37:51Z",
+     "ended_at": "2026-11-24T12:13:02Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 1337134,
+       "turns": 42
+      },
+      "reviewer": {
+       "tokens": 672331,
+       "turns": 19
+      }
+     }
     }
    ],
    "reviewed_sha": "7308435f9b30eb53a7e4d8f4fae07609fa4ff653",
@@ -92196,8 +92219,8 @@
    "branch": "claude/task/T624-health-check-alert-a2",
    "auto_merge": {
     "enabled": true,
-    "why": "auto-merge on #1054 (gh pr merge)",
-    "head": "2b894d8f481196f01fe6282267127912fd05f3fc"
+    "why": "auto-merge on #1444 (gh pr merge)",
+    "head": "7308435f9b30eb53a7e4d8f4fae07609fa4ff653"
    },
    "runner_closed_prs": [
     1046
@@ -92213,12 +92236,7 @@
      "at": "2026-11-18T16:47:17Z"
     }
    ],
-   "last_failure": "Ci: failure; Python: failure\nPython failed at step: Unit, contract and drill tests (pytest)\nT705: about 21877 tokens, 11% of the window\nT711: about 54466 tokens, 28% of the window\nT715: about 55680 tokens, 28% of the window\nT717: about 50274 tokens, 26% of the window\nT716: about 39820 tokens, 20% of the window\nT718: about 64046 tokens, 33% of the window\nT719: about 66789 tokens, 34% of the window\nERROR T702: stale, differs from the template output\nchecked 662 prompts, 1 problems\n=========================== short test summary info ============================\nFAILED tests/test_gen_prompts.py::test_real_prompts_are_current - AssertionError: assert 1 == 0\n +  where 1 = <function main at 0x7ccbfd0b6340>(['--root', '/home/runner/work/askhava/askhava', '--check'])\n +    where <function main at 0x7ccbfd0b6340> = gp.main\n1 failed, 4027 passed, 11 skipped in 223.80s (0:03:43)\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: failure, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
-   "wip_claim": {
-    "attempt": 2,
-    "remote_sha": ""
-   },
-   "head_check_since": null
+   "last_failure": "Ci: failure; Python: failure\nPython failed at step: Unit, contract and drill tests (pytest)\nT705: about 21877 tokens, 11% of the window\nT711: about 54466 tokens, 28% of the window\nT715: about 55680 tokens, 28% of the window\nT717: about 50274 tokens, 26% of the window\nT716: about 39820 tokens, 20% of the window\nT718: about 64046 tokens, 33% of the window\nT719: about 66789 tokens, 34% of the window\nERROR T702: stale, differs from the template output\nchecked 662 prompts, 1 problems\n=========================== short test summary info ============================\nFAILED tests/test_gen_prompts.py::test_real_prompts_are_current - AssertionError: assert 1 == 0\n +  where 1 = <function main at 0x7ccbfd0b6340>(['--root', '/home/runner/work/askhava/askhava', '--check'])\n +    where <function main at 0x7ccbfd0b6340> = gp.main\n1 failed, 4027 passed, 11 skipped in 223.80s (0:03:43)\n##[error]Process completed with exit code 1.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: failure, Coverage: success, E2e: success\n##[error]Process completed with exit code 1."
   },
   {
    "id": "T619",
@@ -119062,12 +119080,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T802",
-   "at": "2026-11-24T12:06:01Z",
-   "output_tokens": 9645,
-   "cache_read_input_tokens": 729950,
-   "input_tokens": 60,
-   "cache_creation_input_tokens": 74335
+   "task": "T624",
+   "at": "2026-11-24T12:13:02Z",
+   "input_tokens": 124,
+   "output_tokens": 21415,
+   "cache_creation_input_tokens": 143422,
+   "cache_read_input_tokens": 1844504
   },
   "source": "session_reading 2026-11-24T11:42:35Z (week)",
   "by_task": {
@@ -124157,14 +124175,14 @@
     "estimated_bytes": 411554,
     "estimated_tokens": 1205637,
     "usage_counting": "message_id",
-    "cache_creation_input_tokens": 246784,
-    "cache_read_input_tokens": 4287056,
-    "input_tokens": 204,
-    "output_tokens": 51273,
-    "worker_tokens": 3452953,
-    "worker_turns": 72,
-    "reviewer_tokens": 1132364,
-    "reviewer_turns": 30,
+    "cache_creation_input_tokens": 390206,
+    "cache_read_input_tokens": 6131560,
+    "input_tokens": 328,
+    "output_tokens": 72688,
+    "worker_tokens": 4790087,
+    "worker_turns": 114,
+    "reviewer_tokens": 1804695,
+    "reviewer_turns": 49,
     "last_model": "claude-opus-5-5"
    },
    "T645": {
@@ -127105,11 +127123,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-24T08:35:06Z",
-    "tokens": 7261461
+    "tokens": 7610872
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 261707534
+    "tokens": 262056945
    }
   },
   "session_reading": {
@@ -127120,7 +127138,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T12:13:04Z",
+ "updated_at": "2026-11-24T12:13:39Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
