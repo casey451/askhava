@@ -53,6 +53,7 @@ pub mod checkin;
 pub mod digest_email;
 pub mod email_due;
 pub mod email_provider;
+pub mod health_watch;
 pub mod healthz;
 pub mod homeowner_portal;
 pub mod inbound_retry;
@@ -1375,7 +1376,7 @@ where
     register_business_handlers(&mut registry, settings, &clock, pairs.clone())?;
     register_email_due(&mut registry, settings, &clock, pairs.clone())?;
     register_paused_safety(&mut registry);
-    no_handler_alert::register(&mut registry, settings.environment(), Arc::clone(&clock));
+    register_alert_checks(&mut registry, settings, &clock, pairs.clone())?;
     watch_checks::register(&mut registry, settings, &clock)?;
     register_timer_backstop(&mut registry, Arc::clone(&clock));
     register_license_reapply(&mut registry, Arc::clone(&clock));
@@ -2560,6 +2561,25 @@ fn register_business_clocked(registry: &mut Registry, clock: &Arc<dyn Clock>) {
     registry.register(askhava_businesses::api::BUSY_END_KIND, move |pool, task| {
         askhava_businesses::api::run_busy_end(pool, task, at.now())
     });
+}
+
+/// The 5-minute health check ([`health_watch`], T624, D-4280) with its `/healthz` limits from
+/// `pairs`, then the hourly dead-letter check ([`no_handler_alert`]); both raise only in test and
+/// live (OPS-004).
+///
+/// # Errors
+///
+/// A bad health-limit setting in `pairs`, named, never its value.
+fn register_alert_checks(
+    registry: &mut Registry,
+    settings: &Settings,
+    clock: &Arc<dyn Clock>,
+    pairs: Vec<(String, String)>,
+) -> io::Result<()> {
+    let limits = healthz::HealthLimits::from_pairs(pairs)?;
+    health_watch::register(registry, settings.environment(), limits, Arc::clone(clock));
+    no_handler_alert::register(registry, settings.environment(), Arc::clone(clock));
+    Ok(())
 }
 
 /// SEC-025, OPS-038, D-3750 (T470): `messaging.email_due`, always registered: with T469's
