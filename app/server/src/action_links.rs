@@ -589,7 +589,8 @@ async fn act_kind(
 
 /// SEC-026, SEC-025, BIZ-038, D-5316, D-5320: a refused press of a link already used, on a bare
 /// connection after the refused use rolled back; it stores, sends and logs nothing. Only a link
-/// `used_action_link` names (used, in its window, its member still allowed) gets an answer: a
+/// `used_action_link` names (used, in its window, its member still allowed, its business not
+/// left, D-5758) gets an answer: a
 /// Quote link its job's page again with the quote as stored ([`quote_again`]), a Confirm link
 /// the same 303 to its Confirm page, a session kind the "already used" page only for its own
 /// signed-in person, a Hold link that page alone; anything else is the one not-found answer.

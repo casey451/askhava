@@ -76,8 +76,8 @@ use askhava_portals::api::{
     use_action_link,
 };
 use askhava_portals::api::{
-    CodeAddress, CodeFuture, CodeSent, CodeTo, ConfirmCodes, SESSION_COOKIE, business_principal,
-    set_inbox_shared,
+    CardDetach, CodeAddress, CodeFuture, CodeSent, CodeTo, ConfirmCodes, SESSION_COOKIE,
+    business_principal, leave, set_inbox_shared,
 };
 use askhava_privacy::api::Vault;
 use askhava_quotes::api::{
@@ -631,6 +631,43 @@ async fn td_sec_44_a_used_session_link_of_another_person_is_not_found(pool: PgPo
     let theirs = act(&w, &pause, Site::Own, &other).await;
     assert_eq!(theirs, not_found(&w, &Method::POST).await, "SEC-025");
     assert_eq!(status(&w).await, ("paused", Some("self")), "paused once");
+}
+
+/// A card detacher for a business with no saved card: never asked.
+struct NoCards;
+
+impl CardDetach for NoCards {
+    fn detach(&self, _: &str) -> impl Future<Output = Result<(), AdapterError>> + Send {
+        std::future::ready(Err(AdapterError::NotSent))
+    }
+}
+
+/// TD-SEC-44, BIZ-051, SEC-026, D-5758: leaving uses up every unused link of the business without
+/// pressing it, so a Hold or Confirm link nobody pressed is then the one not-found answer, never
+/// "already used" nor the Confirm 303.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_44_a_link_cancelled_by_leaving_is_not_found(pool: PgPool) {
+    let w = world(&pool).await;
+    let answer = not_found(&w, &Method::POST).await;
+    let pick = waiting_pick(&w).await;
+    let hold = path_of(&live(&w, ActionKind::Hold, pick).await);
+    let confirm = path_of(&live(&w, ActionKind::Confirm, pick).await);
+    let jar = session_of(&w, w.mailbox).await;
+    let now = Timestamp::now();
+    let mut db = pool.acquire().await.expect("db");
+    let owner = business_principal(&mut db, &jar, now).await.expect("read");
+    let owner = owner.expect("the owner is signed in");
+    let step = record_session_step_up(&mut db, owner_acting(&w), owner.session(), now).await;
+    step.expect("code");
+    leave(&mut db, &owner, (None, &NoCards), now)
+        .await
+        .expect("left");
+    drop(db);
+    for path in [hold, confirm] {
+        assert!(!unused(&w, &path).await, "{path}: leaving used it up");
+        let pressed = send(&w, (&Method::POST, &path, ""), Site::Own).await;
+        assert_eq!(pressed, answer, "{path}: not the one not-found answer");
+    }
 }
 
 /// The kinds whose `POST` acts with a business session (T455, T543, T463, T458, D-3675, D-3839,

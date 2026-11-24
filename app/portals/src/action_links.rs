@@ -25,11 +25,13 @@
 //! [`TEXT_CONFIRM_SESSION_LIFE`]. Every reader first refuses a token that is not 64 lower-case
 //! hex characters, before anything is read or hashed.
 //! T814 (SEC-026, D-5316): [`used_action_link`] names a used link's person, business and object
-//! within its window while its member still has the role, reading only; [`action_done_page`] is
+//! within its window while its member still has the role and its business has not left
+//! (D-5758), reading only; [`action_done_page`] is
 //! the "already used" page (`action_done.html`) a repeated press of most kinds shows.
 
 use askama::Template;
-use askhava_businesses::api::{Roles, members};
+use askhava_businesses::api::rules::next;
+use askhava_businesses::api::{Event, Roles, business as business_record, members};
 use askhava_core::api::brand;
 use askhava_picks::api::{HoldAsk, hold_allowed};
 use axum_extra::extract::cookie::CookieJar;
@@ -437,14 +439,14 @@ pub(crate) async fn action_link_business(
 
 /// SEC-026, SEC-025, D-5316: the person, business and object of the `kind` link `token` for
 /// `object` when it was already used and is still within its original window at `now`, its
-/// member is still on the team and their current roles still allow `kind` (as
-/// [`use_action_link`] checks). It reads only and changes nothing; the server asks it on a bare
+/// member is still on the team, their business has not left (BIZ-051, D-5758) and their current
+/// roles still allow `kind` (as [`use_action_link`] checks). It reads only and changes nothing; the server asks it on a bare
 /// connection after a refused use rolled back, to answer a repeated press with its result.
 ///
 /// # Errors
 ///
 /// [`ActionLinkError::Ended`] for an unknown, unused, expired, wrong-kind or wrong-object token or
-/// a member removed or without the role; [`ActionLinkError::Store`].
+/// a member removed or without the role, or a business that left; [`ActionLinkError::Store`].
 pub async fn used_action_link(
     db: &mut PgConnection,
     (kind, object): (ActionKind, Uuid),
@@ -467,6 +469,9 @@ pub async fn used_action_link(
         .map_err(|_| PortalsError::Database)?;
         let Some(row) = row else { continue };
         let (member, business) = (row.member_id, row.business_id);
+        if has_left(db, business).await? {
+            return Err(ActionLinkError::Ended);
+        }
         return match current_roles(db, member, business).await? {
             Some((owner, roles)) if kind.allowed(owner, roles) => Ok(ActionTarget {
                 kind,
@@ -478,6 +483,17 @@ pub async fn used_action_link(
         };
     }
     Err(ActionLinkError::Ended)
+}
+
+/// BIZ-051, BIZ-009, SEC-026, D-5758: whether `business` left (status `removed`, the one status
+/// the BIZ-009 rules refuse a leave from). Leaving sets `used_at` on
+/// every unused link of the business (`business_left::end_sessions`) without pressing it, so
+/// [`used_action_link`] treats a left business's links as cancelled, never "already used".
+async fn has_left(db: &mut PgConnection, business: Uuid) -> Result<bool, ActionLinkError> {
+    let record = business_record(db, business)
+        .await
+        .map_err(|_| PortalsError::Database)?;
+    Ok(next(record.status, Event::Remove).is_err())
 }
 
 #[derive(Template)]
