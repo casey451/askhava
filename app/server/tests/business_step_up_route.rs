@@ -1,12 +1,12 @@
 //! TD-SEC-64 (T565, D-2636, D-4045, D-3890; SEC-038, SEC-014, SEC-019): the role change, the
 //! removal and the monthly limit served by the assembled router over PostgreSQL. Without a
 //! step-up each is a 303 to the step-up page and changes nothing; with one recorded within 5
-//! minutes (`businesses::api::record_session_step_up` directly, in that session) it changes once; one recorded 6 minutes
-//! ago asks again; a member without the role gets the not-found page. This crate may name no
-//! schema (TD-SEC-10) and `payments` has no limit reader, so the stored limit is checked in
-//! `tests/e2e/business_step_up_served.spec.ts`; here its answers are. People sign in through
-//! `portals`' emailed-link sign-in, as `business_step_up_code_route.rs` does. Every ID and address
-//! is fake.
+//! minutes (`businesses::api::record_session_step_up` directly, in that session) it changes
+//! once; one recorded 6 minutes ago asks again; a member without the role gets the not-found
+//! page. This crate may name no schema (TD-SEC-10) and `payments` has no limit reader, so the
+//! stored limit is checked in `tests/e2e/business_step_up_served.spec.ts`; here its answers are.
+//! People sign in through `portals`' emailed-link sign-in, as `business_step_up_code_route.rs`
+//! does. Every ID and address is fake.
 
 use std::net::SocketAddr;
 use std::sync::{Arc, Mutex, PoisonError};

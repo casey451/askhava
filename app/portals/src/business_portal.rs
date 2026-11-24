@@ -6,9 +6,9 @@
 //! times with their form (CARD-022); [`save_open_cards_times`] stores that person's choice through
 //! `businesses::api`, for themselves only. [`require_step_up`] is the gate every SEC-038 change
 //! calls first: a live 30-day session is not enough, the person must have passed a Verify code in
-//! the last 5 minutes in this same session (`businesses::api::has_fresh_step_up`, D-5314); a refusal is one `authz_denied`
-//! security event (SEC-048). The routes ([`BUSINESS_HOME_ROUTE`], [`OPEN_CARDS_ROUTE`]) are served
-//! with the business portal (D-1728).
+//! the last 5 minutes in this same session (`businesses::api::has_fresh_step_up`, D-5314); a
+//! refusal is one `authz_denied` security event (SEC-048). The routes ([`BUSINESS_HOME_ROUTE`],
+//! [`OPEN_CARDS_ROUTE`]) are served with the business portal (D-1728).
 //!
 //! T195 (BIZ-015, BIZ-029, SEC-038; D-491, D-492, D-1912 to D-1916): [`billing_page`] and
 //! [`statement_csv`] show a `payments::api::Statement` (the ledger only; CSV, no PDF);
@@ -106,8 +106,8 @@ pub enum StepUpError {
 }
 
 /// SEC-038, SEC-048, D-480, D-5314: `Ok` only when `principal` passed a Verify code in its own
-/// session no more than 5 minutes before `now`; else one `authz_denied` event for `route` with the member as actor, and
-/// one log line naming `change` (no value).
+/// session no more than 5 minutes before `now`; else one `authz_denied` event for `route` with
+/// the member as actor, and one log line naming `change` (no value).
 ///
 /// The refusal's event is written on `db`, so call this on a connection whose work is kept, never
 /// inside a transaction the caller rolls back when this refuses: the rollback would drop the
