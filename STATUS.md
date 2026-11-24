@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T01:30:55Z by runner ead721be92bb (actions).
+Updated 2026-11-24T01:33:12Z by runner ead721be92bb (actions).
 
-**Building: T524 in progress since 01:11Z; 644 of 779 done; week 87% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T524 in progress since 01:11Z; 645 of 779 done; week 87% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 644 of 779 build tasks (owner gates not counted)
+- **Tasks done:** 645 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T524 claimed 01:11Z, lease until 04:11Z; lane 5: T222 claimed 00:37Z, lease until 03:37Z
 - **Week:** 87% used, 17.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:30Z, 0 min before this update
+- **Last run:** 01:31Z, 1 min before this update
 - **Keeper:** last ran 01:30Z, next wake 01:50Z
 
 ## Needs attention
@@ -22,7 +22,7 @@ Updated 2026-11-24T01:30:55Z by runner ead721be92bb (actions).
 |---|---|---|---|---|---|---|
 | T836 | ci and runner workflow (harness): the backup-runner gate ski | MERGE_PENDING | 2 | 25 min | 00:55Z | PLAN GAP: tests/test_runner_five_lanes.py:176 (test_no_workflow_a_hand_in_starts_cancels_another_lanes_run_when_five_han |
 | T737 | portals, ai and server: the owner records the AI provider's  | done | 2 | 112 min | 00:42Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
-| T738 | portals and server: owner settings refusals show an accessib | MERGE_PENDING | 1 | 85 min | 00:34Z |  |
+| T738 | portals and server: owner settings refusals show an accessib | done | 1 | 85 min | 00:34Z |  |
 | T716 | intake: the dispatcher's trade questions at step 5: "Which f | done | 4 | 114 min | 23:57Z | PLAN GAP: outside ownership: app/intake/src/conversation.rs (purge_child, ~348-362), app/intake/src/models.rs (purge_req |
 | T649 | intake, site and server: after the code, the web chat's name | check_failed | 1 | 2 h 19 min | 22:52Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T819 | portals: her feedback words are scrubbed before they are sto | done | 3 | 85 min | 22:43Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
@@ -84,7 +84,7 @@ Updated 2026-11-24T01:30:55Z by runner ead721be92bb (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 428 of 735 (58.2%) · partial 294 · unstarted 13
-**Tasks merged (throughput only):** 644 of 779
+**Tasks merged (throughput only):** 645 of 779
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -120,7 +120,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 287 of 351 done
+- stage 5: 288 of 351 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
