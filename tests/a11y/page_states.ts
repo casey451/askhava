@@ -590,6 +590,13 @@ const OWNER_RELEASE_STATES: readonly PageState[] = [
   ["owner release button", "Re-send the release notice", "Nothing was sent", OWNER_SESSION_SQL],
 ].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: OWNER_RELEASE_ROUTE, name, shows, hides, sql, statusRegions: ["release-status"] }));
 
+const OWNER_AI_ROUTE = "/owner/ai";
+
+/** The owner's AI page (T737; AI-008, A11Y-030): nothing recorded yet, so every gap is listed. */
+const OWNER_AI_STATES: readonly PageState[] = [
+  ["owner ai switch, nothing recorded", "Still needed before it can go on", "Nothing was changed", OWNER_SESSION_SQL],
+].map(([name = "", shows = "", hides = "", sql = ""]) => ({ route: OWNER_AI_ROUTE, name, shows, hides, sql, statusRegions: ["ai-status"] }));
+
 const OWNER_PROBLEM_REPORTS_ROUTE = "/owner/problem-reports";
 
 /** The owner's PROBLEM reports (T712; JOB-016, D-4423): one fake report with its kind form. */
@@ -899,6 +906,7 @@ export const PAGE_ENTRIES: readonly PageEntry[] = [
   { route: NOT_FOUND_ROUTE, seed: () => "/no-such-page", states: NOT_FOUND_STATES },
   { route: ADDRESS_CHANGE_ROUTE, seed: portalSeed(false), states: ADDRESS_CHANGE_STATES },
   { route: PHONES_ROUTE, seed: portalSeed(false), states: PHONES_STATES },
+  { route: OWNER_AI_ROUTE, seed: portalSeed(false), states: OWNER_AI_STATES },
 ];
 
 /** Every state of every page, in entry order. */

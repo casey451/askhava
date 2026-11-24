@@ -35,6 +35,11 @@
 //! T249 (CARD-024, D-1519, D-1521): the pool also gets the ZIP of the same `intake.property` row,
 //! so `card_pool_at` fills the job's location and each business's reach, and the cards go through
 //! `send_job_cards_in_reach`; a property with no stored ZIP matches by towns only.
+//!
+//! T716 (D-5606, CARD-001, CARD-016): a job whose request stored (trade, job type) pairs is sent
+//! through `quotes::api::pair_pool_at` with the pairs the coverage count used
+//! (`order_dispatch::send_pairs`), so the businesses carded are exactly those counted; a job with
+//! no stored pair keeps `card_pool_at` with the stored card's facts.
 
 use std::sync::Arc;
 
@@ -46,8 +51,8 @@ use askhava_privacy::api::Vault;
 use askhava_quotes::api::{
     CardLines, CardNotice, CardPool, CardsOut, Pool, Reader, Recipient, SLOW_AT_MOST, StoredCard,
     band_floor_cents, card_holders, card_pool_at, cards_out_text, description, mark_card_sent,
-    queue_card_notice, queue_emergency_card, send_job_cards_in_reach, sent_card, stored_card,
-    unsent_cards,
+    pair_pool_at, queue_card_notice, queue_emergency_card, send_job_cards_in_reach, sent_card,
+    stored_card, unsent_cards,
 };
 use jiff::{SignedDuration, Timestamp};
 use secrecy::SecretString;
@@ -56,6 +61,7 @@ use sqlx::{Connection, PgConnection, PgPool};
 
 use crate::handlers::queue_body;
 use crate::models::{self, IntakeError};
+use crate::order_dispatch::send_pairs;
 use crate::rules::language_from_code;
 use crate::service::{
     EMERGENCY_RELEASED_KIND, Queued, card_allowed, how_soon, may_text, safe_hold,
@@ -384,8 +390,13 @@ async fn send_stored(
     }
     let floor = band.as_deref().and_then(band_floor_cents);
     let quotes = |_| IntakeError::Quotes;
+    let trade = stored.facts.category.as_str();
+    let pairs = send_pairs(&mut tx, conversation, trade).await?;
     let place = ((town.as_str(), zip.as_deref()), &stored.facts);
-    let pool = card_pool_at(&mut tx, place, text, floor, now).await;
+    let pool = match pairs {
+        Some(pairs) => pair_pool_at(&mut tx, place, (text, floor), &pairs, now).await,
+        None => card_pool_at(&mut tx, place, text, floor, now).await,
+    };
     let pool = pool.map_err(quotes)?;
     mark_card_sent(&mut tx, stored.job, &stored.digest, now)
         .await

@@ -10,12 +10,19 @@
     update and a Spanish sample; a refusal lists what is missing.
     T527 (TXT-035, TERMS-014, D-303, D-305): the business texting switch, off by default; on needs
     a saved provider answer that says yes with a business campaign reference, and the page says
-    why while there is none. -#}
-{% block title %}Owner settings{% endblock %}
+    why while there is none.
+    T738 (A11Y-030, CON-035, PICK-048, D-4727, D-5657): a refusal puts "Error: " in the title and a
+    focused summary first, linked to the control, with the message by it; a refused opt-out or
+    Stripe answer keeps every typed value. -#}
+{% block title %}{% if error.is_some() %}Error: {% endif %}Owner settings{% endblock %}
 {% block main %}
 <link rel="stylesheet" href="/static/portals/forms.css">
 <h1>Owner settings</h1>
-{% if let Some(line) = notice %}<p id="settings-done" role="status">{{ line }}</p>{% endif %}
+{% if let Some((field, line)) = error %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>Nothing was saved</h2>
+<p><a href="#{{ field }}">{{ line }}</a></p>
+</div>
+{% endif %}{% if let Some(line) = notice %}<p id="settings-done" role="status">{{ line }}</p>{% endif %}
 <p><a href="{{ home_route }}">Owner home</a></p>
 <p>Each change needs a code from your authenticator app in the last 5 minutes. If yours is older, <a href="{{ step_up_route }}">get a new code</a> first. Every change is logged.</p>
 <ul id="categories">
@@ -35,10 +42,12 @@
 <form method="post" action="{{ safety_route }}" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="to" value="on">
 <p><label for="safety-date">Date of your attorney's written approval</label></p>
-<p><input type="date" id="safety-date" name="approved_on"></p>
+{% if self.bad("safety-date") %}{% if let Some((_, line)) = error %}<p id="safety-date-error">Error: {{ line }}</p>
+{% endif %}{% endif %}<p><input type="date" id="safety-date" name="approved_on"{% if self.bad("safety-date") %} aria-invalid="true" aria-describedby="safety-date-error"{% endif %}></p>
 <p><label for="safety-reference">Reference number on the approval</label></p>
 <p><input type="text" id="safety-reference" name="reference" maxlength="200"></p>
-<p><button type="submit">Turn the safety voice call on</button></p>
+{% if self.bad("safety-on") %}{% if let Some((_, line)) = error %}<p id="safety-on-error">Error: {{ line }}</p>
+{% endif %}{% endif %}<p><button type="submit" id="safety-on"{% if self.bad("safety-on") %} aria-describedby="safety-on-error safety-call-missing"{% endif %}>Turn the safety voice call on</button></p>
 </form>{% endif %}
 <h2>Spanish conversations</h2>
 {% if !spanish_missing.is_empty() %}<ul id="spanish-missing">{% for item in spanish_missing %}<li>{{ item }}</li>{% endfor %}</ul>{% endif %}
@@ -51,7 +60,8 @@
 <form method="post" action="{{ spanish_route }}" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="to" value="on">
 <p><label for="spanish-reviewed-on">Date of the professional translation review</label></p>
-<p><input type="date" id="spanish-reviewed-on" name="reviewed_on"></p>
+{% if self.bad("spanish-reviewed-on") %}{% if let Some((_, line)) = error %}<p id="spanish-reviewed-on-error">Error: {{ line }}</p>
+{% endif %}{% endif %}<p><input type="date" id="spanish-reviewed-on" name="reviewed_on"{% if self.bad("spanish-reviewed-on") %} aria-describedby="spanish-reviewed-on-error spanish-missing"{% endif %}></p>
 <p><label for="spanish-reviewer">Reviewer's name</label></p>
 <p><input type="text" id="spanish-reviewer" name="reviewer" maxlength="200"></p>
 <p><label for="spanish-versions">Texts the review covered</label></p>
@@ -76,7 +86,8 @@
 {% else %}<p id="business-texting-state">Business texting is off, so every business gets email. {% if business.permits %}Your texting provider said yes, so you can turn it on.{% else %}You can't turn it on yet. Save your texting provider's written yes below. Add the business campaign's reference too.{% endif %}</p>
 <form method="post" action="{{ business.route }}" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="to" value="on">
-<p><button type="submit">Turn business texting on</button></p>
+{% if self.bad("business-on") %}{% if let Some((_, line)) = error %}<p id="business-on-error">Error: {{ line }}</p>
+{% endif %}{% endif %}<p><button type="submit" id="business-on"{% if self.bad("business-on") %} aria-describedby="business-on-error"{% endif %}>Turn business texting on</button></p>
 </form>{% endif %}
 {% if let Some(b) = business.filed %}<p id="business-answer">Saved {{ b.filed }}. The provider wrote back on {{ b.answered_on }} (case or ticket {{ b.reference }}). {% if b.allowed %}They said yes to business texting.{% else %}They said no to business texting.{% endif %} {% if b.campaign.is_empty() %}No business campaign reference is saved.{% else %}Business campaign reference: {{ b.campaign }}.{% endif %}</p>
 <p>The provider's answer, word for word: {{ b.answer }}</p>
@@ -103,7 +114,8 @@
 <input type="hidden" name="csrf" value="{{ csrf }}">
 <p><label for="opt-out-phone">Phone number to stop texting</label></p>
 <p id="opt-out-hint">Use this when someone asks you by phone, email or in person to stop our texts. The number gets no more texts or automated calls from us.</p>
-<p><input type="tel" id="opt-out-phone" name="phone" autocomplete="off" aria-describedby="opt-out-hint"></p>
+{% if self.bad("opt-out-phone") %}{% if let Some((_, line)) = error %}<p id="opt-out-phone-error">Error: {{ line }}</p>
+{% endif %}{% endif %}<p><input type="tel" id="opt-out-phone" name="phone" autocomplete="off" value="{{ kept.phone }}" aria-describedby="opt-out-hint{% if self.bad("opt-out-phone") %} opt-out-phone-error{% endif %}"{% if self.bad("opt-out-phone") %} aria-invalid="true"{% endif %}></p>
 <p><button type="submit">Stop texts to this number</button></p>
 </form>
 <h2>Stripe's written answer</h2>
@@ -112,12 +124,15 @@
 <form method="post" action="{{ stripe_route }}" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
 <p><label for="stripe-date">Date of Stripe's answer</label></p>
-<p><input type="date" id="stripe-date" name="answered_on"></p>
+{% if self.bad("stripe-date") %}{% if let Some((_, line)) = error %}<p id="stripe-date-error">Error: {{ line }}</p>
+{% endif %}{% endif %}<p><input type="date" id="stripe-date" name="answered_on" value="{{ kept.answered_on }}"{% if self.bad("stripe-date") %} aria-invalid="true" aria-describedby="stripe-date-error"{% endif %}></p>
 <p><label for="stripe-reference">Stripe case or ticket number</label></p>
-<p><input type="text" id="stripe-reference" name="reference" maxlength="200"></p>
-<fieldset><legend>Does Stripe allow charging a saved card when the business is not there?</legend>
-<p><input type="radio" id="stripe-yes" name="allows" value="yes"> <label for="stripe-yes">Yes</label></p>
-<p><input type="radio" id="stripe-no" name="allows" value="no"> <label for="stripe-no">No</label></p>
+{% if self.bad("stripe-reference") %}{% if let Some((_, line)) = error %}<p id="stripe-reference-error">Error: {{ line }}</p>
+{% endif %}{% endif %}<p><input type="text" id="stripe-reference" name="reference" maxlength="200" value="{{ kept.reference }}"{% if self.bad("stripe-reference") %} aria-invalid="true" aria-describedby="stripe-reference-error"{% endif %}></p>
+<fieldset{% if self.bad("stripe-yes") %} aria-describedby="stripe-yes-error"{% endif %}><legend>Does Stripe allow charging a saved card when the business is not there?</legend>
+{% if self.bad("stripe-yes") %}{% if let Some((_, line)) = error %}<p id="stripe-yes-error">Error: {{ line }}</p>
+{% endif %}{% endif %}<p><input type="radio" id="stripe-yes" name="allows" value="yes"{% if kept.allows == "yes" %} checked{% endif %}{% if self.bad("stripe-yes") %} aria-invalid="true"{% endif %}> <label for="stripe-yes">Yes</label></p>
+<p><input type="radio" id="stripe-no" name="allows" value="no"{% if kept.allows == "no" %} checked{% endif %}{% if self.bad("stripe-yes") %} aria-invalid="true"{% endif %}> <label for="stripe-no">No</label></p>
 </fieldset>
 <p><button type="submit">Save Stripe's answer</button></p>
 </form>

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{#- The owner's AI page (T737; AI-008, AI-018, SEC-043, A11Y-030; D-412, D-492, D-4727). What the
+    switch still needs in plain words, the provider-terms and policy-version forms and the switch.
+    After a refusal the title starts "Error: ", a focused summary comes first in <main> with each
+    message linked to its field, and every typed value is kept. Forms post with novalidate and no
+    required attribute. The two ticks are native checkboxes, so forms.css comes first in <main>
+    after any error summary (A11Y-007). A zero-retention date in force keeps the AI on whatever the
+    switch says (D-841), so the page says so (D-5690). -#}
+{% macro text(id, label, hint, value, mode) %}<p><label for="{{ id }}">{{ label }}</label></p>
+<p id="{{ id }}-hint">{{ hint }}</p>
+{% if let Some(why) = self.err(id) %}<p id="{{ id }}-error">Error: {{ why }}</p>
+{% endif %}<p><input type="text" id="{{ id }}" name="{{ id }}" value="{{ value }}" autocomplete="off" spellcheck="false"{% if !mode.is_empty() %} inputmode="{{ mode }}"{% endif %} aria-describedby="{{ id }}-hint{% if self.err(id).is_some() %} {{ id }}-error{% endif %}"{% if self.err(id).is_some() %} aria-invalid="true"{% endif %}></p>
+{% endmacro %}
+{% macro tick(id, label, ticked) %}{% if let Some(why) = self.err(id) %}<p id="{{ id }}-error">Error: {{ why }}</p>
+{% endif %}<p><input type="checkbox" id="{{ id }}" name="{{ id }}" value="yes"{% if ticked %} checked{% endif %}{% if self.err(id).is_some() %} aria-describedby="{{ id }}-error" aria-invalid="true"{% endif %}> <label for="{{ id }}">{{ label }}</label></p>
+{% endmacro %}
+{% block title %}{% if shown.refused() %}Error: {% endif %}AI switch{% endblock %}
+{% block main %}{% if shown.refused() %}<div id="error-summary" role="alert" tabindex="-1" autofocus>
+<h2>Nothing was changed. Fix the items below.</h2>
+<ul>{% for (field, why) in shown.errors %}<li><a href="#{{ field }}">{{ why }}</a></li>{% endfor %}</ul>
+</div>
+{% endif %}<link rel="stylesheet" href="/static/portals/forms.css">
+<h1>AI on scrubbed text</h1>
+<div id="ai-status" role="status" aria-live="polite">{% if let Some(done) = shown.done %}<p>{{ done }}</p>{% endif %}</div>
+<p>The switch is {% if on %}on{% else %}off{% endif %}. While it's on, the AI sees request text only after our software removes names, phone numbers, emails and street numbers.</p>
+{% if zero_retention %}<p id="ai-zero-retention">A signed zero-retention deal is on record. So the AI stays on, even with this switch off. To stop it, record the terms again. Leave the signing date empty.</p>
+{% endif %}<p>To change anything here, you need a code from your authenticator app entered in the last 5 minutes. If it's been longer, <a href="{{ routes[3] }}">enter a new code</a> first.</p>
+<h2>Still needed before it can go on</h2>
+{% if missing.is_empty() %}<p>Nothing. You can turn it on.</p>
+{% else %}<ul id="ai-missing">{% for (_, words) in missing %}<li>{{ words }}</li>{% endfor %}</ul>
+{% endif %}<form method="post" action="{{ routes[2] }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<p><button type="submit" name="to" value="on">Turn AI on</button> <button type="submit" name="to" value="off">Turn AI off</button></p>
+</form>
+<h2>The AI provider's terms</h2>
+<p>You can't edit a record once it's saved. To fix a mistake, record it again, and the newest one counts.</p>
+<form method="post" action="{{ routes[0] }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+{% call text("url", "Link to the terms page", "The provider's commercial API terms, starting https://", shown.terms.url, "url") %}{% endcall %}
+{% call text("checked_on", "Date you read them", "Like 2026-11-23.", shown.terms.checked_on, "") %}{% endcall %}
+{% call tick("training", "The terms say API inputs aren't used for training", shown.terms.training == "yes") %}{% endcall %}
+{% call text("retention_days", "Days the provider keeps API inputs", "A whole number, like 30.", shown.terms.retention_days, "numeric") %}{% endcall %}
+{% call text("flagged_days", "Days the provider may keep text its safety systems flag", "A whole number, like 730.", shown.terms.flagged_days, "numeric") %}{% endcall %}
+{% call text("expected_cost", "Expected monthly AI cost, in dollars", "Like 20.", shown.terms.expected_cost, "decimal") %}{% endcall %}
+{% call text("spend_limit", "Monthly spend limit set in the provider's Console, in dollars", "Like 60. It can be at most 3 times the expected cost.", shown.terms.spend_limit, "decimal") %}{% endcall %}
+{% call text("zero_retention_on", "Date the zero-retention agreement was signed", "Leave this empty if it isn't signed.", shown.terms.zero_retention_on, "") %}{% endcall %}
+<p><button type="submit">Record the terms</button></p>
+</form>
+<h2>Privacy policy version</h2>
+<form method="post" action="{{ routes[1] }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+{% call text("version", "Version name", "Up to 32 lowercase letters, digits, dots and dashes, like 2026-11-23.", shown.policy.version, "") %}{% endcall %}
+{% call text("effective_on", "Date it takes effect", "Like 2026-11-23.", shown.policy.effective_on, "") %}{% endcall %}
+{% call tick("ai018", "This version has the AI wording needed while the switch is on", shown.policy.ai018 == "yes") %}{% endcall %}
+<p><button type="submit">Record the policy version</button></p>
+</form>
+{% endblock %}
