@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-24T06:27:42Z by runner 3683fc37b05c (actions).
+Updated 2026-11-24T06:28:15Z by runner 3683fc37b05c (actions).
 
 **Building: T656 in progress since 05:11Z; 652 of 779 done; week 90% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 652 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T656 claimed 05:11Z, lease until 08:11Z; lane 2: T779 claimed 05:03Z, lease until 08:03Z; lane 4: T410 claimed 05:58Z, lease until 08:58Z; lane 5: T804 claimed 05:28Z, lease until 08:28Z
+- **Lane:** lane 1: T656 claimed 05:11Z, lease until 08:11Z; lane 4: T410 claimed 05:58Z, lease until 08:58Z; lane 5: T804 claimed 05:28Z, lease until 08:28Z
 - **Week:** 90% used, 10.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 05:59Z, 28 min before this update
 - **Keeper:** last ran 05:39Z, next wake 08:06Z
@@ -30,6 +30,7 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T779 | ops, server and portals: alerts that do not push show in the | MERGE_PENDING | 1 | 83 min | 06:27Z |  |
 | T728 | intake: a homeowner's "<n> YES" text from her phone picks th | MERGE_PENDING | 1 | 91 min | 05:32Z |  |
 | T676 | tests (harness): J1 runs the real intake conversation instea | done | 1 | 2 h 44 min | 05:29Z |  |
 | T656 | site: a failed submit on the /request chat shows a focused e | QUEUED | 1 | 17 min | 04:56Z | Reviewer after the findings round still FINDINGS (head 18fdb4a27): app/site/templates/request.html lines 7-10: header co |
@@ -136,9 +137,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T656 (lease until 2026-11-24T08:11:14Z)
-- lane 2: T779 (lease until 2026-11-24T08:03:55Z)
 - lane 4: T410 (lease until 2026-11-24T08:58:38Z)
 - lane 5: T804 (lease until 2026-11-24T08:28:23Z)
 
 ## Last usage reading
-- {"task": "T728", "at": "2026-11-24T05:32:22Z", "input_tokens": 302, "cache_creation_input_tokens": 280465, "output_tokens": 90070, "cache_read_input_tokens": 20226997}
+- {"task": "T779", "at": "2026-11-24T06:27:41Z", "cache_creation_input_tokens": 227528, "cache_read_input_tokens": 5604684, "input_tokens": 173, "output_tokens": 51372}
