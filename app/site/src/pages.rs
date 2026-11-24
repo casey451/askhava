@@ -1178,9 +1178,10 @@ mod tests {
         .expect("coverage");
         let not_yet = coverage.find("<li>Fake later</li>").expect("not yet");
         assert!(coverage.find("<li>Fake open</li>").expect("open") < not_yet);
-        assert!(
-            coverage.contains("Canadian numbers work. Your phone company may charge roaming fees.")
-        );
+        assert!(coverage.contains("<h2>Texting from other countries</h2>"));
+        assert!(coverage.contains(
+            "Texts work with US mobile numbers. Canadian numbers are not confirmed yet."
+        ));
     }
 
     /// AI-018's switched-off sentence (`docs/spec/ai.md:22`).
