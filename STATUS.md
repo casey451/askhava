@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T14:24:17Z by runner 234ae7f8fe8e (actions).
+Updated 2026-11-24T14:26:59Z by runner 234ae7f8fe8e (actions).
 
-**Building: T802 in progress since 13:12Z; 661 of 780 done; week 93% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T741 in progress since 14:26Z; 661 of 780 done; week 93% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 661 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T802 claimed 13:12Z, lease until 16:12Z; lane 3: T732 claimed 14:23Z, lease until 17:23Z; lane 4: T122 claimed 13:45Z, lease until 16:45Z; lane 5: T305 claimed 13:13Z, lease until 16:13Z
-- **Week:** 93% used, 5.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 14:21Z, 3 min before this update
+- **Lane:** lane 1: T741 claimed 14:26Z, lease until 17:26Z; lane 2: T802 claimed 13:12Z, lease until 16:12Z; lane 3: T732 claimed 14:23Z, lease until 17:23Z; lane 4: T122 claimed 13:45Z, lease until 16:45Z; lane 5: T305 claimed 13:13Z, lease until 16:13Z
+- **Week:** 93% used, 4.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 14:24Z, 2 min before this update
 - **Keeper:** last ran 14:13Z, next wake 16:15Z
 
 ## Needs attention
@@ -72,7 +72,6 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 | T121 | Startup key checks, control router absent in live, supply-ch | done | 4 | 100 min | 16:52Z | PLAN GAP: outside ownership: app/portals/src/update_channel.rs / T729 (owner) merged UpdatesForm/ConfirmForm without den |
 | T714 | portals: a Confirm link sent by text is marked text-started  | done | 4 | 88 min | 15:49Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
 | T222 | Journeys J1 and J2, the full variants: web chat, photos, que | QUEUED | 1 | 67 min | 15:38Z |  |
-| T666 | jobs, quotes and server: GET /b/jobs/{j} serves the business | done | 2 | 67 min | 14:25Z | Reviewer after the findings round (head bf41c81b22bdbd874d7d53cb8ba64ca6bb0737cf): app/server/tests/job_page_route.rs (w |
 
 ### Plan and harness merges on main
 - 13:12Z Plan: T305 owns its three owner-report templates for Ally; PF-T801 review filed (D-5792) (#1446)
@@ -113,7 +112,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-24T14:12:34Z (week)): week: 188.1M used, 5.9M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T20:35:55Z.
+- Pacing (session_reading 2026-11-24T14:12:34Z (week)): week: 189.5M used, 4.5M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T20:39:07Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -128,7 +127,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- nothing
+- T741 (lease until 2026-11-24T17:26:45Z)
 - lane 2: T802 (lease until 2026-11-24T16:12:41Z)
 - lane 3: T732 (lease until 2026-11-24T17:23:32Z)
 - lane 4: T122 (lease until 2026-11-24T16:45:59Z)
