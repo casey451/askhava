@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-24T20:00:51Z by runner 60b853b9b8e1 (actions).
+Updated 2026-11-24T20:02:03Z by runner 60b853b9b8e1 (actions).
 
 **Building: T815 in progress since 19:52Z; 668 of 780 done; week 96% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-24T20:00:51Z by runner 60b853b9b8e1 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T815 claimed 19:52Z, lease until 22:52Z; lane 3: T839 claimed 18:41Z, lease until 21:41Z
 - **Week:** 96% used, 0.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:00Z, 0 min before this update
+- **Last run:** 20:01Z, 0 min before this update
 - **Keeper:** last ran 20:00Z, next wake 21:43Z
 
 ## Needs attention
@@ -119,7 +119,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-24T19:57:43Z (week)): week: 193.6M used, 438k left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T19:11:55Z; waiting until 2026-11-26T17:00:00Z.
+- Pacing (session_reading 2026-11-24T20:00:08Z (week)): week: 193.6M used, 438k left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T19:14:33Z; waiting until 2026-11-26T17:00:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
