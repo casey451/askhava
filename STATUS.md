@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-24T00:38:10Z by runner 6f51aa49550b (actions).
+Updated 2026-11-24T00:42:16Z by runner bd661c403c9e (actions).
 
 **Building: T737 in progress since 22:49Z; 643 of 779 done; week 86% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,14 @@ Updated 2026-11-24T00:38:10Z by runner 6f51aa49550b (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T737 claimed 22:49Z, lease until 01:49Z; lane 2: T813 claimed 00:33Z, lease until 03:33Z; lane 4: T836 claimed 00:30Z, lease until 03:30Z; lane 5: T222 claimed 00:37Z, lease until 03:37Z
 - **Week:** 86% used, 18.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:37Z, 1 min before this update
+- **Last run:** 00:38Z, 4 min before this update
 - **Keeper:** last ran 00:36Z, next wake 00:56Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 46% of the context window, over its 45% limit
-- Strict plan check red: 49 problem(s) on tasks still to run (+537 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 46 problem(s) on tasks still to run (+532 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -69,7 +69,6 @@ Updated 2026-11-24T00:38:10Z by runner 6f51aa49550b (actions).
 | T837 | runner (harness): the keeper judges work with the real stage | done | 1 | 41 min | 01:47Z |  |
 | T712 | server and portals: the owner portal lists PROBLEM reports w | resync | 1 | 90 min | 01:40Z |  |
 | T832 | ci (harness): the Checks job allows 60 minutes, so a full na | done | 1 | 79 min | 01:09Z |  |
-| T725 | site: the home page shows the texting number with its consen | done | 4 | 49 min | 00:39Z | merging main into the reviewed head conflicts in app/server/src/main.rs; a resync merges it in on this attempt (D-891) |
 
 ### Plan and harness merges on main
 - 23:24Z Plan: token efficiency and phase-2 pre-flight (D-5676); smoke throughput harness task T843, T836 unblocked (D-5682) (#1412)
@@ -84,7 +83,7 @@ Updated 2026-11-24T00:38:10Z by runner 6f51aa49550b (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 428 of 735 (58.2%) · partial 294 · unstarted 13
-**Tasks merged (throughput only):** 643 of 779
+**Tasks merged (throughput only):** 643 of 778
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
