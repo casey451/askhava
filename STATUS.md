@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T22:17:32Z by runner 7f1ca1d636bc (actions).
+Updated 2026-11-24T22:19:04Z by runner 7f1ca1d636bc (actions).
 
-**Building: T826 in progress since 20:27Z; 670 of 780 done; week 96% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T826 in progress since 20:27Z; 670 of 781 done; week 96% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 670 of 780 build tasks (owner gates not counted)
+- **Tasks done:** 670 of 781 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T826 claimed 20:27Z, lease until 23:27Z
 - **Week:** 96% used, 0.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:52Z, 24 min before this update
+- **Last run:** 22:18Z, 0 min before this update
 - **Keeper:** last ran 21:27Z, next wake 23:29Z
 
 ## Needs attention
@@ -126,7 +126,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 313 of 352 done
+- stage 5: 313 of 353 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
