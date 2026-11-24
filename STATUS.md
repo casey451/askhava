@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T04:52:06Z by runner 15a972ec6a46 (actions).
+Updated 2026-11-24T04:56:44Z by runner 18fdb4a27186 (actions).
 
 **Building: T779 in progress since 04:10Z; 650 of 779 done; week 89% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 650 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T779 claimed 04:10Z, lease until 07:10Z; lane 2: T656 claimed 04:38Z, lease until 07:38Z; lane 3: T728 claimed 04:01Z, lease until 07:01Z; lane 4: T676 claimed 02:45Z, lease until 05:45Z
+- **Lane:** lane 1: T779 claimed 04:10Z, lease until 07:10Z; lane 3: T728 claimed 04:01Z, lease until 07:01Z; lane 4: T676 claimed 02:45Z, lease until 05:45Z
 - **Week:** 89% used, 10.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 04:51Z, 0 min before this update
+- **Last run:** 04:52Z, 4 min before this update
 - **Keeper:** last ran 04:52Z, next wake 05:48Z
 
 ## Needs attention
@@ -25,11 +25,12 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
-- Strict plan check red: 52 problem(s) on tasks still to run (+541 on DONE tasks); first: T518: stored context_pct 17% but it measures 21%; regenerate
+- Strict plan check red: 59 problem(s) on tasks still to run (+550 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T656 | site: a failed submit on the /request chat shows a focused e | QUEUED | 1 | 17 min | 04:56Z | Reviewer after the findings round still FINDINGS (head 18fdb4a27): app/site/templates/request.html lines 7-10: header co |
 | T544 | portals and server: the business team page with its role-cha | MERGE_PENDING | 1 | 102 min | 04:50Z |  |
 | T757 | privacy and ops: "Delete my data" also deletes her kept mess | done | 1 | 43 min | 03:54Z |  |
 | T524 | portals and server: the weekly digest and the owner-portal f | done | 1 | 2 h 24 min | 03:35Z |  |
@@ -138,9 +139,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T779 (lease until 2026-11-24T07:10:41Z)
-- lane 2: T656 (lease until 2026-11-24T07:38:50Z)
 - lane 3: T728 (lease until 2026-11-24T07:01:21Z)
 - lane 4: T676 (lease until 2026-11-24T05:45:51Z)
 
 ## Last usage reading
-- {"task": "T544", "at": "2026-11-24T04:50:20Z", "input_tokens": 184, "cache_creation_input_tokens": 188309, "output_tokens": 48358, "cache_read_input_tokens": 8851219}
+- {"task": "T656", "at": "2026-11-24T04:56:38Z", "cache_creation_input_tokens": 141474, "input_tokens": 104, "output_tokens": 29928, "cache_read_input_tokens": 1805478}

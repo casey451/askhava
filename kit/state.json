@@ -95912,8 +95912,8 @@
     "T649",
     "T831"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "QUEUED",
+   "attempts": 1,
    "slug": "web-chat-error-summary",
    "type": "build",
    "stage": "5",
@@ -95926,10 +95926,33 @@
     5745,
     5746
    ],
-   "wip_claim": {
-    "attempt": 1,
-    "remote_sha": ""
-   }
+   "last_failure": "Reviewer after the findings round still FINDINGS (head 18fdb4a27): app/site/templates/request.html lines 7-10: header comment still says the typed number goes back only in the code form's hidden field (D-4044), contradicting the new value=\"{{ number }}\" on #chat-number; line 8 still ~144 chars, rewrap lines 8-10. Code and tests otherwise fine; cargo test -p askhava-site 62 pass. Note: gen_prompts --check reports T646 stale on main itself.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-sonnet-5-5",
+     "model_evidence_count": 43,
+     "head_sha": "18fdb4a27186d3ff68d9cf4bf6aa3934bdd16e8d",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-24T04:38:50Z",
+     "ended_at": "2026-11-24T04:56:38Z",
+     "result": "QUEUED",
+     "usage": {
+      "worker": {
+       "tokens": 1140375,
+       "turns": 27
+      },
+      "reviewer": {
+       "tokens": 836609,
+       "turns": 25
+      }
+     },
+     "wip_skipped": "PII scan: a commit message in 498909db4318943f02006ee0695ad3d4d5906305"
+    }
+   ]
   },
   {
    "id": "T657",
@@ -117543,12 +117566,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T544",
-   "at": "2026-11-24T04:50:20Z",
-   "input_tokens": 184,
-   "cache_creation_input_tokens": 188309,
-   "output_tokens": 48358,
-   "cache_read_input_tokens": 8851219
+   "task": "T656",
+   "at": "2026-11-24T04:56:38Z",
+   "cache_creation_input_tokens": 141474,
+   "input_tokens": 104,
+   "output_tokens": 29928,
+   "cache_read_input_tokens": 1805478
   },
   "source": "session_reading 2026-11-24T04:31:13Z (week)",
   "by_task": {
@@ -125434,17 +125457,27 @@
    },
    "T656": {
     "estimated_bytes": 460256,
-    "estimated_tokens": 537630
+    "estimated_tokens": 537630,
+    "usage_counting": "message_id",
+    "cache_creation_input_tokens": 141474,
+    "input_tokens": 104,
+    "output_tokens": 29928,
+    "cache_read_input_tokens": 1805478,
+    "worker_tokens": 1140375,
+    "worker_turns": 27,
+    "reviewer_tokens": 836609,
+    "reviewer_turns": 25,
+    "last_model": "claude-sonnet-5-5"
    }
   },
   "windows": {
    "five_hour": {
     "start": "2026-11-24T02:36:07Z",
-    "tokens": 10706604
+    "tokens": 11058657
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 244837094
+    "tokens": 245189147
    }
   },
   "session_reading": {
@@ -125455,7 +125488,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T04:52:06Z",
+ "updated_at": "2026-11-24T04:56:44Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -125553,7 +125586,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "15a972ec6a465d02eb5997e8dda6acce28e09807",
+ "runner_sha": "18fdb4a27186d3ff68d9cf4bf6aa3934bdd16e8d",
  "starter": "actions",
  "smoke_runs": [
   {
