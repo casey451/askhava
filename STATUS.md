@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-24T00:44:04Z by runner 6f51aa49550b (actions).
+Updated 2026-11-24T00:44:39Z by runner a8036d7093a0 (actions).
 
 **Building: T813 in progress since 00:33Z; 643 of 779 done; week 86% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,14 +8,14 @@ Updated 2026-11-24T00:44:04Z by runner 6f51aa49550b (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T813 claimed 00:33Z, lease until 03:33Z; lane 4: T836 claimed 00:30Z, lease until 03:30Z; lane 5: T222 claimed 00:37Z, lease until 03:37Z
 - **Week:** 86% used, 18.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:43Z, 0 min before this update
+- **Last run:** 00:44Z, 0 min before this update
 - **Keeper:** last ran 00:44Z, next wake 03:33Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 46% of the context window, over its 45% limit
-- Strict plan check red: 49 problem(s) on tasks still to run (+537 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 40 problem(s) on tasks still to run (+532 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -84,7 +84,7 @@ Updated 2026-11-24T00:44:04Z by runner 6f51aa49550b (actions).
 ## Progress (requirements verified)
 
 **Requirements verified:** 428 of 735 (58.2%) · partial 294 · unstarted 13
-**Tasks merged (throughput only):** 643 of 779
+**Tasks merged (throughput only):** 643 of 778
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
