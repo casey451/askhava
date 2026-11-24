@@ -114559,8 +114559,8 @@
     "T725",
     "T831"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "chat-code-not-optin",
    "type": "harness",
    "stage": "5",
@@ -114573,10 +114573,34 @@
     5770,
     5771
    ],
-   "wip_claim": {
-    "attempt": 1,
-    "remote_sha": ""
-   }
+   "reason": "plan gap reported: PLAN GAP: app/server/tests/web_chat_stops.rs:572 and :592 (owned by T645) assert a consent text queued to a chat-verified number that never texted in; fixing review finding (web_chat consent must never permit a text, CON-005/CON-025) requires changing them. Also app/server/tests/web_chat_after_code.rs:46,:319,:368 (T649) for the \"We'll answer by text\" wording. Smallest plan change: let T801 own web_chat_stops.rs (and web_chat_after_code.rs). Prepared fix patch at /tmp/T801-fix-round.patch. Reviewer confirmed the gap for web_chat_stops.rs. Proof: cargo test --workspace --exclude askhava-integra; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T801 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: app/server/tests/web_chat_stops.rs:572 and :592 (owned by T645) assert a consent text queued to a chat-verified number that never texted in; fixing review finding (web_chat consent must never permit a text, CON-005/CON-025) requires changing them. Also app/server/tests/web_chat_after_code.rs:46,:319,:368 (T649) for the \"We'll answer by text\" wording. Smallest plan change: let T801 own web_chat_stops.rs (and web_chat_after_code.rs). Prepared fix patch at /tmp/T801-fix-round.patch. Reviewer confirmed the gap for web_chat_stops.rs. Proof: cargo test --workspace --exclude askhava-integration fails web_chat_stops.rs:572 (left [] right [\"consent\"]) and :592.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 313,
+     "head_sha": "6f9c1243fb5d5de02872b01464d4f13d0bf6d34f",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-24T08:49:17Z",
+     "ended_at": "2026-11-24T10:59:50Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 20652009,
+       "turns": 184
+      },
+      "reviewer": {
+       "tokens": 1624964,
+       "turns": 33
+      }
+     },
+     "wip_skipped": "PII scan: a commit message in 16fd7ee8aae9465dcb7bf75fd20984021425b001"
+    }
+   ]
   },
   {
    "id": "T802",
@@ -118849,12 +118873,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T305",
-   "at": "2026-11-24T10:28:24Z",
-   "input_tokens": 188,
-   "cache_creation_input_tokens": 223902,
-   "cache_read_input_tokens": 9740125,
-   "output_tokens": 52779
+   "task": "T801",
+   "at": "2026-11-24T10:59:50Z",
+   "cache_creation_input_tokens": 361299,
+   "cache_read_input_tokens": 21803005,
+   "output_tokens": 112243,
+   "input_tokens": 426
   },
   "source": "session_reading 2026-11-24T10:29:37Z (week)",
   "by_task": {
@@ -126840,7 +126864,17 @@
    },
    "T801": {
     "estimated_bytes": 664448,
-    "estimated_tokens": 1944019
+    "estimated_tokens": 1944019,
+    "usage_counting": "message_id",
+    "cache_creation_input_tokens": 361299,
+    "cache_read_input_tokens": 21803005,
+    "output_tokens": 112243,
+    "input_tokens": 426,
+    "worker_tokens": 20652009,
+    "worker_turns": 184,
+    "reviewer_tokens": 1624964,
+    "reviewer_turns": 33,
+    "last_model": "claude-opus-5-5"
    },
    "T305": {
     "estimated_bytes": 462033,
@@ -126864,11 +126898,11 @@
   "windows": {
    "five_hour": {
     "start": "2026-11-24T08:35:06Z",
-    "tokens": 3915598
+    "tokens": 6569866
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 258361671
+    "tokens": 261015939
    }
   },
   "session_reading": {
@@ -126879,7 +126913,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T10:38:43Z",
+ "updated_at": "2026-11-24T10:59:56Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -126977,7 +127011,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "16fd7ee8aae9465dcb7bf75fd20984021425b001",
+ "runner_sha": "6f9c1243fb5d5de02872b01464d4f13d0bf6d34f",
  "starter": "actions",
  "smoke_runs": [
   {
@@ -129320,7 +129354,7 @@
    ]
   },
   "4": {
-   "count": 1,
+   "count": 0,
    "last": [
     {
      "at": "2026-11-14T12:08:19Z",

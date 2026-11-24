@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T10:38:43Z by runner 16fd7ee8aae9 (actions).
+Updated 2026-11-24T10:59:56Z by runner 6f9c1243fb5d (actions).
 
 **Building: T802 in progress since 10:10Z; 658 of 780 done; week 91% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 658 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T802 claimed 10:10Z, lease until 13:10Z; lane 3: T410 claimed 09:38Z, lease until 12:38Z; lane 4: T801 claimed 08:49Z, lease until 13:34Z; lane 5: T624 claimed 10:37Z, lease until 13:37Z
+- **Lane:** lane 1: T802 claimed 10:10Z, lease until 13:10Z; lane 3: T410 claimed 09:38Z, lease until 12:38Z; lane 5: T624 claimed 10:37Z, lease until 13:37Z
 - **Week:** 91% used, 8.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:35Z, 2 min before this update
+- **Last run:** 10:38Z, 21 min before this update
 - **Keeper:** last ran 10:30Z, next wake 11:52Z
 
 ## Needs attention
@@ -18,15 +18,17 @@ Updated 2026-11-24T10:38:43Z by runner 16fd7ee8aae9 (actions).
 3. Worker's PLAN GAP (day-3 DONE / masked call) REFUTED by reviewer: app/server/src/main.rs and lib.rs are shared paths T222 may edit, and a masked-call driver can live in owned tests/e2e/j1_full.ts. Only the 600-line budget is a real limit, which the worker did not argue. D-5642 guesses at the cause.
 4. tests/e2e/j2_full.ts:4 cites D-5643, which does not exist in docs/decisions.md.
 Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and prehandin.sh green.
+- BLOCKED T801: plan gap reported: PLAN GAP: app/server/tests/web_chat_stops.rs:572 and :592 (owned by T645) assert a consent text queued to a chat-verified number that never texted in; fixing review finding (web_chat consent must never permit a text, CON-005/CON-025) requires changing them. Also app/server/tests/web_chat_after_code.rs:46,:319,:368 (T649) for the "We'll answer by text" wording. Smallest plan change: let T801 own web_chat_stops.rs (and web_chat_after_code.rs). Prepared fix patch at /tmp/T801-fix-round.patch. Reviewer confirmed the gap for web_chat_stops.rs. Proof: cargo test --workspace --exclude askhava-integra; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T801 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 58 problem(s) on tasks still to run (+554 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 55 problem(s) on tasks still to run (+550 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T801 | intake and site (harness): with texting on, the web chat onl | BLOCKED | 1 | 2 h 10 min | 10:59Z | PLAN GAP: app/server/tests/web_chat_stops.rs:572 and :592 (owned by T645) assert a consent text queued to a chat-verifie |
 | T305 | server and portals: the scorecard, the intake report, the mo | MERGE_PENDING | 1 | 73 min | 10:28Z |  |
 | T814 | portals and server: a used action link pressed again shows i | done | 1 | 2 h 29 min | 10:07Z |  |
 | T841 | e2e: seedPick's new businesses hold the fixture licence ROC1 | done | 1 | 97 min | 09:48Z |  |
@@ -131,8 +133,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T802 (lease until 2026-11-24T13:10:33Z)
 - lane 3: T410 (lease until 2026-11-24T12:38:39Z)
-- lane 4: T801 (lease until 2026-11-24T13:34:00Z)
 - lane 5: T624 (lease until 2026-11-24T13:37:51Z)
 
 ## Last usage reading
-- {"task": "T305", "at": "2026-11-24T10:28:24Z", "input_tokens": 188, "cache_creation_input_tokens": 223902, "cache_read_input_tokens": 9740125, "output_tokens": 52779}
+- {"task": "T801", "at": "2026-11-24T10:59:50Z", "cache_creation_input_tokens": 361299, "cache_read_input_tokens": 21803005, "output_tokens": 112243, "input_tokens": 426}
