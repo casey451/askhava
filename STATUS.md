@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T20:27:21Z by runner 60b853b9b8e1 (actions).
+Updated 2026-11-24T20:33:02Z by runner 60b853b9b8e1 (actions).
 
 **Building: T826 in progress since 20:27Z; 668 of 780 done; week 96% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 668 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T826 claimed 20:27Z, lease until 23:27Z; lane 2: T815 claimed 19:52Z, lease until 22:52Z
-- **Week:** 96% used, 0.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 20:26Z, 1 min before this update
+- **Week:** 96% used, 0.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 20:27Z, 5 min before this update
 - **Keeper:** last ran 20:25Z, next wake 22:55Z
 
 ## Needs attention
@@ -89,36 +89,36 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 
 ## Progress (requirements verified)
 
-**Requirements verified:** 445 of 735 (60.5%) · partial 282 · unstarted 8
+**Requirements verified:** 483 of 735 (65.7%) · partial 244 · unstarted 8
 **Tasks merged (throughput only):** 668 of 780
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
-| accessibility | 27 | 8 | 0 | 35 |
-| ai | 8 | 18 | 3 | 29 |
-| businesses | 34 | 23 | 1 | 58 |
+| accessibility | 28 | 7 | 0 | 35 |
+| ai | 11 | 15 | 3 | 29 |
+| businesses | 36 | 21 | 1 | 58 |
 | calls | 17 | 8 | 0 | 25 |
-| consent | 20 | 15 | 0 | 35 |
-| fees | 28 | 24 | 0 | 52 |
-| intake | 12 | 31 | 0 | 43 |
-| job-cards | 16 | 8 | 0 | 24 |
-| licensing | 40 | 8 | 0 | 48 |
-| lifecycle | 22 | 6 | 0 | 28 |
-| messaging | 26 | 19 | 0 | 45 |
-| ops-recovery | 24 | 29 | 1 | 54 |
-| privacy | 13 | 18 | 0 | 31 |
+| consent | 23 | 12 | 0 | 35 |
+| fees | 29 | 23 | 0 | 52 |
+| intake | 14 | 29 | 0 | 43 |
+| job-cards | 17 | 7 | 0 | 24 |
+| licensing | 41 | 7 | 0 | 48 |
+| lifecycle | 23 | 5 | 0 | 28 |
+| messaging | 27 | 18 | 0 | 45 |
+| ops-recovery | 33 | 20 | 1 | 54 |
+| privacy | 15 | 16 | 0 | 31 |
 | quiet-hours | 4 | 5 | 0 | 9 |
-| quotes-pick | 36 | 20 | 0 | 56 |
+| quotes-pick | 40 | 16 | 0 | 56 |
 | recurring | 10 | 1 | 0 | 11 |
-| security | 22 | 30 | 3 | 55 |
-| terms | 32 | 3 | 0 | 35 |
-| website | 24 | 6 | 0 | 30 |
+| security | 25 | 27 | 3 | 55 |
+| terms | 35 | 0 | 0 | 35 |
+| website | 25 | 5 | 0 | 30 |
 | wording | 30 | 2 | 0 | 32 |
 
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-24T20:25:09Z (week)): week: 193.2M used, 794k left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T19:39:45Z.
+- Pacing (session_reading 2026-11-24T20:25:09Z (week)): week: 193.8M used, 225k left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T19:45:30Z; waiting until 2026-11-26T17:00:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
