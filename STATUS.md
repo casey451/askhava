@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T00:55:54Z by runner 307d40424461 (actions).
+Updated 2026-11-24T00:56:25Z by runner 307d40424461 (actions).
 
 **Building: T813 in progress since 00:33Z; 643 of 779 done; week 86% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 643 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T813 claimed 00:33Z, lease until 03:33Z; lane 4: T836 claimed 00:30Z, lease until 03:30Z; lane 5: T222 claimed 00:37Z, lease until 03:37Z
+- **Lane:** lane 2: T813 claimed 00:33Z, lease until 03:33Z; lane 5: T222 claimed 00:37Z, lease until 03:37Z
 - **Week:** 86% used, 18.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:51Z, 4 min before this update
+- **Last run:** 00:51Z, 5 min before this update
 - **Keeper:** last ran 00:50Z, next wake 03:32Z
 
 ## Needs attention
@@ -20,6 +20,7 @@ Updated 2026-11-24T00:55:54Z by runner 307d40424461 (actions).
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T836 | ci and runner workflow (harness): the backup-runner gate ski | MERGE_PENDING | 2 | 25 min | 00:55Z | PLAN GAP: tests/test_runner_five_lanes.py:176 (test_no_workflow_a_hand_in_starts_cancels_another_lanes_run_when_five_han |
 | T737 | portals, ai and server: the owner records the AI provider's  | MERGE_PENDING | 2 | 112 min | 00:42Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T738 | portals and server: owner settings refusals show an accessib | MERGE_PENDING | 1 | 85 min | 00:34Z |  |
 | T716 | intake: the dispatcher's trade questions at step 5: "Which f | done | 4 | 114 min | 23:57Z | PLAN GAP: outside ownership: app/intake/src/conversation.rs (purge_child, ~348-362), app/intake/src/models.rs (purge_req |
@@ -28,7 +29,7 @@ Updated 2026-11-24T00:55:54Z by runner 307d40424461 (actions).
 | T816 | messaging: the data-request confirm link goes by email to th | done | 1 | 112 min | 22:39Z |  |
 | T737 | portals, ai and server: the owner records the AI provider's  | check_failed | 1 | 65 min | 21:59Z |  |
 | T745 | intake: a reader for a job's intake answers through `intake: | done | 1 | 2 h 19 min | 21:22Z |  |
-| T836 | ci and runner workflow (harness): the backup-runner gate ski | BLOCKED | 1 | 11 min | 20:40Z | PLAN GAP: tests/test_runner_five_lanes.py:176 (test_no_workflow_a_hand_in_starts_cancels_another_lanes_run_when_five_han |
+| T836 | ci and runner workflow (harness): the backup-runner gate ski | BLOCKED | 1 | 11 min | 20:40Z |  |
 | T668 | server: the business job page at /b/jobs/{j} offers "Not a f | done | 1 | 56 min | 20:07Z |  |
 | T812 | businesses and portals: a passed step-up records the session | done | 1 | 89 min | 19:31Z |  |
 | T730 | messaging: a homeowner who chose email gets each quote updat | done | 4 | 76 min | 19:13Z | PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs / Evidence: last_quote_text (quote_text_sent.rs:45-52) |
@@ -129,8 +130,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - nothing
 - lane 2: T813 (lease until 2026-11-24T03:33:53Z)
-- lane 4: T836 (lease until 2026-11-24T03:30:33Z)
 - lane 5: T222 (lease until 2026-11-24T03:37:12Z)
 
 ## Last usage reading
-- {"task": "T737", "at": "2026-11-24T00:42:14Z", "cache_creation_input_tokens": 249720, "cache_read_input_tokens": 4882392, "input_tokens": 194, "output_tokens": 34074}
+- {"task": "T836", "at": "2026-11-24T00:55:53Z", "input_tokens": 63, "cache_creation_input_tokens": 75759, "output_tokens": 19999, "cache_read_input_tokens": 1165526}
