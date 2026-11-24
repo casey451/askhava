@@ -33,6 +33,7 @@ pub use crate::digest_rows::{
     DigestAlert, DigestRow, StatusChangeRow, TradeActive, digest_alerts, digest_opened,
     digest_reminded, digest_sent, latest_digest, system_status_changes, trade_active_counts,
 };
+pub use crate::help_keyword_of::{contact_created_at, help_keyword_of};
 pub use crate::help_request_keys::help_requests_of_homeowner;
 pub use crate::help_requests::{
     Asker, HELP_ANSWERED_WITHIN, HELP_PUSH_ITEM, HelpLimits, HelpOpened, HelpRequest,

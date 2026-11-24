@@ -146,6 +146,7 @@ pub async fn lock_for_quote_change(
 /// the words and tick as sent and never changed; there is no rating or tone column, so
 /// [`feedback::shown`] cannot leave feedback out for being negative.
 pub mod feedback {
+    pub use crate::feedback_of_job::{GivenFeedback, of_job};
     use askhava_ops::api::{Actor, AuditEntry, Change, audit};
     use jiff::Timestamp;
     use jiff_sqlx::ToSqlx;

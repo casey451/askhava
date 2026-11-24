@@ -44,6 +44,7 @@ mod models;
 mod open_cards_digest;
 mod optout;
 mod optout_email;
+mod optout_records;
 mod outbox_sender;
 mod purge;
 mod quote_text_sent;

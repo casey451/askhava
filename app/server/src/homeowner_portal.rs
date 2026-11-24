@@ -21,8 +21,10 @@
 //!
 //! The data routes (T561, D-3967, D-3877; PRIV-031, PRIV-011): `GET` [`DOWNLOAD_ROUTE`] answers
 //! her "Download my data" file (`download_file` over [`held_file`]: her requests and consent
-//! records through `intake::api`, her shown quotes through `quotes::api` with each business's
-//! public name, and the words `messaging` still holds for her through `held_words`). `POST`
+//! records through `intake::api`, her shown and withdrawn quotes through `quotes::api` with each
+//! business's public name, the words `messaging` still holds for her through `held_words`, and
+//! `portals`' `more_held_items`: job descriptions, intake answers, feedback, and opt-out, START and
+//! HELP records; T820, D-5399). `POST`
 //! [`DATA_REQUEST_ROUTE`] opens a copy or delete request and texts its code, `POST`
 //! [`DATA_RESEND_ROUTE`] texts it again, and `POST` [`DATA_CODE_ROUTE`] acts only on her open
 //! request with the right code: a copy answers the same file, a delete the PRIV-011 sentence. Each
@@ -79,15 +81,15 @@ use askhava_portals::api::{
     TEXTS_OFF_ROUTE, TOO_BIG_ERROR, UploadScreen, VERIFY_DAILY_THRESHOLD, WebSecurity,
     admit_code_send, admit_code_try, confirm_data_link, confirm_request, csrf_matches, csrf_token,
     current_session, data_link_page, download_file, ensure_pre_session, finish_sign_in,
-    homeowner_page, no_store, number_listed, open_data_link, open_request, photo_upload_page,
-    refuse_cross_site, resend_request_code, security_event_client, send_request_link,
-    send_sign_in_code, turn_texts_off, upload_screen,
+    homeowner_page, more_held_items, no_store, number_listed, open_data_link, open_request,
+    photo_upload_page, refuse_cross_site, resend_request_code, security_event_client,
+    send_request_link, send_sign_in_code, turn_texts_off, upload_screen,
 };
 use askhava_privacy::api::{
     DEFAULT_MIN_SHORT_SIDE, HomeownerSessionProof, MAX_PHOTO_BYTES, PhotoError, PhotoSeal,
     PhotoTaken, find_by_phone, issue_link, open_link, photo_path, take_upload,
 };
-use askhava_quotes::api::{page_quotes, shown_quotes};
+use askhava_quotes::api::{page_quotes, shown_quotes, withdrawn_quotes};
 use axum::Router;
 use axum::body::Body;
 use axum::extract::{
@@ -583,25 +585,36 @@ async fn request_items(
 }
 
 /// PRIV-031: the quotes shown on her jobs (`quotes::api::shown_quotes`), each with its business's
-/// public name, time and wording (`page_quotes`, `businesses::api::public_names`).
+/// public name, time and wording (`page_quotes`, `businesses::api::public_names`), then each
+/// withdrawn quote still held on her jobs (`quotes::api::withdrawn_quotes`), its words prefixed
+/// "Withdrawn: " (D-5399, D-5526).
 async fn quote_items(db: &mut PgConnection, contact: Uuid) -> Result<Vec<HeldItem>, &'static str> {
-    let mut items = Vec::new();
-    for job in jobs_of_contact(db, contact).await.map_err(|_| "jobs")? {
-        let shown = shown_quotes(db, job).await.map_err(|_| "shown quotes")?;
-        let quotes = page_quotes(db, job).await.map_err(|_| "quotes")?;
-        let quotes: Vec<_> = (quotes.into_iter())
-            .filter(|q| !q.withdrawn && shown.contains(&q.business))
-            .collect();
-        let ids: Vec<Uuid> = quotes.iter().map(|q| q.business).collect();
-        let names = public_names(db, &ids).await.map_err(|_| "business names")?;
-        for quote in quotes {
-            let name = (names.iter().find(|(id, _)| *id == quote.business))
-                .map_or(CARD_FALLBACK_NAME[0], |(_, name)| name.as_str());
-            let words = format!("Quote from {name}: {}", quote.original);
-            items.push(item(contact, Section::Quotes, quote.received_at, words));
-        }
+    let mut quotes = Vec::new();
+    let jobs = jobs_of_contact(db, contact).await.map_err(|_| "jobs")?;
+    for job in &jobs {
+        let shown = shown_quotes(db, *job).await.map_err(|_| "shown quotes")?;
+        let page = page_quotes(db, *job).await.map_err(|_| "quotes")?;
+        quotes.extend(
+            (page.into_iter())
+                .filter(|q| !q.withdrawn && shown.contains(&q.business))
+                .map(|q| (q.business, q.received_at, q.original, "")),
+        );
     }
-    Ok(items)
+    let withdrawn = withdrawn_quotes(db, &jobs).await.map_err(|_| "withdrawn")?;
+    quotes.extend(
+        withdrawn
+            .into_iter()
+            .map(|q| (q.business, q.received_at, q.original, "Withdrawn: ")),
+    );
+    let ids: Vec<Uuid> = quotes.iter().map(|q| q.0).collect();
+    let names = public_names(db, &ids).await.map_err(|_| "business names")?;
+    let items = quotes.into_iter().map(|(business, at, original, mark)| {
+        let name = (names.iter().find(|(id, _)| *id == business))
+            .map_or(CARD_FALLBACK_NAME[0], |(_, name)| name.as_str());
+        let words = format!("{mark}Quote from {name}: {original}");
+        item(contact, Section::Quotes, at, words)
+    });
+    Ok(items.collect())
 }
 
 /// PRIV-031: her "Download my data" file: only her own items, on one connection held for the reads.
@@ -610,6 +623,7 @@ async fn held_file(state: &Portal, her: &OnFile) -> Result<String, &'static str>
     let contact = her.contact();
     let mut items = request_items(&mut db, contact).await?;
     items.extend(quote_items(&mut db, contact).await?);
+    items.extend(more_held_items(&mut db, contact).await?);
     let held = held_words(&mut db, contact).await.map_err(|_| "messages")?;
     let messages = held
         .into_iter()

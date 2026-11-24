@@ -1,0 +1,52 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT body, share, received_at FROM jobs.feedback WHERE job_id = $1 AND body_purged_at IS NULL",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "body",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "jobs.feedback",
+            "name": "body"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "share",
+        "type_info": "Bool",
+        "origin": {
+          "Table": {
+            "table": "jobs.feedback",
+            "name": "share"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "received_at",
+        "type_info": "Timestamptz",
+        "origin": {
+          "Table": {
+            "table": "jobs.feedback",
+            "name": "received_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "4416340516717b741d9f4dbc64025c37fa9a0dabef4250e435bcc5e128917e5f"
+}

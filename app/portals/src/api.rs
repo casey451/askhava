@@ -122,6 +122,7 @@ pub use crate::confirm_pay::{
 pub use crate::confirm_waiver::{
     ConfirmFee, ConfirmWaiverError, ConfirmedPick, decide_at_confirm, join_dates, release_no_fee,
 };
+pub use crate::data_download::more_held_items;
 pub use crate::data_download::{
     ANSWER_WITHIN, Acted, DATA_CODE_ROUTE, DATA_REQUEST_ROUTE, DOWNLOAD_ROUTE, DataRequest,
     DataRequestKind, DeleteError, HeldItem, RequestError, Section, confirm_request,
