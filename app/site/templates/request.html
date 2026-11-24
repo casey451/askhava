@@ -5,15 +5,24 @@
     follows the English text, plain copy, on every step (T595). AI-026's line
     shows while `ai_on`. One question per page, the chat so far above it. `csrf` is the token
     server's chat layer sets; `message` is this form's PRIV-008 message ID (D-3189). The typed
-    number goes back only in the code form's hidden field (D-4044). `words` is the home request
-    box's text carried into the chat box, escaped, never stored (T593). The form sits on a paper
-    card, a field in error takes aria-invalid and its 2 px alert border, her lines sit on `band` and
-    ours on `surface` (T609, D-4246, D-4252 (b)); "Send" has no arrow (docs/for-casey-review.md).
+    number is echoed, escaped, in the code form's hidden field (D-4044) and, after a refused
+    number, in #chat-number (T656). `words` is the home request box's text carried into the chat
+    box, or her words after a refused or failed message step, escaped, never stored (T593, T656).
+    A refusing notice (`error`) is the error summary first in main: role="alert", focused by
+    autofocus, its line a link to the field; "Error: " starts the title; a progress notice stays
+    in the role="status" region (A11Y-030, T656). The form sits on a paper card, a field in error
+    takes aria-invalid and its 2 px alert border, her lines sit on `band` and ours on `surface`
+    (T609, D-4246, D-4252 (b)); "Send" has no arrow (docs/for-casey-review.md).
     `chat-intro` and `chat-form` scope the start screen's compact spacing so the words box never
     spans the fold at 900 px tall (T831, A11Y-005, D-5535). -#}
 {% block title %}{% if error %}Error: {% endif %}Get quotes{% endblock %}
 {% block content %}
 {%- let brand = askhava_core::api::brand().display_name() %}
+{%- if error %}
+<div id="chat-notice" role="alert" tabindex="-1" autofocus>
+<p><a href="#{{ self.field() }}">{{ notice }}</a></p>
+</div>
+{%- endif %}
 <h1 class="chat-intro">Tell us the job. We'll answer by text.</h1>
 <h2>How we'll text you</h2>
 <div lang="es">
@@ -30,9 +39,11 @@
 {%- endfor %}
 </ol>
 {%- endif %}
-<div id="chat-notice" role="{% if error %}alert{% else %}status{% endif %}">
+{%- if !error %}
+<div id="chat-notice" role="status">
 {%- if !notice.is_empty() %}<p>{{ notice }}</p>{% endif -%}
 </div>
+{%- endif %}
 {%- if ai_on %}
 <p data-fixed="AI-026">An AI service helps word our questions.</p>
 {%- endif %}
@@ -53,7 +64,7 @@
 <input type="hidden" name="step" value="number">
 <p><label for="chat-number">Your mobile number</label></p>
 <p id="chat-number-hint">We text a code to this number to check it's yours.</p>
-<p><input id="chat-number" name="number" type="tel" autocomplete="tel" aria-describedby="chat-number-hint{% if error %} chat-notice{% endif %}"{% if error %} aria-invalid="true"{% endif %}></p>
+<p><input id="chat-number" name="number" type="tel" autocomplete="tel" value="{{ turn.number }}" aria-describedby="chat-number-hint{% if error %} chat-notice{% endif %}"{% if error %} aria-invalid="true"{% endif %}></p>
 <p><button type="submit">Text me a code</button></p>
 {%- when Ask::Code %}
 <input type="hidden" name="step" value="code">
