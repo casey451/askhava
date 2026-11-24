@@ -1,17 +1,23 @@
 # Ask Hava build status
 
-Updated 2026-11-24T02:50:12Z by runner 15a972ec6a46 (actions).
+Updated 2026-11-24T03:00:05Z by runner 457819c6bc47 (actions).
 
 **Building: T524 in progress since 01:11Z; 646 of 779 done; week 88% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 646 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T524 claimed 01:11Z, lease until 04:11Z; lane 4: T676 claimed 02:45Z, lease until 05:45Z; lane 5: T222 claimed 00:37Z, lease until 03:37Z
+- **Lane:** lane 1: T524 claimed 01:11Z, lease until 04:11Z; lane 4: T676 claimed 02:45Z, lease until 05:45Z
 - **Week:** 88% used, 15.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 02:49Z, 0 min before this update
+- **Last run:** 02:50Z, 9 min before this update
 - **Keeper:** last ran 02:50Z, next wake 03:40Z
 
 ## Needs attention
+- BLOCKED T222: Reviewer over 457819c6bc470ff6f69d271d7ab023fb3c0c25eb ended REVIEW-VERDICT: FINDINGS (hand_in_by too close for a fix round):
+1. tests/e2e/j2_full.ts:190 closingChecks omits no-duplicate-message, audit-row-per-status-change and no-sentinel-outside-vault (TD-PRIV-02); j2_full.spec.ts:8 title claims closing checks; D-5641 not-driven list does not name them.
+2. D-5641 falsely says no e2e file drives the web chat start (CON-025); tests/e2e/web_chat.spec.ts (T594) does. CON-025 is in T222's Goal and was left undone without valid reason.
+3. Worker's PLAN GAP (day-3 DONE / masked call) REFUTED by reviewer: app/server/src/main.rs and lib.rs are shared paths T222 may edit, and a masked-call driver can live in owned tests/e2e/j1_full.ts. Only the 600-line budget is a real limit, which the worker did not argue. D-5642 guesses at the cause.
+4. tests/e2e/j2_full.ts:4 cites D-5643, which does not exist in docs/decisions.md.
+Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and prehandin.sh green.
 - BLOCKED T119: plan gap reported: PLAN GAP: outside ownership: tests/e2e/webserver.ts
 keyedEnv (webserver.ts:143-177) sets no ASKHAVA_HOMEOWNER_NUMBER; homeowner_number (app/server/src/lib.rs:2345) returns None in CI, so homeowner outbox rows stay queued and J4 steps 1-2 cannot run By text (D-5657). appEnv drops inherited ASKHAVA_* vars, so no workaround. webserver.ts is owned by T536 and not owned/shared by T119. Smallest fix: add a fake +1 ASKHAVA_HOMEOWNER_NUMBER to keyedEnv (or make webserver.ts shared for T119).
 Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (service.rs refused()); docs/test-de; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T119 --plan-fix D-### --reason "..."` (D-2859)
@@ -19,11 +25,12 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
-- Strict plan check red: 52 problem(s) on tasks still to run (+541 on DONE tasks); first: T518: stored context_pct 17% but it measures 21%; regenerate
+- Strict plan check red: 49 problem(s) on tasks still to run (+537 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T222 | Journeys J1 and J2, the full variants: web chat, photos, que | BLOCKED | 3 | 2 h 22 min | 03:00Z | Reviewer after the fix round still ended REVIEW-VERDICT: FINDINGS over 0aedbd3769e83a983d24d694c7abe05f8773a57a: / 1. do |
 | T649 | intake, site and server: after the code, the web chat's name | MERGE_PENDING | 2 | 62 min | 02:40Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T119 | Journey J4 (vendor outage), with closing checks | BLOCKED | 1 | 36 min | 02:36Z | PLAN GAP: outside ownership: tests/e2e/webserver.ts / keyedEnv (webserver.ts:143-177) sets no ASKHAVA_HOMEOWNER_NUMBER;  |
 | T813 | businesses and portals (harness): a step-up counts only in t | MERGE_PENDING | 1 | 59 min | 02:35Z |  |
@@ -40,7 +47,7 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 | T668 | server: the business job page at /b/jobs/{j} offers "Not a f | done | 1 | 56 min | 20:07Z |  |
 | T812 | businesses and portals: a passed step-up records the session | done | 1 | 89 min | 19:31Z |  |
 | T730 | messaging: a homeowner who chose email gets each quote updat | done | 4 | 76 min | 19:13Z | PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs / Evidence: last_quote_text (quote_text_sent.rs:45-52) |
-| T222 | Journeys J1 and J2, the full variants: web chat, photos, que | QUEUED | 2 | 97 min | 17:54Z | Reviewer after the fix round still ended REVIEW-VERDICT: FINDINGS over 0aedbd3769e83a983d24d694c7abe05f8773a57a: / 1. do |
+| T222 | Journeys J1 and J2, the full variants: web chat, photos, que | QUEUED | 2 | 97 min | 17:54Z |  |
 | T782 | server: the released job's page shows its real job number | done | 1 | 97 min | 16:56Z |  |
 | T121 | Startup key checks, control router absent in live, supply-ch | done | 4 | 100 min | 16:52Z | PLAN GAP: outside ownership: app/portals/src/update_channel.rs / T729 (owner) merged UpdatesForm/ConfirmForm without den |
 | T714 | portals: a Confirm link sent by text is marked text-started  | done | 4 | 88 min | 15:49Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
@@ -132,7 +139,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T524 (lease until 2026-11-24T04:11:37Z)
 - lane 4: T676 (lease until 2026-11-24T05:45:51Z)
-- lane 5: T222 (lease until 2026-11-24T03:37:12Z)
 
 ## Last usage reading
-- {"task": "T649", "at": "2026-11-24T02:40:39Z", "cache_read_input_tokens": 1612799, "input_tokens": 79, "cache_creation_input_tokens": 97047, "output_tokens": 13989}
+- {"task": "T222", "at": "2026-11-24T03:00:03Z", "input_tokens": 470, "cache_creation_input_tokens": 388920, "output_tokens": 140670, "cache_read_input_tokens": 48341232}
