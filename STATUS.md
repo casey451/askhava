@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-24T21:00:53Z by runner 7f1ca1d636bc (actions).
+Updated 2026-11-24T21:22:19Z by runner f3d59057ac63 (actions).
 
 **Building: T826 in progress since 20:27Z; 669 of 780 done; week 96% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-24T21:00:53Z by runner 7f1ca1d636bc (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T826 claimed 20:27Z, lease until 23:27Z; lane 2: T815 claimed 19:52Z, lease until 22:52Z
 - **Week:** 96% used, 0.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 21:00Z, 0 min before this update
+- **Last run:** 21:22Z, 0 min before this update
 - **Keeper:** last ran 21:00Z, next wake 22:55Z
 
 ## Needs attention
@@ -23,7 +23,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 65 problem(s) on tasks still to run (+574 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 69 problem(s) on tasks still to run (+574 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -78,7 +78,6 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 | T819 | portals: her feedback words are scrubbed before they are sto | done | 3 | 85 min | 22:43Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T816 | messaging: the data-request confirm link goes by email to th | done | 1 | 112 min | 22:39Z |  |
 | T737 | portals, ai and server: the owner records the AI provider's  | check_failed | 1 | 65 min | 21:59Z |  |
-| T745 | intake: a reader for a job's intake answers through `intake: | done | 1 | 2 h 19 min | 21:22Z |  |
 
 ### Plan and harness merges on main
 - 17:12Z Plan: PF-Q1 pre-flight fixes for T817 and T843; PF-Q1, PF-T222, PF-T801b, PF-CLK reports and Fable's scope decision filed (D-5793) (#1448)
