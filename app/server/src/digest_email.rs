@@ -56,8 +56,8 @@ pub struct DigestMailer {
     pub postal: (String, MailboxKind),
 }
 
-/// Registers [`DIGEST_KIND`] when the email provider is set; with none (dev and CI only) the
-/// worker's seed is skipped too, since it is queued only when the drain can send.
+/// Registers [`DIGEST_KIND`], always (OPS-004); with no email provider (dev and CI only) a run
+/// does nothing and queues no next run, and the worker's seed is skipped too.
 ///
 /// # Errors
 ///
@@ -68,18 +68,20 @@ pub fn register(
     clock: &Arc<dyn Clock>,
     pairs: Vec<(String, String)>,
 ) -> io::Result<()> {
-    let Some(p) = crate::email_provider::email_provider(settings, pairs)? else {
-        return Ok(());
-    };
-    let (postal, kind) = p.postal();
-    let mailer = Arc::new(DigestMailer {
-        secret: p.secret().clone(),
-        postal: (postal.to_owned(), kind),
+    let mailer = crate::email_provider::email_provider(settings, pairs)?.map(|p| {
+        let (postal, kind) = p.postal();
+        Arc::new(DigestMailer {
+            secret: p.secret().clone(),
+            postal: (postal.to_owned(), kind),
+        })
     });
     let clock = Arc::clone(clock);
     registry.register(DIGEST_KIND, move |pool, _task| {
-        let (mailer, now) = (Arc::clone(&mailer), clock.now());
+        let (mailer, now) = (mailer.clone(), clock.now());
         async move {
+            let Some(mailer) = mailer else {
+                return Ok(());
+            };
             let mut conn = pool.acquire().await.map_err(|_| FAILED)?;
             run_digest(&mut conn, &mailer, now).await.map(|_| ())
         }
