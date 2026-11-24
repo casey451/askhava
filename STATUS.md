@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-24T15:47:21Z by runner 234ae7f8fe8e (actions).
+Updated 2026-11-24T15:53:57Z by runner 668bcac6a67e (actions).
 
 **Building: T590 in progress since 15:08Z; 663 of 780 done; week 94% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-24T15:47:21Z by runner 234ae7f8fe8e (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 4: T590 claimed 15:08Z, lease until 18:08Z; lane 5: T815 claimed 15:39Z, lease until 18:39Z
 - **Week:** 94% used, 3.0M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:47Z, 0 min before this update
+- **Last run:** 15:53Z, 0 min before this update
 - **Keeper:** last ran 15:47Z, next wake 18:11Z
 
 ## Needs attention
@@ -22,7 +22,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 61 problem(s) on tasks still to run (+562 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 65 problem(s) on tasks still to run (+567 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -76,7 +76,6 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 | T222 | Journeys J1 and J2, the full variants: web chat, photos, que | QUEUED | 2 | 97 min | 17:54Z |  |
 | T782 | server: the released job's page shows its real job number | done | 1 | 97 min | 16:56Z |  |
 | T121 | Startup key checks, control router absent in live, supply-ch | done | 4 | 100 min | 16:52Z | PLAN GAP: outside ownership: app/portals/src/update_channel.rs / T729 (owner) merged UpdatesForm/ConfirmForm without den |
-| T714 | portals: a Confirm link sent by text is marked text-started  | done | 4 | 88 min | 15:49Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
 
 ### Plan and harness merges on main
 - 13:12Z Plan: T305 owns its three owner-report templates for Ally; PF-T801 review filed (D-5792) (#1446)
