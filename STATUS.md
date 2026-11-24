@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-24T10:08:01Z by runner f649127cd57d (actions).
+Updated 2026-11-24T10:08:10Z by runner f649127cd57d (actions).
 
 **Building: T305 in progress since 09:14Z; 657 of 780 done; week 91% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 657 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T305 claimed 09:14Z, lease until 12:14Z; lane 3: T410 claimed 09:38Z, lease until 12:38Z; lane 4: T801 claimed 08:49Z, lease until 11:49Z; lane 5: T814 claimed 07:37Z, lease until 11:55Z
+- **Lane:** lane 2: T305 claimed 09:14Z, lease until 12:14Z; lane 3: T410 claimed 09:38Z, lease until 12:38Z; lane 4: T801 claimed 08:49Z, lease until 11:49Z
 - **Week:** 91% used, 8.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 10:07Z, 0 min before this update
 - **Keeper:** last ran 09:50Z, next wake 11:51Z
@@ -26,6 +26,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T814 | portals and server: a used action link pressed again shows i | MERGE_PENDING | 1 | 2 h 29 min | 10:07Z |  |
 | T841 | e2e: seedPick's new businesses hold the fixture licence ROC1 | done | 1 | 97 min | 09:48Z |  |
 | T804 | server and portals: a delete or copy request made in the por | done | 2 | 63 min | 08:35Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T410 | portals: every signed-in business page shows the Get help li | check_failed | 1 | 93 min | 07:32Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-24T |
@@ -133,7 +134,6 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T305 (lease until 2026-11-24T12:14:51Z)
 - lane 3: T410 (lease until 2026-11-24T12:38:39Z)
 - lane 4: T801 (lease until 2026-11-24T11:49:17Z)
-- lane 5: T814 (lease until 2026-11-24T11:55:24Z)
 
 ## Last usage reading
-- {"task": "T841", "at": "2026-11-24T09:48:55Z", "output_tokens": 23922, "input_tokens": 135, "cache_read_input_tokens": 2638565, "cache_creation_input_tokens": 114458}
+- {"task": "T814", "at": "2026-11-24T10:07:13Z", "cache_creation_input_tokens": 379261, "output_tokens": 87941, "cache_read_input_tokens": 14833811, "input_tokens": 397}
