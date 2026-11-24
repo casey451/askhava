@@ -40,7 +40,11 @@
 //! needs the Stripe hooks, D-5629), an emailed one's still answers at 29 days; only a text-minted grant is
 //! `text_started`; the token under another kind or object or with anything appended is answered
 //! as an unissued token and starts no session; a misshapen token is refused before any read;
-//! and only Confirm is minted by text.
+//! and only Confirm is minted by text. T814 (SEC-026, D-5316): a used link pressed again acts no
+//! more and shows its result: a Quote link the job page with the one stored quote (a new price
+//! stores nothing), a Confirm link the same 303, every other kind the "already used" page; a used
+//! link of a removed member, of one who lost the role, past its end, or of another signed-in
+//! person is the one not-found answer.
 
 use std::collections::BTreeSet;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -52,7 +56,7 @@ use askhava_adapters::api::{
 use askhava_businesses::api::{
     AccountStatus, Acting, Capability, CapabilityAnswers, Checks, Event, LargestJob, PauseReason,
     Roles, add_member, add_owner, apply, away_until, business, busy_until,
-    create as create_business, record_session_step_up, remove_member, save_capability,
+    create as create_business, record_session_step_up, remove_member, save_capability, set_roles,
     waiting_phones,
 };
 use askhava_calls::api::{
@@ -526,12 +530,107 @@ async fn td_sec_44_the_quote_form_acts_once_and_bounces_a_phone_number(pool: PgP
         "the quote and its facts are stored together"
     );
     assert!(!unused(&w, &path).await, "the stored quote used the link");
-    let again = send(&w, (&Method::POST, &path, &firm()), Site::Own).await;
+    let other = firm().replace("amount=325", "amount=990");
+    let again = send(&w, (&Method::POST, &path, &other), Site::Own).await;
     assert_eq!(
-        again,
-        not_found(&w, &Method::POST).await,
-        "a used link acts no more"
+        (again.status, again.no_store),
+        (200, true),
+        "{}",
+        again.text
     );
+    assert!(
+        again.text.contains("Quotes so far: 1."),
+        "a used link shows the job page again, one quote stored (SEC-026, D-5316): {}",
+        again.text
+    );
+    assert!(
+        !again.text.contains("990"),
+        "the second price is not stored"
+    );
+}
+
+/// SEC-026, D-5316, D-5320: the page a used link's second press shows for every kind but Quote
+/// and Confirm: 200, `no-store`, the portal link and nothing of the job.
+fn already_used(reply: &Reply) -> bool {
+    reply.status == 200
+        && reply.no_store
+        && reply.text.contains("This link was already used")
+        && reply.text.contains("href=\"/b\"")
+}
+
+/// A "Cards and quotes" member of `w`'s business and their used Quote link on a new carded job.
+async fn used_member_quote(w: &World, ends: Timestamp) -> (Uuid, String) {
+    let now = Timestamp::now();
+    let mut db = w.pool.acquire().await.expect("db");
+    let roles = Roles::new(true, false).expect("roles");
+    let member = add_member(&mut db, owner_acting(w), Uuid::new_v4(), roles, now)
+        .await
+        .expect("member");
+    let job = carded_job(&mut db, w.team, now).await;
+    drop(db);
+    let link = mint(w, (ActionKind::Quote, job), member, (now, ends)).await;
+    let path = path_of(&link);
+    let sent = send(w, (&Method::POST, &path, &firm()), Site::Own).await;
+    assert_eq!(sent.status, 200, "{}", sent.text);
+    assert!(!unused(w, &path).await, "the quote used the link");
+    (member, path)
+}
+
+/// `w`'s owner acting for the business.
+fn owner_acting(w: &World) -> Acting {
+    Acting {
+        business: w.team.business,
+        member: w.team.member,
+    }
+}
+
+/// TD-SEC-44, SEC-025, SEC-026, D-5316: a used link of a removed member, of a member who lost
+/// the role, and one past its window are the one not-found answer, and nothing more is stored.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_44_a_used_link_of_a_removed_or_role_less_member_or_past_its_end_is_not_found(
+    pool: PgPool,
+) {
+    let w = world(&pool).await;
+    let answer = not_found(&w, &Method::POST).await;
+    let later = Timestamp::now() + SignedDuration::from_hours(2);
+    let (removed, gone) = used_member_quote(&w, later).await;
+    let mut db = pool.acquire().await.expect("db");
+    remove_member(&mut db, owner_acting(&w), removed, Timestamp::now())
+        .await
+        .expect("removed");
+    let (demoted, lost) = used_member_quote(&w, later).await;
+    let roles = Roles::new(false, true).expect("roles");
+    set_roles(&mut db, owner_acting(&w), demoted, roles)
+        .await
+        .expect("roles changed");
+    let soon = Timestamp::now() + SignedDuration::from_secs(3);
+    let (_, ended) = used_member_quote(&w, soon).await;
+    let wait = soon.duration_since(Timestamp::now()) + SignedDuration::from_millis(200);
+    tokio::time::sleep(wait.unsigned_abs()).await;
+    for path in [gone, lost, ended] {
+        let again = send(&w, (&Method::POST, &path, &firm()), Site::Own).await;
+        assert_eq!(again, answer, "{path}: not the one not-found answer");
+    }
+}
+
+/// TD-SEC-44, SEC-025, D-5316: a used Pause link pressed by another signed-in member of the same
+/// business is the one not-found answer and changes nothing.
+#[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
+async fn td_sec_44_a_used_session_link_of_another_person_is_not_found(pool: PgPool) {
+    let w = world(&pool).await;
+    let (me, jar) = signed_in(&w).await;
+    let (_, other) = signed_in(&w).await;
+    let checks = Checks {
+        code_done: true,
+        match_passed: true,
+        flagged: false,
+    };
+    moved(&w, Event::Checked(checks)).await;
+    let pause = live_for(&w, (ActionKind::Pause, w.team.business), me).await;
+    assert_eq!(act(&w, &pause, Site::Own, &jar).await.status, 200);
+    let theirs = act(&w, &pause, Site::Own, &other).await;
+    assert_eq!(theirs, not_found(&w, &Method::POST).await, "SEC-025");
+    assert_eq!(status(&w).await, ("paused", Some("self")), "paused once");
 }
 
 /// The kinds whose `POST` acts with a business session (T455, T543, T463, T458, D-3675, D-3839,
@@ -801,11 +900,8 @@ async fn td_sec_44_pause_and_resume_act_once_with_the_persons_session(pool: PgPo
     assert!(done.no_store && done.text.contains("Job cards paused"));
     assert_eq!(status(&w).await, ("paused", Some("self")));
     let again = act(&w, &pause, Site::Own, &jar).await;
-    assert_eq!(
-        again,
-        not_found(&w, &Method::POST).await,
-        "a used link acts no more"
-    );
+    assert!(already_used(&again), "a used link: {}", again.text);
+    assert_eq!(status(&w).await, ("paused", Some("self")), "paused once");
     let resume = live_for(&w, (ActionKind::Resume, w.team.business), me).await;
     assert_eq!(act(&w, &resume, Site::Own, &jar).await.status, 200);
     assert_eq!(status(&w).await, ("active", None));
@@ -884,7 +980,8 @@ async fn td_sec_44_the_hold_link_holds_the_pick_once(pool: PgPool) {
     assert!(held(&w, pick).await, "the HOLD is stored");
     assert!(!unused(&w, &path).await, "the link is used");
     let again = send(&w, (&Method::POST, &path, ""), Site::Own).await;
-    assert_eq!(again, not_found(&w, &Method::POST).await);
+    assert!(already_used(&again), "a used link: {}", again.text);
+    assert!(!again.text.contains("new-end"), "it holds no more");
 }
 
 /// TD-SEC-44, PICK-043, SEC-025, D-252, D-1956: a second Hold says why (409) and changes
@@ -961,13 +1058,11 @@ async fn td_sec_44_the_away_link_sets_the_time_once_with_the_persons_session(poo
         set.no_store && set.text.contains("Away until "),
         "D-285's answer line"
     );
-    assert!(away_end(&w).await.is_some_and(|t| t > Timestamp::now()));
-    let again = send_as(&w, (&Method::POST, &away, "&hours=2"), Site::Own, &jar).await;
-    assert_eq!(
-        again,
-        not_found(&w, &Method::POST).await,
-        "a used link acts no more"
-    );
+    let end = away_end(&w).await;
+    assert!(end.is_some_and(|t| t > Timestamp::now()));
+    let again = send_as(&w, (&Method::POST, &away, "&hours=3"), Site::Own, &jar).await;
+    assert!(already_used(&again), "a used link: {}", again.text);
+    assert_eq!(away_end(&w).await, end, "the end is set once");
 }
 
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
@@ -1058,12 +1153,9 @@ async fn td_sec_44_the_busy_link_pauses_once_with_the_persons_session(pool: PgPo
     let ahead = end.duration_since(Timestamp::now());
     let days = SignedDuration::from_hours(71)..=SignedDuration::from_hours(72);
     assert!(days.contains(&ahead), "the end is 3 days on");
-    let again = send_as(&w, (&Method::POST, &busy, "&days=3"), Site::Own, &jar).await;
-    assert_eq!(
-        again,
-        not_found(&w, &Method::POST).await,
-        "a used link acts no more"
-    );
+    let again = send_as(&w, (&Method::POST, &busy, "&days=5"), Site::Own, &jar).await;
+    assert!(already_used(&again), "a used link: {}", again.text);
+    assert_eq!(busy_end(&w).await, Some(end), "the end is set once");
 }
 
 #[sqlx::test(migrator = "askhava_core::api::MIGRATOR")]
@@ -1198,9 +1290,20 @@ async fn td_sec_44_the_confirm_link_asks_for_a_code_then_signs_that_device_in(po
         (who.member(), who.business()),
         (w.team.member, w.team.business)
     );
-    let again = send(&w, (&Method::POST, &path, &right), Site::Own).await;
-    assert_eq!(again, not_found(&w, &Method::POST).await, "a used link");
-    assert_eq!(sends.load(Ordering::SeqCst), 1);
+    let pre = ensure_pre_session(CookieJar::new()).expect("pre-session");
+    let (again, to, replayed) = landed(&w, &path, &right, &pre).await;
+    let confirm = format!("/b/picks/{pick}/confirm");
+    assert_eq!(
+        (again, to),
+        (303, confirm),
+        "a used link: the same 303 (D-5316)"
+    );
+    let nobody = business_principal(&mut db, &replayed, Timestamp::now()).await;
+    assert!(
+        nobody.expect("read").is_none(),
+        "the replay signs nobody in"
+    );
+    assert_eq!(sends.load(Ordering::SeqCst), 1, "still one code sent");
 }
 
 /// TD-SEC-44, SEC-004, SEC-027, BIZ-038: the link's own person's live session needs no code
@@ -1367,7 +1470,8 @@ async fn td_sec_44_the_link_phone_link_links_once_with_the_persons_session(pool:
     );
     assert!(!unused(&w, &path).await, "the link is used");
     let again = act(&w, &path, Site::Own, &jar).await;
-    assert_eq!(again, not_found(&w, &Method::POST).await, "it acts once");
+    assert!(already_used(&again), "a used link: {}", again.text);
+    assert_eq!(phones(&w, BLOCKED[0]).await, (false, 1), "it acts once");
     let request = pending(&w, w.team.business, BLOCKED[1], now).await;
     let owners = live_for(&w, (ActionKind::LinkPhone, request), w.team.member).await;
     let theirs = act(&w, &owners, Site::Own, &jar).await;

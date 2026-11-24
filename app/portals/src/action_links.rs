@@ -24,6 +24,9 @@
 //! its grant is [`ActionGrant::text_started`] and [`confirm_link_session`] gives it
 //! [`TEXT_CONFIRM_SESSION_LIFE`]. Every reader first refuses a token that is not 64 lower-case
 //! hex characters, before anything is read or hashed.
+//! T814 (SEC-026, D-5316): [`used_action_link`] names a used link's person, business and object
+//! within its window while its member still has the role, reading only; [`action_done_page`] is
+//! the "already used" page (`action_done.html`) a repeated press of most kinds shows.
 
 use askama::Template;
 use askhava_businesses::api::{Roles, members};
@@ -430,6 +433,71 @@ pub(crate) async fn action_link_business(
         }
     }
     Err(ActionLinkError::Ended)
+}
+
+/// SEC-026, SEC-025, D-5316: the person, business and object of the `kind` link `token` for
+/// `object` when it was already used and is still within its original window at `now`, its
+/// member is still on the team and their current roles still allow `kind` (as
+/// [`use_action_link`] checks). It reads only and changes nothing; the server asks it on a bare
+/// connection after a refused use rolled back, to answer a repeated press with its result.
+///
+/// # Errors
+///
+/// [`ActionLinkError::Ended`] for an unknown, unused, expired, wrong-kind or wrong-object token or
+/// a member removed or without the role; [`ActionLinkError::Store`].
+pub async fn used_action_link(
+    db: &mut PgConnection,
+    (kind, object): (ActionKind, Uuid),
+    token: &str,
+    now: Timestamp,
+) -> Result<ActionTarget, ActionLinkError> {
+    if !well_formed(token) {
+        return Err(ActionLinkError::Ended);
+    }
+    for &sent in sends(kind) {
+        let hash = Sha256::digest(binding(kind, object, token, sent).as_bytes()).to_vec();
+        let row = sqlx::query!(
+            "SELECT member_id, business_id FROM portals.login_link \
+             WHERE token_sha256 = $1 AND used_at IS NOT NULL AND expires_at > $2",
+            hash,
+            now.to_sqlx(),
+        )
+        .fetch_optional(&mut *db)
+        .await
+        .map_err(|_| PortalsError::Database)?;
+        let Some(row) = row else { continue };
+        let (member, business) = (row.member_id, row.business_id);
+        return match current_roles(db, member, business).await? {
+            Some((owner, roles)) if kind.allowed(owner, roles) => Ok(ActionTarget {
+                kind,
+                object,
+                member,
+                business,
+            }),
+            _ => Err(ActionLinkError::Ended),
+        };
+    }
+    Err(ActionLinkError::Ended)
+}
+
+#[derive(Template)]
+#[template(path = "action_done.html")]
+struct ActionDone<'a> {
+    portal: &'a str,
+}
+
+/// SEC-026, BIZ-038, D-5316: the page a used link's second press shows for every kind but Quote
+/// and Confirm: "This link was already used" and a link to the business portal home, with nothing
+/// of the job, the amount or the person.
+///
+/// # Errors
+///
+/// The template's render error.
+pub fn action_done_page() -> Result<String, askama::Error> {
+    ActionDone {
+        portal: crate::business_portal::BUSINESS_HOME_ROUTE,
+    }
+    .render()
 }
 
 /// SEC-025, SEC-026, PICK-043: uses the `kind` link `token` for `object` at `now` (the page's

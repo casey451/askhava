@@ -36,6 +36,7 @@ pub use crate::action_links::{
     OPEN_IN_BROWSER_LINE, TEXT_CONFIRM_SESSION_LIFE, UseBy, email_reply, fresh_code_needed,
     mint_action_link, mint_text_confirm_link, open_action_link, session_may, use_action_link,
 };
+pub use crate::action_links::{action_done_page, used_action_link};
 pub use crate::address_changes::{
     ADDRESS_CHANGE_ROUTE, ADDRESS_CONFIRM_ROUTE, ADDRESS_REQUEST_ROUTE, AddressChangeError,
     AddressCode, AddressKind, AddressScreen, BACKUP_REMOVE_ROUTE, address_change_page,
