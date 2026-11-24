@@ -1,21 +1,21 @@
 # Ask Hava build status
 
-Updated 2026-11-24T00:57:39Z by runner 3bdc24aca9ac (actions).
+Updated 2026-11-24T01:03:26Z by runner 6f51aa49550b (actions).
 
-**Building: T813 in progress since 00:33Z; 643 of 779 done; week 86% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T813 in progress since 00:33Z; 643 of 779 done; week 87% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 643 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 2: T813 claimed 00:33Z, lease until 03:33Z; lane 5: T222 claimed 00:37Z, lease until 03:37Z
-- **Week:** 86% used, 18.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 00:57Z, 0 min before this update
+- **Week:** 87% used, 18.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 01:03Z, 0 min before this update
 - **Keeper:** last ran 00:57Z, next wake 03:36Z
 
 ## Needs attention
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 46% of the context window, over its 45% limit
-- Strict plan check red: 40 problem(s) on tasks still to run (+533 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
+- Strict plan check red: 49 problem(s) on tasks still to run (+537 on DONE tasks); first: T624: stored context_pct 12% but it measures 19%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
