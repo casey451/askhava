@@ -10861,3 +10861,4 @@
 - 2026-11-24T13:46:13Z runner 017788d7635b (actions): {"T122": "QUEUED -> IN_PROGRESS"}; T122 estimated 487k tokens (calibrated); week has 4.9M left (no five-hour budget, D-3056) after 3.1M still running in another lane (session_reading 2026-11-24T13:37:21Z (week)); claimed
 - 2026-11-24T13:46:38Z runner 017788d7635b (actions): {}
 - 2026-11-24T14:04:38Z runner 0920f6c98044 (actions): {}
+- 2026-11-24T14:05:13Z runner 0920f6c98044 (actions): {"T732": "IN_PROGRESS -> MERGE_PENDING"}

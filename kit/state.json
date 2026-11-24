@@ -107195,7 +107195,7 @@
    "deps": [
     "T668"
    ],
-   "status": "IN_PROGRESS",
+   "status": "MERGE_PENDING",
    "attempts": 1,
    "slug": "quote-withdraw-served",
    "type": "build",
@@ -107273,6 +107273,29 @@
        "turns": 11
       }
      }
+    },
+    {
+     "attempt": 2,
+     "model": "claude-opus-5-5",
+     "model_evidence_count": 30,
+     "head_sha": "0920f6c980446f91a654ffca4961a0fbfcd2ffca",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": true,
+     "started_at": "2026-11-24T13:16:14Z",
+     "ended_at": "2026-11-24T14:04:36Z",
+     "result": "MERGE_PENDING",
+     "usage": {
+      "worker": {
+       "tokens": 661592,
+       "turns": 18
+      },
+      "reviewer": {
+       "tokens": 1506963,
+       "turns": 26
+      }
+     }
     }
    ],
    "reviewed_sha": "60feccaf72f8634e60059ae1c92e05bbfa74eb92",
@@ -107284,18 +107307,13 @@
    "branch": "claude/task/T732-quote-withdraw-served",
    "auto_merge": {
     "enabled": true,
-    "why": "auto-merge on #1445 (gh pr merge)",
-    "head": "50678fa16de9b7cc98ad0b513f1ff15269256203"
+    "why": "auto-merge on #1450 (gh pr merge)",
+    "head": "60feccaf72f8634e60059ae1c92e05bbfa74eb92"
    },
    "last_failure": "Ci: failure; Coverage: failure\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_call_24_another_business_lines_pin_is_refused ... ok\ntest td_call_24_the_main_phones_link_reply_links_the_blocked_phone ... ok\nfailures:\n---- td_call_24_no_row_or_log_line_holds_the_number_or_the_pin stdout ----\nthread 'td_call_24_no_row_or_log_line_holds_the_number_or_the_pin' (24624) panicked at tests/integration/tests/link_reply.rs:595:13:\nassertion `left == right` failed: businesses.staff_phone\n  left: 1\n right: 0\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_call_24_no_row_or_log_line_holds_the_number_or_the_pin\ntest result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.98s\nerror: test failed, to rerun pass `-p askhava-integration --test link_reply`\nerror: process didn't exit successfully: `/home/runner/.rustup/toolchains/nightly-2026-10-15-x86_64-unknown-linux-gnu/bin/cargo test --tests --manifest-path /home/runner/work/askhava/askhava/Cargo.tom\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: failure, E2e: success\n##[error]Process completed with exit code 1.",
-   "wip_claim": {
-    "attempt": 2,
-    "remote_sha": "50678fa16de9b7cc98ad0b513f1ff15269256203"
-   },
    "runner_closed_prs": [
     1445
    ],
-   "head_check_since": null,
    "update_merges": [
     {
      "from": "0920f6c980446f91a654ffca4961a0fbfcd2ffca",
@@ -119450,12 +119468,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T733",
-   "at": "2026-11-24T13:29:24Z",
-   "output_tokens": 49290,
-   "cache_creation_input_tokens": 206043,
-   "input_tokens": 200,
-   "cache_read_input_tokens": 8822317
+   "task": "T732",
+   "at": "2026-11-24T14:04:36Z",
+   "cache_read_input_tokens": 2054860,
+   "input_tokens": 87,
+   "cache_creation_input_tokens": 97845,
+   "output_tokens": 15763
   },
   "source": "session_reading 2026-11-24T13:37:21Z (week)",
   "by_task": {
@@ -127485,14 +127503,14 @@
     "estimated_bytes": 492965,
     "estimated_tokens": 1442300,
     "usage_counting": "message_id",
-    "cache_creation_input_tokens": 131055,
-    "input_tokens": 108,
-    "output_tokens": 34544,
-    "cache_read_input_tokens": 3453554,
-    "worker_tokens": 3243613,
-    "worker_turns": 43,
-    "reviewer_tokens": 375648,
-    "reviewer_turns": 11,
+    "cache_creation_input_tokens": 228900,
+    "input_tokens": 195,
+    "output_tokens": 50307,
+    "cache_read_input_tokens": 5508414,
+    "worker_tokens": 3905205,
+    "worker_turns": 61,
+    "reviewer_tokens": 1882611,
+    "reviewer_turns": 37,
     "last_model": "claude-opus-5-5"
    },
    "T733": {
@@ -127512,12 +127530,12 @@
   },
   "windows": {
    "five_hour": {
-    "start": "2026-11-24T08:35:06Z",
-    "tokens": 9418282
+    "start": "2026-11-24T14:04:36Z",
+    "tokens": 319181
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 263864355
+    "tokens": 264183536
    }
   },
   "session_reading": {
@@ -127528,7 +127546,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T14:04:38Z",
+ "updated_at": "2026-11-24T14:05:13Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",

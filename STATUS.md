@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T14:04:38Z by runner 0920f6c98044 (actions).
+Updated 2026-11-24T14:05:13Z by runner 0920f6c98044 (actions).
 
-**Building: T732 in progress since 13:16Z; 660 of 780 done; week 93% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T802 in progress since 13:12Z; 660 of 780 done; week 93% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 660 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T732 claimed 13:16Z, lease until 16:16Z; lane 2: T802 claimed 13:12Z, lease until 16:12Z; lane 4: T122 claimed 13:45Z, lease until 16:45Z; lane 5: T305 claimed 13:13Z, lease until 16:13Z
+- **Lane:** lane 2: T802 claimed 13:12Z, lease until 16:12Z; lane 4: T122 claimed 13:45Z, lease until 16:45Z; lane 5: T305 claimed 13:13Z, lease until 16:13Z
 - **Week:** 93% used, 4.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:46Z, 17 min before this update
+- **Last run:** 13:46Z, 18 min before this update
 - **Keeper:** last ran 13:38Z, next wake 16:15Z
 
 ## Needs attention
@@ -27,9 +27,10 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T732 | server: the business job page's "Withdraw your quote" posts  | MERGE_PENDING | 2 | 48 min | 14:04Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T733 | server: the business portal serves the service-area settings | MERGE_PENDING | 1 | 91 min | 13:29Z |  |
 | T410 | portals: every signed-in business page shows the Get help li | done | 3 | 85 min | 13:17Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
-| T732 | server: the business job page's "Withdraw your quote" posts  | check_failed | 1 | 63 min | 12:16Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
+| T732 | server: the business job page's "Withdraw your quote" posts  | check_failed | 1 | 63 min | 12:16Z |  |
 | T624 | server: two failed in-process health checks in a row raise o | done | 2 | 95 min | 12:13Z | Ci: failure; Python: failure / Python failed at step: Unit, contract and drill tests (pytest) / T705: about 21877 tokens |
 | T802 | site (harness): the coverage page says texts work with US nu | check_failed | 1 | 115 min | 12:06Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T305 | server and portals: the scorecard, the intake report, the mo | BLOCKED | 2 | 34 min | 11:41Z | PLAN GAP: outside ownership: app/portals/templates/scorecard.html, app/portals/templates/intake_report.html, app/portals |
@@ -127,10 +128,10 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T732 (lease until 2026-11-24T16:16:14Z)
+- nothing
 - lane 2: T802 (lease until 2026-11-24T16:12:41Z)
 - lane 4: T122 (lease until 2026-11-24T16:45:59Z)
 - lane 5: T305 (lease until 2026-11-24T16:13:43Z)
 
 ## Last usage reading
-- {"task": "T733", "at": "2026-11-24T13:29:24Z", "output_tokens": 49290, "cache_creation_input_tokens": 206043, "input_tokens": 200, "cache_read_input_tokens": 8822317}
+- {"task": "T732", "at": "2026-11-24T14:04:36Z", "cache_read_input_tokens": 2054860, "input_tokens": 87, "cache_creation_input_tokens": 97845, "output_tokens": 15763}
