@@ -1747,9 +1747,7 @@ fn register_unreachable(
     pairs: Vec<(String, String)>,
 ) -> io::Result<()> {
     use askhava_messaging::api::{MailboxKind, PostalAddress};
-    use askhava_picks::api::{
-        StepParts, UNREACHABLE_STEP_KIND, run_dispute_opened, run_fraud_warning,
-    };
+    use askhava_picks::api::{StepParts, run_dispute_opened, run_fraud_warning};
     let postal = settings.postal_address().ok().and_then(|line| {
         PostalAddress::new(line, MailboxKind::PoBox)
             .or_else(|_| PostalAddress::new(line, MailboxKind::PrivateMailbox))
@@ -1762,15 +1760,7 @@ fn register_unreachable(
         vault: vault_from(settings, pairs)?,
         postal,
     });
-    let (step_parts, step_clock) = (Arc::clone(&parts), Arc::clone(clock));
-    registry.register(UNREACHABLE_STEP_KIND, move |pool, task| {
-        askhava_picks::api::run_unreachable_step(
-            pool,
-            Arc::clone(&step_parts),
-            task,
-            step_clock.now(),
-        )
-    });
+    register_unreachable_step(registry, Arc::clone(&parts), Arc::clone(clock));
     let (dispute_parts, dispute_clock) = (Arc::clone(&parts), Arc::clone(clock));
     registry.register(
         askhava_payments::api::DISPUTE_OPENED_KIND,
@@ -1784,6 +1774,29 @@ fn register_unreachable(
         move |pool, task| run_fraud_warning(pool, Arc::clone(&parts), task, fraud_clock.now()),
     );
     Ok(())
+}
+
+/// T590 (TXT-030, TXT-039, D-4052 item B22): `picks.unreachable_step` through
+/// `picks::api::run_unreachable_step_in` with [`job_language`], so the missed-call text and its
+/// email copy go in her request's language.
+fn register_unreachable_step(
+    registry: &mut Registry,
+    parts: Arc<askhava_picks::api::StepParts<askhava_adapters::api::StripePayments>>,
+    clock: Arc<dyn Clock>,
+) {
+    registry.register(
+        askhava_picks::api::UNREACHABLE_STEP_KIND,
+        move |pool, task| {
+            let parts = Arc::clone(&parts);
+            askhava_picks::api::run_unreachable_step_in(
+                pool,
+                parts,
+                job_language,
+                task,
+                clock.now(),
+            )
+        },
+    );
 }
 
 /// T684 (CARD-022, BIZ-038, OPS-038, D-4361, D-5017): `picks.open_cards_email`, the hourly
@@ -2153,10 +2166,22 @@ async fn run_owner_bridge(
         .map_err(|_| OWNER_CALL_FAILED)
 }
 
+/// T590 (TXT-039, D-4052 item B22): the `calls::api::JobLanguage` the call texts read her language
+/// through: `intake::api::job_language` (Spanish only for a Spanish request with Spanish
+/// conversations on); `None` on a failed read, which the texts send in English.
+fn job_language(
+    db: &mut sqlx::PgConnection,
+    job: Uuid,
+) -> std::pin::Pin<
+    Box<dyn std::future::Future<Output = Option<askhava_messaging::api::Language>> + Send + '_>,
+> {
+    Box::pin(async move { askhava_intake::api::job_language(db, job).await.ok() })
+}
+
 /// T318 (TXT-027, QH-004, D-1687): with both vault keys, `calls.whos_calling`
-/// (`calls::api::run_whos_calling`) with the `ID_SECRET` as outbox key and the vault for her send
-/// window; without them (dev and CI) nothing is registered and the tasks wait, as `vault_from`
-/// allows.
+/// (`calls::api::run_whos_calling_in`, T590: in her request's language through [`job_language`])
+/// with the `ID_SECRET` as outbox key and the vault for her send window; without them (dev and
+/// CI) nothing is registered and the tasks wait, as `vault_from` allows.
 fn register_whos_calling(
     registry: &mut Registry,
     settings: &Settings,
@@ -2171,7 +2196,8 @@ fn register_whos_calling(
     registry.register(askhava_calls::api::WHOS_CALLING_KIND, move |pool, task| {
         let (keys, now) = (Arc::clone(&keys), clock.now());
         async move {
-            askhava_calls::api::run_whos_calling(pool, (&keys.0, &keys.1), task, now).await
+            let keys_ref = (&keys.0, &keys.1);
+            askhava_calls::api::run_whos_calling_in(pool, keys_ref, job_language, task, now).await
         }
     });
     Ok(())
