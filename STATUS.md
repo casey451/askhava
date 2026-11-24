@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T01:56:59Z by runner 15a972ec6a46 (actions).
+Updated 2026-11-24T01:59:47Z by runner 15a972ec6a46 (actions).
 
 **Building: T524 in progress since 01:11Z; 646 of 779 done; week 87% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 646 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T524 claimed 01:11Z, lease until 04:11Z; lane 2: T813 claimed 01:35Z, lease until 04:35Z; lane 3: T649 claimed 01:38Z, lease until 04:38Z; lane 5: T222 claimed 00:37Z, lease until 03:37Z
-- **Week:** 87% used, 16.1M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 01:54Z, 2 min before this update
+- **Lane:** lane 1: T524 claimed 01:11Z, lease until 04:11Z; lane 2: T813 claimed 01:35Z, lease until 04:35Z; lane 3: T649 claimed 01:38Z, lease until 04:38Z; lane 4: T119 claimed 01:59Z, lease until 04:59Z; lane 5: T222 claimed 00:37Z, lease until 03:37Z
+- **Week:** 87% used, 14.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 01:57Z, 2 min before this update
 - **Keeper:** last ran 01:37Z, next wake 01:57Z
 
 ## Needs attention
@@ -67,7 +67,6 @@ Updated 2026-11-24T01:56:59Z by runner 15a972ec6a46 (actions).
 | T716 | intake: the dispatcher's trade questions at step 5: "Which f | check_failed | 1 | 117 min | 03:28Z |  |
 | T834 | ci (harness): Twin and Ally skip their build when nothing th | QUEUED | 1 | 81 min | 03:19Z |  |
 | T712 | server and portals: the owner portal lists PROBLEM reports w | done | 1 | 39 min | 02:36Z |  |
-| T645 | intake and messaging: the web chat honours an opt-out word,  | done | 2 | 2 h 6 min | 01:58Z | PLAN GAP: app/site/src/chat.rs:340 (owned by T593, then T646 and T649; T593 is not merged yet) calls `chat_message(db, & |
 
 ### Plan and harness merges on main
 - 23:24Z Plan: token efficiency and phase-2 pre-flight (D-5676); smoke throughput harness task T843, T836 unblocked (D-5682) (#1412)
@@ -110,7 +109,7 @@ Updated 2026-11-24T01:56:59Z by runner 15a972ec6a46 (actions).
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-24T01:36:42Z (week)): week: 177.9M used, 16.1M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T21:56:33Z.
+- Pacing (session_reading 2026-11-24T01:36:42Z (week)): week: 179.7M used, 14.3M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T21:28:12Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -128,6 +127,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T524 (lease until 2026-11-24T04:11:37Z)
 - lane 2: T813 (lease until 2026-11-24T04:35:56Z)
 - lane 3: T649 (lease until 2026-11-24T04:38:03Z)
+- lane 4: T119 (lease until 2026-11-24T04:59:33Z)
 - lane 5: T222 (lease until 2026-11-24T03:37:12Z)
 
 ## Last usage reading
