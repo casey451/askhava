@@ -20,7 +20,7 @@
   "7": null,
   "fix": null
  },
- "seq": 10686,
- "runner_sha": "664b9e81172d8fe6afaa45748c72ee8873685b09",
- "starter": "manual"
+ "seq": 10687,
+ "runner_sha": "10a688ebac37ac3ff0c3e792069cb47d7a14b34f",
+ "starter": "actions"
 }
