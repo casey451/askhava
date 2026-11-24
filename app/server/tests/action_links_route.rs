@@ -52,7 +52,8 @@ use askhava_adapters::api::{
 use askhava_businesses::api::{
     AccountStatus, Acting, Capability, CapabilityAnswers, Checks, Event, LargestJob, PauseReason,
     Roles, add_member, add_owner, apply, away_until, business, busy_until,
-    create as create_business, record_step_up, remove_member, save_capability, waiting_phones,
+    create as create_business, record_session_step_up, remove_member, save_capability,
+    waiting_phones,
 };
 use askhava_calls::api::{
     Connected, assign_number, call_start_confirmed, link_after_dial, pending_link,
@@ -1227,9 +1228,10 @@ async fn td_sec_44_a_live_session_skips_the_code_unless_the_inbox_is_shared(pool
         business: w.team.business,
         member,
     };
-    record_step_up(&mut db, by, now).await.expect("step-up");
     let who = business_principal(&mut db, &jar, now).await;
     let who = who.expect("read").expect("signed in");
+    let code = record_session_step_up(&mut db, by, who.session(), now);
+    code.await.expect("step-up");
     let phone = CodeTo::Phone(SecretString::from("+19285550142"));
     let shared = set_inbox_shared(&mut db, &who, (true, &phone), now).await;
     shared.expect("shared");
@@ -1681,9 +1683,10 @@ async fn share_inbox(w: &World, member: Uuid, jar: &CookieJar) {
         business: w.team.business,
         member,
     };
-    record_step_up(&mut db, by, now).await.expect("step-up");
     let who = business_principal(&mut db, jar, now).await;
     let who = who.expect("read").expect("signed in");
+    let code = record_session_step_up(&mut db, by, who.session(), now);
+    code.await.expect("step-up");
     let phone = CodeTo::Phone(SecretString::from("+19285550142"));
     let shared = set_inbox_shared(&mut db, &who, (true, &phone), now).await;
     shared.expect("shared");

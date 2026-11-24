@@ -243,7 +243,8 @@ pub struct StripeAnswer {
 
 /// PICK-048, FEE-014, D-2783, D-3753: files one Stripe written answer: one new append-only
 /// `quotes.stripe_written_answer` row, `filed_at` the call's `now`; the newest filing is the one in
-/// force for [`stripe_answer_filed`]. The owner portal calls it after the SEC-043 fresh factor.
+/// force for [`stripe_answer_filed`]. The owner portal calls it after the SEC-043 fresh factor,
+/// inside its own transaction, and audit-logs the returned row ID (SEC-006, D-4727).
 ///
 /// # Errors
 /// [`AutoConfirmError::BadField`] for a reference that is blank or over 200 characters,
@@ -252,23 +253,22 @@ pub async fn file_stripe_answer(
     db_conn: &mut PgConnection,
     (answered_on, reference, allows): (jiff::civil::Date, &str, bool),
     now: Timestamp,
-) -> Result<(), AutoConfirmError> {
+) -> Result<Uuid, AutoConfirmError> {
     let reference = reference.trim();
     if !(1..=200).contains(&reference.chars().count()) {
         return Err(AutoConfirmError::BadField);
     }
     let day = answered_on.to_string();
-    db(sqlx::query!(
+    db(sqlx::query_scalar!(
         "INSERT INTO quotes.stripe_written_answer (answered_on, reference, allows, filed_at) \
-         VALUES ($1::text::date, $2, $3, $4)",
+         VALUES ($1::text::date, $2, $3, $4) RETURNING id",
         day,
         reference,
         allows as _,
         now.to_sqlx() as _,
     )
-    .execute(db_conn)
-    .await)?;
-    Ok(())
+    .fetch_one(db_conn)
+    .await)
 }
 
 /// D-3753: the newest filed Stripe written answer, the one in force, for the owner settings page;

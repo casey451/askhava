@@ -16,7 +16,8 @@ use std::sync::Mutex;
 
 use askhava_adapters::api::AdapterError;
 use askhava_businesses::api::{
-    Acting, LeaveReason, ReasonAnswer, add_owner, create, pause_self, reason_asked, record_step_up,
+    Acting, LeaveReason, ReasonAnswer, add_owner, create, pause_self, reason_asked,
+    record_session_step_up,
 };
 use askhava_core::api::Guarded;
 use askhava_jobs::api::{JobStatus, current, move_to, record_job_facts};
@@ -267,7 +268,8 @@ async fn td_biz_32_leaving_withdraws_moves_removes_and_ends(pool: PgPool) {
         !reason_asked(&mut db, who.business).await.expect("read"),
         "nothing changed"
     );
-    record_step_up(&mut db, who, at(10)).await.expect("code");
+    let code = record_session_step_up(&mut db, who, principal.session(), at(10));
+    code.await.expect("code");
     let answer = ReasonAnswer::parse("few_jobs", "ignored beside this choice");
     let left = leave(&mut db, &principal, (answer.as_ref(), &stripe), at(11))
         .await
@@ -439,7 +441,7 @@ async fn td_biz_32_a_long_pause_asks_once_and_changes_nothing(pool: PgPool) {
         1,
         "nothing else changed"
     );
-    record_step_up(&mut db, who, at(15 * day))
+    record_session_step_up(&mut db, who, principal.session(), at(15 * day))
         .await
         .expect("code");
     let fee = ReasonAnswer::parse("fee", "");

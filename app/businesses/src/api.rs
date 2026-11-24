@@ -182,9 +182,11 @@ pub use crate::team::{
 pub use crate::texting_switch::business_texting_on;
 pub use crate::texting_switch::homeowner_texting_number;
 
-/// SEC-038, D-480: whether `by`, a current member of `by.business`, passed a Verify code (to their
-/// verified phone, or email without a texting phone) no more than [`STEP_UP_LIFE`] before `now`;
-/// a time after `now` is not fresh (T085, D-1850).
+/// SEC-038, D-480, D-5314: whether `by`, a current member of `by.business`, passed a Verify code
+/// (to their verified phone, or email without a texting phone) in the portal session `session`
+/// (its `portals.session` row ID) no more than [`STEP_UP_LIFE`] before `now`; a code passed in
+/// another session of the same member, or bound to none, is not fresh, nor is a time after `now`
+/// (T085, D-1850, T813).
 ///
 /// # Errors
 ///
@@ -192,13 +194,15 @@ pub use crate::texting_switch::homeowner_texting_number;
 pub async fn has_fresh_step_up(
     conn: &mut PgConnection,
     by: Acting,
+    session: Uuid,
     now: Timestamp,
 ) -> Result<bool, BusinessesError> {
     let q = sqlx::query_scalar!(
         "SELECT step_up_at FROM businesses.team_member \
-         WHERE id = $1 AND business_id = $2 AND removed_at IS NULL",
+         WHERE id = $1 AND business_id = $2 AND removed_at IS NULL AND step_up_session = $3",
         by.member,
-        by.business
+        by.business,
+        session
     );
     let at = q
         .fetch_optional(conn)

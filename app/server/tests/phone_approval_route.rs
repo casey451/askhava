@@ -4,22 +4,22 @@
 //! `server::build_router` over a real test database, with the vault the page reads the linking
 //! member's sign-in address from (`RouterParts::with_vault`), and once without it (the fixed
 //! line). Each person signs in through the sign-in link emailed to their own fake mailbox (as
-//! `approve_link_route.rs` does); step-ups are recorded with `record_step_up`; every lookup goes
-//! through `messaging::api::sender_business`. Fake numbers (555-01xx), fake addresses and fake
-//! IDs only.
+//! `approve_link_route.rs` does); step-ups are recorded with `record_session_step_up` in the
+//! session that then acts (D-5314); every lookup goes through `messaging::api::sender_business`.
+//! Fake numbers (555-01xx), fake addresses and fake IDs only.
 
 use std::sync::{Arc, Mutex, OnceLock, PoisonError};
 use std::thread::ThreadId;
 
 use askhava_businesses::api::{
     Acting, Roles, SenderLink, TeamError, add_member, add_owner, change_phone_at, create,
-    link_phone, phone_standing, record_step_up, waiting_phones,
+    link_phone, phone_standing, record_session_step_up, waiting_phones,
 };
 use askhava_core::api::SystemClock;
 use askhava_messaging::api::{OutboxError, sender_add, sender_business};
 use askhava_portals::api::{
     CookieJar, PortalsError, SIGNIN_LINK_ROUTE, SignIn, SignInAddress, SignInMail, csrf_token,
-    ensure_pre_session, send_sign_in_link, signin_post,
+    current_session, ensure_pre_session, send_sign_in_link, signin_post,
 };
 use askhava_privacy::api::{Vault, mailbox_for};
 use askhava_server::{Hooks, RouterParts, build_router};
@@ -186,9 +186,6 @@ impl SignInMail for OneMail {
 /// when `step_up`: their cookies.
 async fn session(w: &World, (who, mailbox): (Acting, Uuid), step_up: bool) -> CookieJar {
     let mut db = w.pool.acquire().await.expect("db");
-    if step_up {
-        record_step_up(&mut db, who, ago(1)).await.expect("step-up");
-    }
     let to = SignInAddress {
         business: who.business,
         mailbox,
@@ -219,7 +216,14 @@ async fn session(w: &World, (who, mailbox): (Acting, Uuid), step_up: bool) -> Co
         .collect();
     let mut headers = HeaderMap::new();
     headers.insert(header::COOKIE, cookies.join("; ").parse().expect("cookies"));
-    CookieJar::from_headers(&headers)
+    let jar = CookieJar::from_headers(&headers);
+    if step_up {
+        let signed = current_session(&mut db, &jar, ago(0)).await.expect("read");
+        let id = signed.expect("signed in").id();
+        let code = record_session_step_up(&mut db, who, id, ago(1));
+        code.await.expect("step-up");
+    }
+    jar
 }
 
 /// Same-origin with the right token, cross-site by `Sec-Fetch-Site` or by `Origin`, or a wrong token.

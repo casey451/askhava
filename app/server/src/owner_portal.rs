@@ -49,11 +49,11 @@ use askhava_portals::api::{
     OWNER_HOME_ROUTE, OWNER_OPT_OUT_ROUTE, OWNER_PAUSE_ROUTE, OWNER_RELEASE_ROUTE,
     OWNER_SAFETY_CALL_ROUTE, OWNER_SETTINGS_ROUTE, OWNER_SPANISH_ROUTE, OWNER_STRIPE_ANSWER_ROUTE,
     OWNER_TEXTING_ROUTE, OptOutForm, OwnerPrincipal, OwnerToolError, ReleaseForm, ReleaseScreen,
-    SafetyCallForm, SettingsNotice, SpanishForm, StepUpScreen, StripeAnswerForm, WebSecurity,
-    apply_owner_change, csrf_token, no_store, owner_bridge_press, owner_file_stripe_answer,
-    owner_home_page, owner_record_opt_out, owner_release_page, owner_release_resend,
-    owner_safety_call, owner_settings_page_with, owner_signed_out, owner_spanish,
-    owner_step_up_page, parse_change, refuse_cross_site,
+    SafetyCallForm, SettingsError, SettingsNotice, SpanishForm, StepUpScreen, StripeAnswerForm,
+    WebSecurity, apply_owner_change, csrf_token, no_store, owner_bridge_press,
+    owner_file_stripe_answer, owner_home_page, owner_record_opt_out, owner_release_page,
+    owner_release_resend, owner_safety_call, owner_settings_page_refused, owner_settings_page_with,
+    owner_signed_out, owner_spanish, owner_step_up_page, parse_change, refuse_cross_site,
 };
 use askhava_portals::api::{
     BusinessTextingForm, OWNER_BUSINESS_TEXTING_ROUTE, owner_business_texting,
@@ -402,8 +402,14 @@ async fn page_answer(
 
 /// The answer to a change `portals` did not make (SEC-043, D-3878): a stale factor is a 401 with
 /// the step-up form (its `authz_denied` event already recorded by `portals`), a refusal a 400 with
-/// `page` again, a database failure a 500. None links to the sign-in page.
-async fn not_made(tools: &Tools, jar: &CookieJar, error: &OwnerToolError, page: Page) -> Response {
+/// `page` again, a database failure a 500. None links to the sign-in page. A refusal with `kept`
+/// shows the settings page's A11Y-030 error form, the typed values kept and never logged (D-4727).
+async fn not_made(
+    tools: &Tools,
+    jar: &CookieJar,
+    error: &OwnerToolError,
+    (page, kept): (Page, Option<&SettingsError>),
+) -> Response {
     match error {
         OwnerToolError::NeedsFreshFactor => {
             let Some(csrf) = csrf_token(jar) else {
@@ -414,10 +420,26 @@ async fn not_made(tools: &Tools, jar: &CookieJar, error: &OwnerToolError, page: 
                 Err(_) => failed("step-up render"),
             }
         }
-        OwnerToolError::Refused => {
-            page_answer(tools, jar, (page, None), StatusCode::BAD_REQUEST).await
-        }
+        OwnerToolError::Refused => match kept {
+            Some(kept) => settings_refused(tools, jar, kept).await,
+            None => page_answer(tools, jar, (page, None), StatusCode::BAD_REQUEST).await,
+        },
         OwnerToolError::Database => failed("owner change"),
+    }
+}
+
+/// A11Y-030, D-4727: the settings page for a refused opt-out or Stripe answer, a 400 naming the
+/// field `kept` names, its typed values kept.
+async fn settings_refused(tools: &Tools, jar: &CookieJar, kept: &SettingsError) -> Response {
+    let Some(csrf) = csrf_token(jar) else {
+        return failed("csrf token");
+    };
+    let Ok(mut db) = tools.pool.acquire().await else {
+        return failed("database");
+    };
+    match owner_settings_page_refused(&mut db, &csrf, kept).await {
+        Ok(html) => (StatusCode::BAD_REQUEST, Html(html)).into_response(),
+        Err(_) => failed("owner page"),
     }
 }
 
@@ -472,14 +494,14 @@ async fn change(
         to: body.to,
     };
     let Some(parsed) = parse_change(route.as_str(), &form) else {
-        return not_made(&tools, &jar, &OwnerToolError::Refused, page).await;
+        return not_made(&tools, &jar, &OwnerToolError::Refused, (page, None)).await;
     };
     let Ok(mut db) = tools.pool.acquire().await else {
         return failed("database");
     };
     match apply_owner_change(&mut db, &principal, parsed, now).await {
         Ok(_) => see_other(back),
-        Err(error) => not_made(&tools, &jar, &error, page).await,
+        Err(error) => not_made(&tools, &jar, &error, (page, None)).await,
     }
 }
 
@@ -505,7 +527,7 @@ async fn bridge(
     };
     match owner_bridge_press(&mut db, &principal, &form, now).await {
         Ok(_) => see_other(OWNER_HOME_ROUTE),
-        Err(error) => not_made(&tools, &jar, &error, Page::Home).await,
+        Err(error) => not_made(&tools, &jar, &error, (Page::Home, None)).await,
     }
 }
 
@@ -534,7 +556,10 @@ async fn opt_out(
             let shown = (Page::Settings, Some(notice));
             page_answer(&tools, &jar, shown, StatusCode::OK).await
         }
-        Err(error) => not_made(&tools, &jar, &error, Page::Settings).await,
+        Err(error) => {
+            let kept = SettingsError::opt_out(&form);
+            not_made(&tools, &jar, &error, (Page::Settings, Some(&kept))).await
+        }
     }
 }
 
@@ -563,7 +588,10 @@ async fn stripe_answer(
             let shown = (Page::Settings, Some(notice));
             page_answer(&tools, &jar, shown, StatusCode::OK).await
         }
-        Err(error) => not_made(&tools, &jar, &error, Page::Settings).await,
+        Err(error) => {
+            let kept = SettingsError::stripe(&form);
+            not_made(&tools, &jar, &error, (Page::Settings, Some(&kept))).await
+        }
     }
 }
 
@@ -598,7 +626,7 @@ async fn safety_call(
             };
             page_answer(&tools, &jar, (Page::Settings, Some(notice)), status).await
         }
-        Err(error) => not_made(&tools, &jar, &error, Page::Settings).await,
+        Err(error) => not_made(&tools, &jar, &error, (Page::Settings, None)).await,
     }
 }
 
@@ -635,7 +663,7 @@ async fn spanish(
             };
             page_answer(&tools, &jar, (Page::Settings, Some(notice)), status).await
         }
-        Err(error) => not_made(&tools, &jar, &error, Page::Settings).await,
+        Err(error) => not_made(&tools, &jar, &error, (Page::Settings, None)).await,
     }
 }
 
@@ -671,7 +699,7 @@ async fn business_texting(
             };
             page_answer(&tools, &jar, (Page::Settings, Some(notice)), status).await
         }
-        Err(error) => not_made(&tools, &jar, &error, Page::Settings).await,
+        Err(error) => not_made(&tools, &jar, &error, (Page::Settings, None)).await,
     }
 }
 
