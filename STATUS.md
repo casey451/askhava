@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-24T06:38:16Z by runner 8b6c0e8b0c7d (actions).
+Updated 2026-11-24T06:38:26Z by runner 8b6c0e8b0c7d (actions).
 
 **Building: T656 in progress since 05:11Z; 653 of 779 done; week 90% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 653 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T656 claimed 05:11Z, lease until 08:11Z; lane 4: T410 claimed 05:58Z, lease until 08:58Z; lane 5: T804 claimed 05:28Z, lease until 08:28Z
+- **Lane:** lane 1: T656 claimed 05:11Z, lease until 08:11Z; lane 4: T410 claimed 05:58Z, lease until 08:58Z
 - **Week:** 90% used, 10.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 06:37Z, 0 min before this update
 - **Keeper:** last ran 06:37Z, next wake 06:57Z
@@ -30,6 +30,7 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T804 | server and portals: a delete or copy request made in the por | MERGE_PENDING | 1 | 69 min | 06:37Z |  |
 | T779 | ops, server and portals: alerts that do not push show in the | MERGE_PENDING | 1 | 83 min | 06:27Z |  |
 | T728 | intake: a homeowner's "<n> YES" text from her phone picks th | done | 1 | 91 min | 05:32Z |  |
 | T676 | tests (harness): J1 runs the real intake conversation instea | done | 1 | 2 h 44 min | 05:29Z |  |
@@ -138,7 +139,6 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T656 (lease until 2026-11-24T08:11:14Z)
 - lane 4: T410 (lease until 2026-11-24T08:58:38Z)
-- lane 5: T804 (lease until 2026-11-24T08:28:23Z)
 
 ## Last usage reading
-- {"task": "T779", "at": "2026-11-24T06:27:41Z", "cache_creation_input_tokens": 227528, "cache_read_input_tokens": 5604684, "input_tokens": 173, "output_tokens": 51372}
+- {"task": "T804", "at": "2026-11-24T06:37:50Z", "output_tokens": 89127, "cache_read_input_tokens": 15865344, "input_tokens": 249, "cache_creation_input_tokens": 275542}
