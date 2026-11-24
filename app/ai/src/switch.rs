@@ -147,6 +147,17 @@ pub async fn missing_records(db: &mut PgConnection) -> Result<(Vec<Missing>, boo
     Ok((ready.gaps().collect(), ready.switch_on))
 }
 
+/// Whether the newest provider-terms row holds a zero-retention signing date on or before today
+/// in Arizona, so [`ai_mode`] answers [`AiMode::Ai`] in live whatever the switch says; from the
+/// same read as [`ai_mode`]. Reads only (AI-008, D-412, D-841, D-5690).
+///
+/// # Errors
+///
+/// [`AiError::Database`] when the records cannot be read.
+pub async fn zero_retention_in_force(db: &mut PgConnection) -> Result<bool, AiError> {
+    Ok(readiness(db).await?.zero_retention)
+}
+
 /// Turns the owner's "AI on scrubbed text" switch on or off, with its history row and audit row
 /// in one transaction (AI-008, D-418). Off always works; on is refused while anything is
 /// [`Missing`] (D-412, D-492).

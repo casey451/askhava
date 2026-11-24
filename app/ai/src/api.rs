@@ -27,7 +27,7 @@ pub use crate::schemas::{
 pub use crate::service::{AiOff, Intake, IntakeCall, Origin};
 pub use crate::switch::{
     AiMode, Missing, SwitchError, WeeklyCounts, ai_mode, missing_records, read_intake,
-    set_ai_switch, weekly_counts,
+    set_ai_switch, weekly_counts, zero_retention_in_force,
 };
 pub use crate::writer::{Document, WriteSources, Written, accept_document, accept_question};
 

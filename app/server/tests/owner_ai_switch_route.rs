@@ -183,6 +183,16 @@ fn ids_only<'a>(rows: &'a [AuditRow], action: &str) -> Vec<&'a AuditRow> {
     found
 }
 
+/// D-5534(b): a terms row's subject is `from_u64_pair(0, id)` of its bigint key: a zero high half
+/// and a non-zero low half, so never `Uuid::nil()` nor a random UUID. Returns the row ID.
+fn assert_terms_subject(row: &AuditRow) -> u64 {
+    assert_eq!(row.subject_kind, "ai.provider_terms");
+    let (high, low) = row.subject_id.as_u64_pair();
+    assert_eq!(high, 0, "{}", row.subject_id);
+    assert_ne!(low, 0, "{}", row.subject_id);
+    low
+}
+
 /// TD-AI-32: the page lists every missing record; on is refused naming the first; after both
 /// records, on writes one history and one `ai.switch_on` row and `ai_mode` follows; off works.
 #[sqlx::test(migrator = "MIGRATOR")]
@@ -223,6 +233,7 @@ async fn td_ai_32_records_then_the_switch_turns_on_and_off(pool: PgPool) {
     let terms = ids_only(&rows, "ai.provider_terms_recorded");
     assert_eq!(terms.len(), 1);
     assert_eq!(terms[0].subject_kind, "ai.provider_terms");
+    assert_terms_subject(terms[0]);
     let policy = ids_only(&rows, "ai.privacy_policy_recorded");
     assert_eq!(policy.len(), 1);
     assert_eq!(policy[0].subject_id, Uuid::nil());
@@ -295,4 +306,44 @@ async fn td_ai_32_a_bad_field_keeps_the_values(pool: PgPool) {
     assert!(text.contains("already recorded") && text.contains("value=\"2026-fake.3\""));
     let rows = audit_rows(&w).await;
     assert_eq!(ids_only(&rows, "ai.privacy_policy_recorded").len(), 1);
+}
+
+/// TD-AI-32, AI-008, D-841, D-5690: a zero-retention date on or before today keeps live AI on
+/// whatever the switch says, and the page and the "off" answer say so; recording the terms again
+/// without the date closes the gate and the notice goes. Each terms row's audit subject is its
+/// own bigint ID, the newer one higher (D-5534(b)).
+#[sqlx::test(migrator = "MIGRATOR")]
+async fn td_ai_32_a_zero_retention_date_is_shown_as_keeping_ai_on(pool: PgPool) {
+    const NOTICE: &str = "A signed zero-retention deal is on record. So the AI stays on";
+    let w = world(&pool).await;
+    let owner = owner_at(&w, Timestamp::now()).await;
+    let signed = good_terms() + &today();
+    assert_eq!(post(&w, TERMS, &owner, &signed).await.0, 200);
+    let (status, page) = send(&w, ("GET", PAGE), &owner, String::new()).await;
+    assert_eq!(status, 200, "{page}");
+    assert!(
+        page.contains("The switch is off.") && page.contains(NOTICE),
+        "{page}"
+    );
+    let (status, text) = post(&w, SWITCH, &owner, "to=off").await;
+    assert_eq!(status, 200, "{text}");
+    assert!(text.contains("The switch is off, but the AI still runs on scrubbed text"));
+    assert!(!text.contains("AI on scrubbed text is now off.") && text.contains(NOTICE));
+    assert_eq!(live_mode(&w).await, AiMode::Ai);
+    let (status, text) = post(&w, TERMS, &owner, &good_terms()).await;
+    assert_eq!(status, 200, "{text}");
+    assert!(!text.contains(NOTICE), "{text}");
+    assert_eq!(live_mode(&w).await, AiMode::KeywordOnly);
+    let (status, text) = post(&w, SWITCH, &owner, "to=off").await;
+    assert!(
+        status == 200 && text.contains("AI on scrubbed text is now off."),
+        "{text}"
+    );
+    let rows = audit_rows(&w).await;
+    let ids: Vec<u64> = ids_only(&rows, "ai.provider_terms_recorded")
+        .into_iter()
+        .map(assert_terms_subject)
+        .collect();
+    assert_eq!(ids.len(), 2);
+    assert!(ids.iter().min() < ids.iter().max(), "{ids:?}");
 }

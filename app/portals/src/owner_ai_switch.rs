@@ -15,7 +15,7 @@
 use askama::Template;
 use askhava_ai::api::{
     ChecklistError, Missing, PolicyVersion, ProviderTerms, SwitchError, missing_records,
-    record_policy_version, record_provider_terms, set_ai_switch,
+    record_policy_version, record_provider_terms, set_ai_switch, zero_retention_in_force,
 };
 use jiff::Timestamp;
 use jiff::civil::Date;
@@ -282,6 +282,11 @@ pub async fn owner_ai_change(
     Ok(shown)
 }
 
+/// AI-008, D-841, D-5690: the answer to "off" while a zero-retention date keeps the AI on in live.
+const STILL_ON: &str = "The switch is off, but the AI still runs on scrubbed text. A signed \
+    zero-retention deal is on record. To stop it, record the terms again. Leave the signing date \
+    empty.";
+
 type Made = Result<Result<&'static str, Vec<(&'static str, String)>>, OwnerToolError>;
 
 async fn terms(conn: &mut PgConnection, form: &TermsForm, owner: sqlx::types::Uuid) -> Made {
@@ -313,7 +318,11 @@ async fn policy(conn: &mut PgConnection, form: &PolicyForm, owner: sqlx::types::
 async fn switch(conn: &mut PgConnection, on: bool, owner: sqlx::types::Uuid) -> Made {
     match set_ai_switch(conn, on, owner).await {
         Ok(()) if on => Ok(Ok("AI on scrubbed text is now on.")),
-        Ok(()) => Ok(Ok("AI on scrubbed text is now off.")),
+        Ok(()) => match zero_retention_in_force(conn).await {
+            Ok(true) => Ok(Ok(STILL_ON)),
+            Ok(false) => Ok(Ok("AI on scrubbed text is now off.")),
+            Err(_) => Err(OwnerToolError::Database),
+        },
         Err(SwitchError::Refused(missing)) => {
             let (field, words) = missing_words(missing);
             let why = format!("AI can't be turned on yet. {words}");
@@ -330,6 +339,7 @@ struct AiView<'a> {
     routes: [&'static str; 4],
     missing: Vec<(&'static str, &'static str)>,
     on: bool,
+    zero_retention: bool,
     shown: &'a AiShown,
 }
 
@@ -342,7 +352,8 @@ impl AiView<'_> {
 }
 
 /// AI-008, AI-018, A11Y-030: the AI page for `csrf` showing `shown`: every missing record in plain
-/// words, the switch's state, the two forms and the buttons. Reads only.
+/// words, the switch's state, whether a zero-retention date keeps the AI on whatever the switch
+/// says (D-841, D-5690), the two forms and the buttons. Reads only.
 ///
 /// # Errors
 ///
@@ -355,6 +366,9 @@ pub async fn owner_ai_page(
     let (missing, on) = missing_records(conn)
         .await
         .map_err(|_| OwnerToolError::Database)?;
+    let zero_retention = zero_retention_in_force(conn)
+        .await
+        .map_err(|_| OwnerToolError::Database)?;
     AiView {
         csrf,
         routes: [
@@ -365,6 +379,7 @@ pub async fn owner_ai_page(
         ],
         missing: missing.into_iter().map(missing_words).collect(),
         on,
+        zero_retention,
         shown,
     }
     .render()
