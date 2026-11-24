@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-24T22:57:28Z by runner 5ba412147c84 (actions).
+Updated 2026-11-24T22:58:11Z by runner 5ba412147c84 (actions).
 
-**Building: T826 in progress since 20:27Z; 670 of 781 done; week 96% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Waiting for tokens until 17:00Z; 670 of 781 done; week 96% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 670 of 781 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T826 claimed 20:27Z, lease until 01:45Z
+- **Lane:** idle since 22:57Z (no task in progress)
 - **Week:** 96% used, 0.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 22:57Z, 0 min before this update
 - **Keeper:** last ran 22:36Z, next wake 23:29Z
@@ -30,12 +30,13 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T826 | site: Spanish page fixes (ranking line, launch offer, city l | MERGE_PENDING | 2 | 2 h 30 min | 22:57Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T815 | portals: the owner portal serves the weekly digest view at / | done | 2 | 89 min | 21:22Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T839 | intake, privacy and messaging: an under-13 purge also delete | done | 1 | 93 min | 20:15Z |  |
 | T820 | server and portals: "Download my data" also holds withdrawn  | check_failed | 1 | 71 min | 19:49Z | Ci: failure; Coverage: failure / Coverage failed at step: Compare with tests/coverage_floor.json and refuse a lowered fl |
 | T815 | portals: the owner portal serves the weekly digest view at / | check_failed | 1 | 81 min | 19:28Z |  |
 | T846 | portals and a11y tests (harness): the quote card a "Go back" | done | 1 | 29 min | 19:15Z |  |
-| T826 | site: Spanish page fixes (ranking line, launch offer, city l | check_failed | 1 | 43 min | 18:56Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
+| T826 | site: Spanish page fixes (ranking line, launch offer, city l | check_failed | 1 | 43 min | 18:56Z |  |
 | T799 | Templates and tests (harness): copy review fixes (refund att | BLOCKED | 1 | 9 min | 18:29Z | PLAN GAP: contradiction: D-5401 requires es.json text "dentro de 72 horas de recibir los datos del cliente" (5 keys), bu |
 | T741 | server and intake: an opted-out homeowner's "<n> YES" picks  | done | 2 | 73 min | 17:54Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-24T |
 | T590 | calls, picks and server: the who's-calling and missed-call t | done | 3 | 23 min | 17:28Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-24T |
@@ -131,7 +132,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage kit: 14 of 15 done
 
 ## Running
-- T826 (lease until 2026-11-25T01:45:54Z)
+- nothing
 
 ## Last usage reading
-- {"task": "T815", "at": "2026-11-24T21:22:17Z", "cache_creation_input_tokens": 98140, "input_tokens": 78, "cache_read_input_tokens": 1176457, "output_tokens": 10324}
+- {"task": "T826", "at": "2026-11-24T22:57:25Z", "input_tokens": 99, "cache_creation_input_tokens": 92372, "output_tokens": 16731, "cache_read_input_tokens": 1445825}
