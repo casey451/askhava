@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-24T10:11:23Z by runner 8528082f6c06 (actions).
+Updated 2026-11-24T10:15:45Z by runner 8528082f6c06 (actions).
 
 **Building: T802 in progress since 10:10Z; 657 of 780 done; week 91% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-24T10:11:23Z by runner 8528082f6c06 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T802 claimed 10:10Z, lease until 13:10Z; lane 2: T305 claimed 09:14Z, lease until 12:14Z; lane 3: T410 claimed 09:38Z, lease until 12:38Z; lane 4: T801 claimed 08:49Z, lease until 11:49Z
 - **Week:** 91% used, 7.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:10Z, 1 min before this update
+- **Last run:** 10:15Z, 0 min before this update
 - **Keeper:** last ran 10:09Z, next wake 10:29Z
 
 ## Needs attention
@@ -82,7 +82,6 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 - 19:49Z Plan: pre-flight fixes for ten claimable tasks, J3 licence fixture T841 (D-5657); baseline audit gate deferred (D-5663); outside pre-flight fixes T744/T6
 - 16:44Z Plan: T840 update-email entry point and first-quote resend (D-5640); six-task pre-flight fixes (D-5646) (#1402)
 - 13:33Z Plan: Email-only quote updates and counts (T840), under-13 purge completeness (T839), T716 test precondition (D-5639) (#1399)
-- 10:11Z Plan: T716 purges held first-text words on an under-13 stop; T730 counts update emails (D-5617) (#1386)
 
 ## Progress (requirements verified)
 
