@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T18:23:51Z by runner a2750b12e4d8 (actions).
+Updated 2026-11-24T18:30:58Z by runner a34a900bb2a5 (actions).
 
 **Building: T815 in progress since 18:07Z; 666 of 780 done; week 95% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 666 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T815 claimed 18:07Z, lease until 21:07Z; lane 2: T820 claimed 16:58Z, lease until 19:58Z; lane 4: T799 claimed 18:19Z, lease until 21:19Z; lane 5: T826 claimed 18:12Z, lease until 21:12Z
+- **Lane:** lane 1: T815 claimed 18:07Z, lease until 21:07Z; lane 2: T820 claimed 16:58Z, lease until 19:58Z; lane 5: T826 claimed 18:12Z, lease until 21:12Z
 - **Week:** 95% used, 0.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 18:19Z, 4 min before this update
+- **Last run:** 18:23Z, 7 min before this update
 - **Keeper:** last ran 17:56Z, next wake 18:16Z
 
 ## Needs attention
@@ -19,14 +19,16 @@ Updated 2026-11-24T18:23:51Z by runner a2750b12e4d8 (actions).
 4. tests/e2e/j2_full.ts:4 cites D-5643, which does not exist in docs/decisions.md.
 Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and prehandin.sh green.
 - BLOCKED T801: plan gap reported: PLAN GAP: app/server/tests/web_chat_stops.rs:572 and :592 (owned by T645) assert a consent text queued to a chat-verified number that never texted in; fixing review finding (web_chat consent must never permit a text, CON-005/CON-025) requires changing them. Also app/server/tests/web_chat_after_code.rs:46,:319,:368 (T649) for the "We'll answer by text" wording. Smallest plan change: let T801 own web_chat_stops.rs (and web_chat_after_code.rs). Prepared fix patch at /tmp/T801-fix-round.patch. Reviewer confirmed the gap for web_chat_stops.rs. Proof: cargo test --workspace --exclude askhava-integra; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T801 --plan-fix D-### --reason "..."` (D-2859)
+- BLOCKED T799: plan gap reported: PLAN GAP: contradiction: D-5401 requires es.json text "dentro de 72 horas de recibir los datos del cliente" (5 keys), but tests/docs/test_introduction_fee_wording.py:60 forbids the pattern `\bdatos de(l)? clientes?\b` (WORD-026); test_td_word_10[app/messaging/templates/es.json] fails with 4 hits (the negated use in unreachable_no_attempts is allowed). That test is protected and not owned by T799. Reviewer (a4e70d1f2bbf42da0) confirmed on head a34a900bb2a5. Fix: change the Spanish phrase (e.g. "datos del propietario", recount segments) or add an exemption via a harness task. All other changes m; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T799 --plan-fix D-### --reason "..."` (D-2859)
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 64 problem(s) on tasks still to run (+569 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 66 problem(s) on tasks still to run (+570 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T799 | Templates and tests (harness): copy review fixes (refund att | BLOCKED | 1 | 9 min | 18:29Z | PLAN GAP: contradiction: D-5401 requires es.json text "dentro de 72 horas de recibir los datos del cliente" (5 keys), bu |
 | T741 | server and intake: an opted-out homeowner's "<n> YES" picks  | MERGE_PENDING | 2 | 73 min | 17:54Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-24T |
 | T590 | calls, picks and server: the who's-calling and missed-call t | done | 3 | 23 min | 17:28Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-24T |
 | T590 | calls, picks and server: the who's-calling and missed-call t | check_failed | 2 | 74 min | 16:23Z |  |
@@ -133,8 +135,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T815 (lease until 2026-11-24T21:07:01Z)
 - lane 2: T820 (lease until 2026-11-24T19:58:44Z)
-- lane 4: T799 (lease until 2026-11-24T21:19:45Z)
 - lane 5: T826 (lease until 2026-11-24T21:12:27Z)
 
 ## Last usage reading
-- {"task": "T741", "at": "2026-11-24T17:54:11Z", "output_tokens": 19268, "cache_read_input_tokens": 1957144, "cache_creation_input_tokens": 118838, "input_tokens": 111}
+- {"task": "T799", "at": "2026-11-24T18:29:43Z", "output_tokens": 12560, "input_tokens": 58, "cache_creation_input_tokens": 57402, "cache_read_input_tokens": 845669}

@@ -116896,8 +116896,8 @@
     "T147",
     "T791"
    ],
-   "status": "IN_PROGRESS",
-   "attempts": 0,
+   "status": "BLOCKED",
+   "attempts": 1,
    "slug": "copy-review-fixes",
    "type": "harness",
    "stage": "5",
@@ -116910,10 +116910,34 @@
     5819,
     5820
    ],
-   "wip_claim": {
-    "attempt": 1,
-    "remote_sha": ""
-   }
+   "reason": "plan gap reported: PLAN GAP: contradiction: D-5401 requires es.json text \"dentro de 72 horas de recibir los datos del cliente\" (5 keys), but tests/docs/test_introduction_fee_wording.py:60 forbids the pattern `\\bdatos de(l)? clientes?\\b` (WORD-026); test_td_word_10[app/messaging/templates/es.json] fails with 4 hits (the negated use in unreachable_no_attempts is allowed). That test is protected and not owned by T799. Reviewer (a4e70d1f2bbf42da0) confirmed on head a34a900bb2a5. Fix: change the Spanish phrase (e.g. \"datos del propietario\", recount segments) or add an exemption via a harness task. All other changes m; fix the plan (the task's kit/tasks.json entry or prompt, the decision in its `decisions` list), then run `python3 -m runner --requeue T799 --plan-fix D-### --reason \"...\"` (D-2859)",
+   "last_failure": "PLAN GAP: contradiction: D-5401 requires es.json text \"dentro de 72 horas de recibir los datos del cliente\" (5 keys), but tests/docs/test_introduction_fee_wording.py:60 forbids the pattern `\\bdatos de(l)? clientes?\\b` (WORD-026); test_td_word_10[app/messaging/templates/es.json] fails with 4 hits (the negated use in unreachable_no_attempts is allowed). That test is protected and not owned by T799. Reviewer (a4e70d1f2bbf42da0) confirmed on head a34a900bb2a5. Fix: change the Spanish phrase (e.g. \"datos del propietario\", recount segments) or add an exemption via a harness task. All other changes matched the goal; messaging, integration, intake tests, check_copy and check_ai_smell passed; smoke.sh was not run.",
+   "history": [
+    {
+     "attempt": 1,
+     "model": "claude-sonnet-5-5",
+     "model_evidence_count": 20,
+     "head_sha": "a34a900bb2a55aeb6c74cd082eaaea0056394607",
+     "pr": null,
+     "checks": null,
+     "reviewer_model": "claude-opus-5-5",
+     "path_check_ok": null,
+     "started_at": "2026-11-24T18:19:45Z",
+     "ended_at": "2026-11-24T18:29:43Z",
+     "result": "BLOCKED",
+     "usage": {
+      "worker": {
+       "tokens": 423871,
+       "turns": 13
+      },
+      "reviewer": {
+       "tokens": 491818,
+       "turns": 17
+      }
+     },
+     "wip_skipped": "PII scan: a commit message in 4b756acb549d5d7549a83cdc5c018e333f8fb9b7"
+    }
+   ]
   },
   {
    "id": "T810",
@@ -120418,12 +120442,12 @@
  ],
  "usage": {
   "last_reading": {
-   "task": "T741",
-   "at": "2026-11-24T17:54:11Z",
-   "output_tokens": 19268,
-   "cache_read_input_tokens": 1957144,
-   "cache_creation_input_tokens": 118838,
-   "input_tokens": 111
+   "task": "T799",
+   "at": "2026-11-24T18:29:43Z",
+   "output_tokens": 12560,
+   "input_tokens": 58,
+   "cache_creation_input_tokens": 57402,
+   "cache_read_input_tokens": 845669
   },
   "source": "session_reading 2026-11-24T17:55:33Z (week)",
   "by_task": {
@@ -128505,17 +128529,27 @@
    },
    "T799": {
     "estimated_bytes": 137995,
-    "estimated_tokens": 161901
+    "estimated_tokens": 161901,
+    "usage_counting": "message_id",
+    "output_tokens": 12560,
+    "input_tokens": 58,
+    "cache_creation_input_tokens": 57402,
+    "cache_read_input_tokens": 845669,
+    "worker_tokens": 423871,
+    "worker_turns": 13,
+    "reviewer_tokens": 491818,
+    "reviewer_turns": 17,
+    "last_model": "claude-sonnet-5-5"
    }
   },
   "windows": {
    "five_hour": {
     "start": "2026-11-24T14:04:36Z",
-    "tokens": 3435086
+    "tokens": 3589672
    },
    "week": {
     "start": "2026-11-19T19:21:06Z",
-    "tokens": 267299441
+    "tokens": 267454027
    }
   },
   "session_reading": {
@@ -128526,7 +128560,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T18:23:51Z",
+ "updated_at": "2026-11-24T18:30:58Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -128624,7 +128658,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "a2750b12e4d834c8a0a1392bbf5c1d35451aff06",
+ "runner_sha": "a34a900bb2a55aeb6c74cd082eaaea0056394607",
  "starter": "actions",
  "smoke_runs": [
   {
