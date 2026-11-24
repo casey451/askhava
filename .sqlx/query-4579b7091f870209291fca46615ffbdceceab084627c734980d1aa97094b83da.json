@@ -1,0 +1,30 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO ai.privacy_policy_version (version, effective_on, has_ai018_sentence) VALUES ($1, $2::text::date, $3) ON CONFLICT (version) DO NOTHING RETURNING version",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "version",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "ai.privacy_policy_version",
+            "name": "version"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Bool"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "4579b7091f870209291fca46615ffbdceceab084627c734980d1aa97094b83da"
+}

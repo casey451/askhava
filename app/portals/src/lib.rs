@@ -61,6 +61,7 @@ mod money_view;
 mod not_a_fit;
 mod notice_log;
 mod notice_settings;
+mod owner_ai_switch;
 mod owner_auth;
 mod owner_complaint;
 mod owner_help;

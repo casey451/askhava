@@ -189,6 +189,10 @@ pub use crate::notice_settings::{
     ChannelChangeError, ChannelFacts, NOTICE_SETTINGS_ROUTE, NoticeAddress, change_channel,
     channel_choices, notice_settings_page,
 };
+pub use crate::owner_ai_switch::{
+    AiChange, AiShown, OWNER_AI_POLICY_ROUTE, OWNER_AI_ROUTE, OWNER_AI_SWITCH_ROUTE,
+    OWNER_AI_TERMS_ROUTE, PolicyForm, TermsForm, owner_ai_change, owner_ai_page,
+};
 pub use crate::owner_auth::{
     BOOTSTRAP_TOKEN_VAR, MAX_LIVE_SIGN_IN_CHALLENGES, MIN_OWNER_FACTORS, MIN_OWNER_PASSWORD_CHARS,
     OWNER_IDLE_LIMIT, OWNER_PASSKEY_ROUTE, OWNER_SESSION_LIFE, OWNER_SIGNIN_ROUTE,
@@ -215,14 +219,15 @@ pub use crate::owner_portal::{
     AUDIT_PAGE_ROWS, BridgeForm, ChangeForm, EvidenceForm, OPT_OUT_WEEKS, OWNER_ALERT_ACK_ROUTE,
     OWNER_AUDIT_LOG_ROUTE, OWNER_BANNER_ROUTE, OWNER_BRIDGE_ACTION, OWNER_BRIDGE_ROUTE,
     OWNER_CATEGORY_ROUTE, OWNER_EVIDENCE_ACTION, OWNER_EVIDENCE_ROUTE, OWNER_FEE_MODE_ROUTE,
-    OWNER_HOME_ROUTE, OWNER_OPT_OUT_ROUTE, OWNER_PAUSE_ROUTE, OWNER_REFUND_ACTION,
-    OWNER_REFUND_PRESS_ROUTE, OWNER_REFUND_ROUTE, OWNER_SAFETY_CALL_ROUTE, OWNER_SETTINGS_ROUTE,
-    OWNER_SPANISH_ROUTE, OWNER_STRIPE_ANSWER_ROUTE, OWNER_TEXTING_ROUTE, OptOutForm, OwnerChange,
-    OwnerToolError, PauseSwitch, ReviewNotice, SafetyCallForm, SettingsNotice, SpanishForm,
-    SpanishGaps, StripeAnswerForm, apply_owner_change, owner_audit_log_page, owner_bridge_press,
-    owner_dispute_evidence, owner_file_stripe_answer, owner_home_page, owner_record_opt_out,
-    owner_refund, owner_refund_page, owner_safety_call, owner_settings_page,
-    owner_settings_page_with, owner_spanish, parse_change,
+    OWNER_HOME_ROUTE, OWNER_OPT_OUT_ACTION, OWNER_OPT_OUT_ROUTE, OWNER_PAUSE_ROUTE,
+    OWNER_REFUND_ACTION, OWNER_REFUND_PRESS_ROUTE, OWNER_REFUND_ROUTE, OWNER_SAFETY_CALL_ROUTE,
+    OWNER_SETTINGS_ROUTE, OWNER_SPANISH_ROUTE, OWNER_STRIPE_ANSWER_ACTION,
+    OWNER_STRIPE_ANSWER_ROUTE, OWNER_TEXTING_ROUTE, OptOutForm, OwnerChange, OwnerToolError,
+    PauseSwitch, ReviewNotice, SafetyCallForm, SettingsError, SettingsField, SettingsNotice,
+    SpanishForm, SpanishGaps, StripeAnswerForm, apply_owner_change, owner_audit_log_page,
+    owner_bridge_press, owner_dispute_evidence, owner_file_stripe_answer, owner_home_page,
+    owner_record_opt_out, owner_refund, owner_refund_page, owner_safety_call, owner_settings_page,
+    owner_settings_page_refused, owner_settings_page_with, owner_spanish, parse_change,
 };
 pub use crate::owner_portal::{
     BusinessTextingForm, OWNER_BUSINESS_TEXTING_ROUTE, owner_business_texting,

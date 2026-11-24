@@ -61,6 +61,7 @@ pub mod job_page_route;
 pub mod liveness;
 pub mod no_handler_alert;
 pub mod offdb_stream;
+pub mod owner_ai_routes;
 pub mod owner_portal;
 pub mod owner_signin;
 pub mod owner_tools;
@@ -413,6 +414,25 @@ impl ApprovalSecret for StripeApproval {
     }
 }
 
+/// The owner's sign-in ([`owner_signin`], T303), home, settings and switches ([`owner_portal`],
+/// T310, the opt-out with `vault`), help requests (`portals`' T530) and AI page
+/// ([`owner_ai_routes`], T737).
+fn owner_pages(
+    pool: &PgPool,
+    vault: Option<Arc<Vault>>,
+    webhooks: Option<&Arc<inbound_text::Webhooks>>,
+) -> Router {
+    let owner = owner_signin::routes(pool.clone())
+        .merge(owner_portal::routes(pool.clone(), vault, webhooks))
+        .merge(owner_ai_routes::routes(pool.clone()));
+    owner.merge(askhava_portals::api::owner_help_routes(
+        pool.clone(),
+        Arc::new(SystemClock),
+        Some(session_minter()),
+        webhooks.map(|hooks| hooks.id_secret.clone()),
+    ))
+}
+
 /// The served business sign-in (T280) and sign-up (T302) routes, each only when its part is given,
 /// the business portal (T300) over `pool`, always (`business_portal::served`), and the Confirm
 /// route (T261) from the Stripe hooks, with the parts' Confirm settings, else none; the "Can't
@@ -424,7 +444,8 @@ impl ApprovalSecret for StripeApproval {
 /// backup address changes ([`address_changes`], T542, changing only with their part), and the
 /// owner's waiting-phones page ([`phone_approval`], T397, with the portal's vault), always; and the
 /// owner's sign-in, step-up and sign-out routes ([`owner_signin`], T303) and home, settings and
-/// switches ([`owner_portal`], T310, the opt-out with the portal's vault) and refund review, audit
+/// switches ([`owner_portal`], T310, the opt-out with the portal's vault), AI page
+/// ([`owner_ai_routes`], T737) and refund review, audit
 /// log and health page ([`owner_tools`], T304, refunding only with the Stripe hooks and the
 /// Confirm settings' ID secret), always; and the
 /// homeowner portal's sign-in, home, texts-off and data routes ([`homeowner_portal`], T307,
@@ -448,17 +469,7 @@ fn business_pages(
         };
         confirm_routes_with(route, parts.confirm_codes.clone())
     });
-    let owner = owner_signin::routes(pool.clone()).merge(owner_portal::routes(
-        pool.clone(),
-        parts.vault.clone(),
-        webhooks,
-    ));
-    let owner = owner.merge(askhava_portals::api::owner_help_routes(
-        pool.clone(),
-        Arc::new(SystemClock),
-        Some(session_minter()),
-        webhooks.map(|hooks| hooks.id_secret.clone()),
-    ));
+    let owner = owner_pages(&pool, parts.vault.clone(), webhooks);
     let tools = owner_tools::routes(pool.clone(), stripe, &parts.confirm, parts.report);
     let cant_take = cant_take_route::routes(pool.clone());
     let links = webhooks.filter(|_| parts.photos.is_some());
