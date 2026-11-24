@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T13:13:30Z by runner a7f2a247ae33 (actions).
+Updated 2026-11-24T13:13:58Z by runner a7f2a247ae33 (actions).
 
 **Building: T802 in progress since 13:12Z; 659 of 780 done; week 92% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 659 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 2: T802 claimed 13:12Z, lease until 16:12Z; lane 3: T733 claimed 11:58Z, lease until 14:58Z; lane 4: T410 claimed 11:51Z, lease until 14:51Z
-- **Week:** 92% used, 6.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 13:12Z, 0 min before this update
+- **Lane:** lane 2: T802 claimed 13:12Z, lease until 16:12Z; lane 3: T733 claimed 11:58Z, lease until 14:58Z; lane 4: T410 claimed 11:51Z, lease until 14:51Z; lane 5: T305 claimed 13:13Z, lease until 16:13Z
+- **Week:** 92% used, 6.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 13:13Z, 0 min before this update
 - **Keeper:** last ran 12:40Z, next wake 13:00Z
 
 ## Needs attention
@@ -114,7 +114,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-24T12:40:07Z (week)): week: 187.1M used, 6.9M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T22:46:34Z.
+- Pacing (session_reading 2026-11-24T12:40:07Z (week)): week: 187.3M used, 6.7M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T22:47:35Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -133,6 +133,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - lane 2: T802 (lease until 2026-11-24T16:12:41Z)
 - lane 3: T733 (lease until 2026-11-24T14:58:11Z)
 - lane 4: T410 (lease until 2026-11-24T14:51:12Z)
+- lane 5: T305 (lease until 2026-11-24T16:13:43Z)
 
 ## Last usage reading
 - {"task": "T732", "at": "2026-11-24T12:16:59Z", "cache_creation_input_tokens": 131055, "input_tokens": 108, "output_tokens": 34544, "cache_read_input_tokens": 3453554}

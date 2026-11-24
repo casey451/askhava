@@ -10838,3 +10838,4 @@
 - 2026-11-24T13:12:20Z runner 26e9bbe3e395 (manual): {"T305": "BLOCKED -> QUEUED"}
 - 2026-11-24T13:12:59Z runner a7f2a247ae33 (actions): {"T802": "QUEUED -> IN_PROGRESS"}; T802 estimated 195k tokens (calibrated); week has 6.9M left (no five-hour budget, D-3056) after 3.1M still running in another lane (session_reading 2026-11-24T12:40:07Z (week)); claimed
 - 2026-11-24T13:13:30Z runner a7f2a247ae33 (actions): {}
+- 2026-11-24T13:13:58Z runner a7f2a247ae33 (actions): {"T305": "QUEUED -> IN_PROGRESS"}; T305 estimated 1.4M tokens (calibrated); week has 6.7M left (no five-hour budget, D-3056) after 3.3M still running in another lane (session_reading 2026-11-24T12:40:07Z (week)); claimed
