@@ -5,7 +5,8 @@
     calls card with the current masked pool numbers (BIZ-046) and the "This inbox is shared"
     switch (SEC-027), which needs a fresh code and, to turn on, a phone that gets texts. T483: the
     review and dispute lines with the owner's away date (OPS-026) and the Google and Yelp links
-    form (BIZ-052), whose refusal shows its reason beside the field, focused. -#}
+    form (BIZ-052), whose refusal shows its reason beside the field, focused. T733: the "Service
+    area" link to the base ZIP and radius settings (BIZ-010, BIZ-058). -#}
 {% block title %}{% if too_many || link_error.is_some() %}Error: {% endif %}Your business account{% endblock %}
 {% block main %}
 <link rel="stylesheet" href="/static/portals/forms.css">
@@ -48,7 +49,7 @@
 {% endfor %}</ul>
 <p><a href="{{ crate::business_portal::CONTACT_CARD_ROUTE }}" download>Save these numbers to your phone (contact card: {{ card_name }})</a></p>
 <h2 id="shared-inbox">This inbox is shared</h2>
-{% if inbox.shared %}<p id="shared-state">Your job email inbox is marked shared. Before you confirm a job, we text a code to your phone, so only you can confirm it. You can still quote or hold jobs from the emails.</p>
+{% if inbox.shared %}<p id="shared-state">You marked your job email inbox as shared. Each time you confirm a job, we first text a code to your phone. That way nobody else who reads that inbox can confirm it. You can still quote or hold jobs from the emails.</p>
 {% else %}<p id="shared-state">Your job email inbox isn't marked shared. If office staff or anyone else can read it, mark it shared. Then we'll text a code to your phone before you confirm a job.</p>
 {% endif %}{% if inbox.text_phone || inbox.shared %}<form method="post" action="{{ crate::business_portal::SHARED_INBOX_ROUTE }}" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
@@ -57,7 +58,9 @@
 <button type="submit" aria-describedby="shared-hint">{% if inbox.shared %}Mark my inbox not shared{% else %}Mark my inbox shared{% endif %}</button>
 </form>
 {% else %}<p id="shared-needs-phone">To mark it shared, first add a mobile number that gets texts. A code sent by email would land in the shared inbox, where others could see it.</p>
-{% endif %}<h2 id="review-links">Put your Google and Yelp pages on your quotes</h2>
+{% endif %}<h2 id="where-you-work">Where you take jobs</h2>
+<p><a href="{{ crate::business_actions::SERVICE_AREA_SETTINGS_ROUTE }}">Service area</a>: set your base ZIP code and how far you'll travel. The job cards we send you go by these two.</p>
+<h2 id="review-links">Put your Google and Yelp pages on your quotes</h2>
 <form method="post" action="{{ crate::business_portal::REVIEW_LINKS_ROUTE }}" novalidate>
 <input type="hidden" name="csrf" value="{{ csrf }}">
 <p id="links-hint">Homeowners see these links on every quote you send. Both are optional. Leave a box empty to take a link off. We only save a link that opens.</p>
