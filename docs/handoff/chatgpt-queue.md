@@ -6,10 +6,7 @@ The overseer keeps three or four jobs ready at a time, because older packages go
 
 ## Ready now
 
-| # | Zip | What it's for | Prepared |
-|---|---|---|---|
-| 1 | `Laftly_PF-PLAN-T801.zip` | Drafts the plan entries for the T801 chain (web chat runs the whole request on screen with no texts), from Fable's scope record and both earlier reviews. Thursday's session checks the drafts instead of writing them. | Nov 24, 12:00 pm MST, `main` e2c7ee73 |
-| 2 | `Laftly_PF-PLAN-JOURNEYS.zip` | Drafts the plan entries for the journeys chain (the narrow clock fix, the test-data helper, the J1 and J2 core journeys, two variant tasks; T532 and T533 adjusted). | Nov 24, 12:00 pm MST, `main` e2c7ee73 |
+Nothing queued. The next jobs get built as their work comes near.
 
 ## Next, when they're near (not built yet)
 
@@ -23,3 +20,5 @@ The overseer keeps three or four jobs ready at a time, because older packages go
 | PF-Q1 | T817 and T843 fixed (D-5793). |
 | PF-T222, PF-CLK, PF-T801, PF-T801b | Filed; input to Fable's scope record. |
 | PF-E2E-CLOCK | Verified; no further fix needed now (D-5809). |
+| PF-PLAN-T801 | Draft received Nov 24; filed as `PF-PLAN-T801_draft.md` for the Thursday plan. |
+| PF-PLAN-JOURNEYS | Draft received Nov 24; filed as `PF-PLAN-JOURNEYS_draft.md` for the Thursday plan. |
