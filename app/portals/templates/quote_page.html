@@ -71,7 +71,7 @@
 </div>
 <ol id="quotes" data-live="{{ live }}" class="quote-list">
 {% for q in quotes %}
-<li id="quote-{{ q.number }}"{% if self.choose_error().is_none() && !self.just_closed() %} class="rise"{% endif %} data-number="{{ q.number }}" data-available="{{ !q.quote.unavailable }}" data-pickable="{{ pick_open }}" data-updated="{{ q.quote.updated_stamp() }}">
+<li id="quote-{{ q.number }}" tabindex="-1"{% if self.choose_error().is_none() && !self.just_closed() %} class="rise"{% endif %} data-number="{{ q.number }}" data-available="{{ !q.quote.unavailable }}" data-pickable="{{ pick_open }}" data-updated="{{ q.quote.updated_stamp() }}">
 <article aria-labelledby="quote-{{ q.number }}-title" class="card quote{% if q.quote.withdrawn || q.quote.unavailable %} gone{% endif %}">
 {% if q.quote.withdrawn %}
 <h2 id="quote-{{ q.number }}-title" class="quote-top">Quote #{{ q.number }}</h2>
