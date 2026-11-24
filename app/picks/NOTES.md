@@ -304,6 +304,7 @@
 - [-] (never 9) a failed acceptance leaves no pick: `tests/integration/tests/page_pick.rs`. Only `picks` reads the phone for the code and no digit leaks: `tests/security/tests/page_pick_privacy.rs`, `vault_readers.rs`.
 - [-] (never 10) the notice's recipients: `td_pick_15_*`; pure cases and the spec templates: `src/tests/confirm.rs`.
 - [-] (never 11) no picked quote gives the first sentence only; "This job is no longer active." once, withdrawn quoters included, never to the connected business: `tests/integration/tests/pick_aftermath.rs`.
+- [-] (never 11) the 90% and 110% edges;
 - [-] (never 14) A Confirm queues one accepted-quote task, IDs only, and a second settle none: `tests/integration/tests/accepted_quote_email.rs` (TD-PICK-42).
 - [PICK-022 FEE-052] (never 19) a pending claim's release row stops the fraud refund, a committed `picks.fraud_hold` refuses the claim: `tests/integration/tests/release_fraud_race.rs` (TD-PICK-59), `record` itself in `src/release.rs` tests.
 - [PICK-043 PICK-019] (task 456) `migrations/0205_picks_hold_away.sql` adds `picks.pick.confirm_due` (written by `handlers::start_window` at the notice's send, moved once by `hold_pick`; NULL before the send and for an emergency job) and `away_delayed` (false; T543 writes it for a BIZ-034 late start).
