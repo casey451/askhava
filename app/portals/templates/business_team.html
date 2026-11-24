@@ -1,0 +1,46 @@
+{% extends "business_layout.html" %}
+{#- The business team page (T544; BIZ-023, FEE-041, SEC-038, SEC-019; D-3890, D-3892, D-5567). The
+    current members, owner first, each with their sign-in email (or a numbered fixed line when it
+    can't be read) and roles. Only the owner sees a role form and a Remove button, one per member
+    other than the owner, each carrying the CSRF token and the member's ID. The owner and a
+    "Confirm and billing" member see the monthly-limit form. Every change goes through the step-up
+    code first. Native checkboxes, so forms.css comes first in `main`. Works without JavaScript; buttons are never disabled. -#}
+{% block title %}Your team and monthly limit{% endblock %}
+{% block main %}
+<link rel="stylesheet" href="/static/portals/forms.css">
+<h1>Your team and monthly limit</h1>
+<p>{% if owner_view %}Changing someone's roles, removing someone or changing the monthly limit{% else %}Changing the monthly limit{% endif %} needs a code from us first. We send it by text, or by email if you get no texts. It works for 5 minutes. Once the code works, we take you to your business home. Come back to this page and press the same button again.</p>
+<ul>
+{% for r in rows %}<li>
+<h2 id="member-{{ loop.index }}">{{ r.who }}{% if r.owner %} (owner){% endif %}{% if r.you %} (you){% endif %}</h2>
+<p>Roles: {% if r.cards && r.billing %}Cards and quotes, Confirm and billing{% else if r.cards %}Cards and quotes{% else %}Confirm and billing{% endif %}</p>
+{% if owner_view && !r.owner %}<form method="post" action="{{ role_route }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="member" value="{{ r.id }}">
+<fieldset><legend>Roles for {{ r.who }}</legend>
+<p><input type="checkbox" id="cards-{{ loop.index }}" name="cards_and_quotes" value="yes" aria-describedby="cards-hint-{{ loop.index }}"{% if r.cards %} checked{% endif %}>
+<label for="cards-{{ loop.index }}">Cards and quotes</label></p>
+<p id="cards-hint-{{ loop.index }}">Gets job cards and sends quotes.</p>
+<p><input type="checkbox" id="billing-{{ loop.index }}" name="confirm_and_billing" value="yes" aria-describedby="billing-hint-{{ loop.index }}"{% if r.billing %} checked{% endif %}>
+<label for="billing-{{ loop.index }}">Confirm and billing</label></p>
+<p id="billing-hint-{{ loop.index }}">Confirms picks, pays introduction fees and adds phone numbers.</p>
+</fieldset>
+<p><button type="submit" aria-describedby="member-{{ loop.index }}">Save roles</button></p>
+</form>
+<form method="post" action="{{ remove_route }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<input type="hidden" name="member" value="{{ r.id }}">
+<p><button type="submit" aria-describedby="member-{{ loop.index }}">Remove from your team</button></p>
+</form>
+<p>Once removed, they can't sign in to your business account. We email you to say so.</p>
+{% endif %}</li>
+{% endfor %}</ul>
+<h2>Monthly limit on introduction fees</h2>
+<form method="post" action="{{ limit_route }}" novalidate>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<p><label for="limit">Monthly limit in whole dollars</label></p>
+<p id="limit-hint">Leave it empty for no monthly limit.</p>
+<p><input type="text" id="limit" name="limit" inputmode="numeric" autocomplete="off" aria-describedby="limit-hint"></p>
+<p><button type="submit">Save monthly limit</button></p>
+</form>
+{% endblock %}

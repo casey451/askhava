@@ -20,13 +20,17 @@
 //! blocking the rows. The daily [`ORPHAN_SWEEP_KIND`] lists `photos/` and queues the same delete,
 //! a day later, for every object without a `privacy.photo` row (`store_photo` writes the object
 //! before its row); the delete re-checks that no row names the object, so only objects at least
-//! a day old with no row ever go.
+//! a day old with no row ever go. The sweep queues the next day's before it lists, so a sweep that
+//! fails for good never ends the daily chain (D-5399). "Delete my data" also deletes her kept
+//! message words, of her jobs and of her help requests (PRIV-006, PRIV-030, D-4765).
 
 use std::sync::Arc;
 
 use askhava_adapters::api::{IdempotencyKey, StorageDelete};
 use askhava_core::api::{Claimed, Clock, HandlerError, NewTask, Registry, enqueue};
-use askhava_ops::api::{Actor, AuditEntry, Change, NewAlert, Severity, audit, raise_alert};
+use askhava_ops::api::{
+    Actor, AuditEntry, Change, NewAlert, Severity, audit, help_requests_of_homeowner, raise_alert,
+};
 use jiff::{SignedDuration, Timestamp};
 use jiff_sqlx::ToSqlx;
 use secrecy::SecretString;
@@ -34,6 +38,7 @@ use serde_json::json;
 use sqlx::types::Uuid;
 use sqlx::{PgConnection, PgPool};
 
+use crate::message_body::delete_job_words;
 use crate::models::{HoldSource, VaultError};
 use crate::update_email::forget_update_address;
 
@@ -322,8 +327,9 @@ pub async fn schedule_orphan_sweep(
 }
 
 /// PRIV-009, D-1841: registers [`PHOTO_DELETE_KIND`] and [`ORPHAN_SWEEP_KIND`] over the photo
-/// store `storage`, deriving each delete's key from `secret`; the sweep runs at `clock`'s now and
-/// then queues the next day's. A delete's last failed attempt raises a High alert (D-2162).
+/// store `storage`, deriving each delete's key from `secret`; the sweep runs at `clock`'s now
+/// after it queues the next day's, so a sweep that fails for good still leaves the next (D-5399).
+/// A delete's last failed attempt raises a High alert (D-2162).
 pub fn register_photo_deletes<S>(
     registry: &mut Registry,
     storage: Arc<S>,
@@ -344,10 +350,10 @@ pub fn register_photo_deletes<S>(
         let (store, now) = (Arc::clone(&storage), clock.now());
         async move {
             let mut conn = pool.acquire().await.map_err(|_| DB_FAILED)?;
-            sweep_orphans(&mut conn, &*store, now).await?;
             schedule_orphan_sweep(&mut conn, now)
                 .await
-                .map_err(|_| DB_FAILED)
+                .map_err(|_| DB_FAILED)?;
+            sweep_orphans(&mut conn, &*store, now).await.map(drop)
         }
     });
 }
@@ -442,8 +448,10 @@ async fn forget_said(db: &mut PgConnection, id: Uuid) -> Result<u64, VaultError>
 /// PRIV-011, D-214: "Delete my data" for contact `id` and the jobs the caller found for it: the
 /// vault entry is cleared as in [`purge_contact`] (the phone kept, locked, for the consent records,
 /// D-079) and every photo of those jobs deleted, their sealed objects queued for deletion as in
-/// [`purge_photos`]; returns [`DELETE_CONFIRMATION`]. Ledger rows hold
-/// IDs only, so they stay as they are (PRIV-010). One transaction: all of it happens or none.
+/// [`purge_photos`]; the kept words of those jobs and of every help request she asked
+/// (`ops`' `help_requests_of_homeowner`) go too (PRIV-006, PRIV-030, D-4765); returns
+/// [`DELETE_CONFIRMATION`]. Ledger rows hold IDs only, so they stay as they are (PRIV-010). One
+/// transaction: all of it happens or none.
 ///
 /// # Errors
 /// [`VaultError::Database`], [`VaultError::Audit`].
@@ -456,6 +464,13 @@ pub async fn delete_my_data(
     purge_contact(&mut tx, id).await?;
     for job in jobs {
         purge_photos(&mut tx, *job).await?;
+        delete_job_words(&mut tx, *job).await?;
+    }
+    let asked = help_requests_of_homeowner(&mut tx, id)
+        .await
+        .map_err(|_| VaultError::Database)?;
+    for request in asked {
+        delete_job_words(&mut tx, request).await?;
     }
     tx.commit().await.map_err(db_err)?;
     Ok(DELETE_CONFIRMATION)

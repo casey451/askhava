@@ -45,6 +45,7 @@ mod confirm_moves;
 mod confirm_pay;
 mod confirm_waiver;
 mod data_download;
+mod digest_flags;
 mod email_check;
 mod emergency_switch_page;
 mod feedback;
@@ -81,6 +82,7 @@ mod security;
 mod session;
 mod status;
 mod step_up_page;
+mod team_page;
 #[cfg(test)]
 mod tests;
 mod update_channel;

@@ -37,6 +37,7 @@ pub use crate::media_fetch::{
     Taken as PhotoTaken, fetch_twilio_media, make_concept, shorter_side, take_picture_text,
     take_upload,
 };
+pub use crate::message_body::delete_job_words;
 pub use crate::message_body::{
     CUT_WORDS_KIND, ProblemWords, WORDS_KEPT_FOR, cut_problem_words, keep_problem_words,
     problem_words, run_words_cut_at, run_words_purge, schedule_words_cut,

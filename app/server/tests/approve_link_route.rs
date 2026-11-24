@@ -6,12 +6,12 @@
 //! writes); the phone is a "Confirm and billing" member's, held out of the sender directory until
 //! the owner approves it, and every lookup goes through `messaging::api::sender_business`.
 //! Each person signs in through the sign-in link emailed to their own fake mailbox (as
-//! `action_links_route.rs` does) and step-ups are recorded with `record_step_up`. Fake
+//! `action_links_route.rs` does) and step-ups are recorded with `record_session_step_up`. Fake
 //! numbers (555-01xx) and fake IDs only.
 
 use askhava_businesses::api::{
     Acting, Roles, SenderLink, TeamError, add_member, add_owner, change_phone_at, create,
-    link_phone, record_step_up, waiting_phones,
+    link_phone, record_session_step_up, waiting_phones,
 };
 use askhava_messaging::api::{OutboxError, sender_add, sender_business};
 use std::sync::{Arc, Mutex, PoisonError};
@@ -19,8 +19,8 @@ use std::sync::{Arc, Mutex, PoisonError};
 use askhava_core::api::SystemClock;
 use askhava_portals::api::{
     ActionKind, ActionTarget, CookieJar, PortalsError, SIGNIN_LINK_ROUTE, SignIn, SignInAddress,
-    SignInMail, csrf_token, ensure_pre_session, mint_action_link, open_action_link,
-    send_sign_in_link, signin_post,
+    SignInMail, csrf_token, current_session, ensure_pre_session, mint_action_link,
+    open_action_link, send_sign_in_link, signin_post,
 };
 use askhava_privacy::api::Vault;
 use axum::Router;
@@ -197,9 +197,6 @@ impl SignInMail for OneMail {
 /// step-up passed a minute ago when `step_up`: their cookies.
 async fn session(w: &World, (who, mailbox): (Acting, Uuid), step_up: bool) -> CookieJar {
     let mut db = w.pool.acquire().await.expect("db");
-    if step_up {
-        record_step_up(&mut db, who, ago(1)).await.expect("step-up");
-    }
     let to = SignInAddress {
         business: who.business,
         mailbox,
@@ -230,7 +227,14 @@ async fn session(w: &World, (who, mailbox): (Acting, Uuid), step_up: bool) -> Co
         .collect();
     let mut headers = HeaderMap::new();
     headers.insert(header::COOKIE, cookies.join("; ").parse().expect("cookies"));
-    CookieJar::from_headers(&headers)
+    let jar = CookieJar::from_headers(&headers);
+    if step_up {
+        let signed = current_session(&mut db, &jar, ago(0)).await.expect("read");
+        let id = signed.expect("signed in").id();
+        let code = record_session_step_up(&mut db, who, id, ago(1));
+        code.await.expect("step-up");
+    }
+    jar
 }
 
 /// `method path` with `jar`'s cookies and CSRF token.

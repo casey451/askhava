@@ -19,7 +19,7 @@ use askhava_adapters::api::{
 };
 use askhava_businesses::api::{
     AccountStatus, Acting, Checks, ConfirmTerms, Event, Roles, SignUpForm, add_member, add_owner,
-    apply, confirm_assent_line, record_confirm_terms, record_step_up, sign_up,
+    apply, confirm_assent_line, record_confirm_terms, record_session_step_up, sign_up,
 };
 use askhava_core::api::{
     Claimed, ClientIpPolicy, Guarded, MIGRATOR, ManualClock, Settings, SystemClock, WorkerId, claim,
@@ -1030,9 +1030,10 @@ async fn td_sec_32_a_shared_inbox_press_needs_a_fresh_code(pool: PgPool) {
         business: p.business,
         member: p.owner,
     };
-    record_step_up(&mut db, by, now()).await.expect("step-up");
     let who = business_principal(&mut db, &p.jar, now()).await;
     let who = who.expect("read").expect("signed in");
+    let code = record_session_step_up(&mut db, by, who.session(), now());
+    code.await.expect("step-up");
     let phone = CodeTo::Phone(SecretString::from("+19285550142"));
     let shared = set_inbox_shared(&mut db, &who, (true, &phone), now()).await;
     shared.expect("shared");
