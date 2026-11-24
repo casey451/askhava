@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-24T14:28:41Z by runner ecc8eecd52ad (actions).
+Updated 2026-11-24T14:29:17Z by runner ecc8eecd52ad (actions).
 
 **Building: T741 in progress since 14:26Z; 661 of 780 done; week 93% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 661 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T741 claimed 14:26Z, lease until 17:26Z; lane 2: T802 claimed 13:12Z, lease until 16:12Z; lane 3: T732 claimed 14:23Z, lease until 17:23Z; lane 4: T122 claimed 13:45Z, lease until 16:45Z; lane 5: T305 claimed 13:13Z, lease until 16:13Z
+- **Lane:** lane 1: T741 claimed 14:26Z, lease until 17:26Z; lane 3: T732 claimed 14:23Z, lease until 17:23Z; lane 4: T122 claimed 13:45Z, lease until 16:45Z; lane 5: T305 claimed 13:13Z, lease until 16:13Z
 - **Week:** 93% used, 4.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 14:27Z, 1 min before this update
 - **Keeper:** last ran 14:13Z, next wake 16:15Z
@@ -27,12 +27,13 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T802 | site (harness): the coverage page says texts work with US nu | MERGE_PENDING | 2 | 75 min | 14:28Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T732 | server: the business job page's "Withdraw your quote" posts  | resync | 2 | 48 min | 14:04Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
 | T733 | server: the business portal serves the service-area settings | done | 1 | 91 min | 13:29Z |  |
 | T410 | portals: every signed-in business page shows the Get help li | done | 3 | 85 min | 13:17Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T732 | server: the business job page's "Withdraw your quote" posts  | check_failed | 1 | 63 min | 12:16Z |  |
 | T624 | server: two failed in-process health checks in a row raise o | done | 2 | 95 min | 12:13Z | Ci: failure; Python: failure / Python failed at step: Unit, contract and drill tests (pytest) / T705: about 21877 tokens |
-| T802 | site (harness): the coverage page says texts work with US nu | check_failed | 1 | 115 min | 12:06Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
+| T802 | site (harness): the coverage page says texts work with US nu | check_failed | 1 | 115 min | 12:06Z |  |
 | T305 | server and portals: the scorecard, the intake report, the mo | BLOCKED | 2 | 34 min | 11:41Z | PLAN GAP: outside ownership: app/portals/templates/scorecard.html, app/portals/templates/intake_report.html, app/portals |
 | T410 | portals: every signed-in business page shows the Get help li | check_failed | 2 | 101 min | 11:20Z |  |
 | T801 | intake and site (harness): with texting on, the web chat onl | BLOCKED | 1 | 2 h 10 min | 10:59Z | PLAN GAP: app/server/tests/web_chat_stops.rs:572 and :592 (owned by T645) assert a consent text queued to a chat-verifie |
@@ -128,10 +129,9 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T741 (lease until 2026-11-24T17:26:45Z)
-- lane 2: T802 (lease until 2026-11-24T16:12:41Z)
 - lane 3: T732 (lease until 2026-11-24T17:23:32Z)
 - lane 4: T122 (lease until 2026-11-24T16:45:59Z)
 - lane 5: T305 (lease until 2026-11-24T16:13:43Z)
 
 ## Last usage reading
-- {"task": "T732", "at": "2026-11-24T14:04:36Z", "cache_read_input_tokens": 2054860, "input_tokens": 87, "cache_creation_input_tokens": 97845, "output_tokens": 15763}
+- {"task": "T802", "at": "2026-11-24T14:28:39Z", "cache_read_input_tokens": 907412, "cache_creation_input_tokens": 77863, "output_tokens": 10075, "input_tokens": 69}
