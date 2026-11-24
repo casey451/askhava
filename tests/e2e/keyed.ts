@@ -112,8 +112,10 @@ function homeownerSql(job: string): string {
 
 /**
  * A new active business with its owner, or the owner of `business`, as CTE `m`. The new business
- * also gets one fresh Active ROC check row of a fake license number, dated today in Arizona, so
- * its Confirm press passes the re-check (PICK-020, D-4897); a given business is left as it is.
+ * also gets one fresh Active ROC check row of the fixture licence ROC100001 (R-37, Active on
+ * tests/fixtures/license_source/roc), dated today in Arizona, so its Confirm press passes the
+ * re-check (PICK-020, D-4897) and a daily list run that re-checks it later still finds it Active
+ * (LIC-007, LIC-039, D-5657); a given business is left as it is.
  */
 function ownerSql(business: string, existing: boolean): string {
   if (existing) return `m AS (SELECT id, business_id FROM businesses.team_member WHERE business_id = '${business}' AND is_owner LIMIT 1)`;
@@ -123,13 +125,14 @@ function ownerSql(business: string, existing: boolean): string {
       confirm_and_billing, added_at) SELECT id, gen_random_uuid(), true, true, true, now() FROM b
       RETURNING id, business_id),
     lc AS (INSERT INTO licensing.license_check (business_id, source, license_number, list_date, status, checked_at)
-      SELECT id, 'roc', '399999', (now() AT TIME ZONE 'America/Phoenix')::date, 'active', now() FROM b)`;
+      SELECT id, 'roc', 'ROC100001', (now() AT TIME ZONE 'America/Phoenix')::date, 'active', now() FROM b)`;
 }
 
 /**
  * A business (new and active, or the given one), its owner's session, a job waiting for Confirm
- * with its homeowner and a fake AC repair facts row (the Confirm re-check reads the job's kind,
- * PICK-020, D-4897), and a page pick on it with a `feeCents` fee due ($25 unless given).
+ * with its homeowner and a fake plumbing leak repair facts row (the Confirm re-check reads the
+ * job's kind, PICK-020, D-4897; R-37 covers `plumbing_repair`, D-5657), and a page pick on it with
+ * a `feeCents` fee due ($25 unless given).
  */
 export function seedPick({ business, feeCents = 2500 }: { business?: string; feeCents?: number } = {}): Seeded {
   const [id, pick, job] = [business ?? randomUUID(), randomUUID(), randomUUID()];
@@ -139,7 +142,7 @@ export function seedPick({ business, feeCents = 2500 }: { business?: string; fee
     j AS (INSERT INTO jobs.job (id, status, emergency, created_at, status_at, timer_from)
       VALUES ('${job}', 'awaiting_confirm', false, now(), now(), now()) RETURNING id),
     f AS (INSERT INTO jobs.job_facts (job_id, seq, category, job_types, set_at)
-      SELECT id, 1, 'hvac_repair', ARRAY['AC not cooling'], now() FROM j),
+      SELECT id, 1, 'plumbing_repair', ARRAY['leak repair'], now() FROM j),
     ${homeownerSql(job)},
     n AS (UPDATE jobs.job_number_next SET next = next + 1 RETURNING next - 1 AS n),
     num AS (INSERT INTO jobs.job_number (number, job_id, issued_at) SELECT n.n, j.id, now() FROM n, j),
