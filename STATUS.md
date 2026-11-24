@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-24T22:45:54Z by runner 5ba412147c84 (actions).
+Updated 2026-11-24T22:57:28Z by runner 5ba412147c84 (actions).
 
 **Building: T826 in progress since 20:27Z; 670 of 781 done; week 96% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-24T22:45:54Z by runner 5ba412147c84 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T826 claimed 20:27Z, lease until 01:45Z
 - **Week:** 96% used, 0.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 22:42Z, 3 min before this update
+- **Last run:** 22:57Z, 0 min before this update
 - **Keeper:** last ran 22:36Z, next wake 23:29Z
 
 ## Needs attention
@@ -77,7 +77,6 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 | T737 | portals, ai and server: the owner records the AI provider's  | done | 2 | 112 min | 00:42Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T738 | portals and server: owner settings refusals show an accessib | done | 1 | 85 min | 00:34Z |  |
 | T716 | intake: the dispatcher's trade questions at step 5: "Which f | done | 4 | 114 min | 23:57Z | PLAN GAP: outside ownership: app/intake/src/conversation.rs (purge_child, ~348-362), app/intake/src/models.rs (purge_req |
-| T649 | intake, site and server: after the code, the web chat's name | check_failed | 1 | 2 h 19 min | 22:52Z |  |
 
 ### Plan and harness merges on main
 - 22:18Z Plan: harness task T847 for the J3 step-5 race (D-5809); Sonnet for T612 (D-5810); hand-off, ChatGPT queue and plan drafts (#1458)
