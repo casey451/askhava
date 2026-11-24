@@ -6,8 +6,9 @@
 //! takes only a [`ScrubbedText`], which only `scrub` makes, so raw words cannot be stored. The one
 //! read is [`problem_words`], for Casey's [`OwnerSessionProof`] only (the weekly digest, T204, and
 //! the owner portal); there is no business or homeowner read. Rows go 30 days after they are made
-//! ([`CUT_WORDS_KIND`], the daily step, TXT-020) and with the job's PRIV-008 text stage
-//! ([`run_words_purge`]).
+//! ([`CUT_WORDS_KIND`], the daily step, TXT-020), with the job's PRIV-008 text stage
+//! ([`run_words_purge`]) and with "Delete my data" for each of her jobs and help requests
+//! ([`delete_job_words`], PRIV-011, D-4765).
 
 use std::fmt;
 
@@ -158,9 +159,23 @@ pub async fn run_words_purge(pool: PgPool, task: Claimed) -> Result<(), HandlerE
         return Ok(());
     }
     let mut db = pool.acquire().await.map_err(|_| FAILED)?;
-    sqlx::query!("DELETE FROM privacy.message_body WHERE job_id = $1", job)
-        .execute(&mut *db)
+    delete_job_words(&mut db, job)
         .await
         .map(drop)
         .map_err(|_| FAILED)
+}
+
+/// PRIV-011, PRIV-006, PRIV-008, D-4765: deletes every kept word row stored under `key`, a job's
+/// ID or, for a help request with no job, the request's own ID, in the caller's transaction (so
+/// "Delete my data" and the under-13 purge clear words with the rest); the count deleted. Safe to
+/// run twice.
+///
+/// # Errors
+/// [`VaultError::Database`].
+pub async fn delete_job_words(db: &mut PgConnection, key: Uuid) -> Result<u64, VaultError> {
+    sqlx::query!("DELETE FROM privacy.message_body WHERE job_id = $1", key)
+        .execute(db)
+        .await
+        .map(|done| done.rows_affected())
+        .map_err(|_| VaultError::Database)
 }

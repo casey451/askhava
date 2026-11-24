@@ -3,8 +3,10 @@
 //!
 //! [`ChatCodes`] implements T103's `intake::api::CodeStep` over `adapters`' Twilio Verify client,
 //! [`ChatParts`] implements `site::api::ChatKeys` with T103's `send_code` and `check_code` over the
-//! vault and [`ChatCodes`] (D-963), [`chat_keys`] builds it from the settings for `main` to hand
-//! to `RouterParts::with_chat_codes` (none in dev and `Ci`, so no code goes), and [`scrubbed`] is
+//! vault and [`ChatCodes`] (D-963), and after the code scrubs the chat's words with her vault
+//! name and stated names (`privacy::api::read_inbound_for`, D-2088's error rules) and hands her
+//! raw words and the vault to `intake::api::chat_raw_message` (T649, INT-027, AI-003, D-4294);
+//! [`chat_keys`] builds it from the settings for `main` to hand to `RouterParts::with_chat_codes` (none in dev and `Ci`, so no code goes), and [`scrubbed`] is
 //! the chat's scrubber (`privacy::api::scrub`, which `site` may not call). [`guard`] puts the
 //! request checks on `site`'s chat router, since `site` may not call `portals` (D-3882): every
 //! response `no-store`; a cross-site `POST` is refused by `portals::api::refuse_cross_site`; a
@@ -20,19 +22,30 @@ use std::io;
 use std::net::IpAddr;
 use std::sync::Arc;
 
+use crate::inbound_text::answer_words;
 use askhava_adapters::api::{
     CodeChannel, IdempotencyKey, TwilioConfig, TwilioVerify, VerifyAdapter, twilio_clients,
 };
+use askhava_businesses::api::public_names;
 use askhava_core::api::{IdSecret, Settings, SystemClock};
-use askhava_intake::api::{ChatError, ChatSettings, Checked, CodeStep, check_code, send_code};
+use askhava_intake::api::rules::Settings as IntakeSettings;
+use askhava_intake::api::{
+    ChatAnswer, ChatError, ChatIn, ChatSettings, Checked, CodeStep, IntakeError, RawReply,
+    chat_contact, chat_raw_message, check_code, list_ask, name_address_open, open_request_jobs,
+    reads_as_address, send_code,
+};
 use askhava_portals::api::{
     CookieJar, SecurityEvent, SecurityEventKind, WebSecurity, admit_security_event, csrf_matches,
     csrf_token, ensure_pre_session, no_store, record_security_event, refuse_cross_site,
     security_event_client,
 };
-use askhava_privacy::api::{CommonWords, Known, NameMemory, Vault, scrub};
+use askhava_privacy::api::{
+    CommonWords, InboundWords, Known, NameMemory, Vault, VaultError, read_inbound_for, scrub,
+};
+use askhava_quotes::api::quoted_prices;
 use askhava_site::api::{
-    ChatClientIp, ChatCsrf, ChatKeys, HOME_PATH, OLD_CATEGORIES_PATH, OLD_EVENTS_PATH, REQUEST_PATH,
+    ChatClientIp, ChatCsrf, ChatKeys, ChatRead, HOME_PATH, OLD_CATEGORIES_PATH, OLD_EVENTS_PATH,
+    REQUEST_PATH,
 };
 use axum::Router;
 use axum::body::{Body, to_bytes};
@@ -42,9 +55,9 @@ use axum::middleware::{Next, from_fn, from_fn_with_state};
 use axum::response::{IntoResponse, Response};
 use jiff::Timestamp;
 use secrecy::{ExposeSecret, SecretString};
-use sqlx::PgPool;
 use sqlx::postgres::PgConnection;
 use sqlx::types::Uuid;
+use sqlx::{Connection, PgPool};
 
 /// The largest chat form read (the chat lines carried forward included).
 const FORM_LIMIT: usize = 64 * 1024;
@@ -103,10 +116,107 @@ impl ChatKeys for ChatParts {
         let parts = (&self.secret, &self.vault, &self.code);
         check_code(db, parts, key, typed, at).await
     }
+
+    /// AI-003, AI-020, INT-027, D-3705, D-4294: as the text route reads, her answer to the open
+    /// name-and-address question that reads as an address is only `[removed]` from here on.
+    async fn read(
+        &self,
+        db: &mut PgConnection,
+        key: &SecretString,
+        raw: &SecretString,
+    ) -> Result<ChatRead, ChatError> {
+        let Some(contact) = chat_contact(db, key).await? else {
+            return Ok(plain(raw, true));
+        };
+        let mut read = read_for(db, &self.vault, contact, raw).await?;
+        let raw = raw.expose_secret();
+        if reads_as_address(raw) && name_address_open(db, contact).await? {
+            read.words = answer_words(&read.words, true).to_owned();
+        }
+        Ok(read)
+    }
+
+    async fn turn(
+        &self,
+        db: &mut PgConnection,
+        key: &SecretString,
+        (msg, raw): (&ChatIn<'_>, &SecretString),
+        intake: IntakeSettings,
+    ) -> Result<ChatAnswer, ChatError> {
+        let names = list_names(db, key, msg.words).await?;
+        let raw = RawReply {
+            raw,
+            vault: &self.vault,
+        };
+        let said = (msg, (raw, names.as_slice()));
+        chat_raw_message(db, (&self.secret, key), said, intake).await
+    }
+}
+
+/// AI-003, AI-020, PRIV-026, D-2088, D-4294: `raw` read for vault `contact` as the SMS path's
+/// `read` does, in its own transaction: her vault name and stated names removed, a newly stated
+/// name sealed. A vault database or audit error is [`ChatError::Vault`] (nothing kept); any
+/// other vault error falls back to the empty-context scrub, whose turn stops before intake.
+async fn read_for(
+    db: &mut PgConnection,
+    vault: &Vault,
+    contact: Uuid,
+    raw: &SecretString,
+) -> Result<ChatRead, ChatError> {
+    let words = InboundWords {
+        emergency: &[],
+        opt_out: &[],
+        help: &[],
+        start: &[],
+    };
+    let mut tx = db.begin().await.map_err(|_| IntakeError::Database)?;
+    match read_inbound_for(&mut tx, vault, contact, raw.expose_secret(), &words).await {
+        Ok(read) => {
+            tx.commit().await.map_err(|_| IntakeError::Database)?;
+            let words = read.text.as_str().to_owned();
+            Ok(ChatRead { words, go_on: true })
+        }
+        Err(VaultError::Database | VaultError::Audit) => Err(ChatError::Vault),
+        Err(_) => Ok(plain(raw, false)),
+    }
+}
+
+/// `raw` with the empty-context scrub ([`scrubbed`]), the turn going on when `go_on`.
+fn plain(raw: &SecretString, go_on: bool) -> ChatRead {
+    let words = scrubbed(raw.expose_secret());
+    ChatRead { words, go_on }
+}
+
+/// TXT-031, D-1310, D-4294: for a LIST message after the code, the public names of every
+/// business that quoted a job of her open request, as the text route reads them; else none.
+async fn list_names(
+    db: &mut PgConnection,
+    key: &SecretString,
+    words: &str,
+) -> Result<Vec<(Uuid, String)>, ChatError> {
+    if list_ask(words).is_none() {
+        return Ok(Vec::new());
+    }
+    let Some(contact) = chat_contact(db, key).await? else {
+        return Ok(Vec::new());
+    };
+    let jobs = open_request_jobs(db, contact).await?.unwrap_or_default();
+    let mut quoted: Vec<Uuid> = Vec::new();
+    for job in jobs {
+        let prices = quoted_prices(db, job)
+            .await
+            .map_err(|_| IntakeError::Database)?;
+        quoted.extend(prices.iter().map(|p| p.business));
+    }
+    quoted.sort_unstable();
+    quoted.dedup();
+    let names = public_names(db, &quoted).await;
+    Ok(names.map_err(|_| IntakeError::Database)?)
 }
 
 /// AI-002, PRIV-001: `raw` with names, numbers, emails, links and street numbers removed (no
-/// vault name: the chat has no contact before its code).
+/// vault name: the chat before its code, or with no keys; after it [`ChatParts`] reads with her
+/// vault name, D-4294).
 #[must_use]
 pub fn scrubbed(raw: &str) -> String {
     let common = CommonWords::default();

@@ -50,6 +50,7 @@ pub mod cant_take_route;
 pub mod catalog_start;
 pub mod chat_codes;
 pub mod checkin;
+pub mod digest_email;
 pub mod email_due;
 pub mod email_provider;
 pub mod healthz;
@@ -2544,6 +2545,7 @@ fn register_business_clocked(registry: &mut Registry, clock: &Arc<dyn Clock>) {
 /// provider and the vault the drain sends queued emails, its business addresses through
 /// [`email_due::NoticeAddresses`] and its coverage rows to [`OWNER_INBOX_EMAIL`]; without either
 /// (dev and CI without the Resend key) a run does nothing and queues no next run.
+/// It also registers the weekly digest check ([`digest_email::register`], T524, OPS-030).
 fn register_email_due(
     registry: &mut Registry,
     settings: &Settings,
@@ -2551,6 +2553,7 @@ fn register_email_due(
     pairs: Vec<(String, String)>,
 ) -> io::Result<()> {
     use askhava_messaging::api::{EmailDrain, register_email_due};
+    digest_email::register(registry, settings, clock, pairs.clone())?;
     let provider = email_provider::email_provider(settings, pairs.clone())?;
     let vault = vault_from(settings, pairs.clone())?.map(Arc::new);
     let inbox = pairs

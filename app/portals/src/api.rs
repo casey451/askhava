@@ -126,6 +126,11 @@ pub use crate::data_download::{
     DataRequestKind, DeleteError, HeldItem, RequestError, Section, confirm_request,
     delete_her_data, download_file, open_request, resend_request_code,
 };
+pub use crate::digest_flags::{
+    CrowdedTrade, DIGEST_WEEK, DUE_AHEAD, Digest, DigestError, DigestInputs, DigestLine,
+    OWNER_DIGEST_ROUTE, OwnerDigestView, OwnerFlags, ProblemReply, is_crowded, is_no_or_other,
+    owner_digest_view, owner_flags, weekly_digest,
+};
 pub use crate::email_check::{
     ARRIVED_QUESTION, LAST_STEP_LINE, MailApp, NO_EMAIL_LINE, PICK_ALERT_QUESTION, PICK_DND_LINE,
     PICK_SKIP_LINE, REPLY_RECEIVED, SAMPLE_PICK_TITLE, Step, StepList, email_check_page,
