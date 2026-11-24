@@ -1,12 +1,12 @@
 # Ask Hava build status
 
-Updated 2026-11-24T13:17:16Z by runner 797bf7d88c1c (actions).
+Updated 2026-11-24T13:17:51Z by runner 797bf7d88c1c (actions).
 
 **Building: T732 in progress since 13:16Z; 659 of 780 done; week 92% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 659 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T732 claimed 13:16Z, lease until 16:16Z; lane 2: T802 claimed 13:12Z, lease until 16:12Z; lane 3: T733 claimed 11:58Z, lease until 14:58Z; lane 4: T410 claimed 11:51Z, lease until 14:51Z; lane 5: T305 claimed 13:13Z, lease until 16:13Z
+- **Lane:** lane 1: T732 claimed 13:16Z, lease until 16:16Z; lane 2: T802 claimed 13:12Z, lease until 16:12Z; lane 3: T733 claimed 11:58Z, lease until 14:58Z; lane 5: T305 claimed 13:13Z, lease until 16:13Z
 - **Week:** 92% used, 5.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
 - **Last run:** 13:17Z, 0 min before this update
 - **Keeper:** last ran 12:40Z, next wake 13:00Z
@@ -27,11 +27,12 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T410 | portals: every signed-in business page shows the Get help li | MERGE_PENDING | 3 | 85 min | 13:17Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T732 | server: the business job page's "Withdraw your quote" posts  | check_failed | 1 | 63 min | 12:16Z | Ci: failure; Coverage: failure / Coverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly) / test  |
 | T624 | server: two failed in-process health checks in a row raise o | done | 2 | 95 min | 12:13Z | Ci: failure; Python: failure / Python failed at step: Unit, contract and drill tests (pytest) / T705: about 21877 tokens |
 | T802 | site (harness): the coverage page says texts work with US nu | check_failed | 1 | 115 min | 12:06Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T305 | server and portals: the scorecard, the intake report, the mo | BLOCKED | 2 | 34 min | 11:41Z | PLAN GAP: outside ownership: app/portals/templates/scorecard.html, app/portals/templates/intake_report.html, app/portals |
-| T410 | portals: every signed-in business page shows the Get help li | check_failed | 2 | 101 min | 11:20Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
+| T410 | portals: every signed-in business page shows the Get help li | check_failed | 2 | 101 min | 11:20Z |  |
 | T801 | intake and site (harness): with texting on, the web chat onl | BLOCKED | 1 | 2 h 10 min | 10:59Z | PLAN GAP: app/server/tests/web_chat_stops.rs:572 and :592 (owned by T645) assert a consent text queued to a chat-verifie |
 | T305 | server and portals: the scorecard, the intake report, the mo | check_failed | 1 | 73 min | 10:28Z |  |
 | T814 | portals and server: a used action link pressed again shows i | done | 1 | 2 h 29 min | 10:07Z |  |
@@ -132,8 +133,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T732 (lease until 2026-11-24T16:16:14Z)
 - lane 2: T802 (lease until 2026-11-24T16:12:41Z)
 - lane 3: T733 (lease until 2026-11-24T14:58:11Z)
-- lane 4: T410 (lease until 2026-11-24T14:51:12Z)
 - lane 5: T305 (lease until 2026-11-24T16:13:43Z)
 
 ## Last usage reading
-- {"task": "T732", "at": "2026-11-24T12:16:59Z", "cache_creation_input_tokens": 131055, "input_tokens": 108, "output_tokens": 34544, "cache_read_input_tokens": 3453554}
+- {"task": "T410", "at": "2026-11-24T13:17:10Z", "input_tokens": 71, "cache_creation_input_tokens": 62971, "cache_read_input_tokens": 859114, "output_tokens": 9631}
