@@ -1,7 +1,7 @@
 # askhava-core: the shared kernel
 
 ## Purpose
-The layer-0 crate every module may call: settings, the database pool and guarded updates, the clock, derived IDs, webhook dedupe, the `core.task` queue and rate limits (`docs/architecture.md` section 5, D-090). It is not a business module and owns no business data. T011 added settings, the clock and logging; T012 the pool, migrations and `Guarded<T>`; T013 the queue and rate limits;
+The layer-0 crate every module may call: settings, the database pool and guarded updates, the clock, derived IDs, webhook dedupe, the `core.task` queue and rate limits (`docs/architecture.md` section 5, D-090). It is not a business module and owns no business data. T011 added settings, the clock and logging; T012 the pool, migrations and `Guarded<T>`; T013 the queue and rate limits; T728 the one compiled-in copy of the homeowner Terms (`homeowner_terms`);
 
 ## Never break
 - `core` depends on no other first-party crate: it is layer 0 in `kit/layers.json`; T175's architecture test guards the layers (TD-SEC-10).

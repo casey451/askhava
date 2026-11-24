@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {#- The owner home (T108; OPS-001, OPS-003, OPS-035, FEE-007, CON-024, BIZ-027, CON-022; D-1843,
-    D-3744, D-3882, D-3890; T484: OPS-028, D-3753; T712: JOB-016, D-4423, the problem reports link). Pushed alerts with the acknowledgement and,
+    D-3744, D-3882, D-3890; T484: OPS-028, D-3753; T712: JOB-016, D-4423, the problem reports link;
+    T779: OPS-029, OPS-052, D-5081, the open alerts that never pushed, with no button). Pushed alerts with the acknowledgement and,
     for a critical alert about a text, the bridge press, the pause switches, the fee
     mode, the homeowner line, the status banner, the weekly opt-out rates, the needs-review
     sign-ups and how long consent records are kept. IDs and code names only, never a contact
@@ -27,6 +28,13 @@
 <p>We call your phone, read you the 911 safety text we sent the homeowner, then connect you. They see our number, never yours. This needs a code from the last 5 minutes. If yours is older, <a href="{{ routes[6] }}">get a new code</a> first.</p>
 <p><button type="submit">Call from the {{ brand }} number</button></p>
 </form>{% endif %}</li>
+{% endfor %}</ul>
+{% endif %}
+<h2>Alerts not sent to your phone</h2>
+{% if waiting.is_empty() %}<p id="no-waiting-alerts">No other alerts.</p>
+{% else %}<p>These are also in your weekly digest.</p>
+<ul id="waiting-alerts">
+{% for w in waiting %}<li>{{ w.name }} (level: {{ w.severity }}){% if let Some(about) = w.subject %}, about {{ about }}{% endif %}. Started {{ w.raised }}.</li>
 {% endfor %}</ul>
 {% endif %}
 <h2>Pause or resume</h2>
