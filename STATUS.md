@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T10:28:26Z by runner 12fd12654ae9 (actions).
+Updated 2026-11-24T10:29:01Z by runner 12fd12654ae9 (actions).
 
 **Building: T802 in progress since 10:10Z; 657 of 780 done; week 91% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 657 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T802 claimed 10:10Z, lease until 13:10Z; lane 2: T305 claimed 09:14Z, lease until 12:14Z; lane 3: T410 claimed 09:38Z, lease until 12:38Z; lane 4: T801 claimed 08:49Z, lease until 11:49Z
+- **Lane:** lane 1: T802 claimed 10:10Z, lease until 13:10Z; lane 3: T410 claimed 09:38Z, lease until 12:38Z; lane 4: T801 claimed 08:49Z, lease until 11:49Z
 - **Week:** 91% used, 7.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:16Z, 11 min before this update
+- **Last run:** 10:16Z, 12 min before this update
 - **Keeper:** last ran 10:16Z, next wake 11:51Z
 
 ## Needs attention
@@ -26,6 +26,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T305 | server and portals: the scorecard, the intake report, the mo | MERGE_PENDING | 1 | 73 min | 10:28Z |  |
 | T814 | portals and server: a used action link pressed again shows i | MERGE_PENDING | 1 | 2 h 29 min | 10:07Z |  |
 | T841 | e2e: seedPick's new businesses hold the fixture licence ROC1 | done | 1 | 97 min | 09:48Z |  |
 | T804 | server and portals: a delete or copy request made in the por | done | 2 | 63 min | 08:35Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
@@ -72,7 +73,6 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 | T646 | site and server: the web chat's new-request limit counts the | check_failed | 2 | 54 min | 11:30Z |  |
 | T653 | licensing and server (harness): a typed BTR number is stored | check_failed | 1 | 117 min | 11:19Z |  |
 | T714 | portals: a Confirm link sent by text is marked text-started  | check_failed | 1 | 95 min | 11:00Z |  |
-| T666 | jobs, quotes and server: GET /b/jobs/{j} serves the business | QUEUED | 1 | 2 h 1 min | 10:28Z |  |
 
 ### Plan and harness merges on main
 - 07:37Z Plan: per-turn token trims, PF-P1d pre-flight fixes, J1 keyboard flake task T846, T119 unblock, hand-offs (D-5693, D-5709, D-5715, D-5716) (#1419)
@@ -129,9 +129,8 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T802 (lease until 2026-11-24T13:10:33Z)
-- lane 2: T305 (lease until 2026-11-24T12:14:51Z)
 - lane 3: T410 (lease until 2026-11-24T12:38:39Z)
 - lane 4: T801 (lease until 2026-11-24T11:49:17Z)
 
 ## Last usage reading
-- {"task": "T814", "at": "2026-11-24T10:07:13Z", "cache_creation_input_tokens": 379261, "output_tokens": 87941, "cache_read_input_tokens": 14833811, "input_tokens": 397}
+- {"task": "T305", "at": "2026-11-24T10:28:24Z", "input_tokens": 188, "cache_creation_input_tokens": 223902, "cache_read_input_tokens": 9740125, "output_tokens": 52779}
