@@ -9,13 +9,13 @@
     to the number and its Spanish consent line (a draft, with PARAR), together; otherwise the page
     is as before. -#}
 {% block lang %}es{% endblock %}
-{% block title %}Cotizaciones locales para casas en Havasu{% endblock %}
+{% block title %}Cotizaciones locales para casas en {{ market.short_name }}{% endblock %}
 {% block content %}
 {%- let brand = askhava_core::api::brand().es().display_name() %}
 <section class="hero-text">
-<p class="kicker">Para casas en Lake Havasu City</p>
-<h1 class="display">Reciba cotizaciones de negocios de Havasu sin dar su número.</h1>
-<p>Díganos qué necesita y nosotros preguntamos por usted. Los negocios de Havasu que hacen ese trabajo envían sus cotizaciones, y usted las ve en una sola página. Elija una, o ninguna.</p>
+<p class="kicker">Para casas en {{ market.name }}</p>
+<h1 class="display">Reciba cotizaciones de negocios de {{ market.short_name }} sin dar su número.</h1>
+<p>Díganos qué necesita y nosotros preguntamos por usted. Los negocios de {{ market.short_name }} que hacen ese trabajo envían sus cotizaciones, y usted las ve en una sola página. Elija una, o ninguna.</p>
 <p><a href="/request">Pida cotizaciones</a></p>
 <p><a href="/es/how-it-works">Vea cómo funciona</a></p>
 {%- if let Some(number) = texting %}
@@ -30,13 +30,13 @@
 <section class="night home-band fair">
 <h2 class="section-title">Cómo cuidamos su privacidad</h2>
 <p>Su número nunca se comparte. Los negocios ven el trabajo, no a usted. Su nombre de pila y su dirección van solo al negocio que usted elija.</p>
-<p>Nadie paga por salir primero. Las cotizaciones aparecen en el orden en que llegaron. {{ brand }} no clasifica ni califica a los negocios.</p>
+<p>Nadie paga por salir primero. Las cotizaciones aparecen en el orden en que llegaron. {{ brand }} no califica ni ordena a los negocios.</p>
 </section>
 
 <section class="section biz-text">
 <h2 class="section-title">Para negocios</h2>
 <p>Cotice gratis. Pague solo si un propietario lo elige.</p>
-<p>Oferta de lanzamiento: su primer trabajo ganado es gratis, de cualquier tamaño, si se registra en los primeros 90 días o dentro de los 90 días después de que abra su oficio.</p>
+<p>Oferta de lanzamiento: no paga la tarifa de presentación por su primer trabajo ganado, de cualquier tamaño, si se registra en los primeros 90 días o dentro de los 90 días después de que abra su oficio.</p>
 <p><a href="/es/business">Información para negocios</a></p>
 </section>
 
@@ -66,9 +66,9 @@
 <h2>Para propietarios</h2>
 <ul>
 <li><a href="/es/how-it-works">Cómo funciona</a></li>
-<li><a href="/services">Servicios</a></li>
+<li><a href="/services" hreflang="en">Servicios</a> (en inglés)</li>
 <li><a href="/request">Pida cotizaciones</a></li>
-<li><a href="/help">Ayuda</a></li>
+<li><a href="/help" hreflang="en">Ayuda</a> (en inglés)</li>
 </ul>
 <p>Cotizaciones locales. Usted elige.</p>
 <p>{{ askhava_core::api::brand().es().display_name() }} no es contratista y no realiza, cotiza ni supervisa trabajos. Pasamos su solicitud y le mostramos cotizaciones de negocios locales independientes, tal como las escribieron. Usted elige y contrata directamente al negocio.</p>
