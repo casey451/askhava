@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-24T17:04:54Z by runner a2750b12e4d8 (actions).
+Updated 2026-11-24T17:18:00Z by runner e2c7ee730a9f (manual).
 
 **Building: T590 in progress since 17:04Z; 665 of 780 done; week 94% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-24T17:04:54Z by runner a2750b12e4d8 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T590 claimed 17:04Z, lease until 20:04Z; lane 2: T820 claimed 16:58Z, lease until 19:58Z; lane 3: T741 claimed 16:40Z, lease until 19:40Z; lane 5: T815 claimed 15:39Z, lease until 18:39Z
 - **Week:** 94% used, 1.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 17:04Z, 0 min before this update
+- **Last run:** 17:05Z, 12 min before this update
 - **Keeper:** last ran 17:04Z, next wake 18:42Z
 
 ## Needs attention
@@ -22,7 +22,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 65 problem(s) on tasks still to run (+568 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 64 problem(s) on tasks still to run (+568 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -77,6 +77,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 | T222 | Journeys J1 and J2, the full variants: web chat, photos, que | QUEUED | 2 | 97 min | 17:54Z |  |
 
 ### Plan and harness merges on main
+- 17:12Z Plan: PF-Q1 pre-flight fixes for T817 and T843; PF-Q1, PF-T222, PF-T801b, PF-CLK reports and Fable's scope decision filed (D-5793) (#1448)
 - 13:12Z Plan: T305 owns its three owner-report templates for Ally; PF-T801 review filed (D-5792) (#1446)
 - 07:37Z Plan: per-turn token trims, PF-P1d pre-flight fixes, J1 keyboard flake task T846, T119 unblock, hand-offs (D-5693, D-5709, D-5715, D-5716) (#1419)
 - 23:24Z Plan: token efficiency and phase-2 pre-flight (D-5676); smoke throughput harness task T843, T836 unblocked (D-5682) (#1412)
