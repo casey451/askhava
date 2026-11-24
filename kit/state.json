@@ -115343,11 +115343,12 @@
      }
     }
    ],
-   "reviewed_sha": "c7820f1c0e076f755cb3095fc8d02683fe32ece1",
+   "reviewed_sha": "0c90dd186a43bbaa979e32985884f6b9fc45bab0",
    "review_lease": {
     "task": "T802",
-    "session": "actions-45370454167",
-    "expires": "2026-11-24T14:54:39Z"
+    "session": "actions-45395455899",
+    "expires": "2026-11-24T16:12:41Z",
+    "lane": "2"
    },
    "branch": "claude/task/T802-coverage-us-numbers",
    "auto_merge": {
@@ -115355,18 +115356,6 @@
     "why": "auto-merge on #1443 (gh pr merge)",
     "head": "c7820f1c0e076f755cb3095fc8d02683fe32ece1"
    },
-   "update_merges": [
-    {
-     "from": "73c28aee267af9c8e6fff4793084b56426680d11",
-     "to": "c7820f1c0e076f755cb3095fc8d02683fe32ece1",
-     "main": "16fd7ee8aae9465dcb7bf75fd20984021425b001",
-     "how": "hand-in",
-     "at": "2026-11-24T12:06:02Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
-   "merge_turn_since": "2026-11-24T12:15:03Z",
    "last_failure": "Ci: failure; Checks: failure\nChecks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS, D-3142)\n        \"More\",\n    ],\n), tail = [\n    0,\n    0,\n], second = false\n\tsuccesses: 151\n\tlocal rejects: 0\n\tglobal rejects: 0\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    tests::prop_card_no_contact::td_card_01_card_holds_no_contact\ntest result: FAILED. 66 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.45s\nerror: test failed, to rerun pass `-p askhava-quotes --lib`\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: failure, Lint and slow tests: success, Python: success, Coverage: success, E2e: success\n##[error]Process completed with exit code 1.",
    "lane": "2",
    "wip_claim": {
@@ -115375,7 +115364,19 @@
    },
    "runner_closed_prs": [
     1443
-   ]
+   ],
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "ecc8eecd52ad7bf0fa7fe0c6942ba7d4288e84c0",
+     "to": "0c90dd186a43bbaa979e32985884f6b9fc45bab0",
+     "main": "234ae7f8fe8e2b9c581cd2b750775af5a29dad21",
+     "how": "hand-in",
+     "at": "2026-11-24T14:28:41Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T803",
@@ -127695,7 +127696,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T14:27:26Z",
+ "updated_at": "2026-11-24T14:28:41Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -127793,7 +127794,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "234ae7f8fe8e2b9c581cd2b750775af5a29dad21",
+ "runner_sha": "ecc8eecd52ad7bf0fa7fe0c6942ba7d4288e84c0",
  "starter": "actions",
  "smoke_runs": [
   {
