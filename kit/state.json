@@ -87329,12 +87329,12 @@
      }
     }
    ],
-   "reviewed_sha": "1710537f32bfc9b6d438d73db392f912022c135e",
+   "reviewed_sha": "9e24249713a284713417783ce1201b634147cfe2",
    "review_lease": {
     "task": "T590",
-    "session": "actions-45033753540",
-    "expires": "2026-11-22T17:41:54Z",
-    "lane": "7"
+    "session": "actions-45405907914",
+    "expires": "2026-11-24T18:08:45Z",
+    "lane": "4"
    },
    "branch": "claude/task/T590-call-texts-in-her-language",
    "auto_merge": {
@@ -87342,17 +87342,6 @@
     "why": "auto-merge on #1364 (gh pr merge)",
     "head": "1710537f32bfc9b6d438d73db392f912022c135e"
    },
-   "update_merges": [
-    {
-     "from": "aa259b528837bf4a77526634437f517f973b29fc",
-     "to": "1710537f32bfc9b6d438d73db392f912022c135e",
-     "main": "bd27a597ce3e2d3361b4a10a953f8dee73a5c561",
-     "how": "hand-in",
-     "at": "2026-11-22T16:40:25Z"
-    }
-   ],
-   "update_waiting_since": null,
-   "update_push_failures": null,
    "last_failure": "Ci: failure; Coverage: failure\nCoverage failed at step: Branch coverage (cargo llvm-cov on the pinned nightly)\ntest td_ops_11_the_eleventh_of_a_day_waits_for_the_push ... ok\ntest td_ops_22_open_requests_with_due_dates ... ok\ntest td_priv_11_a_help_email_body_stays_in_privacy ... ok\ntest td_ops_11_two_at_once_open_one_request ... ok\nfailures:\n---- td_ops_11_td_ops_20_one_scrubbed_email_at_once stdout ----\nthread 'td_ops_11_td_ops_20_one_scrubbed_email_at_once' (21203) panicked at tests/integration/tests/help_requests.rs:152:9:\nleaked 555\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfailures:\n    td_ops_11_td_ops_20_one_scrubbed_email_at_once\ntest result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.25s\nerror: test failed, to rerun pass `-p askhava-integration --test help_requests`\nerror: process didn't exit successfully: `/home/runner/.rustup/toolchains/nightly-2026-10-15-x86_64-unknown-linux-gnu/bin/cargo test --tests --manifest-path /home/runner/work/askhava/askhava/Cargo.tom\n##[error]Process completed with exit code 101.\nCi failed at step: All five jobs passed\nChecks: success, Lint and slow tests: success, Python: success, Coverage: failure, E2e: success\n##[error]Process completed with exit code 1.",
    "wip_claim": {
     "attempt": 2,
@@ -87360,7 +87349,19 @@
    },
    "runner_closed_prs": [
     1364
-   ]
+   ],
+   "head_check_since": null,
+   "update_merges": [
+    {
+     "from": "fc539d74e9de91b07894e018bd6659eff83d33b7",
+     "to": "9e24249713a284713417783ce1201b634147cfe2",
+     "main": "b77234335e64a9f087dc2e659a28400a3b812b80",
+     "how": "hand-in",
+     "at": "2026-11-24T16:23:31Z"
+    }
+   ],
+   "update_waiting_since": null,
+   "update_push_failures": null
   },
   {
    "id": "T591",
@@ -128166,7 +128167,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T16:08:21Z",
+ "updated_at": "2026-11-24T16:23:32Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
@@ -128264,7 +128265,7 @@
    "P1 and P2 were in flight together; P2 could never merge, so no branch could fall behind"
   ]
  },
- "runner_sha": "b77234335e64a9f087dc2e659a28400a3b812b80",
+ "runner_sha": "fc539d74e9de91b07894e018bd6659eff83d33b7",
  "starter": "actions",
  "smoke_runs": [
   {
