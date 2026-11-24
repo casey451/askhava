@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T09:11:52Z by runner 9eb978b60d55 (actions).
+Updated 2026-11-24T09:15:07Z by runner 9eb978b60d55 (actions).
 
 **Building: T841 in progress since 08:11Z; 656 of 780 done; week 90% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 656 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T841 claimed 08:11Z, lease until 11:11Z; lane 4: T801 claimed 08:49Z, lease until 11:49Z; lane 5: T814 claimed 07:37Z, lease until 11:55Z
-- **Week:** 90% used, 11.7M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 08:55Z, 16 min before this update
+- **Lane:** lane 1: T841 claimed 08:11Z, lease until 11:11Z; lane 2: T305 claimed 09:14Z, lease until 12:14Z; lane 4: T801 claimed 08:49Z, lease until 11:49Z; lane 5: T814 claimed 07:37Z, lease until 11:55Z
+- **Week:** 90% used, 9.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 09:12Z, 2 min before this update
 - **Keeper:** last ran 08:44Z, next wake 09:04Z
 
 ## Needs attention
@@ -114,7 +114,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-24T08:43:49Z (week)): week: 182.3M used, 11.7M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T20:57:19Z.
+- Pacing (session_reading 2026-11-24T08:43:49Z (week)): week: 184.2M used, 9.8M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T21:21:39Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -130,6 +130,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T841 (lease until 2026-11-24T11:11:14Z)
+- lane 2: T305 (lease until 2026-11-24T12:14:51Z)
 - lane 4: T801 (lease until 2026-11-24T11:49:17Z)
 - lane 5: T814 (lease until 2026-11-24T11:55:24Z)
 
