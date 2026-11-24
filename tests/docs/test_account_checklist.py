@@ -142,7 +142,7 @@ CAMPAIGN = [
     "30977, 30984, 30988, 30965, 30987, 30966 and 30978",
     "public screenshot or evidence link of the call-to-action page",
     "no placeholder is left unfilled",
-    "registered even if the business answer is no, except after a 30951 refusal",
+    "The homeowner campaign is registered even if the business answer is no, except after a 30951 refusal",
     "A 30951 answer or refusal means no registration and web-and-email mode, back to Casey",
     "Business texting stays off unless the filed answer is yes",
 ]
