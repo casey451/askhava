@@ -1,10 +1,10 @@
 # Ask Hava build status
 
-Updated 2026-11-24T19:51:13Z by runner a5c0e45bc3c3 (actions).
+Updated 2026-11-24T19:52:24Z by runner 60b853b9b8e1 (actions).
 
-**Building: T839 in progress since 18:41Z; 667 of 780 done; week 96% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T839 in progress since 18:41Z; 668 of 780 done; week 96% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 667 of 780 build tasks (owner gates not counted)
+- **Tasks done:** 668 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 3: T839 claimed 18:41Z, lease until 21:41Z
 - **Week:** 96% used, 0.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
@@ -30,7 +30,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 |---|---|---|---|---|---|---|
 | T820 | server and portals: "Download my data" also holds withdrawn  | MERGE_PENDING | 1 | 71 min | 19:49Z |  |
 | T815 | portals: the owner portal serves the weekly digest view at / | check_failed | 1 | 81 min | 19:28Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
-| T846 | portals and a11y tests (harness): the quote card a "Go back" | MERGE_PENDING | 1 | 29 min | 19:15Z |  |
+| T846 | portals and a11y tests (harness): the quote card a "Go back" | done | 1 | 29 min | 19:15Z |  |
 | T826 | site: Spanish page fixes (ranking line, launch offer, city l | check_failed | 1 | 43 min | 18:56Z | Ally: failure / Ally failed at step: The accessibility suite (axe at 320, 768 and 1280 px, keyboard, reflow, spacing) /  |
 | T799 | Templates and tests (harness): copy review fixes (refund att | BLOCKED | 1 | 9 min | 18:29Z | PLAN GAP: contradiction: D-5401 requires es.json text "dentro de 72 horas de recibir los datos del cliente" (5 keys), bu |
 | T741 | server and intake: an opted-out homeowner's "<n> YES" picks  | done | 2 | 73 min | 17:54Z | Ci: failure; E2e: failure / E2e failed at step: The journeys (npx playwright test tests/e2e) / {"timestamp":"2026-11-24T |
@@ -91,7 +91,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Progress (requirements verified)
 
 **Requirements verified:** 445 of 735 (60.5%) · partial 282 · unstarted 8
-**Tasks merged (throughput only):** 667 of 780
+**Tasks merged (throughput only):** 668 of 780
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -127,7 +127,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 310 of 352 done
+- stage 5: 311 of 352 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
