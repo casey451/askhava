@@ -10928,3 +10928,4 @@
 - 2026-11-24T16:24:47Z runner fc539d74e9de (actions): {}
 - 2026-11-24T16:25:31Z runner 234ae7f8fe8e (actions): {}
 - 2026-11-24T16:28:52Z runner a2750b12e4d8 (actions): {"T741": "MERGE_PENDING -> QUEUED", "T802": "MERGE_PENDING -> DONE"}
+- 2026-11-24T16:41:00Z runner b77234335e64 (actions): {"T741": "QUEUED -> IN_PROGRESS"}; T741 estimated 1.7M tokens (calibrated); week has 4.8M left (no five-hour budget, D-3056) after 1.2M still running in another lane (session_reading 2026-11-24T16:24:46Z (week)); claimed
