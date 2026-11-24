@@ -108557,7 +108557,14 @@
    "update_waiting_since": null,
    "update_push_failures": null,
    "last_failure": "Ci: failure; E2e: failure\nE2e failed at step: The journeys (npx playwright test tests/e2e)\n{\"timestamp\":\"2026-11-24T15:55:11.197743Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3351,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T15:55:11.199726Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3352,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T15:55:11.200043Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3354,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T15:55:11.200180Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3353,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T15:55:11.200790Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3355,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n{\"timestamp\":\"2026-11-24T15:55:11.202540Z\",\"level\":\"INFO\",\"message\":\"task run\",\"task\":3356,\"kind\":\"ops.offdb_stream\",\"outcome\":\"Ok(Done)\",\"target\":\"askhava_core::tasks\"}\n  \u2718  132 [late] \u203a tests/e2e/j3_operator.spec.ts:24:1 \u203a J3 TD-TXT-15: sign-in, pause, refund, fee mode, safe mode, audit log, with the closing checks, launch channel web-and-email (3.4m)\n##[error]  1) [late] \u203a tests/e2e/j3_operator.spec.ts:24:1 \u203a J3 TD-TXT-15: sign-in, pause, refund, fee mode, safe mode, audit log, with the closing checks, launch channel web-and-email \u203a 5. High alert,\nCi",
-   "lane": "3"
+   "lane": "3",
+   "wip_claim": {
+    "attempt": 2,
+    "remote_sha": "acf35e64f8b27a7e3e187a2d6ca0ec758d77ec99"
+   },
+   "runner_closed_prs": [
+    1456
+   ]
   },
   {
    "id": "T745",
@@ -128309,7 +128316,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T16:41:00Z",
+ "updated_at": "2026-11-24T16:41:34Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
