@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T05:29:54Z by runner d22aa36f8a6b (actions).
+Updated 2026-11-24T05:30:33Z by runner d22aa36f8a6b (actions).
 
 **Building: T656 in progress since 05:11Z; 651 of 779 done; week 89% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 651 of 779 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T656 claimed 05:11Z, lease until 08:11Z; lane 2: T779 claimed 05:03Z, lease until 08:03Z; lane 3: T728 claimed 04:01Z, lease until 07:01Z; lane 4: T676 claimed 02:45Z, lease until 08:18Z; lane 5: T804 claimed 05:28Z, lease until 08:28Z
+- **Lane:** lane 1: T656 claimed 05:11Z, lease until 08:11Z; lane 2: T779 claimed 05:03Z, lease until 08:03Z; lane 3: T728 claimed 04:01Z, lease until 07:01Z; lane 5: T804 claimed 05:28Z, lease until 08:28Z
 - **Week:** 89% used, 11.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 05:29Z, 0 min before this update
+- **Last run:** 05:29Z, 1 min before this update
 - **Keeper:** last ran 04:59Z, next wake 05:19Z
 
 ## Needs attention
@@ -30,6 +30,7 @@ Also: stand-in twilio fail fault answers 500 -> OutcomeUnknown, no retries (serv
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
 |---|---|---|---|---|---|---|
+| T676 | tests (harness): J1 runs the real intake conversation instea | MERGE_PENDING | 1 | 2 h 44 min | 05:29Z |  |
 | T656 | site: a failed submit on the /request chat shows a focused e | QUEUED | 1 | 17 min | 04:56Z | Reviewer after the findings round still FINDINGS (head 18fdb4a27): app/site/templates/request.html lines 7-10: header co |
 | T544 | portals and server: the business team page with its role-cha | done | 1 | 102 min | 04:50Z |  |
 | T757 | privacy and ops: "Delete my data" also deletes her kept mess | done | 1 | 43 min | 03:54Z |  |
@@ -139,8 +140,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T656 (lease until 2026-11-24T08:11:14Z)
 - lane 2: T779 (lease until 2026-11-24T08:03:55Z)
 - lane 3: T728 (lease until 2026-11-24T07:01:21Z)
-- lane 4: T676 (lease until 2026-11-24T08:18:44Z)
 - lane 5: T804 (lease until 2026-11-24T08:28:23Z)
 
 ## Last usage reading
-- {"task": "T656", "at": "2026-11-24T04:56:38Z", "cache_creation_input_tokens": 141474, "input_tokens": 104, "output_tokens": 29928, "cache_read_input_tokens": 1805478}
+- {"task": "T676", "at": "2026-11-24T05:29:52Z", "cache_read_input_tokens": 23665006, "input_tokens": 332, "output_tokens": 134340, "cache_creation_input_tokens": 367898}
