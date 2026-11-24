@@ -7,7 +7,8 @@
 //! the client IP they are keyed on (SEC-014, SEC-040), and the test-control router and clock,
 //! whose routes exist only under the `test-control` feature (SEC-035), derived IDs and link tokens
 //! (CARD-017, PICK-028, SEC-037) and the webhook dedupe outcome and event key (SEC-017, SEC-039), and
-//! the brand as data: `brand()`, `install_brand` and `Brand::fill` (WORD-001, WORD-008, D-1932).
+//! the brand as data: `brand()`, `install_brand` and `Brand::fill` (WORD-001, WORD-008, D-1932), and
+//! the published homeowner Terms, `homeowner_terms()` (TERMS-016, D-4727).
 
 pub use crate::brand::{Brand, BrandError, BrandEs, brand, install as install_brand};
 pub use crate::clock::{
@@ -19,6 +20,7 @@ pub use crate::db_metrics::{
     DbMetrics, DbSnapshot, MetricsLayer, PoolSnapshot, WAIT_BUCKETS_US, WaitBucket,
     global as db_metrics,
 };
+pub use crate::homeowner_terms::homeowner_terms;
 pub use crate::ids::{
     IdError, IdKind, IdSecret, LinkKind, LinkSalt, LinkToken, card_id, derive_id, link_token,
     pick_id, quote_id,
