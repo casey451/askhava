@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T15:28:12Z by runner 234ae7f8fe8e (actions).
+Updated 2026-11-24T15:34:38Z by runner 341761ad7dc0 (actions).
 
-**Building: T741 in progress since 14:26Z; 662 of 780 done; week 93% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
+**Building: T741 in progress since 14:26Z; 663 of 780 done; week 93% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
-- **Tasks done:** 662 of 780 build tasks (owner gates not counted)
+- **Tasks done:** 663 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T741 claimed 14:26Z, lease until 17:26Z; lane 4: T590 claimed 15:08Z, lease until 18:08Z
 - **Week:** 93% used, 4.6M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:28Z, 0 min before this update
+- **Last run:** 15:28Z, 6 min before this update
 - **Keeper:** last ran 15:28Z, next wake 17:29Z
 
 ## Needs attention
@@ -22,7 +22,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 62 problem(s) on tasks still to run (+561 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 61 problem(s) on tasks still to run (+563 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -30,7 +30,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 | T802 | site (harness): the coverage page says texts work with US nu | MERGE_PENDING | 3 | 23 min | 15:26Z | Ci: failure; Checks: failure / Checks failed at step: Rust build (the one boundary build) and tests (all but SPLIT_TESTS |
 | T732 | server: the business job page's "Withdraw your quote" posts  | MERGE_PENDING | 2 | 49 min | 15:13Z | merging main into the reviewed head conflicts in docs/architecture.md; a resync merges it in on this attempt (D-891) |
 | T122 | docs/account-checklist.md: Part 1 test accounts, Part 2 busi | done | 2 | 74 min | 15:00Z | Reviewer after the findings round (head d65c4896894680459870359165740cf8b3a2bf57) still ended FINDINGS: / 1. tests/docs/ |
-| T305 | server and portals: the scorecard, the intake report, the mo | MERGE_PENDING | 3 | 102 min | 14:55Z | PLAN GAP: outside ownership: app/portals/templates/scorecard.html, app/portals/templates/intake_report.html, app/portals |
+| T305 | server and portals: the scorecard, the intake report, the mo | done | 3 | 102 min | 14:55Z | PLAN GAP: outside ownership: app/portals/templates/scorecard.html, app/portals/templates/intake_report.html, app/portals |
 | T802 | site (harness): the coverage page says texts work with US nu | check_failed | 2 | 75 min | 14:28Z |  |
 | T732 | server: the business job page's "Withdraw your quote" posts  | resync | 2 | 48 min | 14:04Z |  |
 | T733 | server: the business portal serves the service-area settings | done | 1 | 91 min | 13:29Z |  |
@@ -89,7 +89,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 ## Progress (requirements verified)
 
 **Requirements verified:** 445 of 735 (60.5%) · partial 282 · unstarted 8
-**Tasks merged (throughput only):** 662 of 780
+**Tasks merged (throughput only):** 663 of 780
 
 | Area | Verified | Partial | Unstarted | Total |
 |---|---|---|---|---|
@@ -125,7 +125,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - stage 2: 80 of 80 done
 - stage 3: 29 of 29 done
 - stage 4: 237 of 238 done
-- stage 5: 305 of 352 done
+- stage 5: 306 of 352 done
 - stage 6: 0 of 75 done
 - stage 7: 0 of 2 done
 - stage checkpoint: 0 of 1 done
