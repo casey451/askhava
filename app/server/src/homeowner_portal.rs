@@ -29,6 +29,15 @@
 //! send passes `admit_code_send` (the IP, then her contact) and each check `admit_code_try`
 //! first; a refused or impossible send answers [`not_sent`] and sends nothing.
 //!
+//! The data-request link (T804, D-5281, D-5332, D-5339, D-5340; PRIV-031, SEC-014, SEC-026,
+//! SEC-037): for a number on the suppression list [`data_request`] sends no code; after the same
+//! send limits [`link_request`] has `portals` email a 15-minute single-use link to her confirmed
+//! update address (the footer postal line is `RouterParts::with_data_link_postal`'s), or answers
+//! [`email_help`] when she has none. `GET` [`DATA_LINK_ROUTE`] (under `/help`, no session) shows
+//! the confirm page or the one generic page, always a 200, changing nothing; its `POST`, after the
+//! cross-site and pre-session CSRF checks, acts once and uses the link up; a copy answers only the
+//! sign-in link, never data. The help form is unchanged (D-5339).
+//!
 //! The photo routes (T674, D-4360, D-5082; INT-044, PRIV-014, PRIV-015, PRIV-025, PRIV-028,
 //! CARD-013, SEC-019, A11Y-027): `GET` `PHOTO_UPLOAD_ROUTE` shows `portals`' upload page for her
 //! own request (`{job}` is the job number; a request that is not hers, or no number, is the one
@@ -61,16 +70,18 @@ use askhava_intake::api::{
     jobs_of_contact, photo_answer, photo_job_is_hers, press_photo,
 };
 use askhava_jobs::api::job_by_number;
-use askhava_messaging::api::held_words;
+use askhava_messaging::api::{Language, PostalAddress, held_words};
 use askhava_portals::api::{
     Acted, ButtonForm, CARD_FALLBACK_NAME, CookieJar, CsrfField, CsrfForm, DATA_CODE_ROUTE,
-    DATA_REQUEST_ROUTE, DOWNLOAD_ROUTE, DataRequestKind, HOMEOWNER_CODE_ROUTE,
-    HOMEOWNER_HOME_ROUTE, HOMEOWNER_SIGNIN_ROUTE, HeldItem, HomeFacts, HomeownerError, OnFile,
-    PHOTO_UPLOAD_ROUTE, PortalScreen, RequestError, Section, TEXTS_OFF_ROUTE, TOO_BIG_ERROR,
-    UploadScreen, VERIFY_DAILY_THRESHOLD, WebSecurity, admit_code_send, admit_code_try,
-    confirm_request, csrf_matches, csrf_token, current_session, download_file, ensure_pre_session,
-    finish_sign_in, homeowner_page, no_store, open_request, photo_upload_page, refuse_cross_site,
-    resend_request_code, security_event_client, send_sign_in_code, turn_texts_off, upload_screen,
+    DATA_LINK_ROUTE, DATA_REQUEST_ROUTE, DOWNLOAD_ROUTE, DataRequestKind, HOMEOWNER_CODE_ROUTE,
+    HOMEOWNER_HOME_ROUTE, HOMEOWNER_SIGNIN_ROUTE, HeldItem, HomeFacts, HomeownerError, LinkPage,
+    LinkScreen, LinkSent, OnFile, PHOTO_UPLOAD_ROUTE, PortalScreen, RequestError, Section,
+    TEXTS_OFF_ROUTE, TOO_BIG_ERROR, UploadScreen, VERIFY_DAILY_THRESHOLD, WebSecurity,
+    admit_code_send, admit_code_try, confirm_data_link, confirm_request, csrf_matches, csrf_token,
+    current_session, data_link_page, download_file, ensure_pre_session, finish_sign_in,
+    homeowner_page, no_store, number_listed, open_data_link, open_request, photo_upload_page,
+    refuse_cross_site, resend_request_code, security_event_client, send_request_link,
+    send_sign_in_code, turn_texts_off, upload_screen,
 };
 use askhava_privacy::api::{
     DEFAULT_MIN_SHORT_SIDE, HomeownerSessionProof, MAX_PHOTO_BYTES, PhotoError, PhotoSeal,
@@ -182,6 +193,7 @@ struct Portal {
     security: WebSecurity,
     hooks: Option<Arc<Webhooks>>,
     verify: Option<Arc<HomeownerVerify>>,
+    postal: Option<Arc<PostalAddress>>,
     photos: Option<Arc<PhotoParts>>,
 }
 
@@ -198,11 +210,12 @@ struct ClientIp(IpAddr);
 /// The path of a data request's "Text me the code again" form (T561, D-3877 (1), D-2348).
 pub const DATA_RESEND_ROUTE: &str = "/h/my-data/resend";
 
-/// The portal and data routes over `pool`, with the webhooks' vault and ID secret and `verify`.
+/// The portal and data routes over `pool`, with the webhooks' vault and ID secret, `verify` and
+/// the data-request link email's footer `postal` line (T804).
 pub fn routes(
     pool: PgPool,
     hooks: Option<&Arc<Webhooks>>,
-    verify: Option<HomeownerVerify>,
+    (verify, postal): (Option<HomeownerVerify>, Option<PostalAddress>),
     photos: Option<PhotoParts>,
 ) -> Router {
     let clock: Arc<dyn Clock> = Arc::new(SystemClock);
@@ -213,6 +226,7 @@ pub fn routes(
         security: security.clone(),
         hooks: hooks.cloned(),
         verify: verify.map(Arc::new),
+        postal: postal.map(Arc::new),
         photos: photos.map(Arc::new),
     };
     let upload = Router::new()
@@ -227,6 +241,7 @@ pub fn routes(
         .route(DATA_REQUEST_ROUTE, post(data_request))
         .route(DATA_CODE_ROUTE, post(data_code))
         .route(DATA_RESEND_ROUTE, post(data_resend))
+        .route(DATA_LINK_ROUTE, get(data_link).post(data_link_press))
         .merge(upload)
         .route(PHOTO_LINK_ROUTE, get(photo))
         .route_layer(from_fn(note_client))
@@ -712,22 +727,29 @@ fn request_screen(
     shown(jar, &screen, status)
 }
 
-/// SEC-014, D-1951: the Verify parts when the per-IP and per-contact send limits admit one more
-/// code to her; `None` (send nothing) when refused or not set up.
+/// SEC-014, D-1951: whether the per-IP and per-contact send limits admit one more code or link
+/// to her; an error refuses.
+async fn send_admitted(state: &Portal, ip: IpAddr, her: &OnFile) -> bool {
+    let threshold = i32::try_from(VERIFY_DAILY_THRESHOLD).unwrap_or(i32::MAX);
+    let at = (state.clock.now(), threshold);
+    passed(admit_code_send(&state.pool, (ip, Some(her.contact())), at).await)
+}
+
+/// SEC-014, D-1951: the Verify parts when the send limits admit one more code to her; `None`
+/// (send nothing) when refused or not set up.
 async fn admitted_send(
     state: &Portal,
     ip: IpAddr,
     her: &OnFile,
 ) -> Option<(Arc<Webhooks>, Arc<HomeownerVerify>)> {
-    let threshold = i32::try_from(VERIFY_DAILY_THRESHOLD).unwrap_or(i32::MAX);
-    let at = (state.clock.now(), threshold);
-    let limit = admit_code_send(&state.pool, (ip, Some(her.contact())), at).await;
+    let admitted = send_admitted(state, ip, her).await;
     let parts = state.hooks.clone().zip(state.verify.clone());
-    parts.filter(|_| passed(limit))
+    parts.filter(|_| admitted)
 }
 
-/// `POST` [`DATA_REQUEST_ROUTE`] (PRIV-031, SEC-014): opens her copy or delete request and texts
-/// its code after the send limits; the code step follows.
+/// `POST` [`DATA_REQUEST_ROUTE`] (PRIV-031, SEC-014, D-5339): opens her copy or delete request
+/// and texts its code after the send limits; the code step follows. A number on the suppression
+/// list gets no code: [`link_request`] emails the confirm link instead.
 async fn data_request(
     State(state): State<Portal>,
     Extension(ClientIp(ip)): Extension<ClientIp>,
@@ -741,6 +763,11 @@ async fn data_request(
     let Some(kind) = form.kind() else {
         return StatusCode::BAD_REQUEST.into_response();
     };
+    match listed(&state, &her).await {
+        Ok(true) => return link_request(&state, ip, &her, kind).await,
+        Ok(false) => {}
+        Err(answer) => return *answer,
+    }
     let Some((hooks, verify)) = admitted_send(&state, ip, &her).await else {
         return not_sent();
     };
@@ -812,6 +839,149 @@ async fn data_code(
         Err(RequestError::WrongCode | RequestError::NoLiveCode | RequestError::Verify) => {
             request_screen(&jar, (kind, id), true)
         }
+    }
+}
+
+/// CON-035, PRIV-031: whether her number is on the suppression list; with no vault it reads as
+/// not listed (the code path, which then sends nothing).
+async fn listed(state: &Portal, her: &OnFile) -> Result<bool, Box<Response>> {
+    let Some(hooks) = state.hooks.as_deref() else {
+        return Ok(false);
+    };
+    let Ok(mut db) = state.pool.acquire().await else {
+        return Err(Box::new(failed("connection")));
+    };
+    let listed = number_listed(&mut db, &hooks.vault, her).await;
+    listed.map_err(|_| Box::new(failed("suppression check")))
+}
+
+/// PRIV-031, SEC-014, TXT-018, D-5339: a listed number's request: after the same send limits as
+/// a code, emails the single-use confirm link to her confirmed update address and sends no code;
+/// with no confirmed address she is told to email help@ from her own address (OPS-036).
+async fn link_request(state: &Portal, ip: IpAddr, her: &OnFile, kind: DataRequestKind) -> Response {
+    let admitted = send_admitted(state, ip, her).await;
+    let parts = state.hooks.clone().zip(state.postal.clone());
+    let Some((hooks, postal)) = parts.filter(|_| admitted) else {
+        return link_not_sent();
+    };
+    let Ok(mut db) = state.pool.acquire().await else {
+        return failed("connection");
+    };
+    let language = match spanish(&mut db, her.contact()).await {
+        Ok(true) => Language::Es,
+        Ok(false) => Language::En,
+        Err(what) => return failed(what),
+    };
+    drop(db);
+    let keys = (&hooks.id_secret, postal.as_ref());
+    let asked = (kind, language, state.clock.now());
+    match send_request_link(&state.pool, keys, her, asked).await {
+        Ok(LinkSent::Sent) => link_sent(),
+        Ok(LinkSent::NoConfirmedAddress) => email_help(),
+        Err(_) => failed("data request link"),
+    }
+}
+
+/// SEC-014: the answer when no link was sent (a limit refused it, or email is not set up): a 429
+/// linking back to her page; nothing was stored or sent.
+fn link_not_sent() -> Response {
+    let line = format!(
+        "Your request hasn't gone through yet, and your data hasn't changed. Wait a few minutes \
+         and try again, or <a href=\"{HOMEOWNER_HOME_ROUTE}\">go back to your page</a>."
+    );
+    let words = ("Link not sent", "We couldn't email your link");
+    note(StatusCode::TOO_MANY_REQUESTS, words, &line)
+}
+
+/// PRIV-031, D-5339: the answer once her confirm link is emailed (or an earlier one is still live).
+fn link_sent() -> Response {
+    let line = format!(
+        "Texts are off for your number, so we emailed you a link instead. It went to the email \
+         you gave us for updates. Open it within 15 minutes and press the button to confirm. The \
+         link works once. <a href=\"{HOMEOWNER_HOME_ROUTE}\">Go back to your page</a>."
+    );
+    note(
+        StatusCode::OK,
+        ("Check your email", "Check your email"),
+        &line,
+    )
+}
+
+/// PRIV-031, OPS-036, D-5339: the answer when she has no confirmed update email: email help@
+/// from her own address, which opens a help request.
+fn email_help() -> Response {
+    let help = askhava_messaging::api::reply_to();
+    let line = format!(
+        "Texts are off for your number, and we don't have a confirmed email for you. So we can't \
+         send you a code or a link. Email <a href=\"mailto:{help}\">{help}</a> from your own \
+         email address. Tell us if you want a copy of your data or want it deleted. We'll answer \
+         within 30 days."
+    );
+    let words = ("Email us", "Email us to finish your request");
+    note(StatusCode::OK, words, &line)
+}
+
+/// The link page for `screen` with the jar's CSRF token, answered with `status`.
+fn link_shown(jar: &CookieJar, screen: LinkScreen, status: StatusCode) -> Response {
+    let Some(csrf) = csrf_token(jar) else {
+        return failed("csrf token");
+    };
+    match data_link_page(screen, &csrf) {
+        Ok(html) => (status, Html(html)).into_response(),
+        Err(_) => failed("data link page"),
+    }
+}
+
+/// `GET` [`DATA_LINK_ROUTE`] (PRIV-031, SEC-026, SEC-042, D-5332): with a pre-session cookie for
+/// the CSRF token, the confirm page of a live link, else the one generic page; always a 200 and
+/// it changes nothing (a mail scanner may open it).
+async fn data_link(
+    State(state): State<Portal>,
+    jar: CookieJar,
+    Path((object, token)): Path<(String, String)>,
+) -> Response {
+    let Ok(jar) = ensure_pre_session(jar) else {
+        return failed("pre-session");
+    };
+    let page = match state.hooks.as_deref() {
+        Some(hooks) => {
+            let path = (object.as_str(), token.as_str());
+            open_data_link(&state.pool, &hooks.id_secret, path, state.clock.now()).await
+        }
+        None => Ok(LinkPage::Ended),
+    };
+    let Ok(page) = page else {
+        return failed("data link");
+    };
+    let shown = link_shown(&jar, LinkScreen::Opened(page), StatusCode::OK);
+    (jar, shown).into_response()
+}
+
+/// `POST` [`DATA_LINK_ROUTE`] (PRIV-031, PRIV-011, SEC-026, SEC-009, D-5340): after the
+/// cross-site and CSRF checks, acts on the link's request once and uses the link up; a copy
+/// answers the sign-in link and no data, a delete the PRIV-011 sentence, a repeat the same; a
+/// dead link the generic page as a 404.
+async fn data_link_press(
+    State(state): State<Portal>,
+    jar: CookieJar,
+    Path((object, token)): Path<(String, String)>,
+    CsrfForm(_): CsrfForm<ButtonForm>,
+) -> Response {
+    let acted = match state.hooks.as_deref() {
+        Some(hooks) => {
+            let path = (object.as_str(), token.as_str());
+            confirm_data_link(&state.pool, &hooks.id_secret, path, state.clock.now()).await
+        }
+        None => Ok(None),
+    };
+    match acted {
+        Ok(Some(acted)) => link_shown(&jar, LinkScreen::Done(acted), StatusCode::OK),
+        Ok(None) => link_shown(
+            &jar,
+            LinkScreen::Opened(LinkPage::Ended),
+            StatusCode::NOT_FOUND,
+        ),
+        Err(_) => failed("data link press"),
     }
 }
 
