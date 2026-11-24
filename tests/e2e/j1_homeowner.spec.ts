@@ -152,11 +152,12 @@ async function cardsRecorded(job: string): Promise<string[]> {
 }
 
 /** One business's quote through its served Quote link (a login link row for the real job and business) and the quote form. */
-async function quoteFrom(page: Page, job: string, business: string, n: number): Promise<void> {
+async function quoteFrom(page: Page, control: Control, job: string, business: string, n: number): Promise<void> {
+  const now = await control.now();
   const token = randomBytes(32).toString("hex");
   const hash = createHash("sha256").update(`action:quote:${job}:${token}`).digest("hex");
   rows(`INSERT INTO portals.login_link (token_sha256, member_id, business_id, created_at, expires_at)
-    SELECT decode('${hash}', 'hex'), id, business_id, now() - interval '1 day', now() + interval '2 hours'
+    SELECT decode('${hash}', 'hex'), id, business_id, '${now}'::timestamptz - interval '1 day', '${now}'::timestamptz + interval '2 hours'
     FROM businesses.team_member WHERE business_id = '${business}' AND is_owner`);
   await page.goto(`${BASE}/b/a/quote/${job}/${token}`);
   await page.getByLabel("Visit fee ($)").fill("89");
@@ -183,7 +184,7 @@ function quotePath(chat: Chat): string {
  * The first-quote text is no reply, so quiet hours (8 p.m. to 8 a.m. in Arizona, QH-001) hold it:
  * outside them the worker queues it within seconds; inside them the shared app clock moves once to
  * 8:30 a.m., the one forward move this file makes (a later spec that seeds a short-lived link
- * after it at night is the hazard; D-5717). The path is read once no newer text names her page.
+ * after it at night is the hazard; D-5717, D-5720). The path is read once no newer text names her page.
  */
 async function quoteTextQueued(control: Control, chat: Chat): Promise<string> {
   for (let tries = 0; tries < 2; tries += 1) {
@@ -208,7 +209,7 @@ async function quoteTextQueued(control: Control, chat: Chat): Promise<string> {
 /** Both carded businesses quote in turn; the job reaches Quotes ready by the real path (JOB-005); returns her quote page path, read from the queued first-quote text. */
 async function quotesIn(page: Page, control: Control, [chat, job]: [Chat, string]): Promise<string> {
   const businesses = await cardsRecorded(job);
-  for (const [i, business] of businesses.entries()) await quoteFrom(page, job, business, i + 1);
+  for (const [i, business] of businesses.entries()) await quoteFrom(page, control, job, business, i + 1);
   expect(rows(`SELECT status FROM jobs.job WHERE id = '${job}'`)).toEqual([["quotes_ready"]]);
   return quoteTextQueued(control, chat);
 }

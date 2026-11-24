@@ -2,9 +2,9 @@
 // TD-INT-50 (T676, D-4360, D-5657): the urgent Emergency path and the 911 path of INT-043's
 // "Intake order" table, run through the served Twilio route of the keyed web binary
 // (`keyedUrl()`), with the stand-ins and fake data only. Each text is posted signed as Twilio
-// signs it (SEC-016); the reply texts are read from the stand-in carrier in the order its
-// `sentTexts` returns them, because the suite's worker sends them (it shares the keyed binary's
-// ID secret and vault keys). Two fake active HVAC businesses are fixture rows in her town, so the
+// signs it (SEC-016); the reply texts are read from the `messaging.outbox` rows in the order the
+// suite's worker queued them (it shares the keyed binary's ID secret and vault keys), because
+// no homeowner line is set there, so nothing reaches the stand-in carrier (D-5717). Two fake active HVAC businesses are fixture rows in her town, so the
 // coverage line counts them and the job's cards go to them. Each path runs to its cards recorded
 // (`quotes.job_card`): on the urgent Emergency path the cards go at once on her choice (INT-029),
 // before the trade questions; the 911 path asks the ZIP only after SAFE (INT-025, INT-004).
