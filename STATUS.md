@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-24T19:58:27Z by runner 60b853b9b8e1 (actions).
+Updated 2026-11-24T19:59:27Z by runner 60b853b9b8e1 (actions).
 
 **Building: T815 in progress since 19:52Z; 668 of 780 done; week 96% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -119,7 +119,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-24T19:50:36Z (week)): week: 193.6M used, 438k left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T19:07:16Z; waiting until 2026-11-26T17:00:00Z.
+- Pacing (session_reading 2026-11-24T19:57:43Z (week)): week: 193.6M used, 438k left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T19:11:55Z; waiting until 2026-11-26T17:00:00Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
