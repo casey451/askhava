@@ -33036,7 +33036,8 @@
     "T839",
     "T840",
     "T841",
-    "T846"
+    "T846",
+    "T847"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -33288,7 +33289,8 @@
     "T839",
     "T840",
     "T841",
-    "T846"
+    "T846",
+    "T847"
    ],
    "model": "claude-opus-5-5",
    "effort": "high",
@@ -34101,7 +34103,8 @@
     "T839",
     "T840",
     "T841",
-    "T846"
+    "T846",
+    "T847"
    ],
    "model": "claude-opus-5-5",
    "effort": "medium",
@@ -43975,7 +43978,7 @@
     "T611",
     "T603"
    ],
-   "model": "claude-opus-5-5",
+   "model": "claude-sonnet-5-5",
    "effort": "medium",
    "reviewer_model": "claude-opus-5-5",
    "review_areas": [
@@ -44013,7 +44016,8 @@
     "D-4246",
     "D-3292",
     "D-5657",
-    "D-5676"
+    "D-5676",
+    "D-5810"
    ],
    "cites": [
     "docs/design/DESIGN_SPEC.md:128",
@@ -54915,6 +54919,62 @@
    "branch": "claude/task/T846-j1-keyboard-fragment-focus",
    "prompt": "kit/prompts/T846.md",
    "acceptance": "The quote card `<li id=\"quote-N\">` carries `tabindex=\"-1\"` right after its `id`; after \"Go back\" the J1 keyboard spec asserts `#quote-2` is focused before its first Tab, and that Tab reaches Pick #2 at 320, 768 and 1280 px; the focused card shows the 3 px outline with its top at least 6 px inside the viewport (asserted); every other assertion of `j1_keyboard.spec.ts` is unchanged and the full `Ally` suite passes; no retry, skipped step or `outline: none` on the card."
+  },
+  {
+   "id": "T847",
+   "slug": "j3-refused-pick-app-clock",
+   "title": "e2e: J3 step 5 seeds its refused pick at the app clock, so the daily timer backstop cannot move its job on (J3 flake)",
+   "goal": "Plan change D-5809 (Fable's decision on Casey's \"Ask fable\", Nov 24, 2026; a freeze-allowed fix: the flake charged T741 and T590's second attempt within an hour and every in-flight branch runs this step). J3 step 5 (`tests/e2e/j3.ts:362` to `:376`) fails intermittently with \"This pick can't be confirmed anymore. Nothing was charged.\" (`ChargeOutcome::MovedOn`, `app/portals/src/confirm_pay.rs:330` to `:333`) although its licence check is `active` (D-5657's earlier cause is fixed by T841). Probable cause (code reading, not yet reproduced): `seedPick` inserts the job by raw SQL at system time with `timer_from = now()` and no `jobs.timeout` task (`tests/e2e/keyed.ts:141` to `:142`); `safeModeStarts` moves the worker clock 24 h (`tests/e2e/j3.ts:308`), which makes the daily `jobs.timer_backstop` due (`app/jobs/src/timer_backstop.rs:62` to `:68`, queued at worker start, `app/server/src/bin/worker.rs:217`); tasks run `ORDER BY run_at` (`app/core/src/tasks.rs:211`), so the backstop can drain after `refused` is seeded, finds its job missing a timer and queues one (`timer_backstop.rs:146` to `:149`, at most 50 jobs in UUID order, `:41`, `:96`), already overdue by the 4-business-hour rule (`app/jobs/src/rules.rs:27`) against the advanced clock, and `run_timer` moves the job from Awaiting confirm to Quotes ready (`app/jobs/src/status.rs:122` to `:125`); the reloaded page still shows the button, `recheck` passes (`app/portals/src/confirm_moves.rs:118` to `:121`) and `confirm_move` is Lost and `press_move` answers `Stop::Ended` (`:185` to `:196`; `confirm_pay.rs:1662`). The timer's run time comes from `timer_from` (`app/jobs/src/service.rs:227`), not the clock, and the clock moves at most about 2 h between the seed and the press (review round 1). First confirm the cause: run J3 (`npx playwright test --config tests/e2e/playwright.config.ts tests/e2e/j3_operator.spec.ts --no-deps`, several times if needed) and, on a failure, check for an `ops.audit_log` row `jobs.timer_revived` (or the job's status history) on `refused.job`; if the cause is a different one, report it as a plan gap with evidence rather than guess. The fix, in the two owned files only: (1) `seedPick` (`tests/e2e/keyed.ts`) takes an optional instant used for the job's `created_at`, `status_at` and `timer_from` and the pick's `picked_at` (only these four; the session, licence check, homeowner, number and fee rows stay at `now()`: `portals.session` has `CHECK (expires_at > created_at)`, `migrations/0058_portals_base_security.sql:27`), defaulting to exactly today's SQL so every other caller is unchanged; (2) step 5 seeds `refused` at the app clock's now (the instant `/__test/clock` reports, `tests/e2e/fixtures.ts:117`), so a timer the backstop queues falls 4 business hours ahead; (3) just before the second Confirm press, beside D-5657's licence assertion, step 5 asserts `jobs.job.status` of `refused.job` is `awaiting_confirm`, with a message naming D-5809. No existing assertion is removed or loosened, no wait or retry is added to hide a failure, and no other file changes (a needed change elsewhere is a plan gap to report). Fake data only. Update `docs/decisions.md` (an entry from the hand-off's decision ids).",
+   "type": "harness",
+   "phase": 1,
+   "stage": "5",
+   "module": null,
+   "deps": [
+    "T841",
+    "T515",
+    "T452",
+    "T644",
+    "T767",
+    "T118"
+   ],
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "reviewer_model": "claude-opus-5-5",
+   "review_areas": [
+    "harness"
+   ],
+   "owns": [
+    "tests/e2e/keyed.ts",
+    "tests/e2e/j3.ts"
+   ],
+   "reads": [
+    "docs/code-docs.md",
+    "tests/e2e/j3_operator.spec.ts",
+    "tests/e2e/fixtures.ts",
+    "app/jobs/src/timer_backstop.rs",
+    "app/jobs/src/rules.rs"
+   ],
+   "requirements": [],
+   "tests": [],
+   "decisions": [
+    "D-5657",
+    "D-5762",
+    "D-5809"
+   ],
+   "cites": [],
+   "budget": {
+    "files": 2,
+    "lines": 120,
+    "context_pct": 12
+   },
+   "checks": [
+    "Ci",
+    "Twin",
+    "Ally"
+   ],
+   "branch": "claude/task/T847-j3-refused-pick-app-clock",
+   "prompt": "kit/prompts/T847.md",
+   "acceptance": "J3 passes repeatedly with its cause shown in the task report (the `jobs.timer_revived` evidence or the reported plan gap); step 5 seeds `refused` at the app clock and asserts its job is `awaiting_confirm` just before the second Confirm press; `seedPick` without the new argument seeds exactly as before; every existing assertion of every `seedPick` user is unchanged and passes; only `tests/e2e/keyed.ts` and `tests/e2e/j3.ts` change; fake data only."
   }
  ]
 }
