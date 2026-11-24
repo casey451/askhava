@@ -8,8 +8,10 @@
 //! server-rendered page with the chat so far above it (A11Y-035): the job, then the mobile number,
 //! then the Verify code. Each form carries a fresh message ID that T103's `chat_message` keeps as
 //! the PRIV-008 message ID, so a retried `POST` stores nothing twice (D-3189). The typed words are
-//! scrubbed by the composition's [`Scrub`] (`privacy::api::scrub`, which `site` may not call) before
-//! anything reads them. The typed number goes back only in
+//! scrubbed by the composition before anything reads them: with keys by [`ChatKeys::read`] (after
+//! the code with her vault name and stated names, T649, D-4294), else by [`Scrub`]
+//! (`privacy::api::scrub`, which `site` may not call); after the code her raw words go only to
+//! [`ChatKeys::turn`], so her name-and-address answer reaches the vault (INT-027). The typed number goes back only in
 //! the code form's hidden field on this `no-store` page; it is never logged, stored here or put in
 //! a URL (D-4044). The code step is the composition's [`ChatKeys`] (T103's `send_code` and
 //! `check_code` over the vault and Verify, D-963, D-3144); without it (dev and `Ci`) the code step sends and stores nothing and
@@ -24,7 +26,7 @@ use askama::Template;
 use askhava_core::api::Environment;
 use askhava_intake::api::rules::{Settings as IntakeSettings, language_from_code};
 use askhava_intake::api::{
-    ChatAnswer, ChatError, ChatIn, ChatSettings, Checked, chat_message, start_chat,
+    ChatAnswer, ChatError, ChatIn, ChatSettings, Checked, chat_message, chat_opt_out, start_chat,
     web_chat_consent_text,
 };
 use axum::extract::{Query, State};
@@ -35,7 +37,7 @@ use axum::{Extension, Form, Router};
 use jiff::Timestamp;
 use rand::TryRng;
 use rand::rngs::SysRng;
-use secrecy::SecretString;
+use secrecy::{ExposeSecret, SecretString};
 use serde::Deserialize;
 use sqlx::PgPool;
 use sqlx::postgres::PgConnection;
@@ -62,8 +64,19 @@ pub struct ChatCsrf(pub String);
 #[derive(Clone, Copy)]
 pub struct ChatClientIp(pub IpAddr);
 
-/// AI-002, PRIV-001: the composition's scrubber (`privacy::api::scrub` with no vault name).
+/// AI-002, PRIV-001: the composition's scrubber (`privacy::api::scrub` with no vault name), used
+/// when there are no [`ChatKeys`] (dev and `Ci`: no session passes the code).
 pub type Scrub = fn(&str) -> String;
+
+/// AI-003, AI-020, D-2088, D-4294: one chat message as [`ChatKeys::read`] scrubbed it, and
+/// whether its turn goes on (`false` after a vault error that fell back to the empty-context
+/// scrub: only the opt-out check runs).
+pub struct ChatRead {
+    /// The scrubbed words, never the raw text.
+    pub words: String,
+    /// Whether the turn goes on to intake.
+    pub go_on: bool,
+}
 
 /// D-963, D-3144, D-3744: the code step, implemented by `server` over T103's `send_code` and
 /// `check_code` with the vault, Verify and `ASKHAVA_ID_SECRET`. A full number is never logged.
@@ -86,6 +99,25 @@ pub trait ChatKeys: Send + Sync + 'static {
         typed: (&SecretString, &str),
         at: (ChatSettings, Timestamp),
     ) -> impl Future<Output = Result<Checked, ChatError>> + Send;
+    /// AI-003, AI-020, D-2088, D-4294: `raw` scrubbed for the session of `key`: after the code
+    /// with her vault name and stated names (`privacy::api::read_inbound_for`), before it with
+    /// none. A vault database or audit error is an error (nothing kept); any other vault error
+    /// gives the empty-context scrub with `go_on` false.
+    fn read(
+        &self,
+        db: &mut PgConnection,
+        key: &SecretString,
+        raw: &SecretString,
+    ) -> impl Future<Output = Result<ChatRead, ChatError>> + Send;
+    /// INT-027, D-4294: intake's chat turn (`chat_raw_message`) with `raw`, the vault and the
+    /// LIST's public names; `raw` is never logged, stored or shown back.
+    fn turn(
+        &self,
+        db: &mut PgConnection,
+        key: &SecretString,
+        said: (&ChatIn<'_>, &SecretString),
+        intake: IntakeSettings,
+    ) -> impl Future<Output = Result<ChatAnswer, ChatError>> + Send;
 }
 
 /// The one question a page asks (A11Y-035).
@@ -339,13 +371,22 @@ async fn carry<C: ChatKeys>(
 type Step = Result<(Ask, Option<Notice>), ChatError>;
 
 impl<C: ChatKeys> Chat<C> {
-    /// INT-002, PRIV-008: her scrubbed words as T103's chat message under message ID `id`.
+    /// INT-002, PRIV-008, AI-003, D-4294: her words, scrubbed by the keys' [`ChatKeys::read`]
+    /// (with no keys by [`Scrub`]), as T103's chat message under message ID `id`.
     async fn message(&self, db: &mut PgConnection, turn: &mut Turn, id: Uuid, raw: &str) -> Step {
-        let words = (self.scrub)(raw);
+        let (key, now) = (turn.key(), Timestamp::now());
+        let raw = SecretString::from(raw.to_owned());
+        let read = match &self.keys {
+            Some(keys) => keys.read(db, &key, &raw).await?,
+            None => ChatRead {
+                words: (self.scrub)(raw.expose_secret()),
+                go_on: true,
+            },
+        };
+        let words = read.words;
         if words.trim().is_empty() {
             return Ok((Ask::Message, Some(EMPTY)));
         }
-        let (key, now) = (turn.key(), Timestamp::now());
         start_chat(
             db,
             &key,
@@ -359,19 +400,40 @@ impl<C: ChatKeys> Chat<C> {
             words: &words,
             received_at: now,
         };
-        // Without keys no session passes the code, so the text path never reads this secret.
-        let secret = self.keys.as_ref().map(|k| k.secret().clone());
-        let secret = secret.unwrap_or_else(|| SecretString::from(String::new()));
-        Ok(
-            match chat_message(db, &secret, &key, &msg, self.intake).await? {
-                ChatAnswer::Shown(_, text) => {
-                    turn.add(true, &text);
-                    (Ask::Message, None)
-                }
-                ChatAnswer::AskNumber => (Ask::Number, None),
-                ChatAnswer::Texted(_) => (Ask::Message, Some(TEXTED)),
-            },
-        )
+        let Some(answer) = self.said(db, &key, (&msg, &raw), read.go_on).await? else {
+            return Ok((Ask::Message, Some(FAILED)));
+        };
+        Ok(match answer {
+            ChatAnswer::Shown(_, text) => {
+                turn.add(true, &text);
+                (Ask::Message, None)
+            }
+            ChatAnswer::AskNumber => (Ask::Number, None),
+            ChatAnswer::Texted(_) | ChatAnswer::Replied(_) => (Ask::Message, Some(TEXTED)),
+        })
+    }
+
+    /// The message's turn in intake: through the keys with the raw words (D-4294); after a vault
+    /// read that fell back (`go_on` false) only the opt-out check, `None` when it took nothing
+    /// (D-2088); with no keys T103's `chat_message`.
+    async fn said(
+        &self,
+        db: &mut PgConnection,
+        key: &SecretString,
+        (msg, raw): (&ChatIn<'_>, &SecretString),
+        go_on: bool,
+    ) -> Result<Option<ChatAnswer>, ChatError> {
+        match &self.keys {
+            Some(keys) if go_on => keys.turn(db, key, (msg, raw), self.intake).await.map(Some),
+            Some(_) => chat_opt_out(db, key, msg).await,
+            None => {
+                // Without keys no session passes the code, so the text path never reads it.
+                let secret = SecretString::from(String::new());
+                chat_message(db, &secret, key, msg, self.intake)
+                    .await
+                    .map(Some)
+            }
+        }
     }
 
     /// CON-025, D-3744: the typed number gets a Verify code; without keys nothing is sent or
@@ -522,7 +584,7 @@ mod tests {
 
     use askhava_core::api::Environment;
     use askhava_intake::api::rules::Settings as IntakeSettings;
-    use askhava_intake::api::{ChatError, ChatSettings, Checked};
+    use askhava_intake::api::{ChatAnswer, ChatError, ChatIn, ChatSettings, Checked};
     use axum::body::{Body, to_bytes};
     use axum::http::{Request, StatusCode, header};
     use jiff::Timestamp;
@@ -532,8 +594,8 @@ mod tests {
     use tower::ServiceExt;
 
     use super::{
-        Ask, ChatKeys, NO_CODES, OPEN, Scrub, TOO_MANY, TRY_LATER, WRONG_CODE, after_check,
-        chat_routes,
+        Ask, ChatKeys, ChatRead, NO_CODES, OPEN, Scrub, TOO_MANY, TRY_LATER, WRONG_CODE,
+        after_check, chat_routes,
     };
 
     /// AI-026's sentence, word for word (`docs/spec/ai.md:30`).
@@ -563,6 +625,23 @@ mod tests {
             _: (ChatSettings, Timestamp),
         ) -> Result<Checked, ChatError> {
             unreachable!("no code is checked without the part")
+        }
+        async fn read(
+            &self,
+            _: &mut PgConnection,
+            _: &SecretString,
+            _: &SecretString,
+        ) -> Result<ChatRead, ChatError> {
+            unreachable!("nothing is read through keys that are not given")
+        }
+        async fn turn(
+            &self,
+            _: &mut PgConnection,
+            _: &SecretString,
+            _: (&ChatIn<'_>, &SecretString),
+            _: IntakeSettings,
+        ) -> Result<ChatAnswer, ChatError> {
+            unreachable!("no turn runs through keys that are not given")
         }
     }
 

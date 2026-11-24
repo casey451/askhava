@@ -167,6 +167,7 @@ pub use crate::web_chat::{
     chat_message, check_code, request_source, send_code, start_chat, web_chat_consent_text,
     web_chat_order,
 };
+pub use crate::web_chat::{ChatRaw, chat_contact, chat_opt_out, chat_raw_message};
 pub use crate::zip_step::{
     ZIP_AGAIN_TEMPLATE, ZIP_QUESTION_TEMPLATE, ZipPlace, ZipStep, answer_zip, ask_zip, place_zip,
     read_zip, zip_body,
