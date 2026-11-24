@@ -1,6 +1,6 @@
 # Ask Hava build status
 
-Updated 2026-11-24T19:04:44Z by runner a5c0e45bc3c3 (actions).
+Updated 2026-11-24T19:15:12Z by runner 282a74fe4f82 (actions).
 
 **Building: T815 in progress since 18:07Z; 667 of 780 done; week 96% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
@@ -8,7 +8,7 @@ Updated 2026-11-24T19:04:44Z by runner a5c0e45bc3c3 (actions).
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
 - **Lane:** lane 1: T815 claimed 18:07Z, lease until 21:07Z; lane 2: T846 claimed 18:45Z, lease until 21:45Z; lane 3: T839 claimed 18:41Z, lease until 21:41Z; lane 4: T820 claimed 18:38Z, lease until 21:38Z
 - **Week:** 96% used, 0.4M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 19:04Z, 0 min before this update
+- **Last run:** 19:05Z, 10 min before this update
 - **Keeper:** last ran 19:04Z, next wake 21:09Z
 
 ## Needs attention
@@ -78,7 +78,6 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 | T836 | ci and runner workflow (harness): the backup-runner gate ski | BLOCKED | 1 | 11 min | 20:40Z |  |
 | T668 | server: the business job page at /b/jobs/{j} offers "Not a f | done | 1 | 56 min | 20:07Z |  |
 | T812 | businesses and portals: a passed step-up records the session | done | 1 | 89 min | 19:31Z |  |
-| T730 | messaging: a homeowner who chose email gets each quote updat | done | 4 | 76 min | 19:13Z | PLAN GAP: outside ownership: app/messaging/src/quote_text_sent.rs / Evidence: last_quote_text (quote_text_sent.rs:45-52) |
 
 ### Plan and harness merges on main
 - 17:12Z Plan: PF-Q1 pre-flight fixes for T817 and T843; PF-Q1, PF-T222, PF-T801b, PF-CLK reports and Fable's scope decision filed (D-5793) (#1448)
