@@ -92051,7 +92051,7 @@
     "session": "actions-44350652740",
     "expires": "2026-11-18T20:41:09Z"
    },
-   "branch": "claude/task/T624-health-check-alert",
+   "branch": "claude/task/T624-health-check-alert-a2",
    "auto_merge": {
     "enabled": true,
     "why": "auto-merge on #1054 (gh pr merge)",
@@ -92095,7 +92095,11 @@
    ],
    "update_waiting_since": null,
    "update_push_failures": null,
-   "merge_turn_since": "2026-11-18T19:14:09Z"
+   "merge_turn_since": "2026-11-18T19:14:09Z",
+   "wip_claim": {
+    "attempt": 2,
+    "remote_sha": ""
+   }
   },
   {
    "id": "T619",
@@ -126875,7 +126879,7 @@
    }
   }
  },
- "updated_at": "2026-11-24T10:38:11Z",
+ "updated_at": "2026-11-24T10:38:43Z",
  "notes": [
   "K8: workflow pushes to claude/kit-state (notify, inbox) will make runner pushes non-fast-forward; runner must fetch+rebase+retry and treat rejection as a lost lease only if the lease itself changed (K0 review N2).",
   "K8/K9: verify backup-runner claude-code-action allowed tools and that its pushes start checks (K0 review N3).",
