@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T11:54:39Z by runner 73c28aee267a (actions).
+Updated 2026-11-24T11:58:27Z by runner 16fd7ee8aae9 (actions).
 
 **Building: T802 in progress since 10:10Z; 658 of 780 done; week 92% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 658 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T802 claimed 10:10Z, lease until 14:54Z; lane 2: T732 claimed 11:13Z, lease until 14:13Z; lane 4: T410 claimed 11:51Z, lease until 14:51Z; lane 5: T624 claimed 10:37Z, lease until 13:37Z
-- **Week:** 92% used, 7.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:52Z, 2 min before this update
+- **Lane:** lane 1: T802 claimed 10:10Z, lease until 14:54Z; lane 2: T732 claimed 11:13Z, lease until 14:13Z; lane 3: T733 claimed 11:58Z, lease until 14:58Z; lane 4: T410 claimed 11:51Z, lease until 14:51Z; lane 5: T624 claimed 10:37Z, lease until 13:37Z
+- **Week:** 92% used, 5.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 11:56Z, 2 min before this update
 - **Keeper:** last ran 11:43Z, next wake 12:03Z
 
 ## Needs attention
@@ -26,7 +26,7 @@ Owners T158 (scorecard.html) and T434 (intake_report.html, money_view.html); T30
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 57 problem(s) on tasks still to run (+552 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 58 problem(s) on tasks still to run (+554 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -77,7 +77,6 @@ Owners T158 (scorecard.html) and T434 (intake_report.html, money_view.html); T30
 | T714 | portals: a Confirm link sent by text is marked text-started  | BLOCKED | 3 | 36 min | 13:10Z |  |
 | T653 | licensing and server (harness): a typed BTR number is stored | done | 2 | 65 min | 13:02Z | Ci: failure; Checks: failure / Checks failed at step: Rust dependency audit (cargo-audit, cargo-deny) / Warning:   unmai |
 | T714 | portals: a Confirm link sent by text is marked text-started  | check_failed | 2 | 47 min | 12:27Z |  |
-| T819 | portals: her feedback words are scrubbed before they are sto | check_failed | 1 | 54 min | 11:57Z |  |
 
 ### Plan and harness merges on main
 - 07:37Z Plan: per-turn token trims, PF-P1d pre-flight fixes, J1 keyboard flake task T846, T119 unblock, hand-offs (D-5693, D-5709, D-5715, D-5716) (#1419)
@@ -118,7 +117,7 @@ Owners T158 (scorecard.html) and T434 (intake_report.html, money_view.html); T30
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-24T11:42:35Z (week)): week: 186.8M used, 7.2M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T22:27:19Z.
+- Pacing (session_reading 2026-11-24T11:42:35Z (week)): week: 188.2M used, 5.8M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T22:34:19Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -135,6 +134,7 @@ A requirement is verified only when every task naming it merged green, every tes
 ## Running
 - T802 (lease until 2026-11-24T14:54:39Z)
 - lane 2: T732 (lease until 2026-11-24T14:13:21Z)
+- lane 3: T733 (lease until 2026-11-24T14:58:11Z)
 - lane 4: T410 (lease until 2026-11-24T14:51:12Z)
 - lane 5: T624 (lease until 2026-11-24T13:37:51Z)
 
