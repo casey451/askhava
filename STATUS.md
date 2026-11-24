@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T11:08:38Z by runner 16fd7ee8aae9 (actions).
+Updated 2026-11-24T11:13:35Z by runner 16fd7ee8aae9 (actions).
 
 **Building: T802 in progress since 10:10Z; 658 of 780 done; week 91% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 658 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T802 claimed 10:10Z, lease until 13:10Z; lane 3: T410 claimed 09:38Z, lease until 12:38Z; lane 4: T305 claimed 11:07Z, lease until 14:07Z; lane 5: T624 claimed 10:37Z, lease until 13:37Z
-- **Week:** 91% used, 9.2M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 11:02Z, 6 min before this update
+- **Lane:** lane 1: T802 claimed 10:10Z, lease until 13:10Z; lane 2: T732 claimed 11:13Z, lease until 14:13Z; lane 3: T410 claimed 09:38Z, lease until 12:38Z; lane 4: T305 claimed 11:07Z, lease until 14:07Z; lane 5: T624 claimed 10:37Z, lease until 13:37Z
+- **Week:** 91% used, 7.9M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 11:08Z, 4 min before this update
 - **Keeper:** last ran 11:01Z, next wake 11:21Z
 
 ## Needs attention
@@ -115,7 +115,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-24T11:00:44Z (week)): week: 184.8M used, 9.2M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T21:43:39Z.
+- Pacing (session_reading 2026-11-24T11:00:44Z (week)): week: 186.1M used, 7.9M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T21:49:29Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -131,6 +131,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T802 (lease until 2026-11-24T13:10:33Z)
+- lane 2: T732 (lease until 2026-11-24T14:13:21Z)
 - lane 3: T410 (lease until 2026-11-24T12:38:39Z)
 - lane 4: T305 (lease until 2026-11-24T14:07:32Z)
 - lane 5: T624 (lease until 2026-11-24T13:37:51Z)
