@@ -25,17 +25,21 @@
 //! [`card_pool_at`], the card senders' entry, also needs that check under LIC-008's 72 hours old
 //! at the caller's `now`; plain [`card_pool`] (coverage counts and display names) has no clock
 //! and does not test the age. Neither reads the wall clock or the database's.
+//!
+//! T716 (D-4777, D-5333): [`pair_coverage`] counts a request's coverage from its stored (trade,
+//! job type) pairs, each candidate under its own trade's license rule, as INT-017 tells it, and
+//! [`pair_pool_at`] sends to the same pairs (D-5606); each pair's trade pause applies (CARD-016).
 
 use std::collections::BTreeSet;
 
 use askhava_businesses::api::{
-    BusinessesError, Known, business, business_names, businesses_in_towns, capabilities, holding,
-    job_types, may_get_cards, service_areas, towns,
+    BusinessesError, Known, active_in_category, business, business_names, businesses_in_towns,
+    capabilities, holding, job_types, may_get_cards, service_areas, towns,
 };
 use askhava_catalog::api::{Category, Centroid, category, service_area_towns, zip_location};
 use askhava_licensing::api::{
-    CityRecord, ClassMap, FailureLimits, Freshness, Job, LicenseKind, arizona_day,
-    latest_check_allows_card,
+    CityRecord, ClassMap, FailureLimits, Freshness, Job, LicenseKind, RequestIntake, arizona_day,
+    latest_check_allows_card, request_intake,
 };
 use askhava_ops::api::{Switch, is_paused};
 use jiff::{SignedDuration, Timestamp};
@@ -45,8 +49,11 @@ use sqlx::types::Uuid;
 use crate::capability_match::{JobFit, capable_pool};
 use crate::job_text::CardFacts;
 use crate::models::{
-    BusinessReach, CardBusiness, CardJob, OfferTown, OwnerPauses, Pooled, QuotesError, Reach,
+    BusinessReach, CardBusiness, CardJob, Coverage, OfferTown, OwnerPauses, Pool, Pooled,
+    QuotesError, Reach,
 };
+use crate::rules::coverage_in_reach;
+use crate::service::MIN_ACTIVE_BUSINESSES;
 
 /// What one job's card send needs (CARD-001, CARD-016, CARD-020).
 #[derive(Debug, Clone)]
@@ -91,7 +98,7 @@ pub async fn card_pool(
         checked_since: Timestamp::UNIX_EPOCH,
         listed_since: arizona_day(Timestamp::UNIX_EPOCH),
     };
-    pool_for(conn, job, (text, band_floor_cents), any_age).await
+    pool_for(conn, job, (text, band_floor_cents), (any_age, None)).await
 }
 
 /// CARD-015, LIC-008, D-4310, D-5117: [`card_pool`] for a card send at the caller's `now` (the
@@ -109,22 +116,80 @@ pub async fn card_pool_at(
     band_floor_cents: Option<u64>,
     now: Timestamp,
 ) -> Result<CardPool, QuotesError> {
-    let pause_after = FailureLimits::default().pause_after;
-    let since = now.saturating_sub(pause_after).unwrap_or(now);
-    let fresh = Freshness {
-        checked_since: since + SignedDuration::from_micros(1),
-        listed_since: arizona_day(since),
-    };
-    pool_for(conn, job, (text, band_floor_cents), fresh).await
+    pool_for(conn, job, (text, band_floor_cents), (fresh_at(now), None)).await
 }
 
-/// The shared body of [`card_pool`] and [`card_pool_at`]: `fresh` is how new a business's latest
-/// Active daily check must be for it to keep its ROC classes.
+/// CARD-001, CARD-016, LIC-043, D-5606: [`card_pool_at`] whose candidates are the job's stored
+/// (trade, job type) `pairs`, matched as [`pair_coverage`] counts them ([`pair_jobs`]), so the
+/// send reaches exactly the businesses the coverage line counted; each pair's own trade decides
+/// its license and its owner pause (a paused electrical trade stops a handyman job's electrical
+/// pair). The category name, fee and recurring rules stay the stored category's.
+///
+/// # Errors
+/// As [`card_pool`].
+pub async fn pair_pool_at(
+    conn: &mut PgConnection,
+    job: ((&str, Option<&str>), &CardFacts),
+    (text, band_floor_cents): (String, Option<u64>),
+    pairs: &[(String, String)],
+    now: Timestamp,
+) -> Result<CardPool, QuotesError> {
+    let fresh = fresh_at(now);
+    pool_for(conn, job, (text, band_floor_cents), (fresh, Some(pairs))).await
+}
+
+/// LIC-008, D-5117: the freshness a send at `now` asks of a business's ROC check (72 hours).
+fn fresh_at(now: Timestamp) -> Freshness {
+    let pause_after = FailureLimits::default().pause_after;
+    let since = now.saturating_sub(pause_after).unwrap_or(now);
+    Freshness {
+        checked_since: since + SignedDuration::from_micros(1),
+        listed_since: arizona_day(since),
+    }
+}
+
+/// CARD-001, LIC-043, INT-017, D-4777, D-5333: the request coverage of a job whose candidates
+/// are the stored (trade, job type) `pairs`, each matched under its own trade's license rule (so
+/// "breaker trips" under a handyman request needs the electrical license, D-105), counted as
+/// `service::request_coverage` counts: not covered unless the job's category opens
+/// ([`MIN_ACTIVE_BUSINESSES`]), else the in-reach count of [`card_pool`]'s pool. Pairs, not job
+/// type names, since one name can belong to two trades ("leak repair").
+///
+/// # Errors
+/// As [`card_pool`]; [`QuotesError::Business`] when the active count cannot be read.
+pub async fn pair_coverage(
+    conn: &mut PgConnection,
+    ((town, zip), facts): ((&str, Option<&str>), &CardFacts),
+    pairs: &[(String, String)],
+) -> Result<Coverage, QuotesError> {
+    let map = ClassMap::shipped().map_err(|_| QuotesError::LicenseMap)?;
+    let active = biz(active_in_category(conn, &facts.category).await)?;
+    let opening = map.opening(&facts.category);
+    if request_intake(opening, active, MIN_ACTIVE_BUSINESSES) != RequestIntake::Open {
+        return Ok(Coverage::NotCovered);
+    }
+    let any_age = Freshness {
+        checked_since: Timestamp::UNIX_EPOCH,
+        listed_since: arizona_day(Timestamp::UNIX_EPOCH),
+    };
+    let job = ((town, zip), facts);
+    let pool = pool_for(conn, job, (String::new(), None), (any_age, Some(pairs))).await?;
+    let chosen = Pool {
+        businesses: &pool.businesses,
+        pauses: &pool.pauses,
+    };
+    Ok(coverage_in_reach(map, &pool.job, &chosen, &pool.reach))
+}
+
+/// The shared body of [`card_pool`], [`card_pool_at`], [`pair_pool_at`] and [`pair_coverage`]:
+/// `fresh` is how new a business's latest Active daily check must be for it to keep its ROC
+/// classes; `pairs`, when given, are the candidates, each under its own trade's rule
+/// ([`pair_jobs`]), and each pair's trade pause applies.
 async fn pool_for(
     conn: &mut PgConnection,
     ((town, zip), facts): ((&str, Option<&str>), &CardFacts),
     (text, band_floor_cents): (String, Option<u64>),
-    fresh: Freshness,
+    (fresh, pairs): (Freshness, Option<&[(String, String)]>),
 ) -> Result<CardPool, QuotesError> {
     let stored = category(conn, &facts.category)
         .await
@@ -139,7 +204,13 @@ async fn pool_for(
         band_floor_cents,
         recurring: facts.candidates.iter().any(|t| recurring(&stored, t)),
     };
-    let candidates = candidate_jobs(&stored, &facts.candidates)?;
+    let (candidates, trades) = match pairs {
+        Some(pairs) => pair_jobs(conn, &stored, pairs).await?,
+        None => (
+            candidate_jobs(&stored, &facts.candidates)?,
+            vec![stored.clone()],
+        ),
+    };
     let towns = [OfferTown {
         code: place.code.clone(),
         state: place.state.clone(),
@@ -150,7 +221,7 @@ async fn pool_for(
     };
     let (ids, reach) = reached(conn, &place.code, job_at).await?;
     let businesses = pooled(conn, &ids, fit, fresh).await?;
-    let pauses = owner_pauses(conn, &stored).await?;
+    let pauses = owner_pauses(conn, &trades).await?;
     let fee_free = facts.candidates.iter().all(|t| fee_free(&stored, t));
     Ok(CardPool {
         map: ClassMap::shipped().map_err(|_| QuotesError::LicenseMap)?,
@@ -201,19 +272,50 @@ fn candidate_jobs(stored: &Category, job_types: &[String]) -> Result<Vec<Job>, Q
         .collect())
 }
 
-/// CARD-016, OPS-003: the "all" switch and the category's trade switch (scoped by the stored
-/// category's record ID). No town switch is read: no town has a record ID to scope one (D-3181).
-async fn owner_pauses(
+/// LIC-043, CARD-001, D-4777, D-5606: each stored (trade, job type) pair with its own trade's
+/// license rule, read from the stored catalog (the job's own category is `stored`, already read),
+/// with every category the pairs name (`stored` first), whose owner pauses then apply.
+async fn pair_jobs(
     conn: &mut PgConnection,
     stored: &Category,
+    pairs: &[(String, String)],
+) -> Result<(Vec<Job>, Vec<Category>), QuotesError> {
+    let mut jobs = Vec::new();
+    let mut trades = vec![stored.clone()];
+    for (trade, job_type) in pairs {
+        if !trades.iter().any(|c| c.code == *trade) {
+            let own = category(conn, trade)
+                .await
+                .map_err(|_| QuotesError::Database)?
+                .ok_or(QuotesError::Database)?;
+            trades.push(own);
+        }
+        let own = trades.iter().find(|c| c.code == *trade);
+        let own = own.ok_or(QuotesError::Database)?;
+        jobs.extend(candidate_jobs(own, std::slice::from_ref(job_type))?);
+    }
+    Ok((jobs, trades))
+}
+
+/// CARD-016, OPS-003, D-5606: the "all" switch and the trade switch of each of `trades` (scoped
+/// by the stored category's record ID). No town switch is read: no town has a record ID to scope
+/// one (D-3181).
+async fn owner_pauses(
+    conn: &mut PgConnection,
+    trades: &[Category],
 ) -> Result<OwnerPauses, QuotesError> {
     let on = |r: Result<bool, _>| r.map_err(|_| QuotesError::Database);
     let all = on(is_paused(conn, Switch::All).await)?;
-    let trade = on(is_paused(conn, Switch::Trade(stored.id)).await)?;
+    let mut paused = BTreeSet::new();
+    for stored in trades {
+        if on(is_paused(conn, Switch::Trade(stored.id)).await)? {
+            paused.insert(stored.code.clone());
+        }
+    }
     Ok(OwnerPauses {
         all,
         towns: BTreeSet::new(),
-        trades: trade.then(|| stored.code.clone()).into_iter().collect(),
+        trades: paused,
     })
 }
 

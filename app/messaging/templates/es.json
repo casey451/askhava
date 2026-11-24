@@ -259,6 +259,18 @@
     "segments": 2,
     "text": "{brand_short}: Son 2 trabajos. Empezamos con {trade}. Responda TAMBIÉN para empezar también con {business}."
   },
+  "which_fits": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 1,
+    "text": "{brand_short}: ¿Cuál se parece más? Mande el número o unas palabras."
+  },
+  "trade_ask": {
+    "audience": "homeowner",
+    "draft": true,
+    "segments": 1,
+    "text": "{brand_short}: ¿Qué trabajo necesita? Con unas palabras basta."
+  },
   "quote_update": {
     "audience": "homeowner",
     "draft": true,
