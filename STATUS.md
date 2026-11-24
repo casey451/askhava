@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T15:02:04Z by runner 017788d7635b (actions).
+Updated 2026-11-24T15:02:55Z by runner 234ae7f8fe8e (actions).
 
 **Building: T741 in progress since 14:26Z; 661 of 780 done; week 93% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 661 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T741 claimed 14:26Z, lease until 17:26Z; lane 3: T732 claimed 14:23Z, lease until 17:23Z
-- **Week:** 93% used, 4.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 15:01Z, 0 min before this update
+- **Lane:** lane 1: T741 claimed 14:26Z, lease until 17:26Z; lane 2: T802 claimed 15:02Z, lease until 18:02Z; lane 3: T732 claimed 14:23Z, lease until 17:23Z
+- **Week:** 93% used, 4.8M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 15:02Z, 0 min before this update
 - **Keeper:** last ran 15:02Z, next wake 15:22Z
 
 ## Needs attention
@@ -22,7 +22,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
 - PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
-- Strict plan check red: 59 problem(s) on tasks still to run (+559 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
+- Strict plan check red: 62 problem(s) on tasks still to run (+561 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
 | Task | Title | Result | Attempt | Took | Ended | Retry reason |
@@ -115,7 +115,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-24T14:12:34Z (week)): week: 189.5M used, 4.5M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T20:39:07Z.
+- Pacing (session_reading 2026-11-24T15:01:20Z (week)): week: 189.2M used, 4.8M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T21:15:03Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -131,6 +131,7 @@ A requirement is verified only when every task naming it merged green, every tes
 
 ## Running
 - T741 (lease until 2026-11-24T17:26:45Z)
+- lane 2: T802 (lease until 2026-11-24T18:02:40Z)
 - lane 3: T732 (lease until 2026-11-24T17:23:32Z)
 
 ## Last usage reading
