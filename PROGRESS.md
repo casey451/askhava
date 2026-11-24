@@ -10785,3 +10785,4 @@
 - 2026-11-24T10:30:19Z runner 9eb978b60d55 (actions): {}
 - 2026-11-24T10:34:00Z runner 6f9c1243fb5d (actions): {}
 - 2026-11-24T10:35:32Z runner 16fd7ee8aae9 (actions): {"T814": "MERGE_PENDING -> DONE"}
+- 2026-11-24T10:38:11Z runner 16fd7ee8aae9 (actions): {"T624": "QUEUED -> IN_PROGRESS"}; T624 estimated 1.2M tokens (calibrated); week has 8.5M left (no five-hour budget, D-3056) after 3.5M still running in another lane (session_reading 2026-11-24T10:29:37Z (week)); claimed

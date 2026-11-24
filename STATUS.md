@@ -1,14 +1,14 @@
 # Ask Hava build status
 
-Updated 2026-11-24T10:35:32Z by runner 16fd7ee8aae9 (actions).
+Updated 2026-11-24T10:38:11Z by runner 16fd7ee8aae9 (actions).
 
 **Building: T802 in progress since 10:10Z; 658 of 780 done; week 91% used, resets Thu 2026-11-26 17:00Z (10:00 am Phoenix).**
 
 - **Tasks done:** 658 of 780 build tasks (owner gates not counted)
 - **Stage:** stage 5; stage proofs recorded: 1, 2, 3, 4
-- **Lane:** lane 1: T802 claimed 10:10Z, lease until 13:10Z; lane 3: T410 claimed 09:38Z, lease until 12:38Z; lane 4: T801 claimed 08:49Z, lease until 13:34Z
-- **Week:** 91% used, 7.3M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
-- **Last run:** 10:34Z, 1 min before this update
+- **Lane:** lane 1: T802 claimed 10:10Z, lease until 13:10Z; lane 3: T410 claimed 09:38Z, lease until 12:38Z; lane 4: T801 claimed 08:49Z, lease until 13:34Z; lane 5: T624 claimed 10:37Z, lease until 13:37Z
+- **Week:** 91% used, 8.5M tokens left; resets Thu 2026-11-26 17:00Z (10:00 am Phoenix)
+- **Last run:** 10:35Z, 2 min before this update
 - **Keeper:** last ran 10:30Z, next wake 11:52Z
 
 ## Needs attention
@@ -21,6 +21,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 - PLAN GAP T365 (since 2026-11-12T04:23:07Z, no attempt used; a plan change fixes it): T365: not in kit/tasks.json
 - PLAN GAP T518 (since 2026-11-18T00:12:48Z, no attempt used; a plan change fixes it): T518: dependency T106 is DONE but its owned file app/server/src/healthz.rs is not on main; T518: dependency T106 is DONE but its owned file app/server/src/liveness.rs is not on main; T518: dependency T106 is DONE but its owned file tests/integration/tests/health.rs is not on main; T518: dependency T106 is DONE but its owned file app/core/src/queue_health.rs is not on main
 - PLAN GAP T723 (since 2026-11-24T00:30:33Z, no attempt used; a plan change fixes it): T723: measures 47% of the context window, over its 45% limit
+- PLAN GAP T811 (since 2026-11-24T10:37:51Z, no attempt used; a plan change fixes it): T811: measures 48% of the context window, over its 45% limit
 - Strict plan check red: 58 problem(s) on tasks still to run (+554 on DONE tasks); first: T402: stored context_pct 29% but it measures 33%; regenerate
 
 ## Last 24 hours
@@ -113,7 +114,7 @@ Reviewer could not run tests (no PostgreSQL there); worker reported smoke.sh and
 A requirement is verified only when every task naming it merged green, every test entry covering it is owned by a merged task, and the nightly full run on main was green afterwards.
 
 ## Pacing
-- Pacing (session_reading 2026-11-24T10:08:50Z (week)): week: 186.7M used, 7.3M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T21:30:15Z.
+- Pacing (session_reading 2026-11-24T10:29:37Z (week)): week: 185.5M used, 8.5M left, resets 2026-11-26T17:00:00Z; projected finish 2026-12-07T21:13:59Z.
 
 ## Tasks done (throughput)
 - stage 0.5: 0 of 1 done
@@ -131,6 +132,7 @@ A requirement is verified only when every task naming it merged green, every tes
 - T802 (lease until 2026-11-24T13:10:33Z)
 - lane 3: T410 (lease until 2026-11-24T12:38:39Z)
 - lane 4: T801 (lease until 2026-11-24T13:34:00Z)
+- lane 5: T624 (lease until 2026-11-24T13:37:51Z)
 
 ## Last usage reading
 - {"task": "T305", "at": "2026-11-24T10:28:24Z", "input_tokens": 188, "cache_creation_input_tokens": 223902, "cache_read_input_tokens": 9740125, "output_tokens": 52779}
