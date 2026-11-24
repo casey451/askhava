@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT i.message_sid AS \"sid!\" FROM messaging.inbox i\n           JOIN messaging.inbox_contact c ON c.inbox_id = i.id WHERE c.contact_id = $1\n           UNION SELECT provider_sid AS \"sid!\" FROM messaging.outbox\n           WHERE recipient_id = $1 AND provider_sid IS NOT NULL",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "sid!",
+        "type_info": "Text",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "ad74c40a5bef60cadda670ef43d072442eb9e4c8f882b84f3747f4cbd514e92b"
+}
